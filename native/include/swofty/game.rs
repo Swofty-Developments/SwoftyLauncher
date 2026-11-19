@@ -22474,6 +22474,66 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Game_CrewWorkingOnCar_TeamRecord: Binding = Binding {
+        id: "site_Game_CrewWorkingOnCar_TeamRecord",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_CutsceneAt354530_TeamRecord: Binding = Binding {
+        id: "site_Game_CutsceneAt354530_TeamRecord",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_DriverGettingReady01_TeamRecord: Binding = Binding {
+        id: "site_Game_DriverGettingReady01_TeamRecord",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_DriverGettingWeighed01_TeamRecordA: Binding = Binding {
+        id: "site_Game_DriverGettingWeighed01_TeamRecordA",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_DriverGettingWeighed01_TeamRecordB: Binding = Binding {
+        id: "site_Game_DriverGettingWeighed01_TeamRecordB",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_DriverInCarIdle02_TeamRecord: Binding = Binding {
+        id: "site_Game_DriverInCarIdle02_TeamRecord",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_DriverInCarIdle03_TeamRecordA: Binding = Binding {
+        id: "site_Game_DriverInCarIdle03_TeamRecordA",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_DriverInCarIdle03_TeamRecordB: Binding = Binding {
+        id: "site_Game_DriverInCarIdle03_TeamRecordB",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_DriverInCarIdle04_TeamRecord: Binding = Binding {
+        id: "site_Game_DriverInCarIdle04_TeamRecord",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_DriverInCarIdle05_TeamRecordA: Binding = Binding {
+        id: "site_Game_DriverInCarIdle05_TeamRecordA",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_DriverInCarIdle05_TeamRecordB: Binding = Binding {
+        id: "site_Game_DriverInCarIdle05_TeamRecordB",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_DriverSatInCar06_TeamRecord: Binding = Binding {
+        id: "site_Game_DriverSatInCar06_TeamRecord",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Game_DriverSelectHeader_BuildTabs: Binding = Binding {
         id: "site_Game_DriverSelectHeader_BuildTabs",
         kind: "call",
@@ -22497,6 +22557,21 @@ pub mod bindings {
     pub const site_Game_DriverSelect_TeamLogoFormat: Binding = Binding {
         id: "site_Game_DriverSelect_TeamLogoFormat",
         kind: "call",
+        status: Status::Experimental,
+    };
+    pub const site_Game_DriverTalkToEngineer01_TeamRecordA: Binding = Binding {
+        id: "site_Game_DriverTalkToEngineer01_TeamRecordA",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_DriverTalkToEngineer01_TeamRecordB: Binding = Binding {
+        id: "site_Game_DriverTalkToEngineer01_TeamRecordB",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_DriverTalksToCrew01_TeamRecord: Binding = Binding {
+        id: "site_Game_DriverTalksToCrew01_TeamRecord",
+        kind: "site",
         status: Status::Experimental,
     };
     pub const site_Game_ErsNewLap_NextVehicle: Binding = Binding {
@@ -22531,6 +22606,21 @@ pub mod bindings {
     };
     pub const site_Game_GarageSetups_NotFound: Binding = Binding {
         id: "site_Game_GarageSetups_NotFound",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_GettingReadyToRaceIdle01_TeamRecord: Binding = Binding {
+        id: "site_Game_GettingReadyToRaceIdle01_TeamRecord",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_GettingReadyToRace_TeamRecordA: Binding = Binding {
+        id: "site_Game_GettingReadyToRace_TeamRecordA",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_GettingReadyToRace_TeamRecordB: Binding = Binding {
+        id: "site_Game_GettingReadyToRace_TeamRecordB",
         kind: "site",
         status: Status::Experimental,
     };
@@ -22611,6 +22701,11 @@ pub mod bindings {
     };
     pub const site_Game_SaveSlot_Selected: Binding = Binding {
         id: "site_Game_SaveSlot_Selected",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_SwapTyres_TeamRecord: Binding = Binding {
+        id: "site_Game_SwapTyres_TeamRecord",
         kind: "site",
         status: Status::Experimental,
     };
