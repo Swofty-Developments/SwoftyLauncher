@@ -142,6 +142,24 @@ def mention_edits(files, review):
     return edits
 
 
+def visibility_edits(files, edits):
+    """`pub(in crate::<module>)` names an ancestor, which a re-export is not; point it at the new place."""
+    pattern = re.compile(rf"\bpub\(in crate::({'|'.join(re.escape(m) for m in MODULES)})\b")
+    found = {}
+    for rel in files:
+        if not rel.endswith(".rs"):
+            continue
+        text = edits.get(rel)
+        if text is None:
+            text = read(rel)
+        if text is None or "pub(in crate::" not in text:
+            continue
+        changed = pattern.sub(lambda m: f"pub(in crate::games::f1_25::{m.group(1)}", text)
+        if changed != text:
+            found[rel] = changed
+    return found
+
+
 def nextest_edit(review):
     text = read(NEXTEST)
     if text is None:
@@ -215,6 +233,7 @@ def plan():
             edits[rel] = mention_pattern().sub(lambda m: f"{INTO}/{m.group(1)}", base)
         else:
             edits[rel] = text
+    edits.update(visibility_edits(files, edits))
     edits.update(nextest_edit(review))
     return edits, module_moves(), problems, review
 

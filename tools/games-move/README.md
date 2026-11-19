@@ -9,15 +9,16 @@ once, on the final 1.10 tip, after every other lane has merged.
 ## What a run does
 
 1. It refuses a tree with changes, and with `--expect <sha>` any tip but that one.
-2. It rewrites the `include_str!` and `include_bytes!` paths that point elsewhere once the files move. A path that
+2. It rewrites the `pub(in crate::<module>)` visibility paths of the moved modules to `pub(in crate::games::f1_25::<module>)`.
+3. It rewrites the `include_str!` and `include_bytes!` paths that point elsewhere once the files move. A path that
    still resolves is left alone.
-3. It rewrites every `packages/core/src/<module>` path in the repository (code, docs, `native/`, `re/`, `tools/`)
+4. It rewrites every `packages/core/src/<module>` path in the repository (code, docs, `native/`, `re/`, `tools/`)
    to `packages/core/src/games/f1_25/<module>`, and lists the lines that are code rather than prose.
-4. It rewrites the `test(=<module>::…)` filters in `.config/nextest.toml` to `test(=games::f1_25::<module>::…)`.
-5. It runs `git mv` for each module, drops their `pub mod` lines from `lib.rs`, and adds
+5. It rewrites the `test(=<module>::…)` filters in `.config/nextest.toml` to `test(=games::f1_25::<module>::…)`.
+6. It runs `git mv` for each module, drops their `pub mod` lines from `lib.rs`, and adds
    `pub use games::f1_25::{activation, build, …};` there, so `crate::erp` and `swofty_core::erp` still resolve.
-6. It runs `cargo fmt --all`, then writes `packages/core/boundary.json` through the boundary test.
-7. It stages everything. It does not commit.
+7. It runs `cargo fmt --all`, then writes `packages/core/boundary.json` through the boundary test.
+8. It stages everything. It does not commit.
 
 A second run on a moved tree changes nothing. `--check` prints the plan, and exits 1 while anything is left to do
 and 0 once the move is done.
