@@ -1,4 +1,5 @@
-//! Support: the donation goal, the supporters and the signed-in user's own support, from the launcher's server.
+//! Support: the donation goal, the supporters, the Supporter+ previews and the signed-in user's own support,
+//! from the launcher's server.
 
 use serde::Deserialize;
 use serde_json::{Value, json};
@@ -82,6 +83,35 @@ impl Supporter {
     pub fn plus(&self) -> bool {
         self.tier == "supporter_plus"
     }
+}
+
+/// An addon Supporter+ members can test before it comes out.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+pub struct Preview {
+    #[serde(default)]
+    pub id: String,
+    #[serde(default)]
+    pub title: String,
+    #[serde(default)]
+    pub summary: String,
+    #[serde(default)]
+    pub highlights: Vec<String>,
+    #[serde(default)]
+    pub image: Option<String>,
+    #[serde(default)]
+    pub addons: Vec<String>,
+    /// When it was posted, in unix seconds.
+    #[serde(default)]
+    pub posted: Option<u64>,
+    /// The post in the Discord server that tells more.
+    #[serde(default)]
+    pub link: Option<String>,
+}
+
+#[derive(Deserialize)]
+struct Previews {
+    #[serde(default)]
+    previews: Vec<Preview>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
@@ -168,6 +198,15 @@ impl Api {
         Ok(self
             .get_json::<Rows<Supporter>>("/v1/support/supporters")?
             .into_vec())
+    }
+
+    /// The addons Supporter+ members can test early. Servers from before the previews have none.
+    pub fn support_previews(&self) -> Result<Vec<Preview>, ApiError> {
+        match self.get_json::<Previews>("/v1/support/previews") {
+            Ok(got) => Ok(got.previews),
+            Err(e) if e.status == 404 => Ok(Vec::new()),
+            Err(e) => Err(e),
+        }
     }
 
     pub fn support_update(&self, bio: Option<&str>, display_mode: Option<&str>) -> Result<(), ApiError> {
@@ -262,6 +301,57 @@ mod tests {
             .fraction(),
             1.
         );
+    }
+
+    #[test]
+    fn a_preview_reads_with_or_without_its_image_and_link() {
+        let got: Previews = serde_json::from_str(
+            r#"{"previews":[{"id":"swofty-2011","title":"F1 2011","summary":"Early beta testing",
+                "highlights":["F1 2011 physics","KERS"],"image":null,
+                "addons":["swofty.swofty-seasons-2011","swofty.swofty-seasons-2011-real"],
+                "posted":1763480000,"link":"https://discord.com/channels/1/2/3","pinned":true},
+                {"id":"bare","title":"Bare","summary":"","highlights":[],"image":"https://i/a.png","link":null}],
+                "next":null}"#,
+        )
+        .unwrap();
+        let [full, bare] = got.previews.as_slice() else {
+            panic!("two previews expected");
+        };
+        assert_eq!(full.title, "F1 2011");
+        assert_eq!(full.highlights, ["F1 2011 physics", "KERS"]);
+        assert_eq!(full.image, None);
+        assert_eq!(full.addons.len(), 2);
+        assert_eq!(full.posted, Some(1_763_480_000));
+        assert_eq!(full.link.as_deref(), Some("https://discord.com/channels/1/2/3"));
+        assert!(bare.highlights.is_empty() && bare.link.is_none() && bare.posted.is_none());
+        assert_eq!(bare.image.as_deref(), Some("https://i/a.png"));
+    }
+
+    #[test]
+    fn previews_come_from_the_server_and_an_older_server_has_none() {
+        let (url, t) = crate::online::server::api::tests::serve(
+            "200 OK",
+            r#"{"previews":[{"id":"swofty-2011","title":"F1 2011","summary":"s","highlights":[],"image":null,"addons":[],"posted":1,"link":null}]}"#,
+        );
+        let got = Api::with_server(&url, "tok").support_previews().unwrap();
+        assert_eq!(got.len(), 1);
+        assert_eq!(got[0].id, "swofty-2011");
+        let request = String::from_utf8_lossy(&t.join().unwrap()).into_owned();
+        assert!(request.starts_with("GET /v1/support/previews "));
+
+        let (url, t) = crate::online::server::api::tests::serve("404 Not Found", r#"{"error":"not_found"}"#);
+        assert_eq!(Api::with_server(&url, "tok").support_previews(), Ok(Vec::new()));
+        t.join().unwrap();
+
+        let (url, t) = crate::online::server::api::tests::serve("500 Internal Server Error", "{}");
+        assert_eq!(
+            Api::with_server(&url, "tok")
+                .support_previews()
+                .unwrap_err()
+                .status,
+            500
+        );
+        t.join().unwrap();
     }
 
     #[test]
