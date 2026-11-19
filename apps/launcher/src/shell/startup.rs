@@ -177,7 +177,7 @@ impl Shell {
             Ok("online") => shell.open_page(Page::Online, cx),
             Ok("browser") => shell.open_page(Page::Browser, cx),
             Ok("settings") => shell.open_page(Page::Settings, cx),
-            Ok("store" | "support") => shell.open_page(Page::Store, cx),
+            Ok("donate" | "store" | "support") => shell.open_page(Page::Store, cx),
             Ok("moderation") => shell.open_page(Page::Moderation, cx),
             Ok(page) if page.starts_with("section:") => {
                 let section = page.trim_start_matches("section:");
