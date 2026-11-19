@@ -37,9 +37,8 @@
 // the callback was not proven on) the first press raises the OK message and a second press of the same card loads it.
 // Leaving the screen, opening it again and Back reset the pending press.
 //
-// Each Driver Career card's title (site_Game_CareerContinue_DriverSlotTitle, rbx = slot info, esi = card) becomes
-// "DRIVER CAREER - ALL ADD-ONS ON" or "... - NEEDS: A, B" through a runtime string override. A career the launcher gave no needs for, a card whose
-// slot is not listed and a settings.json with no resume_needs are never gated.
+// The card titles stay the game's own. A career the launcher gave no needs for, a card whose slot is not listed and a
+// settings.json with no resume_needs are never gated.
 //
 // The cards' layout was checked on the KB build, Steam 1.0.145 and EA 1.0.145 (the test agent reads the same fields).
 // SWOFTY_RESUME_GATE=0 turns the gate off.
@@ -47,13 +46,8 @@
 namespace {
 
 constexpr const char *MIXIN = "swofty_core.dll (resume gate)";
-constexpr const char *TITLE_MIXIN = "swofty_core.dll (resume card status)";
 constexpr const char *DRIVER_VT = "vt_Game_CareerContinueDriverViewModel";
 constexpr const char *MY_TEAM_VT = "vt_Game_CareerContinueMyTeamViewModel";
-constexpr const char *TITLE_SITE = "site_Game_CareerContinue_DriverSlotTitle";
-constexpr const char *TEAM_TITLE_MIXIN = "swofty_core.dll (resume my team card status)";
-constexpr const char *TEAM_TITLE_SITE = "site_Game_CareerContinue_MyTeamSlotTitle";
-constexpr const char *TEAM_STOCK_KEY = "lng_homescreen_my_team_career";
 constexpr const char *MAKE_STR = "Ne_Make_StrFromCStr";
 constexpr uintptr_t CARDS = 0x328, CARD_SIZE = 0x540, CARD_COUNT = 3;
 
@@ -70,8 +64,6 @@ constexpr bp::Proof CONFIRM_CALLBACK{"the message response callback ({fn, ctx} a
                                      "answer text at +9)",
                                      PROVEN};
 constexpr bp::Gate CONFIRM_GATE{"the resume gate's confirm message", &CONFIRM_CALLBACK};
-constexpr bp::Proof TITLE_REGS{"the resume card title site (rbx = slot info, esi = card, rdx = key)", PROVEN};
-constexpr bp::Gate TITLE_GATE{"the resume card status", &TITLE_REGS};
 
 using Handle = uint64_t(void *vm, void *cmd, void *value);
 using MakeStr = uint32_t(void **out, const char *text, uint32_t flags, uintptr_t len);
@@ -92,8 +84,6 @@ struct Pending {
     std::string key, prompt;
     bool open = false;
 } pending;
-
-char title_keys[2][CARD_COUNT][40];
 
 const rg::Table &needs_locked()
 {
@@ -348,38 +338,11 @@ uint64_t entry(Handle *orig, bool my_team, void *vm, void *cmd, void *value)
 uint64_t driver_entry(void *vm, void *cmd, void *value) { return entry(orig_driver, false, vm, cmd, value); }
 uint64_t my_team_entry(void *vm, void *cmd, void *value) { return entry(orig_my_team, true, vm, cmd, value); }
 
-void title(SwoftyContext *c, bool my_team)
-{
-    uint8_t card = uint8_t(c->rsi);
-    uint64_t id = 0, guid = 0;
-    std::string current;
-    if (card >= CARD_COUNT || !mem::read(c->rbx, id) || !mem::read(c->rbx + 8, guid) ||
-        !mem::c_string(c->rdx, current, 64) || current != (my_team ? TEAM_STOCK_KEY : rg::STOCK_TITLE_KEY))
-        return;
-    std::string text;
-    {
-        std::lock_guard<std::mutex> g(lock);
-        const rg::Entry *e = rg::find(needs_locked(), cs::slot_key(id, guid));
-        if (!e)
-            return;
-        text = rg::card_title(my_team ? "MY TEAM" : "DRIVER CAREER", *e);
-    }
-    char *key = title_keys[my_team][card];
-    snprintf(key, sizeof title_keys[0][0], "lng_swofty_resume_%s_%u", my_team ? "team" : "title", unsigned(card));
-    if (runtime::lang_table()->override_set(nullptr, key, text.c_str()) == SWOFTY_ASSET_OK)
-        c->rdx = reinterpret_cast<uintptr_t>(key);
-}
-
-void title_site(SwoftyContext *c) { title(c, false); }
-void team_title_site(SwoftyContext *c) { title(c, true); }
-
 class ResumeGateGuard final : public guards::Guard {
 public:
     ResumeGateGuard() : Guard(guards::CoreSetId::resume_gate) {}
 
 private:
-    bool titled = false, team_titled = false;
-
     void build(std::vector<runtime::CoreMixins> &out) override
     {
         char v[16] = {};
@@ -422,15 +385,6 @@ private:
                          (void **)&orig_driver},
                         {MY_TEAM_VT, SWOFTY_MIXIN_WITH_ARG(SWOFTY_MIXIN_VTABLE, 10), 100, (void *)&my_team_entry,
                          (void **)&orig_my_team}}});
-        if (swofty::api->resolve(TITLE_SITE) && runtime::holds(TITLE_GATE)) {
-            titled = true;
-            out.push_back({TITLE_MIXIN, {{TITLE_SITE, SWOFTY_MIXIN_SITE, 100, (void *)&title_site, nullptr}}});
-        }
-        if (swofty::api->resolve(TEAM_TITLE_SITE) && runtime::holds(TITLE_GATE)) {
-            team_titled = true;
-            out.push_back(
-                {TEAM_TITLE_MIXIN, {{TEAM_TITLE_SITE, SWOFTY_MIXIN_SITE, 100, (void *)&team_title_site, nullptr}}});
-        }
     }
 
     void settle() override
@@ -444,12 +398,6 @@ private:
             swofty::log("[career] resume gate %s; a career that needs add-ons this profile lacks asks before it loads (%s)",
                         guards::install_state(runtime::core_mixins_active(MIXIN), "armed"),
                         confirm_on ? "Load Anyway / Back" : "press twice");
-        if (titled && offered_set(TITLE_MIXIN))
-            swofty::log("[career] resume card status %s; Driver Career cards show their add-on status",
-                        guards::install_state(runtime::core_mixins_active(TITLE_MIXIN), "armed"));
-        if (team_titled && offered_set(TEAM_TITLE_MIXIN))
-            swofty::log("[career] resume My Team card status %s; My Team cards show their add-on status",
-                        guards::install_state(runtime::core_mixins_active(TEAM_TITLE_MIXIN), "armed"));
     }
 };
 

@@ -117,15 +117,6 @@ inline std::string dialog_text(const Entry &e)
 
 inline bool loads(std::string_view answer) { return answer == ANSWER_LOAD; }
 
-inline std::string card_title(std::string_view mode, const Entry &e)
-{
-    std::string out(mode);
-    out += " - ";
-    for (char c : status_line(&e))
-        out += char(c >= 'a' && c <= 'z' ? c - 32 : c);
-    return out;
-}
-
 struct State {
     std::string armed;
 };

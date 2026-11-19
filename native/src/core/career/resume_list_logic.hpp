@@ -29,7 +29,29 @@ inline std::string detail_line(const career::saves::SlotRead &s, const resume_ga
     return out;
 }
 
-inline std::string status_of(const resume_gate::Entry *e) { return resume_gate::status_line(e); }
+inline std::string pill(const resume_gate::Entry *e)
+{
+    if (!e)
+        return {};
+    std::vector<std::string> out;
+    for (const auto &n : e->needs) {
+        if (!n.on)
+            out.push_back("Missing: " + n.name);
+        else if (!n.at_version)
+            out.push_back("Made with another version of " + n.name);
+    }
+    if (out.empty())
+        return "Ready";
+    std::string text;
+    size_t shown = out.size() < 2 ? out.size() : 2;
+    for (size_t i = 0; i < shown; i++)
+        text += (i ? "; " : "") + out[i];
+    if (out.size() > shown)
+        text += " and " + std::to_string(out.size() - shown) + " more";
+    return text;
+}
+
+inline std::string status_of(const resume_gate::Entry *e) { return pill(e); }
 
 inline std::vector<Row> rows(const std::vector<career::saves::SlotRead> &slots, const resume_gate::Table &t)
 {
