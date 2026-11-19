@@ -6,9 +6,9 @@
  "row": {
   "addr": "0x1457264a0",
   "type": "vtable[28]",
-  "level": "L2",
+  "level": "L1",
   "subsystem": "game",
-  "evidence": "decomp:own disasm 0x14164a1b0-0x14164a2f4 (factory 0x141649f80: lea rax,[rip+0x40dc2cc] at 0x14164a1cd resolves to this vtable and is stored at [r12], the new view model);decomp:own disasm 0x141a1db90 (slot 10 at +0x50, djb2 seed 0x1505) and 0x141a1eb80 (slot 24 at +0xc0, imul 0x540 card stride, busy byte 0x1380);xref:0x14164a1cd,0x14164a1d4,0x1457264f0;imm:0x1505,0x540,0x1380",
+  "evidence": "decomp:re/decomp/141a1db90.c;xref:0x14164a1d0,0x1457264f0",
   "notes": "ts-v1: CareerContinueDriverViewModel (resume screen, Driver Career); slot 10 = Game_CareerContinue_HandleCommand, slot 24 = PressSlot (read from the exe); built by the screen factory 0x141649f80"
  },
  "signature": {
@@ -40,44 +40,5 @@
   ]
  },
  "verify": [],
- "proofs": [
-  {
-   "by": "swofty",
-   "date": "2026-11-19",
-   "tool": "binding.py verify",
-   "exe": {
-    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
-    "size": 391613312,
-    "pe_timestamp": 1794312636
-   },
-   "result": {
-    "result": "resolved",
-    "method": "scan",
-    "matches": 1,
-    "match": "0x14164b7bd",
-    "target": "0x1457285d0"
-   },
-   "sigcheck": "skipped (not the KB build)",
-   "digest": "20f2536c8a4d0027fc568b5e61c35d3c985a60d033f4c51568bec14044e3d0bc"
-  },
-  {
-   "by": "swofty",
-   "date": "2026-11-19",
-   "tool": "binding.py verify",
-   "exe": {
-    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
-    "size": 408063872,
-    "pe_timestamp": 1789118616
-   },
-   "result": {
-    "result": "resolved",
-    "method": "scan",
-    "matches": 1,
-    "match": "0x14164a1cd",
-    "target": "0x1457264a0"
-   },
-   "sigcheck": "passed",
-   "digest": "52a5c6e2786c80db7d519fee2db44b12a8a0434fd76492ef2daee32357dd168f"
-  }
- ]
+ "proofs": []
 }
