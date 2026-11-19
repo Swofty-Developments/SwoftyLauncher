@@ -69,7 +69,7 @@ const runtime::Sig S_RELEASE{"Ui_Message_ReleaseHandle",
                              0x42aa980};
 constexpr uintptr_t MOTD_VT_DISP = 0x19, MOTD_VT_END = 0x1d, MOTD_CONSTRUCT = 0x4b, MOTD_MAKE_STR = 0x78, MOTD_SET_ATTR = 0x96;
 constexpr const uint8_t CONSTRUCT_HEAD[] = {0x41, 0x57, 0x41, 0x56, 0x56, 0x57, 0x53, 0x48, 0x83, 0xEC, 0x30};
-constexpr const char *OWN_ID = "swofty_message", *FALLBACK_ID = "beta_motd";
+constexpr const char *OWN_ID = "swofty_message", *FALLBACK_ID = "beta_motd", *CONFIRM_ID = "swofty_confirm";
 constexpr size_t MAX_QUEUED = 8, MAX_TEXT = 4000;
 
 constexpr const char *ICONS[] = {
@@ -171,11 +171,13 @@ bool MessageSystem::set(Handle &h, const char *name, const std::string &text)
     return reinterpret_cast<SetAttr_t *>(a_set_attr)(&h, name, &s, 0, nullptr);
 }
 
-Handle MessageSystem::open(void *s, const char *name)
+Handle MessageSystem::open(void *s, const char *name, Callback *with)
 {
     Handle h{};
     FixedId id{};
     Callback cb{};
+    if (with)
+        cb = *with;
     if (make_id(id, name)) {
         opening = true;
         reinterpret_cast<Construct_t *>(a_construct)(s, &h, &id, &cb, nullptr, 0);
@@ -186,6 +188,18 @@ Handle MessageSystem::open(void *s, const char *name)
 
 void MessageSystem::show(void *s, const Request &r)
 {
+    if (r.confirm) {
+        Callback cb = r.cb;
+        Handle c = open(s, CONFIRM_ID, &cb);
+        bool ok = c.msg && set(c, "title", r.title) && set(c, "message", r.body);
+        if (c.msg)
+            reinterpret_cast<Release_t *>(a_release)(&c);
+        swofty::log("[popup] confirm for %s as '%s': \"%.80s\"%s", r.by.c_str(), CONFIRM_ID, r.title.c_str(),
+                    ok ? "" : " (not shown: the game has no such message or refused an attribute)");
+        if (!ok && r.failed)
+            r.failed(r.cb.ctx);
+        return;
+    }
     Handle h = own_missing ? Handle{} : open(s, OWN_ID);
     bool own = h.msg != nullptr;
     if (!own) {
@@ -258,6 +272,24 @@ int MessageSystem::enqueue(std::string t, std::string b, const std::string &by)
     pending = queue.size();
     swofty::log("[popup] queued by %s: \"%.80s\"%s", by.c_str(), queue.back().title.c_str(),
                 sys.load() ? "" : " (waiting for the game's first message to find the message system)");
+    return SWOFTY_ASSET_OK;
+}
+
+int MessageSystem::enqueue_confirm(std::string t, std::string b, void *fn, void *ctx, void (*failed)(void *),
+                                   const std::string &by)
+{
+    if (!api_available() || !fn)
+        return SWOFTY_ASSET_UNAVAILABLE;
+    if (t.size() > MAX_TEXT)
+        t.resize(MAX_TEXT);
+    if (b.size() > MAX_TEXT)
+        b.resize(MAX_TEXT);
+    std::lock_guard<std::mutex> g(queue_lock);
+    Request r{std::move(t), std::move(b), by};
+    r.confirm = true, r.cb = {fn, ctx}, r.failed = failed;
+    queue.push_back(std::move(r));
+    pending = queue.size();
+    swofty::log("[popup] confirm queued by %s", by.c_str());
     return SWOFTY_ASSET_OK;
 }
 
@@ -395,6 +427,12 @@ const SwoftyPopup *popup_table() { return &frontend::popup::table; }
 int popup_show(const std::string &title, const std::string &body, const std::string &by)
 {
     return frontend::popup::messages.enqueue(title, body, by);
+}
+
+int popup_confirm(const std::string &title, const std::string &body, void *fn, void *ctx, void (*failed)(void *),
+                  const std::string &by)
+{
+    return frontend::popup::messages.enqueue_confirm(title, body, fn, ctx, failed, by);
 }
 
 int hud_toast(const std::string &text, const std::string &detail, float seconds, const std::string &by, const std::string &icon)

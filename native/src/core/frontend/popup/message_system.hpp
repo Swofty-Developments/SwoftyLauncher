@@ -37,6 +37,9 @@ using MakeStr_t = uint32_t(void **out, const char *s, uint32_t flags, uintptr_t 
 
 struct Request {
     std::string title, body, by;
+    bool confirm = false;
+    Callback cb{};
+    void (*failed)(void *ctx) = nullptr;
 };
 
 struct Toast {
@@ -53,6 +56,7 @@ int api_toast(const char *text, const char *detail, float seconds, const char *i
 struct MessageSystem {
     Handle *constructed(void *s, Handle *out, FixedId *id, Callback *cb, const char *a5, uint64_t a6);
     int enqueue(std::string t, std::string b, const std::string &by);
+    int enqueue_confirm(std::string t, std::string b, void *fn, void *ctx, void (*failed)(void *), const std::string &by);
     int toast_enqueue(std::string text, std::string detail, float seconds, std::string icon, const std::string &by);
     void setup();
     void toast_test_tick();
@@ -61,7 +65,7 @@ struct MessageSystem {
     void log_game_message(const char *name, bool built);
     bool make_id(FixedId &id, const char *name);
     bool set(Handle &h, const char *name, const std::string &text);
-    Handle open(void *s, const char *name);
+    Handle open(void *s, const char *name, Callback *cb = nullptr);
     void show(void *s, const Request &r);
     void show_toast(void *s, const Toast &t);
 

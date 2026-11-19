@@ -67,6 +67,20 @@ static void press_state()
            "a press of another career moves the pending press to it");
 }
 
+static void dialog_and_title()
+{
+    rg::Table t = rg::parse(SETTINGS);
+    const rg::Entry *bad = rg::find(t, "67cdf241e227f68c"), *good = rg::find(t, "7");
+    expect(rg::dialog_text(*bad).find("Beta, Gamma 2.0.0, a.gone") != std::string::npos &&
+               rg::dialog_text(*bad).find("press") == std::string::npos,
+           "the dialog names the add-ons and does not tell the player to press again");
+    expect(rg::loads("load_anyway") && !rg::loads("back") && !rg::loads("") && !rg::loads("yes"),
+           "only the load_anyway answer loads");
+    expect(rg::card_title("DRIVER CAREER", *good) == "DRIVER CAREER - ALL ADD-ONS ON", "a card title carries the status");
+    expect(rg::card_title("DRIVER CAREER", *bad) == "DRIVER CAREER - NEEDS: BETA, GAMMA 2.0.0, A.GONE",
+           "an unmet card title lists the add-ons in capitals");
+}
+
 static void key_join()
 {
     std::vector<cs::SlotRead> slots(3);
@@ -86,6 +100,7 @@ int main()
     table_and_status();
     press_state();
     key_join();
+    dialog_and_title();
     printf("%s\n", fails ? "FAILED" : "all passed");
     return fails ? 1 : 0;
 }

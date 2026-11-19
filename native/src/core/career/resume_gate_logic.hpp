@@ -105,6 +105,26 @@ inline std::string prompt_text(const Entry &e)
            ". Loading it can break it. Press the career again to load it anyway, or press Back.";
 }
 
+constexpr const char *ANSWER_LOAD = "load_anyway";
+constexpr const char *STOCK_TITLE_KEY = "lng_homescreen_driver_career";
+
+inline std::string dialog_text(const Entry &e)
+{
+    return "This career was made with add-ons this profile does not have on: " + join(unmet(e)) +
+           ". Loading it anyway can break it.";
+}
+
+inline bool loads(std::string_view answer) { return answer == ANSWER_LOAD; }
+
+inline std::string card_title(std::string_view mode, const Entry &e)
+{
+    std::string out(mode);
+    out += " - ";
+    for (char c : status_line(&e))
+        out += char(c >= 'a' && c <= 'z' ? c - 32 : c);
+    return out;
+}
+
 struct State {
     std::string armed;
 };

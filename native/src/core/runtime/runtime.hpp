@@ -129,6 +129,8 @@ bool typing(const char *what);
 void mfd_setup();
 void mfd_tick();
 int popup_show(const std::string &title, const std::string &body, const std::string &by);
+int popup_confirm(const std::string &title, const std::string &body, void *fn, void *ctx, void (*failed)(void *),
+                  const std::string &by);
 int hud_toast(const std::string &text, const std::string &detail, float seconds, const std::string &by,
               const std::string &icon = {});
 const SwoftyCareerContent *career_content_table();
