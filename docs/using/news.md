@@ -47,7 +47,7 @@ The docs build writes `news.json` from `docs/news/*.md` (news posts) and `docs/r
 | `image` | A picture shown above a news post, as an `https://` URL or a path on this site |
 | `draft: true` | Leaves the file out of the feed |
 
-A news post's text is the Markdown after its front matter and its `# ` title line. The launcher shows headings, paragraphs, bullet and numbered lists, quotes, code blocks, rules, bold, italics, inline code and links. It leaves out HTML, pictures inside the text and `:::` container lines. It opens `https://` and `mailto:` links, and links that start with `/` open on this site. Other links show as plain text.
+A news post's text is the Markdown after its front matter and its `# ` title line. The launcher shows headings, paragraphs, bullet and numbered lists, quotes, code blocks, rules, [tables and columns](/reference/addons/publishing#markdown), bold, italics, inline code and links. It leaves out HTML, pictures inside the text and other `:::` container lines. It opens `https://` and `mailto:` links, and links that start with `/` open on this site. Other links show as plain text.
 
 ### The feed
 
