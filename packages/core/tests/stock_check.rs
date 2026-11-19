@@ -810,3 +810,216 @@ fn a_mixed_error_names_both_counts() {
     );
     assert!(text.contains("5 game files are missing"), "{text}");
 }
+
+fn hex(s: &str) -> [u8; 20] {
+    let mut out = [0; 20];
+    for (i, b) in out.iter_mut().enumerate() {
+        *b = u8::from_str_radix(&s[i * 2..i * 2 + 2], 16).unwrap();
+    }
+    out
+}
+
+#[test]
+fn a_path_hashes_as_steam_lists_it() {
+    for (rel, steam) in [
+        (DB, "a5320c3b20bb5e53d58aa1c4365545c13650928c"),
+        (
+            "2025_asset_groups/f1_2026_vehicle_package/teams/common.erp",
+            "9d4e79778424fd2f0ccff5b82b4559bf85f0cd77",
+        ),
+        ("F1_25.exe", "fa36402d17c753dd75bd2f274cdec1a5d72db23e"),
+        (EAC, "44cd2966aa033b1bf4d3256eeb4dac619dbc3eed"),
+    ] {
+        assert_eq!(stock::path_hash(rel), hex(steam), "{rel}");
+    }
+}
+
+fn encrypted_mapping(rel: &str, body: &[u8], hash: Option<[u8; 20]>) -> Vec<u8> {
+    let mut m = Vec::new();
+    field(1, b"cGF0aCBuYW1lIGVuY3J5cHRlZCBieSBzdGVhbQ==", &mut m);
+    int(2, body.len() as u64, &mut m);
+    int(3, 0, &mut m);
+    field(4, &hash.unwrap_or_else(|| stock::path_hash(rel)), &mut m);
+    field(5, &Sha1::digest(body), &mut m);
+    m
+}
+
+fn encrypted_manifest(files: &[(&str, &[u8])], hash: impl Fn(&str) -> Option<[u8; 20]>) -> Vec<u8> {
+    let mut payload = Vec::new();
+    for (rel, body) in files {
+        field(1, &encrypted_mapping(rel, body, hash(rel)), &mut payload);
+    }
+    let mut meta = Vec::new();
+    int(1, 3059521, &mut meta);
+    int(4, 1, &mut meta);
+    let mut out = Vec::new();
+    section(0x71F6_17D0, &payload, &mut out);
+    section(0x1F48_12BE, &meta, &mut out);
+    section(0x32C4_15AB, &[], &mut out);
+    out
+}
+
+fn encrypted_depots(files: &[(&str, &[u8])]) -> Depots {
+    let m = stock::read_manifest(&encrypted_manifest(files, |_| None)).unwrap();
+    Depots::from_manifests([m])
+}
+
+#[test]
+fn an_encrypted_manifest_lists_its_files_by_the_hash_of_their_path() {
+    let m = stock::read_manifest(&encrypted_manifest(&[(DB, b"stock db")], |_| None)).unwrap();
+    assert!(m.encrypted);
+    assert!(m.files.is_empty());
+    assert_eq!(m.hashed, [(Some(stock::path_hash(DB)), entry(b"stock db"))]);
+    let d = Depots::from_manifests([m]);
+    assert!(!d.names_known());
+    assert_eq!(d.get(DB), Some(&entry(b"stock db")));
+    assert_eq!(
+        d.get(&DB.to_uppercase()),
+        Some(&entry(b"stock db")),
+        "Steam hashes the lowercased path"
+    );
+    assert_eq!(d.get(UI), None);
+    let named = Depots::from_manifests([stock::read_manifest(&manifest(false)).unwrap()]);
+    assert!(named.names_known());
+    assert_eq!(named.get(DB), Some(&entry(b"stock db")));
+}
+
+#[test]
+fn after_a_verify_an_encrypted_list_rerecords_the_stale_original_and_the_install_goes_on() {
+    let f = Fixture::new("encrypted-verify");
+    stale_baseline(&f);
+    f.write(DB, b"stock db");
+    let d = encrypted_depots(&[(DB, b"stock db")]);
+    let log = std::cell::RefCell::new(Vec::new());
+    let out = |s: &str| log.borrow_mut().push(s.to_owned());
+    let inst = swofty_core::install::Installer {
+        depot: &d,
+        out: &out,
+        ..swofty_core::install::Installer::new(&f.data, &f.game)
+    };
+    inst.apply(&replace_plan(&f)).unwrap();
+    let rec = &f.baseline().files[DB];
+    assert_eq!(rec.source, Source::Depot);
+    assert_eq!(std::fs::read(f.objects().path(&rec.sha256)).unwrap(), b"stock db");
+    assert_eq!(std::fs::read(f.game.dir.join(DB)).unwrap(), b"modded db");
+    assert!(
+        log.borrow()
+            .iter()
+            .any(|l| l.contains("matches Steam's copy; its recorded original was out of date"))
+    );
+}
+
+#[test]
+fn an_encrypted_list_still_stops_a_file_that_is_not_steams() {
+    let f = Fixture::new("encrypted-mod");
+    stale_baseline(&f);
+    f.write(DB, b"a mod copied in by hand");
+    let d = encrypted_depots(&[(DB, b"stock db")]);
+    let inst = swofty_core::install::Installer {
+        depot: &d,
+        ..swofty_core::install::Installer::new(&f.data, &f.game)
+    };
+    let err = inst.apply(&replace_plan(&f)).unwrap_err();
+    assert!(matches!(&err, swofty_core::Error::NotStock(files) if files == &[DB.to_owned()]));
+    assert_eq!(
+        std::fs::read(f.game.dir.join(DB)).unwrap(),
+        b"a mod copied in by hand"
+    );
+}
+
+#[test]
+fn without_path_hashes_steams_bytes_still_count_as_stock() {
+    let unreadable = |_: &str| Some([0; 20]);
+    let m = stock::read_manifest(&encrypted_manifest(&[(DB, b"stock db")], unreadable)).unwrap();
+    let d = Depots::from_manifests([m]);
+    assert_eq!(d.get(DB), None);
+
+    let f = Fixture::new("encrypted-bytes");
+    stale_baseline(&f);
+    f.write(DB, b"stock db");
+    let inst = swofty_core::install::Installer {
+        depot: &d,
+        ..swofty_core::install::Installer::new(&f.data, &f.game)
+    };
+    inst.apply(&replace_plan(&f)).unwrap();
+    assert_eq!(f.baseline().files[DB].source, Source::Depot);
+
+    let g = Fixture::new("encrypted-bytes-mod");
+    stale_baseline(&g);
+    g.write(DB, b"a mod copied in by hand");
+    let inst = swofty_core::install::Installer {
+        depot: &d,
+        ..swofty_core::install::Installer::new(&g.data, &g.game)
+    };
+    let err = inst.apply(&replace_plan(&g)).unwrap_err();
+    assert!(
+        matches!(&err, swofty_core::Error::Leftovers(c) if c.len() == 1 && !c[0].owned),
+        "bytes that are no file of Steam's are still refused: {err}"
+    );
+}
+
+#[test]
+fn an_encrypted_list_proves_originals_by_path_hash_and_skips_the_sweep() {
+    let f = Fixture::new("encrypted-check");
+    f.write(DB, b"old recorded db");
+    f.record_first_sight(DB);
+    f.write(DB, b"stock db");
+    f.write(UI, b"changed ui");
+    let d = encrypted_depots(&[(DB, b"stock db"), (UI, b"stock ui")]);
+    let c = stock::check(&f.data, &f.game, &d).unwrap();
+    assert!(c.foreign.is_empty(), "{:?}", c.foreign);
+    assert_eq!(c.rerecorded, [DB]);
+    assert_eq!(c.swept, None, "no list of paths to sweep");
+    assert_eq!(f.baseline().files[DB].source, Source::Depot);
+    assert!(
+        !f.baseline().stock_checked,
+        "the sweep runs once Steam's names can be read"
+    );
+}
+
+fn blocked_after_a_verify(f: &Fixture) {
+    stale_baseline(f);
+    f.write(DB, b"stock db");
+    let inst = swofty_core::install::Installer::new(&f.data, &f.game);
+    let found = match inst.apply(&replace_plan(f)) {
+        Err(swofty_core::Error::Leftovers(found)) => found,
+        r => panic!("{r:?}"),
+    };
+    swofty_core::recovery::Blocked::record(&f.data, &f.game.dir, &found).unwrap();
+}
+
+#[test]
+fn a_restore_keeps_a_blocked_file_that_is_steams_copy_and_takes_it_as_the_original() {
+    let f = Fixture::new("restore-keeps-stock");
+    blocked_after_a_verify(&f);
+    let lock = swofty_core::recovery::SessionLock::try_acquire(&f.data)
+        .unwrap()
+        .unwrap();
+    let d = encrypted_depots(&[(DB, b"stock db")]);
+    let done = swofty_core::recovery::restore_locked_with(&lock, &f.data, &f.game, &d).unwrap();
+    assert!(done.set_aside.is_empty(), "{:?}", done.set_aside);
+    assert!(done.left.is_empty(), "{:?}", done.left);
+    assert!(
+        done.notes.iter().any(|n| n.contains("Steam's copy")),
+        "{:?}",
+        done.notes
+    );
+    assert_eq!(std::fs::read(f.game.dir.join(DB)).unwrap(), b"stock db");
+    let rec = &f.baseline().files[DB];
+    assert_eq!(rec.source, Source::Depot);
+    assert_eq!(std::fs::read(f.objects().path(&rec.sha256)).unwrap(), b"stock db");
+    assert!(swofty_core::recovery::Blocked::read(&f.data).is_none());
+}
+
+#[test]
+fn without_steams_list_a_restore_still_sets_the_blocked_file_aside() {
+    let f = Fixture::new("restore-sets-aside");
+    blocked_after_a_verify(&f);
+    let lock = swofty_core::recovery::SessionLock::try_acquire(&f.data)
+        .unwrap()
+        .unwrap();
+    let done = swofty_core::recovery::restore_locked_with(&lock, &f.data, &f.game, &()).unwrap();
+    assert_eq!(done.set_aside.len(), 1);
+    assert_eq!(std::fs::read(&done.set_aside[0]).unwrap(), b"stock db");
+    assert_eq!(std::fs::read(f.game.dir.join(DB)).unwrap(), b"old recorded db");
+}

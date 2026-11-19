@@ -9,7 +9,7 @@
 //! replacement (an upscaler build, a VR runtime, a graphics hook): it is
 //! logged and never stops the session. A missing one still does.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -82,11 +82,33 @@ pub struct Entry {
 }
 
 /// Every file of the installed depots, by its path in the game folder with
-/// `/` separators.
+/// `/` separators. A manifest whose file names Steam encrypted still lists
+/// each file under the SHA-1 of its lowercased path with `\` separators, and
+/// the size and SHA-1 of its content: its files are found by that path hash,
+/// and a file whose path hash is not listed is Steam's when its size and
+/// SHA-1 are those of one of its files.
 #[derive(Debug, Default)]
 pub struct Depots {
     files: HashMap<String, Entry>,
     lower: HashMap<String, String>,
+    hashed: HashMap<[u8; 20], Entry>,
+    contents: HashMap<u64, HashSet<[u8; 20]>>,
+    encrypted: bool,
+}
+
+/// One depot manifest's files: by path, or by path hash when Steam encrypted
+/// the names.
+#[derive(Debug, Default, PartialEq)]
+pub struct Manifest {
+    pub files: Vec<(String, Entry)>,
+    pub hashed: Vec<(Option<[u8; 20]>, Entry)>,
+    pub encrypted: bool,
+}
+
+/// The SHA-1 Steam lists a file's path under: of the path lowercased, with
+/// `\` separators.
+pub fn path_hash(rel: &str) -> [u8; 20] {
+    Sha1::digest(rel.replace('/', "\\").to_lowercase().as_bytes()).into()
 }
 
 impl Depots {
@@ -98,25 +120,75 @@ impl Depots {
         d
     }
 
+    pub fn from_manifests(manifests: impl IntoIterator<Item = Manifest>) -> Self {
+        let mut d = Self::default();
+        for m in manifests {
+            d.add(m);
+        }
+        d
+    }
+
     fn insert(&mut self, rel: String, e: Entry) {
         self.lower.insert(rel.to_lowercase(), rel.clone());
         self.files.insert(rel, e);
     }
 
+    fn add(&mut self, m: Manifest) {
+        for (rel, e) in m.files {
+            self.insert(rel, e);
+        }
+        self.encrypted |= m.encrypted;
+        for (hash, e) in m.hashed {
+            self.contents.entry(e.size).or_default().insert(e.sha1);
+            if let Some(hash) = hash {
+                self.hashed.insert(hash, e);
+            }
+        }
+    }
+
     pub fn len(&self) -> usize {
-        self.files.len()
+        self.files.len() + self.hashed.len()
     }
 
     pub fn is_empty(&self) -> bool {
-        self.files.is_empty()
+        self.files.is_empty() && self.hashed.is_empty()
+    }
+
+    /// Whether every file is listed by its path: no manifest had its file
+    /// names encrypted, so the list can be walked file by file.
+    pub fn names_known(&self) -> bool {
+        !self.encrypted
+    }
+
+    /// How many files are listed only by path hash.
+    pub fn hashed_len(&self) -> usize {
+        self.hashed.len()
     }
 
     pub fn get(&self, rel: &str) -> Option<&Entry> {
-        self.files.get(rel).or_else(|| {
-            self.lower
-                .get(&rel.to_lowercase())
-                .and_then(|r| self.files.get(r))
-        })
+        self.files
+            .get(rel)
+            .or_else(|| {
+                self.lower
+                    .get(&rel.to_lowercase())
+                    .and_then(|r| self.files.get(r))
+            })
+            .or_else(|| match self.hashed.is_empty() {
+                true => None,
+                false => self.hashed.get(&path_hash(rel)),
+            })
+    }
+
+    /// Whether the file at `path` has the size and SHA-1 of a file in a
+    /// manifest whose names are encrypted. A missing file has neither.
+    fn holds_content(&self, path: &Path) -> Result<bool> {
+        let Ok(meta) = std::fs::metadata(path) else {
+            return Ok(false);
+        };
+        match self.contents.get(&meta.len()) {
+            Some(sums) => Ok(sums.contains(&sha1_file(path)?)),
+            None => Ok(false),
+        }
     }
 
     /// The manifests of the depots Steam lists as installed for the game, or
@@ -146,9 +218,13 @@ impl Depots {
                 .find(|p| p.is_file())
                 .ok_or_else(|| format!("Steam's manifest {name} is not in depotcache"))?;
             let data = std::fs::read(&path).map_err(|e| format!("{}: {e}", path.display()))?;
-            for (rel, e) in parse_manifest(&data).map_err(|e| format!("{name}: {e}"))? {
-                out.insert(rel, e);
+            let m = read_manifest(&data).map_err(|e| format!("{name}: {e}"))?;
+            if m.files.is_empty() && m.hashed.is_empty() && m.encrypted {
+                return Err(format!(
+                    "{name}: its file names are encrypted and it lists no file hashes"
+                ));
             }
+            out.add(m);
             any = true;
         }
         if !any {
@@ -159,7 +235,10 @@ impl Depots {
 
     fn matches(&self, rel: &str, path: &Path) -> Result<Option<bool>> {
         let Some(e) = self.get(rel) else {
-            return Ok(None);
+            return Ok(match self.contents.is_empty() {
+                true => None,
+                false => self.holds_content(path)?.then_some(true),
+            });
         };
         let size = std::fs::metadata(path).map_err(io_err(path))?.len();
         Ok(Some(size == e.size && sha1_file(path)? == e.sha1))
@@ -217,11 +296,12 @@ fn fields(b: &[u8]) -> std::result::Result<Vec<(u64, Field<'_>)>, String> {
 }
 
 /// A depot manifest as Steam stores it in `depotcache`: tagged sections, the
-/// payload a protobuf list of files (name 1, size 2, flags 3, content SHA-1
-/// 5). Directories are left out.
-pub fn parse_manifest(data: &[u8]) -> std::result::Result<Vec<(String, Entry)>, String> {
-    let mut out = Vec::new();
-    let mut encrypted = false;
+/// payload a protobuf list of files (name 1, size 2, flags 3, path hash 4,
+/// content SHA-1 5). Directories are left out. Where Steam encrypted the
+/// names, each file is kept by its path hash instead.
+pub fn read_manifest(data: &[u8]) -> std::result::Result<Manifest, String> {
+    let mut out = Manifest::default();
+    let mut listed = Vec::new();
     let mut i = 0;
     let mut payload = false;
     while i + 8 <= data.len() {
@@ -234,7 +314,7 @@ pub fn parse_manifest(data: &[u8]) -> std::result::Result<Vec<(String, Entry)>, 
                 payload = true;
                 for (f, v) in fields(body)? {
                     let (1, Field::Bytes(m)) = (f, v) else { continue };
-                    let (mut name, mut size, mut flags, mut sha) = (None, 0, 0, None);
+                    let (mut name, mut size, mut flags, mut hash, mut sha) = (None, 0, 0, None, None);
                     for (g, w) in fields(m)? {
                         match (g, w) {
                             (1, Field::Bytes(s)) => {
@@ -242,6 +322,9 @@ pub fn parse_manifest(data: &[u8]) -> std::result::Result<Vec<(String, Entry)>, 
                             }
                             (2, Field::Int(n)) => size = n,
                             (3, Field::Int(n)) => flags = n as u32,
+                            (4, Field::Bytes(s)) if s.len() == 20 => {
+                                hash = Some(s.try_into().expect("20 bytes"))
+                            }
                             (5, Field::Bytes(s)) if s.len() == 20 => {
                                 sha = Some(s.try_into().expect("20 bytes"))
                             }
@@ -251,15 +334,15 @@ pub fn parse_manifest(data: &[u8]) -> std::result::Result<Vec<(String, Entry)>, 
                     if flags & DIRECTORY != 0 {
                         continue;
                     }
-                    if let (Some(name), Some(sha1)) = (name, sha) {
-                        out.push((name, Entry { size, sha1 }));
+                    if let Some(sha1) = sha {
+                        listed.push((name, hash, Entry { size, sha1 }));
                     }
                 }
             }
             METADATA => {
                 for (f, v) in fields(body)? {
                     if let (4, Field::Int(n)) = (f, v) {
-                        encrypted = n != 0;
+                        out.encrypted = n != 0;
                     }
                 }
             }
@@ -267,13 +350,29 @@ pub fn parse_manifest(data: &[u8]) -> std::result::Result<Vec<(String, Entry)>, 
             _ => {}
         }
     }
-    if encrypted {
-        return Err("its file names are encrypted".into());
-    }
     if !payload {
-        return Err("no file list".into());
+        return Err(match out.encrypted {
+            true => "its file names are encrypted".into(),
+            false => "no file list".into(),
+        });
+    }
+    for (name, hash, e) in listed {
+        match (out.encrypted, name) {
+            (false, Some(name)) => out.files.push((name, e)),
+            (false, None) => {}
+            (true, _) => out.hashed.push((hash, e)),
+        }
     }
     Ok(out)
+}
+
+/// The files of a manifest whose names are not encrypted, by path.
+pub fn parse_manifest(data: &[u8]) -> std::result::Result<Vec<(String, Entry)>, String> {
+    let m = read_manifest(data)?;
+    if m.encrypted {
+        return Err("its file names are encrypted".into());
+    }
+    Ok(m.files)
 }
 
 pub fn sha1_file(path: &Path) -> Result<[u8; 20]> {
@@ -332,10 +431,12 @@ pub struct Checked {
 /// Steam's copy: a match is marked as proven, and a mismatch whose game
 /// folder file now matches Steam (the player verified the game files) is
 /// backed up again from the game folder. Until a sweep has passed for this
-/// game build, every file Steam installed is also checked for its size; a
-/// file the launcher itself left behind is left to the install, which clears
-/// it. A DLL that is present and differs is third-party and never foreign; a
-/// missing one is. The game folder is only read.
+/// game build, every file Steam installed is also checked for its size,
+/// unless Steam encrypted a manifest's file names, which leaves no list of
+/// paths to walk; a file the launcher itself left behind is left to the
+/// install, which clears it. A DLL that is present and differs is
+/// third-party and never foreign; a missing one is. The game folder is only
+/// read.
 pub fn check(data: &Path, game: &Game, depots: &Depots) -> Result<Checked> {
     let mut out = Checked::default();
     let launcher = game.dir.join(EAC_LAUNCHER);
@@ -391,7 +492,7 @@ pub fn check(data: &Path, game: &Game, depots: &Depots) -> Result<Checked> {
             out.foreign.push(rel);
         }
     }
-    if !baseline.stock_checked {
+    if !baseline.stock_checked && depots.names_known() {
         let placed = Placed::load(data)?;
         let mut swept = 0;
         for (rel, e) in &depots.files {

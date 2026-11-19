@@ -186587,6 +186587,56 @@
    "used_by": [
     "native/src/core/ai_ers_guard.cpp"
    ]
+  },
+  {
+   "id": "car.engine_step_input_update_wear_call",
+   "section": ".xtls",
+   "pattern": "C5 F8 28 CE E8 ?? ?? ?? ?? 48 8B 56 08",
+   "match": "0x14468867e",
+   "anchor": "0x4",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144688682",
+   "kind": "mid",
+   "expect": "E8 39 0D 00 00",
+   "names": [
+    "site_Car_EngineStepInput_UpdateWearCall"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-18",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "car.gear_box_update_faults_call",
+   "section": ".xtls",
+   "pattern": "48 89 CE E8 ?? ?? ?? ?? 8B 8E 80 06 00 00",
+   "match": "0x1446a6b6f",
+   "anchor": "0x3",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1446a6b72",
+   "kind": "mid",
+   "expect": "E8 59 F5 FF FF",
+   "names": [
+    "site_Car_GearBoxUpdate_FaultsCall"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-18",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
   }
  ]
 }

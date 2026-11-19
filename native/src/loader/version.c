@@ -14,6 +14,7 @@
 #include "alog.h"
 #include "supported_builds.h"
 #include "build_gate.h"
+#include "pe_imports.h"
 
 #define HOST_EXE L"F1_25.exe"
 #define EXPECTED_SIZE 408063872ULL
@@ -718,31 +719,61 @@ static void disarm_entry(void)
             slog("trigger disarmed: %s!CreateMutexW entry restored", entry_bp[i].mod);
 }
 
+typedef struct {
+    uintptr_t lo, hi;
+} Region;
+
+static int region_readable(uintptr_t at, size_t n, void *ctx)
+{
+    Region *r = (Region *)ctx;
+    uintptr_t end = at + (n ? n : 1);
+    if (end < at)
+        return 0;
+    while (at < end) {
+        if (at < r->lo || at >= r->hi) {
+            MEMORY_BASIC_INFORMATION m;
+            if (!VirtualQuery((void *)at, &m, sizeof m) || !is_readable(&m))
+                return 0;
+            r->lo = (uintptr_t)m.BaseAddress;
+            r->hi = r->lo + m.RegionSize;
+            if (r->hi <= at)
+                return 0;
+        }
+        at = r->hi;
+    }
+    return 1;
+}
+
 static void hook_iat(void)
 {
     const IMAGE_NT_HEADERS *nt = (const IMAGE_NT_HEADERS *)(image_base + ((const IMAGE_DOS_HEADER *)image_base)->e_lfanew);
-    const IMAGE_DATA_DIRECTORY *dir = &nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
     const IMAGE_DATA_DIRECTORY *iatdir = &nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT];
     uintptr_t iat_lo = image_base + iatdir->VirtualAddress, iat_hi = iat_lo + iatdir->Size;
-    for (const IMAGE_IMPORT_DESCRIPTOR *d = (const IMAGE_IMPORT_DESCRIPTOR *)(image_base + dir->VirtualAddress);
-         dir->VirtualAddress && d->Name; d++) {
-        const char *dll = (const char *)(image_base + d->Name);
-        if (!d->OriginalFirstThunk)
-            continue;
-        const IMAGE_THUNK_DATA64 *names = (const IMAGE_THUNK_DATA64 *)(image_base + d->OriginalFirstThunk);
-        void **slots = (void **)(image_base + d->FirstThunk);
-        for (int i = 0; names[i].u1.AddressOfData; i++) {
-            if (IMAGE_SNAP_BY_ORDINAL64(names[i].u1.Ordinal))
+    Region seen = {0, 0};
+    pe_imports it;
+    pe_import e;
+    int r, skipped = 0;
+    if (pe_imports_open(&it, image_base, NULL, region_readable, &seen))
+        while ((r = pe_imports_next(&it, &e)) != PE_IMPORT_END) {
+            if (r == PE_IMPORT_SKIP) {
+                if (!skipped++)
+                    slog("trigger: skipped corrupt import entry: table %d (%s) entry %llu, %s (0x%llx at +0x%llx)",
+                         e.table, e.dll ? e.dll : "?", (unsigned long long)e.index, e.why, (unsigned long long)e.value,
+                         (unsigned long long)e.value_rva);
                 continue;
-            const char *fn = (const char *)((const IMAGE_IMPORT_BY_NAME *)(image_base + names[i].u1.AddressOfData))->Name;
+            }
+            if (e.kind != PE_IMPORT_BY_NAME)
+                continue;
+            void **slot = (void **)e.slot;
             for (size_t k = 0; k < NIAT; k++)
-                if (!iat[k].slot && !strcmp(dll, iat[k].dll) && !strcmp(fn, iat[k].name) &&
-                    (!iatdir->Size || ((uintptr_t)&slots[i] >= iat_lo && (uintptr_t)&slots[i] < iat_hi))) {
-                    iat[k].slot = &slots[i];
-                    iat[k].orig = slots[i];
+                if (!iat[k].slot && !strcmp(e.dll, iat[k].dll) && !strcmp(e.name, iat[k].name) &&
+                    (!iatdir->Size || ((uintptr_t)slot >= iat_lo && (uintptr_t)slot < iat_hi))) {
+                    iat[k].slot = slot;
+                    iat[k].orig = *slot;
                 }
         }
-    }
+    if (skipped > 1)
+        slog("trigger: %d corrupt import entries skipped in all", skipped);
     for (size_t k = 0; k < NIAT; k++) {
         if (iat[k].stage == STAGE_EARLY && !early_enabled)
             continue;

@@ -15,6 +15,9 @@ use std::path::Path;
 use std::rc::Rc;
 use std::time::{Duration, Instant};
 use swofty_ads::Consent;
+use swofty_i18n::tr;
+
+use crate::notices::Notification;
 
 /// How long the game runs before the slots close. A game that stops sooner,
 /// such as one that crashes as it starts, leaves them as they were.
@@ -80,6 +83,34 @@ impl Unit {
             Self::Consent => size(px(680.), px(420.)),
         }
     }
+}
+
+/// Why a backend shows no slots.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Skip {
+    /// Nothing the player can change: no WebView2, no X11 window, no helper.
+    Quiet,
+    /// The folder the slots keep their profile in can't be written.
+    Unwritable,
+}
+
+/// What the player is told when the slots were skipped: only that Windows
+/// won't let the launcher write their profile folder.
+fn notice(skip: Skip, windows: bool) -> Option<Notification> {
+    if !windows || skip != Skip::Unwritable {
+        return None;
+    }
+    Some(
+        Notification::warning(tr(
+            "The launcher can't write its ad folder. Close it and open it again as administrator.",
+        ))
+        .title(tr("Ad folder can't be written"))
+        .autohide(false)
+        .action(
+            tr("Restart as administrator"),
+            crate::admin_needed::restart_elevated,
+        ),
+    )
 }
 
 /// A slot's rectangle in physical pixels inside the window.
@@ -207,6 +238,7 @@ impl Host {
 #[derive(Default)]
 pub(crate) struct Ads {
     host: Option<Rc<RefCell<Host>>>,
+    notice: Option<Notification>,
 }
 
 impl Ads {
@@ -215,8 +247,14 @@ impl Ads {
         let Some(base) = base_url() else {
             return Self::default();
         };
-        let Some(backend) = Backend::start(window, data) else {
-            return Self::default();
+        let backend = match Backend::start(window, data) {
+            Ok(backend) => backend,
+            Err(skip) => {
+                return Self {
+                    host: None,
+                    notice: notice(skip, cfg!(windows)),
+                };
+            }
         };
         crate::app_log::step("ad slots ready");
         let host = Rc::new(RefCell::new(Host {
@@ -229,7 +267,15 @@ impl Ads {
             game_since: None,
             consent: None,
         }));
-        Self { host: Some(host) }
+        Self {
+            host: Some(host),
+            notice: None,
+        }
+    }
+
+    /// What to tell the player about the slots, once.
+    pub(crate) fn take_notice(&mut self) -> Option<Notification> {
+        self.notice.take()
     }
 
     /// Off while paused, so pages lay out as if there were no ads.
@@ -437,6 +483,15 @@ fn base_url() -> Option<String> {
         .filter(|u| !u.trim().is_empty())
 }
 
+/// Creates `dir` and writes and removes a file in it, as a webview profile kept
+/// there would.
+fn writable(dir: &Path) -> std::io::Result<()> {
+    std::fs::create_dir_all(dir)?;
+    let probe = dir.join(format!(".swofty-write-check-{}", std::process::id()));
+    std::fs::File::create(&probe)?;
+    std::fs::remove_file(&probe)
+}
+
 fn inside(bounds: Bounds<Pixels>, clip: Bounds<Pixels>) -> bool {
     let slack = px(0.5);
     bounds.left() + slack >= clip.left()
@@ -453,7 +508,8 @@ fn rgb_of(colour: Hsla) -> [u8; 3] {
 
 #[cfg(test)]
 mod tests {
-    use super::{Area, inside, rgb_of};
+    use super::{Ads, Area, Skip, inside, notice, rgb_of, writable};
+    use crate::notices::Kind;
     use gpui_kit::{Bounds, Rgba, point, px, size};
 
     #[test]
@@ -477,6 +533,63 @@ mod tests {
         assert!(inside(slot(350.), clip));
         assert!(!inside(slot(351.), clip));
         assert!(!inside(slot(-10.), clip));
+    }
+
+    #[test]
+    fn a_folder_under_a_file_is_not_writable() {
+        let root = std::env::temp_dir().join(format!("swofty-ads-writable-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        std::fs::create_dir_all(&root).unwrap();
+        let file = root.join("file");
+        std::fs::write(&file, "x").unwrap();
+        assert!(writable(&file.join("ads")).is_err());
+        let ads = root.join("data/ads/EBWebView");
+        writable(&ads).unwrap();
+        assert_eq!(
+            std::fs::read_dir(&ads).unwrap().count(),
+            0,
+            "the check leaves nothing behind"
+        );
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn a_read_only_folder_is_not_writable() {
+        use std::os::unix::fs::PermissionsExt;
+        let root = std::env::temp_dir().join(format!("swofty-ads-read-only-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let locked = root.join("locked");
+        std::fs::create_dir_all(&locked).unwrap();
+        let lock =
+            |mode: u32| std::fs::set_permissions(&locked, std::fs::Permissions::from_mode(mode)).unwrap();
+        lock(0o555);
+        let root_writes = std::fs::write(locked.join("root"), "").is_ok();
+        let child = writable(&locked.join("ads"));
+        let itself = writable(&locked);
+        lock(0o755);
+        std::fs::remove_dir_all(&root).ok();
+        if !root_writes {
+            assert!(child.is_err());
+            assert!(itself.is_err());
+        }
+    }
+
+    #[test]
+    fn only_an_unwritable_profile_on_windows_is_told_and_only_once() {
+        assert!(notice(Skip::Quiet, true).is_none());
+        assert!(notice(Skip::Unwritable, false).is_none());
+        let told = notice(Skip::Unwritable, true).unwrap();
+        assert_eq!(told.kind, Kind::Warning);
+        assert!(told.sticky);
+        assert!(told.message.contains("administrator"));
+        let mut ads = Ads {
+            host: None,
+            notice: Some(told),
+        };
+        assert!(ads.take_notice().is_some());
+        assert!(ads.take_notice().is_none());
+        assert!(Ads::default().take_notice().is_none());
     }
 
     #[test]

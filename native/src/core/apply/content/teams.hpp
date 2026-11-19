@@ -485,7 +485,9 @@ inline void lower_team(const std::string &id, const Value &rec, const Lookup &lo
     put("display_name_super_short", title_text(names["super_short"]));
     put("display_name_code", names["code"].is_string() ? std::string(names["code"].as_string()) : std::string());
     put("livery_name", rec["livery_name"].is_string() ? std::string(rec["livery_name"].as_string()) : std::string());
-    put("nationality", rec["nationality"].is_string() ? std::string(rec["nationality"].as_string()) : std::string());
+    std::string nationality = rec["nationality"].is_string() ? std::string(rec["nationality"].as_string()) : std::string();
+    std::string known = nationality.empty() ? nationality : nationality_of(read, nationality);
+    put("nationality", known);
     put("audio_id", rec["audio_id"].is_string() ? std::string(rec["audio_id"].as_string()) : std::string());
     put("prestige", rec["prestige"].is_int() ? std::to_string(rec["prestige"].as_int()) : std::string());
     put("team_boss", rec["team_boss"].is_string() ? std::string(rec["team_boss"].as_string()) : std::string());
@@ -534,6 +536,9 @@ inline void lower_team(const std::string &id, const Value &rec, const Lookup &lo
     lower_logo_images(label, donor, rec["logo"].is_string() ? std::string(rec["logo"].as_string()) : id, logo, tower_key, plan);
     for (auto &f : skipped)
         plan.lines.push_back("team.identity " + id + ": " + donor + " has no " + f + "; left out");
+    if (known != nationality)
+        plan.lines.push_back("team.identity " + id + ": nationality " + nationality + " is not an entrants.nationality row, " +
+                             DEFAULT_NATIONALITY + " used");
     plan.lines.push_back("team.identity " + id + ": row " + label + " from " + donor +
                          (sid ? ", stat id " + std::to_string(*sid) : std::string()) + ", " + std::to_string(sides) +
                          " side row(s)" + (tower_image ? std::string(", own timing tower badge key")

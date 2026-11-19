@@ -53,6 +53,7 @@ t "HUD dial template host test" templates/hud-dial/native/test/run_test.sh
 # The 1.6 handler guard, built as build.sh builds it, against faults and SDK handlers that throw.
 t "Handler guard Wine test" native/test/run_guard_test.sh
 t "Memory page checks Wine test" native/test/run_mem_pages_test.sh
+t "Import table walk host and Wine test (rewritten entries skipped, valid slots patched)" native/test/run_pe_imports_test.sh
 t "Settings read memo Wine test" native/test/run_settings_get_test.sh
 t "Career list Wine test" native/test/run_career_list_test.sh
 t "Hook points, events and services host test" native/test/run_hooks_test.sh

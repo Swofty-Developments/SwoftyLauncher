@@ -1079,6 +1079,7 @@ inline constexpr address<"Game_RankedMatchingProcessor_CreateSession"> Game_Rank
 inline constexpr address<"Game_RankedMatchingProcessor_Search"> Game_RankedMatchingProcessor_Search{}; // L2 experimental
 using Game_Read_GridConfig_t = void(void *placement);
 inline constexpr fn<"Game_Read_GridConfig", Game_Read_GridConfig_t> Game_Read_GridConfig{}; // L2 experimental
+inline constexpr address<"Game_Read_PhysicsWorldConfig"> Game_Read_PhysicsWorldConfig{}; // L2 experimental
 using Game_Read_QualifyingConfig_t = void(void *track_data_system);
 inline constexpr fn<"Game_Read_QualifyingConfig", Game_Read_QualifyingConfig_t> Game_Read_QualifyingConfig{}; // L2 experimental
 inline constexpr address<"Game_Read_RendererTrackInformationSystemConfig"> Game_Read_RendererTrackInformationSystemConfig{}; // L2 experimental

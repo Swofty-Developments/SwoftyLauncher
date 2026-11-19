@@ -7766,7 +7766,7 @@ dependencies = [
 
 [[package]]
 name = "swofty-addon"
-version = "1.9.76"
+version = "1.9.79"
 dependencies = [
  "semver",
  "serde",
@@ -7778,7 +7778,7 @@ dependencies = [
 
 [[package]]
 name = "swofty-ads"
-version = "1.9.76"
+version = "1.9.79"
 dependencies = [
  "open",
  "serde",
@@ -7790,7 +7790,7 @@ dependencies = [
 
 [[package]]
 name = "swofty-ads-helper"
-version = "1.9.76"
+version = "1.9.79"
 dependencies = [
  "gtk",
  "swofty-ads",
@@ -7799,14 +7799,14 @@ dependencies = [
 
 [[package]]
 name = "swofty-builtins"
-version = "1.9.76"
+version = "1.9.79"
 dependencies = [
  "swofty-addon",
 ]
 
 [[package]]
 name = "swofty-cli"
-version = "1.9.76"
+version = "1.9.79"
 dependencies = [
  "anyhow",
  "clap",
@@ -7823,7 +7823,7 @@ dependencies = [
 
 [[package]]
 name = "swofty-core"
-version = "1.9.76"
+version = "1.9.79"
 dependencies = [
  "flate2",
  "libc",
@@ -7854,7 +7854,7 @@ dependencies = [
 
 [[package]]
 name = "swofty-formats"
-version = "1.9.76"
+version = "1.9.79"
 dependencies = [
  "aes 0.9.4",
  "bcdec_rs",
@@ -7865,14 +7865,14 @@ dependencies = [
 
 [[package]]
 name = "swofty-i18n"
-version = "1.9.76"
+version = "1.9.79"
 dependencies = [
  "serde_json",
 ]
 
 [[package]]
 name = "swofty-launcher"
-version = "1.9.76"
+version = "1.9.79"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
@@ -7910,7 +7910,7 @@ dependencies = [
 
 [[package]]
 name = "swofty-preview"
-version = "1.9.76"
+version = "1.9.79"
 dependencies = [
  "image",
  "pollster 1.0.1",
@@ -7926,11 +7926,11 @@ dependencies = [
 
 [[package]]
 name = "swofty-sdk"
-version = "1.9.76"
+version = "1.9.79"
 
 [[package]]
 name = "swofty-shaders"
-version = "1.9.76"
+version = "1.9.79"
 dependencies = [
  "serde",
  "serde_json",
