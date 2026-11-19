@@ -288,7 +288,7 @@ These environment variables change what swofty_core and the loader log. Set them
 
 ## Performance report
 
-swofty_core times every hook, site handler, event callback and storage call it runs, and writes the result to `swofty/perf.log` in the game folder every 15 seconds and when the game exits. Each timed call costs about 12 ns. After the game exits, `swofty run` keeps a copy in the session folder, and [Send Logs to Developers](/using/send-logs) sends it with the other logs. Every minute, three lines such as these go to `loader.log`:
+swofty_core times every hook, site handler, event callback and storage call it runs, and writes the result to `swofty/perf.log` in the game folder every 15 seconds and when the game exits. When the game can't create files in `swofty`, the report goes to `%LOCALAPPDATA%\Swofty\state\perf-fallback.log` instead, beside `loader-fallback.log`, and `loader.log` names it in a `[perf]` line. Each timed call costs about 12 ns. After the game exits, `swofty run` keeps a copy in the session folder as `perf.log`, and [Send Logs to Developers](/using/send-logs) sends it with the other logs. Every minute, three lines such as these go to `loader.log`:
 
 ```text
 [perf] last 60 s: 10029 frame(s) (178 fps, p99 11.9 ms, 0 over 50 ms); swofty 1.417 ms/s on game threads (core flow tick (events, career poll) 1.012 ms/s 60.0 calls/s, core game log (Ne_Log_Thunk) 0.393 ms/s 841.4 calls/s, swofty.progressive api storage read 0.020 ms/s 1.0 calls/s); worst call 0.32 ms (swofty.progressive api storage read)
