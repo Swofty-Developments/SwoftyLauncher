@@ -75,6 +75,30 @@ pub(crate) fn room_meta_players(room: &RoomSummary) -> String {
     format!("{}/{} players", room.members, room.max_members)
 }
 
+/// This player's fingerprint as a room's status reads it: its digest and its gameplay addons.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct OwnPrint {
+    pub(crate) digest: String,
+    pub(crate) addons: Vec<RoomAddon>,
+}
+
+impl OwnPrint {
+    fn of(local: &Local) -> Self {
+        Self {
+            digest: local.digest(),
+            addons: local
+                .fingerprint
+                .addons
+                .iter()
+                .map(|a| RoomAddon {
+                    id: a.id.clone(),
+                    name: a.name.clone(),
+                })
+                .collect(),
+        }
+    }
+}
+
 /// What a room's one status line says, and whether it needs the player's attention.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum RoomStatus {
@@ -85,14 +109,27 @@ pub(crate) enum RoomStatus {
 }
 
 impl RoomStatus {
-    pub(crate) fn of(room: &RoomSummary, mine: Option<&str>) -> Self {
+    /// `on` is the addons this player has on. With the host's addons listed, a room differs when one of them
+    /// is off here or the host lacks one of this player's gameplay addons, as the room's View shows; the
+    /// load order, option values, stat ids and builds the digests also cover come from the host in a room
+    /// launch. A room whose host lists no addons differs when the digests do.
+    pub(crate) fn of(room: &RoomSummary, on: &HashSet<String>, mine: Option<&OwnPrint>) -> Self {
         if room.members >= room.max_members {
             return Self::Full;
         }
-        match (room.digest.as_deref(), mine) {
-            (Some(host), Some(mine)) if host.eq_ignore_ascii_case(mine) => Self::Match,
-            (Some(_), Some(_)) => Self::Differ,
-            _ => Self::Unknown,
+        let (Some(host), Some(mine)) = (room.digest.as_deref(), mine) else {
+            return Self::Unknown;
+        };
+        if host.eq_ignore_ascii_case(&mine.digest) {
+            return Self::Match;
+        }
+        let Some(listed) = room.addons.as_ref().filter(|a| !a.list.is_empty()) else {
+            return Self::Differ;
+        };
+        if missing(&addon_checks(&listed.list, on)) > 0 || !extra_addons(room, mine).is_empty() {
+            Self::Differ
+        } else {
+            Self::Match
         }
     }
 
@@ -281,6 +318,23 @@ pub(crate) fn missing(checks: &[AddonCheck]) -> usize {
     checks.iter().filter(|c| !c.have).count()
 }
 
+/// The names of this player's gameplay addons the host doesn't have, once the server lists every addon the
+/// host has on.
+pub(crate) fn extra_addons(room: &RoomSummary, mine: &OwnPrint) -> Vec<String> {
+    let Some(listed) = room
+        .addons
+        .as_ref()
+        .filter(|a| !a.list.is_empty() && a.list.len() == a.count as usize)
+    else {
+        return Vec::new();
+    };
+    mine.addons
+        .iter()
+        .filter(|a| !listed.list.iter().any(|h| h.id == a.id))
+        .map(|a| a.name.clone())
+        .collect()
+}
+
 /// The names a room card shows: every addon the host has on when the server lists them, else its tracks.
 pub(crate) fn card_addons(room: &RoomSummary) -> Vec<String> {
     match &room.addons {
@@ -324,8 +378,8 @@ pub(crate) struct Multiplayer {
     refused: Option<String>,
     rooms_at: Option<Instant>,
     rooms_polling: bool,
-    digest: Option<String>,
-    digest_busy: bool,
+    print: Option<OwnPrint>,
+    print_busy: bool,
     form: bool,
     name: Entity<InputState>,
     code: Entity<InputState>,
@@ -372,8 +426,8 @@ impl Multiplayer {
             refused: None,
             rooms_at: None,
             rooms_polling: false,
-            digest: None,
-            digest_busy: false,
+            print: None,
+            print_busy: false,
             form: false,
             name,
             code,
@@ -414,7 +468,7 @@ impl Multiplayer {
         self.viewing = None;
         self.rooms_at = None;
         self.game_at = None;
-        self.digest = None;
+        self.print = None;
     }
 }
 
@@ -458,7 +512,7 @@ impl Shell {
             m.visible = true;
             m.rooms_at = None;
             m.game_at = None;
-            m.digest = None;
+            m.print = None;
         }
         let refused = refusal(m.refused.clone(), diag::is_loaded(), diag::unavailable());
         if refused != m.refused {
@@ -489,8 +543,8 @@ impl Shell {
             self.mp_poll_rooms(cx);
         }
         let m = &self.mp_page;
-        if m.digest.is_none() && !m.digest_busy && m.session.is_none() {
-            self.mp_read_digest(cx);
+        if m.print.is_none() && !m.print_busy && m.session.is_none() {
+            self.mp_read_print(cx);
         }
         self.mp_load_faces(cx);
     }
@@ -834,21 +888,21 @@ impl Shell {
         .detach();
     }
 
-    fn mp_read_digest(&mut self, cx: &mut Context<Self>) {
+    fn mp_read_print(&mut self, cx: &mut Context<Self>) {
         let Some(dir) = self.install.as_ref().map(|i| i.dir.clone()) else {
             return;
         };
         let (store, profile) = (self.store.clone(), self.library.profile.name.clone());
-        self.mp_page.digest_busy = true;
+        self.mp_page.print_busy = true;
         cx.spawn(async move |this, cx| {
-            let digest = cx
+            let print = cx
                 .background_executor()
-                .spawn(async move { read_local(&store, &profile, &dir).map(|l| l.digest()) })
+                .spawn(async move { read_local(&store, &profile, &dir).map(|l| OwnPrint::of(&l)) })
                 .await;
             this.update(cx, |s, cx| {
-                s.mp_page.digest_busy = false;
-                match digest {
-                    Ok(d) => s.mp_page.digest = Some(d),
+                s.mp_page.print_busy = false;
+                match print {
+                    Ok(p) => s.mp_page.print = Some(p),
                     Err(e) => eprintln!("swofty-launcher: couldn't read this profile's addons: {e}"),
                 }
                 cx.notify();
@@ -1163,7 +1217,7 @@ impl Shell {
     }
 
     fn room_row(&self, room: &RoomSummary, first: bool, p: Palette, cx: &mut Context<Self>) -> AnyElement {
-        let status = RoomStatus::of(room, self.mp_page.digest.as_deref());
+        let status = RoomStatus::of(room, &self.mp_enabled_addons(), self.mp_page.print.as_ref());
         let code = room.code.clone();
         let names = card_addons(room);
         h_flex()
@@ -1382,6 +1436,12 @@ impl Shell {
         let listed = room.addons.as_ref().filter(|a| !a.list.is_empty());
         let checks = listed.map(|a| addon_checks(&a.list, &on)).unwrap_or_default();
         let lacking = missing(&checks);
+        let extra = self
+            .mp_page
+            .print
+            .as_ref()
+            .map(|mine| extra_addons(room, mine))
+            .unwrap_or_default();
         let subtitle = room_meta(room);
         let actions = h_flex().gap(px(8.)).items_center().child(
             Button::new("mp-view-back")
@@ -1392,8 +1452,14 @@ impl Shell {
         );
         let summary = if checks.is_empty() {
             tr("The host's launcher hasn't listed its addons.").to_owned()
-        } else if lacking == 0 {
+        } else if lacking == 0 && extra.is_empty() {
             tr("You have every addon the host has on.").to_owned()
+        } else if lacking == 0 {
+            trn(
+                extra.len(),
+                "You have {count} addon on that the host doesn't have.",
+                "You have {count} addons on that the host doesn't have.",
+            )
         } else {
             fill(
                 &trn(
@@ -1439,6 +1505,32 @@ impl Shell {
                     )
                     .into_any_element()
             })
+            .chain(extra.iter().enumerate().map(|(i, name)| {
+                h_flex()
+                    .px(px(16.))
+                    .py(px(10.))
+                    .gap(px(12.))
+                    .items_center()
+                    .when(i > 0 || !checks.is_empty(), |d| {
+                        d.border_t_1().border_color(p.border_variant)
+                    })
+                    .child(Icon::new(IconName::X).size(px(16.)).text_color(p.error))
+                    .child(
+                        div()
+                            .flex_1()
+                            .min_w_0()
+                            .truncate()
+                            .text_size(px(14.))
+                            .child(name.clone()),
+                    )
+                    .child(
+                        div()
+                            .text_size(px(13.))
+                            .text_color(p.text_muted)
+                            .child(tr("The host doesn't have it")),
+                    )
+                    .into_any_element()
+            }))
             .collect();
         v_flex()
             .size_full()
@@ -1826,9 +1918,9 @@ mod tests {
     };
 
     use super::{
-        GameState, RoomContent, RoomStatus, Start, Tone, addon_checks, card_addons, content_check,
-        content_word, exit_leaves, exit_notice, joined, member_word, missing, refusal, refusal_text,
-        restart_ok_text, room_meta,
+        GameState, OwnPrint, RoomContent, RoomStatus, Start, Tone, addon_checks, card_addons, content_check,
+        content_word, exit_leaves, exit_notice, extra_addons, joined, member_word, missing, refusal,
+        refusal_text, restart_ok_text, room_meta,
     };
 
     #[test]
@@ -1952,23 +2044,104 @@ mod tests {
         assert_eq!(GameState::of(true, None), GameState::Busy);
     }
 
+    fn own(digest: &str, addons: &[(&str, &str)]) -> OwnPrint {
+        OwnPrint {
+            digest: digest.into(),
+            addons: addons.iter().map(|(id, name)| addon(id, name)).collect(),
+        }
+    }
+
+    fn ids(addons: &[(&str, &str)]) -> HashSet<String> {
+        addons.iter().map(|(id, _)| (*id).to_owned()).collect()
+    }
+
     #[test]
     fn gives_each_room_one_status() {
+        let all = [
+            ("a.tracks", "Okayama"),
+            ("b.cars", "2026 Cars"),
+            ("c.hud", "Timing HUD"),
+        ];
+        let on = ids(&all);
+        let of = |room: &RoomSummary, mine: &str| RoomStatus::of(room, &on, Some(&own(mine, &all)));
+        assert_eq!(of(&room(8, 8, Some("sha256:a")), "sha256:a"), RoomStatus::Full);
         assert_eq!(
-            RoomStatus::of(&room(8, 8, Some("sha256:a")), Some("sha256:a")),
-            RoomStatus::Full
-        );
-        assert_eq!(
-            RoomStatus::of(&room(3, 8, Some("sha256:ABC")), Some("sha256:abc")),
+            of(&room(3, 8, Some("sha256:ABC")), "sha256:abc"),
             RoomStatus::Match
         );
         assert_eq!(
-            RoomStatus::of(&room(3, 8, Some("sha256:a")), Some("sha256:b")),
+            of(&room(3, 8, Some("sha256:a")), "sha256:b"),
+            RoomStatus::Match,
+            "every listed addon on, the rest a room launch takes from the host"
+        );
+        let without_cars = ids(&[("a.tracks", "Okayama"), ("c.hud", "Timing HUD")]);
+        assert_eq!(
+            RoomStatus::of(
+                &room(3, 8, Some("sha256:a")),
+                &without_cars,
+                Some(&own("sha256:b", &all))
+            ),
             RoomStatus::Differ
         );
+        assert_eq!(of(&room(3, 8, None), "sha256:b"), RoomStatus::Unknown);
         assert_eq!(
-            RoomStatus::of(&room(3, 8, None), Some("sha256:b")),
+            RoomStatus::of(&room(3, 8, Some("sha256:a")), &on, None),
             RoomStatus::Unknown
+        );
+        let mut unlisted = room(3, 8, Some("sha256:a"));
+        unlisted.addons = None;
+        assert_eq!(of(&unlisted, "sha256:b"), RoomStatus::Differ);
+        assert_eq!(of(&unlisted, "sha256:a"), RoomStatus::Match);
+    }
+
+    #[test]
+    fn a_room_differs_in_its_list_only_where_its_view_shows_a_difference() {
+        let hosts = [
+            ("kizi.ai-driver-behaviour", "AI Driver Behaviour"),
+            ("swofty.core", "SwoftyMod"),
+            ("swofty.lap1-ai", "Lap 1 Realistic AI"),
+            ("swofty.swofty-seasons-2011", "SWOFTY 2011"),
+            ("swofty.swofty-seasons-2011-real", "SWOFTY 2011 Real Liveries"),
+            ("teamsimplified.mods", "Simplified for Swofty"),
+        ];
+        let mut room = room(1, 8, Some("sha256:dde0b6530ef0753d"));
+        room.addons = Some(RoomAddons {
+            count: hosts.len() as u32,
+            tracks: Vec::new(),
+            list: hosts.iter().map(|(id, name)| addon(id, name)).collect(),
+        });
+        let mine = own("sha256:b860077ab11537ec", &hosts);
+        assert_eq!(
+            RoomStatus::of(&room, &ids(&hosts), Some(&mine)),
+            RoomStatus::Match
+        );
+        assert!(extra_addons(&room, &mine).is_empty());
+
+        let mut with_hud = hosts.to_vec();
+        with_hud.push(("player.telemetry-hud", "Telemetry HUD"));
+        let mine = own("sha256:43f821ef51b134cf", &with_hud);
+        assert_eq!(
+            RoomStatus::of(&room, &ids(&with_hud), Some(&mine)),
+            RoomStatus::Differ
+        );
+        assert_eq!(extra_addons(&room, &mine), ["Telemetry HUD"]);
+
+        let mut capped = room.clone();
+        capped.addons.as_mut().unwrap().count += 1;
+        assert!(
+            extra_addons(&capped, &mine).is_empty(),
+            "a list the server cut short says nothing of extra addons"
+        );
+        assert_eq!(
+            RoomStatus::of(&capped, &ids(&with_hud), Some(&mine)),
+            RoomStatus::Match
+        );
+
+        let without_season = ids(&hosts[..3]);
+        let mine = own("sha256:43f821ef51b134cf", &hosts);
+        assert_eq!(
+            RoomStatus::of(&room, &without_season, Some(&mine)),
+            RoomStatus::Differ
         );
     }
 
