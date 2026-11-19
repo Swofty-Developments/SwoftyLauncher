@@ -1002,7 +1002,6 @@ inline constexpr address<"Game_PitLane_SetDoPracticePitStop_2"> Game_PitLane_Set
 inline constexpr address<"Game_PitLane_VehicleEntering"> Game_PitLane_VehicleEntering{}; // L2 experimental
 inline constexpr address<"Game_PitLane_VehicleEnteringInternal"> Game_PitLane_VehicleEnteringInternal{}; // L2 experimental
 inline constexpr address<"Game_PitLane_VehicleExiting"> Game_PitLane_VehicleExiting{}; // L2 experimental
-inline constexpr address<"Game_PitStopActionObserver_SetTransitionSequence"> Game_PitStopActionObserver_SetTransitionSequence{}; // L2 experimental, PitStopActionObserver::setTransitionSequence
 inline constexpr address<"Game_PitStopInstance_PlaySequence"> Game_PitStopInstance_PlaySequence{}; // L2 experimental, PitStopInstance::playSequence
 inline constexpr address<"Game_PitStopLogic_ChangeState"> Game_PitStopLogic_ChangeState{}; // L2 experimental
 inline constexpr address<"Game_PitStopLogic_NeSequenceClipTargetImpl"> Game_PitStopLogic_NeSequenceClipTargetImpl{}; // L2 experimental, PitStopLogic::NeSequenceClipTargetImpl
@@ -1079,6 +1078,7 @@ inline constexpr address<"Game_RankedMatchingProcessor_CreateSession"> Game_Rank
 inline constexpr address<"Game_RankedMatchingProcessor_Search"> Game_RankedMatchingProcessor_Search{}; // L2 experimental
 using Game_Read_GridConfig_t = void(void *placement);
 inline constexpr fn<"Game_Read_GridConfig", Game_Read_GridConfig_t> Game_Read_GridConfig{}; // L2 experimental
+inline constexpr address<"Game_Read_PhysicsWorldConfig"> Game_Read_PhysicsWorldConfig{}; // L2 experimental
 using Game_Read_QualifyingConfig_t = void(void *track_data_system);
 inline constexpr fn<"Game_Read_QualifyingConfig", Game_Read_QualifyingConfig_t> Game_Read_QualifyingConfig{}; // L2 experimental
 inline constexpr address<"Game_Read_RendererTrackInformationSystemConfig"> Game_Read_RendererTrackInformationSystemConfig{}; // L2 experimental

@@ -2,7 +2,7 @@
 //! launcher's X11 window, so the launcher itself never links WebKitGTK. With no
 //! helper, no WebKitGTK or a Wayland window there are no slots.
 
-use super::{Area, Unit};
+use super::{Area, Skip, Unit};
 use gpui_kit::Window;
 use raw_window_handle::{HasWindowHandle, RawWindowHandle};
 use std::io::{BufRead, BufReader, Write};
@@ -29,18 +29,22 @@ pub(super) struct Backend {
 }
 
 impl Backend {
-    pub(super) fn start(window: &Window, data: &Path) -> Option<Self> {
-        let parent = match HasWindowHandle::window_handle(window).ok()?.as_raw() {
+    pub(super) fn start(window: &Window, data: &Path) -> Result<Self, Skip> {
+        let handle = HasWindowHandle::window_handle(window).map_err(|_| Skip::Quiet)?;
+        let parent = match handle.as_raw() {
             RawWindowHandle::Xcb(h) => u64::from(h.window.get()),
             RawWindowHandle::Xlib(h) => h.window,
             _ => {
                 crate::app_log::note("no ad slots: the window isn't on X11");
-                return None;
+                return Err(Skip::Quiet);
             }
         };
-        let helper = helper()?;
+        let helper = helper().ok_or(Skip::Quiet)?;
         let dir = data.join("ads");
-        std::fs::create_dir_all(&dir).ok()?;
+        if let Err(e) = super::writable(&dir) {
+            crate::app_log::note(&format!("no ad slots: {} can't be written: {e}", dir.display()));
+            return Err(Skip::Unwritable);
+        }
         let log = std::fs::File::create(dir.join("helper.log")).map(Stdio::from);
         let mut child = Command::new(&helper)
             .arg("--parent")
@@ -51,10 +55,10 @@ impl Backend {
             .stdout(Stdio::piped())
             .stderr(log.unwrap_or_else(|_| Stdio::null()))
             .spawn()
-            .inspect_err(|e| {
-                crate::app_log::note(&format!("no ad slots: {} didn't start: {e}", helper.display()))
-            })
-            .ok()?;
+            .map_err(|e| {
+                crate::app_log::note(&format!("no ad slots: {} didn't start: {e}", helper.display()));
+                Skip::Quiet
+            })?;
         let stdin = child.stdin.take();
         let events = Arc::new(Mutex::new(Vec::new()));
         if let Some(stdout) = child.stdout.take() {
@@ -70,7 +74,7 @@ impl Backend {
                 }
             });
         }
-        Some(Self { child, stdin, events })
+        Ok(Self { child, stdin, events })
     }
 
     pub(super) fn events(&mut self) -> Vec<Event> {

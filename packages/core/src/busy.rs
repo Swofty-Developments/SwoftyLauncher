@@ -110,6 +110,16 @@ impl Busy {
         }
     }
 
+    /// What Restore game folder says while this build runs.
+    pub fn restore_text(&self) -> String {
+        format!(
+            "Play is still {} for profile {}, started {}; restore the game folder again when it finishes, or cancel the build in the launcher",
+            self.progress(),
+            self.profile,
+            ago(self.minutes())
+        )
+    }
+
     /// What a second Play says while this build runs.
     pub fn text(&self) -> String {
         format!(

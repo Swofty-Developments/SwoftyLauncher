@@ -125,7 +125,7 @@ fn not_restarted(text: String, window: &mut Window, cx: &mut App) {
 
 /// Starts the administrator copy and closes this one once it is still
 /// running a few seconds later. One that closes before then is reported.
-fn restart_elevated(window: &mut Window, cx: &mut App) {
+pub(crate) fn restart_elevated(window: &mut Window, cx: &mut App) {
     app_log::note("restart as administrator: asking Windows");
     let started = cx.background_executor().spawn(async move {
         std::thread::spawn(compat::relaunch_elevated)

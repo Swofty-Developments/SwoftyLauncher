@@ -3,7 +3,8 @@ use std::path::{Path, PathBuf};
 
 use md5::{Digest as _, Md5};
 use swofty_formats::erp::{Entry, ErpFile, Resource, STORED, ZSTD, compress};
-use swofty_formats::gvdb::Gvdb;
+use swofty_formats::gvdb::{Gvdb, Record};
+use swofty_formats::hash::fnv1a64;
 use swofty_formats::pkg::{Node, Pkg, is_pkg};
 
 use super::ailine::{self, Spacing};
@@ -238,13 +239,24 @@ pub fn missing_worlds(worlds: &[LayerWorld], code: &str, provided: impl Fn(&str)
 }
 
 pub const AI_ASSET_DATA: &str = "ai.asset_data.";
+/// The AI folder of the game's own 2025 cars, which every track ships.
+pub const STOCK_AI: &str = "f1_2025_vehicle_package";
+/// The stock team whose AI data stands in for a team of an addon's own AI folder that the game has no team of
+/// (SWOFTY 2011-2013's Caterham, Marussia and HRT, which the seasons build from Lotus's).
+pub const STAND_IN_TEAM: &str = "lotus";
+const VEHICLE_PACKAGES: &str = "entrants.vehicles.vehicle_packages";
+const TRACK_ROWS: &str = "tracks.Track";
+const DIFFICULTIES: &str = "ai_track_difficulties";
 
-/// An AI team an addon added by copying the row of team `from` in `ai.asset_data.<package>`.
+/// An AI team whose per-track data a track may lack: the build copies the track's `from_package/from` folder for
+/// it, else its `from_package/or` folder.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct AiTeam {
     pub package: String,
     pub team: String,
+    pub from_package: String,
     pub from: String,
+    pub or: Option<String>,
 }
 
 impl AiTeam {
@@ -253,22 +265,173 @@ impl AiTeam {
     }
 }
 
-/// The AI teams the `add-row` copies `(from, row)` added to an `ai.asset_data` table, read from the built `db`.
-pub fn ai_teams<'a>(db: &Gvdb, copies: impl IntoIterator<Item = (&'a str, &'a str)>) -> Vec<AiTeam> {
-    let label = |row: &str| db.get_text(&format!("{row}._metadata_"));
-    let teams: BTreeSet<AiTeam> = copies
+/// The AI teams a track may lack data for, read from the built `db`: each team an `add-row` copy `(from, row)`
+/// added to an `ai.asset_data` table, standing in with the team its row copies, and each team of an addon's own AI
+/// folder ([`own_ai_folders`]), standing in with the track's stock 2025 data of the team its row copies, else of
+/// the stock team of its name, else of [`STAND_IN_TEAM`].
+pub fn ai_teams<'a>(
+    db: &Gvdb,
+    stock: &Gvdb,
+    copies: impl IntoIterator<Item = (&'a str, &'a str)>,
+) -> Vec<AiTeam> {
+    let label = |row: &str| {
+        db.get_text(&format!("{row}._metadata_"))
+            .map(|l| l.trim().to_owned())
+    };
+    let package_of = |row: &str| Some(row.strip_prefix(AI_ASSET_DATA)?.split('.').next()?.to_owned());
+    let copied: Vec<AiTeam> = copies
         .into_iter()
         .filter_map(|(from, row)| {
-            let package = row.strip_prefix(AI_ASSET_DATA)?.split('.').next()?;
+            let package = package_of(row)?;
             Some(AiTeam {
-                package: package.to_owned(),
+                from_package: package_of(from).unwrap_or_else(|| package.clone()),
+                package,
                 team: label(row)?,
                 from: label(from)?,
+                or: None,
             })
         })
         .filter(|t| !t.team.is_empty() && t.team != t.from)
         .collect();
+    let mut teams = BTreeSet::new();
+    let own = own_ai_folders(db, stock);
+    for folder in &own {
+        let table = format!("{AI_ASSET_DATA}{folder}");
+        for i in 0..db.instance_count(&table, "asset_data").unwrap_or(0) {
+            let Some(team) = label(&format!("{table}.asset_data_{i}")).filter(|t| !t.is_empty()) else {
+                continue;
+            };
+            let from = copied
+                .iter()
+                .find(|t| t.package == *folder && t.team == team)
+                .map_or_else(|| team.clone(), |t| t.from.clone());
+            teams.insert(AiTeam {
+                package: folder.clone(),
+                or: (from != STAND_IN_TEAM).then(|| STAND_IN_TEAM.to_owned()),
+                team,
+                from_package: STOCK_AI.to_owned(),
+                from,
+            });
+        }
+    }
+    teams.extend(copied.into_iter().filter(|t| !own.contains(&t.package)));
     teams.into_iter().collect()
+}
+
+/// The build log's lines for a placement's `ai_aliases`: one per AI folder, naming the teams that take another
+/// team's data.
+pub fn ai_alias_lines(aliases: &BTreeMap<String, String>) -> Vec<String> {
+    let mut by: BTreeMap<(&str, &str), Vec<(&str, &str)>> = BTreeMap::new();
+    for (team, to) in aliases {
+        let (Some((package, team)), Some((from_package, from))) = (team.split_once('/'), to.split_once('/'))
+        else {
+            continue;
+        };
+        by.entry((package, from_package)).or_default().push((team, from));
+    }
+    by.into_iter()
+        .map(|((package, from_package), teams)| match teams.as_slice() {
+            [(team, from)] => {
+                format!("AI data for {package}/{team} stands in with the track's {from_package}/{from}")
+            }
+            _ => {
+                let mut donors: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
+                for (team, from) in teams.iter().filter(|(t, f)| t != f) {
+                    donors.entry(from).or_default().push(team);
+                }
+                let taken: Vec<String> = donors
+                    .into_iter()
+                    .map(|(from, teams)| format!("{} with {from}'s", teams.join(", ")))
+                    .collect();
+                let rest = match taken.is_empty() {
+                    true => String::new(),
+                    false => format!("; {}", taken.join("; ")),
+                };
+                format!(
+                    "AI data for {} teams of {package} stands in with the track's {from_package} data of the team of the \
+                     same name{rest}",
+                    teams.len()
+                )
+            }
+        })
+        .collect()
+}
+
+fn ai_folders(db: &Gvdb) -> BTreeSet<String> {
+    (0..db
+        .instance_count(VEHICLE_PACKAGES, "vehicle_package")
+        .unwrap_or(0))
+        .filter_map(|i| {
+            db.get_text(&format!(
+                "{VEHICLE_PACKAGES}.vehicle_package_{i}.ai_package_folder"
+            ))
+        })
+        .map(|f| f.trim().to_owned())
+        .filter(|f| !f.is_empty())
+        .collect()
+}
+
+/// The AI folders the built `db`'s vehicle packages name that the game's own `stock` database doesn't: an addon's
+/// own folder, which has data only at the tracks the addon ships it for.
+pub fn own_ai_folders(db: &Gvdb, stock: &Gvdb) -> BTreeSet<String> {
+    let stock = ai_folders(stock);
+    ai_folders(db)
+        .into_iter()
+        .filter(|f| !stock.contains(f))
+        .collect()
+}
+
+/// Gives the track rows of `codes` the `ai_track_difficulties` of each of `folders` they lack, copied from the
+/// row's own stock 2025 ones: a row the build adds is cloned from a stock track before any addon gives the stock
+/// tracks values for its own folder. Returns each `(code, folder)` given values.
+pub fn difficulty_stand_ins(
+    db: &mut Gvdb,
+    folders: &BTreeSet<String>,
+    codes: &[&str],
+) -> Vec<(String, String)> {
+    let prefix = format!("{DIFFICULTIES}.{STOCK_AI}.");
+    let fields: Vec<String> = super::db::Registry::builtin()
+        .track
+        .schema
+        .fields
+        .iter()
+        .filter_map(|f| f.strip_prefix(&prefix).map(str::to_owned))
+        .collect();
+    let at: std::collections::HashMap<u64, usize> =
+        db.records.iter().enumerate().map(|(i, r)| (r.key, i)).collect();
+    let (container, row) = TRACK_ROWS.rsplit_once('.').expect("table path");
+    let mut added = Vec::new();
+    let mut given = Vec::new();
+    for i in 0..db.instance_count(container, row).unwrap_or(0) {
+        let Some(&j) = at.get(&fnv1a64(format!("{TRACK_ROWS}_{i}._metadata_"))) else {
+            continue;
+        };
+        let code = db.records[j].text().trim().to_owned();
+        if !codes.contains(&code.as_str()) {
+            continue;
+        }
+        for folder in folders {
+            let key = |f: &str, field: &str| fnv1a64(format!("{TRACK_ROWS}_{i}.{DIFFICULTIES}.{f}.{field}"));
+            let before = added.len();
+            for field in &fields {
+                if at.contains_key(&key(folder, field)) {
+                    continue;
+                }
+                if let Some(&s) = at.get(&key(STOCK_AI, field)) {
+                    added.push(Record {
+                        key: key(folder, field),
+                        tag: db.records[s].tag,
+                        value: db.records[s].value.clone(),
+                    });
+                }
+            }
+            if added.len() > before && !given.iter().any(|(c, f)| *c == code && f == folder) {
+                given.push((code.clone(), folder.clone()));
+            }
+        }
+    }
+    db.records.extend(added);
+    given
 }
 
 pub struct PlaceInput<'a> {
@@ -340,18 +503,18 @@ fn rename_strings(node: &mut Node, from: &str, to: &str) -> usize {
     }
 }
 
-fn ai_stand_in(file: &ErpFile, res: &Resource, code: &str, team: &AiTeam) -> Result<Resource> {
+fn ai_stand_in(file: &ErpFile, res: &Resource, code: &str, team: &AiTeam, from: &str) -> Result<Resource> {
     let (src, dst) = (
-        ai_dir(code, &team.package, &team.from),
+        ai_dir(code, &team.from_package, from),
         ai_dir(code, &team.package, &team.team),
     );
     let rest = res.name.strip_prefix(&src).unwrap_or(&res.name);
-    let rest = match rest.strip_prefix(team.from.as_str()) {
+    let rest = match rest.strip_prefix(from) {
         Some(ext) if ext.starts_with('.') => format!("{}{ext}", team.team),
         _ => rest.to_owned(),
     };
     let mut res = file.load(res)?;
-    if let Some(data) = renamed_pkg(&res, team) {
+    if let Some(data) = renamed_pkg(&res, from, &team.team) {
         let mut copy = res.clone();
         if set_data(&mut copy, 0, &data).is_ok() {
             res = copy;
@@ -361,13 +524,16 @@ fn ai_stand_in(file: &ErpFile, res: &Resource, code: &str, team: &AiTeam) -> Res
     Ok(res)
 }
 
-fn renamed_pkg(res: &Resource, team: &AiTeam) -> Option<Vec<u8>> {
+fn renamed_pkg(res: &Resource, from: &str, to: &str) -> Option<Vec<u8>> {
+    if from == to {
+        return None;
+    }
     let data = res.fragments.first()?.data().ok()?;
     if !is_pkg(&data) {
         return None;
     }
     let mut pkg = Pkg::parse(&data).ok()?;
-    if rename_strings(&mut pkg.root, &team.from, &team.team) == 0 {
+    if rename_strings(&mut pkg.root, from, to) == 0 {
         return None;
     }
     pkg.to_bytes().ok()
@@ -469,7 +635,13 @@ fn stamp(input: &PlaceInput) -> Result<String> {
         sha2::Digest::update(&mut h, format!("|{}|{}", w.group, w.eri));
     }
     for t in input.ai_teams {
-        sha2::Digest::update(&mut h, format!("|ai:{}/{}<{}", t.package, t.team, t.from));
+        sha2::Digest::update(
+            &mut h,
+            format!(
+                "|ai:{}/{}<{}/{}|{:?}",
+                t.package, t.team, t.from_package, t.from, t.or
+            ),
+        );
     }
     Ok(crate::baseline::hex(&sha2::Digest::finalize(h))[..16].to_owned())
 }
@@ -551,26 +723,29 @@ pub fn place(input: &PlaceInput, cache: &Path) -> Result<Placement> {
         if file.erp.resources.iter().any(|r| r.name.starts_with(&own)) {
             continue;
         }
-        let src = ai_dir(code, &team.package, &team.from);
-        let from: Vec<&Resource> = file
-            .erp
-            .resources
-            .iter()
-            .filter(|r| r.name.starts_with(&src))
-            .collect();
-        if from.is_empty() {
+        let found = std::iter::once(&team.from).chain(&team.or).find_map(|from| {
+            let src = ai_dir(code, &team.from_package, from);
+            let res: Vec<&Resource> = file
+                .erp
+                .resources
+                .iter()
+                .filter(|r| r.name.starts_with(&src))
+                .collect();
+            (!res.is_empty()).then_some((from, res))
+        });
+        let Some((from, res)) = found else {
             placement.notes.push(format!(
-                "no AI data can stand in for {}/{}: the track has none for {}",
-                team.package, team.team, team.from
+                "no AI data can stand in for {}/{}: the track has none for {}/{}",
+                team.package, team.team, team.from_package, team.from
             ));
             continue;
-        }
-        for r in from {
-            owned.push(ai_stand_in(&file, r, code, team)?);
+        };
+        for r in res {
+            owned.push(ai_stand_in(&file, r, code, team, from)?);
         }
         placement.ai_aliases.insert(
             format!("{}/{}", team.package, team.team),
-            format!("{}/{}", team.package, team.from),
+            format!("{}/{from}", team.from_package),
         );
     }
     let mut layer_groups = Vec::new();
@@ -1107,7 +1282,19 @@ mod tests {
         AiTeam {
             package: "f1_2025_vehicle_package".into(),
             team: "cater".into(),
+            from_package: "f1_2025_vehicle_package".into(),
             from: "lotus".into(),
+            or: None,
+        }
+    }
+
+    fn own_team(team: &str, from: &str) -> AiTeam {
+        AiTeam {
+            package: "sw_2013_vehicle_package".into(),
+            team: team.into(),
+            from_package: STOCK_AI.into(),
+            from: from.into(),
+            or: (from != STAND_IN_TEAM).then(|| STAND_IN_TEAM.into()),
         }
     }
 
@@ -1119,6 +1306,10 @@ mod tests {
     }
 
     fn place_with_ai(name: &str, teams: &[&str]) -> (Placement, ErpFile) {
+        place_with_ai_teams(name, teams, &[lotus_and_cater()])
+    }
+
+    fn place_with_ai_teams(name: &str, teams: &[&str], ai_teams: &[AiTeam]) -> (Placement, ErpFile) {
         use swofty_formats::erp::Fragment;
         use swofty_formats::pkg::{Obj, Val};
         let dir = std::env::temp_dir().join(format!("swofty-place-{name}-{}", std::process::id()));
@@ -1185,7 +1376,7 @@ mod tests {
             slot: None,
             cars: 0,
             worlds: &[],
-            ai_teams: &[lotus_and_cater()],
+            ai_teams,
         };
         let placement = place(&input, &dir.join("cache")).unwrap();
         let placed = ErpFile::open(&placement.dir.join(&placement.archive)).unwrap();
@@ -1250,7 +1441,9 @@ mod tests {
         assert!(placement.ai_aliases.is_empty());
         assert_eq!(
             placement.notes,
-            ["no AI data can stand in for f1_2025_vehicle_package/cater: the track has none for lotus"]
+            [
+                "no AI data can stand in for f1_2025_vehicle_package/cater: the track has none for f1_2025_vehicle_package/lotus"
+            ]
         );
         std::fs::remove_dir_all(placement.dir.parent().unwrap().parent().unwrap()).ok();
     }
@@ -1273,9 +1466,197 @@ mod tests {
             ),
         ];
         assert_eq!(
-            ai_teams(&db, copies.iter().map(|(a, b)| (a.as_str(), b.as_str()))),
+            ai_teams(
+                &db,
+                &Gvdb::default(),
+                copies.iter().map(|(a, b)| (a.as_str(), b.as_str()))
+            ),
             [lotus_and_cater()]
         );
+    }
+
+    fn vehicle_packages(db: &mut Gvdb, folders: &[&str]) {
+        use swofty_formats::gvdb::Record;
+        let t = "entrants.vehicles.vehicle_packages";
+        db.records.push(Record::new(
+            &format!("{t}._vehicle_package_instancecount_"),
+            0,
+            folders.len().to_string(),
+        ));
+        for (i, f) in folders.iter().enumerate() {
+            db.records.push(Record::new(
+                &format!("{t}.vehicle_package_{i}.ai_package_folder"),
+                2,
+                *f,
+            ));
+        }
+    }
+
+    #[test]
+    fn the_teams_of_an_addons_own_ai_folder_stand_in_with_the_stock_teams() {
+        use swofty_formats::gvdb::Record;
+        let mut stock = Gvdb::default();
+        vehicle_packages(&mut stock, &[STOCK_AI, "f1cg_f1_2013_vehicle_package"]);
+        let mut db = Gvdb::default();
+        vehicle_packages(&mut db, &[STOCK_AI, "sw_2013_vehicle_package"]);
+        let mut text = |key: &str, value: &str| db.records.push(Record::new(key, 2, value));
+        let s = "ai.asset_data.sw_2013_vehicle_package";
+        text(&format!("{s}._asset_data_instancecount_"), "4");
+        for (i, team) in ["mclaren", "lotus", "cater", "manor"].iter().enumerate() {
+            text(&format!("{s}.asset_data_{i}._metadata_"), team);
+        }
+        let f = "ai.asset_data.f1_2025_vehicle_package.asset_data";
+        text(&format!("{f}_9._metadata_"), "lotus");
+        text(&format!("{f}_16._metadata_"), "cater");
+        let copies = [
+            (format!("{f}_9"), format!("{f}_16")),
+            (format!("{s}.asset_data_1"), format!("{s}.asset_data_3")),
+        ];
+        assert_eq!(
+            own_ai_folders(&db, &stock).into_iter().collect::<Vec<_>>(),
+            ["sw_2013_vehicle_package"]
+        );
+        let mut want = vec![
+            lotus_and_cater(),
+            own_team("cater", "cater"),
+            own_team("lotus", "lotus"),
+            own_team("manor", "lotus"),
+            own_team("mclaren", "mclaren"),
+        ];
+        want.sort();
+        assert_eq!(
+            ai_teams(&db, &stock, copies.iter().map(|(a, b)| (a.as_str(), b.as_str()))),
+            want
+        );
+    }
+
+    #[test]
+    fn an_own_ai_folder_gets_the_tracks_stock_data_under_its_team_names() {
+        let teams = [own_team("mclaren", "mclaren"), own_team("cater", "cater")];
+        let (placement, placed) = place_with_ai_teams("ai-own-folder", &["lotus", "mclaren"], &teams);
+        let t = "eaid://environment_package/tracks/testring/ai";
+        let car = |at: &str| {
+            let wear = placed.load(placed.erp.find(at).unwrap()).unwrap();
+            let doc = Pkg::parse(&wear.fragments[0].data().unwrap()).unwrap();
+            doc.root
+                .as_obj()
+                .and_then(|o| o.get("car")?.as_val()?.as_str().map(str::to_owned))
+        };
+        assert_eq!(
+            car(&format!("{t}/sw_2013_vehicle_package/mclaren/mclaren.tyre_wear")).as_deref(),
+            Some("mclaren")
+        );
+        assert_eq!(
+            car(&format!("{t}/sw_2013_vehicle_package/cater/cater.tyre_wear")).as_deref(),
+            Some("cater")
+        );
+        let times = placed
+            .load(
+                placed
+                    .erp
+                    .find(&format!("{t}/sw_2013_vehicle_package/cater/cater.vp_times"))
+                    .unwrap(),
+            )
+            .unwrap();
+        assert_eq!(times.fragments[0].data().unwrap(), [7, 7, 7]);
+        assert_eq!(
+            car(&format!("{t}/{STOCK_AI}/lotus/lotus.tyre_wear")).as_deref(),
+            Some("lotus")
+        );
+        for team in &teams {
+            assert_eq!(
+                placement
+                    .groups
+                    .iter()
+                    .filter(|g| **g == team.group("testring"))
+                    .count(),
+                1
+            );
+        }
+        let alias = |k: &str| placement.ai_aliases.get(k).map(String::as_str);
+        assert_eq!(
+            alias("sw_2013_vehicle_package/mclaren"),
+            Some("f1_2025_vehicle_package/mclaren")
+        );
+        assert_eq!(
+            alias("sw_2013_vehicle_package/cater"),
+            Some("f1_2025_vehicle_package/lotus")
+        );
+        assert!(placement.notes.is_empty(), "{:?}", placement.notes);
+        std::fs::remove_dir_all(placement.dir.parent().unwrap().parent().unwrap()).ok();
+    }
+
+    #[test]
+    fn ai_alias_lines_are_one_per_folder() {
+        let aliases: BTreeMap<String, String> = [
+            ("f1_2025_vehicle_package/cater", "f1_2025_vehicle_package/lotus"),
+            ("sw_2012_vehicle_package/cater", "f1_2025_vehicle_package/lotus"),
+            ("sw_2012_vehicle_package/hrt12", "f1_2025_vehicle_package/lotus"),
+            (
+                "sw_2012_vehicle_package/mclaren",
+                "f1_2025_vehicle_package/mclaren",
+            ),
+            (
+                "sw_2013_vehicle_package/mclaren",
+                "f1_2025_vehicle_package/mclaren",
+            ),
+            (
+                "sw_2013_vehicle_package/redbull",
+                "f1_2025_vehicle_package/redbull",
+            ),
+        ]
+        .into_iter()
+        .map(|(a, b)| (a.to_owned(), b.to_owned()))
+        .collect();
+        assert_eq!(
+            ai_alias_lines(&aliases),
+            [
+                "AI data for f1_2025_vehicle_package/cater stands in with the track's f1_2025_vehicle_package/lotus",
+                "AI data for 3 teams of sw_2012_vehicle_package stands in with the track's f1_2025_vehicle_package \
+                 data of the team of the same name; cater, hrt12 with lotus's",
+                "AI data for 2 teams of sw_2013_vehicle_package stands in with the track's f1_2025_vehicle_package \
+                 data of the team of the same name",
+            ]
+        );
+    }
+
+    #[test]
+    fn added_track_rows_get_the_difficulties_of_an_own_ai_folder_from_their_stock_ones() {
+        use swofty_formats::gvdb::Record;
+        let mut db = Gvdb::default();
+        let mut put = |key: String, tag: u8, value: &str| db.records.push(Record::new(&key, tag, value));
+        put("tracks._Track_instancecount_".into(), 0, "3");
+        let d = |row: usize, folder: &str, field: &str| {
+            format!("tracks.Track_{row}.ai_track_difficulties.{folder}.{field}")
+        };
+        for (row, code) in ["bahrain", "testring", "okayama"].iter().enumerate() {
+            put(format!("tracks.Track_{row}._metadata_"), 2, code);
+            put(d(row, STOCK_AI, "time"), 8, "91.5,89.2");
+            put(d(row, STOCK_AI, "max_slider_position"), 0, "110");
+        }
+        put(d(0, "sw_2013_vehicle_package", "time"), 8, "95.1,92.7");
+        put(d(0, "sw_2013_vehicle_package", "max_slider_position"), 0, "110");
+        let folders: BTreeSet<String> = ["sw_2013_vehicle_package".to_owned()].into();
+        let given = difficulty_stand_ins(&mut db, &folders, &["bahrain", "testring"]);
+        assert_eq!(
+            given,
+            [("testring".to_owned(), "sw_2013_vehicle_package".to_owned())]
+        );
+        let get = |key: String| db.get(&key).map(|r| (r.tag, r.text().into_owned()));
+        assert_eq!(
+            get(d(1, "sw_2013_vehicle_package", "time")),
+            Some((8, "91.5,89.2".into()))
+        );
+        assert_eq!(
+            get(d(1, "sw_2013_vehicle_package", "max_slider_position")),
+            Some((0, "110".into()))
+        );
+        assert_eq!(
+            get(d(0, "sw_2013_vehicle_package", "time")),
+            Some((8, "95.1,92.7".into()))
+        );
+        assert_eq!(get(d(2, "sw_2013_vehicle_package", "time")), None);
+        assert!(difficulty_stand_ins(&mut db, &folders, &["testring"]).is_empty());
     }
 
     #[test]

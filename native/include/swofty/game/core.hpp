@@ -500,7 +500,6 @@ inline constexpr address<"Ne_ModuleSystem_Destroy"> Ne_ModuleSystem_Destroy{}; /
 inline constexpr address<"Ne_ModuleSystem_StartModules"> Ne_ModuleSystem_StartModules{}; // L2 experimental
 inline constexpr address<"Ne_MoverCollision_BuildMoverShapes"> Ne_MoverCollision_BuildMoverShapes{}; // L2 experimental
 inline constexpr address<"Ne_MoverCollision_BuildQueryContext"> Ne_MoverCollision_BuildQueryContext{}; // L2 experimental
-inline constexpr address<"Ne_MoverCollision_CreateResource"> Ne_MoverCollision_CreateResource{}; // L2 experimental
 inline constexpr address<"Ne_NameRegistry_FindId"> Ne_NameRegistry_FindId{}; // L2 experimental
 inline constexpr address<"Ne_NameTable_FindByFnv1a_B"> Ne_NameTable_FindByFnv1a_B{}; // L2 experimental
 inline constexpr address<"Ne_NetConnectionQuality_ConnectionArrived"> Ne_NetConnectionQuality_ConnectionArrived{}; // L2 experimental, neon::NeNetConnectionQuality::connectionArrived
