@@ -5,12 +5,14 @@
 #include <cstring>
 #include <filesystem>
 #include <fstream>
+#include <iterator>
 #include <string>
 #include <string_view>
 #include <system_error>
 #include <utility>
 #include <vector>
 
+#include "core/runtime/durable_file.hpp"
 #include "core/runtime/json.hpp"
 
 // Pure logic of the test save sandbox (save_sandbox.cpp, re/db/subsystems/core.md#save-sandbox): the
@@ -29,6 +31,10 @@ constexpr const char *TOKEN_ENV = "SWOFTY_TEST_TOKEN";
 constexpr const char *RUN_FILE = "run.json";
 constexpr const char *REMOTE = "remote";
 constexpr const char *TMP_SUFFIX = ".swofty-tmp";
+constexpr const char *PREV_SUFFIX = ".swofty-prev";
+constexpr const char *PENDING_NAME = "batch.swofty-pending";
+constexpr const char *PENDING_SUFFIX = ".swofty-pending";
+constexpr const char *INDEX_TAIL = "#QKRHMYXE";
 constexpr size_t USER_DATA_CAP = 0x104;
 constexpr size_t NAME_CAP = 260;
 constexpr int SLOTS = 64;
@@ -360,8 +366,9 @@ inline bool valid_name(std::string_view n)
 {
     if (n.empty() || n.size() > NAME_CAP || n == "." || n == "..")
         return false;
-    if (n.size() > strlen(TMP_SUFFIX) && n.substr(n.size() - strlen(TMP_SUFFIX)) == TMP_SUFFIX)
-        return false;
+    for (const char *suffix : {TMP_SUFFIX, PREV_SUFFIX, PENDING_SUFFIX})
+        if (n.size() >= strlen(suffix) && n.substr(n.size() - strlen(suffix)) == suffix)
+            return false;
     for (char c : n)
         if (static_cast<unsigned char>(c) < 0x20 || c == '/' || c == '\\' || c == ':' || c == '*' || c == '?' || c == '"' ||
             c == '<' || c == '>' || c == '|')
@@ -557,27 +564,25 @@ public:
 
     const std::filesystem::path &root() const { return root_; }
 
-    bool write(std::string_view name, const void *data, int32_t size) const
+    // A save is a data file and its index, written as one pair: each write is flushed to disk with its directory, the
+    // files a batch replaces are kept as <name>.swofty-prev until the pair is whole, and a pending record names them. A
+    // crash between the two writes leaves the record without both files, and recover() puts the old pair back.
+    bool write(std::string_view name, const void *data, int32_t size)
     {
         if (!valid_name(name) || size < 0 || (size && !data))
             return false;
         std::error_code ec;
         std::filesystem::create_directories(root_, ec);
-        auto final = path(name), tmp = path(std::string(name) + TMP_SUFFIX);
-        {
-            std::ofstream f(tmp, std::ios::binary | std::ios::trunc);
-            if (!f)
-                return false;
-            f.write(static_cast<const char *>(data), size);
-            if (!f.flush())
-                return false;
-        }
-        std::filesystem::rename(tmp, final, ec);
-        if (ec) {
-            std::filesystem::remove(tmp, ec);
+        if (!note(name))
             return false;
-        }
-        return true;
+        if (!runtime::durable::write_file(path(name), data, size_t(size)))
+            return false;
+        if (is_index(name))
+            pending_.index = true;
+        else
+            pending_.data = true;
+        pending_.writes++;
+        return save_pending();
     }
 
     int32_t read(std::string_view name, void *out, int32_t cap) const
@@ -591,10 +596,73 @@ public:
         return int32_t(f.gcount());
     }
 
-    bool remove(std::string_view name) const
+    bool remove(std::string_view name)
     {
         std::error_code ec;
-        return valid_name(name) && std::filesystem::remove(path(name), ec) && !ec;
+        if (!valid_name(name) || !exists(name) || !note(name))
+            return false;
+        bool ok = std::filesystem::remove(path(name), ec) && !ec;
+        runtime::durable::sync_dir(root_);
+        return ok;
+    }
+
+    static bool is_index(std::string_view name)
+    {
+        return name.size() >= strlen(INDEX_TAIL) && name.substr(name.size() - strlen(INDEX_TAIL)) == INDEX_TAIL;
+    }
+
+    struct Recovery {
+        enum Kind { none, rolled_forward, rolled_back, unreadable } kind = none;
+        std::vector<std::string> files;
+    };
+
+    // Called when the game opens a save for loading or begins a write batch: a record left by an earlier run (or an
+    // abandoned batch) is settled. A pair whose data file and index were both written is complete, so the new files stay;
+    // anything less goes back to the files it replaced, and files the batch created are removed.
+    Recovery recover(bool force = false) { return settle(force, false); }
+
+    Recovery settle(bool force, bool forward)
+    {
+        Recovery r;
+        std::error_code ec;
+        if (!std::filesystem::is_regular_file(path(PENDING_NAME), ec))
+            return r;
+        if (!force && pending_open_ && std::chrono::steady_clock::now() - touched_ < std::chrono::seconds(10))
+            return r;
+        Pending p;
+        if (!read_pending(p)) {
+            r.kind = Recovery::unreadable;
+            return r;
+        }
+        bool whole = forward || (p.index && p.data);
+        for (auto &[name, had_prev] : p.files) {
+            r.files.push_back(name);
+            auto prev = prev_path(name);
+            if (whole) {
+                std::filesystem::remove(prev, ec);
+            } else if (had_prev) {
+                std::filesystem::rename(prev, path(name), ec);
+            } else {
+                std::filesystem::remove(path(name), ec);
+            }
+        }
+        std::filesystem::remove(path(PENDING_NAME), ec);
+        runtime::durable::sync_dir(root_);
+        pending_ = Pending();
+        pending_open_ = false;
+        r.kind = whole ? Recovery::rolled_forward : Recovery::rolled_back;
+        return r;
+    }
+
+    // EndFileWriteBatch: a whole pair (or a batch of only deletions) is final, so the kept old files go.
+    bool commit()
+    {
+        if (!pending_open_)
+            return true;
+        if (!(pending_.index && pending_.data) && pending_.writes)
+            return false;
+        Recovery r = settle(true, true);
+        return r.kind != Recovery::unreadable;
     }
 
     bool exists(std::string_view name) const
@@ -655,7 +723,60 @@ public:
     }
 
 private:
+    struct Pending {
+        std::vector<std::pair<std::string, bool>> files;
+        bool index = false, data = false;
+        int writes = 0;
+    };
+
     std::filesystem::path path(std::string_view name) const { return root_ / std::filesystem::path(std::string(name)); }
+    std::filesystem::path prev_path(const std::string &name) const { return path(name + PREV_SUFFIX); }
+
+    bool save_pending() const
+    {
+        std::string t = "{\"schema\":1,\"index\":" + std::string(pending_.index ? "true" : "false") +
+                        ",\"data\":" + (pending_.data ? "true" : "false") + ",\"files\":[";
+        for (size_t i = 0; i < pending_.files.size(); i++)
+            t += (i ? "," : "") + std::string("{\"name\":\"") + pending_.files[i].first +
+                 "\",\"had_prev\":" + (pending_.files[i].second ? "true" : "false") + "}";
+        t += "]}\n";
+        return runtime::durable::write_file(path(PENDING_NAME), t);
+    }
+
+    bool read_pending(Pending &p) const
+    {
+        std::ifstream f(path(PENDING_NAME), std::ios::binary);
+        std::string text((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
+        json::Value doc;
+        if (!json::parse(text, doc) || doc.type != json::Value::Obj || doc["files"].type != json::Value::Arr)
+            return false;
+        p.index = doc["index"].type == json::Value::Bool && doc["index"].b;
+        p.data = doc["data"].type == json::Value::Bool && doc["data"].b;
+        for (const json::Value &e : doc["files"].a)
+            if (e["name"].type == json::Value::Str && valid_name(e["name"].s))
+                p.files.emplace_back(e["name"].s, e["had_prev"].type == json::Value::Bool && e["had_prev"].b);
+        return true;
+    }
+
+    bool note(std::string_view name)
+    {
+        std::string n(name);
+        pending_open_ = true;
+        touched_ = std::chrono::steady_clock::now();
+        for (auto &[known, had] : pending_.files)
+            if (known == n)
+                return true;
+        std::error_code ec;
+        bool had_prev = std::filesystem::is_regular_file(path(n), ec);
+        if (had_prev) {
+            std::ifstream f(path(n), std::ios::binary);
+            std::string bytes((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
+            if (!runtime::durable::write_file(prev_path(n), bytes))
+                return false;
+        }
+        pending_.files.emplace_back(n, had_prev);
+        return save_pending();
+    }
 
     std::vector<std::pair<std::string, int32_t>> scan() const
     {
@@ -678,6 +799,9 @@ private:
 
     std::filesystem::path root_;
     std::vector<std::pair<std::string, int32_t>> listing_;
+    Pending pending_;
+    bool pending_open_ = false;
+    std::chrono::steady_clock::time_point touched_{};
 };
 
 }

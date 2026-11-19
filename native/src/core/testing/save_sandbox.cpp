@@ -292,15 +292,42 @@ int32_t p_local_changes(Proxy *)
     return 0;
 }
 
+void log_recovery(const ss::RemoteDir::Recovery &r)
+{
+    if (r.kind == ss::RemoteDir::Recovery::none)
+        return;
+    std::string names;
+    for (auto &n : r.files)
+        names += (names.empty() ? "" : ", ") + n;
+    switch (r.kind) {
+    case ss::RemoteDir::Recovery::rolled_back:
+        swofty::log("[saves] sandbox: a save write was cut off between its data file and its index; the previous pair is "
+                    "back (%s)",
+                    names.c_str());
+        break;
+    case ss::RemoteDir::Recovery::rolled_forward:
+        swofty::log("[saves] sandbox: a finished save pair was still marked pending; it is kept (%s)", names.c_str());
+        break;
+    default:
+        swofty::log("[saves] sandbox: the pending save record is not readable; it is left for the next mount");
+    }
+}
+
 bool p_batch(Proxy *)
 {
+    std::lock_guard<std::mutex> g(lock);
     note(ss::BeginFileWriteBatch, nullptr);
+    log_recovery(remote->recover());
     return true;
 }
 
 bool p_batch_end(Proxy *)
 {
+    std::lock_guard<std::mutex> g(lock);
     note(ss::EndFileWriteBatch, nullptr);
+    if (!remote->commit())
+        swofty::log("[saves] sandbox: a save batch ended without both its data file and its index; the next mount "
+                    "puts the previous pair back");
     return true;
 }
 
@@ -401,6 +428,7 @@ void arm_steam_remote(void *device)
     {
         std::lock_guard<std::mutex> g(lock);
         remote = std::make_unique<ss::RemoteDir>(std::filesystem::path(remote_w));
+        log_recovery(remote->recover(true));
     }
     *slot = &proxy;
     if (*slot != &proxy)
@@ -496,6 +524,10 @@ uint32_t mount_entry(void *device, void *op, void *save, uint8_t for_saving, uin
     if (mode == Mode::on && !armed)
         fail_closed(std::string("the save device mounted a save (") + (for_saving ? "for saving" : "for loading") +
                     ") before the sandbox armed: its start ran before the core's hook");
+    if (mode == Mode::on && remote) {
+        std::lock_guard<std::mutex> g(lock);
+        log_recovery(remote->recover());
+    }
     return mount_orig(device, op, save, for_saving, a5, created);
 }
 

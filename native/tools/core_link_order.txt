@@ -137,6 +137,7 @@ src/core/boxes/box_grid.cpp
 src/core/career/save_splice.cpp
 src/core/career/save_data.cpp
 src/core/career/career_saves.cpp
+src/core/career/plain_saves.cpp
 src/core/guards/cars/ers_newlap.cpp
 src/core/guards/garage/garage_crew.cpp
 src/core/garage/garage_placement.cpp

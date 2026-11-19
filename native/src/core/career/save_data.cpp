@@ -180,6 +180,43 @@ template <class S> bool child_names(uintptr_t begin, uintptr_t end, std::vector<
     }
 }
 
+bool container_name(uintptr_t self, std::string &out)
+{
+    if constexpr (layout::named_container<g::SaveDataContainer>) {
+        uintptr_t name = 0;
+        return self && mem::read(self + offsetof(g::SaveDataContainer, name), name) && name && mem::c_string(name, out, 256) &&
+               !out.empty();
+    } else {
+        (void)self, (void)out;
+        return false;
+    }
+}
+
+uintptr_t registered_child(uintptr_t root, const std::string &name)
+{
+    constexpr size_t TABLE_BEGIN = 0x160, TABLE_END = 0x168, NODE_NAME = 0x10, NODE_CHILD = 0x58;
+    uintptr_t begin = 0, end = 0;
+    if (!root || !mem::read(root + TABLE_BEGIN, begin) || !mem::read(root + TABLE_END, end) || begin > end ||
+        (end - begin) / 8 > MAX_CHILDREN * 4 || (begin & 7))
+        return 0;
+    for (uintptr_t at = begin; at < end; at += 8) {
+        uintptr_t node = 0, name_ptr = 0, child = 0;
+        std::string n, cn;
+        if (!mem::read(at, node) || node < 0x10000 || !mem::read(node + NODE_NAME, name_ptr) || !name_ptr ||
+            !mem::c_string(name_ptr, n, 64) || n != name || !mem::read(node + NODE_CHILD, child) || !child ||
+            !container_name(child, cn) || cn != name || !game_object(reinterpret_cast<const void *>(child)))
+            continue;
+        return child;
+    }
+    return 0;
+}
+
+bool game_object(const void *obj)
+{
+    uintptr_t vt = 0;
+    return obj && mem::read(reinterpret_cast<uintptr_t>(obj), vt) && mem::in_image(vt);
+}
+
 template bool child_names<>(uintptr_t begin, uintptr_t end, std::vector<std::string> &out);
 
 }

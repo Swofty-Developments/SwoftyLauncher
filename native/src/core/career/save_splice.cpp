@@ -15,6 +15,8 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
+#include <map>
+#include <memory>
 #include <mutex>
 #include <set>
 #include <string>
@@ -26,6 +28,8 @@
 #include "core/runtime/layout.hpp"
 #include "core/career/save_splice_logic.hpp"
 #include "core/career/save_data.hpp"
+#include "core/career/bag_scan_logic.hpp"
+#include "core/career/plain_saves.hpp"
 
 // Save splice: keeps the save containers of absent addons through a profile save
 // (re/db/subsystems/game.md#save-containers, #save-splice).
@@ -114,9 +118,132 @@ std::vector<cs::SlotRead> slot_reads;
 struct Manager {
     uintptr_t iface = 0, vtable = 0;
     size_t count = 0;
+    std::string container;
 };
 std::vector<Manager> managers;
 bool in_root_load = false, slots_clean = true;
+
+// The plain store (plain_saves.cpp): what every root child of the last load held, so the store has registered
+// containers too. A registered child's bag is encoded from the recursive deserialise call the root's loop makes for it
+// (depth 2 below the root's own call). SWOFTY_PLAIN_REGISTERED=0 leaves registered children out.
+namespace plain = career::plain_saves;
+struct Captured {
+    std::string name;
+    std::shared_ptr<const std::vector<uint8_t>> bytes;
+};
+std::vector<Captured> captured;
+std::set<std::string> seen_children, injected_names;
+std::string current_child;
+thread_local int load_depth = 0;
+plain::Plan plan;
+std::map<std::string, size_t> career_tally;
+std::vector<std::string> registered_now;
+bool registered_now_ok = false;
+std::vector<Captured> saved_caps;
+bool saved_caps_ok = false;
+
+bool env_on(const char *name)
+{
+    char v[8] = {};
+    DWORD n = GetEnvironmentVariableA(name, v, sizeof v);
+    return !(n && n < sizeof v && !strcmp(v, "0"));
+}
+
+namespace bs = career::bag_scan;
+
+using ReadBag_t = int (*)(void *codec, void *bag);
+
+// Reads our bytes into a bag object the game made, through the game's own bag reader and a read stream the core owns. The
+// reader clears the bag first, so this is only called on a bag whose content the game has already used or never had.
+bool read_into_bag(void *bag, const std::vector<uint8_t> &bytes, std::string &why)
+{
+    if (!bs::whole_bag(bytes.data(), bytes.size()))
+        return why = "the stored bytes are not one whole bag", false;
+    if (!career::save_data::game_object(bag))
+        return why = "the target bag is not a game object", false;
+    uintptr_t fn = 0;
+    if (!b.codec_vt || !mem::read(b.codec_vt + 0x10, fn) || !mem::in_image(fn))
+        return why = "the bag reader is not readable", false;
+    bs::ReadStream stream;
+    bs::init_read(stream, bytes.data(), bytes.size());
+    alignas(16) std::array<uint8_t, 0x10> codec{};
+    auto *c = reinterpret_cast<g::NeBagCodec *>(codec.data());
+    c->vtable = reinterpret_cast<void **>(b.codec_vt);
+    c->stream = &stream;
+    int r = reinterpret_cast<ReadBag_t>(fn)(c, bag);
+    if (r)
+        return why = "the bag reader failed with code " + std::to_string(r), false;
+    if (stream.pos != stream.size || stream.bad_slot_calls)
+        return why = "the bag reader stopped at " + std::to_string(stream.pos) + " of " + std::to_string(stream.size) +
+                     " bytes (" + std::to_string(stream.bad_slot_calls) + " unsupported stream call(s))",
+               false;
+    return true;
+}
+
+size_t tally_of(const std::string &name)
+{
+    std::lock_guard<std::mutex> g(hooks.lock);
+    auto it = career_tally.find(name);
+    return it == career_tally.end() ? 0 : it->second;
+}
+
+void set_captured(const std::string &name, std::vector<uint8_t> bytes)
+{
+    std::lock_guard<std::mutex> g(hooks.lock);
+    auto body = std::make_shared<const std::vector<uint8_t>>(std::move(bytes));
+    for (auto &c : captured)
+        if (c.name == name) {
+            c.bytes = body;
+            injected_names.insert(name);
+            return;
+        }
+    captured.push_back({name, body});
+    injected_names.insert(name);
+}
+
+bool registered_capture_on()
+{
+    char v[8] = {};
+    DWORD n = GetEnvironmentVariableA("SWOFTY_PLAIN_REGISTERED", v, sizeof v);
+    return !(n && n < sizeof v && !strcmp(v, "0"));
+}
+
+plain::Slot plain_slot(const cs::SlotRead &r)
+{
+    plain::Slot s;
+    s.slot = r.id, s.guid = r.guid, s.name = r.name;
+    s.season = r.season == cs::NO_INDEX ? -1 : int64_t(r.season);
+    s.round = r.weekend == cs::NO_INDEX ? -1 : int64_t(r.weekend);
+    s.team = r.team, s.driver = r.driver, s.last_played = r.date, s.flags = r.flags;
+    return s;
+}
+
+std::vector<plain::Body> plain_bodies(bool at_save, const std::map<std::string, std::vector<plain::Slot>> &slots)
+{
+    std::vector<plain::Body> out;
+    auto slots_of = [&](const std::string &name) {
+        auto it = slots.find(name);
+        return it == slots.end() ? std::vector<plain::Slot>() : it->second;
+    };
+    const std::vector<Captured> &game = at_save && saved_caps_ok ? saved_caps : captured;
+    for (const Captured &c : game) {
+        plain::Body b;
+        b.name = c.name, b.bytes = c.bytes, b.registered = true, b.source = "game", b.slots = slots_of(c.name);
+        if (at_save && !saved_caps_ok)
+            b.as_of = "load";
+        if (!at_save && injected_names.count(c.name))
+            b.source = "injected";
+        out.push_back(std::move(b));
+    }
+    for (const sp::Kept &k : store.kept()) {
+        plain::Body b;
+        b.name = k.name, b.bytes = std::make_shared<const std::vector<uint8_t>>(k.body);
+        b.source = injected_names.count(k.name) ? "injected" : "kept";
+        b.slots = slots_of(k.name);
+        out.push_back(std::move(b));
+    }
+    return out;
+}
 
 void log_load(const std::vector<cs::SlotRead> &reads, const std::vector<Manager> &seen, bool ok)
 {
@@ -147,20 +274,303 @@ void log_load(const std::vector<cs::SlotRead> &reads, const std::vector<Manager>
         swofty::log("[saves] profile load %u: no save slot manager was read (no career containers in this save)", n);
 }
 
+struct ChildInfo {
+    void *self = nullptr, *bag = nullptr;
+    uint8_t reset = 0;
+    uint64_t groups = 0;
+};
+std::map<std::string, ChildInfo> child_info;
+
+void capture_child(void *self, void *bag, uint8_t reset_on_error, uint64_t groups)
+{
+    std::string name, why;
+    std::vector<uint8_t> bytes;
+    if (!career::save_data::container_name(reinterpret_cast<uintptr_t>(self), name) || !sp::name_ok(name))
+        return;
+    {
+        std::lock_guard<std::mutex> g(hooks.lock);
+        seen_children.insert(name);
+        current_child = name;
+        child_info[name] = {self, bag, reset_on_error, groups};
+    }
+    if (!registered_capture_on() || !plain::enabled())
+        return;
+    if (!career::save_data::game_object(bag)) {
+        swofty::log("[saves] plain store: the bag of %s is not readable; it is left out of this load's generation", name.c_str());
+        return;
+    }
+    if (!encode(bag, bytes, why)) {
+        swofty::log("[saves] plain store: could not capture %s: %s", name.c_str(), why.c_str());
+        return;
+    }
+    std::lock_guard<std::mutex> g(hooks.lock);
+    captured.push_back({name, std::make_shared<const std::vector<uint8_t>>(std::move(bytes))});
+}
+
+void drop_manager(const std::string &name)
+{
+    std::lock_guard<std::mutex> g(hooks.lock);
+    size_t at = 0;
+    for (size_t i = managers.size(); i-- > 0;) {
+        if (managers[i].container != name)
+            continue;
+        for (size_t k = 0; k < i; k++)
+            at += managers[k].count;
+        size_t n = managers[i].count;
+        if (at + n <= slot_reads.size())
+            slot_reads.erase(slot_reads.begin() + long(at), slot_reads.begin() + long(at + n));
+        managers.erase(managers.begin() + long(i));
+        return;
+    }
+}
+
+// A registered mode whose container the file does not hold at all: the game never called the mode to read one. A bag made from
+// our bytes is handed to the registered child, found in the root's child table.
+bool place_registered(void *root, void *root_bag, const std::string &name, const std::vector<uint8_t> &bytes,
+                      uint8_t reset_on_error, uint64_t groups, std::string &why)
+{
+    uintptr_t child = career::save_data::registered_child(reinterpret_cast<uintptr_t>(root), name);
+    if (!child)
+        return why = "no registered mode container of that name", false;
+    void *allocator = nullptr;
+    if (!mem::read(reinterpret_cast<uintptr_t>(root_bag), allocator) || !career::save_data::game_object(allocator))
+        return why = "the root bag's allocator is not readable", false;
+    alignas(16) std::array<uint8_t, 0x40> fresh{};
+    *reinterpret_cast<void **>(fresh.data()) = allocator;
+    if (!read_into_bag(fresh.data(), bytes, why))
+        return false;
+    alignas(16) std::array<uint8_t, 0x80> res{};
+    {
+        std::lock_guard<std::mutex> g(hooks.lock);
+        career_tally[name] = 0;
+        current_child = name;
+    }
+    hooks.deserialise_container(reinterpret_cast<void *>(child), reinterpret_cast<int *>(res.data()), fresh.data(),
+                                reset_on_error, groups);
+    int code = *reinterpret_cast<int *>(res.data());
+    if (code != 0)
+        return why = "the mode failed to read it (code " + std::to_string(code) + ")", false;
+    return true;
+}
+
+// Puts our bytes into the bag the game read a registered container from, and has the mode read it again.
+bool replace_in_place(const std::string &name, const ChildInfo &info, const std::vector<uint8_t> &bytes, std::string &why)
+{
+    if (!read_into_bag(info.bag, bytes, why))
+        return false;
+    {
+        std::lock_guard<std::mutex> g(hooks.lock);
+        career_tally[name] = 0;
+        current_child = name;
+    }
+    drop_manager(name);
+    alignas(16) std::array<uint8_t, 0x80> res{};
+    hooks.deserialise_container(info.self, reinterpret_cast<int *>(res.data()), info.bag, info.reset, info.groups);
+    int code = *reinterpret_cast<int *>(res.data());
+    if (code != 0)
+        return why = "the mode failed to read it (code " + std::to_string(code) + ")", false;
+    return true;
+}
+
+std::string captured_sha(const std::string &name)
+{
+    std::lock_guard<std::mutex> g(hooks.lock);
+    for (const Captured &c : captured)
+        if (c.name == name)
+            return plain::Sha256::of(c.bytes->data(), c.bytes->size());
+    return {};
+}
+
+// The put-back for the registered modes, after the root has loaded. A mode is two root containers, gm_<mode> and
+// <mode>_SaveSlotGameModeComponent, and they are replaced or added together from one generation, or not at all. The game's own
+// pair with careers is never touched: ours goes in when the loaded pair holds no careers (it was dropped and made again empty,
+// or it is not there), when it holds careers an absent half can only join when the present half is the one in that generation.
+void fix_registered(void *root, void *root_bag, uint8_t reset_on_error, uint64_t groups)
+{
+    if (!env_on("SWOFTY_PLAIN_PUTBACK"))
+        return;
+    std::map<std::string, std::vector<std::string>> groups_of;
+    auto key_of = [](const std::string &n) {
+        std::string p = plain::pair_of(n);
+        return p.empty() ? n : p;
+    };
+    if (plan.newest)
+        for (const plain::Entry &e : plan.newest->containers)
+            groups_of[key_of(e.name)].push_back(e.name);
+    for (const plain::Request &q : plan.requests)
+        groups_of.emplace(key_of(q.container), std::vector<std::string>{q.container});
+    for (auto &[key, halves] : groups_of) {
+        std::set<std::string> have;
+        size_t tree_careers = 0;
+        {
+            std::lock_guard<std::mutex> g(hooks.lock);
+            for (auto &h : halves)
+                if (seen_children.count(h) || child_info.count(h))
+                    have.insert(h);
+            for (auto &[n, c] : career_tally)
+                if (key_of(n) == key)
+                    tree_careers += c;
+        }
+        bool registered_any = !have.empty();
+        for (auto &h : halves)
+            registered_any |= career::save_data::registered_child(reinterpret_cast<uintptr_t>(root), h) != 0;
+        if (!registered_any)
+            continue;
+        int req = -1;
+        for (auto &h : halves)
+            if (req < 0)
+                req = plain::request_for(plan, h);
+        uint64_t generation = 0;
+        size_t ours = 0;
+        std::optional<std::vector<plain::Part>> parts;
+        if (req >= 0) {
+            generation = plan.requests[size_t(req)].generation;
+            parts = plain::fetch_group(generation, plan.requests[size_t(req)].container);
+        } else if (plan.newest) {
+            generation = plan.newest->generation;
+            for (auto &h : halves)
+                if (const plain::Entry *e = plain::newest_entry(plan, h))
+                    ours = std::max<size_t>(ours, e->careers);
+            bs::Mode mode = bs::registered_decision(!have.empty(), tree_careers, ours);
+            bool absent_only = mode == bs::Mode::leave && tree_careers && ours && have.size() < halves.size();
+            if (mode == bs::Mode::leave && !absent_only)
+                continue;
+            parts = plain::fetch_group(generation, halves.front());
+            if (parts && parts->size() != halves.size())
+                parts.reset();
+            if (parts && absent_only) {
+                bool same = true;
+                for (auto &part : *parts)
+                    if (have.count(part.name))
+                        same &= captured_sha(part.name) == part.sha256;
+                if (!same) {
+                    swofty::log("[saves] did not put back %s: the half of its pair in the loaded save differs from "
+                                "generation %llu's",
+                                key.c_str(), (unsigned long long)generation);
+                    continue;
+                }
+                parts->erase(
+                    std::remove_if(parts->begin(), parts->end(), [&](const plain::Part &p) { return have.count(p.name); }),
+                    parts->end());
+            }
+        } else
+            continue;
+        std::string why;
+        if (!parts)
+            why = "generation " + std::to_string(generation) + " has no intact copy of every half of it";
+        for (size_t i = 0; why.empty() && i < parts->size(); i++) {
+            const plain::Part &part = (*parts)[i];
+            bool in_tree = child_info.count(part.name) != 0;
+            if (!bs::whole_bag(part.bytes.data(), part.bytes.size()))
+                why = part.name + " is not one whole bag";
+            else if (!in_tree && !career::save_data::registered_child(reinterpret_cast<uintptr_t>(root), part.name))
+                why = "the game has no registered " + part.name;
+        }
+        if (why.empty()) {
+            for (plain::Part &part : *parts) {
+                bool ok;
+                auto it = child_info.find(part.name);
+                if (it != child_info.end())
+                    ok = replace_in_place(part.name, it->second, part.bytes, why);
+                else
+                    ok = place_registered(root, root_bag, part.name, part.bytes, reset_on_error, groups, why);
+                if (!ok) {
+                    why = part.name + ": " + why + "; its pair may now come from different generations";
+                    break;
+                }
+                {
+                    std::lock_guard<std::mutex> g(hooks.lock);
+                    seen_children.insert(part.name);
+                }
+                set_captured(part.name, std::move(part.bytes));
+            }
+        }
+        if (!why.empty()) {
+            swofty::log("[saves] could not put back %s: %s; the game's own containers stay", key.c_str(), why.c_str());
+            if (req >= 0)
+                plain::request_done(plan, req, false, why);
+            continue;
+        }
+        size_t now = 0;
+        {
+            std::lock_guard<std::mutex> g(hooks.lock);
+            for (auto &[n, c] : career_tally)
+                if (key_of(n) == key)
+                    now += c;
+        }
+        for (auto &h : halves)
+            swofty::log("%s", plain::put_back_line(h, now ? now : ours, generation).c_str());
+        if (req >= 0) {
+            plain::request_done(plan, req, true, "replaced " + key + " with generation " + std::to_string(generation));
+            for (auto &h : halves)
+                for (int more = plain::request_for(plan, h); more >= 0; more = plain::request_for(plan, h))
+                    plan.handled[size_t(more)] = true;
+        }
+    }
+}
+
 int *deserialise_entry(void *self, int *result, void *bag, uint8_t reset_on_error, uint64_t groups)
 {
     bool root = is_root(reinterpret_cast<uintptr_t>(self));
+    int depth = ++load_depth;
     if (root) {
         std::lock_guard<std::mutex> g(hooks.lock);
         store.begin_load();
         ++loads;
         slot_reads.clear();
         managers.clear();
+        captured.clear();
+        seen_children.clear();
+        injected_names.clear();
+        current_child.clear();
+        career_tally.clear();
+        child_info.clear();
         slots_clean = true;
         in_root_load = true;
     }
+    if (root)
+        plan = plain::make_plan();
+    if (!root && depth == 2) {
+        bool loading;
+        {
+            std::lock_guard<std::mutex> g(hooks.lock);
+            loading = in_root_load;
+        }
+        if (loading)
+            capture_child(self, bag, reset_on_error, groups);
+    }
     int *r = hooks.deserialise_container(self, result, bag, reset_on_error, groups);
+    --load_depth;
     if (root) {
+        if (r && *r == 0 && plan.on)
+            fix_registered(self, bag, reset_on_error, groups);
+        if (r && *r == 0 && plain::enabled()) {
+            std::map<std::string, std::string> registered, kept;
+            {
+                std::lock_guard<std::mutex> g(hooks.lock);
+                for (auto &n : seen_children)
+                    registered[n] = {};
+                for (auto &c : captured)
+                    registered[c.name] = plain::Sha256::of(c.bytes->data(), c.bytes->size());
+                for (auto &k : store.kept())
+                    kept[k.name] = plain::Sha256::of(k.body.data(), k.body.size());
+            }
+            std::vector<plain::Added> added = plain::at_load(plan, registered, kept);
+            std::lock_guard<std::mutex> g(hooks.lock);
+            for (auto &a : added) {
+                size_t size = a.bytes.size();
+                switch (store.add(a.name, std::move(a.bytes))) {
+                case sp::Add::kept:
+                case sp::Add::replaced:
+                    injected_names.insert(a.name);
+                    if (!a.injected_by_request)
+                        swofty::log("%s", plain::put_back_line(a.name, a.careers, a.generation).c_str());
+                    break;
+                default:
+                    swofty::log("[saves] could not put back %s (%zu bytes): the store is full", a.name.c_str(), size);
+                }
+            }
+        }
         std::vector<cs::SlotRead> reads;
         bool report;
         std::vector<Manager> seen;
@@ -192,6 +602,20 @@ int *deserialise_entry(void *self, int *result, void *bag, uint8_t reset_on_erro
         }
         if (hooks.live() && entry_hooks.loaded)
             entry_hooks.loaded(has_entry ? &entry : nullptr);
+        if (r && *r == 0 && plain::enabled()) {
+            std::map<std::string, std::vector<plain::Slot>> slots;
+            size_t at = 0;
+            for (const Manager &m : seen)
+                for (size_t i = 0; i < m.count && at < reads.size(); i++, at++)
+                    if (!m.container.empty() && cs::career_slot(reads[at]))
+                        slots[m.container].push_back(plain_slot(reads[at]));
+            std::vector<plain::Body> bodies;
+            {
+                std::lock_guard<std::mutex> g(hooks.lock);
+                bodies = plain_bodies(false, slots);
+            }
+            plain::write_async("load", std::move(bodies));
+        }
     }
     return r;
 }
@@ -205,7 +629,11 @@ int slots_entry(void *iface, void *bag, void *ctx)
     std::lock_guard<std::mutex> g(hooks.lock);
     if (in_root_load) {
         if (clean) {
-            managers.push_back({base, vt, reads.size()});
+            managers.push_back({base, vt, reads.size(), current_child});
+            if (!current_child.empty())
+                for (auto &r : reads)
+                    if (cs::career_slot(r))
+                        career_tally[current_child]++;
             for (auto &r : reads)
                 slot_reads.push_back(std::move(r));
         } else
@@ -264,6 +692,130 @@ void slot_selected(SwoftyContext *c)
         runtime::snapshots_slot_selected(c->rsi, id, guid);
 }
 
+// ---- the plain store's save capture ----
+// The inline profile save writes each registered child straight into the save stream, so no bag of it exists. From the end of
+// the kept entries to the end of the containers block the core runs the stream through a copy of its vtable whose write slot
+// also appends the bytes to a buffer (the game's own slot still does the write). At the end of the block the buffer is split
+// by the bag format into the registered children, and used only when exactly the registered children came out, whole.
+constexpr size_t TEE_SLOTS = 64;
+constexpr size_t TEE_MAX = 192ull << 20;
+struct Tee {
+    bool on = false, overflow = false, in_length = false;
+    void *stream = nullptr;
+    void **original = nullptr;
+    void *write = nullptr, *write_length = nullptr;
+    std::vector<uint8_t> bytes;
+};
+Tee tee;
+void *tee_vtable[TEE_SLOTS];
+
+int tee_write(void *stream, const void *data, uint64_t size)
+{
+    int r = reinterpret_cast<Write_t>(tee.write)(stream, data, size);
+    if (!r && !tee.in_length) {
+        if (tee.bytes.size() + size > TEE_MAX)
+            tee.overflow = true;
+        else
+            tee.bytes.insert(tee.bytes.end(), static_cast<const uint8_t *>(data), static_cast<const uint8_t *>(data) + size);
+    }
+    return r;
+}
+
+int tee_write_length(void *stream, uint32_t length)
+{
+    tee.in_length = true;
+    int r = reinterpret_cast<WriteLength_t>(tee.write_length)(stream, length);
+    tee.in_length = false;
+    if (!r)
+        tee.bytes.push_back(uint8_t(length));
+    return r;
+}
+
+void tee_stop()
+{
+    if (tee.on && tee.stream) {
+        void **now = nullptr;
+        if (mem::read(reinterpret_cast<uintptr_t>(tee.stream), now) && now == tee_vtable)
+            *reinterpret_cast<void ***>(tee.stream) = tee.original;
+    }
+    tee.on = false;
+}
+
+void tee_start(void *stream)
+{
+    tee_stop();
+    tee.bytes.clear();
+    tee.overflow = false, tee.in_length = false;
+    saved_caps.clear();
+    saved_caps_ok = false;
+    uintptr_t vt = 0;
+    if (!stream || !mem::read(reinterpret_cast<uintptr_t>(stream), vt) || !mem::in_image(vt) || !mem::readable(vt, TEE_SLOTS * 8))
+        return;
+    uintptr_t w = 0, wl = 0;
+    if (!mem::read(vt + offsetof(g::NeStreamVtbl, write), w) || !mem::in_image(w) ||
+        !mem::read(vt + offsetof(g::NeStreamVtbl, write_length), wl) || !mem::in_image(wl))
+        return;
+    for (size_t i = 0; i < TEE_SLOTS; i++)
+        mem::read(vt + i * 8, tee_vtable[i]);
+    tee.original = reinterpret_cast<void **>(vt);
+    tee.write = reinterpret_cast<void *>(w);
+    tee.write_length = reinterpret_cast<void *>(wl);
+    tee_vtable[offsetof(g::NeStreamVtbl, write) / 8] = reinterpret_cast<void *>(&tee_write);
+    tee_vtable[offsetof(g::NeStreamVtbl, write_length) / 8] = reinterpret_cast<void *>(&tee_write_length);
+    tee.stream = stream;
+    *reinterpret_cast<void ***>(stream) = tee_vtable;
+    tee.on = true;
+}
+
+void tee_finish()
+{
+    if (!tee.on)
+        return;
+    tee_stop();
+    std::vector<std::string> names;
+    bool known;
+    {
+        std::lock_guard<std::mutex> g(hooks.lock);
+        names = registered_now;
+        known = registered_now_ok;
+    }
+    std::vector<bs::Entry> parts;
+    std::string why;
+    if (tee.overflow)
+        why = "the registered containers are over " + std::to_string(TEE_MAX >> 20) + " MB";
+    else if (!known)
+        why = "the root's children were not readable";
+    else if (!bs::split_entries(tee.bytes.data(), tee.bytes.size(), names.size(), parts))
+        why = "the bytes written for the root's children (" + std::to_string(tee.bytes.size()) + ") do not split into " +
+              std::to_string(names.size()) + " whole containers";
+    std::vector<Captured> got;
+    if (why.empty()) {
+        std::set<std::string> want(names.begin(), names.end());
+        for (const bs::Entry &e : parts) {
+            if (!want.erase(e.name)) {
+                why = "the container " + e.name + " was not among the registered children";
+                break;
+            }
+            got.push_back({e.name, std::make_shared<const std::vector<uint8_t>>(tee.bytes.begin() + long(e.begin),
+                                                                                tee.bytes.begin() + long(e.end))});
+        }
+        if (why.empty() && !want.empty())
+            why = "a registered child was not written";
+    }
+    tee.bytes.clear();
+    tee.bytes.shrink_to_fit();
+    if (!why.empty()) {
+        swofty::log("[saves] plain store: could not capture the registered containers at save: %s; this generation holds "
+                    "their load-time bytes (as_of load)",
+                    why.c_str());
+        return;
+    }
+    std::lock_guard<std::mutex> g(hooks.lock);
+    saved_caps = std::move(got);
+    saved_caps_ok = true;
+}
+// ---- end plain store save capture ----
+
 void count_entry(SwoftyContext *c)
 {
     uintptr_t self = 0;
@@ -292,10 +844,15 @@ void count_entry(SwoftyContext *c)
     }
     uint64_t count = 0;
     uintptr_t begin = 0;
-    if (!store.size() || !mem::read(c->rsp + FRAME_COUNT, count) || !mem::read(c->rsp + FRAME_CHILDREN, begin))
-        return;
+    bool have_children = mem::read(c->rsp + FRAME_COUNT, count) && mem::read(c->rsp + FRAME_CHILDREN, begin);
     std::vector<std::string> registered;
-    if (!child_names(begin, c->r15, registered) || registered.size() != count) {
+    bool names_ok = have_children && child_names(begin, c->r15, registered) && registered.size() == count;
+    registered_now = names_ok ? registered : std::vector<std::string>();
+    registered_now_ok = names_ok;
+    tee_stop();
+    if (!store.size() || !have_children)
+        return;
+    if (!names_ok) {
         swofty::log("[saves] profile save: the root's children are not readable; the kept save containers are not "
                     "written back this time");
         return;
@@ -349,7 +906,7 @@ int write_kept(void *stream, uint32_t bag_type, const std::vector<size_t> &picke
     }
 }
 
-void children_entry(SwoftyContext *c)
+void children_inner(SwoftyContext *c)
 {
     uintptr_t self = 0;
     if (!hooks.live() || !mem::read(c->rsp + FRAME_SELF, self) || !is_root(self))
@@ -385,10 +942,26 @@ void children_entry(SwoftyContext *c)
                 names.c_str());
 }
 
+void children_entry(SwoftyContext *c)
+{
+    auto rip = c->rip;
+    children_inner(c);
+    uintptr_t self = 0;
+    if (c->rip != rip || !hooks.live() || !plain::enabled() || !env_on("SWOFTY_PLAIN_SAVE_CAPTURE") ||
+        !mem::read(c->rsp + FRAME_SELF, self) || !is_root(self))
+        return;
+    void *stream = nullptr;
+    mem::read(c->rsp + FRAME_STREAM, stream);
+    std::lock_guard<std::mutex> g(hooks.lock);
+    tee_start(stream);
+}
+
 void saved_entry(SwoftyContext *c)
 {
     uintptr_t self = 0;
     int result = 1;
+    if (hooks.live() && mem::read(c->rsp + FRAME_SELF, self) && is_root(self))
+        tee_finish();
     if (!hooks.live() || !mem::read(c->rsp + FRAME_SELF, self) || !is_root(self) || !mem::read(c->r12, result) || result)
         return;
     std::vector<cs::SlotRead> reads;
@@ -398,14 +971,30 @@ void saved_entry(SwoftyContext *c)
         known = managers;
     }
     bool clean = !known.empty();
+    std::map<std::string, std::vector<plain::Slot>> slots;
     for (const Manager &m : known) {
         uintptr_t vt = 0;
-        if (!mem::read(m.iface, vt) || vt != m.vtable || !read_manager(m.iface, reads))
+        std::vector<cs::SlotRead> own;
+        if (!mem::read(m.iface, vt) || vt != m.vtable || !read_manager(m.iface, own))
             clean = false;
+        else if (!m.container.empty())
+            for (const cs::SlotRead &r : own)
+                if (cs::career_slot(r))
+                    slots[m.container].push_back(plain_slot(r));
+        for (auto &r : own)
+            reads.push_back(std::move(r));
     }
     if (clean)
         runtime::career_saves_listed(reads, true, false);
     runtime::career_saves_saved();
+    if (plain::enabled()) {
+        std::vector<plain::Body> bodies;
+        {
+            std::lock_guard<std::mutex> g(hooks.lock);
+            bodies = plain_bodies(true, slots);
+        }
+        plain::write_async("save", std::move(bodies));
+    }
 }
 
 }

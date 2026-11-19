@@ -179,6 +179,8 @@ UNITS = [
     Unit('car_category', 'Car category boxes unit test', 'zig'),
     Unit('save_splice', 'Save splice unit test', 'zig'),
     Unit('career_saves', 'Career saves index unit test', 'zig'),
+    Unit('plain_saves', 'Plain save store unit test', 'zig'),
+    Unit('bag_scan', 'Bag scan and read stream unit test', 'zig'),
     Unit('entitlements', 'Entitlement check unit test', 'zig'),
     Unit('room_cover', 'Loading cover unit test', 'zig'),
     Unit('testagent', 'Test agent logic unit test', 'zig'),

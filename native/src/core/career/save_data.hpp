@@ -38,6 +38,13 @@ bool encode(void *bag, std::vector<uint8_t> &out, std::string &why);
 std::string name_of(uint64_t hash);
 // Every save slot of the manager at base; false when the list or a slot does not read.
 bool read_manager(uintptr_t base, std::vector<career::saves::SlotRead> &out);
+// The container's name (the field the game's logs print); false when it does not read.
+bool container_name(uintptr_t self, std::string &out);
+// The registered child of the root container named name: found in the root's child table and checked against the child's own
+// name; 0 when it is not there or does not check out.
+uintptr_t registered_child(uintptr_t root, const std::string &name);
+// Whether obj starts with a vtable pointer into the game image, the cheapest check that a pointer is a live game object.
+bool game_object(const void *obj);
 // The names of the root's registered children between begin and end; false when one does not read.
 template <class S = swofty::game::SaveDataContainer>
 bool child_names(uintptr_t begin, uintptr_t end, std::vector<std::string> &out);

@@ -361,6 +361,94 @@ static void ea_test_run(const fs::path &tmp)
     expect(w.observe(later, 9100) == 1 && w.observe(later, 10100) == 2, "ea save: the next save counts again");
 }
 
+static std::vector<uint8_t> read_all(const ss::RemoteDir &d, const std::string &name)
+{
+    std::vector<uint8_t> out(2 << 20);
+    out.resize(size_t(d.read(name, out.data(), int32_t(out.size()))));
+    return out;
+}
+
+static void pair(const fs::path &tmp)
+{
+    const std::string data = "savegame@profile#NXDSMWW.BWW", index = "savegame@profile#QKRHMYXE";
+    fs::remove_all(tmp);
+    auto d1 = noise(5000, 11), i1 = noise(416, 12), d2 = noise(6000, 13), i2 = noise(416, 14);
+    {
+        ss::RemoteDir dir(tmp / "remote");
+        expect(dir.write(data, d1.data(), int32_t(d1.size())) && dir.write(index, i1.data(), 416),
+               "pair: the first pair is written");
+        expect(dir.commit(), "pair: a whole pair commits");
+        expect(!fs::exists(tmp / "remote" / ss::PENDING_NAME) && !fs::exists(tmp / "remote" / (data + ss::PREV_SUFFIX)),
+               "pair: a committed pair leaves no pending record and no previous copy");
+    }
+    {
+        ss::RemoteDir dir(tmp / "remote");
+        expect(dir.write(data, d2.data(), int32_t(d2.size())), "pair: the new data file is written");
+        expect(fs::exists(tmp / "remote" / ss::PENDING_NAME) && fs::exists(tmp / "remote" / (data + ss::PREV_SUFFIX)),
+               "pair: the old data file is kept and a pending record names it");
+        expect(!dir.commit(), "pair: a batch with the data file only does not commit");
+        int32_t n = dir.count();
+        expect(n == 2, "pair: the pending record and the previous copy are not listed as saves");
+    }
+    {
+        ss::RemoteDir after_crash(tmp / "remote");
+        auto r = after_crash.recover(true);
+        expect(r.kind == ss::RemoteDir::Recovery::rolled_back, "pair: a torn pair rolls back at the next mount");
+        expect(read_all(after_crash, data) == d1 && read_all(after_crash, index) == i1,
+               "pair: the old data file and index are back");
+        expect(!fs::exists(tmp / "remote" / ss::PENDING_NAME) && !fs::exists(tmp / "remote" / (data + ss::PREV_SUFFIX)),
+               "pair: recovery clears the record and the previous copies");
+        expect(after_crash.recover(true).kind == ss::RemoteDir::Recovery::none, "pair: nothing is left to recover");
+    }
+    {
+        ss::RemoteDir dir(tmp / "remote");
+        dir.write(index, i2.data(), 416);
+        dir.write(data, d2.data(), int32_t(d2.size()));
+    }
+    {
+        ss::RemoteDir after_crash(tmp / "remote");
+        auto r = after_crash.recover(true);
+        expect(r.kind == ss::RemoteDir::Recovery::rolled_forward, "pair: a whole pair with a record left is kept");
+        expect(read_all(after_crash, data) == d2 && read_all(after_crash, index) == i2,
+               "pair: the new pair stands, index written first or last");
+        expect(!fs::exists(tmp / "remote" / (index + ss::PREV_SUFFIX)), "pair: the previous copies go");
+    }
+    fs::remove_all(tmp);
+    {
+        ss::RemoteDir dir(tmp / "remote");
+        dir.write(data, d1.data(), int32_t(d1.size()));
+    }
+    {
+        ss::RemoteDir after_crash(tmp / "remote");
+        expect(after_crash.recover(true).kind == ss::RemoteDir::Recovery::rolled_back && !after_crash.exists(data),
+               "pair: a first save cut off before its index leaves no file");
+    }
+    {
+        ss::RemoteDir dir(tmp / "remote");
+        dir.write(data, d1.data(), int32_t(d1.size()));
+        dir.write(index, i1.data(), 416);
+        dir.commit();
+        expect(dir.remove(data) && dir.remove(index) && dir.commit(), "pair: a batch of only deletions commits");
+        expect(!dir.exists(data) && !fs::exists(tmp / "remote" / ss::PENDING_NAME), "pair: deleted files stay deleted");
+    }
+    {
+        ss::RemoteDir dir(tmp / "remote");
+        dir.write(data, d1.data(), int32_t(d1.size()));
+        dir.write(index, i1.data(), 416);
+        dir.commit();
+        dir.remove(data);
+    }
+    {
+        ss::RemoteDir after_crash(tmp / "remote");
+        expect(after_crash.recover(true).kind == ss::RemoteDir::Recovery::rolled_back && read_all(after_crash, data) == d1,
+               "pair: a delete cut off with the batch open puts the file back");
+    }
+    expect(!ss::valid_name("a" + std::string(ss::PREV_SUFFIX)) && !ss::valid_name(ss::PENDING_NAME) &&
+               ss::RemoteDir::is_index(index) && !ss::RemoteDir::is_index(data),
+           "pair: bookkeeping files are not valid remote names; the index is told by its tail");
+    fs::remove_all(tmp);
+}
+
 int main(int argc, char **argv)
 {
     fs::path tmp = argc > 1 ? fs::path(argv[1]) : fs::temp_directory_path() / "save_sandbox_test";
@@ -371,6 +459,7 @@ int main(int argc, char **argv)
     folder(tmp);
     launcher();
     launcher_store(tmp);
+    pair(tmp / "pair");
     ea_backend(tmp);
     ea_test_run(tmp);
     printf("%s (%d failure(s))\n", fails ? "SOME FAILED" : "ALL PASSED", fails);
