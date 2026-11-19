@@ -357,8 +357,9 @@ pub fn resume_list_for(
     build: &std::path::Path,
     order: &[&crate::manifest::AddonManifest],
     aliases: crate::row_ids::IdAliases,
+    pending: Option<&swofty_formats::lng::Lng>,
 ) -> Option<(Vec<CareerNeeds>, Vec<ResumeRow>)> {
-    let names = Names::of_build(store, game, build, aliases)?;
+    let names = Names::of_build(store, game, build, aliases, pending)?;
     let installed = store.addons().ok()?;
     let on: Vec<String> = order.iter().map(|m| m.id.clone()).collect();
     let careers = super::read(&super::data_path(&store.root));
@@ -764,7 +765,7 @@ mod tests {
             .to_bytes(),
         )
         .unwrap();
-        let merged = crate::saves::vault::career_names::with_build_lang(Some(english()), &dir).unwrap();
+        let merged = crate::saves::vault::career_names::with_build_lang(Some(english()), &dir, None).unwrap();
         let names = Names::from_db(db(), Some(&merged));
         assert_eq!(names.team_named(646).unwrap().0, "Addon Team");
         assert_eq!(
@@ -773,9 +774,27 @@ mod tests {
             "the game's own text stays"
         );
         let same =
-            crate::saves::vault::career_names::with_build_lang(Some(english()), &dir.join("none")).unwrap();
+            crate::saves::vault::career_names::with_build_lang(Some(english()), &dir.join("none"), None)
+                .unwrap();
         assert_eq!(same, english());
         std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn text_an_addon_has_queued_but_not_yet_written_names_its_rows() {
+        let queued = swofty_formats::lng::Lng {
+            entries: vec![swofty_formats::lng::Entry {
+                key: "lng_team".into(),
+                value: "Queued Team".into(),
+            }],
+        };
+        let none = std::env::temp_dir().join("swofty-resume-queued-none");
+        let merged =
+            crate::saves::vault::career_names::with_build_lang(Some(english()), &none, Some(&queued))
+                .unwrap();
+        let names = Names::from_db(db(), Some(&merged));
+        assert_eq!(names.team_named(646).unwrap().0, "Queued Team");
+        assert_eq!(names.driver_named(61).unwrap(), "Nigel Mansell");
     }
 
     #[test]

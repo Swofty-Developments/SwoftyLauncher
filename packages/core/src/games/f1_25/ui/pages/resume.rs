@@ -58,10 +58,7 @@ fn continue_route(r: &ResumeRow) -> &'static str {
 }
 
 fn who(r: &ResumeRow) -> &str {
-    [&r.driver, &r.team, &r.badge]
-        .into_iter()
-        .find(|s| !s.is_empty())
-        .map_or("", |s| s.as_str())
+    &r.driver
 }
 
 fn clip(s: &str, chars: usize) -> String {
@@ -264,9 +261,6 @@ fn row_node(src: &Sources, r: &ResumeRow) -> Result<Node> {
         short_status(&r.severity),
     ];
     let mut t = base_row(src, &row_name(r.index), texts, Some(status_colour(&r.severity)))?;
-    if let Some(c) = r.colour {
-        tint(t.child_mut("indicator")?, colour_rgb(c))?;
-    }
     let cmd = row_command(r.index);
     add_events(
         &mut t,

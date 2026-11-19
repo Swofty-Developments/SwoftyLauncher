@@ -144,11 +144,16 @@ const BUILD_LANG: [&str; 2] = ["swofty/assets/lang/all.lng", "swofty/assets/lang
 
 /// `english` with the text the addons of `build` add to the game's English table (the all-languages table, then
 /// the English one), so the names of rows an addon adds resolve.
-pub(crate) fn with_build_lang(english: Option<Vec<u8>>, build: &Path) -> Option<Vec<u8>> {
+pub(crate) fn with_build_lang(
+    english: Option<Vec<u8>>,
+    build: &Path,
+    pending: Option<&swofty_formats::lng::Lng>,
+) -> Option<Vec<u8>> {
     let extra: Vec<swofty_formats::lng::Lng> = BUILD_LANG
         .iter()
         .filter_map(|rel| std::fs::read(build.join(rel)).ok())
         .filter_map(|b| swofty_formats::lng::Lng::parse(&b).ok())
+        .chain(pending.cloned())
         .collect();
     if extra.is_empty() {
         return english;
@@ -197,7 +202,13 @@ impl Names {
 
     /// The names of the database a build wrote in `build` (its `game_package` database and runtime edits, else
     /// the game's own database), with the build's id `aliases`.
-    pub fn of_build(store: &Store, game: &Game, build: &Path, aliases: IdAliases) -> Option<Self> {
+    pub fn of_build(
+        store: &Store,
+        game: &Game,
+        build: &Path,
+        aliases: IdAliases,
+        pending: Option<&swofty_formats::lng::Lng>,
+    ) -> Option<Self> {
         let db_path = build.join(crate::build::GVDB);
         let path = match db_path.is_file() {
             true => db_path,
@@ -210,7 +221,7 @@ impl Names {
         let english =
             crate::game_folder::baseline::original_lang(&store.root, &game.dir, &game.identity, "eng").ok();
         let english = english.and_then(|p| std::fs::read(p).ok());
-        let english = with_build_lang(english, build);
+        let english = with_build_lang(english, build, pending);
         let mut names = Self::from_db(db, english.as_deref());
         names.rows.aliases = aliases;
         Some(names)

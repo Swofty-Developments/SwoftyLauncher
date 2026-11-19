@@ -1121,15 +1121,13 @@ fn check_row_nodes(bytes: &[u8]) {
             assert!(r.child(c.name).is_ok(), "{name} has no {} column", c.name);
         }
     }
-    assert_eq!(
-        tint_of(row("row_0").child("indicator").unwrap()),
-        Some(vec![0xff, 0x88, 0x00, 0xff])
-    );
-    assert_eq!(visible_of(row("row_0").child("indicator").unwrap()), Some(true));
-    assert_eq!(
-        visible_of(row("row_new").child("indicator").unwrap()),
-        Some(false)
-    );
+    for name in ["row_0", "row_1", "row_2", "row_new"] {
+        assert_eq!(
+            visible_of(row(name).child("indicator").unwrap()),
+            Some(false),
+            "{name} draws no stock strip"
+        );
+    }
     assert_eq!(
         tint_of(row("row_0").child("status").unwrap()),
         Some(pages::status_colour("ready").to_vec())
