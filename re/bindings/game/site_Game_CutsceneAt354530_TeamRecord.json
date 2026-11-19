@@ -40,7 +40,18 @@
   "made_on_target": "0x1403549de",
   "twin": "made on steam-26566308; the target 0x1403549de is KB 0x14035499e: Game_TerminalDamage_Initialise (0x354530) and Game_Pod2019First_RequestPodiumThumbnails (0x3616b0) on either side both sit 0x40 above their KB addresses"
  },
- "verify": [],
+ "verify": [
+  {
+   "date": "2026-11-20",
+   "verifier": "saves-blind",
+   "kind": "global",
+   "item": "site_Game_CutsceneAt354530_TeamRecord",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:disasm 0x14035499e mov r,[rax+0x18] after chain [g+0x290] [+set*16+0x2c8] [+8] [+id*16+8] and cmp ecx 0x3fff0000 at 0x140354967 je 0x1403549ad,xref:vtable cell 0x145602f20 -> Game_TerminalDamage_Initialise 0x1403544f0,imm:0x3fff0000 at 0x140354967 and 0x290 0x2c8 0x18",
+   "notes": "gh:saves-blind Re-derived blind on KB: site 0x14035499e is mov r,[rax+0x18]; rax from rdx=[[g]+0x290], [rdx+(al<<4)+0x2c8], [+8], [+(ecx>>16<<4)+8]. Sentinel cmp at 0x140354967 (55 bytes before site) je 0x1403549ad. Join 0x1403549ad: rax rcx rdx reloaded or overwritten before any read, no use of the skipped register after the join. Function Game_TerminalDamage_Initialise (0x1403544f0) is referenced from vtable cell 0x145602f20. binding verify: KB sigcheck passed, Steam 145 resolved once. Function is Game_TerminalDamage_Initialise (a cutscene state, name differs from the garage names)."
+  }
+ ],
  "proofs": [
   {
    "by": "saves",
@@ -78,6 +89,63 @@
     "target": "0x14035499e"
    },
    "sigcheck": "passed",
+   "digest": "8132a087612507c0d1ff407b56b513515c2611d33904a89286e4a0749c977b76"
+  },
+  {
+   "by": "saves-blind",
+   "date": "2026-11-20",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1403549a1",
+    "target": "0x1403549de"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6b07a9660f73a868aed320f1b63441777421c15a8cf8099a7f9ea5746ad2edfa"
+  },
+  {
+   "by": "saves-blind",
+   "date": "2026-11-20",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140354961",
+    "target": "0x14035499e"
+   },
+   "sigcheck": "passed",
+   "digest": "8132a087612507c0d1ff407b56b513515c2611d33904a89286e4a0749c977b76"
+  },
+  {
+   "by": "saves-blind",
+   "date": "2026-11-20",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140354961",
+    "target": "0x14035499e"
+   },
+   "sigcheck": "skipped (pefile is not installed; re/tools/py has it)",
    "digest": "8132a087612507c0d1ff407b56b513515c2611d33904a89286e4a0749c977b76"
   }
  ]

@@ -40,7 +40,18 @@
   "made_on_target": "0x1402898e0",
   "twin": "made on steam-26566308; the target 0x1402898e0 is KB 0x1402898e0: Game_DriverInCarIdle05_Initialise (0x286e90) and Ne_ActorSceneDataResource_DestroyScenes (0x2918b0) on either side both sit 0x0 above their KB addresses"
  },
- "verify": [],
+ "verify": [
+  {
+   "date": "2026-11-20",
+   "verifier": "saves-blind",
+   "kind": "global",
+   "item": "site_Game_DriverGettingReady01_TeamRecord",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:disasm 0x1402898e0 mov r,[rax+0x18] after chain [g+0x290] [+set*16+0x2c8] [+8] [+id*16+8] and cmp ecx 0x3fff0000 at 0x1402898a9 je 0x1402898ef,xref:vtable cell 0x1455fe900 -> Game_DriverGettingReady01_Initialise 0x140288a80,imm:0x3fff0000 at 0x1402898a9 and 0x290 0x2c8 0x18",
+   "notes": "gh:saves-blind Re-derived blind on KB: site 0x1402898e0 is mov r,[rax+0x18]; rax from rdx=[[g]+0x290], [rdx+(al<<4)+0x2c8], [+8], [+(ecx>>16<<4)+8]. Sentinel cmp at 0x1402898a9 (55 bytes before site) je 0x1402898ef. Join 0x1402898ef: rax rcx rdx reloaded or overwritten before any read, no use of the skipped register after the join. Function Game_DriverGettingReady01_Initialise (0x140288a80) is referenced from vtable cell 0x1455fe900. binding verify: KB sigcheck passed, Steam 145 resolved once."
+  }
+ ],
  "proofs": [
   {
    "by": "saves",
@@ -78,6 +89,63 @@
     "target": "0x1402898e0"
    },
    "sigcheck": "passed",
+   "digest": "db9f828f42fbe13cd50f63ee2efebabaf34d51038c4b3edfe9e164f7aa70904b"
+  },
+  {
+   "by": "saves-blind",
+   "date": "2026-11-20",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1402898a3",
+    "target": "0x1402898e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ad4989bbf88e8163c8ded88934a850dddd229184e7d1805b0e54d1d8e231fbd6"
+  },
+  {
+   "by": "saves-blind",
+   "date": "2026-11-20",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1402898a3",
+    "target": "0x1402898e0"
+   },
+   "sigcheck": "passed",
+   "digest": "db9f828f42fbe13cd50f63ee2efebabaf34d51038c4b3edfe9e164f7aa70904b"
+  },
+  {
+   "by": "saves-blind",
+   "date": "2026-11-20",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1402898a3",
+    "target": "0x1402898e0"
+   },
+   "sigcheck": "skipped (pefile is not installed; re/tools/py has it)",
    "digest": "db9f828f42fbe13cd50f63ee2efebabaf34d51038c4b3edfe9e164f7aa70904b"
   }
  ]
