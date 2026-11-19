@@ -36,6 +36,7 @@ pub(super) struct Persistent {
 /// Writes persistent.erp from `at.0` to `at.1`: the routes, flows and regions that reach every screen,
 /// the career setup routes, the customisation routes, the MFD page's metadata, and the addon tiles'
 /// icons and row layout, so they are loaded wherever ADDON SETTINGS shows.
+#[allow(clippy::too_many_arguments)]
 pub(super) fn write_persistent(
     at: &(PathBuf, PathBuf),
     flow_options: &Path,

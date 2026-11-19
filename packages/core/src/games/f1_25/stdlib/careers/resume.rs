@@ -86,7 +86,7 @@ fn addon_name(id: &str, installed: &BTreeMap<String, AddonManifest>) -> String {
 
 /// The addon that owns the career's mode: the one recorded with a `career content` or `its career mode`
 /// reason, else the first addon the career needs.
-fn mode_owner<'a>(c: &'a Career) -> Option<&'a super::CareerAddon> {
+fn mode_owner(c: &Career) -> Option<&super::CareerAddon> {
     let owns = |a: &&super::CareerAddon| {
         a.why
             .as_deref()

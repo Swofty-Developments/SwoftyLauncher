@@ -48,11 +48,7 @@ struct Slot {
     content::Desc given;
     std::string record;
     bool from_record = false;
-    bool resume = false;
-    size_t row = 0;
 };
-
-constexpr size_t MAX_RESUME = 24;
 
 struct Bound {
     uintptr_t site, route, gate, predicate_vt, select_vt, add_tile, construct, populate_2026, populate_2025, customisation,
@@ -60,7 +56,6 @@ struct Bound {
 };
 
 extern Slot slots[content::MAX_CONTENTS];
-extern Slot resume_slots[MAX_RESUME];
 extern Bound b;
 // The career content set: the driver-career gate, the save-slot predicate and the content select command.
 struct ContentHooks : runtime::loader::HookSet<> {

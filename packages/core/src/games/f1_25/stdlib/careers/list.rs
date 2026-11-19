@@ -121,7 +121,7 @@ pub fn resume_rows(list: &[Career], needs: &[CareerNeeds], names: &Names) -> Vec
             })
         })
         .collect();
-    rows.sort_by(|a, b| b.played.cmp(&a.played));
+    rows.sort_by_key(|r| std::cmp::Reverse(r.played));
     for (i, r) in rows.iter_mut().enumerate() {
         r.index = i;
     }
@@ -299,7 +299,7 @@ mod tests {
         names = names.with_aliases(aliases);
         let rows = resume_rows(&list, &needs, &names);
         assert_eq!(rows[0].team, "Team");
-        assert_eq!(rows[0].colour, Some(0x00_00_00ff));
+        assert_eq!(rows[0].colour, Some(0x0000_00ff));
         assert_eq!(rows[1].team, "");
     }
 
