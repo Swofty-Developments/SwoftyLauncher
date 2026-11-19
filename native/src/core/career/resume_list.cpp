@@ -12,7 +12,7 @@
 #include "core/runtime/runtime.hpp"
 #include "core/runtime/settings.hpp"
 
-// The Resume Career list screen (SWOFTY_RESUME_LIST=1). The launcher builds the screen swofty_resume_list at Play, with literal
+// The Resume Career list screen (on unless SWOFTY_RESUME_LIST=0). The launcher builds the screen swofty_resume_list at Play, with literal
 // text, and writes `resume_list` into settings.json (resume_list_logic.hpp). The Career menu's Resume Career press (route
 // solo_career_continue_driver or _my_team) is rewritten to the route swofty_resume_list (content_hooks.cpp). A row press
 // raises `swofty_resume:<index>` to this view model, which maps the row to its save slot and keeps it as the target; the same
@@ -68,7 +68,7 @@ bool wanted()
 {
     static const bool v = [] {
         char e[16] = {};
-        return GetEnvironmentVariableA("SWOFTY_RESUME_LIST", e, sizeof e) && !strcmp(e, "1");
+        return !(GetEnvironmentVariableA("SWOFTY_RESUME_LIST", e, sizeof e) && !strcmp(e, "0"));
     }();
     return v;
 }
@@ -104,9 +104,8 @@ bool pressed(size_t index)
     swofty::log("[career] resume screen: row %zu (%s, key %s) is slot id %llu guid %016llx, %s%s%s; the %s continue screen "
                 "loads it next",
                 index, e->my_team ? "My Team" : "Driver Career", e->key.c_str(), (unsigned long long)sel.id,
-                (unsigned long long)sel.guid, e->ready ? "ready" : "not ready (",
-                e->ready ? "" : e->status.c_str(), e->ready ? "" : ") and asks first",
-                e->my_team ? "My Team" : "Driver Career");
+                (unsigned long long)sel.guid, e->ready ? "ready" : "not ready (", e->ready ? "" : e->status.c_str(),
+                e->ready ? "" : ") and asks first", e->my_team ? "My Team" : "Driver Career");
     return true;
 }
 

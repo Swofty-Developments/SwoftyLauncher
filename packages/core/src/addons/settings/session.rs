@@ -43,7 +43,7 @@ pub struct SessionSettings {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub resume_needs: Vec<crate::stdlib::careers::CareerNeeds>,
     /// The rows of the in-game Resume Career list screen, newest first; the core maps a pressed row's index to
-    /// its save slot by `key`. Empty unless the list screen is on (`SWOFTY_RESUME_LIST=1`).
+    /// its save slot by `key`. Empty when the list screen is off (`SWOFTY_RESUME_LIST=0`).
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub resume_list: Vec<crate::stdlib::careers::ResumeRow>,
 }

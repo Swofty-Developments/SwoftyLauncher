@@ -34,9 +34,13 @@ pub struct ResumeRow {
     pub played: Option<i64>,
 }
 
-/// Whether the Resume Career list screen is on: `SWOFTY_RESUME_LIST=1`.
+/// Whether the Resume Career list screen is on: always, unless `SWOFTY_RESUME_LIST=0`.
 pub fn wanted() -> bool {
-    std::env::var("SWOFTY_RESUME_LIST").is_ok_and(|v| v == "1")
+    wanted_from(std::env::var("SWOFTY_RESUME_LIST").ok().as_deref())
+}
+
+fn wanted_from(value: Option<&str>) -> bool {
+    value != Some("0")
 }
 
 fn pill(n: &CareerNeeds) -> (String, &'static str) {
@@ -152,6 +156,14 @@ mod tests {
     use super::*;
     use crate::stdlib::careers::{MissingRows, ResumeNeed, parse};
     use swofty_formats::gvdb::{Gvdb, Record};
+
+    #[test]
+    fn the_list_screen_is_on_unless_the_variable_is_zero() {
+        assert!(wanted_from(None));
+        assert!(wanted_from(Some("1")));
+        assert!(wanted_from(Some("")));
+        assert!(!wanted_from(Some("0")));
+    }
 
     fn db() -> Gvdb {
         let mut r = vec![
