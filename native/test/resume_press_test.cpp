@@ -120,6 +120,15 @@ static void new_career()
     expect(!rl::new_career_live(0, 100), "no choice is never live");
 }
 
+static void setup_diag()
+{
+    expect(rl::setup_after_press(rl::SETUP_FLOW, 1000, 1000 + rl::SETUP_DIAG_MS),
+           "the season setup flow just after a press is noted");
+    expect(!rl::setup_after_press(rl::SETUP_FLOW, 1000, 1001 + rl::SETUP_DIAG_MS), "a later season setup flow is not noted");
+    expect(!rl::setup_after_press("frontend_flow", 1000, 1500) && !rl::setup_after_press(rl::SETUP_FLOW, 0, 1500),
+           "other flows and no press are not noted");
+}
+
 static void zero_rows()
 {
     auto es = rl::parse(R"({"resume_list":[]})");
@@ -138,6 +147,7 @@ int main()
     opened();
     press();
     new_career();
+    setup_diag();
     zero_rows();
     printf("%s\n", fails ? "FAILED" : "all passed");
     return fails ? 1 : 0;

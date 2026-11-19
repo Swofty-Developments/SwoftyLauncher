@@ -24,5 +24,7 @@ bool target_set();
 bool take_target(bool my_team, Target &t);
 void route_ran(const std::string &route);
 bool new_career_requested();
+void press_noted(const std::string &state);
+bool press_recent(std::string &state);
 
 }

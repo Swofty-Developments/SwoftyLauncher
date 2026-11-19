@@ -7,6 +7,7 @@
 #include <swofty/mixin.hpp>
 
 #include <atomic>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <cstdint>
@@ -293,6 +294,33 @@ void match_wizard(void *vm, const rl::Target &t, rl::Facts &f)
                                  : "not written");
 }
 
+std::string press_summary(void *vm, void *wizard)
+{
+    char b[512];
+    auto base = reinterpret_cast<uintptr_t>(vm);
+    uint8_t card[16] = {}, w[8] = {}, pending = 0, busy = 0, selected = 0, kind = 0;
+    for (size_t i = 0; i < sizeof card; i++)
+        mem::read(base + CARDS + i, card[i]);
+    auto wz = reinterpret_cast<uintptr_t>(wizard);
+    const uintptr_t offs[] = {0x181, 0x182, 0x1e0, 0x1e1, 0x1e2, 0x1e3, 0x1e4, 0x1e5};
+    for (size_t i = 0; i < 8 && wizard; i++)
+        mem::read(wz + offs[i], w[i]);
+    mem::read(base + CARD_PENDING, pending);
+    mem::read(base + CARD_BUSY, busy);
+    mem::read(base + 0x1369, selected);
+    mem::read(base + CARDS + CARD_MODE, kind);
+    uint32_t content = 0;
+    if (uintptr_t g = swofty::api->resolve("g_FeTile_SelectedCareerContent"))
+        mem::read(g, content);
+    snprintf(
+        b, sizeof b,
+        "card0 bytes %02x %02x %02x %02x %02x %02x %02x %02x kind %u, wizard +181/182 %02x %02x +1e0..1e5 %02x %02x %02x %02x "
+        "%02x %02x, vm pending %u busy %u selected %u, selected content %08x, group %s",
+        card[0], card[1], card[2], card[3], card[4], card[5], card[6], card[7], kind, w[0], w[1], w[2], w[3], w[4], w[5], w[6],
+        w[7], pending, busy, selected, content, wizard_group(wizard).c_str());
+    return b;
+}
+
 bool mode_shaped(void *vm, uintptr_t &fn)
 {
     uintptr_t vt = 0;
@@ -345,8 +373,9 @@ uint64_t rewrite_card0(void *vm, const career::resume_list::Selection &sel)
     uint64_t was = 0;
     mem::read(card + 8, was);
     *reinterpret_cast<volatile uint64_t *>(card + 8) = slot_id;
-    *reinterpret_cast<volatile uint8_t *>(card) = 1;
-    *reinterpret_cast<volatile uint8_t *>(card + 1) = 1;
+    uint8_t has_save = 0;
+    if (!mem::read(card, has_save) || !has_save)
+        *reinterpret_cast<volatile uint8_t *>(card) = 1;
     *reinterpret_cast<volatile uint8_t *>(base + CARD_SELECTED) = 0;
     return was;
 }
@@ -415,6 +444,7 @@ void press_selected(void *vm, bool my_team, const rl::Target &t)
     swofty::log("[career] resume screen: row %zu: PressSlot returned; pending action vm+0x1368 = %u (2 means the career loads "
                 "when the screen finishes its transition out)",
                 t.row, pending);
+    rl::press_noted(press_summary(vm, wizard_of(vm)));
     if (pending != 2)
         swofty::log("[career] resume screen: row %zu: the screen did not take the career (pending %u); it stays open", t.row,
                     pending);

@@ -23,6 +23,8 @@ constexpr const char *LIST_ROUTE = "swofty_resume_list";
 constexpr uint64_t TARGET_LIFE_MS = 15000;
 constexpr const char *NEW_CAREER_ROUTE = "swofty_new_career";
 constexpr uint64_t NEW_CAREER_LIFE_MS = 60000;
+constexpr uint64_t SETUP_DIAG_MS = 5000;
+constexpr const char *SETUP_FLOW = "career_season_setup_flow";
 
 struct Entry {
     size_t index = 0;
@@ -122,6 +124,11 @@ inline Action press(const Entry &e) { return e.ready ? Action::Load : Action::As
 inline std::string dialog_text(const Entry &e)
 {
     return "This career needs something this profile does not have: " + e.status + ". Loading it anyway can break it.";
+}
+
+inline bool setup_after_press(std::string_view flow, uint64_t press_at, uint64_t now)
+{
+    return flow == SETUP_FLOW && press_at != 0 && now - press_at <= SETUP_DIAG_MS;
 }
 
 inline bool expired(uint64_t set_at, uint64_t now) { return now - set_at > TARGET_LIFE_MS; }

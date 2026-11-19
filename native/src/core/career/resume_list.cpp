@@ -31,7 +31,8 @@ std::mutex mu;
 bool table_read = false, target_on = false;
 std::vector<Entry> table;
 Target target_;
-uint64_t target_at = 0, new_career_at = 0;
+uint64_t target_at = 0, new_career_at = 0, press_at = 0;
+std::string press_state;
 
 const std::vector<Entry> &entries_locked()
 {
@@ -135,6 +136,22 @@ bool new_career_requested()
     if (!new_career_live(new_career_at, GetTickCount64()))
         return false;
     new_career_at = 0;
+    return true;
+}
+
+void press_noted(const std::string &state)
+{
+    std::lock_guard<std::mutex> g(mu);
+    press_at = GetTickCount64();
+    press_state = state;
+}
+
+bool press_recent(std::string &state)
+{
+    std::lock_guard<std::mutex> g(mu);
+    if (!setup_after_press(SETUP_FLOW, press_at, GetTickCount64()))
+        return false;
+    state = press_state;
     return true;
 }
 

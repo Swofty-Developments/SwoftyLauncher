@@ -1,3 +1,6 @@
+#include <windows.h>
+
+#include "core/career/resume_list.hpp"
 #include "core/runtime/hook_errors.hpp"
 #include "core/runtime/runtime.hpp"
 
@@ -8,6 +11,7 @@
 #include <swofty/game.hpp>
 #include <swofty/mem.hpp>
 
+#include <cstdio>
 #include <cstring>
 #include <mutex>
 #include <string>
@@ -188,6 +192,21 @@ NeStr **Navigation::migrated(void *cmd, NeStr **out, void *node)
         }
         if (pending)
             cover_up("the container is about to open");
+    }
+    std::string press;
+    if (!failed && flow == career::resume_list::SETUP_FLOW && career::resume_list::press_recent(press)) {
+        void *frames[4] = {};
+        USHORT n = RtlCaptureStackBackTrace(1, 4, frames, nullptr);
+        auto base = reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr));
+        std::string at;
+        for (USHORT i = 0; i < n; i++) {
+            char b[24];
+            snprintf(b, sizeof b, "%sbase+0x%llx", i ? " < " : "",
+                     (unsigned long long)(reinterpret_cast<uintptr_t>(frames[i]) - base));
+            at += b;
+        }
+        swofty::log("[career] resume screen: Migrate to %s within %llu s of a list row press; callers %s; at the press: %s",
+                    flow.c_str(), (unsigned long long)(career::resume_list::SETUP_DIAG_MS / 1000), at.c_str(), press.c_str());
     }
     if (migrate_logged(failed, flow, before))
         swofty::log("[main-menu] nav: Migrate command: flow '%s' entry '%s' -> %s%s%s; the flow the game last accepted is now %s",
