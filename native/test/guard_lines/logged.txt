@@ -68,21 +68,22 @@
 [career] resume gate: %s
 [career] resume gate: the confirm was answered "%s"
 [career] resume gate: the confirm message did not show; the press-twice prompt is used
-[career] resume list: probe: the view model's vtable slot 24 does not read; nothing was done
-[career] resume list: probe: vtable slot 24 (base+0x%llx) is not PressSlot's code on this build; nothing was done
-[career] resume list: probe: the screen is busy (vm+0x1380 = %u); nothing was done
+[career] resume list: %s: the view model's vtable slot 24 does not read; nothing was done
+[career] resume list: %s: vtable slot 24 (base+0x%llx) is not PressSlot's code on this build; nothing was done
+[career] resume list: %s: the screen is busy (vm+0x1380 = %u); nothing was done
 [career] resume list: probe: card 0 slot id %llu rewritten to %llu; calling PressSlot (base+0x%llx) on vm %p
 [career] resume list: probe: PressSlot returned; pending action vm+0x1368 = %u (2 means the career loads when the screen finishes its transition out)
+[career] resume list: list load: card 0 slot id %llu rewritten to %llu on the %s continue screen; pressing it
 [career] resume gate: slot %u key %s: %s%s
 [career] resume gate off (SWOFTY_RESUME_GATE=%s)
 [career] resume gate off: needs %s and %s, which this build does not resolve
 [career] resume gate off: the resume cards' layout is not proven on this build
-[career] resume list: SWOFTY_RESUME_LIST=1 but SWOFTY_RESUME_LIST_PROBE names no slot id; the direct slot load is not probed
+[career] resume list: SWOFTY_RESUME_LIST=1 and no SWOFTY_RESUME_LIST_PROBE slot id; the list screen is used, not the probe
 [career] resume list: the direct slot load is not proven on this build; not probed
 [career] resume list: probe armed: the first stock resume screen to open loads slot id %llu through card 0
+[career] resume list: armed; Resume Career opens the list screen when the content select hooks are live
+[career] resume list: not armed (the gate or the direct load is not available on this build)
 [career] resume gate %s; a career that needs add-ons this profile lacks asks before it loads (%s)
-[career] resume card status %s; Driver Career cards show their add-on status
-[career] resume My Team card status %s; My Team cards show their add-on status
 
 [log career/rnd_suppliers_guard.cpp]
 [rnd] %s, vehicle %u (engine %s): %d team + %d supplier rows pass %d per tree (%d tree(s) of 384); each tree keeps %d rows with suppliers %s; left out of this team's trees: %s

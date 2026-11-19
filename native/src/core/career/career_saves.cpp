@@ -13,6 +13,7 @@
 #include <swofty/mixin.hpp>
 
 #include "core/career/career_saves_logic.hpp"
+#include "core/career/resume_list_logic.hpp"
 #include "core/hooks/core_events.hpp"
 #include "core/hooks/hooks.hpp"
 #include "core/registry/table.hpp"
@@ -400,6 +401,16 @@ std::string career_saves_slot_key(uint64_t slot_id, bool my_team)
 {
     std::lock_guard<std::mutex> g(mu);
     return cs::slot_key_of(listed_slots, slot_id, my_team);
+}
+
+std::vector<career::resume_list::Row> career_resume_rows()
+{
+    std::vector<cs::SlotRead> slots;
+    {
+        std::lock_guard<std::mutex> g(mu);
+        slots = listed_slots;
+    }
+    return career::resume_list::rows(slots, career::resume_gate::parse(settings_json_text()));
 }
 
 std::string career_saves_id_for_slot(const std::string &key)

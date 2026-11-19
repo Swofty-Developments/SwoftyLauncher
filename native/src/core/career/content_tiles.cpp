@@ -1,4 +1,5 @@
 #include "core/career/content_state.hpp"
+#include "core/career/resume_list.hpp"
 #include "core/guards/skips.hpp"
 #include "core/runtime/runtime.hpp"
 
@@ -167,6 +168,27 @@ Action *press(HomeItem *item, Action *out)
     return reinterpret_cast<Route *>(b.route)(item, out);
 }
 
+Action *resume_press(HomeItem *item, Action *out)
+{
+    namespace rl = career::resume_list;
+    Slot *s = by_vtable(item);
+    std::vector<rl::Row> rows = rl::shown();
+    if (!s || !s->resume || s->row >= rows.size()) {
+        out->type = 1;
+        out->str = nullptr;
+        swofty::log("[career] resume list: a row was pressed that is not in the list; ignored");
+        return out;
+    }
+    const rl::Row &r = rows[s->row];
+    rl::set_target(rl::selection_of(r), r.my_team);
+    out->type = 1;
+    reinterpret_cast<MakeStr *>(b.make_str)(&out->str, rl::continue_route(r.my_team), 0, 0);
+    swofty::log("[career] resume list: row %zu pressed (slot %llu, %s, %s); opening %s to load it", s->row,
+                (unsigned long long)r.id, r.mode.c_str(), r.ready ? "ready" : r.status.c_str(),
+                rl::continue_route(r.my_team));
+    return out;
+}
+
 HomeItem *build_item(NeAllocator *alloc, HomeItem *model, Slot &s)
 {
     bool y25 = s.desc.model == content::MODEL_2025;
@@ -194,7 +216,7 @@ HomeItem *build_item(NeAllocator *alloc, HomeItem *model, Slot &s)
         auto **copy = new void *[content::ITEM_VTABLE_SLOTS + 1];
         std::memcpy(copy, src - 1, (content::ITEM_VTABLE_SLOTS + 1) * sizeof(void *));
         copy[1 + content::ITEM_POPULATE_SLOT] = reinterpret_cast<void *>(&populate);
-        copy[1 + content::ITEM_PRESS_SLOT] = reinterpret_cast<void *>(&press);
+        copy[1 + content::ITEM_PRESS_SLOT] = s.resume ? reinterpret_cast<void *>(&resume_press) : reinterpret_cast<void *>(&press);
         s.vt = copy + 1;
     }
     *reinterpret_cast<void ***>(item) = s.vt;
@@ -321,7 +343,31 @@ void site_entry(SwoftyContext *c)
     size_t stock = list->items_begin ? size_t(list->items_end - list->items_begin) : 0;
     void *buttons = buttons_of(list);
     size_t tiles = 0;
-    for (size_t i = 0; i < used(); i++) {
+    bool resume = career::resume_list::armed() && career::resume_list::take_list();
+    if (resume) {
+        std::vector<career::resume_list::Row> rows = career::resume_list::shown();
+        for (size_t i = 0; i < rows.size() && i < MAX_RESUME; i++) {
+            Slot &s = resume_slots[i];
+            s.resume = true;
+            s.row = i;
+            s.desc.model = content::MODEL_2026;
+            s.desc.id = "resume_" + std::to_string(i);
+            s.desc.title = rows[i].name;
+            s.desc.description = career::resume_list::description(rows[i]);
+            s.desc.badge = 0;
+            s.desc.data_group.clear();
+            s.desc.suffix.clear();
+            s.desc.entitlement.clear();
+            if (addon)
+                set_buttons(list, addon);
+            add_tile(list, s, uint8_t(stock + tiles + 1), addon != nullptr);
+            set_buttons(list, buttons);
+            tiles++;
+        }
+        swofty::log("[career] resume list: the list screen shows %zu of %zu career(s) in %s", tiles, rows.size(),
+                    addon ? "the Addons row" : "tiles after the stock ones");
+    }
+    for (size_t i = 0; i < used() && !resume; i++) {
         Slot &s = slots[i];
         if (!ready(s) || !(s.desc.careers & career))
             continue;

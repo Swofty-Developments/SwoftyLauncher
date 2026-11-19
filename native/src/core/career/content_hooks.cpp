@@ -1,4 +1,5 @@
 #include "core/career/content_state.hpp"
+#include "core/career/resume_list.hpp"
 #include "core/runtime/build.hpp"
 #include "core/runtime/runtime.hpp"
 
@@ -30,6 +31,7 @@ namespace {
 
 using RegistryGet = void *(void *, const void *, int);
 using GroupIndex = uint8_t(void *);
+using MakeStr = uint32_t(NeStr **, const char *, uint32_t, uintptr_t);
 
 void *setup_component(void *championship, void *)
 {
@@ -84,6 +86,29 @@ Slot *by_mode(const void *championship)
 
 }
 
+namespace {
+
+void redirect_resume(Action *out)
+{
+    namespace rl = career::resume_list;
+    const char *route = out && out->type == 1 ? nestr(out->str) : nullptr;
+    bool my_team = false;
+    if (!route || !rl::armed() || rl::target_set() || !rl::continue_route_of(route, my_team))
+        return;
+    auto rows = runtime::career_resume_rows();
+    if (!rl::redirects(true, false, rows.size(), route, my_team)) {
+        swofty::log("[career] resume list: no listed career to show; the stock Resume Career screen opens");
+        return;
+    }
+    size_t n = rows.size();
+    rl::begin_list(std::move(rows));
+    reinterpret_cast<MakeStr *>(b.make_str)(&out->str, rl::list_route(my_team), 0, 0);
+    swofty::log("[career] resume list: Resume Career (%s) opens the list screen %s with %zu career(s)", route,
+                rl::list_route(my_team), n);
+}
+
+}
+
 Action *route_entry(HomeItem *item, Action *out)
 {
     Slot *s = by_vtable(item);
@@ -100,6 +125,7 @@ Action *route_entry(HomeItem *item, Action *out)
         runtime::events_fire(SWOFTY_EVENT_CAREER_CONTENT_PRESSED, s ? int64_t(s - slots) : -1, 0, g.c_str());
     Action *r = route.route_item(item, out);
     runtime::wizard_tile_routed(g, out);
+    redirect_resume(out);
     return r;
 }
 
@@ -140,6 +166,8 @@ bool bind_all(std::string &why)
     bool y25 = false, y26 = false;
     for (size_t i = 0; i < used(); i++)
         (slots[i].desc.model == content::MODEL_2025 ? y25 : y26) = true;
+    if (!used())
+        y26 = true;
     return ContentHooks::bind({{"site_FeTile_CareerContentEnd", &b.site},
                                {"FeTile_Route_CareerItem", &b.route},
                                {"Game_Career_IsDriverCareerMode", &b.gate},

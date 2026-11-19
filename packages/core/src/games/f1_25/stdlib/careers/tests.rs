@@ -904,6 +904,29 @@ fn migrating_moves_the_old_files_once_and_the_newer_ids_win() {
 }
 
 #[test]
+fn resume_needs_label_an_addon_mode_with_its_addon() {
+    let list = parse(
+        r#"[{"career":"a","slot":"1","mode":"driver_career","addons":[{"id":"x.mode","why":"career content g"}]},
+          {"career":"b","slot":"2","mode":"driver_career_1990","addons":[{"id":"x.other"},{"id":"x.mode","why":"career content g"}]},
+          {"career":"c","slot":"3","mode":"driver_career_1990","addons":[{"id":"x.other"}]},
+          {"career":"d","slot":"4","addons":[]}]"#,
+    );
+    let mut m = manifest("x.mode", "1.0.0");
+    m.name = "F1 1990".into();
+    let installed: BTreeMap<String, AddonManifest> = [
+        ("x.mode".to_owned(), m),
+        ("x.other".to_owned(), manifest("x.other", "1.0.0")),
+    ]
+    .into_iter()
+    .collect();
+    let out = resume_needs(&list, &[], &installed);
+    assert_eq!(out[0].mode_label, "");
+    assert_eq!(out[1].mode_label, "F1 1990");
+    assert_eq!(out[2].mode_label, installed["x.other"].name);
+    assert_eq!(out[3].mode_label, "");
+}
+
+#[test]
 fn resume_needs_say_what_is_off_missing_or_another_version() {
     let list = parse(&format!(
         r#"[{{"career":"c1","slot":"67cdf241e227f68c","addons":[

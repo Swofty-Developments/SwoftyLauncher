@@ -17,6 +17,7 @@
 
 #include "core/career/career_saves_logic.hpp"
 #include "core/career/resume_gate_logic.hpp"
+#include "core/career/resume_list.hpp"
 
 // Resume Career gate (re/db/globals.tsv vt_Game_CareerContinueDriverViewModel and vt_Game_CareerContinueMyTeamViewModel,
 // slot 10 = Game_CareerContinue_HandleCommand, 0x141a1db90 on the KB build).
@@ -36,9 +37,8 @@
 // the callback was not proven on) the first press raises the OK message and a second press of the same card loads it.
 // Leaving the screen, opening it again and Back reset the pending press.
 //
-// Each Driver Career card's title (site_Game_CareerContinue_DriverSlotTitle, rbx = slot info, esi = card) becomes
-// "DRIVER CAREER - ALL ADD-ONS ON" or "... - NEEDS: A, B" through a runtime string override. A career the launcher gave no needs for, a card whose
-// slot is not listed and a settings.json with no resume_needs are never gated.
+// The card titles stay the game's own. A career the launcher gave no needs for, a card whose slot is not listed and a
+// settings.json with no resume_needs are never gated.
 //
 // The cards' layout was checked on the KB build, Steam 1.0.145 and EA 1.0.145 (the test agent reads the same fields).
 // SWOFTY_RESUME_GATE=0 turns the gate off.
@@ -46,13 +46,8 @@
 namespace {
 
 constexpr const char *MIXIN = "swofty_core.dll (resume gate)";
-constexpr const char *TITLE_MIXIN = "swofty_core.dll (resume card status)";
 constexpr const char *DRIVER_VT = "vt_Game_CareerContinueDriverViewModel";
 constexpr const char *MY_TEAM_VT = "vt_Game_CareerContinueMyTeamViewModel";
-constexpr const char *TITLE_SITE = "site_Game_CareerContinue_DriverSlotTitle";
-constexpr const char *TEAM_TITLE_MIXIN = "swofty_core.dll (resume my team card status)";
-constexpr const char *TEAM_TITLE_SITE = "site_Game_CareerContinue_MyTeamSlotTitle";
-constexpr const char *TEAM_STOCK_KEY = "lng_homescreen_my_team_career";
 constexpr const char *MAKE_STR = "Ne_Make_StrFromCStr";
 constexpr uintptr_t CARDS = 0x328, CARD_SIZE = 0x540, CARD_COUNT = 3;
 
@@ -69,14 +64,12 @@ constexpr bp::Proof CONFIRM_CALLBACK{"the message response callback ({fn, ctx} a
                                      "answer text at +9)",
                                      PROVEN};
 constexpr bp::Gate CONFIRM_GATE{"the resume gate's confirm message", &CONFIRM_CALLBACK};
-constexpr bp::Proof TITLE_REGS{"the resume card title site (rbx = slot info, esi = card, rdx = key)", PROVEN};
-constexpr bp::Gate TITLE_GATE{"the resume card status", &TITLE_REGS};
 
 using Handle = uint64_t(void *vm, void *cmd, void *value);
 using MakeStr = uint32_t(void **out, const char *text, uint32_t flags, uintptr_t len);
 Handle *orig_driver = nullptr, *orig_my_team = nullptr;
 uintptr_t make_str = 0;
-bool confirm_on = false;
+bool confirm_on = false, list_on = false;
 
 std::mutex lock;
 rg::Table table;
@@ -91,8 +84,6 @@ struct Pending {
     std::string key, prompt;
     bool open = false;
 } pending;
-
-char title_keys[2][CARD_COUNT][40];
 
 const rg::Table &needs_locked()
 {
@@ -179,7 +170,7 @@ void set_labels()
     l->override_set(nullptr, "lng_swofty_back", "Back");
 }
 
-constexpr uintptr_t PRESS_SLOT_VT = 24 * 8, CARD_BUSY = 0x1380;
+constexpr uintptr_t PRESS_SLOT_VT = 24 * 8, CARD_BUSY = 0x1380, CARD_SELECTED = 0x1369;
 constexpr uint8_t PRESS_SLOT_HEAD[] = {0x41, 0x57, 0x41, 0x56, 0x41, 0x55, 0x41, 0x54, 0x56, 0x57,
                                        0x55, 0x53, 0x48, 0x81, 0xEC, 0x58, 0x01, 0x00, 0x00};
 constexpr uint8_t PRESS_SLOT_IMUL[] = {0x4C, 0x69, 0xF0, 0x40, 0x05, 0x00, 0x00};
@@ -191,18 +182,16 @@ constexpr bp::Gate PRESS_SLOT_GATE{"the resume probe's direct slot load", &PRESS
 
 std::atomic<bool> probe_done{false};
 bool probe_armed = false;
-uint64_t probe_slot = 0;
+uint64_t probe_slot = 0, probe_guid = 0;
 
-void probe(void *vm)
+bool press_slot_shaped(void *vm, uintptr_t &fn, const char *who)
 {
-    if (!probe_armed || probe_done.exchange(true))
-        return;
     auto base = reinterpret_cast<uintptr_t>(vm);
-    uintptr_t vt = 0, fn = 0;
+    uintptr_t vt = 0;
     uint8_t busy = 0;
     if (!mem::read(base, vt) || !mem::in_image(vt) || !mem::read(vt + PRESS_SLOT_VT, fn) || !mem::in_image(fn)) {
-        swofty::log("[career] resume list: probe: the view model's vtable slot 24 does not read; nothing was done");
-        return;
+        swofty::log("[career] resume list: %s: the view model's vtable slot 24 does not read; nothing was done", who);
+        return false;
     }
     uint8_t head[sizeof PRESS_SLOT_HEAD] = {}, imul[sizeof PRESS_SLOT_IMUL] = {};
     bool shape = true;
@@ -211,22 +200,42 @@ void probe(void *vm)
     for (size_t i = 0; i < sizeof imul && shape; i++)
         shape = mem::read(fn + PRESS_SLOT_IMUL_AT + i, imul[i]) && imul[i] == PRESS_SLOT_IMUL[i];
     if (!shape) {
-        swofty::log("[career] resume list: probe: vtable slot 24 (base+0x%llx) is not PressSlot's code on this build; "
-                    "nothing was done",
-                    (unsigned long long)(fn - reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr))));
-        return;
+        swofty::log("[career] resume list: %s: vtable slot 24 (base+0x%llx) is not PressSlot's code on this build; nothing "
+                    "was done",
+                    who, (unsigned long long)(fn - reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr))));
+        return false;
     }
     if (!mem::read(base + CARD_BUSY, busy) || busy) {
-        swofty::log("[career] resume list: probe: the screen is busy (vm+0x1380 = %u); nothing was done", busy);
-        return;
+        swofty::log("[career] resume list: %s: the screen is busy (vm+0x1380 = %u); nothing was done", who, busy);
+        return false;
     }
+    return true;
+}
+
+uint64_t rewrite_card0(void *vm, const career::resume_list::Selection &sel)
+{
+    uint64_t slot_id = sel.id;
+    runtime::snapshots_slot_selected(0, sel.id, sel.guid);
+    auto base = reinterpret_cast<uintptr_t>(vm);
     uintptr_t card = base + CARDS;
     uint64_t was = 0;
     mem::read(card + 8, was);
-    auto *has_save = reinterpret_cast<volatile uint8_t *>(card);
-    auto *slot = reinterpret_cast<volatile uint64_t *>(card + 8);
-    *slot = probe_slot;
-    *has_save = 1;
+    *reinterpret_cast<volatile uint64_t *>(card + 8) = slot_id;
+    *reinterpret_cast<volatile uint8_t *>(card) = 1;
+    *reinterpret_cast<volatile uint8_t *>(card + 1) = 1;
+    *reinterpret_cast<volatile uint8_t *>(base + CARD_SELECTED) = 0;
+    return was;
+}
+
+void probe(void *vm)
+{
+    if (!probe_armed || probe_done.exchange(true))
+        return;
+    uintptr_t fn = 0;
+    if (!press_slot_shaped(vm, fn, "probe"))
+        return;
+    auto base = reinterpret_cast<uintptr_t>(vm);
+    uint64_t was = rewrite_card0(vm, {probe_slot, probe_guid});
     swofty::log("[career] resume list: probe: card 0 slot id %llu rewritten to %llu; calling PressSlot (base+0x%llx) on vm %p",
                 (unsigned long long)was, (unsigned long long)probe_slot,
                 (unsigned long long)(fn - reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr))), vm);
@@ -239,12 +248,41 @@ void probe(void *vm)
                 pending);
 }
 
+uint64_t entry(Handle *orig, bool my_team, void *vm, void *cmd, void *value);
+
+void load_target(Handle *orig, bool my_team, void *vm)
+{
+    career::resume_list::Selection sel;
+    if (!career::resume_list::take_target(my_team, sel))
+        return;
+    uintptr_t fn = 0;
+    if (!make_str || !press_slot_shaped(vm, fn, "list load"))
+        return;
+    uint64_t was = rewrite_card0(vm, sel);
+    swofty::log("[career] resume list: list load: card 0 slot id %llu rewritten to %llu on the %s continue screen; pressing it",
+                (unsigned long long)was, (unsigned long long)sel.id, my_team ? "My Team" : "Driver Career");
+    struct alignas(8) Value {
+        uint32_t type, pad;
+        uint64_t data, zero;
+    } v{4, 0, 0, 0};
+    void *cmd = nullptr;
+    reinterpret_cast<MakeStr *>(make_str)(&cmd, "slot_pressed", 0, 0);
+    entry(orig, my_team, vm, &cmd, &v);
+    reinterpret_cast<MakeStr *>(make_str)(&cmd, nullptr, 0, 0);
+}
+
 uint64_t entry(Handle *orig, bool my_team, void *vm, void *cmd, void *value)
 {
     uint32_t hash = command_hash(cmd);
-    if (hash == rg::CMD_TRANSITION_IN && probe_armed && !probe_done.load()) {
+    if (hash == rg::CMD_TRANSITION_IN && ((probe_armed && !probe_done.load()) || career::resume_list::armed())) {
         uint64_t r = orig(vm, cmd, value);
+        {
+            std::lock_guard<std::mutex> g(lock);
+            rg::screen_changed(state);
+            pending.open = false;
+        }
         probe(vm);
+        load_target(orig, my_team, vm);
         return r;
     }
     if (hash == rg::CMD_TRANSITION_IN || hash == rg::CMD_BACK_PRESSED) {
@@ -300,38 +338,11 @@ uint64_t entry(Handle *orig, bool my_team, void *vm, void *cmd, void *value)
 uint64_t driver_entry(void *vm, void *cmd, void *value) { return entry(orig_driver, false, vm, cmd, value); }
 uint64_t my_team_entry(void *vm, void *cmd, void *value) { return entry(orig_my_team, true, vm, cmd, value); }
 
-void title(SwoftyContext *c, bool my_team)
-{
-    uint8_t card = uint8_t(c->rsi);
-    uint64_t id = 0, guid = 0;
-    std::string current;
-    if (card >= CARD_COUNT || !mem::read(c->rbx, id) || !mem::read(c->rbx + 8, guid) ||
-        !mem::c_string(c->rdx, current, 64) || current != (my_team ? TEAM_STOCK_KEY : rg::STOCK_TITLE_KEY))
-        return;
-    std::string text;
-    {
-        std::lock_guard<std::mutex> g(lock);
-        const rg::Entry *e = rg::find(needs_locked(), cs::slot_key(id, guid));
-        if (!e)
-            return;
-        text = rg::card_title(my_team ? "MY TEAM" : "DRIVER CAREER", *e);
-    }
-    char *key = title_keys[my_team][card];
-    snprintf(key, sizeof title_keys[0][0], "lng_swofty_resume_%s_%u", my_team ? "team" : "title", unsigned(card));
-    if (runtime::lang_table()->override_set(nullptr, key, text.c_str()) == SWOFTY_ASSET_OK)
-        c->rdx = reinterpret_cast<uintptr_t>(key);
-}
-
-void title_site(SwoftyContext *c) { title(c, false); }
-void team_title_site(SwoftyContext *c) { title(c, true); }
-
 class ResumeGateGuard final : public guards::Guard {
 public:
     ResumeGateGuard() : Guard(guards::CoreSetId::resume_gate) {}
 
 private:
-    bool titled = false, team_titled = false;
-
     void build(std::vector<runtime::CoreMixins> &out) override
     {
         char v[16] = {};
@@ -349,48 +360,44 @@ private:
         }
         make_str = swofty::api->resolve(MAKE_STR);
         char on[16] = {}, slot[32] = {};
+        bool probe_list_on = false;
         if (GetEnvironmentVariableA("SWOFTY_RESUME_LIST", on, sizeof on) && !strcmp(on, "1")) {
+            probe_list_on = true;
             if (!GetEnvironmentVariableA("SWOFTY_RESUME_LIST_PROBE", slot, sizeof slot) || !(probe_slot = strtoull(slot, nullptr, 10)))
-                swofty::log("[career] resume list: SWOFTY_RESUME_LIST=1 but SWOFTY_RESUME_LIST_PROBE names no slot id; the "
-                            "direct slot load is not probed");
+                swofty::log("[career] resume list: SWOFTY_RESUME_LIST=1 and no SWOFTY_RESUME_LIST_PROBE slot id; the list "
+                            "screen is used, not the probe");
             else if (!runtime::holds(PRESS_SLOT_GATE))
                 swofty::log("[career] resume list: the direct slot load is not proven on this build; not probed");
             else {
+                char g[32] = {};
+                if (GetEnvironmentVariableA("SWOFTY_RESUME_LIST_PROBE_GUID", g, sizeof g))
+                    probe_guid = strtoull(g, nullptr, 16);
                 probe_armed = true;
                 swofty::log("[career] resume list: probe armed: the first stock resume screen to open loads slot id %llu "
                             "through card 0",
                             (unsigned long long)probe_slot);
             }
         }
+        list_on = probe_list_on && !probe_armed && make_str && runtime::holds(PRESS_SLOT_GATE);
         confirm_on = make_str && runtime::holds(CONFIRM_GATE);
         out.push_back({MIXIN,
                        {{DRIVER_VT, SWOFTY_MIXIN_WITH_ARG(SWOFTY_MIXIN_VTABLE, 10), 100, (void *)&driver_entry,
                          (void **)&orig_driver},
                         {MY_TEAM_VT, SWOFTY_MIXIN_WITH_ARG(SWOFTY_MIXIN_VTABLE, 10), 100, (void *)&my_team_entry,
                          (void **)&orig_my_team}}});
-        if (swofty::api->resolve(TITLE_SITE) && runtime::holds(TITLE_GATE)) {
-            titled = true;
-            out.push_back({TITLE_MIXIN, {{TITLE_SITE, SWOFTY_MIXIN_SITE, 100, (void *)&title_site, nullptr}}});
-        }
-        if (swofty::api->resolve(TEAM_TITLE_SITE) && runtime::holds(TITLE_GATE)) {
-            team_titled = true;
-            out.push_back(
-                {TEAM_TITLE_MIXIN, {{TEAM_TITLE_SITE, SWOFTY_MIXIN_SITE, 100, (void *)&team_title_site, nullptr}}});
-        }
     }
 
     void settle() override
     {
+        if (list_on && offered_set(MIXIN) && runtime::core_mixins_active(MIXIN)) {
+            career::resume_list::set_armed(true);
+            swofty::log("[career] resume list: armed; Resume Career opens the list screen when the content select hooks are live");
+        } else if (career::resume_list::wanted())
+            swofty::log("[career] resume list: not armed (the gate or the direct load is not available on this build)");
         if (offered_set(MIXIN))
             swofty::log("[career] resume gate %s; a career that needs add-ons this profile lacks asks before it loads (%s)",
                         guards::install_state(runtime::core_mixins_active(MIXIN), "armed"),
                         confirm_on ? "Load Anyway / Back" : "press twice");
-        if (titled && offered_set(TITLE_MIXIN))
-            swofty::log("[career] resume card status %s; Driver Career cards show their add-on status",
-                        guards::install_state(runtime::core_mixins_active(TITLE_MIXIN), "armed"));
-        if (team_titled && offered_set(TEAM_TITLE_MIXIN))
-            swofty::log("[career] resume My Team card status %s; My Team cards show their add-on status",
-                        guards::install_state(runtime::core_mixins_active(TEAM_TITLE_MIXIN), "armed"));
     }
 };
 

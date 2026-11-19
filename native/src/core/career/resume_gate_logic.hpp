@@ -21,7 +21,7 @@ struct Need {
 };
 
 struct Entry {
-    std::string key;
+    std::string key, mode_label;
     std::vector<Need> needs;
 };
 
@@ -45,6 +45,7 @@ inline Table parse(std::string_view text)
             continue;
         Entry entry;
         entry.key = e["key"].s;
+        entry.mode_label = e["mode_label"].str();
         for (const json::Value &n : e["addons"].a) {
             if (n["id"].type != json::Value::Str)
                 continue;
@@ -115,15 +116,6 @@ inline std::string dialog_text(const Entry &e)
 }
 
 inline bool loads(std::string_view answer) { return answer == ANSWER_LOAD; }
-
-inline std::string card_title(std::string_view mode, const Entry &e)
-{
-    std::string out(mode);
-    out += " - ";
-    for (char c : status_line(&e))
-        out += char(c >= 'a' && c <= 'z' ? c - 32 : c);
-    return out;
-}
 
 struct State {
     std::string armed;

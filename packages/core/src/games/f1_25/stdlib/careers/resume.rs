@@ -21,7 +21,34 @@ pub struct ResumeNeed {
 pub struct CareerNeeds {
     pub key: String,
     pub career: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub mode_label: String,
     pub addons: Vec<ResumeNeed>,
+}
+
+const STOCK_MODES: [&str; 3] = ["", "driver_career", "my_team"];
+
+/// What the in game list calls a career's mode: nothing for the two stock modes (the core names them from the
+/// save), else the name of the addon that owns the mode, the one recorded with a `career content` or
+/// `its career mode` reason, or the first addon the career needs.
+fn mode_label(c: &Career, installed: &BTreeMap<String, AddonManifest>) -> String {
+    if STOCK_MODES.contains(&c.field("mode").unwrap_or("")) {
+        return String::new();
+    }
+    let owns = |a: &&super::CareerAddon| {
+        a.why
+            .as_deref()
+            .is_some_and(|w| w.starts_with("career content") || w.starts_with("its career mode"))
+    };
+    let owner = c
+        .addons
+        .iter()
+        .filter(|a| !is_guess(a))
+        .find(owns)
+        .or_else(|| c.addons.iter().find(|a| !is_guess(a)));
+    owner
+        .map(|a| installed.get(&a.id).map_or(a.id.clone(), |m| m.name.clone()))
+        .unwrap_or_default()
 }
 
 fn at_version(a: &super::CareerAddon, installed: &AddonManifest) -> bool {
@@ -70,6 +97,7 @@ pub fn resume_needs(
             Some(CareerNeeds {
                 key,
                 career: c.career.clone(),
+                mode_label: mode_label(c, installed),
                 addons,
             })
         })

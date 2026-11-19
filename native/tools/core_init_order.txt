@@ -99,6 +99,7 @@ init
   src/core/diagnostics/log_csv.cpp
   src/core/hud/race_hud.cpp
   src/core/frontend/popup.cpp
+  src/core/career/resume_list.cpp
   src/core/career/career_start.cpp
   src/core/career/career_content.cpp
   src/core/career/career.cpp
@@ -245,6 +246,7 @@ exit
   src/core/career/career.cpp
   src/core/career/career_content.cpp
   src/core/career/career_start.cpp
+  src/core/career/resume_list.cpp
   src/core/frontend/popup.cpp
   src/core/hud/race_hud.cpp
   src/core/diagnostics/log_csv.cpp

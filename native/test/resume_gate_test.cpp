@@ -77,9 +77,6 @@ static void dialog_and_title()
            "the dialog names the add-ons and does not tell the player to press again");
     expect(rg::loads("load_anyway") && !rg::loads("back") && !rg::loads("") && !rg::loads("yes"),
            "only the load_anyway answer loads");
-    expect(rg::card_title("DRIVER CAREER", *good) == "DRIVER CAREER - ALL ADDONS READY", "a card title carries the status");
-    expect(rg::card_title("DRIVER CAREER", *bad) == "DRIVER CAREER - MISSING: BETA, GAMMA 2.0.0, A.GONE",
-           "an unmet card title lists the add-ons in capitals");
 }
 
 static void key_join()
@@ -120,13 +117,21 @@ static void list_rows()
     auto rows = career::resume_list::rows(slots, t);
     expect(rows.size() == 3, "hidden and undated slots are not listed");
     expect(rows[0].name == "Solo" && rows[1].name == "Mine" && rows[2].name == "Old", "rows are newest first");
-    expect(!rows[0].ready && rows[0].status.rfind("Missing: Beta", 0) == 0, "a row with missing add-ons says Missing");
-    expect(rows[1].ready && rows[1].status == "All addons ready", "a row with everything on is ready");
+    expect(!rows[0].ready && rows[0].status == "Missing: Beta; Made with another version of Gamma and 1 more", "a row with missing add-ons says Missing");
+    expect(rows[1].ready && rows[1].status == "Ready", "a row with everything on is ready");
     expect(rows[2].ready && rows[2].status.empty(), "a row with no data is ready and has no status");
     expect(rows[1].detail == "My Team - Season 2, Race 5", "the detail line names mode, season and race");
     expect(rows[0].detail == "Driver Career - Season 3", "an unknown race is left out");
     expect(career::resume_list::press(rows[0]) == career::resume_list::Action::Ask, "a mismatched row asks first");
     expect(career::resume_list::press(rows[1]) == career::resume_list::Action::Load, "a ready row loads at once");
+    rg::Table modes = rg::parse(R"({"resume_needs":[{"key":"6","mode_label":"F1 1990","addons":[]}]})");
+    std::vector<cs::SlotRead> m1990{slot(6, 0, "Senna", 0, 5, 0, 1)};
+    auto labelled = career::resume_list::rows(m1990, modes);
+    expect(labelled[0].detail == "F1 1990 - Season 1, Race 2" && labelled[0].mode == "F1 1990",
+           "an addon mode row carries the launcher's mode label");
+    auto sel = career::resume_list::selection_of(rows[0]);
+    expect(sel.id == 6 && sel.guid == 0x67cdf241e227f68cULL, "a row hands the registry its slot id and guid");
+    expect(cs::slot_key(sel.id, sel.guid) == rows[0].key, "the hand-off names the slot the row's key names");
     std::vector<cs::SlotRead> tie{slot(3, 0, "B", 0, 5, 0, 0), slot(2, 0, "A", 0, 5, 0, 0)};
     auto tied = career::resume_list::rows(tie, t);
     expect(tied[0].id == 2 && tied[1].id == 3, "equal dates order by slot id");
