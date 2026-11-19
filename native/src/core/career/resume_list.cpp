@@ -104,14 +104,15 @@ bool pressed(size_t index)
     }
     target_on = true;
     target_at = GetTickCount64();
-    std::string group = runtime::career_saves_content_for_slot(e->key);
+    std::string group = e->group.empty() ? runtime::career_saves_content_for_slot(e->key) : e->group;
     target_ = {sel,
                e->my_team,
                press(*e) == Action::Ask,
                index,
                dialog_text(*e),
                group,
-               suffix_for(group, career::content::suffix_of_group(group))};
+               suffix_for(group, career::content::suffix_of_group(group)),
+               e->game_mode};
     swofty::log("[career] resume screen: row %zu (%s, key %s) is slot id %llu guid %016llx, %s%s%s; the %s continue screen "
                 "loads it next",
                 index, e->my_team ? "My Team" : "Driver Career", e->key.c_str(), (unsigned long long)sel.id,

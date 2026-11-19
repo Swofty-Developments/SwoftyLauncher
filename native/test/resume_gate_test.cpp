@@ -120,6 +120,9 @@ static void list_rows()
     expect(es[0].index == 0 && !es[0].my_team && !es[0].ready && es[0].status == "Missing: Beta",
            "a not-ready driver entry parses");
     expect(es[1].my_team && es[1].ready, "a ready My Team entry parses");
+    auto gm = rl::parse(R"({"resume_list":[{"index":0,"key":"7","group":"f1_career_1990","game_mode":"driver_career_1990"}]})");
+    expect(gm.size() == 1 && gm[0].group == "f1_career_1990" && gm[0].game_mode == "driver_career_1990",
+           "a row carries its data group and game mode");
     expect(rl::parse("").empty() && rl::parse("{}").empty() && rl::parse("nonsense").empty(), "no block gives no entries");
     expect(rl::find(es, 1) == &es[1] && !rl::find(es, 5), "an entry is found by its index");
 

@@ -12,7 +12,7 @@ struct Target {
     Selection sel;
     bool my_team = false, ask = false;
     size_t row = 0;
-    std::string body, group, suffix;
+    std::string body, group, suffix, game_mode;
 };
 
 bool wanted();
