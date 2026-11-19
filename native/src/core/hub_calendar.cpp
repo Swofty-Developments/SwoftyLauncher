@@ -21,6 +21,13 @@
 // calendars, their activities and definitions through KB structs (L2), the clock through
 // CareerTimeComponent.current_minutes, and the weekend through moments::career_weekend. A build whose game headers lack
 // a field logs that the calendar is not readable.
+//
+// The one write, the season break fix (hub_calendar_logic.hpp): as the hub opens, a started SeasonBreak listed ahead of
+// a started race weekend running today, with nothing else the check weighs before that weekend, gets
+// CalendarActivity.state 4 (Ignored), one "[career] season break over race weekend" line per item, and the calendar
+// is logged again. It runs on the thread that sets the hub's status, before the hub's onStateUpdate reads the calendar.
+// An item whose state no longer reads 1 or whose memory is not writable is left as it is. SWOFTY_HUB_BREAK_FIX=0 turns
+// it off; the line then says the break is left.
 
 namespace swofty::game {
 struct ActivityDef;
@@ -70,6 +77,7 @@ struct Snapshot {
     bool season_over = false;
     uintptr_t calendar = 0;
     size_t total = 0;
+    uint64_t state_offset = 0;
     std::vector<hc::Item> today;
 };
 
@@ -151,6 +159,7 @@ Snapshot snapshot()
             return s.stop = "no driver calendar for the human driver", s;
         hc::Layout L{offsetof(C, activities_begin), offsetof(C, activities_end), offsetof(A, day), offsetof(A, state),
                      offsetof(A, activity), offsetof(D, id), offsetof(D, type), offsetof(D, duration)};
+        s.state_offset = L.item_state;
         if (!hc::collect(s.calendar, s.day, L, read_raw, nullptr, s.today, &s.total))
             s.stop = "the calendar's activity list does not read";
         return s;
@@ -187,11 +196,74 @@ std::string calendar(const Snapshot &s)
     return summary(s) + "; the calendar check reads: " + decision(s);
 }
 
+bool break_fix_off()
+{
+    static const bool off = [] {
+        char v[8] = {};
+        DWORD n = GetEnvironmentVariableA("SWOFTY_HUB_BREAK_FIX", v, sizeof v);
+        return n > 0 && n < sizeof v && !std::strcmp(v, "0");
+    }();
+    return off;
+}
+
+bool writable(uintptr_t p, size_t n)
+{
+    MEMORY_BASIC_INFORMATION mbi{};
+    if (!p || VirtualQuery(reinterpret_cast<const void *>(p), &mbi, sizeof mbi) != sizeof mbi)
+        return false;
+    if (mbi.State != MEM_COMMIT || (mbi.Protect & PAGE_GUARD))
+        return false;
+    DWORD w = PAGE_READWRITE | PAGE_WRITECOPY | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY;
+    return (mbi.Protect & w) && p + n <= reinterpret_cast<uintptr_t>(mbi.BaseAddress) + mbi.RegionSize;
+}
+
+bool ignore_break(const Snapshot &s, const hc::Item &it, const char *&how)
+{
+    uintptr_t at = uintptr_t(it.at + s.state_offset);
+    uint8_t state = 0;
+    if (break_fix_off())
+        how = "left as it is (SWOFTY_HUB_BREAK_FIX=0)";
+    else if (!s.state_offset || !mem::read(at, state) || state != hc::STARTED)
+        how = "left as it is (its state no longer reads 1)";
+    else if (!writable(at, sizeof state))
+        how = "left as it is (not writable)";
+    else {
+        state = hc::IGNORED;
+        std::memcpy(reinterpret_cast<void *>(at), &state, sizeof state);
+        how = "set to ignored (state 4), so the race weekend decides";
+        return true;
+    }
+    return false;
+}
+
+size_t fix_breaks(const Snapshot &s)
+{
+    hc::BreakFix f = hc::breaks_before_weekend(s.today, s.season_over);
+    if (f.weekend < 0)
+        return 0;
+    const hc::Item &weekend = s.today[size_t(f.weekend)];
+    size_t ignored = 0;
+    for (size_t i : f.breaks) {
+        const char *how = "";
+        ignored += ignore_break(s, s.today[i], how);
+        swofty::log("[career] season break over race weekend: %s runs over the race weekend days %u-%u (id %d) "
+                    "that the session is in; %s",
+                    hc::describe(s.today[i]).c_str(), unsigned(weekend.first), unsigned(weekend.last),
+                    weekend.id == hc::NO_ID ? -1 : int(weekend.id), how);
+    }
+    return ignored;
+}
+
 void opened()
 {
     Snapshot s = snapshot();
     swofty::log("[career] hub opened: %s", calendar(s).c_str());
     log_items(s);
+    if (!fix_breaks(s))
+        return;
+    Snapshot after = snapshot();
+    swofty::log("[career] hub calendar after the season break fix: %s", calendar(after).c_str());
+    log_items(after);
 }
 
 bool current_weekend(hc::Weekend &w)

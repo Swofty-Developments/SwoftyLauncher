@@ -13,6 +13,15 @@
 // Team HQ too, and a season that is over answers 3 without the walk. The collector also drops one activity class by
 // RTTI, which the core can't tell apart, so each item carries its vtable.
 //
+// The season break fix: the stock 2026 season event list keeps season_break_2026 (activity_season_break, a 15-day
+// SeasonBreak) on 27 July, the day after the stock Hungary weekend. A calendar with a round that starts from 28 July to
+// 10 August (Historical Calendar 1.4.8's 30 July round in 2016, 2017, 2019 to 2022, 2024 and 2025) starts that weekend
+// inside the break. The break starts first, so it comes first in the list, decides Team HQ on every session of the
+// weekend, and the game crashes leaving it. breaks_before_weekend names the started breaks ahead of a started race
+// weekend running today; the core sets them to 4, Ignored, the state Career_Calendar_IgnoreActivitiesInRange
+// 0x1412682d0 gives a SeasonBreak inside a dynamic break, so the weekend decides. A started break's own start hook
+// (ScheduleEntry vt+0x78) does nothing, so there is nothing to undo.
+//
 // A career session enters SessionStateCareerHub right after StateSession enters and leaves it in the same
 // millisecond, healthy or not. The tell of the stuck-weekend crash is StateSession itself ending within FAST_END_MS of
 // its start after the hub opened; SessionWatch reports that. A weekend whose progress state is past not started with
@@ -44,11 +53,14 @@ constexpr size_t MAX_ITEMS = 512;
 constexpr uint64_t SLOT_SIZE = 16;
 constexpr uint64_t SLOT_ITEM = 8;
 constexpr uint8_t RACE_WEEKEND = 0x0a;
+constexpr uint8_t SEASON_BREAK = 0x0c;
 constexpr uint8_t CONTRACT_EVENT = 0x0f;
 constexpr uint8_t SECRET_MEETING = 0x10;
 constexpr uint8_t TYPE_COUNT = 0x23;
 constexpr uint64_t DECIDING_TYPES = 0x7ffffbebbull;
 constexpr uint16_t NO_ID = 0xffff;
+constexpr uint8_t STARTED = 1;
+constexpr uint8_t IGNORED = 4;
 
 inline constexpr const char *TYPE_NAMES[TYPE_COUNT] = {
     "ContractDriverRenewal", "ContractTeamRenewal", "ContractTransferWindow", "CarReveal", "GridReveal", "EndSeason",
@@ -93,6 +105,12 @@ inline bool deciding(uint8_t type)
     return type < TYPE_COUNT && ((DECIDING_TYPES >> type) & 1);
 }
 
+// An item the calendar check weighs: started, with a definition that has an id, of a deciding type.
+inline bool counts(const Item &i)
+{
+    return i.state == STARTED && i.def && i.id != NO_ID && deciding(i.type);
+}
+
 inline bool logs_add(uint8_t type)
 {
     return type == CONTRACT_EVENT || type == SECRET_MEETING;
@@ -132,12 +150,39 @@ inline Decision decide(const std::vector<Item> &today, bool season_over)
 {
     if (season_over)
         return {Verdict::season_end, -1};
+    for (size_t i = 0; i < today.size(); ++i)
+        if (counts(today[i]))
+            return {verdict_of(today[i].type), int(i)};
+    return {Verdict::team_hq, -1};
+}
+
+// The started season breaks listed ahead of the first started race weekend running today (breaks, in list order) and
+// that weekend (weekend), when every item the check weighs before the weekend is a season break. Nothing to do (no
+// breaks, weekend -1) otherwise, and when the season is over.
+struct BreakFix {
+    std::vector<size_t> breaks;
+    int weekend = -1;
+};
+
+inline BreakFix breaks_before_weekend(const std::vector<Item> &today, bool season_over)
+{
+    BreakFix f;
+    if (season_over)
+        return f;
     for (size_t i = 0; i < today.size(); ++i) {
         const Item &it = today[i];
-        if (it.state == 1 && it.def && it.id != NO_ID && deciding(it.type))
-            return {verdict_of(it.type), int(i)};
+        if (!counts(it))
+            continue;
+        if (it.type == RACE_WEEKEND) {
+            if (!f.breaks.empty())
+                f.weekend = int(i);
+            return f;
+        }
+        if (it.type != SEASON_BREAK)
+            return {};
+        f.breaks.push_back(i);
     }
-    return {Verdict::team_hq, -1};
+    return {};
 }
 
 inline bool read_item(uint64_t at, const Layout &L, Read rd, void *user, Item &out)

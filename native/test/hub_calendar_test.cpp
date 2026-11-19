@@ -258,6 +258,107 @@ static void adds()
     expect(a.fresh(CAL + 0xc8, hc::SECRET_MEETING, 246), "another calendar logs");
 }
 
+static void season_break_over_weekend()
+{
+    Memory m;
+    std::vector<Def> defs{{40, hc::RACE_WEEKEND, 4}, {36, hc::SEASON_BREAK, 15}, {41, hc::RACE_WEEKEND, 4},
+                          {42, hc::RACE_WEEKEND, 4}};
+    calendar(m, {{162, 2}, {166, 1}, {169, 1}, {197, 0}}, defs, {0, 1, 2, 3});
+    std::vector<hc::Item> today;
+    expect(hc::collect(CAL, 170, L, read, &m, today) && today.size() == 2,
+           "Fizzywoo's round 12, day 170: two items run today");
+    expect(today.size() == 2 && today[0].type == hc::SEASON_BREAK && today[0].first == 166 && today[0].last == 180 &&
+               today[0].id == 36,
+           "item 1 is the 15-day SeasonBreak, days 166-180, id 36");
+    expect(today.size() == 2 && today[1].type == hc::RACE_WEEKEND && today[1].first == 169 && today[1].last == 172 &&
+               today[1].id == 41,
+           "item 2 is the round 12 race weekend, days 169-172, id 41");
+    hc::Decision d = hc::decide(today, false);
+    expect(hc::describe(d, today, false) == "go to Team HQ (item 1, SeasonBreak, decides)",
+           "the break decides Team HQ, as the 1.9.88 log read: " + hc::describe(d, today, false));
+
+    hc::BreakFix f = hc::breaks_before_weekend(today, false);
+    expect(f.breaks.size() == 1 && f.breaks[0] == 0 && f.weekend == 1,
+           "the fix names the break ahead of the started weekend");
+    expect(hc::breaks_before_weekend(today, true).weekend == -1, "nothing to do when the season is over");
+
+    m.put<uint8_t>(today[0].at + L.item_state, hc::IGNORED);
+    hc::collect(CAL, 170, L, read, &m, today);
+    d = hc::decide(today, false);
+    expect(d.verdict == hc::Verdict::stay && hc::describe(d, today, false) == "stay in the hub (item 2, RaceWeekend, decides)",
+           "with the break ignored the weekend keeps the hub: " + hc::describe(d, today, false));
+    expect(hc::breaks_before_weekend(today, false).weekend == -1 && hc::breaks_before_weekend(today, false).breaks.empty(),
+           "the next session of the weekend finds nothing to do");
+
+    for (uint16_t day : {uint16_t(166), uint16_t(168), uint16_t(173), uint16_t(180)}) {
+        Memory q;
+        calendar(q, {{162, 2}, {166, 1}, {169, 0}, {197, 0}}, defs, {0, 1, 2, 3});
+        hc::collect(CAL, day, L, read, &q, today);
+        expect(hc::breaks_before_weekend(today, false).weekend == -1,
+               "a break with no started weekend running on day " + std::to_string(day) + " is left");
+    }
+}
+
+static void season_break_left_alone()
+{
+    std::vector<Def> defs{{36, hc::SEASON_BREAK, 15}, {10, hc::RACE_WEEKEND, 4}, {37, hc::SECRET_MEETING, 1},
+                          {40, 0x0b, 10}, {14, hc::RACE_WEEKEND, 4}, {6, hc::RACE_WEEKEND, 4}};
+    std::vector<hc::Item> today;
+
+    Memory primitive;
+    calendar(primitive, {{343, 1}}, defs, {4});
+    hc::collect(CAL, 344, L, read, &primitive, today);
+    expect(hc::describe(hc::decide(today, false), today, false) == "stay in the hub (item 1, RaceWeekend, decides)" &&
+               hc::breaks_before_weekend(today, false).weekend == -1,
+           "Primitive's day 344, one race weekend: stays, nothing to do");
+
+    Memory tutusenna;
+    calendar(tutusenna, {{22, 1}}, defs, {5});
+    hc::collect(CAL, 23, L, read, &tutusenna, today);
+    expect(hc::decide(today, false).verdict == hc::Verdict::stay && hc::breaks_before_weekend(today, false).weekend == -1,
+           "tutusenna's day 23, one race weekend: stays, nothing to do");
+
+    Memory first;
+    calendar(first, {{164, 1}, {166, 1}}, defs, {1, 0});
+    hc::collect(CAL, 166, L, read, &first, today);
+    expect(hc::decide(today, false).verdict == hc::Verdict::stay && hc::breaks_before_weekend(today, false).weekend == -1,
+           "a weekend that starts before the break (2013 round 10, days 164-167) decides first and is left");
+
+    Memory meeting;
+    calendar(meeting, {{166, 1}, {169, 1}, {169, 1}}, defs, {0, 2, 1});
+    hc::collect(CAL, 169, L, read, &meeting, today);
+    expect(today.size() == 3 && hc::breaks_before_weekend(today, false).weekend == -1,
+           "a break with a secret meeting ahead of the weekend is left: ignoring it would not keep the hub");
+
+    Memory dynamic;
+    calendar(dynamic, {{166, 1}, {169, 1}}, defs, {3, 1});
+    hc::collect(CAL, 170, L, read, &dynamic, today);
+    expect(hc::decide(today, false).verdict == hc::Verdict::team_hq &&
+               hc::breaks_before_weekend(today, false).weekend == -1,
+           "a DynamicBreak ahead of the weekend is not a season break and is left");
+
+    Memory twice;
+    calendar(twice, {{166, 4}, {169, 2}, {176, 1}}, defs, {0, 1, 1});
+    hc::collect(CAL, 177, L, read, &twice, today);
+    expect(hc::decide(today, false).verdict == hc::Verdict::stay && hc::breaks_before_weekend(today, false).weekend == -1,
+           "2020's second round in the break (days 176-179) finds the break already ignored");
+
+    Memory two;
+    calendar(two, {{160, 1}, {166, 1}, {169, 1}}, defs, {0, 0, 1});
+    hc::collect(CAL, 170, L, read, &two, today);
+    hc::BreakFix f = hc::breaks_before_weekend(today, false);
+    expect(f.breaks.size() == 2 && f.weekend == 2, "every started break ahead of the weekend is named");
+
+    hc::Item i;
+    i.def = 0x100;
+    i.id = 36;
+    i.type = hc::SEASON_BREAK;
+    i.state = hc::STARTED;
+    expect(hc::counts(i), "a started season break with an id counts");
+    i.state = hc::IGNORED;
+    expect(!hc::counts(i), "an ignored one does not");
+}
+
 int main()
 {
     secret_meeting_on_p1();
@@ -268,6 +369,8 @@ int main()
     session_watch();
     weekends();
     adds();
+    season_break_over_weekend();
+    season_break_left_alone();
     std::printf("%s\n", failed ? "FAILED" : "all passed");
     return failed ? 1 : 0;
 }

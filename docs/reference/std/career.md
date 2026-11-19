@@ -212,7 +212,21 @@ A career session enters `SessionStateCareerHub` (`#42843edb`) right after `State
 [events] session.end (StateSession exited)
 ```
 
-All of these come from the flow-state site and read the game without writing to it. The weekend reads need `vt_Career_Championship`, `vt_Career_Season` and `vt_Career_Weekend`; the calendar reads need the career components. A build without them logs `the current weekend is not readable` or `the calendar is not readable (<reason>)` in the same lines.
+A calendar can start a race weekend inside the season break. The stock 2026 season's break, `season_break_2026`, runs 15 days from 27 July, and Historical Calendar 1.4.8 has a round on 30 July in 2016, 2017, 2019 to 2022, 2024 and 2025. The break starts first and is item 1: the calendar check sends the session to Team HQ as practice 1 opens, and the game crashes at `F1_25.exe+0x1f8be5c`. As the hub opens, the core sets every started season break listed ahead of a started race weekend running that day to ignored (state 4), the state the game gives a season break inside a dynamic break, and logs the calendar again:
+
+```text
+[career] hub opened: day 170, season 0, 2 of 29 calendar items running today (driver 0x00090000, calendar 0x345517370); the calendar check reads: go to Team HQ (item 1, SeasonBreak, decides)
+[career]   item 1/2: SeasonBreak (0x0c) days 166-180 state 1 id 36 at 0x16ef13c0 vt 0x1456d31f0
+[career]   item 2/2: RaceWeekend (0x0a) days 169-172 state 1 id 41 at 0x16ef13e0 vt 0x1456d31f0
+[career] season break over race weekend: SeasonBreak (0x0c) days 166-180 state 1 id 36 at 0x16ef13c0 vt 0x1456d31f0 runs over the race weekend days 169-172 (id 41) that the session is in; set to ignored (state 4), so the race weekend decides
+[career] hub calendar after the season break fix: day 170, season 0, 2 of 29 calendar items running today (driver 0x00090000, calendar 0x345517370); the calendar check reads: stay in the hub (item 2, RaceWeekend, decides)
+[career]   item 1/2: SeasonBreak (0x0c) days 166-180 state 4 id 36 at 0x16ef13c0 vt 0x1456d31f0
+[career]   item 2/2: RaceWeekend (0x0a) days 169-172 state 1 id 41 at 0x16ef13e0 vt 0x1456d31f0
+```
+
+The rest of the break doesn't run. A break with any other item the check weighs ahead of the weekend, or with no started weekend running that day, is left as it is. `SWOFTY_HUB_BREAK_FIX=0` turns the fix off, and the line then ends `left as it is (SWOFTY_HUB_BREAK_FIX=0)`.
+
+All of these come from the flow-state site. Apart from the season break fix, they read the game without writing to it. The weekend reads need `vt_Career_Championship`, `vt_Career_Season` and `vt_Career_Weekend`; the calendar reads need the career components. A build without them logs `the current weekend is not readable` or `the calendar is not readable (<reason>)` in the same lines.
 
 ## Components
 
