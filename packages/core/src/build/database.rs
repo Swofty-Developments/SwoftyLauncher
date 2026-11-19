@@ -110,11 +110,11 @@ impl Pipeline<'_, '_> {
         let (store, game) = (self.run.store, self.run.game);
         std::thread::scope(|scope| {
             scope.spawn(|| crate::dbedit::Catalog::open(store, game).map(drop));
-            self.edit_database_rows(inputs)
+            self.edit_database_rows(inputs, std16)
         })
     }
 
-    fn edit_database_rows(&mut self, inputs: &Inputs) -> Result<DbEdits> {
+    fn edit_database_rows(&mut self, inputs: &Inputs, std16: &BTreeMap<String, Std>) -> Result<DbEdits> {
         let fitted = &inputs.tracks;
         let store = self.run.store;
         let ui_lists = track_ui_lists(self.run, fitted)?;
