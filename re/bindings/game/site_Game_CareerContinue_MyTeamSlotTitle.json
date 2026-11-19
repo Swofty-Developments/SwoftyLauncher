@@ -36,7 +36,18 @@
   ],
   "used_by": []
  },
- "verify": [],
+ "verify": [
+  {
+   "date": "2026-11-19",
+   "verifier": "saves-blind",
+   "kind": "global",
+   "item": "site_Game_CareerContinue_MyTeamSlotTitle",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm of FillSlot 0x141a0f760, test byte [rdx+0x171],0x20 jne 0x141a0f82c, lea rdx at 0x141a0f82c = 0x14570ce69 lng_homescreen_my_team_career, E8 call 0x1407b10c0 at 0x141a0f833;xref:0x141a0f833,0x141a0f82c;imm:0x171,0x20,0x540",
+   "notes": "gh:saves-blind call is E8 to 0x1407b10c0 which builds a string from the lng key and sets it on the text holder [rcx+8] (rcx = slot +0x3b8). Non-My-Team branch loads lng_homescreen_driver_career at 0x145709e97 into the same call at 0x141a0f7ac. Steam 145 site 0x141a11013 is a call after the same lea, key lng_homescreen_my_team_career"
+  }
+ ],
  "proofs": [
   {
    "by": "swofty",
@@ -75,6 +86,44 @@
    },
    "sigcheck": "skipped (not the KB build)",
    "digest": "09a63b7ac32ba962a4a064135825063f88f123c1825027008617e8605caaa745"
+  },
+  {
+   "by": "saves-blind",
+   "date": "2026-11-19",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141a11013",
+    "target": "0x141a11013"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "09a63b7ac32ba962a4a064135825063f88f123c1825027008617e8605caaa745"
+  },
+  {
+   "by": "saves-blind",
+   "date": "2026-11-19",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141a0f833",
+    "target": "0x141a0f833"
+   },
+   "sigcheck": "passed",
+   "digest": "fa9c09396884132738f9004259602d0ce95b02ca66b344dd7302d290371fc0de"
   }
  ]
 }
