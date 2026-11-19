@@ -245,6 +245,10 @@ enum AddonsCommand {
         #[arg(long, short, help = "Don't ask, even when the addon has affected your saves")]
         yes: bool,
     },
+    #[command(about = "Read every file of the installed addons, or of one, and list the damaged ones")]
+    Verify {
+        id: Option<String>,
+    },
 }
 
 #[derive(Subcommand)]
@@ -692,6 +696,7 @@ fn addons(store: &Store, profile: &str, cmd: AddonsCommand) -> Result<()> {
                 );
             }
         }
+        AddonsCommand::Verify { id } => verify(store, id.as_deref())?,
         AddonsCommand::Install { path } => {
             for result in store.install_addons(&path) {
                 let m = result.with_context(|| format!("installing {}", path.display()))?;
@@ -745,6 +750,45 @@ fn addons(store: &Store, profile: &str, cmd: AddonsCommand) -> Result<()> {
             store.remove_addon(&id)?;
             println!("removed {id}");
         }
+    }
+    Ok(())
+}
+
+fn verify(store: &Store, only: Option<&str>) -> Result<()> {
+    use swofty_core::addon_files;
+    let installed = store.addons()?;
+    if let Some(id) = only
+        && !installed.contains_key(id)
+    {
+        bail!("{id} is not installed");
+    }
+    let mut damaged = 0;
+    for (id, m) in installed
+        .iter()
+        .filter(|(id, _)| only.is_none_or(|o| o == id.as_str()))
+    {
+        let dir = store.addons_dir().join(id);
+        if store.is_builtin(id) || !dir.is_dir() {
+            continue;
+        }
+        let damage = addon_files::verify(&dir, m);
+        if damage.is_empty() {
+            let unlisted = addon_files::read_index(&dir).is_none();
+            let note = if unlisted {
+                " (installed without a file list: op files checked)"
+            } else {
+                ""
+            };
+            println!("{id:32} ok{note}");
+            continue;
+        }
+        damaged += 1;
+        for d in damage {
+            println!("{id:32} {}", d.line());
+        }
+    }
+    if damaged > 0 {
+        bail!("{damaged} damaged addon(s): install them again");
     }
     Ok(())
 }
