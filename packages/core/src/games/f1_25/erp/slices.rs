@@ -22,12 +22,12 @@ pub(crate) fn view_slices(view: &Resource) -> Result<Option<u32>> {
 // The slice count a texture array view says and the one its image has, when they differ
 // and the view doesn't say 0 (the stock single-slice convention).
 pub(crate) fn view_mismatch(view: &Resource, image: &Resource) -> Result<Option<(u32, usize)>> {
-    let Some(array) = Array::read_slices(image) else {
+    let Some(count) = Array::slice_count(image) else {
         return Ok(None);
     };
     Ok(view_slices(view)?
-        .filter(|&said| said != 0 && said as usize != array.count)
-        .map(|said| (said, array.count)))
+        .filter(|&said| said != 0 && said as usize != count)
+        .map(|said| (said, count)))
 }
 
 // What one merge-slices op did: the stock slice count (0 without a stock array), the
@@ -231,13 +231,18 @@ impl ErpBuild<'_> {
                     .strip_suffix(".image")
                     .expect("built with the suffix")
                     .to_owned();
-                let Some(img) = self.current(&rel, &image)? else {
+                let target = self.erp(&rel)?;
+                let (Some(at_image), Some(at_view)) = (
+                    target.position(&image).map_err(|e| fail(format!("{rel}: {e}")))?,
+                    target.position(&view).map_err(|e| fail(format!("{rel}: {e}")))?,
+                ) else {
+                    continue;
+                };
+                let (viewed, imaged) = (target.loaded(at_view)?, target.loaded(at_image)?);
+                let Some((said, count)) = view_mismatch(&viewed, &imaged)? else {
                     continue;
                 };
                 let Some(mut v) = self.current(&rel, &view)? else {
-                    continue;
-                };
-                let Some((said, count)) = view_mismatch(&v, &img)? else {
                     continue;
                 };
                 let Some(mut data) = v.fragments.first().map(|f| f.data()).transpose()? else {
