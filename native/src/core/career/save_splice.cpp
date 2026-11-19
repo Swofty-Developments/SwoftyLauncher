@@ -136,6 +136,7 @@ std::vector<Captured> captured;
 std::set<std::string> seen_children, injected_names;
 std::string current_child;
 thread_local int load_depth = 0;
+thread_local bool in_fix = false;
 plain::Plan plan;
 std::map<std::string, size_t> career_tally;
 std::vector<std::string> registered_now;
@@ -544,7 +545,7 @@ int *deserialise_entry(void *self, int *result, void *bag, uint8_t reset_on_erro
     }
     if (root)
         plan = plain::make_plan();
-    if (!root && depth == 2) {
+    if (!root && depth == 2 && !in_fix) {
         bool loading;
         {
             std::lock_guard<std::mutex> g(hooks.lock);
@@ -556,8 +557,11 @@ int *deserialise_entry(void *self, int *result, void *bag, uint8_t reset_on_erro
     int *r = hooks.deserialise_container(self, result, bag, reset_on_error, groups);
     --load_depth;
     if (root) {
-        if (r && *r == 0 && plan.on)
+        if (r && *r == 0 && plan.on) {
+            in_fix = true;
             fix_registered(self, bag, reset_on_error, groups);
+            in_fix = false;
+        }
         if (r && *r == 0 && plain::enabled()) {
             std::map<std::string, std::string> registered, kept;
             {
