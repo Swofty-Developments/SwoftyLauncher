@@ -45,6 +45,7 @@ bool container_name(uintptr_t self, std::string &out);
 uintptr_t registered_child(uintptr_t root, const std::string &name);
 // Whether obj starts with a vtable pointer into the game image, the cheapest check that a pointer is a live game object.
 bool game_object(const void *obj);
+bool bag_object(const void *bag);
 // The names of the root's registered children between begin and end; false when one does not read.
 template <class S = swofty::game::SaveDataContainer>
 bool child_names(uintptr_t begin, uintptr_t end, std::vector<std::string> &out);
