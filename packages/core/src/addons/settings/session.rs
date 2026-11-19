@@ -46,6 +46,9 @@ pub struct SessionSettings {
     /// its save slot by `key`. Empty when the list screen is off (`SWOFTY_RESUME_LIST=0`).
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub resume_list: Vec<crate::stdlib::careers::ResumeRow>,
+    /// The Career list screen is built, even with no careers to list (it then holds the New Career row alone).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub resume_list_on: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -335,6 +338,7 @@ impl SessionSettings {
             plain_saves: None,
             resume_needs: Vec::new(),
             resume_list: Vec::new(),
+            resume_list_on: false,
         };
         out.check_commands()?;
         Ok(out)

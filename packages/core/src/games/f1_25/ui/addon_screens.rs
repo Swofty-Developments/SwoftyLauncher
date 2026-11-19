@@ -5,14 +5,15 @@ use std::path::PathBuf;
 
 use swofty_formats::pkg::Node;
 
+use super::career_row;
 use super::node::{boolv, err, s, uidb_var};
 use super::pages::{self, Entry, HomePage, Screens, Sources};
 use super::{
     ANCHOR, FLOW, MfdRow, SETUP_BACK_ERP, SETUP_FLOW_ERP, catalog, check, patch, screen_flow, ui_file,
 };
-use crate::Result;
 use crate::addons::settings::SessionSettings;
 use crate::manifest::CAREER_SETUP_BACK;
+use crate::{Error, Result};
 
 /// Builds the options page of each addon screen with `page: options` and adds it to `built`, named
 /// swofty_addon_<name>_<addon index>, since the view model reads the index after the last '_'. Returns
@@ -98,24 +99,32 @@ pub(super) struct Resume {
     pub(super) line: String,
 }
 
-/// Builds the Resume Career list screen for the rows the session has and adds it to `built`. `None` when the
-/// session has no rows: the stock Resume Career screen then stays as it is.
+/// Builds the Career list screen for the rows the session has, which may be none, and adds it to `built`. `None`
+/// when the list is off: the stock Career menu then stays as it is.
 pub(super) fn resume_screen(
     settings: &SessionSettings,
     input: &dyn Fn(&str) -> PathBuf,
     src: &Sources,
     built: &mut Screens,
 ) -> Result<Option<Resume>> {
-    if settings.resume_list.is_empty() {
+    if !settings.resume_list_on {
         return Ok(None);
     }
     let flows_ui = super::archives::read_frag(&input(&ui_file("persistent.erp")), super::FLOWS, 0)?;
     let frontend_flow = screen_flow(input, &flows_ui, SETUP_BACK_ERP, patch::RESUME_CONTINUE_SCREEN)?;
     let (name, ui) = pages::build_resume_page(src, &settings.resume_list)?;
+    let stock = super::archives::read_frag(&input(&ui_file("flow_options.erp")), career_row::STOCK, 0)?;
+    let problems = career_row::layout_problems(&ui, &career_row::row_scene(&stock)?, &stock)?;
+    if !problems.is_empty() {
+        return Err(Error::Other(format!(
+            "the Career list rows break their scene: {}",
+            problems.join("; ")
+        )));
+    }
     built.order.push((name.clone(), ui));
     built.view_models.push(name.clone());
     let line = format!(
-        "ui: the Resume Career list screen {name} has {} row(s); the route {} opens it from {}, and a row's \
+        "ui: the Career list screen {name} has {} career row(s); the Career tile opens it, the route {} opens it from {}, and a row's \
          press routes to the stock continue screen of its mode in {frontend_flow}",
         settings.resume_list.len(),
         pages::RESUME_ROUTE,

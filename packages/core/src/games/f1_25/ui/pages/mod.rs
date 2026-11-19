@@ -26,8 +26,8 @@ pub(super) use page::as_group;
 use page::{build_page, retitle, vm_page};
 use page_rows::{addon_rows, map_rows, mod_rows, number, state_value};
 pub use resume::{
-    COMMAND_PREFIX, CONTINUE_DRIVER, CONTINUE_MY_TEAM, RESUME_ROUTE, RESUME_SCREEN, build_resume_page,
-    row_command, row_name,
+    COMMAND_PREFIX, CONTINUE_DRIVER, CONTINUE_MY_TEAM, NEW_CAREER_ROUTE, RESUME_ROUTE, RESUME_SCREEN,
+    build_resume_page, colour_rgb, row_command, row_name, status_colour,
 };
 pub use setup::{
     SETUP_CONFIRM, SETUP_OPTIONS, build_setup_home, build_setup_page, setup_rows_screen, setup_title,

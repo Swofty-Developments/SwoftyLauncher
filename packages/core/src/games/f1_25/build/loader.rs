@@ -187,7 +187,7 @@ impl Pipeline<'_, '_> {
                 ));
                 if menus && crate::stdlib::careers::resume_list_wanted() {
                     let aliases = edits.id_aliases.clone();
-                    match crate::stdlib::careers::resume_list_for(store, run.game, &built.overlay, order.as_slice(), aliases) {
+                    match crate::stdlib::careers::resume_list_for(store, run.game, run.profile, &built.overlay, order.as_slice(), aliases) {
                         Some((needs, rows)) => {
                             built.lines.push(format!(
                                 "ui: the Resume Career list screen has {} career(s); {} need something this build lacks",
@@ -196,6 +196,7 @@ impl Pipeline<'_, '_> {
                             ));
                             session.resume_needs = needs;
                             session.resume_list = rows;
+                            session.resume_list_on = true;
                         }
                         None => built
                             .warnings

@@ -24,7 +24,7 @@ const INTO: &str = "block_into_1";
 /// it, so the row starts there too.
 const ROW_X: f64 = -8.6;
 
-fn set_scene_name(entry: &mut Node, id: u64) -> Result<()> {
+pub(super) fn set_scene_name(entry: &mut Node, id: u64) -> Result<()> {
     let o = entry.o_mut()?;
     let mut v = o
         .get("name")
