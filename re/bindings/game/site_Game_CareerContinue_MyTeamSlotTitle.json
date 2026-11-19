@@ -8,7 +8,7 @@
   "type": "code",
   "level": "L2",
   "subsystem": "game",
-  "evidence": "decomp:own capstone disasm 0x141a0f760-0x141a0f8bf on KB 1.0.141 FillSlot My Team branch (lea rdx at 0x141a0f82c loads lng_homescreen_my_team_career then the call at 0x141a0f833 writes the title);xref:0x141a0f833,0x141a0f82c;imm:0xc000,0x4000;pat:Steam 1.0.145 site 0x141a11013 = KB+0x17e0 found by the same signature",
+  "evidence": "decomp:own capstone disasm 0x141a0f760-0x141a0f8bf on KB 1.0.141 FillSlot My Team branch (lea rdx at 0x141a0f82c loads lng_homescreen_my_team_career then the call at 0x141a0f833 writes the title);xref:0x141a0f833,0x141a0f82c;imm:0xc000;imm:0x4000;pat:Steam 1.0.145 site 0x141a11013 = KB+0x17e0 found by the same signature",
   "notes": "resume-career card title (Game_CareerContinue_FillSlot, My Team branch): the call that writes the card's display_title, the twin of site_Game_CareerContinue_DriverSlotTitle; rcx = the holder, rdx = lng_homescreen_my_team_career, rbx = slot_info, rsi = slot index, rdi = the view model. KB 0x141a0f833, Steam 1.0.145 0x141a11013"
  },
  "signature": {
@@ -44,7 +44,7 @@
    "item": "site_Game_CareerContinue_MyTeamSlotTitle",
    "claimed": "L2",
    "verdict": "agree",
-   "evidence": "decomp:own capstone disasm of FillSlot 0x141a0f760, test byte [rdx+0x171],0x20 jne 0x141a0f82c, lea rdx at 0x141a0f82c = 0x14570ce69 lng_homescreen_my_team_career, E8 call 0x1407b10c0 at 0x141a0f833;xref:0x141a0f833,0x141a0f82c;imm:0x171,0x20,0x540",
+   "evidence": "decomp:own capstone disasm of FillSlot 0x141a0f760, test byte [rdx+0x171],0x20 jne 0x141a0f82c, lea rdx at 0x141a0f82c = 0x14570ce69 lng_homescreen_my_team_career, E8 call 0x1407b10c0 at 0x141a0f833;xref:0x141a0f833,0x141a0f82c;imm:0x171;imm:0x20;imm:0x540",
    "notes": "gh:saves-blind call is E8 to 0x1407b10c0 which builds a string from the lng key and sets it on the text holder [rcx+8] (rcx = slot +0x3b8). Non-My-Team branch loads lng_homescreen_driver_career at 0x145709e97 into the same call at 0x141a0f7ac. Steam 145 site 0x141a11013 is a call after the same lea, key lng_homescreen_my_team_career"
   }
  ],

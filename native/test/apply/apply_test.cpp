@@ -265,10 +265,9 @@ void test_ids_reserved()
 {
     ap::ids::Store s;
     s.define_pool("team.identity", {{{502, 506}}});
-    std::string rows =
-        R"({"rows":{"a.f1-1990/entrants.teams.team/mclaren":{"id":502,"from":"seeded"},)"
-        R"("a.f1-1990/entrants.vehicles.vehicle/car":{"id":503,"from":"seeded"}},)"
-        R"("profiles":{"p":{"rows":{"b.x/entrants.teams.team/t":{"id":503,"from":"moved"}}}}})";
+    std::string rows = R"({"rows":{"a.f1-1990/entrants.teams.team/mclaren":{"id":502,"from":"seeded"},)"
+                       R"("a.f1-1990/entrants.vehicles.vehicle/car":{"id":503,"from":"seeded"}},)"
+                       R"("profiles":{"p":{"rows":{"b.x/entrants.teams.team/t":{"id":503,"from":"moved"}}}}})";
     check(s.reserve_json(rows), "row-ids.json parses");
     check(s.reserved("team.identity", 502) && s.reserved("team.identity", 503), "team ids kept as rows are reserved");
     check(!s.reserved("team.identity", 504) && !s.reserved("vehicle", 502), "other ids and tables are not");

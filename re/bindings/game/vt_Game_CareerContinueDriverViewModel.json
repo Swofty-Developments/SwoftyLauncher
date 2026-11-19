@@ -8,7 +8,7 @@
   "type": "vtable[28]",
   "level": "L2",
   "subsystem": "game",
-  "evidence": "decomp:own capstone disasm of factory 0x141649f80 tail 0x14164a1b0-0x14164a2f4 on KB 1.0.141 (lea rax at 0x14164a1cd = 0x1457264a0 stored at r12) and own vtable dump slot 10 +0x50 HandleCommand KB 0x141a1db90 and slot 24 +0xc0 PressSlot KB 0x141a1eb80;xref:0x14164a1cd,0x14164a1d4,0x1457264f0;imm:0x1505,0x540,0x1380;pat:Steam 1.0.145 vtable 0x1457285d0 found by the same signature and its slot 24 PressSlot 0x141a20360 = KB+0x17e0",
+  "evidence": "decomp:own capstone disasm of factory 0x141649f80 tail 0x14164a1b0-0x14164a2f4 on KB 1.0.141 (lea rax at 0x14164a1cd = 0x1457264a0 stored at r12) and own vtable dump slot 10 +0x50 HandleCommand KB 0x141a1db90 and slot 24 +0xc0 PressSlot KB 0x141a1eb80;xref:0x14164a1cd,0x14164a1d4,0x1457264f0;imm:0x1505;imm:0x540;imm:0x1380;pat:Steam 1.0.145 vtable 0x1457285d0 found by the same signature and its slot 24 PressSlot 0x141a20360 = KB+0x17e0",
   "notes": "ts-v1: CareerContinueDriverViewModel (resume screen, Driver Career); slot 10 = Game_CareerContinue_HandleCommand, slot 24 = PressSlot (read from the exe); built by the screen factory 0x141649f80"
  },
  "signature": {
@@ -47,7 +47,7 @@
    "item": "vt_Game_CareerContinueDriverViewModel",
    "claimed": "L2",
    "verdict": "agree",
-   "evidence": "decomp:own capstone disasm of factory 0x141649f80 (allocs 0x13c0, base ctor name career_continue_driver, lea rax at 0x14164a1cd = 0x1457264a0 stored at [r12]) and vtable dump slot 10 = 0x141a1db90 slot 24 = 0x141a1eb80;xref:0x14164a1cd;imm:0x13c0,0x1505,0x540",
+   "evidence": "decomp:own capstone disasm of factory 0x141649f80 (allocs 0x13c0, base ctor name career_continue_driver, lea rax at 0x14164a1cd = 0x1457264a0 stored at [r12]) and vtable dump slot 10 = 0x141a1db90 slot 24 = 0x141a1eb80;xref:0x14164a1cd;imm:0x13c0;imm:0x1505;imm:0x540",
    "notes": "gh:saves-blind factory string career_continue_driver at 0x14572647c; slot 10 reads event id [rdx]->dword (0x1505 ignore, 0xbda0a8b0 clears +0x136a, else tail-jumps to base 0x141a0b280) = HandleCommand; slot 24 takes slot index in dl, indexes slot array +0x328 stride 0x540, returns 3 if slot absent = PressSlot; Steam 145 vtable 0x1457285d0 slots 10/24 = 0x141a1f370/0x141a20360 by same signature"
   }
  ],

@@ -8,7 +8,7 @@
   "type": "vtable[28]",
   "level": "L2",
   "subsystem": "game",
-  "evidence": "decomp:own capstone disasm of factory 0x14164a4d0-0x14164a52a on KB 1.0.141 (lea rax at 0x14164a4f6 = 0x145726670 stored at r12) and own vtable dump slot 10 +0x50 HandleCommand KB 0x141a1db90 and slot 24 +0xc0 PressSlot KB 0x141a1eb80;xref:0x14164a4f6,0x14164a4fd,0x1457266c0;imm:0x1505,0x540,0x1380;pat:Steam 1.0.145 vtable 0x1457287a0 found by the same signature and its slot 24 PressSlot 0x141a20360 = KB+0x17e0",
+  "evidence": "decomp:own capstone disasm of factory 0x14164a4d0-0x14164a52a on KB 1.0.141 (lea rax at 0x14164a4f6 = 0x145726670 stored at r12) and own vtable dump slot 10 +0x50 HandleCommand KB 0x141a1db90 and slot 24 +0xc0 PressSlot KB 0x141a1eb80;xref:0x14164a4f6,0x14164a4fd,0x1457266c0;imm:0x1505;imm:0x540;imm:0x1380;pat:Steam 1.0.145 vtable 0x1457287a0 found by the same signature and its slot 24 PressSlot 0x141a20360 = KB+0x17e0",
   "notes": "ts-v1: CareerContinueMyTeamViewModel (resume screen, My Team); slot 10 = Game_CareerContinue_HandleCommand, slot 24 = PressSlot (read from the exe)"
  },
  "signature": {
@@ -47,7 +47,7 @@
    "item": "vt_Game_CareerContinueMyTeamViewModel",
    "claimed": "L2",
    "verdict": "agree",
-   "evidence": "decomp:own capstone disasm of the My Team factory 0x14164a2fc-0x14164a52a (allocs 0x13b8, base ctor name career_continue_my_team at 0x14572664f, lea rax at 0x14164a4f6 = 0x145726670 stored at [r12]) and vtable dump slot 10 = 0x141a1db90 slot 24 = 0x141a1eb80;xref:0x14164a4f6;imm:0x13b8,0x1505,0x540",
+   "evidence": "decomp:own capstone disasm of the My Team factory 0x14164a2fc-0x14164a52a (allocs 0x13b8, base ctor name career_continue_my_team at 0x14572664f, lea rax at 0x14164a4f6 = 0x145726670 stored at [r12]) and vtable dump slot 10 = 0x141a1db90 slot 24 = 0x141a1eb80;xref:0x14164a4f6;imm:0x13b8;imm:0x1505;imm:0x540",
    "notes": "gh:saves-blind same shared HandleCommand and PressSlot as the Driver vtable; own slots 5,13,15,22,25 differ (0x141a11300 etc); Steam 145 vtable 0x1457287a0 slots 10/24 = 0x141a1f370/0x141a20360"
   }
  ],
