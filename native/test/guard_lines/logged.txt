@@ -14,6 +14,10 @@
 [ai] team curves: the player's vehicle is not in the entrants system's vehicle table (a saved Grand Prix from before its addon moved the vehicle ids); the AI builds with the first team's curves
 [ai] team curves guard: not hooked: %s%s
 
+[log ai/ai_ers_guard.cpp]
+[ai] ers corner: car record +0x%llx has no corner marker between the next corner's start and end lines on this track's AI line; its ERS decision skips that corner's bonus
+[ai] ers corner guard off: needs %s and %s, which this build does not resolve
+
 [log ai/ai_line_set_guard.cpp]
 [ai] vehicle slot %u has no AI line or tables of its own (its name is in none of the AI maps); %u of its pointers borrow another car's, %u have no donor, %u earlier cars backfilled; brake line settings %s%s
 
@@ -23,6 +27,14 @@
 [career] activity resume guard off (SWOFTY_ACTIVITY_RESUME_GUARD=%s)
 [career] activity resume guard: not hooked: %s%s%s
 [career] activity resume guard armed: a championship whose track is not in the game mode's track list no longer faults the activity report
+
+[log career/calendar_track_guard.cpp]
+[career] calendar track guard: the calendar of schedule component 0x%llx could not be read; left as it is
+[career] calendar track guard: none of the %zu round(s) has track data in this game; the calendar is left as it is
+[career] calendar: round %zu (event %u) is on track %u, which this game loaded no track data for (it is not in the game's content); the round is left out of the season
+[career] calendar track guard: the kept rounds could not be read; the calendar is left as it is
+[career] calendar: %zu of %zu round(s) kept; the season runs without the %zu round(s) on tracks the game has no track data for
+[career] calendar track guard off: %s is not found on this build
 
 [log career/myteam_vehicle_guard.cpp]
 [myteam] save: My Team vehicle base %llu (stat id %u) uses vehicle '%s' from %s (%s), which is not in the game data (no entrants.vehicles row; the addon is off or gone); the base is skipped and the rest of the career loads. Turn %s back on, or if it is on, add that engine back in its settings, to bring this car back%s
@@ -285,8 +297,12 @@
 
 [log tracks/gp_weekend_track_guard.cpp]
 [gp] %s
+[gp] weekend track guard: %s is not found on this build
+[gp] weekend track guard: %s: the hook failed: %s
+%s
 [gp] weekend track guard off: vt_Career_Weekend does not resolve on this build
-[gp] weekend track guard off: %s is not found on this build
+[gp] weekend track guard off: neither site is found on this build
+[gp] weekend track guard armed%s: a Grand Prix, Driver Career or My Team weekend whose track has no track data record races melbourne instead of %s
 
 [log tracks/track_acclim.cpp]
 [acclim] Track Acclimatisation programme 0x%llx has no targets at this track (targets 0x%llx); refresh skipped%s

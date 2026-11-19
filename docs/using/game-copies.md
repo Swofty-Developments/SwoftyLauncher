@@ -85,6 +85,22 @@ F1 25 started from the EA app can run without administrator rights even when Swo
 
 `swofty run --apply` and `swofty apply` stop with the same message. Steam library folders can be changed without administrator rights.
 
+## Programs set to run as administrator
+
+On the EA app copy, **Play** stops before it changes anything and shows **A program is set to run as administrator** when Windows won't start a program the session needs. The EA app runs without administrator rights, and Windows starts a program set to **Run this program as an administrator** only for a program that has them (error 740). The dialog names each file, usually one of these:
+
+- `EALauncher.exe` or `EADesktop.exe` in `C:\Program Files\Electronic Arts\EA Desktop\EA Desktop`, the programs the launcher hands the launch link to
+- `F1_25.exe` or `EAAntiCheat.GameServiceLauncher.exe` in the game folder, for a modded session
+
+The EA app starts F1 25, so for the game's files running Swofty Launcher as administrator doesn't help. For each file the dialog names:
+
+1. Right-click it and select **Properties**.
+2. Open **Compatibility** and untick **Run this program as an administrator**.
+3. Select **Change settings for all users** and untick it there too.
+4. Select **OK**, then **Play** again.
+
+When Windows refuses one of them after the launch link, the same dialog ends the launch at once, and the game folder goes back to vanilla. See [Programs set to run as administrator](/reference/launch#programs-set-to-run-as-administrator).
+
 ## An EA app copy moved by hand
 
 The EA app starts F1 25 only from the folder it has on record: `Install Dir` under `HKEY_LOCAL_MACHINE\SOFTWARE\Codemasters\F1_25` (and the other EA keys) and the F1 25 uninstall entry. A copy moved in File Explorer stays on record at its old folder, and the EA app shows F1 25 as not installed.
@@ -111,6 +127,7 @@ On Linux, the launcher hands the EA app a launch link through a command you set.
 ```
 
 - `ea_launch_command` runs with `sh -c`. With a link, it must reach the EA app that is already running, in the same Wine prefix.
+- A path with spaces written without quotes, such as `/home/me/.steam/steam/steamapps/common/Proton - Experimental/proton`, is put in quotes when the whole path is on disk. This covers the program, its arguments and the value of a leading `NAME=` setting, up to the first quote or other shell syntax. When the shell finds no program at the path, the launch log says so, and the shell's message is in `ea_handoff.log` in the session folder.
 - When the EA app is closed, **Play** runs `ea_launch_command` with `{url}` left out to start it, waits up to 90 seconds for `EADesktop.exe`, then 10 seconds more before it hands over the link. When that command exits with an error, the launch link starts the EA app instead.
 - The EA app must keep running after `swofty` exits. A sandbox that ends with its parent, such as `steam-run`, needs `setsid -f` in front of the command that starts the EA app.
 - `ea_prefix` is the EA app's Wine prefix: the folder with `user.reg`, or the Proton folder that holds `pfx`. Before it starts the EA app, the launcher writes the in-game loader's DLL setting there and leaves it in place. Wine reads it only when the EA app starts, so the first modded **Play** with the EA app open closes the EA app and starts it again.

@@ -29,9 +29,19 @@ void on_barrier(BarrierFn fn)
     subscribers.barriers.add(fn);
 }
 
+void on_barrier_observe(BarrierObserverFn fn)
+{
+    subscribers.barrier_observers.add(fn);
+}
+
 void on_setname(SetNameFn fn)
 {
     subscribers.setnames.add(fn);
+}
+
+void on_texture_copy(TextureCopyFn fn)
+{
+    subscribers.texture_copies.add(fn);
 }
 
 void on_render_targets(RenderTargetsFn fn)

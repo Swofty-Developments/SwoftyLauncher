@@ -1,22 +1,107 @@
 use std::borrow::Cow;
 use std::path::Path;
 
-use swofty_formats::erp::{ErpFile, Resource};
+use swofty_formats::erp::{Entry, ErpFile, Resource};
 
 use super::fail;
+use crate::cache::archive_entry::ArchiveEntry;
 use crate::{Error, Result};
 
-pub(super) enum Slot {
+/// The version of the cache key's layout, raised whenever what [`Archive::key`] hashes changes, so an
+/// archive cached under an older layout is never taken for one written now. 2: a fragment hashes as stored
+/// or as pending. 3: the key leaves out where the archive is written, which its bytes do not depend on.
+const KEY_VERSION: u32 = 3;
+
+pub(crate) enum Slot {
     Stock(usize),
     Owned(Resource),
 }
 
-pub(super) struct Archive {
+pub(crate) struct Archive {
     pub(super) file: ErpFile,
     pub(super) slots: Vec<Slot>,
 }
 
 impl Archive {
+    pub(crate) fn new(file: ErpFile, slots: Vec<Slot>) -> Self {
+        Self { file, slots }
+    }
+
+    /// A hash of everything that decides the archive's bytes: the key's layout, the build pipeline, the
+    /// source archive (path, size and modified time) and every slot, stock by index and owned by all of its
+    /// fields and fragments: stored bytes, or the data and level of a pending compression.
+    pub(crate) fn key(&self) -> Option<String> {
+        use sha2::{Digest, Sha256};
+        let meta = std::fs::metadata(&self.file.path).ok()?;
+        let mut h = Sha256::new();
+        let mut field = |b: &[u8]| {
+            h.update((b.len() as u64).to_le_bytes());
+            h.update(b);
+        };
+        field(&KEY_VERSION.to_le_bytes());
+        field(env!("SWOFTY_PIPELINE").as_bytes());
+        field(self.file.path.to_string_lossy().as_bytes());
+        field(&meta.len().to_le_bytes());
+        field(format!("{:?}", meta.modified().ok()?).as_bytes());
+        field(&self.file.erp.header);
+        field(&self.file.erp.version.to_le_bytes());
+        for slot in &self.slots {
+            match slot {
+                Slot::Stock(i) => {
+                    field(b"stock");
+                    field(&(*i as u64).to_le_bytes());
+                }
+                Slot::Owned(r) => {
+                    field(b"owned");
+                    field(r.name.as_bytes());
+                    field(&r.kind);
+                    field(&r.unk);
+                    field(&r.hash);
+                    for f in &r.fragments {
+                        field(&f.name);
+                        field(&f.offset.to_le_bytes());
+                        field(&f.size.to_le_bytes());
+                        field(&f.flags.to_le_bytes());
+                        field(&[f.compression]);
+                        match f.pending() {
+                            Some((data, level)) => {
+                                field(b"pending");
+                                field(&level.to_le_bytes());
+                                field(data);
+                            }
+                            None => {
+                                field(b"stored");
+                                field(&f.packed().unwrap_or_default().to_le_bytes());
+                                field(f.raw().unwrap_or_default());
+                            }
+                        }
+                    }
+                    field(b"end");
+                }
+            }
+        }
+        Some(h.finalize().iter().map(|b| format!("{b:02x}")).collect())
+    }
+
+    /// Where the archive cache in `dir` keeps this archive, under a key taken before any pending fragment
+    /// is compressed.
+    pub(crate) fn cache_entry(&self, dir: &Path) -> Option<ArchiveEntry> {
+        Some(ArchiveEntry::at(dir, &self.key()?))
+    }
+
+    /// Writes the archive to `dst`, its pending fragments compressed.
+    pub(crate) fn write_to(self, dst: &Path) -> swofty_formats::Result<()> {
+        let Self { file, slots } = self;
+        let entries = slots
+            .into_iter()
+            .map(|s| match s {
+                Slot::Stock(i) => Entry::Copy(&file.erp.resources[i]),
+                Slot::Owned(r) => Entry::Owned(r),
+            })
+            .collect();
+        file.write(entries, dst)
+    }
+
     /// The archive at `path`, every slot the game's own; `rel` names it in errors.
     pub(super) fn open(rel: &str, path: &Path) -> Result<Self> {
         let file = ErpFile::open(path).map_err(|e| fail(format!("{rel}: {e}")))?;

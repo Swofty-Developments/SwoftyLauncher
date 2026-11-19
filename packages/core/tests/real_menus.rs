@@ -81,7 +81,7 @@ fn menus_match_the_prototype_byte_for_byte() {
         &|_, _| None,
         &out,
         true,
-        &swofty_formats::erp::Packer::default(),
+        &swofty_core::ui::ArchiveWriter::new(&swofty_formats::erp::Packer::default()),
     )
     .unwrap();
     let mut bad = Vec::new();
@@ -188,7 +188,7 @@ fn menus_and_a_map_patch_one_databases_erp() {
         &resolve,
         &|_, _| None,
         true,
-        &swofty_formats::erp::Packer::default(),
+        &swofty_core::ui::ArchiveWriter::new(&swofty_formats::erp::Packer::default()),
     )
     .unwrap();
     assert_eq!(built.plan.data[rel], out.join("overlay").join(rel));
@@ -275,7 +275,7 @@ fn stock_dialogs_keep_their_text() {
         &|_, _| None,
         &out,
         true,
-        &swofty_formats::erp::Packer::default(),
+        &swofty_core::ui::ArchiveWriter::new(&swofty_formats::erp::Packer::default()),
     )
     .unwrap();
     let rel = "2025_asset_groups/ui_package/flow_persistent.erp";
@@ -408,7 +408,7 @@ fn the_core_build_adds_the_era_rows() {
         &|_, _| None,
         &out,
         true,
-        &swofty_formats::erp::Packer::default(),
+        &swofty_core::ui::ArchiveWriter::new(&swofty_formats::erp::Packer::default()),
     )
     .unwrap();
     assert!(
@@ -684,7 +684,7 @@ fn the_core_build_adds_the_era_rows() {
         &|_, _| None,
         &again,
         true,
-        &swofty_formats::erp::Packer::default(),
+        &swofty_core::ui::ArchiveWriter::new(&swofty_formats::erp::Packer::default()),
     )
     .unwrap();
     for rel in era::ARCHIVES {
@@ -746,7 +746,7 @@ fn the_era_rows_keep_what_an_addon_put_in_the_same_archive() {
         &|r| stock(&game, r),
         &|_, _| None,
         true,
-        &swofty_formats::erp::Packer::default(),
+        &swofty_core::ui::ArchiveWriter::new(&swofty_formats::erp::Packer::default()),
     )
     .unwrap();
     assert_eq!(built.plan.data[&rel], addon);
@@ -813,7 +813,7 @@ fn an_addon_era_picker_swofty_cannot_edit_is_left_as_it_is() {
         &|r| stock(&game, r),
         &writer,
         true,
-        &swofty_formats::erp::Packer::default(),
+        &swofty_core::ui::ArchiveWriter::new(&swofty_formats::erp::Packer::default()),
     )
     .unwrap();
     assert_eq!(built.plan.data[&odd_rel], addon);
@@ -854,7 +854,7 @@ fn an_addon_era_picker_swofty_cannot_edit_is_left_as_it_is() {
         &|r| stock(&game, r),
         &|_, _| None,
         true,
-        &swofty_formats::erp::Packer::default(),
+        &swofty_core::ui::ArchiveWriter::new(&swofty_formats::erp::Packer::default()),
     );
     std::fs::remove_dir_all(&out).ok();
     assert!(e.unwrap_err().to_string().contains("does not round-trip"));
@@ -914,7 +914,7 @@ fn addon_settings_scrolls_sideways_and_shows_details_on_the_focused_tile() {
         &|_, _| None,
         &out,
         false,
-        &swofty_formats::erp::Packer::default(),
+        &swofty_core::ui::ArchiveWriter::new(&swofty_formats::erp::Packer::default()),
     )
     .unwrap();
     let pkg = swofty_formats::pkg::Pkg::parse(
@@ -1036,7 +1036,7 @@ fn a_long_addon_page_scrolls_to_keep_the_focused_row_on_screen() {
         &|_, _| None,
         &out,
         false,
-        &swofty_formats::erp::Packer::default(),
+        &swofty_core::ui::ArchiveWriter::new(&swofty_formats::erp::Packer::default()),
     )
     .unwrap();
     let pages: Vec<_> = built
@@ -1163,7 +1163,7 @@ fn addon_settings_pages_its_home_so_each_home_screen_stays_small() {
         &|_, _| None,
         &out,
         false,
-        &swofty_formats::erp::Packer::default(),
+        &swofty_core::ui::ArchiveWriter::new(&swofty_formats::erp::Packer::default()),
     )
     .unwrap();
     let homes: Vec<String> = (0..tiles.div_ceil(HOME_PAGE_TILES))
@@ -1400,7 +1400,7 @@ fn the_mfd_page_and_a_map_patch_share_flow_race_and_persistent() {
         &resolve,
         &|_, _| None,
         true,
-        &swofty_formats::erp::Packer::default(),
+        &swofty_core::ui::ArchiveWriter::new(&swofty_formats::erp::Packer::default()),
     )
     .unwrap();
     assert!(

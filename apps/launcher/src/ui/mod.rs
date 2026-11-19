@@ -14,6 +14,7 @@ pub mod form;
 pub(crate) mod format;
 mod header;
 mod lock;
+pub(crate) mod memory_image;
 mod overlay;
 mod pill;
 mod progress;

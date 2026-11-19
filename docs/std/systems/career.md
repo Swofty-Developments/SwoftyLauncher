@@ -330,6 +330,7 @@ Result set_driver_ratings(Ref<drivers::Identity> driver, const DriverRatings &ra
 Result set_car_number(Ref<drivers::Identity> driver, int number, bool swap = false);
 Result swap_drivers(Ref<drivers::Identity> a, Ref<drivers::Identity> b);   // the game's full move sequence
 Result set_dropped_scores(std::string_view data_group, int best);   // the loaded career counts each driver's best N results
+std::optional<Standings> standings();   // the drivers' championship in the game's order (table version 8)
 Result report_season(int year, int season_index);   // the career's owner: the season at season_index is year
 
 } // namespace swofty::career
@@ -842,7 +843,7 @@ career::swap_drivers(drivers::identities["game/alex_albon"], drivers::identities
 career::report_season(2017, 1);
 ```
 
-The calls run on the core's career operations table (`SwoftyCoreCareerOps`, `SwoftyCareerOps` in `swofty_api.h`, `SWOFTY_CAREER_OPS_VERSION` 7). A call returns `unavailable` on a core whose table is older than the version that added it.
+The calls run on the core's career operations table (`SwoftyCoreCareerOps`, `SwoftyCareerOps` in `swofty_api.h`, `SWOFTY_CAREER_OPS_VERSION` 8). A call returns `unavailable` on a core whose table is older than the version that added it.
 
 | Table version | Adds | Header call |
 | --- | --- | --- |
@@ -853,6 +854,7 @@ The calls run on the core's career operations table (`SwoftyCoreCareerOps`, `Swo
 | 5 | `set_logo` | `teams::set_logo` |
 | 6 | `set_look` | `drivers::set_look` |
 | 7 | `current_round`, `team_stat`, `set_dropped_scores` | `career::current_round`, `career::set_slots` (by team references), `career::set_dropped_scores` |
+| 8 | `standings` | `career::standings` |
 
 `set_seat` takes a 1-based `slot` of the loaded career's data group, `set_seat_of_team` a team stat id; `set_car_number` takes `swap`, which gives the driver who held the number the caller's old one. `set_driver_ratings` writes experience, racecraft, awareness and pace by game stat id 0, 1, 3 and 4.
 
@@ -865,6 +867,7 @@ The calls run on the core's career operations table (`SwoftyCoreCareerOps`, `Swo
 - **What it refuses:** a driver not in the drivers table, a driver without a single career row, a driver named on two seats (the second), the player (never moved) and the player's seat (never given away). The refused seats keep their drivers.
 
 - **Mid-season changes:** `career::current_round()` (table version 7) says which race weekend the loaded career is at: `round` is 1-based and is the next race to run, `rounds` the season's weekend count. It returns nothing while no career is loaded, the season has no built weekends or the career is busy, so call it at an idle Team HQ (`career.hub`). `career::seats_at(season, round)` is the season's seats at that round, from the season's `changes` with `round` up to that round: `replace` puts `in` on the seat for the rest of the season, `swap` puts `in` on the seat and gives his old seat to the seat's previous driver, `move` puts `in` on the seat and leaves his old seat empty until another change fills it, and `stand_in` puts `in` on the seat from its round up to (not including) `until_round`, one race when it is absent, then the previous driver returns. `career::apply_round(season, round)` runs `apply_lineup` on those seats, so a seat already right is unchanged, the player's seat is never given away and the player is never moved. A driver an earlier round released has no seat and takes the next one as a free agent.
+- **Standings:** `career::standings()` (table version 8) is the loaded career's drivers' championship: the drivers in the game's order with the game's totals (dropped scores included), and each driver's points and finishes per round. See [Standings](/reference/std/standings).
 - **Team references:** `career::set_slots(data_group, teams)` takes team references (`game/<label>`, or an addon's `team.identity` id) and resolves them to the teams table's stat ids (`team_stat`, table version 7).
 
 A batch of seat changes follows the game's own sequence, in this order:

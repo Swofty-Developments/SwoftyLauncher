@@ -48,6 +48,8 @@ pub(crate) struct Browser {
     pub(super) refused: BTreeSet<String>,
     pub(super) batch: Option<Batch>,
     pub(super) held: BTreeMap<String, (semver::Version, String)>,
+    /// The version of each addon the play bar doesn't offer ([`catalog::source::skipped`]).
+    pub(super) skipped: BTreeMap<String, semver::Version>,
     pub(super) ticking: bool,
     pub(super) stars: Stars,
     pub(super) sort: Sort,
@@ -63,6 +65,8 @@ pub(crate) struct Browser {
     pub(super) profile_failed: HashMap<String, String>,
     pub(super) author_sort: Sort,
     pub(super) avatars: HashMap<String, Arc<Image>>,
+    pub(super) media: HashMap<String, Arc<Image>>,
+    pub(super) media_pick: HashMap<String, usize>,
     pub(super) _search: Subscription,
     pub(super) feed: Feed,
 }
@@ -114,6 +118,7 @@ impl Browser {
             refused: BTreeSet::new(),
             batch: None,
             held: BTreeMap::new(),
+            skipped: catalog::source::skipped(root),
             ticking: false,
             stars: Stars::load(root),
             sort: Sort::Stars,
@@ -129,6 +134,8 @@ impl Browser {
             profile_failed: HashMap::new(),
             author_sort: Sort::Stars,
             avatars: HashMap::new(),
+            media: HashMap::new(),
+            media_pick: HashMap::new(),
             _search: changed,
             feed,
         }
@@ -177,7 +184,7 @@ impl Browser {
         self.find(id).is_some()
     }
 
-    pub(super) fn find(&self, id: &str) -> Option<&Addon> {
+    pub(crate) fn find(&self, id: &str) -> Option<&Addon> {
         self.addons.iter().find(|a| a.id == id)
     }
 

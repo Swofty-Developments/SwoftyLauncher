@@ -1,0 +1,43 @@
+{
+ "schema": 1,
+ "name": "site_Game_ChampionshipGameMode_SessionTrackRead",
+ "table": "globals",
+ "author": "driver-career-suzuka",
+ "row": {
+  "addr": "0x1407b7dd6",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "game",
+  "evidence": "xref:0x1407b7dcf,0x1407b7dd6,0x1407b7df4,0x1407b7dfa,0x1407b7e08,0x1407b7e33,0x142e57efb;kb:subsystems/tracks.md",
+  "notes": "In Game_ChampionshipGameMode_BuildSessionSettings (0x1407b7b90): movzx eax,byte [rdi+0x278] (7 bytes) right after mov rdx,[r13+0x1448]. rdi = the current weekend (vt_Career_Weekend: the season from game+0x1030 vt+0x88, weekends +0x288, index +0x2a0), eax = its track stat id (Weekend+0x278), rdx = the mode's TrackDataSystem (item vector +0x28..+0x30, 16 bytes per stat id, TrackDataRecord at +8), r13 = the championship game mode. The next instructions leave r12 = the record, 0 when the stat id is >= the item count (jbe) or the item is null, store it at SessionSettings+0x30 and pass it as rdx to 0x1407a1310, whose loop calls 0x142e57e90 that reads [record+0x78] (0x142e57efb) (the track name, for the FILENAME key) with no check. Steam 1.0.145 (0x1407b7e16, fn 0x1407b7bd0) bundles of 2026-11-17/18: ACCESS_VIOLATION reading 0x78 at F1_25.exe+0x2e5a48b (fn 0x2e5a420+0x6b < 0x7a140e < 0x7b7e78) on a Driver Career race load whose weekend track is 36 (the suzuka24 slot, filled only by an imported track that was uninstalled). A second read of the same weekend's track later in the function (mov rdx,[r13+0x1448] at 0x1407b8be4) checks the record and bails. Pattern unique in .xtls on Steam 1.0.141 (match 0x1407b7dcf) and 1.0.145 (.tls$, 0x1407b7e0f) and in the EA 1.0.141 (.rdata, 0x1407b6edf) and 1.0.145 (.arch, 0x1407b6f1f) dumps."
+ },
+ "signature": {
+  "id": "game.championship_game_mode_session_track_read",
+  "section": ".xtls",
+  "pattern": "49 8B 95 48 14 00 00 0F B6 87 78 02 00 00 48 8B 4A 28 48 8B 52 30 48 29 CA 48 C1 FA 04 48 39 C2 48 89 7C 24 70",
+  "match": "0x1407b7dcf",
+  "anchor": "0x7",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407b7dd6",
+  "kind": "mid",
+  "expect": "0F B6 87 78 02 00 00",
+  "names": [
+   "site_Game_ChampionshipGameMode_SessionTrackRead"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-18",
+    "by": "driver-career-suzuka",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/gp_weekend_track_guard.cpp"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

@@ -11,6 +11,7 @@
 use crate::GAME_EXE;
 
 mod compat;
+mod ea;
 mod elevation;
 mod tools;
 mod write_access;
@@ -18,6 +19,10 @@ mod write_access;
 pub use compat::{
     AdminLayer, admin_layers, elevation_blocker, explain, has_layers, has_run_as_admin, layers,
     session_admin_layers, starter_layers, starter_layers_in,
+};
+pub use ea::{
+    EA_APP_EXES, ELEVATION_REQUIRED, Elevation, RunAsAdmin, STUB_ELEVATION, ea_blocker, ea_blocker_in,
+    game_refused, game_refused_in, needs_elevation, refused_start, refused_start_in, stub_needs_elevation,
 };
 pub use elevation::{Elevated, elevated, relaunch_elevated};
 pub(crate) use tools::windows_tool;

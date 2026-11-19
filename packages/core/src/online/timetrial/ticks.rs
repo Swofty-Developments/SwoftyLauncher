@@ -3,7 +3,10 @@
 //! of its own, in the order they were made, each chained to the receipt of its lap's previous mark, and keeps the
 //! receipts per lap in `timetrial/ticks/`. A lap collected into the outbox takes its receipts with it
 //! ([`for_lap`]), so a queued upload carries them however late it goes. A mark that can't be sent in time is
-//! dropped with the rest of its lap's timing: that lap is untimed and uploads as before.
+//! dropped with the rest of its lap's timing: that lap is untimed and uploads as before. The marks of a pause in a
+//! lap (`p1` as the game pauses, chained to the lap's start, and `r1` as it resumes, chained to `p1`; up to four)
+//! let the server leave the pause out of the lap's real time; one that can't be sent is dropped alone, and the pause
+//! stays in.
 
 use std::collections::{BTreeMap, VecDeque};
 use std::path::{Path, PathBuf};
@@ -34,6 +37,7 @@ const PER_MINUTE: usize = 12;
 const MINUTE_MS: u64 = 60_000;
 const STORE_KEEP_MS: u64 = 7 * 24 * 3_600_000;
 const MARKS: [&str; 4] = ["start", "s1", "s2", "end"];
+const PAUSE_MARKS: [&str; 8] = ["p1", "r1", "p2", "r2", "p3", "r3", "p4", "r4"];
 const MAX_LAP: u32 = 100_000;
 const MAX_GAME_MS: u64 = 3_600_000;
 const MARK_MAX_BYTES: u64 = 4096;
@@ -154,7 +158,9 @@ fn read_mark(path: &Path) -> Option<Mark> {
         return None;
     }
     let mark: Mark = serde_json::from_slice(&std::fs::read(path).ok()?).ok()?;
-    (MARKS.contains(&mark.mark.as_str()) && mark.lap <= MAX_LAP && mark.game_ms <= MAX_GAME_MS)
+    ((MARKS.contains(&mark.mark.as_str()) || pause(&mark.mark))
+        && mark.lap <= MAX_LAP
+        && mark.game_ms <= MAX_GAME_MS)
         .then_some(mark)
 }
 
@@ -166,8 +172,21 @@ fn plausible(receipt: &str) -> bool {
             .all(|b| b.is_ascii_alphanumeric() || b"-_.=".contains(&b))
 }
 
-/// The mark before `mark` in its lap, whose receipt a tick of `mark` carries as `prev`.
+/// Whether `mark` is one end of a pause in a lap.
+fn pause(mark: &str) -> bool {
+    PAUSE_MARKS.contains(&mark)
+}
+
+/// The mark whose receipt a tick of `mark` carries as `prev`: the line before it in its lap, the lap's start for a
+/// pause, the pause for its resume.
 fn previous(mark: &str) -> Option<&'static str> {
+    if let Some(at) = PAUSE_MARKS.iter().position(|m| *m == mark) {
+        return Some(if at % 2 == 0 {
+            MARKS[0]
+        } else {
+            PAUSE_MARKS[at - 1]
+        });
+    }
     let at = MARKS.iter().position(|m| *m == mark)?;
     at.checked_sub(1).map(|i| MARKS[i])
 }
@@ -182,6 +201,7 @@ struct Try {
 enum Outcome {
     Kept,
     Again { wait: u64, answered: bool },
+    DropMark,
     DropLap,
     StopSession,
 }
@@ -305,16 +325,20 @@ impl Sender {
                 tried.is_some_and(|t| t.answered) && lap_end.is_some_and(|end| now_ms > end + AFTER_END_MS);
             if age > GIVE_UP_MS || past_end || tried.is_some_and(|t| t.attempt > MAX_ATTEMPT) {
                 say(&format!(
-                    "timing: lap {} {} not sent within {} s; that lap is untimed",
+                    "timing: lap {} {} not sent within {} s; {}",
                     mark.lap,
                     mark.mark,
                     if past_end {
                         (now_ms - mark.at_ms) / 1000
                     } else {
                         GIVE_UP_MS / 1000
-                    }
+                    },
+                    untimed(&mark.mark)
                 ));
                 self.drop_mark(path);
+                if pause(&mark.mark) {
+                    continue;
+                }
                 if let Some(nonce) = nonce {
                     self.session(nonce).laps.remove(&mark.lap);
                     self.keep(say);
@@ -341,6 +365,13 @@ impl Sender {
                     .cloned()
             });
             if prev == Some(None) {
+                say(&format!(
+                    "timing: lap {} {} has no {} receipt to chain to; {}",
+                    mark.lap,
+                    mark.mark,
+                    previous(&mark.mark).unwrap_or("?"),
+                    untimed(&mark.mark)
+                ));
                 self.drop_mark(path);
                 continue;
             }
@@ -368,9 +399,14 @@ impl Sender {
                 }
                 Ok(_) => {
                     say(&format!(
-                        "{what}: the server's receipt is not one; that lap is untimed"
+                        "{what}: the server's receipt is not one; {}",
+                        untimed(&mark.mark)
                     ));
-                    Outcome::DropLap
+                    if pause(&mark.mark) {
+                        Outcome::DropMark
+                    } else {
+                        Outcome::DropLap
+                    }
                 }
                 Err(e) if e.status == 404 || e.status == 401 => {
                     say(&format!(
@@ -391,8 +427,12 @@ impl Sender {
                     }
                 }
                 Err(e) => {
-                    say(&format!("{what} refused ({e}); that lap is untimed"));
-                    Outcome::DropLap
+                    say(&format!("{what} refused ({e}); {}", untimed(&mark.mark)));
+                    if pause(&mark.mark) {
+                        Outcome::DropMark
+                    } else {
+                        Outcome::DropLap
+                    }
                 }
             };
             match outcome {
@@ -411,6 +451,7 @@ impl Sender {
                     );
                     return;
                 }
+                Outcome::DropMark => self.drop_mark(path),
                 Outcome::DropLap => {
                     self.drop_mark(path);
                     self.session(nonce).laps.remove(&mark.lap);
@@ -422,6 +463,15 @@ impl Sender {
                 }
             }
         }
+    }
+}
+
+/// What a mark that did not go out costs: its lap's timing, or for a pause only the pause's leaving out.
+fn untimed(mark: &str) -> &'static str {
+    if pause(mark) {
+        "that pause stays in the lap's time"
+    } else {
+        "that lap is untimed"
     }
 }
 
@@ -766,6 +816,115 @@ mod tests {
                 Some(4)
             );
         }
+    }
+
+    #[test]
+    fn a_lap_whose_sector_marks_never_came_says_its_finish_is_untimed() {
+        let (data, game) = temp("gap");
+        mark(&data, 1, 2, "start", 0, 1_000);
+        mark(&data, 2, 2, "end", 90_360, 91_000);
+        let fake = Fake::new((1..=2).map(|n| Ok(receipt(n))).collect());
+        let mut sender = Sender::new(&data, folders(&data, &game));
+        let said = RefCell::new(Vec::new());
+        sender.step(&fake, Some("n"), 91_010, &|s| {
+            said.borrow_mut().push(s.to_owned())
+        });
+        let sent: Vec<String> = fake
+            .seen
+            .borrow()
+            .iter()
+            .map(|(_, b)| b["mark"].as_str().unwrap().to_owned())
+            .collect();
+        assert_eq!(sent, ["start"]);
+        assert_eq!(
+            *said.borrow(),
+            ["timing: lap 2 end has no s2 receipt to chain to; that lap is untimed"]
+        );
+        assert!(!pending(&data, &game));
+    }
+
+    #[test]
+    fn a_pause_goes_out_chained_to_the_laps_start_and_the_upload_keeps_the_line_receipts() {
+        let (data, game) = temp("pause");
+        for (seq, which, game_ms, at) in [
+            (1, "start", 0, 1_000_000),
+            (2, "s1", 33_024, 1_033_040),
+            (3, "p1", 49_830, 1_049_830),
+            (4, "r1", 49_830, 1_053_554),
+            (5, "s2", 73_220, 1_076_945),
+            (6, "end", 91_488, 1_111_584),
+        ] {
+            mark(&data, seq, 1, which, game_ms, at);
+        }
+        let fake = Fake::new((1..=6).map(|n| Ok(receipt(n))).collect());
+        let mut sender = Sender::new(&data, folders(&data, &game));
+        sender.step(&fake, Some("n"), 1_111_600, &|_| {});
+        sender.step(&fake, Some("n"), 1_111_700, &|_| {});
+        let seen = fake.seen.borrow();
+        let sent: Vec<(&str, Option<&str>)> = seen
+            .iter()
+            .map(|(_, b)| (b["mark"].as_str().unwrap(), b["prev"].as_str()))
+            .collect();
+        let (start, s1, p1, s2) = (receipt(1), receipt(2), receipt(3), receipt(5));
+        assert_eq!(
+            sent,
+            [
+                ("start", None),
+                ("s1", Some(start.as_str())),
+                ("p1", Some(start.as_str())),
+                ("r1", Some(p1.as_str())),
+                ("s2", Some(s1.as_str())),
+                ("end", Some(s2.as_str())),
+            ]
+        );
+        assert_eq!(seen[3].1["game_ms"], 49_830);
+        assert!(!pending(&data, &game));
+        assert_eq!(
+            for_lap(&data, Some("n"), Some(1), 91_488),
+            timing(1, &[receipt(1), receipt(2), receipt(5), receipt(6)])
+        );
+    }
+
+    #[test]
+    fn a_refused_pause_drops_only_itself_and_its_resume() {
+        let (data, game) = temp("pause-refused");
+        for (seq, which, game_ms, at) in [
+            (1, "start", 0, 1_000),
+            (2, "p1", 10_000, 11_000),
+            (3, "r1", 10_000, 14_000),
+            (4, "s1", 30_000, 34_000),
+            (5, "s2", 61_000, 65_000),
+            (6, "end", 90_000, 94_000),
+        ] {
+            mark(&data, seq, 1, which, game_ms, at);
+        }
+        let mut replies = vec![Ok(receipt(1)), Err(status(400, None))];
+        replies.extend((2..=4).map(|n| Ok(receipt(n))));
+        let fake = Fake::new(replies);
+        let mut sender = Sender::new(&data, folders(&data, &game));
+        let said = RefCell::new(Vec::new());
+        sender.step(&fake, Some("n"), 94_010, &|s| {
+            said.borrow_mut().push(s.to_owned())
+        });
+        sender.step(&fake, Some("n"), 94_110, &|s| {
+            said.borrow_mut().push(s.to_owned())
+        });
+        let sent: Vec<String> = fake
+            .seen
+            .borrow()
+            .iter()
+            .map(|(_, b)| b["mark"].as_str().unwrap().to_owned())
+            .collect();
+        assert_eq!(sent, ["start", "p1", "s1", "s2", "end"]);
+        assert_eq!(
+            *said.borrow(),
+            [
+                "timing: lap 1 p1 refused (status 400); that pause stays in the lap's time",
+                "timing: lap 1 r1 has no p1 receipt to chain to; that pause stays in the lap's time",
+            ]
+        );
+        assert!(!pending(&data, &game));
+        assert_eq!(for_lap(&data, Some("n"), Some(1), 90_000), timing(1, &all(4)));
     }
 
     #[test]

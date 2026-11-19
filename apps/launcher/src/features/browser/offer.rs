@@ -31,10 +31,25 @@ impl Shell {
         if self.browser.failed.contains_key(&a.id) {
             return Offer::Failed;
         }
-        standing(
+        let installed = self
+            .library
+            .addons
+            .iter()
+            .find(|x| x.manifest.id == a.id)
+            .map(|x| (x.source, x.manifest.version.clone()));
+        let standing = standing(
             a.offered(&current_version()),
             self.installed_version(&a.id),
             || self.needs_of(a).1.is_some(),
+        );
+        browser_offer(standing, installed, self.update_skipped(&a.id))
+    }
+
+    /// What the Addon Browser says about the import that has the id of `a`.
+    pub(super) fn separate_text(&self, a: &Addon) -> String {
+        trf!(
+            "This import has the same id as {name} in the Addon Browser; it is kept separate. Remove the import on the Addons page to install {name} from here.",
+            name = a.name
         )
     }
 
@@ -110,6 +125,19 @@ impl Shell {
                     ))
                     .disabled(true);
             }
+            Offer::UpdateHere(from, to) => {
+                let label = trf!("Installed v{from} · Update to v{to}", from = from, to = to);
+                button.outline().icon(IconName::CircleArrowUp).label(label)
+            }
+            Offer::Separate(v) => {
+                let tip = SharedString::from(self.separate_text(a));
+                return button
+                    .outline()
+                    .icon(IconName::TriangleAlert)
+                    .label(trf!("Your import v{version} has this id", version = v))
+                    .tooltip(tip)
+                    .disabled(true);
+            }
             Offer::Failed => {
                 return button
                     .danger()
@@ -161,6 +189,22 @@ impl Shell {
             cx.stop_propagation();
             Browser::install(this, &target, cx);
         }))
+    }
+}
+
+/// What the Addon Browser offers for an addon that stands at `standing`, with the copy installed under
+/// its id when there is one: an import keeps its id to itself, and the page itself updates a version
+/// the player skipped, which the play bar doesn't.
+pub(super) fn browser_offer(
+    standing: Offer,
+    installed: Option<(crate::services::library::Source, semver::Version)>,
+    skipped: bool,
+) -> Offer {
+    use crate::services::library::Source;
+    match (standing, installed) {
+        (_, Some((Source::Importer, version))) => Offer::Separate(version),
+        (Offer::Update(from, to), Some(_)) if skipped => Offer::UpdateHere(from, to),
+        (offer, _) => offer,
     }
 }
 

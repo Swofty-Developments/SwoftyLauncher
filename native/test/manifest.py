@@ -88,7 +88,7 @@ UNITS = [
     Unit('garage_slots', 'Garage slot guard unit test'),
     Unit('gp_continue', 'Grand Prix continue guard unit test'),
     Unit('gp_track', 'Grand Prix remembered-track fallback unit test'),
-    Unit('gp_weekend_track', 'Grand Prix weekend track guard unit test'),
+    Unit('gp_weekend_track', 'Weekend track guard unit test'),
     Unit('grade', 'Shader look unit test'),
     Unit('heap_sizes', 'Heap size table unit test'),
     Unit('hud_leaves', 'HUD leaf table unit test'),
@@ -103,6 +103,7 @@ UNITS = [
     Unit('myteam_vehicle_guard', 'My Team vehicle base guard unit test'),
     Unit('myteam_vehicle_heal', 'My Team vehicle heal unit test'),
     Unit('myteam_vehicle_keep', 'My Team vehicle keep unit test'),
+    Unit('pe_imports', 'Import table walk unit test (rewritten entries skipped, valid slots patched)', 'zig'),
     Unit('perf_logic', 'Profiler minute summary unit test'),
     Unit('pit_box', 'Pit box guard unit test'),
     Unit('pit_garage_state', 'Pit garage state guard unit test'),
@@ -140,10 +141,12 @@ UNITS = [
     Unit('rtas_guard', 'Ray tracing build guard unit test'),
     Unit('d3d12_probe', 'D3D12 probe device sharing unit test'),
     Unit('arm_gate', 'D3D12 arm gate unit test'),
+    Unit('asset_template', 'Asset group template archives unit test'),
     Unit('font_upload', 'Overlay font atlas upload unit test'),
     Unit('lang_scope', 'String scope unit test'),
     Unit('stall_order', 'Load-stall report running-threads order unit test'),
     Unit('standings_drop', 'Standings dropped scores unit test'),
+    Unit('standings_read', 'Season standings read unit test'),
     Unit('teamhq_track', 'Team HQ track guard unit test'),
     Unit('teammate_pairs', 'Teammate pairs guard unit test'),
     Unit('theatre_list', 'Theatre list guard unit test'),
@@ -172,6 +175,7 @@ UNITS = [
     Unit('career_content', 'Career content library unit test', 'zig'),
     Unit('era_logic', 'Era picker logic unit test', 'zig'),
     Unit('box_grid', 'Box grid rules unit test', 'zig'),
+    Unit('calendar_track', 'Career calendar track guard unit test'),
     Unit('car_category', 'Car category boxes unit test', 'zig'),
     Unit('save_splice', 'Save splice unit test', 'zig'),
     Unit('career_saves', 'Career saves index unit test', 'zig'),
@@ -181,6 +185,7 @@ UNITS = [
     Unit('storage_logic', 'Storage library path unit test', 'zig'),
     Unit('crash_dir', 'Crash report folder unit test', 'zig'),
     Unit('hw_settings', 'Hardware settings probe unit test', 'zig'),
+    Unit('pacing_logic', 'Frame pacing logic unit test'),
     Unit('state_logic', 'State folder unit test', 'zig'),
     Unit('udp_ids', 'UDP id rewrite unit test', 'zig'),
     Unit('udp_telemetry', 'UDP telemetry feed fill unit test', 'zig'),
@@ -204,7 +209,7 @@ REGISTRY_ENGINE = Objects(ENGINE, REGISTRY_FLAGS)
 REGISTRY = [
     *[Program(test, [Objects([f'test/registry/{test}.cpp'] + extra, REGISTRY_FLAGS), REGISTRY_ENGINE])
       for test, extra in [('corpus_test', []), ('tolerant_edit_test', []), ('iterate_test', []), ('index_load_test', []),
-                          ('declare_all_test', ['src/core/registry/older.cpp']), ('career_wait_test', []),
+                          ('declare_all_test', ['src/core/registry/older.cpp']), ('header_schemas_test', []), ('career_wait_test', []),
                           ('older_test', ['src/core/registry/older.cpp']), ('career_scope_test', [])]],
     Program('store.windows.o', [Objects(['src/core/registry/store.cpp'], ['-Isrc', '-std=c++23', '-O2', '-Wall', '-Wextra', SDK], WINDOWS)], 'obj'),
     Program('pe_exports_test', [Objects(['test/registry/pe_exports_test.c'], ['-O2', '-Wall', '-Wextra', '-Isrc/loader'])]),
@@ -256,7 +261,7 @@ SDK_OPS_FLAGS = ['-std=c++23', '-O1', '-Wall', '-Wextra', '-Werror', '-Wno-nulla
 CAREER_OPS = [Program(t, [Objects([f'test/career_ops/{t}.cpp'], CAREER_OPS_FLAGS)])
               for t in ('lineup_plan_test', 'teams_plan_test', 'ops_logic_test')] + [
     Program(f'{t}{ext}', [Objects([f'test/career_ops/{t}.cpp'], SDK_OPS_FLAGS, target)])
-    for t in ('sdk_ops_test', 'sdk_ops_v4_test', 'sdk_ops_v6_test', 'sdk_ops_v7_test')
+    for t in ('sdk_ops_test', 'sdk_ops_v4_test', 'sdk_ops_v6_test', 'sdk_ops_v7_test', 'sdk_ops_v8_test')
     for ext, target in (('', LINUX), ('.exe', WINDOWS))]
 
 SANITIZE = ['-fsanitize=address,undefined', '-fno-sanitize-recover=all']
@@ -342,7 +347,7 @@ SCRIPTS = [
     Script('bind', 'Binding resolver Wine test', ['bash', 'native/test/run_bind_test.sh'], wine=True),
     Script('career_ops', 'Career operations planner and SDK calls host test', each(
         'lineup_plan_test', 'teams_plan_test', 'sdk_ops_test', 'ops_logic_test', 'sdk_ops_v4_test', 'sdk_ops_v6_test',
-        'sdk_ops_v7_test'), cwd='test', programs=CAREER_OPS),
+        'sdk_ops_v7_test', 'sdk_ops_v8_test'), cwd='test', programs=CAREER_OPS),
     Script('json', 'swofty::json unit test', ['bash', 'native/test/run_json_test.sh', '{out}'], programs=JSON),
     Script('build_gate', 'Loader build gate unit test', ['bash', 'native/test/run_build_gate_test.sh']),
     Script('apply', 'Live apply paths (scheduler, put-back, context, budgets, sizing, stat ids, reports)',
@@ -366,6 +371,8 @@ SCRIPTS = [
     Script('hud_dial_template', 'HUD dial template host test', ['bash', 'templates/hud-dial/native/test/run_test.sh']),
     Script('guard', 'Handler guard Wine test', ['bash', 'native/test/run_guard_test.sh'], wine=True),
     Script('mem_pages', 'Memory page checks Wine test', ['bash', 'native/test/run_mem_pages_test.sh'], wine=True),
+    Script('pe_imports_wine', 'Import table walk Wine test (rewritten entries skipped, valid slots patched)',
+           ['bash', 'native/test/run_pe_imports_test.sh'], wine=True),
     Script('settings_get', 'Settings read memo Wine test', ['bash', 'native/test/run_settings_get_test.sh'], wine=True),
     Script('career_list', 'Career list Wine test', ['bash', 'native/test/run_career_list_test.sh'], wine=True),
     Script('hooks', 'Hook points, events and services host test', ['{out}/hooks_test'], cwd='test', programs=[hook_test('hooks')]),
@@ -377,6 +384,8 @@ SCRIPTS = [
     Script('w5_review', 'Hook points review test', ['{out}/w5_review_test'], cwd='test',
            programs=[Program('w5_review_test', [Objects(['test/hooks/w5_review_test.cpp'], HOOK_FLAGS)])]),
     Script('live', 'Live state memory reads, derivations and telemetry fill', ['bash', 'native/test/run_live_test.sh']),
+    Script('tyre_images', 'Live tyre image catalogues, mod routes and archive worker',
+           ['bash', 'native/test/run_tyre_images_test.sh'], wine=True),
     Script('core_sites_exported', 'Core site names exported (host-only)', ['bash', 'native/test/run_core_sites_exported_test.sh']),
     Script('garage_placement', 'Garage placement and crew poses', ['bash', 'native/test/run_garage_placement_test.sh']),
     Script('garage_crew_sites', 'Garage crew guard sites export test', ['bash', 'native/test/run_garage_crew_sites_test.sh']),
@@ -390,11 +399,11 @@ SCRIPTS = [
            ['python3', '-I', 'native/test/sigverify_test.py']),
     Script('init_check', 'Static initializer check: run order, inline variables and hook guard arming',
            ['python3', '-I', 'native/test/init_check_test.py']),
+    Script('ninja_deps', 'Ninja deps log check (damage from two writers, removal, incremental again)',
+           ['python3', '-I', 'native/test/ninja_deps_test.py']),
     Script('patch_sites', 'Every line that writes game code is in tools/patch_sites.txt',
            ['python3', '-I', 'native/tools/patch_sites.py', '--check']),
     Script('patch_sites_tool', 'Patch site list and patches.json on a fixture tree and a synthetic exe',
            ['python3', '-I', 'native/test/patch_sites_test.py']),
-    Script('ninja_deps', 'Ninja deps log check (damage from two writers, removal, incremental again)',
-           ['python3', '-I', 'native/test/ninja_deps_test.py']),
 ]
 

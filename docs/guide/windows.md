@@ -110,6 +110,10 @@ The next launch checks the game again and continues once it matches Steam's copy
 
 Addons are made for the latest F1 25 update. When an addon's changes don't apply to an older F1 25, F1 25 is not started and the play bar names the addon, your F1 25 version and the version it needs. Update F1 25 in Steam or the EA app, then press **Play** again. The original error is in the launch log, under **View log**.
 
+## If a program is set to run as administrator
+
+On the EA app copy, **Play** stops with **A program is set to run as administrator** when `EALauncher.exe`, `EADesktop.exe`, `F1_25.exe` or `EAAntiCheat.GameServiceLauncher.exe` is set to **Run this program as an administrator**. The dialog names each file. Right-click it, open **Properties > Compatibility**, untick **Run this program as an administrator**, and untick it under **Change settings for all users** too. Then press **Play** again. For `F1_25.exe` and `EAAntiCheat.GameServiceLauncher.exe`, running Swofty Launcher as administrator doesn't help. See [Programs set to run as administrator](/using/game-copies#programs-set-to-run-as-administrator).
+
 ## If the game closes as it starts
 
 F1 25 runs one copy at a time. A copy started while another runs closes itself before its window opens.

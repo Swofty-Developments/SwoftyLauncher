@@ -65,6 +65,16 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/1434b83e0.c;xref:0x1434bc0fc",
    "notes": "V11209 Loop r14 0..12, cmp r14,0xd at 0x1434bc0fc, r13 += 0x90 from mgr+0xb0, records at mgr+0x40+i*0x90 (+0x80 written); i==12 -> [[mgr+8]+0x738] (null exits loop, last anyway), else [[mgr+8]+0x838+i*8], null -> next (0x1434bc0f2)."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "era-refuel-verify",
+   "kind": "func",
+   "item": "0x1434b83e0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1434b9fbe-0x1434ba0d0,0x1434b89be-0x1434b89d3;decomp:SwoftyLauncher 1434b83e0.c case 4 lines 1496-1815;imm:0x145f9677c=5.0",
+   "notes": "V11605 case 4 confirmed: 0x1434ba096 adds dt to +0xe4, 0x1434ba0bb compares vs [r14+0xe8]+penalty, penalty=5.0 if 0x142f29600 true else 0; on exceed or no matching entry ([[self+0xaf0]+0x28]+0x20 list, +0x60==(+0xe0>>1 or 12)) calls 0x1434bdd60 then 0x1434b89be -> 0x1434bc540(...,5). Only when flag bit 0x400000000 clear; other branch compares against +0xf8"
   }
  ],
  "proofs": [

@@ -1,3 +1,4 @@
+pub mod archive_entry;
 pub mod link;
 
 use std::collections::BTreeMap;
@@ -87,7 +88,7 @@ pub fn mark_used(entry: &Path) {
 }
 
 /// Prunes the archive cache in `dir` to the entries used within `max_age`, most recently used first up to
-/// `max_bytes`. An entry is the files under one key, its archive and the record and use mark beside it, last
+/// `max_bytes`. An entry is the files under one key, its archive and the records and use mark beside it, last
 /// used when the newest of them was written or marked; the entries removed.
 pub fn prune_archives(dir: &Path, max_age: std::time::Duration, max_bytes: u64) -> usize {
     let mut entries: BTreeMap<PathBuf, (std::time::SystemTime, u64, Vec<PathBuf>)> = BTreeMap::new();
@@ -120,6 +121,31 @@ pub fn prune_archives(dir: &Path, max_age: std::time::Duration, max_bytes: u64) 
         if stale || kept + len > max_bytes {
             let gone = files.iter().filter(|f| std::fs::remove_file(f).is_ok()).count();
             removed += usize::from(gone > 0);
+        } else {
+            kept += len;
+        }
+    }
+    removed
+}
+
+/// Drop the oldest files directly in `dir` until the rest fit in `max_bytes`.
+pub fn prune_files(dir: &Path, max_bytes: u64) -> usize {
+    let mut files: Vec<(std::time::SystemTime, u64, PathBuf)> = std::fs::read_dir(dir)
+        .into_iter()
+        .flatten()
+        .flatten()
+        .filter_map(|e| {
+            let meta = e.metadata().ok().filter(std::fs::Metadata::is_file)?;
+            Some((meta.modified().ok()?, meta.len(), e.path()))
+        })
+        .collect();
+    files.sort_by_key(|f| std::cmp::Reverse(f.0));
+    let (mut kept, mut removed) = (0u64, 0);
+    for (_, len, path) in files {
+        if kept + len > max_bytes {
+            if std::fs::remove_file(&path).is_ok() {
+                removed += 1;
+            }
         } else {
             kept += len;
         }
@@ -193,6 +219,30 @@ mod tests {
         );
         assert!(!left(&stale));
         assert_eq!(removed, 2);
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn prune_files_keeps_the_newest_that_fit() {
+        let dir = std::env::temp_dir().join(format!("swofty-cache-files-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        std::fs::create_dir_all(dir.join("sub")).unwrap();
+        let now = std::time::SystemTime::now();
+        for (i, name) in ["old", "mid", "new"].iter().enumerate() {
+            let path = dir.join(name);
+            std::fs::write(&path, [0u8; 10]).unwrap();
+            let at = now - std::time::Duration::from_secs(60 * (3 - i as u64));
+            std::fs::File::options()
+                .write(true)
+                .open(&path)
+                .unwrap()
+                .set_modified(at)
+                .unwrap();
+        }
+        assert_eq!(prune_files(&dir, 25), 1);
+        assert!(!dir.join("old").exists() && dir.join("mid").exists() && dir.join("new").exists());
+        assert!(dir.join("sub").is_dir());
+        assert_eq!(prune_files(&dir.join("missing"), 0), 0);
         std::fs::remove_dir_all(&dir).ok();
     }
 

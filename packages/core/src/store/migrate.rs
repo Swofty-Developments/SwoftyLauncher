@@ -20,6 +20,8 @@ impl Store {
             return Ok(notes);
         }
         notes.extend(self.finish_swaps());
+        notes.extend(self.sweep_unfinished());
+        notes.extend(crate::catalog::pending::settle(self));
         let config = self.read_config();
         if config.as_ref().is_ok_and(|c| c.data_version >= DATA_VERSION) {
             return Ok(notes);

@@ -8,8 +8,8 @@
   "level": "L2",
   "subsystem": "session",
   "proto": "void Sess_Setup_VehicleComponents(void *module)",
-  "evidence": "decomp:re/decomp/142f45960.c;decomp:re/decomp/14080c300.c;xref:0x14080c546",
-  "notes": "Session module slot 0x58 (vtable 0x1457f82e8 holds 0x142f45960; called through call [rax+0x58] at 0x14080c546 in Game_GameModule_OnSessionEnter's module loop). Walks the session's vehicle entities, a pointer vector module+0x28..+0x30 whose count is the byte ((end-begin)>>3)&0xff: copies the config at module+0x190..+0x268 into each entity's component 0x146ce8a00, and stores each entity's component 0x146ce8b00 into a 26-slot table at module+0xb0 with its count at module+0x180 and no bound check, so a 27th vehicle writes the count itself (crash at +0x2e9 writing, +0x305 reading, Send Logs 2026-10-29 sessions 111311/122524, rbp=r14=0x1b). Later loops reuse the vector count (vehicle controllers via 0x146096578, flags +0x132, +0x2580, +0x9f2c..). Reads the mode context at module+0x80: *(*(+0x88)+0x260) is the EntrantsManager, whose +0x2b0 (current game setup mode) it reads."
+  "evidence": "decomp:re/decomp/142f45960.c;decomp:re/decomp/14080c300.c;xref:0x14080c546;xref:0x142f460fc",
+  "notes": "Session module slot 0x58 (vtable 0x1457f82e8 holds 0x142f45960; called through call [rax+0x58] at 0x14080c546 in Game_GameModule_OnSessionEnter's module loop). Walks the session's vehicle entities, a pointer vector module+0x28..+0x30 whose count is the byte ((end-begin)>>3)&0xff: copies the config at module+0x190..+0x268 into each entity's component 0x146ce8a00, and stores each entity's component 0x146ce8b00 into a 26-slot table at module+0xb0 with its count at module+0x180 and no bound check, so a 27th vehicle writes the count itself (crash at +0x2e9 writing, +0x305 reading, Send Logs 2026-10-29 sessions 111311/122524, rbp=r14=0x1b). Later loops reuse the vector count (vehicle controllers via 0x146096578, flags +0x132, +0x2580, +0x9f2c..). Reads the mode context at module+0x80: *(*(+0x88)+0x260) is the EntrantsManager, whose +0x2b0 (current game setup mode) it reads. | E3 2026-11-18 (engine-re, static): the last loop copies the session settings S = [module+0x78]+0x1a8 into every car: CarLive+0x9f2c = S+0xe10 ^ S+0xe18 (PU wear scale, read by Car_Engine_UpdateWear and Car_Ers_StepWear_Body), +0x9f30 = S+0xe20 ^ S+0xe28 (gearbox wear scale, Car_GearBox_UpdateShiftTimersAndFaults), +0x9f34 = 1.0, +0x9f38 = S+0xe30 ^ S+0xe38, +0x9f3c = S+0xe40 ^ S+0xe48 (store 0x142f460fc..0x142f46124). Runs at session enter only, so an addon that writes CarLive+0x9f2c / +0x9f30 after that keeps its value for the session (the only other static writer is the car create 0x144628190, which sets +0x9f2c..+0x9f38 to 1.0 at 0x144628df3; .xtls/.xtext/.data1 disp scan)."
  },
  "signature": {
   "id": "session.setup_vehicle_components",
@@ -67,6 +67,16 @@
    "verdict": "agree",
    "evidence": "decomp:own capstone disasm of the archived 1.0.141 exe (PE 1789118616) 0x142f45960-0x142f46206;xref:0x1457f82e8,0x14080c546",
    "notes": "V20008 Re-verified; the newest partial V2134 judged the native 26-vehicle clamp in era_picker.cpp (it found the clamp unsafe for the AI job), not this row. Only reference abs 0x1457f82e8 = VehicleSystem vtable 0x1457f8290 +0x58, called by call [rax+0x58] at 0x14080c546; rcx=module only (native hook type void(void*) matches); count = ((end-begin)>>3)&0xff from +0x28/+0x30; +0x180 zeroed then table store mov [rsi+rcx*8+0xb0] at 0x142f45a09 with no bound, so slot 26 is the count; +0x2e9 (0x142f45c49) writes [rdx+0x3e4], +0x305 (0x142f45c65) reads [r10+0xe8]; config lea [rsi+0x190]; component ids 0x146ce8a00/0x146ce8b00; mode context [[+0x88]+0x260]+0x2b0 at 0x142f45d86/0x142f45d91; +0x132, +0x2580, +0x9f2c writes."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "e3-verify",
+   "kind": "func",
+   "item": "0x142f45960",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f45960.c;decomp:own capstone disasm 0x142f46005-0x142f46116, 0x144628dea-0x144628df3, 0x1447486d5-0x1447486dd;imm:0x145381184=1.0,0x1455d8580={1,1,1,0}",
+   "notes": "V11712 Confirmed: S=[[module+0x78]+0x1a8], stores at 0x142f460fc/0x142f46106; also +0x9f34=1.0, +0x9f38=S+0xe30^e38. Car create 0x144628190 broadcasts 1.0 to +0x9f2c..+0x9f38 at 0x144628df3. 0x1447486dd (in 0x1447484f0) writes {1,1,1,0} at rsi+0x25a8."
   }
  ],
  "proofs": []

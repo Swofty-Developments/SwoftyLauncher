@@ -159,7 +159,8 @@ pub struct CaptureArgs {
         long,
         value_name = "DIR",
         help = "Capture a save folder instead of a test run: a Steam remote/ folder or the userdata/<app> folder holding \
-                one, such as a copy of a backup. Never the live folder"
+                one, or an EA app copy's savegame/ea folder or the savegame folder holding one, such as a copy of a \
+                backup. Never the live folder"
     )]
     from: Option<PathBuf>,
     #[arg(long, help = "What the fixture holds, in a sentence")]

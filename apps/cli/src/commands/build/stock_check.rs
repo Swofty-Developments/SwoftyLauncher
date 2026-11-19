@@ -45,6 +45,13 @@ pub(super) fn check_stock(store: &Store, g: &Game, out: &dyn Fn(&str)) -> Result
             return Ok(None);
         }
     };
+    if !depots.names_known() {
+        out(&format!(
+            "[stock] Steam's manifests have encrypted file names; {} game file(s) are checked by the hash of their path, \
+             the rest by their size and SHA-1",
+            depots.hashed_len()
+        ));
+    }
     heal_launcher(store, &g.dir, Some(&depots as &dyn DepotHashes), out)?;
     let checked = stock::check(&store.root, g, &depots)?;
     if !checked.missing.is_empty() {

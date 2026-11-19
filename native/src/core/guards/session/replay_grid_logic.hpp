@@ -126,6 +126,11 @@ inline bool outgrew(uint64_t pos, uint64_t base, uint64_t capacity)
     return capacity != 0 && pos > base && pos - base > capacity;
 }
 
+inline uint64_t room_of(uint64_t cur, uint64_t prev, uint64_t capacity)
+{
+    return prev > cur && prev - cur >= capacity ? prev - cur : 0;
+}
+
 struct Tally {
     std::atomic<uint64_t> skipped{0};
 
@@ -162,6 +167,25 @@ inline std::string line(int64_t cars, const std::string &recordable, uint64_t st
              "%llu, so it is not recorded (replay and flashback lose its state; the session keeps all its cars)",
              count, STOCK_CARS, name.c_str(), static_cast<unsigned long long>(state),
              static_cast<unsigned long long>(capacity));
+    return buf;
+}
+
+inline std::string room_line(int64_t cars, const std::string &recordable, uint64_t state, uint64_t room, uint64_t grown)
+{
+    char buf[400];
+    std::string name = recordable.empty() ? "?" : recordable;
+    char count[24] = "?";
+    if (cars >= 0)
+        snprintf(count, sizeof count, "%lld", static_cast<long long>(cars));
+    char outcome[96];
+    if (grown)
+        snprintf(outcome, sizeof outcome, "so the holder grew to %llu", static_cast<unsigned long long>(grown));
+    else
+        snprintf(outcome, sizeof outcome, "so it is not recorded (replay and flashback lose its state)");
+    snprintf(buf, sizeof buf,
+             "[replay] session has %s cars; %s needs %llu bytes of replay state, more than the %llu its holder has room "
+             "for (track or session data larger than the game sized it for), %s",
+             count, name.c_str(), static_cast<unsigned long long>(state), static_cast<unsigned long long>(room), outcome);
     return buf;
 }
 

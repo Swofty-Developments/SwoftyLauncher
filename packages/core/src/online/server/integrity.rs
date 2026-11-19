@@ -90,7 +90,7 @@ pub fn ensure(data: &Path, api: &Api, out: &dyn Fn(&str)) -> Result<Module, Unav
 }
 
 #[cfg(test)]
-fn ensure_with(data: &Path, api: &Api, key: &[u8]) -> Result<Module, Unavailable> {
+pub(crate) fn ensure_with(data: &Path, api: &Api, key: &[u8]) -> Result<Module, Unavailable> {
     let quick = Retry {
         backoff: vec![Duration::from_millis(20), Duration::from_millis(20)],
         budget: Duration::from_secs(6),
@@ -386,7 +386,7 @@ pub(crate) mod tests {
         b64(key.sign(msg.as_bytes()).as_ref())
     }
 
-    fn offer(key: &Ed25519KeyPair, version: &str, bytes: &[u8]) -> serde_json::Value {
+    pub(crate) fn offer(key: &Ed25519KeyPair, version: &str, bytes: &[u8]) -> serde_json::Value {
         let sha = sha256_bytes(bytes);
         serde_json::json!({
             "version": version, "sha256": sha, "size": bytes.len(),

@@ -12,6 +12,9 @@ on:
       - native/test/hooks/**
       - native/test/run_guard_test.sh
       - packages/sdk/include/swofty/mem.hpp
+      - native/include/pe_imports.h
+      - native/test/pe_imports_test.cpp
+      - native/test/run_pe_imports_test.sh
       - .github/workflows/native-windows.yml
   push:
     branches: [main, "perf/guarded-reads-*", "perf/mem-page-cache"]
@@ -25,6 +28,9 @@ on:
       - native/test/hooks/**
       - native/test/run_guard_test.sh
       - packages/sdk/include/swofty/mem.hpp
+      - native/include/pe_imports.h
+      - native/test/pe_imports_test.cpp
+      - native/test/run_pe_imports_test.sh
       - .github/workflows/native-windows.yml
   workflow_dispatch:
 
@@ -46,3 +52,7 @@ jobs:
         if: always()
         shell: bash
         run: bash native/test/run_mem_pages_test.sh
+      - name: Import table walk
+        if: always()
+        shell: bash
+        run: bash native/test/run_pe_imports_test.sh
