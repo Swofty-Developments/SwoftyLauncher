@@ -85,6 +85,39 @@ FROZEN
 ADDED
 #undef X
 
+// SwoftyLiveSession keeps its size; version 6 takes the first two reserved words.
+static_assert(sizeof(SwoftyLiveSession) == 440 && offsetof(SwoftyLiveSession, on_track) == 404);
+static_assert(offsetof(SwoftyLiveSession, time_left_s) == 408 && offsetof(SwoftyLiveSession, total_laps) == 412 &&
+              offsetof(SwoftyLiveSession, reserved) == 416);
+
+// SwoftyLiveCarDetail (table version 6).
+#define DETAIL                                                                                                                   \
+    X(version, 0)                                                                                                                \
+    X(size, 4)                                                                                                                   \
+    X(have, 8)                                                                                                                   \
+    X(vehicle, 16)                                                                                                               \
+    X(grid_position, 20)                                                                                                         \
+    X(tyre_age_laps, 21)                                                                                                         \
+    X(tyre_stint_laps, 22)                                                                                                       \
+    X(lap_flags, 23)                                                                                                             \
+    X(tyre_wear, 24)                                                                                                             \
+    X(laps_completed, 40)                                                                                                        \
+    X(current_lap_ms, 44)                                                                                                        \
+    X(current_sector_ms, 48)                                                                                                     \
+    X(last_lap_ms, 56)                                                                                                           \
+    X(last_sector_ms, 60)                                                                                                        \
+    X(best_lap_ms, 72)                                                                                                           \
+    X(best_lap_number, 76)                                                                                                       \
+    X(best_sector_ms, 80)                                                                                                        \
+    X(reserved, 92)
+static_assert(sizeof(SwoftyLiveCarDetail) == 160 && alignof(SwoftyLiveCarDetail) == 8);
+#define X(f, at) static_assert(offsetof(SwoftyLiveCarDetail, f) == (at), #f);
+DETAIL
+#undef X
+
+// The table only grows: car_detail follows tyre_icon_texture.
+static_assert(offsetof(SwoftyLive, car_detail) == offsetof(SwoftyLive, tyre_icon_texture) + sizeof(void *));
+
 int main()
 {
     expect(sizeof(SwoftyLiveCar) == 208, "SwoftyLiveCar is 208 bytes, as in every earlier release");
@@ -101,6 +134,11 @@ int main()
            "reserved[1] ends where reserved[7] ended");
     expect(SWOFTY_LIVE_HAVE_TYRE_DAMAGE == (1ull << 28) && !(SWOFTY_LIVE_HAVE_TYRE_DAMAGE & SWOFTY_LIVE_HAVE_GARAGE),
            "the tyre damage have bit is a new bit");
+    expect(SWOFTY_LIVE_HAVE_GRID == (1ull << 29) && SWOFTY_LIVE_HAVE_LAP_TIMES == (1ull << 30) &&
+               SWOFTY_LIVE_HAVE_TYRE_AGE == (1ull << 31) && SWOFTY_LIVE_HAVE_TYRE_WEAR == (1ull << 17),
+           "version 6 adds the grid, lap times and tyre age bits and fills the tyre wear bit");
+    expect(sizeof(SwoftyLiveSession) == 440 && sizeof(SwoftyLiveCarDetail) == 160 && SWOFTY_LIVE_VERSION == 6,
+           "the session keeps its size and the car detail is 160 bytes");
     expect(SWOFTY_LIVE_HAVE_GARAGE == (1ull << 27) &&
                !(SWOFTY_LIVE_HAVE_GARAGE & (SWOFTY_LIVE_HAVE_PIT_LANE | SWOFTY_LIVE_HAVE_GAP_AHEAD)),
            "the garage have bit is a new bit");

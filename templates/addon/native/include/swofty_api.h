@@ -1083,8 +1083,9 @@ typedef struct SwoftyContentOps {
    zero, never another car's value. Calls answer SWOFTY_ASSET_UNAVAILABLE while no session is live, the build is
    not the one the offsets are from, or the group is off because a KB row it needs has no independent verify row
    yet (the core logs "live <group> off: needs <row>" once), and SWOFTY_ASSET_INVALID for a bad argument.
-   Table version 5 appends tyre_icon_texture; version 4 appends images (see swofty/live_images.h);
-   version 3 appends team_badge_texture. Check version >= 5 before reading tyre_icon_texture.
+   Table version 6 appends car_detail; version 5 appends tyre_icon_texture; version 4 appends images (see
+   swofty/live_images.h); version 3 appends team_badge_texture. Check version >= 6 before calling car_detail and
+   version >= 5 before reading tyre_icon_texture.
    Version 2 adds driver_name and version 1 is the members up to seq; each keeps its layout, so
    check version >= 3 before calling team_badge_texture and version >= 2 before calling driver_name.
    session: the session header. car: one car by vehicle id. subject: the watched car while the spectator HUD is
@@ -1103,7 +1104,7 @@ typedef struct SwoftyContentOps {
    Steam 26566308 build use the saved assignment for the active mode and loaded career slot; an unavailable
    saved assignment is not replaced by the entrant fallback.
    SWOFTY_ASSET_UNAVAILABLE when the reference cannot be read or the path does not fit cap. */
-#define SWOFTY_LIVE_VERSION 5
+#define SWOFTY_LIVE_VERSION 6
 #define SWOFTY_LIVE_MAX_CARS 32
 #define SWOFTY_LIVE_NO_GAP INT32_MIN
 
@@ -1139,6 +1140,9 @@ typedef struct SwoftyContentOps {
 #define SWOFTY_LIVE_HAVE_TYRE_DAMAGE (1ull << 28)
 #define SWOFTY_LIVE_TYRE_PUNCTURED 2
 #define SWOFTY_LIVE_TYRE_BURST 3
+#define SWOFTY_LIVE_HAVE_GRID (1ull << 29)
+#define SWOFTY_LIVE_HAVE_LAP_TIMES (1ull << 30)
+#define SWOFTY_LIVE_HAVE_TYRE_AGE (1ull << 31)
 
 #define SWOFTY_LIVE_CAR_PLAYER (1u << 0)
 #define SWOFTY_LIVE_CAR_AI_DRIVING (1u << 1)
@@ -1213,6 +1217,8 @@ typedef struct SwoftyLiveCar {
 #define SWOFTY_LIVE_SHAVE_SECTORS (1ull << 10)
 #define SWOFTY_LIVE_SHAVE_ORDER (1ull << 11)
 #define SWOFTY_LIVE_SHAVE_ROAD_ORDER (1ull << 12)
+#define SWOFTY_LIVE_SHAVE_TIME_LEFT (1ull << 13)
+#define SWOFTY_LIVE_SHAVE_TOTAL_LAPS (1ull << 14)
 
 #define SWOFTY_LIVE_MODE_UNKNOWN 0
 #define SWOFTY_LIVE_MODE_GRAND_PRIX 1
@@ -1244,7 +1250,12 @@ typedef struct SwoftyLiveSession {
     uint32_t classified;
     uint32_t road_order[SWOFTY_LIVE_MAX_CARS];
     uint32_t on_track;
-    uint32_t reserved[8];
+    /* The session time left in seconds (SWOFTY_LIVE_SHAVE_TIME_LEFT) and the race's lap count
+       (SWOFTY_LIVE_SHAVE_TOTAL_LAPS). Not read yet on any build: both bits stay clear and both fields 0. They take
+       the first two words of what was reserved[8]: the struct's size and every other offset are unchanged. */
+    float time_left_s;
+    uint32_t total_laps;
+    uint32_t reserved[6];
 } SwoftyLiveSession;
 
 #define SWOFTY_LIVE_TURN_OFFICIAL 1
@@ -1263,6 +1274,41 @@ typedef struct SwoftyLiveTurn {
     char label[8];
     uint32_t reserved[4];
 } SwoftyLiveTurn;
+
+#define SWOFTY_LIVE_LAP_CURRENT_VALID (1u << 0)
+#define SWOFTY_LIVE_LAP_LAST_VALID (1u << 1)
+
+/* More of one car's state, from car_detail (table version 6). have holds the car's SWOFTY_LIVE_HAVE_* bits, the same
+   as SwoftyLiveCar.have for that car in the same snapshot; a clear bit leaves its fields 0.
+   SWOFTY_LIVE_HAVE_GRID: grid_position, the car's starting grid slot from 1.
+   SWOFTY_LIVE_HAVE_TYRE_WEAR: tyre_wear, each wheel's tyre wear in percent (0 new, 100 worn out), RL, RR, FL, FR.
+   SWOFTY_LIVE_HAVE_LAP_TIMES: laps_completed; current_lap_ms, the time of the lap in progress so far, and
+   current_sector_ms, its sector 1 and sector 2 times (0 until the car crosses that sector line); last_lap_ms and
+   last_sector_ms, the last completed lap (0 before the first one); best_lap_ms, best_lap_number (from 1) and
+   best_sector_ms, the fastest valid completed lap and its sectors (0 while there is none); lap_flags,
+   SWOFTY_LIVE_LAP_CURRENT_VALID and SWOFTY_LIVE_LAP_LAST_VALID.
+   SWOFTY_LIVE_HAVE_TYRE_AGE: tyre_age_laps, the laps the fitted set has run, earlier stints on it included (the
+   count the game sends as tyresAgeLaps); tyre_stint_laps, the laps since it was fitted. */
+typedef struct SwoftyLiveCarDetail {
+    uint32_t version;
+    uint32_t size;
+    uint64_t have;
+    uint32_t vehicle;
+    uint8_t grid_position;
+    uint8_t tyre_age_laps;
+    uint8_t tyre_stint_laps;
+    uint8_t lap_flags;
+    float tyre_wear[4];
+    uint32_t laps_completed;
+    uint32_t current_lap_ms;
+    uint32_t current_sector_ms[2];
+    uint32_t last_lap_ms;
+    uint32_t last_sector_ms[3];
+    uint32_t best_lap_ms;
+    uint32_t best_lap_number;
+    uint32_t best_sector_ms[3];
+    uint32_t reserved[17];
+} SwoftyLiveCarDetail;
 
 typedef struct SwoftyLiveImages SwoftyLiveImages;
 typedef struct SwoftyLive {
@@ -1283,6 +1329,8 @@ typedef struct SwoftyLive {
        UTF-8 buffer of 160 bytes suffices; INVALID for a short buffer/invalid car,
        UNAVAILABLE while fitted tyres, GameDB or the supported template are absent. */
     int (*tyre_icon_texture)(uint32_t vehicle, char *path, uint32_t cap);
+    /* Version 6: one car's SwoftyLiveCarDetail by vehicle id, from the same snapshot as car. */
+    int (*car_detail)(uint32_t vehicle, SwoftyLiveCarDetail *out);
 } SwoftyLive;
 
 /* Live car operations (standard library 1.6, experimental), from the core export SwoftyCoreCarOps; not a SwoftyApi
