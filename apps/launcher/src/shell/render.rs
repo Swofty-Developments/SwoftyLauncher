@@ -136,7 +136,7 @@ impl Render for Shell {
             .bg(p.background)
             .text_color(p.text)
             .text_size(px(14.))
-            .child(self.top_bar(p, layout_width, cx))
+            .child(self.top_bar(p, layout_width, window, cx))
             .child(
                 h_flex().flex_1().min_h_0().items_start().bg(p.background).child(
                     h_flex()

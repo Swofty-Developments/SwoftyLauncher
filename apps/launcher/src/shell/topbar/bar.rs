@@ -21,11 +21,12 @@ impl Shell {
         &self,
         p: Palette,
         layout_width: f32,
+        window: &Window,
         cx: &mut Context<Self>,
     ) -> impl IntoElement {
         let labels: Vec<&str> = Tab::ALL.iter().map(|t| t.label()).collect();
         let step = fit::choose(
-            layout_width,
+            fit::bar_width(layout_width, window_buttons(window)),
             &labels,
             self.account.display_name().map(|n| n.chars().count()),
             BAR_HEIGHT,
@@ -43,6 +44,7 @@ impl Shell {
             .flex_shrink_0()
             .items_center()
             .gap(fixed(10.))
+            .ml(fixed(fit::INSET))
             .child(logo(42.))
             .when(step.wordmark(), |d| d.child(wordmark(84.)));
         let tabs = if collapsed {
@@ -57,6 +59,36 @@ impl Shell {
         };
         let action_focus = |a: usize| focus == Some(Tab::ALL.len() + a);
         let notices = self.notices().len() + cx.global::<crate::shell::notices::Notices>().unread();
+        let actions = h_flex()
+            .flex_shrink_0()
+            .gap(fixed(4.))
+            .mr(fixed(6.))
+            .child(self.bell(notices, action_focus(0), p, cx))
+            .child(
+                self.icon_button(
+                    "open-settings",
+                    IconName::Settings,
+                    tr("Settings"),
+                    action_focus(1),
+                    p,
+                )
+                .when(
+                    self.navigation.page == Page::Settings || self.navigation.page == Page::Tools,
+                    |d| d.bg(p.selected),
+                )
+                .on_click(cx.listener(|this, _, _, cx| {
+                    this.navigation.cursor = None;
+                    this.navigation.popover = None;
+                    this.open_page(Page::Settings, cx);
+                })),
+            );
+        let right = h_flex()
+            .id("top-bar-right")
+            .flex_1()
+            .justify_end()
+            .gap(fixed(10.))
+            .child(actions)
+            .child(self.account_block(account, action_focus(2), p, cx));
         crate::ui::title_bar(p)
             .h(fixed(BAR_HEIGHT))
             .pl(fixed(0.))
@@ -64,52 +96,13 @@ impl Shell {
             .child(
                 h_flex()
                     .id("top-bar")
-                    .relative()
                     .w_full()
                     .h_full()
                     .items_stretch()
-                    .pl(fixed(14.))
-                    .gap(fixed(10.))
-                    .child(
-                        h_flex()
-                            .absolute()
-                            .top_0()
-                            .left_0()
-                            .right_0()
-                            .h_full()
-                            .items_center()
-                            .justify_center()
-                            .child(tabs),
-                    )
-                    .child(div().flex().items_center().child(left))
-                    .child(div().flex_1())
-                    .child(
-                        h_flex()
-                            .items_center()
-                            .gap(fixed(4.))
-                            .mr(fixed(6.))
-                            .child(self.bell(notices, action_focus(0), p, cx))
-                            .child(
-                                self.icon_button(
-                                    "open-settings",
-                                    IconName::Settings,
-                                    tr("Settings"),
-                                    action_focus(1),
-                                    p,
-                                )
-                                .when(
-                                    self.navigation.page == Page::Settings
-                                        || self.navigation.page == Page::Tools,
-                                    |d| d.bg(p.selected),
-                                )
-                                .on_click(cx.listener(|this, _, _, cx| {
-                                    this.navigation.cursor = None;
-                                    this.navigation.popover = None;
-                                    this.open_page(Page::Settings, cx);
-                                })),
-                            ),
-                    )
-                    .child(self.account_block(account, action_focus(2), p, cx)),
+                    .gap(fixed(fit::GAP))
+                    .child(h_flex().id("top-bar-left").flex_1().child(left))
+                    .child(h_flex().id("top-bar-tabs").flex_shrink_0().child(tabs))
+                    .child(right),
             )
     }
 
@@ -525,4 +518,15 @@ impl Shell {
             }))
             .into_any_element()
     }
+}
+
+fn window_buttons(window: &Window) -> usize {
+    if cfg!(any(target_os = "macos", target_family = "wasm")) {
+        return 0;
+    }
+    if cfg!(target_os = "linux") && !matches!(window.window_decorations(), Decorations::Client { .. }) {
+        return 0;
+    }
+    let controls = window.window_controls();
+    1 + usize::from(controls.minimize) + usize::from(controls.maximize)
 }
