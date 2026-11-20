@@ -12,7 +12,7 @@ use swofty_core::catalog::stars::Stars;
 use swofty_core::catalog::{self, Addon, Trouble, Update};
 use swofty_i18n::{tr, trf, trn};
 
-use super::authors::View;
+use super::authors::Trail;
 use super::*;
 use crate::services::library::Library;
 use crate::shell::Shell;
@@ -28,8 +28,7 @@ pub(crate) struct Browser {
     pub(super) icons: HashMap<String, Arc<Image>>,
     pub(super) search: Entity<InputState>,
     pub(super) window: AnyWindowHandle,
-    pub(super) view: View,
-    pub(super) trail: Vec<(View, Point<Pixels>)>,
+    pub(super) trail: Trail,
     pub(super) scroll: ScrollHandle,
     pub(super) grid_scroll: ListState,
     pub(super) grid_cache: Option<GridCache>,
@@ -94,8 +93,7 @@ impl Browser {
             icons: HashMap::new(),
             search,
             window: window.window_handle(),
-            view: View::Grid,
-            trail: Vec::new(),
+            trail: Trail::default(),
             scroll: ScrollHandle::new(),
             grid_scroll: ListState::new(0, ListAlignment::Top, px(200.)),
             grid_layout: Default::default(),

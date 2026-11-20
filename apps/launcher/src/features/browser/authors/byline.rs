@@ -123,11 +123,12 @@ impl Shell {
         let b = &self.browser;
         let mut crumbs: Vec<(Option<usize>, String)> = b
             .trail
+            .steps()
             .iter()
             .enumerate()
             .map(|(i, (v, _))| (Some(i), b.view_label(v)))
             .collect();
-        crumbs.push((None, b.view_label(&b.view)));
+        crumbs.push((None, b.view_label(b.trail.view())));
         let cut = crumbs.len().saturating_sub(CRUMBS_SHOWN);
         let mut parts: Vec<AnyElement> = Vec::new();
         if cut > 0 {
@@ -189,7 +190,7 @@ impl Shell {
     pub(in crate::features::browser) fn creators_button(&self, cx: &mut Context<Self>) -> Button {
         Button::new("browser-creators")
             .map(|b| {
-                if self.browser.view == View::Creators {
+                if *self.browser.trail.view() == View::Creators {
                     b.outline()
                 } else {
                     b.ghost()

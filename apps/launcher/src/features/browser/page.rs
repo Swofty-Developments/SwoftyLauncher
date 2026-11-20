@@ -47,7 +47,7 @@ impl Shell {
                     .disabled(self.browser.feed.fetching)
                     .on_click(cx.listener(|this, _, _, cx| Browser::fetch_catalog(this, cx))),
             );
-        let (content, ad) = match self.browser.view.clone() {
+        let (content, ad) = match self.browser.trail.view().clone() {
             View::Addon(id) if self.browser.find(&id).is_some() => (self.browser_detail(&id, p, cx), None),
             View::Author(id) => (self.author_page(&id, p, cx), None),
             View::Creators => (self.creators_page(p, cx), None),

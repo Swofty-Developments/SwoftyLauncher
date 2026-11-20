@@ -15,86 +15,136 @@ use crate::features::browser::*;
 use crate::shell::host::Host;
 use crate::shell::{Page, Shell};
 
-impl Shell {
-    /// Shows `to`, remembering the current view and its scroll to come back to.
-    /// A view already on the trail is gone back to instead.
-    pub(in crate::features::browser) fn browse(&mut self, to: View, cx: &mut Context<Self>) {
-        let b = &mut self.browser;
-        if b.view == to {
-            return;
-        }
-        if let Some(i) = b.trail.iter().position(|(v, _)| *v == to) {
-            self.browse_back_to(i, cx);
-            return;
-        }
-        let from = std::mem::replace(&mut b.view, to.clone());
-        b.trail.push((from, b.scroll.offset()));
-        b.smooth.cancel();
-        b.scroll.set_offset(Point::default());
-        b.activity_open = false;
-        Browser::load_view(self, &to, cx);
-        cx.notify();
+/// Where a step along the trail lands.
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) enum Landing {
+    /// A view of the browser, scrolled to where it was left.
+    View(View, Point<Pixels>),
+    /// The Addons page, with this addon's panel open.
+    Addons(String),
+}
+
+/// The view the browser shows and the views before it, each with the scroll it was left at.
+#[derive(Clone, Debug, Default)]
+pub(crate) struct Trail {
+    view: View,
+    steps: Vec<(View, Point<Pixels>)>,
+}
+
+impl Trail {
+    pub(crate) fn view(&self) -> &View {
+        &self.view
     }
 
-    pub(super) fn browse_back_to(&mut self, i: usize, cx: &mut Context<Self>) {
-        let b = &mut self.browser;
-        let Some((view, offset)) = b.trail.get(i).cloned() else {
-            return;
-        };
-        b.trail.truncate(i);
-        b.activity_open = false;
-        if let View::Installed(id) = view {
-            b.view = View::Grid;
-            b.trail.clear();
-            b.smooth.cancel();
-            b.scroll.set_offset(Point::default());
-            self.navigation.open_addon = Some(id);
-            self.go(Page::Addons, cx);
-            return;
+    pub(crate) fn steps(&self) -> &[(View, Point<Pixels>)] {
+        &self.steps
+    }
+
+    /// Shows `to`, remembering the current view, scrolled to `scrolled`, to come back to.
+    /// A view already on the trail is gone back to instead.
+    pub(crate) fn open(&mut self, to: View, scrolled: Point<Pixels>) -> Option<Landing> {
+        if self.view == to {
+            return None;
         }
-        b.view = view.clone();
-        b.smooth.cancel();
-        b.scroll.set_offset(offset);
-        Browser::load_view(self, &view, cx);
-        cx.notify();
+        if let Some(i) = self.steps.iter().position(|(v, _)| *v == to) {
+            return self.back_to(i);
+        }
+        let from = std::mem::replace(&mut self.view, to.clone());
+        self.steps.push((from, scrolled));
+        Some(Landing::View(to, Point::default()))
+    }
+
+    /// Goes back to the `i`th view on the trail, leaving the views after it.
+    pub(crate) fn back_to(&mut self, i: usize) -> Option<Landing> {
+        let (to, scrolled) = self.steps.get(i).cloned()?;
+        self.steps.truncate(i);
+        if let View::Installed(id) = to {
+            *self = Self::default();
+            return Some(Landing::Addons(id));
+        }
+        self.view = to.clone();
+        Some(Landing::View(to, scrolled))
+    }
+
+    pub(crate) fn back(&mut self) -> Option<Landing> {
+        match self.steps.len().checked_sub(1) {
+            Some(i) => self.back_to(i),
+            None => self.open(View::Grid, Point::default()),
+        }
     }
 
     /// Opens the Creators list as a section of its own: back from it is All addons.
-    pub(super) fn browse_creators(&mut self, cx: &mut Context<Self>) {
-        let b = &mut self.browser;
-        if b.view == View::Creators {
-            return;
+    pub(crate) fn creators(&mut self, scrolled: Point<Pixels>) -> Option<Landing> {
+        if self.view == View::Creators {
+            return None;
         }
-        let grid = match (&b.view, b.trail.first()) {
-            (View::Grid, _) => b.scroll.offset(),
-            (_, Some((View::Grid, offset))) => *offset,
+        let grid = match (&self.view, self.steps.first()) {
+            (View::Grid, _) => scrolled,
+            (_, Some((View::Grid, at))) => *at,
             _ => Point::default(),
         };
-        b.trail = vec![(View::Grid, grid)];
-        b.view = View::Creators;
-        b.smooth.cancel();
-        b.scroll.set_offset(Point::default());
-        b.activity_open = false;
-        cx.notify();
+        self.steps = vec![(View::Grid, grid)];
+        self.view = View::Creators;
+        Some(Landing::View(View::Creators, Point::default()))
+    }
+
+    /// Opens `to` from the Addons page, with `id` open there to come back to.
+    pub(crate) fn open_from_addons(&mut self, id: &str, to: View) -> Landing {
+        self.steps = vec![(View::Installed(id.to_owned()), Point::default())];
+        self.view = to.clone();
+        Landing::View(to, Point::default())
+    }
+}
+
+impl Shell {
+    pub(in crate::features::browser) fn browse(&mut self, to: View, cx: &mut Context<Self>) {
+        let scrolled = self.browser.scroll.offset();
+        if let Some(landing) = self.browser.trail.open(to, scrolled) {
+            self.land(landing, cx);
+        }
+    }
+
+    pub(super) fn browse_back_to(&mut self, i: usize, cx: &mut Context<Self>) {
+        if let Some(landing) = self.browser.trail.back_to(i) {
+            self.land(landing, cx);
+        }
+    }
+
+    pub(super) fn browse_creators(&mut self, cx: &mut Context<Self>) {
+        let scrolled = self.browser.scroll.offset();
+        if let Some(landing) = self.browser.trail.creators(scrolled) {
+            self.land(landing, cx);
+        }
     }
 
     pub(super) fn browse_back(&mut self, cx: &mut Context<Self>) {
-        match self.browser.trail.len().checked_sub(1) {
-            Some(i) => self.browse_back_to(i, cx),
-            None => self.browse(View::Grid, cx),
+        if let Some(landing) = self.browser.trail.back() {
+            self.land(landing, cx);
         }
     }
 
-    /// Opens `to` in the browser from the Addons page, with `id` open there to come back to.
     pub(crate) fn browse_from_addons(&mut self, id: &str, to: View, cx: &mut Context<Self>) {
-        let b = &mut self.browser;
-        b.trail = vec![(View::Installed(id.to_owned()), Point::default())];
-        b.view = to.clone();
-        b.smooth.cancel();
-        b.scroll.set_offset(Point::default());
-        b.activity_open = false;
-        Browser::load_view(self, &to, cx);
+        let landing = self.browser.trail.open_from_addons(id, to);
+        self.land(landing, cx);
         self.go(Page::Browser, cx);
+    }
+
+    fn land(&mut self, landing: Landing, cx: &mut Context<Self>) {
+        let b = &mut self.browser;
+        b.activity_open = false;
+        b.smooth.cancel();
+        match landing {
+            Landing::Addons(id) => {
+                b.scroll.set_offset(Point::default());
+                self.navigation.open_addon = Some(id);
+                self.go(Page::Addons, cx);
+            }
+            Landing::View(view, scrolled) => {
+                b.scroll.set_offset(scrolled);
+                Browser::load_view(self, &view, cx);
+                cx.notify();
+            }
+        }
     }
 }
 
@@ -188,5 +238,99 @@ impl Browser {
             }
         }
         self.avatars.extend(faces);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use gpui_kit::{Pixels, Point, point, px};
+
+    use super::{Landing, Trail};
+    use crate::features::browser::authors::View;
+
+    fn down(y: f32) -> Point<Pixels> {
+        point(px(0.), px(y))
+    }
+
+    fn addon(id: &str) -> View {
+        View::Addon(id.to_owned())
+    }
+
+    #[test]
+    fn back_from_an_addon_returns_to_the_grid() {
+        let mut t = Trail::default();
+        assert_eq!(
+            t.open(addon("a"), down(0.)),
+            Some(Landing::View(addon("a"), down(0.)))
+        );
+        assert_eq!(t.back(), Some(Landing::View(View::Grid, down(0.))));
+        assert_eq!(t.view(), &View::Grid);
+        assert!(t.steps().is_empty());
+        assert_eq!(t.back(), None);
+    }
+
+    #[test]
+    fn each_back_scrolls_the_view_it_returns_to_where_it_was_left() {
+        let mut t = Trail::default();
+        t.open(addon("a"), down(0.));
+        t.open(View::Author("x".to_owned()), down(1200.));
+        t.open(addon("b"), down(480.));
+        assert_eq!(
+            t.back(),
+            Some(Landing::View(View::Author("x".to_owned()), down(480.)))
+        );
+        assert_eq!(t.back(), Some(Landing::View(addon("a"), down(1200.))));
+        assert_eq!(t.back(), Some(Landing::View(View::Grid, down(0.))));
+    }
+
+    #[test]
+    fn opening_a_view_on_the_trail_goes_back_to_it() {
+        let mut t = Trail::default();
+        t.open(addon("a"), down(0.));
+        t.open(View::Author("x".to_owned()), down(900.));
+        assert_eq!(
+            t.open(addon("a"), down(300.)),
+            Some(Landing::View(addon("a"), down(900.)))
+        );
+        assert_eq!(t.steps().len(), 1);
+        assert_eq!(t.open(addon("a"), down(0.)), None);
+    }
+
+    #[test]
+    fn back_from_a_page_opened_on_the_addons_page_returns_there_with_its_panel_open() {
+        let mut t = Trail::default();
+        assert_eq!(
+            t.open_from_addons("mine", addon("mine")),
+            Landing::View(addon("mine"), down(0.))
+        );
+        t.open(View::Author("x".to_owned()), down(640.));
+        assert_eq!(t.back(), Some(Landing::View(addon("mine"), down(640.))));
+        assert_eq!(t.back(), Some(Landing::Addons("mine".to_owned())));
+        assert_eq!(t.view(), &View::Grid);
+        assert!(t.steps().is_empty());
+    }
+
+    #[test]
+    fn back_from_creators_returns_to_the_grid_where_it_was_left() {
+        let mut t = Trail::default();
+        t.open(addon("a"), down(330.));
+        t.open(View::Author("x".to_owned()), down(200.));
+        assert_eq!(
+            t.creators(down(50.)),
+            Some(Landing::View(View::Creators, down(0.)))
+        );
+        assert_eq!(t.creators(down(50.)), None);
+        assert_eq!(t.back(), Some(Landing::View(View::Grid, down(330.))));
+    }
+
+    #[test]
+    fn a_crumb_goes_back_past_every_view_after_it() {
+        let mut t = Trail::default();
+        t.open(addon("a"), down(0.));
+        t.open(View::Author("x".to_owned()), down(700.));
+        t.open(addon("b"), down(20.));
+        assert_eq!(t.back_to(1), Some(Landing::View(addon("a"), down(700.))));
+        assert_eq!(t.steps().len(), 1);
+        assert_eq!(t.back_to(5), None);
     }
 }

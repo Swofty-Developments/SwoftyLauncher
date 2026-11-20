@@ -24,6 +24,8 @@ mod profile;
 mod related;
 mod trail;
 
+pub(super) use trail::Trail;
+
 const MORE_SHOWN: usize = 4;
 const MORE_INSTALLED: usize = 3;
 const CREATORS_FOUND: usize = 4;
@@ -45,8 +47,9 @@ const MONTHS: [&str; 12] = [
 ];
 
 /// What the browser shows. `Installed` is the Addons page, for the way back to it.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub(crate) enum View {
+    #[default]
     Grid,
     Creators,
     Addon(String),
