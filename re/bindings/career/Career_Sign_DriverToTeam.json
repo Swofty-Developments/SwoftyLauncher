@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140d8fcb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void Career_Sign_DriverToTeam(void *renewal, uint32_t driver, uint32_t *offer, uint8_t flag, uint32_t replaced_driver)",
-  "evidence": "decomp:re/decomp/140d8fcb0.c;xref:0x140c49554,0x140c4a362,0x140d8fbc5,0x140d99cd0,0x140d9a38d,0x140ff5249;doc:addons/career-editor/protocol/drivers.md#op-driversswap",
-  "notes": "DISPUTE(V0294). The game's immediate signing (AI renewal 0x140d99210 'Add new driver' / 'Replace old RESERVE driver', auctions 0x140c49310, online negotiation 0x140ff5180). offer is a 0x2c-byte contract record (+0 new team key; +0xc u16 day = clock/1440 and +0xe = flag are written; offer[0..10] is copied into the driver contract in [renewal+0x290]+0x298, setting +0x2c, posting 0x145696e60). It first calls 0x140d8ecd0(renewal, offer, &driver): when the incoming driver sits on another team it backfills his old seat with that team's first reserve (vehicle +0x5e none, +0x80 >= 2): Career_Record_DriverMove(reserve, old team, incoming team, 2) and Career_Set_EntrantData_Thunk(reserve, incoming vehicle, pos|0x100); with no reserve it returns 0 and Sign returns without signing. With replaced_driver set it then records/sets the incoming driver (reason 0) and benches the replaced one (reason 3). The old team does not lose the seat when it has a reserve (wording per V0294). drivers.cpp does not call it"
+  "evidence": "decomp:re/decomp/140d8fcb0.c;doc:addons/career-editor/protocol/drivers.md#op-driversswap;xref:0x140c49553,0x140c4a361,0x140d8fbc4,0x140d99ccf",
+  "notes": "Immediate signing (AI renewal 0x140d99210, auctions 0x140c49310, negotiation 0x140ff5180). offer 0x2c bytes (+0 team key, +0xc day, +0xe flag) copied into the contract at [renewal+0x290]+0x298; first 0x140d8ecd0 backfills the driver's old seat (returns early with no reserve); logs Add new driver/contract, Replace old (RESERVE) driver, Remove old driver, Assign position; posts 0x1439876c0. (lane owner review requested)"
  },
  "signature": {
   "id": "career.sign_driver_to_team",

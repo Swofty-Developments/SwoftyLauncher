@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14231bff0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void f(void *self)",
   "evidence": "decomp:re/decomp/14231bff0.c;xref:0x142319946",
-  "notes": "myteam-g1: MY_TEAM_ACTIVITIES list build (slots at +0x428..+0x898)."
+  "notes": "Logs MY_TEAM_ACTIVITIES 'Function: onCalendarBlockPressed'; 0x14231d2f0, fires focus_activity_list, sets bool nodes, calls Career_MyTeamActivities_ApplyActivityToSelectedBlock (0x1423208a0), 0x142321f80, 0x142323a20. Only ref: tail jmp from 0x142319850. (lane owner review requested) Better name: Career_MyTeamActivities_OnCalendarBlockPressed (bound record keeps its name)."
  },
  "signature": {
   "id": "career.my_team_activities_build_list",

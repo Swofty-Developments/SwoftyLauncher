@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1400fcbe0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "uint32_t *Get(void *owner, uint32_t *out, uint64_t dept)",
-  "evidence": "decomp:re/decomp/1400fcbe0.c;xref:0x1414c6237;xref:0x1417ffb12;xref:0x141c42da7",
-  "notes": "myteam-g2: Reads the RnD/team object (owner+0x30 -> +0x88 -> +0x260), RTTI-checks class 0x146129ca0 and calls Career_Is_RnDDepartmentPlayerControlled (FUN_1400fb8e0) to return whether the department is under player control; builds a result id. Used by RP icons and RnD dept page."
+  "evidence": "decomp:re/decomp/1400fcbe0.c;xref:0x1414c6237,0x1417ffb12,0x141c42da7,0x141c7e163",
+  "notes": "Driver key param_3 -> its entrant row (+0x50/+0x52) in [[this+0x30]+0x88]+0x260 rows +0x2e0 (0x88); collects the rows of its team (+0x58/+0x5a) with +0x4b&0x10. <2 such rows -> out=param_3. Else if component 0x1460609c8 exists and 0x1400fb8e0(team) is false, out = +0x50 of the row matching the identity from 0x140fd0720(component). Returns param_2. (lane owner review requested) Better name: Career_Resolve_TeamDriverKeyByIdentity (bound record keeps its name)."
  },
  "signature": {
   "id": "career.get_rn_ddepartment_player_control",

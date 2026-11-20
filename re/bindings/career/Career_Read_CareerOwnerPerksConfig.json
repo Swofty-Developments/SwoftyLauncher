@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141012d70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: career.owner_perks.level_and_xp.gradient, career.owner_perks.level_and_xp.level_cap, career.owner_perks.level_and_xp.tp_per_level, career.owner_perks.level_and_xp.y_intercept'"
+  "evidence": "decomp:re/decomp/141012d70.c;pat:log-channel--;xref:0x1456b7770",
+  "notes": "Vtable slot ref 0x1456b7770. Reads career.owner_perks.level_and_xp.level_cap -> this+0x3d0, tp_per_level -> +0x3d4, gradient + y_intercept -> per-level XP table +0x3e0..+0x3f0; then owner_perks.providers (OwnerXPProvider), background_outcomes, perk trees (OwnerPerkTree/OwnerPerkNode: statId, attribute, trigger, outcome, training_points), modifier_groups and career.my_team_background.outcomes. (lane owner review requested) Better name: Career_Read_OwnerPerksConfig (bound record keeps its name)."
  },
  "signature": {
   "id": "career.read_career_owner_perks_config",

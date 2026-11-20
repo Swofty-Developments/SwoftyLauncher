@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1423e1a30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void Career_Despawn_UpgradeList_B(void * self,void * a2)",
   "evidence": "decomp:re/decomp/1423e1a30.c;xref:0x145786b58",
-  "notes": "myteam-g1: Despawns despawn_upgrade_list for a given parent (param_2)."
+  "notes": "Vtable slot (cell 0x145786b58). For event type 0x50: hash 0x646f27ca -> 0x1423e1e00(this,[this+0xbd0]); else djb2 hash of the name selects category 0..8 into [this+0xbd0]. If not busy (+0xbf4) fires despawn_upgrade_list or respawns via 0x1423df990; 0x14196efe0 with table 0x14578ed90; start_magnet_workaround_timer. (lane owner review requested) Better name: Career_FacilityUpgradesVM_HandleCategoryEvent (bound record keeps its name)."
  },
  "signature": {
   "id": "career.despawn_upgrade_list_b",

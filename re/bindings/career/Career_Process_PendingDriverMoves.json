@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140db18e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140db18e0.c;doc:addons/career-editor/protocol/drivers.md#op-driversswap",
-  "notes": "DriverContractsMyTeamComponent vtable +0x188 (vt 0x145692330; the same slot is overridden only by Upgrades 0x14123b0b0, DriverCareerContractsManager 0x140d76570 and Championship 0x140ae70a0, so likely the season-change hook, L0); logs DRIVERMOVES 'Processing m_pendingDriverMoves' / 'm_reserveDrivers' / 'Creating contract for reserve driver %s on team %s'; clears forcedDriverMoves (comp+0x818..+0x820, {u16 team,u16 driver}) at entry and refills it with the moves it forced; walks pendingDriverMoves (+0x7d8, 0x70 stride), finds the entrant by driver key in entity entrants ([comp+0x278]+0x2e0, 0x88 stride, driver key +0x50) and assigns it to the record's new team (+0x58) via 0x140db70a0, then rewrites every entrant through 0x1407b72e0; moves pendingDriverMoves into lastSeasonsSignings at the end"
+  "evidence": "decomp:re/decomp/140db18e0.c;doc:addons/career-editor/protocol/drivers.md#op-driversswap;xref:0x1456924b8",
+  "notes": "DriverContractsMyTeamComponent vtable +0x188 (cell 0x1456924b8): clears forcedDriverMoves (+0x818/+0x820), optional forced-purchase search for the player ('Searching for a driver to force the player to purchase'), walks pendingDriverMoves (+0x7d0, 0x70 stride) assigning entrants via 0x140db70a0 and 0x1407b72e0, processes reserve drivers (appends via 0x140dabfb0), moves pending into lastSeasonsSignings. (lane owner review requested)"
  },
  "signature": {
   "id": "career.process_pending_driver_moves",

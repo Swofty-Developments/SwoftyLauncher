@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "career",
   "proto": "bool Career_Rnd_IsPanelEntryForPart(void *panel, uint32_t part_key, void *entry)",
-  "evidence": "decomp:re/decomp/143536e90.c;xref:0x1416b55c4;xref:0x141c51d29;xref:0x141c8f219",
-  "notes": "myteam-g2: Compares the last entry of the R&D upgrade queue (entry+0xc0..+0xc8) with part_key (id short at -0xe, kind byte at -0x10, state byte at -8 == 2) to see whether the part is the one currently being worked on. Read-only."
+  "evidence": "decomp:re/decomp/143536e90.c;xref:0x1416b55c4,0x141c51d29,0x141c8f219",
+  "notes": "param_3 is an upgrade instance. If last entry state == 2 with a non-player owner key and the key != param_2 -> 0. If state is 6 or 1: returns sum of kind-5 dept (+0x72) modifiers (Career_Get_TeamModifiers 0x1434fb4b0 on this+0x18) > 0 (same gate as Roll_UpgradePurchaseOutcome). Otherwise 0. Callers: Ui_Rnd_SetUnlockInstantText, RnD adapt-part and rush panels. Better name: Career_Upgrades_CheckOwnerStateDeptModifier5 (bound record keeps its name)."
  },
  "signature": {
   "id": "career.rnd_is_panel_entry_for_part",

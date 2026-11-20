@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140d7b530",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-CONTRACT_RENEWAL",
-  "notes": "named from its log messages (channel CONTRACT_RENEWAL): 'SIMULATING AI TEAM MOVES | SIMULATING team %s | SKIP SIMULATING AI TEAM MOVE FOR ENTRANT %s | AVAILABLE - Driver %s passed all checks | UNAVAILABLE - Driver %s is fired'"
+  "evidence": "decomp:re/decomp/140d7b530.c;pat:log-channel-CONTRACT_RENEWAL;xref:0x140d7b1c0,0x1436c1f9b",
+  "notes": "CONTRACT_RENEWAL 'SIMULATING AI TEAM MOVES': per AI team (skip logs), checks driver availability (0x140d7da70, logs AVAILABLE/UNAVAILABLE fired/retired/cached/replaced), ratings 0x14113d120 / 0x140d7f0d0, applies via 0x140d79ff0 / 0x140d79dd0. (lane owner review requested)"
  },
  "signature": {
   "id": "career.contract_renewal_simulate_ai_team_moves",

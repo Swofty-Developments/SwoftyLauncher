@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "career",
   "proto": "uint16_t *Career_Calc_DriverOverallRating_Cached(void *comp, uint16_t *out, uint32_t driver_key)",
-  "evidence": "decomp:re/decomp/140d7f0d0.c;xref:0x140d794b4;xref:0x140d79eee;xref:0x140d7c261",
-  "notes": "myteam-g2: Wraps Career_Get_DriverOverallRating with the contract component helpers FUN_140d82070 / FUN_140d822a0 to return the driver overall rating used for market checks. Read only."
+  "evidence": "decomp:re/decomp/140d7f0d0.c;xref:0x140d794b4,0x140d79eee,0x140d7c262,0x140d7dd12",
+  "notes": "Optional out {u16,has}: needs settings from 0x140d82070; finds the row of driver key param_3; rating = 0x14113d120([this+0x360]); flag = 0x140d822a0 (rows without +0x4b&0x10) or a days check vs this+0x2d0; band 0x200 if rating >= threshold1, 0x100 if >= threshold2; out = flag|band. Not a cached overall rating. Better name: Career_DriverMarket_GetDriverRatingBand (bound record keeps its name)."
  },
  "signature": {
   "id": "career.calc_driver_overall_rating_cached",

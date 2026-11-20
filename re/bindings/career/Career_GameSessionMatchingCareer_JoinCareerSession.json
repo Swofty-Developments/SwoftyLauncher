@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14306f4d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionMatchingCareer::joinCareerSession; log channel NETWORK-SESSION: 'NEbool network::GameSessionMatchingCareer::joinCareerSession(JoinCareerDelegate) | %s'"
+  "evidence": "decomp:re/decomp/14306f4d0.c;pat:log-message-cxx;xref:0x1430ad6a1,0x1430ae884,0x1430b2825",
+  "notes": "__FUNCTION__ GameSessionMatchingCareer::joinCareerSession (NETWORK-SESSION log); calls 0x1431fe880, 0x140fdb2b0, 0x143070a80, then searchSession 0x143070f40 and 0x14306f770. Callers: GameSessionUI onCareerSessionRequested (0x1430ad4e0), 0x1430ae720, onJoinCareerSessionCompleted (0x1430b2710). (lane owner review requested)"
  },
  "signature": {
   "id": "career.game_session_matching_career_join_career_session",

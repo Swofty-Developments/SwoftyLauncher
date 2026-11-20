@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140fc6000",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-MY_TEAM_REWARDS",
-  "notes": "named from its log messages (channel MY_TEAM_REWARDS): 'Team %s claimed reward '%s'.'"
+  "evidence": "decomp:re/decomp/140fc6000.c;pat:log-channel-MY_TEAM_REWARDS;xref:0x140d6c656,0x140f8d9b6,0x140f98f09,0x140f99039",
+  "notes": "Logs MY_TEAM_REWARDS 'Team %s claimed reward' (team key +0x18, name via 0x140fc5ef0), then locks the weak_ptr (+8 obj, +0x10 ctrl) and calls obj->vt+0x38(param_2). (lane owner review requested)"
  },
  "signature": {
   "id": "career.my_team_rewards_claim",

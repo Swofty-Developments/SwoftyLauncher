@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140d9a7b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-CONTRACT_RENEWAL",
-  "notes": "named from its log messages (channel CONTRACT_RENEWAL): 'Approaching driver that meets our teams requirements %s | No driver meets our teams standards, check for drivers that would join our team | Approaching BEST available driver that would be willing to j'"
+  "evidence": "decomp:re/decomp/140d9a7b0.c;pat:log-channel-CONTRACT_RENEWAL;xref:0x140d99991,0x140d9a0fd,0x140d9b9bb",
+  "notes": "Writes chosen driver key (0x3fff0000 = none) to *param_2 for team param_3: first own entrants via 0x140d97ec0 (log 'Approaching driver that meets our teams requirements'), else candidates 0x140d9ade0 + 0x140d9afe0, else log 'No driver meets our teams standards', candidates 0x140d9b170 + 0x140d9afe0 ('Approaching BEST available driver' / 'Couldnt find any appropriate drivers'). (lane owner review requested)"
  },
  "signature": {
   "id": "career.contract_renewal_pick_driver_to_approach",

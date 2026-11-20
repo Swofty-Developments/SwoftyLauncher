@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140ffeec0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void Career_OnlineNegotiationsB_RegisterMessageHandlers(void *neg)",
   "evidence": "decomp:re/decomp/140ffeec0.c;xref:0x1456b6940",
-  "notes": "myteam-g1: Registers 7 handler pairs for the B negotiation class: OnNegotiationEventMsg (1410027e0), ProcessContractRecv (141002b30), ReceiveSecretMeeting (141002f20), ReceiveTeamSelect (141003050), ReceiveContractReviewed (141003420), ReceiveContractBroken (1410036a0) etc. Network dispatch table for online contract negotiations (state at neg+0x298)."
+  "notes": "Vtable slot ref 0x1456b6940. Subscribes 13 bus handlers via 0x143987810 (0x141001510 'ApproachNegotiationSucceeded', 0x1410015e0, 0x1410016c0 ... 0x141002410 'ProcessTeamSelectMessage', 0x1410026e0, 0x1410027a0) and registers net handlers on [[this+0x298]+0x3d0] vf+0x8: 0x8a 0x1410027e0, 0x91 0x141002b30, 0xc5 0x141002f20, 0xc6 0x141003050, 0xc7 0x141003320, 0xc8 0x141003420, 0xc9 0x1410036a0. (lane owner review requested)"
  },
  "signature": {
   "id": "career.online_negotiations_b_register_message_handlers",

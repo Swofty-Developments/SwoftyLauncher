@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1422bb920",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-TEAMHQ_ADVANCE",
-  "notes": "named from its log messages (channel TEAMHQ ADVANCE): 'Stopped advancing | Advancing set to: %s | Stopping set to: %s | Cancelling set to: %s'"
+  "evidence": "decomp:re/decomp/1422bb920.c;pat:log-channel-TEAMHQ_ADVANCE;xref:0x1422c2ffa,0x1422c6c90,0x1422c7618,0x14232dbea,0x142331736,0x142332da5",
+  "notes": "Logs 'Stopped advancing'; clears +0x29/+0x2a, +0x2c cancelling, qword +0x38 and u32 +0x40 (peer signal days); posts bus message 0x1457825d8. Callers incl. StopAdvancing, OnTimer 0x1422c7570, Career_TeamHqMyTeamVM_OnTimer. (lane owner review requested)"
  },
  "signature": {
   "id": "career.team_hq_advance_stopped",

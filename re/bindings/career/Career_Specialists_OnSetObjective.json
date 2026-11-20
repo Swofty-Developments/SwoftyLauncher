@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1412dee80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-SPECIALISTS",
-  "notes": "named from its log messages (channel SPECIALISTS): 'Set objective message received | Specialist type: %s | Specialist objective type: %s | Driver stat id: %s'"
+  "evidence": "decomp:re/decomp/1412dee80.c;pat:log-channel-SPECIALISTS;xref:0x14a756706",
+  "notes": "Message handler: msg +0x10 specialist type, +0x11 objective type, +0x12 packed driver stat id; logs 'Set objective message received'; finds the manager in +0x358..+0x360 (stride 0x128) by driver id, the specialist of that type (6 slots), the objective in its selectable lists (+0x30/+0x50) and applies it via 0x1412dfba0; then 0x1412dcbd0 team path. Only ref: .data1 0x14a756706 (obfuscated subscriber). (lane owner review requested)"
  },
  "signature": {
   "id": "career.specialists_on_set_objective",

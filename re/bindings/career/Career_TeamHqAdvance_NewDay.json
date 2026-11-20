@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1422bb390",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-TEAMHQ_ADVANCE",
-  "notes": "named from its log messages (channel TEAMHQ ADVANCE): 'resetting m_peerSignalledFinished (at %d) | New day: %d | Timer restarted with delay: %.2f'"
+  "evidence": "decomp:re/decomp/1422bb390.c;pat:log-channel-TEAMHQ_ADVANCE;xref:0x1422c0e22,0x14232c703",
+  "notes": "(AdvanceData, day, ctx) If online byte +0x37: clears u16 +0x38 and u32 +0x3c (logs reset when +0x3a <= day). If ctx: logs New day, delay = cfg+8 if any card in ctx+0xa0..0xa8 has vslot +0x20 == day else cfg+4; restarts timer (+0x10/+0x18/+0x30); ctx+0x94 = day. (lane owner review requested)"
  },
  "signature": {
   "id": "career.team_hq_advance_new_day",

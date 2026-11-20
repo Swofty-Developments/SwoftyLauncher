@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141c8a080",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:vtable-0x145740ac0-slot-0x30;kb:subsystems/rnd_ui.md#back",
-  "notes": "LaptopRnDUpgradePurchaseViewModel build (vtable 0x145740ac0 +0x30): finds the instance by upgrade_hash_name via Career_Query_EnabledUpgrades and copies byte [u+0x72] to panel+0x6e8; calls Career_Update_RnDPurchasePanel @0x141c8bb58."
+  "evidence": "decomp:re/decomp/141c8a080.c;pat:vtable-0x145740ac0-slot-0x30;kb:subsystems/rnd_ui.md#back;xref:0x145740af0",
+  "notes": "Purchase view model build (vtable 0x145740ac0 slot +0x30, cell 0x145740af0): finds the upgrade by #view_model_data...upgrade_hash_name via Career_Query_EnabledUpgrades, stores it at +0x6a8 and its dept byte [u+0x72] at +0x6e8 (0x141c8a5bb); binds button/upgrade_*/unlock_tile_*/info_bar nodes; calls Career_Update_RnDPurchasePanel at 0x141c8bb58. (lane owner review requested)"
  },
  "signature": {
   "id": "career.build_rn_d_purchase_panel",

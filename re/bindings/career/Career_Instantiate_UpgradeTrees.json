@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14352cac0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "imm:0xe0;xref:0x14123cfa1;kb:subsystems/rnd_ui.md#instances",
-  "notes": "Copies EVERY 0x80-byte UpgradeRecord into a 0xe0-byte upgrade instance (no department filter), runs the per-instance reset 0x143517d80 on the stack temp (@0x14352d071), moves it into tree k and pushes the pointer: array U+0x110+k*0xc40, count U+0xd10+k*0xc40, indexed off param_1 with the slot folded into the index (a scan for [..+0xd10] stores misses it)."
+  "evidence": "decomp:re/decomp/14352cac0.c;imm:0xe0;kb:subsystems/rnd_ui.md#instances;xref:0x14123cfa1",
+  "notes": "Per tree slot k (counter +0x1960, stride 0xc40): grows the 0xe0-byte instance array, copies each 0x80-byte UpgradeRecord into a stack instance, runs per-instance reset 0x143517d80, moves it in and pushes its pointer (pointer array +0x110+k*0xc40, count +0xd10). No department filter. Called by Career_Add_TeamUpgrades 0x14123ca40. (lane owner review requested)"
  },
  "signature": {
   "id": "career.instantiate_upgrade_trees",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1412e06a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: relationship.levelMax, relationship.levelMin, relationship.levelProgress, relationship.levelStart, relationship.levelThresholds, relationship.specialist_perk.failureChanceDecrease, relationship.specialist_perk.practiceProgrammePercentageIncrease, relationship.specialist_'"
+  "evidence": "decomp:re/decomp/1412e06a0.c;pat:log-channel--;xref:0x14125c5d5,0x1456d22f0",
+  "notes": "Specialists config loader from Gdb (Gdb_Find_RowByLabel/Gdb_Get_FieldInt, table cursor): specialist_data (isPrimary, isAvailable, uiColour, uiName, uiDescription, headquarters_order), relationship.levelStart/Max/Min/Progress/Thresholds, relationship.specialist_perk.*, settings.rewards_and_punishment, settings.cadences, specialist_objectives. Vtable cell 0x1456d22f0; call 0x14125c5d5. (lane owner review requested) Better name: Career_Specialists_ReadConfig (bound record keeps its name)."
  },
  "signature": {
   "id": "career.read_relationship_config_2",

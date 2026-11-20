@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1434fd990",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-RESOURCE_POINTS",
-  "notes": "named from its log messages (channel RESOURCE_POINTS): 'Serialised resource points wallet for driver %s containing %d points'"
+  "evidence": "decomp:re/decomp/1434fd990.c;pat:log-channel-RESOURCE_POINTS;xref:0x14a6c6360",
+  "notes": "Save writer: field driver_wallets array (Gdb_Get_ReflectedTypeInfo, 0x143932a40), per wallet driverId and Career_ResourcePointCounts_WriteSaveData, logs 'Serialised resource points wallet for driver %s containing %d points'; 'key not found' path. Only ref: E8 call at 0x14a6c6360 in the .data1 code section (not covered by the .xtls scan). (lane owner review requested)"
  },
  "signature": {
   "id": "career.resource_points_serialise",

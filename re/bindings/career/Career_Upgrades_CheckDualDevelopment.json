@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143526e60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-UPGRADES/D",
-  "notes": "named from its log messages (channel UPGRADES/D): 'Mismatched dual development mode for upgrades %s and %s'"
+  "evidence": "decomp:re/decomp/143526e60.c;pat:log-channel-UPGRADES/D;xref:0x143526c70,0x143533bcd",
+  "notes": "Filters an instance list (count at +0xc00) into out: an instance whose last entry byte +0xb == 1 (dual-dev flag) is dropped if a later item has the same node hash +0x58; logs UPGRADES/D 'Mismatched dual development mode for upgrades %s and %s' when both have the same state but the partner lacks the flag. Returns out. (lane owner review requested) Better name: Career_Upgrades_FilterDualDevelopmentPairs (bound record keeps its name)."
  },
  "signature": {
   "id": "career.upgrades_check_dual_development",

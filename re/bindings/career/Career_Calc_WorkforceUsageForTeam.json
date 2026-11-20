@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140f88ed0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "uint64_t Career_Calc_WorkforceUsageForTeam(void *ctx)",
-  "evidence": "decomp:re/decomp/140f88ed0.c;xref:0x140f829b0;xref:0x140f82bca;xref:0x140f88c23",
-  "notes": "myteam-g2: Finds the team record in the stat list at (ctx+0x20)+0x2c8 for key ctx+0x18 and compares it by Ne_Crt_Strcmp against workforce stat names to compute used / available workforce. Called from Career_FacilitiesAuto_AdjustCapacity and Vm_MyTeamWorkforce_Bind. Read only."
+  "evidence": "decomp:re/decomp/140f88ed0.c;xref:0x140f829b0,0x140f82bca,0x140f88c23,0x140f8a599",
+  "notes": "Same lookup as 0x140f88c60 with the attribute name at ctx+0x88: returns the clamped value +0x3e0 (float in xmm0), 0 when team or attribute is missing. (lane owner review requested) Better name: Career_Facility_GetTeamAttribute_88 (bound record keeps its name)."
  },
  "signature": {
   "id": "career.calc_workforce_usage_for_team",

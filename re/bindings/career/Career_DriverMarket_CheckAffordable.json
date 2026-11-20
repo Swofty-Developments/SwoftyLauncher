@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140d982c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-DRIVER_MARKET",
-  "notes": "named from its log messages (channel DRIVER_MARKET): 'Team cannot afford driver. Driver %s - Team %s | Driver is an Add-on driver and cannot be recruted by a non-player team, as the cap has been reached. Driver %s - Team %s, count = %d, cap = %d'"
+  "evidence": "decomp:re/decomp/140d982c0.c;pat:log-channel-DRIVER_MARKET;xref:0x1456939d8,0x140d97f9d",
+  "notes": "Affordability check, flags in out_flags param_4 (zeroed first): team budget = sum of +0x10 over 0x1b0-byte records of the team entry ([mkt+0x720]+0x298, 0x30 stride, key +0x28) scaled by float +0x374 (except player team with gate 0x1484f1570), driver cost from 0x140dbb690; budget<cost logs 'Team cannot afford driver' |=2; 0x140dcbde0 false logs Add-on cap |=0x80. Returns flags==0. (lane owner review requested)"
  },
  "signature": {
   "id": "career.driver_market_check_affordable",

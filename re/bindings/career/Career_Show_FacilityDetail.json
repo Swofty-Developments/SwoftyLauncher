@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142350d10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void f(void *flow)",
   "evidence": "decomp:re/decomp/142350d10.c;xref:0x145781a28",
-  "notes": "myteam-g1: Flow step that opens the detail view for one facility."
+  "notes": "Vtable slot (cell 0x145781a28). Vm_Init_TeamHqHubNodes; show_advance_tooltip; summary/breakdown text (0x14423ec70), breakdown_items, has_extra_items, animate_on_extra_items, num_extra_items_int, item_%d (0x1423533a0), animation_state, unlock, facility hidden flag. (lane owner review requested) Better name: Career_FacilityVM_BuildSummaryBreakdown (bound record keeps its name)."
  },
  "signature": {
   "id": "career.show_facility_detail",

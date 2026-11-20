@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14114f480",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-DRIVER_MARKET_XML_LOADER",
-  "notes": "named from its log messages (channel DRIVER_MARKET_XML_LOADER): '      Found Driver StatId For Driver: %s Value: %s!' CORRECTION(V9162): The Found Driver StatId log is real but this is a ~4700-line driver statistics / game-setup XML loader (StatisticsDataSet, DynamicStatisticInfo, DriverStatisticsHolder templates), so FindDriverStatId is too narrow."
+  "evidence": "decomp:re/decomp/14114f480.c;pat:log-channel-DRIVER_MARKET_XML_LOADER;xref:0x141146dc8",
+  "notes": "Not a single lookup: large DRIVER_MARKET_XML_LOADER loader of driver_statistics._templates._Templates.* (StatisticInfo, DynamicStatisticInfo, StatisticsDataSet, DriverCharacteristicOverride, DriverStatisticsHolder) incl. default/aggression values; logs 'Found Driver StatId For Driver: %s Value: %s!' on one branch. Caller 0x141146d00. (lane owner review requested) Better name: Career_Load_DriverStatisticsTemplates (bound record keeps its name)."
  },
  "signature": {
   "id": "career.driver_market_xml_find_driver_stat_id",

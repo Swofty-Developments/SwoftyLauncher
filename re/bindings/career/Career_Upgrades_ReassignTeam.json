@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1435294e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-UPGRADES",
-  "notes": "named from its log messages (channel UPGRADES): 'Reassigning upgrades team %s, driver %s not found | Reassigning upgrades team %s, found driver %s at index %d | Reassigning upgrades from driver %s to index %d on team %s | Reassigning upgrades %s fro'"
+  "evidence": "decomp:re/decomp/1435294e0.c;pat:log-channel-UPGRADES;xref:0x14123ccb1,0x14352e374",
+  "notes": "Only for operating_mode byte +8 == 2 (PerDriverUnique). For team key +0xc/+0xe finds the team drivers, rebuilds the driver->slot hash map at +0x1a50.. (keys +0x1a68, slot byte +2) over the tree slots (+0x1960 count, 0xc40 stride) and moves state histories; logs UPGRADES 'Reassigning upgrades team %s...' and UPGRADES/V state-count lines. Called by Career_Add_TeamUpgrades 0x14123ca40. (lane owner review requested)"
  },
  "signature": {
   "id": "career.upgrades_reassign_team",

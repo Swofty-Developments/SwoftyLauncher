@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141c3f130",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:pdata-0x141c3f130-0x141c42b3e;xref:0x141c41ca7;kb:subsystems/rnd_ui.md#pie",
-  "notes": "Career-hub laptop builder: creates every laptop tab when the hub loads (R&D workstation block overrides.career.laptop.page_icons[3] / lng_workstation_r_and_d calls Career_Create_RnDPerfViewModel @0x141c41ca7). So the R&D Performance pie is built and populated at career load, before R&D is opened. No E8 callers (dispatched)."
+  "evidence": "decomp:re/decomp/141c3f130.c;pat:pdata-0x141c3f130-0x141c42b3e;kb:subsystems/rnd_ui.md#pie;xref:0x14568cdf8",
+  "notes": "Hub laptop builder (vtable cell 0x14568cdf8, no direct calls): creates every laptop tab with overrides.career.laptop.page_icons[0..5] (Career_Construct_HubLaptopTab + Career_Add_HubLaptopPage): weekend session, driver details, R&D (lng_workstation_r_and_d; Career_Create_RnDPerfViewModel at 0x141c41ca7), tyre allocation, standings/season results/trophies; flags r_and_d_visible, laptop_anim_in_progress. (lane owner review requested)"
  },
  "signature": {
   "id": "career.build_hub_laptop",
