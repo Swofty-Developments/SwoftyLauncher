@@ -486,6 +486,31 @@ swofty: the profile save in /home/you/.local/share/Steam/userdata/843502855/3059
 
 A session that read the profile save and then sat on the start screen for 120 s or more shows the known problem `stalled_save` (**F1 25 stayed on the loading screen after reading your save**) in the crash window.
 
+### A save stuck in a started race weekend
+
+At every Team HQ entry the core logs the career's current weekend ([Weekend diagnostics](/reference/std/career#weekend-diagnostics)). A weekend past not started with no session complete is logged as `weekend already started, session never ran`. A load of such a save opens Team HQ with no Advance, and the weekend's first session never loads.
+
+The launcher learns such a save from its sessions. A session counts when its last Team HQ weekend line is `weekend already started, session never ran` and no `StateLoadSession` comes after it. The save it learns is the one the session ended on, keyed by the SHA-256 of `savegame@profile#NXDSMWW.BWW` in the session's `after-session` snapshot. Each session folder is read once, after its `after-session` snapshot is in the vault. `$DATA/state/stuck-weekends.json` keeps what was learned:
+
+```json
+{
+  "saves": [
+    { "source": "launcher-kok", "sha256": "4be1…", "size": 932920, "weekend": { "round": 12, "rounds": 22, "session": "practice_1", "track": "game/hungaroring" }, "sessions": ["20261120-104632", "20261120-105635"], "profile": "kok", "found_at": 1795173800 }
+  ],
+  "read": ["20261120-104632", "20261120-105635", "20261120-111910"]
+}
+```
+
+`stuck::sweep` runs at launcher start and after every Play. Each find is one line:
+
+```text
+saves: session 20261120-104632 ended with its career in the round 12 of 22 (hungaroring) weekend, started with no session run; the profile save 4be1c0d2a9f3 (932920 bytes) of launcher-kok holds it, and the Career Saves page offers an earlier version
+```
+
+While a learned save is in its save folder, the Career Saves page and the Addons page show a banner that names the round, with **Restore**, **Review the restore** and **Dismiss**. The offer is the newest snapshot of the same vault that is not a learned save. **Restore** is the whole-save restore of the offered snapshot, which keeps the save it replaces as `before-restore`; every career in the save goes back to that version. **Dismiss** leaves the save as it is. With no other version the banner says so and offers no restore. The launcher never changes the save by itself.
+
+A session that ended this way shows the known problem `stuck_weekend` (**Your career is stuck at the start of a race weekend**) in the crash window, also when F1 25 then hit its error on closing.
+
 ### Back up and restore
 
 ```text

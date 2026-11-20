@@ -142,6 +142,8 @@ A banner at the top of the page, and on the **Addons** page, names the missing c
 
 A save that keeps F1 25 on Loading... after Press any button gets a banner with **Restore** of the last version that loaded and **Dismiss**. The launcher changes nothing until you choose.
 
+A save that holds a career saved inside a race weekend before any session of it ran opens Team HQ with no Advance. It gets a banner that names the round, with **Restore** of the newest earlier version, **Review the restore** and **Dismiss**. The launcher changes nothing until you choose. See [A save stuck in a started race weekend](/reference/saves#a-save-stuck-in-a-started-race-weekend).
+
 ## From a terminal
 
 ```text

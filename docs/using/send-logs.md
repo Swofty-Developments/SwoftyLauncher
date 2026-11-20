@@ -48,6 +48,7 @@ A session that ended without a crash opens the same screen for a known problem t
 | Cause | What the launcher looks for |
 |---|---|
 | Your addons' team logos were not built | `team.logo: the game can't create files in swofty/addons/swofty.logos/ (error N)`: F1 25 couldn't write the team logo archives, and the logos and badges addons add were missing. The screen names the folder and the Windows error. `state/wrapper-run.log` gets a `[warning] known problem logos_not_built: ...` line |
+| Your career is stuck at the start of a race weekend | The session's last Team HQ weekend line is `[career] weekend already started, session never ran: round N/M, ...`, with no `StateLoadSession` after it: the career was saved inside a race weekend before any session of it ran. The screen names the round and the track and points to **Restore** on the Career saves page. A session that then hit F1 25's error on closing shows this instead of **F1 25 hit an error as it closed**. `state/wrapper-run.log` gets a `known problem stuck_weekend: ...` line |
 
 A game that stopped itself with exit code `0xc0000409`, `0xc0000602` or `0xc0000417` (a fast-fail) shows as a crash. The screen and the **Crash** section of `summary.txt` say it in one sentence, with the last lines of the session's `loader.log` when no crash report was written:
 
