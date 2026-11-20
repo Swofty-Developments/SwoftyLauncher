@@ -45,6 +45,16 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/142d49050.c;xref:0x142d47d99,0x142da7ece",
    "notes": "V3554 allocs region request list (0x28 node, 0x100 buffer), region_on_track string and other region adds; callers Sess_Loader_StartFrontendAssetLoad and RequestTrackLoad"
+  },
+  {
+   "date": "2026-11-19",
+   "verifier": "track-flag-verify",
+   "kind": "func",
+   "item": "0x142d49050",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142d49050-0x142d4a057;decomp:re/decomp/142d49050.c",
+   "notes": "V11900 C3 confirmed: r14=[[param_1+0x30]+0x1a8], record r9=[r14+0x30] (same object passed as rcx to 0x142e4be70 at 0x142d49302/49353/493a4); string obj record+0xc0 (char* +0xd0, fallback static 0x14607fbe0 if record null) copied to stack (cap 0x80) then to request r15=[[param_1+0x30]+0x1b0] +0xb0 with char* at +0xa8 (0x142d499af); record+0x68 obj char* +0x78 copied to request +0x18 (char* at +0x10, cap 0x80 at +0x8). Precision: claim says 'string at record+0x78' - it is the char* stored at record+0x78. Also request+0x148 gets a string from the 0x142e4be70 result"
   }
  ],
  "proofs": []

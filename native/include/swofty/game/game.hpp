@@ -1319,7 +1319,6 @@ inline constexpr address<"Game_TrackExtraYacht_Initialise"> Game_TrackExtraYacht
 using Game_TrackInfoSystem_CreateResourceListeners_t = void(void *tis);
 inline constexpr fn<"Game_TrackInfoSystem_CreateResourceListeners", Game_TrackInfoSystem_CreateResourceListeners_t> Game_TrackInfoSystem_CreateResourceListeners{}; // L2 experimental
 inline constexpr address<"Game_TrackInformation_ParseTrackInfoXml"> Game_TrackInformation_ParseTrackInfoXml{}; // L2 experimental
-inline constexpr address<"Game_TrackModelComponent_Initialise"> Game_TrackModelComponent_Initialise{}; // L2 experimental
 inline constexpr address<"Game_TrackSelectVM_OnScreenActivated"> Game_TrackSelectVM_OnScreenActivated{}; // L2 experimental
 inline constexpr address<"Game_TrackSpaceDataResource_Load"> Game_TrackSpaceDataResource_Load{}; // L2 experimental
 inline constexpr address<"Game_TrackSpaceTracker_Reset"> Game_TrackSpaceTracker_Reset{}; // L2 experimental

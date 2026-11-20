@@ -45,6 +45,16 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/142aa0330.c;xref:0x142aa0330",
    "notes": "V2833 strings/calls/offsets checked in decomp+disasm; role and name hold"
+  },
+  {
+   "date": "2026-11-19",
+   "verifier": "track-flag-verify",
+   "kind": "func",
+   "item": "0x142aa0330",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x142aa0330-0x142aa0b8c;decomp:re/decomp/142aa0330.c;str:0x14560f4f7;str:0x14560f516;str:0x1456e6bc0",
+   "notes": "V11908 C7 core confirmed: source char* = [comp+0xe0] where comp = component of type 0x146cb7da0 (type desc named 'Model'); text up to and incl '=' copied to a 0x400 stack buffer; bool setting 'Game.Context.overrideTrackName' (0x143a43b90) true -> string setting 'Game.Context.TrackName' read into global 0x1460790f0 (cap 0x40) and copied after '='; result used for a lookup via 0x143993660 (local copy, not in place). CORRECTIONS: 'mat binding' identity of the +0xe0 string is not shown in this function (string 0x1456e6bc0 not referenced here); before the override the text after '=' is first set to 'default', or for a matching car/livery case to a SEASON/TRACK template expansion where TRACK = [[[0x14601f5c8]+0x30]+0xe8]+0xa0 (0x142aa0936)"
   }
  ],
  "proofs": []
