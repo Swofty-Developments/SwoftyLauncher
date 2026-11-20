@@ -25,7 +25,7 @@ use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
 pub use loss::{Loss, Lost, PutBack, put_backs};
-pub use manifest::{Container, Event, Manifest, SCHEMA, Slot, Source, mode_of};
+pub use manifest::{Container, Event, Manifest, SCHEMA, SLOT_SUFFIX, Slot, Source, mode_of};
 pub use prune::{Keep, Pruned, prune_all_held};
 
 use crate::{Result, io_err};

@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use super::CareerNeeds;
 use crate::saves::bag::{Bag, Value as BagValue};
-use crate::saves::plain::{Plain, Slot};
+use crate::saves::plain::{Plain, SLOT_SUFFIX, Slot, mode_of};
 use crate::saves::vault::career_names::Names;
 
 pub const READY: &str = "ready";
@@ -186,11 +186,12 @@ fn entries<'a>(root: &'a Bag, table: &str) -> impl Iterator<Item = &'a Bag> + 'a
 
 /// The created drivers' and teams' names in an entrants container's bytes. Empty when they cannot be read.
 pub fn created_from_bag(bytes: &[u8]) -> Created {
+    crate::saves::bag::decode(bytes).map_or_else(|_| Created::default(), |root| created_of(&root))
+}
+
+fn created_of(root: &Bag) -> Created {
     let mut out = Created::default();
-    let Ok(root) = crate::saves::bag::decode(bytes) else {
-        return out;
-    };
-    for d in entries(&root, "drivers") {
+    for d in entries(root, "drivers") {
         let (Some(id), Some(first)) = (id_of(d, "stat_id"), text_of(d, "first_name")) else {
             continue;
         };
@@ -200,12 +201,82 @@ pub fn created_from_bag(bytes: &[u8]) -> Created {
         };
         out.drivers.insert(id, name);
     }
-    for t in entries(&root, "teams") {
+    for t in entries(root, "teams") {
         if let (Some(id), Some(name)) = (id_of(t, "stat_id"), text_of(t, "display_name")) {
             out.teams.insert(id, name);
         }
     }
     out
+}
+
+fn unsigned_of(b: &Bag, key: &str) -> Option<u64> {
+    match b.get(key)? {
+        BagValue::U8(v) => Some(u64::from(*v)),
+        BagValue::U16(v) => Some(u64::from(*v)),
+        BagValue::U32(v) => Some(u64::from(*v)),
+        BagValue::U64(v) => Some(*v),
+        _ => None,
+    }
+}
+
+fn small_of(b: &Bag, key: &str) -> Option<u32> {
+    match b.get(key)? {
+        BagValue::I32(v) => u32::try_from(*v).ok(),
+        _ => unsigned_of(b, key).and_then(|v| u32::try_from(v).ok()),
+    }
+}
+
+/// A slot of a save file's `<mode>_SaveSlotGameModeComponent` with the fields the core records for it in a plain
+/// generation.
+fn slot_of(b: &Bag) -> Option<Slot> {
+    Some(Slot {
+        slot: small_of(b, "slot_id")?,
+        guid: format!("0x{:016x}", unsigned_of(b, "slot_guid")?),
+        name: text_of(b, "name").unwrap_or_default(),
+        season: small_of(b, "info_season"),
+        round: small_of(b, "info_weekend"),
+        team: small_of(b, "info_team"),
+        driver: small_of(b, "info_driver"),
+        last_played: unsigned_of(b, "info_date")
+            .and_then(|v| i64::try_from(v).ok())
+            .unwrap_or(0),
+        flags: small_of(b, "type_flag").unwrap_or(0),
+    })
+}
+
+fn slots_of(component: &Bag) -> Vec<Slot> {
+    let Some(BagValue::List(list)) = bag_at(component, "data").and_then(|d| d.get("slots")) else {
+        return Vec::new();
+    };
+    list.items
+        .iter()
+        .filter_map(|v| match v {
+            BagValue::Bag(b) => slot_of(b),
+            _ => None,
+        })
+        .collect()
+}
+
+/// The careers in a profile save file, with the player-made names its entrants container holds. `None` when the
+/// file cannot be read or decoded.
+pub fn save_file_careers(path: &std::path::Path) -> Option<(Vec<SaveCareer>, Created)> {
+    let file = std::fs::read(path).ok()?;
+    let data = crate::saves::codec::decode_data(&file).ok()?;
+    let root = crate::saves::bag::decode(&data.stream).ok()?;
+    let mut careers = Vec::new();
+    let mut created = Created::default();
+    for (name, c) in crate::saves::remap::save_containers(&root) {
+        if name.starts_with(ENTRANTS) {
+            created = created_of(c);
+        } else if name.ends_with(SLOT_SUFFIX) && career_mode(&mode_of(&name)) {
+            let mode = mode_of(&name);
+            careers.extend(slots_of(c).into_iter().filter(is_career).map(|slot| SaveCareer {
+                mode: mode.clone(),
+                slot,
+            }));
+        }
+    }
+    Some((careers, created))
 }
 
 /// The careers of the newest generation in `plain`, with the player-made names its entrants container holds.
@@ -370,10 +441,22 @@ fn plain_of(data: &std::path::Path, profile: &str) -> Plain {
     }
 }
 
+/// The careers of the profile's save: its newest plain generation, else the profile's launcher save file while the
+/// plain store has no generation.
+fn profile_careers(data: &std::path::Path, profile: &str) -> (Vec<SaveCareer>, Created) {
+    let plain = plain_of(data, profile);
+    if plain.newest().is_some() {
+        return save_careers(&plain);
+    }
+    let file =
+        crate::saves::launcher::remote_dir(data, profile).join(crate::saves::plain::rewrite::SAVE_FILE);
+    save_file_careers(&file).unwrap_or_default()
+}
+
 /// What the list shows of the profile's save, as text a build hash takes in: each career slot and the names the
 /// player made.
 pub fn save_state(data: &std::path::Path, profile: &str) -> String {
-    let (saved, created) = save_careers(&plain_of(data, profile));
+    let (saved, created) = profile_careers(data, profile);
     format!("{saved:?}{created:?}")
 }
 
@@ -394,7 +477,7 @@ pub fn resume_list_for(
     let on: Vec<String> = order.iter().map(|m| m.id.clone()).collect();
     let careers = super::read(&super::data_path(&store.root));
     let needs = super::resume_needs(&careers, &on, &installed, Some(names.rows()));
-    let (saved, created) = save_careers(&plain_of(&store.root, profile));
+    let (saved, created) = profile_careers(&store.root, profile);
     let rows = resume_rows(&saved, &created, &needs, &names);
     Some((needs, rows))
 }
@@ -865,6 +948,142 @@ mod tests {
         let names = Names::from_db(db(), Some(&merged));
         assert_eq!(names.team_named(646).unwrap().0, "Queued Team");
         assert_eq!(names.driver_named(61).unwrap(), "Nigel Mansell");
+    }
+
+    fn slot_bag(
+        (id, guid): (u64, u64),
+        (team, driver): (u16, u16),
+        (season, round): (i32, i32),
+        date: u64,
+        flag: u8,
+    ) -> crate::saves::bag::Value {
+        use crate::saves::bag::{Bag, Text, Value};
+        let mut b = Bag::new();
+        b.push("slot_id", Value::U64(id));
+        b.push("slot_guid", Value::U64(guid));
+        b.push("name", Value::S128(Text::new("Career Save 2")));
+        b.push("info_season", Value::I32(season));
+        b.push("info_weekend", Value::I32(round));
+        b.push("info_team", Value::U16(team));
+        b.push("info_date", Value::U64(date));
+        b.push("type_flag", Value::U8(flag));
+        b.push("info_driver", Value::U16(driver));
+        Value::Bag(b)
+    }
+
+    fn save_file(dir: &std::path::Path) -> std::path::PathBuf {
+        use crate::saves::bag::{Bag, List, Value};
+        let component = |slots: Vec<Value>| {
+            let mut l = List::new();
+            l.items = slots;
+            let mut data = Bag::new();
+            data.push("slots", Value::List(l));
+            let mut c = Bag::new();
+            c.push("data", Value::Bag(data));
+            Value::Bag(c)
+        };
+        let mut containers = Bag::new();
+        containers.push(
+            "driver_career_1990_SaveSlotGameModeComponent",
+            component(vec![
+                slot_bag((8, 0x604a2c4a9c422bfc), (646, 105), (0, 1), 1_794_798_122, 0),
+                slot_bag((9, 0xaa), (16383, 16383), (-1, -1), 0, 0),
+            ]),
+        );
+        containers.push(
+            "grand_prix_23_SaveSlotGameModeComponent",
+            component(vec![slot_bag(
+                (9, 0x5ed07dc40d4f6b41),
+                (646, 105),
+                (0, 0),
+                1_794_797_255,
+                0,
+            )]),
+        );
+        containers.push(
+            "my_team_career_26_SaveSlotGameModeComponent",
+            component(vec![slot_bag(
+                (2, 0x635981a5f8d30254),
+                (16384, 197),
+                (7, 1),
+                1_792_460_159,
+                0x41,
+            )]),
+        );
+        containers.push(
+            "entrants_system_entrants_system",
+            Value::Bag(crate::saves::bag::decode(&created_bag()).unwrap()),
+        );
+        let mut save = Bag::new();
+        save.push("uid", Value::U64(1));
+        save.push("containers", Value::Bag(containers));
+        let mut root = Bag::new();
+        root.push("save_game", Value::Bag(save));
+        let stream = crate::saves::bag::encode(&root).unwrap();
+        std::fs::create_dir_all(dir).unwrap();
+        let path = dir.join(crate::saves::plain::rewrite::SAVE_FILE);
+        std::fs::write(
+            &path,
+            crate::saves::codec::encode_data(&stream, [3u8; 16], 3).unwrap(),
+        )
+        .unwrap();
+        path
+    }
+
+    #[test]
+    fn a_save_files_careers_are_read_as_the_core_records_them() {
+        let dir = std::env::temp_dir().join(format!("swofty-resume-file-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        let (careers, created) = save_file_careers(&save_file(&dir)).unwrap();
+        assert_eq!(careers.len(), 1);
+        assert_eq!(careers[0].mode, "driver_career_1990");
+        assert_eq!(
+            careers[0].slot,
+            Slot {
+                slot: 8,
+                guid: "0x604a2c4a9c422bfc".into(),
+                name: "Career Save 2".into(),
+                season: Some(0),
+                round: Some(1),
+                team: Some(646),
+                driver: Some(105),
+                last_played: 1_794_798_122,
+                flags: 0,
+            }
+        );
+        assert_eq!(key_of(&careers[0].slot), "604a2c4a9c422bfc");
+        assert_eq!(created.drivers[&16386], "John BENNETT");
+        assert!(save_file_careers(&dir.join("missing")).is_none());
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn a_profile_with_no_plain_generation_lists_its_launcher_save_files_careers() {
+        use crate::saves::plain::fixture::{Gen, current, pair, write};
+        let root = std::env::temp_dir().join(format!("swofty-resume-first-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        assert!(profile_careers(&root, "p").0.is_empty());
+        save_file(&crate::saves::launcher::remote_dir(&root, "p"));
+        let (careers, _) = profile_careers(&root, "p");
+        assert_eq!(careers.len(), 1);
+        assert_eq!(key_of(&careers[0].slot), "604a2c4a9c422bfc");
+        let p = Plain::at(crate::saves::plain::root_of_profile(&root, "p"));
+        write(
+            &p,
+            &Gen {
+                n: 1,
+                event: "load",
+                session: Some("s"),
+                containers: pair(
+                    "driver_career_26",
+                    "game",
+                    vec![("0x00000000000000aa", "Career Save 1")],
+                ),
+            },
+        );
+        current(&p, 1);
+        assert_eq!(profile_careers(&root, "p").0, save_careers(&p).0);
+        std::fs::remove_dir_all(&root).ok();
     }
 
     #[test]
