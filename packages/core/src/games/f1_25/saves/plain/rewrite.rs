@@ -417,29 +417,17 @@ const SAVE_LEVEL: i32 = 3;
 
 fn mapped_stream(stream: &[u8], maps: &IdMaps) -> std::result::Result<(Vec<u8>, CareerPass), String> {
     let mut root = bag::decode(stream).map_err(|e| format!("the save stream does not decode: {e}"))?;
-    let mut parts = Vec::new();
-    for save in &root.entries {
-        if let bag::Value::Bag(containers) = &save.value {
-            for child in &containers.entries {
-                let name = String::from_utf8_lossy(&child.key.0).into_owned();
-                if let (true, bag::Value::Bag(b)) = (remap::is_career_container(&name), &child.value) {
-                    parts.push((name, b.clone()));
-                }
-            }
-        }
-    }
+    let parts = remap::save_containers(&root)
+        .filter(|(name, _)| remap::is_career_container(name))
+        .map(|(name, b)| (name, b.clone()))
+        .collect();
     let pass = career_pass(parts, maps);
     if pass.changed.is_empty() {
         return Ok((Vec::new(), pass));
     }
-    for save in &mut root.entries {
-        if let bag::Value::Bag(containers) = &mut save.value {
-            for child in &mut containers.entries {
-                let name = String::from_utf8_lossy(&child.key.0).into_owned();
-                if let Some(tree) = pass.changed.get(&name) {
-                    child.value = bag::Value::Bag(tree.clone());
-                }
-            }
+    for (name, child) in remap::save_containers_mut(&mut root) {
+        if let Some(tree) = pass.changed.get(&name) {
+            *child = tree.clone();
         }
     }
     let bytes = bag::encode(&root).map_err(|e| format!("the mapped save stream does not encode: {e}"))?;

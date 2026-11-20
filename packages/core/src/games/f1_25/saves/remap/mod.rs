@@ -322,21 +322,53 @@ pub fn remap_root(root: &mut Bag, maps: &IdMaps) -> Remapped {
     if maps.is_empty() {
         return out;
     }
-    for save in &mut root.entries {
-        let Value::Bag(containers) = &mut save.value else {
-            continue;
-        };
-        for child in &mut containers.entries {
-            let name = String::from_utf8_lossy(&child.key.0).into_owned();
-            if !is_career_container(&name) {
-                continue;
-            }
-            if let Value::Bag(bag) = &mut child.value {
-                out.add(remap_container(bag, maps));
-            }
+    for (name, bag) in save_containers_mut(root) {
+        if is_career_container(&name) {
+            out.add(remap_container(bag, maps));
         }
     }
     out
+}
+
+fn containers_of(save: &Bag) -> Option<&Bag> {
+    match save.get("containers")? {
+        Value::Bag(c) => Some(c),
+        _ => None,
+    }
+}
+
+/// The containers of a decoded profile save stream, by name: `save_game.containers.<name>`.
+pub fn save_containers(root: &Bag) -> impl Iterator<Item = (String, &Bag)> {
+    root.entries
+        .iter()
+        .filter_map(|save| match &save.value {
+            Value::Bag(b) => containers_of(b),
+            _ => None,
+        })
+        .flat_map(|c| c.entries.iter())
+        .filter_map(|e| match &e.value {
+            Value::Bag(b) => Some((String::from_utf8_lossy(&e.key.0).into_owned(), b)),
+            _ => None,
+        })
+}
+
+/// [`save_containers`], mutable.
+pub fn save_containers_mut(root: &mut Bag) -> impl Iterator<Item = (String, &mut Bag)> {
+    root.entries
+        .iter_mut()
+        .filter_map(|save| match &mut save.value {
+            Value::Bag(b) => b.entries.iter_mut().find(|e| e.key.0 == b"containers"),
+            _ => None,
+        })
+        .filter_map(|e| match &mut e.value {
+            Value::Bag(c) => Some(c),
+            _ => None,
+        })
+        .flat_map(|c| c.entries.iter_mut())
+        .filter_map(|e| match &mut e.value {
+            Value::Bag(b) => Some((String::from_utf8_lossy(&e.key.0).into_owned(), b)),
+            _ => None,
+        })
 }
 
 #[derive(Debug, thiserror::Error)]

@@ -68,8 +68,11 @@ fn career() -> Value {
 fn root(name: &str, container: Value) -> Bag {
     let mut containers = Bag::new();
     containers.push(name, container);
+    let mut save = Bag::new();
+    save.push("uid", Value::U64(1));
+    save.push("containers", Value::Bag(containers));
     let mut root = Bag::new();
-    root.push("save_game", Value::Bag(containers));
+    root.push("save_game", Value::Bag(save));
     root
 }
 

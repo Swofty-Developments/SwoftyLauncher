@@ -414,9 +414,16 @@ fn stream() -> Vec<u8> {
         "driver_career_26_SaveSlotGameModeComponent",
         Value::Bag(slot_component(1, vec![slot(1, 478, 235)])),
     );
+    encode(&save_root(containers)).unwrap()
+}
+
+fn save_root(containers: Bag) -> Bag {
+    let mut save = Bag::new();
+    save.push("uid", Value::U64(1));
+    save.push("containers", Value::Bag(containers));
     let mut root = Bag::new();
-    root.push("save_game", Value::Bag(containers));
-    encode(&root).unwrap()
+    root.push("save_game", Value::Bag(save));
+    root
 }
 
 fn save_file(d: &std::path::Path) -> PathBuf {
@@ -466,14 +473,9 @@ fn a_store_with_no_generation_maps_the_launcher_save_file_once() {
     );
     assert!(!path.with_extension("remap.tmp").exists());
     let mut expected = decode(&stream()).unwrap();
-    let Some(Value::Bag(c)) = expected.entries[0..1].first_mut().map(|e| &mut e.value) else {
-        panic!()
-    };
     let mut mapped = 0;
-    for e in &mut c.entries {
-        if let Value::Bag(b) = &mut e.value
-            && (e.key.0 == GM.as_bytes() || e.key.0 == SLOT.as_bytes())
-        {
+    for (name, b) in crate::saves::remap::save_containers_mut(&mut expected) {
+        if name == GM || name == SLOT {
             mapped += crate::saves::remap::remap_container(b, &IdMaps::from_aliases(&aliases())).total();
         }
     }
@@ -547,8 +549,7 @@ fn a_save_file_with_this_builds_ids_is_not_written() {
     let path = d.join("savegame@profile#NXDSMWW.BWW");
     let mut containers = Bag::new();
     containers.push(GM, Value::Bag(career(645, 362)));
-    let mut root = Bag::new();
-    root.push("save_game", Value::Bag(containers));
+    let root = save_root(containers);
     std::fs::write(
         &path,
         crate::saves::codec::encode_data(&encode(&root).unwrap(), [1u8; 16], 3).unwrap(),
