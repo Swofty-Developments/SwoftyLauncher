@@ -377,6 +377,7 @@ SCRIPTS = [
     Script('hud', 'Overlay draw-list unit test', ['bash', 'native/test/run_hud_test.sh']),
     Script('hud_dial_template', 'HUD dial template host test', ['bash', 'templates/hud-dial/native/test/run_test.sh']),
     Script('guard', 'Handler guard Wine test', ['bash', 'native/test/run_guard_test.sh'], wine=True),
+    Script('pdh', 'GPU Engine counter calls Wine test (pinned pdh.dll, faults kept)', ['bash', 'native/test/run_pdh_test.sh'], wine=True),
     Script('mem_pages', 'Memory page checks Wine test', ['bash', 'native/test/run_mem_pages_test.sh'], wine=True),
     Script('pe_imports_wine', 'Import table walk Wine test (rewritten entries skipped, valid slots patched)',
            ['bash', 'native/test/run_pe_imports_test.sh'], wine=True),
