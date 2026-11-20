@@ -84,6 +84,24 @@ pub(super) const TYRE_CURVE_NAN: [&str; 6] = [
     "F1_25.exe+0x2e72821 ",
 ];
 
+/// Where the game's keyframe samplers read a track's bucket table at the index a time that is not a number turns
+/// into (0x80000000, 4 GB below the table): the 3-float, 4-float and rotation samplers, on Steam build 26566308
+/// (1.0.145), the KB build, EA 1.0.141 and EA 1.0.145.
+pub(super) const ANIM_CLIP_NAN: [&str; 12] = [
+    "F1_25.exe+0x3a3d54b ",
+    "F1_25.exe+0x3a3e1a2 ",
+    "F1_25.exe+0x3a3e5ff ",
+    "F1_25.exe+0x3a3af7b ",
+    "F1_25.exe+0x3a3bbd2 ",
+    "F1_25.exe+0x3a3c02f ",
+    "F1_25.exe+0x3a27f9b ",
+    "F1_25.exe+0x3a28bf2 ",
+    "F1_25.exe+0x3a2904f ",
+    "F1_25.exe+0x3a2a56b ",
+    "F1_25.exe+0x3a2b1c2 ",
+    "F1_25.exe+0x3a2b61f ",
+];
+
 /// How long before the crash Manual Pit Lane's lines count, and after it.
 pub(super) const PITLANE_SECS: f64 = 1.5;
 
@@ -123,15 +141,27 @@ pub(super) fn pitlane_crash(e: &Evidence, f: &Fatal) -> bool {
     garbage || (kept && at)
 }
 
-/// Whether F1 25 faulted in its own tyre curve lookup: the unhandled exception's address or the crash's nearest
-/// frame is in [`TYRE_CURVE_NAN`].
-pub(super) fn tyre_curve_crash(e: &Evidence, f: &Fatal) -> bool {
+/// Whether F1 25 faulted at one of `sites` in its own code: the unhandled exception's address or the crash's nearest
+/// frame is one of them.
+fn game_fault_at(e: &Evidence, f: &Fatal, sites: &[&str]) -> bool {
     f.module.as_deref() == Some("f1_25.exe")
         && crash_lines(&e.loader)
             .into_iter()
             .filter(|l| l.starts_with("unhandled ") && l.contains("reached the top-level filter"))
             .chain(f.frames.first().map(String::as_str))
-            .any(|l| TYRE_CURVE_NAN.iter().any(|at| l.contains(at)))
+            .any(|l| sites.iter().any(|at| l.contains(at)))
+}
+
+/// Whether F1 25 faulted in its own tyre curve lookup: the unhandled exception's address or the crash's nearest
+/// frame is in [`TYRE_CURVE_NAN`].
+pub(super) fn tyre_curve_crash(e: &Evidence, f: &Fatal) -> bool {
+    game_fault_at(e, f, &TYRE_CURVE_NAN)
+}
+
+/// Whether F1 25 faulted in its own keyframe sampler: the unhandled exception's address or the crash's nearest frame
+/// is in [`ANIM_CLIP_NAN`].
+pub(super) fn anim_clip_crash(e: &Evidence, f: &Fatal) -> bool {
+    game_fault_at(e, f, &ANIM_CLIP_NAN)
 }
 
 /// Whether F1 25 faulted in its own tyre curve lookup less than [`TD_WHEEL_OFF_SECS`] after Terminal Damage tore a
@@ -317,6 +347,17 @@ pub(super) fn tyre_curve_nan() -> Diagnosis {
         title: "F1 25 crashed in its own tyre wear estimate".to_owned(),
         what: "F1 25's own tyre wear estimate for a car hit an invalid number, and the game crashed. This is a fault \
                in the game, and no setting of yours fixes it."
+            .to_owned(),
+        steps: vec![SEND_LOGS.to_owned()],
+    }
+}
+
+pub(super) fn anim_clip_nan() -> Diagnosis {
+    Diagnosis {
+        id: "anim_clip_nan",
+        title: "F1 25 crashed in its own animation code".to_owned(),
+        what: "F1 25's own animation code hit an invalid number, and the game crashed. This is a fault in the game, \
+               and no setting of yours fixes it."
             .to_owned(),
         steps: vec![SEND_LOGS.to_owned()],
     }

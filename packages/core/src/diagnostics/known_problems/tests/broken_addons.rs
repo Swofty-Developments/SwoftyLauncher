@@ -389,6 +389,28 @@ const TYRE_CURVE_FAULTS: [&str; 6] = [
     "F1_25.exe+0x2e72821 .rdata fn base+0x2e72780+0xa1",
 ];
 
+const ANIM_CLIP_STEAM: [&str; 4] = [
+    "F1_25.exe+0x3a3d54b .tls$ fn base+0x3a3d470+0xdb",
+    "F1_25.exe+0x3a3d690 .tls$ fn base+0x3a3d600+0x90",
+    "F1_25.exe+0x7c36c8a .trace fn base+0x7c36b40+0x14a",
+    "F1_25.exe+0x7c2f80a .trace fn base+0x7c2f720+0xea",
+];
+
+const ANIM_CLIP_FAULTS: [&str; 12] = [
+    "F1_25.exe+0x3a3d54b .tls$ fn base+0x3a3d470+0xdb",
+    "F1_25.exe+0x3a3e1a2 .tls$ fn base+0x3a3e0d0+0xd2",
+    "F1_25.exe+0x3a3e5ff .tls$ fn base+0x3a3e500+0xff",
+    "F1_25.exe+0x3a3af7b .xtls fn base+0x3a3aea0+0xdb",
+    "F1_25.exe+0x3a3bbd2 .xtls fn base+0x3a3bb00+0xd2",
+    "F1_25.exe+0x3a3c02f .xtls fn base+0x3a3bf30+0xff",
+    "F1_25.exe+0x3a27f9b .rdata fn base+0x3a27ec0+0xdb",
+    "F1_25.exe+0x3a28bf2 .rdata fn base+0x3a28b20+0xd2",
+    "F1_25.exe+0x3a2904f .rdata fn base+0x3a28f50+0xff",
+    "F1_25.exe+0x3a2a56b .arch fn base+0x3a2a490+0xdb",
+    "F1_25.exe+0x3a2b1c2 .arch fn base+0x3a2b0f0+0xd2",
+    "F1_25.exe+0x3a2b61f .arch fn base+0x3a2b520+0xff",
+];
+
 fn td_wheel_off_line(at: &str) -> String {
     format!(
         "2026-11-15 {at} [11132] [td-probe] suspension: your car FR wheel torn off: the game's damage 0.00 -> 1.02 \
@@ -492,4 +514,46 @@ fn only_a_fault_at_the_tyre_curve_read_is_named_for_it() {
         TYRE_CURVE_STEAM[1],
     ]);
     assert_eq!(diagnose(&td_on(&(wheel_off + &near))), None);
+}
+
+#[test]
+fn a_keyframe_sampler_crash_is_the_games_own() {
+    let generic = |log: &str| {
+        let d = diagnose(&td_on(log)).unwrap();
+        assert_eq!(d.id, "anim_clip_nan", "{log}");
+        d
+    };
+    let d = generic(&frames_log(&ANIM_CLIP_STEAM));
+    assert_eq!(d.title, "F1 25 crashed in its own animation code");
+    assert_eq!(
+        d.what,
+        "F1 25's own animation code hit an invalid number, and the game crashed. This is a fault in the game, and \
+         no setting of yours fixes it."
+    );
+    assert_eq!(
+        d.steps,
+        ["Press Send Logs in the launcher so this reaches the developers."]
+    );
+    assert_eq!(diagnose(&ev(&frames_log(&ANIM_CLIP_STEAM), &[])).unwrap(), d);
+    generic(&(td_wheel_off_line("13:13:09.664") + &frames_log(&ANIM_CLIP_STEAM)));
+    for fault in ANIM_CLIP_FAULTS {
+        generic(&frames_log(&[fault, ANIM_CLIP_STEAM[1]]));
+    }
+}
+
+#[test]
+fn only_a_fault_at_the_keyframe_sampler_read_is_named_for_it() {
+    let deeper = frames_log(&[
+        "F1_25.exe+0x7c36b55 .trace fn base+0x7c36b40+0x15",
+        ANIM_CLIP_STEAM[0],
+        ANIM_CLIP_STEAM[1],
+    ]);
+    assert_eq!(diagnose(&ev(&deeper, &[])), None);
+    let other_module = frames_log(&["race_broadcast.dll+0x3a3d54b", ANIM_CLIP_STEAM[1]]);
+    assert_eq!(diagnose(&ev(&other_module, &[])), None);
+    let near = frames_log(&[
+        "F1_25.exe+0x3a3d54c .tls$ fn base+0x3a3d470+0xdc",
+        ANIM_CLIP_STEAM[1],
+    ]);
+    assert_eq!(diagnose(&ev(&near, &[])), None);
 }
