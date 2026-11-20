@@ -60,13 +60,13 @@ std::recursive_mutex mu;
 std::mutex drs_mu;
 std::map<std::string, DrsGroup> drs_groups;
 
-// Boxes with more teams than their world has garages get a world of their own (box_world.hpp) only with
-// SWOFTY_BOX_WORLDS=1, until an in-game check on 1.0.145 proves it.
+// Boxes with more teams than their world has garages get a world of their own (box_world.hpp) unless
+// SWOFTY_BOX_WORLDS=0.
 bool box_worlds_on()
 {
     char v[8] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_BOX_WORLDS", v, sizeof v);
-    return n && n < sizeof v && v[0] == '1';
+    DWORD n = GetEnvironmentVariableA(box_world::ENV, v, sizeof v);
+    return box_world::enabled(n && n < sizeof v ? std::string_view(v, n) : std::string_view());
 }
 
 void publish_drs(Store &st, Expansion &x)

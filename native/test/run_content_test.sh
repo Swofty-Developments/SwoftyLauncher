@@ -80,6 +80,36 @@ assert any("11 teams, its world holds 10 garages: season swofty_box_cs_f1_2016" 
            "layer swofty_box_cs_f1_2016_world (f1_26, 11 garages" in l for l in lines), lines
 print("box worlds on the game database: an 11-team swofty_f1 box gets its own season and f1_26 layer")
 EOF
+    python3 - content/classic-seasons/classic-seasons-2016/registry/content.json "$OUT/box_world_tt.json" <<'EOF'
+import copy, json, sys
+d = json.load(open(sys.argv[1]))
+extra = copy.deepcopy(d["vehicle"]["mercedes"])
+extra.pop("stat_id", None)
+extra["label"] = "cs16_mercedes_tt"
+d["vehicle"]["mercedes_tt"] = extra
+pkg = d["content.package"].pop(next(iter(d["content.package"])))
+pkg.pop("calendar", None)
+pkg["entrant_list"] = "cs_f1_2016_tt"
+pkg["database"] = {"entrant_list_from": "f1_2025", "standings_from": "f1_teams_2024",
+                   "entrant_list_set": {"previous_season_driver_standings": ""}}
+pkg["teams"].append(dict(copy.deepcopy(pkg["teams"][0]), key="mercedes_tt", vehicle="swofty.classic-seasons-2016/mercedes_tt"))
+for t in pkg["teams"]:
+    t.pop("drivers", None)
+d["content.package"] = {"f1_2016_tt": pkg}
+json.dump(d, open(sys.argv[2], "w"))
+EOF
+    "$OUT/rows_tool" --registries ../../packages/sdk/std/registries --db "$GAMEDB" --edits content/box_world/swofty_f1_edits.json \
+        --out "$OUT/box_world_tt_edits.json" --summary "$OUT/box_world_tt_summary.json" --box-worlds \
+        swofty.classic-seasons-2016 "$OUT/box_world_tt.json"
+    python3 - "$OUT/box_world_tt_summary.json" <<'EOF'
+import json, sys
+s = json.load(open(sys.argv[1]))
+lines = s["lines"]["content.package"]
+assert s["records"].get("content.package") == 1 and not s["refused"], (s["records"], s["refused"])
+assert any("12 teams, its world holds 10 garages: season swofty_box_cs_f1_2016_tt" in l and
+           "layer swofty_box_cs_f1_2016_tt_world (f1_26_myteam, 12 garages" in l for l in lines), lines
+print("box worlds on the game database: a 12-team Time Trial list with no season of its own gets a My Team layer")
+EOF
     python3 content/check_boot_ahead.py "$OUT/rows_tool" "$GAMEDB" "$OUT" "${CS[@]}" -- \
         swofty.classic-seasons-2016 "$OUT/box_world_box.json"
 else

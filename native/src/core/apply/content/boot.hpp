@@ -295,8 +295,8 @@ struct Expansion {
     std::set<std::string> owners;
     std::map<std::string, std::map<std::string, int>> left_out;
     std::vector<std::string> virtual_lists;
-    // A box with more teams than its world has garages gets a world of its own (box_world.hpp); off unless the core
-    // turns it on (SWOFTY_BOX_WORLDS=1).
+    // A box with more teams than its world has garages gets a world of its own (box_world.hpp). The core turns it on
+    // unless SWOFTY_BOX_WORLDS=0; host tools pass it.
     bool box_worlds = false;
 };
 
