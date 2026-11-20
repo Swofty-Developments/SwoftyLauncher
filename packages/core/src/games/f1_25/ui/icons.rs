@@ -93,13 +93,10 @@ fn settings(p: &mut swofty_formats::pkg::Pkg) -> Result<&mut Obj> {
 }
 
 /// overrides.uidb with settings.swofty_addons, a copy of settings.button naming the icons' array
-/// and a slice per icon.
+/// and a slice per icon, in place of the one an earlier build wrote.
 pub fn overrides(data: &[u8]) -> Result<Vec<u8>> {
     edit(data, |p| {
         let d = settings(p)?;
-        if d.get(LIST).is_some() {
-            return Err(err(format!("the overrides already have settings.{LIST}")));
-        }
         let mut e = d.at(FROM)?.clone();
         let eo = e.o_mut()?;
         set_str(eo, "Name", LIST)?;
