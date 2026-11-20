@@ -1032,7 +1032,6 @@ inline constexpr fn<"Game_PitLane_UpdateMovement", Game_PitLane_UpdateMovement_t
 inline constexpr address<"Game_PitLane_VehicleEntering"> Game_PitLane_VehicleEntering{}; // L2 experimental
 inline constexpr address<"Game_PitLane_VehicleEnteringInternal"> Game_PitLane_VehicleEnteringInternal{}; // L2 experimental
 inline constexpr address<"Game_PitLane_VehicleExiting"> Game_PitLane_VehicleExiting{}; // L2 experimental
-[[deprecated("deprecated in 1.10.0, removed in the next release: its notes' exe claim is wrong: the only refuel strings are parts of the EnsureFuelLoad race objective names, and there is no fuelling string")]] inline constexpr address<"Game_PitStopActionObserver_SetTransitionSequence"> Game_PitStopActionObserver_SetTransitionSequence{}; // L2 experimental, PitStopActionObserver::setTransitionSequence
 inline constexpr address<"Game_PitStopInstance_PlaySequence"> Game_PitStopInstance_PlaySequence{}; // L2 experimental, PitStopInstance::playSequence
 inline constexpr address<"Game_PitStopLogic_ChangeState"> Game_PitStopLogic_ChangeState{}; // L2 experimental
 inline constexpr address<"Game_PitStopLogic_NeSequenceClipTargetImpl"> Game_PitStopLogic_NeSequenceClipTargetImpl{}; // L2 experimental, PitStopLogic::NeSequenceClipTargetImpl

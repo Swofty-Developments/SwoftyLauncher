@@ -11962,15 +11962,6 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
-    #[deprecated(
-        since = "1.10.0",
-        note = "deprecated in 1.10.0, removed in the next release: its notes' exe claim is wrong: the only refuel strings are parts of the EnsureFuelLoad race objective names, and there is no fuelling string"
-    )]
-    pub const Game_PitStopActionObserver_SetTransitionSequence: Binding = Binding {
-        id: "Game_PitStopActionObserver_SetTransitionSequence",
-        kind: "func",
-        status: Status::Experimental,
-    };
     pub const Game_PitStopInstance_PlaySequence: Binding = Binding {
         id: "Game_PitStopInstance_PlaySequence",
         kind: "func",
@@ -16276,15 +16267,6 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
-    #[deprecated(
-        since = "1.10.0",
-        note = "deprecated in 1.10.0, removed in the next release: renamed: every caller sets a UIDBRef weak object reference through it and the compare is object identity, not a numeric S64 compare; use Ne_Property_SetUIDBRefIfChanged"
-    )]
-    pub const Ne_Property_SetS64IfChanged: Binding = Binding {
-        id: "Ne_Property_SetS64IfChanged",
-        kind: "func",
-        status: Status::Experimental,
-    };
     pub const Ne_Property_SetUIDBRefIfChanged: Binding = Binding {
         id: "Ne_Property_SetUIDBRefIfChanged",
         kind: "func",
@@ -16857,15 +16839,6 @@ pub mod bindings {
     };
     pub const Ne_Std_ThrowDequeTooLong: Binding = Binding {
         id: "Ne_Std_ThrowDequeTooLong",
-        kind: "func",
-        status: Status::Experimental,
-    };
-    #[deprecated(
-        since = "1.10.0",
-        note = "deprecated in 1.10.0, removed in the next release: renamed: it is std::_Throw_bad_optional_access, which only raises std::bad_optional_access and ends the process in a fast fail; use Ne_Std_ThrowBadOptionalAccess"
-    )]
-    pub const Ne_Std_ThrowException: Binding = Binding {
-        id: "Ne_Std_ThrowException",
         kind: "func",
         status: Status::Experimental,
     };

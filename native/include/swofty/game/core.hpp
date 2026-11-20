@@ -692,7 +692,6 @@ inline constexpr address<"Ne_PresenceQueue_VectorPush"> Ne_PresenceQueue_VectorP
 inline constexpr address<"Ne_Presence_OnSubscribeResult"> Ne_Presence_OnSubscribeResult{}; // L2 experimental
 inline constexpr address<"Ne_Property_ResolveBindingChain"> Ne_Property_ResolveBindingChain{}; // L2 experimental
 inline constexpr address<"Ne_Property_SetS32IfChanged"> Ne_Property_SetS32IfChanged{}; // L2 experimental
-[[deprecated("deprecated in 1.10.0, removed in the next release: renamed: every caller sets a UIDBRef weak object reference through it and the compare is object identity, not a numeric S64 compare; use Ne_Property_SetUIDBRefIfChanged")]] inline constexpr address<"Ne_Property_SetS64IfChanged"> Ne_Property_SetS64IfChanged{}; // L2 experimental
 inline constexpr address<"Ne_Property_SetUIDBRefIfChanged"> Ne_Property_SetUIDBRefIfChanged{}; // L2 experimental
 inline constexpr address<"Ne_PtrList_RemoveLocked"> Ne_PtrList_RemoveLocked{}; // L2 experimental
 inline constexpr address<"Ne_Queue_EnqueueEventRecord"> Ne_Queue_EnqueueEventRecord{}; // L2 experimental
@@ -817,7 +816,6 @@ inline constexpr address<"Ne_Std_ThrowBadArrayNewLength"> Ne_Std_ThrowBadArrayNe
 inline constexpr address<"Ne_Std_ThrowBadFunctionCall"> Ne_Std_ThrowBadFunctionCall{}; // L2 experimental
 inline constexpr address<"Ne_Std_ThrowBadOptionalAccess"> Ne_Std_ThrowBadOptionalAccess{}; // L2 experimental
 inline constexpr address<"Ne_Std_ThrowDequeTooLong"> Ne_Std_ThrowDequeTooLong{}; // L2 experimental
-[[deprecated("deprecated in 1.10.0, removed in the next release: renamed: it is std::_Throw_bad_optional_access, which only raises std::bad_optional_access and ends the process in a fast fail; use Ne_Std_ThrowBadOptionalAccess")]] inline constexpr address<"Ne_Std_ThrowException"> Ne_Std_ThrowException{}; // L2 experimental
 inline constexpr address<"Ne_Std_ThrowExceptionNoReturn"> Ne_Std_ThrowExceptionNoReturn{}; // L2 experimental
 inline constexpr address<"Ne_Std_ThrowInvalidBitsetPosition"> Ne_Std_ThrowInvalidBitsetPosition{}; // L2 experimental
 inline constexpr address<"Ne_Std_ThrowMapSetTooLong"> Ne_Std_ThrowMapSetTooLong{}; // L2 experimental
