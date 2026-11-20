@@ -54,6 +54,60 @@ pub fn stock_max_ids(data: &Path, game: &Game) -> BTreeMap<String, i64> {
     Shipped::new(data, game).max_ids()
 }
 
+/// Puts a clean copy of the game file `rel` back where the build found the launcher's own changes of an
+/// earlier session in the game's original: the game file when the record of originals holds a stale copy and the
+/// game file differs from it, else the newest original backed up for another game build. None when no journal
+/// may be open, F1 25 runs or no clean copy is on record.
+pub fn heal_stale(data: &Path, game: &Game, rel: &str) -> Result<Option<String>> {
+    if !crate::game_folder::journal::Journal::open(data)?.is_empty()
+        || crate::platform::process::game_running_in(&game.dir)
+    {
+        return Ok(None);
+    }
+    let objects = Objects {
+        root: data.join("baseline/objects"),
+    };
+    let mut baseline = Baseline::load_or_new(data, &game.identity)?;
+    let path = game.dir.join(rel);
+    let now = crate::game_folder::baseline::sha256_opt(&path)?;
+    let recorded = baseline.files.get(rel).map(|r| r.sha256.clone());
+    let Some(stale) = recorded.clone().or_else(|| now.clone()) else {
+        return Ok(None);
+    };
+    if recorded.is_some() && now.as_ref().is_some_and(|n| *n != stale) {
+        let size = std::fs::metadata(&path).map_err(crate::io_err(&path))?.len();
+        let sha256 = objects.put_file(&path)?;
+        baseline.files.insert(
+            rel.to_owned(),
+            crate::game_folder::baseline::FileRecord {
+                size,
+                sha256,
+                source: crate::game_folder::baseline::Source::FirstSight,
+            },
+        );
+        baseline.save(data)?;
+        return Ok(Some(format!(
+            "the recorded original of {rel} held the launcher's changes from an earlier session; the game folder's copy \
+             is the original now"
+        )));
+    }
+    let Some((build, clean)) = crate::game_folder::baseline::older_originals(data, &game.identity, rel)
+        .into_iter()
+        .find(|(_, r)| r.sha256 != stale)
+    else {
+        return Ok(None);
+    };
+    objects.restore_to(&clean.sha256, &path)?;
+    if recorded.is_some() {
+        baseline.files.insert(rel.to_owned(), clean);
+        baseline.save(data)?;
+    }
+    Ok(Some(format!(
+        "{rel} in the game folder still held the launcher's changes from an earlier session; put back its original \
+         backed up for game build {build}"
+    )))
+}
+
 #[cfg(test)]
 thread_local! {
     pub(super) static SHIPPED_READS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };

@@ -49,6 +49,7 @@ mod registry;
 mod reuse;
 mod row_ids;
 mod setup;
+mod stale;
 mod tracks;
 
 pub(super) struct Rows(pub(super) AddonManifest);

@@ -30,6 +30,20 @@ pub(in crate::games::f1_25::build) fn missing_resource(
     )
 }
 
+/// The refusal for two addons that add the same entry.
+pub(in crate::games::f1_25::build) fn duplicate_entry(
+    later: &str,
+    earlier: &str,
+    origin: &str,
+    at: &str,
+    entry: &str,
+) -> String {
+    format!(
+        "{later} and {earlier} both add the entry {entry} ({at}); turn one of them off, or ask their authors which \
+         one should own it (applying {origin})"
+    )
+}
+
 /// The game-root folders addons put files in that the game never reads from
 /// there: not a folder at the game root, but one under `2025_asset_groups/`.
 /// Each is the addon, the folder and how many files go in it.

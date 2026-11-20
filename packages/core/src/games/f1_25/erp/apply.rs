@@ -6,12 +6,12 @@ use swofty_formats::pkg::{Node, Pkg, Value};
 use super::ops::{replaces, whole_write};
 use super::pack;
 use super::{ErpBuild, SCENE, checked, fail, mipmap_path, overlay_names, unsupported};
-use crate::Result;
 use crate::addons::builtin::loader_files;
 use crate::asset::Source;
-use crate::content::pkg_edit::{apply_edits, sources};
-use crate::ops::{ErpOp, PkgTarget};
+use crate::content::pkg_edit::{added_entry, apply_edits, holds_added, sources};
+use crate::ops::{ErpOp, PkgEdit, PkgTarget};
 use crate::ui::node::component_id;
+use crate::{Error, Result};
 
 pub(super) type SourceKey = (String, String, usize);
 
@@ -125,7 +125,42 @@ impl ErpBuild<'_> {
             Some((erp, resource)) if self.merge_ui => self.earlier_whole(erp, resource, origin)?,
             _ => None,
         };
-        self.apply(op, resolve)?;
+        if let ErpOp::PatchPkg {
+            erp,
+            resource,
+            fragment,
+            edits,
+        } = op
+        {
+            for (at, entry) in edits.iter().filter_map(added_entry) {
+                if let Some(earlier) =
+                    self.added
+                        .get(&(erp.clone(), resource.clone(), at.clone(), entry.clone()))
+                {
+                    return Err(Error::DuplicateEntry {
+                        resource: resource.clone(),
+                        at,
+                        entry,
+                        earlier: earlier.clone(),
+                    });
+                }
+            }
+            if let Err(e) = self.apply(op, resolve) {
+                return Err(match self.original_holds(erp, resource, *fragment, edits) {
+                    true => Error::StaleInput {
+                        rel: erp.clone(),
+                        detail: e.to_string(),
+                    },
+                    false => e,
+                });
+            }
+            for (at, entry) in edits.iter().filter_map(added_entry) {
+                self.added
+                    .insert((erp.clone(), resource.clone(), at, entry), origin.to_owned());
+            }
+        } else {
+            self.apply(op, resolve)?;
+        }
         if let Some((erp, resource)) = whole {
             self.record_whole(erp, resource, origin, before)?;
         }
@@ -171,6 +206,21 @@ impl ErpBuild<'_> {
             }
         }
         Ok(())
+    }
+
+    /// Whether the game's original of `erp` (the baseline's copy, else the input) already holds an entry one
+    /// of `edits` adds.
+    fn original_holds(&self, erp: &str, resource: &str, fragment: usize, edits: &[PkgEdit]) -> bool {
+        let Ok(rel) = checked(erp) else {
+            return false;
+        };
+        let path = self.baseline.unwrap_or(self.original)(rel);
+        let target = PkgTarget {
+            erp: erp.to_owned(),
+            resource: resource.to_owned(),
+            fragment,
+        };
+        read_resource(&path, &target).is_ok_and(|root| edits.iter().any(|e| holds_added(&root, e)))
     }
 
     pub fn apply(&mut self, op: &ErpOp, resolve: &dyn Fn(&Source) -> Result<PathBuf>) -> Result<()> {

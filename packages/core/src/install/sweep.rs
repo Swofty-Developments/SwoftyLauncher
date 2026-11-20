@@ -92,7 +92,13 @@ impl<'a> Installer<'a> {
             let path = self.path(&f.path);
             if hashes.sha256_opt(&path)?.as_deref() == Some(f.sha256.as_str()) {
                 if f.replaced {
-                    match baseline.files.get(&f.path) {
+                    let older = || {
+                        crate::game_folder::baseline::older_originals(self.data, &self.game.identity, &f.path)
+                            .into_iter()
+                            .next()
+                            .map(|(_, rec)| rec)
+                    };
+                    match baseline.files.get(&f.path).cloned().or_else(older) {
                         Some(rec) if self.objects().has(&rec.sha256) => {
                             self.put_original(&rec.sha256, &path, hashes)?;
                             notes.push(format!("put the original {} back", f.path));

@@ -41,11 +41,11 @@ use crate::profile::resolver::resolve;
 use crate::store::Store;
 use crate::{Error, Result};
 
-pub use self::failure::{named, refused_fix};
+pub use self::failure::{named, refused_fix, stale_text};
 pub use self::loader::{Plugins, build_menus, plugin_files, screen_files};
 pub use self::lock::{BuildLock, lock};
 pub use self::op_files::read_op_file;
-pub use self::originals::{original, stock_max_ids};
+pub use self::originals::{heal_stale, original, stock_max_ids};
 pub use self::tracks::{TrackPackages, track_packages};
 
 pub const GVDB: &str = "game_package/gamedatabases/gamedatabases.2025.bin";
@@ -108,7 +108,28 @@ pub fn source_dir(store: &Store, addon: &str, root: crate::asset::Root) -> PathB
 }
 
 pub fn build(store: &Store, profile: &str, game: &Game) -> Result<Built> {
-    build_as(store, profile, game, false)
+    let mut healed: Vec<String> = Vec::new();
+    let mut notes = Vec::new();
+    loop {
+        match build_as(store, profile, game, false) {
+            Err(Error::StaleInput { rel, detail }) => {
+                let note = match healed.contains(&rel) {
+                    true => None,
+                    false => heal_stale(&store.root, game, &rel)?,
+                };
+                let Some(note) = note else {
+                    return Err(Error::Other(stale_text(&detail, &rel, false)));
+                };
+                notes.push(format!("stale: {note}"));
+                healed.push(rel);
+            }
+            Ok(mut built) => {
+                built.lines.splice(0..0, notes);
+                return Ok(built);
+            }
+            Err(e) => return Err(e),
+        }
+    }
 }
 
 /// What [`track_limit`] found and how its check went.

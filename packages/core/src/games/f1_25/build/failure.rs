@@ -110,3 +110,17 @@ pub(super) fn loader_missing(exe_dir: Option<&Path>) -> String {
         "Swofty Launcher's game files (version.dll, swofty_core.dll) are missing from {at}; your antivirus may have removed them. Restore them or run the installer again"
     )
 }
+
+/// The refusal for an addon's change the game's own copy of `rel` already holds. `play` is for a check
+/// before Play, which puts a backed-up original back itself.
+pub fn stale_text(detail: &str, rel: &str, play: bool) -> String {
+    let first = match play {
+        true => "press Play, which puts its backed-up original back, or ",
+        false => "the launcher has no clean copy of it on record; ",
+    };
+    format!(
+        "{detail}. {rel} in the game folder still holds the launcher's changes from an earlier session: {first}repair \
+         F1 25 in the EA app (Library > F1 25 > Manage > Repair) or verify the game files in Steam, then press Play \
+         again"
+    )
+}

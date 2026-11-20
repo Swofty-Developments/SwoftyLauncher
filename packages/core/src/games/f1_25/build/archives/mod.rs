@@ -14,7 +14,7 @@ pub(super) use self::warnings::{
 
 use self::merges::{contested_in, keep_menus, record_merge, ui_merge_notes};
 use self::puts::{ArchivePut, after_puts, archive_puts};
-use self::warnings::missing_resource;
+use self::warnings::{duplicate_entry, missing_resource};
 use super::inputs::Inputs;
 use super::run::Run;
 use super::{Built, Pipeline, source_dir};
@@ -306,6 +306,26 @@ impl Pipeline<'_, '_> {
                                 &name(&puts[&erp].origin.to_string()),
                             ));
                             continue;
+                        }
+                        Err(Error::DuplicateEntry {
+                            resource,
+                            at,
+                            entry,
+                            earlier,
+                        }) => {
+                            return Err(Error::Other(duplicate_entry(
+                                &name(&op.origin.to_string()),
+                                &name(&earlier),
+                                &format!("{}", op.origin),
+                                &format!("{resource}: {at}"),
+                                &entry,
+                            )));
+                        }
+                        Err(Error::StaleInput { rel, detail }) => {
+                            return Err(Error::StaleInput {
+                                rel,
+                                detail: format!("applying {}: {detail}", op.origin),
+                            });
                         }
                         Err(e) => {
                             return Err(Error::Other(format!("applying {}: {e}", op.origin)));

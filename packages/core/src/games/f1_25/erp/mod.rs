@@ -64,6 +64,7 @@ pub struct ErpBuild<'a> {
     whole: HashMap<(String, String), Vec<(String, Pkg)>>,
     ui_base: HashMap<(String, String), Option<Pkg>>,
     ui_merges: Vec<UiMerge>,
+    added: HashMap<(String, String, String, String), String>,
     packer: Packer,
 }
 
@@ -102,6 +103,7 @@ impl<'a> ErpBuild<'a> {
             whole: HashMap::new(),
             ui_base: HashMap::new(),
             ui_merges: Vec::new(),
+            added: HashMap::new(),
             packer: Packer::default(),
         }
     }

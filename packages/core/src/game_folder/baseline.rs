@@ -501,6 +501,31 @@ impl Baseline {
     }
 }
 
+/// The originals of `rel` backed up for game builds other than `id`, newest record first, each with its
+/// build id; only those whose backup is in the object store.
+pub fn older_originals(data: &Path, id: &Identity, rel: &str) -> Vec<(String, FileRecord)> {
+    let objects = Objects {
+        root: data.join("baseline/objects"),
+    };
+    let current = Baseline::path(data, id);
+    let mut found: Vec<(std::time::SystemTime, String, FileRecord)> =
+        std::fs::read_dir(data.join("baseline"))
+            .into_iter()
+            .flatten()
+            .flatten()
+            .map(|e| e.path().join("baseline.json"))
+            .filter(|p| *p != current)
+            .filter_map(|p| {
+                let modified = std::fs::metadata(&p).ok()?.modified().ok()?;
+                let b: Baseline = crate::read_json(&p).ok()?;
+                let rec = b.files.get(rel)?.clone();
+                objects.has(&rec.sha256).then_some((modified, b.build_id, rec))
+            })
+            .collect();
+    found.sort_by_key(|f| std::cmp::Reverse(f.0));
+    found.into_iter().map(|(_, build, rec)| (build, rec)).collect()
+}
+
 fn damaged_copy(path: &Path) -> Option<String> {
     let name = format!("{}{}", path.file_name()?.to_string_lossy(), crate::DAMAGED_SUFFIX);
     std::fs::read_dir(path.parent()?)

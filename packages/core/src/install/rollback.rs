@@ -100,8 +100,9 @@ impl<'a> Installer<'a> {
                     }
                     // A game file that is gone was moved aside by the install and its replacement never took
                     // its name, as after a power cut; nothing of the player's is lost by putting it back.
-                    let ours = now == e.after || (!stranded && (e.state == State::Pending || now.is_none()));
-                    if ours && same_build {
+                    let ours = (now == e.after && (same_build || !stranded))
+                        || (!stranded && same_build && (e.state == State::Pending || now.is_none()));
+                    if ours {
                         self.put_original(before, &path, hashes)?;
                     } else {
                         report.push(left(&e.path));
