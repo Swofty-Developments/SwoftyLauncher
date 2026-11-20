@@ -15,7 +15,8 @@
 // human's calendar activities running today and what the game's calendar check makes of them. When StateSession ends
 // within FAST_END_MS of entering after the hub opened, it logs "[career] session ended <N> ms after start" with the
 // current weekend and the calendar again. At career.hub (Team HQ) entered it logs the current weekend, as "[career]
-// weekend already started, session never ran" when the weekend is past not started with no session complete.
+// weekend already started, session never ran" when the weekend is past not started with no session complete, followed
+// by "[career] Team HQ calendar" with today's calendar items.
 // career.calendar.add_activity reports each contract event or secret meeting added, with its day and today. Reads
 // only, every one guarded: the ScheduleComponent (current season, season over, seasons), the season's driver
 // calendars, their activities and definitions through KB structs (L2), the clock through
@@ -286,6 +287,13 @@ void ended(uint64_t ms, uint64_t hub_ms, const char *how)
     log_items(s);
 }
 
+void stuck_calendar()
+{
+    Snapshot s = snapshot();
+    swofty::log("[career] Team HQ calendar: %s", calendar(s).c_str());
+    log_items(s);
+}
+
 template <class C = g::DriverCalendar> bool calendar_driver(uintptr_t calendar, uint32_t &driver)
 {
     if constexpr (requires(C *c) { c->driver; }) {
@@ -338,9 +346,10 @@ void hub_calendar_team_hq()
     hc::Weekend w;
     if (!current_weekend(w))
         swofty::log("[career] Team HQ weekend: the current weekend is not readable");
-    else if (hc::never_ran(w))
+    else if (hc::never_ran(w)) {
         swofty::log("[career] weekend already started, session never ran: %s", hc::describe(w).c_str());
-    else
+        stuck_calendar();
+    } else
         swofty::log("[career] Team HQ weekend: %s", hc::describe(w).c_str());
 }
 
