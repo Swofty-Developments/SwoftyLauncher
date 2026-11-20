@@ -134,7 +134,7 @@ inline Action press(const Entry &e)
 
 inline std::string dialog_text(const Entry &e)
 {
-    return "This career needs something this profile does not have: " + e.status + ". Loading it anyway can break it.";
+    return "This career does not match this profile's add-ons (" + e.status + "). Loading it anyway can break it.";
 }
 
 constexpr const char *REFUSE_TITLE = "Career can't load";

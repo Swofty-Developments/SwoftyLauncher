@@ -1054,7 +1054,7 @@ fn resume_rows() -> Vec<crate::stdlib::careers::ResumeRow> {
             "driver",
             "Ayrton Senna",
             "version",
-            "Made with another version of F1 1990",
+            "Mismatched version of F1 1990",
         ),
     ]
 }

@@ -28,11 +28,13 @@ pub struct ResumeRow {
     #[serde(default)]
     pub game_mode: String,
     pub ready: bool,
-    /// False when the build lacks the career's own team, car or driver row: the game crashes loading it, so the
-    /// press shows a notice and loads nothing (no Load Anyway).
+    /// False when the career's mode is an addon's that is off: the game has no such mode to load it into, so the
+    /// press shows a notice and loads nothing. A career whose team, car or driver row the build seems to lack asks
+    /// Load Anyway / Back instead, like one whose addon is at another version.
     #[serde(default = "loadable_default")]
     pub loadable: bool,
-    /// `ready`, `missing` (an addon or rows the build lacks) or `version` (made with another addon version).
+    /// `ready`, `missing` (an addon that is off or not installed) or `version` (Mismatched: made with another
+    /// addon version, or rows the build seems to lack).
     pub severity: String,
     pub status: String,
     pub badge: String,
@@ -77,7 +79,7 @@ fn pill(n: &CareerNeeds) -> (String, &'static str) {
             parts.push(format!("Missing: {}", a.name));
             severity = MISSING;
         } else if !a.at_version {
-            parts.push(format!("Made with another version of {}", a.name));
+            parts.push(format!("Mismatched version of {}", a.name));
             if severity == READY {
                 severity = VERSION;
             }
@@ -92,7 +94,9 @@ fn pill(n: &CareerNeeds) -> (String, &'static str) {
     }
     if let Some(m) = &n.missing_rows {
         parts.push(m.text());
-        severity = MISSING;
+        if severity == READY {
+            severity = VERSION;
+        }
     }
     if parts.is_empty() {
         return ("Ready".into(), READY);
@@ -433,7 +437,7 @@ pub fn resume_rows(
                 group: group_of(&c.mode),
                 game_mode: c.mode.clone(),
                 ready: severity == READY,
-                loadable: n.is_none_or(|n| n.missing_rows.is_none() && n.missing_mode.is_none()),
+                loadable: n.is_none_or(|n| n.missing_mode.is_none()),
                 severity: severity.into(),
                 status,
                 badge,
@@ -723,10 +727,7 @@ mod tests {
         assert_eq!(rows[0].driver, "John BENNETT");
         assert_eq!(rows[0].team, "Bennett Racing");
         assert_eq!(rows[0].colour, None, "a player-made team has no database colour");
-        assert_eq!(
-            rows[0].status,
-            "Missing: Alpha; Made with another version of Beta"
-        );
+        assert_eq!(rows[0].status, "Missing: Alpha; Mismatched version of Beta");
         assert_eq!((rows[0].ready, rows[0].severity.as_str()), (false, MISSING));
         assert_eq!(rows[0].addons.len(), 2);
         assert_eq!(
@@ -735,14 +736,11 @@ mod tests {
         );
         assert_eq!(rows[0].addons[1].state, "Version 1");
         assert_eq!(rows[1].badge, "F1 1990 Driver Career");
-        assert_eq!(rows[1].status, "Missing rows from F1 1990");
+        assert_eq!(rows[1].status, "Mismatched rows from F1 1990");
+        assert_eq!((rows[1].ready, rows[1].severity.as_str()), (false, VERSION));
         assert!(
-            !rows[1].loadable,
-            "a career whose own rows the build lacks does not load"
-        );
-        assert!(
-            rows[0].loadable && rows[2].loadable && rows[3].loadable,
-            "an addon that is off or at another version still offers Load Anyway"
+            rows.iter().all(|r| r.loadable),
+            "rows the build seems to lack, an addon that is off or at another version all offer Load Anyway"
         );
         assert_eq!(rows[1].team, "", "a team the build lacks has no name");
         assert!(rows[2].ready && rows[2].status == "Ready" && rows[2].addons.is_empty());

@@ -131,7 +131,7 @@ fn short_badge(r: &ResumeRow) -> &str {
 fn short_status(severity: &str) -> &'static str {
     match severity {
         crate::stdlib::careers::SEVERITY_READY => "Ready",
-        crate::stdlib::careers::SEVERITY_VERSION => "Version",
+        crate::stdlib::careers::SEVERITY_VERSION => "Mismatched",
         _ => "Missing",
     }
 }
@@ -412,6 +412,33 @@ mod tests {
         }
         for place in ["Season 8, Race 12", "Season 10, Race 24"] {
             assert_eq!(clip_col(place, &career_row::PLACE), place);
+        }
+    }
+
+    #[test]
+    fn every_status_fits_its_column_and_columns_never_overlap() {
+        for severity in ["ready", "version", "missing"] {
+            let word = short_status(severity);
+            assert!(
+                text_width(word) * 1.1 <= budget(&career_row::STATUS),
+                "{word} fits the status column, bold included"
+            );
+        }
+        assert_eq!(
+            clip_col("F1\u{ae} 2026 My Team", &career_row::BADGE),
+            "F1\u{ae} 2026 My Team"
+        );
+        let edges = |c: &career_row::Column| match c.align {
+            career_row::Align::Start => (c.x, c.x + c.width),
+            career_row::Align::End => (c.x - c.width, c.x),
+        };
+        for w in career_row::COLUMNS.windows(2) {
+            assert!(
+                edges(&w[0]).1 <= edges(&w[1]).0,
+                "{} ends before {}",
+                w[0].name,
+                w[1].name
+            );
         }
     }
 

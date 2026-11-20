@@ -67,8 +67,8 @@ pub struct MissingRows {
 impl MissingRows {
     pub fn text(&self) -> String {
         match self.addon.is_empty() {
-            false => format!("Missing rows from {}", self.addon),
-            true => format!("Missing rows: {}", self.tables.join(", ")),
+            false => format!("Mismatched rows from {}", self.addon),
+            true => format!("Mismatched rows: {}", self.tables.join(", ")),
         }
     }
 }

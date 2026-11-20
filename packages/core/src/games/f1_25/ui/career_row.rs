@@ -57,16 +57,16 @@ pub const TEAM: Column = Column {
 pub const BADGE: Column = Column {
     name: "badge",
     x: 5.95,
-    width: 1.85,
+    width: 1.8,
     style: "17_regular",
     align: Align::Start,
     y: -0.045,
-    chars: 17,
+    chars: 16,
 };
 pub const PLACE: Column = Column {
     name: "place",
-    x: 7.9,
-    width: 1.95,
+    x: 7.8,
+    width: 1.9,
     style: "17_regular",
     align: Align::Start,
     y: -0.045,
@@ -74,12 +74,12 @@ pub const PLACE: Column = Column {
 };
 pub const STATUS: Column = Column {
     name: "status",
-    x: 10.85,
-    width: 1.0,
+    x: 10.9,
+    width: 1.2,
     style: "17_bold",
     align: Align::End,
     y: -0.045,
-    chars: 9,
+    chars: 10,
 };
 
 pub const COLUMNS: [Column; 5] = [DRIVER, TEAM, BADGE, PLACE, STATUS];

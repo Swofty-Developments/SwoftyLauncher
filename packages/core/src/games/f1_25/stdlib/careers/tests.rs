@@ -1038,13 +1038,13 @@ fn a_career_whose_team_and_car_rows_the_build_lacks_says_which_addon_made_them()
             tables: vec!["team".into(), "vehicle".into()]
         })
     );
-    assert_eq!(gap(0).unwrap().text(), "Missing rows from F1 1990");
+    assert_eq!(gap(0).unwrap().text(), "Mismatched rows from F1 1990");
     assert_eq!(gap(1).unwrap().addon, "F1 1990");
     assert_eq!(gap(1).unwrap().tables, ["team", "vehicle", "driver"]);
     assert_eq!(gap(2), None, "rows the build has are not missing");
     let unknown = gap(3).unwrap();
     assert_eq!(unknown.addon, "");
-    assert_eq!(unknown.text(), "Missing rows: team");
+    assert_eq!(unknown.text(), "Mismatched rows: team");
     assert_eq!(
         gap(4),
         None,

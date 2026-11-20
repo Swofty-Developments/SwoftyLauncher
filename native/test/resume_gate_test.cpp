@@ -173,13 +173,13 @@ static void list_rows()
     expect(rl::press(es[0]) == rl::Action::Ask && rl::press(es[1]) == rl::Action::Load, "not-ready rows ask, ready rows load");
     expect(rl::dialog_text(es[0]).find("Missing: Beta") != std::string::npos, "the dialog names the status");
     auto rows = rl::parse(R"({"resume_list":[
-        {"index":0,"key":"8","ready":false,"loadable":false,"status":"Missing rows from F1 1990"},
+        {"index":0,"key":"8","ready":false,"loadable":false,"status":"Missing: F1 1990"},
         {"index":1,"key":"9","ready":false,"loadable":true,"status":"Missing: Beta"}]})");
     expect(rows.size() == 2 && !rows[0].loadable && rows[1].loadable && es[0].loadable,
            "loadable parses, and a row without it is loadable");
     expect(rl::press(rows[0]) == rl::Action::Refuse && rl::press(rows[1]) == rl::Action::Ask,
-           "a row whose own rows the build lacks is refused; a row that only needs an addon asks");
-    expect(rl::refuse_text(rows[0]).find("Missing rows from F1 1990") != std::string::npos &&
+           "a row the launcher marks not loadable is refused; a loadable row that is not ready asks");
+    expect(rl::refuse_text(rows[0]).find("Missing: F1 1990") != std::string::npos &&
                rl::refuse_text(rows[0]).find("anyway") == std::string::npos,
            "the refusal names the status and offers no Load Anyway");
     expect(!rl::expired(1000, 1000 + rl::TARGET_LIFE_MS) && rl::expired(1000, 1001 + rl::TARGET_LIFE_MS),
