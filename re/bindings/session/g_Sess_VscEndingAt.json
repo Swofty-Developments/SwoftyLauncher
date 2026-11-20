@@ -1,0 +1,66 @@
+{
+ "schema": 1,
+ "name": "g_Sess_VscEndingAt",
+ "table": "globals",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x145f96b60",
+  "type": "float",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:own disasm 0x14363ca40-0x14363cb3f (Sess_ScState_Vsc_Enter);xref:0x14363cb23",
+  "notes": "Point in the VSC (s) where 'VSC ending' is shown, written on entry. Used by vmknolle red-flag."
+ },
+ "signature": {
+  "id": "session.vsc_ending_at",
+  "section": ".xtls",
+  "pattern": "C5 FA 11 05 ?? ?? ?? ?? 31 C0 C5 F8 28 74 24 20 C5 F8 28 7C 24 30 48 83 C4 48 5F 5E C3 56 57 48 83 EC 48",
+  "match": "0x14363a593",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 8
+  },
+  "target": "0x145f96b60",
+  "kind": "data",
+  "names": [
+   "g_Sess_VscEndingAt"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-20",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14363cb23",
+  "made_on_target": "0x145f98b60",
+  "twin": "made on steam-26566308; the target 0x145f98b60 is KB 0x145f96b60: g_Career_RnDOverviewSelectedDept (0x5f95c08) and g_Car_FfbForceWetMultiple (0x5fac638) on either side both sit 0x2000 above their KB addresses; the match 0x14363cb23 is KB 0x14363a593: Sess_ScState_Vsc_Enter (0x363ca40) and Sess_ScCond_TriggerVsc_Update (0x363f2a0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-20",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14363cb23",
+    "target": "0x145f98b60"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f05ef20611e4e93d5f404e79ebe5b25aa03bbb78cef45b58a5f3ef66cc398c0b"
+  }
+ ]
+}
