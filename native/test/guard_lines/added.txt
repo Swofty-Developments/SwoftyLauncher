@@ -33,3 +33,9 @@ off [car] tyre curve guard off (SWOFTY_TYRE_CURVE_GUARD=%s)
 unresolved [car] tyre curve guard off: needs Car_Tyre_CurveMap_FindBracketA and Car_Tyre_CurveMap_FindBracketB, which this build does not resolve
 armed [car] tyre curve guard armed: a tyre curve lookup with a key that is not a number uses the curve's first point instead of faulting
 not_installed [car] tyre curve guard did not install (see the [core] lines)
+
+[anim_clip_time]
+off [anim] clip time guard off (SWOFTY_ANIM_CLIP_TIME_GUARD=%s)
+unresolved [anim] clip time guard off: needs Ne_AnimClipPlayer_Sample_Thunk, which this build does not resolve
+armed [anim] clip time guard armed: an animation clip sampled at a time that is not a number shows its first frame instead of faulting
+not_installed [anim] clip time guard did not install (see the [core] lines)
