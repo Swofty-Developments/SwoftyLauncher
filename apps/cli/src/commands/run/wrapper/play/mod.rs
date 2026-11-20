@@ -12,12 +12,12 @@ use swofty_core::GAME_EXE;
 use swofty_core::install::Game;
 use swofty_core::platform::process::{descends_from, game_processes, stop_process};
 use swofty_core::session::{
-    Config, LOADER_FALLBACK, LOADER_LOG, LOADER_MARK, LaunchMode, LaunchRequest, LogMark, game_args,
-    parse_steam_command,
+    Config, LOADER_FALLBACK, LOADER_LOG, LOADER_MARK, LaunchMode, LaunchRequest, LogMark, PERF_FALLBACK,
+    game_args, keep_game_logs, parse_steam_command,
 };
 use swofty_core::store::Store;
 
-use self::end::{EA_UNREAD, Played, end_session, keep_game_logs, why_no_code};
+use self::end::{EA_UNREAD, Played, end_session, why_no_code};
 use self::env::{game_env, game_link};
 use self::loader_watch::LoaderWatch;
 use super::copies::{RESTART_WAIT, running_copy, wait_relaunched};
@@ -116,14 +116,7 @@ pub(crate) fn play(
         launched.elapsed().unwrap_or_default(),
     );
     crate::commands::laps::end(laps, game);
-    keep_game_logs(
-        &store.root,
-        game,
-        &session.fallback,
-        dir,
-        session.before.as_ref(),
-        launched,
-    );
+    keep_game_logs(&store.root, game, dir, session.before.as_ref(), launched);
     end_session(store, game, dir, Played { code, unread, via_ea }, launched, usage)
 }
 
@@ -144,7 +137,11 @@ impl SessionDir {
         let before = LogMark::read(&loader);
         std::fs::write(dir.join(LOADER_MARK), serde_json::to_vec(&before)?)?;
         let fallback = store.root.join(LOADER_FALLBACK);
-        for stale in [fallback.clone(), fallback.with_extension("prev.log")] {
+        for stale in [
+            fallback.clone(),
+            fallback.with_extension("prev.log"),
+            store.root.join(PERF_FALLBACK),
+        ] {
             std::fs::remove_file(stale).ok();
         }
         let latest = store.sessions_dir().join("latest");

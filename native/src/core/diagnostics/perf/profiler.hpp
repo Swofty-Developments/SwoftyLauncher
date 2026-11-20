@@ -206,6 +206,7 @@ struct Profiler {
     double process_cores(double secs, double *user, double *kernel);
     void line(std::string &out, const char *fmt, ...);
     std::string report(const char *why);
+    static const std::wstring &report_path();
     void write_report(const char *why);
     void pace_lines(double secs, const pace::Pace &mp, const pace::Presents &pp, uint64_t df, const logic::CpuMinute &pc);
     void minute_line(Minute &last);

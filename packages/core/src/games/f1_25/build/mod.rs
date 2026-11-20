@@ -30,8 +30,8 @@ use self::originals::check_originals;
 use self::run::Run;
 use self::saved::Saved;
 use self::setup::Setup;
-use self::start::Start;
-use crate::addons::settings::SessionSettings;
+use self::start::{AsBuilt, Start};
+use crate::addons::settings::{OnAddons, SessionSettings};
 use crate::asset::Op;
 use crate::content::runtime_assets::Runtime;
 use crate::install::{Game, Plan};
@@ -120,27 +120,25 @@ pub struct TrackLimitCheck {
     pub limit: Option<crate::tracks::TrackLimit>,
     /// How long reading the profile and counting its tracks took.
     pub counting: std::time::Duration,
-    /// The check build's steps, folded by [`crate::fold_steps`]; empty when too few tracks are on for it to run.
-    pub steps: Vec<crate::Step>,
-    /// The check build restored a saved build with the same hash.
-    pub reused: bool,
-    /// The check build is saved, so a build of the same addons and game files restores it.
-    pub saved: bool,
+    /// Whether the tracks were fitted to the game's track lists: false when too few are on to fill them.
+    pub fitted: bool,
+    /// How long reading the tracks' op files and fitting them to the lists took.
+    pub fitting: std::time::Duration,
 }
 
-impl TrackLimitCheck {
-    /// Whether a check build ran.
-    pub fn built(&self) -> bool {
-        !self.steps.is_empty()
-    }
-}
-
-/// The track addons `profile` would lose to the game's full track lists, found by planning the build
-/// without installing it; none, and no build, when too few tracks are on to fill them.
-pub fn track_limit(store: &Store, profile: &str, game: &Game) -> Result<TrackLimitCheck> {
+/// The track addons `profile` would lose to the game's full track lists: the tracks the on addons' op files and
+/// track records add, fitted to the lists the way a build fits them, without planning or placing the rest of the
+/// build and without starting any addon's program. `std16` is [`crate::stdlib::deps::read_all`] of the installed
+/// addons. None, and no fitting, when too few tracks are on to fill the lists.
+pub fn track_limit(
+    store: &Store,
+    profile: &str,
+    game: &Game,
+    std16: &BTreeMap<String, crate::stdlib::deps::Std>,
+) -> Result<TrackLimitCheck> {
     let started = std::time::Instant::now();
     let addons = store.registry()?.manifests();
-    let p = store.profile(profile)?;
+    let AsBuilt { profile: p, .. } = start::as_built(store, profile, &addons)?;
     let order = resolve(&p, &addons)?.order;
     let mut check = TrackLimitCheck {
         added: crate::tracks::added_count(store, &order, &addons),
@@ -150,14 +148,21 @@ pub fn track_limit(store: &Store, profile: &str, game: &Game) -> Result<TrackLim
     if !crate::tracks::may_fill_track_lists(check.added) {
         return Ok(check);
     }
-    let (built, steps) = crate::timed_steps("resolving the addons", || build_as(store, profile, game, true));
-    let built = built?;
-    check.steps = crate::fold_steps(steps, 3);
-    check.reused = built.reused;
-    check.saved = built.overlay.join(SAVED_FILE).is_file();
-    check.limit = built.track_limit;
+    let fitting = std::time::Instant::now();
+    if let Some(stop) = crate::stdlib::deps::for_order(profile, &order, &addons, std16).stop_text() {
+        return Err(Error::Dependencies(stop));
+    }
+    let mut on = OnAddons::new(order.iter().filter_map(|id| addons.get(id)));
+    let shipped = originals::Shipped::new(&store.root, game);
+    start::trackless_options(store, &shipped, &p, &order, &addons, &mut on);
+    let ops = tracks::track_ops(store, &p, &on, &order, &addons, std16)?;
+    let fit = tracks::fit_tracks(store, game, &addons, &order, std16, ops)?;
+    check.fitted = true;
+    check.limit = fit.limit;
+    check.fitting = fitting.elapsed();
     Ok(check)
 }
+
 /// One build of a profile once its addons are read: the state every later stage changes.
 struct Pipeline<'a, 'p> {
     run: Run<'a>,

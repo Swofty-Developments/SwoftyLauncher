@@ -102,11 +102,18 @@ pub(super) fn saves_lines(logs: &[(String, PathBuf)]) -> Vec<String> {
     out
 }
 
-pub(super) fn newest_perf(live: Option<PathBuf>, sessions: &[PathBuf]) -> Option<(String, PathBuf)> {
+/// The performance report the summary reads: the newest session's copy, unless the running game's report (in
+/// the game folder, or in the data folder when the game folder refuses it) is newer.
+pub(super) fn newest_perf(
+    live: Option<(String, PathBuf)>,
+    sessions: &[PathBuf],
+) -> Option<(String, PathBuf)> {
     let kept = sessions.iter().map(|d| d.join("perf.log")).find(|p| p.is_file());
     match (live, kept) {
-        (Some(live), Some(kept)) if modified(&live) <= modified(&kept) => Some((session_label(&kept), kept)),
-        (Some(live), _) => Some(("game/perf.log".into(), live)),
+        (Some((_, live)), Some(kept)) if modified(&live) <= modified(&kept) => {
+            Some((session_label(&kept), kept))
+        }
+        (Some(live), _) => Some(live),
         (None, Some(kept)) => Some((session_label(&kept), kept)),
         (None, None) => None,
     }

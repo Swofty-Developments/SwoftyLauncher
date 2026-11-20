@@ -14,6 +14,38 @@ use crate::stdlib::deps::Std;
 use crate::store::Store;
 use crate::{Error, Result};
 
+/// A profile as a build reads it.
+pub(super) struct AsBuilt {
+    pub profile: Profile,
+    /// A line for each on addon left out because its manifest no longer reads.
+    pub skipped: Vec<String>,
+    /// The lent load order and option values, with how many of each the profile took.
+    pub lent: Option<((usize, usize), Overrides)>,
+}
+
+/// `profile` with each on addon whose manifest no longer reads turned off, and with the lent load order and option
+/// values when some are lent.
+pub(super) fn as_built(
+    store: &Store,
+    profile: &str,
+    addons: &BTreeMap<String, AddonManifest>,
+) -> Result<AsBuilt> {
+    let mut p = store.profile(profile)?;
+    let mut skipped = Vec::new();
+    for u in store.unreadable_addons() {
+        if !addons.contains_key(&u.id) && p.enabled().any(|id| id == u.id) {
+            p.set_enabled(&u.id, false)?;
+            skipped.push(format!("{} is left out: it {}", u.name, u.reason));
+        }
+    }
+    let lent = crate::row_ids::lent().map(|o| (p.lend(&o), o));
+    Ok(AsBuilt {
+        profile: p,
+        skipped,
+        lent,
+    })
+}
+
 /// The profile a build is of, as the build reads it: its addons on in load order, their options and
 /// registry data, and a room launch's lent settings.
 pub(super) struct Start {
@@ -35,15 +67,11 @@ impl Start {
         addons: &BTreeMap<String, AddonManifest>,
         shipped: &Shipped,
     ) -> Result<Self> {
-        let mut p = store.profile(profile)?;
-        let mut skipped = Vec::new();
-        for u in store.unreadable_addons() {
-            if !addons.contains_key(&u.id) && p.enabled().any(|id| id == u.id) {
-                p.set_enabled(&u.id, false)?;
-                skipped.push(format!("{} is left out: it {}", u.name, u.reason));
-            }
-        }
-        let lent_settings = crate::row_ids::lent().map(|o| (p.lend(&o), o));
+        let AsBuilt {
+            profile: p,
+            mut skipped,
+            lent: lent_settings,
+        } = as_built(store, profile, addons)?;
         let resolved = resolve(&p, addons)?;
         let mut on = OnAddons::new(resolved.order.iter().filter_map(|id| addons.get(id)));
         let std16 = match p.is_vanilla() {

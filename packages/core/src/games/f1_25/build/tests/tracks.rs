@@ -1269,3 +1269,176 @@ fn leaves_out_the_tracks_the_game_s_track_lists_have_no_room_for() {
     );
     std::fs::remove_dir_all(&root).ok();
 }
+
+// A game whose database lists `stock` tracks with TrackData, and madrid.
+fn track_room_game(root: &Path, stock: usize) -> Game {
+    use swofty_formats::gvdb::Record;
+    let dir = root.join("game");
+    std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
+    std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
+    let codes: Vec<String> = (0..stock)
+        .map(|i| format!("stock_{i:02}"))
+        .chain(["madrid".to_owned()])
+        .collect();
+    let mut records = vec![
+        Record::new("tracks._Track_instancecount_", 0, codes.len().to_string()),
+        Record::new("track_data.game_setup._TrackDataSet_instancecount_", 0, "1"),
+        Record::new("track_data.game_setup.TrackDataSet_0._metadata_", 2, "f1"),
+        Record::new(
+            "track_data.game_setup.TrackDataSet_0._TrackData_instancecount_",
+            0,
+            codes.len().to_string(),
+        ),
+    ];
+    for (i, code) in codes.iter().enumerate() {
+        records.push(Record::new(
+            &format!("tracks.Track_{i}._metadata_"),
+            2,
+            code.as_str(),
+        ));
+        records.push(Record::new(
+            &format!("track_data.game_setup.TrackDataSet_0.TrackData_{i}.track"),
+            2,
+            code.as_str(),
+        ));
+    }
+    std::fs::write(
+        dir.join(GVDB),
+        Gvdb {
+            records: records.into(),
+        }
+        .to_bytes(),
+    )
+    .unwrap();
+    Game {
+        identity: Identity::detect(&dir, Some(1)).unwrap(),
+        dir,
+        user_reg: None,
+    }
+}
+
+// Installs and turns on a track addon `mod.<code>`; `launcher` goes into its manifest as is.
+fn track_room_addon(store: &Store, root: &Path, code: &str, launcher: &str) {
+    let id = format!("mod.{code}");
+    let src = root.join("src").join(&id);
+    std::fs::create_dir_all(src.join("track")).unwrap();
+    std::fs::write(
+            src.join("swofty.json"),
+            format!(
+                r#"{{ "schema_version": 1, "id": "{id}", "name": "{code}", "version": "1.0.0", "author": "t",
+                     "compat": {{ "game": "f1_25" }}, "operations": {{ "assets": ["ops.json"] }}{launcher} }}"#
+            ),
+        )
+        .unwrap();
+    std::fs::write(
+        src.join("ops.json"),
+        r#"{ "schema_version": 1, "ops": [{"op":"track.add","source":"track"}] }"#,
+    )
+    .unwrap();
+    std::fs::write(
+        src.join("track/manifest.json"),
+        format!(
+            r#"{{ "track_code": "{code}", "track_name": "{code}", "erp": "{code}.erp",
+                     "activation": {{ "copy_from_track": "stock_00" }} }}"#
+        ),
+    )
+    .unwrap();
+    store.install_addon(&src).unwrap();
+    store
+        .update_profile("default", |p| p.set_enabled(&id, true))
+        .unwrap();
+}
+
+#[test]
+fn the_track_check_fits_34_tracks_like_the_build_without_building() {
+    if loader_dir().is_some() {
+        return;
+    }
+    let root = std::env::temp_dir().join(format!("swofty-build-track-check-{}", std::process::id()));
+    std::fs::remove_dir_all(&root).ok();
+    let game = track_room_game(&root, 64);
+    let store = Store::new(root.join("data"));
+    let codes: Vec<String> = (0..34).map(|i| format!("added_{i:02}")).collect();
+    for code in &codes {
+        track_room_addon(&store, &root, code, "");
+    }
+    let all = crate::stdlib::deps::read_all(&store, &store.addons().unwrap());
+    let started = std::time::Instant::now();
+    let check = track_limit(&store, "default", &game, &all).unwrap();
+    let took = started.elapsed();
+    assert_eq!(check.added, 34);
+    assert!(check.fitted);
+    let limit = check.limit.clone().expect("no room for added tracks");
+    assert_eq!(limit.names, codes);
+    assert_eq!(limit.stock, 64);
+    assert!(
+        !store.overlays_dir("default").exists(),
+        "the check built the profile"
+    );
+    assert!(
+        !crate::profile::conflicts::path(&store, "default").exists(),
+        "the check wrote a build report"
+    );
+    assert!(took < std::time::Duration::from_secs(10), "{took:?}");
+
+    let built = build(&store, "default", &game).unwrap();
+    assert_eq!(built.track_limit, check.limit);
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
+fn the_track_check_under_the_fill_mark_reads_no_database() {
+    let root = std::env::temp_dir().join(format!("swofty-build-track-check-few-{}", std::process::id()));
+    std::fs::remove_dir_all(&root).ok();
+    let game = track_room_game(&root, 43);
+    let store = Store::new(root.join("data"));
+    for i in 0..21 {
+        track_room_addon(&store, &root, &format!("added_{i:02}"), "");
+    }
+    std::fs::remove_file(game.dir.join(GVDB)).unwrap();
+    let all = crate::stdlib::deps::read_all(&store, &store.addons().unwrap());
+    let check = track_limit(&store, "default", &game, &all).unwrap();
+    assert_eq!(check.added, 21);
+    assert!(!check.fitted);
+    assert_eq!(check.limit, None);
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[cfg(unix)]
+#[test]
+fn the_track_check_never_starts_an_addon_program_and_still_finds_the_limit() {
+    let root = std::env::temp_dir().join(format!("swofty-build-track-check-helper-{}", std::process::id()));
+    std::fs::remove_dir_all(&root).ok();
+    let game = track_room_game(&root, 43);
+    let store = Store::new(root.join("data"));
+    let hung = r#", "launcher": { "program": { "linux": "bin/helper", "macos": "bin/helper" },
+                       "sections": [{ "id": "items", "title": "Items", "icon": "package" }], "build": true }"#;
+    let codes: Vec<String> = (0..28).map(|i| format!("added_{i:02}")).collect();
+    for (i, code) in codes.iter().enumerate() {
+        track_room_addon(&store, &root, code, if i == 3 { hung } else { "" });
+    }
+    let started_mark = root.join("helper-started");
+    let program = store.addons_dir().join("mod.added_03").join("bin/helper");
+    std::fs::create_dir_all(program.parent().unwrap()).unwrap();
+    std::fs::write(
+        &program,
+        format!("#!/bin/sh\ntouch '{}'\nsleep 30\n", started_mark.display()),
+    )
+    .unwrap();
+    {
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(&program, std::fs::Permissions::from_mode(0o755)).unwrap();
+    }
+    assert!(store.registry().unwrap().get("mod.added_03").unwrap().helper);
+    let all = crate::stdlib::deps::read_all(&store, &store.addons().unwrap());
+    let started = std::time::Instant::now();
+    let check = track_limit(&store, "default", &game, &all).unwrap();
+    let took = started.elapsed();
+    assert!(took < std::time::Duration::from_secs(5), "{took:?}");
+    assert!(!started_mark.exists(), "the check started the addon's program");
+    assert_eq!(check.added, 28);
+    let limit = check.limit.expect("7 tracks past the room for 21");
+    assert_eq!(limit.names, codes[21..].to_vec());
+    assert_eq!(limit.addons.len(), 7);
+    std::fs::remove_dir_all(&root).ok();
+}

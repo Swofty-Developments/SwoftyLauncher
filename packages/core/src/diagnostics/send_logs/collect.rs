@@ -14,7 +14,7 @@ use super::{
     Bundle, CAREER_EDITOR, CRASHES_SENT, DUMP_CAP, Entry, LOADER_DIR, Limits, MIN_TAIL, NET_TRACE,
     NET_TRACE_CAP, PRINTS_SENT, Report, SESSION_DEPTH, SESSIONS, file_safe, now_secs, size, utc_stamp,
 };
-use crate::session::{LOADER_FALLBACK, LOADER_LOG, PERF_LOG};
+use crate::session::{LOADER_FALLBACK, LOADER_LOG, PERF_FALLBACK, PERF_LOG};
 use crate::store::Store;
 
 /// What a bundle is read from: the data folder, the game folder the report names, and the newest sessions
@@ -339,7 +339,7 @@ impl Bundle {
                 }
                 c.file(format!("game/{name}"), &live, None);
                 if name == "perf.log" {
-                    live_perf = Some(live);
+                    live_perf = Some((format!("game/{name}"), live));
                 } else {
                     loader.extend(loader_line(&format!("game/{name}"), &live));
                 }
@@ -397,6 +397,15 @@ impl Bundle {
             .is_some_and(|d| same_contents(&fallback, &d.join("loader.log")))
         {
             loader.extend(loader_line(LOADER_FALLBACK, &fallback));
+        }
+        let perf_fallback = store.root.join(PERF_FALLBACK);
+        if live_perf.is_none()
+            && perf_fallback.is_file()
+            && !sessions
+                .first()
+                .is_some_and(|d| same_contents(&perf_fallback, &d.join("perf.log")))
+        {
+            live_perf = Some((PERF_FALLBACK.to_owned(), perf_fallback));
         }
         for (id, log) in from.helper_logs() {
             c.file(

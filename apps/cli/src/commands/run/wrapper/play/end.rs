@@ -5,9 +5,7 @@ use std::time::{Duration, SystemTime};
 use anyhow::Result;
 use swofty_core::diagnostics::launch;
 use swofty_core::platform::process::{descends_from, game_processes, stop_process};
-use swofty_core::session::{
-    LOADER_LOG, LogMark, PERF_LOG, STOP_FILE, SessionEnd, SessionRecord, written_since,
-};
+use swofty_core::session::{STOP_FILE, SessionEnd, SessionRecord};
 use swofty_core::store::Store;
 
 use crate::commands::run::wrapper::copies::other_copies;
@@ -114,28 +112,5 @@ fn note_failed_launch(store: &Store, loader: Option<launch::LoaderSeen>, code: i
     say("warning", &format!("{}: {}", failure.title(), failure.text()));
     if let Err(e) = failure.write(&store.root) {
         info(&format!("could not record it for the launcher: {e}"));
-    }
-}
-
-/// The session's loader.log: the game folder's when the loader wrote it,
-/// else its fallback in the data folder, which a session starts without.
-pub(crate) fn keep_game_logs(
-    data: &Path,
-    game: &Path,
-    fallback: &Path,
-    dir: &Path,
-    before: Option<&LogMark>,
-    launched: SystemTime,
-) {
-    swofty_core::diagnostics::crash_report::keep_fallback(data, &dir.join("game-logs"), launched);
-    let loader = game.join(LOADER_LOG);
-    if LogMark::replaced(&loader, before) {
-        std::fs::copy(&loader, dir.join("loader.log")).ok();
-    } else if fallback.is_file() {
-        std::fs::copy(fallback, dir.join("loader.log")).ok();
-    }
-    let perf = game.join(PERF_LOG);
-    if written_since(&perf, launched) {
-        std::fs::copy(&perf, dir.join("perf.log")).ok();
     }
 }

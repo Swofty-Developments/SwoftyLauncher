@@ -11,7 +11,7 @@ set -Eeuo pipefail
 trap 'line=$LINENO' ERR
 SELF=$(readlink -f "$0")
 cd "$(dirname "$SELF")"
-CASES=(modes crash acclim acclim_penalty ers_mode standings weekends teamhq activity setup_vm pairs fe_tiles ai_corner replay_grid garage_crew pit_slots leaderboard myteam_vehicle myteam_keep myteam_heal track_list ntpage int3 stages packed filled register)
+CASES=(modes crash perf_ro acclim acclim_penalty ers_mode standings weekends teamhq activity setup_vm pairs fe_tiles ai_corner replay_grid garage_crew pit_slots leaderboard myteam_vehicle myteam_keep myteam_heal track_list ntpage int3 stages packed filled register)
 if [[ ${1:-} == --list ]]; then
     printf '%s\n' "${CASES[@]}"
     exit 0
@@ -730,6 +730,27 @@ for mode in crash exit heap abort; do
         [[ $code != 0 && $code != 124 && $code != 137 ]] && echo "ok  : abort: the process aborted ($code)" || { echo "FAIL: abort: the process did not abort on its own (exit $code)"; status=1; }
     fi
 done
+}
+case_perf_ro() {
+echo "==== perf_ro"
+PERF_FALLBACK=$(winepath -u "$(wine cmd /c 'echo %LOCALAPPDATA%' | tr -d '\r')")/Swofty/state/perf-fallback.log
+rm -f "$SW/perf.log" "$PERF_FALLBACK"
+chmod a-w "$SW"
+if [[ -w $SW ]]; then
+    echo "skip: perf_ro: this user writes in read-only folders (root?), so the refusal cannot be staged"
+    chmod u+w "$SW"
+else
+    timeout 120 "${PIN[@]}" xvfb-run -a wine cmd /c "$OUT/game/F1_25.exe" perf_ro >"$OUT/perf_ro.out" 2>&1 || true
+    chmod u+w "$SW"
+    grep -F '[perf]' "$LOG" | tail -5
+    once "perf_ro: a game folder that refuses perf.log moves it to the data folder" \
+        '\[perf\] the game can.t create swofty[\]perf\.log \(error 5\); the report goes to .*[\]Swofty[\]state[\]perf-fallback\.log[[:space:]]*$'
+    [[ -e $SW/perf.log ]] && { echo "FAIL: perf_ro: perf.log reached the game folder"; status=1; } ||
+        echo "ok  : perf_ro: nothing reached the game folder"
+    head -1 "$PERF_FALLBACK" 2>/dev/null | grep -q '^Swofty Launcher performance report' &&
+        echo "ok  : perf_ro: the report is in the data folder's perf-fallback.log" ||
+        { echo "FAIL: perf_ro: no report in $PERF_FALLBACK"; status=1; }
+fi
 }
 case_acclim() {
 for guard in on off; do

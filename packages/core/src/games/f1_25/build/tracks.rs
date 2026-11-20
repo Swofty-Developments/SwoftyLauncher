@@ -6,6 +6,8 @@ use swofty_formats::gvdb::Gvdb;
 use super::buildhash::BuildHash;
 use super::failure::loader_missing;
 use super::inputs::Inputs;
+use super::op_files::read_op_file;
+use super::registry::replaced_operations;
 use super::run::Run;
 use super::{Built, GVDB, Pipeline, original, source_dir};
 use crate::activation::place::{
@@ -13,13 +15,17 @@ use crate::activation::place::{
     slot_file, track_group,
 };
 use crate::activation::ui::{Kept, MapUi, build_ui, plan_lists};
-use crate::asset::Kind;
+use crate::addons::builtin::loader_dir;
+use crate::addons::settings::OnAddons;
 use crate::asset::{AssetOp, GroupOp, Op, Origin, TrackOp};
+use crate::asset::{FileKind, Kind};
 use crate::content::track_package::{TrackPackage, Unusable};
 use crate::game_folder::baseline::{Baseline, sha256_opt};
 use crate::game_folder::placed::Placed;
 use crate::install::Game;
+use crate::manifest::AddonManifest;
 use crate::planner::{Planner, Route, Target};
+use crate::profile::Profile;
 use crate::stdlib::deps::Std;
 use crate::store::Store;
 use crate::{Error, Result, io_err};
@@ -56,6 +62,152 @@ pub fn track_packages(store: &Store, ops: Vec<Op>) -> Result<TrackPackages> {
     Ok((out, left_out))
 }
 
+/// The build's track packages, fitted to the game's track lists.
+pub(super) struct FittedTracks {
+    /// The packages the build adds.
+    pub tracks: Vec<(PathBuf, TrackPackage, Origin)>,
+    /// The packages the build leaves out, and why.
+    pub left_out: Vec<(Origin, Unusable)>,
+    /// The addons whose track records the core adds in game.
+    pub recorded: BTreeSet<String>,
+    /// The code and name of each track the full lists leave out that no kept package adds.
+    pub dropped: Vec<(String, String)>,
+    /// The build's notice for the tracks the full lists leave out.
+    pub warning: Option<String>,
+    pub limit: Option<crate::tracks::TrackLimit>,
+}
+
+/// The packages `ops` and the track records of `order` add, with the tracks past the game's track lists' room
+/// left out, as a build and its track check both fit them.
+pub(super) fn fit_tracks(
+    store: &Store,
+    game: &Game,
+    addons: &BTreeMap<String, AddonManifest>,
+    order: &[String],
+    std16: &BTreeMap<String, Std>,
+    ops: Vec<Op>,
+) -> Result<FittedTracks> {
+    let (mut tracks, mut left_out) = track_packages(store, ops)?;
+    let recorded = crate::tracks::with_records(order, std16);
+    let (more, unusable) = crate::tracks::record_packages(store, order, std16, &tracks);
+    tracks.extend(more);
+    left_out.extend(unusable);
+    let mut fitted = FittedTracks {
+        tracks,
+        left_out,
+        recorded,
+        dropped: Vec::new(),
+        warning: None,
+        limit: None,
+    };
+    if !crate::tracks::may_fill_track_lists(fitted.tracks.len()) {
+        return Ok(fitted);
+    }
+    let listed = listed_tracks(&original(&store.root, game, GVDB))?;
+    let tracks = std::mem::take(&mut fitted.tracks);
+    let (kept, full) = crate::tracks::fit_track_lists(&listed, tracks, &fitted.recorded);
+    fitted.tracks = kept;
+    let names: Vec<String> = full
+        .iter()
+        .map(|((_, pkg, origin), _)| {
+            let addon = addons
+                .get(&origin.addon)
+                .map_or(origin.addon.as_str(), |m| m.name.as_str());
+            match pkg.display_name() == addon {
+                true => addon.to_owned(),
+                false => format!("{} ({addon})", pkg.display_name()),
+            }
+        })
+        .collect();
+    for (((_, pkg, _), _), name) in full.iter().zip(&names) {
+        if !fitted
+            .tracks
+            .iter()
+            .any(|(_, p, _)| p.track_code == pkg.track_code)
+        {
+            fitted.dropped.push((pkg.track_code.clone(), name.clone()));
+        }
+    }
+    fitted.warning = crate::tracks::track_lists_full_warning(&listed, &names);
+    fitted.limit = crate::tracks::TrackLimit::new(
+        &listed,
+        names,
+        full.iter()
+            .map(|((_, _, origin), _)| origin.addon.clone())
+            .collect(),
+    );
+    fitted
+        .left_out
+        .extend(full.into_iter().map(|((_, _, origin), why)| (origin, why)));
+    Ok(fitted)
+}
+
+/// The tracks the game database at `path` puts in the game's track lists, kept while the file's size and time
+/// stay the same: the shipped database is the same for every build and check until the game updates.
+fn listed_tracks(path: &Path) -> Result<crate::tracks::ListedTracks> {
+    type Cached = (
+        PathBuf,
+        u64,
+        Option<std::time::SystemTime>,
+        crate::tracks::ListedTracks,
+    );
+    static CACHE: std::sync::Mutex<Option<Cached>> = std::sync::Mutex::new(None);
+    let meta = std::fs::metadata(path).map_err(io_err(path))?;
+    let (len, modified) = (meta.len(), meta.modified().ok());
+    let mut cache = CACHE.lock().unwrap_or_else(|e| e.into_inner());
+    if let Some((at, l, m, listed)) = cache.as_ref()
+        && at == path
+        && *l == len
+        && *m == modified
+        && modified.is_some()
+    {
+        return Ok(listed.clone());
+    }
+    let shipped = Gvdb::parse(&std::fs::read(path).map_err(io_err(path))?)?;
+    let listed = crate::tracks::ListedTracks::of(&shipped);
+    *cache = Some((path.to_owned(), len, modified, listed.clone()));
+    Ok(listed)
+}
+
+/// The `track.add` ops of the addons of `order`, from their asset op files as a build renders them, in load order.
+/// Tracks an addon's program adds when a build runs it are not among them.
+pub(super) fn track_ops(
+    store: &Store,
+    p: &Profile,
+    on: &OnAddons,
+    order: &[String],
+    addons: &BTreeMap<String, AddonManifest>,
+    std16: &BTreeMap<String, Std>,
+) -> Result<Vec<Op>> {
+    let replaced = replaced_operations(std16, loader_dir().as_deref());
+    let mut ops = Vec::new();
+    for id in order {
+        let Some(m) = addons.get(id) else {
+            continue;
+        };
+        let dir = store.addons_dir().join(id);
+        for rel in &m.operations.assets {
+            if replaced.get(id.as_str()).is_some_and(|r| r.replaces(rel)) {
+                continue;
+            }
+            let file = read_op_file(&dir.join(rel), FileKind::Assets, m, p, on)?;
+            ops.extend(
+                file.ops
+                    .into_iter()
+                    .filter(|op| matches!(op, AssetOp::Track(_)))
+                    .map(|op| Op {
+                        op,
+                        origin: Origin {
+                            addon: id.clone(),
+                            item: None,
+                        },
+                    }),
+            );
+        }
+    }
+    Ok(ops)
+}
+
 /// The tracks a build adds.
 pub(super) struct Tracks {
     /// Each track package kept, with its folder and the origin of the op that adds it, in load order.
@@ -78,44 +230,26 @@ impl Tracks {
         std16: &mut BTreeMap<String, Std>,
     ) -> Result<Self> {
         let store = run.store;
-        let (mut tracks, mut left_out) = track_packages(store, planner.take_tracks())?;
-        let recorded = crate::tracks::with_records(run.order, std16);
-        let (more, unusable) = crate::tracks::record_packages(store, run.order, std16, &tracks);
-        tracks.extend(more);
-        left_out.extend(unusable);
-        if crate::tracks::may_fill_track_lists(tracks.len()) {
-            let path = run.original(GVDB);
-            let shipped = Gvdb::parse(&std::fs::read(&path).map_err(io_err(&path))?)?;
-            let listed = crate::tracks::ListedTracks::of(&shipped);
-            let (kept, full) = crate::tracks::fit_track_lists(&listed, tracks, &recorded);
-            tracks = kept;
-            let names: Vec<String> = full
-                .iter()
-                .map(|((_, pkg, origin), _)| {
-                    let addon = run.name(&origin.addon);
-                    match pkg.display_name() == addon {
-                        true => addon,
-                        false => format!("{} ({addon})", pkg.display_name()),
-                    }
-                })
-                .collect();
-            for (((_, pkg, _), _), name) in full.iter().zip(&names) {
-                if !tracks.iter().any(|(_, p, _)| p.track_code == pkg.track_code) {
-                    planner.leave_out_track(&pkg.track_code, name);
-                }
-            }
-            built
-                .warnings
-                .extend(crate::tracks::track_lists_full_warning(&listed, &names));
-            built.track_limit = crate::tracks::TrackLimit::new(
-                &listed,
-                names.clone(),
-                full.iter()
-                    .map(|((_, _, origin), _)| origin.addon.clone())
-                    .collect(),
-            );
-            left_out.extend(full.into_iter().map(|((_, _, origin), why)| (origin, why)));
+        let FittedTracks {
+            tracks,
+            left_out,
+            recorded,
+            dropped,
+            warning,
+            limit,
+        } = fit_tracks(
+            store,
+            run.game,
+            run.addons,
+            run.order,
+            std16,
+            planner.take_tracks(),
+        )?;
+        for (code, name) in &dropped {
+            planner.leave_out_track(code, name);
         }
+        built.warnings.extend(warning);
+        built.track_limit = limit;
         crate::tracks::keep_track_folders(store, &tracks, std16);
         for (origin, why) in &left_out {
             let name = run.name(&origin.addon);

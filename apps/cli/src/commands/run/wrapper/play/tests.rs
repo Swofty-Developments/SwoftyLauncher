@@ -1,4 +1,6 @@
-use swofty_core::session::{PERF_LOG, SessionEnd};
+use swofty_core::session::{
+    LOADER_FALLBACK, LOADER_LOG, PERF_FALLBACK, PERF_LOG, SessionEnd, keep_game_logs,
+};
 
 use crate::commands::run::tests::{STALE, session_dir};
 
@@ -26,22 +28,42 @@ fn keeps_the_loader_and_perf_logs_this_session_wrote() {
     touch(&perf, launched - Duration::from_secs(600));
     let before = LogMark::read(&loader);
     let fallback = dir.join(LOADER_FALLBACK);
-    keep_game_logs(&dir, &game, &fallback, &session, before.as_ref(), launched);
+    let perf_fallback = dir.join(PERF_FALLBACK);
+    keep_game_logs(&dir, &game, &session, before.as_ref(), launched);
     assert!(!session.join("loader.log").exists());
     assert!(!session.join("perf.log").exists());
 
     std::fs::create_dir_all(fallback.parent().unwrap()).unwrap();
     std::fs::write(&fallback, "attached in the data folder\n").unwrap();
-    keep_game_logs(&dir, &game, &fallback, &session, before.as_ref(), launched);
+    std::fs::write(
+        &perf_fallback,
+        "Swofty Launcher performance report\nan earlier session\n",
+    )
+    .unwrap();
+    touch(&perf_fallback, launched - Duration::from_secs(600));
+    keep_game_logs(&dir, &game, &session, before.as_ref(), launched);
     assert_eq!(
         std::fs::read_to_string(session.join("loader.log")).unwrap(),
         "attached in the data folder\n"
+    );
+    assert!(!session.join("perf.log").exists());
+
+    std::fs::write(
+        &perf_fallback,
+        "Swofty Launcher performance report\nin the data folder\n",
+    )
+    .unwrap();
+    touch(&perf_fallback, launched + Duration::from_secs(1));
+    keep_game_logs(&dir, &game, &session, before.as_ref(), launched);
+    assert_eq!(
+        std::fs::read_to_string(session.join("perf.log")).unwrap(),
+        "Swofty Launcher performance report\nin the data folder\n"
     );
 
     std::fs::write(&loader, "fresh\n").unwrap();
     std::fs::write(&perf, "Swofty Launcher performance report\nnew\n").unwrap();
     touch(&perf, launched + Duration::from_secs(1));
-    keep_game_logs(&dir, &game, &fallback, &session, before.as_ref(), launched);
+    keep_game_logs(&dir, &game, &session, before.as_ref(), launched);
     assert_eq!(
         std::fs::read_to_string(session.join("loader.log")).unwrap(),
         "fresh\n"
@@ -56,7 +78,7 @@ fn keeps_the_loader_and_perf_logs_this_session_wrote() {
         "Swofty crash report\n",
     )
     .unwrap();
-    keep_game_logs(&dir, &game, &fallback, &session, before.as_ref(), launched);
+    keep_game_logs(&dir, &game, &session, before.as_ref(), launched);
     assert!(session.join("game-logs/crash-20261101-125350.txt").is_file());
     assert!(!fallback.with_file_name("crash-20261101-125350.txt").exists());
     std::fs::remove_dir_all(&dir).ok();

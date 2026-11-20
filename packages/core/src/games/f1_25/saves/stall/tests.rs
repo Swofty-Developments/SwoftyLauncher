@@ -148,6 +148,28 @@ fn a_session_that_read_the_profile_and_sat_on_the_start_screen_stalled() {
 }
 
 #[test]
+fn a_stall_shows_when_the_game_folder_refused_perf_log() {
+    let root = tmp("perf-fallback");
+    let s = store(&root, &[]);
+    let game = root.join("game");
+    std::fs::create_dir_all(game.join("swofty")).unwrap();
+    let dir = s.sessions_dir().join("20261119-184700");
+    std::fs::create_dir_all(&dir).unwrap();
+    let launched = std::time::SystemTime::now() - std::time::Duration::from_secs(5);
+    std::fs::create_dir_all(s.root.join("state")).unwrap();
+    std::fs::write(s.root.join(crate::session::LOADER_FALLBACK), LOADER).unwrap();
+    std::fs::write(s.root.join(crate::session::PERF_FALLBACK), STALLED_PERF).unwrap();
+    assert_eq!(
+        outcome(&dir, &s),
+        Outcome::Unknown,
+        "nothing kept from the game yet"
+    );
+    crate::session::keep_game_logs(&s.root, &game, &dir, None, launched);
+    assert!(!game.join(crate::session::PERF_LOG).exists());
+    assert_eq!(outcome(&dir, &s), Outcome::Stalled(162.0));
+}
+
+#[test]
 fn two_stalls_on_the_same_save_learn_it() {
     let mut ledger = Ledger::default();
     let one = [seen("a", "bad", Outcome::Stalled(162.0))];

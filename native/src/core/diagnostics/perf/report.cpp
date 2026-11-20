@@ -1,11 +1,14 @@
 #include "core/diagnostics/perf.hpp"
 
+#include "core/diagnostics/crash/crash_dir.hpp"
 #include "core/diagnostics/perf/profiler.hpp"
 #include "core/diagnostics/perf/sysmem.hpp"
 #include "core/diagnostics/perf/system.hpp"
 #include "core/diagnostics/perf/vq.hpp"
 #include "core/diagnostics/perf_logic.hpp"
+#include "core/runtime/files.hpp"
 #include "core/runtime/runtime.hpp"
+#include "loader/data_folder.h"
 
 #include <swofty/mixin.hpp>
 
@@ -13,6 +16,7 @@
 #include <cstdarg>
 #include <cstdio>
 #include <cstring>
+#include <mutex>
 #include <new>
 
 namespace perf {
@@ -270,11 +274,36 @@ std::string Profiler::report(const char *why)
     return out;
 }
 
+const std::wstring &Profiler::report_path()
+{
+    static std::wstring path;
+    static std::once_flag once;
+    std::call_once(once, [] {
+        path = runtime::swofty_root() + L"perf.log";
+        DWORD refused = runtime::write_refusal(runtime::swofty_root());
+        if (!refused)
+            return;
+        wchar_t folder[MAX_PATH * 2];
+        std::wstring data(folder, swofty_data_folder(folder, MAX_PATH * 2));
+        if (data.empty()) {
+            swofty::log("[perf] the game can't create swofty\\perf.log (error %lu) and LOCALAPPDATA is not set; no report "
+                        "is written",
+                        refused);
+            return;
+        }
+        CreateDirectoryW(crash_dir::fallback(data).c_str(), nullptr);
+        path = crash_dir::perf_fallback(data);
+        swofty::log("[perf] the game can't create swofty\\perf.log (error %lu); the report goes to %s", refused,
+                    runtime::narrow(path).c_str());
+    });
+    return path;
+}
+
 void Profiler::write_report(const char *why)
 {
     std::lock_guard<std::mutex> g(write_lock);
     std::string text = report(why);
-    std::wstring path = runtime::swofty_root() + L"perf.log", tmp = path + L".tmp";
+    std::wstring path = report_path(), tmp = path + L".tmp";
     HANDLE f = CreateFileW(tmp.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
     DWORD w = 0;
     bool ok = f != INVALID_HANDLE_VALUE && WriteFile(f, text.data(), DWORD(text.size()), &w, nullptr) && w == text.size();

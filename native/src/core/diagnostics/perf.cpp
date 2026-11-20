@@ -80,6 +80,7 @@ void Profiler::start()
 {
     if (!live() || wake)
         return;
+    report_path();
     wake = CreateEventW(nullptr, FALSE, FALSE, nullptr);
     if (HANDLE t = CreateThread(nullptr, 0, writer, nullptr, 0, nullptr))
         CloseHandle(t);
