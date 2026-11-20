@@ -5,7 +5,9 @@ use std::time::Duration;
 
 use semver::Version;
 
+use crate::data::relocate::{link, real_path, resolved};
 use crate::launcher::Progress;
+use crate::platform::process::same_path;
 use crate::{Error, Result, io_err};
 
 use super::download::{check_download, download_release, parse_sums};
@@ -252,35 +254,33 @@ pub(super) fn roll_back(done: &[Swap]) {
     }
 }
 
-pub const DATA_IN_INSTALL: &str = "your addons and saves are in the same folder as the launcher, so updates cannot install. Move them out in Settings, under Your addons and saves, or run the installer again";
+pub const DATA_IN_INSTALL: &str = "your addons and saves are in the launcher's folder, so updates cannot install. Run the installer and install to a new, empty folder: it moves only the launcher's files";
 
 pub(super) fn holds_data(root: &Path, data: &Path) -> bool {
     resolved(data).starts_with(resolved(root))
 }
 
-pub(super) fn resolved(path: &Path) -> PathBuf {
-    let mut rest = Vec::new();
-    let mut at = path;
-    loop {
-        if let Ok(real) = std::fs::canonicalize(at) {
-            return rest.iter().rev().fold(real, |p, part| p.join(part));
-        }
-        match (at.parent(), at.file_name()) {
-            (Some(parent), Some(name)) => {
-                rest.push(name.to_owned());
-                at = parent;
-            }
-            _ => return path.to_path_buf(),
-        }
-    }
-}
-
 pub fn refuse_data_root(root: &Path, data: &Path) -> Result<()> {
+    let (install, folder) = (real_path(root), real_path(data));
     let why = if holds_data(root, data) {
+        let linked = link::target(data)
+            .map(|_| format!(" ({} links to it)", data.display()))
+            .unwrap_or_default();
+        let layout = if same_path(&install, &folder) {
+            format!(
+                "the install folder {} is also the data folder{linked}",
+                install.display()
+            )
+        } else {
+            format!(
+                "the data folder {}{linked} is inside the install folder {}",
+                folder.display(),
+                install.display()
+            )
+        };
         Some(format!(
-            "the install folder {} is or contains the data folder {}",
-            root.display(),
-            data.display()
+            "{layout}. Install the launcher to a new, empty folder with the installer: it moves only the launcher's files and leaves your addons and saves in {}",
+            folder.display()
         ))
     } else {
         ["config.json", "profiles", "saves"]
@@ -289,8 +289,8 @@ pub fn refuse_data_root(root: &Path, data: &Path) -> Result<()> {
             .map(|m| {
                 format!(
                     "the install folder {} holds {m}, so it looks like a data folder the launcher could not resolve (data folder resolved to {})",
-                    root.display(),
-                    data.display()
+                    install.display(),
+                    folder.display()
                 )
             })
     };
