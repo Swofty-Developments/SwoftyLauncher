@@ -710,6 +710,7 @@ int main(int argc, char **argv)
     room_hole_tests();
     livery_tests();
     garage_tests();
+    sponsors_tests();
     package_team_row_tests();
     points_tests();
     if (argc > 1)
