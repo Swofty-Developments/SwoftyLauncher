@@ -16,7 +16,7 @@ use crate::commands::saves::browse::{careers, list, show, versions};
 use crate::commands::saves::manage::{backup, export_saves, import_saves, pin_snapshot, restore_snapshot};
 use crate::commands::saves::plain::{careers_in_plain, restore_career};
 use crate::commands::{Execute, Invocation};
-pub use session::{after_session, before_session, notice_since};
+pub use session::{after_session, before_session, notice_since, withdraw_unanswered_restores};
 
 impl Execute for SavesCommand {
     fn execute(self, invocation: &Invocation) -> Result<ExitCode> {

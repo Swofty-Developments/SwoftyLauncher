@@ -153,6 +153,7 @@ pub(crate) fn run(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Res
     );
     let result = run_loop(store, args, &config, &request, &profile, g, installed);
     let out = finish(session, result);
+    crate::commands::saves::withdraw_unanswered_restores(store);
     crate::commands::saves::after_session(before);
     out
 }

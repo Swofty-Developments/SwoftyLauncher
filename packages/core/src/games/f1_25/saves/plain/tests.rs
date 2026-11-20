@@ -224,6 +224,48 @@ fn a_restore_request_pins_the_generation_and_replaces_the_pending_one() {
 }
 
 #[test]
+fn requests_a_load_took_and_never_answered_are_withdrawn_once() {
+    let d = dir("withdraw");
+    let p = Plain::at(root_of_source(&d, "steam-123"));
+    write(&p, &career_gen(1, "save", Some("s1"), &[("0x0a", "Jacob")]));
+    current(&p, 1);
+    assert!(
+        withdraw_all_unanswered(&d).is_empty(),
+        "nothing taken, nothing withdrawn"
+    );
+    let r = p.restore_mode(1, "driver_career_progressive", 50).unwrap();
+    std::fs::rename(p.root.join(inject::INJECT), p.root.join(inject::APPLYING)).unwrap();
+    std::fs::write(
+        p.root.join(inject::INJECTED),
+        r#"{"schema":1,"results":[{"id":"older","ok":true,"detail":"kept"}]}"#,
+    )
+    .unwrap();
+    assert!(p.pending().is_empty());
+    assert_eq!(p.applying(), r);
+    let lines = withdraw_all_unanswered(&d);
+    assert_eq!(lines.len(), 2);
+    assert!(lines[0].contains(&r[0].id) && lines[0].contains("generation 1"));
+    assert!(!p.root.join(inject::APPLYING).exists());
+    let answers = p.answers();
+    assert_eq!(answers.len(), 3);
+    assert_eq!(answers[0].detail, "kept");
+    assert!(
+        answers[1..]
+            .iter()
+            .all(|a| !a.ok && a.detail == inject::WITHDRAWN)
+    );
+    assert_eq!(answers[1].id, r[0].id);
+    let v: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(p.root.join(inject::INJECTED)).unwrap()).unwrap();
+    assert_eq!(v["schema"], 1);
+    assert!(
+        withdraw_all_unanswered(&d).is_empty(),
+        "a second pass finds nothing"
+    );
+    std::fs::remove_dir_all(&d).ok();
+}
+
+#[test]
 fn roots_follow_the_contract() {
     let data = std::path::Path::new("/d");
     assert_eq!(

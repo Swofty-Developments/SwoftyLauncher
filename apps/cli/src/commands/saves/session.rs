@@ -92,6 +92,7 @@ pub(super) fn before_session_at(
     for line in swofty_core::saves::stall::sweep(store, game_loc.as_ref(), Running::now(), vault::now()) {
         say("warning", &line);
     }
+    withdraw_unanswered_restores(store);
     if let Some(l) = game_loc.as_ref().filter(|l| !l.layout.is_launcher()) {
         swofty_core::saves::plain::remember_copy_source(&store.root, &l.source);
     }
@@ -223,6 +224,19 @@ fn seed_if_empty(store: &Store, profile: &str, from: &Location, to: &Location) {
                 "saves: could not copy the Steam save into the launcher saves of profile {profile}: {e}"
             ),
         ),
+    }
+}
+
+/// Withdraw the restore requests of a profile load that stopped before it
+/// answered them (the game closed or crashed while it applied them), so the
+/// next Play does not apply them again. Skipped while F1 25 runs: the game may
+/// still answer them.
+pub fn withdraw_unanswered_restores(store: &Store) {
+    if Running::now().game {
+        return;
+    }
+    for line in swofty_core::saves::plain::withdraw_all_unanswered(&store.root) {
+        say("warning", &line);
     }
 }
 

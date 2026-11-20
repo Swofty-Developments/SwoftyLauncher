@@ -6,6 +6,12 @@ use crate::{Result, read_json, write_json};
 
 pub const INJECT: &str = "inject.json";
 pub const INJECTED: &str = "injected.json";
+/// The requests a profile load took: the core renames `inject.json` to this before it applies any of
+/// them and deletes it once `injected.json` holds the answers.
+pub const APPLYING: &str = "inject.applying.json";
+/// The answer to a request whose profile load stopped before it answered.
+pub const WITHDRAWN: &str = "F1 25 stopped while this restore was applied, so the launcher withdrew it; the next \
+                             Play loads the save without it";
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Request {
@@ -35,8 +41,14 @@ pub struct Answer {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 struct Answers {
+    #[serde(default = "schema")]
+    schema: u32,
     #[serde(default)]
     results: Vec<Answer>,
+}
+
+fn schema() -> u32 {
+    1
 }
 
 pub fn pending(root: &Path) -> Vec<Request> {
@@ -45,6 +57,34 @@ pub fn pending(root: &Path) -> Vec<Request> {
 
 pub fn answers(root: &Path) -> Vec<Answer> {
     read_json::<Answers>(&root.join(INJECTED)).map_or_else(|_| Vec::new(), |a| a.results)
+}
+
+/// The requests a profile load took and has not answered yet.
+pub fn applying(root: &Path) -> Vec<Request> {
+    read_json::<Requests>(&root.join(APPLYING)).map_or_else(|_| Vec::new(), |r| r.requests)
+}
+
+/// Answer the requests of a profile load that stopped before it answered them (the game closed or
+/// crashed while it applied them) as withdrawn, and remove them so no later load applies them. Only
+/// while F1 25 is closed: a running game may still answer them.
+pub fn withdraw_unanswered(root: &Path) -> Result<Vec<Request>> {
+    let path = root.join(APPLYING);
+    if !path.is_file() {
+        return Ok(Vec::new());
+    }
+    let requests = applying(root);
+    let mut results: Vec<Answer> = answers(root)
+        .into_iter()
+        .filter(|a| !requests.iter().any(|r| r.id == a.id))
+        .collect();
+    results.extend(requests.iter().map(|r| Answer {
+        id: r.id.clone(),
+        ok: false,
+        detail: WITHDRAWN.to_owned(),
+    }));
+    write_json(&root.join(INJECTED), &Answers { schema: 1, results })?;
+    std::fs::remove_file(&path).map_err(crate::io_err(&path))?;
+    Ok(requests)
 }
 
 pub fn ask(root: &Path, generation: u64, container: &str, replace: bool, now: i64) -> Result<Request> {

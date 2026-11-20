@@ -89,7 +89,8 @@ pub(super) fn build_plain(root: &Path, source: &str) -> Option<PlainView> {
     let plain = Plain::of_source(root, source);
     let gens = plain.generations();
     let newest = gens.first()?;
-    let pending = plain.pending();
+    let mut pending = plain.pending();
+    pending.extend(plain.applying());
     let signature = |m: &swofty_core::saves::plain::Manifest, mode: &str| -> Option<String> {
         let halves: Vec<String> = m.halves(mode).map(|c| c.sha256.clone()).collect();
         (!halves.is_empty()).then(|| halves.join("+"))

@@ -50,6 +50,12 @@ pub(super) fn careers_in_plain(store: &Store, source: Option<&str>) -> Result<()
             r.container, r.generation
         );
     }
+    for r in plain.applying() {
+        println!(
+            "taken by a profile load that has not answered yet: {} from generation {}",
+            r.container, r.generation
+        );
+    }
     for a in plain.answers() {
         println!(
             "the core answered {}: {} {}",
