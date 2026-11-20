@@ -161,7 +161,7 @@ pub fn data_entry(s: &Snapshot) -> Option<&crate::saves::vault::FileEntry> {
 }
 
 /// The data file of the save in `loc`.
-fn data_file(loc: &Location) -> Option<PathBuf> {
+pub(crate) fn data_file(loc: &Location) -> Option<PathBuf> {
     let files = loc.files().ok()?;
     files
         .iter()
@@ -239,10 +239,28 @@ fn session_snapshots(data: &Path) -> Vec<(String, Snapshot, Option<Snapshot>)> {
     out
 }
 
-/// The newest sessions with the save each read and how it went.
-pub fn seen(store: &Store) -> Vec<Seen> {
-    let data = &store.root;
-    let snaps = session_snapshots(data);
+/// A recent launcher session: its folder and the vault snapshots it started and ended on.
+#[derive(Debug, Clone)]
+pub(crate) struct Played {
+    pub(crate) dir: PathBuf,
+    pub(crate) before: Snapshot,
+    pub(crate) after: Option<Snapshot>,
+}
+
+impl Played {
+    /// The session's folder name.
+    pub(crate) fn name(&self) -> String {
+        self.dir
+            .file_name()
+            .unwrap_or_default()
+            .to_string_lossy()
+            .into_owned()
+    }
+}
+
+/// The newest [`RECENT`] session folders that the vault has a start snapshot for, newest first.
+pub(crate) fn played(store: &Store) -> Vec<Played> {
+    let snaps = session_snapshots(&store.root);
     let mut dirs: Vec<PathBuf> = std::fs::read_dir(store.sessions_dir())
         .into_iter()
         .flatten()
@@ -259,19 +277,31 @@ pub fn seen(store: &Store) -> Vec<Seen> {
         let Some((_, before, after)) = snaps.iter().find(|(s, _, _)| *s == id) else {
             continue;
         };
-        let Some(entry) = data_entry(before) else {
-            continue;
-        };
-        out.push(Seen {
-            session: dir.file_name().unwrap_or_default().to_string_lossy().into_owned(),
-            before: entry.sha256.clone(),
-            size: entry.size,
-            after: after.as_ref().and_then(data_entry).map(|f| f.sha256.clone()),
-            profile: before.profile.clone(),
-            outcome: outcome(dir, store),
+        out.push(Played {
+            dir: dir.clone(),
+            before: before.clone(),
+            after: after.clone(),
         });
     }
     out
+}
+
+/// The newest sessions with the save each read and how it went.
+pub fn seen(store: &Store) -> Vec<Seen> {
+    played(store)
+        .into_iter()
+        .filter_map(|p| {
+            let entry = data_entry(&p.before)?;
+            Some(Seen {
+                session: p.name(),
+                before: entry.sha256.clone(),
+                size: entry.size,
+                after: p.after.as_ref().and_then(data_entry).map(|f| f.sha256.clone()),
+                profile: p.before.profile.clone(),
+                outcome: outcome(&p.dir, store),
+            })
+        })
+        .collect()
 }
 
 /// Fold the sessions into the ledger: a save stalls after [`SESSIONS`] stalled sessions, or one of
