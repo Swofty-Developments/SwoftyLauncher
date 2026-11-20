@@ -163,6 +163,18 @@ pub enum Error {
     /// A part of the HUD that the composed records and another addon's archive changes both claim.
     #[error("hud: {0}")]
     HudConflict(Box<hud::conflict::Conflict>),
+    /// An entry an addon adds that an earlier addon in the load order added already.
+    #[error("{resource}: {at}: an entry with {entry} already exists; {earlier} adds it too")]
+    DuplicateEntry {
+        resource: String,
+        at: String,
+        entry: String,
+        earlier: String,
+    },
+    /// The game's own copy of the archive `rel` already holds an entry an addon adds: the launcher's output of
+    /// an earlier session left in the game folder in place of the original.
+    #[error("{detail}")]
+    StaleInput { rel: String, detail: String },
     #[error("{0}")]
     Other(String),
 }
