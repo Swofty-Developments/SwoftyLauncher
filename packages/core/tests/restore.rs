@@ -464,6 +464,52 @@ fn a_game_update_in_between_never_restores_old_originals() {
 }
 
 #[test]
+fn a_game_update_puts_back_the_originals_of_files_it_did_not_touch() {
+    let f = Fixture::new("update-untouched");
+    let game1 = f.game("1");
+    Installer::new(&f.data, &game1).apply(&f.maps_plan()).unwrap();
+    assert_eq!(f.read(UI), "ui-B");
+
+    for (rel, body) in [("F1_25.exe", "exe-v2"), (GVDB, "db-v2")] {
+        write(&f.game.join(rel), body);
+    }
+    let game2 = f.game("2");
+    let inst = Installer::new(&f.data, &game2);
+    let report = inst.recover().unwrap();
+    assert!(report.contains(&Drift::LeftInPlace(GVDB.into())), "{report:?}");
+    assert!(!report.contains(&Drift::LeftInPlace(UI.into())), "{report:?}");
+    assert_eq!(f.read(GVDB), "db-v2");
+    assert_eq!(f.read(UI), "ui-v1");
+
+    inst.apply(&f.maps_plan()).unwrap();
+    assert_eq!(inst.baseline().unwrap().files[UI].sha256, sha256_bytes(b"ui-v1"));
+    inst.apply(&Plan::vanilla()).unwrap();
+    assert_eq!(f.read(UI), "ui-v1");
+}
+
+#[test]
+fn a_leftover_the_placed_record_proves_gets_the_original_of_the_earlier_game_build() {
+    use swofty_core::placed::Placed;
+    let f = Fixture::new("sweep-older-build");
+    let game1 = f.game("1");
+    Installer::new(&f.data, &game1).apply(&f.maps_plan()).unwrap();
+    let placed = Placed::load(&f.data).unwrap();
+    for j in Journal::open(&f.data).unwrap() {
+        std::fs::remove_file(&j.file).unwrap();
+    }
+    placed.save(&f.data).unwrap();
+    write(&f.game.join("F1_25.exe"), "exe-v2");
+    let game2 = f.game("2");
+    let notes = Installer::new(&f.data, &game2).sweep().unwrap();
+    assert!(
+        notes.contains(&format!("put the original {UI} back")),
+        "{notes:?}"
+    );
+    assert_eq!(f.read(UI), "ui-v1");
+    assert_eq!(f.read(GVDB), "db-v1");
+}
+
+#[test]
 fn an_empty_loader_folder_is_not_drift() {
     let f = Fixture::new("empty-loader");
     let game = f.game("1");

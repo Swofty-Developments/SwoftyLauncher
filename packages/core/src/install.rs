@@ -480,8 +480,9 @@ impl<'a> Installer<'a> {
                     if now.as_deref() == Some(before) {
                         continue;
                     }
-                    let ours = now == e.after || (!stranded && e.state == State::Pending);
-                    if ours && same_build {
+                    let ours = (now == e.after && (same_build || !stranded))
+                        || (!stranded && same_build && e.state == State::Pending);
+                    if ours {
                         self.restore_original(before, &path)?;
                         hashes.wrote(&path, before);
                     } else {
@@ -641,7 +642,13 @@ impl<'a> Installer<'a> {
             let path = self.path(&f.path);
             if hashes.sha256_opt(&path)?.as_deref() == Some(f.sha256.as_str()) {
                 if f.replaced {
-                    match baseline.files.get(&f.path) {
+                    let older = || {
+                        crate::baseline::older_originals(self.data, &self.game.identity, &f.path)
+                            .into_iter()
+                            .next()
+                            .map(|(_, rec)| rec)
+                    };
+                    match baseline.files.get(&f.path).cloned().or_else(older) {
                         Some(rec) if self.objects().has(&rec.sha256) => {
                             self.restore_original(&rec.sha256, &path)?;
                             hashes.wrote(&path, &rec.sha256);
