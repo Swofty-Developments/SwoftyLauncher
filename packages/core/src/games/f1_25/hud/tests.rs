@@ -766,3 +766,128 @@ fn two_addons_share_one_scene_and_one_template_pass() {
     assert!(clash.unwrap_err().to_string().contains("both get the prefix"));
     std::fs::remove_dir_all(dir).ok();
 }
+
+#[test]
+fn two_screen_records_wrap_the_lap_counter_inside_each_other() {
+    let Some(stock) = game() else { return };
+    let dir = addon_dir("two-wraps");
+    let flag_node = "hud_left_notification_dynamic.osd_visibility_option.left_notification.left_message";
+    let hide = [
+        "car_category_logo",
+        "session_icon",
+        "centre_lap_value",
+        "separator_bg",
+        "separator_bg_top",
+        "centre_formation",
+    ];
+    let wrap = ["edge_base", "edge_border", "lap_bg", "lockup"];
+    let mk = |addon: &str| {
+        let mut v = tower_record();
+        let o = v.as_object_mut().unwrap();
+        o.remove("restyle");
+        o.insert(
+            "stock_nodes".into(),
+            serde_json::json!([
+                { "template": screens::LAPC_PARENT, "scene": screens::LAPC_SCENE, "hide": hide, "wrap": wrap,
+                  "while": { "view_model": "view_model_data.hud_tt_show" } },
+                { "template": flag_node, "hide": ["boundless"], "while": { "view_model": "view_model_data.hud_tt_show" } }
+            ]),
+        );
+        Input {
+            addon: addon.into(),
+            key: "tower".into(),
+            dir: dir.clone(),
+            record: HudElement::parse(&v).unwrap(),
+        }
+    };
+    let inputs = [mk("two.season"), mk("one.season")];
+    let t_stock = Pkg::parse(&stock.read(dials::STOCK_ERP, dials::TEMPLATE).unwrap()[0]).unwrap();
+    let flag = stock_edit::scene_of(&t_stock.root, flag_node).unwrap().unwrap();
+    let mut shared = vec![screens::LAPC_SCENE.to_owned(), flag.clone()];
+    shared.sort();
+    assert_eq!(screen_build::shared_scenes(&stock, &inputs).unwrap(), shared);
+    let out = compose(&stock, &inputs).unwrap();
+    assert!(check::uncovered(&stock, &out.archives).unwrap().is_empty());
+    let a = prefix_for("one.season", "tower", None).unwrap();
+    let b = prefix_for("two.season", "tower", None).unwrap();
+    let file = |name: &str| {
+        let built = out.archives.iter().find(|x| x.file == name).unwrap();
+        Erp::parse(&built.bytes).unwrap()
+    };
+    let scene = file("hud_screen_scene.erp");
+    for name in [screens::LAPC_SCENE, flag.as_str()] {
+        assert_eq!(
+            scene.resources.iter().filter(|r| r.name == name).count(),
+            1,
+            "{name}"
+        );
+    }
+    let lapc = pkg_in(&scene, screens::LAPC_SCENE);
+    assert!(crate::ui::idf::id_problems(&lapc).unwrap().is_empty());
+    let lc: Vec<String> = crate::ui::idf::elements(stock_edit::scene_root(&lapc).unwrap())
+        .into_iter()
+        .map(|(p, _)| p)
+        .collect();
+    for w in wrap {
+        let nested = format!(
+            "{}.{}.{w}",
+            stock_edit::wrap_name(&a, w),
+            stock_edit::wrap_name(&b, w)
+        );
+        assert!(lc.contains(&nested), "{nested} in {lc:#?}");
+    }
+    for h in hide {
+        let wrapper = stock_edit::wrap_name(&b, h);
+        assert!(
+            lc.iter().any(|p| p.ends_with(&format!("{wrapper}.{h}"))),
+            "{h} inside {wrapper}"
+        );
+        assert!(!lc.iter().any(|p| p.contains(&stock_edit::wrap_name(&a, h))));
+    }
+    let fl = pkg_in(&scene, &flag);
+    assert!(crate::ui::idf::id_problems(&fl).unwrap().is_empty());
+    assert!(
+        crate::ui::idf::find(
+            stock_edit::scene_root(&fl).unwrap(),
+            &stock_edit::wrap_name(&b, "boundless")
+        )
+        .is_some()
+    );
+
+    let t = pkg_in(&file("hud_template.erp"), dials::TEMPLATE);
+    let targets = |parent: &str, group: &str| -> Vec<String> {
+        let at = crate::ui::node::find_path(&t.root, &format!("{parent}.{group}")).unwrap();
+        crate::ui::node::node_at(&t.root, &at)
+            .unwrap()
+            .slot(crate::ui::node::CHILDREN)
+            .unwrap()
+            .iter()
+            .flat_map(|n| n.slot(crate::ui::node::LAYOUT).unwrap().to_vec())
+            .flat_map(|c| c.as_arr().unwrap().items.clone())
+            .map(|o| o.as_obj().unwrap().str_at("debugName").unwrap().to_owned())
+            .collect()
+    };
+    let mine_a = targets(screens::LAPC_PARENT, &format!("{a}_sn0"));
+    let mine_b = targets(screens::LAPC_PARENT, &format!("{b}_sn0"));
+    let mut want_a: Vec<String> = hide.iter().map(|h| (*h).to_owned()).collect();
+    want_a.extend(wrap.iter().map(|w| stock_edit::wrap_name(&a, w)));
+    assert_eq!(mine_a, want_a);
+    let want_b: Vec<String> = wrap
+        .iter()
+        .chain(&hide)
+        .map(|w| stock_edit::wrap_name(&b, w))
+        .collect();
+    assert_eq!(mine_b, want_b);
+    for el in mine_a.iter().chain(&mine_b) {
+        assert!(
+            lc.iter().any(|p| p.rsplit('.').next() == Some(el.as_str())),
+            "{el} in the scene"
+        );
+    }
+    assert_eq!(targets(flag_node, &format!("{a}_sn1")), ["boundless"]);
+    assert_eq!(
+        targets(flag_node, &format!("{b}_sn1")),
+        [stock_edit::wrap_name(&b, "boundless")]
+    );
+    std::fs::remove_dir_all(dir).ok();
+}

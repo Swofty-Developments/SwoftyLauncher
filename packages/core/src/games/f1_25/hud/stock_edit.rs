@@ -94,10 +94,24 @@ fn child_at_mut<'a>(e: &'a mut Node, path: &[usize]) -> Result<&'a mut Node> {
     Ok(cur)
 }
 
+/// The entry with each `hide` element another record's group already shows and hides in `scene`
+/// (in `taken`) moved to `wrap`, so an element keeps one `visible` binding; `taken` gains the rest.
+/// Returns the entry and the moved elements.
+pub fn share(s: &StockNodes, scene: &str, taken: &mut BTreeSet<String>) -> (StockNodes, Vec<String>) {
+    let (moved, hide): (Vec<String>, Vec<String>) = s.hide.iter().cloned().partition(|h| taken.contains(h));
+    taken.extend(hide.iter().cloned());
+    let mut out = s.clone();
+    out.scene = Some(scene.to_owned());
+    out.hide = hide;
+    out.wrap.extend(moved.iter().cloned());
+    (out, moved)
+}
+
 /// The scene with a new null `<pfx>_w_<element>` around each of `s.wrap`, in the element's place
 /// in its parent's children, so every stock name and the drawing order stay; the ids of the moved
 /// subtrees follow their new paths and the lookup grows by the wrappers. The null is a copy of one of
-/// the scene's nulls, an undrawn one when there is one, with no art. Returns the bytes and the
+/// the scene's nulls, an undrawn one when there is one, with no art. A scene another record wrapped
+/// already gets the new null inside that record's, around the element. Returns the bytes and the
 /// wrapper names.
 pub fn wrap_scene(bytes: &[u8], s: &StockNodes, pfx: &str) -> Result<(Vec<u8>, Vec<String>)> {
     let mut pkg = Pkg::parse(bytes)?;
@@ -963,6 +977,149 @@ mod tests {
             Some(false)
         );
         assert!(v.as_obj().unwrap().get("dbentry").is_none());
+    }
+
+    fn typed(name: &str, ty: &str, drawn: bool, kids: Vec<Node>) -> Node {
+        let mut e = elem(name, kids);
+        let o = e.o_mut().unwrap();
+        o.set("typeName", s(ty));
+        if drawn {
+            o.set("geoms", arr(vec![obj(vec![("materialid", s(name))])]));
+        }
+        e
+    }
+
+    fn scene_bytes(root: Node) -> Vec<u8> {
+        let mut p = Pkg {
+            name: [0; 4],
+            root: obj(vec![(
+                "scenelist",
+                arr(vec![obj(vec![("scene", root), ("nodeidlookup", arr(vec![]))])]),
+            )]),
+            vca: Vec::new(),
+            layout: None,
+        };
+        let entry = &mut idf::scenes_mut(&mut p).unwrap()[0];
+        let root = entry.o_mut().unwrap().at_mut("scene").unwrap();
+        for kid in idf::children_mut(root).unwrap() {
+            let n = idf::elem_name(kid).to_owned();
+            idf::recompute_ids(kid, &n).unwrap();
+        }
+        idf::relookup(entry).unwrap();
+        p.to_bytes().unwrap()
+    }
+
+    fn visible_targets(t: &Node, group: &str) -> Vec<String> {
+        let at = node::find_path(t, &format!("hud_lap_counter.osd_visibility_option.{group}")).unwrap();
+        node::node_at(t, &at)
+            .unwrap()
+            .slot(node::CHILDREN)
+            .unwrap()
+            .iter()
+            .flat_map(|n| n.slot(node::LAYOUT).unwrap().to_vec())
+            .flat_map(|c| c.as_arr().unwrap().items.clone())
+            .map(|o| o.as_obj().unwrap().str_at("debugName").unwrap().to_owned())
+            .collect()
+    }
+
+    #[test]
+    fn two_records_wrap_one_scene_inside_each_other() {
+        let stock = scene_bytes(typed(
+            "Scene Root",
+            "eScene",
+            false,
+            vec![
+                typed("logo", "eXRef", false, vec![]),
+                typed("edge_base", "eNull", true, vec![]),
+                typed(
+                    "holder",
+                    "eNull",
+                    false,
+                    vec![typed("centre", "eCentre", false, vec![])],
+                ),
+                typed(
+                    "lap_bg",
+                    "eNull",
+                    true,
+                    vec![typed("lap_bg_overlay", "eNull", true, vec![])],
+                ),
+            ],
+        ));
+        let entry = |leaf: &str, hide: &[&str]| StockNodes {
+            template: "hud_lap_counter.osd_visibility_option".into(),
+            scene: Some("eaid://ui_package/art/osd/test/lap.idf".into()),
+            hide: hide.iter().map(|h| (*h).to_owned()).collect(),
+            wrap: vec!["edge_base".into(), "lap_bg".into()],
+            while_: Some(Bind::leaf(leaf)),
+        };
+        let scene = "eaid://ui_package/art/osd/test/lap.idf";
+        let mut taken = BTreeSet::new();
+        let (a, moved_a) = share(&entry("view_model_data.a_show", &["logo"]), scene, &mut taken);
+        let (b, moved_b) = share(
+            &entry("view_model_data.b_show", &["logo", "centre"]),
+            scene,
+            &mut taken,
+        );
+        assert!(moved_a.is_empty());
+        assert_eq!(moved_b, ["logo"]);
+        assert_eq!(b.hide, ["centre"]);
+        assert_eq!(b.wrap, ["edge_base", "lap_bg", "logo"]);
+
+        let (first, wraps_a) = wrap_scene(&stock, &a, "aa").unwrap();
+        let (second, wraps_b) = wrap_scene(&first, &b, "bb").unwrap();
+        assert_eq!(wraps_a, ["aa_w_edge_base", "aa_w_lap_bg"]);
+        assert_eq!(wraps_b, ["bb_w_edge_base", "bb_w_lap_bg", "bb_w_logo"]);
+        let p = Pkg::parse(&second).unwrap();
+        assert!(idf::id_problems(&p).unwrap().is_empty());
+        let root = scene_root(&p).unwrap();
+        let paths: Vec<String> = idf::elements(root).into_iter().map(|(p, _)| p).collect();
+        assert_eq!(
+            paths,
+            [
+                "Scene Root",
+                "bb_w_logo",
+                "bb_w_logo.logo",
+                "aa_w_edge_base",
+                "aa_w_edge_base.bb_w_edge_base",
+                "aa_w_edge_base.bb_w_edge_base.edge_base",
+                "holder",
+                "holder.centre",
+                "aa_w_lap_bg",
+                "aa_w_lap_bg.bb_w_lap_bg",
+                "aa_w_lap_bg.bb_w_lap_bg.lap_bg",
+                "aa_w_lap_bg.bb_w_lap_bg.lap_bg.lap_bg_overlay",
+            ]
+        );
+        let before = idf::id_map(scene_root(&Pkg::parse(&first).unwrap()).unwrap());
+        let after = idf::id_map(root);
+        for w in &wraps_a {
+            assert_eq!(before.get(w), after.get(w), "{w} keeps its id");
+        }
+        for w in wraps_a.iter().chain(&wraps_b) {
+            let e = idf::find(root, w).unwrap();
+            let geoms = e.as_obj().unwrap().get("geoms").and_then(Node::as_arr);
+            assert!(geoms.is_none_or(|g| g.items.is_empty()), "{w} draws nothing");
+            assert_eq!(crate::ui::catalog::element_type(e), "eNull");
+        }
+
+        let stock_root = scene_root(&Pkg::parse(&stock).unwrap()).unwrap().clone();
+        let stock_t = template(vec![]);
+        let mut t = stock_t.clone();
+        attach_stock_nodes(&mut t, &stock_t, &stock_root, &a, "aa_sn0", &wraps_a).unwrap();
+        attach_stock_nodes(&mut t, &stock_t, &stock_root, &b, "bb_sn0", &wraps_b).unwrap();
+        let mine_a = visible_targets(&t, "aa_sn0");
+        let mine_b = visible_targets(&t, "bb_sn0");
+        assert_eq!(mine_a, ["logo", "aa_w_edge_base", "aa_w_lap_bg"]);
+        assert_eq!(mine_b, ["centre", "bb_w_edge_base", "bb_w_lap_bg", "bb_w_logo"]);
+        let all: BTreeSet<&String> = mine_a.iter().chain(&mine_b).collect();
+        assert_eq!(
+            all.len(),
+            mine_a.len() + mine_b.len(),
+            "one visible binding per element"
+        );
+        for el in all {
+            assert!(idf::find(root, el).is_some(), "{el} is in the scene");
+        }
     }
 
     #[test]

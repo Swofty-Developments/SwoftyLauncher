@@ -190,6 +190,7 @@ pub fn compose_in_build(
     inputs: &[Input],
     template: Option<TemplateBase>,
 ) -> Result<Composed> {
+    let shared = screen_build::shared_scenes(cx.stock, inputs)?;
     let mut written: BTreeSet<&str> = dials::written().into_iter().collect();
     written.extend(inputs.iter().filter_map(|i| i.record.scene.as_deref()));
     written.extend(
@@ -199,6 +200,7 @@ pub fn compose_in_build(
             .filter(|s| !s.wrap.is_empty())
             .filter_map(|s| s.scene.as_deref()),
     );
+    written.extend(shared.iter().map(String::as_str));
     if inputs.iter().any(|i| i.record.screen.is_some()) {
         written.extend(screen_build::written());
     }

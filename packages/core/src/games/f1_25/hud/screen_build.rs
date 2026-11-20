@@ -912,8 +912,10 @@ pub fn compose_screens(
     }
 
     let mut scene_cache: BTreeMap<String, Node> = BTreeMap::new();
-    let mut wrapped: BTreeSet<String> = BTreeSet::new();
-    for r in &recs {
+    let mut taken: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
+    let mut by_pfx: Vec<&Rec> = recs.iter().collect();
+    by_pfx.sort_by(|a, b| a.pfx.cmp(&b.pfx));
+    for r in by_pfx {
         let mut nodes: Vec<StockNodes> = r.stock_nodes.clone();
         if r.targets.iter().any(|t| t.facts.key == "standings") {
             nodes.push(StockNodes {
@@ -976,23 +978,35 @@ pub fn compose_screens(
             } else {
                 s
             };
+            let (s, moved) = stock_edit::share(s, &scene, taken.entry(scene.clone()).or_default());
+            let s = &s;
+            if !moved.is_empty() {
+                out.lines.push(format!(
+                    "{}: another record hides {} of {} too, so this record hides them through wrapper nulls",
+                    r.pfx,
+                    moved.join(", "),
+                    scene.rsplit('/').next().unwrap_or(&scene)
+                ));
+            }
             let mut wraps = Vec::new();
             if !s.wrap.is_empty() {
-                if wrapped.contains(&scene) {
-                    return Err(err(format!(
-                        "{}: {} is wrapped by another record already; one record wraps a scene",
-                        r.pfx,
-                        scene.rsplit('/').next().unwrap_or(&scene)
-                    )));
-                }
-                let bytes = race_read(&scene).or_else(|_| read_from(screens::FLOW_REPLAY, &scene))?;
+                let bytes = match out
+                    .scene
+                    .iter()
+                    .chain(&out.spectator_scene)
+                    .find(|res| res.0 == scene)
+                {
+                    Some(res) => res.2[0].clone(),
+                    None => race_read(&scene).or_else(|_| read_from(screens::FLOW_REPLAY, &scene))?,
+                };
                 let (new, names) = stock_edit::wrap_scene(&bytes, s, &r.pfx)?;
                 wraps = names;
-                wrapped.insert(scene.clone());
-                match template_of_path(&s.template) {
-                    "spectator" => out.spectator_scene.push((scene.clone(), "UILayout", vec![new])),
-                    _ => out.scene.push((scene.clone(), "UILayout", vec![new])),
-                }
+                put_scene(
+                    &mut out,
+                    template_of_path(&s.template) == "spectator",
+                    &scene,
+                    new,
+                );
             }
             let n = stock_edit::attach_stock_nodes(
                 &mut live.root,
@@ -1071,6 +1085,61 @@ pub fn compose_screens(
         }
     }
     Ok(out)
+}
+
+/// The scenes the `stock_nodes` of more than one entry hide one element of: the later entries wrap it
+/// ([`stock_edit::share`]), so the composer writes those scenes too.
+pub fn shared_scenes(stock: &dyn Stock, inputs: &[Input]) -> Result<Vec<String>> {
+    let entries: Vec<&StockNodes> = inputs
+        .iter()
+        .filter(|i| i.record.screen.is_some())
+        .flat_map(|i| &i.record.stock_nodes)
+        .collect();
+    if entries.len() < 2 {
+        return Ok(Vec::new());
+    }
+    let read =
+        |name: &str| -> Result<Pkg> { Ok(Pkg::parse(&first(stock.read(dials::STOCK_ERP, name)?, name)?)?) };
+    let (race, spectator) = (read(dials::TEMPLATE)?, read(dials::SPECTATOR)?);
+    let mut seen = BTreeSet::new();
+    let mut out = BTreeSet::new();
+    for s in entries {
+        let template = match template_of_path(&s.template) {
+            "spectator" => &spectator,
+            _ => &race,
+        };
+        let Some(scene) = s
+            .scene
+            .clone()
+            .or_else(|| stock_edit::scene_of(&template.root, &s.template).ok().flatten())
+        else {
+            continue;
+        };
+        for h in &s.hide {
+            if !seen.insert((scene.clone(), h.clone())) {
+                out.insert(scene.clone());
+            }
+        }
+    }
+    Ok(out.into_iter().collect())
+}
+
+/// Makes `bytes` the one entry of `scene` in the scene archives: an earlier entry is replaced where
+/// it is, and the template's own archive gets one when it has none.
+fn put_scene(out: &mut Out, spectator: bool, scene: &str, bytes: Vec<u8>) {
+    for res in out.scene.iter_mut().chain(&mut out.spectator_scene) {
+        if res.0 == scene {
+            res.2 = vec![bytes.clone()];
+        }
+    }
+    let list = if spectator {
+        &mut out.spectator_scene
+    } else {
+        &mut out.scene
+    };
+    if !list.iter().any(|res| res.0 == scene) {
+        list.push((scene.to_owned(), "UILayout", vec![bytes]));
+    }
 }
 
 /// The archives the screen records' scene archive is made for: the host, the standings instance, the
@@ -1373,6 +1442,24 @@ mod tests {
             layout: None,
         };
         assert!(super::super::check::stock_kept(&sp, &bp, &ours).unwrap());
+    }
+
+    #[test]
+    fn a_scene_wrapped_again_keeps_one_entry_per_archive() {
+        let mut out = Out::default();
+        put_scene(&mut out, false, screens::LAPC_SCENE, vec![1]);
+        put_scene(&mut out, false, screens::LAPC_SCENE, vec![2]);
+        assert_eq!(
+            out.scene,
+            [(screens::LAPC_SCENE.to_owned(), "UILayout", vec![vec![2]])]
+        );
+        assert!(out.spectator_scene.is_empty());
+        put_scene(&mut out, true, screens::LAPC_SCENE, vec![3]);
+        assert_eq!(
+            out.scene,
+            [(screens::LAPC_SCENE.to_owned(), "UILayout", vec![vec![3]])]
+        );
+        assert_eq!(out.spectator_scene, out.scene);
     }
 
     #[test]

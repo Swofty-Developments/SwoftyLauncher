@@ -205,10 +205,20 @@ and `lockup` each have a stock group over them, so a `visible` of ours on them d
 The composer writes the scene again with a new null `<prefix>_w_<element>` in each wrapped
 element's place in its parent's children, the element inside it: every stock name stays, the
 drawing order stays, the lookup grows by the wrappers, and the stock nodes still find their parts
-by name. The group then hides the wrappers (`v_w_<element>`, `visible <- NOT while` like the rest).
-One record wraps a scene; a second record wrapping the same scene is refused. The flag box
+by name. The wrapper is a copy of one of the scene's plain nulls, with no art of its own. The group
+then hides the wrappers (`v_w_<element>`, `visible <- NOT while` like the rest). The flag box
 (`boundless` in `race_condition_flag_message.idf`, under
 `hud_left_notification_dynamic.osd_visibility_option.left_notification.left_message`) needs no wrap.
+
+Several records can hide parts of one scene, such as two season HUDs that each show with their own
+cars. The composer takes the records in the order of their prefixes, and writes each scene once:
+
+- **A scene an earlier record wrapped:** the later record's null goes inside the earlier one,
+  around the element: `s10_tower_w_lap_bg.s11_tower_w_lap_bg.lap_bg`.
+- **A part an earlier record already hides:** it moves to the later record's `wrap`. Two
+  `visible` bindings on one element fight, as they do with a stock node.
+
+Each record's group then shows and hides only its own parts and wrappers.
 
 ## The session clock
 
