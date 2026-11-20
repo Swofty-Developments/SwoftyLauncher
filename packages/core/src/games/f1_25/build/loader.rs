@@ -215,7 +215,7 @@ impl Pipeline<'_, '_> {
                     built.plan.loader.len(),
                     dir.display()
                 ));
-                if menus && crate::stdlib::careers::resume_list_wanted() {
+                if menus && crate::stdlib::careers::resume_list_wanted(&store.config().launch.env) {
                     let aliases = edits.id_aliases.clone();
                     let pending = pending_english(store, planner);
                     match crate::stdlib::careers::resume_list_for(
