@@ -4,9 +4,9 @@ description: >
   libraries GPUI and the ads helper link against. Every Rust job in ci.yml and release-binaries.yml starts here.
 
 inputs:
-  # Only the test builds and the Windows installer are cached: the rest are off the critical path or, on EC2,
-  # build as quickly as they restore, and the repository's 10 GB of cache space holds main's caches with room
-  # for pull requests (.github/runners/README.md, Cache budget).
+  # Only the test builds and the Windows installer are cached: the rest are off the critical path or build as
+  # quickly as they restore, and the repository's 10 GB of cache space holds main's caches with room for pull
+  # requests.
   cache:
     description: The cache's shared key, or empty for no Rust cache
     default: ''
@@ -42,10 +42,9 @@ runs:
         cache: false
 
     # rust-cache hashes every installed rustc and every CARGO*/RUST* variable into its key. A hosted image
-    # preinstalls the current stable and leaves CARGO_HOME unset, and the EC2 images do neither, so without
-    # this the two kinds of runner save and look for different keys and a pull request never restores main's
-    # cache. The paths are the hosted runners' defaults, which the EC2 images use too.
-    - name: Match the hosted and EC2 Rust environments
+    # preinstalls the current stable and leaves CARGO_HOME unset, so without this a runner with a different
+    # toolchain or CARGO_HOME would save and look for different keys. The paths are the hosted runners' defaults.
+    - name: Match the hosted Rust environment
       shell: bash
       run: |
         pinned=$(sed -n 's/^channel = "\(.*\)"/\1/p' rust-toolchain.toml)

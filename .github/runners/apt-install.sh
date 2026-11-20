@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
-# Installs the Ubuntu packages a CI job needs that the runner does not have yet. The EC2 images have them
-# baked in (bake-linux.sh), so there it returns without touching the network. An EC2 runner's regional
-# archive mirror can list files it does not have yet (404 on the amd64v3 builds of 26.04 in ap-south-2);
-# the install then retries against the main archive.
+# Installs the Ubuntu packages a CI job needs that the runner does not have yet, and returns at once when they
+# are all present. A regional archive mirror can list files it does not have yet (404 on the amd64v3 builds of
+# 26.04 in ap-south-2); the install then retries against the main archive.
 set -euo pipefail
 
 missing=()

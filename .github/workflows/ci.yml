@@ -121,72 +121,6 @@ jobs:
               - *always
               - tools/compat/**
 
-  # A push to main starts its heavy jobs on EC2 spot instances that take one job each and terminate
-  # (.github/runners). A pull request from a branch of this repository does too once the repository variable
-  # EC2_PULL_REQUESTS is true and the runner role trusts pull requests (.github/runners/README.md). Pull
-  # requests from forks, and any launch that fails, get the hosted runner labels instead. Only the jobs the
-  # change runs get an instance.
-  ec2:
-    name: EC2 runners
-    needs: changes
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
-    outputs:
-      native: ${{ steps.launch.outputs.native || 'ubuntu-latest' }}
-      rust-linux: ${{ steps.launch.outputs.rust-linux || 'ubuntu-latest' }}
-      rust-windows: ${{ steps.launch.outputs.rust-windows || 'windows-latest' }}
-      release-linux: ${{ steps.launch.outputs.release-linux || 'ubuntu-22.04' }}
-      release-windows: ${{ steps.launch.outputs.release-windows || 'windows-latest' }}
-    steps:
-      - id: gate
-        env:
-          EVENT: ${{ github.event_name }}
-          ENABLED: ${{ vars.EC2_PULL_REQUESTS }}
-          HEAD: ${{ github.event.pull_request.head.repo.full_name }}
-          WORK: ${{ needs.changes.outputs.rust == 'true' || needs.changes.outputs.native == 'true' }}
-        run: |
-          use=false
-          if [ "$EVENT" = push ]; then use=true; fi
-          if [ "$EVENT" = pull_request ] && [ "$ENABLED" = true ] && [ "$HEAD" = "$GITHUB_REPOSITORY" ] && [ "$WORK" = true ]; then use=true; fi
-          echo "use=$use" >> "$GITHUB_OUTPUT"
-
-      - if: steps.gate.outputs.use == 'true'
-        uses: actions/checkout@v7
-        with:
-          sparse-checkout: .github/runners
-
-      - id: aws
-        if: steps.gate.outputs.use == 'true'
-        continue-on-error: true
-        uses: aws-actions/configure-aws-credentials@v6
-        with:
-          role-to-assume: arn:aws:iam::532818875494:role/swofty-launcher-ci-runners
-          aws-region: ap-south-2
-
-      # All at once. m8a has a whole core per vCPU; Windows pays for its licence per vCPU, so it stops at 16.
-      - id: launch
-        if: steps.aws.outcome == 'success'
-        continue-on-error: true
-        env:
-          NATIVE: ${{ needs.changes.outputs.native }}
-          RUST: ${{ needs.changes.outputs.rust }}
-          RELEASE: ${{ github.event_name == 'push' }}
-        run: |
-          linux=m8a.8xlarge,c8i.8xlarge,c7i.8xlarge,m8a.4xlarge
-          windows=m8a.4xlarge,c8i.4xlarge,c7i.4xlarge
-          if [ "$NATIVE" = true ]; then .github/runners/launch.sh native linux-2604 "$linux" ubuntu-latest & fi
-          if [ "$RUST" = true ]; then
-            .github/runners/launch.sh rust-linux linux-2604 "$linux" ubuntu-latest &
-            .github/runners/launch.sh rust-windows windows "$windows" windows-latest &
-          fi
-          if [ "$RELEASE" = true ]; then
-            .github/runners/launch.sh release-linux linux-2204 "$linux" ubuntu-22.04 &
-            .github/runners/launch.sh release-windows windows "$windows" windows-latest &
-          fi
-          wait
-
   # The first answer on a change: formatting needs only the toolchain, so it reports within a minute.
   format:
     name: Rust format
@@ -244,9 +178,9 @@ jobs:
 
   rust:
     name: Rust tests (${{ matrix.os }})
-    needs: [changes, ec2]
+    needs: changes
     if: needs.changes.outputs.rust == 'true'
-    runs-on: ${{ matrix.os == 'windows-latest' && needs.ec2.outputs.rust-windows || needs.ec2.outputs.rust-linux }}
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 45
     strategy:
       fail-fast: false
@@ -462,15 +396,15 @@ jobs:
       - run: python3 -m pip install capstone==5.0.5
       - run: python3 -m unittest discover -s re/tools/tests
 
-  # On a 32-core EC2 runner one job runs every native test. On 4-core hosted runners two jobs split them, one
+  # Two jobs split the native tests on 4-core hosted runners, one
   # for the host tests and one for the Wine tests, each with its own CPUs. Both build the loader themselves:
   # sharing one build through an artifact would start the Wine job's own setup only after the other job's
   # setup and build.
   native:
     name: Native ${{ matrix.part == 'host' && 'loader and host tests' || matrix.part == 'wine' && 'loader and Wine tests' || 'loader and Wine test' }}
-    needs: [changes, ec2]
+    needs: changes
     if: needs.changes.outputs.native == 'true'
-    runs-on: ${{ needs.ec2.outputs.native }}
+    runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:
       contents: read
@@ -478,7 +412,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        part: ${{ fromJSON(needs.ec2.outputs.native == 'ubuntu-latest' && '["host", "wine"]' || '["all"]') }}
+        part: [host, wine]
     steps:
       - uses: actions/checkout@v7
 
@@ -499,8 +433,7 @@ jobs:
           key: wine-debs-${{ runner.os }}-${{ github.run_id }}
           restore-keys: wine-debs-${{ runner.os }}-
 
-      # The EC2 runner has Wine baked in. A hosted runner installs Wine and Xvfb in the background while the build
-      # runs, and the step before the tests waits for them; each line of the install log starts with its time.
+      # Wine and Xvfb install in the background while the build runs, and the step before the tests waits for them; each line of the install log starts with its time.
       # Hosted runners have a 145 GB disk with about 68 GB free; one with under 40 GB free first drops the
       # preinstalled toolchains the job never uses, which the Wine prefixes of the parallel tests would fill.
       # The man-db trigger, which rebuilds the manual page index after the install, is turned off.
@@ -673,8 +606,7 @@ jobs:
             gh cache delete "$id" --repo "$GITHUB_REPOSITORY" && echo "removed cache $id"
           done
 
-      # This part's tests side by side; on EC2 that is every host test, the templates build, the Any Team
-      # Transfers build and every Wine test. Each test's output is in its own group in the log, and the step
+      # This part's tests run side by side. Each test's output is in its own group in the log, and the step
       # fails on any failing test. The hosted Wine part has the runner's 4 CPUs to itself and runs 4 Wine tests
       # at a time, where run_tests.sh would run 2.
       - name: Native tests
@@ -723,7 +655,7 @@ jobs:
             gh cache delete "$id" --repo "$GITHUB_REPOSITORY" && echo "removed cache $id"
           done
 
-      # On main on EC2, once every test has run, the files the run neither read nor wrote leave the cache before it
+      # On main, once every test has run, the files the run neither read nor wrote leave the cache before it
       # is saved. A file system that does not record reads would lose every restored file, so a test read guards it.
       - name: Zig cache files this run used
         if: ${{ !cancelled() }}
@@ -788,38 +720,9 @@ jobs:
   # this commit takes its binaries from here (release.yml) instead of building again.
   release-binaries:
     name: Release binaries
-    needs: ec2
     if: github.event_name == 'push'
     uses: ./.github/workflows/release-binaries.yml
     with:
       ref: ${{ github.sha }}
       retention-days: 7
-      linux-runner: ${{ needs.ec2.outputs.release-linux }}
-      windows-runner: ${{ needs.ec2.outputs.release-windows }}
       installer: true
-
-  # Cleans up after every run that may have started instances. Release tags need this run to pass, so the
-  # cleanup never fails it.
-  ec2-cleanup:
-    name: EC2 cleanup
-    needs: [ec2, rust, native, release-binaries]
-    if: always() && (github.event_name == 'push' || (vars.EC2_PULL_REQUESTS == 'true' && github.event.pull_request.head.repo.full_name == github.repository))
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          sparse-checkout: .github/runners
-
-      - id: aws
-        continue-on-error: true
-        uses: aws-actions/configure-aws-credentials@v6
-        with:
-          role-to-assume: arn:aws:iam::532818875494:role/swofty-launcher-ci-runners
-          aws-region: ap-south-2
-
-      - if: steps.aws.outcome == 'success'
-        continue-on-error: true
-        run: .github/runners/cleanup.sh

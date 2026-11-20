@@ -1,7 +1,7 @@
 name: Release binaries
 
 # The release build of the swofty CLI, the launcher and Swofty UI for Linux and Windows. CI calls it on every
-# push to main, on EC2 runners when they start, and a tag on that commit takes the binaries from that run
+# push to main, and a tag on that commit takes the binaries from that run
 # instead of building again (release.yml). The release workflow calls it itself, on hosted runners, only when
 # it finds none. CI's call also builds the installer people test, so main needs no separate installer build.
 on:
@@ -16,7 +16,7 @@ on:
         type: number
         default: 1
       linux-runner:
-        description: The runner label for the Linux build; CI passes an EC2 runner of the same Ubuntu release
+        description: The runner label for the Linux build
         type: string
         default: ubuntu-22.04
       windows-runner:
@@ -42,7 +42,7 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
 
-      # No Rust cache: on an EC2 runner a cold release build takes about as long as restoring one. GTK and
+      # No Rust cache: a cold release build takes about as long as restoring one. GTK and
       # WebKitGTK are for the swofty-ads helper, which hosts the launcher's ad slots on Linux.
       - uses: ./.github/actions/setup-rust
 
@@ -103,7 +103,7 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
 
-      # No Rust cache: on an EC2 runner a cold release build takes about as long as restoring one.
+      # No Rust cache: a cold release build takes about as long as restoring one.
       - uses: ./.github/actions/setup-rust
 
       # Only the two binaries the release ships, not the installer or the addon template.
