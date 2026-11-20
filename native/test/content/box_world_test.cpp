@@ -249,7 +249,8 @@ static void test_time_trial_list()
 
 static void test_enabled()
 {
-    check(bw::enabled("") && bw::enabled("1") && bw::enabled("yes"), "box worlds are on when SWOFTY_BOX_WORLDS is unset or not 0");
+    check(bw::enabled("") && bw::enabled("1") && bw::enabled("yes"),
+          "box worlds are on when SWOFTY_BOX_WORLDS is unset or not 0");
     check(!bw::enabled("0"), "SWOFTY_BOX_WORLDS=0 turns them off");
 }
 
