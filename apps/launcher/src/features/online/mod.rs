@@ -13,11 +13,14 @@ use crate::shell::host::{Host, Hosted, reports_nothing};
 use api::{BoardsApi, HttpBoards};
 use gpui_kit::component::input::InputState;
 use gpui_kit::*;
-use images::{Art, Images};
+use images::{Images, Job};
 use model::*;
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::convert::Infallible;
+use std::rc::Rc;
 use std::sync::Arc;
+use std::time::Instant;
 
 pub(crate) enum Load<T> {
     Idle,
@@ -33,6 +36,13 @@ impl<T> Load<T> {
             Err(e) => Self::Failed(e),
         }
     }
+}
+
+#[derive(Default)]
+pub(crate) struct Seen {
+    urls: Vec<String>,
+    shell: Option<WeakEntity<Shell>>,
+    armed: bool,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -55,6 +65,8 @@ pub(crate) struct Online {
     board_category: Option<Category>,
     more: bool,
     images: Images,
+    seen: Rc<RefCell<Seen>>,
+    wake: Option<Instant>,
     data: std::path::PathBuf,
     recents: Recents,
     filter_tracks: TrackFilter,
@@ -88,7 +100,9 @@ impl Online {
             category: Category::load(data),
             board_category: None,
             more: false,
-            images: Images::new(data),
+            images: Images::new(data, &swofty_core::catalog::base_url()),
+            seen: Rc::new(RefCell::new(Seen::default())),
+            wake: None,
             data: data.to_path_buf(),
             recents: Recents::load(data),
             filter_tracks: TrackFilter::default(),
@@ -114,15 +128,8 @@ fn mock_mode() -> Option<mock::Mode> {
     }
 }
 
-fn art_urls<'a>(
-    drivers: impl IntoIterator<Item = &'a Driver>,
-    extra: impl IntoIterator<Item = Option<&'a String>>,
-) -> Vec<String> {
-    drivers
-        .into_iter()
-        .filter_map(|d| d.avatar.clone())
-        .chain(extra.into_iter().flatten().cloned())
-        .collect()
+fn art_urls<'a>(drivers: impl IntoIterator<Item = &'a Driver>) -> Vec<String> {
+    drivers.into_iter().filter_map(|d| d.avatar.clone()).collect()
 }
 
 pub(crate) struct OnlineNeeds<'a> {
@@ -195,10 +202,6 @@ impl Online {
                             .iter()
                             .map(|r| &r.driver)
                             .chain(o.seasons.iter().flat_map(|s| &s.top)),
-                        o.seasons
-                            .iter()
-                            .map(|s| s.cover.as_ref())
-                            .chain(o.custom.iter().map(|t| t.layout.as_ref())),
                     );
                     Self::prefetch(host, urls, cx);
                 }
@@ -250,24 +253,70 @@ impl Online {
     }
 
     fn prefetch<H: Host<Self>>(host: &mut H, urls: Vec<String>, cx: &mut Context<H>) {
+        let jobs = host.split().0.images.prefetch(urls, Instant::now());
+        Self::run(host, jobs, cx);
+    }
+
+    pub(crate) fn pump<H: Host<Self>>(host: &mut H, cx: &mut Context<H>) {
         let o = host.split().0;
+        let visible = {
+            let mut seen = o.seen.borrow_mut();
+            seen.armed = false;
+            std::mem::take(&mut seen.urls)
+        };
+        let now = Instant::now();
+        let plan = o.images.plan(visible, now);
+        Self::run(host, plan.jobs, cx);
+        if let Some(wait) = plan.wake {
+            Self::wake(host, now + wait, cx);
+        }
+    }
+
+    fn run<H: Host<Self>>(host: &mut H, jobs: Vec<Job>, cx: &mut Context<H>) {
+        if jobs.is_empty() {
+            return;
+        }
+        let (o, needs) = host.split();
         let dir = o.images.dir();
-        for url in o.images.wanted(urls) {
-            let dir = dir.clone();
+        let token = needs.token.map(str::to_owned);
+        for job in jobs {
+            let (dir, token) = (dir.clone(), token.clone());
             cx.spawn(async move |this, cx| {
-                let u = url.clone();
-                let art: Option<Art> = cx
+                let url = job.url().to_owned();
+                let done = cx
                     .background_executor()
-                    .spawn(async move { images::load(&dir, &u) })
+                    .spawn(async move { job.run(&dir, token.as_deref()) })
                     .await;
                 this.update(cx, |host, cx| {
-                    host.split().0.images.finish(url, art);
+                    host.split().0.images.finish(url, done, Instant::now());
                     cx.notify();
                 })
                 .ok();
             })
             .detach();
         }
+    }
+
+    fn wake<H: Host<Self>>(host: &mut H, at: Instant, cx: &mut Context<H>) {
+        let o = host.split().0;
+        if o.wake.is_some_and(|w| w <= at) {
+            return;
+        }
+        o.wake = Some(at);
+        cx.spawn(async move |this, cx| {
+            cx.background_executor()
+                .timer(at.saturating_duration_since(Instant::now()))
+                .await;
+            this.update(cx, |host, cx| {
+                let o = host.split().0;
+                if o.wake == Some(at) {
+                    o.wake = None;
+                    cx.notify();
+                }
+            })
+            .ok();
+        })
+        .detach();
     }
 
     pub(crate) fn rank_ensure<H: Host<Self>>(host: &mut H, scope: &str, cx: &mut Context<H>) {
@@ -297,7 +346,7 @@ impl Online {
                     return;
                 }
                 if let Ok(p) = &page {
-                    let urls = art_urls(p.rows.iter().map(|r| &r.driver), []);
+                    let urls = art_urls(p.rows.iter().map(|r| &r.driver));
                     Self::prefetch(host, urls, cx);
                 }
                 let feed = host.split().0.feeds.entry(key).or_default();
@@ -339,10 +388,6 @@ impl Online {
                             .map(|r| &r.driver)
                             .chain(p.tracks.iter().flat_map(|t| t.podium.iter().map(|e| &e.driver)))
                             .chain(p.season.top.iter()),
-                        p.tracks
-                            .iter()
-                            .map(|t| t.layout.as_ref())
-                            .chain([p.season.cover.as_ref()]),
                     );
                     Self::prefetch(host, urls, cx);
                 }
@@ -384,7 +429,6 @@ impl Online {
                             .iter()
                             .map(|r| &r.driver)
                             .chain(p.history.iter().map(|h| &h.driver)),
-                        [p.track.layout.as_ref()],
                     );
                     Self::prefetch(host, urls, cx);
                 }
@@ -423,7 +467,7 @@ impl Online {
                     return;
                 }
                 if let Ok(p) = &page {
-                    Self::prefetch(host, art_urls([&p.driver], p.bests.iter().map(|_| None)), cx);
+                    Self::prefetch(host, art_urls([&p.driver]), cx);
                 }
                 let (o, needs) = host.split();
                 if let Ok(p) = &page
@@ -639,6 +683,11 @@ impl Shell {
         use crate::ui::scale::px;
         use gpui_kit::component::v_flex;
         Online::enter(self, cx);
+        self.online
+            .seen
+            .borrow_mut()
+            .shell
+            .get_or_insert_with(|| cx.entity().downgrade());
         if self.online.search.is_none() {
             self.online.search =
                 Some(cx.new(|cx| InputState::new(window, cx).placeholder(swofty_i18n::tr("Search tracks"))));

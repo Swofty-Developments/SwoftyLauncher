@@ -167,6 +167,7 @@ export default defineConfigWithTheme<DocsThemeConfig>({
             text: "Releases",
             items: [
               { text: "1.10.0", link: "/releases/1.10.0" },
+              { text: "1.9.91", link: "/releases/1.9.91" },
               { text: "1.9.90", link: "/releases/1.9.90" },
               { text: "1.9.89", link: "/releases/1.9.89" },
               { text: "1.9.88", link: "/releases/1.9.88" },
