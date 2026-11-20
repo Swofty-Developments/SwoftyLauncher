@@ -52,6 +52,8 @@ John BENNETT       wefew                    F1® 2026 My Team    Season 1, Race 
   - `Ready`: the profile has every addon the career needs.
   - `Missing` (red): an addon is off or not installed (`Missing: <addon>`).
   - `Mismatched` (yellow): the addon is on, at a different version from the one the career was saved with (`Mismatched version of <addon>`), or the career's team, car or driver is in neither the profile's database nor the core's registry ids (`Mismatched rows from <addon>`).
+- A newer patch version of the version the career was saved with is not a mismatch: a career saved with 1.0.5 is `Ready` with 1.0.6. An older version (1.0.4), another minor version (1.1.0) and another major version (2.0.0) are `Mismatched`. A career whose record gives a version range (`need`) is checked against that range instead.
+- After a session in which the game saved a career with an addon on at a newer patch version, the career index records that version as the one the career was saved with. A session that loads a career and does not save it changes nothing.
 - A ready row loads the career.
 - A row that is not ready opens **Add-ons do not match** with **Load Anyway** and **Back**. **Load Anyway** loads the career. **Back** returns to the list.
 - **Add-ons do not match** names the addons that are off or not installed, and each addon the career was saved with at another version as `<addon> (saved with <version>, installed <version>)`.

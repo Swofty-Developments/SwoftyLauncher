@@ -9,7 +9,7 @@ use serde_json::Value;
 use super::index_file::{data_path, read};
 use super::play::in_save_of;
 use super::rows::{settle_rows, stock_max_for};
-use super::{CAR_WHY, Career, CareerAddon, is_guess};
+use super::{CAR_WHY, Career, CareerAddon, is_guess, same_or_patch};
 use crate::manifest::AddonManifest;
 
 /// The save slot's vehicle id of a My Team career is this flag and the id of its custom vehicle.
@@ -95,9 +95,52 @@ pub(super) fn prove(
     }
 }
 
+/// Whether the game saved the career in the session that last listed its slot: the slot's date
+/// (`last_played`, in seconds) is at or after the start of that session (`listed_session`, the core's
+/// start in milliseconds).
+fn saved_in_session(c: &Career) -> bool {
+    let listed = c.extra.get("listed_session").and_then(|v| {
+        v.as_str()
+            .and_then(|s| s.parse::<i64>().ok())
+            .or_else(|| v.as_i64())
+    });
+    let played = c.extra.get("last_played").and_then(Value::as_i64);
+    matches!((listed, played), (Some(l), Some(p)) if p.saturating_mul(1000) >= l)
+}
+
+/// Records the installed version of each addon a career of `in_save` needs when the game saved the career
+/// in the session ([`saved_in_session`]) with that addon on in load order `on` at a patch update of the
+/// version recorded ([`same_or_patch`]). Another major or minor version, an older one and an addon that was
+/// off keep the version recorded. Returns whether any career changed.
+pub fn refresh_versions(
+    list: &mut [Career],
+    in_save: &dyn Fn(&Career) -> bool,
+    on: &[String],
+    installed: &BTreeMap<String, AddonManifest>,
+) -> bool {
+    let mut changed = false;
+    for c in list.iter_mut().filter(|c| !c.is_gone() && c.in_slots()) {
+        if !in_save(c) || !saved_in_session(c) {
+            continue;
+        }
+        for a in c.addons.iter_mut().filter(|a| !is_guess(a) && on.contains(&a.id)) {
+            let (Some(was), Some(m)) = (a.version.as_deref(), installed.get(&a.id)) else {
+                continue;
+            };
+            let now = m.version.to_string();
+            if was != now && same_or_patch(was, &m.version) {
+                a.version = Some(now);
+                changed = true;
+            }
+        }
+    }
+    changed
+}
+
 /// After a session of `profile`: records in the data folder's career index the addons that own the
 /// team, car or driver row of each career ([`settle_rows`], with the stock maximum ids `stock_max`
-/// gives) and the addons whose My Team cars the session's loader.log names as lost ([`record_cars`]).
+/// gives), the addons whose My Team cars the session's loader.log names as lost ([`record_cars`]) and
+/// the patch updates the careers the game saved were saved with ([`refresh_versions`]).
 pub fn record_session(
     data: &Path,
     profile: &str,
@@ -137,6 +180,9 @@ pub fn record_session(
             &crate::row_ids::label_owners(data, VEHICLES),
             &installed,
         );
+    }
+    if let Some(on) = on.as_deref() {
+        changed |= refresh_versions(&mut list, &in_save, on, &installed);
     }
     if changed {
         crate::write_json_shared(
