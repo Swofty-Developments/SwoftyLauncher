@@ -593,6 +593,16 @@ pub fn exe_version(game: &Path) -> Result<Option<String>> {
 mod tests {
     use super::*;
 
+    fn age(path: &Path, secs: u64) {
+        let at = std::time::SystemTime::now() - std::time::Duration::from_secs(secs);
+        std::fs::File::options()
+            .write(true)
+            .open(path)
+            .unwrap()
+            .set_modified(at)
+            .unwrap();
+    }
+
     #[test]
     fn a_cached_digest_holds_until_the_file_is_written_again() {
         let data = std::env::temp_dir().join(format!("swofty-hashes-{}", std::process::id()));
@@ -600,6 +610,7 @@ mod tests {
         std::fs::create_dir_all(&data).unwrap();
         let file = data.join("f.bin");
         std::fs::write(&file, "one").unwrap();
+        age(&file, 3600);
         let mut hashes = Hashes::load(&data);
         assert_eq!(hashes.sha256(&file).unwrap(), sha256_bytes(b"one"));
         hashes.save();
@@ -613,6 +624,7 @@ mod tests {
         assert_eq!(hashes.sha256(&file).unwrap(), sha256_bytes(b"two"));
         let moved = data.join("moved.bin");
         std::fs::write(&moved, "one").unwrap();
+        age(&moved, 7200);
         std::fs::rename(&moved, &file).unwrap();
         assert_eq!(hashes.sha256(&file).unwrap(), sha256_bytes(b"one"));
 
