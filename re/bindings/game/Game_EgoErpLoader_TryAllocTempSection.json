@@ -45,6 +45,16 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/143a69e90.c;xref:0x143a65ede",
    "notes": "V6435 name/purpose and quoted strings/cxx confirmed in body"
+  },
+  {
+   "date": "2026-11-20",
+   "verifier": "size-verify",
+   "kind": "func",
+   "item": "0x143a69e90",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "pat:disasm-0x143a69e90;xref:0x143a69eec,0x143a69f28,0x143a69f4d,0x143a69f56,0x143a6a0da,0x143a6a1bb,0x143a6a328,0x1439182a0,0x143a65ede,0x143a683a6,0x143a60bef",
+   "notes": "V12105 Partial: tags 'tmp0'/'temp'/'tmp1' and heap [this+0] = loader temp heap (ctor 0x143a60bef) confirmed. Per fragment it first calls heap vt+0x40(size); status!=0 and !=0xc -> frees that resource's temp blocks taken so far (vt+0x38) and returns 0 (0x143a683a6 caller then returns 2). BUT status 0xc, or a NULL from the real alloc vt+0x18 (0x143a69f56 -> 0x143a6a31b), goes to 0x1439182a0 = write 0xdeaddead to [1] + noreturn fatal, i.e. hard crash, no free/retry."
   }
  ],
  "proofs": []
