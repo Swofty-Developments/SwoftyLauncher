@@ -6,7 +6,7 @@ use swofty_core::diagnostics::crash::{Event, LogScan, Symbols, fatal_name};
 use swofty_core::session::{LogMark, SessionRecord};
 use swofty_core::{GAME_EXE, STEAM_APP_ID};
 
-use crate::console::output::say;
+use crate::console::output::{blank, say};
 
 const KB: &str = include_str!("../../../../../re/db/function_names.tsv");
 
@@ -146,7 +146,7 @@ impl Follow {
 
     pub(crate) fn summary(&self) -> Result<()> {
         if let Some(failure) = self.scan.start_failure {
-            println!();
+            blank();
             say("info", &format!("logs in {}", self.dir.display()));
             bail!("{failure}");
         }
@@ -165,7 +165,7 @@ impl Follow {
             .end
             .map(|e| format!(" ({})", e.end.as_str()))
             .unwrap_or_default();
-        println!();
+        blank();
         say(
             "info",
             &format!(
