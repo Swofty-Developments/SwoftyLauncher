@@ -455,10 +455,13 @@ static_assert(offsetof(CarTurbo, max_boost) == 0x2d8);
 struct CarWheel {
     uint8_t _pad_0x0[0x20];
     uint8_t tyre_flags; // L2 experimental
-    uint8_t _pad_0x21[0x77];
+    uint8_t _pad_0x21[0x67];
+    float wear; // L2 experimental
+    uint8_t _pad_0x8c[0xc];
     float deflation; // L2 experimental
 };
 static_assert(offsetof(CarWheel, tyre_flags) == 0x20);
+static_assert(offsetof(CarWheel, wear) == 0x88);
 static_assert(offsetof(CarWheel, deflation) == 0x98);
 
 inline constexpr address<"Car_Assets_CreateSystemForPerformanceMode"> Car_Assets_CreateSystemForPerformanceMode{}; // L3 stable

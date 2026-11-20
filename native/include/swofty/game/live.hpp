@@ -488,5 +488,6 @@ inline constexpr data<"k_Live_SessionSystemKey", uint8_t> k_Live_SessionSystemKe
 inline constexpr data<"k_Live_SpectatorDirectorKey", uint8_t> k_Live_SpectatorDirectorKey{}; // L2 experimental
 inline constexpr data<"k_Live_TyreSystemKey", uint8_t> k_Live_TyreSystemKey{}; // L2 experimental
 inline constexpr data<"k_Live_VehicleHelperSystemKey", uint8_t> k_Live_VehicleHelperSystemKey{}; // L2 experimental
+inline constexpr data<"k_Live_VehicleLapTimesSystemKey", uint8_t> k_Live_VehicleLapTimesSystemKey{}; // L2 experimental
 
 }

@@ -1215,10 +1215,13 @@ const _: () = assert!(core::mem::offset_of!(CarTurbo, max_boost) == 0x2d8);
 pub struct CarWheel {
     _pad_0x0: [u8; 0x20],
     pub tyre_flags: u8,
-    _pad_0x21: [u8; 0x77],
+    _pad_0x21: [u8; 0x67],
+    pub wear: f32,
+    _pad_0x8c: [u8; 0xc],
     pub deflation: f32,
 }
 const _: () = assert!(core::mem::offset_of!(CarWheel, tyre_flags) == 0x20);
+const _: () = assert!(core::mem::offset_of!(CarWheel, wear) == 0x88);
 const _: () = assert!(core::mem::offset_of!(CarWheel, deflation) == 0x98);
 
 #[repr(C)]
@@ -2222,6 +2225,43 @@ pub struct ItemVtbl {
 }
 const _: () = assert!(core::mem::offset_of!(ItemVtbl, populate) == 0x20);
 const _: () = assert!(core::mem::offset_of!(ItemVtbl, get_action) == 0x28);
+
+#[repr(C)]
+pub struct LapTimeRecord {
+    pub lap: u8,
+    _pad_0x1: [u8; 0x7],
+    pub sector1_a: u32,
+    _pad_0xc: [u8; 0x4],
+    pub sector1_b: u32,
+    _pad_0x14: [u8; 0x4],
+    pub sector2_a: u32,
+    _pad_0x1c: [u8; 0x4],
+    pub sector2_b: u32,
+    _pad_0x24: [u8; 0x4],
+    pub sector3_a: u32,
+    _pad_0x2c: [u8; 0x4],
+    pub sector3_b: u32,
+    _pad_0x34: [u8; 0x64],
+    pub valid_a: u8,
+    _pad_0x99: [u8; 0x7],
+    pub valid_b: u64,
+    pub time_a: u32,
+    _pad_0xac: [u8; 0x4],
+    pub time_b: u32,
+    _pad_0xb4: [u8; 0x14],
+}
+const _: () = assert!(core::mem::offset_of!(LapTimeRecord, lap) == 0x0);
+const _: () = assert!(core::mem::offset_of!(LapTimeRecord, sector1_a) == 0x8);
+const _: () = assert!(core::mem::offset_of!(LapTimeRecord, sector1_b) == 0x10);
+const _: () = assert!(core::mem::offset_of!(LapTimeRecord, sector2_a) == 0x18);
+const _: () = assert!(core::mem::offset_of!(LapTimeRecord, sector2_b) == 0x20);
+const _: () = assert!(core::mem::offset_of!(LapTimeRecord, sector3_a) == 0x28);
+const _: () = assert!(core::mem::offset_of!(LapTimeRecord, sector3_b) == 0x30);
+const _: () = assert!(core::mem::offset_of!(LapTimeRecord, valid_a) == 0x98);
+const _: () = assert!(core::mem::offset_of!(LapTimeRecord, valid_b) == 0xa0);
+const _: () = assert!(core::mem::offset_of!(LapTimeRecord, time_a) == 0xa8);
+const _: () = assert!(core::mem::offset_of!(LapTimeRecord, time_b) == 0xb0);
+const _: () = assert!(core::mem::size_of::<LapTimeRecord>() == 0xc8);
 
 #[repr(C)]
 pub struct MarshalZone {
@@ -3334,6 +3374,20 @@ const _: () = assert!(core::mem::offset_of!(TyreSlot, physical) == 0x8);
 const _: () = assert!(core::mem::offset_of!(TyreSlot, visual) == 0x10);
 
 #[repr(C)]
+pub struct TyreStint {
+    _pad_0x0: [u8; 0xc],
+    pub compound: u32,
+    pub set_index: u8,
+    _pad_0x11: [u8; 0x63],
+    pub end_lap: u16,
+    _pad_0x76: [u8; 0x2],
+}
+const _: () = assert!(core::mem::offset_of!(TyreStint, compound) == 0xc);
+const _: () = assert!(core::mem::offset_of!(TyreStint, set_index) == 0x10);
+const _: () = assert!(core::mem::offset_of!(TyreStint, end_lap) == 0x74);
+const _: () = assert!(core::mem::size_of::<TyreStint>() == 0x78);
+
+#[repr(C)]
 pub struct TyreSystem {
     _pad_0x0: [u8; 0x110],
     pub vehicles_begin: *mut *mut VehicleTyreComponent,
@@ -3467,6 +3521,31 @@ const _: () = assert!(core::mem::offset_of!(VehicleHelperSystem, participants_be
 const _: () = assert!(core::mem::offset_of!(VehicleHelperSystem, participants_end) == 0x90);
 const _: () = assert!(core::mem::offset_of!(VehicleHelperSystem, drive_through) == 0x568);
 const _: () = assert!(core::mem::offset_of!(VehicleHelperSystem, stop_go) == 0x578);
+
+#[repr(C)]
+pub struct VehicleLapTimesData {
+    _pad_0x0: [u8; 0x8],
+    pub laps: [LapTimeRecord; 200],
+    pub current_lap: u8,
+}
+const _: () = assert!(core::mem::offset_of!(VehicleLapTimesData, laps) == 0x8);
+const _: () = assert!(core::mem::offset_of!(VehicleLapTimesData, current_lap) == 0x9c48);
+
+#[repr(C)]
+pub struct VehicleLapTimesEntry {
+    _pad_0x0: [u8; 0x38],
+    pub data: VehicleLapTimesData,
+}
+const _: () = assert!(core::mem::offset_of!(VehicleLapTimesEntry, data) == 0x38);
+
+#[repr(C)]
+pub struct VehicleLapTimesSystem {
+    _pad_0x0: [u8; 0x58],
+    pub cars_begin: *mut *mut VehicleLapTimesEntry,
+    pub cars_end: *mut *mut VehicleLapTimesEntry,
+}
+const _: () = assert!(core::mem::offset_of!(VehicleLapTimesSystem, cars_begin) == 0x58);
+const _: () = assert!(core::mem::offset_of!(VehicleLapTimesSystem, cars_end) == 0x60);
 
 #[repr(C)]
 pub struct VehicleProgressEntry {
@@ -21454,6 +21533,11 @@ pub mod bindings {
     };
     pub const k_Live_VehicleHelperSystemKey: Binding = Binding {
         id: "k_Live_VehicleHelperSystemKey",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const k_Live_VehicleLapTimesSystemKey: Binding = Binding {
+        id: "k_Live_VehicleLapTimesSystemKey",
         kind: "data",
         status: Status::Experimental,
     };

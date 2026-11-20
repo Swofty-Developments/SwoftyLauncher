@@ -97,6 +97,42 @@ static_assert(offsetof(InputRecord, clutch) == 0x10);
 static_assert(offsetof(InputRecord, steering) == 0x14);
 static_assert(offsetof(InputRecord, throttle) == 0x18);
 
+struct LapTimeRecord {
+    uint8_t lap; // L2 experimental
+    uint8_t _pad_0x1[0x7];
+    uint32_t sector1_a; // L2 experimental
+    uint8_t _pad_0xc[0x4];
+    uint32_t sector1_b; // L2 experimental
+    uint8_t _pad_0x14[0x4];
+    uint32_t sector2_a; // L2 experimental
+    uint8_t _pad_0x1c[0x4];
+    uint32_t sector2_b; // L2 experimental
+    uint8_t _pad_0x24[0x4];
+    uint32_t sector3_a; // L2 experimental
+    uint8_t _pad_0x2c[0x4];
+    uint32_t sector3_b; // L2 experimental
+    uint8_t _pad_0x34[0x64];
+    uint8_t valid_a; // L2 experimental
+    uint8_t _pad_0x99[0x7];
+    uint64_t valid_b; // L2 experimental
+    uint32_t time_a; // L2 experimental
+    uint8_t _pad_0xac[0x4];
+    uint32_t time_b; // L2 experimental
+    uint8_t _pad_0xb4[0x14];
+};
+static_assert(offsetof(LapTimeRecord, lap) == 0x0);
+static_assert(offsetof(LapTimeRecord, sector1_a) == 0x8);
+static_assert(offsetof(LapTimeRecord, sector1_b) == 0x10);
+static_assert(offsetof(LapTimeRecord, sector2_a) == 0x18);
+static_assert(offsetof(LapTimeRecord, sector2_b) == 0x20);
+static_assert(offsetof(LapTimeRecord, sector3_a) == 0x28);
+static_assert(offsetof(LapTimeRecord, sector3_b) == 0x30);
+static_assert(offsetof(LapTimeRecord, valid_a) == 0x98);
+static_assert(offsetof(LapTimeRecord, valid_b) == 0xa0);
+static_assert(offsetof(LapTimeRecord, time_a) == 0xa8);
+static_assert(offsetof(LapTimeRecord, time_b) == 0xb0);
+static_assert(sizeof(LapTimeRecord) == 0xc8);
+
 struct RedFlagSystem {
     uint8_t _pad_0x0[0x40];
     uint8_t state; // L2 experimental
@@ -267,6 +303,41 @@ static_assert(offsetof(TimeOfDaySystem, random_override) == 0xb42d);
 static_assert(offsetof(TimeOfDaySystem, busy) == 0xb432);
 static_assert(offsetof(TimeOfDaySystem, override_active) == 0xb436);
 static_assert(offsetof(TimeOfDaySystem, curve_version) == 0xb438);
+
+struct TyreStint {
+    uint8_t _pad_0x0[0xc];
+    uint32_t compound; // L2 experimental
+    uint8_t set_index; // L2 experimental
+    uint8_t _pad_0x11[0x63];
+    uint16_t end_lap; // L2 experimental
+    uint8_t _pad_0x76[0x2];
+};
+static_assert(offsetof(TyreStint, compound) == 0xc);
+static_assert(offsetof(TyreStint, set_index) == 0x10);
+static_assert(offsetof(TyreStint, end_lap) == 0x74);
+static_assert(sizeof(TyreStint) == 0x78);
+
+struct VehicleLapTimesData {
+    uint8_t _pad_0x0[0x8];
+    LapTimeRecord laps[200]; // L2 experimental
+    uint8_t current_lap; // L2 experimental
+};
+static_assert(offsetof(VehicleLapTimesData, laps) == 0x8);
+static_assert(offsetof(VehicleLapTimesData, current_lap) == 0x9c48);
+
+struct VehicleLapTimesEntry {
+    uint8_t _pad_0x0[0x38];
+    VehicleLapTimesData data; // L2 experimental
+};
+static_assert(offsetof(VehicleLapTimesEntry, data) == 0x38);
+
+struct VehicleLapTimesSystem {
+    uint8_t _pad_0x0[0x58];
+    VehicleLapTimesEntry **cars_begin; // L2 experimental
+    VehicleLapTimesEntry **cars_end; // L2 experimental
+};
+static_assert(offsetof(VehicleLapTimesSystem, cars_begin) == 0x58);
+static_assert(offsetof(VehicleLapTimesSystem, cars_end) == 0x60);
 
 struct WeatherAndTimeOfDayComponent {
     uint8_t _pad_0x0[0x2a0];
