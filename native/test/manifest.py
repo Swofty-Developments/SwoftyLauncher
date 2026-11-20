@@ -190,6 +190,7 @@ UNITS = [
     Unit('testagent', 'Test agent logic unit test', 'zig'),
     Unit('storage_logic', 'Storage library path unit test', 'zig'),
     Unit('crash_dir', 'Crash report folder unit test', 'zig'),
+    Unit('exit_logic', 'Crash report exit decision unit test', 'zig'),
     Unit('hw_settings', 'Hardware settings probe unit test', 'zig'),
     Unit('pacing_logic', 'Frame pacing logic unit test'),
     Unit('state_logic', 'State folder unit test', 'zig'),

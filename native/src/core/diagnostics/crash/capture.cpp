@@ -5,6 +5,7 @@
 
 #include "core/diagnostics/crash/crash_log.hpp"
 #include "core/diagnostics/crash/constants.hpp"
+#include "core/diagnostics/crash/exit_logic.hpp"
 #include "core/diagnostics/crash/process.hpp"
 #include "core/diagnostics/crash/report_writer.hpp"
 #include "core/diagnostics/crash/symbolizer.hpp"
@@ -251,6 +252,35 @@ LONG WINAPI unhandled(EXCEPTION_POINTERS *e)
 
 void window_stage(int) { InterlockedExchange(&process.window_reached, 1); }
 
+// Whether the launcher asked this game's session to stop: the data folder's sessions\latest.txt names the session
+// folder, and its stop_requested was written after this process started.
+bool launcher_stop()
+{
+    std::wstring data = data_folder();
+    if (data.empty())
+        return false;
+    HANDLE f = CreateFileW((data + L"\\sessions\\latest.txt").c_str(), GENERIC_READ,
+                           FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL,
+                           nullptr);
+    if (f == INVALID_HANDLE_VALUE)
+        return false;
+    char text[MAX_PATH * 4];
+    DWORD n = 0;
+    BOOL read = ReadFile(f, text, sizeof text, &n, nullptr);
+    CloseHandle(f);
+    std::string file = read ? exit_logic::stop_file(std::string(text, n)) : std::string();
+    wchar_t path[MAX_PATH * 2];
+    if (file.empty() || !MultiByteToWideChar(CP_UTF8, 0, file.c_str(), -1, path, MAX_PATH * 2))
+        return false;
+    WIN32_FILE_ATTRIBUTE_DATA fa{};
+    FILETIME created{}, exited{}, kernel{}, user{};
+    if (!GetFileAttributesExW(path, GetFileExInfoStandard, &fa) ||
+        !GetProcessTimes(GetCurrentProcess(), &created, &exited, &kernel, &user))
+        return false;
+    auto count = [](FILETIME t) { return uint64_t(t.dwHighDateTime) << 32 | t.dwLowDateTime; };
+    return exit_logic::stop_is_ours(count(fa.ftLastWriteTime), count(created));
+}
+
 void on_exit(const char *fn, UINT code)
 {
     perf::flush(fn);
@@ -267,13 +297,23 @@ void on_exit(const char *fn, UINT code)
         backtrace(ctx, true);
     leave();
     ULONGLONG now = GetTickCount64(), since = capture.last_fatal.ms ? now - capture.last_fatal.ms : ~0ull;
-    if (code || since < EXIT_AFTER_FATAL_MS) {
-        std::string why = fmt("%s(%u = 0x%x) on thread %lu", fn, code, code, GetCurrentThreadId());
-        if (!code)
-            why += fmt(", %.1f s after a fatal-class exception", double(since) / 1000);
-        if (!request_report(K_EXIT, why.c_str(), nullptr, &ctx))
-            already(fn);
+    exit_logic::Exit x{code, since < EXIT_AFTER_FATAL_MS, now, capture.close_ms, code && launcher_stop()};
+    switch (exit_logic::verdict(x)) {
+    case exit_logic::Verdict::Clean:
+        return;
+    case exit_logic::Verdict::Close:
+        cl("[crash] %s(%u) ends a close the game was asked for (%s); no crash report", fn, code,
+           x.stop_requested ? "the launcher asked the session to stop"
+                            : fmt("%s %.1f s earlier", capture.close_msg, double(now - x.close_ms) / 1000).c_str());
+        return;
+    case exit_logic::Verdict::Crash:
+        break;
     }
+    std::string why = fmt("%s(%u = 0x%x) on thread %lu", fn, code, code, GetCurrentThreadId());
+    if (!code)
+        why += fmt(", %.1f s after a fatal-class exception", double(since) / 1000);
+    if (!request_report(K_EXIT, why.c_str(), nullptr, &ctx))
+        already(fn);
 }
 
 void WINAPI hooked_exit(UINT code)

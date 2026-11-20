@@ -11,6 +11,10 @@
 
 #include <algorithm>
 
+namespace runtime {
+void crash_close_asked(const char *msg);
+}
+
 namespace hud::overlay {
 
 void Input::poll_pads(ULONGLONG now)
@@ -105,6 +109,15 @@ LRESULT CALLBACK Input::proc(HWND w, UINT msg, WPARAM wp, LPARAM lp)
         break;
     case WM_SIZE:
         in.client_size.store(uint32_t(lp), std::memory_order_relaxed);
+        record = false;
+        break;
+    case WM_CLOSE:
+        runtime::crash_close_asked("WM_CLOSE");
+        record = false;
+        break;
+    case WM_ENDSESSION:
+        if (wp)
+            runtime::crash_close_asked("WM_ENDSESSION");
         record = false;
         break;
     case WM_INPUT:

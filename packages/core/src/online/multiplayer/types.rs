@@ -2,7 +2,8 @@
 
 use std::collections::BTreeMap;
 
-use serde::{Deserialize, Serialize};
+use serde::de::DeserializeOwned;
+use serde::{Deserialize, Deserializer, Serialize};
 use serde_json::Value;
 
 use crate::row_ids::Overrides;
@@ -181,6 +182,67 @@ pub struct Problem {
     pub detail: Option<String>,
 }
 
+/// Where one step of a session stands.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum StepState {
+    Pending,
+    Active,
+    Done,
+    Failed,
+    Skipped,
+    /// A state a newer module names that this launcher doesn't know.
+    #[serde(other)]
+    Unknown,
+}
+
+/// What stopped a step: a stable code for logs, the sentence to show, and what can fix it.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct StepProblem {
+    pub code: String,
+    pub text: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub detail: Option<String>,
+    /// Whether trying again can help; without it the session's [`Problem`] says.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub retry: Option<bool>,
+    #[serde(default, deserialize_with = "lenient", skip_serializing_if = "Vec::is_empty")]
+    pub fix_plan: Vec<FixStep>,
+    /// See [`SessionStep::warns`].
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub warning: bool,
+}
+
+/// One step of a session, in the order the module lists them. The module names the step by `id` (`account`,
+/// `room`, `addons`, `build`, `game`, `network`, `lobby`, `race`); the launcher gives it its title.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SessionStep {
+    pub id: String,
+    pub state: StepState,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub detail: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub problem: Option<StepProblem>,
+    /// See [`SessionStep::warns`].
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub warning: bool,
+}
+
+impl SessionStep {
+    /// A done step whose problem is a warning: something differs that the session goes on with, such as an
+    /// addon difference the room launch can't fix while the game still starts. The module marks it
+    /// `warning: true` on the step or on its problem.
+    pub fn warns(&self) -> bool {
+        self.state == StepState::Done && self.problem.as_ref().is_some_and(|p| self.warning || p.warning)
+    }
+}
+
+/// A value a module may send in a shape this launcher doesn't read, read as its default instead of failing the
+/// document around it.
+fn lenient<'de, D: Deserializer<'de>, T: DeserializeOwned + Default>(d: D) -> Result<T, D::Error> {
+    Ok(serde_json::from_value(Value::deserialize(d)?).unwrap_or_default())
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "phase", content = "reason", rename_all = "snake_case")]
 pub enum Phase {
@@ -302,6 +364,9 @@ pub struct SessionState {
     pub progress: Option<Progress>,
     #[serde(skip)]
     pub problem: Option<Problem>,
+    /// The steps the module reports beside this state, in order; empty from a module older than them.
+    #[serde(skip)]
+    pub steps: Vec<SessionStep>,
 }
 
 impl SessionState {
@@ -321,6 +386,7 @@ impl SessionState {
             last_error: None,
             launch: None,
             content: RoomContent::default(),
+            steps: Vec::new(),
             progress: None,
             problem: None,
         }

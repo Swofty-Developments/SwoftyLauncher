@@ -5,7 +5,9 @@ use gpui_kit::component::spinner::Spinner;
 use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use swofty_core::online::multiplayer::types::{MemberState, Phase, RoomContent, RoomSummary, SessionState};
+use swofty_core::online::multiplayer::types::{
+    MemberState, Phase, Problem, RoomContent, RoomSummary, SessionState, StepState,
+};
 use swofty_i18n::{fill, tr, trf, trn};
 
 use super::model::*;
@@ -117,6 +119,7 @@ impl Shell {
                     .into_any_element()
             }))
             .collect();
+        let ad = self.page_ad(false, p);
         v_flex()
             .size_full()
             .child(self.header(room.name.clone(), subtitle, actions, p))
@@ -143,7 +146,8 @@ impl Shell {
                                 .overflow_hidden()
                                 .children(rows),
                         )
-                    }),
+                    })
+                    .children(ad),
             )
             .into_any_element()
     }
@@ -155,19 +159,23 @@ impl Shell {
         p: Palette,
         cx: &mut Context<Self>,
     ) -> Div {
-        let m = &self.rooms;
-        let (icon, color) = match st.tone {
-            Tone::Working => (IconName::LoaderCircle, p.accent),
-            Tone::Blocked => (IconName::CircleAlert, p.warning),
-            Tone::Good => (IconName::CircleCheck, p.success),
-            Tone::Over => (IconName::Info, p.text_placeholder),
-        };
+        if let Some(card) = StepCard::of(state, self.rooms.leaving) {
+            return self
+                .room_card(p)
+                .gap(px(14.))
+                .when(card.banner, |d| {
+                    d.child(self.status_head(st, state, false, p, cx))
+                })
+                .when(!card.rows.is_empty(), |d| {
+                    d.child(self.step_list(&card.rows, state, p, cx))
+                });
+        }
         let over = state.phase.is_over();
         let current = step_number(st.progress.step);
         let steps = h_flex()
             .gap(px(14.))
             .flex_wrap()
-            .children(STEPS.iter().enumerate().map(|(i, (_, name))| {
+            .children(STEPS.iter().enumerate().map(|(i, step)| {
                 div()
                     .text_size(px(12.))
                     .text_color(if i == current && !over {
@@ -178,7 +186,7 @@ impl Shell {
                         p.text_placeholder
                     })
                     .when(i == current && !over, |d| d.font_weight(FontWeight::SEMIBOLD))
-                    .child(*name)
+                    .child(step_name(*step))
             }));
         let fraction = f32::from(st.progress.percent) / 100.0;
         let bar = div()
@@ -197,33 +205,102 @@ impl Shell {
                         p.accent
                     }),
             );
+        self.room_card(p)
+            .gap(px(14.))
+            .child(self.status_head(st, state, true, p, cx))
+            .when(!over, |d| d.child(bar).child(steps))
+    }
+
+    /// The card's headline row: the session's state, its hint or problem, and the buttons for them. `race` puts
+    /// the host's race button here; the step list puts it on the race step instead.
+    fn status_head(
+        &self,
+        st: &Status,
+        state: &SessionState,
+        race: bool,
+        p: Palette,
+        cx: &mut Context<Self>,
+    ) -> Div {
+        let m = &self.rooms;
+        let (icon, color) = match st.tone {
+            Tone::Working => (IconName::LoaderCircle, p.accent),
+            Tone::Blocked => (IconName::CircleAlert, p.warning),
+            Tone::Good => (IconName::CircleCheck, p.success),
+            Tone::Over => (IconName::Info, p.text_placeholder),
+        };
+        let over = state.phase.is_over();
         let headline = match &st.problem {
             Some(problem) => problem.text.clone(),
             None => st.progress.label.clone(),
         };
-        let action = st
-            .problem
-            .as_ref()
-            .filter(|_| !m.leaving && !over)
-            .map(|problem| {
-                if problem.retry {
-                    Button::new("mp-retry")
-                        .primary()
-                        .tap_sm()
-                        .icon(IconName::RefreshCw)
-                        .label("Retry")
-                        .on_click(cx.listener(|this, _, _, cx| this.room_retry(cx)))
-                } else {
-                    Button::new("mp-problem-leave")
-                        .primary()
-                        .tap_sm()
-                        .icon(IconName::LogOut)
-                        .label("Leave")
-                        .on_click(cx.listener(|this, _, _, cx| this.room_leave(cx)))
-                }
-            });
+        let fixes = self.problem_buttons(st.problem.as_ref(), state, cx);
+        let reopened = fixes.reopen.is_some();
+        h_flex()
+            .gap(px(12.))
+            .items_center()
+            .map(|d| match icon {
+                IconName::LoaderCircle => d.child(Spinner::new().icon(icon).with_size(px(22.)).color(color)),
+                _ => d.child(Icon::new(icon).size(px(22.)).text_color(color)),
+            })
+            .child(
+                v_flex()
+                    .flex_1()
+                    .min_w_0()
+                    .gap(px(3.))
+                    .child(div().text_size(px(17.)).font_weight(FontWeight::SEMIBOLD).child(
+                        if m.leaving && !over {
+                            tr("Leaving the room…").to_owned()
+                        } else {
+                            headline
+                        },
+                    ))
+                    .children(
+                        st.hint
+                            .filter(|_| !m.leaving)
+                            .map(|h| div().text_size(px(13.)).text_color(p.text_muted).child(h)),
+                    )
+                    .children(
+                        st.problem
+                            .as_ref()
+                            .and_then(|problem| problem.detail.clone())
+                            .filter(|_| !m.leaving)
+                            .map(|d| div().text_size(px(13.)).text_color(p.text_muted).child(d)),
+                    )
+                    .children(reopened.then(|| reopen_note(p))),
+            )
+            .children(race.then(|| self.race_button(state, cx)).flatten())
+            .children(fixes.reopen)
+            .children(fixes.retry_or_leave)
+    }
+
+    /// What a problem offers: restarting F1 25 when the session's game is open, and trying again or leaving.
+    fn problem_buttons(
+        &self,
+        problem: Option<&Problem>,
+        state: &SessionState,
+        cx: &mut Context<Self>,
+    ) -> ProblemButtons {
+        let m = &self.rooms;
+        let over = state.phase.is_over();
+        let retry_or_leave = problem.filter(|_| !m.leaving && !over).map(|problem| {
+            if problem.retry {
+                Button::new("mp-retry")
+                    .primary()
+                    .tap_sm()
+                    .icon(IconName::RefreshCw)
+                    .label(tr("Retry"))
+                    .on_click(cx.listener(|this, _, _, cx| this.room_retry(cx)))
+            } else {
+                Button::new("mp-problem-leave")
+                    .primary()
+                    .tap_sm()
+                    .icon(IconName::LogOut)
+                    .label(tr("Leave"))
+                    .on_click(cx.listener(|this, _, _, cx| this.room_leave(cx)))
+            }
+        });
         let running = !self.game.processes.is_empty();
-        let reopen = (st.problem.is_some()
+        let reopen = (problem.is_some()
             && state.launch.is_some()
             && running
             && m.game.closing.is_none()
@@ -239,79 +316,129 @@ impl Shell {
                         cx.notify();
                     }))
             });
-        let race =
-            (state.host && !over && !m.leaving && matches!(state.phase, Phase::InLobby | Phase::Racing))
-                .then(|| {
-                    let started = state.room.as_ref().is_some_and(|r| r.started);
-                    Button::new("mp-race")
-                        .outline()
-                        .tap_sm()
-                        .icon(IconName::Flag)
-                        .label(if started {
-                            tr("Race over")
-                        } else {
-                            tr("Race started")
-                        })
-                        .tooltip(if started {
-                            tr("Show the room in the list again")
-                        } else {
-                            tr("Hide the room from the list while you race")
-                        })
-                        .on_click(cx.listener(move |this, _, _, cx| {
-                            if let Some(s) = &this.rooms.session {
-                                s.mark_race(!started);
-                            }
-                            cx.notify();
-                        }))
-                });
-        self.room_card(p)
-            .gap(px(14.))
+        ProblemButtons {
+            reopen,
+            retry_or_leave,
+        }
+    }
+
+    /// The host's button that hides the room from the list while they race, and shows it again after.
+    fn race_button(&self, state: &SessionState, cx: &mut Context<Self>) -> Option<Button> {
+        let over = state.phase.is_over();
+        let shown = state.host
+            && !over
+            && !self.rooms.leaving
+            && matches!(state.phase, Phase::InLobby | Phase::Racing);
+        shown.then(|| {
+            let started = state.room.as_ref().is_some_and(|r| r.started);
+            Button::new("mp-race")
+                .outline()
+                .tap_sm()
+                .icon(IconName::Flag)
+                .label(if started {
+                    tr("Race over")
+                } else {
+                    tr("Race started")
+                })
+                .tooltip(if started {
+                    tr("Show the room in the list again")
+                } else {
+                    tr("Hide the room from the list while you race")
+                })
+                .on_click(cx.listener(move |this, _, _, cx| {
+                    if let Some(s) = &this.rooms.session {
+                        s.mark_race(!started);
+                    }
+                    cx.notify();
+                }))
+        })
+    }
+
+    fn step_list(&self, rows: &[StepRow], state: &SessionState, p: Palette, cx: &mut Context<Self>) -> Div {
+        v_flex()
+            .gap(px(12.))
+            .children(rows.iter().map(|row| self.step_row(row, state, p, cx)))
+    }
+
+    fn step_row(
+        &self,
+        row: &StepRow,
+        state: &SessionState,
+        p: Palette,
+        cx: &mut Context<Self>,
+    ) -> AnyElement {
+        let (icon, color) = match row.state {
+            _ if row.warning => (IconName::CircleAlert, p.warning),
+            StepState::Done => (IconName::CircleCheck, p.success),
+            StepState::Active => (IconName::LoaderCircle, p.accent),
+            StepState::Failed => (IconName::CircleX, p.error),
+            StepState::Skipped => (IconName::CircleMinus, p.text_placeholder),
+            StepState::Pending | StepState::Unknown => (IconName::Circle, p.text_placeholder),
+        };
+        let title_color = match row.state {
+            _ if row.dimmed => p.text_placeholder,
+            _ if row.warning => p.warning,
+            StepState::Failed => p.error,
+            StepState::Done | StepState::Active => p.text,
+            StepState::Skipped | StepState::Pending | StepState::Unknown => p.text_muted,
+        };
+        let line = |text: String| div().text_size(px(13.)).text_color(p.text_muted).child(text);
+        let failure = row.problem.as_ref().filter(|_| row.state == StepState::Failed);
+        let fixes = self.problem_buttons(failure, state, cx);
+        let reopened = fixes.reopen.is_some();
+        let buttons: Vec<Button> = fixes.reopen.into_iter().chain(fixes.retry_or_leave).collect();
+        let race = (row.id == "race").then(|| self.race_button(state, cx)).flatten();
+        h_flex()
+            .gap(px(12.))
+            .items_start()
+            .child(div().flex_shrink_0().pt(px(1.)).map(|d| match row.state {
+                StepState::Active => d.child(Spinner::new().icon(icon).with_size(px(18.)).color(color)),
+                _ => d.child(Icon::new(icon).size(px(18.)).text_color(color)),
+            }))
             .child(
-                h_flex()
-                    .gap(px(12.))
-                    .items_center()
-                    .map(|d| match icon {
-                        IconName::LoaderCircle => {
-                            d.child(Spinner::new().icon(icon).with_size(px(22.)).color(color))
-                        }
-                        _ => d.child(Icon::new(icon).size(px(22.)).text_color(color)),
-                    })
+                v_flex()
+                    .flex_1()
+                    .min_w_0()
+                    .gap(px(3.))
                     .child(
-                        v_flex()
-                            .flex_1()
-                            .min_w_0()
-                            .gap(px(3.))
-                            .child(div().text_size(px(17.)).font_weight(FontWeight::SEMIBOLD).child(
-                                if m.leaving && !over {
-                                    "Leaving the room\u{2026}".to_owned()
-                                } else {
-                                    headline
-                                },
-                            ))
-                            .children(
-                                st.hint
-                                    .filter(|_| !m.leaving)
-                                    .map(|h| div().text_size(px(13.)).text_color(p.text_muted).child(h)),
+                        div()
+                            .text_size(px(14.))
+                            .text_color(title_color)
+                            .when(
+                                row.warning || matches!(row.state, StepState::Active | StepState::Failed),
+                                |d| d.font_weight(FontWeight::SEMIBOLD),
                             )
-                            .children(
-                                st.problem
-                                    .as_ref()
-                                    .and_then(|problem| problem.detail.clone())
-                                    .filter(|_| !m.leaving)
-                                    .map(|d| div().text_size(px(13.)).text_color(p.text_muted).child(d)),
-                            )
-                            .children(reopen.is_some().then(|| {
-                                div()
-                                    .text_size(px(13.))
-                                    .text_color(p.text_muted)
-                                    .child(tr("F1 25 is open. It restarts for this session."))
-                            })),
+                            .child(row.title.clone()),
                     )
-                    .children(race)
-                    .children(reopen)
-                    .children(action),
+                    .children(
+                        row.problem
+                            .as_ref()
+                            .map(|problem| div().text_size(px(13.)).child(problem.text.clone())),
+                    )
+                    .children(
+                        row.problem
+                            .as_ref()
+                            .and_then(|problem| problem.detail.clone())
+                            .map(line),
+                    )
+                    .children(row.detail.clone().map(line))
+                    .children(row.fixes.iter().map(|fix| {
+                        h_flex()
+                            .gap(px(6.))
+                            .items_start()
+                            .text_size(px(13.))
+                            .text_color(p.text_muted)
+                            .child(div().flex_shrink_0().child("\u{2022}"))
+                            .child(div().flex_1().min_w_0().child(fix.clone()))
+                    }))
+                    .children(row.hint.map(|h| line(h.to_owned())))
+                    .children(reopened.then(|| reopen_note(p)))
+                    .when(!buttons.is_empty(), |d| {
+                        d.child(h_flex().pt(px(6.)).gap(px(8.)).children(buttons))
+                    }),
             )
-            .when(!over, |d| d.child(bar).child(steps))
+            .children(race)
+            .into_any_element()
     }
 
     pub(super) fn room(&mut self, state: &SessionState, p: Palette, cx: &mut Context<Self>) -> AnyElement {
@@ -362,16 +489,26 @@ impl Shell {
                         .on_click(cx.listener(move |this, _, _, cx| this.room_copy_code(copy.clone(), cx))),
                 )
             })
+            .when_some(m.steward_url(), |d, url| {
+                d.child(
+                    Button::new("mp-steward")
+                        .outline()
+                        .icon(IconName::ExternalLink)
+                        .label(tr("Open stewarding"))
+                        .tooltip(tr("Open League Stewarding in your browser"))
+                        .on_click(move |_, _, cx| cx.open_url(&url)),
+                )
+            })
             .child(
                 Button::new("mp-leave")
                     .outline()
                     .icon(IconName::LogOut)
                     .label(if m.leaving {
-                        "Leaving\u{2026}"
+                        tr("Leaving…")
                     } else if over {
-                        "Back to rooms"
+                        tr("Back to rooms")
                     } else {
-                        "Leave"
+                        tr("Leave")
                     })
                     .disabled(m.leaving)
                     .on_click(cx.listener(|this, _, _, cx| this.room_leave(cx))),
@@ -421,6 +558,7 @@ impl Shell {
                         .child(div().text_size(px(13.)).text_color(p.text_muted).child(text)),
                 )
         });
+        let ad = self.page_ad(false, p);
         v_flex()
             .size_full()
             .child(self.header(title, subtitle, actions, p))
@@ -457,7 +595,8 @@ impl Shell {
                                     .children(players)
                                     .into_any_element()
                             }),
-                    ),
+                    )
+                    .children(ad),
             )
             .into_any_element()
     }
@@ -503,4 +642,16 @@ impl Shell {
             )
             .into_any_element()
     }
+}
+
+struct ProblemButtons {
+    reopen: Option<Button>,
+    retry_or_leave: Option<Button>,
+}
+
+fn reopen_note(p: Palette) -> Div {
+    div()
+        .text_size(px(13.))
+        .text_color(p.text_muted)
+        .child(tr("F1 25 is open. It restarts for this session."))
 }

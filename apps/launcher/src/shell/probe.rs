@@ -1,7 +1,6 @@
-use crate::dialogs::crash::{CrashNeeds, Crashes};
+use crate::dialogs::crash::{CrashChange, CrashNeeds, Crashes};
 use crate::dialogs::game_edited::Edited;
 use crate::services::game::{self, Copies, Install, Owner, Probe};
-use crate::shell::host::reports_nothing;
 use crate::shell::notices::{Notification, Notify};
 use gpui_kit::*;
 use std::path::PathBuf;
@@ -256,14 +255,26 @@ impl Shell {
 
 impl Host<Crashes> for Shell {
     fn split(&mut self) -> (&mut Crashes, CrashNeeds<'_>) {
+        let room = self.rooms.crash_room();
         (
             &mut self.crashes,
             CrashNeeds {
                 store: &self.store,
-                game_dir: self.game.install.as_ref().map(|i| i.dir.as_path()),
+                install: self.game.install.as_ref(),
+                running: !self.game.processes.is_empty(),
+                room,
+                allowed: self.account.allowed(),
+                send_room_crash_logs: self.prefs.send_room_crash_logs,
             },
         )
     }
 
-    reports_nothing!();
+    fn changed(&mut self, change: CrashChange, _: &mut Context<Self>) {
+        match change {
+            CrashChange::GameEnded(end) => {
+                self.rooms
+                    .game_exited(end.exit_code, end.stopped_by_launcher, end.crashed)
+            }
+        }
+    }
 }

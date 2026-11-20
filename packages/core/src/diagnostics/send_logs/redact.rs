@@ -27,6 +27,52 @@ pub fn secret_name(name: &str) -> bool {
         || n.contains("oauth")
 }
 
+/// `data` with the `t=` token of every page this machine serves (`http://127.0.0.1` or `http://localhost`)
+/// replaced, such as League Stewarding's, whose token opens the page. `None` when there is no such token.
+pub fn redact_page_tokens(data: &[u8]) -> Option<Vec<u8>> {
+    const HOSTS: [&[u8]; 2] = [b"http://127.0.0.1", b"http://localhost"];
+    let mut out = Vec::new();
+    let mut copied = 0;
+    let mut i = 0;
+    while i < data.len() {
+        let rest = &data[i..];
+        if !HOSTS
+            .iter()
+            .any(|h| rest.len() >= h.len() && rest[..h.len()].eq_ignore_ascii_case(h))
+        {
+            i += 1;
+            continue;
+        }
+        let end = rest
+            .iter()
+            .position(|&b| b.is_ascii_whitespace() || matches!(b, b'"' | b'\'' | b'<' | b'>' | b'`'))
+            .map_or(data.len(), |n| i + n);
+        let mut j = i;
+        while j + 3 <= end {
+            if !(matches!(data[j], b'?' | b'&') && data[j + 1] == b't' && data[j + 2] == b'=') {
+                j += 1;
+                continue;
+            }
+            let value = j + 3;
+            let value_end = data[value..end]
+                .iter()
+                .position(|&b| matches!(b, b'&' | b'#'))
+                .map_or(end, |n| value + n);
+            if value_end > value {
+                out.extend_from_slice(&data[copied..value]);
+                out.extend_from_slice(REDACTED.as_bytes());
+                copied = value_end;
+            }
+            j = value_end;
+        }
+        i = end.max(i + 1);
+    }
+    (copied > 0).then(|| {
+        out.extend_from_slice(&data[copied..]);
+        out
+    })
+}
+
 pub(super) fn secret_value(value: &str) -> bool {
     let v = value.to_ascii_lowercase();
     v.contains("/api/webhooks/") || v.contains("discord.com/api") && v.contains("token")

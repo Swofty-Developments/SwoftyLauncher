@@ -147,6 +147,9 @@ pub struct Config {
     pub home_video: bool,
     #[serde(default = "on", skip_serializing_if = "is_on")]
     pub use_profiles: bool,
+    /// Send the logs by themselves when F1 25 crashes in a room, without asking; on unless turned off.
+    #[serde(default = "on", skip_serializing_if = "is_on")]
+    pub send_room_crash_logs: bool,
     /// Offer Addon Browser updates for installed addons that are off as well; off unless turned on.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub update_off_addons: bool,

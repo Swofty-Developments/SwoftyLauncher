@@ -14,6 +14,7 @@ use gpui_kit::*;
 use swofty_core::diagnostics::send_logs::{self, Bundle, GameInfo, MESSAGE_MAX, Report, Stage};
 use swofty_core::store::Store;
 
+use crate::services::game::Install;
 use crate::services::reveal;
 use crate::shell::Shell;
 use crate::ui::Callout;
@@ -47,6 +48,9 @@ const WHAT_IS_SENT: &str = "Your launcher and game logs. They can include folder
                             user name, your hardware, and your installed mods and profiles. Passwords and \
                             tokens in the launcher's settings are left out.";
 
+/// The dialog sent the logs: the parts and the reference the log server gave.
+pub(crate) struct LogsSent(pub(crate) send_logs::Sent);
+
 #[derive(Clone, PartialEq)]
 enum Phase {
     Editing,
@@ -70,13 +74,14 @@ pub struct SendLogs {
     phase: Phase,
     tried: bool,
     session: bool,
+    allowed: bool,
     stage: Arc<Mutex<Stage>>,
     _work: Option<Task<()>>,
     _poll: Option<Task<()>>,
 }
 
 impl SendLogs {
-    fn new(store: Store, game: GameInfo, window: &mut Window, cx: &mut Context<Self>) -> Self {
+    fn new(store: Store, game: GameInfo, allowed: bool, window: &mut Window, cx: &mut Context<Self>) -> Self {
         let remembered = store.config().discord_username.unwrap_or_default();
         let name = cx.new(|cx| {
             InputState::new(window, cx)
@@ -109,6 +114,7 @@ impl SendLogs {
             phase: Phase::Editing,
             tried: false,
             session,
+            allowed,
             stage: Arc::new(Mutex::new(Stage::Collecting)),
             _work: None,
             _poll: None,
@@ -148,7 +154,8 @@ impl SendLogs {
             name: name.clone(),
             message,
             game: self.game.clone(),
-            room: swofty_core::online::multiplayer::client::snapshot(),
+            room: room_state(self.allowed, swofty_core::online::multiplayer::client::snapshot),
+            automatic: None,
         };
         let sending = send_logs::available();
         self._work = Some(cx.spawn_in(window, async move |this, cx| {
@@ -193,14 +200,18 @@ impl SendLogs {
         &mut self,
         name: String,
         zip: Result<PathBuf, String>,
-        sent: Option<Result<usize, String>>,
+        sent: Option<Result<send_logs::Sent, String>>,
         cx: &mut Context<Self>,
     ) {
         if let Err(e) = &zip {
             eprintln!("swofty-launcher: could not keep the logs zip: {e}");
         }
         self.phase = match (sent, zip) {
-            (Some(Ok(parts)), zip) => Phase::Sent { parts, zip: zip.ok() },
+            (Some(Ok(sent)), zip) => {
+                let parts = sent.parts;
+                cx.emit(LogsSent(sent));
+                Phase::Sent { parts, zip: zip.ok() }
+            }
             (Some(Err(e)), zip) => Phase::Failed {
                 text: trf!("Not sent. {e}", e = e),
                 zip: zip.ok(),
@@ -431,15 +442,37 @@ impl Render for SendLogs {
     }
 }
 
+impl EventEmitter<LogsSent> for SendLogs {}
+
+/// The room's state for the bundle, which names the room: only for a player with multiplayer access.
+fn room_state(
+    allowed: bool,
+    snapshot: impl FnOnce() -> Option<serde_json::Value>,
+) -> Option<serde_json::Value> {
+    allowed.then(snapshot).flatten()
+}
+
+/// The game a bundle describes: the copy Play uses.
+pub(crate) fn game_info(install: Option<&Install>) -> GameInfo {
+    GameInfo {
+        dir: install.map(|i| i.dir.clone()),
+        build_id: install.and_then(|i| i.build_id),
+        version: install.and_then(|i| i.exe_version.clone()),
+    }
+}
+
 impl Shell {
     pub(crate) fn send_logs(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let game = GameInfo {
-            dir: self.game.install.as_ref().map(|i| i.dir.clone()),
-            build_id: self.game.install.as_ref().and_then(|i| i.build_id),
-            version: self.game.install.as_ref().and_then(|i| i.exe_version.clone()),
-        };
+        self.open_send_logs(window, cx);
+    }
+
+    /// Opens Send Logs and gives back its form, which says when it sent the logs.
+    pub(crate) fn open_send_logs(&mut self, window: &mut Window, cx: &mut Context<Self>) -> Entity<SendLogs> {
+        let game = game_info(self.game.install.as_ref());
         let store = self.store.clone();
-        let form = cx.new(|cx| SendLogs::new(store, game, window, cx));
+        let allowed = self.account.allowed();
+        let form = cx.new(|cx| SendLogs::new(store, game, allowed, window, cx));
+        let opened = form.clone();
         let focus = std::cell::Cell::new(true);
         window.open_alert_dialog(cx, move |alert, window, cx| {
             if focus.replace(false) {
@@ -470,5 +503,22 @@ impl Shell {
                     false
                 })
         });
+        opened
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::room_state;
+
+    #[test]
+    fn the_bundle_holds_the_room_only_for_a_player_with_multiplayer_access() {
+        let room = || Some(serde_json::json!({"code": "K7Q2PX"}));
+        assert_eq!(room_state(true, room), room());
+        assert_eq!(room_state(true, || None), None);
+        assert_eq!(
+            room_state(false, || panic!("the room is not asked for without access")),
+            None
+        );
     }
 }

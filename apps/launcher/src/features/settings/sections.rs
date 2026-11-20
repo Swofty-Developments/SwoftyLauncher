@@ -338,6 +338,25 @@ impl Shell {
             .on_click(
                 cx.listener(|this, on: &bool, window, cx| this.set_clear_old_session_logs(*on, window, cx)),
             );
+        let mut logs = SettingsSection::new(tr("Logs")).row(
+            SettingRow::new(tr("Clear old logs"))
+                .description(trf!(
+                    "Off by default. When on, the launcher clears old logs as it starts, as Clear old does: keeps the newest {sessions} sessions and the last {days} days",
+                    sessions = KEEP_SESSIONS,
+                    days = keep_days()
+                ))
+                .control(auto_clear),
+        );
+        if let Some(on) = self.prefs.room_crash_logs_shown(self.account.allowed()) {
+            let room_crash_logs = Switch::new("settings-room-crash-logs").checked(on).on_click(
+                cx.listener(|this, on: &bool, window, cx| this.set_send_room_crash_logs(*on, window, cx)),
+            );
+            logs = logs.row(
+                SettingRow::new(tr("Send logs when F1 25 crashes in a room"))
+                    .description(tr("On by default. When F1 25 crashes while you're in a room, the launcher sends your logs to the developers straight away, as Send Logs to Developers does, and the crash screen says they were sent. When off, the crash screen offers Send Logs to Developers instead"))
+                    .control(room_crash_logs),
+            );
+        }
         v_flex()
             .gap(px(24.))
             .child(
@@ -347,17 +366,7 @@ impl Shell {
                         .control(developer),
                 ),
             )
-            .child(
-                SettingsSection::new(tr("Logs")).row(
-                    SettingRow::new(tr("Clear old logs"))
-                        .description(trf!(
-                            "Off by default. When on, the launcher clears old logs as it starts, as Clear old does: keeps the newest {sessions} sessions and the last {days} days",
-                            sessions = KEEP_SESSIONS,
-                            days = keep_days()
-                        ))
-                        .control(auto_clear),
-                ),
-            )
+            .child(logs)
             .into_any_element()
     }
 

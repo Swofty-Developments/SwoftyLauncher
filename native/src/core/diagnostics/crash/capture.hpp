@@ -28,6 +28,9 @@ struct FaultCapture {
     DWORD blame_tid;
     ULONGLONG blame_ms;
     volatile DWORD stall_tid;
+    /* When the game's window was last asked to close, and by which message: an exit soon after is that close. */
+    volatile ULONGLONG close_ms;
+    const char *volatile close_msg;
 };
 
 extern FaultCapture capture;
@@ -47,6 +50,7 @@ void already(const char *what);
 LONG CALLBACK veh(EXCEPTION_POINTERS *e);
 LONG WINAPI unhandled(EXCEPTION_POINTERS *e);
 void window_stage(int);
+bool launcher_stop();
 void on_exit(const char *fn, UINT code);
 void WINAPI hooked_exit(UINT code);
 BOOL WINAPI hooked_terminate(HANDLE process, UINT code);

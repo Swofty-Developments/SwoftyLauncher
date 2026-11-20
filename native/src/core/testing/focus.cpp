@@ -9,11 +9,23 @@
 // WM_ACTIVATE(WA_INACTIVE) and WM_ACTIVATEAPP(FALSE); a race then stops at the pause menu. The core
 // subclasses that window and drops those three messages, and hands the game one WM_SETFOCUS when the
 // window starts without focus.
+//
+// SWOFTY_TEST_OVERLAY_INPUT=1 subclasses the same window with the overlay's input procedure, as the first frame on
+// a swapchain does, for the Wine test's fake game, which presents none. Its close modes need the overlay to see
+// WM_CLOSE.
 
 namespace {
 
 std::atomic<WNDPROC> original;
 std::atomic<unsigned> dropped[3];
+bool keep_focus, overlay_input;
+
+bool env_on(const char *name)
+{
+    char v[8] = {};
+    DWORD n = GetEnvironmentVariableA(name, v, sizeof v);
+    return n && n < sizeof v && v[0] == '1';
+}
 
 LRESULT CALLBACK keep_focus_proc(HWND wnd, UINT msg, WPARAM wp, LPARAM lp)
 {
@@ -61,9 +73,19 @@ DWORD WINAPI watch(void *)
             Sleep(100);
     }
     if (!f.found) {
-        swofty::log("[focus] SWOFTY_KEEP_FOCUS: no window with the game's window procedure appeared in 120 s");
+        if (keep_focus)
+            swofty::log("[focus] SWOFTY_KEEP_FOCUS: no window with the game's window procedure appeared in 120 s");
+        if (overlay_input)
+            swofty::log("[overlay] SWOFTY_TEST_OVERLAY_INPUT: no window with the game's window procedure appeared in 120 s");
         return 0;
     }
+    if (overlay_input) {
+        swofty::log("[overlay] SWOFTY_TEST_OVERLAY_INPUT: the overlay's input procedure takes window %p with no swapchain",
+                    static_cast<void *>(f.found));
+        runtime::hud_hook_window(f.found);
+    }
+    if (!keep_focus)
+        return 0;
     WNDPROC game = reinterpret_cast<WNDPROC>(GetWindowLongPtrW(f.found, GWLP_WNDPROC));
     original.store(game);
     SetWindowLongPtrW(f.found, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&keep_focus_proc));
@@ -83,9 +105,9 @@ namespace runtime {
 
 void focus_setup()
 {
-    char v[8] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_KEEP_FOCUS", v, sizeof v);
-    if (!n || n >= sizeof v || v[0] != '1')
+    keep_focus = env_on("SWOFTY_KEEP_FOCUS");
+    overlay_input = env_on("SWOFTY_TEST_OVERLAY_INPUT");
+    if (!keep_focus && !overlay_input)
         return;
     HANDLE t = CreateThread(nullptr, 0, watch, nullptr, 0, nullptr);
     if (t)

@@ -7,6 +7,7 @@ use crate::store::Store;
 use crate::{Error, GAME_EXE, Result};
 
 mod addons;
+pub mod automatic;
 mod collect;
 mod crashes;
 mod files;
@@ -16,12 +17,13 @@ mod summary;
 mod system;
 pub mod upload;
 
+pub use automatic::{Automatic, Outcome, RoomRun};
 pub use collect::newest_sessions;
 pub use crashes::{Crash, newest_crash, recent_crashes, summarise_crash};
 use files::{file_name, modified};
-pub use redact::{redact_env, redact_json, secret_name};
+pub use redact::{redact_env, redact_json, redact_page_tokens, secret_name};
 pub use system::os_description;
-pub use upload::{LogServer, SendError, Stage};
+pub use upload::{KIND_HEADER, LogServer, SendError, Sent, Stage};
 
 pub const UNAVAILABLE: &str = "Sending logs isn't available in this build";
 pub const NAME_MIN: usize = 2;
@@ -70,7 +72,7 @@ pub fn available() -> bool {
     destination().is_some()
 }
 
-pub fn send(bundle: &Bundle, progress: &dyn Fn(Stage)) -> std::result::Result<usize, SendError> {
+pub fn send(bundle: &Bundle, progress: &dyn Fn(Stage)) -> std::result::Result<Sent, SendError> {
     destination()
         .ok_or(SendError::Unavailable)?
         .send(bundle, progress)
@@ -176,6 +178,21 @@ pub struct Report {
     pub game: GameInfo,
     /// The running room's state, already redacted, sent as `multiplayer/session.json`.
     pub room: Option<Value>,
+    /// Set when the launcher sends the bundle by itself, without asking the player.
+    pub automatic: Option<Automatic>,
+}
+
+impl Report {
+    /// The report the launcher sends by itself for `automatic`, with its message in place of the player's.
+    pub fn automatic(name: String, game: GameInfo, room: Option<Value>, automatic: Automatic) -> Self {
+        Self {
+            name,
+            message: automatic.message(),
+            game,
+            room,
+            automatic: Some(automatic),
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -195,6 +212,8 @@ pub struct Bundle {
     pub game: String,
     pub entries: Vec<Entry>,
     pub skipped: Vec<String>,
+    /// The launcher sent it by itself after a crash, which every part says to the log server.
+    pub automatic: bool,
 }
 
 #[derive(Debug, Clone, PartialEq)]

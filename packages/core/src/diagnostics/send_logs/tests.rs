@@ -11,7 +11,7 @@ use super::files::*;
 use super::redact::*;
 use super::summary::*;
 use super::system::*;
-use super::upload::{SendError, Stage, multipart, payload};
+use super::upload::{SendError, Sent, Stage, multipart, payload};
 use super::*;
 use crate::session::{LOADER_FALLBACK, LOADER_LOG, PERF_LOG};
 
@@ -100,6 +100,7 @@ fn report(game: &Path) -> Report {
             version: Some("1.17.0".into()),
         },
         room: None,
+        automatic: None,
     }
 }
 
@@ -264,6 +265,72 @@ fn redacts_secrets_from_config_and_environment() {
 }
 
 #[test]
+fn a_page_this_machine_serves_loses_its_token() {
+    let red = |s: &str| redact_page_tokens(s.as_bytes()).map(|v| String::from_utf8(v).unwrap());
+    assert_eq!(
+        red("[steward] test mode: page http://127.0.0.1:51234/?t=0123456789abcdef0123456789abcdef (browser not opened)\n")
+            .as_deref(),
+        Some("[steward] test mode: page http://127.0.0.1:51234/?t=[redacted] (browser not opened)\n")
+    );
+    assert_eq!(
+        red(r#"{"schema":1,"url":"http://localhost:8080/x?a=1&t=abc#top","port":8080}"#).as_deref(),
+        Some(r#"{"schema":1,"url":"http://localhost:8080/x?a=1&t=[redacted]#top","port":8080}"#)
+    );
+    assert_eq!(
+        red("a HTTP://127.0.0.1/?t=1 and http://127.0.0.1:2/?t=2&u=3").as_deref(),
+        Some("a HTTP://127.0.0.1/?t=[redacted] and http://127.0.0.1:2/?t=[redacted]&u=3")
+    );
+    for kept in [
+        "page server on 127.0.0.1:51234",
+        "https://example.com/?t=public",
+        "http://127.0.0.1:51234/?t=",
+        "http://127.0.0.1:51234/?at=1&tt=2",
+        "t=1 http://localhost/ ?t=2",
+    ] {
+        assert_eq!(red(kept), None, "{kept}");
+    }
+    assert_eq!(
+        redact_page_tokens(b"\xff\xfe http://127.0.0.1/?t=1 \xff"),
+        Some(b"\xff\xfe http://127.0.0.1/?t=[redacted] \xff".to_vec()),
+        "bytes that aren't text stay as they are"
+    );
+}
+
+#[test]
+fn a_bundle_never_carries_the_stewarding_pages_token() {
+    let root = tmp("steward-token");
+    let (store, game) = fake_data(&root);
+    let token = "0123456789abcdef0123456789abcdef";
+    let url = format!("http://127.0.0.1:51234/?t={token}");
+    put(
+        &game.join("swofty/addons/swofty.league-stewarding/steward.json"),
+        format!(r#"{{"schema":1,"url":"{url}","port":51234,"started":1795000000}}"#),
+    );
+    put(
+        &game.join(LOADER_LOG),
+        format!("[steward] test mode: page {url} (browser not opened)\n"),
+    );
+    put(
+        &store.sessions_dir().join("20261020-090000/loader.log"),
+        format!("earlier game\n[steward] test mode: page {url} (browser not opened)\n"),
+    );
+    let bundle = Bundle::collect_with(&store, &report(&game), Limits::default(), "x");
+    let zip = bundle.zip().unwrap();
+    for name in names(&zip) {
+        let mut z = zip::ZipArchive::new(std::io::Cursor::new(zip.as_slice())).unwrap();
+        let mut data = Vec::new();
+        z.by_name(&name).unwrap().read_to_end(&mut data).unwrap();
+        assert!(
+            !data.windows(token.len()).any(|w| w == token.as_bytes()),
+            "{name} carries the token"
+        );
+    }
+    assert!(entry(&zip, "game/loader.log").contains("?t=[redacted]"));
+    assert!(entry(&zip, "sessions/20261020-090000/loader.log").contains("?t=[redacted]"));
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
 fn secret_names_and_webhook_values() {
     for n in [
         "token",
@@ -358,6 +425,7 @@ fn noisy_bundle(sizes: &[usize]) -> Bundle {
             })
             .collect(),
         skipped: Vec::new(),
+        automatic: false,
     }
 }
 
@@ -493,10 +561,18 @@ fn posts_multipart_with_payload_json_and_the_zip() {
     let (url, server) = serve(1, Box::new(|_, _| (204, String::new())));
     let hook = LogServer::new(Some(&url)).unwrap();
     let (stages, progress) = collect_stages();
-    assert_eq!(hook.send(&bundle, &progress), Ok(1));
+    assert_eq!(
+        hook.send(&bundle, &progress),
+        Ok(Sent {
+            parts: 1,
+            reference: None
+        })
+    );
     let got = server.join().unwrap();
     assert_eq!(got.len(), 1);
     assert!(got[0].head.starts_with("POST /v1/logs HTTP/1.1"));
+    assert!(!bundle.automatic);
+    assert_eq!(got[0].header(KIND_HEADER).as_deref(), Some("manual"));
     assert!(
         got[0]
             .header("content-type")
@@ -550,7 +626,13 @@ fn sends_parts_and_waits_out_rate_limits() {
     let hook = LogServer::new(Some(&url)).unwrap();
     let (stages, progress) = collect_stages();
     let sent = hook.send_with(&bundle, 1 << 20, Duration::from_secs(30), &progress);
-    assert_eq!(sent, Ok(3));
+    assert_eq!(
+        sent,
+        Ok(Sent {
+            parts: 3,
+            reference: None
+        })
+    );
     let got = server.join().unwrap();
     assert_eq!(got.len(), 4);
     let labels: Vec<String> = got
@@ -576,6 +658,27 @@ fn sends_parts_and_waits_out_rate_limits() {
 }
 
 #[test]
+fn every_part_says_whether_the_launcher_sent_the_bundle_by_itself() {
+    for (automatic, kind) in [(true, "automatic"), (false, "manual")] {
+        let bundle = Bundle {
+            automatic,
+            ..noisy_bundle(&[700 << 10, 700 << 10, 700 << 10])
+        };
+        let (url, server) = serve(3, Box::new(|_, _| (200, "{}".into())));
+        let hook = LogServer::new(Some(&url)).unwrap();
+        let sent = hook.send_with(&bundle, 1 << 20, Duration::from_secs(30), &|_| {});
+        assert_eq!(sent.map(|s| s.parts), Ok(3));
+        let kinds: Vec<Option<String>> = server
+            .join()
+            .unwrap()
+            .iter()
+            .map(|g| g.header(KIND_HEADER))
+            .collect();
+        assert_eq!(kinds, vec![Some(kind.to_owned()); 3], "{kind}");
+    }
+}
+
+#[test]
 fn halves_the_part_size_when_the_server_says_too_big() {
     let bundle = noisy_bundle(&[700 << 10, 700 << 10]);
     let (url, server) = serve(
@@ -594,7 +697,8 @@ fn halves_the_part_size_when_the_server_says_too_big() {
     let hook = LogServer::new(Some(&url)).unwrap();
     let (_, progress) = collect_stages();
     assert_eq!(
-        hook.send_with(&bundle, 4 << 20, Duration::from_secs(30), &progress),
+        hook.send_with(&bundle, 4 << 20, Duration::from_secs(30), &progress)
+            .map(|s| s.parts),
         Ok(2)
     );
     let got = server.join().unwrap();
@@ -606,6 +710,120 @@ fn halves_the_part_size_when_the_server_says_too_big() {
     assert_eq!(
         hook.send_with(&bundle, 1 << 20, Duration::from_secs(30), &progress),
         Err(SendError::TooBig)
+    );
+    server.join().unwrap();
+}
+
+#[test]
+fn an_automatic_bundle_says_so_and_names_the_room() {
+    let root = tmp("automatic");
+    let (store, game) = fake_data(&root);
+    let crashed = store.root.join("sessions/20261020-090000");
+    let room = RoomRun {
+        code: Some("K7Q2PX".into()),
+        step: Some("in_lobby".into()),
+        phase: Some("racing".into()),
+        host: false,
+        launched: true,
+    };
+    room.write(&crashed).unwrap();
+    let automatic = Automatic {
+        session: "20261020-090000".into(),
+        room: Some(room.clone()),
+    };
+    let sent = Report::automatic("swofty".into(), report(&game).game, None, automatic.clone());
+    assert_eq!(sent.message, automatic.message());
+    let bundle = Bundle::collect_with(&store, &sent, Limits::default(), "20261020-101010");
+    assert!(bundle.automatic);
+    let zip = bundle.zip().unwrap();
+    let summary = entry(&zip, "summary.txt");
+    let line = |k: &str, v: &str| format!("{k:16} {v}\n");
+    assert!(summary.starts_with(&format!(
+        "{}{}{}{}",
+        line("Discord username", "swofty"),
+        line(
+            "Sent",
+            "automatically by the launcher after F1 25 crashed; the player wasn't asked"
+        ),
+        line("Room", &room.describe()),
+        line("Crashed session", "sessions/20261020-090000"),
+    )));
+    assert!(summary.contains(&format!("What went wrong\n{}", automatic.message())));
+    assert_eq!(
+        entry(&zip, "sessions/20261020-090000/room.json"),
+        std::fs::read_to_string(crashed.join(automatic::ROOM_FILE)).unwrap()
+    );
+    let part = &bundle.parts(PART_LIMIT).unwrap()[0];
+    let content = upload::content(&bundle, part);
+    assert!(
+        content.starts_with("**Logs from `swofty`**\nLauncher "),
+        "{content}"
+    );
+    assert!(
+        content.ends_with(&format!(">>> {}", automatic.message())),
+        "{content}"
+    );
+
+    assert!(!summary.contains("Room steps"));
+
+    let with_steps = Report {
+        room: Some(json!({"steps": [
+            {"id": "lobby", "state": "done"},
+            {"id": "race", "state": "failed", "problem": {"code": "game_crashed"}},
+        ]})),
+        ..sent
+    };
+    let bundle = Bundle::collect_with(&store, &with_steps, Limits::default(), "20261020-101010");
+    let summary = entry(&bundle.zip().unwrap(), "summary.txt");
+    assert!(summary.contains(&line("Room steps", "lobby done, race failed (game_crashed)")));
+
+    let asked = Bundle::collect_with(&store, &report(&game), Limits::default(), "20261020-101010");
+    let summary = entry(&asked.zip().unwrap(), "summary.txt");
+    assert!(!summary.contains("automatically by the launcher"));
+    assert!(!summary.contains("Crashed session"));
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
+fn keeps_the_id_the_log_server_gives_the_first_part() {
+    let bundle = noisy_bundle(&[700 << 10, 700 << 10]);
+    let (url, server) = serve(
+        2,
+        Box::new(|i, _| match i {
+            0 => (200, json!({"ok": true, "id": "1311204"}).to_string()),
+            _ => (200, json!({"ok": true, "id": "1311205"}).to_string()),
+        }),
+    );
+    let hook = LogServer::new(Some(&url)).unwrap();
+    let (_, progress) = collect_stages();
+    assert_eq!(
+        hook.send_with(&bundle, 1 << 20, Duration::from_secs(30), &progress),
+        Ok(Sent {
+            parts: 2,
+            reference: Some("1311204".into())
+        })
+    );
+    server.join().unwrap();
+
+    let (url, server) = serve(
+        1,
+        Box::new(|_, _| (200, json!({"ok": true, "id": 42}).to_string())),
+    );
+    let hook = LogServer::new(Some(&url)).unwrap();
+    let small = noisy_bundle(&[10]);
+    assert_eq!(
+        hook.send_with(&small, 1 << 20, Duration::from_secs(30), &progress)
+            .map(|s| s.reference),
+        Ok(Some("42".into()))
+    );
+    server.join().unwrap();
+
+    let (url, server) = serve(1, Box::new(|_, _| (200, "not json".into())));
+    let hook = LogServer::new(Some(&url)).unwrap();
+    assert_eq!(
+        hook.send_with(&small, 1 << 20, Duration::from_secs(30), &progress)
+            .map(|s| s.reference),
+        Ok(None)
     );
     server.join().unwrap();
 }

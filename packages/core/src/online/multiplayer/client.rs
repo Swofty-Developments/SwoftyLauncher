@@ -468,10 +468,35 @@ impl Setup {
     }
 }
 
+/// The state a `session.state` answer carries, with its progress, problem and steps; `None` when its state doesn't
+/// read.
+pub fn state_of(doc: Value) -> Option<SessionState> {
+    View::read(doc).map(|v| v.state)
+}
+
 struct View {
     state: SessionState,
     fix_plan: Vec<FixStep>,
     finished: bool,
+}
+
+impl View {
+    /// Reads a `session.state` answer; `None` when its state doesn't read. Steps that don't read leave the
+    /// state without steps.
+    fn read(mut doc: Value) -> Option<View> {
+        let mut take = |key: &str| doc.get_mut(key).map(Value::take).unwrap_or(Value::Null);
+        let mut state: SessionState = serde_json::from_value(take("state")).ok()?;
+        state.progress = serde_json::from_value(take("progress")).ok();
+        state.problem = serde_json::from_value(take("problem")).ok().flatten();
+        state.steps = serde_json::from_value(take("steps")).unwrap_or_default();
+        let fix_plan = serde_json::from_value(take("fix_plan")).unwrap_or_default();
+        let finished = take("finished").as_bool().unwrap_or(false);
+        Some(View {
+            state,
+            fix_plan,
+            finished,
+        })
+    }
 }
 
 /// One session in the module. Dropping it leaves the session.
@@ -533,15 +558,8 @@ impl Session {
 
     fn poll(&self) -> MutexGuard<'_, View> {
         let mut last = lock(&self.last);
-        if let Ok(mut doc) = self.send("session.state", json!({})) {
-            let take = |doc: &mut Value, key: &str| doc.get_mut(key).map(Value::take).unwrap_or(Value::Null);
-            if let Ok(mut state) = serde_json::from_value::<SessionState>(take(&mut doc, "state")) {
-                state.progress = serde_json::from_value(take(&mut doc, "progress")).ok();
-                state.problem = serde_json::from_value(take(&mut doc, "problem")).ok().flatten();
-                last.state = state;
-                last.fix_plan = serde_json::from_value(take(&mut doc, "fix_plan")).unwrap_or_default();
-                last.finished = doc.get("finished").and_then(Value::as_bool).unwrap_or(false);
-            }
+        if let Some(view) = self.send("session.state", json!({})).ok().and_then(View::read) {
+            *last = view;
         }
         last
     }
@@ -581,6 +599,16 @@ impl Session {
 
     pub fn launch_failed(&self, why: &str) {
         self.send("session.launch_failed", json!({ "why": why })).ok();
+    }
+
+    /// Tells the session how the game it ran ended, as the launcher judged it. A module without the op answers
+    /// that it has none, which changes nothing.
+    pub fn game_exited(&self, exit_code: Option<i32>, stopped_by_launcher: bool, crashed: bool) {
+        let mut args = json!({ "stopped_by_launcher": stopped_by_launcher, "crashed": crashed });
+        if let Some(code) = exit_code {
+            args["exit_code"] = json!(code);
+        }
+        self.send("session.game_exited", args).ok();
     }
 
     pub fn leave(&self) {
@@ -674,6 +702,92 @@ mod tests {
         std::fs::write(data.join(LAUNCH_ENV_FILE), "not json").unwrap();
         assert_eq!(parse_launch_env(&launch_env_value(&data, Duration::ZERO)), first);
         std::fs::remove_dir_all(&data).ok();
+    }
+
+    fn state_doc() -> Value {
+        let state = serde_json::to_value(SessionState::new(false)).unwrap();
+        json!({
+            "state": state,
+            "progress": {"step": "connecting", "label": "Connecting", "percent": 40},
+            "problem": {"text": "Max can't be reached.", "retry": true},
+            "fix_plan": [],
+            "finished": false,
+        })
+    }
+
+    #[test]
+    fn a_state_from_a_module_without_steps_reads_as_before() {
+        let view = View::read(state_doc()).unwrap();
+        assert!(view.state.steps.is_empty());
+        assert_eq!(view.state.step().percent, 40);
+        assert!(view.state.problem.as_ref().is_some_and(|p| p.retry));
+        assert!(!view.finished);
+        assert!(View::read(json!({"state": "not a state"})).is_none());
+    }
+
+    #[test]
+    fn steps_read_beside_the_state() {
+        use super::super::types::StepState;
+        let steps = json!([
+            {"id": "account", "state": "done"},
+            {"id": "addons", "state": "done", "warning": true,
+             "problem": {"code": "addons_differ", "text": "Timing HUD doesn't match the host's.", "retry": false}},
+            {"id": "network", "state": "failed", "detail": "couldn't reach the relay: timed out",
+             "problem": {"code": "relay_unreachable", "text": "Couldn't reach the relay.", "retry": true,
+                         "fix_plan": null}},
+            {"id": "lobby", "state": "pending"},
+            {"id": "voice", "state": "warming_up"},
+        ]);
+        let mut doc = state_doc();
+        doc["steps"] = steps.clone();
+        let view = View::read(doc).unwrap();
+        let read: Vec<(&str, StepState)> = view
+            .state
+            .steps
+            .iter()
+            .map(|s| (s.id.as_str(), s.state))
+            .collect();
+        assert_eq!(
+            read,
+            [
+                ("account", StepState::Done),
+                ("addons", StepState::Done),
+                ("network", StepState::Failed),
+                ("lobby", StepState::Pending),
+                ("voice", StepState::Unknown),
+            ]
+        );
+        assert!(view.state.steps[1].warns());
+        assert!(!view.state.steps[2].warns(), "a failed step stops the session");
+        let problem = view.state.steps[2].problem.as_ref().unwrap();
+        assert_eq!(problem.code, "relay_unreachable");
+        assert_eq!(problem.retry, Some(true));
+        assert!(problem.fix_plan.is_empty());
+
+        let mut inside = state_doc();
+        inside["state"]["steps"] = steps;
+        assert!(
+            View::read(inside).unwrap().state.steps.is_empty(),
+            "the module sends steps beside the state"
+        );
+
+        let mut broken = state_doc();
+        broken["steps"] = json!([{"state": "done"}]);
+        let view = View::read(broken).expect("steps that don't read leave the state readable");
+        assert!(view.state.steps.is_empty());
+    }
+
+    #[test]
+    fn a_warning_is_a_done_step_with_a_problem_marked_as_one() {
+        use super::super::types::SessionStep;
+        let step = |doc: Value| serde_json::from_value::<SessionStep>(doc).unwrap();
+        let problem = json!({"code": "addons_differ", "text": "x", "retry": false});
+        assert!(step(json!({"id": "addons", "state": "done", "warning": true, "problem": problem})).warns());
+        let mut marked = problem.clone();
+        marked["warning"] = json!(true);
+        assert!(step(json!({"id": "addons", "state": "done", "problem": marked})).warns());
+        assert!(!step(json!({"id": "addons", "state": "done", "problem": problem})).warns());
+        assert!(!step(json!({"id": "addons", "state": "done", "warning": true})).warns());
     }
 
     #[test]

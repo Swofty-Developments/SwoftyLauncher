@@ -11,7 +11,7 @@ set -Eeuo pipefail
 trap 'line=$LINENO' ERR
 SELF=$(readlink -f "$0")
 cd "$(dirname "$SELF")"
-CASES=(modes crash perf_ro acclim acclim_penalty ers_mode standings weekends teamhq activity setup_vm pairs fe_tiles ai_corner replay_grid garage_crew pit_slots leaderboard myteam_vehicle myteam_keep myteam_heal track_list ntpage int3 stages packed filled register)
+CASES=(modes crash close perf_roacclim acclim_penalty ers_mode standings weekends teamhq activity setup_vm pairs fe_tiles ai_corner replay_grid garage_crew pit_slots leaderboard myteam_vehicle myteam_keep myteam_heal track_list ntpage int3 stages packed filled register)
 if [[ ${1:-} == --list ]]; then
     printf '%s\n' "${CASES[@]}"
     exit 0
@@ -730,6 +730,49 @@ for mode in crash exit heap abort; do
         [[ $code != 0 && $code != 124 && $code != 137 ]] && echo "ok  : abort: the process aborted ($code)" || { echo "FAIL: abort: the process did not abort on its own (exit $code)"; status=1; }
     fi
 done
+}
+# The fake game ends with TerminateProcess(1), as F1 25 answers WM_CLOSE. close: WM_CLOSE reaches the overlay's input
+# procedure first (SWOFTY_TEST_OVERLAY_INPUT hooks it with no swapchain), so no crash report. close_fatal: an access
+# violation the game handles comes just before, so a report all the same. close_stop: no overlay and no WM_CLOSE, only
+# the launcher's stop request in the data folder, so no crash report.
+case_close() {
+for mode in close close_fatal close_stop; do
+    echo "==== $mode"
+    code=0
+    rm -rf "$SW"/crash-*.txt "$SW"/crash-*.dmp "$WINEPREFIX"/drive_c/users/*/AppData/Local/Swofty/sessions
+    input=1
+    [[ $mode == close_stop ]] && input=
+    SWOFTY_TEST_OVERLAY_INPUT=$input timeout -k 5 120 "${PIN[@]}" xvfb-run -a wine cmd /c "$OUT/game/F1_25.exe" $mode >"$OUT/$mode.out" 2>&1 || code=$?
+    grep -E '\[crash\]|\[overlay\] (input|SWOFTY_TEST)' "$LOG" || true
+    grep -E "^(ok  |FAIL): $mode: " "$OUT/$mode.out" || true
+    if grep -q "^FAIL: $mode: " "$OUT/$mode.out"; then status=1; fi
+    reports=$(find "$SW" -maxdepth 1 -name 'crash-*.txt' | wc -l)
+    [[ $code == 1 ]] && echo "ok  : $mode: the process ended with 1" || { echo "FAIL: $mode: the process ended with $code"; status=1; }
+    if [[ $mode == close_fatal ]]; then
+        once "close_fatal: the overlay subclasses the game's window" '\[overlay\] input: window [0-9A-Fa-fx]+ subclassed'
+        check "close_fatal: the handled access violation is logged first-chance" '\[crash\] #1 first-chance .*ACCESS_VIOLATION'
+        check "close_fatal: its faulting access" '\[crash\]   writing 0x18'
+        once "close_fatal: the overlay notes WM_CLOSE" '\[crash\] the game.s window got WM_CLOSE'
+        count "close_fatal: the close does not excuse an exit right after a fatal exception" 0 'ends a close the game was asked for'
+        check "close_fatal: a report is written for TerminateProcess(1)" '\[crash\] crash report .*crash-.*: TerminateProcess\(1 = 0x1\)'
+        parse_report "TerminateProcess(1 = 0x1)" "" || status=1
+        continue
+    fi
+    if [[ $mode == close ]]; then
+        once "close: the test switch hands the window to the overlay" '\[overlay\] SWOFTY_TEST_OVERLAY_INPUT: the overlay.s input procedure takes window'
+        once "close: the overlay subclasses the game's window" '\[overlay\] input: window [0-9A-Fa-fx]+ subclassed'
+        once "close: the overlay notes WM_CLOSE for the crash log" '\[crash\] the game.s window got WM_CLOSE; an exit within 60 s is that close'
+        once "close: TerminateProcess(1) is logged with its caller's stack" '\[crash\] TerminateProcess\(1\) on thread [0-9]+, .*; caller stack:'
+        once "close: TerminateProcess(1) ends the close" '\[crash\] TerminateProcess\(1\) ends a close the game was asked for \(WM_CLOSE [0-9]+\.[0-9] s earlier\); no crash report'
+    else
+        count "close_stop: the overlay hooks nothing without the test switch" 0 '\[overlay\] input: window .* subclassed'
+        count "close_stop: the window gets no WM_CLOSE" 0 'the game.s window got WM_CLOSE'
+        once "close_stop: TerminateProcess(1) ends the launcher's stop" '\[crash\] TerminateProcess\(1\) ends a close the game was asked for \(the launcher asked the session to stop\); no crash report'
+    fi
+    count "$mode: no crash report is logged" 0 '\[crash\] crash report '
+    [[ $reports == 0 ]] && echo "ok  : $mode: no crash-*.txt is written" || { echo "FAIL: $mode: $reports crash-*.txt written"; status=1; }
+done
+rm -rf "$WINEPREFIX"/drive_c/users/*/AppData/Local/Swofty/sessions
 }
 case_perf_ro() {
 echo "==== perf_ro"

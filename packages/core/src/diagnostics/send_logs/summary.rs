@@ -240,6 +240,12 @@ impl Bundle {
         let mut s = String::new();
         let mut line = |k: &str, v: &str| s.push_str(&format!("{k:16} {v}\n"));
         line("Discord username", &self.name);
+        for (k, v) in report.automatic.iter().flat_map(|a| a.summary_lines()) {
+            line(k, &v);
+        }
+        if let Some(steps) = report.room.as_ref().and_then(super::automatic::steps_line) {
+            line("Room steps", &steps);
+        }
         line("Collected", &readable(stamp));
         line("Launcher", &self.launcher);
         line("OS", &self.os);

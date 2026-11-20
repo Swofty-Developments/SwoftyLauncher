@@ -13,6 +13,7 @@ use swofty_i18n::{tr, trf};
 
 use super::model::*;
 use super::state::*;
+use super::steward;
 use crate::shell::Launching;
 use crate::shell::host::Host;
 use crate::shell::host::PromptHost;
@@ -148,8 +149,7 @@ impl Shell {
     }
 
     pub(super) fn room_default_name(&self) -> String {
-        let you = self.account.session.as_ref().map_or("Your", |m| m.name.as_str());
-        format!("{you}'s room")
+        default_room_name(self.account.session.as_ref().map(|m| m.name.as_str()))
     }
 
     pub(super) fn room_open_form(&mut self, window: &mut Window, cx: &mut Context<Self>) {
@@ -376,7 +376,12 @@ impl Multiplayer {
         let dialog = window.has_active_dialog(cx);
         let (m, needs) = <H as Host<Self>>::split(host);
         let mut changed = !dialog && m.drop_held();
-        changed |= m.watch_game(needs.running, needs.busy);
+        changed |= m.watch_game(
+            needs.running,
+            needs.busy,
+            || session_ended(needs.store),
+            Instant::now(),
+        );
         if m.leaving && m.session.as_ref().is_none_or(Session::is_finished) {
             m.finish_leaving();
             changed = true;
@@ -414,8 +419,15 @@ impl Multiplayer {
             m.copied = None;
             changed = true;
         }
+        let offered = m.steward_offered(needs.running);
+        if !offered {
+            changed |= m.steward.forget();
+        }
         if changed {
             cx.notify();
+        }
+        if offered && m.steward.due(now) {
+            Self::read_steward(host, cx);
         }
         let m = <H as Host<Self>>::split(host).0;
         if m.session.is_none() && m.lobby.game_due(now) {
@@ -430,6 +442,32 @@ impl Multiplayer {
             Self::read_print(host, cx);
         }
         Self::load_shown_faces(host, cx);
+    }
+
+    /// Reads the League Stewarding page the host's game names, off the UI thread.
+    pub(super) fn read_steward<H: Host<Self>>(host: &mut H, cx: &mut Context<H>) {
+        let (m, needs) = host.split();
+        let Some(dir) = needs.game_dir.map(Path::to_path_buf) else {
+            return;
+        };
+        let started = steward::process_started(needs.processes, &dir);
+        let store = needs.store.clone();
+        m.steward.reading = true;
+        cx.spawn(async move |this, cx| {
+            let url = cx
+                .background_executor()
+                .spawn(async move { steward::read(&store, &dir, started) })
+                .await;
+            this.update(cx, |host, cx| {
+                let (m, needs) = host.split();
+                let offered = m.steward_offered(needs.running);
+                if m.steward.took(url, offered, Instant::now()) {
+                    cx.notify();
+                }
+            })
+            .ok();
+        })
+        .detach();
     }
 
     /// Closes the copy's F1 25 so the room can start it. False when a stop failed, which a notice says.

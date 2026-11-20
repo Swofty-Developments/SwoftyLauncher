@@ -1,11 +1,12 @@
 use std::collections::HashSet;
 
 use swofty_core::online::multiplayer::client::Local;
+use swofty_core::online::multiplayer::types::FixStep;
 use swofty_core::online::multiplayer::types::{
     GameStatus, MemberStage, MemberState, Phase, Problem, Progress, RoomAddon, RoomContent, RoomSettings,
-    RoomSummary, Screen, SessionState, Step,
+    RoomSummary, Screen, SessionState, SessionStep, Step, StepState,
 };
-use swofty_i18n::trf;
+use swofty_i18n::{tr, trf};
 
 /// Where the game is, in the page header.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -123,17 +124,29 @@ pub(crate) enum Tone {
     Over,
 }
 
-pub(crate) const STEPS: [(Step, &str); 6] = [
-    (Step::SigningIn, "Signing in"),
-    (Step::Joining, "Joining"),
-    (Step::Connecting, "Connecting"),
-    (Step::StartingGame, "Starting F1 25"),
-    (Step::Loading, "Loading"),
-    (Step::InLobby, "In the lobby"),
+pub(crate) const STEPS: [Step; 6] = [
+    Step::SigningIn,
+    Step::Joining,
+    Step::Connecting,
+    Step::StartingGame,
+    Step::Loading,
+    Step::InLobby,
 ];
 
 pub(crate) fn step_number(step: Step) -> usize {
-    STEPS.iter().position(|(s, _)| *s == step).unwrap_or(0)
+    STEPS.iter().position(|s| *s == step).unwrap_or(0)
+}
+
+/// A step's name on the status card of a session that reports no steps.
+pub(crate) fn step_name(step: Step) -> &'static str {
+    match step {
+        Step::SigningIn => tr("Signing in"),
+        Step::Joining => tr("Joining"),
+        Step::Connecting => tr("Connecting"),
+        Step::StartingGame => tr("Starting F1 25"),
+        Step::Loading => tr("Loading"),
+        Step::InLobby => tr("In the lobby"),
+    }
 }
 
 /// What the status area shows: the step, how far along, and the problem when there is one.
@@ -159,26 +172,194 @@ pub(crate) fn room_status(state: &SessionState) -> Status {
         };
     }
     let problem = state.problem.clone();
-    let (tone, hint) = match (&problem, progress.step, state.host, &state.phase) {
-        (Some(_), ..) => (Tone::Blocked, None),
-        (None, Step::InLobby, true, Phase::Racing) => (
-            Tone::Good,
-            Some("Mark the race over when everyone is back in the lobby."),
-        ),
-        (None, Step::InLobby, true, _) => (
-            Tone::Good,
-            Some("Pick tracks and settings in F1 25's lobby, then start the race there."),
-        ),
-        (None, Step::InLobby, false, _) => {
-            (Tone::Good, Some("The host picks the tracks and starts the race."))
-        }
-        (None, ..) => (Tone::Working, None),
+    let (tone, hint) = match (&problem, progress.step) {
+        (Some(_), _) => (Tone::Blocked, None),
+        (None, Step::InLobby) => (Tone::Good, Some(lobby_hint(state.host, &state.phase))),
+        (None, _) => (Tone::Working, None),
     };
     Status {
         tone,
         progress,
         problem,
         hint,
+    }
+}
+
+/// What the player does next once everyone is in F1 25's lobby.
+pub(crate) fn lobby_hint(host: bool, phase: &Phase) -> &'static str {
+    match (host, phase) {
+        (true, Phase::Racing) => tr("Mark the race over when everyone is back in the lobby."),
+        (true, _) => tr("Pick tracks and settings in F1 25's lobby, then start the race there."),
+        (false, _) => tr("The host picks the tracks and starts the race."),
+    }
+}
+
+/// A step's title, by the id the module names it with. A step this launcher doesn't know shows its id.
+pub(crate) fn step_title(id: &str, host: bool) -> String {
+    let title = match (id, host) {
+        ("account", _) => tr("Log in"),
+        ("room", true) => tr("Open the room"),
+        ("room", false) => tr("Join the room"),
+        ("addons", true) => tr("Check your addons"),
+        ("addons", false) => tr("Match the host's addons"),
+        ("build", _) => tr("Build the game"),
+        ("game", _) => tr("Start F1 25"),
+        ("network", _) => tr("Connect to the players"),
+        ("lobby", true) => tr("Open the LAN lobby"),
+        ("lobby", false) => tr("Join the host's LAN lobby"),
+        ("race", _) => tr("Race"),
+        (other, _) => return crate::ui::format::capitalised(&other.replace('_', " ")),
+    };
+    title.to_owned()
+}
+
+/// One row of the room's step list.
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) struct StepRow {
+    pub(crate) id: String,
+    pub(crate) title: String,
+    /// A state this launcher doesn't know reads as pending.
+    pub(crate) state: StepState,
+    /// A done step with a problem the session goes on with ([`SessionStep::warns`]).
+    pub(crate) warning: bool,
+    /// Shown under an active, failed, skipped or warning step.
+    pub(crate) detail: Option<String>,
+    /// The step comes after a failed one, so the session stopped before it.
+    pub(crate) dimmed: bool,
+    /// What stopped a failed step, which the card's problem buttons act on, or what a warning step warns of.
+    pub(crate) problem: Option<Problem>,
+    /// What the problem's fix plan asks the player to change, one sentence each.
+    pub(crate) fixes: Vec<String>,
+    /// What the player does next, under the race step once everyone is in the lobby.
+    pub(crate) hint: Option<&'static str>,
+}
+
+/// The status card of a module that reports steps: the step list, and whether the session's headline shows
+/// above it.
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) struct StepCard {
+    /// While leaving, once the session ended without a step failing, or for a problem no step carries. A
+    /// warning carries the session's problem as well as a failure does.
+    pub(crate) banner: bool,
+    /// Empty once the session ended without a step failing.
+    pub(crate) rows: Vec<StepRow>,
+}
+
+impl StepCard {
+    /// `None` from a module that reports no steps, whose card shows its phase and progress as before.
+    pub(crate) fn of(state: &SessionState, leaving: bool) -> Option<Self> {
+        if state.steps.is_empty() {
+            return None;
+        }
+        let failed = state.steps.iter().position(|s| s.state == StepState::Failed);
+        let warned = state.steps.iter().any(SessionStep::warns);
+        let stray = failed.is_none() && !warned && state.problem.is_some();
+        let over = state.phase.is_over();
+        let lobby = matches!(state.phase, Phase::InLobby | Phase::Racing);
+        let hint = (failed.is_none() && !stray && lobby && !leaving && !over)
+            .then(|| lobby_hint(state.host, &state.phase));
+        let rows = if over && failed.is_none() {
+            Vec::new()
+        } else {
+            state
+                .steps
+                .iter()
+                .enumerate()
+                .map(|(i, step)| StepRow::of(step, state, failed.is_some_and(|f| i > f), hint))
+                .collect()
+        };
+        Some(Self {
+            banner: leaving || stray || (over && failed.is_none()),
+            rows,
+        })
+    }
+}
+
+impl StepRow {
+    fn of(step: &SessionStep, state: &SessionState, dimmed: bool, hint: Option<&'static str>) -> Self {
+        let shown = match step.state {
+            StepState::Unknown => StepState::Pending,
+            known => known,
+        };
+        let warning = step.warns();
+        let problem = match (shown, &step.problem) {
+            (StepState::Failed, _) => Some(failure(step, state.problem.as_ref())),
+            (_, Some(p)) if warning => Some(Problem {
+                text: p.text.clone(),
+                retry: false,
+                detail: p.detail.clone(),
+            }),
+            _ => None,
+        };
+        let fixes = step
+            .problem
+            .as_ref()
+            .filter(|_| problem.is_some())
+            .map(|p| fix_lines(&p.fix_plan))
+            .unwrap_or_default();
+        let detail = (warning || matches!(shown, StepState::Active | StepState::Failed | StepState::Skipped))
+            .then(|| step.detail.as_deref().map(crate::ui::format::capitalised))
+            .flatten();
+        Self {
+            id: step.id.clone(),
+            title: step_title(&step.id, state.host),
+            state: shown,
+            warning,
+            detail,
+            dimmed,
+            problem,
+            fixes,
+            hint: hint.filter(|_| step.id == "race"),
+        }
+    }
+}
+
+/// What a fix plan asks the player to change to match the host, one sentence per step.
+pub(crate) fn fix_lines(plan: &[FixStep]) -> Vec<String> {
+    plan.iter()
+        .map(|fix| match fix {
+            FixStep::Install { name, version, .. } => trf!(
+                "Install {name} {version} from the Addon Browser",
+                name = name,
+                version = version
+            ),
+            FixStep::Disable { name, .. } => trf!("Turn off {name}", name = name),
+            FixStep::SetOption {
+                addon,
+                option,
+                value: Some(value),
+            } => trf!(
+                "Set {option} in {addon} to {value}",
+                option = option,
+                addon = addon,
+                value = value.as_str().map_or_else(|| value.to_string(), str::to_owned)
+            ),
+            FixStep::SetOption { addon, option, .. } => trf!(
+                "Set {option} in {addon} back to its default",
+                option = option,
+                addon = addon
+            ),
+            FixStep::Reorder { .. } => tr("Put your addons in the host's load order").to_owned(),
+            FixStep::Manual { line } => line.clone(),
+        })
+        .collect()
+}
+
+/// A failed step's problem as the card's problem buttons read it: whether trying again helps comes from the step,
+/// else from the session's problem.
+fn failure(step: &SessionStep, session: Option<&Problem>) -> Problem {
+    let retry = |p: Option<bool>| p.or(session.map(|s| s.retry)).unwrap_or(false);
+    match &step.problem {
+        Some(p) => Problem {
+            text: p.text.clone(),
+            retry: retry(p.retry),
+            detail: p.detail.clone(),
+        },
+        None => session.cloned().unwrap_or_else(|| Problem {
+            text: tr("This step didn't finish.").to_owned(),
+            retry: false,
+            detail: None,
+        }),
     }
 }
 
@@ -194,6 +375,20 @@ pub(super) fn restart_ok_text(start: &Start) -> &'static str {
         Start::Create(_) => "Create room and join",
         Start::Join(_) => "Join room",
     }
+}
+
+/// Whether the room leaves once its game exited: only with a session that reports no steps. One that does fails
+/// its `game` step and waits there for Retry, which starts the game again, or Leave.
+pub(crate) fn leaves_on_exit(state: Option<&SessionState>) -> bool {
+    state.is_none_or(|s| s.steps.is_empty())
+}
+
+/// The name the create form starts with: the player's room, or "Your room" while the player's name isn't known.
+pub(crate) fn default_room_name(player: Option<&str>) -> String {
+    player.map_or_else(
+        || tr("Your room").to_owned(),
+        |name| trf!("{name}'s room", name = name),
+    )
 }
 
 pub(crate) fn exit_notice(host: bool) -> &'static str {
@@ -306,6 +501,13 @@ pub(crate) fn card_addons(room: &RoomSummary) -> Vec<String> {
         Some(a) => a.tracks.clone(),
         None => Vec::new(),
     }
+}
+
+/// Whether a page of the online rooms shows its ad, a banner in the page's content: not while the create form is
+/// open, whose players menu would open under the ad's webview. The header has no place for it, as the Online
+/// tab's links sit over the middle of the header.
+pub(crate) fn shows_ad(form_open: bool) -> bool {
+    !form_open
 }
 
 #[derive(Clone)]

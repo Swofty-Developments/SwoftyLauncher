@@ -6,6 +6,7 @@
 #include "core/diagnostics/crash/crash_dir.hpp"
 #include "core/diagnostics/crash/crash_log.hpp"
 #include "core/diagnostics/crash/dred.hpp"
+#include "core/diagnostics/crash/exit_logic.hpp"
 #include "core/diagnostics/crash/fatal_paths.hpp"
 #include "core/diagnostics/crash/hw_settings_logic.hpp"
 #include "core/diagnostics/crash/constants.hpp"
@@ -23,7 +24,9 @@
 // and a minidump beside it) is written once per process: for an exception that reaches the top-level
 // filter, for the game's own fatal paths (a fatal Ne heap error, Ne_FatalAbort, a heap corruption or
 // fail-fast exception, a stack overflow), and for an exit with a non-zero code or one that follows a
-// fatal-class exception within EXIT_AFTER_FATAL_MS. A thread started at attach writes it while the
+// fatal-class exception within EXIT_AFTER_FATAL_MS. An exit with a non-zero code that ends a close the game
+// was asked for (WM_CLOSE to its window, or the launcher's stop request; exit_logic.hpp) gets no report
+// unless a fatal-class exception came just before. A thread started at attach writes it while the
 // reporting thread waits, so a stack overflow or a corrupt stack still gets one. An exit before the
 // window stage logs its caller stack whatever its code; a clean one there still gets no report.
 
@@ -98,6 +101,14 @@ void crash_blame(const char *text)
     snprintf(capture.blame_text, sizeof capture.blame_text, "%s", text ? text : "");
     capture.blame_ms = GetTickCount64();
     capture.blame_tid = GetCurrentThreadId();
+}
+
+void crash_close_asked(const char *msg)
+{
+    capture.close_msg = msg;
+    capture.close_ms = GetTickCount64();
+    cl("[crash] the game's window got %s; an exit within %llu s is that close, with no crash report", msg,
+       (unsigned long long)(exit_logic::CLOSE_MS / 1000));
 }
 
 }

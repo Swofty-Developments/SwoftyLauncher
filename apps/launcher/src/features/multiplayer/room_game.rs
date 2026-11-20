@@ -1,10 +1,11 @@
 use std::path::Path;
+use std::time::Instant;
 
 use swofty_core::online::multiplayer::client::Session;
 use swofty_core::online::multiplayer::types::LaunchAsk;
 
 use super::model::exit_leaves;
-use super::state::RoomLaunch;
+use super::state::{EXIT_WAIT, RoomLaunch};
 
 /// What the room's game asks of the room's session.
 pub(crate) trait RoomSession {
@@ -40,6 +41,8 @@ pub(crate) struct RoomGame {
     pub(super) launching: bool,
     /// A prompt Play opened holds the room launch: its Play goes on with it through `Shell::play`.
     pub(super) held: Option<RoomLaunch>,
+    /// When the room's game was first seen gone, while the room waits for the session to write how it ended.
+    pub(super) exited_at: Option<Instant>,
 }
 
 impl RoomGame {
@@ -138,7 +141,19 @@ impl RoomGame {
         if self.closing.is_some() && !running {
             self.closing = None;
         }
-        exit_leaves(self.seen, running, busy)
+        let gone = exit_leaves(self.seen, running, busy);
+        if !gone {
+            self.exited_at = None;
+        }
+        gone
+    }
+
+    /// Whether the room may leave for its exited game: once the game's session wrote how it ended
+    /// (`end.json`), so the crash watch tells the session first, or [`EXIT_WAIT`] after the exit was first
+    /// seen without that.
+    pub(crate) fn exit_settled(&mut self, end_written: impl FnOnce() -> bool, now: Instant) -> bool {
+        let since = *self.exited_at.get_or_insert(now);
+        end_written() || now.duration_since(since) >= EXIT_WAIT
     }
 }
 
@@ -345,5 +360,36 @@ mod tests {
         assert!(!game.exited(false, false));
         assert!(game.closing.is_none());
         assert!(!game.exited(true, false) && game.seen);
+    }
+
+    #[test]
+    fn the_room_waits_for_the_games_end_to_be_written_before_it_leaves() {
+        use std::time::{Duration, Instant};
+        let t0 = Instant::now();
+        let mut game = RoomGame {
+            ask_seq: 1,
+            seen: true,
+            ..RoomGame::default()
+        };
+        assert!(game.exited(false, false));
+        assert!(!game.exit_settled(|| false, t0));
+        assert!(!game.exit_settled(|| false, t0 + Duration::from_secs(4)));
+        assert!(
+            game.exit_settled(|| true, t0 + Duration::from_secs(1)),
+            "the end is written"
+        );
+        assert!(
+            game.exit_settled(|| false, t0 + super::EXIT_WAIT),
+            "no end within the wait"
+        );
+
+        assert!(!game.exited(true, false), "the game runs again");
+        assert!(game.exited_at.is_none());
+        let t1 = t0 + Duration::from_secs(60);
+        assert!(game.exited(false, false));
+        assert!(
+            !game.exit_settled(|| false, t1),
+            "a later exit waits from when it was seen"
+        );
     }
 }

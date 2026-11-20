@@ -3,16 +3,19 @@ use std::time::Instant;
 
 use swofty_core::online::multiplayer::types::{
     GameStatus, MemberStage, MemberState, Phase, PrintMatch, Problem, RelayStatus, Role, RoomAddon,
-    RoomAddons, RoomSummary, Screen, SessionState, User,
+    RoomAddons, RoomSummary, Screen, SessionState, SessionStep, StepState, User,
 };
 
-use super::model::starting;
 use super::model::{
     GameState, OwnPrint, RoomStatus, Start, Tone, addon_checks, card_addons, content_check, content_word,
     exit_leaves, exit_notice, extra_addons, joined, member_word, missing, refusal, refusal_text,
     restart_ok_text, room_meta,
 };
-use super::state::{Lobby, unasked};
+use super::model::{
+    StepCard, StepRow, default_room_name, fix_lines, leaves_on_exit, lobby_hint, shows_ad, starting,
+    step_title,
+};
+use super::state::{Lobby, room_sizes, unasked};
 use swofty_core::online::multiplayer::types::RoomContent;
 
 #[test]
@@ -96,6 +99,7 @@ fn session(phase: Phase, host: bool) -> SessionState {
         last_error: None,
         launch: None,
         content: RoomContent::default(),
+        steps: Vec::new(),
         progress: None,
         problem: None,
     }
@@ -479,4 +483,338 @@ fn avatars_are_asked_for_once_and_only_from_the_web() {
 fn a_start_names_what_the_page_waits_on() {
     assert_eq!(starting(&Start::Create(Default::default())), "create");
     assert_eq!(starting(&Start::Join("ABCD".into())), "ABCD");
+}
+
+#[test]
+fn a_room_offers_every_size_from_two_to_twenty_four_and_starts_at_the_servers_default() {
+    use swofty_core::online::multiplayer::types::RoomSettings;
+    let sizes: Vec<u8> = room_sizes().collect();
+    assert_eq!(sizes.first(), Some(&2));
+    assert_eq!(sizes.last(), Some(&24));
+    assert_eq!(sizes.len(), 23);
+    let default = RoomSettings::default().max_members;
+    assert_eq!(default, 20, "the room server's default size");
+    assert!(room_sizes().contains(&default));
+}
+
+#[test]
+fn the_create_form_names_the_room_after_the_player() {
+    assert_eq!(default_room_name(Some("Max")), "Max's room");
+    assert_eq!(default_room_name(None), "Your room");
+}
+
+#[test]
+fn the_ad_banner_gives_way_to_the_create_form() {
+    assert!(shows_ad(false));
+    assert!(!shows_ad(true), "the form's players menu would open under the ad");
+}
+
+fn step(id: &str, state: &str) -> SessionStep {
+    serde_json::from_value(serde_json::json!({"id": id, "state": state, "detail": format!("{id} detail")}))
+        .unwrap()
+}
+
+fn failed_step(id: &str, problem: serde_json::Value) -> SessionStep {
+    let mut s = step(id, "failed");
+    s.problem = Some(serde_json::from_value(problem).unwrap());
+    s
+}
+
+fn stepped(phase: Phase, host: bool, steps: Vec<SessionStep>) -> SessionState {
+    let mut s = session(phase, host);
+    s.steps = steps;
+    s
+}
+
+fn row<'a>(card: &'a StepCard, id: &str) -> &'a StepRow {
+    card.rows.iter().find(|r| r.id == id).unwrap()
+}
+
+#[test]
+fn a_session_with_steps_keeps_the_room_when_its_game_exits_and_one_without_them_leaves_it() {
+    assert!(leaves_on_exit(None));
+    assert!(
+        leaves_on_exit(Some(&session(Phase::InLobby, false))),
+        "a module without steps"
+    );
+    let failed = failed_step(
+        "game",
+        serde_json::json!({"code": "game_exited", "text": "F1 25 closed.", "retry": true}),
+    );
+    let state = stepped(
+        Phase::WaitingForGame("game".into()),
+        false,
+        vec![step("account", "done"), failed, step("network", "pending")],
+    );
+    assert!(
+        !leaves_on_exit(Some(&state)),
+        "the game step fails and Retry starts it again"
+    );
+    let card = StepCard::of(&state, false).unwrap();
+    let row = row(&card, "game");
+    assert_eq!(row.state, StepState::Failed);
+    assert_eq!(
+        row.problem.as_ref().map(|p| (p.text.as_str(), p.retry)),
+        Some(("F1 25 closed.", true))
+    );
+}
+
+#[test]
+fn a_module_without_steps_keeps_the_phase_and_progress_card() {
+    assert_eq!(
+        StepCard::of(&session(Phase::Connecting("joining".into()), false), false),
+        None
+    );
+}
+
+#[test]
+fn each_step_is_titled_by_its_id_for_the_host_or_a_player() {
+    assert_eq!(step_title("account", false), "Log in");
+    assert_eq!(step_title("room", true), "Open the room");
+    assert_eq!(step_title("room", false), "Join the room");
+    assert_eq!(step_title("addons", false), "Match the host's addons");
+    assert_eq!(step_title("game", true), "Start F1 25");
+    assert_eq!(step_title("lobby", false), "Join the host's LAN lobby");
+    assert_eq!(step_title("race", false), "Race");
+    assert_eq!(
+        step_title("voice_chat", false),
+        "Voice chat",
+        "a step a newer module adds reads as its id"
+    );
+}
+
+#[test]
+fn the_steps_show_in_order_with_the_active_ones_detail_only() {
+    let s = stepped(
+        Phase::Connecting("connecting".into()),
+        false,
+        vec![
+            step("account", "done"),
+            step("room", "done"),
+            step("addons", "done"),
+            step("build", "skipped"),
+            step("game", "done"),
+            step("network", "active"),
+            step("lobby", "pending"),
+            step("race", "warming_up"),
+        ],
+    );
+    let card = StepCard::of(&s, false).unwrap();
+    assert!(!card.banner);
+    let ids: Vec<&str> = card.rows.iter().map(|r| r.id.as_str()).collect();
+    assert_eq!(
+        ids,
+        [
+            "account", "room", "addons", "build", "game", "network", "lobby", "race"
+        ]
+    );
+    assert_eq!(row(&card, "network").state, StepState::Active);
+    assert_eq!(row(&card, "network").detail.as_deref(), Some("Network detail"));
+    assert_eq!(row(&card, "build").detail.as_deref(), Some("Build detail"));
+    assert_eq!(row(&card, "account").detail, None, "a done step is only ticked");
+    assert_eq!(row(&card, "lobby").detail, None);
+    assert_eq!(
+        row(&card, "race").state,
+        StepState::Pending,
+        "a state this launcher doesn't know"
+    );
+    assert!(
+        card.rows
+            .iter()
+            .all(|r| !r.dimmed && r.problem.is_none() && r.hint.is_none())
+    );
+}
+
+#[test]
+fn a_failed_step_carries_its_problem_and_dims_the_steps_after_it() {
+    let mut s = stepped(
+        Phase::Connecting("connecting".into()),
+        false,
+        vec![
+            step("account", "done"),
+            failed_step(
+                "network",
+                serde_json::json!({"code": "member_unreachable", "text": "Max can't be reached.",
+                                   "detail": "Their router drops the relay."}),
+            ),
+            step("lobby", "pending"),
+            step("race", "pending"),
+        ],
+    );
+    s.problem = Some(Problem {
+        text: "Max can't be reached.".into(),
+        retry: true,
+        detail: None,
+    });
+    let card = StepCard::of(&s, false).unwrap();
+    assert!(
+        !card.banner,
+        "the failed step shows the problem, not the headline"
+    );
+    let failed = row(&card, "network");
+    assert_eq!(failed.state, StepState::Failed);
+    let problem = failed.problem.as_ref().unwrap();
+    assert_eq!(problem.text, "Max can't be reached.");
+    assert_eq!(problem.detail.as_deref(), Some("Their router drops the relay."));
+    assert!(problem.retry, "the session's problem says trying again helps");
+    assert_eq!(failed.detail.as_deref(), Some("Network detail"));
+    assert!(!row(&card, "account").dimmed && !failed.dimmed);
+    assert!(row(&card, "lobby").dimmed && row(&card, "race").dimmed);
+
+    s.steps[1] = failed_step(
+        "network",
+        serde_json::json!({"code": "turn_refused", "text": "The relay refused us.", "retry": false}),
+    );
+    let card = StepCard::of(&s, false).unwrap();
+    assert!(
+        !row(&card, "network").problem.as_ref().unwrap().retry,
+        "the step's own answer wins"
+    );
+
+    s.steps[1] = step("network", "failed");
+    s.problem = None;
+    let card = StepCard::of(&s, false).unwrap();
+    let bare = row(&card, "network").problem.as_ref().unwrap();
+    assert!(
+        !bare.retry && !bare.text.is_empty(),
+        "a failure without a problem still offers Leave"
+    );
+}
+
+#[test]
+fn the_headline_shows_above_the_steps_only_for_what_no_step_says() {
+    let steps = || vec![step("account", "done"), step("room", "active")];
+    let working = stepped(Phase::Connecting("joining".into()), false, steps());
+    assert!(!StepCard::of(&working, false).unwrap().banner);
+    assert!(StepCard::of(&working, true).unwrap().banner, "leaving");
+
+    let mut stray = working.clone();
+    stray.problem = Some(Problem {
+        text: "The room server is slow.".into(),
+        retry: true,
+        detail: None,
+    });
+    assert!(StepCard::of(&stray, false).unwrap().banner);
+
+    let ended = stepped(Phase::Ended("the host closed the room".into()), false, steps());
+    let card = StepCard::of(&ended, false).unwrap();
+    assert!(card.banner && card.rows.is_empty());
+
+    let failed = stepped(
+        Phase::Failed("the room is full".into()),
+        false,
+        vec![
+            step("account", "done"),
+            failed_step(
+                "room",
+                serde_json::json!({"code": "room_full", "text": "The room is full."}),
+            ),
+        ],
+    );
+    let card = StepCard::of(&failed, false).unwrap();
+    assert!(
+        !card.banner && card.rows.len() == 2,
+        "an ended session still shows where it stopped"
+    );
+}
+
+#[test]
+fn the_race_step_says_what_to_do_once_everyone_is_in_the_lobby() {
+    let steps = || {
+        vec![
+            step("lobby", "done"),
+            serde_json::from_value(serde_json::json!({"id": "race", "state": "pending"})).unwrap(),
+        ]
+    };
+    let host = StepCard::of(&stepped(Phase::InLobby, true, steps()), false).unwrap();
+    assert_eq!(row(&host, "race").hint, Some(lobby_hint(true, &Phase::InLobby)));
+    assert_eq!(row(&host, "lobby").hint, None);
+    let racing = StepCard::of(&stepped(Phase::Racing, true, steps()), false).unwrap();
+    assert_eq!(
+        row(&racing, "race").hint,
+        Some("Mark the race over when everyone is back in the lobby.")
+    );
+    let player = StepCard::of(&stepped(Phase::InLobby, false, steps()), false).unwrap();
+    assert_eq!(
+        row(&player, "race").hint,
+        Some("The host picks the tracks and starts the race.")
+    );
+    let leaving = StepCard::of(&stepped(Phase::InLobby, false, steps()), true).unwrap();
+    assert_eq!(row(&leaving, "race").hint, None);
+    let starting = StepCard::of(&stepped(Phase::Connecting("x".into()), false, steps()), false).unwrap();
+    assert_eq!(row(&starting, "race").hint, None);
+}
+
+#[test]
+fn a_warning_shows_its_problem_and_fix_plan_without_stopping_the_steps_after_it() {
+    let mut warned = step("addons", "done");
+    warned.warning = true;
+    warned.problem = Some(
+        serde_json::from_value(serde_json::json!({
+            "code": "addons_differ", "text": "Timing HUD doesn't match the host's.", "retry": false,
+            "detail": "Timing HUD (t.hud) is 1.0.0; the host has 1.2.0.",
+            "fix_plan": [{"action": "install", "id": "t.hud", "name": "Timing HUD", "version": "1.2.0", "sha256": null}],
+        }))
+        .unwrap(),
+    );
+    let mut s = stepped(
+        Phase::InLobby,
+        false,
+        vec![
+            step("room", "done"),
+            warned,
+            step("game", "done"),
+            step("lobby", "done"),
+            serde_json::from_value(serde_json::json!({"id": "race", "state": "pending"})).unwrap(),
+        ],
+    );
+    s.problem = Some(Problem {
+        text: "Timing HUD doesn't match the host's.".into(),
+        retry: false,
+        detail: None,
+    });
+    let card = StepCard::of(&s, false).unwrap();
+    assert!(!card.banner, "the warning carries the session's problem");
+    let row = row(&card, "addons");
+    assert!(row.warning);
+    assert_eq!(row.state, StepState::Done);
+    assert_eq!(
+        row.problem.as_ref().map(|p| p.text.as_str()),
+        Some("Timing HUD doesn't match the host's.")
+    );
+    assert_eq!(row.fixes, ["Install Timing HUD 1.2.0 from the Addon Browser"]);
+    assert_eq!(row.detail.as_deref(), Some("Addons detail"));
+    assert!(card.rows.iter().all(|r| !r.dimmed));
+    assert_eq!(
+        card.rows.last().unwrap().hint,
+        Some("The host picks the tracks and starts the race."),
+        "the session goes on past a warning"
+    );
+}
+
+#[test]
+fn a_fix_plan_reads_as_one_sentence_per_change() {
+    let plan: Vec<swofty_core::online::multiplayer::types::FixStep> =
+        serde_json::from_value(serde_json::json!([
+            {"action": "install", "id": "t.cars", "name": "2026 Cars", "version": "2.4.1", "sha256": "ab"},
+            {"action": "disable", "id": "t.hud", "name": "Telemetry HUD"},
+            {"action": "set_option", "addon": "t.ai", "option": "laps", "value": 5},
+            {"action": "set_option", "addon": "t.ai", "option": "mode", "value": "full"},
+            {"action": "set_option", "addon": "t.ai", "option": "wet", "value": null},
+            {"action": "reorder", "order": ["t.cars", "t.ai"]},
+            {"action": "manual", "line": "Update F1 25 to the host's version."},
+        ]))
+        .unwrap();
+    assert_eq!(
+        fix_lines(&plan),
+        [
+            "Install 2026 Cars 2.4.1 from the Addon Browser",
+            "Turn off Telemetry HUD",
+            "Set laps in t.ai to 5",
+            "Set mode in t.ai to full",
+            "Set wet in t.ai back to its default",
+            "Put your addons in the host's load order",
+            "Update F1 25 to the host's version.",
+        ]
+    );
 }

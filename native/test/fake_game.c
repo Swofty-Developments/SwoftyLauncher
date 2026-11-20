@@ -385,11 +385,14 @@ static int movie_built(void)
     return 0;
 }
 
-static int closes;
+static int closes, close_ends;
 
+// F1 25 answers WM_CLOSE with TerminateProcess(1); the close modes set close_ends to do the same.
 static LRESULT CALLBACK wndproc(HWND h, UINT m, WPARAM w, LPARAM l)
 {
     closes += m == WM_CLOSE;
+    if (m == WM_CLOSE && close_ends)
+        TerminateProcess(GetCurrentProcess(), 1);
     return DefWindowProcW(h, m, w, l);
 }
 
@@ -3654,6 +3657,86 @@ static void test_udp(int off)
     closesocket(lan);
 }
 
+static LONG CALLBACK handled_fault(EXCEPTION_POINTERS *e)
+{
+    const EXCEPTION_RECORD *r = e->ExceptionRecord;
+    return r->ExceptionCode == EXCEPTION_ACCESS_VIOLATION && r->NumberParameters >= 2 && r->ExceptionInformation[1] == 0x18
+               ? EXCEPTION_CONTINUE_EXECUTION
+               : EXCEPTION_CONTINUE_SEARCH;
+}
+
+static int write_text(const wchar_t *path, const char *text)
+{
+    HANDLE f = CreateFileW(path, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (f == INVALID_HANDLE_VALUE)
+        return 0;
+    DWORD n = 0, len = (DWORD)strlen(text);
+    int ok = WriteFile(f, text, len, &n, NULL) && n == len;
+    CloseHandle(f);
+    return ok;
+}
+
+// Writes the launcher's stop request as its Stop does: %LOCALAPPDATA%\Swofty\sessions\latest.txt names the session
+// folder, and that folder gets stop_requested, after this process started.
+static void request_stop(void)
+{
+    wchar_t sessions[MAX_PATH], session[MAX_PATH], file[MAX_PATH];
+    char text[MAX_PATH * 3 + 2];
+    DWORD n = GetEnvironmentVariableW(L"LOCALAPPDATA", sessions, MAX_PATH - 64);
+    int ok = n && n < MAX_PATH - 64, len = 0;
+    if (ok) {
+        lstrcatW(sessions, L"\\Swofty");
+        CreateDirectoryW(sessions, NULL);
+        lstrcatW(sessions, L"\\sessions");
+        CreateDirectoryW(sessions, NULL);
+        lstrcpyW(session, sessions);
+        lstrcatW(session, L"\\wine-close-stop");
+        CreateDirectoryW(session, NULL);
+        len = WideCharToMultiByte(CP_UTF8, 0, session, -1, text, sizeof text - 1, NULL, NULL);
+        ok = len > 0;
+    }
+    if (ok) {
+        text[len - 1] = '\n';
+        text[len] = 0;
+        lstrcpyW(file, sessions);
+        lstrcatW(file, L"\\latest.txt");
+        ok = write_text(file, text);
+        lstrcpyW(file, session);
+        lstrcatW(file, L"\\stop_requested");
+        ok = ok && write_text(file, "");
+    }
+    expect_in("close_stop", ok, "sessions\\latest.txt names this session and its stop_requested is written");
+}
+
+// The close modes end the game as a close does: close sends WM_CLOSE once the overlay's input procedure has subclassed
+// the window (SWOFTY_TEST_OVERLAY_INPUT), close_fatal first raises an access violation it handles itself, and
+// close_stop writes the launcher's stop request and ends with no WM_CLOSE.
+static void close_game(HWND w, const char *mode)
+{
+    SetErrorMode(SEM_NOGPFAULTERRORBOX);
+    if (!strcmp(mode, "close_stop")) {
+        request_stop();
+        TerminateProcess(GetCurrentProcess(), 1);
+    }
+    for (DWORD t0 = GetTickCount(); GetWindowLongPtrW(w, GWLP_WNDPROC) == (LONG_PTR)wndproc && GetTickCount() - t0 < 30000;) {
+        MSG m;
+        while (PeekMessageW(&m, NULL, 0, 0, PM_REMOVE))
+            DispatchMessageW(&m);
+        Sleep(20);
+    }
+    expect_in(mode, GetWindowLongPtrW(w, GWLP_WNDPROC) != (LONG_PTR)wndproc,
+              "the overlay's input procedure subclassed the window before WM_CLOSE");
+    if (!strcmp(mode, "close_fatal")) {
+        AddVectoredExceptionHandler(0, handled_fault);
+        ULONG_PTR info[2] = {1, 0x18};
+        RaiseException(EXCEPTION_ACCESS_VIOLATION, 0, 2, info);
+        printf("      close_fatal: the game handled an access violation writing 0x18\n");
+    }
+    close_ends = 1;
+    SendMessageW(w, WM_CLOSE, 0, 0);
+    expect_in(mode, 0, "WM_CLOSE ended the game");
+}
+
 // The fake game's hand-written stand-ins leave callee-saved registers as the game's own code does, so the mode is read
 // from memory after them, not from the register main would keep it in.
 static int main_argc;
@@ -3867,6 +3950,8 @@ int main(int argc, char **argv)
     }
     if (main_argc > 1 && !strcmp(main_argv[1], "exit"))
         ExitProcess(255);
+    if (main_argc > 1 && !strncmp(main_argv[1], "close", 5))
+        close_game(w, main_argv[1]);
     if (main_argc > 1 && !strcmp(main_argv[1], "acclim"))
         crash_track_acclim(0);
     if (main_argc > 1 && !strcmp(main_argv[1], "acclim_penalty"))

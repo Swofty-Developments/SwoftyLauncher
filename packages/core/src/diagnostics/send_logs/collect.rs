@@ -7,7 +7,7 @@ use serde_json::Value;
 
 use super::crashes::{CrashFound, dumps_listing, is_crash_file};
 use super::files::{Cut, file_name, kept_head, read_cut, same_contents};
-use super::redact::{redact_env, redact_json};
+use super::redact::{redact_env, redact_json, redact_page_tokens};
 use super::summary::{loader_line, newest_perf};
 use super::system::os_description;
 use super::{
@@ -181,8 +181,9 @@ impl Collector {
         match read_cut(from, cap, head) {
             Ok((data, cut)) => {
                 let redacted = redact
-                    .map(|f| f(&String::from_utf8_lossy(&data)))
-                    .filter(|r| r.as_bytes() != data.as_slice());
+                    .map(|f| f(&String::from_utf8_lossy(&data)).into_bytes())
+                    .filter(|r| r.as_slice() != data.as_slice());
+                let redacted = redact_page_tokens(redacted.as_deref().unwrap_or(&data)).or(redacted);
                 let changed = redacted.is_some();
                 let mut out = Vec::new();
                 let kept = match cut {
@@ -206,7 +207,7 @@ impl Collector {
                     (None, true) => Some("secrets redacted".into()),
                     (None, false) => None,
                 };
-                out.extend_from_slice(redacted.as_ref().map_or(data.as_slice(), |r| r.as_bytes()));
+                out.extend_from_slice(redacted.as_deref().unwrap_or(&data));
                 self.push(path, out, note);
             }
             Err(e) => self.skipped.push(format!("{path}: {e}")),
@@ -513,6 +514,7 @@ impl Bundle {
             game: report.game.describe(),
             entries: c.entries,
             skipped: c.skipped,
+            automatic: report.automatic.is_some(),
         };
         let perf = newest_perf(live_perf, sessions);
         let summary = bundle.summary(&from, report, stamp, perf, found, &loader);
@@ -520,7 +522,7 @@ impl Bundle {
             0,
             Entry {
                 path: "summary.txt".into(),
-                data: summary.into_bytes(),
+                data: redact_page_tokens(summary.as_bytes()).unwrap_or_else(|| summary.into_bytes()),
                 note: None,
             },
         );

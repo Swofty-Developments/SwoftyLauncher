@@ -174,6 +174,14 @@ Crashes, with the exception, registers and a stack named from `symbols.tsv`. The
 [crash] ExitProcess(1) on thread 340, 11 s after load; caller stack:
 ```
 
+An exit that ends a close the game was asked for writes no report: a non-zero exit within 60 s of the game's window getting `WM_CLOSE` or `WM_ENDSESSION`, or after the launcher wrote the session's `stop_requested`. An exit within 10 s of a fatal exception still gets one.
+
+```text
+[crash] the game's window got WM_CLOSE; an exit within 60 s is that close, with no crash report
+[crash] TerminateProcess(1) on thread 33672, 20 s after load; caller stack:
+[crash] TerminateProcess(1) ends a close the game was asked for (WM_CLOSE 0.4 s earlier); no crash report
+```
+
 A fast-fail ends the game with exit code `0xc0000409` and skips every exception handler, so the core hooks the paths that end in one before they run: `__report_gsfailure` (a stack cookie check failed), the CRT's invalid-parameter terminate path, the CRT's `abort()` path and `RaiseFailFastException`. The report is written first and the fast-fail then goes ahead. Its reason names the path, the fast-fail code and the exit code, and its `Exception` section carries the code as parameter 0:
 
 ```text

@@ -454,6 +454,8 @@ void hud_setup() { overlay.setup(); }
 
 void hud_arm() { overlay.arm_decided(); }
 
+void hud_hook_window(HWND wnd) { overlay.input.hook_window(wnd); }
+
 void hud_fatal()
 {
     ID3D12Device *dev = overlay.live_dev.load();

@@ -82,6 +82,7 @@ impl Shell {
                 )
                 .into_any_element()
         };
+        let ad = self.page_ad(self.rooms.form, p);
         v_flex()
             .size_full()
             .child(self.header(Page::Multiplayer.label(), subtitle, actions, p))
@@ -94,6 +95,7 @@ impl Shell {
                     .pt(px(4.))
                     .pb(px(24.))
                     .gap(px(24.))
+                    .children(ad)
                     .when(self.rooms.form, |d| d.child(self.create_form(p, cx)))
                     .child(
                         v_flex()
@@ -229,6 +231,7 @@ impl Shell {
         let m = &self.rooms;
         let creating = m.starting.as_deref() == Some("create");
         let shell = cx.entity().downgrade();
+        let chosen = m.max;
         let players = Button::new("mp-max")
             .outline()
             .tap_sm()
@@ -236,10 +239,12 @@ impl Shell {
             .label(trn(usize::from(m.max), "{count} player", "{count} players"))
             .dropdown_caret(true)
             .dropdown_menu_with_anchor(Anchor::TopLeft, move |mut menu, _, _| {
-                for n in MIN_PLAYERS..=MAX_PLAYERS {
+                menu = menu.max_h(px(320.)).scrollable(true).min_w(px(160.));
+                for n in room_sizes() {
                     let shell = shell.clone();
                     menu = menu.item(
                         PopupMenuItem::new(trn(usize::from(n), "{count} player", "{count} players"))
+                            .checked(n == chosen)
                             .on_click(move |_, _, cx| {
                                 shell
                                     .update(cx, |s, cx| {

@@ -19,6 +19,8 @@ pub(crate) struct Prefs {
     pub(crate) home_video: bool,
     /// `update_off_addons` from config.json: opt-in, the play bar also updates addons that are off.
     pub(crate) update_off_addons: bool,
+    /// `send_room_crash_logs` from config.json: on unless turned off, a crash in a room sends its logs by itself.
+    pub(crate) send_room_crash_logs: bool,
     /// `updates.check` from config.json, read when the library loads.
     pub(crate) update_check: bool,
     pub(crate) start_store: bool,
@@ -35,10 +37,17 @@ impl Prefs {
             time_trial_ingame: config.time_trial_ingame,
             home_video: config.home_video,
             update_off_addons: config.update_off_addons,
+            send_room_crash_logs: config.send_room_crash_logs,
             update_check: config.updates.check,
             start_store: config.launch.start_store,
             vr_profiles: config.vr_profiles.clone(),
         }
+    }
+
+    /// The crash-in-a-room setting Settings shows: only to a player with multiplayer access. It keeps its value
+    /// while hidden.
+    pub(crate) fn room_crash_logs_shown(&self, allowed: bool) -> Option<bool> {
+        allowed.then_some(self.send_room_crash_logs)
     }
 }
 
@@ -159,6 +168,17 @@ impl Shell {
         cx.notify();
     }
 
+    pub(crate) fn set_send_room_crash_logs(&mut self, on: bool, window: &mut Window, cx: &mut Context<Self>) {
+        let mut config = self.store.config();
+        config.send_room_crash_logs = on;
+        if let Err(e) = self.store.save_config(&config) {
+            crate::app::app_log::action("save settings").failed(&e);
+            window.notify(Notification::error(e.to_string()), cx);
+        }
+        self.prefs.send_room_crash_logs = config.send_room_crash_logs;
+        cx.notify();
+    }
+
     pub(crate) fn set_launch_mode(&mut self, mode: LaunchMode, window: &mut Window, cx: &mut Context<Self>) {
         let mut config = self.store.config();
         config.set_launch_mode(&self.library.profile.name, mode);
@@ -168,5 +188,25 @@ impl Shell {
         }
         self.prefs.vr_profiles = config.vr_profiles;
         cx.notify();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Config, Prefs};
+
+    #[test]
+    fn the_crash_in_a_room_setting_shows_only_with_multiplayer_access_and_keeps_its_value() {
+        let mut config = Config::default();
+        assert_eq!(
+            Prefs::from_config(&config).room_crash_logs_shown(true),
+            Some(true)
+        );
+        assert_eq!(Prefs::from_config(&config).room_crash_logs_shown(false), None);
+        config.send_room_crash_logs = false;
+        let prefs = Prefs::from_config(&config);
+        assert_eq!(prefs.room_crash_logs_shown(false), None);
+        assert!(!prefs.send_room_crash_logs);
+        assert_eq!(prefs.room_crash_logs_shown(true), Some(false));
     }
 }

@@ -12,6 +12,10 @@ const CONTENT_MAX: usize = 2000;
 
 /// The log server Send Logs to Developers uploads to, which posts each part to
 /// the developers' Discord channel.
+/// The header on every part that says whether the launcher sent the bundle by itself (`automatic`) or the player
+/// did (`manual`).
+pub const KIND_HEADER: &str = "X-Swofty-Logs-Kind";
+
 #[derive(Debug, Clone)]
 pub struct LogServer {
     url: String,
@@ -39,6 +43,14 @@ impl std::fmt::Display for Stage {
             Self::Sent { .. } => f.write_str("Sent — thanks!"),
         }
     }
+}
+
+/// A bundle the log server took: how many parts it went in, and the id the server gave its first part, which
+/// the developers can look the report up by.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Sent {
+    pub parts: usize,
+    pub reference: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -78,7 +90,7 @@ impl LogServer {
         (url.starts_with("https://") || url.starts_with("http://")).then(|| Self { url: url.to_owned() })
     }
 
-    pub fn send(&self, bundle: &Bundle, progress: &dyn Fn(Stage)) -> Result<usize, SendError> {
+    pub fn send(&self, bundle: &Bundle, progress: &dyn Fn(Stage)) -> Result<Sent, SendError> {
         self.send_with(bundle, PART_LIMIT, Duration::from_secs(300), progress)
     }
 
@@ -90,10 +102,11 @@ impl LogServer {
         mut limit: usize,
         timeout: Duration,
         progress: &dyn Fn(Stage),
-    ) -> Result<usize, SendError> {
+    ) -> Result<Sent, SendError> {
         'pack: loop {
             progress(Stage::Packing);
             let parts = bundle.parts(limit).map_err(|e| SendError::Other(e.to_string()))?;
+            let mut reference = None;
             for part in &parts {
                 progress(Stage::Sending {
                     part: part.index,
@@ -101,7 +114,7 @@ impl LogServer {
                     bytes: part.data.len(),
                 });
                 match self.post(bundle, part, timeout, progress) {
-                    Ok(()) => {}
+                    Ok(id) => reference = reference.or(id),
                     Err(SendError::TooBig) if part.index == 1 && limit / 2 >= MIN_PART => {
                         limit /= 2;
                         continue 'pack;
@@ -110,7 +123,10 @@ impl LogServer {
                 }
             }
             progress(Stage::Sent { parts: parts.len() });
-            return Ok(parts.len());
+            return Ok(Sent {
+                parts: parts.len(),
+                reference,
+            });
         }
     }
 
@@ -120,7 +136,7 @@ impl LogServer {
         part: &Part,
         timeout: Duration,
         progress: &dyn Fn(Stage),
-    ) -> Result<(), SendError> {
+    ) -> Result<Option<String>, SendError> {
         let (content_type, body) = multipart(&payload(bundle, part), &part.file_name, &part.data);
         let (mut waits, mut retries) = (0, 0);
         loop {
@@ -130,6 +146,7 @@ impl LogServer {
                     concat!("swofty-launcher/", env!("CARGO_PKG_VERSION")),
                 )
                 .header("Content-Type", &content_type)
+                .header(KIND_HEADER, if bundle.automatic { "automatic" } else { "manual" })
                 .config()
                 .timeout_global(Some(timeout))
                 .timeout_connect(Some(Duration::from_secs(15)))
@@ -140,7 +157,7 @@ impl LogServer {
                 .map_err(|e| SendError::Unreachable(e.to_string()))?;
             let code = response.status().as_u16();
             if (200..300).contains(&code) {
-                return Ok(());
+                return Ok(reference(response.into_body()));
             }
             let header = response
                 .headers()
@@ -187,6 +204,18 @@ impl LogServer {
                     .map(str::to_owned),
             });
         }
+    }
+}
+
+/// The id a log server's 2xx reply gives the message it posted (`{"ok": true, "id": "..."}`), as a string
+/// whether it came as one or as a number. Discord's own webhook replies with no body.
+fn reference(mut body: ureq::Body) -> Option<String> {
+    let text = body.with_config().limit(64 << 10).read_to_string().ok()?;
+    let reply: Value = serde_json::from_str(&text).ok()?;
+    match &reply["id"] {
+        Value::String(id) if !id.trim().is_empty() => Some(id.trim().to_owned()),
+        Value::Number(id) => Some(id.to_string()),
+        _ => None,
     }
 }
 

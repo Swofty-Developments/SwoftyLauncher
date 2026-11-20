@@ -70,7 +70,7 @@ impl Shell {
         }
     }
 
-    fn ad_fits(unit: Unit, width: f32) -> bool {
+    pub(crate) fn ad_fits(unit: Unit, width: f32) -> bool {
         width * crate::ui::scale::current() >= f32::from(unit.size().width)
     }
 
