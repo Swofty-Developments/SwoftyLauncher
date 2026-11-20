@@ -300,24 +300,43 @@ std::vector<car_profile::Entry> profile_entries()
     return out;
 }
 
+std::unordered_set<std::string> g_logged;
+
 bool within(const car_profile::Entry &e)
 {
-    if (e.profile.within.is_null())
-        return true;
-    swofty::json::Value arr = e.profile.within.is_array() ? e.profile.within : swofty::json::Value::array();
-    if (!e.profile.within.is_array())
-        arr.push_back(e.profile.within);
-    Selectors sel;
-    std::string why;
-    if (!Selectors::compile(swofty::json::dump(arr), sel, &why)) {
-        swofty::log("[cars] car.profile %s: within does not compile: %s", e.id.c_str(), why.c_str());
-        return false;
-    }
     auto facts = core().current();
-    return facts && sel.match(*facts);
+    if (!facts)
+        return e.profile.within.is_null();
+    std::string why;
+    bool hit = car_profile::within_matches(e.profile, *facts, &why);
+    if (!why.empty() && g_logged.insert("compile:" + e.id).second)
+        swofty::log("[cars] car.profile %s: within does not compile: %s", e.id.c_str(), why.c_str());
+    return hit;
 }
 
-std::unordered_set<std::string> g_logged;
+std::vector<std::vector<std::string>> box_chains()
+{
+    std::vector<std::vector<std::string>> out;
+    auto &store = swofty_core::registry::store();
+    for (const std::string &id : store.list("content.package", "")) {
+        auto chain = store.chain("content.package", id);
+        if (chain.empty())
+            chain.push_back(id);
+        out.push_back(std::move(chain));
+    }
+    return out;
+}
+
+void check_within(const std::vector<car_profile::Entry> &entries)
+{
+    for (const auto &e : entries) {
+        if (!g_logged.insert("within:" + e.id).second)
+            continue;
+        std::string why = car_profile::unreachable(e.profile.within, box_chains);
+        if (!why.empty())
+            swofty::log("[cars] car.profile %s never matches: %s", e.id.c_str(), why.c_str());
+    }
+}
 
 car_profile::Memo g_profiled;
 
@@ -346,6 +365,7 @@ void apply_profiles(uint32_t index, bool force = false)
         return;
     g_profiled.note(index, key);
     auto entries = profile_entries();
+    check_within(entries);
     auto report = car_profile::Applier<Ops>::evaluate(entries, session_type(), within, index, is_ai != 0);
     for (const auto &id : report.needs_identity)
         if (g_logged.insert("identity:" + id).second)

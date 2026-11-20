@@ -248,6 +248,29 @@ ops->unlayer(token);
 
 That record is all of F1 1990's two native DLLs: the race engine (power x0.9725 and a cut 300 rpm under the limiter outside qualifying) and the AI's grip (x0.87 outside qualifying, in the dry).
 
+Every entry of `within` has to hold. A season with a Grand Prix box and a Time Trial box lists both in one entry. In a Time Trial the content is the Time Trial box picked, the mode is `time_trial` and the session type is `time_trial`:
+
+```json
+{
+  "car.profile": {
+    "sw12_handling": {
+      "within": [{ "content": ["swofty.swofty-seasons-2012/sw_2012", "swofty.swofty-seasons-2012/sw_2012_tt"] }],
+      "lift_scale": 0.9,
+      "drag_scale": 0.9
+    }
+  }
+}
+```
+
+Written as two entries, `[{ "content": ".../sw_2012" }, { "content": ".../sw_2012_tt" }]`, the profile asks for one box that is both and matches no session. The core says so the first time it reads the record:
+
+```text
+[cars] car.profile swofty.swofty-seasons-2012/sw12_handling never matches: its within entries all have to hold, and no box is swofty.swofty-seasons-2012/sw_2012 and swofty.swofty-seasons-2012/sw_2012_tt at once; one entry {"content": ["swofty.swofty-seasons-2012/sw_2012", "swofty.swofty-seasons-2012/sw_2012_tt"]} matches any of them
+[cars] car 0: 12 car.profile layer(s) from 2 profile(s) in a time_trial session
+```
+
+The second line is what a matching profile logs, once per car and session type.
+
 ```cpp
 namespace swofty::cars {
 struct Profile {

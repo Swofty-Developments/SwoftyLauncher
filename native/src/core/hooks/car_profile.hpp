@@ -10,6 +10,7 @@
 #include <swofty/systems/cars.hpp>
 
 #include "core/hooks/car_live.hpp"
+#include "core/hooks/context.hpp"
 
 // car.profile records applied as core-owned layers (standard library 1.6, experimental). A profile names a
 // scope (the selectors in `within`, the session types in `when`, the cars in `cars`, ai_only and player_only)
@@ -17,6 +18,8 @@
 // name, and every key the record does not name is a live field path (a number sets it, or an object with set,
 // scale or add). The core drops its profile layers for a car and adds the matching profiles' again at car.built,
 // car.reset, the upgrade replay and when the session changes. Profiles compose by priority, then by record id.
+// The entries of `within` all have to hold, so a Grand Prix box and its Time Trial box go in one entry
+// ({"content": [gp, tt]}); unreachable() names a within whose content entries no box holds at once.
 // Ops<Tag> keeps the state per tag, so the host test runs the same code on fake cars.
 
 namespace swofty_core::hooks::car_profile {
@@ -82,6 +85,91 @@ inline std::vector<Spec> specs(const swofty::cars::Profile &p, std::vector<std::
         }
     }
     return out;
+}
+
+inline swofty::json::Value within_list(const swofty::json::Value &within)
+{
+    if (within.is_array())
+        return within;
+    swofty::json::Value list = swofty::json::Value::array();
+    if (!within.is_null())
+        list.push_back(within);
+    return list;
+}
+
+inline bool within_matches(const swofty::cars::Profile &p, const Facts &facts, std::string *why)
+{
+    if (p.within.is_null())
+        return true;
+    Selectors sel;
+    if (!Selectors::compile(swofty::json::dump(within_list(p.within)), sel, why))
+        return false;
+    return sel.match(facts);
+}
+
+struct ContentNeed {
+    std::vector<std::string> ids;
+    bool exact = false;
+};
+
+inline std::vector<ContentNeed> content_needs(const swofty::json::Value &within)
+{
+    std::vector<ContentNeed> out;
+    swofty::json::Value list = within_list(within);
+    for (const auto &entry : *list.if_array()) {
+        auto o = entry.if_object();
+        if (!o)
+            continue;
+        for (const auto &[key, v] : *o) {
+            if (key != "content" && key != "content_exact")
+                continue;
+            ContentNeed n;
+            n.exact = key == "content_exact";
+            if (auto s = v.if_string())
+                n.ids.push_back(*s);
+            else if (auto a = v.if_array())
+                for (const auto &x : *a)
+                    if (auto s = x.if_string())
+                        n.ids.push_back(*s);
+            if (!n.ids.empty())
+                out.push_back(std::move(n));
+        }
+    }
+    return out;
+}
+
+inline bool box_holds(const std::vector<std::string> &chain, const ContentNeed &n)
+{
+    for (const auto &id : n.ids)
+        if (n.exact ? !chain.empty() && chain.front() == id : std::find(chain.begin(), chain.end(), id) != chain.end())
+            return true;
+    return false;
+}
+
+inline std::string unreachable(const swofty::json::Value &within,
+                               const std::function<std::vector<std::vector<std::string>>()> &boxes)
+{
+    auto needs = content_needs(within);
+    if (needs.size() < 2)
+        return {};
+    for (const auto &chain : boxes()) {
+        bool all = true;
+        for (const auto &n : needs)
+            all = all && box_holds(chain, n);
+        if (all)
+            return {};
+    }
+    std::string named, ids;
+    for (size_t i = 0; i < needs.size(); i++) {
+        std::string one;
+        for (const auto &id : needs[i].ids) {
+            one += (one.empty() ? "" : " or ") + id;
+            ids += (ids.empty() ? "\"" : ", \"") + id + "\"";
+        }
+        named += (i == 0 ? "" : i + 1 == needs.size() ? " and " : ", ") + one;
+    }
+    return "its within entries all have to hold, and no box is " + named + " at once; one entry {\"content\": [" + ids +
+           "]} matches any of them";
 }
 
 enum class Match { yes, no, needs_identity };
