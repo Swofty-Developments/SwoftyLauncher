@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: Renderer.Gfx.SSGI, Renderer.Gfx.WIN.uploadHeapSize, Renderer.Gfx.clearColour, Renderer.Gfx.d3DDebugMuteFilters, Renderer.Gfx.d3dDebugBreakOnCorruption, Renderer.Gfx.d3dDebugBreakOnError, Renderer.Gfx.d3dDebugBreakOnInfo, Renderer.Gfx.d3dDebugBreakOnMessage, Renderer.Gfx.'"
+  "evidence": "pat:log-channel--;pat:disasm-0x1443cd291",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: Renderer.Gfx.SSGI, Renderer.Gfx.WIN.uploadHeapSize, Renderer.Gfx.clearColour, Renderer.Gfx.d3DDebugMuteFilters, Renderer.Gfx.d3dDebugBreakOnCorruption, Renderer.Gfx.d3dDebugBreakOnError, Renderer.Gfx.d3dDebugBreakOnInfo, Renderer.Gfx.d3dDebugBreakOnMessage, Renderer.Gfx.'  | 2026-11-20 engine-re (track ERP size limits): Renderer.Gfx.WIN.uploadHeapSize default 0x4b00000 = 75 MiB (mov r9d at 0x1443cd298, read 0x1443cd29e): D3D12 upload heap size, settings key."
  },
  "signature": {
   "id": "game.read_renderer_gfx_config_3",
