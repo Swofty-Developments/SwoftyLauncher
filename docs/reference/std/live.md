@@ -418,7 +418,7 @@ Active aero mode, Boost and Overtake state, DRS allowed and distance, the pit li
 [live] setup values off: needs the car setup record rows; CarOps gives several setup values
 ```
 
-The setup values the car carries (brake bias, differential, suspension and the others in [Changing a car live](../../std/systems/car-physics#changing-a-car-live)) read through the car operations instead. The game's own view-model leaves carry most of these values, but the core has no leaf reader: the node's value layout is not in the knowledge base, so there is no `hud::get` yet.
+The setup values the car carries (brake bias, differential, suspension and the others in [Changing a car live](/std/systems/car-physics#changing-a-car-live)) read through the car operations instead. The game's own view-model leaves carry most of these values, but the core has no leaf reader: the node's value layout is not in the knowledge base, so there is no `hud::get` yet.
 
 ## Images through the live API (table v4)
 
