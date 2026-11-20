@@ -87,7 +87,7 @@ impl Shell {
                     {
                         seen.armed = true;
                         cx.defer(move |cx| {
-                            shell.update(cx, |s, cx| super::Online::pump(s, cx)).ok();
+                            shell.update(cx, super::Online::pump).ok();
                         });
                     }
                 },
