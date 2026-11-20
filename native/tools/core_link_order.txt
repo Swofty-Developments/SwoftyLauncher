@@ -8,6 +8,7 @@
 # the build fails when it changes or a unit with static objects is not listed here.
 src/core/diagnostics/crash/stall_walk.cpp
 src/core/hooks/guard.cpp
+src/core/diagnostics/perf/pdh.cpp
 third_party/safetyhook/safetyhook.cpp
 third_party/safetyhook/Zydis.c
 third_party/zstd/common/debug.c

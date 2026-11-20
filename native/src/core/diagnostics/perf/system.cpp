@@ -1,4 +1,5 @@
 #include "core/diagnostics/perf/system.hpp"
+#include "core/diagnostics/perf/pdh.hpp"
 #include "core/hud/hardware_settings.hpp"
 
 #include "core/runtime/runtime.hpp"
@@ -38,9 +39,7 @@ std::string narrow(const wchar_t *w, size_t cap = 128)
 
 template <class F> F proc(const wchar_t *dll, const char *name)
 {
-    HMODULE m = GetModuleHandleW(dll);
-    if (!m)
-        m = LoadLibraryW(dll);
+    HMODULE m = pdh::pinned(dll);
     return m ? reinterpret_cast<F>(reinterpret_cast<void *>(GetProcAddress(m, name))) : nullptr;
 }
 
@@ -166,18 +165,30 @@ Gpu *game_gpu()
 
 namespace engines {
 
-using OpenQ = PDH_STATUS(WINAPI *)(LPCWSTR, DWORD_PTR, PDH_HQUERY *);
-using AddEnglish = PDH_STATUS(WINAPI *)(PDH_HQUERY, LPCWSTR, DWORD_PTR, PDH_HCOUNTER *);
-using Collect = PDH_STATUS(WINAPI *)(PDH_HQUERY);
-using Array = PDH_STATUS(WINAPI *)(PDH_HCOUNTER, DWORD, LPDWORD, LPDWORD, PPDH_FMT_COUNTERVALUE_ITEM_W);
-
-Collect collect_fn;
-Array array_fn;
+pdh::Api api;
+pdh::Fault fault;
 PDH_HQUERY query;
 PDH_HCOUNTER counter;
 bool off;
 unsigned every = 1, ticks;
 std::vector<BYTE> buf;
+
+bool switched_off()
+{
+    char v[8] = {};
+    DWORD n = GetEnvironmentVariableA("SWOFTY_PERF_GPU_ENGINE", v, sizeof v);
+    return n && n < sizeof v && v[0] == '0';
+}
+
+bool faulted()
+{
+    if (!fault.call)
+        return false;
+    off = true;
+    swofty::log("[perf] gpu engine use: %s faulted (0x%08lx at %s); 3D engine use is not sampled from now on", fault.call,
+                fault.code, runtime::code_where(fault.at).c_str());
+    return true;
+}
 
 bool start()
 {
@@ -188,17 +199,21 @@ bool start()
     off = true;
     if (under_wine())
         return false;
-    auto open_fn = proc<OpenQ>(L"pdh.dll", "PdhOpenQueryW");
-    auto add_fn = proc<AddEnglish>(L"pdh.dll", "PdhAddEnglishCounterW");
-    collect_fn = proc<Collect>(L"pdh.dll", "PdhCollectQueryData");
-    array_fn = proc<Array>(L"pdh.dll", "PdhGetFormattedCounterArrayW");
-    if (!open_fn || !add_fn || !collect_fn || !array_fn) {
+    if (switched_off()) {
+        swofty::log("[perf] gpu engine use: off (SWOFTY_PERF_GPU_ENGINE=0); 3D engine use is not sampled");
+        return false;
+    }
+    if (!pdh::load(api)) {
         swofty::log("[perf] gpu engine use: pdh.dll is unavailable; 3D engine use is not sampled");
         return false;
     }
-    PDH_STATUS s = open_fn(nullptr, 0, &query);
+    PDH_STATUS s = pdh::open(api, &query, fault);
     if (s == ERROR_SUCCESS)
-        s = add_fn(query, L"\\GPU Engine(*)\\Utilization Percentage", 0, &counter);
+        s = pdh::add(api, query, L"\\GPU Engine(*)\\Utilization Percentage", &counter, fault);
+    if (faulted()) {
+        query = nullptr;
+        return false;
+    }
     if (s != ERROR_SUCCESS) {
         swofty::log("[perf] gpu engine use: the GPU Engine counters are unavailable (0x%08lx); 3D engine use is not sampled",
                     (unsigned long)s);
@@ -206,8 +221,10 @@ bool start()
         return false;
     }
     auto t0 = std::chrono::steady_clock::now();
-    collect_fn(query);
+    pdh::collect(api, query, fault);
     double ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
+    if (faulted())
+        return false;
     swofty::log("[perf] gpu engine use: sampled from the GPU Engine counters every 5 s (first read %.0f ms)", ms);
     off = false;
     return false;
@@ -220,8 +237,10 @@ bool read(std::vector<pace::EngineUse> &out)
     if (++ticks % every)
         return false;
     auto t0 = std::chrono::steady_clock::now();
-    PDH_STATUS s = collect_fn(query);
+    PDH_STATUS s = pdh::collect(api, query, fault);
     double ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
+    if (faulted())
+        return false;
     if (ms > 2000) {
         off = true;
         swofty::log("[perf] gpu engine use: one read took %.0f ms; 3D engine use is not sampled from now on", ms);
@@ -234,12 +253,13 @@ bool read(std::vector<pace::EngineUse> &out)
     if (s != ERROR_SUCCESS)
         return false;
     DWORD size = 0, n = 0;
-    s = array_fn(counter, PDH_FMT_DOUBLE, &size, &n, nullptr);
-    if (s != PDH_STATUS(PDH_MORE_DATA) || !size)
+    s = pdh::array(api, counter, &size, &n, nullptr, fault);
+    if (faulted() || s != PDH_STATUS(PDH_MORE_DATA) || !size)
         return false;
     buf.resize(size);
     auto *items = reinterpret_cast<PPDH_FMT_COUNTERVALUE_ITEM_W>(buf.data());
-    if (array_fn(counter, PDH_FMT_DOUBLE, &size, &n, items) != ERROR_SUCCESS)
+    s = pdh::array(api, counter, &size, &n, items, fault);
+    if (faulted() || s != ERROR_SUCCESS)
         return false;
     out.reserve(n);
     for (DWORD i = 0; i < n; i++) {
