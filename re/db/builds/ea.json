@@ -35,6 +35,10 @@
    "pattern": "E9 ?? ?? ?? ?? 04 C4 5C E9 28 C5 A5 FC 63",
    "note": "The bytes after the protector thunk's jmp are Steam-only filler. EA's thunk is the target that all 4 Steam callers (2 in .xtls, 2 in .data1 bodies) reach once mapped; the filler is from the EA dump."
   },
+  "Ne_AnimClipPlayer_Sample_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 7A 1A 32 D8 E9 49 7C FD FF F6",
+   "note": "The bytes after the 5-byte jmp are not code and differ on EA (thunk 0x1403a6b40 to the body 0x147be8570, the KB body with the zeroing stride, the output offset and the log probe start written another way)."
+  },
   "Ne_Detach_ChildNode": {
    "pattern": "E9 ?? ?? ?? ?? 0F 87 B1 E0 9A 01 65 ED E9",
    "note": "The bytes after the protector thunk's jmp are Steam-only filler. EA's thunk is the target that 7 mapped Steam callers reach; the filler is from the EA dump."
@@ -1091,6 +1095,9 @@
   },
   "Gdb_Lookup_Key": {
    "match": "0x4598580"
+  },
+  "Ne_AnimClipPlayer_Sample_Thunk": {
+   "match": "0x3a6b40"
   },
   "Ne_Compare_StringNoCase": {
    "match": "0x5454aa4"
