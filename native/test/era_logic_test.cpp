@@ -117,14 +117,16 @@ static void rev_lights_swap_tests()
     expect(!swaps.swap(c.mem, 27) && c.mem[era::MODE_EQUAL_ENGINE] == 0 && swaps.active() == 2,
            "a mode without an equal_performance_engine is left alone (each car shows its own engine)");
     swaps.swap(a.mem, 25);
-    expect(a.mem[era::MODE_EQUAL_ENGINE] == 25 && swaps.active() == 2, "a second press without a put back keeps the game's engine once");
+    expect(a.mem[era::MODE_EQUAL_ENGINE] == 25 && swaps.active() == 2,
+           "a second press without a put back keeps the game's engine once");
     expect(swaps.put_back() == 2 && a.mem[era::MODE_EQUAL_ENGINE] == 2 && b.mem[era::MODE_EQUAL_ENGINE] == 2 &&
                swaps.active() == 0,
            "put back restores the game's engine in every swapped mode");
 
     swaps.swap(a.mem, 27);
     a.mem[era::MODE_EQUAL_ENGINE] = 3; // the game reloaded the mode since the press
-    expect(swaps.put_back() == 0 && a.mem[era::MODE_EQUAL_ENGINE] == 3, "put back leaves an engine the game changed since the swap");
+    expect(swaps.put_back() == 0 && a.mem[era::MODE_EQUAL_ENGINE] == 3,
+           "put back leaves an engine the game changed since the swap");
 
     swaps.swap(a.mem, 27);
     expect(swaps.forget() == 1 && swaps.active() == 0 && a.mem[era::MODE_EQUAL_ENGINE] == 27 && swaps.put_back() == 0,

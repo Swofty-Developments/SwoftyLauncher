@@ -432,7 +432,8 @@ void drs_tests(const std::string &regs)
     Value v12 = swofty::json::parse(
         R"({"entrant_list":"sw_f1_2012_tt","teams":[{"vehicle":"mod.s/redbull"},{"vehicle":"mod.s/ferrari"},
             {"vehicle":"mod.s/lotus"},{"vehicle":"mod.s/hrt"},{"vehicle":"mod.s/ghost"},{"team":"mod.s/no_vehicle"}]})");
-    Value v13 = swofty::json::parse(R"({"entrant_list":"sw_f1_2013_tt","teams":[{"vehicle":"mod.s/ferrari"},{"vehicle":"mod.s/hrt"}]})");
+    Value v13 =
+        swofty::json::parse(R"({"entrant_list":"sw_f1_2013_tt","teams":[{"vehicle":"mod.s/ferrari"},{"vehicle":"mod.s/hrt"}]})");
     Value vnone = swofty::json::parse(R"({"entrant_list":"cs_1990","teams":[{"vehicle":"mod.s/plain"}]})");
     std::map<std::string, Value> vehicles = {
         {"mod.s/redbull", swofty::json::parse(R"({"engine":"game/Renault_F1_V8_2009-2013"})")},

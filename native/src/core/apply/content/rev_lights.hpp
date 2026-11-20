@@ -22,8 +22,8 @@ namespace swofty_core::apply::content {
 
 struct RevLightsPick {
     std::string package;
-    std::string engine;   // an entrants.engines label; empty: the mode keeps its own engine
-    std::size_t cars = 0; // vehicles that name `engine`
+    std::string engine;    // an entrants.engines label; empty: the mode keeps its own engine
+    std::size_t cars = 0;  // vehicles that name `engine`
     std::size_t named = 0; // vehicles that name any engine
     std::string line;
 };
@@ -32,8 +32,7 @@ struct RevLightsPick {
 // content.package (in the order given) with that entrant list, the `engine` most of its teams' vehicle records name,
 // the first of those in team order on a tie. Vehicles that name no engine keep their donor's and count for none.
 inline RevLightsPick rev_lights_pick(const std::string &entrant_list,
-                                     const std::vector<std::pair<std::string, const Value *>> &packages,
-                                     const Lookup &lookup)
+                                     const std::vector<std::pair<std::string, const Value *>> &packages, const Lookup &lookup)
 {
     RevLightsPick p;
     const Value *found = nullptr;
