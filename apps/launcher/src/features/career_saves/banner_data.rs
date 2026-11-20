@@ -1,8 +1,8 @@
 use std::path::Path;
 
 use swofty_core::profile::VANILLA;
-use swofty_core::saves::stall;
 use swofty_core::saves::vault::{self, Vault};
+use swofty_core::saves::{stall, stuck};
 use swofty_i18n::{fill, tr, trf, trn};
 
 use super::labels::row_name;
@@ -48,10 +48,20 @@ pub(crate) struct Stalled {
     pub(super) sessions: usize,
 }
 
+pub(crate) struct Stuck {
+    pub(super) profile: String,
+    pub(super) source: String,
+    pub(super) sha256: String,
+    pub(super) weekend: stuck::Weekend,
+    pub(super) snapshot: Option<String>,
+    pub(super) snapshot_at: Option<i64>,
+}
+
 pub(crate) enum Banner {
     Dropped(Missing),
     Lost(Missing),
     Stalled(Stalled),
+    Stuck(Stuck),
 }
 
 pub(super) struct Shown {
@@ -70,6 +80,7 @@ pub(super) enum Kind {
     Dropped,
     Lost,
     Stalled,
+    Stuck,
 }
 
 impl Banner {
@@ -150,7 +161,46 @@ impl Banner {
                 sha256: s.sha256.clone(),
                 restorable: s.snapshot.is_some(),
             },
+            Self::Stuck(s) => Shown {
+                text: match s.snapshot_at {
+                    Some(at) => fill(
+                        tr(
+                            "{whose} holds a career saved inside its {weekend} weekend before any session of it ran: Team HQ has no Advance in that save. Restore puts back the version from {when}, and the save as it is stays in Versions. Review the restore shows the season and round of each career in that version first.",
+                        ),
+                        &[
+                            ("whose", whose_cap(&s.profile)),
+                            ("weekend", weekend_text(&s.weekend)),
+                            ("when", vault::human(at)),
+                        ],
+                    ),
+                    None => fill(
+                        tr(
+                            "{whose} holds a career saved inside its {weekend} weekend before any session of it ran: Team HQ has no Advance in that save. The launcher holds no earlier version to restore.",
+                        ),
+                        &[
+                            ("whose", whose_cap(&s.profile)),
+                            ("weekend", weekend_text(&s.weekend)),
+                        ],
+                    ),
+                },
+                source: s.source.clone(),
+                snapshot: s.snapshot.clone().unwrap_or_default(),
+                kind: Kind::Stuck,
+                generation: 0,
+                modes: Vec::new(),
+                sha256: s.sha256.clone(),
+                restorable: s.snapshot.is_some(),
+            },
         }
+    }
+}
+
+/// `round 12 of 22 (hungaroring)`, in the player's language.
+fn weekend_text(w: &stuck::Weekend) -> String {
+    let place = trf!("round {round} of {rounds}", round = w.round, rounds = w.rounds);
+    match w.track_name() {
+        Some(track) => format!("{place} ({track})"),
+        None => place,
     }
 }
 
@@ -194,17 +244,27 @@ pub(super) fn banner_from(root: &Path, source: String, profile: String) -> Optio
             modes: loss.plain.modes(),
         }));
     }
-    stall::offers(root)
+    if let Some(o) = stall::offers(root).into_iter().find(|o| o.source == source) {
+        return Some(Banner::Stalled(Stalled {
+            profile,
+            source,
+            sha256: o.sha256,
+            snapshot: o.snapshot,
+            snapshot_at: o.snapshot_at,
+            sessions: o.sessions,
+        }));
+    }
+    stuck::offers(root)
         .into_iter()
         .find(|o| o.source == source)
         .map(|o| {
-            Banner::Stalled(Stalled {
+            Banner::Stuck(Stuck {
                 profile,
                 source,
                 sha256: o.sha256,
+                weekend: o.weekend,
                 snapshot: o.snapshot,
                 snapshot_at: o.snapshot_at,
-                sessions: o.sessions,
             })
         })
 }

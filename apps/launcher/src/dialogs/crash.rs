@@ -220,6 +220,7 @@ impl Crashes {
                         let facts = CrashFacts::read(&session, fresh);
                         if !crashed {
                             let stall = known_problems::stall(&session, game_dir.as_deref(), &store)
+                                .or_else(|| known_problems::stuck(&session, game_dir.as_deref(), &store))
                                 .or_else(|| known_problems::tyres(&session, game_dir.as_deref(), &store))
                                 .or_else(|| known_problems::logos(&session, game_dir.as_deref(), &store));
                             return (Ok(String::new()), stall, facts);

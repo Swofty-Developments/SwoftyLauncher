@@ -662,3 +662,55 @@ fn a_saves_refresh_overtaken_by_a_newer_one_is_dropped() {
     assert_eq!(page.view.as_ref().map(|v| v.profile.as_str()), Some("Race"));
     std::fs::remove_dir_all(&root).ok();
 }
+
+#[test]
+fn a_save_stuck_in_a_started_weekend_offers_the_version_before_it() {
+    use swofty_core::saves::stuck::{self, Ledger, Stuck, Weekend};
+    let d = data("stuck");
+    let loc = vault::Location::launcher(&d, "p");
+    std::fs::create_dir_all(&loc.dir).unwrap();
+    let file = loc.dir.join("savegame@profile#NXDSMWW.BWW");
+    let v = Vault::of(&d, &loc).unwrap();
+    std::fs::write(&file, vec![3u8; 64]).unwrap();
+    let good = v
+        .snapshot(&loc, vault::Meta::new(vault::Reason::AfterSession), 1_000)
+        .unwrap();
+    std::fs::write(&file, vec![9u8; 65]).unwrap();
+    v.snapshot(&loc, vault::Meta::new(vault::Reason::AfterSession), 2_000)
+        .unwrap();
+    let sha = swofty_core::game_folder::baseline::sha256_file(&file).unwrap();
+    Ledger {
+        saves: vec![Stuck {
+            source: loc.source.clone(),
+            sha256: sha.clone(),
+            size: 65,
+            weekend: Weekend {
+                round: 12,
+                rounds: 22,
+                session: Some("practice_1".into()),
+                track: Some("game/hungaroring".into()),
+            },
+            sessions: vec!["20261120-104632".into()],
+            profile: Some("p".into()),
+            found_at: 3_000,
+            dismissed: false,
+        }],
+        read: Vec::new(),
+    }
+    .write(&d)
+    .unwrap();
+    let banner = banner_from(&d, loc.source.clone(), "p".into()).expect("a stuck banner");
+    let shown = banner.shown();
+    assert!(
+        shown
+            .text
+            .contains("inside its round 12 of 22 (hungaroring) weekend"),
+        "{}",
+        shown.text
+    );
+    assert_eq!(shown.snapshot, good.snapshot().unwrap().id);
+    assert!(shown.restorable);
+    stuck::dismiss(&d, &loc.source, &sha).unwrap();
+    assert!(banner_from(&d, loc.source.clone(), "p".into()).is_none());
+    std::fs::remove_dir_all(&d).ok();
+}

@@ -40,7 +40,7 @@ impl Shell {
                                     this.restore_mode(&restore.0, mode, restore.2, window, cx);
                                 }
                             }
-                            Kind::Dropped | Kind::Stalled => {
+                            Kind::Dropped | Kind::Stalled | Kind::Stuck => {
                                 this.restore_version(&restore.0, &restore.1, window, cx);
                             }
                         })),
@@ -67,6 +67,9 @@ impl Shell {
                         let root = this.store.root.clone();
                         if kind == Kind::Stalled {
                             swofty_core::saves::stall::dismiss(&root, &dismiss_source, &dismiss_sha).ok();
+                        }
+                        if kind == Kind::Stuck {
+                            swofty_core::saves::stuck::dismiss(&root, &dismiss_source, &dismiss_sha).ok();
                         }
                         if let Ok(v) = Vault::open(&root, &dismiss_source) {
                             v.dismiss_drop().ok();
