@@ -90,6 +90,17 @@ inline constexpr bool F_DRIVER_NAMES =
 inline constexpr bool F_BADGE_RENDER = F_BADGES && LIVE_HAS(SessionEntrantView, badge_stat_id);
 inline constexpr bool F_TRACK_NAME =
     LIVE_HAS(RacingVehicles, owner) && LIVE_HAS(RacingOwner, track) && LIVE_HAS(RacingTrack, name);
+inline constexpr bool F_GRID = LIVE_HAS(SessionVehicleEntry, grid_position_a) && LIVE_HAS(SessionVehicleEntry, grid_position_b);
+inline constexpr bool F_LAP_TIMES =
+    LIVE_HAS(VehicleLapTimesSystem, cars_begin) && LIVE_HAS(VehicleLapTimesSystem, cars_end) &&
+    LIVE_HAS(VehicleLapTimesEntry, data) && LIVE_HAS(VehicleLapTimesData, laps) && LIVE_HAS(VehicleLapTimesData, current_lap) &&
+    LIVE_HAS(LapTimeRecord, lap) && LIVE_HAS(LapTimeRecord, sector1_a) && LIVE_HAS(LapTimeRecord, sector1_b) &&
+    LIVE_HAS(LapTimeRecord, sector2_a) && LIVE_HAS(LapTimeRecord, sector2_b) && LIVE_HAS(LapTimeRecord, sector3_a) &&
+    LIVE_HAS(LapTimeRecord, sector3_b) && LIVE_HAS(LapTimeRecord, valid_a) && LIVE_HAS(LapTimeRecord, valid_b) &&
+    LIVE_HAS(LapTimeRecord, time_a) && LIVE_HAS(LapTimeRecord, time_b) && LIVE_SIZED(LapTimeRecord, layout::lap_times::stride);
+inline constexpr bool F_TYRE_WEAR = LIVE_HAS(CarWheel, wear) && LIVE_HAS(VehicleTyreComponent, physics);
+inline constexpr bool F_TYRE_AGE = LIVE_HAS(TyreStint, compound) && LIVE_HAS(TyreStint, set_index) &&
+                                   LIVE_HAS(TyreStint, end_lap) && LIVE_SIZED(TyreStint, layout::tyres::set_stride);
 
 inline constexpr Row ROWS[G_COUNT] = {
     {G_CAR_SYSTEMS, F_CAR_SYSTEMS, true,
@@ -123,6 +134,27 @@ inline constexpr Row ROWS[G_COUNT] = {
      "the game mode entrant chain, SessionEntrantView.driver_ref, EntrantsSystem driver tables, DriverRecord.display_name, "
      "VehicleHelperSystem participants and player name, VehicleHelperParticipant and CarPhysicsRecord.car"},
     {G_BADGE_RENDER, F_BADGE_RENDER &&F_REGISTRY, true, "the badges rows and SessionEntrantView.badge_stat_id"},
+    {G_GRID, F_GRID &&F_REGISTRY, true, "SessionVehicleEntry.grid_position_a and grid_position_b"},
+    {G_LAP_TIMES, F_LAP_TIMES &&F_REGISTRY, true,
+     "VehicleLapTimesSystem, VehicleLapTimesEntry, VehicleLapTimesData and LapTimeRecord fields and the LapTimeRecord size"},
+    {G_TYRE_WEAR, F_TYRE_WEAR && F_TYRES && F_REGISTRY, true, "CarWheel.wear, VehicleTyreComponent.physics and the tyres rows"},
+    {G_TYRE_AGE, F_TYRE_AGE && F_TYRES && F_LAP_TIMES &&F_REGISTRY, true,
+     "TyreStint fields and size, the tyres rows and the lap times rows"},
+};
+
+// Values the live state does not read yet on any build: their have bits stay clear and the core logs
+// "[live] <name> off: needs <rows>" once.
+struct Unread {
+    const char *name;
+    const char *needs;
+};
+
+inline constexpr Unread UNREAD[] = {
+    {"session time left",
+     "a session clock row read without a call (Sess_RaceRuleset_GetTimeRemaining interpolates RaceRuleset +0x2f0 from the "
+     "game timer)"},
+    {"total laps", "the race lap count: RaceRuleset +0x358 with the ruleset class proven on each session type"},
+    {"setup values", "the car setup record rows; CarOps gives several setup values"},
 };
 
 struct Needs {
@@ -155,6 +187,10 @@ inline constexpr Needs NEEDS[] = {
     {G_BUS_EVENTS, {&Sites::bus_slot, &Sites::bus_subscribe}},
     {G_DRIVER_NAMES, {&Sites::game_manager, &Sites::key_game_mode, &Sites::key_team_tables, &Sites::key_session_component}},
     {G_BADGE_RENDER, {&Sites::game_manager, &Sites::key_game_mode, &Sites::key_team_tables}},
+    {G_GRID, {&Sites::game_manager, &Sites::key_results}},
+    {G_LAP_TIMES, {&Sites::game_manager, &Sites::key_lap_times}},
+    {G_TYRE_WEAR, {&Sites::game_manager, &Sites::key_tyres}},
+    {G_TYRE_AGE, {&Sites::game_manager, &Sites::key_tyres, &Sites::key_lap_times}},
 };
 
 constexpr uint32_t bit(Group g) { return 1u << g; }
@@ -174,12 +210,15 @@ struct BuildProof {
 
 inline constexpr uint32_t ALL_GROUPS = (1u << G_COUNT) - 1;
 
+// Groups whose layouts were compared on the KB build and Steam 26566308 only (re/research/live-steam-26566308.md).
+inline constexpr uint32_t STEAM_ONLY_GROUPS = bit(G_GRID) | bit(G_LAP_TIMES) | bit(G_TYRE_WEAR) | bit(G_TYRE_AGE);
+
 inline constexpr BuildProof KB_BUILD = {runtime::build_proof::known(runtime::build_proof::Build::kb)->pe_timestamp, "Steam",
                                         ALL_GROUPS, layout::progress::from_manager};
 
 // Driver names read the EntrantsSystem driver tables and VehicleHelperSystem participants, which have not been compared
 // against the EA build's layout yet; the rendered badge path reads a SessionEntrantView field that has not been either.
-inline constexpr uint32_t EA_GROUPS = ALL_GROUPS & ~(bit(G_DRIVER_NAMES) | bit(G_BADGE_RENDER));
+inline constexpr uint32_t EA_GROUPS = ALL_GROUPS & ~(bit(G_DRIVER_NAMES) | bit(G_BADGE_RENDER) | STEAM_ONLY_GROUPS);
 
 inline constexpr BuildProof EA_BUILD = {runtime::build_proof::known(runtime::build_proof::Build::ea)->pe_timestamp, "EA",
                                         EA_GROUPS, runtime::game_manager::tail_field(layout::progress::from_manager, "ea")};
@@ -203,7 +242,7 @@ inline constexpr BuildProof STEAM_26566308_BUILD = {
 inline constexpr BuildProof EA_1_0_145_BUILD = {
     runtime::build_proof::known(runtime::build_proof::Build::ea_1_0_145)->pe_timestamp,
     "EA 1.0.145",
-    ALL_GROUPS,
+    ALL_GROUPS & ~STEAM_ONLY_GROUPS,
     runtime::game_manager::tail_field(layout::progress::from_manager, "ea"),
     runtime::car_layout::ers_mode(runtime::build_proof::Build::ea_1_0_145),
     bit(G_DRIVER_NAMES)};

@@ -164,6 +164,7 @@ public:
 
     SwoftyLiveSession ses;
     SwoftyLiveCar cars[MAX_CARS];
+    SwoftyLiveCarDetail details[MAX_CARS];
     bool present[MAX_CARS] = {};
     uint64_t seq = 0;
 
@@ -215,7 +216,9 @@ public:
             job_pit();
         if (g_[G_PENALTIES] && due(t_pen_, 0.25))
             job_penalties();
-        if (g_[G_TYRES] && due(t_tyre_, 0.5))
+        if (g_[G_LAP_TIMES] && due(t_laps_, 0.1))
+            job_laps();
+        if ((g_[G_TYRES] || g_[G_TYRE_WEAR] || g_[G_TYRE_AGE]) && due(t_tyre_, 0.5))
             job_tyres();
         if (g_[G_FLAGS] && due(t_flags_, 0.25))
             job_flags();
@@ -374,7 +377,7 @@ private:
     };
     struct Cls {
         bool have = false, tpen = false;
-        uint8_t status = 0xff, pos = 0;
+        uint8_t status = 0xff, pos = 0, grid = 0;
         float penalty = 0;
     };
     struct Gap {
@@ -392,6 +395,16 @@ private:
         bool damage = false;
         uint8_t state[4] = {};
         float deflation[4] = {};
+        bool wear_ok = false;
+        float wear[4] = {};
+        bool age_ok = false;
+        uint8_t age = 0, stint = 0;
+    };
+    struct Laps {
+        bool have = false, best = false;
+        uint32_t completed = 0, current_ms = 0, current_s[2] = {}, last_ms = 0, last_s[3] = {};
+        uint32_t best_ms = 0, best_number = 0, best_s[3] = {};
+        uint8_t flags = 0;
     };
 
     Mem m_;
@@ -399,7 +412,7 @@ private:
     Gates g_;
     double now_ = 0, last_now_ = -1e18;
     double t_scan_ = -1e9, t_ctrl_ = -1e9, t_cls_ = -1e9, t_prog_ = -1e9, t_timing_ = -1e9, t_pit_ = -1e9, t_pen_ = -1e9,
-           t_tyre_ = -1e9, t_flags_ = -1e9, t_mode_ = -1e9, t_track_ = -1e9, t_cars_ = -1e9;
+           t_tyre_ = -1e9, t_flags_ = -1e9, t_mode_ = -1e9, t_track_ = -1e9, t_cars_ = -1e9, t_laps_ = -1e9, t_best_ = -1e9;
     const char *stop_ = "";
 
     uintptr_t slots_[MAX_CARS] = {};
@@ -410,7 +423,7 @@ private:
     size_t entrants_ = 0;
 
     Slot c_results_, c_spectator_, c_timing_, c_pit_, c_sc_, c_log_, c_s1_, c_tyres_, c_marshal_, c_red_, c_mode_, c_teams_;
-    Slot c_customisation_;
+    Slot c_customisation_, c_laps_;
     uintptr_t customisation_key_ = 0;
     double customisation_scan_ = -2.0;
 
@@ -426,6 +439,7 @@ private:
     uint8_t pit_[MAX_CARS];
     Pen pen_[MAX_CARS];
     Tyre tyre_[MAX_CARS];
+    Laps laps_[MAX_CARS];
     float sector_end_[8] = {};
     int sector_count_ = 0;
     float sector_track_ = 0;
@@ -463,6 +477,7 @@ private:
     {
         std::memset(&ses, 0, sizeof ses);
         std::memset(cars, 0, sizeof cars);
+        std::memset(details, 0, sizeof details);
         std::memset(pit_, 0xff, sizeof pit_);
         std::memset(pit_lane_ok_, 0, sizeof pit_lane_ok_);
         std::memset(garage_ok_, 0, sizeof garage_ok_);
@@ -472,7 +487,7 @@ private:
     void reset_timers()
     {
         t_scan_ = t_ctrl_ = t_cls_ = t_prog_ = t_timing_ = t_pit_ = t_pen_ = t_tyre_ = t_flags_ = t_mode_ = t_track_ = t_cars_ =
-            -1e9;
+            t_laps_ = t_best_ = -1e9;
     }
 
     bool due(double &t, double period)
@@ -496,7 +511,7 @@ private:
         observed_valid_ = false;
         events_.clear();
         c_results_ = c_spectator_ = c_timing_ = c_pit_ = c_sc_ = c_log_ = c_s1_ = c_tyres_ = c_marshal_ = c_red_ = c_mode_ =
-            c_teams_ = c_customisation_ = Slot{};
+            c_teams_ = c_customisation_ = c_laps_ = Slot{};
         customisation_key_ = 0;
         customisation_scan_ = -2.0;
         if (player_ptr_) {
@@ -516,6 +531,7 @@ private:
         std::memset(present, 0, sizeof present);
         std::memset(&ses, 0, sizeof ses);
         std::memset(cars, 0, sizeof cars);
+        std::memset(details, 0, sizeof details);
         for (auto &c : cls_)
             c = Cls{};
         for (auto &g : gap_)
@@ -524,6 +540,8 @@ private:
             p = Pen{};
         for (auto &t : tyre_)
             t = Tyre{};
+        for (auto &l : laps_)
+            l = Laps{};
         std::memset(pit_, 0xff, sizeof pit_);
         std::memset(pit_lane_ok_, 0, sizeof pit_lane_ok_);
         std::memset(garage_ok_, 0, sizeof garage_ok_);
@@ -829,6 +847,11 @@ private:
                 c.tpen = true;
                 c.penalty = float(d);
             }
+            uint32_t grid[3] = {};
+            if (g_[G_GRID] && m_.read(p + L::grid::pos_a, grid, sizeof grid)) {
+                uint32_t slot = (grid[0] ^ grid[2]) + 1;
+                c.grid = slot >= 1 && slot <= ne && slot <= MAX_ENTRIES ? uint8_t(slot) : 0;
+            }
             uint32_t pos = (field<uint32_t>(b, 0, L::results::pos_a) ^ field<uint32_t>(b, 0, L::results::pos_b)) + 1;
             if (pos < 1 || pos > ne || pos > MAX_ENTRIES)
                 continue;
@@ -1020,19 +1043,39 @@ private:
         }
     }
 
-    void read_tyre_damage(uintptr_t V, Tyre &t)
+    bool read_wheels(uintptr_t V, uintptr_t (&wheels)[4])
     {
         namespace D = L::tyre_damage;
-        uintptr_t physics = 0, car = 0, suspension = 0, wheels[4] = {};
-        if (!m_.get(V + D::physics, physics) || !physics || (physics & 7) || !m_.get(physics + D::car, car) || !car ||
-            (car & 7) || !m_.get(car + D::suspension, suspension) || !suspension || (suspension & 7) ||
+        uintptr_t physics = 0, car = 0, suspension = 0;
+        if (!V || (V & 7) || !m_.get(V + D::physics, physics) || !physics || (physics & 7) || !m_.get(physics + D::car, car) ||
+            !car || (car & 7) || !m_.get(car + D::suspension, suspension) || !suspension || (suspension & 7) ||
             !m_.read(suspension + D::wheels, wheels, sizeof wheels))
-            return;
+            return false;
+        for (uintptr_t w : wheels)
+            if (!w || (w & 7))
+                return false;
+        return true;
+    }
+
+    void read_tyre_wear(const uintptr_t (&wheels)[4], Tyre &t)
+    {
+        float wear[4];
+        for (unsigned w = 0; w < 4; w++)
+            if (!m_.get(wheels[w] + L::tyre_wear::wear, wear[w]) || !within(wear[w], 0.f, 1.f))
+                return;
+        for (unsigned w = 0; w < 4; w++)
+            t.wear[w] = wear[w] * 100.f;
+        t.wear_ok = true;
+    }
+
+    void read_tyre_damage(const uintptr_t (&wheels)[4], Tyre &t)
+    {
+        namespace D = L::tyre_damage;
         for (unsigned w = 0; w < 4; w++) {
             uint8_t flags = 0;
             float deflation = 0;
-            if (!wheels[w] || (wheels[w] & 7) || !m_.get(wheels[w] + D::flags, flags) ||
-                !m_.get(wheels[w] + D::deflation, deflation) || !(deflation == deflation) || deflation < 0 || deflation > 100)
+            if (!m_.get(wheels[w] + D::flags, flags) || !m_.get(wheels[w] + D::deflation, deflation) ||
+                !(deflation == deflation) || deflation < 0 || deflation > 100)
                 return;
             uint8_t st = flags & D::state_mask;
             t.state[w] = st == 2 || st == 3 ? st : 0;
@@ -1041,11 +1084,50 @@ private:
         t.damage = true;
     }
 
+    // The UDP car status count of laps on the fitted set (0x142d00060): over the stint records in fitting order, each
+    // starting the lap after the previous one ended, add the laps up to the current lap of every record with the
+    // fitted record's compound and set index.
+    void read_tyre_age(uintptr_t V, uint32_t current, Tyre &t)
+    {
+        namespace A = L::tyre_age;
+        uintptr_t set[2];
+        if (!m_.read(V + L::tyres::set_begin, set, sizeof set) || !set[0] || set[1] <= set[0] ||
+            (set[1] - set[0]) % L::tyres::set_stride || (set[1] - set[0]) / L::tyres::set_stride > A::max_stints)
+            return;
+        size_t n = (set[1] - set[0]) / L::tyres::set_stride;
+        static uint8_t buf[A::max_stints * L::tyres::set_stride];
+        if (!m_.read(set[0], buf, n * L::tyres::set_stride))
+            return;
+        const uint8_t *fitted = buf + (n - 1) * L::tyres::set_stride;
+        uint32_t compound = field<uint32_t>(fitted, 0, A::compound), start = 0, age = 0, stint = 0;
+        uint8_t index = fitted[A::set_index];
+        for (size_t k = 0; k < n; k++) {
+            const uint8_t *r = buf + k * L::tyres::set_stride;
+            uint32_t end = uint32_t(field<uint16_t>(r, 0, A::end_lap)) + 1, upto = std::min(end, current);
+            uint32_t laps = upto > start ? upto - start : 0;
+            if (field<uint32_t>(r, 0, A::compound) == compound && r[A::set_index] == index)
+                age += laps;
+            if (k + 1 == n)
+                stint = laps;
+            start = end;
+        }
+        t.age = uint8_t(std::min<uint32_t>(age, 255));
+        t.stint = uint8_t(std::min<uint32_t>(stint, 255));
+        t.age_ok = true;
+    }
+
     void read_tyre(uintptr_t V, Tyre &t)
     {
+        uintptr_t wheels[4] = {};
+        bool damage = L::HAS_TYRE_DAMAGE && s_.tyre_damage, wear = g_[G_TYRE_WEAR] && s_.wheel_chain;
+        bool chain = (damage || wear) && read_wheels(V, wheels);
         if constexpr (L::HAS_TYRE_DAMAGE)
-            if (s_.tyre_damage && V && !(V & 7))
-                read_tyre_damage(V, t);
+            if (chain && damage)
+                read_tyre_damage(wheels, t);
+        if (chain && wear)
+            read_tyre_wear(wheels, t);
+        if (!g_[G_TYRES])
+            return;
         uint8_t b[L::tyres::hi - L::tyres::lo];
         auto F = [&](uintptr_t off) { return off - L::tyres::lo; };
         if (!V || (V & 7) || !m_.read(V + L::tyres::lo, b, sizeof b))
@@ -1097,8 +1179,110 @@ private:
             (n && !m_.read(v[0], ptr, n * 8)))
             return;
         for (unsigned vid = 0; vid < MAX_CARS && vid < n; vid++)
-            if (racer(vid))
+            if (racer(vid)) {
                 read_tyre(ptr[vid], tyre_[vid]);
+                if (g_[G_TYRE_AGE] && laps_[vid].have && ptr[vid] && !(ptr[vid] & 7))
+                    read_tyre_age(ptr[vid], laps_[vid].completed, tyre_[vid]);
+            }
+    }
+
+    static bool lap_ms(const uint8_t *r, uintptr_t a, uintptr_t b, uint32_t &out)
+    {
+        float s = from_bits(field<uint32_t>(r, 0, a) ^ field<uint32_t>(r, 0, b));
+        if (!within(s, 0.f, 86400.f))
+            return false;
+        out = uint32_t(s * 1000.f);
+        return true;
+    }
+
+    static bool lap_valid(const uint8_t *r)
+    {
+        return (field<uint64_t>(r, 0, L::lap_times::valid_b) & 1) == r[L::lap_times::valid_a];
+    }
+
+    static bool sector_set(const uint8_t *r, uintptr_t a, uintptr_t b)
+    {
+        return ((field<uint32_t>(r, 0, a) ^ field<uint32_t>(r, 0, b)) & 0x7fffffffu) != 0;
+    }
+
+    // Laps of one car's lap data (VehicleLapTimesEntry + 0x38): the lap in progress is record current_lap, the last
+    // completed one the record before it (Sess_Udp_SyncLapData). The best lap, as Sess_LapTimes_IsNewFastestLap and the
+    // session history pick it: of the valid records whose three sectors are set, the first with the lowest time.
+    bool read_laps(uintptr_t data, Laps &l, bool scan)
+    {
+        namespace T = L::lap_times;
+        uint8_t current = 0;
+        if (!m_.get(data + T::current_lap, current) || current >= T::records)
+            return false;
+        uint8_t two[2 * T::stride];
+        size_t first = current ? current - 1u : 0u;
+        if (!m_.read(data + T::laps + first * T::stride, two, (current ? 2 : 1) * T::stride))
+            return false;
+        const uint8_t *now = two + (current ? T::stride : 0), *last = current ? two : nullptr;
+        Laps n;
+        n.completed = current;
+        if (!lap_ms(now, T::time_a, T::time_b, n.current_ms) || !lap_ms(now, T::s1_a, T::s1_b, n.current_s[0]) ||
+            !lap_ms(now, T::s2_a, T::s2_b, n.current_s[1]))
+            return false;
+        n.flags = lap_valid(now) ? SWOFTY_LIVE_LAP_CURRENT_VALID : 0;
+        if (last) {
+            if (!lap_ms(last, T::time_a, T::time_b, n.last_ms) || !lap_ms(last, T::s1_a, T::s1_b, n.last_s[0]) ||
+                !lap_ms(last, T::s2_a, T::s2_b, n.last_s[1]) || !lap_ms(last, T::s3_a, T::s3_b, n.last_s[2]))
+                return false;
+            n.flags |= lap_valid(last) ? SWOFTY_LIVE_LAP_LAST_VALID : 0;
+        }
+        if (scan || !l.have) {
+            static uint8_t all[T::records * T::stride];
+            if (!m_.read(data + T::laps, all, sizeof all))
+                return false;
+            const uint8_t *best = nullptr;
+            uint32_t best_ms = 0;
+            for (size_t i = 0; i < T::records; i++) {
+                const uint8_t *r = all + i * T::stride;
+                uint32_t ms = 0;
+                if (!sector_set(r, T::s1_a, T::s1_b) || !sector_set(r, T::s2_a, T::s2_b) || !sector_set(r, T::s3_a, T::s3_b) ||
+                    !lap_valid(r))
+                    continue;
+                if (!lap_ms(r, T::time_a, T::time_b, ms))
+                    return false;
+                if (!best || ms < best_ms) {
+                    best = r;
+                    best_ms = ms;
+                }
+            }
+            if (best && best[T::lap] != 0xff && lap_ms(best, T::s1_a, T::s1_b, n.best_s[0]) &&
+                lap_ms(best, T::s2_a, T::s2_b, n.best_s[1]) && lap_ms(best, T::s3_a, T::s3_b, n.best_s[2])) {
+                n.best = true;
+                n.best_ms = best_ms;
+                n.best_number = uint32_t(best[T::lap]) + 1;
+            }
+        } else {
+            n.best = l.best;
+            n.best_ms = l.best_ms;
+            n.best_number = l.best_number;
+            std::memcpy(n.best_s, l.best_s, sizeof n.best_s);
+        }
+        n.have = true;
+        l = n;
+        return true;
+    }
+
+    void job_laps()
+    {
+        namespace T = L::lap_times;
+        bool scan = due(t_best_, 1.0);
+        uintptr_t sys = find(c_laps_, s_.key_lap_times), v[2];
+        size_t n = 0;
+        uintptr_t ptr[MAX_ENTRIES];
+        if (!sys || !m_.read(sys + T::cars_begin, v, sizeof v) || !vec_ok(v[0], v[1], 8, MAX_ENTRIES, n) ||
+            (n && !m_.read(v[0], ptr, n * 8))) {
+            for (auto &l : laps_)
+                l = Laps{};
+            return;
+        }
+        for (unsigned vid = 0; vid < MAX_CARS; vid++)
+            if (vid >= n || !racer(vid) || !ptr[vid] || (ptr[vid] & 7) || !read_laps(ptr[vid] + T::entry_data, laps_[vid], scan))
+                laps_[vid] = Laps{};
     }
 
     void job_flags()
@@ -1535,6 +1719,7 @@ private:
         }
 
         std::memset(cars, 0, sizeof cars);
+        std::memset(details, 0, sizeof details);
         std::memset(present, 0, sizeof present);
         for (int i = 0; i < n_cars_; i++) {
             const CarRef &r = refs_[i];
@@ -1647,6 +1832,39 @@ private:
                     c.tyre_deflation[w] = t.deflation[w];
                 }
             }
+            SwoftyLiveCarDetail &d = details[id];
+            d.version = SWOFTY_LIVE_VERSION;
+            d.size = sizeof d;
+            d.vehicle = id;
+            if (k.have && k.grid) {
+                c.have |= SWOFTY_LIVE_HAVE_GRID;
+                d.grid_position = k.grid;
+            }
+            if (t.wear_ok) {
+                c.have |= SWOFTY_LIVE_HAVE_TYRE_WEAR;
+                std::memcpy(d.tyre_wear, t.wear, sizeof d.tyre_wear);
+            }
+            if (t.age_ok) {
+                c.have |= SWOFTY_LIVE_HAVE_TYRE_AGE;
+                d.tyre_age_laps = t.age;
+                d.tyre_stint_laps = t.stint;
+            }
+            const Laps &l = laps_[id];
+            if (l.have) {
+                c.have |= SWOFTY_LIVE_HAVE_LAP_TIMES;
+                d.laps_completed = l.completed;
+                d.current_lap_ms = l.current_ms;
+                std::memcpy(d.current_sector_ms, l.current_s, sizeof d.current_sector_ms);
+                d.last_lap_ms = l.last_ms;
+                std::memcpy(d.last_sector_ms, l.last_s, sizeof d.last_sector_ms);
+                d.lap_flags = l.flags;
+                if (l.best) {
+                    d.best_lap_ms = l.best_ms;
+                    d.best_lap_number = l.best_number;
+                    std::memcpy(d.best_sector_ms, l.best_s, sizeof d.best_sector_ms);
+                }
+            }
+            d.have = c.have;
         }
 
         if (g_[G_CLASS] && cls_ok_) {

@@ -47,6 +47,7 @@ const Named SITE_NAMES[] = {
     {"k_Live_RedFlagSystemKey", &lv::Sites::key_red_flag},
     {"k_Live_GameModeSystemKey", &lv::Sites::key_game_mode},
     {"k_Live_EntrantsSystemKey", &lv::Sites::key_team_tables},
+    {"k_Live_VehicleLapTimesSystemKey", &lv::Sites::key_lap_times},
     {"g_Live_ControllerSystem", &lv::Sites::controllers},
     {"vt_Sess_ControllerSystem", &lv::Sites::vt_controllers},
     {"vt_Sess_HumanController", &lv::Sites::vt_human},
@@ -205,8 +206,8 @@ void decide_gates(const lv::BuildProof &build)
     g_verify = env_on("SWOFTY_TELEMETRY_VERIFY");
     g_sites.progress_from_manager = build.progress_from_manager;
     g_sites.ers_mode = build.ers_mode;
-    g_sites.tyre_damage = lv::layout::HAS_TYRE_DAMAGE &&
-                          (g_forced || runtime::build_proof::proven_on(runtime::car_layout::PUNCTURES, runtime::running_build()));
+    g_sites.wheel_chain = g_forced || runtime::build_proof::proven_on(runtime::car_layout::PUNCTURES, runtime::running_build());
+    g_sites.tyre_damage = lv::layout::HAS_TYRE_DAMAGE && g_sites.wheel_chain;
     lv::Decision d = lv::decide(g_sites, build, g_forced);
     g_gates = d.gates;
     for (unsigned i = 0; i < lv::G_COUNT; i++) {
@@ -223,6 +224,8 @@ void decide_gates(const lv::BuildProof &build)
         else
             swofty::log("[live] %s off: %s (SWOFTY_LIVE_FORCE=1 reads it unverified)", lv::group_name(g), lv::ROWS[g].needs);
     }
+    for (const lv::Unread &u : lv::UNREAD)
+        swofty::log("[live] %s off: needs %s", u.name, u.needs);
 }
 
 void publish()
@@ -232,6 +235,7 @@ void publish()
     g_snap.valid = g_live->active();
     g_snap.ses = g_live->ses;
     std::memcpy(g_snap.cars, g_live->cars, sizeof g_snap.cars);
+    std::memcpy(g_snap.details, g_live->details, sizeof g_snap.details);
     std::memcpy(g_snap.present, g_live->present, sizeof g_snap.present);
     g_snap.official = g_official;
     g_snap.turn_length = g_turns.length;
@@ -380,6 +384,19 @@ int live_tyre_icon_texture(uint32_t vehicle, char *path, uint32_t cap)
     return lv::tyre_images::reference(runtime::db_table(), car.tyre_visual, path, cap);
 }
 
+int live_car_detail(uint32_t vehicle, SwoftyLiveCarDetail *out)
+{
+    if (!g_on)
+        return SWOFTY_ASSET_UNAVAILABLE;
+    if (!out || vehicle >= SWOFTY_LIVE_MAX_CARS)
+        return SWOFTY_ASSET_INVALID;
+    static thread_local lv::Snapshot s;
+    if (!read_snapshot(s) || !s.present[vehicle])
+        return SWOFTY_ASSET_UNAVAILABLE;
+    *out = s.details[vehicle];
+    return SWOFTY_ASSET_OK;
+}
+
 int live_seq(uint64_t *frame)
 {
     if (!g_on)
@@ -403,7 +420,8 @@ const SwoftyLive table = {SWOFTY_LIVE_VERSION,
                           live_driver_name,
                           live_team_badge_texture,
                           badge_images::api,
-                          live_tyre_icon_texture};
+                          live_tyre_icon_texture,
+                          live_car_detail};
 
 }
 

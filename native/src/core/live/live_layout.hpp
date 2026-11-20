@@ -135,6 +135,30 @@ constexpr uintptr_t visual_stat_id = 0x0, visual_compound = 0x50;
 constexpr uintptr_t physical_stat_id = 0x0;
 }
 
+// The starting grid slot: SessionVehicleEntry +0x90 ^ +0x98, plus 1 (Sess_Udp_SyncLapData and the formation lap HUD).
+namespace grid {
+constexpr uintptr_t pos_a = 0x90, pos_b = 0x98;
+}
+
+// Lap times, as the UDP lap data, car status and session history builders read them: VehicleLapTimesSystem +0x58 holds
+// one entry pointer per vehicle id, the entry's lap data starts at +0x38 (Sess_LapTimes_GetCarData), 200 records of
+// 0xc8 bytes from +0x8, then the current lap's record index at +0x9c48. Times are float seconds as XOR pairs; a lap is
+// valid when (valid_b & 1) == valid_a.
+namespace lap_times {
+constexpr uintptr_t cars_begin = 0x58, cars_end = 0x60, entry_data = 0x38, laps = 0x8, current_lap = 0x9c48;
+constexpr size_t stride = 0xc8, records = 200;
+constexpr uintptr_t lap = 0x0, s1_a = 0x8, s1_b = 0x10, s2_a = 0x18, s2_b = 0x20, s3_a = 0x28, s3_b = 0x30, valid_a = 0x98,
+                    valid_b = 0xa0, time_a = 0xa8, time_b = 0xb0;
+static_assert(laps + stride * records == current_lap);
+}
+
+// A tyre set's stint: the 0x78-byte records of VehicleTyreComponent.set_begin..set_end in fitting order, the last one
+// fitted. compound and set_index name the set; end_lap is the lap index its stint ended on (0xffff while fitted).
+namespace tyre_age {
+constexpr uintptr_t compound = 0xc, set_index = 0x10, end_lap = 0x74;
+constexpr size_t max_stints = 64;
+}
+
 namespace controllers {
 constexpr uintptr_t sets = 0x30, count_vec = 0x90, count_lo = 0x28, count_hi = 0x30, built = 0x365;
 constexpr uintptr_t set_human = 0x20, set_vehicle = 0x34;
@@ -191,6 +215,24 @@ constexpr size_t sector_block = 0x60;
         []<class X>() consteval {                                                                                                \
             if constexpr (requires { sizeof(X); })                                                                               \
                 return sizeof(X) <= (n);                                                                                         \
+            else                                                                                                                 \
+                return true;                                                                                                     \
+        }.template operator()<swofty::game::T>(),                                                                                \
+        #T " is not the size the live layout steps by")
+// LIVE_SIZED(T, n) is true when the header on this build declares T complete and n bytes long; LIVE_SIZE_IS fails the
+// build when it declares it with another size.
+#define LIVE_SIZED(T, n)                                                                                                         \
+    ([]<class X>() consteval {                                                                                                   \
+        if constexpr (requires { sizeof(X); })                                                                                   \
+            return sizeof(X) == (n);                                                                                             \
+        else                                                                                                                     \
+            return false;                                                                                                        \
+    }.template operator()<swofty::game::T>())
+#define LIVE_SIZE_IS(T, n)                                                                                                       \
+    static_assert(                                                                                                               \
+        []<class X>() consteval {                                                                                                \
+            if constexpr (requires { sizeof(X); })                                                                               \
+                return sizeof(X) == (n);                                                                                         \
             else                                                                                                                 \
                 return true;                                                                                                     \
         }.template operator()<swofty::game::T>(),                                                                                \
@@ -309,6 +351,36 @@ constexpr uint8_t state_mask = 0x03;
 LIVE_TIE(CarWheel, tyre_flags, tyre_damage::flags);
 LIVE_TIE(CarWheel, deflation, tyre_damage::deflation);
 inline constexpr bool HAS_TYRE_DAMAGE = LIVE_HAS(CarWheel, tyre_flags) && LIVE_HAS(CarWheel, deflation);
+// Each wheel's tyre wear, 0..1, read through the same wheel chain at CarWheel.wear +0x88 (the UDP car damage builder
+// sends 100 x it as tyresWear).
+namespace tyre_wear {
+constexpr uintptr_t wear = 0x88;
+}
+LIVE_TIE(CarWheel, wear, tyre_wear::wear);
+LIVE_TIE(VehicleTyreComponent, physics, tyre_damage::physics);
+LIVE_TIE(SessionVehicleEntry, grid_position_a, grid::pos_a);
+LIVE_TIE(SessionVehicleEntry, grid_position_b, grid::pos_b);
+LIVE_TIE(VehicleLapTimesSystem, cars_begin, lap_times::cars_begin);
+LIVE_TIE(VehicleLapTimesSystem, cars_end, lap_times::cars_end);
+LIVE_TIE(VehicleLapTimesEntry, data, lap_times::entry_data);
+LIVE_TIE(VehicleLapTimesData, laps, lap_times::laps);
+LIVE_TIE(VehicleLapTimesData, current_lap, lap_times::current_lap);
+LIVE_TIE(LapTimeRecord, lap, lap_times::lap);
+LIVE_TIE(LapTimeRecord, sector1_a, lap_times::s1_a);
+LIVE_TIE(LapTimeRecord, sector1_b, lap_times::s1_b);
+LIVE_TIE(LapTimeRecord, sector2_a, lap_times::s2_a);
+LIVE_TIE(LapTimeRecord, sector2_b, lap_times::s2_b);
+LIVE_TIE(LapTimeRecord, sector3_a, lap_times::s3_a);
+LIVE_TIE(LapTimeRecord, sector3_b, lap_times::s3_b);
+LIVE_TIE(LapTimeRecord, valid_a, lap_times::valid_a);
+LIVE_TIE(LapTimeRecord, valid_b, lap_times::valid_b);
+LIVE_TIE(LapTimeRecord, time_a, lap_times::time_a);
+LIVE_TIE(LapTimeRecord, time_b, lap_times::time_b);
+LIVE_SIZE_IS(LapTimeRecord, lap_times::stride);
+LIVE_TIE(TyreStint, compound, tyre_age::compound);
+LIVE_TIE(TyreStint, set_index, tyre_age::set_index);
+LIVE_TIE(TyreStint, end_lap, tyre_age::end_lap);
+LIVE_SIZE_IS(TyreStint, tyres::set_stride);
 LIVE_SIZE(PitLaneVehicleSlot, pit::lane_flag_stride);
 LIVE_TIE(SpectatorDirectorGap, gap_mode, spectate::gap);
 LIVE_TIE(TyreSystem, vehicles_begin, tyres::per_vehicle);

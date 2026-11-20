@@ -198,7 +198,7 @@ struct World {
         a.put<uintptr_t>(results + L::results::vec_end, rvec + 24);
         const int pos[3] = {2, 1, 3};
         for (int i = 0; i < 3; i++) {
-            uintptr_t e = results_entries[i] = a.alloc(0x60);
+            uintptr_t e = results_entries[i] = a.alloc(0xa0);
             a.put<uintptr_t>(rvec + 8 * i, e);
             set_position(i, pos[i]);
             a.put<uint8_t>(e + L::results::vehicle, uint8_t(i));
@@ -1162,13 +1162,18 @@ static void test_build_gate()
 
     CHECK(proof_for(1789118616u) == &KB_BUILD && proof_for(1789128892u) == &EA_BUILD && !proof_for(1234u) && !proof_for(0));
     CHECK(EA_BUILD.progress_from_manager == 0x2a0 && KB_BUILD.progress_from_manager == L::progress::from_manager);
-    CHECK(EA_BUILD.groups == (ALL_GROUPS & ~(bit(G_DRIVER_NAMES) | bit(G_BADGE_RENDER))) && KB_BUILD.groups == ALL_GROUPS);
+    CHECK(EA_BUILD.groups == (ALL_GROUPS & ~(bit(G_DRIVER_NAMES) | bit(G_BADGE_RENDER) | STEAM_ONLY_GROUPS)) &&
+          KB_BUILD.groups == ALL_GROUPS);
+    CHECK(STEAM_ONLY_GROUPS == (bit(G_GRID) | bit(G_LAP_TIMES) | bit(G_TYRE_WEAR) | bit(G_TYRE_AGE)));
 
     World ea(EA_BUILD.progress_from_manager);
     Sites ea_sites = ea.s;
     Decision de = decide(resolved_everywhere(ea.s), EA_BUILD, false, backed);
     CHECK(on_mask(de) == (mapped & EA_BUILD.groups) && (on_mask(de) & bit(G_PROGRESS)) && (on_mask(de) & bit(G_BUS_EVENTS)));
     CHECK(de.verdict[G_TYRES].why == Why::row && de.verdict[G_MODE].why == Why::row && de.verdict[G_BADGES].why == Why::on);
+    CHECK(de.verdict[G_LAP_TIMES].why == Why::build && de.verdict[G_GRID].why == Why::build &&
+          de.verdict[G_TYRE_AGE].why == Why::build && dk.verdict[G_LAP_TIMES].why == Why::on &&
+          dk.verdict[G_GRID].why == Why::on);
 
     Live live(ea.mem(), ea_sites, Gates::all());
     live.update(0.0);
@@ -1359,7 +1364,7 @@ static void test_steam_26566308_ers_mode()
 static void test_ea_1_0_145()
 {
     const BuildProof *build = proof_for(1794315435u);
-    CHECK(build == &EA_1_0_145_BUILD && build->groups == ALL_GROUPS);
+    CHECK(build == &EA_1_0_145_BUILD && build->groups == (ALL_GROUPS & ~STEAM_ONLY_GROUPS));
     CHECK(build->progress_from_manager == 0x2a0 && build->ers_mode == 0x1a6c);
     CHECK(build->field_proofs == bit(G_DRIVER_NAMES));
     CHECK(!proof_for(1794315434u) && !proof_for(1794315436u));
@@ -1368,7 +1373,9 @@ static void test_ea_1_0_145()
     Sites sites = resolved_everywhere(w.s);
     Decision d = decide(sites, *build, false);
     for (unsigned i = 0; i < G_COUNT; i++)
-        CHECK(d.gates[Group(i)] == (ROWS[i].mapped && (ROWS[i].fields || i == G_DRIVER_NAMES)));
+        CHECK(d.gates[Group(i)] ==
+              (ROWS[i].mapped && (ROWS[i].fields || i == G_DRIVER_NAMES) && (build->groups & bit(Group(i))) != 0));
+    CHECK(d.verdict[G_LAP_TIMES].why == Why::build && d.verdict[G_TYRE_WEAR].why == Why::build);
     sites.key_tyres = 0;
     CHECK(!decide(sites, *build, false).gates[G_TYRES]);
 
@@ -1382,6 +1389,155 @@ static void test_ea_1_0_145()
     CHECK((live.cars[0].have & SWOFTY_LIVE_HAVE_ERS_MODE) && live.cars[0].ers_mode == 1);
 }
 
+static void put_pair(Arena &a, uintptr_t at_a, uintptr_t at_b, float v)
+{
+    const uint32_t K = 0x3c5a96e1;
+    a.put<uint32_t>(at_a, bits(v) ^ K);
+    a.put<uint64_t>(at_b, 0xabcdef0000000000ull | K);
+}
+
+static void put_lap(Arena &a, uintptr_t data, unsigned i, float time, float s1, float s2, float s3, bool valid)
+{
+    namespace T = L::lap_times;
+    uintptr_t r = data + T::laps + i * T::stride;
+    a.put<uint8_t>(r + T::lap, uint8_t(i));
+    put_pair(a, r + T::time_a, r + T::time_b, time);
+    put_pair(a, r + T::s1_a, r + T::s1_b, s1);
+    put_pair(a, r + T::s2_a, r + T::s2_b, s2);
+    put_pair(a, r + T::s3_a, r + T::s3_b, s3);
+    a.put<uint8_t>(r + T::valid_a, 1);
+    a.put<uint64_t>(r + T::valid_b, 0x5a5a5a5a00000040ull | (valid ? 1u : 0u));
+}
+
+static void put_stint(Arena &a, uintptr_t r, uint32_t compound, uint8_t index, uint16_t end)
+{
+    a.put<uint32_t>(r + L::tyre_age::compound, compound);
+    a.put<uint8_t>(r + L::tyre_age::set_index, index);
+    a.put<uint16_t>(r + L::tyre_age::end_lap, end);
+}
+
+static void test_detail()
+{
+    namespace T = L::lap_times;
+    namespace D = L::tyre_damage;
+    World w;
+    Arena &a = w.a;
+    uintptr_t reg = a.get<uintptr_t>(a.get<uintptr_t>(w.s.game_manager) + L::registry::from_manager);
+    uintptr_t slots = a.get<uintptr_t>(reg + L::registry::slots), info = a.get<uintptr_t>(reg + L::registry::info);
+    w.s.key_lap_times = KEY_BASE + 16 * 12;
+    uintptr_t laps = a.alloc(0x80), lvec = a.alloc(8 * 3), data[3];
+    a.put<uintptr_t>(slots + 12 * 16, w.s.key_lap_times);
+    a.put<uintptr_t>(slots + 12 * 16 + 8, laps);
+    a.put<uint8_t>(info + 12, 1);
+    a.put<uintptr_t>(laps + T::cars_begin, lvec);
+    a.put<uintptr_t>(laps + T::cars_end, lvec + 3 * 8);
+    for (unsigned i = 0; i < 3; i++) {
+        uintptr_t entry = a.alloc(T::entry_data + T::current_lap + 8);
+        a.put<uintptr_t>(lvec + 8 * i, entry);
+        data[i] = entry + T::entry_data;
+    }
+    put_lap(a, data[0], 0, 90.5f, 30.f, 30.f, 30.5f, true);
+    put_lap(a, data[0], 1, 88.25f, 29.f, 29.25f, 30.f, false);
+    put_lap(a, data[0], 2, 91.f, 30.f, 30.5f, 30.5f, true);
+    put_lap(a, data[0], 3, 12.5f, 0.f, 0.f, 0.f, true);
+    a.put<uint8_t>(data[0] + T::current_lap, 3);
+    put_lap(a, data[1], 0, 5.f, 0.f, 0.f, 0.f, true);
+    a.put<uint8_t>(data[1] + T::current_lap, 0);
+    a.put<uint8_t>(data[2] + T::current_lap, 250);
+
+    const uint32_t grid[3] = {3, 1, 2};
+    for (unsigned i = 0; i < 3; i++) {
+        a.put<uint32_t>(w.results_entries[i] + L::grid::pos_a, (grid[i] - 1) ^ 0x2468);
+        a.put<uint32_t>(w.results_entries[i] + L::grid::pos_b, 0x2468);
+    }
+
+    uintptr_t tyres = a.alloc(0x120), vehicles = a.alloc(3 * 8), comp[3];
+    a.put<uintptr_t>(slots + 13 * 16, w.s.key_tyres);
+    a.put<uintptr_t>(slots + 13 * 16 + 8, tyres);
+    a.put<uint8_t>(info + 13, 1);
+    a.put<uintptr_t>(tyres + L::tyres::per_vehicle, vehicles);
+    a.put<uintptr_t>(tyres + L::tyres::per_vehicle + 8, vehicles + 3 * 8);
+    const float wear[3][4] = {{0.1f, 0.2f, 0.3f, 0.4f}, {0.f, 0.f, 0.05f, 0.05f}, {0.1f, 1.5f, 0.1f, 0.1f}};
+    for (unsigned i = 0; i < 3; i++) {
+        uintptr_t c = comp[i] = a.alloc(L::tyres::hi);
+        a.put<uintptr_t>(vehicles + 8 * i, c);
+        uintptr_t physics = a.alloc(0x60), car = a.alloc(D::suspension + 8), susp = a.alloc(D::wheels + 32);
+        a.put<uintptr_t>(c + D::physics, physics);
+        a.put<uintptr_t>(physics + D::car, car);
+        a.put<uintptr_t>(car + D::suspension, susp);
+        for (unsigned k = 0; k < 4; k++) {
+            uintptr_t wheel = a.alloc(0xa0);
+            a.put<uintptr_t>(susp + D::wheels + 8 * k, wheel);
+            a.put<float>(wheel + L::tyre_wear::wear, wear[i][k]);
+        }
+    }
+    uintptr_t stints = a.alloc(3 * L::tyres::set_stride);
+    put_stint(a, stints, 3, 0, 0);
+    put_stint(a, stints + L::tyres::set_stride, 4, 1, 1);
+    put_stint(a, stints + 2 * L::tyres::set_stride, 3, 0, 0xffff);
+    a.put<uintptr_t>(comp[0] + L::tyres::set_begin, stints);
+    a.put<uintptr_t>(comp[0] + L::tyres::set_end, stints + 3 * L::tyres::set_stride);
+    uintptr_t one = a.alloc(L::tyres::set_stride);
+    put_stint(a, one, 4, 2, 0xffff);
+    a.put<uintptr_t>(comp[1] + L::tyres::set_begin, one);
+    a.put<uintptr_t>(comp[1] + L::tyres::set_end, one + L::tyres::set_stride);
+
+    Sites sites = w.s;
+    sites.wheel_chain = true;
+    Live live(w.mem(), sites, Gates::all());
+    live.update(0.0);
+    live.update(1.0);
+    const SwoftyLiveCarDetail &d0 = live.details[0], &d1 = live.details[1], &d2 = live.details[2];
+    CHECK(d0.version == SWOFTY_LIVE_VERSION && d0.size == sizeof d0 && d0.vehicle == 0 && d0.have == live.cars[0].have);
+    CHECK((d0.have & SWOFTY_LIVE_HAVE_GRID) && d0.grid_position == 3 && d1.grid_position == 1 && d2.grid_position == 2);
+    CHECK((d0.have & SWOFTY_LIVE_HAVE_LAP_TIMES) && d0.laps_completed == 3 && d0.current_lap_ms == 12500 &&
+          !d0.current_sector_ms[0] && !d0.current_sector_ms[1]);
+    CHECK(d0.last_lap_ms == 91000 && d0.last_sector_ms[0] == 30000 && d0.last_sector_ms[1] == 30500 &&
+          d0.last_sector_ms[2] == 30500);
+    CHECK(d0.lap_flags == (SWOFTY_LIVE_LAP_CURRENT_VALID | SWOFTY_LIVE_LAP_LAST_VALID));
+    CHECK(d0.best_lap_ms == 90500 && d0.best_lap_number == 1 && d0.best_sector_ms[0] == 30000 && d0.best_sector_ms[2] == 30500);
+    CHECK((d1.have & SWOFTY_LIVE_HAVE_LAP_TIMES) && d1.laps_completed == 0 && d1.current_lap_ms == 5000 && !d1.last_lap_ms &&
+          !d1.best_lap_ms && !d1.best_lap_number && d1.lap_flags == SWOFTY_LIVE_LAP_CURRENT_VALID);
+    CHECK(!(d2.have & SWOFTY_LIVE_HAVE_LAP_TIMES) && !d2.laps_completed && !d2.current_lap_ms);
+    CHECK((d0.have & SWOFTY_LIVE_HAVE_TYRE_WEAR) && d0.tyre_wear[0] == 10.f && d0.tyre_wear[3] == 40.f);
+    CHECK((d1.have & SWOFTY_LIVE_HAVE_TYRE_WEAR) && d1.tyre_wear[2] == 5.f && !(d2.have & SWOFTY_LIVE_HAVE_TYRE_WEAR));
+    CHECK((d0.have & SWOFTY_LIVE_HAVE_TYRE_AGE) && d0.tyre_age_laps == 2 && d0.tyre_stint_laps == 1);
+    CHECK((d1.have & SWOFTY_LIVE_HAVE_TYRE_AGE) && d1.tyre_age_laps == 0 && d1.tyre_stint_laps == 0);
+    CHECK(!(d2.have & SWOFTY_LIVE_HAVE_TYRE_AGE));
+
+    put_lap(a, data[0], 4, 3.f, 0.f, 0.f, 0.f, false);
+    put_lap(a, data[0], 3, 89.75f, 29.5f, 30.f, 30.25f, true);
+    a.put<uint8_t>(data[0] + T::current_lap, 4);
+    live.update(1.05);
+    live.update(1.2);
+    CHECK(live.details[0].laps_completed == 4 && live.details[0].last_lap_ms == 89750 &&
+          live.details[0].lap_flags == SWOFTY_LIVE_LAP_LAST_VALID && live.details[0].best_lap_ms == 90500);
+    live.update(2.3);
+    CHECK(live.details[0].best_lap_ms == 89750 && live.details[0].best_lap_number == 4 && live.details[0].tyre_age_laps == 3 &&
+          live.details[0].tyre_stint_laps == 2);
+
+    put_pair(a, data[0] + T::laps + 4 * T::stride + T::time_a, data[0] + T::laps + 4 * T::stride + T::time_b, NAN);
+    live.update(2.5);
+    CHECK(!(live.details[0].have & SWOFTY_LIVE_HAVE_LAP_TIMES) && !live.details[0].best_lap_ms);
+
+    Gates off = Gates::all();
+    off.on[G_LAP_TIMES] = off.on[G_GRID] = off.on[G_TYRE_WEAR] = off.on[G_TYRE_AGE] = false;
+    Live quiet(w.mem(), sites, off);
+    quiet.update(0.0);
+    quiet.update(1.0);
+    constexpr uint64_t detail_bits =
+        SWOFTY_LIVE_HAVE_GRID | SWOFTY_LIVE_HAVE_LAP_TIMES | SWOFTY_LIVE_HAVE_TYRE_WEAR | SWOFTY_LIVE_HAVE_TYRE_AGE;
+    CHECK(!(quiet.details[1].have & detail_bits) && !quiet.details[1].grid_position && !quiet.details[1].tyre_wear[2]);
+    CHECK(quiet.cars[1].have & SWOFTY_LIVE_HAVE_CLASS);
+
+    Sites no_chain = sites;
+    no_chain.wheel_chain = false;
+    Live unproven(w.mem(), no_chain, Gates::all());
+    unproven.update(0.0);
+    unproven.update(1.0);
+    CHECK(!(unproven.details[1].have & SWOFTY_LIVE_HAVE_TYRE_WEAR) && (unproven.details[1].have & SWOFTY_LIVE_HAVE_TYRE_AGE));
+}
+
 static void test_readiness_rows()
 {
     for (unsigned g = 0; g < G_COUNT; g++) {
@@ -1393,6 +1549,9 @@ static void test_readiness_rows()
     CHECK(ROWS[G_TYRES].mapped && ROWS[G_MODE].mapped && ROWS[G_BADGES].mapped && ROWS[G_PIT_LANE].mapped);
     CHECK(ROWS[G_TRACK_NAME].mapped && ROWS[G_SPECTATE_GAP].mapped);
     CHECK(ROWS[G_AERO].fields && ROWS[G_AERO].mapped);
+    CHECK(ROWS[G_GRID].mapped && ROWS[G_LAP_TIMES].mapped && ROWS[G_TYRE_WEAR].mapped && ROWS[G_TYRE_AGE].mapped);
+    for (const Unread &u : UNREAD)
+        CHECK(u.name && u.name[0] && u.needs && u.needs[0]);
     CHECK(L::pit::lane_object == 0x48 && L::pit::lane_flags == 0x938 && L::pit::in_lane == 0x103);
     CHECK(L::pit::stops == 0x14 && L::pit::lane_flag_stride == 0x10);
 }
@@ -1421,6 +1580,7 @@ int main()
     test_steam_26566308();
     test_steam_26566308_ers_mode();
     test_ea_1_0_145();
+    test_detail();
     if (failures) {
         std::printf("%d failures\n", failures);
         return 1;
