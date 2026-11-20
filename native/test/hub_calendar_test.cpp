@@ -357,8 +357,12 @@ static void season_break_left_alone()
 
 static void season_break_over_team_hq()
 {
-    std::vector<Def> defs{{40, hc::RACE_WEEKEND, 4}, {36, hc::SEASON_BREAK, 15}, {41, hc::RACE_WEEKEND, 4},
-                          {42, hc::RACE_WEEKEND, 4}, {50, 0x0b, 10},          {9, 0x09, 1}};
+    std::vector<Def> defs{{40, hc::RACE_WEEKEND, 4},
+                          {36, hc::SEASON_BREAK, 15},
+                          {41, hc::RACE_WEEKEND, 4},
+                          {42, hc::RACE_WEEKEND, 4},
+                          {50, 0x0b, 10},
+                          {9, 0x09, 1}};
     std::vector<hc::Item> today;
 
     Memory m;

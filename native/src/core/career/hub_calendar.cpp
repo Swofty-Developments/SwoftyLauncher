@@ -280,8 +280,8 @@ bool move_break(const Snapshot &s, const hc::Item &it, uint16_t first, const cha
     uint16_t day = 0;
     if (break_fix_off())
         how = "left as it is (SWOFTY_HUB_BREAK_FIX=0)";
-    else if (!s.state_offset || !s.day_offset || !mem::read(state_at, state) || state != hc::IGNORED ||
-             !mem::read(day_at, day) || day != it.first)
+    else if (!s.state_offset || !s.day_offset || !mem::read(state_at, state) || state != hc::IGNORED || !mem::read(day_at, day) ||
+             day != it.first)
         how = "left as it is (its state or day no longer reads as read)";
     else if (!writable(day_at, sizeof first))
         how = "left as it is (not writable)";
@@ -305,14 +305,12 @@ void team_hq_calendar()
         moved += move_break(s, it, m.first, how);
         swofty::log("[career] ignored season break over Team HQ: %s keeps Team HQ's Advance off on day %u with no race "
                     "weekend running; to days %u-%u: %s",
-                    hc::describe(it).c_str(), unsigned(s.day), unsigned(m.first), unsigned(m.first + (it.last - it.first)),
-                    how);
+                    hc::describe(it).c_str(), unsigned(s.day), unsigned(m.first), unsigned(m.first + (it.last - it.first)), how);
     }
     if (!moved)
         return;
     Snapshot after = snapshot();
-    swofty::log("[career] Team HQ calendar after the season break move: %s; %s", calendar(after).c_str(),
-                advance(after).c_str());
+    swofty::log("[career] Team HQ calendar after the season break move: %s; %s", calendar(after).c_str(), advance(after).c_str());
     log_items(after);
 }
 
