@@ -1,7 +1,7 @@
 use super::Diagnosis;
 use super::crash_record::{Fatal, NEAR_FRAMES, crash_lines, crash_time, stamp};
 use super::evidence::Evidence;
-use super::wording::{list, name};
+use super::wording::{SEND_LOGS, list, name};
 
 /// Manual Pit Lane, and where F1 25 crashes when it takes the car as the
 /// game returns it to the garage.
@@ -62,6 +62,28 @@ pub(super) const UNLOADED_AI_LINE_READ: &str = "reading 0x88";
 /// ashton.lbcgp/lbeach`: an addon's track is its addon id and track code.
 pub(super) const FACTS: &str = "] [apply] facts: ";
 
+/// Terminal Damage, whose experimental suspension damage tears a wheel off by pushing the game's own suspension
+/// damage past its wheel detach limit.
+pub(super) const TERMINAL_DAMAGE: &str = "nick.terminal-damage-probe";
+
+/// Its line for that, as in `[td-probe] suspension: your car FR wheel torn off: the game's damage 0.00 -> 1.02`.
+pub(super) const TD_WHEEL_OFF: [&str; 2] = ["] [td-probe] suspension: your car ", " wheel torn off"];
+
+/// How long before the crash that line counts.
+pub(super) const TD_WHEEL_OFF_SECS: f64 = 1.0;
+
+/// Where the game's tyre curve samplers read through the node their bracket search returns, which is the curve
+/// tree's head when the key is not a number: `Car_Tyre_SampleCurveSet2KeyLerp+0xbc` and
+/// `Car_Tyre_SampleWearCurve2DAlt+0xa1`, on Steam build 26566308 (1.0.145), the KB build and EA 1.0.145.
+pub(super) const TYRE_CURVE_NAN: [&str; 6] = [
+    "F1_25.exe+0x2e7e5ec ",
+    "F1_25.exe+0x2e7ec21 ",
+    "F1_25.exe+0x2e7c05c ",
+    "F1_25.exe+0x2e7c691 ",
+    "F1_25.exe+0x2e721ec ",
+    "F1_25.exe+0x2e72821 ",
+];
+
 /// How long before the crash Manual Pit Lane's lines count, and after it.
 pub(super) const PITLANE_SECS: f64 = 1.5;
 
@@ -99,6 +121,31 @@ pub(super) fn pitlane_crash(e: &Evidence, f: &Fatal) -> bool {
         .lines()
         .any(|l| l.contains("[crash] unhandled ") && l.contains(PITLANE_CRASH));
     garbage || (kept && at)
+}
+
+/// Whether F1 25 faulted in its own tyre curve lookup: the unhandled exception's address or the crash's nearest
+/// frame is in [`TYRE_CURVE_NAN`].
+pub(super) fn tyre_curve_crash(e: &Evidence, f: &Fatal) -> bool {
+    f.module.as_deref() == Some("f1_25.exe")
+        && crash_lines(&e.loader)
+            .into_iter()
+            .filter(|l| l.starts_with("unhandled ") && l.contains("reached the top-level filter"))
+            .chain(f.frames.first().map(String::as_str))
+            .any(|l| TYRE_CURVE_NAN.iter().any(|at| l.contains(at)))
+}
+
+/// Whether F1 25 faulted in its own tyre curve lookup less than [`TD_WHEEL_OFF_SECS`] after Terminal Damage tore a
+/// wheel off the player's car.
+pub(super) fn td_wheel_off_crash(e: &Evidence, f: &Fatal) -> bool {
+    let Some(end) = crash_time(e, f) else {
+        return false;
+    };
+    tyre_curve_crash(e, f)
+        && e.loader.lines().any(|l| {
+            l.contains(TD_WHEEL_OFF[0])
+                && l.contains(TD_WHEEL_OFF[1])
+                && stamp(l).is_some_and(|t| t <= end && end - t < TD_WHEEL_OFF_SECS)
+        })
 }
 
 /// Whether F1 25 crashed loading the track files of the Aggressive AI
@@ -241,6 +288,37 @@ pub(super) fn aggressive_ai(e: &Evidence) -> Diagnosis {
             ),
             format!("Or turn off {addon} in your profile."),
         ],
+    }
+}
+
+pub(super) fn td_wheel_off(e: &Evidence) -> Diagnosis {
+    let addon = e
+        .names
+        .get(TERMINAL_DAMAGE)
+        .cloned()
+        .unwrap_or_else(|| "Terminal Damage".to_owned());
+    Diagnosis {
+        id: "terminal_damage_wheel_off",
+        title: format!("F1 25 crashed right after {addon} tore a wheel off your car"),
+        what: format!(
+            "{addon}'s experimental suspension damage tore a wheel off your car, and F1 25 crashed a moment later in \
+             its own tyre wear estimate for that car."
+        ),
+        steps: vec![format!(
+            "On the Addons page, turn off Suspension damage from hits (experimental) and Suspension damage for AI \
+             cars (experimental) in {addon}'s options, or turn {addon} off, then press Play."
+        )],
+    }
+}
+
+pub(super) fn tyre_curve_nan() -> Diagnosis {
+    Diagnosis {
+        id: "tyre_curve_nan",
+        title: "F1 25 crashed in its own tyre wear estimate".to_owned(),
+        what: "F1 25's own tyre wear estimate for a car hit an invalid number, and the game crashed. This is a fault \
+               in the game, and no setting of yours fixes it."
+            .to_owned(),
+        steps: vec![SEND_LOGS.to_owned()],
     }
 }
 
