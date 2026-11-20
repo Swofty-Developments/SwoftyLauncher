@@ -95,6 +95,15 @@ int main()
     camera.update_phase(false, false);
     expect(!camera.observe(0, 5) && camera.kind() == UNKNOWN, "session exit drops the saved camera");
 
+    expect(is_reverse_pod("pod_reverse") && is_reverse_pod("podoff_reverse"), "recognize both reverse-pod definitions");
+    expect(!is_reverse_pod("pod") && !is_reverse_pod("pod_reverse_extra") && !is_reverse_pod("s01a_cam") && !is_reverse_pod(""),
+           "forward, unrelated and unavailable definitions are not reverse pods");
+    camera.update_phase(true, true);
+    expect(camera.observe(0, 8, TRACKSIDE) && camera.kind() == TRACKSIDE, "publish trackside during replay");
+    expect(camera.observe(0, 8, REVERSE_POD) && camera.kind() == REVERSE_POD, "publish a type 8 switch to the reverse pod");
+    expect(!camera.observe(1, 8, TRACKSIDE) && camera.kind() == REVERSE_POD, "ignore a secondary type 8 assignment");
+    expect(camera.observe(0, 8) && camera.kind() == OTHER, "an unknown type 8 cannot retain the previous classification");
+
     printf("%s\n", fails ? "view flow test: FAILED" : "view flow test: ok");
     return fails ? 1 : 0;
 }

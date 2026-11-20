@@ -4,6 +4,11 @@
 
 namespace frontend::view {
 
+constexpr bool is_reverse_pod(std::string_view definition)
+{
+    return definition == "pod_reverse" || definition == "podoff_reverse";
+}
+
 class ViewportCamera {
 public:
     void update_phase(bool in_session, bool replay)
@@ -17,12 +22,12 @@ public:
 
     Kind kind() const { return replay_ && kind_ == UNKNOWN ? OTHER : kind_; }
 
-    bool observe(uint32_t viewport, uint8_t type)
+    bool observe(uint32_t viewport, uint8_t type, Kind fallback = OTHER)
     {
         if (!in_session_ || viewport != 0)
             return false;
 
-        Kind next = classify(type);
+        Kind next = type == 8 ? fallback : classify(type);
         if (kind_ == next)
             return false;
         kind_ = next;

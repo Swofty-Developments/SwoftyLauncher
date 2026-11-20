@@ -16,6 +16,7 @@
 #include "core/frontend/pause_edge.hpp"
 #include "core/frontend/viewport_camera_logic.hpp"
 #include "core/frontend/view_flow_logic.hpp"
+#include "core/frontend/view_camera_catalog.hpp"
 
 namespace frontend::view {
 
@@ -73,12 +74,14 @@ public:
     void photo_off();
     void camera(safetyhook::Context &ctx);
     void viewport_camera(safetyhook::Context &ctx);
+    void load_trackside_cameras(std::string_view track);
     void pause(safetyhook::Context &ctx);
 
 private:
     uint32_t groups_active();
     void recompute();
     void recompute_locked();
+    Kind classify_fallback_camera(const safetyhook::Context &ctx) const;
 
     safetyhook::MidHook h_photo_on, h_photo_off, h_camera_setting, h_pause, h_viewport_camera;
     std::atomic<uint64_t> packed{0};
@@ -89,6 +92,7 @@ private:
     std::atomic<uint32_t> pause_mask{0};
     std::mutex change_lock;
     ViewportCamera assigned_camera;
+    std::vector<CameraUid> trackside_camera_uids;
     bool trust_camera = false;
     std::atomic<int> pause_logged{0};
 };
@@ -144,8 +148,9 @@ std::string flag_text(uint32_t flags)
 
 const char *kind_text(uint32_t kind)
 {
-    static constexpr const char *NAMES[] = {"unknown", "cockpit", "tcam", "tcam_offset", "chase_near", "chase_far", "other"};
-    return kind < 7 ? NAMES[kind] : "unknown";
+    static constexpr const char *NAMES[] = {"unknown",   "cockpit", "tcam",      "tcam_offset", "chase_near",
+                                            "chase_far", "other",   "trackside", "reverse_pod"};
+    return kind < std::size(NAMES) ? NAMES[kind] : "unknown";
 }
 
 void ViewState::recompute()
@@ -235,10 +240,55 @@ void ViewState::camera(safetyhook::Context &ctx)
     recompute();
 }
 
+Kind ViewState::classify_fallback_camera(const safetyhook::Context &ctx) const
+{
+    // The same verified viewport record holds the selected object and definition before the type write.
+    const uintptr_t viewport = ctx.rbp + ctx.r13 * 8;
+    uintptr_t camera = 0;
+    if (!swofty::mem::read(viewport, camera) || !camera || camera != ctx.r14)
+        return OTHER;
+
+    // The game's UID accessor copies the 16 bytes at camera +0x70 on this build.
+    uintptr_t uid_vtable = 0, getter = 0;
+    CameraUid uid{};
+    const bool circuit_camera = !trackside_camera_uids.empty() && swofty::mem::read(camera + 0x18, uid_vtable) && uid_vtable &&
+                                swofty::mem::read(uid_vtable + 0x20, getter) &&
+                                getter == swofty::api->module_base() + 0x44cc570 && swofty::mem::read(camera + 0x70, uid) &&
+                                std::binary_search(trackside_camera_uids.begin(), trackside_camera_uids.end(), uid);
+
+    if (circuit_camera)
+        return TRACKSIDE;
+
+    uintptr_t definition = 0, name = 0;
+    std::string label;
+    if (swofty::mem::read(viewport + 0x18, definition) && definition && swofty::mem::read(definition + 0x28, name) &&
+        swofty::mem::c_string(name, label, sizeof("podoff_reverse")) && is_reverse_pod(label))
+        return REVERSE_POD;
+    return OTHER;
+}
+
+void ViewState::load_trackside_cameras(std::string_view track)
+{
+    if (!runtime::holds(VIEWPORT_CAMERA_GATE))
+        return;
+    auto uids = circuit_camera_uids(runtime::game_root(), track);
+    const auto count = uids.size();
+    std::lock_guard lock(change_lock);
+    trackside_camera_uids = std::move(uids);
+    swofty::log("[view] loaded %zu trackside camera UIDs for %.*s", count, int(track.size()), track.data());
+}
+
 void ViewState::viewport_camera(safetyhook::Context &ctx)
 {
+    const auto viewport = uint32_t(ctx.rdi);
+    if (viewport != 0)
+        return;
     std::lock_guard lock(change_lock);
-    if (assigned_camera.observe(uint32_t(ctx.rdi), uint8_t(ctx.rax)))
+    if (!(groups_active() & G_SESSION))
+        return;
+    const auto type = uint8_t(ctx.rax);
+    const Kind fallback = type == 8 ? classify_fallback_camera(ctx) : OTHER;
+    if (assigned_camera.observe(viewport, type, fallback))
         recompute_locked();
 }
 
@@ -290,6 +340,8 @@ void ViewState::flow(uint32_t hash, uint32_t to)
             active.fetch_or(bit, std::memory_order_relaxed);
         else if (to == 0 || to == 3)
             active.fetch_and(~bit, std::memory_order_relaxed);
+        if (TRACKED[i].group == G_SESSION && (to == 0 || to == 3))
+            trackside_camera_uids.clear();
         if (TRACKED[i].group == G_REPLAY && (to == 0 || to == 3) && photo.exchange(false))
             swofty::log("[view] photo mode cleared by the replay state leaving");
         break;
@@ -328,6 +380,8 @@ uint32_t pause_reasons() { return view_state.pause_reasons(); }
 void flow(uint32_t hash, uint32_t to) { view_state.flow(hash, to); }
 
 void setup() { view_state.setup(); }
+
+void load_trackside_cameras(std::string_view track) { view_state.load_trackside_cameras(track); }
 
 }
 
