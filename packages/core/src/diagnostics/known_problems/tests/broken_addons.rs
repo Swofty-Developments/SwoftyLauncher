@@ -251,3 +251,125 @@ fn a_crash_as_manual_pit_lane_takes_the_car_names_it() {
     let later = later.replacen("19:26:19.7", "19:26:15.7", 3);
     assert_eq!(diagnose(&ev(&later, &[])), None);
 }
+
+const LONG_BEACH: (&str, &str) = ("ashton.lbcgp", "Long Beach Grand Prix");
+
+fn unloaded_ai_line_log(facts: &str, frames: [&str; 4], read: &str) -> String {
+    let mut log = facts.to_owned();
+    log.push_str(&format!(
+        "2026-11-20 08:57:24.980 [156284] [career] flow \"StateSession\" None -> Entering
+2026-11-20 08:57:24.999 [155696] [crash] #1 first-chance (the game may still handle it) ACCESS_VIOLATION (0xc0000005) on thread 155696, 381 s after load, at {at}
+2026-11-20 08:57:24.999 [155696] [crash]   {read}
+2026-11-20 08:57:24.999 [206324] [driver-momentum] game database: 313 driver(s), 243 with ratings, read in the background in 3 ms
+2026-11-20 08:57:24.999 [155696] [crash]   rax=00000001354fe5d0 rbx=00000001354fd784 rcx=0000000000000000 rdx=0000000000000010
+2026-11-20 08:57:25.000 [155696] [crash]   code: 80 B9 88 00 00 00 00 C5 F8 28 F1 48 8B 41 20 48
+2026-11-20 08:57:25.000 [155696] [crash]   stack:
+",
+        at = frames[0]
+    ));
+    for (i, frame) in frames.iter().enumerate() {
+        log.push_str(&format!(
+            "2026-11-20 08:57:25.000 [155696] [crash]   #{i:<2} {frame}\n"
+        ));
+    }
+    log.push_str(&format!(
+        "2026-11-20 08:57:25.001 [155696] [crash] unhandled ACCESS_VIOLATION (0xc0000005) at {} reached the top-level filter; passing it to the game's filter\n",
+        frames[0]
+    ));
+    log
+}
+
+const STEAM_145_FRAMES: [&str; 4] = [
+    "F1_25.exe+0x679e34 .tls$ fn base+0x679e10+0x24",
+    "F1_25.exe+0x60cdeb .tls$ fn base+0x60cdb0+0x3b",
+    "F1_25.exe+0x6015c0 .tls$ fn base+0x5ff790+0x1e30",
+    "F1_25.exe+0x80c599 .tls$ fn base+0x80c350+0x249",
+];
+
+const KB_FRAMES: [&str; 4] = [
+    "F1_25.exe+0x679df4 .xtls Game_TrackSpline_EvalFrameAtDistance+0x24",
+    "F1_25.exe+0x60cdab .xtls Ai_SplineCursor_PlaceAtDistance+0x3b",
+    "F1_25.exe+0x601580 .xtls Sess_Build_AiSystem+0x1e30",
+    "F1_25.exe+0x80c549 .xtls Game_GameModule_OnSessionEnter+0x249",
+];
+
+const LONG_BEACH_FACTS: &str = "2026-11-20 08:57:09.340 [205708] [apply] facts: mode grand_prix, session race, track ashton.lbcgp/lbeach\n";
+
+fn tracks_on(loader: &str, tracks: &[(&str, &str)]) -> Evidence {
+    let mut e = with_names(ev(loader, &[]), tracks);
+    e.tracks = tracks.iter().map(|(id, _)| (*id).to_owned()).collect();
+    e
+}
+
+#[test]
+fn a_crash_placing_ai_cars_on_an_unloaded_racing_line_names_the_sessions_track() {
+    let log = unloaded_ai_line_log(LONG_BEACH_FACTS, STEAM_145_FRAMES, "reading 0x88");
+    let e = tracks_on(&log, &[("mod.sochi", "Sochi"), LONG_BEACH]);
+    let d = diagnose(&e).unwrap();
+    assert_eq!(d.id, "track_ai_data_unloaded");
+    assert_eq!(
+        d.title,
+        "Long Beach Grand Prix's AI data crashed F1 25 as the session started"
+    );
+    assert_eq!(
+        d.what,
+        "F1 25 crashed as the session on Long Beach Grand Prix started, while it put the AI cars on the racing line. \
+         The game could not load Long Beach Grand Prix's AI data, so the track had no racing line to put them on."
+    );
+    assert_eq!(
+        d.steps,
+        [
+            "Turn Long Beach Grand Prix off in your profile, and set any race weekend that uses it back to another \
+             track.",
+            "Ask its author to fix the AI data: a corner start can't be at gate 0, the first gate of the lap, and every \
+             brake line, corner end, retire line and link has to point at a gate the track has.",
+        ]
+    );
+    let kb = unloaded_ai_line_log(LONG_BEACH_FACTS, KB_FRAMES, "reading 0x88");
+    assert_eq!(diagnose(&tracks_on(&kb, &[LONG_BEACH])).unwrap(), d);
+}
+
+#[test]
+fn an_unloaded_racing_line_crash_without_the_sessions_track_names_the_tracks_on() {
+    let log = unloaded_ai_line_log("", STEAM_145_FRAMES, "reading 0x88");
+    let one = diagnose(&tracks_on(&log, &[LONG_BEACH])).unwrap();
+    assert_eq!(
+        one.title,
+        "Long Beach Grand Prix's AI data crashed F1 25 as the session started"
+    );
+    let two = diagnose(&tracks_on(&log, &[("mod.sochi", "Sochi"), LONG_BEACH])).unwrap();
+    assert_eq!(
+        two.title,
+        "A track's AI data crashed F1 25 as the session started"
+    );
+    assert_eq!(
+        two.steps[0],
+        "Turn off the track you raced on (Sochi and Long Beach Grand Prix are on in your profile), and set any race \
+         weekend that uses it back to another track."
+    );
+    let stock =
+        "2026-11-20 08:57:09.340 [205708] [apply] facts: mode grand_prix, session race, track game/monza\n";
+    let stock = unloaded_ai_line_log(stock, STEAM_145_FRAMES, "reading 0x88");
+    assert_eq!(
+        diagnose(&tracks_on(&stock, &[])).unwrap().steps[0],
+        "Race on another track, or turn off the addon that changes this track's AI data."
+    );
+}
+
+#[test]
+fn only_the_unloaded_racing_line_fault_is_named_for_it() {
+    let other_read = unloaded_ai_line_log(LONG_BEACH_FACTS, STEAM_145_FRAMES, "reading 0x90");
+    assert_eq!(diagnose(&tracks_on(&other_read, &[LONG_BEACH])), None);
+    let mut other_caller = STEAM_145_FRAMES;
+    other_caller[1] = "F1_25.exe+0x625d54 .tls$ fn base+0x624e60+0xef4";
+    let other_caller = unloaded_ai_line_log(LONG_BEACH_FACTS, other_caller, "reading 0x88");
+    assert_eq!(diagnose(&tracks_on(&other_caller, &[LONG_BEACH])), None);
+    let mixed = [
+        KB_FRAMES[0],
+        STEAM_145_FRAMES[1],
+        STEAM_145_FRAMES[2],
+        STEAM_145_FRAMES[3],
+    ];
+    let mixed = unloaded_ai_line_log(LONG_BEACH_FACTS, mixed, "reading 0x88");
+    assert_eq!(diagnose(&tracks_on(&mixed, &[LONG_BEACH])), None);
+}

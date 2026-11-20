@@ -161,6 +161,21 @@ testring: fixed the AI pit lane of Test Ring so F1 25 doesn't crash when an AI c
 
 A pit lane whose white lines vary along its length, as at the stock tracks, needs no change.
 
+When the racing line breaks one of the rules below, F1 25 can't load it and crashes as a session on the track loads or starts. The build stops on such a racing line, and Play doesn't start. Gates count in file order from 0.
+
+- The racing line is a `<track>` with all seven lists: `gates`, `links`, `routes`, `brake_lines`, `corner_start_lines`, `corner_end_lines` and `retire_lines`. A list can be empty.
+- Every link has an `id`, and its `from_gate` and `to_gate` are gates of the track: 0 to the number of gates minus 1.
+- Every route has a `type`, `from_route` and `to_route` of `track` or `pit`, and a `from_link` and `to_link` with at least one link id between them.
+- Every brake line, corner end and retire line has an `id` and a `gate_id` of 0 to the number of gates minus 1.
+- Every corner start has an `id` and a `gate_id` of 1 to the number of gates minus 1, and so has its `pair_id` when it has one. Gate 0, the first gate of the lap, can't start a corner.
+- Every retire line has `x`, `y`, `z` and `side`.
+
+The build names the first line that breaks a rule and counts the rest:
+
+```text
+Test Ring would crash F1 25 when a session on it starts: the game can't load its AI data, because corner start 12 starts at gate 0, the first gate of the lap, where no corner can start. Ask the track's author to fix it. Turn Test Ring off in this profile, and set any race weekend that uses it back to another track.
+```
+
 ## Check the build
 
 ```sh

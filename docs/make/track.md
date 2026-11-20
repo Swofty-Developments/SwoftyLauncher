@@ -274,6 +274,8 @@ An AI line lists its corner starts and ends and the brake lines inside each corn
 
 `SWOFTY_AI_CORNER_GUARD=0` turns the guard off. Give every corner a start, an end and a brake line inside it for the AI to brake and overtake there.
 
+A corner start at gate 0, the first gate of the lap, or any line or link pointing at a gate the track doesn't have, stops the game loading the AI line, and F1 25 then crashes as the session starts. [Racing line and other binary XML](/reference/mods/tracks#racing-line-and-other-binary-xml) lists the rules the game's loader checks.
+
 A new track also needs the stack-built keys listed under [track limits](/std/systems/tracks#readiness-and-limits):
 
 ```text
