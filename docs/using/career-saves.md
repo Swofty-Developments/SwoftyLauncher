@@ -35,6 +35,8 @@ Versions use 2.7 MB of 500 MB · Change · Open folder
 
 **Career** on the main menu opens a list of your careers, newest first, with **New Career** at the top. The list is on by default.
 
+The list is built at **Play** from the save the game loads in that session: the profile's launcher save with **Use launcher saves** on, and the game's own Steam or EA app save with it off. A restore on the **Saves** page shows in the list at the next **Play**. See [The save the career list reads](/reference/saves#the-save-the-career-list-reads).
+
 ```text
 CAREER                                                                    10 careers
 
