@@ -272,6 +272,14 @@ pub fn after_session(before: Option<Before>) {
     }
 }
 
+/// Learn the saves a session ended stuck in a started race weekend on, once the session's end snapshot is in
+/// the vault.
+pub fn learn_stuck_weekends(store: &Store) {
+    for line in swofty_core::saves::stuck::sweep(store, vault::now()) {
+        say("warning", &line);
+    }
+}
+
 /// The vault notice a session that started at `since` raised.
 pub fn notice_since(store: &Store, since: f64) -> Option<String> {
     let at = std::fs::metadata(Notice::path(&store.root))

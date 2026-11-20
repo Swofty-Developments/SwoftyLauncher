@@ -155,6 +155,7 @@ pub(crate) fn run(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Res
     let out = finish(session, result);
     crate::commands::saves::withdraw_unanswered_restores(store);
     crate::commands::saves::after_session(before);
+    crate::commands::saves::learn_stuck_weekends(store);
     out
 }
 

@@ -75,6 +75,7 @@ fn note_known_problem(store: &Store, game: &Path, dir: &Path, crashed: bool) {
     let record = SessionRecord::read(dir);
     if !crashed {
         if let Some(d) = swofty_core::diagnostics::known_problems::stall(&record, Some(game), store)
+            .or_else(|| swofty_core::diagnostics::known_problems::stuck(&record, Some(game), store))
             .or_else(|| swofty_core::diagnostics::known_problems::tyres(&record, Some(game), store))
             .or_else(|| swofty_core::diagnostics::known_problems::logos(&record, Some(game), store))
         {
