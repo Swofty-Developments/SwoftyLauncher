@@ -3894,6 +3894,10 @@ pub type Car_SuspensionDamage_OnCollision_t =
 pub type Car_Tyre_ChangeToNextCompound_t =
     unsafe extern "C" fn(tyre_component: *mut c_void, pit_stop: u8) -> u64;
 pub type Car_Tyre_CheckCompoundClassRule_t = unsafe extern "C" fn(set: *const c_void) -> bool;
+pub type Car_Tyre_CurveMap_FindBracketA_t =
+    unsafe extern "C" fn(curves: *mut c_void, key: f32, bracket: *mut *mut c_void);
+pub type Car_Tyre_CurveMap_FindBracketB_t =
+    unsafe extern "C" fn(curves: *mut c_void, key: f32, bracket: *mut *mut c_void);
 pub type Car_Tyre_IsCompoundAllowed_t = unsafe extern "C" fn(set: *const c_void) -> bool;
 pub type Car_Tyre_SetWearFactor_t =
     unsafe extern "C" fn(tyre_component: *mut c_void, apply_set: bool, force: u16);
@@ -5771,6 +5775,16 @@ pub mod bindings {
     };
     pub const Car_Tyre_ComputeGripMultiplier: Binding = Binding {
         id: "Car_Tyre_ComputeGripMultiplier",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Car_Tyre_CurveMap_FindBracketA: Binding = Binding {
+        id: "Car_Tyre_CurveMap_FindBracketA",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Car_Tyre_CurveMap_FindBracketB: Binding = Binding {
+        id: "Car_Tyre_CurveMap_FindBracketB",
         kind: "func",
         status: Status::Experimental,
     };
