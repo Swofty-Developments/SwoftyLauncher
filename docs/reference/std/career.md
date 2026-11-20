@@ -237,7 +237,7 @@ A calendar can start a race weekend inside the season break. The stock 2026 seas
 
 The rest of the break doesn't run. A break with any other item the check weighs ahead of the weekend, or with no started weekend running that day, is left as it is. `SWOFTY_HUB_BREAK_FIX=0` turns the fix off, and the line then ends `left as it is (SWOFTY_HUB_BREAK_FIX=0)`.
 
-All of these come from the flow-state site. Apart from the season break fix, they read the game without writing to it. The weekend reads need `vt_Career_Championship`, `vt_Career_Season` and `vt_Career_Weekend`; the calendar reads need the career components. A build without them logs `the current weekend is not readable` or `the calendar is not readable (<reason>)` in the same lines.
+All of these come from the flow-state site. Apart from the season break fix, they read the game without writing to it. The calendar reads use `ScheduleComponent` (`seasons_begin`, `seasons_end`, `current_season`, `season_over`), `ScheduleSeason`, `DriverCalendar`, `CalendarActivity` (`day`, `state`, `activity`), `ActivityDef` (`id`, `type`, `duration`) and `CareerTimeComponent.current_minutes` from the generated game headers; the core does not compile without one of them. The weekend reads need `vt_Career_Championship`, `vt_Career_Season` and `vt_Career_Weekend`; the calendar reads need the career components. A build without them logs `the current weekend is not readable` or `the calendar is not readable (<reason>)` in the same lines.
 
 ## Components
 
