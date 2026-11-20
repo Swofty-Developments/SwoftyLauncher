@@ -75,7 +75,7 @@
 [career] resume screen: probe: card 0 slot id %llu rewritten to %llu; calling PressSlot (base+0x%llx) on vm %p
 [career] resume screen: probe: PressSlot returned; pending action vm+0x1368 = %u (2 means the career loads when the screen finishes its transition out)
 [career] resume screen: row %zu: not pressed: %s
-[career] resume screen: row %zu: not pressed: %s; the continue screen says so and goes back
+[career] resume screen: row %zu: not pressed: %s; the continue screen stays open and says to pick the career on it
 [career] resume screen: row %zu: calling PressSlot (base+0x%llx) on the %s continue screen, wizard data group %s
 [career] resume screen: row %zu: PressSlot returned; pending action vm+0x1368 = %u (2 means the career loads when the screen finishes its transition out)
 [career] resume screen: row %zu: the screen did not take the career (pending %u); it stays open

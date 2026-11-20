@@ -147,7 +147,8 @@ inline std::string refuse_text(const Entry &e)
 
 inline std::string failed_text()
 {
-    return "This career could not be opened from the list. Press Send Logs in the launcher so it can be fixed.";
+    return "The list could not open this career. Pick it on this screen, then press Send Logs in the launcher so it can be "
+           "fixed.";
 }
 
 inline bool setup_after_press(std::string_view flow, uint64_t press_at, uint64_t now)
