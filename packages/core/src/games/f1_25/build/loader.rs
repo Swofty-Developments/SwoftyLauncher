@@ -92,6 +92,25 @@ pub(super) fn loader_line(exe_dir: Option<&Path>, loader: Option<&Path>) -> Stri
     format!("loader: {}; swofty.exe in {}", show(loader), show(exe_dir))
 }
 
+/// Stops a menu build when the game's original of a menu archive already holds the launcher's own entries, as a
+/// stale input of that archive: the build then puts a clean original back and runs again.
+pub(super) fn check_menu_originals(original: &dyn Fn(&str) -> PathBuf) -> Result<()> {
+    for archive in crate::ui::marks::MARKED {
+        let rel = crate::ui::ui_file(archive);
+        let path = original(&rel);
+        let Ok(found) = crate::ui::marks::launcher_entries(archive, &path) else {
+            continue;
+        };
+        if !found.is_empty() {
+            return Err(Error::StaleInput {
+                detail: format!("menus: the game's {archive} already holds {}", found.join(", ")),
+                rel,
+            });
+        }
+    }
+    Ok(())
+}
+
 pub fn build_menus(
     built: &mut Built,
     session: &mut SessionSettings,
@@ -100,6 +119,7 @@ pub fn build_menus(
     lang: bool,
     archives: &crate::ui::ArchiveWriter,
 ) -> Result<Vec<(String, String)>> {
+    check_menu_originals(original)?;
     let input = |rel: &str| built.plan.data.get(rel).cloned().unwrap_or_else(|| original(rel));
     let writer = |erp: &str, res: &str| {
         built
