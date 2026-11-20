@@ -80,7 +80,7 @@ private:
     void recompute();
     void recompute_locked();
 
-    safetyhook::MidHook h_photo_on, h_photo_off, h_camera, h_pause, h_replay_camera;
+    safetyhook::MidHook h_photo_on, h_photo_off, h_camera_setting, h_pause, h_viewport_camera;
     std::atomic<uint64_t> packed{0};
     std::atomic<uint64_t> active{0};
     std::atomic<int> camera_value{-1};
@@ -302,16 +302,16 @@ void ViewState::setup()
     trust_camera = GetEnvironmentVariableA("SWOFTY_VIEW_TRUST_CAMERA", trust, sizeof trust) && trust[0] == '1';
     h_photo_on = install(S_PHOTO_ON, [](safetyhook::Context &) { view_state.photo_on(); });
     h_photo_off = install(S_PHOTO_OFF, [](safetyhook::Context &) { view_state.photo_off(); });
-    h_camera = install(S_CAMERA, [](safetyhook::Context &ctx) { view_state.camera(ctx); });
+    h_camera_setting = install(S_CAMERA, [](safetyhook::Context &ctx) { view_state.camera(ctx); });
     h_pause = install(S_PAUSE, [](safetyhook::Context &ctx) { view_state.pause(ctx); });
     if (runtime::holds(REPLAY_CAMERA_GATE))
-        h_replay_camera = install(S_REPLAY_CAMERA, [](safetyhook::Context &ctx) { view_state.viewport_camera(ctx); });
+        h_viewport_camera = install(S_REPLAY_CAMERA, [](safetyhook::Context &ctx) { view_state.viewport_camera(ctx); });
     swofty::log("[view] setup: photo %s/%s, camera setting %s%s, pause reasons %s; flow states come from the career flow "
                 "site",
-                h_photo_on ? "armed" : "off", h_photo_off ? "armed" : "off", h_camera ? "armed" : "off",
+                h_photo_on ? "armed" : "off", h_photo_off ? "armed" : "off", h_camera_setting ? "armed" : "off",
                 trust_camera ? " (trusted for the view kind)" : " (static only: the view kind stays unknown, valid=0 on track)",
                 h_pause ? "armed" : "off");
-    swofty::log("[view] replay onboard camera hook %s", h_replay_camera ? "armed" : "off");
+    swofty::log("[view] replay onboard camera hook %s", h_viewport_camera ? "armed" : "off");
     recompute();
 }
 
