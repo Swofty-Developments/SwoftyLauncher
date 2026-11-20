@@ -4,20 +4,22 @@
 
 namespace frontend::view {
 
-class ReplayCamera {
+class ViewportCamera {
 public:
-    void set_active(bool active)
+    void update_phase(bool in_session, bool replay)
     {
-        active_ = active;
-        if (!active)
-            kind_ = OTHER;
+        // Keep assignments made before InGame, but never reuse one from a previous replay or session.
+        if (in_session_ != in_session || replay_ != replay)
+            kind_ = UNKNOWN;
+        in_session_ = in_session;
+        replay_ = replay;
     }
 
-    Kind kind() const { return kind_; }
+    Kind kind() const { return replay_ && kind_ == UNKNOWN ? OTHER : kind_; }
 
     bool observe(uint32_t viewport, uint8_t type)
     {
-        if (!active_ || viewport != 0)
+        if (!in_session_ || viewport != 0)
             return false;
 
         Kind next = classify(type);
@@ -42,8 +44,9 @@ private:
         }
     }
 
-    bool active_ = false;
-    Kind kind_ = OTHER;
+    bool in_session_ = false;
+    bool replay_ = false;
+    Kind kind_ = UNKNOWN;
 };
 
 }

@@ -121,7 +121,7 @@ core/frontend/view_state.cpp: auto h = safetyhook::MidHook::create(reinterpret_c
 core/frontend/view_state.cpp: h_photo_on = install(S_PHOTO_ON, [](safetyhook::Context &) { view_state.photo_on(); }); => mid sig S_PHOTO_ON
 core/frontend/view_state.cpp: h_photo_off = install(S_PHOTO_OFF, [](safetyhook::Context &) { view_state.photo_off(); }); => mid sig S_PHOTO_OFF
 core/frontend/view_state.cpp: h_camera_setting = install(S_CAMERA, [](safetyhook::Context &ctx) { view_state.camera(ctx); }); => mid sig S_CAMERA
-core/frontend/view_state.cpp: h_viewport_camera = install(S_REPLAY_CAMERA, [](safetyhook::Context &ctx) { view_state.viewport_camera(ctx); }); => mid sig S_REPLAY_CAMERA
+core/frontend/view_state.cpp: auto hook = install(S_VIEWPORT_CAMERA, [](safetyhook::Context &ctx) { view_state.viewport_camera(ctx); }); => mid sig S_VIEWPORT_CAMERA
 core/frontend/view_state.cpp: h_pause = install(S_PAUSE, [](safetyhook::Context &ctx) { view_state.pause(ctx); }); => mid sig S_PAUSE
 core/guards/ai/ai_curves_guard.cpp: const guards::MidHookSpec spec{ => mid sig S_READ
 core/guards/ai/ai_ers_guard.cpp: const swofty_core::guards::MidHookSpec spec{ => mid sig S_READ

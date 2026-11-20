@@ -1,7 +1,7 @@
 // Host unit test for the view tracker's flow table (view_flow_logic.hpp). The hashes are the ones a real run
 // logged: session 20261105-215752 entered Instant Replay as flow node 24941c93 and logged no
 // djb2("SessionStateViewInstantReplay") (203f3b13).
-#include "core/frontend/replay_camera_logic.hpp"
+#include "core/frontend/viewport_camera_logic.hpp"
 #include "core/frontend/view_flow_logic.hpp"
 #include "core/render/postfx/view_logic.hpp"
 
@@ -34,9 +34,9 @@ int main()
             if (TRACKED[i].hash == TRACKED[j].hash)
                 expect(false, "duplicate hash " + std::to_string(i) + "/" + std::to_string(j));
     using namespace frontend::view;
-    ReplayCamera camera;
-    expect(!camera.observe(0, 3) && camera.kind() == OTHER, "camera commits outside replay are ignored");
-    camera.set_active(true);
+    ViewportCamera camera;
+    expect(!camera.observe(0, 3) && camera.kind() == UNKNOWN, "camera commits outside a session are ignored");
+    camera.update_phase(true, true);
     expect(camera.kind() == OTHER, "replay starts with no confirmed onboard view");
 
     // Monza post-race replay, Steam depot 26566308, 2026-11-17. The game logged these
@@ -65,13 +65,36 @@ int main()
     }
     camera.observe(0, 5);
     expect(!camera.observe(1, 8) && camera.kind() == TCAM_OFFSET, "the secondary viewport cannot change the replay view");
-    camera.set_active(true);
+    camera.update_phase(true, true);
     expect(!camera.observe(0, 5) && camera.kind() == TCAM_OFFSET, "repeated activity and type preserve the result");
     expect(camera.observe(0, 255) && camera.kind() == OTHER, "an unknown type clears the onboard classification");
     camera.observe(0, 3);
-    camera.set_active(false);
-    camera.set_active(true);
+    camera.update_phase(false, false);
+    camera.update_phase(true, true);
     expect(camera.kind() == OTHER, "a new replay cannot inherit the last camera");
+
+    // Melbourne GP. The offset T-cam was assigned before InGame at race start
+    // and again between replay exit and the return to InGame.
+    camera.update_phase(false, false);
+    camera.update_phase(true, false);
+    expect(camera.kind() == UNKNOWN, "a new session begins without a camera");
+    expect(camera.observe(0, 8) && camera.kind() == OTHER, "a cinematic assignment is a non-onboard view");
+    expect(camera.observe(0, 3) && camera.observe(0, 5), "retain camera writes during the grid setup");
+    camera.update_phase(true, false);
+    expect(camera.kind() == TCAM_OFFSET, "first driving frame keeps the assignment from grid setup");
+    expect(camera.observe(0, 4) && camera.kind() == TCAM, "a live camera switch takes effect");
+    expect(!camera.observe(1, 3) && camera.kind() == TCAM, "secondary viewport cannot change the driving view");
+    camera.update_phase(true, true);
+    expect(camera.kind() == OTHER, "replay does not inherit the driving camera");
+    expect(camera.observe(0, 3) && camera.kind() == COCKPIT, "replay camera updates during the replay");
+    camera.update_phase(true, false);
+    expect(camera.kind() == UNKNOWN, "replay camera is invalidated before driving resumes");
+    expect(camera.observe(0, 5), "cache the restored driving camera before InGame");
+    camera.update_phase(true, false);
+    expect(camera.kind() == TCAM_OFFSET, "first frame back in driving reports the restored camera");
+    camera.update_phase(false, false);
+    expect(!camera.observe(0, 5) && camera.kind() == UNKNOWN, "session exit drops the saved camera");
+
     printf("%s\n", fails ? "view flow test: FAILED" : "view flow test: ok");
     return fails ? 1 : 0;
 }

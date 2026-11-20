@@ -203,8 +203,8 @@ skip   paused  replay  photo  menu  cutscene  spectating
 
 - `menu` is every state without a player-driven session view: the frontend, the garage and the hub.
 - A pass without `when` runs in every view.
-- The view is reported only where the core recognises the game's state, and `swofty/loader.log` logs each change as `[view] kind=… flags=… valid=…`. While `valid` is 0, a pass with `views` does not run and `skip` does not apply. The driving camera stays unknown until it is confirmed on the game's build, so `views` passes stay off for now.
-- On Steam 1.0.145 (26566308), recognized replays report `cockpit`, `tcam` or `tcam_offset` for the active forward onboard view. Other replay cameras report `other`.
+- The view is reported only where the core recognises the game's state, and `swofty/loader.log` logs each change as `[view] kind=… flags=… valid=…`. While `valid` is 0, a pass with `views` does not run and `skip` does not apply. On builds without a verified camera hook, the driving camera stays unknown and `views` passes stay off.
+- On Steam 1.0.145 (26566308), recognized driving and replay views report `cockpit`, `tcam` or `tcam_offset` for the active forward onboard camera. Other observed cameras report `other`. On entry to driving, the view stays unknown until the core has seen a camera assignment for the current session or replay transition.
 - A shader reads the same state with `view_kind()` and `view_is(SWOFTY_VIEW_PAUSED)`, to change what it draws rather than whether it runs. The `paused` flag follows the game's pause flow state; native code reads the game's pause reasons with [`swofty::view::paused()`](/reference/std/events#pause-and-resume).
 
 ## Live options and enabled

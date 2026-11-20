@@ -14,7 +14,7 @@
 
 #include "core/career/career_state.hpp"
 #include "core/frontend/pause_edge.hpp"
-#include "core/frontend/replay_camera_logic.hpp"
+#include "core/frontend/viewport_camera_logic.hpp"
 #include "core/frontend/view_flow_logic.hpp"
 
 namespace frontend::view {
@@ -39,11 +39,11 @@ const runtime::Sig S_CAMERA{"site_Game_UseCameraSettingCall", "48 89 F1 B2 0F E8
 const runtime::Sig S_PAUSE{"Game_App_SetPauseReason", "41 57 41 56 41 54 56 57 53 48 83 EC 28 89 D3 48 89 CE 84 D2", 0x80e110};
 
 // Game_Camera_SetForViewport writes the selected type from AL and the viewport index is in EDI.
-const runtime::Sig S_REPLAY_CAMERA{"site_Game_ViewportCameraTypeStore",
-                                   "42 88 44 ED 20 48 8B 4E 30 4D 8D 7E 18 4C 89 FA 41 89 F8", 0x45394e2};
-constexpr runtime::build_proof::Proof REPLAY_CAMERA_LAYOUT{"the replay viewport camera type",
-                                                           runtime::build_proof::bit(runtime::build_proof::Build::steam_1_0_145)};
-constexpr runtime::build_proof::Gate REPLAY_CAMERA_GATE{"replay onboard cameras", &REPLAY_CAMERA_LAYOUT};
+const runtime::Sig S_VIEWPORT_CAMERA{"site_Game_ViewportCameraTypeStore",
+                                     "42 88 44 ED 20 48 8B 4E 30 4D 8D 7E 18 4C 89 FA 41 89 F8", 0x45394e2};
+constexpr runtime::build_proof::Proof VIEWPORT_CAMERA_LAYOUT{
+    "the primary viewport camera type", runtime::build_proof::bit(runtime::build_proof::Build::steam_1_0_145)};
+constexpr runtime::build_proof::Gate VIEWPORT_CAMERA_GATE{"active viewport camera", &VIEWPORT_CAMERA_LAYOUT};
 
 const char *const CAMERA_NAMES[8] = {"unknown", "nose_cam",      "nose_cam_alt", "cockpit_cam",
                                      "tv_pod",  "tv_pod_offset", "near_chase",   "far_chase"};
@@ -88,7 +88,7 @@ private:
     std::atomic<bool> flow_seen{false};
     std::atomic<uint32_t> pause_mask{0};
     std::mutex change_lock;
-    ReplayCamera replay_camera;
+    ViewportCamera assigned_camera;
     bool trust_camera = false;
     std::atomic<int> pause_logged{0};
 };
@@ -161,7 +161,7 @@ void ViewState::recompute_locked()
     bool driving = g & G_DRIVING;
     bool paused = (g & G_PAUSE) && in_session;
     bool replay = g & G_REPLAY;
-    replay_camera.set_active(in_session && replay);
+    assigned_camera.update_phase(in_session, replay);
     bool cutscene = g & G_CUTSCENE;
     bool spectating = g & G_SPECTATE;
     bool is_photo = photo.load(std::memory_order_relaxed);
@@ -190,10 +190,12 @@ void ViewState::recompute_locked()
     } else if (is_photo || cutscene || spectating) {
         kind = frontend::view::OTHER;
     } else if (replay) {
-        kind = replay_camera.kind();
+        kind = assigned_camera.kind();
     } else {
-        int cam = camera_value.load(std::memory_order_relaxed);
-        kind = trust_camera ? camera_kind(cam) : frontend::view::UNKNOWN;
+        if (h_viewport_camera)
+            kind = assigned_camera.kind();
+        else if (trust_camera)
+            kind = camera_kind(camera_value.load(std::memory_order_relaxed));
         if (kind == frontend::view::UNKNOWN)
             valid = false;
     }
@@ -236,7 +238,7 @@ void ViewState::camera(safetyhook::Context &ctx)
 void ViewState::viewport_camera(safetyhook::Context &ctx)
 {
     std::lock_guard lock(change_lock);
-    if (replay_camera.observe(uint32_t(ctx.rdi), uint8_t(ctx.rax)))
+    if (assigned_camera.observe(uint32_t(ctx.rdi), uint8_t(ctx.rax)))
         recompute_locked();
 }
 
@@ -304,14 +306,16 @@ void ViewState::setup()
     h_photo_off = install(S_PHOTO_OFF, [](safetyhook::Context &) { view_state.photo_off(); });
     h_camera_setting = install(S_CAMERA, [](safetyhook::Context &ctx) { view_state.camera(ctx); });
     h_pause = install(S_PAUSE, [](safetyhook::Context &ctx) { view_state.pause(ctx); });
-    if (runtime::holds(REPLAY_CAMERA_GATE))
-        h_viewport_camera = install(S_REPLAY_CAMERA, [](safetyhook::Context &ctx) { view_state.viewport_camera(ctx); });
+    if (runtime::holds(VIEWPORT_CAMERA_GATE)) {
+        auto hook = install(S_VIEWPORT_CAMERA, [](safetyhook::Context &ctx) { view_state.viewport_camera(ctx); });
+        std::lock_guard lock(change_lock);
+        h_viewport_camera = std::move(hook);
+    }
     swofty::log("[view] setup: photo %s/%s, camera setting %s%s, pause reasons %s; flow states come from the career flow "
                 "site",
                 h_photo_on ? "armed" : "off", h_photo_off ? "armed" : "off", h_camera_setting ? "armed" : "off",
-                trust_camera ? " (trusted for the view kind)" : " (static only: the view kind stays unknown, valid=0 on track)",
-                h_pause ? "armed" : "off");
-    swofty::log("[view] replay onboard camera hook %s", h_viewport_camera ? "armed" : "off");
+                trust_camera ? " (settings fallback enabled)" : " (diagnostic only)", h_pause ? "armed" : "off");
+    swofty::log("[view] active viewport camera hook %s", h_viewport_camera ? "armed" : "off");
     recompute();
 }
 
