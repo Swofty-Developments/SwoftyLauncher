@@ -1032,6 +1032,12 @@
   "Car_Tyre_ComputeGripMultiplier": {
    "match": "0x46b9c00"
   },
+  "Car_Tyre_CurveMap_FindBracketA": {
+   "match": "0x2e7e750"
+  },
+  "Car_Tyre_CurveMap_FindBracketB": {
+   "match": "0x2e7e2e0"
+  },
   "Car_Tyre_GripScale": {
    "match": "0x46b9ab0"
   },
