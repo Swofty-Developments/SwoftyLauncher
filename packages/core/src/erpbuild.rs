@@ -9,8 +9,8 @@ use crate::activation::wheel_check;
 use crate::asset::Source;
 use crate::builtin::loader_files;
 use crate::manifest::relative_inside;
-use crate::ops::{ErpOp, PkgTarget};
-use crate::pkgedit::{apply_edits, edit_name, sources, supported};
+use crate::ops::{ErpOp, PkgEdit, PkgTarget};
+use crate::pkgedit::{added_entry, apply_edits, edit_name, holds_added, sources, supported};
 use crate::runtime::{foreign_argument, layout_change};
 use crate::ui::node::component_id;
 use crate::{Error, Result};
@@ -188,6 +188,7 @@ pub struct ErpBuild<'a> {
     whole: HashMap<(String, String), Vec<(String, Pkg)>>,
     ui_base: HashMap<(String, String), Option<Pkg>>,
     ui_merges: Vec<UiMerge>,
+    added: HashMap<(String, String, String, String), String>,
 }
 
 /// Where two addons that replace the same whole UI resource were merged node by node, and the nodes
@@ -637,6 +638,7 @@ impl<'a> ErpBuild<'a> {
             whole: HashMap::new(),
             ui_base: HashMap::new(),
             ui_merges: Vec::new(),
+            added: HashMap::new(),
         }
     }
 
@@ -731,7 +733,42 @@ impl<'a> ErpBuild<'a> {
             Some((erp, resource)) if self.merge_ui => self.earlier_whole(erp, resource, origin)?,
             _ => None,
         };
-        self.apply(op, resolve)?;
+        if let ErpOp::PatchPkg {
+            erp,
+            resource,
+            fragment,
+            edits,
+        } = op
+        {
+            for (at, entry) in edits.iter().filter_map(added_entry) {
+                if let Some(earlier) =
+                    self.added
+                        .get(&(erp.clone(), resource.clone(), at.clone(), entry.clone()))
+                {
+                    return Err(Error::DuplicateEntry {
+                        resource: resource.clone(),
+                        at,
+                        entry,
+                        earlier: earlier.clone(),
+                    });
+                }
+            }
+            if let Err(e) = self.apply(op, resolve) {
+                return Err(match self.original_holds(erp, resource, *fragment, edits) {
+                    true => Error::StaleInput {
+                        rel: erp.clone(),
+                        detail: e.to_string(),
+                    },
+                    false => e,
+                });
+            }
+            for (at, entry) in edits.iter().filter_map(added_entry) {
+                self.added
+                    .insert((erp.clone(), resource.clone(), at, entry), origin.to_owned());
+            }
+        } else {
+            self.apply(op, resolve)?;
+        }
         if let Some((erp, resource)) = whole {
             self.record_whole(erp, resource, origin, before)?;
         }
@@ -906,6 +943,21 @@ impl<'a> ErpBuild<'a> {
         versions.retain(|(a, _)| *a != id);
         versions.push((id, theirs));
         Ok(())
+    }
+
+    /// Whether the game's original of `erp` (the baseline's copy, else the input) already holds an entry one
+    /// of `edits` adds.
+    fn original_holds(&self, erp: &str, resource: &str, fragment: usize, edits: &[PkgEdit]) -> bool {
+        let Ok(rel) = checked(erp) else {
+            return false;
+        };
+        let path = self.baseline.unwrap_or(self.original)(rel);
+        let target = PkgTarget {
+            erp: erp.to_owned(),
+            resource: resource.to_owned(),
+            fragment,
+        };
+        read_resource(&path, &target).is_ok_and(|root| edits.iter().any(|e| holds_added(&root, e)))
     }
 
     fn owns(&self, erp: &str, resource: &str) -> bool {

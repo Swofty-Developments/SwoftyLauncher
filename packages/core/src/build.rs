@@ -686,7 +686,102 @@ pub fn lock(store: &Store, profile: &str) -> Result<BuildLock> {
 }
 
 pub fn build(store: &Store, profile: &str, game: &Game) -> Result<Built> {
-    build_as(store, profile, game, false)
+    let mut healed: Vec<String> = Vec::new();
+    let mut notes = Vec::new();
+    loop {
+        match build_as(store, profile, game, false) {
+            Err(Error::StaleInput { rel, detail }) => {
+                let note = match healed.contains(&rel) {
+                    true => None,
+                    false => heal_stale(&store.root, game, &rel)?,
+                };
+                let Some(note) = note else {
+                    return Err(Error::Other(stale_text(&detail, &rel, false)));
+                };
+                notes.push(format!("stale: {note}"));
+                healed.push(rel);
+            }
+            Ok(mut built) => {
+                built.lines.splice(0..0, notes);
+                return Ok(built);
+            }
+            Err(e) => return Err(e),
+        }
+    }
+}
+
+/// Puts a clean copy of the game file `rel` back where the build found the launcher's own changes of an
+/// earlier session in the game's original: the game file when the record of originals holds a stale copy and the
+/// game file differs from it, else the newest original backed up for another game build. None when no journal
+/// may be open, F1 25 runs or no clean copy is on record.
+pub fn heal_stale(data: &Path, game: &Game, rel: &str) -> Result<Option<String>> {
+    if !crate::journal::Journal::open(data)?.is_empty() || crate::process::game_running_in(&game.dir) {
+        return Ok(None);
+    }
+    let objects = Objects {
+        root: data.join("baseline/objects"),
+    };
+    let mut baseline = Baseline::load_or_new(data, &game.identity)?;
+    let path = game.dir.join(rel);
+    let now = crate::baseline::sha256_opt(&path)?;
+    let recorded = baseline.files.get(rel).map(|r| r.sha256.clone());
+    let Some(stale) = recorded.clone().or_else(|| now.clone()) else {
+        return Ok(None);
+    };
+    if recorded.is_some() && now.as_ref().is_some_and(|n| *n != stale) {
+        let size = std::fs::metadata(&path).map_err(crate::io_err(&path))?.len();
+        let sha256 = objects.put_file(&path)?;
+        baseline.files.insert(
+            rel.to_owned(),
+            crate::baseline::FileRecord {
+                size,
+                sha256,
+                source: crate::baseline::Source::FirstSight,
+            },
+        );
+        baseline.save(data)?;
+        return Ok(Some(format!(
+            "the recorded original of {rel} held the launcher's changes from an earlier session; the game folder's copy \
+             is the original now"
+        )));
+    }
+    let Some((build, clean)) = crate::baseline::older_originals(data, &game.identity, rel)
+        .into_iter()
+        .find(|(_, r)| r.sha256 != stale)
+    else {
+        return Ok(None);
+    };
+    objects.restore_to(&clean.sha256, &path)?;
+    if recorded.is_some() {
+        baseline.files.insert(rel.to_owned(), clean);
+        baseline.save(data)?;
+    }
+    Ok(Some(format!(
+        "{rel} in the game folder still held the launcher's changes from an earlier session; put back its original \
+         backed up for game build {build}"
+    )))
+}
+
+/// The refusal for an addon's change the game's own copy of `rel` already holds. `play` is for a check
+/// before Play, which puts a backed-up original back itself.
+pub fn stale_text(detail: &str, rel: &str, play: bool) -> String {
+    let first = match play {
+        true => "press Play, which puts its backed-up original back, or ",
+        false => "the launcher has no clean copy of it on record; ",
+    };
+    format!(
+        "{detail}. {rel} in the game folder still holds the launcher's changes from an earlier session: {first}repair \
+         F1 25 in the EA app (Library > F1 25 > Manage > Repair) or verify the game files in Steam, then press Play \
+         again"
+    )
+}
+
+/// The refusal for two addons that add the same entry.
+fn duplicate_entry(later: &str, earlier: &str, origin: &str, at: &str, entry: &str) -> String {
+    format!(
+        "{later} and {earlier} both add the entry {entry} ({at}); turn one of them off, or ask their authors which \
+         one should own it (applying {origin})"
+    )
 }
 
 /// A build or install that stopped on a missing or cut-short file, as the
@@ -2594,6 +2689,26 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
                                 &name(&puts[&erp].origin.to_string()),
                             ));
                             continue;
+                        }
+                        Err(Error::DuplicateEntry {
+                            resource,
+                            at,
+                            entry,
+                            earlier,
+                        }) => {
+                            return Err(Error::Other(duplicate_entry(
+                                &name(&op.origin.to_string()),
+                                &name(&earlier),
+                                &format!("{}", op.origin),
+                                &format!("{resource}: {at}"),
+                                &entry,
+                            )));
+                        }
+                        Err(Error::StaleInput { rel, detail }) => {
+                            return Err(Error::StaleInput {
+                                rel,
+                                detail: format!("applying {}: {detail}", op.origin),
+                            });
                         }
                         Err(e) => {
                             return Err(Error::Other(format!("applying {}: {e}", op.origin)));
@@ -10132,5 +10247,242 @@ mod tests {
         std::fs::write(&path, r#"{"ops": [{"op": "set", "value": "{{missing}}"}]}"#).unwrap();
         assert!(read_op_file(&path, FileKind::Database, &m, &p, &OnAddons::default()).is_err());
         std::fs::remove_dir_all(&root).ok();
+    }
+
+    const TILES_ERP: &str = "ui/tiles.erp";
+
+    fn tiles_archive(names: &[&str]) -> Vec<u8> {
+        use swofty_formats::erp::{Erp, Fragment, HEADER_LEN, MAGIC, Resource, STORED};
+        use swofty_formats::pkg::{Arr, Node, Obj, Pkg, Val};
+        let obj = |pairs: Vec<(&str, Node)>| {
+            Node::Obj(Obj::new(
+                pairs.into_iter().map(|(k, v)| (Val::str(k), v)).collect(),
+            ))
+        };
+        let tiles = names
+            .iter()
+            .map(|n| obj(vec![("Name", Node::Val(Val::str(*n)))]))
+            .collect();
+        let root = obj(vec![(
+            "overrides",
+            obj(vec![(
+                "Contents",
+                obj(vec![(
+                    "home",
+                    obj(vec![("Contents", Node::Arr(Arr::new(tiles)))]),
+                )]),
+            )]),
+        )]);
+        let raw = Pkg {
+            name: *b"UIDB",
+            root,
+            vca: Vec::new(),
+            layout: None,
+        }
+        .to_bytes()
+        .unwrap();
+        let mut header = [0u8; HEADER_LEN];
+        header[..4].copy_from_slice(MAGIC);
+        header[4..8].copy_from_slice(&3u32.to_le_bytes());
+        let mut res = Resource {
+            name: "eaid://ui_package/databases/overrides.uidb".into(),
+            kind: swofty_formats::erp::kind("UIDB").unwrap(),
+            unk: vec![0; 4],
+            fragments: vec![Fragment {
+                name: *b"temp",
+                offset: 0,
+                size: raw.len() as u64,
+                flags: 0,
+                compression: STORED,
+                packed: raw.len() as u64,
+                raw,
+            }],
+            hash: [0; 16],
+        };
+        res.hash = res.content_hash().unwrap();
+        Erp {
+            header,
+            version: 3,
+            resources: vec![res],
+        }
+        .to_bytes()
+    }
+
+    fn tile_names(path: &Path) -> Vec<String> {
+        let erp = swofty_formats::erp::Erp::parse(&std::fs::read(path).unwrap()).unwrap();
+        let res = erp.find("eaid://ui_package/databases/overrides.uidb").unwrap();
+        let pkg = swofty_formats::pkg::Pkg::parse(&res.fragments[0].data().unwrap()).unwrap();
+        crate::pkgedit::value_text(&pkg.root, "overrides.Contents.home.Contents[0].Name").unwrap();
+        let mut names = Vec::new();
+        for i in 0.. {
+            match crate::pkgedit::value_text(
+                &pkg.root,
+                &format!("overrides.Contents.home.Contents[{i}].Name"),
+            ) {
+                Ok(n) => names.push(n),
+                Err(_) => break,
+            }
+        }
+        names
+    }
+
+    struct Seasons {
+        root: PathBuf,
+        store: Store,
+        game: Game,
+    }
+
+    impl Seasons {
+        fn new(name: &str, in_game: &[&str]) -> Self {
+            let root = std::env::temp_dir().join(format!("swofty-stale-{name}-{}", std::process::id()));
+            std::fs::remove_dir_all(&root).ok();
+            let dir = root.join("game");
+            std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
+            std::fs::create_dir_all(dir.join("ui")).unwrap();
+            std::fs::write(dir.join(crate::GAME_EXE), "exe v2").unwrap();
+            std::fs::write(dir.join(GVDB), Gvdb { records: Vec::new() }.to_bytes()).unwrap();
+            std::fs::write(dir.join(TILES_ERP), tiles_archive(in_game)).unwrap();
+            let game = Game {
+                identity: Identity::detect(&dir, Some(2)).unwrap(),
+                dir,
+                user_reg: None,
+            };
+            let store = Store::new(root.join("data"));
+            Self { root, store, game }
+        }
+
+        fn add(&self, id: &str, name: &str, tile: &str) {
+            let src = self.root.join("src").join(id);
+            std::fs::create_dir_all(&src).unwrap();
+            std::fs::write(
+                src.join("swofty.json"),
+                format!(
+                    r#"{{ "schema_version": 1, "id": "{id}", "name": "{name}", "version": "1.0.0", "author": "t",
+                         "compat": {{ "game": "f1_25" }}, "operations": {{ "erp": ["erp.json"] }} }}"#
+                ),
+            )
+            .unwrap();
+            std::fs::write(
+                src.join("erp.json"),
+                format!(
+                    r#"{{ "schema_version": 1, "ops": [{{ "op": "patch-pkg", "erp": "{TILES_ERP}",
+                         "resource": "eaid://ui_package/databases/overrides.uidb", "edits": [
+                         {{ "op": "clone-entry", "at": "overrides.Contents.home.Contents", "src": "[Name=stock]",
+                            "as": "{tile}" }}] }}] }}"#
+                ),
+            )
+            .unwrap();
+            self.store.install_addon(&src).unwrap();
+            self.store
+                .update_profile("default", |p| p.set_enabled(id, true))
+                .unwrap();
+        }
+
+        fn back_up_for_build_1(&self, names: &[&str]) {
+            let clean = self.root.join("clean.erp");
+            std::fs::write(&clean, tiles_archive(names)).unwrap();
+            let objects = Objects {
+                root: self.store.root.join("baseline/objects"),
+            };
+            let sha256 = objects.put_file(&clean).unwrap();
+            let old = Identity {
+                build_id: "1".into(),
+                exe_sha256: "a".repeat(64),
+            };
+            let mut b = Baseline::new(&old);
+            b.files.insert(
+                TILES_ERP.into(),
+                crate::baseline::FileRecord {
+                    size: std::fs::metadata(&clean).unwrap().len(),
+                    sha256,
+                    source: crate::baseline::Source::FirstSight,
+                },
+            );
+            b.save(&self.store.root).unwrap();
+        }
+    }
+
+    impl Drop for Seasons {
+        fn drop(&mut self) {
+            std::fs::remove_dir_all(&self.root).ok();
+        }
+    }
+
+    #[test]
+    fn a_game_file_holding_an_earlier_sessions_entry_gets_its_original_back_and_the_build_succeeds() {
+        if loader_dir().is_some() {
+            return;
+        }
+        let s = Seasons::new("healed", &["stock", "sw_f1_2016"]);
+        s.back_up_for_build_1(&["stock"]);
+        s.add("t.season-2016", "Season 2016", "sw_f1_2016");
+        let built = build(&s.store, "default", &s.game).unwrap();
+        assert!(
+            built.lines.iter().any(|l| l.starts_with(&format!(
+                "stale: {TILES_ERP} in the game folder still held the launcher's changes from an earlier session"
+            ))),
+            "{:?}",
+            built.lines
+        );
+        assert_eq!(tile_names(&s.game.dir.join(TILES_ERP)), ["stock"]);
+        let out = built
+            .plan
+            .data
+            .get(TILES_ERP)
+            .expect("the tiles archive is built");
+        assert_eq!(tile_names(out), ["stock", "sw_f1_2016"]);
+        let again = build(&s.store, "default", &s.game).unwrap();
+        assert!(!again.lines.iter().any(|l| l.starts_with("stale: ")));
+    }
+
+    #[test]
+    fn a_stale_game_file_with_no_clean_copy_on_record_says_to_repair_the_game() {
+        if loader_dir().is_some() {
+            return;
+        }
+        let s = Seasons::new("unhealed", &["stock", "sw_f1_2016"]);
+        s.add("t.season-2016", "Season 2016", "sw_f1_2016");
+        let text = build(&s.store, "default", &s.game).unwrap_err().to_string();
+        assert!(
+            text.starts_with("applying t.season-2016: eaid://ui_package/databases/overrides.uidb: ")
+                && text.contains("an entry with Name=sw_f1_2016 already exists")
+                && text.contains(&format!(
+                    "{TILES_ERP} in the game folder still holds the launcher's changes from an earlier session"
+                ))
+                && text.contains("repair F1 25 in the EA app"),
+            "{text}"
+        );
+        assert_eq!(tile_names(&s.game.dir.join(TILES_ERP)), ["stock", "sw_f1_2016"]);
+        let checked = crate::conflicts::check(&s.store, "default", &s.game)
+            .unwrap_err()
+            .to_string();
+        assert!(
+            checked.contains("press Play, which puts its backed-up original back"),
+            "{checked}"
+        );
+    }
+
+    #[test]
+    fn two_addons_adding_the_same_entry_refuse_and_name_both() {
+        if loader_dir().is_some() {
+            return;
+        }
+        let s = Seasons::new("twice", &["stock"]);
+        s.back_up_for_build_1(&["stock"]);
+        s.add("t.season-a", "Season A", "sw_f1_2016");
+        s.add("t.season-b", "Season B", "sw_f1_2016");
+        let text = build(&s.store, "default", &s.game).unwrap_err().to_string();
+        let (later, earlier) = match text.starts_with("Season B") {
+            true => ("Season B", "Season A"),
+            false => ("Season A", "Season B"),
+        };
+        assert!(
+            text.starts_with(&format!(
+                "{later} and {earlier} both add the entry Name=sw_f1_2016"
+            )),
+            "{text}"
+        );
+        assert!(text.contains("turn one of them off"), "{text}");
+        assert_eq!(tile_names(&s.game.dir.join(TILES_ERP)), ["stock"]);
     }
 }

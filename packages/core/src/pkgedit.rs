@@ -217,6 +217,34 @@ pub fn edit_name(edit: &PkgEdit) -> &'static str {
     }
 }
 
+/// The entry a clone-entry edit adds, as `at` and `Key=name` (or the bare key name of an
+/// object entry); None for any other edit.
+pub fn added_entry(edit: &PkgEdit) -> Option<(String, String)> {
+    let PkgEdit::CloneEntry { at, src, name, .. } = edit else {
+        return None;
+    };
+    let entry = match steps(src).ok()?.as_slice() {
+        [Step::Match(key, _)] => format!("{key}={name}"),
+        _ => name.clone(),
+    };
+    Some((at.clone(), entry))
+}
+
+/// Whether `root` already holds the entry the clone-entry `edit` adds, the check its apply refuses on.
+pub fn holds_added(root: &Node, edit: &PkgEdit) -> bool {
+    let PkgEdit::CloneEntry { at, src, name, .. } = edit else {
+        return false;
+    };
+    let (Ok(sel), Ok(container)) = (steps(src), walk(root, at)) else {
+        return false;
+    };
+    match (container, sel.as_slice()) {
+        (Node::Obj(o), [Step::Key(_)]) => o.get(name).is_some(),
+        (Node::Arr(a), [Step::Match(key, _)]) => a.items.iter().any(|n| matches(n, key, name)),
+        _ => false,
+    }
+}
+
 pub fn apply_edits<'s>(
     root: &mut Node,
     edits: &[PkgEdit],
