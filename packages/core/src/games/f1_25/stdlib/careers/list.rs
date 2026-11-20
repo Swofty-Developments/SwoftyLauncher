@@ -1,13 +1,14 @@
 //! The rows of the in-game Resume Career list: one per career the save slots back, newest first, with what each
 //! row shows and whether pressing it loads the career at once.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use serde::{Deserialize, Serialize};
 
 use super::CareerNeeds;
 use crate::saves::bag::{Bag, Value as BagValue};
-use crate::saves::plain::{Plain, SLOT_SUFFIX, Slot, mode_of};
+use crate::saves::plain::{Manifest, Plain, SLOT_SUFFIX, Slot, mode_of};
+use crate::saves::vault::Location;
 use crate::saves::vault::career_names::Names;
 
 pub const READY: &str = "ready";
@@ -268,26 +269,43 @@ fn slots_of(component: &Bag) -> Vec<Slot> {
         .collect()
 }
 
-/// The careers in a profile save file, with the player-made names its entrants container holds. `None` when the
-/// file cannot be read or decoded.
-pub fn save_file_careers(path: &std::path::Path) -> Option<(Vec<SaveCareer>, Created)> {
+/// The careers of a profile save file, the player-made names its entrants container holds and the career modes it
+/// has a slot container of, with or without careers.
+struct FileCareers {
+    careers: Vec<SaveCareer>,
+    created: Created,
+    modes: BTreeSet<String>,
+}
+
+fn read_save_file(path: &std::path::Path) -> Option<FileCareers> {
     let file = std::fs::read(path).ok()?;
     let data = crate::saves::codec::decode_data(&file).ok()?;
     let root = crate::saves::bag::decode(&data.stream).ok()?;
-    let mut careers = Vec::new();
-    let mut created = Created::default();
+    let mut out = FileCareers {
+        careers: Vec::new(),
+        created: Created::default(),
+        modes: BTreeSet::new(),
+    };
     for (name, c) in crate::saves::remap::save_containers(&root) {
         if name.starts_with(ENTRANTS) {
-            created = created_of(c);
+            out.created = created_of(c);
         } else if name.ends_with(SLOT_SUFFIX) && career_mode(&mode_of(&name)) {
             let mode = mode_of(&name);
-            careers.extend(slots_of(c).into_iter().filter(is_career).map(|slot| SaveCareer {
-                mode: mode.clone(),
-                slot,
-            }));
+            out.careers
+                .extend(slots_of(c).into_iter().filter(is_career).map(|slot| SaveCareer {
+                    mode: mode.clone(),
+                    slot,
+                }));
+            out.modes.insert(mode);
         }
     }
-    Some((careers, created))
+    Some(out)
+}
+
+/// The careers in a profile save file, with the player-made names its entrants container holds. `None` when the
+/// file cannot be read or decoded.
+pub fn save_file_careers(path: &std::path::Path) -> Option<(Vec<SaveCareer>, Created)> {
+    read_save_file(path).map(|f| (f.careers, f.created))
 }
 
 /// The slots of a slot container the game did not register (its addon's mode is not in the build), read from the
@@ -300,13 +318,9 @@ fn kept_slots(plain: &Plain, generation: u64, c: &crate::saves::plain::Container
         .unwrap_or_default()
 }
 
-/// The careers of the newest generation in `plain`, with the player-made names its entrants container holds.
-pub fn save_careers(plain: &Plain) -> (Vec<SaveCareer>, Created) {
-    let Some(m) = plain.newest() else {
-        return (Vec::new(), Created::default());
-    };
-    let careers = m
-        .containers
+/// The careers of generation `m` of `plain`.
+fn generation_careers(plain: &Plain, m: &Manifest) -> Vec<SaveCareer> {
+    m.containers
         .iter()
         .filter(|c| career_mode(&c.mode()))
         .flat_map(|c| {
@@ -319,7 +333,14 @@ pub fn save_careers(plain: &Plain) -> (Vec<SaveCareer>, Created) {
                 .filter(is_career)
                 .map(|slot| SaveCareer { mode: c.mode(), slot })
         })
-        .collect();
+        .collect()
+}
+
+/// The careers of the newest generation in `plain`, with the player-made names its entrants container holds.
+pub fn save_careers(plain: &Plain) -> (Vec<SaveCareer>, Created) {
+    let Some(m) = plain.newest() else {
+        return (Vec::new(), Created::default());
+    };
     let created = m
         .containers
         .iter()
@@ -327,7 +348,7 @@ pub fn save_careers(plain: &Plain) -> (Vec<SaveCareer>, Created) {
         .and_then(|c| std::fs::read(plain.bag_path(m.generation, c)).ok())
         .map(|b| created_from_bag(&b))
         .unwrap_or_default();
-    (careers, created)
+    (generation_careers(plain, &m), created)
 }
 
 fn key_of(s: &Slot) -> String {
@@ -458,47 +479,130 @@ pub fn resume_rows(
     rows
 }
 
-/// The plain store the session of `profile` reads its save from, whichever way it plays.
-fn plain_of(data: &std::path::Path, profile: &str) -> Plain {
-    let own = Plain::at(crate::saves::plain::root_of_profile(data, profile));
-    if own.newest().is_some() {
-        return own;
-    }
-    match crate::saves::plain::root_of_session(data, profile, false) {
-        Some(root) => Plain::at(root),
-        None => own,
+/// The careers the list shows: the careers of the save a session of `profile` loads, as the core leaves them after
+/// the load.
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct ListSave {
+    pub profile: String,
+    pub careers: Vec<SaveCareer>,
+    pub created: Created,
+    /// Where the careers came from, for the build's log.
+    pub source: String,
+}
+
+impl ListSave {
+    /// What the list shows of the save, as text a build hash takes in: each career slot and the names the player
+    /// made.
+    pub fn state(&self) -> String {
+        format!("{:?}{:?}", self.careers, self.created)
     }
 }
 
-/// The careers of the profile's save: its newest plain generation, else the data file of the launcher store a
-/// session on `game` plays from while the plain store has no generation.
-fn profile_careers(
+/// The careers a session of `profile` on `game` loads. `launcher_saves` is whether the profile plays on its launcher
+/// saves.
+pub fn list_save(
     data: &std::path::Path,
     profile: &str,
+    launcher_saves: bool,
     game: &crate::install::Game,
-) -> (Vec<SaveCareer>, Created) {
-    let plain = plain_of(data, profile);
-    if plain.newest().is_some() {
-        return save_careers(&plain);
+) -> ListSave {
+    list_save_with(data, profile, launcher_saves, game, || Location::for_game(game))
+}
+
+/// [`list_save`] with the game copy's own save from `own`. A session on launcher saves loads the data file of the
+/// launcher store for `game`, or the copy's own while that store is empty, since the session start copies the copy's
+/// own save into an empty store. Any other session loads the copy's own save. The plain store is the one the
+/// session's settings name.
+fn list_save_with(
+    data: &std::path::Path,
+    profile: &str,
+    launcher_saves: bool,
+    game: &crate::install::Game,
+    own: impl FnOnce() -> Option<Location>,
+) -> ListSave {
+    let redirect = crate::saves::launcher::redirected(data, profile, launcher_saves);
+    let plain = crate::saves::plain::root_of_session(data, profile, redirect).map(Plain::at);
+    let store = redirect
+        .then(|| crate::saves::launcher::store_of_game(data, profile, game))
+        .filter(crate::saves::launcher::has_files);
+    let file = store.or_else(own).map(|l| l.data_file());
+    ListSave {
+        profile: profile.to_owned(),
+        ..session_careers(file.as_deref(), plain.as_ref())
     }
-    let file = crate::saves::launcher::store_of_game(data, profile, game).data_file();
-    save_file_careers(&file).unwrap_or_default()
 }
 
-/// What the list shows of the profile's save, as text a build hash takes in: each career slot and the names the
-/// player made.
-pub fn save_state(data: &std::path::Path, profile: &str, game: &crate::install::Game) -> String {
-    let (saved, created) = profile_careers(data, profile, game);
-    format!("{saved:?}{created:?}")
+/// The careers of save file `file` as the core leaves them at load from the session's plain store `plain`: a career
+/// mode the file has no slot container of comes from the plain store's newest session save generation, which the
+/// core puts it back from, and a mode a pending restore request names comes from that request's generation when the
+/// request replaces it or the file lacks it. Without a readable file, the careers of the plain store's newest
+/// generation.
+fn session_careers(file: Option<&std::path::Path>, plain: Option<&Plain>) -> ListSave {
+    let Some(mut read) = file.and_then(read_save_file) else {
+        let missing = match file {
+            Some(f) => format!("no readable save file at {}", f.display()),
+            None => "no save file found".to_owned(),
+        };
+        return match plain.and_then(|p| Some((p, p.newest()?))) {
+            Some((p, m)) => {
+                let (careers, created) = save_careers(p);
+                ListSave {
+                    careers,
+                    created,
+                    source: format!("generation {} of {} ({missing})", m.generation, p.root.display()),
+                    ..ListSave::default()
+                }
+            }
+            None => ListSave {
+                source: format!("nothing: {missing} and no plain generation"),
+                ..ListSave::default()
+            },
+        };
+    };
+    let mut source = file.map(|f| f.display().to_string()).unwrap_or_default();
+    if let Some(p) = plain {
+        let mut from: BTreeMap<String, u64> = BTreeMap::new();
+        if let Some(m) = p.newest_session_save() {
+            for mode in m.modes() {
+                if career_mode(&mode) && !read.modes.contains(&mode) {
+                    from.insert(mode, m.generation);
+                }
+            }
+        }
+        for r in p.pending() {
+            let mode = mode_of(&r.container);
+            if career_mode(&mode) && (r.replace || !read.modes.contains(&mode)) {
+                from.insert(mode, r.generation);
+            }
+        }
+        for (mode, generation) in from {
+            let Some(m) = p.manifest(generation) else {
+                continue;
+            };
+            read.careers.retain(|c| c.mode != mode);
+            read.careers
+                .extend(generation_careers(p, &m).into_iter().filter(|c| c.mode == mode));
+            source.push_str(&format!(
+                "; {mode} from generation {generation} of {}",
+                p.root.display()
+            ));
+        }
+    }
+    ListSave {
+        careers: read.careers,
+        created: read.created,
+        source,
+        ..ListSave::default()
+    }
 }
 
-/// The needs and rows of the list for the profile `order` loads: the careers in the profile's save, named from the
-/// database the build wrote in `build` with its id `aliases`, and what each needs from the career index in the
-/// data folder. `None` when that database cannot be read.
+/// The needs and rows of the list for the profile `order` loads: the careers of `saved`, named from the database the
+/// build wrote in `build` with its id `aliases`, and what each needs from the career index in the data folder.
+/// `None` when that database cannot be read.
 pub fn resume_list_for(
     store: &crate::store::Store,
     game: &crate::install::Game,
-    profile: &str,
+    saved: &ListSave,
     build: &std::path::Path,
     order: &[&crate::manifest::AddonManifest],
     aliases: crate::row_ids::IdAliases,
@@ -509,12 +613,15 @@ pub fn resume_list_for(
     let names = Names::of_build(store, game, build, aliases, pending)?.with_rows(&registry);
     let installed = store.addons().ok()?;
     let index = super::read(&super::data_path(&store.root));
-    let careers = super::of_profile(&index, profile);
+    let careers = super::of_profile(&index, &saved.profile);
     let mut needs = super::resume_needs(&careers, &on, &installed, Some(names.rows()));
-    let (saved, created) = profile_careers(&store.root, profile, game);
-    let keyed: Vec<(String, String)> = saved.iter().map(|c| (key_of(&c.slot), c.mode.clone())).collect();
+    let keyed: Vec<(String, String)> = saved
+        .careers
+        .iter()
+        .map(|c| (key_of(&c.slot), c.mode.clone()))
+        .collect();
     super::mark_missing_modes(&mut needs, &keyed, &super::mode_owners(&index), &on, &installed);
-    let rows = resume_rows(&saved, &created, &needs, &names);
+    let rows = resume_rows(&saved.careers, &saved.created, &needs, &names);
     Some((needs, rows))
 }
 
@@ -1032,6 +1139,48 @@ mod tests {
     }
 
     fn save_file_named(dir: &std::path::Path, name: &str, header: [u8; 16]) -> std::path::PathBuf {
+        save_with(
+            dir,
+            name,
+            header,
+            vec![
+                (
+                    "driver_career_1990",
+                    vec![
+                        slot_bag((8, 0x604a2c4a9c422bfc), (646, 105), (0, 1), 1_794_798_122, 0),
+                        slot_bag((9, 0xaa), (16383, 16383), (-1, -1), 0, 0),
+                    ],
+                ),
+                (
+                    "grand_prix_23",
+                    vec![slot_bag(
+                        (9, 0x5ed07dc40d4f6b41),
+                        (646, 105),
+                        (0, 0),
+                        1_794_797_255,
+                        0,
+                    )],
+                ),
+                (
+                    "my_team_career_26",
+                    vec![slot_bag(
+                        (2, 0x635981a5f8d30254),
+                        (16384, 197),
+                        (7, 1),
+                        1_792_460_159,
+                        0x41,
+                    )],
+                ),
+            ],
+        )
+    }
+
+    fn save_with(
+        dir: &std::path::Path,
+        name: &str,
+        header: [u8; 16],
+        modes: Vec<(&str, Vec<crate::saves::bag::Value>)>,
+    ) -> std::path::PathBuf {
         use crate::saves::bag::{Bag, List, Value};
         let component = |slots: Vec<Value>| {
             let mut l = List::new();
@@ -1043,33 +1192,9 @@ mod tests {
             Value::Bag(c)
         };
         let mut containers = Bag::new();
-        containers.push(
-            "driver_career_1990_SaveSlotGameModeComponent",
-            component(vec![
-                slot_bag((8, 0x604a2c4a9c422bfc), (646, 105), (0, 1), 1_794_798_122, 0),
-                slot_bag((9, 0xaa), (16383, 16383), (-1, -1), 0, 0),
-            ]),
-        );
-        containers.push(
-            "grand_prix_23_SaveSlotGameModeComponent",
-            component(vec![slot_bag(
-                (9, 0x5ed07dc40d4f6b41),
-                (646, 105),
-                (0, 0),
-                1_794_797_255,
-                0,
-            )]),
-        );
-        containers.push(
-            "my_team_career_26_SaveSlotGameModeComponent",
-            component(vec![slot_bag(
-                (2, 0x635981a5f8d30254),
-                (16384, 197),
-                (7, 1),
-                1_792_460_159,
-                0x41,
-            )]),
-        );
+        for (mode, slots) in modes {
+            containers.push(&format!("{mode}{SLOT_SUFFIX}"), component(slots));
+        }
         containers.push(
             "entrants_system_entrants_system",
             Value::Bag(crate::saves::bag::decode(&created_bag()).unwrap()),
@@ -1280,84 +1405,278 @@ mod tests {
         std::fs::remove_dir_all(&dir).ok();
     }
 
-    #[test]
-    fn a_profile_with_no_plain_generation_lists_its_launcher_save_files_careers() {
-        use crate::saves::plain::fixture::{Gen, current, pair, write};
-        let root = std::env::temp_dir().join(format!("swofty-resume-first-{}", std::process::id()));
-        std::fs::remove_dir_all(&root).ok();
-        let steam = game_copy(&root, false);
-        assert!(profile_careers(&root, "p", &steam).0.is_empty());
-        save_file(&crate::saves::launcher::remote_dir(&root, "p"));
-        let (careers, _) = profile_careers(&root, "p", &steam);
-        assert_eq!(careers.len(), 1);
-        assert_eq!(key_of(&careers[0].slot), "604a2c4a9c422bfc");
-        let p = Plain::at(crate::saves::plain::root_of_profile(&root, "p"));
-        write(
-            &p,
-            &Gen {
-                n: 1,
-                event: "load",
-                session: Some("s"),
-                containers: pair(
-                    "driver_career_26",
-                    "game",
-                    vec![("0x00000000000000aa", "Career Save 1")],
-                ),
-            },
-        );
-        current(&p, 1);
-        assert_eq!(profile_careers(&root, "p", &steam).0, save_careers(&p).0);
-        std::fs::remove_dir_all(&root).ok();
-    }
-
-    #[test]
-    fn an_ea_app_copy_lists_the_careers_of_its_launcher_store() {
-        let root = std::env::temp_dir().join(format!("swofty-resume-ea-{}", std::process::id()));
-        std::fs::remove_dir_all(&root).ok();
-        let (ea, steam) = (game_copy(&root, true), game_copy(&root, false));
+    fn ea_header() -> [u8; 16] {
         let mut header = crate::saves::codec::STREAM_HEADER;
         header[13..].copy_from_slice(&[0xb4, 0xeb, 0xc9]);
-        save_file_named(&crate::saves::launcher::ea_dir(&root, "p"), "NXDSMWW.BWW", header);
-        let (careers, _) = profile_careers(&root, "p", &ea);
-        assert_eq!(careers.len(), 1);
-        assert_eq!(key_of(&careers[0].slot), "604a2c4a9c422bfc");
-        assert!(profile_careers(&root, "p", &steam).0.is_empty());
-        assert_ne!(save_state(&root, "p", &ea), save_state(&root, "p", &steam));
+        header
+    }
+
+    fn keys(saved: &ListSave) -> Vec<String> {
+        let mut out: Vec<String> = saved.careers.iter().map(|c| key_of(&c.slot)).collect();
+        out.sort();
+        out
+    }
+
+    fn scratch(name: &str) -> std::path::PathBuf {
+        let root = std::env::temp_dir().join(format!("swofty-resume-{name}-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        root
+    }
+
+    fn imported(root: &std::path::Path) {
+        let marker = crate::saves::launcher::marker_path(root);
+        std::fs::create_dir_all(marker.parent().unwrap()).unwrap();
+        std::fs::write(marker, "{}").unwrap();
+    }
+
+    fn generation(
+        p: &Plain,
+        n: u64,
+        event: &str,
+        containers: Vec<crate::saves::plain::fixture::FixtureContainer>,
+    ) {
+        use crate::saves::plain::fixture::{Gen, current, write};
+        write(
+            p,
+            &Gen {
+                n,
+                event,
+                session: Some("s"),
+                containers,
+            },
+        );
+        current(p, n);
+    }
+
+    fn niggo_layout(root: &std::path::Path) -> (crate::install::Game, Location) {
+        let career = |id: u64, guid: u64, team: u16, driver: u16, season: i32, date: u64| {
+            slot_bag((id, guid), (team, driver), (season, 23), date, 0)
+        };
+        let stock = || {
+            (
+                "driver_career_26",
+                vec![career(2, 0x6090e65341392af1, 478, 16388, 1, 1_795_107_833)],
+            )
+        };
+        let f2 = || {
+            (
+                "driver_career_f2_26",
+                vec![
+                    career(1, 0x6820c8793a7ff7ff, 480, 16386, 0, 1_785_682_480),
+                    career(2, 0x64adcb609301dde8, 477, 16387, 9, 1_794_148_590),
+                ],
+            )
+        };
+        let older = || {
+            (
+                "driver_career_25",
+                vec![
+                    career(1, 0x6820435d59bd9ccb, 505, 7, 0, 1_794_140_370),
+                    slot_bag((3, 0x6cc4fd7ed2d2f62f), (505, 7), (0, 0), 1_793_876_614, 0x01),
+                ],
+            )
+        };
+        let ea = game_copy(root, true);
+        let own = Location::ea(&root.join("Nico/AppData/Local/F1 25/savegame/ea/profile"), "Nico");
+        save_with(&own.dir, "NXDSMWW.BWW", ea_header(), vec![stock(), older(), f2()]);
+        save_with(
+            &crate::saves::launcher::ea_dir(root, "default"),
+            "NXDSMWW.BWW",
+            ea_header(),
+            vec![
+                (
+                    "driver_career_26",
+                    vec![slot_bag((2, 0x73abbb879a0faa02), (478, 16388), (0, 0), 0, 0)],
+                ),
+                older(),
+                f2(),
+            ],
+        );
+        crate::saves::plain::remember_copy_source(root, &own.source);
+        generation(&Plain::of_source(root, &own.source), 2, "load", Vec::new());
+        generation(
+            &Plain::at(crate::saves::plain::root_of_profile(root, "default")),
+            1,
+            "load",
+            crate::saves::plain::fixture::pair(
+                "driver_career_26",
+                "game",
+                vec![
+                    ("0x6820435d59bd9ccb", "F1 25 Save 1"),
+                    ("0x64adcb609301dde8", "Career Save 2"),
+                ],
+            ),
+        );
+        imported(root);
+        (ea, own)
+    }
+
+    #[test]
+    fn launcher_saves_off_lists_the_ea_copys_own_save_and_not_a_stale_plain_store() {
+        let root = scratch("niggo-off");
+        let (ea, own) = niggo_layout(&root);
+        let stale = Plain::at(crate::saves::plain::root_of_profile(&root, "default"));
+        assert_eq!(save_careers(&stale).0.len(), 2);
+        assert!(save_careers(&Plain::of_source(&root, &own.source)).0.is_empty());
+        let saved = list_save_with(&root, "default", false, &ea, || Some(own.clone()));
+        assert_eq!(
+            keys(&saved),
+            [
+                "6090e65341392af1",
+                "64adcb609301dde8",
+                "6820435d59bd9ccb",
+                "6820c8793a7ff7ff"
+            ]
+        );
+        assert_eq!(saved.source, own.data_file().display().to_string());
         std::fs::remove_dir_all(&root).ok();
     }
 
     #[test]
-    fn the_list_state_of_a_save_changes_with_its_careers() {
-        use crate::saves::plain::fixture::{Gen, current, pair, write};
-        let root = std::env::temp_dir().join(format!("swofty-resume-state-{}", std::process::id()));
-        std::fs::remove_dir_all(&root).ok();
-        let p = Plain::at(crate::saves::plain::root_of_profile(&root, "default"));
-        let steam = game_copy(&root, false);
-        let state = || save_state(&root, "default", &steam);
-        let empty = state();
-        let generation = |n: u64, slots: Vec<(&str, &str)>| {
-            write(
-                &p,
-                &Gen {
-                    n,
-                    event: "load",
-                    session: Some("s"),
-                    containers: pair("driver_career_26", "game", slots),
-                },
-            );
-            current(&p, n);
-        };
-        generation(1, vec![("0x00000000000000aa", "Career Save 1")]);
-        let one = state();
-        assert_ne!(one, empty);
-        generation(
-            2,
-            vec![
-                ("0x00000000000000aa", "Career Save 1"),
-                ("0x00000000000000bb", "Career Save 2"),
-            ],
+    fn launcher_saves_on_lists_the_launcher_store_the_game_loads() {
+        let root = scratch("niggo-on");
+        let (ea, own) = niggo_layout(&root);
+        let saved = list_save_with(&root, "default", true, &ea, || Some(own.clone()));
+        assert_eq!(
+            keys(&saved),
+            ["64adcb609301dde8", "6820435d59bd9ccb", "6820c8793a7ff7ff"]
         );
-        assert_ne!(state(), one);
+        let store = crate::saves::launcher::location_ea(&root, "default");
+        assert_eq!(saved.source, store.data_file().display().to_string());
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn an_ea_plain_generation_with_no_containers_hides_no_career() {
+        let root = scratch("ea-empty-plain");
+        let (ea, own) = niggo_layout(&root);
+        let launcher = Plain::at(crate::saves::plain::root_of_profile(&root, "default"));
+        generation(&launcher, 2, "load", Vec::new());
+        generation(&launcher, 3, "save", Vec::new());
+        generation(&Plain::of_source(&root, &own.source), 3, "save", Vec::new());
+        let on = list_save_with(&root, "default", true, &ea, || Some(own.clone()));
+        let off = list_save_with(&root, "default", false, &ea, || Some(own.clone()));
+        assert_eq!(on.careers.len(), 3);
+        assert_eq!(off.careers.len(), 4);
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn an_empty_launcher_store_lists_the_save_the_session_start_copies_into_it() {
+        let root = scratch("seed");
+        let (ea, own) = niggo_layout(&root);
+        std::fs::remove_dir_all(crate::saves::launcher::ea_dir(&root, "default")).unwrap();
+        let saved = list_save_with(&root, "default", true, &ea, || Some(own.clone()));
+        assert_eq!(saved.careers.len(), 4);
+        assert_eq!(saved.source, own.data_file().display().to_string());
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn without_a_readable_save_the_list_falls_back_to_the_sessions_plain_store() {
+        let root = scratch("fallback");
+        let (ea, own) = niggo_layout(&root);
+        let copy = Plain::of_source(&root, &own.source);
+        generation(
+            &copy,
+            3,
+            "load",
+            crate::saves::plain::fixture::pair(
+                "driver_career_26",
+                "game",
+                vec![("0x00000000000000aa", "Career Save 1")],
+            ),
+        );
+        let saved = list_save_with(&root, "default", false, &ea, || None);
+        assert_eq!(keys(&saved), ["00000000000000aa"]);
+        assert!(saved.source.starts_with("generation 3 of "), "{}", saved.source);
+        std::fs::write(own.data_file(), b"torn").unwrap();
+        let torn = list_save_with(&root, "default", false, &ea, || Some(own.clone()));
+        assert_eq!(keys(&torn), ["00000000000000aa"]);
+        assert!(torn.source.contains("no readable save file"), "{}", torn.source);
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_vault_restore_of_the_save_changes_the_list_at_the_next_play() {
+        let root = scratch("restore");
+        let (ea, own) = niggo_layout(&root);
+        let before = list_save_with(&root, "default", false, &ea, || Some(own.clone()));
+        save_with(
+            &own.dir,
+            "NXDSMWW.BWW",
+            ea_header(),
+            vec![(
+                "driver_career_26",
+                vec![slot_bag((1, 0xbb), (478, 16388), (0, 3), 1_793_000_000, 0)],
+            )],
+        );
+        let after = list_save_with(&root, "default", false, &ea, || Some(own.clone()));
+        assert_eq!(keys(&after), ["00000000000000bb"]);
+        assert_ne!(before.state(), after.state());
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_mode_the_save_lacks_comes_from_the_generation_the_core_puts_it_back_from() {
+        use crate::saves::plain::fixture::pair;
+        let root = scratch("put-back");
+        let steam = game_copy(&root, false);
+        save_file(&crate::saves::launcher::remote_dir(&root, "p"));
+        let p = Plain::at(crate::saves::plain::root_of_profile(&root, "p"));
+        let mut containers = pair(
+            "driver_career_progressive",
+            "kept",
+            vec![("0x00000000000000cc", "Career Save 1")],
+        );
+        containers.extend(pair(
+            "driver_career_1990",
+            "game",
+            vec![("0x00000000000000dd", "Career Save 2")],
+        ));
+        generation(&p, 3, "save", containers);
+        generation(
+            &p,
+            4,
+            "load",
+            pair("driver_career_progressive", "kept", Vec::new()),
+        );
+        let saved = list_save_with(&root, "p", true, &steam, || None);
+        assert_eq!(keys(&saved), ["00000000000000cc", "604a2c4a9c422bfc"]);
+        assert!(
+            saved
+                .source
+                .contains("driver_career_progressive from generation 3"),
+            "{}",
+            saved.source
+        );
+        p.restore_mode(3, "driver_career_1990", 1).unwrap();
+        let restored = list_save_with(&root, "p", true, &steam, || None);
+        assert_eq!(keys(&restored), ["00000000000000cc", "00000000000000dd"]);
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_steam_session_lists_its_launcher_store_or_the_steam_save() {
+        let root = scratch("steam");
+        let steam = game_copy(&root, false);
+        let remote = root.join("Steam/userdata/843502855/3059520/remote");
+        let own = Location::steam(&remote).unwrap();
+        save_with(
+            &remote,
+            crate::saves::plain::rewrite::SAVE_FILE,
+            crate::saves::codec::STREAM_HEADER,
+            vec![(
+                "driver_career_26",
+                vec![slot_bag((1, 0xee), (7, 61), (0, 0), 1_793_000_000, 0)],
+            )],
+        );
+        save_file(&crate::saves::launcher::remote_dir(&root, "p"));
+        let on = list_save_with(&root, "p", true, &steam, || Some(own.clone()));
+        let off = list_save_with(&root, "p", false, &steam, || Some(own.clone()));
+        assert_eq!(keys(&on), ["604a2c4a9c422bfc"]);
+        assert_eq!(keys(&off), ["00000000000000ee"]);
+        assert_ne!(on.state(), off.state());
         std::fs::remove_dir_all(&root).ok();
     }
 

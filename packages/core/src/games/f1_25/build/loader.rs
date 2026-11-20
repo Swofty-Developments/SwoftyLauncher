@@ -218,10 +218,18 @@ impl Pipeline<'_, '_> {
                 if menus && crate::stdlib::careers::resume_list_wanted() {
                     let aliases = edits.id_aliases.clone();
                     let pending = pending_english(store, planner);
+                    let saved = inputs.resume_save.clone().unwrap_or_else(|| {
+                        crate::stdlib::careers::list_save(
+                            &store.root,
+                            run.profile,
+                            run.settings.launcher_saves && !run.settings.is_vanilla(),
+                            run.game,
+                        )
+                    });
                     match crate::stdlib::careers::resume_list_for(
                         store,
                         run.game,
-                        run.profile,
+                        &saved,
                         &built.overlay,
                         order.as_slice(),
                         aliases,
@@ -233,6 +241,7 @@ impl Pipeline<'_, '_> {
                                 rows.len(),
                                 rows.iter().filter(|r| !r.ready).count()
                             ));
+                            built.lines.push(format!("ui: the Resume Career list reads {}", saved.source));
                             for r in rows.iter().filter(|r| r.driver.is_empty() || r.team.is_empty()) {
                                 built.warnings.push(format!(
                                     "ui: career {} on the Career list has no {} name; its saved ids name no row in this build",
