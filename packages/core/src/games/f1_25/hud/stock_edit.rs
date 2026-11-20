@@ -96,16 +96,29 @@ fn child_at_mut<'a>(e: &'a mut Node, path: &[usize]) -> Result<&'a mut Node> {
 
 /// The scene with a new null `<pfx>_w_<element>` around each of `s.wrap`, in the element's place
 /// in its parent's children, so every stock name and the drawing order stay; the ids of the moved
-/// subtrees follow their new paths and the lookup grows by the wrappers. Returns the bytes and the
+/// subtrees follow their new paths and the lookup grows by the wrappers. The null is a copy of one of
+/// the scene's nulls, an undrawn one when there is one, with no art. Returns the bytes and the
 /// wrapper names.
 pub fn wrap_scene(bytes: &[u8], s: &StockNodes, pfx: &str) -> Result<(Vec<u8>, Vec<String>)> {
     let mut pkg = Pkg::parse(bytes)?;
     let root = scene_root(&pkg)?;
     let all = idf::elements(root);
-    let tmpl = all
+    let nulls: Vec<&Node> = all
         .iter()
-        .find(|(_, e)| crate::ui::catalog::element_type(e) == "eNull")
-        .map(|(_, e)| idf::detached(e))
+        .filter(|(_, e)| crate::ui::catalog::element_type(e) == "eNull")
+        .map(|(_, e)| *e)
+        .collect();
+    let drawn = |e: &Node| {
+        e.as_obj()
+            .and_then(|o| o.get("geoms"))
+            .and_then(Node::as_arr)
+            .is_some_and(|a| !a.items.is_empty())
+    };
+    let tmpl = nulls
+        .iter()
+        .find(|e| !drawn(e))
+        .or(nulls.first())
+        .map(|e| idf::detached(e))
         .ok_or_else(|| {
             err(format!(
                 "stock_nodes {}: the scene has no eNull to clone a wrapper from",
@@ -160,6 +173,7 @@ pub fn wrap_scene(bytes: &[u8], s: &StockNodes, pfx: &str) -> Result<(Vec<u8>, V
         idf::set_transform(&mut w, [0.0; 3], super::geom::QUAT_IDENTITY, [1.0; 3])?;
         idf::clear_list(&mut w, "children")?;
         idf::clear_list(&mut w, "anims")?;
+        idf::clear_list(&mut w, "geoms")?;
         if idf::param(&w, "isHidden").is_some() {
             idf::set_param_like(&mut w, "isHidden", Val::bool(false))?;
         }
