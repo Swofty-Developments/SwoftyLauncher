@@ -333,15 +333,19 @@ fn key_of(s: &Slot) -> String {
     }
 }
 
+/// The year a career mode's name ends in when that is all that follows `driver_career_` or `my_team_career_`
+/// (`driver_career_26`, `driver_career_1990`). An addon's own mode (`driver_career_f2_26`) has none, whatever its
+/// name ends in.
 fn year_of(mode: &str) -> Option<u32> {
-    mode.rsplit('_')
-        .next()
+    super::mode_suffix(mode)
+        .filter(|s| s.bytes().all(|b| b.is_ascii_digit()))
         .and_then(|y| y.parse::<u32>().ok())
         .filter(|y| (y.to_string().len() == 2 && *y < 100) || (1900..2100).contains(y))
 }
 
 /// The game's data group for a career mode with a year in its name; empty for a mode without one (an addon's own
-/// content), whose group the core takes from the careers index.
+/// content, `driver_career_f2_26` too), whose group the core takes from the content that registers the mode or
+/// from the careers index.
 pub fn group_of(mode: &str) -> String {
     match year_of(mode) {
         Some(y) if y < 100 => format!("f1_career_20{y:02}"),
@@ -850,6 +854,12 @@ mod tests {
         assert_eq!(group_of("driver_career_25"), "f1_career_2025");
         assert_eq!(group_of("my_team_career_26"), "f1_career_2026");
         assert_eq!(group_of("driver_career_progressive"), "");
+        assert_eq!(
+            group_of("driver_career_f2_26"),
+            "",
+            "an addon's mode ending in a number is not the stock 2026 group"
+        );
+        assert_eq!(group_of("my_team_career_f2_2026"), "");
         let list = vec![
             saved(
                 "driver_career_1990",
@@ -871,6 +881,20 @@ mod tests {
         assert_eq!(by("driver_career_1990").group, "f1_career_1990");
         assert_eq!(by("my_team_career_26").group, "f1_career_2026");
         assert_eq!(by("driver_career_progressive").group, "");
+        let f2 = resume_rows(
+            &[saved(
+                "driver_career_f2_26",
+                slot(4, "0x00000000000000dd", 646, 61, 0, 0, 4),
+            )],
+            &Created::default(),
+            &[],
+            &names,
+        );
+        assert_eq!(f2[0].group, "");
+        assert_eq!(
+            f2[0].badge, "Driver Career",
+            "an addon's mode ending in _26 is not named as the game's 2026 content"
+        );
         let json = serde_json::to_value(by("driver_career_1990")).unwrap();
         assert_eq!(json["group"], "f1_career_1990");
         assert_eq!(json["game_mode"], "driver_career_1990");
