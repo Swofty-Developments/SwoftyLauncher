@@ -81,6 +81,15 @@ pub fn location_ea(data: &Path, profile: &str) -> Location {
     Location::launcher_ea(data, profile)
 }
 
+/// The launcher store a session on `game` plays from: the EA layout's for an EA app copy, else the Steam
+/// layout's.
+pub fn store_of_game(data: &Path, profile: &str, game: &crate::install::Game) -> Location {
+    match crate::install::Source::detect(&game.dir) {
+        crate::install::Source::EaApp => location_ea(data, profile),
+        _ => location(data, profile),
+    }
+}
+
 /// The launcher store that goes with a game save: the Steam layout's for a Steam save, the EA layout's for
 /// an EA app save.
 pub fn store_for(data: &Path, profile: &str, game_save: &Location) -> Option<Location> {

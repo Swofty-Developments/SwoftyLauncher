@@ -197,9 +197,17 @@ fn a_build_names_the_same_overlay_with_its_kept_digests_or_without_them() {
 fn the_careers_file_and_the_list_state_are_part_of_the_build_hash() {
     use super::super::inputs::stamp_resume_list;
     let root = scratch("resume-list");
+    let game = crate::install::Game {
+        dir: root.join("F1 25"),
+        user_reg: None,
+        identity: crate::game_folder::baseline::Identity {
+            build_id: "1".into(),
+            exe_sha256: "0".repeat(64),
+        },
+    };
     let hash = |wanted: bool| {
         let mut h = BuildHash::new();
-        stamp_resume_list(&mut h, &root, "default", wanted).unwrap();
+        stamp_resume_list(&mut h, &root, "default", &game, wanted).unwrap();
         h.finish()
     };
     let absent = hash(true);

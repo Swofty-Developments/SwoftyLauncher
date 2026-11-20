@@ -473,7 +473,7 @@ pub fn map_save_file(save: SaveFile<'_>, maps: &IdMaps, write: bool) -> FileResu
         lines.push("[saves] launcher save file left alone: no career in it holds an earlier team id".into());
         return FileResult { lines, settled: true };
     }
-    let written = match crate::saves::codec::encode_data(&stream, decoded.iv, SAVE_LEVEL) {
+    let written = match decoded.reseal(&stream, SAVE_LEVEL) {
         Ok(w) => w,
         Err(e) => return alone(format!("the mapped save does not encode ({e})"), false),
     };

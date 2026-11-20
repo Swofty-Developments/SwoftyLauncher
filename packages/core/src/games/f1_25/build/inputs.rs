@@ -58,6 +58,7 @@ pub(super) fn stamp_resume_list(
     hash: &mut BuildHash,
     data: &std::path::Path,
     profile: &str,
+    game: &crate::install::Game,
     wanted: bool,
 ) -> Result<()> {
     if !wanted {
@@ -71,7 +72,7 @@ pub(super) fn stamp_resume_list(
     };
     hash.update(format!(
         "resume list|{stamp}|{};",
-        crate::stdlib::careers::save_state(data, profile)
+        crate::stdlib::careers::save_state(data, profile, game)
     ));
     Ok(())
 }
@@ -206,6 +207,7 @@ impl Inputs {
                 &mut hash,
                 &store.root,
                 profile,
+                game,
                 crate::stdlib::careers::resume_list_wanted(),
             )?;
         }

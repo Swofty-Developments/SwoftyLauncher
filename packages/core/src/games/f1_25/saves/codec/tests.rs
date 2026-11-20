@@ -88,7 +88,32 @@ fn real_sample_decodes_and_reseals_identically() {
     let file = std::fs::read(path).unwrap();
     let decoded = decode_data(&file).unwrap();
     assert_eq!(decoded.stream[..8], 1u64.to_le_bytes());
-    assert_eq!(seal_frame(&decoded.frame, decoded.iv), file);
+    assert_eq!(seal(&decoded.header, &decoded.frame, decoded.iv), file);
+}
+
+#[test]
+fn an_ea_app_save_decodes_and_reseals_with_its_own_stream_header() {
+    let mut header = STREAM_HEADER;
+    header[13..].copy_from_slice(&[0xb4, 0xeb, 0xc9]);
+    let stream = synthetic_stream(3000);
+    let frame = zstd::bulk::compress(&stream, 3).unwrap();
+    let file = seal(&header, &frame, IV);
+    let decoded = decode_data(&file).unwrap();
+    assert_eq!(decoded.header, header);
+    assert_eq!(decoded.stream, stream);
+    let again = decode_data(&decoded.reseal(&stream, 3).unwrap()).unwrap();
+    assert_eq!((again.header, again.stream), (header, stream));
+}
+
+#[test]
+fn a_stream_header_of_another_format_is_refused() {
+    let mut header = STREAM_HEADER;
+    header[0] = 6;
+    let frame = zstd::bulk::compress(&synthetic_stream(100), 3).unwrap();
+    assert!(matches!(
+        decode_data(&seal(&header, &frame, IV)),
+        Err(CodecError::BadStreamHeader)
+    ));
 }
 
 #[test]

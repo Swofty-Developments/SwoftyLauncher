@@ -14,6 +14,9 @@ pub const MAC_LEN: usize = 32;
 pub const IV_LEN: usize = 16;
 pub const BODY_OFFSET: usize = HEADER_LEN + MAC_LEN + IV_LEN;
 pub const STREAM_HEADER: [u8; 16] = [5, 0, 0, 0, 16, 0, 0, 0, 4, 0, 0, 0, 0x01, 0x08, 0x65, 0x15];
+/// The leading bytes of the stream header every copy writes. The last four differ: Steam's saves hold the ones in
+/// [`STREAM_HEADER`], the EA app copy's other values.
+const STREAM_HEADER_SHARED: usize = 12;
 pub const INDEX_LEN: usize = 416;
 
 const SIZE_XOR: u32 = 0xc361_5f4e;
@@ -52,6 +55,7 @@ pub enum CodecError {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DecodedData {
     pub iv: [u8; IV_LEN],
+    pub header: [u8; 16],
     pub frame: Vec<u8>,
     pub stream: Vec<u8>,
 }
@@ -168,17 +172,37 @@ pub fn decode_data(file: &[u8]) -> Result<DecodedData, CodecError> {
         return Err(CodecError::BadPadding);
     }
     plain.truncate(plain.len() - pad);
-    if plain.len() < STREAM_HEADER.len() || plain[..16] != STREAM_HEADER {
+    if plain.len() < STREAM_HEADER.len()
+        || plain[..STREAM_HEADER_SHARED] != STREAM_HEADER[..STREAM_HEADER_SHARED]
+    {
         return Err(CodecError::BadStreamHeader);
     }
+    let header: [u8; 16] = plain[..16].try_into().expect("16 bytes");
     let frame = plain[16..].to_vec();
     let stream = zstd::stream::decode_all(frame.as_slice()).map_err(|e| CodecError::Zstd(e.to_string()))?;
-    Ok(DecodedData { iv, frame, stream })
+    Ok(DecodedData {
+        iv,
+        header,
+        frame,
+        stream,
+    })
+}
+
+impl DecodedData {
+    /// `stream` sealed as this file was: its IV and its stream header.
+    pub fn reseal(&self, stream: &[u8], level: i32) -> Result<Vec<u8>, CodecError> {
+        let frame = zstd::bulk::compress(stream, level).map_err(|e| CodecError::Zstd(e.to_string()))?;
+        Ok(seal(&self.header, &frame, self.iv))
+    }
 }
 
 pub fn seal_frame(frame: &[u8], iv: [u8; IV_LEN]) -> Vec<u8> {
-    let mut plain = Vec::with_capacity(STREAM_HEADER.len() + frame.len() + 16);
-    plain.extend_from_slice(&STREAM_HEADER);
+    seal(&STREAM_HEADER, frame, iv)
+}
+
+fn seal(header: &[u8; 16], frame: &[u8], iv: [u8; IV_LEN]) -> Vec<u8> {
+    let mut plain = Vec::with_capacity(header.len() + frame.len() + 16);
+    plain.extend_from_slice(header);
     plain.extend_from_slice(frame);
     let pad = 16 - plain.len() % 16;
     plain.resize(plain.len() + pad, pad as u8);

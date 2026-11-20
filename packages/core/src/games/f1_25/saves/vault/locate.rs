@@ -14,6 +14,7 @@ use crate::{Result, io_err};
 
 pub const STEAM_PREFIX: &str = "savegame@profile#";
 pub const KEY_PREFIX: &str = "profile/";
+pub const DATA_KEY: &str = "profile/NXDSMWW.BWW";
 const EA_PROFILE: &[&str] = &["F1 25", "savegame", "ea", "profile"];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -311,6 +312,11 @@ impl Location {
 
     pub fn path_of(&self, key: &str) -> Option<PathBuf> {
         self.name_of(key).map(|n| self.dir.join(n))
+    }
+
+    /// The profile save's data file, the one that holds the careers.
+    pub fn data_file(&self) -> PathBuf {
+        self.path_of(DATA_KEY).expect("the data key names a file")
     }
 
     /// The profile save's files, by key. Highlights, ghosts and mid-session
