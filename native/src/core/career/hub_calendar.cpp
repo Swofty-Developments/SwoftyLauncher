@@ -21,7 +21,7 @@
 // only, every one guarded: the ScheduleComponent (current season, season over, seasons), the season's driver
 // calendars, their activities and definitions through KB structs (L2), the clock through
 // CareerTimeComponent.current_minutes, and the weekend through moments::career_weekend. A build whose game headers lack
-// a field logs that the calendar is not readable.
+// one of those fields fails to compile.
 //
 // The one write, the season break fix (hub_calendar_logic.hpp): as the hub opens, a started SeasonBreak listed ahead of
 // a started race weekend running today, with nothing else the check weighs before that weekend, gets
@@ -44,6 +44,8 @@ namespace {
 namespace g = swofty::game;
 namespace hc = runtime::hub_calendar;
 namespace mem = swofty::mem;
+
+template <class...> constexpr bool missing_layout = false;
 
 constexpr size_t MAX_SEASONS = 64;
 constexpr size_t MAX_CALENDARS = 256;
@@ -105,7 +107,7 @@ template <class T = g::CareerTimeComponent> bool today(uint16_t &day)
         day = uint16_t(minutes / hc::MINUTES_PER_DAY);
         return true;
     } else {
-        (void)day;
+        static_assert(missing_layout<T>, "the game headers lack CareerTimeComponent.current_minutes");
         return false;
     }
 }
@@ -168,7 +170,9 @@ Snapshot snapshot()
             s.stop = "the calendar's activity list does not read";
         return s;
     } else {
-        s.stop = "this core was built without the calendar layout";
+        static_assert(missing_layout<S, Z, C, A, D>,
+                      "the game headers lack a calendar field: ScheduleComponent.current_season or season_over, "
+                      "CalendarActivity.state, ActivityDef.id or duration, or another field snapshot() reads");
         return s;
     }
 }
