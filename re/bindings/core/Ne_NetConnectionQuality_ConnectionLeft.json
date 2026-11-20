@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetConnectionQuality_ConnectionLeft",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144057800",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "str:s_NeNetConnectionQuality_ConnectionLeft;xref:0x14405798a,0x1440579b3;decomp:re/decomp/144057800.c",
+  "notes": "cxx=neon::NeNetConnectionQuality::connectionLeft; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "core.net_connection_quality_connection_left",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D7 48 89 CE 48 8B 89 28",
+  "match": "0x144057800",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144057800",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetConnectionQuality_ConnectionLeft"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb2-verify-b",
+   "kind": "func",
+   "item": "Ne_NetConnectionQuality_ConnectionLeft",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144057800.c;xref:0x144057800",
+   "notes": "V2036 log strings on NETWORK-CONNECTION-QUALITY match method name (log signature and body consistent)"
+  }
+ ],
+ "proofs": []
+}

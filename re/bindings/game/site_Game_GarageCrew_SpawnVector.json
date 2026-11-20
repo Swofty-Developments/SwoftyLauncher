@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "site_Game_GarageCrew_SpawnVector",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140389314",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/140388cf0.c;pat:disasm-0x140388cf0-0x14038c7f7;xref:0x140389304,0x14038930e,0x14038944c,0x140389321,0x14038c7f4;sig:game.garage_crew_spawn_vector",
+  "notes": "In Game_GarageCrewModule_SpawnGarageCrew (0x140388cf0), after the loop over the session assignment records (session+0x50, +0x1d0..+0x1d8 begin/end, step 0x98: entrant copy, +0x88 garage, +0x90 slot byte). The loop pushes a 16-byte entry {record*, slot dword} for each record whose garage id (garage+0x28) equals the spawn argument (ebp); rcx = vector begin, r13 = vector end (0x140389310 is the empty case). The crew loop then stores crew instance number r14d (the index in this vector) at [rsp+r14d*8+0x290] (0x14038944c) with no bound, but that array holds two pointers and the slot after them (+0x2a0) is the vector pointer the epilogue frees through GAME_DEFAULT (0x14038c7f4), so a garage with a third record (slots 0,1,2) overwrites it: fatal Invalid address for this heap. Sess_Set_GarageSlotEntrant_Thunk already ignores slot >= 2. Patch window 0x140389314..0x14038931a (mov r8,r13; sub r8,rcx); 0x14038930e jumps to its first byte and no branch lands inside. Core compacts the vector to its first two entries with slot < 2 by lowering r13. Raised by crew from the exe bytes; needs an independent agree row from the game lane owner before the binding exports.  Verified agree V3853 by kbverify-crew1 (independent disasm); L2 promoted by lead authorisation."
+ },
+ "signature": {
+  "id": "game.garage_crew_spawn_vector",
+  "section": ".xtls",
+  "pattern": "31 C9 4D 89 E8 49 29 C8 49 C1 F8 04",
+  "match": "0x140389312",
+  "anchor": "0x2",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140389314",
+  "kind": "mid",
+  "names": [
+   "site_Game_GarageCrew_SpawnVector"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "crew",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/garage/garage_crew.cpp"
+  ],
+  "expect": "4D 89 E8 49",
+  "func_start": "0x140388cf0"
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "kbverify-crew1",
+   "kind": "global",
+   "item": "0x140389314",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140388cf0.c;xref:0x140389304,0x14038930e,0x14038944c,0x140389321,0x14038c7f4",
+   "notes": "V3853 capstone disasm of 0x140388cf0 on the Steam exe d873a1c8: vector build loop 0x140389240-0x1403892ff writes {rdi=record*, dword slot byte [rdi+0x90]} at [r13], r13+=0x10, begin in rsi, garage match cmp [rax+0x28],ebp; site 0x140389314 reached with rcx=rsi=begin and r13=end from 0x140389304 (non-empty) or xor esi/ecx with r13=0 from 0x140389310; ebp=garage id (restored from [rsp+0xb8] after each realloc, used as r8d at 0x14038933f). Crew loop 0x14038944c mov [rsp+rax*8+0x290],rsi with rax=r14d and no bound: index 2 hits [rsp+0x2a0], which 0x1403893f8 stored as vector begin and 0x14038c7ab reloads as rsi for the free at 0x14038c7f4 (rdx=rsi, only the pointer, no size; the allocator realloc path 0x1403892a2 passes the capacity in r15 which is never stored). r13 only reaches [rsp+0x2a8] (0x140389403), the loop end compare at 0x140389472 and the reload at 0x14038b182 which has no later use, so lowering it leaves the free argument and the allocation untouched; the empty case (rcx==r13==0) is jumped past by 0x14038934a. Patch window 0x140389314-0x14038931a, no branch lands inside. sigcheck game.garage_crew_spawn_vector hits=1 OK"
+  },
+  {
+   "date": "2026-11-01",
+   "verifier": "kbverify-crewce0",
+   "kind": "global",
+   "item": "0x140389314",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140388cf0.c;xref:0x1403899d0,0x1403895a0,0x140389610",
+   "notes": "V8618 V-ce0 own disasm: entries are {record*,[+8] dword slot}: loop 0x14038947b mov rsi,[rdx] (null skipped via 0x14038946e), rdx+=0x10, cmp r13. Template chain at 0x1403895a0-0x1403895fd: rbx=[rsp+0xc0] module; r12=[rbx+0x48]; kind=byte [rsi+0x58] (ja 2 -> r14=0 at 0x140389610); table=[r12+kind*0x10+0x2c8], null -> r14=0; team=word [rsi+0x5a]; begin=[table+8], end=[table+0x10], (end-begin)>>4 <= team -> r14=0; r14=[begin+team*0x10+8]. 0x1403899d0 movzx eax,byte [r14+0x560] with no test; 0x140389a0d [r14+0x18] and 0x140389a18 [r14+0x58c] also unguarded. Guard code in garage_crew_logic.hpp computes the identical chain. Note the crew array index is the vector position (r14d increments for skipped entries too)."
+  }
+ ],
+ "proofs": []
+}

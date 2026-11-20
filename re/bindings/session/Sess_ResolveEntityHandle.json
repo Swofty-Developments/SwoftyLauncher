@@ -1,0 +1,72 @@
+{
+ "schema": 1,
+ "name": "Sess_ResolveEntityHandle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14243fd10",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "xref:0x14022de4a,0x14022e4a7,0x140231629,0x1402316ba,0x140231bb3,0x1402340fc,0x14023ac38,0x14023ae98+187;doc:research/grid24-cap.md#2;decomp:re/decomp/14243fd10.c",
+  "notes": "Resolves a 4-byte entity handle: rcx ctx, rdx -> handle {u8 kind at +0, u16 index at +2}. 0x14243fd10 is a jmp thunk to the body at .data1 0x14ca67b00. kind must be <= 2 (ePreLoaded, eUserDefined, eNetworkReplicated, names at 0x145612e60). [ctx+0x328+kind*0x10] points to a vector header whose 16-byte entries run [hdr+8]..[hdr+0x10]; the result is the qword at entry+8 (0x14ca67b42). A null header or kind > 2 returns 0 and logs \"Vehicle with stat id %s not found\" on ENTRANTS_SYSTEM (id formatted \"%s %u\" from kind name and index) only when the byte at 0x14604bac4 is 1 and that channel is enabled; with kind > 2 that log reads the name past the 3-entry table. An index at or past the entry count returns 0 with no log (0x14ca67b38). About half the call sites pass e+0x5c and many others a stack copy of the handle; 0x14379dd00 passes rsi+0x58 (0x14379ddad). Callers: census steam 0x243fd10."
+ },
+ "signature": {
+  "id": "session.find_vehicle",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 85 C0 0F 84 ?? ?? ?? ?? 80 3D ?? ?? ?? ?? 01 75 6E B9",
+  "match": "0x14022de49",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14243fd10",
+  "kind": "func_start",
+  "names": [
+   "Sess_ResolveEntityHandle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la1-verify",
+   "kind": "func",
+   "item": "0x14243fd10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14243fd10.c;xref:0x14379def9,0x14022de49",
+   "notes": "V4034 Handle kind byte<3, u16 index at +2, table param_1+0x328+kind*0x10, entry vector begin +8 stride 16 returning entry+8; miss logs ENTRANTS_SYSTEM 'Vehicle with stat id %s not found'; handle copied from [rdi+0x5c] at 0x14022de32; caller 0x14379dd00 call site seen"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Sess_ResolveEntityHandle",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x14243fd10-0x14243fd15,0x14ca67b00-0x14ca67c1c,0x14024c580-0x14024c666,0x14379dd00-0x14379df40,0x14243fe30-0x14243ffa0,0x1424a2120-0x1424a21d0,0x14078d5c0-0x14078d600,0x1413f8e30-0x1413f8e70,0x1474b4fe0-0x1474b5030,0x148513e80-0x148513ec0,0x14f2dcbd0-0x14f2dcc20,0x149fe1e30-0x149fe1ed0,0x151689228-0x15168925c,1.0.145 0x142441910-0x142441915,1.0.145 0x14c714330-0x14c71444c;xref:0x14ca67b04,0x14ca67b08,0x14ca67b15,0x14ca67b22,0x14ca67b26,0x14ca67b2a,0x14ca67b38,0x14ca67b42,0x14ca67be8,0x14024c637,0x14379ddad,0x14379def9",
+   "notes": "V100052 Blind: partial. Confirmed: 2 args (rcx ctx, rdx -> 4-byte handle); kind = u8 [rdx], unsigned cmp r8,2/ja (0x14ca67b08); index = u16 [rdx+2], unsigned jbe vs count (0x14ca67b38); returns qword entry+8 (0x14ca67b42), else 0; caller 0x14379dd00 passes rsi+0x58 (0x14379ddad); census row 209/153 (.data1 15, .xtls 194), 1 jump, 0 ptr matches. Imprecise: ctx+0x328+kind*0x10 holds a pointer to a vector header; entries run [hdr+8]..[hdr+0x10], 16 bytes, value at +8 (0x14ca67b15-0x14ca67b42). Null slot or kind>2 logs \"Vehicle with stat id %s not found\" (ENTRANTS_SYSTEM), returns 0; index overflow returns 0 silently. (ctx,e+0x5c) is common, not universal. xref list 195 = .xtls only."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Sess_ResolveEntityHandle",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14243fd10-0x14243fd15,0x14ca67b00-0x14ca67c1c,0x14024c580-0x14024c666,0x1424761a0-0x142476210,0x14379dd00-0x14379df01,1.0.145 0x142441910-0x142441915,1.0.145 0x14c714330-0x14c71444c;xref:0x14243fd10,0x14ca67b08,0x14ca67b0c,0x14ca67b15,0x14ca67b20,0x14ca67b35,0x14ca67b38,0x14ca67b42,0x14ca67b4c,0x14ca67b86,0x14ca67be8,0x14ca67bf8,0x14ca67c10,0x14ca67c15,0x14379ddad,0x14379def9,0x14024c637",
+   "notes": "V100053 Blind: agree. Thunk 0x14243fd10 -> .data1 0x14ca67b00; rcx ctx, rdx -> 4-byte handle (u8 kind +0, u16 index +2, +1 unread). kind>2 (unsigned, 0x14ca67b0c) or null [ctx+0x328+kind*16] -> 0, logs ENTRANTS_SYSTEM \"Vehicle with stat id %s not found\" (\"%s %u\") only if byte 0x14604bac4==1 and key 0x584ba0fa is in the 373-slot channel set; kind>2 reads past the name table (0x14ca67be8). index>=count (16-byte entries, 0x14ca67b38) -> 0, no log; hit returns entry+8 unchecked (0x14ca67b42). Census row 209/153 (.xtls 194, .data1 15, 1 jump) matches own scan. e+0x5c is the largest group (~95/210), not a majority; 69 pass a stack copy. 0x14379ddad rsi+0x58 ok. 1.0.145 0x14c714330 same logic."
+  }
+ ],
+ "proofs": []
+}

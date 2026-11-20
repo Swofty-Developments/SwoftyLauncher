@@ -15,12 +15,12 @@ Halo's build is Python: sprites from a headless browser, BC7 encoding, resource 
 
 ```text
 tools/export_native.js, halo.js, export_sprites.py     stay: they draw the sprites (988 lines)
-tools/native/textures.py, pngio.py (89)                -> packages/core/src/hud/textures.rs: PNG, edge bleed, content-hash cache
+tools/native/textures.py, pngio.py (89)                -> packages/core/src/games/f1_25/hud/textures.rs: PNG, edge bleed, content-hash cache
 tools/native/bc7.py, bc7_tables.py (309)               -> packages/formats bc7_enc.rs, bit-identical to the launcher's C++ encoder
 tools/native/resources.py, emb.py (161)                -> packages/formats surface.rs, emb.rs and the texture links of material.rs
 tools/native/erpbuild.py, erpmeta.py (151)             -> the launcher's own ERP writer
 tools/native/build_native.py (191)                     -> operations.hud: ready overlay archives
-tools/native/halo_native.py, scene/template/clips (880) -> packages/core/src/hud: scene, template, editor, check; animclip.rs, uipre.rs
+tools/native/halo_native.py, scene/template/clips (880) -> packages/core/src/games/f1_25/hud: scene, template, editor, check; animclip.rs, uipre.rs
 tools/native/halo_native.py, Geo, _halo, constants (424) stays as data: the layout becomes a hud.element record
 tools/native/check_leaves.py (43)                      -> swofty hud check and the build's binding checks
 tools/native/scene_dump.py, sim_page.py, sim.js (307)  not replaced: no previewer ships yet

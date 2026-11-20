@@ -45,7 +45,9 @@ inline Normal clean(std::string_view in, bool lower, const char *what)
         if (c >= 0x80)
             return n.why = std::string(what) + " '" + s + "' has a non-ASCII character; the game opens files by narrow paths", n;
         if (!game_char(c))
-            return n.why = std::string(what) + " '" + s + "' has a character the game's paths reject (<>|:?*()!\" or a control character)", n;
+            return n.why = std::string(what) + " '" + s +
+                           "' has a character the game's paths reject (<>|:?*()!\" or a control character)",
+                   n;
     }
     if (s.front() == '/')
         return n.why = std::string(what) + " '" + s + "' is absolute; it must be relative", n;
@@ -169,8 +171,8 @@ public:
     void set_order(std::vector<std::string> order) { order_ = std::move(order); }
     const std::string &prefix() const { return sink_.prefix; }
 
-    Outcome redirect(std::string_view raw_path, const std::string &addon, std::string_view file,
-                     const std::string &registry, const std::string &id, const std::string &scope)
+    Outcome redirect(std::string_view raw_path, const std::string &addon, std::string_view file, const std::string &registry,
+                     const std::string &id, const std::string &scope)
     {
         Outcome o;
         o.addon = addon;
@@ -218,8 +220,8 @@ public:
         list.push_back(c);
         const Claim *now = winner(o.path);
         bool mine = now && now->seq == c.seq;
-        if (mine && (!had || before_copy.target != now->target || before_copy.registry != now->registry ||
-                     before_copy.id != now->id)) {
+        if (mine &&
+            (!had || before_copy.target != now->target || before_copy.registry != now->registry || before_copy.id != now->id)) {
             std::string why;
             if (sink_.route && !sink_.route(o.path, now, why)) {
                 list.pop_back();
@@ -347,8 +349,8 @@ public:
         std::string who;
         for (auto &a : c.addons)
             who += (who.empty() ? "" : ", ") + a;
-        return "file conflict: " + c.path + " is redirected by " + who + "; " + c.wins + " wins (" + c.registry + " " +
-               c.id + ", later in load order; reorder addons to change it)";
+        return "file conflict: " + c.path + " is redirected by " + who + "; " + c.wins + " wins (" + c.registry + " " + c.id +
+               ", later in load order; reorder addons to change it)";
     }
 
 private:

@@ -1,8 +1,9 @@
 #pragma once
 
-#include "lower.hpp"
+#include "core/apply/content/lower.hpp"
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <optional>
@@ -24,7 +25,7 @@ struct FuelRules {
     bool refuelling = false;
     std::optional<float> race_fuel_kg, refuel_stint_kg, quali_fuel_kg;
     bool start_from_quali = false;
-    bool race_tyre_change = true;   // 1.5 rules.race_tyre_change: false keeps a car's tyres through its race pit stops
+    bool race_tyre_change = true; // 1.5 rules.race_tyre_change: false keeps a car's tyres through its race pit stops
     std::string line;
 
     bool any() const { return refuelling || start_from_quali || quali_fuel_kg.has_value(); }
@@ -87,7 +88,7 @@ inline FuelRules fuel_rules_pick(const std::string &entrant_list,
         add("a pit stop refuels to " + (stint ? kg_text(*stint) : std::string("a full tank")));
     }
     if (r.tyres_kept())
-        add("race pit stops keep the tyres (a change only with tyre damage)");
+        add("race pit stops keep the tyres (a change only for a puncture)");
     r.line = head + parts;
     return r;
 }
@@ -96,19 +97,62 @@ inline FuelRules fuel_rules_pick(const std::string &entrant_list,
 // (Car_Tyre_ChangeToNextCompound 0x142e94040, log PITSTOP_TYRES 'PITLANE CHANGEOVER'). Its pit stop caller
 // Game_PitLane_ApplyPitstopTyres 0x1434bdd60 calls it with flag 1 and ignores its result (always 0); the garage actor
 // (Game_PitBoxCarActor_Update) calls it with flag 0. In a race session a flag-1 call is skipped, so the fitted compound,
-// its wear (the resets 0x142e83130 in the body) and temperatures stay; pitstopComplete still runs. A car whose tyre
-// records (TyreComponent +0x30 + i * 0xde0, count +0x98d0) carry a flag in dword +0x208 & 0x1f, which the body OR-s
-// into its per-wheel reset arguments, keeps the game's change (read as puncture/damage: HYPOTHESIS, logged per stop).
-constexpr uintptr_t TYRE_WHEELS = 0x30, TYRE_WHEEL_STRIDE = 0xde0, TYRE_WHEEL_FLAGS = 0x208, TYRE_WHEEL_COUNT = 0x98d0;
-constexpr uint32_t TYRE_DAMAGE_MASK = 0x1f;
+// its wear and temperatures stay; pitstopComplete still runs. A car with a punctured tyre keeps the game's change.
+//
+// The puncture state is CarWheel.tyre_flags (+0x20) of each of the car's four wheels: VehicleTyreComponent.physics
+// (+0x20), CarPhysicsRecord.car (+0x58, the CarLive), CarLive.suspension (+0x580), CarSuspension.wheels (+0x70 RL,
+// +0x78 RR, +0x80 FL, +0x88 FR), the chain 0x142e92f70 and 0x142ea2300 walk. Bit 1 is a puncture (every set goes through
+// the tyre damage monitor's Car_Puncture_Add 0x14464e200, every clear through Car_Puncture_Remove 0x14464e3a0); bit 0 a
+// burst, set only while bit 1 is (the tyre update 0x1446b5720 once the deflation +0x98 reaches 2.0, or 0x144656f80); bits
+// 2 and 3 are pending hits. The pit stop's own change resets every wheel (0x142ea2300 -> 0x142e88840 -> the tyre reset
+// 0x1446b6d10 with flags 0x1002, reset bit 0x1000: bit 0 cleared, a puncture removed, {0, 0, 1.0, 0} stored at
+// +0x88..+0x94 and 0 at +0x98) and then adds a puncture back only where the fitted set has one, so the flags are read
+// before the game's change runs (Game_PitLane_ApplyPitstopTyres calls Car_Tyre_ChangeToNextCompound first, and
+// 0x142ea2300 is its last call). Dword +0x208 of the TyreComponent's
+// tyre records is the tyre model's visibility mask (m_tyreModelVisibility, set per shown part by setTyreVisibility
+// 0x142e83130), not a damage state.
+constexpr uint64_t TYRE_PHYSICS = 0x20, PHYSICS_CAR = 0x58, CAR_SUSPENSION = 0x580, WHEEL_TYRE_FLAGS = 0x20;
+constexpr uint64_t SUSPENSION_WHEELS[4] = {0x70, 0x78, 0x80, 0x88};
+constexpr uint8_t WHEEL_PUNCTURED = 0x03;
+inline constexpr const char *WHEEL_NAMES[4] = {"RL", "RR", "FL", "FR"};
 
-enum class TyreChange { game, kept, damage };
+// The punctured wheels of the TyreComponent's car, bit i for SUSPENSION_WHEELS[i]. `read(address, out)` copies an
+// object of out's type from the game; a wheel whose state can't be read counts as not punctured.
+template <class Read> uint8_t punctured_wheels(uint64_t tyre_component, Read read)
+{
+    uint64_t physics = 0, car = 0, suspension = 0;
+    if (!read(tyre_component + TYRE_PHYSICS, physics) || !physics || !read(physics + PHYSICS_CAR, car) || !car ||
+        !read(car + CAR_SUSPENSION, suspension) || !suspension)
+        return 0;
+    uint8_t out = 0;
+    for (size_t i = 0; i < 4; i++) {
+        uint64_t wheel = 0;
+        uint8_t flags = 0;
+        if (read(suspension + SUSPENSION_WHEELS[i], wheel) && wheel && read(wheel + WHEEL_TYRE_FLAGS, flags) &&
+            (flags & WHEEL_PUNCTURED))
+            out |= uint8_t(1u << i);
+    }
+    return out;
+}
 
-inline TyreChange race_tyre_change_pick(bool kept_rule, uint32_t session_type, bool pit_stop_call, uint32_t damage_bits)
+// The wheels of a punctured_wheels mask, for the log ("RL, FR").
+inline std::string wheel_names(uint8_t wheels)
+{
+    std::string out;
+    for (size_t i = 0; i < 4; i++)
+        if (wheels & (1u << i))
+            out += (out.empty() ? "" : ", ") + std::string(WHEEL_NAMES[i]);
+    return out;
+}
+
+enum class TyreChange { game, kept, punctured };
+
+// `punctured` is punctured_wheels' mask, 0 on a build without a witness for the wheel state.
+inline TyreChange race_tyre_change_pick(bool kept_rule, uint32_t session_type, bool pit_stop_call, uint8_t punctured)
 {
     if (!kept_rule || !pit_stop_call || !(session_type >= 15 && session_type <= 17))
         return TyreChange::game;
-    return (damage_bits & TYRE_DAMAGE_MASK) ? TyreChange::damage : TyreChange::kept;
+    return punctured ? TyreChange::punctured : TyreChange::kept;
 }
 
 // One car as the fuel plan sees it in a frame. pit_stops_ok: the live snapshot read the car's pit stop counter.
@@ -136,13 +180,10 @@ inline bool fuel_race_session(uint32_t t) { return t >= 15 && t <= 17; }
 class FuelPlan {
 public:
     static constexpr uint32_t MAX = 32;
-    static constexpr float SLACK = 0.5f;   // kg the game may differ from a written start fuel before it is written again
+    static constexpr float SLACK = 0.5f; // kg the game may differ from a written start fuel before it is written again
 
     // Box change: forgets everything, including the qualifying fuel.
-    void reset()
-    {
-        *this = FuelPlan{};
-    }
+    void reset() { *this = FuelPlan{}; }
 
     std::vector<FuelWrite> tick(const FuelRules &r, uint32_t type, uint32_t generation, const FuelCar *cars, uint32_t n)
     {
@@ -184,7 +225,7 @@ public:
             }
             if (start && !c.start_done)
                 start_step(c, i, f, std::min(*start, f.capacity), why, out);
-            if (quali && (!start || c.written)) {   // the fuel left at the end of this qualifying session
+            if (quali && (!start || c.written)) { // the fuel left at the end of this qualifying session
                 c.quali_left = f.fuel;
                 c.quali_ok = true;
             }
@@ -262,7 +303,7 @@ private:
             return;
         }
         if (f.fuel < c.written_kg - SLACK) {
-            c.start_done = true;   // burning: the start fuel held
+            c.start_done = true; // burning: the start fuel held
             return;
         }
         if (f.fuel > c.written_kg + SLACK) {

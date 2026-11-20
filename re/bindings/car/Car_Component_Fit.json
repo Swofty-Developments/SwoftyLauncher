@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_Component_Fit",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f58a20",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "pat:log-channel-VEHICLE",
+  "notes": "named from its log messages (channel VEHICLE): 'Fit component %I64u (exists: %hs), type: %hs'"
+ },
+ "signature": {
+  "id": "car.component_fit",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 D7 48 89 CE C7 44 24 30 04 00 00 00",
+  "match": "0x141f58a20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f58a20",
+  "kind": "func_start",
+  "names": [
+   "Car_Component_Fit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141f58a20",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141f58a20.c;xref:0x141f5832c",
+   "notes": "V5238 PU components VM command handler: sends enable_components, resolves selected components, calls Car_PuComponent_SetFittedId, logs Fit component, then PopulateList/RefreshSummary. Better Car_PuComponent_FitSelected"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x141f58a20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f58a20.c",
+   "notes": "V7280 name fits; finding facts hold; vtable/indirect (no direct call)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,9 +1,10 @@
-// Host-native unit test for the core's Time Trial leaderboard guards (native/src/core/leaderboard_guard_logic.hpp):
+// Host-native unit test for the core's Time Trial leaderboard guards (native/src/core/guards/frontend/leaderboard_guard_logic.hpp):
 // when a missing board, child list model, reference board or reference list leaderboard is skipped, how often the skip
 // is logged, and how the env switches parse.
-// Built and run by native/test/run_leaderboard_guard_test.sh.
+// Built and run by native/test/run_tests.sh leaderboard_guard.
 
-#include "leaderboard_guard_logic.hpp"
+#include "core/guards/env.hpp"
+#include "core/guards/frontend/leaderboard_guard_logic.hpp"
 
 #include <cstdio>
 
@@ -46,15 +47,15 @@ int main()
     expect(lg::say(lg::LOG_FIRST + 1) == lg::Say::none, "skips past the cap are silent");
     expect(lg::say(1000000) == lg::Say::none, "a long run stays silent");
 
-    expect(lg::switch_off("0"), "SWOFTY_LEADERBOARD_TAB_GUARD=0 turns it off");
-    expect(lg::switch_off("off"), "SWOFTY_LEADERBOARD_TAB_GUARD=off turns it off");
-    expect(!lg::switch_off("1"), "1 keeps it on");
-    expect(!lg::switch_off("00"), "00 keeps it on");
-    expect(!lg::switch_off("offer"), "offer keeps it on");
-    expect(!lg::switch_off(""), "an empty value keeps it on");
-    expect(!lg::switch_off(nullptr), "an unset variable keeps it on");
-    expect(lg::switch_off("off"), "SWOFTY_TT_REFERENCE_LOG_GUARD=off turns it off");
-    expect(lg::switch_off("0"), "SWOFTY_TT_REFERENCE_LIST_GUARD=0 turns it off");
+    expect(swofty_core::guards::switch_off("0"), "SWOFTY_LEADERBOARD_TAB_GUARD=0 turns it off");
+    expect(swofty_core::guards::switch_off("off"), "SWOFTY_LEADERBOARD_TAB_GUARD=off turns it off");
+    expect(!swofty_core::guards::switch_off("1"), "1 keeps it on");
+    expect(!swofty_core::guards::switch_off("00"), "00 keeps it on");
+    expect(!swofty_core::guards::switch_off("offer"), "offer keeps it on");
+    expect(!swofty_core::guards::switch_off(""), "an empty value keeps it on");
+    expect(!swofty_core::guards::switch_off(nullptr), "an unset variable keeps it on");
+    expect(swofty_core::guards::switch_off("off"), "SWOFTY_TT_REFERENCE_LOG_GUARD=off turns it off");
+    expect(swofty_core::guards::switch_off("0"), "SWOFTY_TT_REFERENCE_LIST_GUARD=0 turns it off");
 
     std::printf("%s\n", failed ? "FAILED" : "all passed");
     return failed ? 1 : 0;

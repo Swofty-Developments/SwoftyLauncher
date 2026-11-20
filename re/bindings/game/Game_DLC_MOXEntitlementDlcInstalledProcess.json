@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DLC_MOXEntitlementDlcInstalledProcess",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140791ee0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-DLC",
+  "notes": "named from its log messages (channel DLC): 'MOX/Entitlement: DlcInstalled. I could process the specific item, but eh.'"
+ },
+ "signature": {
+  "id": "game.dlc_mox_entitlement_dlc_installed_process",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 61 B8 66 01 00 00 48 8D 0D ?? ?? ?? ?? 0F 1F 00 8B 14 81 85 D2 74 4B 81 FA 6E D0 87 0B 74 30 83 C0 13 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D 66 01 00 00 75 C3 EB 13 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? C6 86 18 05 00 00 01 48 83 C4 20 5E C3 CC 56 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x140791ee0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140791ee0",
+  "kind": "func_start",
+  "names": [
+   "Game_DLC_MOXEntitlementDlcInstalledProcess"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb02-verify",
+   "kind": "func",
+   "item": "0x140791ee0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140791ee0.c",
+   "notes": "V4289 log/string match decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -36,6 +36,7 @@ struct Context {
     std::vector<std::string> content;
     int year = 0;
     bool has_year = false;
+    bool operator==(const Context &) const = default;
 };
 
 struct Def {
@@ -100,7 +101,7 @@ struct Record {
     std::string owner, why;
 };
 
-// Career snapshots (W4, native/src/core/snapshots/). While a career is loaded (Context::career set),
+// Career snapshots (W4, native/src/core/career/snapshots/). While a career is loaded (Context::career set),
 // the store asks the snapshot source for a record's frozen value before it computes it. A found value
 // replaces base and every global and profile layer; the career's own layers still apply on top. A
 // value frozen with another major is converted through the registry's migrate, else its adapter's
@@ -111,6 +112,11 @@ struct Frozen {
     int major = 0;
 };
 using SnapshotSource = std::function<Frozen(const std::string &registry, const std::string &id, const Context &ctx)>;
+
+struct LayerOp {
+    LayerSpec spec;
+    bool clear = false;
+};
 
 class Store {
 public:
@@ -141,17 +147,17 @@ public:
     int define_tag(const std::string &registry, const std::string &tag, const std::vector<std::string> &members);
     void stock_loaded(const std::string &registry, bool loaded);
 
-    int add(const std::string &addon, const std::string &registry, const std::string &key, const Value &value,
-            std::string *id, const std::string &source = {});
+    int add(const std::string &addon, const std::string &registry, const std::string &key, const Value &value, std::string *id,
+            const std::string &source = {});
     int put_older(const std::string &addon, const std::string &registry, const std::string &key, const Value *value,
                   const std::string &source);
     std::vector<std::string> layer_targets(const std::string &registry);
     int variant(const std::string &addon, const std::string &registry, const std::string &key, const std::string &base,
                 const Change &change, std::string *id, const std::string &source = {});
-    int provide_fn(const std::string &addon, const std::string &registry, SwoftyProvideFn fn, SwoftyListFn list,
-                   void *user);
+    int provide_fn(const std::string &addon, const std::string &registry, SwoftyProvideFn fn, SwoftyListFn list, void *user);
     int invalidate(const std::string &registry, const std::string *id);
     int layer(const LayerSpec &spec, uint32_t *handle);
+    int layer_batch(const std::string &addon, const std::string &registry, const std::vector<LayerOp> &ops);
     int layer_in(const std::string &addon, uint32_t handle, const Value &selectors);
     int clear_layer(const std::string &addon, const std::string &registry, const std::string &id, Scope scope);
     int tag_add(const std::string &addon, const std::string &registry, const std::string &tag, const std::string &id);
@@ -182,8 +188,8 @@ public:
     std::size_t layer_count(const std::string &addon, const std::string &registry) const;
     void set_op_index(const std::string &addon, int op);
     bool read_option(const std::string &addon, const std::string &id, Value &out);
-    void note_refusal(const std::string &addon, const std::string &registry, const std::string &id,
-                      const std::string &reason, const std::string &message);
+    void note_refusal(const std::string &addon, const std::string &registry, const std::string &id, const std::string &reason,
+                      const std::string &message);
 
     Value effective_report();
     Value conflicts_report();

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_AdvanceSession_SetDestination_4",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14121c3b0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-ADVANCE_SESSION",
+  "notes": "named from its log messages (channel ADVANCE_SESSION): 'Setting the destination to %s for sessionId: %s'"
+ },
+ "signature": {
+  "id": "game.advance_session_set_destination_4",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 CE E8 ?? ?? ?? ?? C5 FA 10 86 B4 02 00 00",
+  "match": "0x14121c3b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14121c3b0",
+  "kind": "func_start",
+  "names": [
+   "Game_AdvanceSession_SetDestination_4"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x14121c3b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14121c3b0.c;xref:0x142d878a4",
+   "notes": "V4693 name and quoted log strings/pretty-function present in body"
+  }
+ ],
+ "proofs": []
+}

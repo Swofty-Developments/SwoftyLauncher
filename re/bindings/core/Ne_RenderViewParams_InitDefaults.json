@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Ne_RenderViewParams_InitDefaults",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c9a360",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c9a360.c;xref:0x140170460,0x140174298",
+  "notes": "(p): default-initialises a render view/job parameter struct (+0x10=60, +0x18 vec 0x1455d8780, +0x28=16, +0x30=-1, +0x38=1, +0x4c/+0x54 10/32, +0x5c floats 5.0/15.0, +0x64 0.5/10.0) and zeroes 0x801 bytes at +0x6c. Callers: Ne_Rtt_UnregisterGenerators, Game_Read_RendererGfxConfig_2, Render_Batch_Submit, Ne_RttRenderer_FlushJobs."
+ },
+ "signature": {
+  "id": "core.render_view_params_init_defaults",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 48 C7 41 07 00 00 00 00",
+  "match": "0x143c9a360",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c9a360",
+  "kind": "func_start",
+  "names": [
+   "Ne_RenderViewParams_InitDefaults"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x143c9a360",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143c9a360.c;xref:0x140170460",
+   "notes": "V3630 defaults match (+0x10=60,+0x28=16,+0x30=-1,+0x38=1, 0x801 memset) but claimed callers are not real: only Car_Parse_Chassis among named callers (7 funcs)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x143c9a360",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143c9a360.c;xref:0x140170460",
+   "notes": "V4010 defaults match (+0x10=60,+0x28=16,+0x30=-1,+0x38=1, 0x801 memset) but claimed callers are not real: only Car_Parse_Chassis among named callers (7 funcs)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x143c9a360",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c9a360.c;xref:0x140170460,0x140174298",
+   "notes": "V4088 24-line init; callers Ne_Rtt_UnregisterGenerators, Game_Read_RendererGfxConfig_2, Render_Batch_Submit, Ne_RttRenderer_FlushJobs confirmed among 10 sites"
+  }
+ ],
+ "proofs": []
+}

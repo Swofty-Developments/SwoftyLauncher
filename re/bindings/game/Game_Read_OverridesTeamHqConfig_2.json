@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_OverridesTeamHqConfig_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1419ad560",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: overrides.team_hq.card_textures.cost_cap_on_target, overrides.team_hq.card_textures.cost_cap_over_budget, overrides.team_hq.card_textures.cost_cap_under_budget'"
+ },
+ "signature": {
+  "id": "game.read_overrides_team_hq_config_2",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 01 00 00 C5 F8 29 BC 24 50 01 00 00 C5 F8 29 B4 24 40 01 00 00 49 89 D4 48 89 CF 48 8B 89 E8 00 00 00",
+  "match": "0x1419ad560",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419ad560",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_OverridesTeamHqConfig_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x1419ad560",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1419ad560.c",
+   "notes": "V4915 38-55 KB cost-cap card VM builder (cost_cap, spent, budget, breaching cap card title/desc), not just a key read. Better: Game_Build_TeamHq...Cards (subsystem Game_Build_*) (vtable/indirect, no direct call site)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x1419ad560",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1419ad560.c",
+   "notes": "V7233 name fits; finding facts hold; vtable/indirect (no direct call)"
+  }
+ ],
+ "proofs": []
+}

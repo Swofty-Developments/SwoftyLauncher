@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CarCustomisation_MarkCarDirtyOff",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1420059c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1420059c0.c;xref:0x145764c80",
+  "notes": "Car customisation vfunc (slot 0x145764c80): clears car dirty flag (0) and posts bus message. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2942)"
+ },
+ "signature": {
+  "id": "game.car_customisation_mark_car_dirty_off",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 48 48 89 CF 48 89 D1 E8",
+  "match": "0x1420059c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1420059c0",
+  "kind": "func_start",
+  "names": [
+   "Game_CarCustomisation_MarkCarDirtyOff"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d11-verify",
+   "kind": "func",
+   "item": "Game_CarCustomisation_MarkCarDirtyOff",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1420059c0.c;xref:0x145764c80",
+   "notes": "V2942 Decomp strings, offsets and callees match the claim; name fits."
+  }
+ ],
+ "proofs": []
+}

@@ -116,6 +116,7 @@ See [Restoring the game](/using/profiles-and-restoring).
 | `swofty addons enable <id>` | Enable an addon |
 | `swofty addons disable <id> [--yes]` | Disable an addon; SwoftyMod cannot be disabled |
 | `swofty addons remove <id> [--yes]` | Delete an installed addon and take it out of every profile; built-in addons cannot be removed |
+| `swofty addons verify [<id>]` | Read every file of the installed addons, or of one, against the sizes and CRC-32s its install wrote, list the damaged files and exit with status 1 if any would stop **Play** |
 
 For an addon whose manifest sets [`saves.affects`](/reference/addons/manifest#saves), `disable` (when the addon is on) and `remove` print `Warning: <name> (<id>) has affected your saves. Careers you played with it may not load without it.`, then the addon's message, and ask `[y/N]`. `--yes` (`-y`) skips the question. When stdin is not a terminal, the command needs `--yes`; without it, nothing changes and the command exits with status 1.
 
@@ -167,6 +168,9 @@ These commands come from the built-in Team Simplified addon. Use them to manage 
 | `swofty saves restore <snapshot> [--source <s>]` | Copy a snapshot back over the profile save. It refuses while F1 25 runs, and while Steam (or the EA app, for an EA app save) runs, and snapshots the current save first |
 | `swofty saves versions [--source <s>]` | List the vault's versions of the profile save with the careers each holds, and what restoring each gets back and loses. See [Careers](/reference/saves#careers) |
 | `swofty saves careers [--source <s>]` | List the careers the vault has seen, with their status and the addons they need |
+| `swofty saves decode-bag <file.bag> [--json]` | Print the tree of a decoded root container from the plain save store, or the whole tree as JSON. See [Save format](/reference/save-format) |
+| `swofty saves plain [--source <s>]` | List the careers of the [plain copy](/reference/saves#the-plain-store) the game writes, where each lives, the careers the newest generation lacks and the core's answers to restore requests |
+| `swofty saves restore-career <mode> [--generation <n>] [--source <s>]` | Ask the core to put one mode, both its containers, back from the plain copy at the next Play |
 | `swofty saves pin <snapshot> [--source <s>]` | Keep a snapshot: retention never removes it |
 | `swofty saves unpin <snapshot> [--source <s>]` | Remove your pin; pins from a backup, a restore or a missing career stay |
 | `swofty saves cap [<MB>]` | Show or set the vault's size cap (500 MB by default) |

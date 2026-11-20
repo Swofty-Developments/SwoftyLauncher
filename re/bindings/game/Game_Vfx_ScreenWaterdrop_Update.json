@@ -1,0 +1,39 @@
+{
+ "schema": 1,
+ "name": "Game_Vfx_ScreenWaterdrop_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1433afe50",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_Vfx_ScreenWaterdrop_Update(void *state, float elapsed, float delta)",
+  "evidence": "pat:game.vfx_screen_waterdrop_update;xref:0x14337f37e",
+  "notes": "Stock screen_waterdrop_01 pool update. Prototype and parameter meanings provisional."
+ },
+ "signature": {
+  "id": "game.vfx_screen_waterdrop_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 03 00 00 C5 78 29 BC 24 60 03 00 00 C5 78 29 B4 24 50 03 00 00 C5 78 29 AC 24 40 03 00 00 C5 78 29 A4 24 30 03 00 00 C5 78 29 9C 24 20 03 00 00 C5 78 29 94 24 10 03 00 00 C5 78 29 8C 24 00 03 00 00 C5 78 29 84 24 F0 02 00 00 C5 F8 29 BC 24 E0 02 00 00 C5 F8 29 B4 24 D0 02 00 00 C5 FA 11 8C 24 58 02 00 00 C7 01 00 00 00 00 48 8B 41 40",
+  "match": "0x1433afe50",
+  "anchor": 0,
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1433afe50",
+  "kind": "func_start",
+  "names": [
+   "Game_Vfx_ScreenWaterdrop_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-14",
+    "by": "local-sigcheck"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

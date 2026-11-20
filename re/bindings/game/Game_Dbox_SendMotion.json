@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Dbox_SendMotion",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144728690",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144728690.c",
+  "notes": "D-BOX motion output: logs angular acceleration/velocity, posts RaceTelemetry events (channel DBOX). | engine-re 2026-11-17 track round C: per wheel copies the MECHANICS ffb_surface enum (record +0x78) at 0x144728b6c into the D-BOX packet (null record skipped). Only code reader of +0x78 found by a full .xtls scan besides the UDP telemetry."
+ },
+ "signature": {
+  "id": "game.dbox_send_motion",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC C0 01 00 00 C5 78 29 B4 24 B0 01 00 00",
+  "match": "0x144728690",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144728690",
+  "kind": "func_start",
+  "names": [
+   "Game_Dbox_SendMotion"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb24-verify",
+   "kind": "func",
+   "item": "0x144728690",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144728690.c",
+   "notes": "V6613 D-BOX motion: angular accel/velocity log and Failed to post RaceTelemetry event; reads wheel slip and forces; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

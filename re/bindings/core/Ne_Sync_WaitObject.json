@@ -1,0 +1,72 @@
+{
+ "schema": 1,
+ "name": "Ne_Sync_WaitObject",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14391ca60",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14391ca60.c;xref:0x1407a281e,0x1409bfbae",
+  "notes": "(obj) -> NEerrno: WaitForSingleObject on obj+8; WAIT_ABANDONED -> 0x55, WAIT_TIMEOUT -> 0x3c, recorded in the NEerrno trace. 197 call sites incl. Ne_JobSignal_WaitWithTimeout."
+ },
+ "signature": {
+  "id": "core.sync_wait_object",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? BF 24 00 00 00 83 F8 3C 74 03 8B 7B 30 85 FF 0F 85",
+  "match": "0x1407a281e",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14391ca60",
+  "kind": "func_start",
+  "names": [
+   "Ne_Sync_WaitObject"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x14391ca60",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14391ca60.c;xref:0x1407a281e",
+   "notes": "V3475 WaitForSingleObject(obj+8): 0x80->0x55, 0x102->0x3c with NEerrno trace: ok; Ne_JobSignal_WaitWithTimeout is a caller; but refs = 206 call + 11 jmp = 217, not 197"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x14391ca60",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14391ca60.c;xref:0x1407a281e",
+   "notes": "V3993 WaitForSingleObject(obj+8): 0x80->0x55, 0x102->0x3c with NEerrno trace: ok; Ne_JobSignal_WaitWithTimeout is a caller; but refs = 206 call + 11 jmp = 217, not 197"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x14391ca60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14391ca60.c",
+   "notes": "V4065 WaitForSingleObject(obj+8), 0x80->0x55, 0x102 path, NEerrno trace; confirmed (vtable/indirect or no direct callsite checked)"
+  }
+ ],
+ "proofs": []
+}

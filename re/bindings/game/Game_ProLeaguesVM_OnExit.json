@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ProLeaguesVM_OnExit",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141d44ab0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141d44ab0.c;xref:0x145748298",
+  "notes": "Pro Leagues (Racenet leagues) screen view model vtable slot 7 (+0x38, vtable 0x145748260) exit/teardown: clears request state [this+0x700]+0x20, unregisters list callbacks, destroys league list entries this+0x680..+0x688 (stride 0x1e8), frees spawner this+0x640 and fires 'detach_spawner', clears this+0x650 lists, sets this+0x6f4=-1, closes pending UI messages this+0x698/+0x738, releases this+0x660. Addon: hook for leaving the leagues screen. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3263)"
+ },
+ "signature": {
+  "id": "game.pro_leagues_v_m_on_exit",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 48 48 89 CE 48 8B 81 00",
+  "match": "0x141d44ab0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141d44ab0",
+  "kind": "func_start",
+  "names": [
+   "Game_ProLeaguesVM_OnExit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_ProLeaguesVM_OnExit",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141d44ab0.c;xref:0x141d44ab0",
+   "notes": "V3263 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

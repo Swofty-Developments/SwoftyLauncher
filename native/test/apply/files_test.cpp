@@ -1,5 +1,5 @@
-#include "../../src/core/apply/content/lower.hpp"
-#include "../../src/core/apply/files.hpp"
+#include "core/apply/content/lower.hpp"
+#include "core/apply/files.hpp"
 
 #include <cstdio>
 #include <map>
@@ -55,8 +55,8 @@ void paths()
 {
     auto ok = [](const char *addon, const char *file, const char *target) {
         files::Resolved r = files::resolve(addon, file);
-        check(r.ok() && r.target == target, std::string("resolve ") + addon + " " + file + " -> " + target + " (got " +
-                                                 r.target + r.why + ")");
+        check(r.ok() && r.target == target,
+              std::string("resolve ") + addon + " " + file + " -> " + target + " (got " + r.target + r.why + ")");
     };
     auto bad = [](const char *addon, const char *file, const char *why) {
         files::Resolved r = files::resolve(addon, file);
@@ -75,7 +75,10 @@ void paths()
     bad("mod.esp", "\\sounds\\x.bdl", "absolute");
     bad("mod.esp", "C:/Windows/x.bdl", "reject");
     bad("mod.esp", "sounds/x.bdl:stream", "reject");
-    bad("mod.esp", "sounds/v10_\xc3\xa9" "cran.bdl", "non-ASCII");
+    bad("mod.esp",
+        "sounds/v10_\xc3\xa9"
+        "cran.bdl",
+        "non-ASCII");
     bad("mod.esp", "sounds/\xe5\xa3\xb0.bdl", "non-ASCII");
     bad("mod.esp", "sounds/v10 (1).bdl", "reject");
     bad("mod.esp", "sounds/", "folder");
@@ -87,7 +90,8 @@ void paths()
     bad("core", "swofty_core.dll", "not an addon id");
 
     files::Normal g = files::game_path("Audio\\2025\\Bundles\\V10_Screamer.BDL");
-    check(g.ok() && g.path == "audio/2025/bundles/v10_screamer.bdl", "a game path is case-folded with forward slashes: " + g.path);
+    check(g.ok() && g.path == "audio/2025/bundles/v10_screamer.bdl",
+          "a game path is case-folded with forward slashes: " + g.path);
     check(files::game_path("/game/audio/2025/bundles/x.bdl").path == "audio/2025/bundles/x.bdl", "/game/ is dropped");
     check(!files::game_path("swofty/addons/mod.esp/x.bdl").ok(), "a game path inside swofty/ is refused");
     check(!files::game_path("audio/../swofty/x.bdl").ok(), "a game path with .. is refused");
@@ -97,7 +101,8 @@ void paths()
     files::Router r(f.sink());
     std::string longname(240, 'a');
     f.installed.insert("addons/mod.esp/" + longname + ".bdl");
-    files::Outcome o = r.redirect("audio/2025/bundles/long.bdl", "mod.esp", longname + ".bdl", "engine_sound", "mod.esp/long", "boot");
+    files::Outcome o =
+        r.redirect("audio/2025/bundles/long.bdl", "mod.esp", longname + ".bdl", "engine_sound", "mod.esp/long", "boot");
     check(o.kind == files::Kind::invalid && o.line.find("longer than") != std::string::npos,
           "a target past the game's path length is refused: " + o.line);
     check(f.routes.empty(), "a refused redirect installs no route");
@@ -106,8 +111,8 @@ void paths()
 void routing()
 {
     Fake f;
-    f.installed = {"addons/mod.esp/sounds/v10_screamer.bdl", "addons/mod.late/sounds/v10.bdl",
-                   "addons/mod.early/sounds/v10.bdl", "addons/mod.box/sounds/v10_box.bdl"};
+    f.installed = {"addons/mod.esp/sounds/v10_screamer.bdl", "addons/mod.late/sounds/v10.bdl", "addons/mod.early/sounds/v10.bdl",
+                   "addons/mod.box/sounds/v10_box.bdl"};
     f.game = {"audio/2025/bundles/cs17_ferrari.bdl"};
     files::Router r(f.sink());
     r.set_order({"swofty.classic-seasons-2017", "mod.early", "mod.esp", "mod.box", "mod.late"});
@@ -115,8 +120,10 @@ void routing()
     files::Outcome o = r.redirect("audio/2025/bundles/v10_screamer.bdl", "mod.esp", "sounds/v10_screamer.bdl", "engine_sound",
                                   "mod.esp/v10_screamer", "boot");
     check(o.kind == files::Kind::routed, "an installed file is routed");
-    check(o.line == "redirect audio/2025/bundles/v10_screamer.bdl -> mod.esp/sounds/v10_screamer.bdl (engine_sound mod.esp/v10_screamer)",
-          "the redirect line names the game path and the addon's file: " + o.line);
+    check(
+        o.line ==
+            "redirect audio/2025/bundles/v10_screamer.bdl -> mod.esp/sounds/v10_screamer.bdl (engine_sound mod.esp/v10_screamer)",
+        "the redirect line names the game path and the addon's file: " + o.line);
     check(f.routes["audio/2025/bundles/v10_screamer.bdl"] == "addons/mod.esp/sounds/v10_screamer.bdl", "the sink gets the route");
     check(o.conflict.empty(), "one addon is no conflict");
     o = r.redirect("audio/2025/bundles/v10_screamer.bdl", "mod.esp", "sounds/v10_screamer.bdl", "engine_sound",
@@ -125,7 +132,8 @@ void routing()
 
     o = r.redirect("audio/2025/bundles/cs17_ferrari.bdl", "swofty.classic-seasons-2017", "sounds/cs17_ferrari.bdl",
                    "engine_sound", "swofty.classic-seasons-2017/ferrari", "boot");
-    check(o.kind == files::Kind::kept && !o.refused(), "a file the addon's folder lacks but the game folder has is kept: " + o.line);
+    check(o.kind == files::Kind::kept && !o.refused(),
+          "a file the addon's folder lacks but the game folder has is kept: " + o.line);
     check(!f.routes.count("audio/2025/bundles/cs17_ferrari.bdl"), "a kept path is not routed");
     o = r.redirect("audio/2025/bundles/nowhere.bdl", "mod.esp", "sounds/nowhere.bdl", "engine_sound", "mod.esp/nowhere", "boot");
     check(o.kind == files::Kind::missing && o.refused(), "a file in neither folder is refused: " + o.line);
@@ -133,10 +141,12 @@ void routing()
     o = r.redirect("audio/2025/bundles/v10.bdl", "mod.late", "sounds/v10.bdl", "engine_sound", "mod.late/v10", "boot");
     check(o.kind == files::Kind::routed, "the later addon claims first");
     o = r.redirect("Audio/2025/Bundles/V10.bdl", "mod.early", "sounds/v10.bdl", "engine_sound", "mod.early/v10", "boot");
-    check(o.kind == files::Kind::shadowed && o.refused() == false, "an earlier addon's claim on the same path is shadowed: " + o.line);
-    check(f.routes["audio/2025/bundles/v10.bdl"] == "addons/mod.late/sounds/v10.bdl", "the later addon in load order wins, whatever the claim order");
+    check(o.kind == files::Kind::shadowed && o.refused() == false,
+          "an earlier addon's claim on the same path is shadowed: " + o.line);
+    check(f.routes["audio/2025/bundles/v10.bdl"] == "addons/mod.late/sounds/v10.bdl",
+          "the later addon in load order wins, whatever the claim order");
     check(o.conflict == "file conflict: audio/2025/bundles/v10.bdl is redirected by mod.early, mod.late; mod.late wins "
-                       "(engine_sound mod.late/v10, later in load order; reorder addons to change it)",
+                        "(engine_sound mod.late/v10, later in load order; reorder addons to change it)",
           "the conflict line: " + o.conflict);
     auto cs = r.conflicts();
     check(cs.size() == 1 && cs[0].wins == "mod.late" && cs[0].addons == std::vector<std::string>{"mod.early", "mod.late"},
@@ -159,7 +169,8 @@ void routing()
     check(lines.size() == 1 && lines[0] == "put back audio/2025/bundles/v10_screamer.bdl: now mod.esp/sounds/v10_screamer.bdl "
                                            "(engine_sound mod.esp/v10_screamer)",
           "put back returns the boot claim: " + (lines.empty() ? std::string() : lines[0]));
-    check(f.routes["audio/2025/bundles/v10_screamer.bdl"] == "addons/mod.esp/sounds/v10_screamer.bdl", "the route is the boot claim's again");
+    check(f.routes["audio/2025/bundles/v10_screamer.bdl"] == "addons/mod.esp/sounds/v10_screamer.bdl",
+          "the route is the boot claim's again");
     check(r.put_back("content:mod.box/f1_2017_v10").empty(), "a second put back changes nothing");
 
     f.installed.insert("addons/mod.box/sounds/only.bdl");
@@ -223,11 +234,12 @@ void lowering()
               "the redirect is the game's bundle path for the file's name");
     }
     content::Plan stock;
-    content::lower_engine_sound("mod.esp/pinned", swofty::json::parse(R"({"bundle": {"stock": "audio/2025/bundles/ferrari_2024.bdl"}})"),
-                                stock);
+    content::lower_engine_sound("mod.esp/pinned",
+                                swofty::json::parse(R"({"bundle": {"stock": "audio/2025/bundles/ferrari_2024.bdl"}})"), stock);
     check(stock.redirects.empty(), "a stock bundle is not redirected");
 
-    Value car = swofty::json::parse(R"({"label": "cs17_ferrari", "donor": "game/ferrari_2025", "engine_sound": "mod.esp/v10_screamer",
+    Value car =
+        swofty::json::parse(R"({"label": "cs17_ferrari", "donor": "game/ferrari_2025", "engine_sound": "mod.esp/v10_screamer",
         "audio_switch": "f1_M_ferrari", "audio_from": "f1_m_ferrari"})");
     content::Lookup lookup = [&](const std::string &reg, const std::string &id) -> const Value * {
         return reg == "engine_sound" && id == "mod.esp/v10_screamer" ? &sound : nullptr;

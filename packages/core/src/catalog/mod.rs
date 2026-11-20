@@ -3,6 +3,7 @@
 //! downloads checked against the size and SHA-256 the registry lists.
 
 pub mod media;
+pub mod pending;
 pub mod publishers;
 pub mod requires;
 pub mod search;
@@ -20,7 +21,7 @@ use sha2::{Digest, Sha256};
 
 use crate::manifest::{AddonManifest, Category, Platform, Requirement};
 use crate::store::Store;
-use crate::transfer;
+use crate::updates::transfer;
 use crate::{Error, Result, io_err};
 
 pub const URL_ENV: &str = "SWOFTY_REGISTRY_URL";
@@ -308,7 +309,7 @@ pub fn updates<'a>(
 pub fn store_updates(store: &Store, catalog: &[Addon], launcher: &semver::Version) -> Result<Vec<Update>> {
     let addons = store.addons()?;
     let installed = addons.values().filter(|m| {
-        !store.is_builtin(&m.id) && !crate::managed::is_managed(&m.id) && source::takes_updates(m)
+        !store.is_builtin(&m.id) && !crate::updates::managed::is_managed(&m.id) && source::takes_updates(m)
     });
     Ok(updates(installed, catalog, launcher))
 }

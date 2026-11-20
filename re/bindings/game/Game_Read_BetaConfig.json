@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_BetaConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14080a720",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: beta.driver_headdriverHeadReferebeta.livery_colobeta.team_colour, beta.livery_colours.override_colours, beta.team_colours.override_colours, seasons.2019, seasons.current_season'"
+ },
+ "signature": {
+  "id": "game.read_beta_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 0C 00 00 C5 F8 29 B4 24 80 0C 00 00 F0 FF 05",
+  "match": "0x14080a720",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14080a720",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_BetaConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x14080a720",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14080a720.c",
+   "notes": "V4321 reads seasons.2019/seasons.current_season and beta.team_colours/livery_colours.override_colours; claimed key list is garbled (driver_headdriverHeadReferebeta...); name ok"
+  }
+ ],
+ "proofs": []
+}

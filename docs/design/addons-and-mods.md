@@ -349,7 +349,7 @@ Its sections then show the error in a notice with a Restart button (`swofty.rest
 | `file.put` | `source`, `target` | Replace or add a loose game file |
 | `warn` | `message` | Print a message at build |
 
-You can use `when` and `{{id}}` placeholders on every op, just as with database ops. Give `source` paths relative to your addon folder. The ops, `operations.assets` and the planner are already built (`packages/core/src/planner.rs`).
+You can use `when` and `{{id}}` placeholders on every op, just as with database ops. Give `source` paths relative to your addon folder. The ops, `operations.assets` and the planner are already built (`packages/core/src/games/f1_25/planner.rs`).
 
 ### 3.2 Manifest
 
@@ -474,7 +474,7 @@ pub enum Target {
 | `lang` | none: the game reads `.lng` only from its packed archive | `overlay.cpp`: partial string tables added after the stock table | Stable (T016) | Runtime |
 | `file` | journaled copy into the game folder | `overlay.cpp`: file system overlay from `swofty/overlay/` | Experimental: not run in game | Runtime when turned on, otherwise Build |
 
-`RUNTIME_DELIVERIES` in `planner.rs` lists all five kinds. `packages/core/src/runtime.rs` writes `swofty/assets.json` and its files. A `db` build whose ops remove records, or write a record of tag 10, 15 or 16 or one that is not text, falls back to the build route with a warning.
+`RUNTIME_DELIVERIES` in `planner.rs` lists all five kinds. `packages/core/src/games/f1_25/content/runtime_assets.rs` writes `swofty/assets.json` and its files. A `db` build whose ops remove records, or write a record of tag 10, 15 or 16 or one that is not text, falls back to the build route with a warning.
 
 The planner chooses a route for each kind:
 

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_WindowWin_SetOnMinimised",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439fd850",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/1439fd850.c;xref:0x1439f2ca0",
+  "notes": "cxx=NeWindowWin::setOnMinimised; log channel WINDOW: 'NeWindowWin::setOnMinimised: isMinimised %d'"
+ },
+ "signature": {
+  "id": "core.window_win_set_on_minimised",
+  "section": ".xtls",
+  "pattern": "56 53 48 83 EC 28 38 91 A5 02 00 00",
+  "match": "0x1439fd850",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439fd850",
+  "kind": "func_start",
+  "names": [
+   "Ne_WindowWin_SetOnMinimised"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb1-verify",
+   "kind": "func",
+   "item": "Ne_WindowWin_SetOnMinimised",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439fd850.c;xref:0x1439f2ca0",
+   "notes": "V2011 log strings and role confirmed in decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkLeagues_GotoLaunchSubstate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1431809d0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name gotoLaunchSubstate (class from the log channel); log channel NETWORK-LEAGUES: 'gotoLaunchSubstate: %d:%s -> %d:%s'"
+ },
+ "signature": {
+  "id": "game.network_leagues_goto_launch_substate",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 44 8B 41 38 41 39 D0",
+  "match": "0x1431809d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1431809d0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkLeagues_GotoLaunchSubstate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x1431809d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1431809d0.c;xref:0x14317425b",
+   "notes": "V5851 name and log/cxx claim match body"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_RetirementSequence_PlayTerminalDamage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d8a0b0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-RETIREMENT_SEQUENCE;decomp:re/decomp/142d8a0b0.c;xref:0x142d89fb0",
+  "notes": "Log channel RETIREMENT_SEQUENCE: 'Attempting to play terminal damage sequence'"
+ },
+ "signature": {
+  "id": "session.retirement_sequence_play_terminal_damage",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 80 01 00 00 48 89 CE 48 8B B9 88 0C 00 00",
+  "match": "0x142d8a0b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d8a0b0",
+  "kind": "func_start",
+  "names": [
+   "Sess_RetirementSequence_PlayTerminalDamage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb2-verify-b",
+   "kind": "func",
+   "item": "Sess_RetirementSequence_PlayTerminalDamage",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d8a0b0.c;xref:0x142d8a354",
+   "notes": "V1868 string verified"
+  }
+ ],
+ "proofs": []
+}

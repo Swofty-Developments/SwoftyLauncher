@@ -16,6 +16,7 @@ struct Snapshot {
     SwoftyLiveSession ses;
     SwoftyLiveCar cars[SWOFTY_LIVE_MAX_CARS];
     bool present[SWOFTY_LIVE_MAX_CARS];
+    SwoftyLiveCarDetail details[SWOFTY_LIVE_MAX_CARS];
 };
 
 inline void snap_begin(Snapshot *s)

@@ -1,18 +1,18 @@
-#include "live_car_logic.hpp"
-#include "postfx_logic.hpp"
+#include "core/live/live_car_logic.hpp"
+#include "core/render/postfx_logic.hpp"
 
 #include <cstdio>
 
 static int failures;
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                    \
-            failures++;                                                                                                \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                              \
+            failures++;                                                                                                          \
+        }                                                                                                                        \
     } while (0)
 
-using namespace postfx;
+using namespace render::postfx;
 
 int main()
 {
@@ -39,13 +39,18 @@ int main()
         CHECK(!SIGNALS[s].in_game);
 
     {
-        live_car::Fields none = live_car::fields_of(false, false), ea = live_car::fields_of(false, true),
-                         steam = live_car::fields_of(true, true);
+        namespace bp = runtime::build_proof;
+        live_car::Fields none = live_car::fields_of(bp::Build::unknown), ea = live_car::fields_of(bp::Build::ea),
+                         steam = live_car::fields_of(bp::Build::kb), port = live_car::fields_of(bp::Build::steam_1_0_145);
         CHECK(!none.table && !none.wetness && !none.surface && !none.orient && !none.angvel && !none.wheels && !none.drs);
         CHECK(ea.table && ea.drs);
         CHECK(!ea.wetness && !ea.surface && !ea.orient && !ea.angvel && !ea.wheels);
         CHECK(steam.table && steam.wetness && steam.surface && steam.orient && steam.angvel && steam.wheels && steam.drs);
-        CHECK(!live_car::fields_of(true, false).table);
+        CHECK(port.table && port.drs && port.wheels && port.wetness);
+        CHECK(!port.surface && !port.orient && !port.angvel);
+        live_car::Fields ea145 = live_car::fields_of(bp::Build::ea_1_0_145);
+        CHECK(ea145.wheels && ea145.wetness && ea145.table && ea145.drs);
+        CHECK(!ea145.surface && !ea145.orient && !ea145.angvel);
     }
 
     if (failures)

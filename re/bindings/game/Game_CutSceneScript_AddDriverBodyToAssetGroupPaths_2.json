@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CutSceneScript_AddDriverBodyToAssetGroupPaths_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140234440",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140234440.c;xref:0x14023ab77,0x14023b089",
+  "notes": "Second overload of CutSceneScript::addDriverBodyToAssetGroupPaths (WARN 'invalid DriverStatId [%s]'), used by Game_CutSceneScript_AddRaceCrewLiveryToAssetGroupPaths for team mate / crew bodies. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2804)"
+ },
+ "signature": {
+  "id": "game.cut_scene_script_add_driver_body_to_asset_group_paths_2",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC D0 00 00 00 89 D5 89",
+  "match": "0x140234440",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140234440",
+  "kind": "func_start",
+  "names": [
+   "Game_CutSceneScript_AddDriverBodyToAssetGroupPaths_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d9-verify",
+   "kind": "func",
+   "item": "Game_CutSceneScript_AddDriverBodyToAssetGroupPaths_2",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140234440.c;xref:0x140234440",
+   "notes": "V2804 strings/calls/offsets checked in decomp+disasm; role and name hold"
+  }
+ ],
+ "proofs": []
+}

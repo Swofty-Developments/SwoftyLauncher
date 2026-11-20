@@ -1,0 +1,41 @@
+{
+ "schema": 1,
+ "name": "site_Game_CutSceneDriverLookupCall",
+ "table": "globals",
+ "author": "jonnoAUS",
+ "row": {
+  "addr": "0x14022da92",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "game",
+  "evidence": "decomp:own capstone disasm 0x14022d920-0x14022fb63;xref:0x14022da77,0x14022da82,0x14022da88,0x14022da92,0x1423dbcf0;doc:re/research/weather_strategy_bindings.md#sites",
+  "notes": "Call to Ent_Get_Driver_Thunk (driver lookup): ecx = driver id [rdi+0x50] at 0x14022da82, db = [g_Game_Manager]+0x290 at 0x14022da88; returns the driver record (name char* at +0xc8). A call site because the thunk's bytes after its jmp are build-specific. Proposed L2 (game inbox)."
+ },
+ "signature": {
+  "id": "game.cut_scene_driver_lookup_call",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 89 C7 80 3D ?? ?? ?? ?? 01 75 4E",
+  "match": "0x14022da92",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14022da92",
+  "kind": "mid",
+  "expect": "E8",
+  "names": [
+   "site_Game_CutSceneDriverLookupCall"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-17",
+    "by": "rr-bindings",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

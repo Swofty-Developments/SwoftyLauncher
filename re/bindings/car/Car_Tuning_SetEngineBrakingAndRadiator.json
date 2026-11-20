@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_Tuning_SetEngineBrakingAndRadiator",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446878d0",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "pat:log-channel-F1_TUNING;decomp:re/decomp/1446878d0.c;xref:0x145bfa648",
+  "notes": "Log channel F1_TUNING: 'Setting engine braking fraction to %f.' | 'Setting radiator opening fraction to %f.' | car-b: this is the Engine system Reset (vtable +0x18, flags). An outer test dl,0x10/je at 0x1446878ef gates every branch, so 0x400, 0x800 and 0x2000 do nothing without 0x10 (corrected per V1232): 0x10|0x200 rotation_rate = IdleRotationRate, limiter = LimiterRotationRate, kers_energy = KERSCapacity, throttle 0; 0x10|0x400 temperature = InitialTemperature; 0x10|0x800 zeroes the six PU wears +0x254c..+0x2560; 0x10|0x2000 recomputes the derived values and applies the F1Tuning engine-braking (+0x252c) and radiator (+0x25b0) sliders"
+ },
+ "signature": {
+  "id": "car.tuning_set_engine_braking_and_radiator",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 60 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 F6 C2 10",
+  "match": "0x1446878d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446878d0",
+  "kind": "func_start",
+  "names": [
+   "Car_Tuning_SetEngineBrakingAndRadiator"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v4",
+   "kind": "func",
+   "item": "Car_Tuning_SetEngineBrakingAndRadiator",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1446878d0.c;xref:0x145bfa648",
+   "notes": "V1232 Role right (Engine vt +0x18 Reset). Flag detail wrong: every branch sits under an outer test dl,0x10/je at 0x1446878ef, so 0x400 (temp +0x253c), 0x800 (wears +0x254c..+0x2563) and 0x2000 (derived values plus engine-braking +0x252c and radiator +0x25b0 sliders) need 0x10 too; 0x2000 alone does nothing. Offsets and log strings match."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x1446878d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446878d0.c",
+   "notes": "V6751 name and log/strings match; body checked, no broader behaviour (vtable/indirect; no direct call site)"
+  }
+ ],
+ "proofs": []
+}

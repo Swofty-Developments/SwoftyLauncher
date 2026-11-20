@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Puncture_Add",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14464e200",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "pat:log-channel-TYRE_DAMAGE_MONITOR",
+  "notes": "Log channel TYRE_DAMAGE_MONITOR: 'Added puncture for vehicle %d tyre %p.'"
+ },
+ "signature": {
+  "id": "car.puncture_add",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 4C 89 C7 89 D3",
+  "match": "0x14464e200",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14464e200",
+  "kind": "func_start",
+  "names": [
+   "Car_Puncture_Add"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x14464e200",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14464e200.c;xref:0x1409b353c",
+   "notes": "V6720 name and log/strings match; body checked, no broader behaviour"
+  }
+ ],
+ "proofs": []
+}

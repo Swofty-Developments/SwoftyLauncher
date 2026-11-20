@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDResearchTypeLoop",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c75751",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141c73b80.c;xref:0x141c75733,0x141c7574a,0x141c75751;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v090--the-tyres-upgrade-types-setting-tyres_upgrade_types-default-on-install-time",
+  "notes": "jmp 0x141c75783: loop entry of the research category rows after lea r12,[order] and lea r13,[order end] (r12 = pointer, r13 = end; cmp r12,r13 at 0x141c7577a; rows built by 0x141c76b60). rnd-tyres sets r12/r13 = its extended order table"
+ },
+ "signature": {
+  "id": "career.rn_d_research_type_loop",
+  "section": ".xtls",
+  "pattern": "4C 8D 2D ?? ?? ?? ?? EB 30 66 66 66 66 2E 0F 1F 84 00 00 00 00 00",
+  "match": "0x141c7574a",
+  "anchor": "0x7",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c75751",
+  "kind": "mid",
+  "expect": "EB 30 66 66 66 66 2E 0F 1F 84 00 00 00 00 00",
+  "names": [
+   "site_Career_RnDResearchTypeLoop"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-a",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_upgrade_types.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-1",
+   "kind": "global",
+   "item": "site_Career_RnDResearchTypeLoop",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c73b80.c;xref:0x141c75733,0x141c7574a,0x141c75751,0x141c7577a,0x141c75772,0x141c75783",
+   "notes": "V0058 lea r12->0x14566fd16, lea r13->0x14566fd29, jmp 0x141c75783 (2+13 byte nop window, loop body 0x141c75760 = window end); cmp r12,r13 at 0x141c7577a; rows via call 0x141c76b60; r12/r13 dead after exit"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,60 @@
+{
+ "schema": 1,
+ "name": "Game_TelemetryLaps_ApplyLapValidity_Thunk",
+ "table": "functions",
+ "author": "load-game",
+ "row": {
+  "addr": "0x142923d40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_TelemetryLaps_ApplyLapValidity_Thunk(void *validity)",
+  "evidence": "decomp:own disasm 0x14d4c8ce0-0x14d4c8da1;xref:0x1437b0c0c,0x151407b58",
+  "notes": "5-byte jmp into .data1 body=0x14d4c8ce0 (plaintext in the KB file). rcx is the lap validity component (type node 0x146076480, found in an entity's component list +0x238..+0x240): +0x260 the telemetry laps (vector +0x50), +0x280 the car state object, u8 +0x288/+0x289/+0x28a/+0x28b. The body asks 0x14359f820 (thunk to 0x15068a1b0) about car 0 of +0x280 (true only when the car record's +0x32 bit 5 is set and bit 7 clear, +0x30 & 0x42 is 0, +0x33 bit 1 and +0x35 bit 4 are clear, and 0x14359f8e0 and 0x14359fa10 return true). With +0x28b set it sets bit 0 (not clean) of telemetry lap slot 0's summary flags +0x2c0 (0x14d4c8d40) when +0x288 is 0, +0x28a is 0 or the car check is true, and of slot 1's (0x14d4c8d84) when +0x289 is 0; it then stores 1 in +0x288, +0x289 and +0x28a (0x14d4c8d8b). Called by Game_TelemetryLaps_OnNewLapRecorded at 0x1437b0c0c before it ranks the closed lap, and tail-jumped by the lap start body 0x151407860 at 0x151407b58 after slot 0 is cleared. Steam 1.0.145 thunk 0x142926100 (body 0x14d1c5210) and EA 1.0.145 0x14291f480 (body 0x14c61ad90, restored dump): 50 of 50 body instructions the same, +0x2c0/+0x288..+0x28b/+0x280 at the same places."
+ },
+ "signature": {
+  "id": "game.telemetry_laps_apply_lap_validity_thunk",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? E9 ?? ?? ?? ?? 7D 46 E1 F4 9B",
+  "match": "0x142923d40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142923d40",
+  "kind": "func_start",
+  "names": [
+   "Game_TelemetryLaps_ApplyLapValidity_Thunk"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-18",
+    "by": "load-game",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "load-game",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142923d40",
+    "target": "0x142923d40"
+   },
+   "sigcheck": "passed",
+   "digest": "d65c5f312a866386a2b4df590daeb978cffd49813b861dff7d31aefb44649e5a"
+  }
+ ]
+}

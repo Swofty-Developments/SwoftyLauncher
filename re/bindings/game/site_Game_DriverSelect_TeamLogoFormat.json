@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "site_Game_DriverSelect_TeamLogoFormat",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1416a3aee",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/1416a3630.c;decomp:re/decomp/141a5d180.c;xref:0x1416a3ad9,0x1416a3ade,0x1416a3ae2,0x1416a3ae9,0x1416a3aee,0x1416a3aff",
+  "notes": "Choose Driver details panel Game_DriverSelect_FillDriverDetails 0x1416a3630: the call to Ne_Format_String (0x1441630f0) that builds the details team logo key; rcx = rsp+0x60 the NeStr** out, rdx = 'overrides.teams.driver_select_team_logos.%s' (lea at 0x1416a3ae2), r8 = the team record's label (+0x18 of rdi, loaded at 0x1416a3ade) of the focused row's team. The key goes to 0x1416864d0 at 0x1416a3b0e (the Vm_Holder_SetCStr at 0x1416a3aff writes the team record's +0xb0 into another holder); rdi is read again after the call. EA (re/db/builds/ea.json): EA 0x14169debe calls Ne_Format_String EA 0x1441572e0 with the same format string and rcx/rdx/r8 setup; the containing function EA 0x14169da00 is instruction-for-instruction Steam's; only the rel32 in expect differs (EA E8 1D 94 AB 02)."
+ },
+ "signature": {
+  "id": "game.driver_select_team_logo_format",
+  "section": ".xtls",
+  "pattern": "48 8D 4C 24 60 E8 ?? ?? ?? ?? 48 8B 97 B0 00 00 00",
+  "match": "0x1416a3ae9",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416a3aee",
+  "kind": "mid",
+  "expect": "E8 FD F5 AB 02",
+  "names": [
+   "site_Game_DriverSelect_TeamLogoFormat"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-26",
+    "by": "progressive-wizvis",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/progressive/native/src/ui/cards.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-26",
+   "verifier": "logo-sites-verify",
+   "kind": "global",
+   "item": "site_Game_DriverSelect_TeamLogoFormat",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1416a3630.c;decomp:re/decomp/1441630f0.c;xref:0x1416a3aa7,0x1416a3aba,0x1416a3ac9,0x1416a3ad9,0x1416a3ade,0x1416a3ae2,0x1416a3ae9,0x1416a3aee,0x1416a3af3,0x1416a3aff,0x1416a3b04,0x1416a3b0e;xref:0x1416864d0,0x1407b10c0;str:0x1456fe475;sig:game.driver_select_team_logo_format",
+   "notes": "V1062 Checked from my own capstone sweep of the .pdata function 0x1416a3630-0x1416a406d (.xtls) and a fresh decomp. The sweep from the function start lands on 0x1416a3aee (instruction boundary); bytes E8 FD F5 AB 02 = 5-byte call to 0x1441630f0 Ne_Format_String. rcx = lea [rsp+0x60] at 0x1416a3ae9, slot zeroed at 0x1416a3aa7. rdx = lea at 0x1416a3ae2 -> 0x1456fe475 (.xtext) = 6f 76 65 72 ... 2e 25 73 00 'overrides.teams.driver_select_team_logos.%s', one % only, so r9 and the stack are not read. r8 = [rdi+0x18] at 0x1416a3ade with rdi = [[ [[rsp+0x40] + byte[rbx+0x58]*0x10 + 0x2c8] + 8] + word[rbx+0x5a]*0x10 + 8] (0x1416a3abc-0x1416a3ad9); the block is skipped (je 0x1416a3b04) when word[rbx+0x5a] = 0x3fff. +0x18 of that table entry is a C string label (same walk passes it as %s/%hs at 0x140dc757c, 0x1421abb70, 0x1435355a8). One precision on the consumer: the call right after, 0x1416a3aff, is Vm_Holder_SetCStr(holder [rsp+0x48], [rdi+0xb0]), a separate field of the team record that does not touch the key. The key itself goes to 0x1416864d0(rcx = [rsp+0x50], rdx = rsp+0x60) at 0x1416a3b0e, the same registry-path bind as the other two sites, and is then released (0x1416a3b13-). The row's notes do not name the consumer, so nothing stated is wrong; adding 'result to 0x1416864d0 at 0x1416a3b0e' would make it explicit. rdi is callee-saved and read again at 0x1416a3af3, so a redirect must preserve it (any ABI-conforming hook does). sigcheck: OK, one hit, match 0x1416a3ae9 + anchor 5 = 0x1416a3aee, expect E8 FD F5 AB 02."
+  },
+  {
+   "date": "2026-10-27",
+   "verifier": "easites-verify",
+   "kind": "sig",
+   "item": "game.driver_select_team_logo_format",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "sig:game.driver_select_team_logo_format;xref:0x1416a3aee,0x1416a3630,0x1441630f0;pat:48 8D 4C 24 60 E8 ?? ?? ?? ?? 48 8B 97 B0 00 00 00",
+   "notes": "V1147 EA overlay: the pattern matches EA .rdata once at 0x169deb9, and the target 0x14169debe holds E8 1D 94 AB 02, a call to 0x1441572e0 (Ne_Format_String, identical to Steam 0x1441630f0). The containing EA function 0x14169da00 is instruction-identical to Steam 0x1416a3630 (663 insns, site at +0x4be in both), with rcx = rsp+0x60, rdx = overrides.teams.driver_select_team_logos.%s and r8 = [rdi+0x18] as on Steam."
+  }
+ ],
+ "proofs": []
+}

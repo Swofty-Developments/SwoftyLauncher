@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "vt_Career_MessageDriverMovesFinalisedUpgrades",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145696d20",
+  "type": "vtable[2]",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/140d766b0.c;decomp:re/decomp/140db18e0.c;decomp:re/decomp/14123b3f0.c;xref:0x140d78522;doc:addons/career-editor/protocol/drivers.md#op-driversswap",
+  "notes": "vtable of MessageDriverMovesFinalised_upgrades (name getter 0x140e040d0); UpgradesComponent handler 0x14123b3f0 (subscribed in 0x141234b40) runs only when the component's +0x3e0 lifecycle byte is 0: it creates team modifiers (Career_Init_TeamModifiers / _SharedTeamModifiers by the +0xc98 +0x58 mode) for every listed driver that has none, re-inits them for the new team when a driver that has them changed team, then calls 0x14351f560 with the new team of every moved driver (new team != 0x3fff) (V0878). Message layout DriverMovesFinalisedMessage (0x298): +0 vtable, +8 0, +0x10 LineupChange[40], +0x290 u64 count; the Driver Career signing 0x140d766b0 and the season processor 0x140db18e0 post _upgrades, _recognition, then the plain message after their entrant writes, with the payload from Career_Build_LineupChanges"
+ },
+ "signature": {
+  "id": "career.message_driver_moves_finalised_upgrades",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 44 24 70 49 8B 4F 08 48 8D 54 24 70 E8 ?? ?? ?? ?? 4C 8B 3D",
+  "match": "0x140d78522",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x145696d20",
+  "kind": "data",
+  "names": [
+   "vt_Career_MessageDriverMovesFinalisedUpgrades"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-drivers",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/drivers.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-8",
+   "kind": "global",
+   "item": "vt_Career_MessageDriverMovesFinalisedUpgrades",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14123b3f0.c;decomp:re/decomp/141234b40.c;decomp:re/decomp/140d766b0.c;decomp:re/decomp/140db18e0.c;xref:0x140d78522,0x140db5fdd,0x140e040d0,0x141235904,0x141235912,0x14123b420,0x14123b485,0x14123b4ae;sig:career.message_driver_moves_finalised_upgrades",
+   "notes": "V0878 sigcheck OK; vtable[2], name getter 0x140e040d0 -> MessageDriverMovesFinalised_upgrades, UpgradesComponent init 0x141234b40 subscribes 0x14123b3f0 to it (0x141235904/0x141235912), layout and post order right. The handler text is incomplete in a way that changes what it claims: 0x14123b3f0 does nothing unless the component's +0x3e0 byte (the value copied to g_Career_UpgradeLifecycle) is 0; a listed driver that already has modifiers but changed team (new team != 0x3fff, old != new) gets Career_Init_TeamModifiers for the new team (mode 0: 0x1434f6120); and 0x14351f560 is called with the new team key of each such driver. Corrected: 'vtable of MessageDriverMovesFinalised_upgrades (name getter 0x140e040d0); UpgradesComponent handler 0x14123b3f0 (subscribed in 0x141234b40) runs only when the component's +0x3e0 lifecycle byte is 0: it creates team modifiers (Career_Init_TeamModifiers / _SharedTeamModifiers by the +0xc98 +0x58 mode) for every listed driver that has none, re-inits them for the new team when a driver that has them changed team, then calls 0x14351f560 with the new team of every moved driver (new team != 0x3fff). Message layout ... (unchanged)'"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-8",
+   "kind": "global",
+   "item": "vt_Career_MessageDriverMovesFinalisedUpgrades",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14123b3f0.c;decomp:re/decomp/141234b40.c;decomp:re/decomp/140d766b0.c;decomp:re/decomp/140db18e0.c;xref:0x140d78522,0x140db5fdd,0x140e040d0,0x141235904,0x141235912,0x14123b420,0x14123b485,0x14123b4ae;sig:career.message_driver_moves_finalised_upgrades",
+   "notes": "V0900 sigcheck OK. Current text right: 0x141234b40 subscribes 0x14123b3f0 to _upgrades (0x141235904/0x141235912); the handler returns unless byte +0x3e0 == 0; drivers without modifiers get Career_Init_TeamModifiers (mode [+0xc98]+0x58 in 1..2, with the team from the +0x2e0 entrants) or _SharedTeamModifiers (mode 0); a driver that has them and changed team (new != 0x3fff, old != new) gets Init_TeamModifiers for the new team; then 0x14351f560 per moved driver with entry+8. Quibble: in mode 0 the changed-team path calls 0x1434f6120(+0xca0, driver) rather than a re-init for the new team. Layout and post order unchanged and right"
+  }
+ ],
+ "proofs": []
+}

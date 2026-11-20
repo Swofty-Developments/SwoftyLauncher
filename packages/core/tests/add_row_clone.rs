@@ -1,8 +1,9 @@
 use std::collections::BTreeSet;
 
+use swofty_core::asset::Features;
 use swofty_core::asset::{FileKind, OpFile, Origin};
 use swofty_core::ops::DbReport;
-use swofty_core::planner::{Features, Planner};
+use swofty_core::planner::Planner;
 use swofty_formats::gvdb::{Gvdb, Record};
 
 const MODES: &str = "entrants.entrant_setup_modes";
@@ -27,7 +28,7 @@ fn stock() -> Gvdb {
             }
         }
     }
-    Gvdb { records }
+    Gvdb::new(records)
 }
 
 fn build(file: &str) -> (Gvdb, DbReport) {

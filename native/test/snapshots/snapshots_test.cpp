@@ -1,4 +1,4 @@
-// Host test for career snapshots (native/src/core/snapshots/): the swofty_registry entry's format and
+// Host test for career snapshots (native/src/core/career/snapshots/): the swofty_registry entry's format and
 // bag envelope, freezes and reads through the registry store, budgets, unknown majors and items kept
 // byte for byte, migration through an adapter, a career from before 1.6, Freeze::at_creation, corrupt
 // input, and the entry spliced into a profile save's containers block with the save splice's own
@@ -6,9 +6,10 @@
 // owner-only career::report_season, career.created after a new-career route, career.season.start once per
 // career and year, and the dry save default. --generate DIR writes the fixture entries of packages/sdk/std/fixtures; --fixtures DIR checks
 // every fixture there loads and reads as its .json says. run_snapshots_test.sh builds and runs it.
-#include "../../src/core/save_splice_logic.hpp"
-#include "../../src/core/snapshots/clock.hpp"
-#include "../../src/core/snapshots/snapshots.hpp"
+#include "core/career/save_splice_logic.hpp"
+#include "core/career/snapshots/clock.hpp"
+#include "core/career/snapshots/snapshots.hpp"
+#include "core/career/snapshots/bag.hpp"
 
 #include <cstdio>
 #include <filesystem>
@@ -16,11 +17,11 @@
 #include <random>
 #include <sstream>
 
-namespace snap = swofty_core::snapshots;
-namespace fmt = swofty_core::snapshots::format;
+namespace snap = career::snapshots;
+namespace fmt = career::snapshots::format;
 namespace reg = swofty_core::registry;
-namespace sp = runtime::save_splice;
-namespace sn = swofty_core::snapshots::seasons;
+namespace sp = career::save_splice;
+namespace sn = career::snapshots::seasons;
 using swofty::json::Value;
 
 static int fails;
@@ -49,8 +50,7 @@ static Value parse(const std::string &s)
     return v;
 }
 
-static void declare(reg::Store &st, const std::string &name, bool snapshot, int budget = 65536,
-                    const char *version = "1.0")
+static void declare(reg::Store &st, const std::string &name, bool snapshot, int budget = 65536, const char *version = "1.0")
 {
     Value schema = parse(R"({"type":"object"})");
     schema["x-version"] = Value(std::string(version));
@@ -78,8 +78,7 @@ static void world(reg::Store &st, const char *season_version = "1.0")
                      std::to_string(y - 1930) + "}"),
                nullptr);
     }
-    st.add("other.mode", "career.season", "2016",
-           parse(R"({"data_group":"f1_career_other","year":2016,"teams":[]})"), nullptr);
+    st.add("other.mode", "career.season", "2016", parse(R"({"data_group":"f1_career_other","year":2016,"teams":[]})"), nullptr);
     st.add("tails.whatif", "tails.whatif.presets", "classic", parse(R"({"name":"classic","start_year":2016})"), nullptr);
     st.add("game", "vehicle", "redbull", parse(R"({"livery":"stock"})"), nullptr);
 }
@@ -146,9 +145,8 @@ static void format_tests()
     std::string why;
     expect(fmt::decode(a, back, why) == fmt::Decoded::ok, "an entry decodes");
     expect(back.encode() == a, "an entry round-trips byte for byte");
-    expect(back.careers.size() == 1 && back.careers[0].id == "dc-0000002a" &&
-               back.careers[0].idmap == e.careers[0].idmap && back.careers[0].seasons[0].frozen[0].registry ==
-                                                                  "career.season",
+    expect(back.careers.size() == 1 && back.careers[0].id == "dc-0000002a" && back.careers[0].idmap == e.careers[0].idmap &&
+               back.careers[0].seasons[0].frozen[0].registry == "career.season",
            "the round trip keeps the career id, its stat-id map and its season snapshot");
 
     fmt::Entry u = sample_entry();
@@ -167,8 +165,7 @@ static void format_tests()
            "unknown items at every level and an unknown registry of major 9 are written back byte for byte");
 
     fmt::Bytes body, payload;
-    expect(fmt::bag_body(a, body) && fmt::parse_bag(body, payload, why) && payload == a,
-           "the bag envelope carries the payload");
+    expect(fmt::bag_body(a, body) && fmt::parse_bag(body, payload, why) && payload == a, "the bag envelope carries the payload");
     expect(body.size() >= 16 && body[0] == 1 && body[8] == 2, "the envelope has the codec header and its entry count");
 
     std::string big(200000, 'x');
@@ -225,8 +222,10 @@ static void freeze_tests()
 
     book.season_start(2016, career_ctx());
     expect(logged("career season 2016 starts in dc-1"), "the season start logs its snapshot");
-    layer(st, "tails.whatif", "career.season", "swofty.progressive/2016", R"({"teams":[{"slot":1,"seats":["game/z","game/b"]}]})");
-    layer(st, "tails.whatif", "career.season", "swofty.progressive/2017", R"({"teams":[{"slot":1,"seats":["game/y","game/b"]}]})");
+    layer(st, "tails.whatif", "career.season", "swofty.progressive/2016",
+          R"({"teams":[{"slot":1,"seats":["game/z","game/b"]}]})");
+    layer(st, "tails.whatif", "career.season", "swofty.progressive/2017",
+          R"({"teams":[{"slot":1,"seats":["game/y","game/b"]}]})");
     layer(st, "tails.whatif", "career.driver_ratings", "swofty.progressive/2016/game/a", R"({"pace":1})");
     layer(st, "tails.whatif", "tails.whatif.presets", "tails.whatif/classic", R"({"start_year":1990})");
     expect(seat(st, 2016) == "game/a", "a change to a frozen season does not reach the career");
@@ -275,7 +274,8 @@ static void freeze_tests()
     expect(pace(st, 2016) == 86, "and its 2016 ratings");
     reload.season_start(2017, career_ctx());
     expect(seat(st, 2017) == "game/y", "a career advanced to 2017 gets the change made before 2017 started");
-    layer(st, "tails.whatif", "career.season", "swofty.progressive/2017", R"({"teams":[{"slot":1,"seats":["game/q","game/b"]}]})");
+    layer(st, "tails.whatif", "career.season", "swofty.progressive/2017",
+          R"({"teams":[{"slot":1,"seats":["game/q","game/b"]}]})");
     expect(seat(st, 2017) == "game/y", "and keeps it once 2017 is frozen");
     reload.season_start(2017, career_ctx());
     expect(logged("already frozen"), "a second season start for a frozen season keeps it");
@@ -390,8 +390,8 @@ static void budget_tests()
     st.add("tails", "tails.tiny", "a", parse(R"({"year":2016,"blob":")" + noise(400) + R"("})"), nullptr);
     declare(st, "tails.big", true, 1 << 20);
     for (int y = 2016; y <= 2018; y++)
-        st.add("tails", "tails.big", std::to_string(y), parse(R"({"year":)" + std::to_string(y) + R"(,"blob":")" + noise(130000) + R"("})"),
-               nullptr);
+        st.add("tails", "tails.big", std::to_string(y),
+               parse(R"({"year":)" + std::to_string(y) + R"(,"blob":")" + noise(130000) + R"("})"), nullptr);
     snap::Book book(st, [](const std::string &s) { logs.push_back(s); });
     st.set_snapshot_source(book.source());
     book.loaded(nullptr);
@@ -437,8 +437,7 @@ static void creation_tests()
     expect(book.saving(body), "the created career is due at the next save");
 }
 
-static void add_season(reg::Store &st, const std::string &addon, const std::string &key, const std::string &group,
-                       int year)
+static void add_season(reg::Store &st, const std::string &addon, const std::string &key, const std::string &group, int year)
 {
     st.add(addon, "career.season", key,
            parse(R"({"data_group":")" + group + R"(","year":)" + std::to_string(year) + R"(,"teams":[]})"), nullptr);
@@ -503,8 +502,8 @@ static void year_map_tests()
         reg::Change ch;
         ch.patch = parse(R"({"data_group":"f1_career_decades"})");
         std::string id;
-        st.variant("mod.decades", "career.season", std::to_string(y),
-                   "mod.season-" + std::to_string(y) + "/" + std::to_string(y), ch, &id);
+        st.variant("mod.decades", "career.season", std::to_string(y), "mod.season-" + std::to_string(y) + "/" + std::to_string(y),
+                   ch, &id);
     }
     sn::YearMap decades = sn::year_map(st, "f1_career_decades");
     expect(decades.why.empty() && decades.years.size() == 5 && sn::year_at(decades, 0, why) == 2008 &&
@@ -579,7 +578,8 @@ static void clock_tests()
         sn::Season slot = committed;
         slot.career = "f1_career_progressive_save:7";
         r = fresh.report("swofty.progressive", slot, 2016, pg, m);
-        expect(r == sn::Report::ok && !m.fire && said(m, "already started"), "the slot id learnt at the first save keeps the season started");
+        expect(r == sn::Report::ok && !m.fire && said(m, "already started"),
+               "the slot id learnt at the first save keeps the season started");
         sn::Clock other;
         r = other.report("tails.whatif", none, 2016, pg, m);
         expect(!other.queued(), "only the owner's report is queued");
@@ -898,20 +898,20 @@ static int generate(const std::filesystem::path &dir)
     book.saving(body);
     std::filesystem::create_directories(dir);
     write_file(dir / "1.6.0-per-season.bin", std::string(body.begin(), body.end()));
-    Value expect_doc = Value::object(
-        {{"career", Value("dc-0000002a")},
-         {"data_group", Value("f1_career_progressive")},
-         {"layer", Value::object({{"registry", Value("career.season")},
-                                  {"id", Value("swofty.progressive/2016")},
-                                  {"patch", parse(R"({"teams":[{"slot":1,"seats":["game/z","game/b"]}]})")}})},
-         {"reads", Value::array({Value::object({{"registry", Value("career.season")},
+    Value expect_doc =
+        Value::object({{"career", Value("dc-0000002a")},
+                       {"data_group", Value("f1_career_progressive")},
+                       {"layer", Value::object({{"registry", Value("career.season")},
                                                 {"id", Value("swofty.progressive/2016")},
-                                                {"pointer", Value("/teams/0/seats/0")},
-                                                {"value", Value("game/a")}}),
-                                 Value::object({{"registry", Value("career.driver_ratings")},
-                                                {"id", Value("swofty.progressive/2017/game/a")},
-                                                {"pointer", Value("/pace")},
-                                                {"value", Value(int64_t(87))}})})}});
+                                                {"patch", parse(R"({"teams":[{"slot":1,"seats":["game/z","game/b"]}]})")}})},
+                       {"reads", Value::array({Value::object({{"registry", Value("career.season")},
+                                                              {"id", Value("swofty.progressive/2016")},
+                                                              {"pointer", Value("/teams/0/seats/0")},
+                                                              {"value", Value("game/a")}}),
+                                               Value::object({{"registry", Value("career.driver_ratings")},
+                                                              {"id", Value("swofty.progressive/2017/game/a")},
+                                                              {"pointer", Value("/pace")},
+                                                              {"value", Value(int64_t(87))}})})}});
     write_file(dir / "1.6.0-per-season.json", swofty::json::dump(expect_doc, 1) + "\n");
     printf("wrote %s (%zu bytes)\n", (dir / "1.6.0-per-season.bin").string().c_str(), body.size());
     return 0;

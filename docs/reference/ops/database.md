@@ -212,6 +212,22 @@ When an addon's ops rename one of the stock lists, remove it, lower `_entrant_li
 warning: My Mod: renames or removes the entrant list(s) f2_2026; F2 menus may crash with it
 ```
 
+### Track layer overrides
+
+A row of `content_sets.content_set_N.track_layer_override_N` names two track layers (`track_data.track_layers`) by label: after the track database loads, the game copies the `override` layer's world onto the `target` layer, for every game setup mode. The game checks neither label. After every addon's ops, the build drops each override row whose `target` or `override` names no track layer row, moves the rows after it down and lowers the count, with one line per row:
+
+```jsonc
+// the classic world on the f1 layer becomes my_layer's, but no track layer row is labelled my_layer
+{ "op": "set", "select": "content_sets.content_set[_metadata_=2025].track_layer_override_0",
+  "field": "override", "value": "my_layer" }
+```
+
+```text
+content set 2025: dropped track_layer_override track_layer_override (override my_layer names no track_data.track_layers row; the game reads past the end of the layer table there)
+```
+
+Add the layer row before the override row names it. The keys past the new count stay in the database, where the game ignores them. A content set or layer table the build cannot read is left as it is, and the build goes on.
+
 ### remove-row
 
 ```json
@@ -277,6 +293,8 @@ A copy keeps its id from build to build, so a career keeps its cars, teams and d
 - A kept id that a row of the database, the core's `ids.json` or the table's ceiling now rules out moves to the next free id, in that profile only. The new id is kept under `profiles.<profile>` in the file; the install-wide id stays in `rows`, so every other profile keeps the id its careers hold, and a profile with no entry of its own reads the install-wide one. The id a row moved from is kept as an alias in the same place.
 - 1.6.10 and 1.6.11 gave new copies an id from the hash of their key and kept none of the ids earlier builds gave. The first build after them puts those rows back once: each takes the id the newest game session log from before 1.6.10 (`$DATA/sessions/<stamp>/loader.log`) shows for its label, and a row no log shows takes the next free id in load order again. An addon whose hashed team ids a session loaded since 1.6.10, while none loaded its earlier ones, keeps the hashed ids.
 - The file keeps every id a row had before the one it keeps (the ids 1.6.10 and 1.6.11 hashed, the ids a row moved from). Each build writes them to `swofty/id_aliases.json` as `{ "version": 1, "tables": { "teams": { "646": 518 }, "vehicles": {}, "drivers": {} } }`, earlier id to current id. When a Grand Prix is continued and no entrant list holds the saved entrants' teams, the core maps the saved entrants' team, vehicle and driver ids through it and loads the list that holds the mapped teams, so a Grand Prix started on 1.6.10 or 1.6.11 loads on a later build.
+- An earlier id maps to the current id unless a stock row, a row of an addon in the build or a core registry record of an addon in the build holds it. A registry record of an addon the build leaves out does not stop the alias. Two rows that moved from one earlier id to different ids give no alias for it, and a row lent by another player's room gives none.
+- The core's `ids.json` pools never allocate an id this file keeps for a row, whether it is under `rows` or under any profile's `rows`.
 - A table with no free id left takes the lowest id kept for an addon the build leaves out, then the lowest id `ids.json` holds for a record of an addon the build leaves out that no career uses.
 - Two copies with one label in one addon's table are `<label>` and `<label>#2`.
 

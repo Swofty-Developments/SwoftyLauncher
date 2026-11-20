@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CutSceneScript_SpawnManager",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14024bb60",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=CutSceneScript::spawnManager; log channel WARN: 'CutSceneScript::spawnManager %s JohnS - team manager not found'"
+ },
+ "signature": {
+  "id": "game.cut_scene_script_spawn_manager",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 40 0F B6 81 1A 03 00 00",
+  "match": "0x14024bb60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14024bb60",
+  "kind": "func_start",
+  "names": [
+   "Game_CutSceneScript_SpawnManager"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x14024bb60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14024bb60.c",
+   "notes": "V4465 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

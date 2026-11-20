@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Rules_OnPaceCarLapForVehicle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14359f680",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14359f680.c;xref:0x14359f64c,0x14359ff83",
+  "notes": "(rules, carIdx) Finds participant via rules+0x40 cache/scan and updates the pace-car lap state for it ([rules+0x50], 0x1435a0440). Called from Sess_Rules_PaceCarNewLap (2x)."
+ },
+ "signature": {
+  "id": "session.rules_on_pace_car_lap_for_vehicle",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 80 FA FF 0F",
+  "match": "0x14359f680",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14359f680",
+  "kind": "func_start",
+  "names": [
+   "Sess_Rules_OnPaceCarLapForVehicle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x14359f680",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14359f680.c;xref:0x14359f64c",
+   "notes": "V3801 Participant lookup via rules+0x40 cache/scan, updates pace-car state in [rules+0x50] stride 0xc0 via 1435a0440."
+  }
+ ],
+ "proofs": []
+}

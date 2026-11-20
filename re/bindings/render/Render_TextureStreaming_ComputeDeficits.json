@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_TextureStreaming_ComputeDeficits",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bfb790",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bfb790.c;xref:0x143eb94ac,0x143ebb630",
+  "notes": "Hypothesis: iterates the streaming list (+0x300) computing density/deficit; from AdjustQualityFactor. Named callers: Game_TextureStreaming_AdjustQualityFactor."
+ },
+ "signature": {
+  "id": "render.texture_streaming_compute_deficits",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC C0 00 00 00 C5 79 7F B4 24 B0 00 00 00 C5 79 7F AC 24 A0 00 00 00 C5 79 7F A4 24 90 00 00 00 C5 79 7F 9C 24 80 00 00 00 C5 79 7F 54 24 70 C5 79 7F 4C 24 60 C5 79 7F 44 24 50 C5 F9 7F 7C 24 40 C5 F9 7F 74 24 30 48 89 CE 48",
+  "match": "0x143bfb790",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bfb790",
+  "kind": "func_start",
+  "names": [
+   "Render_TextureStreaming_ComputeDeficits"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143bfb790",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143bfb790.c;xref:0x143eb94ac",
+   "notes": "V7841 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

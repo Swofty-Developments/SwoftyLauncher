@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Calc_FacilityNodeScaledValueB",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f8e800",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int Calc(void *node)",
+  "evidence": "decomp:re/decomp/140f8e800.c;xref:0x141673c71;xref:0x141673f62;xref:0x141984557",
+  "notes": "myteam-g2: Same pattern as ScaledValueA but uses selector *(node+0x98)+8 and base node+0xa8; second value line of an upgrade info panel."
+ },
+ "signature": {
+  "id": "career.calc_facility_node_scaled_value_b",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 C5 F8 29 74 24 30 8B B1 A8 00 00 00",
+  "match": "0x140f8e800",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f8e800",
+  "kind": "func_start",
+  "names": [
+   "Career_Calc_FacilityNodeScaledValueB"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140f8e800",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f8e800.c;xref:0x141673c71",
+   "notes": "V9602 Same pattern with selector +8 and base +0xa8, result rounded and forced to at least 1."
+  }
+ ],
+ "proofs": []
+}

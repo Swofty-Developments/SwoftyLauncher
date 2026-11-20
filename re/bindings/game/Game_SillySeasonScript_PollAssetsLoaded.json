@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SillySeasonScript_PollAssetsLoaded",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140373c70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140373c70.c;xref:0x145606fa0",
+  "notes": "pollAssetsLoaded slot (vt+0x1b0; +0x1f0 in 110-slot grid vtables): returns 1 when Game_CutsceneManager_AreAssetGroupsLoaded(this[9]=manager, this+0x38 request) and (this+0x538 bit7 clear or this+0x539 bit0 world post-creation done), else logs CUTSCENE_SCRIPT_VERBOSE and returns 0. Identical per-class copy. Also resets the world transform this+0x470 to identity first. Silly season cutscene (silly_season, InterviewBGP01-04, vt 0x145606df0). Addon: hook to return 0 to hold the cutscene in loading; forcing 1 early skips the wait (only safe when assets are loaded). | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3162)"
+ },
+ "signature": {
+  "id": "game.silly_season_script_poll_assets_loaded",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 48 8B 49 48 48 8D 7E 38 48 89 FA E8 ?? ?? ?? ?? 84 C0 0F 84 ?? ?? ?? ?? C5 FA 10",
+  "match": "0x140373c70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140373c70",
+  "kind": "func_start",
+  "names": [
+   "Game_SillySeasonScript_PollAssetsLoaded"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d13-verify",
+   "kind": "func",
+   "item": "Game_SillySeasonScript_PollAssetsLoaded",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140373c70.c;xref:0x145606fa0",
+   "notes": "V3162 role/offsets/strings confirmed in decomp (INIT pattern calls thunks 140240410/140240700 -> alt copy 147562600 of advanceStartTimeOffset)"
+  }
+ ],
+ "proofs": []
+}

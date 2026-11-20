@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ne_Make_RandomIdBlock",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1441207d0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint8_t *Ne_Make_RandomIdBlock(uint8_t *out)",
+  "evidence": "decomp:re/decomp/1441207d0.c;xref:0x1424536be;xref:0x1400f9880,0x1400fa590",
+  "notes": "fills a 0x3a-byte id block: +0x00 kind 1, +0x08/+0x10 one random u64 (QueryPerformanceCounter-seeded generator at 0x146108c00), +0x18/+0x20 a second, +0x28/+0x30 a third, +0x38 u16 0; Sess_Parse_Entrant builds EntrantRecord +0x08..+0x47 with it; 2395 call sites | (RandomId *o): o[0]=1, zero o+8..o+0x27, then fills o+0x28 and o+0x30 with a 64-bit random id from the global MT19937 0x146108c00 (624 words, lazily seeded from QueryPerformanceCounter ms * 0x5d5e6971), o+0x38 = 0. Used as a temporary player/user id object (Sess_Get_PlayerVehicleIndex, Game_OnMessageDriverPlayerChanged, season UI, TT shutdown). | #589 proposed the name Ne_RandomId_Ctor"
+ },
+ "signature": {
+  "id": "core.random_id_ctor",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 30 48 89 CE C6 01 01",
+  "match": "0x1441207d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1441207d0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Make_RandomIdBlock"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-26",
+   "verifier": "ce-verify-fa",
+   "kind": "func",
+   "item": "Ne_Make_RandomIdBlock",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1441207d0.c;decomp:re/decomp/1431146d0.c;xref:0x1400f994a,0x1400f9b1f,0x1400fa3ba,0x1400fa5d1,0x1400fb2e3",
+   "notes": "V1043 Relative to its argument: byte +0 = 1, (R1,R1) at +8/+0x10, (R2,R2) at +0x18/+0x20, (R3,R3) at +0x28/+0x30, u16 0 at +0x38; +1..+7 untouched. Each R is a fresh 64-bit value from two 32-bit draws of the MT state 0x146108c00 (0x143929b90), so each pair XORs to 0 and the identity compare sees kind 1 with zero ids. Called with record+8 this spans record +0x08..+0x41 inside the +0x08..+0x47 block. Generic: 2291 rel32 callers."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x1441207d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1441207d0.c;xref:0x1400f9949",
+   "notes": "V3648 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "base.hpp"
-#include "per_package.hpp"
-#include "../../career_ops/fuel_logic.hpp"
+#include "core/apply/tracks/base.hpp"
+#include "core/apply/tracks/per_package.hpp"
+#include "core/career/ops/fuel_logic.hpp"
 
 #include <cstdint>
 #include <cstdio>
@@ -19,7 +19,7 @@
 
 namespace swofty_core::apply::tracks {
 
-namespace fuel = ::career_ops::fuel;
+namespace fuel = ::career::ops::fuel;
 
 struct FuelWrite {
     uintptr_t object = 0;
@@ -135,7 +135,7 @@ inline std::vector<PitWrite> plan_box_pit(const Base &base, const Entries &entri
             const fuel::Track *ft = fuel::find(*s, t->code);
             float now = 0;
             if (!ft || !ft->object || !read(ft->object + kPitSpeed, now) || !(now > 0 && now <= 400))
-                continue;   // not a pit speed limit as the game's tracks hold it (60..80): left alone
+                continue; // not a pit speed limit as the game's tracks hold it (60..80): left alone
             bool seen = false;
             for (auto &w : out)
                 seen = seen || w.object == ft->object;
@@ -160,7 +160,7 @@ constexpr uintptr_t kListBegin = 0x10, kListEnd = 0x18;
 constexpr size_t kLapsMax = 8;
 
 struct LapsWrite {
-    uintptr_t at = 0;   // the int32 in the number_of_laps list
+    uintptr_t at = 0; // the int32 in the number_of_laps list
     std::string track, entry;
     int32_t before = 0, after = 0;
 };
@@ -192,7 +192,7 @@ inline std::vector<LapsWrite> plan_box_laps(const Base &base, const Entries &ent
                 continue;
             int32_t race = 0;
             if (!read_int(begin, race) || race < 1 || race > 999)
-                continue;   // not a lap count as the game's tracks hold it: left alone
+                continue; // not a lap count as the game's tracks hold it: left alone
             for (uintptr_t at = begin; at < end; at += 4) {
                 int32_t now = 0;
                 if (!read_int(at, now) || now != race || now == *e.laps || seen(at))

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_PlayerCustomInputProvider_BindToDevices",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1444338d0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/1444338d0.c;xref:0x142a5b723,0x142a5f0af,0x142a60573,0x142a66a8a",
+  "notes": "cxx=NePlayerCustomInputProvider::bindToDevices; log channel INPUT: 'NePlayerCustomInputProvider::bindToDevices - devices=%d'"
+ },
+ "signature": {
+  "id": "core.player_custom_input_provider_bind_to_devices",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x1444338d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1444338d0",
+  "kind": "func_start",
+  "names": [
+   "Ne_PlayerCustomInputProvider_BindToDevices"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb4-verify-b",
+   "kind": "func",
+   "item": "Ne_PlayerCustomInputProvider_BindToDevices",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1444338d0.c;xref:0x1444338d0",
+   "notes": "V2213 log devices=count of 56-byte entries, then per-device log, rebuilds maps"
+  }
+ ],
+ "proofs": []
+}

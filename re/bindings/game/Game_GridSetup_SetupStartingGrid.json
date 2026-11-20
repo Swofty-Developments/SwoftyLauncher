@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_GridSetup_SetupStartingGrid",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141210160",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141210160.c;xref:0x140b9cd89,0x14568be90",
+  "notes": "Log channel GRID: 'GridSetupComponent::setupStartingGrid()' | '%s' L2 2026-11-14 (engine-re round 2): decomp read; 2 reference(s) (0x140b9cd89, 0x14568be90); the body itself references 'GRID' / 'GridSetupComponent::setupStartingGrid()' / 'setupStartingGrid' / 'Pre-sort grid places'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.grid_setup_setup_starting_grid",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 B8 A8 2F 00 00",
+  "match": "0x141210160",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141210160",
+  "kind": "func_start",
+  "names": [
+   "Game_GridSetup_SetupStartingGrid"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x141210160",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141210160.c;xref:0x140b9cd89",
+   "notes": "V4687 name and quoted log strings/pretty-function present in body"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x141210160",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x141210160-0x141210602;xref:0x140b9cd89,0x14568be90",
+   "notes": "V10475 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Refs call 0x140b9cd89 (from 0x140b9cd70) + abs64 0x14568be90. GridSetupComponent::setupStartingGrid(), Pre-sort/Post-sort grid places, Grid setup complete; calls DriverBasedGrid 0x141210610 (0x1412103e9)."
+  }
+ ],
+ "proofs": []
+}

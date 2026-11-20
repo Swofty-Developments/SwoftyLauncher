@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleProgressManager_SetVehicleAuthorityId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14323cd00",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=VehicleProgressManager::setVehicleAuthorityId; log channel NETWORK-PROGRESS: 'NEbool network::VehicleProgressManager::setVehicleAuthorityId(racing::vehicleInstance::Id, neon::NeNetConnectionID) | %s: vehicle(%d) authority id changed from (%d) to (%d).'"
+ },
+ "signature": {
+  "id": "game.vehicle_progress_manager_set_vehicle_authority_id",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 30 80 FA 1A",
+  "match": "0x14323cd00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14323cd00",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleProgressManager_SetVehicleAuthorityId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x14323cd00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14323cd00.c;xref:0x14323bda7",
+   "notes": "V6045 name and log/cxx claim match body"
+  }
+ ],
+ "proofs": []
+}

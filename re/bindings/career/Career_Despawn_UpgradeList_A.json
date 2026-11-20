@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Despawn_UpgradeList_A",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1423deea0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Despawn_UpgradeList_A(void * self)",
+  "evidence": "decomp:re/decomp/1423deea0.c;xref:0x145786ba8",
+  "notes": "myteam-g1: Despawns the despawn_upgrade_list widget set (no extra arg)."
+ },
+ "signature": {
+  "id": "career.despawn_upgrade_list_a",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 40 48 89 CE 80 B9 F4 0B 00 00 00",
+  "match": "0x1423deea0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423deea0",
+  "kind": "func_start",
+  "names": [
+   "Career_Despawn_UpgradeList_A"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1423deea0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1423deea0.c",
+   "notes": "V10187 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

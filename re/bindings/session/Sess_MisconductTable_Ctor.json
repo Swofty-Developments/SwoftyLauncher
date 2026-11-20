@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_MisconductTable_Ctor",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14359b3d0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14359b3d0.c;xref:0x14358a4e5,0x14358a546",
+  "notes": "(obj, owner, alloc, ctx): vtable 0x14584c010, zeroes tables, creates two allocator-backed lists (vtbl 0x14584b480) stored in globals 0x145f96238 and 0x145f962f0. Caller: Sess_MisconductManager_Ctor."
+ },
+ "signature": {
+  "id": "session.misconduct_table_ctor",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 C5 F8 29 74 24 20 4C 89 C7 48 89",
+  "match": "0x14359b3d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14359b3d0",
+  "kind": "func_start",
+  "names": [
+   "Sess_MisconductTable_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x14359b3d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14359b3d0.c;xref:0x14358a4e5,0x14358a546",
+   "notes": "V3799 vtable 14584c010 at +0, two allocator-backed lists with vtbl 14584b480 stored into globals 145f96238 and 145f962f0."
+  }
+ ],
+ "proofs": []
+}

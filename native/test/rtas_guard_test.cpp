@@ -1,9 +1,9 @@
-#include "rtas_guard_logic.hpp"
+#include "core/render/rtas_guard_logic.hpp"
 
 #include <cstdio>
 #include <string>
 
-namespace rg = runtime::rtas_guard;
+namespace rg = render::rtas_guard;
 
 int fails;
 
@@ -159,8 +159,7 @@ int main()
         build(0xb, 1);
     build(0xa, 2);
     auto newest = lists.newest_lists_first();
-    expect(newest.size() == 2 && newest[0].list == 0xa && newest[1].list == 0xb,
-           "the list with the newest build comes first");
+    expect(newest.size() == 2 && newest[0].list == 0xa && newest[1].list == 0xb, "the list with the newest build comes first");
     expect(newest[0].builds.size() == 2 && newest[0].builds.front().seq == 0,
            "a quiet list keeps its builds however many a busy list records");
     expect(newest[1].builds.size() == 3 && newest[1].total == 5, "each list keeps its own newest builds");
@@ -178,7 +177,8 @@ int main()
     build(0xc, 2);
     build(0xc, 2);
     section = rg::recent_section(lists.newest_lists_first(), lists.pushed());
-    expect(section.find("build 8 frame 2 #1+ bottom-level") != std::string::npos && section.find("build 10 frame 2 #3+ bottom-level") != std::string::npos,
+    expect(section.find("build 8 frame 2 #1+ bottom-level") != std::string::npos &&
+               section.find("build 10 frame 2 #3+ bottom-level") != std::string::npos,
            "a place in a list's oldest kept frame may miss builds it no longer keeps");
 
     expect(rg::recent_section(lists.newest_lists_first(), lists.pushed(), 1).find("1 more command list(s) not shown") !=
@@ -207,21 +207,24 @@ int main()
     expect(stopped.find("  the GPU stopped on list 0xd's build #4 of 4: build 104 frame 8 bottom-level into 0x92c4") == 0 &&
                stopped.find("v10062/") != std::string::npos,
            "the stopped build is the list's newest frame's build at the DRED's place");
-    expect(rg::stopped_lines(hung_lists, std::vector<Stop>{{0xd, 4, 8}}).find("newest kept frame 8 has 4 build(s), so which build that is is not known") !=
-               std::string::npos,
+    expect(rg::stopped_lines(hung_lists, std::vector<Stop>{{0xd, 4, 8}})
+                   .find("newest kept frame 8 has 4 build(s), so which build that is is not known") != std::string::npos,
            "a newest frame with another build count than the DRED names no build");
-    expect(rg::stopped_lines(hung_lists, std::vector<Stop>{{0xf, 1, 1}}).find("no build of that list was kept") != std::string::npos,
+    expect(rg::stopped_lines(hung_lists, std::vector<Stop>{{0xf, 1, 1}}).find("no build of that list was kept") !=
+               std::string::npos,
            "a list with no kept builds names no build");
     rg::ByList<3, 2> few;
     for (int i = 0; i < 5; i++)
         on(few, 0xd, 8, 7);
-    expect(rg::stopped_lines(few.newest_lists_first(), std::vector<Stop>{{0xd, 3, 3}}).find("has 3+ build(s)") != std::string::npos,
+    expect(rg::stopped_lines(few.newest_lists_first(), std::vector<Stop>{{0xd, 3, 3}}).find("has 3+ build(s)") !=
+               std::string::npos,
            "a frame cut by the ring names no build");
     std::string led = rg::recent_section(hung_lists, hung.pushed(), 12, stopped);
     expect(led.find("in that frame\n  the GPU stopped on list 0xd's build #4 of 4:") != std::string::npos &&
                led.find("the GPU stopped") < led.find("    list 0xe"),
            "the stopped build leads the section");
-    expect(rg::recent_section(decltype(hung_lists){}, 0, 12, stopped) == "\n" + stopped, "the stopped line stays without kept lists");
+    expect(rg::recent_section(decltype(hung_lists){}, 0, 12, stopped) == "\n" + stopped,
+           "the stopped line stays without kept lists");
 
     rg::Entry top;
     top.top = true;

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkAttributes_FillAttribs",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14407ddb0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name fillAttribs (class from the log channel); log channel NETWORK-ATTRIBUTES: 'fillAttribs(%d attrib defs)'"
+ },
+ "signature": {
+  "id": "game.network_attributes_fill_attribs",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 4C 89 C6 48 89 D7 48 89 CB 48 8B 42 38",
+  "match": "0x14407ddb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14407ddb0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkAttributes_FillAttribs"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x14407ddb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14407ddb0.c",
+   "notes": "V6511 size=382; strings, callees and callers match claim (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

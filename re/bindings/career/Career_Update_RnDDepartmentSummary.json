@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Update_RnDDepartmentSummary",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c73b80",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *panel)",
+  "evidence": "decomp:re/decomp/141c73b80.c;xref:0x141c733c0;xref:0x141c76a5a",
+  "notes": "myteam-g1: R&D department_summary panel with RP icons and lng_rnd_dept_%s; uses the enabled-upgrades, RP wallet and team modifiers getters."
+ },
+ "signature": {
+  "id": "career.update_rn_ddepartment_summary",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 08 32 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 F8 29 B4 24 F0 31 00 00 48 83 B9 E0 02 00 00 00",
+  "match": "0x141c73b80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c73b80",
+  "kind": "func_start",
+  "names": [
+   "Career_Update_RnDDepartmentSummary"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141c73b80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c73b80.c;xref:0x141c733c0;xref:0x141c76a5a",
+   "notes": "V9988 Department summary panel with RP icons, rows, lng_rnd_dept_%s, sim upgrade icons."
+  }
+ ],
+ "proofs": []
+}

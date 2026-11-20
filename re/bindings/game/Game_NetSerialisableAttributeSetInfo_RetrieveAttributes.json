@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetSerialisableAttributeSetInfo_RetrieveAttributes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143124fb0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=NetSerialisableAttributeSetInfo::retrieveAttributes; log channel NETWORK-ENTRANTS: 'void network::NetSerialisableAttributeSetInfo::retrieveAttributes(neon::NeIAllocPool *, const game::AttributeSet &) | %s: Loaded net info, with %u elements.'"
+ },
+ "signature": {
+  "id": "game.net_serialisable_attribute_set_info_retrieve_attributes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 C5 78 29 94 24 D0 00 00 00 C5 78 29 8C 24 C0 00 00 00 C5 78 29 84 24 B0 00 00 00 C5 F8 29 BC 24 A0 00 00 00 C5 F8 29 B4 24 90 00 00 00 4D 89 C6 48 89 D5",
+  "match": "0x143124fb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143124fb0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetSerialisableAttributeSetInfo_RetrieveAttributes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143124fb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143124fb0.c;xref:0x143124adb",
+   "notes": "V5848 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

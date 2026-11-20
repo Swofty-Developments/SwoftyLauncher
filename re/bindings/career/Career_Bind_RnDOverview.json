@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Bind_RnDOverview",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422cdf70",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Bind_RnDOverview(void * self,int64_t *a2)",
+  "evidence": "decomp:re/decomp/1422cdf70.c;xref:0x1422c1511;xref:0x1422c1641",
+  "notes": "myteam-g1: Binds the rnd_overview widget."
+ },
+ "signature": {
+  "id": "career.bind_rn_doverview",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 48 48 89 CE 48 8B 02 48 8D 50 09 48 85 C0 48 8D 0D ?? ?? ?? ?? 48 0F 45 CA 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 85 C0 74 07 48 83 C4 48 5F 5E C3 48 8B B6 20 06 00 00",
+  "match": "0x1422cdf70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422cdf70",
+  "kind": "func_start",
+  "names": [
+   "Career_Bind_RnDOverview"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1422cdf70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422cdf70.c;xref:0x1422c1511",
+   "notes": "V10087 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

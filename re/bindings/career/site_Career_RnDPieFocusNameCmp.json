@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDPieFocusNameCmp",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f4a9e6",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141f4a9c0.c;xref:0x141f4a9e6;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v070--the-five-sector-development-potential-pie-folded-in;doc:addons/rnd-tyres-thermal/native/HOOKS.md#4-the-tyres-tile-opens-durability-flag-pie_tyres_open-default-on-install-time",
+  "notes": "class-B department_focused handler (R&D > Performance): mov rcx,rbx before the first strcmp (aero); rbx = data chars, rsi = this, rdi = aero literal; the only entry to the aero/chassis/maintenance/engine compare chain that ends in the g_Career_RnDOverviewSelectedDept store"
+ },
+ "signature": {
+  "id": "career.rnd_pie_focus_name_cmp",
+  "section": ".xtls",
+  "pattern": "48 8B 02 48 8D 48 09 48 85 C0 48 8D 1D ?? ?? ?? ?? 48 0F 45 D9 48 8D 3D ?? ?? ?? ?? 48 89 D9 48 89 FA",
+  "match": "0x141f4a9ca",
+  "anchor": "0x1c",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f4a9e6",
+  "kind": "mid",
+  "expect": "48 89 D9 48 89 FA",
+  "names": [
+   "site_Career_RnDPieFocusNameCmp"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-c",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_fifth_pie.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-2",
+   "kind": "global",
+   "item": "site_Career_RnDPieFocusNameCmp",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f4a9c0.c;xref:0x141f4a9c7,0x141f4a9ca,0x141f4a9db,0x141f4a9df,0x141f4a9e6,0x141f4a9ec,0x141f4aa35,0x141f4aa49,0x141f4ac57,0x141f4ad54,0x141f4a958",
+   "notes": "V0114 window mov rcx,rbx; mov rdx,rdi (6B) before strcmp(aero); rbx = [rdx] NeStr chars or empty, rsi = this (rcx), rdi = aero; fn entered from the department_focused (djb2 0x3aae34e1) dispatcher jmp @0x141f4ad54 and call @0x141f4a958; only path into the chain is the fn entry (0x1414bddf6 jcc lands mid-insn, junk); chain ends in the store @0x141f4aa49"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2_AcquireBackbuffer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439ad480",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439ad480.c;xref:0x1439ad194,0x143b7ceed",
+  "notes": "Acquires the next swapchain image: submits pending cmd lists via 0x1439dc660, calls swapchain vcall +0x40 (acquire), then vendor-specific debug marker by GPU vendor id at renderer+0x880 (0x8086 Intel, 0x10de NVIDIA, 0x1002 AMD). Returns error code or 0. Called by 0x143b7f890 and Ne_Gfx2Renderer_RenderFrame. Addon: renderer+0x880 holds the PCI vendor id."
+ },
+ "signature": {
+  "id": "render.gfx2_acquire_backbuffer",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 4C 89 C7 48 89 D3 48 89 CE 48 8B 42 18",
+  "match": "0x1439ad480",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439ad480",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2_AcquireBackbuffer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x1439ad480",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439ad480.c;xref:0x1439ad194",
+   "notes": "V7737 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

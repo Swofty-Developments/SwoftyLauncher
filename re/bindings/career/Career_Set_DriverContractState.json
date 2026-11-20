@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Career_Set_DriverContractState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d9de30",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Set_DriverContractState(void *contract, uint16_t day, uint8_t state, uint32_t value)",
+  "evidence": "decomp:re/decomp/140d9de30.c;decomp:re/decomp/140d766b0.c;xref:0x140d777a8,0x140d77b2a,0x140d90c9e,0x140d95eaa;doc:addons/career-editor/protocol/drivers.md#op-driversswap",
+  "notes": "when the contract's active byte (+0x2c) is set: stores day (+0x10), state (+0x12) and value (+0x14), posts the contract message (vtable 0x145696e60) with the contract fields, and appends a history entry. The Driver Career replace path 0x140d766b0 calls it with state 3 on the outgoing driver's contract (found in [manager+0x350]+0x298 list by contract+0x50 == driver), day = clock/1440, value = vtable +0x108 of the entity's component registry, before posting his move to team 0x3fff with reason 1; Career_Sign_DriverToTeam calls it 4x  it clears the guard byte +0x2c, so a second call on the same contract does nothing"
+ },
+ "signature": {
+  "id": "career.set_driver_contract_state",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 98 00 00 00 80 79 2C 00",
+  "match": "0x140d9de30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d9de30",
+  "kind": "func_start",
+  "names": [
+   "Career_Set_DriverContractState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-drivers",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/drivers.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-8",
+   "kind": "func",
+   "item": "Career_Set_DriverContractState",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d9de30.c;decomp:re/decomp/140d766b0.c;decomp:re/decomp/140d8fcb0.c;xref:0x140d9de3c,0x140d9de49,0x140d9de4d,0x140d9de51,0x140d9de68,0x140d7771a,0x140d77736,0x140d777a2,0x140d777a5,0x140d777a8,0x140d77b29;sig:career.set_driver_contract_state",
+   "notes": "V0881 sigcheck OK. Proto right: rcx contract, dx day (u16 store 0x140d9de49), r8b state (0x140d9de4d), r9d value (0x140d9de51), no return. Guard byte +0x2c; message vt 0x145696e60 is MessageDriverContractChanged; history entries are 0x2c-byte copies of contract +0..+0x2c into the vector {allocator +0x30, begin +0x38, end +0x40, cap +0x48}. Signing call 0x140d777a8: contract = slot+8 of [comp+0x350]+0x298 matched on +0x50, day = (clock>>5)*0x5b05b06>>32, r8b = 3, r9d = eax of [comp+0x278]+0x1030 vt+0x108 (0x140d77736), then the move post with new team 0x3fff0000 and reason 1; Career_Sign_DriverToTeam has 4 calls (2 more in 0x140d94140, 0x140d958b0). Omission worth adding: the function clears the guard (+0x2c = 0) after the update, so a second call on the same contract does nothing until something sets it again"
+  }
+ ],
+ "proofs": []
+}

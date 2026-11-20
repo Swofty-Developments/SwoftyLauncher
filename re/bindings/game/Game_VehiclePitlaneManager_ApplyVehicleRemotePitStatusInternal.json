@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_VehiclePitlaneManager_ApplyVehicleRemotePitStatusInternal",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143252aa0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143252aa0.c;xref:0x14305f98a",
+  "notes": "cxx=VehiclePitlaneManager::applyVehicleRemotePitStatusInternal; log channel NETWORK: 'VehiclePitlaneManager::applyVehicleRemotePitStatusInternal - authority driving out of garage, locally in garage, triggering drive out, vehicle: %d, local state ' L2 2026-11-14 (engine-re round 2): decomp read; 1 reference(s) (0x14305f98a); the body itself references 'LOCAL' / 'remote' / 'NETWORK' / 'OLI/Pitlane: updated Vehicle %s %s from %s'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vehicle_pitlane_manager_apply_vehicle_remote_pit_status_internal",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 C5 79 29 84 24 10 01 00 00",
+  "match": "0x143252aa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143252aa0",
+  "kind": "func_start",
+  "names": [
+   "Game_VehiclePitlaneManager_ApplyVehicleRemotePitStatusInternal"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x143252aa0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143252aa0.c;xref:0x14305f98b",
+   "notes": "V5767 name and description match body; log string/pretty name present"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x143252aa0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x143252aa0-0x1432547b3;xref:0x14305f98a",
+   "notes": "V10497 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only call 0x14305f98a. applyVehicleRemotePitStatusInternal logs (authority driving out, teleporting, BeingPushedIntoGarage, LeavingPitLane), OLI/Pitlane updated log; calls 0x1434bff40, 0x1434d16a0, 0x1434d1ab0."
+  }
+ ],
+ "proofs": []
+}

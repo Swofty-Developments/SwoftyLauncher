@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_Format_LocalisedTextToVariant",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1407b1190",
+  "level": "L1",
+  "subsystem": "vm",
+  "proto": "uint64_t Format(void **fmt, void *key, void *args, void *out_variant)",
+  "evidence": "decomp:re/decomp/1407b1190.c;xref:0x1407a70b4;xref:0x1414b1294;xref:0x1414fd61d",
+  "notes": "myteam-g2: Builds a localised string from key + args (Game_VmValue_AssignVariant, interned string) and stores it into a VM variant; helper for icon/text bindings (facility, workforce cap, renown)."
+ },
+ "signature": {
+  "id": "vm.format_localised_text_to_variant",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC A0 00 00 00 4C 89 CF",
+  "match": "0x1407b1190",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407b1190",
+  "kind": "func_start",
+  "names": [
+   "Vm_Format_LocalisedTextToVariant"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x1407b1190",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1407b1190.c",
+   "notes": "V9477 Formats a localised string from key+args via FUN_140972140/FUN_140234f30 with optional translator vcall (+0x18); the VM-variant/Game_VmValue_AssignVariant part is not visible."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "site_Game_TelemetryLaps_NewLapClosed",
+ "table": "globals",
+ "author": "load-game",
+ "row": {
+  "addr": "0x1437b0ef8",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:own disasm 0x1437b0aa0-0x1437b0f0a;xref:0x1437b0d74,0x1437b0e44,0x1437b0e62,0x1437b0eb7,0x1437b0c0c,0x1437b0f05",
+  "notes": "cmp byte [rdi+0x18], 0 in Game_TelemetryLaps_OnNewLapRecorded (rsi telemetry laps, rdi the vehicle_newlap_recorded message, rbx telemetry lap slot 0). Every path past the car match reaches it (the ranking's exits at 0x1437b0d74..0x1437b0dfa, 0x1437b0e44, 0x1437b0e62, 0x1437b0eb7 and the fall-through at 0x1437b0ef2), after Game_TelemetryLaps_ApplyLapValidity_Thunk ran at 0x1437b0c0c and the lap time was stored, and before the lap start body (0x1437b0f05 with msg+0x18 set) copies slot 0 into slot 1 and clears it. Here bit 0 of [rbx+0x2c0] is the game's not-clean flag of the lap just closed and [rbx+0x268] its time (f32 s), with msg+0x10 the car and msg+0x14 the lap index. Steam 1.0.145 0x1437b3488 and EA 1.0.145 0x1437a0738 (restored dump): the containing function's 267 instructions are the same on both."
+ },
+ "signature": {
+  "id": "game.telemetry_laps_new_lap_closed",
+  "section": ".xtls",
+  "pattern": "0F 85 ?? ?? ?? ?? 80 7F 18 00 74 0C",
+  "match": "0x1437b0ef2",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1437b0ef8",
+  "kind": "mid",
+  "expect": "80 7F 18 00 74 0C",
+  "names": [
+   "site_Game_TelemetryLaps_NewLapClosed"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-18",
+    "by": "load-game",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "load-game",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1437b0ef2",
+    "target": "0x1437b0ef8"
+   },
+   "sigcheck": "passed",
+   "digest": "f74fd4febe032b6764cfd8915478a742630ece39b9b0aa82da94843f4797df52"
+  }
+ ]
+}

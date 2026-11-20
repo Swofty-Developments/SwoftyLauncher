@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqFacilities_UpdateCameraAndPlayerControl",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140df0450",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *facilities, char force)",
+  "evidence": "decomp:re/decomp/140df0450.c;xref:0x1456959e0",
+  "notes": "myteam-g1: Per-tick/enter update of the TeamHq facilities scene: iterates the facility camera entries (+0x2b8, +0x3d0), cycles cameras via Career_TeamHqFacilities_CameraCycle* helpers and applies the facilities_player_control flag."
+ },
+ "signature": {
+  "id": "career.team_hq_facilities_update_camera_and_player_control",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 0B 00 00 C5 78 29 9C 24 40 0B 00 00",
+  "match": "0x140df0450",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140df0450",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqFacilities_UpdateCameraAndPlayerControl"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140df0450",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140df0450.c;str:\"facilities_player_control\"",
+   "notes": "V9560 Iterates +0x2b8 and +0x3d0 camera entries; uses facilities_player_control."
+  }
+ ],
+ "proofs": []
+}

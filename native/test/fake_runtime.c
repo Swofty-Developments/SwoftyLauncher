@@ -415,15 +415,12 @@ typedef struct {
     LngTable *head;
 } LangSet;
 
-static uint32_t be(uint32_t v)
-{
-    return v >> 24 | (v >> 8 & 0xff00) | (v << 8 & 0xff0000) | v << 24;
-}
+static uint32_t be(uint32_t v) { return v >> 24 | (v >> 8 & 0xff00) | (v << 8 & 0xff0000) | v << 24; }
 
 static uint32_t rd32(MemStream *s)
 {
     uint32_t v = 0;
-    ((int64_t(*)(MemStream *, void *, uint32_t))s->vt[6])(s, &v, 4);
+    ((int64_t (*)(MemStream *, void *, uint32_t))s->vt[6])(s, &v, 4);
     return be(v);
 }
 
@@ -432,16 +429,16 @@ static int parse_failures;
 int32_t loc_add_impl(LangSet *set, MemStream *s, uint32_t priority, uint8_t flag)
 {
     (void)flag;
-    ((int64_t(*)(MemStream *))s->vt[13])(s);
+    ((int64_t (*)(MemStream *))s->vt[13])(s);
     LngTable *t = calloc(1, sizeof *t);
     char tag[5] = {0};
-#define TAG(want)                                                                                                     \
-    ((int64_t(*)(MemStream *, void *, uint32_t))s->vt[6])(s, tag, 4);                                               \
-    if (memcmp(tag, want, 4)) {                                                                                       \
-        printf("      fake LNGT parser: expected %s, got '%.4s'\n", want, tag);                                       \
-        parse_failures++;                                                                                             \
-        free(t);                                                                                                      \
-        return 0x4f;                                                                                                  \
+#define TAG(want)                                                                                                                \
+    ((int64_t (*)(MemStream *, void *, uint32_t))s->vt[6])(s, tag, 4);                                                           \
+    if (memcmp(tag, want, 4)) {                                                                                                  \
+        printf("      fake LNGT parser: expected %s, got '%.4s'\n", want, tag);                                                  \
+        parse_failures++;                                                                                                        \
+        free(t);                                                                                                                 \
+        return 0x4f;                                                                                                             \
     }
     TAG("LNGT");
     rd32(s);
@@ -464,11 +461,11 @@ int32_t loc_add_impl(LangSet *set, MemStream *s, uint32_t priority, uint8_t flag
     TAG("SIDB");
     uint32_t nb = rd32(s);
     t->sidb = calloc(nb + 1, 1);
-    ((int64_t(*)(MemStream *, void *, uint32_t))s->vt[6])(s, t->sidb, nb);
+    ((int64_t (*)(MemStream *, void *, uint32_t))s->vt[6])(s, t->sidb, nb);
     TAG("LNGB");
     uint32_t nl = rd32(s);
     t->lngb = calloc(nl + 1, 1);
-    ((int64_t(*)(MemStream *, void *, uint32_t))s->vt[6])(s, t->lngb, nl);
+    ((int64_t (*)(MemStream *, void *, uint32_t))s->vt[6])(s, t->lngb, nl);
 #undef TAG
     t->priority = priority;
     t->next = set->head;
@@ -744,7 +741,8 @@ void expand_impl(void *loader, uint64_t *h, void *out)
     uint8_t *m = g_fake_manifest;
     if (((uint8_t *)h)[0xc] & 4) {
         const uint64_t *b = (const uint64_t *)h[3], *e = (const uint64_t *)h[4];
-        printf("      fake expand: flag-4 handle 0x%016llx -> %d ERP(s) from its own list\n", (unsigned long long)h[0], (int)(e - b));
+        printf("      fake expand: flag-4 handle 0x%016llx -> %d ERP(s) from its own list\n", (unsigned long long)h[0],
+               (int)(e - b));
         for (; b != e; b++)
             process_erp(m, *b);
         return;
@@ -810,7 +808,8 @@ static void early_wait_mode(void)
             DispatchMessageW(&m);
         Sleep(5);
     }
-    expect(GetModuleHandleW(L"swofty_core.dll") != NULL, "earlywait: the watcher thread started loading mods (main window visible)");
+    expect(GetModuleHandleW(L"swofty_core.dll") != NULL,
+           "earlywait: the watcher thread started loading mods (main window visible)");
     char done[8] = {0};
     GetEnvironmentVariableA("SWOFTY_SLOW_DONE", done, sizeof done);
     expect(!done[0], "earlywait: the slow mod is still initialising when the game reaches CreateMutexW");
@@ -819,7 +818,17 @@ static void early_wait_mode(void)
     DWORD waited = GetTickCount() - t1;
     GetEnvironmentVariableA("SWOFTY_SLOW_DONE", done, sizeof done);
     printf("      CreateMutexW returned after %lu ms, slow mod done='%s'\n", (unsigned long)waited, done);
-    expect(mx && !strcmp(done, "1"), "earlywait: CreateMutexW('Codemasters F1 25') returned only after the other thread's load finished");
+    expect(mx && !strcmp(done, "1"),
+           "earlywait: CreateMutexW('Codemasters F1 25') returned only after the other thread's load finished");
+    char tid[16] = {0};
+    GetEnvironmentVariableA("SWOFTY_SLOW_THREAD", tid, sizeof tid);
+    DWORD loader = strtoul(tid, NULL, 10);
+    HANDLE th = loader && loader != GetCurrentThreadId() ? OpenThread(SYNCHRONIZE, FALSE, loader) : NULL;
+    DWORD exited = th ? WaitForSingleObject(th, 10000) : WAIT_OBJECT_0;
+    if (th)
+        CloseHandle(th);
+    expect(loader && loader != GetCurrentThreadId() && exited == WAIT_OBJECT_0,
+           "earlywait: the loading thread finishes the window stage and exits before the game does");
     printf("%s (%d failure(s))\n", fails ? "FAILED" : "ALL PASSED", fails);
     ExitProcess(fails != 0);
 }
@@ -852,102 +861,99 @@ void *fake_alias_ref(uint64_t hash);
 static uint8_t fake_alias_obj[0x60];
 void *g_fake_alias = fake_alias_obj;
 
-__asm__(
-    ".section .xtls,\"xr\"\n"
-    ".globl fake_gdb_load\nfake_gdb_load:\n"
-    ".byte 0x41,0x57,0x41,0x56,0x41,0x55,0x41,0x54,0x56,0x57,0x55,0x53\n"
-    ".byte 0x48,0x81,0xEC,0x28,0x02,0x00,0x00,0x48,0x89,0xD7,0x49,0x89,0xCC\n"
-    "mov %r12, %rcx\nmov %rdi, %rdx\ncall gdb_load_impl\nadd $0x228, %rsp\n"
-    "pop %rbx\npop %rbp\npop %rdi\npop %rsi\npop %r12\npop %r13\npop %r14\npop %r15\nret\n"
+__asm__(".section .xtls,\"xr\"\n"
+        ".globl fake_gdb_load\nfake_gdb_load:\n"
+        ".byte 0x41,0x57,0x41,0x56,0x41,0x55,0x41,0x54,0x56,0x57,0x55,0x53\n"
+        ".byte 0x48,0x81,0xEC,0x28,0x02,0x00,0x00,0x48,0x89,0xD7,0x49,0x89,0xCC\n"
+        "mov %r12, %rcx\nmov %rdi, %rdx\ncall gdb_load_impl\nadd $0x228, %rsp\n"
+        "pop %rbx\npop %rbp\npop %rdi\npop %rsi\npop %r12\npop %r13\npop %r14\npop %r15\nret\n"
 
-    ".globl fake_gdb_insert\nfake_gdb_insert:\n"
-    ".byte 0x41,0x57,0x41,0x56,0x41,0x55,0x41,0x54,0x56,0x57,0x55,0x53\n"
-    ".byte 0x48,0x81,0xEC,0xD8,0x00,0x00,0x00,0xC5,0xF8,0x29,0xB4,0x24,0xC0,0x00,0x00,0x00\n"
-    ".byte 0x4C,0x89,0xCE,0x44,0x88,0x44,0x24,0x37\n"
-    "call gdb_insert_impl\nvmovaps 0xc0(%rsp), %xmm6\nadd $0xd8, %rsp\n"
-    "pop %rbx\npop %rbp\npop %rdi\npop %rsi\npop %r12\npop %r13\npop %r14\npop %r15\nret\n"
+        ".globl fake_gdb_insert\nfake_gdb_insert:\n"
+        ".byte 0x41,0x57,0x41,0x56,0x41,0x55,0x41,0x54,0x56,0x57,0x55,0x53\n"
+        ".byte 0x48,0x81,0xEC,0xD8,0x00,0x00,0x00,0xC5,0xF8,0x29,0xB4,0x24,0xC0,0x00,0x00,0x00\n"
+        ".byte 0x4C,0x89,0xCE,0x44,0x88,0x44,0x24,0x37\n"
+        "call gdb_insert_impl\nvmovaps 0xc0(%rsp), %xmm6\nadd $0xd8, %rsp\n"
+        "pop %rbx\npop %rbp\npop %rdi\npop %rsi\npop %r12\npop %r13\npop %r14\npop %r15\nret\n"
 
-    ".globl fake_gdb_xor_key_ref\nfake_gdb_xor_key_ref:\n"
-    ".byte 0x48,0xB8,0x53,0x57,0x46,0x54,0x58,0x4B,0x45,0x59\n"
-    ".byte 0x4C,0x8D,0x25\n.long k_fake_xor_key-(.+4)\nret\n"
+        ".globl fake_gdb_xor_key_ref\nfake_gdb_xor_key_ref:\n"
+        ".byte 0x48,0xB8,0x53,0x57,0x46,0x54,0x58,0x4B,0x45,0x59\n"
+        ".byte 0x4C,0x8D,0x25\n.long k_fake_xor_key-(.+4)\nret\n"
 
-    ".globl fake_gdb_lookup\nfake_gdb_lookup:\n"
-    ".byte 0x56,0x57,0x55,0x53,0x49,0xB8,0x25,0x23,0x22,0x84,0xE4,0x9C,0xF2,0xCB\n"
-    ".byte 0x48,0x8B,0x15\n.long g_fake_gdb-(.+4)\n.byte 0x44,0x0F,0xB6,0x11\n"
-    "sub $0x28, %rsp\ncall gdb_lookup_impl\nadd $0x28, %rsp\npop %rbx\npop %rbp\npop %rdi\npop %rsi\nret\n"
+        ".globl fake_gdb_lookup\nfake_gdb_lookup:\n"
+        ".byte 0x56,0x57,0x55,0x53,0x49,0xB8,0x25,0x23,0x22,0x84,0xE4,0x9C,0xF2,0xCB\n"
+        ".byte 0x48,0x8B,0x15\n.long g_fake_gdb-(.+4)\n.byte 0x44,0x0F,0xB6,0x11\n"
+        "sub $0x28, %rsp\ncall gdb_lookup_impl\nadd $0x28, %rsp\npop %rbx\npop %rbp\npop %rdi\npop %rsi\nret\n"
 
-    ".globl fake_fs_resolve\nfake_fs_resolve:\n"
-    ".byte 0x41,0x56,0x56,0x57,0x55,0x53,0x48,0x81,0xEC,0x30,0x01,0x00,0x00,0x4C,0x89,0xCF\n"
-    "mov 0x180(%rsp), %rax\nmov %rax, 0x20(%rsp)\nmov 0x188(%rsp), %rax\nmov %rax, 0x28(%rsp)\n"
-    "call fs_resolve_impl\nadd $0x130, %rsp\npop %rbx\npop %rbp\npop %rdi\npop %rsi\npop %r14\nret\n"
+        ".globl fake_fs_resolve\nfake_fs_resolve:\n"
+        ".byte 0x41,0x56,0x56,0x57,0x55,0x53,0x48,0x81,0xEC,0x30,0x01,0x00,0x00,0x4C,0x89,0xCF\n"
+        "mov 0x180(%rsp), %rax\nmov %rax, 0x20(%rsp)\nmov 0x188(%rsp), %rax\nmov %rax, 0x28(%rsp)\n"
+        "call fs_resolve_impl\nadd $0x130, %rsp\npop %rbx\npop %rbp\npop %rdi\npop %rsi\npop %r14\nret\n"
 
-    ".globl fake_loc_load\nfake_loc_load:\n"
-    ".byte 0x41,0x56,0x56,0x57,0x53,0x48,0x81,0xEC,0xA8,0x00,0x00,0x00,0x83,0xFA,0x12,0x0F,0x87\n"
-    ".long 1f-(.+4)\n"
-    ".byte 0x48,0x8D,0x05\n.long fake_memstream_vt-(.+4)\n"
-    ".byte 0x48,0x89,0x44,0x24,0x68,0xC5,0xF8,0x28,0x84,0x24,0x90,0x00,0x00,0x00,0xC5,0xF8,0x11,0x44,0x24,0x70\n"
-    "call loc_load_impl\njmp 2f\n1:\nmov $0xe, %eax\n2:\nadd $0xa8, %rsp\npop %rbx\npop %rdi\npop %rsi\npop %r14\nret\n"
+        ".globl fake_loc_load\nfake_loc_load:\n"
+        ".byte 0x41,0x56,0x56,0x57,0x53,0x48,0x81,0xEC,0xA8,0x00,0x00,0x00,0x83,0xFA,0x12,0x0F,0x87\n"
+        ".long 1f-(.+4)\n"
+        ".byte 0x48,0x8D,0x05\n.long fake_memstream_vt-(.+4)\n"
+        ".byte 0x48,0x89,0x44,0x24,0x68,0xC5,0xF8,0x28,0x84,0x24,0x90,0x00,0x00,0x00,0xC5,0xF8,0x11,0x44,0x24,0x70\n"
+        "call loc_load_impl\njmp 2f\n1:\nmov $0xe, %eax\n2:\nadd $0xa8, %rsp\npop %rbx\npop %rdi\npop %rsi\npop %r14\nret\n"
 
-    ".globl fake_loc_add\nfake_loc_add:\n"
-    ".byte 0x41,0x57,0x41,0x56,0x41,0x54,0x56,0x57,0x55,0x53,0x48,0x83,0xEC,0x30,0x44,0x89,0xCB,0x44,0x89,0xC5\n"
-    "call loc_add_impl\nadd $0x30, %rsp\npop %rbx\npop %rbp\npop %rdi\npop %rsi\npop %r12\npop %r14\npop %r15\nret\n"
+        ".globl fake_loc_add\nfake_loc_add:\n"
+        ".byte 0x41,0x57,0x41,0x56,0x41,0x54,0x56,0x57,0x55,0x53,0x48,0x83,0xEC,0x30,0x44,0x89,0xCB,0x44,0x89,0xC5\n"
+        "call loc_add_impl\nadd $0x30, %rsp\npop %rbx\npop %rbp\npop %rdi\npop %rsi\npop %r12\npop %r14\npop %r15\nret\n"
 
-    ".globl fake_parse_manifest\nfake_parse_manifest:\n"
-    ".byte 0x41,0x57,0x41,0x56,0x41,0x55,0x41,0x54,0x56,0x57,0x55,0x53\n"
-    ".byte 0x48,0x81,0xEC,0xD8,0x00,0x00,0x00,0xC5,0xF8,0x29,0xB4,0x24,0xC0,0x00,0x00,0x00\n"
-    ".byte 0x4C,0x89,0xC7,0x49,0x89,0xD0\n"
-    "mov %rdi, %r8\ncall parse_manifest_impl\nvmovaps 0xc0(%rsp), %xmm6\nadd $0xd8, %rsp\n"
-    "pop %rbx\npop %rbp\npop %rdi\npop %rsi\npop %r12\npop %r13\npop %r14\npop %r15\nret\n"
+        ".globl fake_parse_manifest\nfake_parse_manifest:\n"
+        ".byte 0x41,0x57,0x41,0x56,0x41,0x55,0x41,0x54,0x56,0x57,0x55,0x53\n"
+        ".byte 0x48,0x81,0xEC,0xD8,0x00,0x00,0x00,0xC5,0xF8,0x29,0xB4,0x24,0xC0,0x00,0x00,0x00\n"
+        ".byte 0x4C,0x89,0xC7,0x49,0x89,0xD0\n"
+        "mov %rdi, %r8\ncall parse_manifest_impl\nvmovaps 0xc0(%rsp), %xmm6\nadd $0xd8, %rsp\n"
+        "pop %rbx\npop %rbp\npop %rdi\npop %rsi\npop %r12\npop %r13\npop %r14\npop %r15\nret\n"
 
-    ".globl fake_manifest_global_ref\nfake_manifest_global_ref:\n"
-    ".byte 0x48,0xC7,0x41,0x08,0x04,0x01,0x00,0x00,0x48,0x89,0x79,0x10,0xC6,0x41,0x18,0x00\n"
-    ".byte 0x48,0x8D,0x05\n.long fake_manifest-(.+4)\n.byte 0x48,0x89,0x01\n"
-    ".byte 0x4C,0x8B,0x35\n.long g_fake_manifest-(.+4)\n.byte 0x49,0x8B,0x86,0x08,0x02,0x00,0x00\nret\n"
+        ".globl fake_manifest_global_ref\nfake_manifest_global_ref:\n"
+        ".byte 0x48,0xC7,0x41,0x08,0x04,0x01,0x00,0x00,0x48,0x89,0x79,0x10,0xC6,0x41,0x18,0x00\n"
+        ".byte 0x48,0x8D,0x05\n.long fake_manifest-(.+4)\n.byte 0x48,0x89,0x01\n"
+        ".byte 0x4C,0x8B,0x35\n.long g_fake_manifest-(.+4)\n.byte 0x49,0x8B,0x86,0x08,0x02,0x00,0x00\nret\n"
 
-    ".globl fake_site_fn\nfake_site_fn:\n"
-    "push %r15\npush %r13\npush %rdi\npush %rsi\nsub $0x88, %rsp\n"
-    "mov %rcx, %r13\nmov %rdx, %rdi\nxor %esi, %esi\nmov %r9, 0x80(%rsp)\nmov %r8, %rax\n"
-    "jmp fake_site_at\n"
-    ".org fake_site_fn+0x8f, 0xCC\n"
-    "jmp fake_site_done\n"
-    ".org fake_site_fn+0x100, 0xCC\n"
-    "fake_site_at:\n"
-    ".byte 0x4C,0x8B,0xBC,0x24,0x80,0x00,0x00,0x00,0x84,0xC0,0x74,0x83\n"
-    "fake_site_done:\n"
-    "add $0x88, %rsp\npop %rsi\npop %rdi\npop %r13\npop %r15\nret\n"
+        ".globl fake_site_fn\nfake_site_fn:\n"
+        "push %r15\npush %r13\npush %rdi\npush %rsi\nsub $0x88, %rsp\n"
+        "mov %rcx, %r13\nmov %rdx, %rdi\nxor %esi, %esi\nmov %r9, 0x80(%rsp)\nmov %r8, %rax\n"
+        "jmp fake_site_at\n"
+        ".org fake_site_fn+0x8f, 0xCC\n"
+        "jmp fake_site_done\n"
+        ".org fake_site_fn+0x100, 0xCC\n"
+        "fake_site_at:\n"
+        ".byte 0x4C,0x8B,0xBC,0x24,0x80,0x00,0x00,0x00,0x84,0xC0,0x74,0x83\n"
+        "fake_site_done:\n"
+        "add $0x88, %rsp\npop %rsi\npop %rdi\npop %r13\npop %r15\nret\n"
 
-    ".globl fake_expand\nfake_expand:\n"
-    ".byte 0x41,0x57,0x41,0x56,0x41,0x55,0x41,0x54,0x56,0x57,0x55,0x53,0x48,0x83,0xEC,0x68\n"
-    ".byte 0xC5,0xF8,0x29,0x74,0x24,0x50,0x4D,0x89,0xC5,0x49,0x89,0xD4\n"
-    "call expand_impl\nvmovaps 0x50(%rsp), %xmm6\nadd $0x68, %rsp\n"
-    "pop %rbx\npop %rbp\npop %rdi\npop %rsi\npop %r12\npop %r13\npop %r14\npop %r15\nret\n"
+        ".globl fake_expand\nfake_expand:\n"
+        ".byte 0x41,0x57,0x41,0x56,0x41,0x55,0x41,0x54,0x56,0x57,0x55,0x53,0x48,0x83,0xEC,0x68\n"
+        ".byte 0xC5,0xF8,0x29,0x74,0x24,0x50,0x4D,0x89,0xC5,0x49,0x89,0xD4\n"
+        "call expand_impl\nvmovaps 0x50(%rsp), %xmm6\nadd $0x68, %rsp\n"
+        "pop %rbx\npop %rbp\npop %rdi\npop %rsi\npop %r12\npop %r13\npop %r14\npop %r15\nret\n"
 
-    ".globl fake_release\nfake_release:\n"
-    ".byte 0x41,0x57,0x41,0x56,0x41,0x55,0x41,0x54,0x56,0x57,0x55,0x53,0x48,0x83,0xEC,0x38\n"
-    ".byte 0x4C,0x89,0xC6,0x48,0x89,0xD3,0x48,0x89,0xCF,0x4C,0x8B,0x25\n.long g_fake_manifest-(.+4)\n"
-    "call release_impl\nadd $0x38, %rsp\n"
-    "pop %rbx\npop %rbp\npop %rdi\npop %rsi\npop %r12\npop %r13\npop %r14\npop %r15\nret\n"
+        ".globl fake_release\nfake_release:\n"
+        ".byte 0x41,0x57,0x41,0x56,0x41,0x55,0x41,0x54,0x56,0x57,0x55,0x53,0x48,0x83,0xEC,0x38\n"
+        ".byte 0x4C,0x89,0xC6,0x48,0x89,0xD3,0x48,0x89,0xCF,0x4C,0x8B,0x25\n.long g_fake_manifest-(.+4)\n"
+        "call release_impl\nadd $0x38, %rsp\n"
+        "pop %rbx\npop %rbp\npop %rdi\npop %rsi\npop %r12\npop %r13\npop %r14\npop %r15\nret\n"
 
-    ".globl fake_alias_ref\nfake_alias_ref:\n"
-    ".byte 0x56,0x57,0x55,0x53,0x48,0x83,0xEC,0x28,0x48,0x89,0xC8,0x48,0x8B,0x15\n.long g_fake_alias-(.+4)\n"
-    ".byte 0x48,0x8B,0x4A,0x18,0x48,0x0F,0xAF,0xC8\n"
-    "add $0x28, %rsp\npop %rbx\npop %rbp\npop %rdi\npop %rsi\nret\n"
+        ".globl fake_alias_ref\nfake_alias_ref:\n"
+        ".byte 0x56,0x57,0x55,0x53,0x48,0x83,0xEC,0x28,0x48,0x89,0xC8,0x48,0x8B,0x15\n.long g_fake_alias-(.+4)\n"
+        ".byte 0x48,0x8B,0x4A,0x18,0x48,0x0F,0xAF,0xC8\n"
+        "add $0x28, %rsp\npop %rbx\npop %rbp\npop %rdi\npop %rsi\nret\n"
 
-    ".globl fake_create_mutex\nfake_create_mutex:\n"
-    "sub $0x28, %rsp\nmov %rcx, %r8\nxor %ecx, %ecx\nxor %edx, %edx\ncall *__imp_CreateMutexW(%rip)\nadd $0x28, %rsp\nret\n"
-    ".text\n");
+        ".globl fake_create_mutex\nfake_create_mutex:\n"
+        "sub $0x28, %rsp\nmov %rcx, %r8\nxor %ecx, %ecx\nxor %edx, %edx\ncall *__imp_CreateMutexW(%rip)\nadd $0x28, %rsp\nret\n"
+        ".text\n");
 
-static void *fake_vt_stub(void)
-{
-    return NULL;
-}
+static void *fake_vt_stub(void) { return NULL; }
 
 static void files_mode(void)
 {
     static const struct {
         const char *path, *want, *what;
     } reads[] = {
-        {"audio/2025/bundles/t_v10.bdl", "T.FILES2 V10", "files: the game opens the bundle path and reads the later addon's file"},
+        {"audio/2025/bundles/t_v10.bdl", "T.FILES2 V10",
+         "files: the game opens the bundle path and reads the later addon's file"},
         {"Audio/2025/Bundles/T_V10.BDL", "T.FILES2 V10", "files: the path matches in any case"},
         {"/game/audio/2025/bundles/t_v10.bdl", "T.FILES2 V10", "files: a /game/ path is redirected too"},
         {"audio/2025/bundles/t_kept.bdl", "GAME KEPT", "files: a bundle the addon's folder lacks reads the game folder's copy"},
@@ -957,7 +963,11 @@ static void files_mode(void)
         uint8_t *buf = NULL;
         size_t n = 0;
         int src = fs_read(reads[i].path, &buf, &n);
-        printf("      %s from %s: '%s'\n", reads[i].path, src == 1 ? "archive" : src == 2 ? "disk" : "nowhere", buf ? (char *)buf : "");
+        printf("      %s from %s: '%s'\n", reads[i].path,
+               src == 1   ? "archive"
+               : src == 2 ? "disk"
+                          : "nowhere",
+               buf ? (char *)buf : "");
         expect(src == 2 && buf && !strcmp((char *)buf, reads[i].want), reads[i].what);
         free(buf);
     }
@@ -978,7 +988,8 @@ int main(int argc, char **argv)
     if (files)
         gdb_slots = 1 << 14;
     int gated = !strcmp(mode, "gated");
-    int early = !strcmp(mode, "early") || real || files, late = !strcmp(mode, "late") || gated, replace = !strcmp(mode, "replace");
+    int early = !strcmp(mode, "early") || real || files, late = !strcmp(mode, "late") || gated,
+        replace = !strcmp(mode, "replace");
     int on = (early || late) && !real;
     setvbuf(stdout, NULL, _IONBF, 0);
     GetModuleFileNameW(NULL, game_dir_w, MAX_PATH);
@@ -1035,7 +1046,9 @@ int main(int argc, char **argv)
     void *dbr = fake_gdb_load(db_storage, NULL);
     expect(dbr == db_storage && db_storage[0xf0] == 1, "boot step 10: Gdb_Load_GameDatabase built the database");
 
-    WNDCLASSEXW wc = {.cbSize = sizeof wc, .lpfnWndProc = DefWindowProcW, .hInstance = GetModuleHandleW(NULL),
+    WNDCLASSEXW wc = {.cbSize = sizeof wc,
+                      .lpfnWndProc = DefWindowProcW,
+                      .hInstance = GetModuleHandleW(NULL),
                       .lpszClassName = L"EGO_WindowClass"};
     ATOM(WINAPI * rc)(const WNDCLASSEXW *) = (void *)__imp_RegisterClassExW;
     rc(&wc);
@@ -1078,7 +1091,11 @@ int main(int argc, char **argv)
     uint8_t *cfg = NULL;
     size_t cfg_size = 0;
     int src = fs_read("system/config.xml", &cfg, &cfg_size);
-    printf("      system/config.xml from %s: '%s'\n", src == 1 ? "archive" : src == 2 ? "loose" : "nowhere", cfg ? (char *)cfg : "");
+    printf("      system/config.xml from %s: '%s'\n",
+           src == 1   ? "archive"
+           : src == 2 ? "loose"
+                      : "nowhere",
+           cfg ? (char *)cfg : "");
     if (real)
         expect(src == 1, "real stage: no overlay folder, the archive copy wins");
     else if (on && !gated)
@@ -1100,17 +1117,19 @@ int main(int argc, char **argv)
     if (on) {
         load_group("asset_groups/ui_package/screens/splash.assetgroup");
         uint8_t *l1 = res_of(logo_uri);
-        printf("      after splash: ps_logo from '%s' refs %d data '%.8s', added %p\n", src_name(l1), l1 ? *(int32_t *)(l1 + 0x1c) : -1,
-               l1 ? (char *)l1 + 0x48 : "", (void *)res_of(added_uri));
+        printf("      after splash: ps_logo from '%s' refs %d data '%.8s', added %p\n", src_name(l1),
+               l1 ? *(int32_t *)(l1 + 0x1c) : -1, l1 ? (char *)l1 + 0x48 : "", (void *)res_of(added_uri));
         expect(l1 && is_overlay(*(uint64_t *)(l1 + 0x40)) && !memcmp(l1 + 0x48, "SWOFTYPX", 8) && *(int32_t *)(l1 + 0x1c) == 2,
-               "resources: the splash group's own overlay created ps_logo with the later declaration's bytes, splash.erp bound (refs 2)");
+               "resources: the splash group's own overlay created ps_logo with the later declaration's bytes, splash.erp bound "
+               "(refs 2)");
         expect(!res_of(added_uri), "resources: the splash group's overlay does not carry the uri only flow_boot.erp lists");
         uint64_t list[1] = {boot_hash}, handle[5] = {0x5157f7aa5157f7aaull, 1, 0, (uint64_t)list, (uint64_t)(list + 1)};
         ((uint8_t *)handle)[0xc] = 4;
         fake_expand(fake_loader, handle, NULL);
         uint8_t *a1 = res_of(added_uri);
-        expect(a1 && is_overlay(*(uint64_t *)(a1 + 0x40)) && *(int32_t *)(a1 + 0x1c) == 1,
-               "resources: a flag-4 group listing flow_boot.erp in its own list read flow_boot's overlay first (added uri created)");
+        expect(
+            a1 && is_overlay(*(uint64_t *)(a1 + 0x40)) && *(int32_t *)(a1 + 0x1c) == 1,
+            "resources: a flag-4 group listing flow_boot.erp in its own list read flow_boot's overlay first (added uri created)");
         fake_release(fake_loader, handle, NULL);
         expect(nreleased == 2 && is_overlay(released[0]) && released[1] == boot_hash,
                "resources: release of the flag-4 group sees the same augmented list (overlay, flow_boot.erp)");
@@ -1128,7 +1147,8 @@ int main(int argc, char **argv)
     uint8_t *mag = NULL;
     size_t mag_size = 0;
     if (real) {
-        expect(read_disk("swofty/res/ps_logo.1.temp", &mag, &mag_size) && mag_size == 176416, "real stage: magenta fragment present");
+        expect(read_disk("swofty/res/ps_logo.1.temp", &mag, &mag_size) && mag_size == 176416,
+               "real stage: magenta fragment present");
         expect(logo && mag && is_overlay(*(uint64_t *)(logo + 0x40)) && !memcmp(logo + 0x48, mag, 8),
                "real stage: ps_logo created from an overlay with the magenta BC7 bytes (zstd-decompressed)");
         expect(zstd_frags >= 1, "real stage: the overlay stores the 176 KB pixel fragment as zstd (0x11)");
@@ -1174,14 +1194,18 @@ int main(int argc, char **argv)
     void **tb = fake_gdb_lookup("swofty.runtime_test.toobig"), **fv = fake_gdb_lookup("swofty.runtime_test.f");
     printf("      db: max_test_time=%g marker=%s answer=%d retype_me vt=%s keep=%d flag=%d dtor calls %d\n", mtt,
            m1 && *m1 ? *(char **)((uint8_t *)*m1 + 8) : "(none)", m2 && *m2 ? *(int32_t *)((uint8_t *)*m2 + 8) : -1,
-           rt && *rt ? (*(void ***)*rt == vt_gstr ? "string" : *(void ***)*rt == vt_gint ? "int" : "?") : "(none)",
+           rt && *rt ? (*(void ***)*rt == vt_gstr   ? "string"
+                        : *(void ***)*rt == vt_gint ? "int"
+                                                    : "?")
+                     : "(none)",
            kp && *kp ? *(int32_t *)((uint8_t *)*kp + 8) : -1, fl && *fl ? ((uint8_t *)*fl)[8] : -1, gdb_dtor_calls);
     if (early) {
         expect(mtt == 301.0f, "db: existing float overwritten (300 -> 301)");
         expect(fl && *fl && ((uint8_t *)*fl)[8] == 1, "db: existing bool overwritten by an edit without a type (False -> True)");
     } else
         expect(mtt == 300.0f && fl && *fl && ((uint8_t *)*fl)[8] == 0,
-               late ? "db late: the in-place fallback refuses an exe that is not the analysed build" : "db: untouched without edits");
+               late ? "db late: the in-place fallback refuses an exe that is not the analysed build"
+                    : "db: untouched without edits");
     if (early) {
         expect(m1 && *m1 && *(void ***)*m1 == vt_gstr && !strcmp(*(char **)((uint8_t *)*m1 + 8), "hello from swofty") &&
                    *(uint32_t *)((uint8_t *)*m1 + 0x30) == fnv32("hello from swofty"),
@@ -1189,7 +1213,8 @@ int main(int argc, char **argv)
         expect(m2 && *m2 && *(void ***)*m2 == vt_gint && *(int32_t *)((uint8_t *)*m2 + 8) == 42, "db: new int key created");
         expect(rt && *rt && *(void ***)*rt == vt_gstr && !strcmp(*(char **)((uint8_t *)*rt + 8), "five") && gdb_dtor_calls == 1,
                "db: retype with \"retype\": true destroyed the int record and inserted a string record");
-        expect(big && *big && *(int32_t *)((uint8_t *)*big + 8) == 1234567890, "db: a 10-digit int keeps its exact text (1234567890)");
+        expect(big && *big && *(int32_t *)((uint8_t *)*big + 8) == 1234567890,
+               "db: a 10-digit int keeps its exact text (1234567890)");
         expect(u64 && *u64 && *(uint64_t *)((uint8_t *)*u64 + 8) == 12345678901234567ull,
                "db: a 17-digit t12 value keeps its exact text (12345678901234567)");
         expect(u64neg && *u64neg && *(uint64_t *)((uint8_t *)*u64neg + 8) == UINT64_MAX,

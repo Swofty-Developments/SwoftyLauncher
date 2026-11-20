@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamContract_SetDriversVisible",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142309780",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142309780.c;xref:0x14577e150",
+  "notes": "Small vtable method (slot 0x14577e150): sets the screen's frontend driver comps visible/invisible (0x1428e0f40) and posts a bus message. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2953)"
+ },
+ "signature": {
+  "id": "game.my_team_contract_set_drivers_visible",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 38 80 B9 42 2D 00 00 00 0F",
+  "match": "0x142309780",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142309780",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamContract_SetDriversVisible"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d11-verify",
+   "kind": "func",
+   "item": "Game_MyTeamContract_SetDriversVisible",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142309780.c;xref:0x14577e150",
+   "notes": "V2953 Decomp strings, offsets and callees match the claim; name fits."
+  }
+ ],
+ "proofs": []
+}

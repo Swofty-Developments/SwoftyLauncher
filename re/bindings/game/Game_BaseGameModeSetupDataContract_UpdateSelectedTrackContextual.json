@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_BaseGameModeSetupDataContract_UpdateSelectedTrackContextual",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143852b40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_BaseGameModeSetupDataContract_UpdateSelectedTrackContextual(void *contract)",
+  "evidence": "decomp:re/decomp/143852b40.c;decomp:re/decomp/1407b5330.c;decomp:re/decomp/1407b7b90.c;xref:0x1407b559d,0x1407b81a3;kb:subsystems/tracks.md#select",
+  "notes": "cxx=game::BaseGameModeSetupDataContract::updateSelectedTrackContextualData. When the contract node +0x30 resolves and the mode used byte +0x71 is set, reads child track_file_name (0x145735e19), finds the TrackDataRecord whose name (+0xd0) equals it in TrackDataSystem +0x28..+0x30 (null items skipped), and calls Game_TrackData_GetTrack with the contract's 6-byte query at +0x70 (log UI_TRACK ... GameSetUpMode %d, SeasonStatId %d, WeekendFormat %s). Callers 0x1407b5330 and 0x1407b7b90, each right after Game_UITrack_FindTrackInfoWithFallback. Agreed by V1632 (trk-v1). raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.base_game_mode_setup_data_contract_update_selected_track_contextual",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 C5 F8 29 B4 24 C0 00 00 00 48 89 CE 48 8B 49 30 48",
+  "match": "0x143852b40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143852b40",
+  "kind": "func_start",
+  "names": [
+   "Game_BaseGameModeSetupDataContract_UpdateSelectedTrackContextual"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "trk-v1",
+   "kind": "func",
+   "item": "Game_BaseGameModeSetupDataContract_UpdateSelectedTrackContextual",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143852b40.c;decomp:re/decomp/1407b5330.c;decomp:re/decomp/1407b7b90.c;xref:0x1407b559d,0x1407b81a3",
+   "notes": "V1632 Re-derived the name -> record -> stat id path (fresh read-only decompile plus disassembly 0x143852b40..0x143853330): resolves the contract's node at +0x30; only when it resolves and the mode used byte +0x71 is set (0x143852c2f) it reads child 0x145735e19 track_file_name, gets TrackDataSystem from g_Game_Manager+0x30 by type 0x146080ce8, walks +0x28..+0x30 in 16-byte items skipping null records (0x143852d11, 0x143852d3d) and strcmp(0x14535d850)s record+0xd0 against the name. No match (r15 = 0) jumps to 0x143852fe9 and skips both the UI_TRACK log and Game_TrackData_GetTrack, so GetTrack (which dereferences track_ref+1 unchecked) never sees a null record from here. On a match it calls GetTrack(system, record, contract+0x70) and links the result's +0x10 node into contract+0x50; when the gate fails it clears +0x50. Callers 0x1407b5330 (0x143852230 at 0x1407b54ec, query at 0x1407b557e, call 0x1407b559d) and 0x1407b7b90 (0x1407b816b, 0x1407b8182, 0x1407b81a3) as stated. The stat id is the matched record's byte +1. Supports raising this row to L2."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143852b40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143852b40.c;xref:0x1407b559d",
+   "notes": "V6321 name/purpose and quoted strings/cxx confirmed in body"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x143852b40",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x143852b40-0x143853331;xref:0x1407b559d,0x1407b81a3",
+   "notes": "V10374 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). cxx string void game::BaseGameModeSetupDataContract::updateSelectedTrackContextualData() in body. Checks contract+0x71, reads track_file_name, walks [tds+0x28]..[tds+0x30] comparing record+0xd0 (0x143852cff/0x143852d03/0x143852d42 strcmp), calls 0x142e60e00 at 0x143852f14 with query at contract+0x70, log ...GameSetUpMode: %d, SeasonStatId: %d, WeekendFormat: %s. Both callers call 0x143852230 just before (0x1407b54ec/0x1407b816b)."
+  }
+ ],
+ "proofs": []
+}

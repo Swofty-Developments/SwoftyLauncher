@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VoiceCommands_UpdateState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f7b940",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-VOICE_COMMANDS",
+  "notes": "named from its log messages (channel VOICE_COMMANDS): '%s %s | %s State::eState_Disabled voiceControlsAllowed | %s State::eState_Disabled isSpeechVOPlaying | %s State::eState_Hold closeVoiceCommandsUI | %s State::eState_Disabled closeVoiceCommandsUI'"
+ },
+ "signature": {
+  "id": "game.voice_commands_update_state",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 81 EC A8 00 00 00 48 89 D7 48 89 CE 0F B6 81 88 00 00 00",
+  "match": "0x142f7b940",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f7b940",
+  "kind": "func_start",
+  "names": [
+   "Game_VoiceCommands_UpdateState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f7b940",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f7b940.c",
+   "notes": "V5663 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

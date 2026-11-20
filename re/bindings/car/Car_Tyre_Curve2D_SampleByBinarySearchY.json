@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Tyre_Curve2D_SampleByBinarySearchY",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e7c410",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e7c410.c;xref:0x142e7c089",
+  "notes": "Binary search in an array of 0x28-byte keyframes then in the inner (x,y) pair array (8-byte pairs, compares second float) and linear interpolates; used by the tyre 2-D wear/curve sampler. Hypothesis on axis meaning."
+ },
+ "signature": {
+  "id": "car.tyre_curve2_d_sample_by_binary_search_y",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 C5 F8 29 7C 24 10 C5 F8 29 34 24 4C",
+  "match": "0x142e7c410",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e7c410",
+  "kind": "func_start",
+  "names": [
+   "Car_Tyre_Curve2D_SampleByBinarySearchY"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x142e7c410",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e7c410.c;xref:0x142e7c089",
+   "notes": "V8467 binary search 0x28-byte keyframes then 8-byte (x,y) pairs comparing y, linear interpolation"
+  }
+ ],
+ "proofs": []
+}

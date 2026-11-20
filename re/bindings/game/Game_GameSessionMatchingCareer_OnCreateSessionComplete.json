@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionMatchingCareer_OnCreateSessionComplete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143071a30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143071a30.c;xref:0x1430719b8,0x1430765d1",
+  "notes": "GameSessionMatchingCareer::onCreateSessionComplete(bool ok, NeNetError): stores error to [[this+8]+0x4d8]+0x34; on fail fires create delegate (this+0xa8/+0xb0) and join delegate (+0xe8/+0xf0) with the error; on success sets +0xe4 and stops the matching timer. Addon: online (2-player) career session creation result. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2584)"
+ },
+ "signature": {
+  "id": "game.game_session_matching_career_on_create_session_complete",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 44 89 C7 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01 0F 85",
+  "match": "0x143071a30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143071a30",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionMatchingCareer_OnCreateSessionComplete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d6-verify",
+   "kind": "func",
+   "item": "Game_GameSessionMatchingCareer_OnCreateSessionComplete",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143071a30.c;xref:0x143071a30",
+   "notes": "V2584 role/offsets/log strings match decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_Std_ThrowStringTooLong",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14030f950",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14030f950.c;xref:0x140189af4",
+  "notes": "Noreturn: Ne_Std_ThrowStdException(\"string too long\") then int3 (MSVC std::string length_error). 1253 call sites (Game_MultipartActor_AddPart, Game_SceneManager_AddSceneObjects, ...)."
+ },
+ "signature": {
+  "id": "core.std_throw_string_too_long",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 83 3D ?? ?? ?? ?? FF 0F 85 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8D 0D",
+  "match": "0x140189af4",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14030f950",
+  "kind": "func_start",
+  "names": [
+   "Ne_Std_ThrowStringTooLong"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x14030f950",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14030f950.c;xref:0x140189af4",
+   "notes": "V7727 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

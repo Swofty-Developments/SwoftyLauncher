@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_Localtime64",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14534a0ec",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14534a0ec.c;xref:0x1407a7496,0x1407a8482,0x140c21bd3",
+  "notes": "CRT fopen-style: get free stream (0x1453499a8), open (0x14534a13c), returns stream or 0. 143 callers incl. benchmark screenshot and ElasticSearch reporter. Hypothesis. (143 xref site(s), fb.py callers.) lb24-verify partial/disagree"
+ },
+ "signature": {
+  "id": "core.crt_fopen",
+  "section": ".xtls",
+  "pattern": "48 89 5C 24 08 48 89 74 24 10 57 48 83 EC 20 48 8B F1 E8 ?? ?? ?? ?? 33 DB 48 8B F8",
+  "match": "0x14534a0ec",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14534a0ec",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_Localtime64"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb24-verify",
+   "kind": "func",
+   "item": "0x14534a0ec",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/14534a0ec.c;xref:0x1407a7496",
+   "notes": "V6652 not fopen: takes pointer to time_t (caller 1407a7486 does time64 then passes &t), per-thread struct tm buffer (0x24 B at tls+0x68) via 0x1453499a8, range checks 0x793582aff/0x7935041fd, timezone/DST math; it is CRT _localtime64; better name Ne_Crt_Localtime64"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x14534a0ec",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14534a0ec.c;xref:0x1407a7496",
+   "notes": "V7291 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

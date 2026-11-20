@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EntrantsManager_ClaimFreeEntrant",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143116a90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143116a90.c;xref:0x143111e62,0x143112088",
+  "notes": "'No one is this entrant, take it!': during team change / rehost assigns a free entrant slot to the player (desc+0x68..+0x80 team/pos/number, +0x98 slot or 0xff -> auto 0x14310e070), applied via 0x14310c1d0. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2609)"
+ },
+ "signature": {
+  "id": "game.entrants_manager_claim_free_entrant",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 4C 89 C3 48 89",
+  "match": "0x143116a90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143116a90",
+  "kind": "func_start",
+  "names": [
+   "Game_EntrantsManager_ClaimFreeEntrant"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d6-verify",
+   "kind": "func",
+   "item": "Game_EntrantsManager_ClaimFreeEntrant",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143116a90.c;xref:0x143116a90",
+   "notes": "V2609 role/offsets/log strings match decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Ne_CloudUploader_Upload",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1447c5bc0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1447c5bc0.c;xref:0x144143531,0x145ccc970;kb:subsystems/core.md#save-sandbox",
+  "notes": "vt_Ne_CloudUploader (0x145ccc960) slot +0x10; the object lives at NeSaveSystem2Win+0x268. Fetches ISteamRemoteStorage itself (SteamInternal_ContextInit(k_Ne_SteamRemoteStorageContext)) and a second interface (context 0x145f985d0), writes a local file to remote storage with FileWriteStreamOpen +0x48 / FileWriteStreamWriteChunk +0x50 / FileWriteStreamClose +0x58, shares it with FileShare +0x38, then calls the second interface vt+0xf8 / vt+0x100. Only direct caller: Ne_SaveSystem2Win_UploadCorruptSave (0x144143531)."
+ },
+ "signature": {
+  "id": "core.cloud_uploader_upload",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 02 00 00 44 89 CB",
+  "match": "0x1447c5bc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1447c5bc0",
+  "kind": "func_start",
+  "names": [
+   "Ne_CloudUploader_Upload"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "ts3",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/testing/save_sandbox.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "save-v3",
+   "kind": "func",
+   "item": "0x1447c5bc0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1447c5bc0.c;decomp:re/decomp/1447c5580.c;xref:0x144143531,0x145ccc970",
+   "notes": "V1475 Fetches the global ISteamRemoteStorage itself and calls +0x48/+0x50/+0x58 (FileWriteStream Open/WriteChunk/Close) and +0x38 FileShare, plus ISteamUserStats012 (ctx 0x145f985d0) +0xf8/+0x100; this path bypasses helper+0x108. Only rel32 caller 0x144143531 in WriteInfoXml; vtable slots +0x10 (and +0x18 wrapper 0x1447c5b30) have no vcall on the device+0x268 uploader."
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "save-v3",
+   "kind": "sig",
+   "item": "core.cloud_uploader_upload",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "pat:sigcheck-hits-1;decomp:re/decomp/1447c5bc0.c;xref:0x1447c5bc0",
+   "notes": "V1482 sigcheck on d873a1c8: exactly one match in .xtls at 0x1447c5bc0, func_start, target is the decompiled function."
+  }
+ ],
+ "proofs": []
+}

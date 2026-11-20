@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_RuleManager_HandleSessionEvents",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435692d0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1435692d0.c;xref:0x1458493e8",
+  "notes": "rule manager reaction to player_dropped_in, mid_session_driver_swap and session_complete."
+ },
+ "signature": {
+  "id": "session.rule_manager_handle_session_events",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 30 48 89 CE 48 8B 99 50 1C 00 00",
+  "match": "0x1435692d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435692d0",
+  "kind": "func_start",
+  "names": [
+   "Sess_RuleManager_HandleSessionEvents"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb3-verify-b",
+   "kind": "func",
+   "item": "Sess_RuleManager_HandleSessionEvents",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435692d0.c;xref:0x1435692d0",
+   "notes": "V1919 player_dropped_in, mid_session_driver_swap, session_complete strings confirmed"
+  }
+ ],
+ "proofs": []
+}

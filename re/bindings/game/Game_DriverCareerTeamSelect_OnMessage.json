@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_DriverCareerTeamSelect_OnMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a69a50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_DriverCareerTeamSelect_OnMessage(void *vm, const uint32_t *const *name)",
+  "evidence": "decomp:own capstone disasm 0x141a69a50-0x141a6a5a4;xref:0x145729e00,0x141a69a5f,0x141a69a70",
+  "notes": "slot 10 of vt_Game_DriverCareerTeamSelectViewModel (0x145729db0 + 0x50 = 0x145729e00 holds 0x141a69a50; the vtable ctor is 0x141a67af0). The view-model message handler: rcx = the view model (rsi), rdx = const uint32_t *const *name, whose hash [[rdx]] is dispatched by compare (seven hashes: 0xd585d41d, 0xd585d41e, 0x9c4d00fd, 0xb2738f54, 0xc22b77ef = transition_in_finished per strings_anchors.tsv, 0x493fe92b, 0x559fe493) at 0x141a69a5f-0x141a69c64. r8 and r9 are never read as inputs, in the body or in the two tail-jump targets 0x141878ea0 and 0x14187a490, and no exit sets rax deliberately (single ret at 0x141a6a561), so the prototype carries only the two arguments the body reads; callers through slot +0x50 that were read pass r8 as an unused stack slot pointer and never set r9. Writes the selected team key at vm+0xf20 (0x141a69eb6)"
+ },
+ "signature": {
+  "id": "game.read_selected_team_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 08 01 00 00 48 8B 02",
+  "match": "0x141a69a50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a69a50",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverCareerTeamSelect_OnMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141a69a50",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141a69a50.c",
+   "notes": "V4931 28 KB driver-career team select VM (open_secret_meetings, back, open_confirm_selections, open_team_mate_select, _two_players/_official), not only 3 selected_team keys. Better: Game_Build_DriverCareerTeamSelect (vtable/indirect, no direct call site)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x141a69a50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a69a50.c",
+   "notes": "V7243 name fits; finding facts hold; vtable/indirect (no direct call)"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "bind552-verifier",
+   "kind": "func",
+   "item": "Game_DriverCareerTeamSelect_OnMessage",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x141a69a50-0x141a6a5a4;decomp:own capstone disasm 0x141878ea0 and 0x14187a490;xref:0x145729e00,0x141a69a5f,0x141a6a561,0x141a69ed0,0x141a69eee;sig:game.read_selected_team_config",
+   "notes": "V10721 Independent second pass from the bytes: slot 10 of 0x145729db0 (0x145729e00) holds 0x141a69a50; rcx = view model and rdx = pointer to a u32 name hash are the only incoming registers read; r8/r9 are only written before use in the body and in both tail-jump targets; no exit deliberately sets rax (every exit reaches the single ret at 0x141a6a561 or a tail jump whose callee leaves rax incidental). Proto void(void *vm, const uint32_t *const *name) is the form the evidence supports. Which class owns the hash switch was tied to this vtable only by slot address, not by callers"
+  }
+ ],
+ "proofs": []
+}

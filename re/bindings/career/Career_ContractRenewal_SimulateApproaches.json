@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_ContractRenewal_SimulateApproaches",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d99210",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:log-channel-CONTRACT_RENEWAL",
+  "notes": "named from its log messages (channel CONTRACT_RENEWAL): 'Team has no seats. %s | Team has no approaches. %s | Simulate approaches for team %s, Number of approaches : %u | No valid drivers left to approach | Team is interested in. Driver : %s - Team : %s | T'"
+ },
+ "signature": {
+  "id": "career.contract_renewal_simulate_approaches",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 01 00 00 C5 F8 29 B4 24 30 01 00 00 80 B9 A0 03 00 00 00",
+  "match": "0x140d99210",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d99210",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractRenewal_SimulateApproaches"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140d99210",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d99210.c;xref:0x140c4ae7f,0x140d8c29d",
+   "notes": "V4728 log/pretty strings and body checked in decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140d99210",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d99210.c",
+   "notes": "V9086 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

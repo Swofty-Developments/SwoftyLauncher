@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_PhysUpdateStage_FinishStepNotifyBodies",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440c7d70",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1440c7d70.c;xref:0x14445b27e",
+  "notes": "Waits for physics jobs, pumps Ne_PhysWorld_AdvanceStepState to idle, then walks the body list (world+0x40) and for bodies with a post-step callback (body+0x80 -> +0x28) fills a struct with linear speed |v| (+0x170/+0x180), angular speed (+0x190/+0x1a0) and contact flags (+0x2dc/+0x304 bits) and calls it. Hypothesis: source of impact/contact callback speeds (damage, sound, vfx). Caller Game_PhysicsUpdateStage_Update."
+ },
+ "signature": {
+  "id": "core.phys_update_stage_finish_step_notify_bodies",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 8B 79 08 8B 87 F0 0C 00",
+  "match": "0x1440c7d70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440c7d70",
+  "kind": "func_start",
+  "names": [
+   "Ne_PhysUpdateStage_FinishStepNotifyBodies"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x1440c7d70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440c7d70.c;xref:0x14445b27e",
+   "notes": "V7609 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

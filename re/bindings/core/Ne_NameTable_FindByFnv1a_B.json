@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_NameTable_FindByFnv1a_B",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143905280",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143905280.c;xref:0x143a4224f",
+  "notes": "FNV-1a 64 name lookup in an open table (fields +0x10..+0x44, strcmp via 14535d850). Callers Ne_Get_SettingU32, Ne_Get_SettingBool, Ne_Map_FindOrDefaultWithErrorContext: the settings-by-name lookup. Addon: setting names resolve here."
+ },
+ "signature": {
+  "id": "core.name_table_find_by_fnv1a_b",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 89 C4 49 C1 E4 04 4D 03 65 18",
+  "match": "0x143a4224f",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143905280",
+  "kind": "func_start",
+  "names": [
+   "Ne_NameTable_FindByFnv1a_B"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x143905280",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143905280.c;xref:0x143a4224f",
+   "notes": "V8235 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

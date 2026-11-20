@@ -1,0 +1,130 @@
+{
+ "schema": 1,
+ "name": "Game_SessionStateTalkingPoints_ParseParams_Thunk",
+ "table": "functions",
+ "author": "load-game",
+ "row": {
+  "addr": "0x142d94e20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_SessionStateTalkingPoints_ParseParams_Thunk(void *state, void *params)",
+  "evidence": "decomp:re/decomp/14eb3abf0.c;decomp:re/decomp/142d94f30.c;decomp:re/decomp/142d95b90.c;xref:0x1457e2cf8,0x14eb3ac1b,0x14eb3ac62,0x142d952ae",
+  "notes": "cxx=SessionStateTalkingPoints slot 7 (parse params): vtable 0x1457e2cc0, pointer 0x1457e2cf8; slots 8/9/10/11 are OnStateEnter 0x142d94f30, OnStateUpdate 0x142d95b90, OnStateExit 0x142d967e0, OnStateInterrupt 0x142d95990. 5-byte jmp into .data1 body=0x14eb3abf0 (plaintext in the KB file). The body first calls the SessionBaseState slot 7 0x142c75f90 with the same arguments and ignores its result, then reads Game.SkipTalkingPoints (Ne_Get_SettingBool 0x143a43b90 called at 0x14eb3ac2a, node [[state+0xdb0]+0x18], default 0; retail config.xml false) and Game.ecaEnabled (call 0x14eb3ac49, default 1; retail true), and stores byte state+0xea1 = 1 when SkipTalkingPoints is true or ecaEnabled is false (0x14eb3ac62; besides the constructor's zeroing store at 0x14f03380c, the only writer of +0xea1 for this class), then looks the releaseCutscenesOnExit param up in the 16-byte {name, value} params with _stricmp and stores it as a bool in byte +0xeb0 (0 when absent or not a bool), stores 10.0f in dword +0xeb4 and returns 0 (0x14eb3acf8). OnStateEnter stores +0xea0 = 1 (0x142d952ae) when the game mode is not a GameModeChampionship (type node 0x14604ec60, named at 0x14097d99a) or a class derived from it, or has no component 0x14605b108: the test walks the +0x10 parent links of the mode's type (vfunc +0x28) until it meets the championship node or the root type NoOtiInfo (descriptor 0x146129ca0, node 0x146129ca8, named at 0x143953543), and sets the flag on the root (0x142d94f8b..0x142d94fd5), else +0xea0 = other mode and feature checks OR mode+0xe35 OR +0xea1; with +0xea0 set it does not generate the broadcast sequence. OnStateUpdate returns link skipped (djb2 0x996c4495) on every update while +0xea0 is set and neither +0xea3 nor bit 1 of +0xcc9 is (0x142d95c26..0x142d95c44), or snapshot (0x9b3bfc35) in its place when the mode [[[[0x146075a78]+0x38]+0x88]+0x260] is a GameModeChampionship or derived from it (the same walk), has component 0x146062fc0, and byte [[[0x146075a78]+0x20]+0xd8]+6 is 0 (0x142d95c7b..0x142d95d04). Among the update's other exits: skipped (or snapshot under the same test) once CutsceneSkipped was posted (+0xea2, 0x142d95ef9) and the fade-out delegate 0x14eb46c90 has set +0xea6 (0x142d95f0d); next (0x7c9b1ec4) once the sequence at +0xe88 reaches status 4 (+0x2c) with +0xea8 set (by the fade request 0x14eb3c550, by the next-phase fade request 0x142d96250 whose body stores it at 0x14eb410a2, or by the update at 0x142d95e07 once the timer at +0xeac runs out; enter starts that timer at 0.2 s (0x142d952f8) and 0x142d96673 and 0x142d96ec0 reset it to 0.6 s and 0.3 s) and +0xea6 set, unless the same snapshot test replaces it (0x142d96125..0x142d961a7); restart (0x3f29fc8a) when byte +0xcc9 bit 1 is set; while +0xea3 is set every exit is none. No .xtls code references the Game.SkipTalkingPoints string. | re-bindings 2026-11-18: the base call, the +0xeb0/+0xeb4 stores and the update's skipped and snapshot conditions from the blind partials V20023, V20025 and V20028."
+ },
+ "signature": {
+  "id": "game.session_state_talking_points_parse_params_thunk",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 0F 89 ?? ?? ?? ?? 85 E9 DC 85 40 FF FE 0F",
+  "match": "0x142d94e20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d94e20",
+  "kind": "func_start",
+  "names": [
+   "Game_SessionStateTalkingPoints_ParseParams_Thunk"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-17",
+    "by": "load-game",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings",
+   "kind": "func",
+   "item": "Game_SessionStateTalkingPoints_ParseParams_Thunk",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm KB 0x14eb3abf0-0x14eb3ad06 and 1.0.145 0x14e6cc9b0, KB slots 0-13 of vtable 0x1457e2cc0;xref:0x1457e2cf8,0x14eb3ac1b,0x14eb3ac3a,0x14eb3ac62,0x142d9529c,0x142d952ae,0x142d95c2c,0x142d95b6f,0x142d960d0",
+   "notes": "gh:re-bindings not blind: re-derived from the exes after reading re/research/loading_pipeline.md §1.8 (which names the vtable, slot 7, +0xea1 and OnStateEnter) and before reading the record, so a blind second proof can still lift it: KB thunk 0x142d94e20 is a jmp to the .data1 body 0x14eb3abf0 and slot 7 (pointer 0x1457e2cf8) of the vtable 0x1457e2cc0 that the factory 0x14f033680 installs after the base constructor 0x142d74480; the class logs under the TalkingPoints channel (0x142d95b6f, 0x142d960d0). The body calls the shared parse params 0x142c75f90 (32 callers), reads Game.SkipTalkingPoints (default 0) and Game.ecaEnabled (default 1) through 0x143a43b90 on [[state+0xdb0]+0x18], stores +0xea1 = 1 when the first is set or the second clear, parses releaseCutscenesOnExit into +0xeb0 and stores 10.0f at +0xeb4. No other slot of the vtable writes +0xea1; slot 8 ORs it into +0xea0 (0x142d9529c, 0x142d952ae) and slot 9 tests +0xea0 (0x142d95c2c) before loading the skipped link hash 0x996c4495 (djb2). On 1.0.145 the thunk is 0x142d973b0 and its .trace body 0x14e6cc9b0 is the same code with the same offsets; the record's KB pattern is protector filler and does not match there, so steam-26566308.json now carries an override and a hint. Proof on 1.0.145."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_SessionStateTalkingPoints_ParseParams_Thunk",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x142d94e20-0x142d94e25,0x14eb3abf0-0x14eb3ad06,0x14e5cf550-0x14e5cf731,0x143a43b90-0x143a43e0f,0x14f033680-0x14f03385b,0x142d94f30-0x142d9586e,0x142d95b90-0x142d961cf,0x142d967e0-0x142d96dae,0x14eb3c550-0x14eb3c663,0x14eb46c90-0x14eb46d0d;xref:0x1457e2cf8,0x142d94e20,0x14eb3ac2a,0x14eb3ac49,0x14eb3ac62,0x14eb3ace8,0x14eb3acee,0x14eb3acf8,0x142d952ae,0x142d95305,0x142d95c26,0x142d95c44,0x142d95cc3,0x142d95cf6,0x142d95feb,0x142d961a7,0x14eb3c562,0x14eb46d00,0x14f03380c",
+   "notes": "V20023 Blind: partial, derived before reading the notes. Thunk e9->0x14eb3abf0, sole ptr 0x1457e2cf8 = slot 7 of vtable 0x1457e2cc0 (SessionStateTalkingPoints; overrides SessionBaseState slot 7 0x142c75f90, called first). Body: Ne_Get_SettingBool([[s+0xdb0]+0x18]) SkipTalkingPoints def 0 @0x14eb3ac2a, ecaEnabled def 1 @0x14eb3ac49; s+0xea1=1 if skip||!eca @0x14eb3ac62; _stricmp scan of {name,value} params for releaseCutscenesOnExit -> byte s+0xeb0; dword s+0xeb4=10.0f; returns 0. Slots 8-11, OnStateEnter +0xea0 logic, djb2 links, fade +0xea8/+0xea6 confirmed. Imprecise: skipped is returned on every update with +0xea0 set (no first-update test); snapshot also needs mode not class 0x146129ca0 and also replaces next."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_SessionStateTalkingPoints_ParseParams_Thunk",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x142d94e20-0x142d94e25,0x14eb3abf0-0x14eb3ad06,0x14e5cf550-0x14e5cf731,0x143a43b90-0x143a43e93,0x142d94f30-0x142d9586e,0x142d95b90-0x142d961cf,0x142d967e0-0x142d96dae,0x142d95990-0x142d95b8d,0x14f033680-0x14f03385b,0x14eb3c550-0x14eb3c663,0x14eb46c90-0x14eb46d0d;xref:0x1457e2cf8,0x14f03377b,0x14eb3ac01,0x14eb3ac2a,0x14eb3ac49,0x14eb3ac62,0x14f03380c,0x14eb3ace8,0x14eb3acee,0x14eb3acf8,0x142d952ae,0x142d9529c,0x142d95305,0x142d95ba2,0x142d95c1d,0x142d95c44,0x142d95d04,0x142d95ef9,0x142d95f0d,0x142d95e07,0x142d960ee,0x142d961a7,0x14eb46d00,0x14eb3ac1e",
+   "notes": "V20025 Blind: partial, derived before reading the notes. Confirmed from own disasm: slot 7 of vtable 0x1457e2cc0 (ptr 0x1457e2cf8), jmp to body 0x14eb3abf0; base slot-7 call at 0x14eb3ac01, result dropped; Skip/eca reads at 0x14eb3ac2a/0x14eb3ac49 with defaults 0/1; +0xea1=1 at 0x14eb3ac62 (only writer besides ctor 0x14f03380c); +0xeb0 via _stricmp; +0xeb4=10.0f; ret 0; enter +0xea0 at 0x142d952ae; skipped/snapshot/next/restart hashes and conditions. Imprecise: the enter mode test is is-a 0x146129ca0 (derived too); exit list omits skipped after CutsceneSkipped with +0xea2 and +0xea6 (0x142d95f0d); +0xea8 also set at 0x142d95e07."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_SessionStateTalkingPoints_ParseParams_Thunk",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x142d94e20-0x142d94e25,0x14eb3abf0-0x14eb3ad06,0x14e5cf550-0x14e5cf731,0x143a43b90-0x143a43e93,0x14391a0d0-0x14391a120,0x14534d918-0x14534d95e,0x142d94f30-0x142d9586e,0x142d95990-0x142d95b8d,0x142d95b90-0x142d961cf,0x142d967e0-0x142d96dae,0x14f033680-0x14f03385b,0x14eb3c550-0x14eb3c663,0x14eb41090-0x14eb411aa,0x14eb46c90-0x14eb46d0d,0x142d96e30-0x142d96ec8,0x1439532f0-0x143953570,0x14097d980-0x14097d9c0,0x140108f70-0x140108fb8;xref:0x1457e2cf8,0x14eb3ac01,0x14eb3ac62,0x14f03380c,0x142d94f8b,0x142d94f9f,0x143953543,0x14097d99a,0x140108f92,0x142d952ae,0x142d95305,0x142d95c44,0x142d95d04,0x142d95ef9,0x14eb46d00,0x142d960ee,0x142d961a7,0x142d95d1b,0x14eb410a2,0x14eb3ac1e",
+   "notes": "V20028 Blind: partial, derived before reading the notes. Confirmed: thunk, vtable 0x1457e2cc0 slot 7, slots 8-11, base call 0x142c75f90 (0x14eb3ac01), both settings (defaults 0/1), the +0xea1 rule and its only class writer (0x14eb3ac62, ctor 0x14f03380c), releaseCutscenesOnExit to +0xeb0 via _stricmp, +0xeb4=10.0f, return 0, and the skipped/snapshot/next/restart/none exits with their flags. Wrong: 0x146129ca0 is the root type NoOtiInfo, the end marker of every is-a walk. The class tested is GameModeChampionship (node 0x14604ec60, 0x14097d99a). So +0xea0=1 when the mode is not a championship or lacks 0x14605b108, and snapshot needs a championship mode. Minor: 0x14eb410a2 also sets +0xea8; +0xeac is reset to 0.6/0.3."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_SessionStateTalkingPoints_ParseParams_Thunk",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142d94e20-0x142d94e25,0x14eb3abf0-0x14eb3ad06,0x14e5cf550-0x14e5cf731,0x142d74cb0-0x142d74d6c,0x142d94f30-0x142d9586e,0x142d95b90-0x142d961cf,0x142d967e0-0x142d96dae,0x142d95990-0x142d95b8d,0x142d96370-0x142d967d9,0x142d96e30-0x142d96ec6,0x14eb3c550-0x14eb3c663,0x14eb41090-0x14eb411aa,0x14eb46c90-0x14eb46d0d,0x14f033680-0x14f03385b,0x143953500-0x143953570,0x14097d939-0x14097d9b9,0x1444fdd00-0x1444fddc0;xref:0x1457e2cf8,0x14eb3ac01,0x14eb3ac2a,0x14eb3ac49,0x14eb3ac62,0x14f03380c,0x14eb3ace8,0x14eb3acee,0x142d952ae,0x142d94fd5,0x143953543,0x14097d99a,0x142d95c44,0x142d95d04,0x142d95ef9,0x14eb46d00,0x142d95ffb,0x142d961a7,0x142d95e07,0x14eb410a2,0x14eb3c562,0x142d952f8,0x142d96673,0x142d96ec0,0x14eb3ac1b",
+   "notes": "V20030 Blind: agree, derived before reading the notes. Thunk 0x142d94e20 jmp to .data1 0x14eb3abf0, slot 7 of vtable 0x1457e2cc0. Calls SessionBaseState slot 7 0x142c75f90 first, reads Game.SkipTalkingPoints (default 0) and Game.ecaEnabled (default 1) from [[state+0xdb0]+0x18], sets +0xea1=1 at 0x14eb3ac62 (only other class writer is ctor zero 0x14f03380c), stores releaseCutscenesOnExit in +0xeb0 and 10.0f in +0xeb4, returns 0. The walk sets its flag at NoOtiInfo (0x146129ca8), so it means not-a GameModeChampionship. Update exits match: skipped/snapshot, next, restart, none under +0xea3. +0xea8 setters and the 0.2/0.6/0.3 s timers match. Retail values and history not checkable."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "load-game",
+   "date": "2026-11-17",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142d94e20",
+    "target": "0x142d94e20"
+   },
+   "sigcheck": "passed",
+   "digest": "b6ef342a34c9d1099fabdb7ef97e65d8f091b829fe54e5b7870c2dccf6dee61a"
+  },
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142d973b0",
+    "target": "0x142d973b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c562807f91e680c13fc59fc2c3bb3a9dea273fecaeeac67adce29d8e961849c1"
+  }
+ ]
+}

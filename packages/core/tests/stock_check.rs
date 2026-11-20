@@ -1,10 +1,10 @@
 use std::path::{Path, PathBuf};
 
 use sha1::{Digest, Sha1};
-use swofty_core::baseline::{Baseline, Identity, Objects, Source, sha256_file};
+use swofty_core::game_folder::baseline::{Baseline, Identity, Objects, Source, sha256_file};
+use swofty_core::game_folder::placed::Placed;
+use swofty_core::game_folder::stock::{self, Depots, Entry};
 use swofty_core::install::Game;
-use swofty_core::placed::Placed;
-use swofty_core::stock::{self, Depots, Entry};
 
 const DB: &str = "2025_asset_groups/ui_package/databases.erp";
 const UI: &str = "2025_asset_groups/ui_package/common_front_end.erp";
@@ -299,7 +299,7 @@ fn the_steam_api_dll_is_still_checked_by_the_ownership_check() {
         ("steam_api64.dll", b"steam's steam api"),
     ]);
     assert_eq!(
-        swofty_core::entitlement::changed_files(&f.data, &f.game.dir, &d).unwrap(),
+        swofty_core::game_folder::entitlement::changed_files(&f.data, &f.game.dir, &d).unwrap(),
         ["steam_api64.dll"]
     );
 }
@@ -340,13 +340,13 @@ fn a_changed_game_exe_still_blocks_whatever_its_size() {
 
     f.write("F1_25.exe", b"STOCK EXE BYTES");
     assert_eq!(
-        swofty_core::entitlement::changed_files(&f.data, &f.game.dir, &d).unwrap(),
+        swofty_core::game_folder::entitlement::changed_files(&f.data, &f.game.dir, &d).unwrap(),
         ["F1_25.exe"],
         "a same-size edit is caught by its SHA-1"
     );
     f.write("F1_25.exe", b"stock exe bytes");
     assert!(
-        swofty_core::entitlement::changed_files(&f.data, &f.game.dir, &d)
+        swofty_core::game_folder::entitlement::changed_files(&f.data, &f.game.dir, &d)
             .unwrap()
             .is_empty()
     );
@@ -362,7 +362,7 @@ fn a_missing_game_exe_still_blocks_and_is_told_to_update_first() {
     let (changed, missing) = stock::split_absent(&c.detail);
     assert!(changed.is_empty());
     assert_eq!(missing, ["F1_25.exe"]);
-    let version = swofty_core::exe_version::read(&f.game.dir.join(swofty_core::GAME_EXE));
+    let version = swofty_core::game_folder::exe_version::read(&f.game.dir.join(swofty_core::GAME_EXE));
     assert_eq!(version, None);
     let report = stock::Report::missing(missing, &f.game.dir, version);
     assert_eq!(report.fix(), stock::Fix::Both);
@@ -387,7 +387,7 @@ fn an_older_game_exe_routes_to_the_update_fix_with_third_party_dlls_in_place() {
     let c = stock::check(&f.data, &f.game, &d).unwrap();
     assert_eq!(c.foreign, ["character_package/heads/head.mipmaps"]);
     assert_eq!(third_party_rels(&c), [FFX]);
-    let version = swofty_core::exe_version::read(&f.game.dir.join(swofty_core::GAME_EXE));
+    let version = swofty_core::game_folder::exe_version::read(&f.game.dir.join(swofty_core::GAME_EXE));
     assert_eq!(version.as_deref(), Some("1.0.138.5601"));
     let (_, missing) = stock::split_absent(&c.detail);
     let report = stock::Report::missing(missing, &f.game.dir, version.clone());
@@ -399,19 +399,19 @@ fn an_older_game_exe_routes_to_the_update_fix_with_third_party_dlls_in_place() {
         "{}",
         report.text()
     );
-    let outdated = swofty_core::known_problems::outdated_exe(version.as_deref()).unwrap();
+    let outdated = swofty_core::diagnostics::known_problems::outdated_exe(version.as_deref()).unwrap();
     assert_eq!(outdated.id, "outdated_exe");
 
     let mut current = versioned_exe(1 << 16, (145 << 16) | 2472);
     current.extend([0; 16]);
     f.write("F1_25.exe", &current);
-    let version = swofty_core::exe_version::read(&f.game.dir.join(swofty_core::GAME_EXE));
+    let version = swofty_core::game_folder::exe_version::read(&f.game.dir.join(swofty_core::GAME_EXE));
     assert_eq!(
         version.as_deref(),
-        Some(swofty_core::known_problems::LATEST_GAME_VERSION)
+        Some(swofty_core::diagnostics::known_problems::LATEST_GAME_VERSION)
     );
     assert_eq!(stock::fix_for(version.as_deref()), stock::Fix::Verify);
-    assert!(swofty_core::known_problems::outdated_exe(version.as_deref()).is_none());
+    assert!(swofty_core::diagnostics::known_problems::outdated_exe(version.as_deref()).is_none());
 }
 
 #[test]
@@ -559,7 +559,7 @@ fn steams_manifest_lists_files_with_forward_slashes_and_skips_directories() {
 
 #[test]
 fn the_real_install_matches_steams_manifests() {
-    let Some(found) = swofty_core::steam::find_game() else {
+    let Some(found) = swofty_core::platform::steam::find_game() else {
         eprintln!("no Steam install of F1 25; skipping");
         return;
     };
@@ -985,18 +985,18 @@ fn blocked_after_a_verify(f: &Fixture) {
         Err(swofty_core::Error::Leftovers(found)) => found,
         r => panic!("{r:?}"),
     };
-    swofty_core::recovery::Blocked::record(&f.data, &f.game.dir, &found).unwrap();
+    swofty_core::game_folder::recovery::Blocked::record(&f.data, &f.game.dir, &found).unwrap();
 }
 
 #[test]
 fn a_restore_keeps_a_blocked_file_that_is_steams_copy_and_takes_it_as_the_original() {
     let f = Fixture::new("restore-keeps-stock");
     blocked_after_a_verify(&f);
-    let lock = swofty_core::recovery::SessionLock::try_acquire(&f.data)
+    let lock = swofty_core::game_folder::recovery::SessionLock::try_acquire(&f.data)
         .unwrap()
         .unwrap();
     let d = encrypted_depots(&[(DB, b"stock db")]);
-    let done = swofty_core::recovery::restore_locked_with(&lock, &f.data, &f.game, &d).unwrap();
+    let done = swofty_core::game_folder::recovery::restore_locked_with(&lock, &f.data, &f.game, &d).unwrap();
     assert!(done.set_aside.is_empty(), "{:?}", done.set_aside);
     assert!(done.left.is_empty(), "{:?}", done.left);
     assert!(
@@ -1008,17 +1008,17 @@ fn a_restore_keeps_a_blocked_file_that_is_steams_copy_and_takes_it_as_the_origin
     let rec = &f.baseline().files[DB];
     assert_eq!(rec.source, Source::Depot);
     assert_eq!(std::fs::read(f.objects().path(&rec.sha256)).unwrap(), b"stock db");
-    assert!(swofty_core::recovery::Blocked::read(&f.data).is_none());
+    assert!(swofty_core::game_folder::recovery::Blocked::read(&f.data).is_none());
 }
 
 #[test]
 fn without_steams_list_a_restore_still_sets_the_blocked_file_aside() {
     let f = Fixture::new("restore-sets-aside");
     blocked_after_a_verify(&f);
-    let lock = swofty_core::recovery::SessionLock::try_acquire(&f.data)
+    let lock = swofty_core::game_folder::recovery::SessionLock::try_acquire(&f.data)
         .unwrap()
         .unwrap();
-    let done = swofty_core::recovery::restore_locked_with(&lock, &f.data, &f.game, &()).unwrap();
+    let done = swofty_core::game_folder::recovery::restore_locked_with(&lock, &f.data, &f.game, &()).unwrap();
     assert_eq!(done.set_aside.len(), 1);
     assert_eq!(std::fs::read(&done.set_aside[0]).unwrap(), b"stock db");
     assert_eq!(std::fs::read(f.game.dir.join(DB)).unwrap(), b"old recorded db");

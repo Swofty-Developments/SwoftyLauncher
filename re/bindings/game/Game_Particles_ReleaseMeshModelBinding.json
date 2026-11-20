@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Particles_ReleaseMeshModelBinding",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c4a8e0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c4a8e0.c;xref:0x14204292c,0x143b134ee,0x143b40880",
+  "notes": "Hypothesis: tears down a particle mesh-model binding: ushort count at +0x4e of the object at *param_1, per-entry release 0x1439dbea0(g 0x14618caa8, ptr+8*i) when +0x20==0, else allocator vcall +0x38 frees; then frees +0x18 array. Named callers: Game_Particles_BindMeshModel."
+ },
+ "signature": {
+  "id": "game.particles_release_mesh_model_binding",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 D3 48 89 CE 48 8B 39",
+  "match": "0x143c4a8e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c4a8e0",
+  "kind": "func_start",
+  "names": [
+   "Game_Particles_ReleaseMeshModelBinding"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143c4a8e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c4a8e0.c;xref:0x143b134ee",
+   "notes": "V7877 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

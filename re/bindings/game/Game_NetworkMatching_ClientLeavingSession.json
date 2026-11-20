@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkMatching_ClientLeavingSession",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14315a700",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-MATCHING",
+  "notes": "named from its log messages (channel NETWORK-MATCHING): '%s: client leaving the session'"
+ },
+ "signature": {
+  "id": "game.network_matching_client_leaving_session",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE E8 ?? ?? ?? ?? 80 BE 81 00 00 00 01",
+  "match": "0x14315a700",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14315a700",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkMatching_ClientLeavingSession"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x14315a700",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14315a700.c",
+   "notes": "V6000 207-line updateLeave/changePlayerState (client and host leave, session closing); not only client leaving log. Better: Game_NetworkMatching_UpdateLeave; vtable/indirect"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x14315a700",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14315a700.c",
+   "notes": "V6999 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

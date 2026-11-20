@@ -2,7 +2,7 @@
 // file in the C2 shape and a Classic Seasons 2016-like box.
 #pragma once
 
-#include "../../src/core/apply/tracks/list.hpp"
+#include "core/apply/tracks/list.hpp"
 
 #include <cstdio>
 #include <string>
@@ -47,10 +47,8 @@ inline trk::Base base_of(std::vector<trk::BaseTrack> tracks)
 inline trk::Base cs_base()
 {
     return base_of({track("game/melbourne", "melbourne", {"venue/albert_park"}),
-                    track("game/bahrain", "bahrain", {"venue/bahrain"}),
-                    track("game/shanghai", "shanghai", {"venue/shanghai"}),
-                    track("game/monaco", "monaco", {"venue/monaco"}),
-                    track("game/melbourne_reverse", "melbourne_reverse"),
+                    track("game/bahrain", "bahrain", {"venue/bahrain"}), track("game/shanghai", "shanghai", {"venue/shanghai"}),
+                    track("game/monaco", "monaco", {"venue/monaco"}), track("game/melbourne_reverse", "melbourne_reverse"),
                     track("test.bahrain24/sepang", "bahrain24", {"venue/sepang"}, trk::Kind::record, "Sepang"),
                     track("mod.miami24/igora_drive", "igora_drive", {}, trk::Kind::older, "Igora Drive"),
                     track("mod.okayama/okayama", "okayama", {"venue/okayama"}, trk::Kind::older, "Okayama")});

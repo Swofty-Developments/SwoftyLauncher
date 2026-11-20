@@ -1,7 +1,7 @@
 // Host unit test for the storage path logic (storage_logic.hpp): the relative paths an addon may name, the
 // data folder root its files move to when the game can't create files in its addon folder, and the
-// listing of a folder split between that root and the game folder. run_events_test.sh builds and runs it.
-#include "../src/core/storage_logic.hpp"
+// listing of a folder split between that root and the game folder. native/test/run_tests.sh storage_logic builds and runs it.
+#include "core/runtime/storage_logic.hpp"
 
 #include <cstdio>
 #include <string>

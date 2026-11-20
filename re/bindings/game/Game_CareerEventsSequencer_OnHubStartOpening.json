@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerEventsSequencer_OnHubStartOpening",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c78050",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name onHubStartOpening (class from the log channel); log channel CareerEventsSequencer: 'onHubStartOpening'"
+ },
+ "signature": {
+  "id": "game.career_events_sequencer_on_hub_start_opening",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 80 3D ?? ?? ?? ?? 01 75 65 B8 AD 00 00 00",
+  "match": "0x140c78050",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c78050",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerEventsSequencer_OnHubStartOpening"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140c78050",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c78050.c;xref:0x142d510db",
+   "notes": "V4603 log/pretty strings and body checked in decomp"
+  }
+ ],
+ "proofs": []
+}

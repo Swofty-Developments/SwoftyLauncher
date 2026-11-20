@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EventDispatcher_SendPositionEvent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142525070",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142525070.c;xref:0x142524f01",
+  "notes": "Called from 0x142524e30: for vehicle [this+0x10] decodes its 1-based position (race order global 0x14606f740), formats it into a 0x40 string and sends it via Ne_EventDispatcher_SendEvent. Addon: position-change event for UI/audio. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3235)"
+ },
+ "signature": {
+  "id": "game.event_dispatcher_send_position_event",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC A8 00 00 00 83 79 08 FF 0F 84",
+  "match": "0x142525070",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142525070",
+  "kind": "func_start",
+  "names": [
+   "Game_EventDispatcher_SendPositionEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d14-verify",
+   "kind": "func",
+   "item": "Game_EventDispatcher_SendPositionEvent",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/42525070.c;xref:None",
+   "notes": "V3235 offsets, vtable slot/callers, strings and calls checked in decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

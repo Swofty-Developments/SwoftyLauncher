@@ -1,5 +1,7 @@
 #pragma once
 
+#include "core/apply/content/box_world.hpp"
+
 #include <swofty/json.hpp>
 
 #include <algorithm>
@@ -112,38 +114,74 @@ inline constexpr const char *LISTS = "entrants.entrant_lists.entrant_list";
 inline constexpr const char *VIRTUAL_HOST_LIST = "swofty_virtual_list";
 inline constexpr const char *SCENARIOS = "game_setup.scenarios.scenario";
 inline constexpr const char *SETUP_ROW = "entrants.entrant_setup_modes.entrant_setup_mode";
-inline constexpr const char *CATEGORY =
-    "options_system.options.multiplayer.options_folder_2.option[_metadata_=category]";
+inline constexpr const char *CATEGORY = "options_system.options.multiplayer.options_folder_2.option[_metadata_=category]";
 
-inline constexpr const char *AUDIO_CAR_FIELDS[] = {
-    "_metadata_", "bundle_name", "detonations_category", "safety_car", "cabin_radio", "left_right_panning",
-    "frontwing_offset_x", "frontwing_offset_y", "frontwing_offset_z", "rearwing_offset_x", "rearwing_offset_y",
-    "rearwing_offset_z", "windscreen_offset_x", "windscreen_offset_y", "windscreen_offset_z", "engine_offset_x",
-    "engine_offset_y", "engine_offset_z", "engine_rotation_y", "exhaust_offset_x", "exhaust_offset_y",
-    "exhaust_offset_z", "exhaust_rotation_y", "cabin_offset_x", "cabin_offset_y", "cabin_offset_z",
-    "cabin_rotation_y", "gearbox_offset_x", "gearbox_offset_y", "gearbox_offset_z", "gearbox_rotation_y",
-    "braking_slowdown", "engine_braking_scale", "exhaust_braking_scale", "engine_downshift_load_lag",
-    "exhaust_downshift_load_lag", "engine_torque_throttle_mixer", "exhaust_torque_throttle_mixer",
-    "judder_wobble_scale", "surface_load_wobble_scale", "off_load_decell_attenuation_idle",
-    "off_load_decell_attenuation_redline", "throttle_blend_power_base"};
+inline constexpr const char *AUDIO_CAR_FIELDS[] = {"_metadata_",
+                                                   "bundle_name",
+                                                   "detonations_category",
+                                                   "safety_car",
+                                                   "cabin_radio",
+                                                   "left_right_panning",
+                                                   "frontwing_offset_x",
+                                                   "frontwing_offset_y",
+                                                   "frontwing_offset_z",
+                                                   "rearwing_offset_x",
+                                                   "rearwing_offset_y",
+                                                   "rearwing_offset_z",
+                                                   "windscreen_offset_x",
+                                                   "windscreen_offset_y",
+                                                   "windscreen_offset_z",
+                                                   "engine_offset_x",
+                                                   "engine_offset_y",
+                                                   "engine_offset_z",
+                                                   "engine_rotation_y",
+                                                   "exhaust_offset_x",
+                                                   "exhaust_offset_y",
+                                                   "exhaust_offset_z",
+                                                   "exhaust_rotation_y",
+                                                   "cabin_offset_x",
+                                                   "cabin_offset_y",
+                                                   "cabin_offset_z",
+                                                   "cabin_rotation_y",
+                                                   "gearbox_offset_x",
+                                                   "gearbox_offset_y",
+                                                   "gearbox_offset_z",
+                                                   "gearbox_rotation_y",
+                                                   "braking_slowdown",
+                                                   "engine_braking_scale",
+                                                   "exhaust_braking_scale",
+                                                   "engine_downshift_load_lag",
+                                                   "exhaust_downshift_load_lag",
+                                                   "engine_torque_throttle_mixer",
+                                                   "exhaust_torque_throttle_mixer",
+                                                   "judder_wobble_scale",
+                                                   "surface_load_wobble_scale",
+                                                   "off_load_decell_attenuation_idle",
+                                                   "off_load_decell_attenuation_redline",
+                                                   "throttle_blend_power_base"};
 
 inline constexpr const char *AUDIO_BUNDLE_FIELDS[] = {"_metadata_", "bundle_name", "era", "engine", "exhaust", "cabin"};
-inline constexpr const char *SCENARIO_FIELDS[] = {"_metadata_", "display_name", "entrant_list", "game_setup_mode",
-                                                  "race_class", "statId", "use_custom_vehicle_spec"};
-inline constexpr const char *CATEGORY_FIELDS[] = {"_metadata_", "confirmation_dialogue", "description_override",
-                                                  "game_value", "is_default", "loc_tag", "loc_tag_alternate",
-                                                  "vr_is_default"};
+inline constexpr const char *SCENARIO_FIELDS[] = {"_metadata_", "display_name", "entrant_list",           "game_setup_mode",
+                                                  "race_class", "statId",       "use_custom_vehicle_spec"};
+inline constexpr const char *CATEGORY_FIELDS[] = {
+    "_metadata_", "confirmation_dialogue", "description_override", "game_value", "is_default",
+    "loc_tag",    "loc_tag_alternate",     "vr_is_default"};
 
 // Records a copied row adds, by the table it copies in (the fields of the stock rows the copies come from,
 // from tools/gamedb/catalog/keys.tsv.gz and the operation files' field lists).
 inline std::size_t row_keys(const std::string &table)
 {
     static const std::map<std::string, std::size_t> sizes = {
-        {"audio.audio_bundle_settings", 6},        {"entrants.vehicles", 40},
-        {"entrants.vehicles.vehicle_packages", 30}, {"car_setup.presets", 421},
-        {"entrants.entrant_lists.entrants", 12},    {"entrants.standings", 23},
-        {"entrants.entrant_lists", 190},            {"game_setup.scenarios", 7},
-        {"drs.drs_allowed_lap", 8},                 {"leaderboards", 3},
+        {"audio.audio_bundle_settings", 6},
+        {"entrants.vehicles", 40},
+        {"entrants.vehicles.vehicle_packages", 30},
+        {"car_setup.presets", 421},
+        {"entrants.entrant_lists.entrants", 12},
+        {"entrants.standings", 23},
+        {"entrants.entrant_lists", 190},
+        {"game_setup.scenarios", 7},
+        {"drs.drs_allowed_lap", 8},
+        {"leaderboards", 3},
         {"options_system.options.multiplayer.options_folder_2.option[_metadata_=category]", 8}};
     auto it = sizes.find(table);
     return it == sizes.end() ? 16 : it->second;
@@ -307,8 +345,7 @@ inline void lower_engine_sound(const std::string &id, const Value &rec, Plan &pl
     }
     std::string from = rec["settings_from"].is_string() ? key_of(rec["settings_from"].as_string()) : name;
     Value set = Value::object({{"_metadata_", name}, {"bundle_name", name}});
-    push_row(plan, "audio.audio_bundle_settings", std::string(AUDIO_BUNDLES) + "[_metadata_=" + from + "]",
-             std::move(set));
+    push_row(plan, "audio.audio_bundle_settings", std::string(AUDIO_BUNDLES) + "[_metadata_=" + from + "]", std::move(set));
     add_fields(plan, AUDIO_BUNDLES, AUDIO_BUNDLE_FIELDS, std::size(AUDIO_BUNDLE_FIELDS));
     plan.redirects.push_back({"audio/2025/bundles/" + name + ".bdl", std::string(b.as_string()), addon_of(id), id});
     plan.lines.push_back("engine_sound " + id + ": bundle " + name + ", settings from " + from);
@@ -333,14 +370,14 @@ inline void lower_vehicle_package(const std::string &id, const Value &rec, Plan 
                              (sid ? "stat id " + std::to_string(*sid) : std::string("no stat id")) + " is outside 0-" +
                              std::to_string(VEHICLE_PACKAGE_MAX) +
                              ", which is all the game keeps for a vehicle package; the package is left out and its "
-                             "cars use " + donor);
+                             "cars use " +
+                             donor);
         plan.refused++;
         return;
     }
     if (sid)
         set["stat_id"] = std::to_string(*sid);
-    push_row(plan, "entrants.vehicles.vehicle_packages", std::string(PACKAGES) + "[_metadata_=" + donor + "]",
-             std::move(set));
+    push_row(plan, "entrants.vehicles.vehicle_packages", std::string(PACKAGES) + "[_metadata_=" + donor + "]", std::move(set));
     push_row(plan, "car_setup.presets", std::string(SETUP_PRESETS) + "[_metadata_=" + setups + "_vehicle_package]",
              Value::object({{"_metadata_", label + "_vehicle_package"}}));
     plan.lines.push_back("vehicle.package " + id + ": row " + label + " from " + donor + ", setups from " + setups +
@@ -349,13 +386,10 @@ inline void lower_vehicle_package(const std::string &id, const Value &rec, Plan 
 
 using Dropped = std::set<std::string>;
 
-inline std::string drop_key(const char *registry, const std::string &id)
-{
-    return std::string(registry) + "|" + id;
-}
+inline std::string drop_key(const char *registry, const std::string &id) { return std::string(registry) + "|" + id; }
 
-inline void lower_vehicle(const std::string &id, const Value &rec, const Lookup &lookup, const Source &source,
-                          Plan &plan, const StatIds &stat = {}, const Dropped *dropped = nullptr)
+inline void lower_vehicle(const std::string &id, const Value &rec, const Lookup &lookup, const Source &source, Plan &plan,
+                          const StatIds &stat = {}, const Dropped *dropped = nullptr)
 {
     plan.owner = addon_of(id);
     std::string label = rec["label"].is_string() ? std::string(rec["label"].as_string()) : key_of(id);
@@ -386,18 +420,18 @@ inline void lower_vehicle(const std::string &id, const Value &rec, const Lookup 
         set["asset_filename"] = ai;
     auto sid = stat_of(stat, "vehicle", id, pin_of(rec));
     if ((!sid && stat) || (sid && *sid > VEHICLE_STAT_MAX)) {
-        plan.lines.push_back("vehicle " + id + ": " +
-                             (sid ? "stat id " + std::to_string(*sid) : std::string("no stat id")) + " is outside 0-" +
-                             std::to_string(VEHICLE_STAT_MAX) +
-                             ", which is all the game keeps for a vehicle; the car is left out, and so is every entrant list that uses it");
+        plan.lines.push_back(
+            "vehicle " + id + ": " + (sid ? "stat id " + std::to_string(*sid) : std::string("no stat id")) + " is outside 0-" +
+            std::to_string(VEHICLE_STAT_MAX) +
+            ", which is all the game keeps for a vehicle; the car is left out, and so is every entrant list that uses it");
         plan.refused++;
         return;
     }
     if (sid)
         set["stat_id"] = std::to_string(*sid);
     push_row(plan, "entrants.vehicles", std::string(VEHICLES) + "[_metadata_=" + donor + "]", std::move(set));
-    std::string line = "vehicle " + id + ": row " + label + " from " + donor +
-                       (sid ? ", stat id " + std::to_string(*sid) : std::string());
+    std::string line =
+        "vehicle " + id + ": row " + label + " from " + donor + (sid ? ", stat id " + std::to_string(*sid) : std::string());
     if (!left_out.empty())
         line += ", package " + left_out + " has no stat id and is left out, so it keeps the package of " + donor;
     const Value &sound_id = rec["engine_sound"];
@@ -416,8 +450,8 @@ inline void lower_vehicle(const std::string &id, const Value &rec, const Lookup 
                 value = std::string(rec["audio_switch"].as_string());
             else if (std::string_view(field) == "bundle_name" && !bundle.empty())
                 value = bundle + ".bdl";
-            push_op(plan, Value::object({{"op", "put-record"}, {"key", to + field}, {"type", stock->tag},
-                                         {"value", hex(value)}}));
+            push_op(plan,
+                    Value::object({{"op", "put-record"}, {"key", to + field}, {"type", stock->tag}, {"value", hex(value)}}));
             copied++;
         }
         plan.keys += copied;
@@ -488,16 +522,19 @@ inline PackageTeams package_teams(const Value &teams, const Lookup &lookup, cons
         std::string label = named ? own : vehicle;
         if (named && (own.empty() || !seen(own)) && !vehicle.empty() && seen(vehicle)) {
             out.notes.push_back(head + ": its team " + std::string(team["team"].as_string()) + " gives no entrants.teams row" +
-                                (own.empty() ? std::string() : " (" + own + ")") + " the game sees; it uses its car's row " + vehicle);
+                                (own.empty() ? std::string() : " (" + own + ")") + " the game sees; it uses its car's row " +
+                                vehicle);
             label = vehicle;
         }
         bool addons_car = !named && team["vehicle"].is_string() && team["vehicle"].as_string().rfind("game/", 0) != 0;
         if (addons_car && !seen(label))
-            out.notes.push_back(head + " names entrants.teams row " + label +
-                                ", which the game database does not hold yet; its addon's database operations are expected to add it");
+            out.notes.push_back(
+                head + " names entrants.teams row " + label +
+                ", which the game database does not hold yet; its addon's database operations are expected to add it");
         else if (!seen(label))
-            out.missing.push_back(head + (label.empty() ? std::string(" names no entrants.teams row")
-                                                        : " names entrants.teams row " + label + ", which the game database lacks"));
+            out.missing.push_back(head + (label.empty()
+                                              ? std::string(" names no entrants.teams row")
+                                              : " names entrants.teams row " + label + ", which the game database lacks"));
         if (have_vehicles && !vehicle.empty() && !read(std::string(VEHICLES) + "[_metadata_=" + vehicle + "]._metadata_"))
             out.notes.push_back(head + " names entrants.vehicles row " + vehicle + ", which the game database lacks");
         out.labels.push_back(label);
@@ -541,10 +578,7 @@ inline std::string package_look(const Lookup &lookup, std::string_view ref, cons
     return record_label(lookup, "driver.look", (*d)["look"].as_string());
 }
 
-inline std::string title_tag(const std::string &entrant_list)
-{
-    return "lng_swofty_era_" + entrant_list;
-}
+inline std::string title_tag(const std::string &entrant_list) { return "lng_swofty_era_" + entrant_list; }
 
 // The rows of a child table that a row the package copies holds (its _<child>_instancecount_), when a Read sees the
 // database; without one the count is unknown and the copy keeps the source's children only.
@@ -604,8 +638,7 @@ inline std::string dropped_ref(const Value &rec, const Dropped *dropped)
         for (const char *registry : {"team.identity", "vehicle"}) {
             const Value &ref = entries[t][std::string_view(registry) == "vehicle" ? "vehicle" : "team"];
             if (ref.is_string() && dropped->count(drop_key(registry, std::string(ref.as_string()))))
-                return std::string(registry == std::string_view("vehicle") ? "vehicle " : "team ") +
-                       std::string(ref.as_string());
+                return std::string(registry == std::string_view("vehicle") ? "vehicle " : "team ") + std::string(ref.as_string());
         }
     return {};
 }
@@ -628,8 +661,7 @@ inline constexpr const char *SETUP_MODES_ROW = "game_setup.game_setup_modes.game
 // 0x1413e6e46); Sess_Load_GameSetupModes (0x142a148f0) parses only rows whose available is true (0x142a14a1c..
 // 0x142a14a2d) and nothing clears it. So the helper row gets available=True here and is parsed into the setup mode
 // store the era picker reads. A row that does not exist is left alone with a line: the package still applies.
-inline void lower_weekend_mode(const std::string &id, const Value &rec, const std::string &host, const Read &read,
-                               Plan &plan)
+inline void lower_weekend_mode(const std::string &id, const Value &rec, const std::string &host, const Read &read, Plan &plan)
 {
     const Value &w = rec["rules"]["weekend_mode"];
     if (!w.is_string() || !weekend_mode_name_ok(w.as_string()) || w.as_string() == host)
@@ -652,9 +684,53 @@ inline void lower_weekend_mode(const std::string &id, const Value &rec, const st
                          " made available, so the game parses it into its setup mode store");
 }
 
-inline void lower_package(const std::string &id, const Value &rec, const Lookup &lookup, Plan &plan,
-                          const StatIds &stat = {}, const PersonMap *wear = nullptr, const Read &read = {},
-                          const ConstructorTeams *constructors = nullptr, const Dropped *dropped = nullptr)
+// The rows of a box's own world (box_world.hpp): a season row copied from the list's season with an id from the
+// content.package.season pool, the season on every seasons list that holds the list's season, a layer row for the
+// box's setup mode and season copied from f1_26 or myteam_26 with an id from the content.package.layer pool, and the
+// season on the list row. A box whose list's world already holds its teams gets nothing.
+inline void lower_box_world(const std::string &id, const std::string &list, const std::string &mode, std::size_t teams,
+                            const std::string &list_from, Value &row, const Read &read, const StatIds &stat, Plan &plan)
+{
+    const Value &set = row;
+    std::string season = set["season"].is_string()
+                             ? std::string(set["season"].as_string())
+                             : (read ? read(std::string(LISTS) + "[_metadata_=" + list_from + "].season").value_or("") : "");
+    box_world::Choice c = box_world::choose(list, mode, teams, season, read);
+    if (!c.line.empty())
+        plan.lines.push_back("content.package " + id + ": " + c.line);
+    if (!c.apply)
+        return;
+    auto season_id = stat_of(stat, box_world::SEASON_IDS, id, -1);
+    auto layer_id = season_id ? stat_of(stat, box_world::LAYER_IDS, id, -1) : std::nullopt;
+    if (!season_id || !layer_id) {
+        plan.lines.push_back("content.package " + id + ": no free " +
+                             std::string(season_id ? "track layer id (0 to 255)" : "season id (0 to 31)") + "; its " +
+                             std::to_string(teams) + " teams keep the world as it is");
+        return;
+    }
+    push_row(plan, box_world::SEASONS,
+             std::string(box_world::SEASONS) + "." + box_world::SEASON_ROW + "[_metadata_=" + c.from_season + "]",
+             Value::object({{"_metadata_", c.season}, {"statId", std::to_string(*season_id)}}));
+    for (auto &r : c.appends)
+        push_op(plan, append_op(r, "seasons", c.season));
+    push_row(
+        plan, box_world::LAYERS,
+        std::string(box_world::LAYERS) + "." + box_world::LAYER_ROW + "[_metadata_=" + c.from->layer + "]",
+        Value::object(
+            {{"_metadata_", c.layer}, {"statId", std::to_string(*layer_id)}, {"game_setup_modes", mode}, {"seasons", c.season}}));
+    row["season"] = c.season;
+    plan.lines.push_back(
+        "content.package " + id + ": " + std::to_string(teams) + " teams, " +
+        (c.now < 0 ? std::string("no layer gives its list a world") : "its world holds " + std::to_string(c.now) + " garages") +
+        ": season " + c.season + " (statId " + std::to_string(*season_id) + "), layer " + c.layer + " (" + c.from->world + ", " +
+        std::to_string(c.from->garages) + " garages, statId " + std::to_string(*layer_id) + "), " +
+        std::to_string(c.appends.size()) + " season lists");
+}
+
+// box_worlds: give a box with more teams than its world has garages a world of its own (box_world.hpp).
+inline void lower_package(const std::string &id, const Value &rec, const Lookup &lookup, Plan &plan, const StatIds &stat = {},
+                          const PersonMap *wear = nullptr, const Read &read = {}, const ConstructorTeams *constructors = nullptr,
+                          const Dropped *dropped = nullptr, bool box_worlds = false)
 {
     plan.owner = addon_of(id);
     if (std::string gone = dropped_ref(rec, dropped); !gone.empty()) {
@@ -670,15 +746,12 @@ inline void lower_package(const std::string &id, const Value &rec, const Lookup 
         title = list;
     std::string mode = rec["setup_mode"].is_string() ? std::string(rec["setup_mode"].as_string()) : "swofty_f1";
     bool own = !db["entrant_list"].is_string() || db["entrant_list"].as_string() == list;
-    std::string prefix = own && db["entrant_prefix"].is_string() ? std::string(db["entrant_prefix"].as_string())
-                                                                  : list + "-";
-    std::string standings = own && db["standings"].is_string() ? std::string(db["standings"].as_string())
-                                                                : list + "_teams";
+    std::string prefix = own && db["entrant_prefix"].is_string() ? std::string(db["entrant_prefix"].as_string()) : list + "-";
+    std::string standings = own && db["standings"].is_string() ? std::string(db["standings"].as_string()) : list + "_teams";
     int64_t scenario_pin = own && db["scenario_stat_id"].is_int() ? db["scenario_stat_id"].as_int() : -1;
     if (!own)
-        plan.lines.push_back("content.package " + id + ": its database block is " +
-                             std::string(db["entrant_list"].as_string()) + "'s; its own rows are " + prefix +
-                             "<driver> and " + standings);
+        plan.lines.push_back("content.package " + id + ": its database block is " + std::string(db["entrant_list"].as_string()) +
+                             "'s; its own rows are " + prefix + "<driver> and " + standings);
     std::size_t seats = 0;
     const Value &teams = rec["teams"];
     PackageTeams rows = package_teams(teams, lookup, read, constructors);
@@ -686,8 +759,9 @@ inline void lower_package(const std::string &id, const Value &rec, const Lookup 
         std::string all;
         for (auto &m : rows.missing)
             all += (all.empty() ? "" : "; ") + m;
-        plan.lines.push_back("content.package " + id + ": " + all +
-                             "; not applied, so the game can boot (give the team a team.identity record, or its vehicle a team_from)");
+        plan.lines.push_back(
+            "content.package " + id + ": " + all +
+            "; not applied, so the game can boot (give the team a team.identity record, or its vehicle a team_from)");
         plan.refused++;
         return;
     }
@@ -696,10 +770,9 @@ inline void lower_package(const std::string &id, const Value &rec, const Lookup 
     for (std::size_t t = 0; t < teams.size(); t++)
         seats += teams[t]["drivers"].size();
     bool wide = seats > 20;
-    std::string list_from = db["entrant_list_from"].is_string() ? std::string(db["entrant_list_from"].as_string())
-                                                                 : "f1_2025";
-    std::string standings_from = db["standings_from"].is_string() ? std::string(db["standings_from"].as_string())
-                                                                   : "f1_teams_2024";
+    std::string list_from = db["entrant_list_from"].is_string() ? std::string(db["entrant_list_from"].as_string()) : "f1_2025";
+    std::string standings_from =
+        db["standings_from"].is_string() ? std::string(db["standings_from"].as_string()) : "f1_teams_2024";
     for (std::size_t t = 0; t < teams.size(); t++) {
         const Value &team = teams[t];
         for (std::size_t s = 0; s < team["drivers"].size(); s++) {
@@ -768,6 +841,8 @@ inline void lower_package(const std::string &id, const Value &rec, const Lookup 
     bool virt = rec["virtual_list"].is_bool() && rec["virtual_list"].as_bool();
     if (virt)
         plan.virtual_lists.push_back(list);
+    if (box_worlds && !virt && mode == box_world::SETUP_MODE)
+        lower_box_world(id, list, mode, teams.size(), list_from, row, read, stat, plan);
     auto list_id = virt ? std::optional<int64_t>() : stat_of(stat, "content.package", id, pin_of(rec));
     if (list_id)
         row["stat_id"] = std::to_string(*list_id);
@@ -786,15 +861,14 @@ inline void lower_package(const std::string &id, const Value &rec, const Lookup 
             std::string at = own_list + ".entrant_" + std::to_string(slot);
             char pos[16];
             std::snprintf(pos, sizeof pos, "_driver_0%zu", s + 1);
-            std::initializer_list<std::pair<const char *, std::string>> fields = {
-                {"_metadata_", vehicle + pos},
-                {"team", label},
-                {"vehicle", vehicle},
-                {"entrant_reference", prefix + driver},
-                {"team_position", std::to_string(s)},
-                {"car_number", "255"},
-                {"driver", ""},
-                {"driver_customisation", ""}};
+            std::initializer_list<std::pair<const char *, std::string>> fields = {{"_metadata_", vehicle + pos},
+                                                                                  {"team", label},
+                                                                                  {"vehicle", vehicle},
+                                                                                  {"entrant_reference", prefix + driver},
+                                                                                  {"team_position", std::to_string(s)},
+                                                                                  {"car_number", "255"},
+                                                                                  {"driver", ""},
+                                                                                  {"driver_customisation", ""}};
             if (list_rows && *list_rows && slot >= *list_rows) {
                 Value set = Value::object();
                 for (auto &[field, value] : fields)
@@ -808,17 +882,15 @@ inline void lower_package(const std::string &id, const Value &rec, const Lookup 
         }
     }
     if (list_rows && *list_rows && slot > *list_rows)
-        plan.lines.push_back("content.package " + id + ": entrant list " + list + " has " + std::to_string(slot) +
-                             " entrants; " + list_from + " holds " + std::to_string(*list_rows) + ", the rest are added");
+        plan.lines.push_back("content.package " + id + ": entrant list " + list + " has " + std::to_string(slot) + " entrants; " +
+                             list_from + " holds " + std::to_string(*list_rows) + ", the rest are added");
     if (list_rows && slot && slot < *list_rows) {
         push_op(plan, set_op(own_list, "_entrant_instancecount_", std::to_string(slot)));
-        plan.lines.push_back("content.package " + id + ": entrant list " + list + " has " + std::to_string(slot) +
-                             " entrants; " + list_from + " holds " + std::to_string(*list_rows) + ", the rest are left out");
+        plan.lines.push_back("content.package " + id + ": entrant list " + list + " has " + std::to_string(slot) + " entrants; " +
+                             list_from + " holds " + std::to_string(*list_rows) + ", the rest are left out");
     }
-    Value scenario = Value::object({{"_metadata_", list},
-                                    {"display_name", title},
-                                    {"entrant_list", list},
-                                    {"game_setup_mode", mode}});
+    Value scenario =
+        Value::object({{"_metadata_", list}, {"display_name", title}, {"entrant_list", list}, {"game_setup_mode", mode}});
     auto scenario_id = stat_of(stat, SCENARIO_IDS, id, scenario_pin);
     if (scenario_id)
         scenario["statId"] = std::to_string(*scenario_id);
@@ -842,25 +914,24 @@ inline void lower_package(const std::string &id, const Value &rec, const Lookup 
     if (virt)
         sets.clear();
     for (auto &cs : sets)
-        push_op(plan, append_op("content_sets.content_set[_metadata_=" + cs + "].available_entrant_lists_0",
-                                "entrant_lists", list));
+        push_op(plan,
+                append_op("content_sets.content_set[_metadata_=" + cs + "].available_entrant_lists_0", "entrant_lists", list));
     lower_weekend_mode(id, rec, mode, read, plan);
     add_fields(plan, SCENARIOS, SCENARIO_FIELDS, std::size(SCENARIO_FIELDS));
     add_fields(plan, (std::string(CATEGORY) + ".value").c_str(), CATEGORY_FIELDS, std::size(CATEGORY_FIELDS));
-    plan.lines.push_back("content.package " + id + ": entrant list " + list + ", " + std::to_string(seats) +
-                         " entrants in " + mode +
-                         (list_id ? ", stat id " + std::to_string(*list_id) : std::string()) +
-                         (board ? ", leaderboard " + board->label + (board_id ? " (stat id " + std::to_string(*board_id) + ")" : std::string())
-                                : std::string()) +
-                         (scenario_id ? ", scenario stat id " + std::to_string(*scenario_id) : std::string()));
+    plan.lines.push_back(
+        "content.package " + id + ": entrant list " + list + ", " + std::to_string(seats) + " entrants in " + mode +
+        (list_id ? ", stat id " + std::to_string(*list_id) : std::string()) +
+        (board ? ", leaderboard " + board->label + (board_id ? " (stat id " + std::to_string(*board_id) + ")" : std::string())
+               : std::string()) +
+        (scenario_id ? ", scenario stat id " + std::to_string(*scenario_id) : std::string()));
 }
 
 using BaseImage = std::function<std::string(const std::string &package)>;
 
 inline constexpr std::size_t BOX_TIME_TRIAL_CARS = 23;
 
-inline void lower_box(const std::string &id, const Value &rec, const Lookup &lookup, Plan &plan,
-                      const BaseImage &base_image = {})
+inline void lower_box(const std::string &id, const Value &rec, const Lookup &lookup, Plan &plan, const BaseImage &base_image = {})
 {
     std::string package = rec["package"].is_string() ? std::string(rec["package"].as_string()) : std::string();
     const Value *pkg = package.empty() ? nullptr : lookup("content.package", package);
@@ -917,6 +988,8 @@ inline constexpr PoolSpec POOLS[] = {
     {SCENARIO_IDS, "game_setup.scenarios", "scenario", "statId", 254},
     {LEADERBOARD_IDS, LEADERBOARD_TABLE, "leaderboard_descriptor", "stat_id", 255},
     {"team.identity", "entrants.teams", "team", "stat_id", TEAM_STAT_MAX},
+    {box_world::SEASON_IDS, box_world::SEASONS, box_world::SEASON_ROW, "statId", box_world::SEASON_ID_MAX},
+    {box_world::LAYER_IDS, box_world::LAYERS, box_world::LAYER_ROW, "statId", box_world::LAYER_ID_MAX},
 };
 
 struct PoolScan {
@@ -952,4 +1025,3 @@ inline std::vector<PoolScan> scan_pools(const std::function<std::optional<std::s
 }
 
 }
-

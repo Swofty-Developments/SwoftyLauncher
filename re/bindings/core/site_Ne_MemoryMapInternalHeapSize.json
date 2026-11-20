@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Ne_MemoryMapInternalHeapSize",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143972474",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/143971e20.c;xref:0x143972482",
+  "notes": "lea rdx,[rsp+0xa0] in Ne_MemoryMap_CreateHeapInternal (0x143971e20), the factory of the memory_map.xml heap_internal element, 8 bytes, right before mov r9,r15 and the call to Ne_MemoryMap_AllocHeapBlock (0x143972482). r15 = the heap size in bytes after the virtualExpandPercent scaling (SAVE_TEMP_ALLOC: 78643200 = 75M); r15 is also the capacity r8 of the heap object built after the call (mov r8,r15 at 0x143972508 and the later construction paths), so writing r15 here resizes the allocation and the heap together. rdi = the heap config struct (+0x0 align, +0x4 virtual, +0x8 virtualExpandPercent, +0x20 pagesize). Of the heap_internal elements of the stock system/memory_map.xml only SAVE_TEMP_ALLOC is 75M (SAVE_TEMP_ALLOC_HUGE 200M, SAVE_DATA 3M, GAME_VALUE_DB 55M, TEMP_POOL 12M); the plain-heap factory 0x14396e9d0 is the AUDIO_BUNDLE site."
+ },
+ "signature": {
+  "id": "core.memory_map_internal_heap_size",
+  "section": ".xtls",
+  "pattern": "48 8D 94 24 A0 00 00 00 48 89 F1 4D 89 F9",
+  "match": "0x143972474",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143972474",
+  "kind": "mid",
+  "expect": "48 8D 94 24 A0 00 00 00",
+  "names": [
+   "site_Ne_MemoryMapInternalHeapSize"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "savepool",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/save_heap.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-01",
+   "verifier": "savepool-verify",
+   "kind": "global",
+   "item": "0x143972474",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143971e20.c;xref:0x143972482",
+   "notes": "V8620 Own disasm: 0x143972474 is lea rdx,[rsp+0xa0] (488d9424a0000000, 8 bytes) followed by mov rcx,rsi; mov r9,r15; call 0x143969af0. r15 loaded at 0x1439723f8 from [rsp+0x88], scaled by (100+[rdi+8])/100 only when [rdi+4] (virtual) and [rdi+8] nonzero (0x143972410-0x14397242f), not touched between 0x143972433 and the call. mov r8,r15 reused at 0x143972508/0x14397267f/0x1439726c6/0x143972746/0x1439727bc/0x143972820. rdi fields +4,+8,+0x20 confirmed at 0x143972400/407/43d. No jump/call target lies in 0x143972475-0x14397247f."
+  }
+ ],
+ "proofs": []
+}

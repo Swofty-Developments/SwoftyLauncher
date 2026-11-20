@@ -5,7 +5,8 @@
 /* Image access through SwoftyCoreLive table v4 images(). All results are copied into caller-owned
    memory. No image files or pointers into the game's resources are returned.
    start enables bounded, asynchronous readback of named runtime badge textures.
-   image accepts team_badge_texture references, including catalogue and runtime badges.
+   image accepts team_badge_texture and tyre_icon_texture references, including catalogue and runtime badges.
+   Tyre catalogue support is advertised by Live table version 5 (images table stays version 1).
    Catalogue reads and decoding run on a worker only when requested, following active redirects.
    LATE means an archive read is pending; UNAVAILABLE means no usable image.
    sources returns the active game-relative archive redirects, not a cache search.

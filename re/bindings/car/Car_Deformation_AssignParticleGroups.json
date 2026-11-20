@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Deformation_AssignParticleGroups",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144110ca0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144110ca0.c;xref:0x14410b1f3",
+  "notes": "vector assign/copy over a list of 0x30-byte nodes each holding a vector<ptr> (node allocator vcall +0x18). Callers Car_Deformation_BuildTyreParticles, Car_TyreDeformation_BuildTyreParticleGrid."
+ },
+ "signature": {
+  "id": "car.deformation_assign_particle_groups",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 48 39 D1 0F 84",
+  "match": "0x144110ca0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144110ca0",
+  "kind": "func_start",
+  "names": [
+   "Car_Deformation_AssignParticleGroups"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x144110ca0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144110ca0.c;xref:0x14410b1f3",
+   "notes": "V7629 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

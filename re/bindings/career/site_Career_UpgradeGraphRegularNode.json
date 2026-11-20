@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_UpgradeGraphRegularNode",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143528a0b",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/1435288f0.c;xref:0x143528a0b;doc:addons/rnd-tyres-thermal/native/HOOKS.md#the-fix-flag-instantiate_tyres_upgrades-default-on-install-time",
+  "notes": "mov rcx,[rax+0xc8]: fall-through of the hub test (join target)"
+ },
+ "signature": {
+  "id": "career.upgrade_graph_regular_node",
+  "section": ".xtls",
+  "pattern": "74 7D 48 8B 88 C8 00 00 00 80 79 FC 00",
+  "match": "0x143528a09",
+  "anchor": "0x2",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143528a0b",
+  "kind": "mid",
+  "expect": "48 8B 88 C8 00 00 00",
+  "names": [
+   "site_Career_UpgradeGraphRegularNode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-4",
+   "kind": "global",
+   "item": "site_Career_UpgradeGraphRegularNode",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435288f0.c;xref:0x143528a09,0x143528a0b,0x143528a12",
+   "notes": "V0183 mov rcx,[rax+0xc8] is the fall-through of the hub test, followed by cmp byte [rcx-4],0 on the last state entry; 7-byte window clean"
+  }
+ ],
+ "proofs": []
+}

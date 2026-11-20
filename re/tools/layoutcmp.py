@@ -82,9 +82,26 @@ def func_bounds(img, rva):
 
 
 class Locator:
-    def __init__(self, steam, other):
+    def __init__(self, steam, other, build=None):
         self.s, self.o = steam, other
         self.cache = {}
+        self.alt_cache = {}
+        self.smap = None
+        if build:
+            from sigverify import section_map
+            self.smap = section_map(build)
+
+    def find_alt(self, srva):
+        """The other build's twin by sigport.py (a unique entry pattern, or a call or jump to it such as a protector thunk's),
+        for a function whose head pattern matched nothing or matched code that is not the same."""
+        if self.smap is None:
+            return None
+        if srva not in self.alt_cache:
+            from sigport import port_one
+            from sigverify import follow
+            r = port_one(self.s, self.o, self.smap, hex(srva), srva)
+            self.alt_cache[srva] = follow(self.o, r['port']) if 'error' not in r and r.get('port') else None
+        return self.alt_cache[srva]
 
     def find_other(self, srva, insns):
         if srva in self.cache:
@@ -274,27 +291,37 @@ def compare_function(steam, other, loc, sfunc_rva, cache):
     if not s_ins:
         out['why'] = 'no code'
         return out
+    sn = [norm(i) for i in s_ins]
+
+    def align(erva):
+        e_ins = decode(other, erva, (bnd[1] - bnd[0]) + 0x400)
+        en = [norm(i) for i in e_ins[:len(s_ins) + 64]]
+        sm = difflib.SequenceMatcher(None, sn, en, autojunk=False)
+        amap = {}
+        same = 0
+        for a, b, n in sm.get_matching_blocks():
+            for k in range(n):
+                amap[a + k] = b + k
+            same += n
+        for tag, a1, a2, b1, b2 in sm.get_opcodes():
+            if tag == 'replace' and a2 - a1 == b2 - b1:
+                for k in range(a2 - a1):
+                    if s_ins[a1 + k].mnemonic == e_ins[b1 + k].mnemonic:
+                        amap[a1 + k] = b1 + k
+        return dict(ratio=same / len(sn), same=same, erva=erva, eins=e_ins, amap=amap)
+
     erva = loc.find_other(sfunc_rva, s_ins)
-    if erva is None:
+    best = align(erva) if erva is not None else None
+    if best is None or best['ratio'] < 0.95:
+        alt = loc.find_alt(sfunc_rva)
+        if alt is not None and alt != erva:
+            cand = align(alt)
+            if best is None or cand['ratio'] > best['ratio']:
+                best = cand
+    if best is None:
         out['why'] = 'no unique head pattern on the other build'
         return out
-    e_ins = decode(other, erva, (bnd[1] - bnd[0]) + 0x400)
-    sn = [norm(i) for i in s_ins]
-    en = [norm(i) for i in e_ins[:len(s_ins) + 64]]
-    sm = difflib.SequenceMatcher(None, sn, en, autojunk=False)
-    amap = {}
-    same = 0
-    for a, b, n in sm.get_matching_blocks():
-        for k in range(n):
-            amap[a + k] = b + k
-        same += n
-    for tag, a1, a2, b1, b2 in sm.get_opcodes():
-        if tag == 'replace' and a2 - a1 == b2 - b1:
-            for k in range(a2 - a1):
-                if s_ins[a1 + k].mnemonic == e_ins[b1 + k].mnemonic:
-                    amap[a1 + k] = b1 + k
-    out.update(ok=True, ratio=same / len(sn), n=len(sn), same=same, erva=erva, sins=s_ins, eins=e_ins, amap=amap,
-               sidx={i.address: k for k, i in enumerate(s_ins)}, srva=sfunc_rva)
+    out.update(ok=True, n=len(sn), sins=s_ins, sidx={i.address: k for k, i in enumerate(s_ins)}, srva=sfunc_rva, **best)
     return out
 
 
@@ -303,10 +330,12 @@ def main(argv=None):
     ap.add_argument('--steam', required=True)
     ap.add_argument('--other', required=True)
     ap.add_argument('--field', action='append', help='Type.field (default: every LIVE_TIE field)')
+    ap.add_argument('--build', help='the other image\'s overlay in re/db/builds; with it a function whose head pattern fails is '
+                                    'located by sigport.py (call sites, protector thunks)')
     ap.add_argument('--md')
     a = ap.parse_args(argv)
     steam, other = bv.Image(a.steam), bv.Image(a.other)
-    loc = Locator(steam, other)
+    loc = Locator(steam, other, a.build)
     fields = parse_structs()
     want = [tuple(f.split('.')) for f in a.field] if a.field else live_ties() + [tuple(f.split('.')) for f in EXTRA_FIELDS]
     cache = {}

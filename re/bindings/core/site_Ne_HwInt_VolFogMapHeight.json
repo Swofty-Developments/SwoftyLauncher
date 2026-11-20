@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Ne_HwInt_VolFogMapHeight",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ca519a",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/143ca4ea0.c;xref:0x143ca519a",
+  "notes": "call Ne_Parse_Long(attr+0x50 value, NULL, 0) for the hardware-settings attribute 'volumetricFogMapHeight' (name matched case-insensitively against the string loaded at 0x143ca514c) in reader 0x143ca4ea0, a settings listener callback; its return address keys xanpavle.re-optimization's integer enforcement"
+ },
+ "signature": {
+  "id": "core.hw_int_vol_fog_map_height",
+  "section": ".xtls",
+  "pattern": "45 31 C0 E8 ?? ?? ?? ?? 89 C3 48 8B 0D",
+  "match": "0x143ca5197",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143ca519a",
+  "kind": "mid",
+  "expect": "E8",
+  "names": [
+   "site_Ne_HwInt_VolFogMapHeight"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "reopt-025",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/re-optimization/native/src/re_optimization.cpp (xanpavle.re-optimization)"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "reopt-025-verify",
+   "kind": "global",
+   "item": "site_Ne_HwInt_VolFogMapHeight",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ca4ea0.c;xref:0x143ca519a,0x143ca514c,0x143ca5187,0x143ca519f;sig:core.hw_int_vol_fog_map_height",
+   "notes": "V0932 Loop over the element attribute vector (+0x50..+0x58): 0x14534da24(attr+0x18 name, rbx = 'volumetricFogMapHeight' from lea 0x143ca514c, r8d 0x1f) at 0x143ca5187; on 0 it sets rcx = [attr+0x50], edx = 0, r8d = 0 and the E8 at 0x143ca519a calls 0x14534dcd8 (.xtls, .pdata 0x143ca4ea0-0x143ca5281). Result kept in ebx; when the callback at 0x1465343a0 is absent or returns 0 and height > 0x2d0 or width > 0x500, both are forced to 0x2d0 x 0x500; then height is clamped to 0x80..0x438, rounded up to 16 and written to the global 0x145f97090 when it changes. sigcheck: one hit, target 0x143ca519a"
+  }
+ ],
+ "proofs": []
+}

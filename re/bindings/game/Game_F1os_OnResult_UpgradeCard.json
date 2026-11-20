@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Game_F1os_OnResult_UpgradeCard",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142694560",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142694560.c;xref:0x142691c0f,0x142690e90",
+  "notes": "F1OS ServerMethodOperation result callback for method 'UpgradeCard' (method name ptr this+0x118, service this+0x110; lea-registered at 0x142691c0f in onStart/send 0x142690e90). Resp param_2: +0x88 flag / +8 transport error text -> fail 0x14443acd0; +0x98==0 success: JSON-parse body +0xa0 (0x140b5e130), log 'received result (%u)' with HTTP status +0x9c, result JSON keys {UpdatedCard,UpdatedCurrencies} -> result obj this+0x1c8 (raw body also to hook 0x142695610); else ERROR/UNKNOWNERROR: {Message,Data} -> error obj this+0x1b8, Message 'InvalidSessionToken' / 'UpgradeRequired' special-cased. Addon: card upgrade result."
+ },
+ "signature": {
+  "id": "game.f1os_on_result_upgrade_card",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 01 00 00 48 89 D7 48 89 CE E8",
+  "match": "0x142694560",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142694560",
+  "kind": "func_start",
+  "names": [
+   "Game_F1os_OnResult_UpgradeCard"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

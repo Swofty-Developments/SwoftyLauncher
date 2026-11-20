@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_SubscribeMessageHandlers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143720bc0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "int (void *owner)",
+  "evidence": "decomp:re/decomp/143720bc0.c;xref:0x145860a08",
+  "notes": "myteam-g1: Subscribes the stat-event writers: BankAccountTransactionMessage -> handler 143737790, FacilityAreaInstalled, FacilityReopenedMessage, F1WUpgradeCardCompleteMessage, UpgradeFittingChangedMessage -> Game_StatEvent_WriteRnDAndFacilityUpgrades, sponsor messages, trophy messages."
+ },
+ "signature": {
+  "id": "game.stat_event_subscribe_message_handlers",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC F8 01 00 00 48 89 CF 48 8B 81 98 00 00 00",
+  "match": "0x143720bc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143720bc0",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_SubscribeMessageHandlers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x143720bc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143720bc0.c;xref:0x145860a08",
+   "notes": "V10315 Subscribes many stat-event messages incl. BankAccountTransactionMessage handler 143737790, FacilityAreaInstalled, trophies, sponsors."
+  }
+ ],
+ "proofs": []
+}

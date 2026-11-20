@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Car_AnimClipTarget_SetAnimation",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140399720",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140399720.c;xref:0x140393eb0",
+  "notes": "(clipTarget, out, name, flags): under critical section +0x1218 binds a vehicle animation by name (JIT bind) for the in-car driver ('DRIVER'); sums channel counts from +0x12b0 lists, writes out={this+0x1270, weight 1.0}; logs 'InCarDriverActor::VehicleAnimationData::NeVehicleClipTargetImpl::setAnimationName JIT bind failed'. Caller: Car_Model_BindCockpitNodes."
+ },
+ "signature": {
+  "id": "car.anim_clip_target_set_animation",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 01 00 00 44 89 CB 4D 89",
+  "match": "0x140399720",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140399720",
+  "kind": "func_start",
+  "names": [
+   "Car_AnimClipTarget_SetAnimation"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x140399720",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140399720.c;xref:0x140394d29",
+   "notes": "V3522 crit sec +0x1218, out={this+0x1270,1.0}, summed channel counts from +0x12b0 lists, 'DRIVER' string all seen; but logged strings are 'SkinnedActor::NeSequenceClipTargetImpl::setAnimationName JIT bind failed' / '...NeVehicleClipTargetImpl::setAnimationName ERROR %s not found', not the quoted InCarDriverActor JIT text"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x140399720",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140399720.c;xref:0x140394d29",
+   "notes": "V3999 crit sec +0x1218, out={this+0x1270,1.0}, summed channel counts from +0x12b0 lists, 'DRIVER' string all seen; but logged strings are 'SkinnedActor::NeSequenceClipTargetImpl::setAnimationName JIT bind failed' / '...NeVehicleClipTargetImpl::setAnimationName ERROR %s not found', not the quoted InCarDriverActor JIT text"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la0-verify",
+   "kind": "func",
+   "item": "0x140399720",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140399720.c;xref:0x1403646f7,0x140394d29",
+   "notes": "V4064 critical section +0x1218, out={this+0x1270}, +0x12b0 lists, JIT bind strings, DRIVER; caller Car_Model_BindCockpitNodes confirmed"
+  }
+ ],
+ "proofs": []
+}

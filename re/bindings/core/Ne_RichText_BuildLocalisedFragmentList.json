@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_RichText_BuildLocalisedFragmentList",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141b61e10",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Build(int *style, void *src, void *dst, int mode)",
+  "evidence": "decomp:re/decomp/141b61e10.c;xref:0x1419b6371;xref:0x1419b6527;xref:0x1422e6bbe",
+  "notes": "myteam-g2: Large string/rich-text builder (Ne_RichText_ConstructMixedString, Ne_Variant_FormatToString) with refcounted source handling; generic text composing helper used by department event icons/popups."
+ },
+ "signature": {
+  "id": "core.rich_text_build_localised_fragment_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 78 11 00 00 E8 ?? ?? ?? ?? 48 29 C4 44 89 CF",
+  "match": "0x141b61e10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141b61e10",
+  "kind": "func_start",
+  "names": [
+   "Ne_RichText_BuildLocalisedFragmentList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141b61e10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141b61e10.c;xref:0x1419b6371;xref:0x1419b6527",
+   "notes": "V9949 Large rich-text builder using Ne_RichText_ConstructMixedString, Variant_FormatToString, strcmp; generic text composer."
+  }
+ ],
+ "proofs": []
+}

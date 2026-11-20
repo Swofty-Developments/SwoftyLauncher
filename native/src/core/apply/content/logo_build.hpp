@@ -1,15 +1,25 @@
 #pragma once
 
-#include "erp_file.hpp"
-#include "logo_array.hpp"
-#include "uidb.hpp"
+#include "core/apply/content/erp_file.hpp"
+#include "core/apply/content/logo_array.hpp"
+#include "core/apply/content/logo_cache.hpp"
+#include "core/apply/content/png_straight.hpp"
+#include "core/apply/content/uidb.hpp"
+#include "core/runtime/hashing.hpp"
 
+#include <algorithm>
+#include <atomic>
+#include <chrono>
+#include <cstdio>
+#include <cstring>
+#include <exception>
 #include <functional>
 #include <map>
 #include <memory>
 #include <optional>
 #include <set>
 #include <string>
+#include <thread>
 #include <vector>
 
 // The archives a set of team logos changes. Each logo is a slice for one stock texture array (an encoded image, or a
@@ -30,17 +40,221 @@ inline constexpr const char *OVERRIDES = "eaid://ui_package/databases/overrides.
 inline constexpr const char *ARRAY_URI = "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.";
 inline constexpr const char *TEXTURE_PATH = "ui_package/art/textures/swofty/team_logos/";
 
+// An image want carries its decoded pixels, or, when the slice cache already knew its PNG decodes, the PNG bytes
+// (png) to decode only if a slice of it has to be encoded; source names those bytes in the slice cache.
 struct Want {
     std::string array, key, donor;
     std::string rgba;
     uint32_t width = 0, height = 0;
     bool fallback = false;
+    std::string png{}, source{};
 };
+
+/* Encoded slices on disk, so a change to one addon re-encodes only its own logos. An entry is named by the PNG's
+   bytes (two 64-bit hashes and the length), the slice size and SLICE_ENCODER, which changes with anything that
+   changes slice_from_rgba's output; it holds a checksum of the slice, and an entry that fails it is encoded again.
+   A PNG's decode result (its size, or why it does not decode) is kept the same way. */
+inline constexpr const char *SLICE_ENCODER = "bc7logo1";
+
+struct SliceCache {
+    std::function<bool(const std::string &name, std::string &bytes)> get;
+    std::function<void(const std::string &name, const std::string &bytes)> put;
+    bool on() const { return get && put; }
+};
+
+inline std::string source_of(const std::string &png)
+{
+    char out[64];
+    std::snprintf(out, sizeof out, "%016llx%016llx-%zx", (unsigned long long)runtime::fnv64(png.data(), png.size()),
+                  (unsigned long long)runtime::mix64(png.data(), png.size()), png.size());
+    return out;
+}
+
+inline std::string slice_name(const std::string &source, uint32_t width, uint32_t height)
+{
+    return source + "-" + std::to_string(width) + "x" + std::to_string(height) + "-" + SLICE_ENCODER + ".slice";
+}
+
+inline std::string info_name(const std::string &source) { return source + ".png"; }
+
+inline std::string sealed(const std::string &bytes)
+{
+    uint64_t sum = runtime::mix64(bytes.data(), bytes.size());
+    std::string out = "SLC1";
+    out.append(reinterpret_cast<const char *>(&sum), 8);
+    return out + bytes;
+}
+
+inline bool unseal(const std::string &stored, std::string &bytes)
+{
+    if (stored.size() < 12 || stored.compare(0, 4, "SLC1"))
+        return false;
+    uint64_t sum;
+    std::memcpy(&sum, stored.data() + 4, 8);
+    if (runtime::mix64(stored.data() + 12, stored.size() - 12) != sum)
+        return false;
+    bytes.assign(stored, 12, std::string::npos);
+    return true;
+}
+
+struct PngInfo {
+    bool ok = false;
+    uint32_t width = 0, height = 0;
+    std::string why;
+};
+
+inline std::string info_text(const PngInfo &i)
+{
+    return i.ok ? "ok " + std::to_string(i.width) + " " + std::to_string(i.height) : "no " + i.why;
+}
+
+inline bool info_parse(const std::string &text, PngInfo &i)
+{
+    if (!text.compare(0, 3, "no ")) {
+        i = {false, 0, 0, text.substr(3)};
+        return true;
+    }
+    unsigned w = 0, h = 0;
+    char tail = 0;
+    if (text.compare(0, 3, "ok ") || std::sscanf(text.c_str() + 3, "%u %u%c", &w, &h, &tail) != 2 || !w || !h)
+        return false;
+    i = {true, w, h, {}};
+    return true;
+}
+
+// Reads a want's PNG the way deliver_logos always has, but answers from the slice cache when it knows these bytes, so
+// the pixels are decoded only when a slice must be encoded. Returns the decode result; rgba is filled when decoded.
+inline PngInfo look_at_png(const SliceCache &cache, const std::string &png, const std::string &source, std::string &rgba)
+{
+    PngInfo i;
+    std::string stored, text;
+    if (cache.on() && cache.get(info_name(source), stored) && unseal(stored, text) && info_parse(text, i))
+        return i;
+    i.ok = png::decode(png, rgba, i.width, i.height, i.why);
+    if (cache.on())
+        cache.put(info_name(source), sealed(info_text(i)));
+    return i;
+}
+
+/* One slice of a 700x640 array takes hundreds of milliseconds to encode and a boot can ask for hundreds of slices,
+   while the game's main thread waits in the database load. Each encode reads only its own image, so they run on
+   worker threads; a failure or exception is kept for the caller, which uses the results in its own order. */
+struct Encoded {
+    bool ok = false, scaled = false;
+    std::string bytes, why;
+};
+
+inline void run_parallel(size_t n, const std::function<void(size_t)> &fn)
+{
+    unsigned cores = std::thread::hardware_concurrency();
+    size_t workers = std::min<size_t>(n, std::clamp<unsigned>(cores > 1 ? cores - 1 : 1, 1, 8));
+    std::atomic<size_t> next{0};
+    std::vector<std::exception_ptr> failed(n);
+    auto drain = [&] {
+        for (size_t i; (i = next.fetch_add(1)) < n;) {
+            try {
+                fn(i);
+            } catch (...) {
+                failed[i] = std::current_exception();
+            }
+        }
+    };
+    std::vector<std::thread> pool;
+    for (size_t k = 1; k < workers; k++) {
+        try {
+            pool.emplace_back(drain);
+        } catch (...) {
+            break;
+        }
+    }
+    drain();
+    for (auto &t : pool)
+        t.join();
+    for (auto &e : failed)
+        if (e)
+            std::rethrow_exception(e);
+}
+
+struct EncodeStats {
+    size_t cached = 0, encoded = 0, decoded = 0;
+};
+
+inline std::vector<std::vector<Encoded>> encode_slices(const std::vector<const Want *> &wants,
+                                                       const std::vector<logo_array::Shape> &shapes, const SliceCache &cache = {},
+                                                       EncodeStats *stats = nullptr)
+{
+    std::vector<std::vector<Encoded>> out(wants.size(), std::vector<Encoded>(shapes.size()));
+    std::vector<size_t> misses;
+    std::vector<char> needs_pixels(wants.size());
+    for (size_t job = 0; job < wants.size() * shapes.size(); job++) {
+        const Want *w = wants[job / shapes.size()];
+        if (!w->donor.empty())
+            continue;
+        const logo_array::Shape &shape = shapes[job % shapes.size()];
+        Encoded &e = out[job / shapes.size()][job % shapes.size()];
+        std::string stored;
+        if (cache.on() && !w->source.empty() && cache.get(slice_name(w->source, shape.width, shape.height), stored) &&
+            unseal(stored, e.bytes)) {
+            e.ok = true;
+            e.scaled = w->width != shape.width || w->height != shape.height;
+            if (stats)
+                stats->cached++;
+            continue;
+        }
+        misses.push_back(job);
+        needs_pixels[job / shapes.size()] = w->rgba.empty();
+    }
+    std::vector<std::string> pixels(wants.size());
+    std::vector<std::string> pixel_why(wants.size());
+    std::vector<size_t> decode;
+    for (size_t i = 0; i < wants.size(); i++)
+        if (needs_pixels[i])
+            decode.push_back(i);
+    run_parallel(decode.size(), [&](size_t k) {
+        const Want *w = wants[decode[k]];
+        uint32_t dw = 0, dh = 0;
+        if (!png::decode(w->png, pixels[decode[k]], dw, dh, pixel_why[decode[k]]) || dw != w->width || dh != w->height) {
+            pixels[decode[k]].clear();
+            if (pixel_why[decode[k]].empty())
+                pixel_why[decode[k]] = "the image decodes to another size than the slice cache says";
+        }
+    });
+    if (stats)
+        stats->decoded += decode.size(), stats->encoded += misses.size();
+    run_parallel(misses.size(), [&](size_t k) {
+        size_t job = misses[k], wi = job / shapes.size();
+        const Want *w = wants[wi];
+        Encoded &e = out[wi][job % shapes.size()];
+        const std::string &rgba = w->rgba.empty() ? pixels[wi] : w->rgba;
+        if (rgba.empty()) {
+            e.why = "the image does not decode: " + pixel_why[wi];
+            return;
+        }
+        e.ok = logo_array::slice_from_rgba(shapes[job % shapes.size()], reinterpret_cast<const uint8_t *>(rgba.data()), w->width,
+                                           w->height, e.bytes, e.why, &e.scaled);
+    });
+    if (cache.on())
+        for (size_t job : misses) {
+            const Want *w = wants[job / shapes.size()];
+            const Encoded &e = out[job / shapes.size()][job % shapes.size()];
+            const logo_array::Shape &shape = shapes[job % shapes.size()];
+            if (e.ok && !w->source.empty())
+                cache.put(slice_name(w->source, shape.width, shape.height), sealed(e.bytes));
+        }
+    return out;
+}
 
 struct Env {
     std::function<std::vector<std::string>()> list;
     std::function<std::shared_ptr<erpfile::Source>(const std::string &rel)> open;
     std::function<std::vector<std::string>(const std::string &rel)> overlays;
+    SliceCache slices;
+};
+
+// The slice sizes each image want was encoded at, for the next start to encode ahead of the database load.
+struct Planned {
+    std::string source;
+    std::vector<std::pair<uint32_t, uint32_t>> sizes;
 };
 
 struct Result {
@@ -48,6 +262,10 @@ struct Result {
     std::set<std::string> read;
     std::vector<std::string> lines;
     int built = 0, refused = 0;
+    double encode_ms = 0;
+    size_t encodes = 0;
+    EncodeStats slices;
+    std::map<const Want *, Planned> planned;
 };
 
 struct Refusals {
@@ -64,7 +282,8 @@ struct Refusals {
     void flush(std::vector<std::string> &lines) const
     {
         for (auto &[reason, r] : by)
-            lines.push_back("team.logo: " + std::to_string(r.first) + " slot(s) refused: " + reason + " (first " + r.second + ")");
+            lines.push_back("team.logo: " + std::to_string(r.first) + " slot(s) refused: " + reason + " (first " + r.second +
+                            ")");
     }
 };
 
@@ -93,10 +312,76 @@ inline std::vector<std::string> array_layers(const Env &env, const std::string &
         std::string why;
         if (!src || !erpfile::open(*src, arc, why))
             continue;
-        if (std::any_of(arc.entries.begin(), arc.entries.end(), [&](const erpfile::Entry &e) { return e.name.compare(0, prefix, ARRAY_URI) == 0; }))
+        if (std::any_of(arc.entries.begin(), arc.entries.end(),
+                        [&](const erpfile::Entry &e) { return e.name.compare(0, prefix, ARRAY_URI) == 0; }))
             out.push_back(l);
     }
     return out;
+}
+
+// What the build reads from databases.erp: whether it carries a texture array, and the contents of the first fragment
+// of its overrides.uidb. A databases.erp that carries none counts by those contents alone (true), wherever the entry
+// lies and however it is packed; one that carries one, or does not read, counts by all of its bytes (false).
+inline bool databases_hash(const erpfile::Source &src, uint64_t &hash)
+{
+    erpfile::Archive arc;
+    std::string why, data;
+    if (!erpfile::open(src, arc, why))
+        return false;
+    size_t prefix = std::char_traits<char>::length(ARRAY_URI);
+    if (std::any_of(arc.entries.begin(), arc.entries.end(),
+                    [&](const erpfile::Entry &e) { return e.name.compare(0, prefix, ARRAY_URI) == 0; }))
+        return false;
+    const erpfile::Entry *e = arc.find(OVERRIDES);
+    if (e && !e->frags.empty() && !erpfile::fragment(src, arc, e->frags[0], data, why))
+        return false;
+    std::string tag = !e ? "no overrides.uidb" : e->frags.empty() ? "an empty overrides.uidb" : "overrides.uidb";
+    logo_cache::Bytes b;
+    b.add(tag.data(), tag.size() + 1);
+    b.add(data.data(), data.size());
+    hash = b.done();
+    return true;
+}
+
+// The hash an input counts by: databases_hash for databases.erp when it applies, all of its bytes (whole) otherwise.
+inline bool input_hash(const Env &env, const std::string &rel, const std::function<bool(const std::string &, uint64_t &)> &whole,
+                       uint64_t &hash)
+{
+    if (rel == DATABASES) {
+        auto src = env.open(rel);
+        if (src && databases_hash(*src, hash))
+            return true;
+    }
+    return whole(rel, hash);
+}
+
+// The copy of databases.erp a cached build wrote, made from databases.erp as it is now (now): the overrides.uidb the
+// build wrote (from copy) in place of its own, and every other byte as now has it. A build under the same key reads
+// the same overrides.uidb (databases_hash) and writes the same one, so this is the copy it writes.
+inline bool databases_copy(const erpfile::Source &now, const std::string &copy, const erpfile::Sink &sink, std::string &why)
+{
+    erpfile::Source held;
+    held.size = copy.size();
+    held.read = [&copy](uint64_t off, size_t n, char *out) {
+        if (off > copy.size() || n > copy.size() - off)
+            return false;
+        std::memcpy(out, copy.data() + off, n);
+        return true;
+    };
+    erpfile::Archive was, arc;
+    std::string written;
+    if (!erpfile::open(held, was, why) || !erpfile::open(now, arc, why))
+        return false;
+    const erpfile::Entry *e = was.find(OVERRIDES);
+    if (!e || e->frags.empty())
+        return why = "the copy has no overrides.uidb", false;
+    if (!arc.find(OVERRIDES))
+        return why = "databases.erp has no overrides.uidb", false;
+    if (!erpfile::fragment(held, was, e->frags[0], written, why))
+        return false;
+    erpfile::Changes changes;
+    changes[OVERRIDES] = {written};
+    return erpfile::rewrite(now, arc, changes, sink, why);
 }
 
 inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
@@ -174,7 +459,8 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
     }
     uidb::Pkg pkg;
     if (!pkg.read(uidb_bytes)) {
-        refuse("overrides.uidb does not read: " + pkg.why, wants.empty() ? "" : wants[0].array + "/" + wants[0].key, int(wants.size()));
+        refuse("overrides.uidb does not read: " + pkg.why, wants.empty() ? "" : wants[0].array + "/" + wants[0].key,
+               int(wants.size()));
         return false;
     }
     std::vector<std::string> files = env.list();
@@ -335,19 +621,22 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
                 return;
             }
             if (c.shape.count < keys)
-                out.lines.push_back("team.logo: " + array + in + " lists " + std::to_string(keys) + " keys but its image holds " +
-                                    std::to_string(c.shape.count) + " slice(s): another addon replaced the whole array, so " +
-                                    std::to_string(keys - c.shape.count) + " key(s) from " + names[c.shape.count] +
-                                    " on have no image of their own; padded with blank slices so new logos land on their own keys");
+                out.lines.push_back(
+                    "team.logo: " + array + in + " lists " + std::to_string(keys) + " keys but its image holds " +
+                    std::to_string(c.shape.count) + " slice(s): another addon replaced the whole array, so " +
+                    std::to_string(keys - c.shape.count) + " key(s) from " + names[c.shape.count] +
+                    " on have no image of their own; padded with blank slices so new logos land on their own keys");
             else if (c.shape.count < names.size())
                 out.lines.push_back("team.logo: " + array + in + " holds " + std::to_string(c.shape.count) + " slice(s), " +
                                     std::to_string(names.size() - c.shape.count) +
-                                    " fewer than another archive's copy; padded with blank slices so new logos land on the same slice in every archive");
+                                    " fewer than another archive's copy; padded with blank slices so new logos land on the same "
+                                    "slice in every archive");
             if (c.shape.count < names.size()) {
                 auto [b, fresh] = blanks.try_emplace({c.shape.width, c.shape.height});
                 if (fresh)
-                    b->second = bc7::encode_logo(reinterpret_cast<const uint8_t *>(std::string(c.shape.slice_bytes() * 4, '\0').data()),
-                                                 int(c.shape.width), int(c.shape.height));
+                    b->second =
+                        bc7::encode_logo(reinterpret_cast<const uint8_t *>(std::string(c.shape.slice_bytes() * 4, '\0').data()),
+                                         int(c.shape.width), int(c.shape.height));
                 logo_array::pad(c.stock, c.shape, b->second, uint32_t(names.size()));
                 c.shape.count = uint32_t(names.size());
             }
@@ -359,9 +648,33 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
         for (auto &c : copies)
             if (c.outside)
                 fill(c);
+        std::vector<logo_array::Shape> shapes;
+        for (auto &c : copies)
+            if (std::none_of(shapes.begin(), shapes.end(),
+                             [&](const logo_array::Shape &s) { return s.width == c.shape.width && s.height == c.shape.height; }))
+                shapes.push_back(c.shape);
+        auto encode_start = std::chrono::steady_clock::now();
+        std::vector<std::vector<Encoded>> encodes = encode_slices(list, shapes, env.slices, &out.slices);
+        out.encode_ms += std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - encode_start).count();
+        for (const Want *w : list)
+            if (w->donor.empty()) {
+                out.encodes += shapes.size();
+                Planned &p = out.planned[w];
+                p.source = w->source;
+                for (auto &sh : shapes)
+                    if (std::find(p.sizes.begin(), p.sizes.end(), std::make_pair(sh.width, sh.height)) == p.sizes.end())
+                        p.sizes.push_back({sh.width, sh.height});
+            }
+        auto encode_of = [&](size_t want, const logo_array::Shape &shape) -> Encoded & {
+            size_t at = 0;
+            while (shapes[at].width != shape.width || shapes[at].height != shape.height)
+                at++;
+            return encodes[want][at];
+        };
         std::set<std::string> seen(names.begin(), names.end());
         std::vector<const Want *> used;
-        for (auto *w : list) {
+        for (size_t wi = 0; wi < list.size(); wi++) {
+            const Want *w = list[wi];
             if (!seen.insert(w->key).second) {
                 out.lines.push_back("team.logo: " + array + " lists " + w->key + " already; its slice is kept");
                 continue;
@@ -388,12 +701,19 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
                     const logo_array::Shape &shape = copies[i].shape;
                     auto [e, fresh] = encoded.try_emplace({shape.width, shape.height});
                     bool scaled = false;
-                    if (fresh && !(ok = logo_array::slice_from_rgba(shape, reinterpret_cast<const uint8_t *>(w->rgba.data()), w->width,
-                                                                    w->height, e->second, why, &scaled)))
-                        break;
+                    if (fresh) {
+                        Encoded &done = encode_of(wi, shape);
+                        if (!(ok = done.ok)) {
+                            why = done.why;
+                            break;
+                        }
+                        e->second = std::move(done.bytes);
+                        scaled = done.scaled;
+                    }
                     if (scaled)
-                        out.lines.push_back("team.logo: " + w->key + " scaled " + std::to_string(w->width) + "x" + std::to_string(w->height) +
-                                            " -> " + std::to_string(shape.width) + "x" + std::to_string(shape.height) + " for " + array);
+                        out.lines.push_back("team.logo: " + w->key + " scaled " + std::to_string(w->width) + "x" +
+                                            std::to_string(w->height) + " -> " + std::to_string(shape.width) + "x" +
+                                            std::to_string(shape.height) + " for " + array);
                     slices[i] = e->second;
                 }
                 if (!ok) {
@@ -413,7 +733,8 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
             logo_array::Stock grown;
             if (!logo_array::grow(c.stock, c.add, grown, why)) {
                 if (copies.size() > 1)
-                    out.lines.push_back("team.logo: skipped " + array + " in " + where(c.carriers) + ": " + why + "; left as it is");
+                    out.lines.push_back("team.logo: skipped " + array + " in " + where(c.carriers) + ": " + why +
+                                        "; left as it is");
                 continue;
             }
             for (auto &rel : c.carriers) {
@@ -430,9 +751,12 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
             continue;
         }
         for (size_t at = 0; at < used.size(); at++)
-            out.lines.push_back("team.logo: " + array + " slice " + std::to_string(names.size() + at) + " = " + used[at]->key +
-                                (used[at]->donor.empty() ? " (its image)" : " (copy of " + used[at]->donor + ", slice " +
-                                 std::to_string(std::find(names.begin(), names.end(), used[at]->donor) - names.begin()) + ")"));
+            out.lines.push_back(
+                "team.logo: " + array + " slice " + std::to_string(names.size() + at) + " = " + used[at]->key +
+                (used[at]->donor.empty()
+                     ? " (its image)"
+                     : " (copy of " + used[at]->donor + ", slice " +
+                           std::to_string(std::find(names.begin(), names.end(), used[at]->donor) - names.begin()) + ")"));
         for (auto *w : used) {
             std::string e;
             if (!pkg.append_entry(*node, w->key, std::string(TEXTURE_PATH) + w->key + ".tif", e)) {
@@ -441,8 +765,9 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
         }
         uidb_changed = true;
         out.built += int(used.size());
-        out.lines.push_back("team.logo: " + array + " grows by " + std::to_string(used.size()) + " slice(s) in " + std::to_string(archives) +
-                            " archive(s)" + (grew > 1 ? " (" + std::to_string(grew) + " different copies)" : ""));
+        out.lines.push_back("team.logo: " + array + " grows by " + std::to_string(used.size()) + " slice(s) in " +
+                            std::to_string(archives) + " archive(s)" +
+                            (grew > 1 ? " (" + std::to_string(grew) + " different copies)" : ""));
     }
     if (uidb_changed) {
         std::string written = pkg.write();

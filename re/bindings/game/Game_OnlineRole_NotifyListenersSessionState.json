@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineRole_NotifyListenersSessionState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140998090",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140998090.c;xref:0x145658660",
+  "notes": "OnlineRole listener virtual (vt slot before Game_OnlineRole_OnConnectionArrived): logs 'onSessionStateChange: status: %d' (param_2) and updates role state (+0x30/+0x38). Addon: hook online session state transitions. d4-verify-a: does not update role state; walks listener vector this+0x30..+0x38, calls each listener vslot +8 with the state (kind check entry+0xc)"
+ },
+ "signature": {
+  "id": "game.online_role_on_session_state_change",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01 75 68 B8 6D 01 00",
+  "match": "0x140998090",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140998090",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineRole_NotifyListenersSessionState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

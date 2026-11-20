@@ -1,0 +1,56 @@
+{
+ "schema": 1,
+ "name": "g_Sess_VehicleCount",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x146ce86dc",
+  "type": "uint32_t",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/14152a9f0.c;xref:0x14152aa4e,0x140173d83;decomp:re/decomp/14152a9f0.c;xref:0x140173d83",
+  "notes": "Live-vehicle count paired with g_Sess_VehicleTable (table sits 4 bytes after). Gates per-vehicle enumeration loops across the engine (~147 readers incl Game_GameModule_OnSessionEnter). Bound value at runtime is the de-facto grid cap for table-indexed systems; needs a runtime read (flagged). ts-v1 signature for the test agent"
+ },
+ "signature": {
+  "id": "session.vehicle_count",
+  "section": ".xtls",
+  "pattern": "74 E5 38 1D ?? ?? ?? ?? 76 0E 48 8D 05",
+  "match": "0x140173e18",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x2",
+   "len": 6
+  },
+  "target": "0x146ce86dc",
+  "kind": "data",
+  "names": [
+   "g_Sess_VehicleCount"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "ts-v1",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/hooks/car_live.cpp",
+   "native/src/core/testing/agent/agent.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "std16-remerge2",
+   "kind": "global",
+   "item": "g_Sess_VehicleCount",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "xref:0x14152aa4c,0x140173d80,0x140173e1a;sig:session.vehicle_count",
+   "notes": "V2425 capstone on the KB exe: 147 rip-relative references, all byte-width (75 cmp byte, 70 movzx byte, 2 mov byte): the count of live vehicles the table is bounded by (cmp byte [0x146ce86dc], id; jbe at 0x14152aa4c and 0x140173e1a), clamped to 27 at 0x140173d80. Nothing references 0x146ce86dd..0x146ce86df, so a 4-byte read (the KB type, uint32_t) gives the same value as the game's byte reads. sigcheck session.vehicle_count 1 hit, data target 0x146ce86dc."
+  }
+ ],
+ "proofs": []
+}

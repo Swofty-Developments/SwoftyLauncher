@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_OptionsConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141d97750",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: options.o_category, options.o_category_f2, ui_menu_data.show_report_code'"
+ },
+ "signature": {
+  "id": "game.read_options_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 C5 F8 29 B4 24 C0 00 00 00 48 89 CE 48 8B 89 A0 08 00 00",
+  "match": "0x141d97750",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141d97750",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_OptionsConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141d97750",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141d97750.c;xref:0x141d96f73",
+   "notes": "V5212 Keys o_category/show_report_code are only part of a 1541-line OPTIONS-UI screen setup (dynamic texture loading, settings_home/save_load/select tabs, Message handlers, tooltips). Better Game_OptionsUI_OnScreenActivated"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x141d97750",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141d97750.c",
+   "notes": "V7265 name fits; finding facts hold; vtable/indirect (no direct call)"
+  }
+ ],
+ "proofs": []
+}

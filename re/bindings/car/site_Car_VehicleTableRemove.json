@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "site_Car_VehicleTableRemove",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14473d143",
+  "type": "code",
+  "level": "L3",
+  "subsystem": "car",
+  "evidence": "decomp:re/decomp/14473cf70.c;decomp:re/decomp/14473cf70.c;trace:T119/2026-10-28-gp:323;trace:T119/2026-10-28-gp:343",
+  "notes": "mov [g_Sess_VehicleCount], al inside Car_Destroy_Live after the swap-with-last move; a trace here shows when cars leave the table (session end vs mid-session) Runtime 2026-10-28 (T119 pass): 21 hits at session end, al (the new count) 20 down to 0, so the last car leaves first; none during load or the race."
+ },
+ "signature": {
+  "id": "car.vehicle_table_remove",
+  "section": ".xtls",
+  "pattern": "74 07 41 88 89 E8 00 00 00 FE C8 88 05",
+  "match": "0x14473d138",
+  "anchor": "0xb",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14473d143",
+  "kind": "mid",
+  "expect": "88 05 93 B5 5A 02",
+  "names": [
+   "site_Car_VehicleTableRemove"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "car-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v1",
+   "kind": "global",
+   "item": "site_Car_VehicleTableRemove",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14473cf70.c;xref:0x14473d141;sig:car.vehicle_table_remove",
+   "notes": "V1333 0x14473d141 dec al; 0x14473d143 mov [0x146ce86dc],al right after the swap (0x14473d132) and id rewrite (0x14473d13a), then table[al] = 0 at 0x14473d14c. sigcheck OK."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Hud_Bind_DynamicMfdViewModel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1414f5970",
+  "level": "L1",
+  "subsystem": "hud",
+  "proto": "-",
+  "evidence": "pat:view model property strings mfd_name,mfd_visible,car_settings_panel_enabled,mods_panel_enabled,#mfds.%s,osd_mfd;xref:0x1414f5f56,0x1414f6361,0x1414f641c,0x1414f6759,0x1414f687f",
+  "notes": "HudDynamicMFDViewModel binding setup: creates bool leaves mfd_visible and <panel>_enabled for car_settings, pit_settings, car_damage, car_engine, car_temp and mods panels under the MFD VM node via 0x140975db0 (g_Vm_Registry, parent, name, &value, overwrite 1) and keeps their holders in the VM (+0x3e0..); also formats #mfds.%s and reads osd_mfd. L1 (disx only)"
+ },
+ "signature": {
+  "id": "hud.bind_dynamic_mfd_view_model",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 74 24 60 48 89 CE E8 ?? ?? ?? ?? 48 8B 46 10 48 8D",
+  "match": "0x1414f5970",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1414f5970",
+  "kind": "func_start",
+  "names": [
+   "Hud_Bind_DynamicMfdViewModel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "cg-verify",
+   "kind": "func",
+   "item": "Hud_Bind_DynamicMfdViewModel",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x1414f6759",
+   "notes": "V1677 cg-verify: mods_panel_enabled referenced inside the bind"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "cg-verify",
+   "kind": "func",
+   "item": "Hud_Bind_DynamicMfdViewModel",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x1414f6759",
+   "notes": "V3913 cg-verify: mods_panel_enabled referenced inside the bind"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x1414f5970",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1414f5970.c",
+   "notes": "V4878 name/description match decomp: strings and callees consistent (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

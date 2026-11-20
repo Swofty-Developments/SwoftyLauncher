@@ -33,8 +33,9 @@ void flush_locked(ULONGLONG now)
     ++windows;
     if (cars.empty()) {
         if (windows % 10 == 0)
-            swofty::log("[t145] second %u: no ai.controller.update and no car.controllers.rebuilt yet (totals ai %llu, rebuilt %llu)",
-                        windows, total_ai, total_rebuilt);
+            swofty::log(
+                "[t145] second %u: no ai.controller.update and no car.controllers.rebuilt yet (totals ai %llu, rebuilt %llu)",
+                windows, total_ai, total_rebuilt);
         return;
     }
     unsigned ai = 0, rebuilt = 0;
@@ -43,11 +44,13 @@ void flush_locked(ULONGLONG now)
         std::string t;
         for (DWORD id : c.threads)
             t += (t.empty() ? "" : ",") + std::to_string(id);
-        swofty::log("[t145] second %u vehicle %d: ai.controller.update %.1f/s (%u), car.controllers.rebuilt %u (resettle %u), threads %s",
-                    windows, v, c.ai / secs, c.ai, c.rebuilt, c.resettled, t.empty() ? "-" : t.c_str());
+        swofty::log(
+            "[t145] second %u vehicle %d: ai.controller.update %.1f/s (%u), car.controllers.rebuilt %u (resettle %u), threads %s",
+            windows, v, c.ai / secs, c.ai, c.rebuilt, c.resettled, t.empty() ? "-" : t.c_str());
     }
-    swofty::log("[t145] second %u: %zu vehicle(s), ai.controller.update %u, car.controllers.rebuilt %u (totals ai %llu, rebuilt %llu)",
-                windows, cars.size(), ai, rebuilt, total_ai, total_rebuilt);
+    swofty::log(
+        "[t145] second %u: %zu vehicle(s), ai.controller.update %u, car.controllers.rebuilt %u (totals ai %llu, rebuilt %llu)",
+        windows, cars.size(), ai, rebuilt, total_ai, total_rebuilt);
     for (auto &[v, c] : cars)
         c = Count{};
     cars.clear();

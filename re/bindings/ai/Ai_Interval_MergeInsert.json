@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_Interval_MergeInsert",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140661b20",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_Interval_MergeInsert(const float *ival, void *vec)",
+  "evidence": "decomp:re/decomp/140661b20.c;xref:0x14065e7ab,0x14065e7f6,0x14065ec91,0x14065f18a,0x14065f57d,0x140660267,0x1406630db,0x140663349,0x140663a56,0x14066552c,0x140667abc,0x14066809a",
+  "notes": "ival = {start +0, end +4, weight at start +8, weight at end +0xc, tag +0x10} (0x14 bytes); returns at once unless start < end and returns when both weights <= 0. vec = {+8 begin, +0x10 end} of 0x14-byte records kept sorted; grows/shifts with memmove 0x1453784c0, compares with 0x140662680, splits pieces with 0x140662870/0x1406627c0 and 0x140606190 and re-inserts them recursively (4 self-calls 0x14066242e..0x140662458); epsilon 1e-4. 18 call sites, all in the lateral-interval cluster 0x14065e650..0x140668100 (Ai_IntervalProfile_AddRamps, Ai_Interval_AddWeightedRange, Ai_Interval_AddFullSpanWeighted, 0x140662de0, 0x1406663d0, 0x140667f40, ...). L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.interval_merge_insert",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 80 01 00 00 C5 78",
+  "match": "0x140661b20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140661b20",
+  "kind": "func_start",
+  "names": [
+   "Ai_Interval_MergeInsert"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x140661b20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140661b20.c;xref:0x14065e7ab,0x14066242e",
+   "notes": "V3567 inserts 5-float (0x14 byte) interval into sorted list param_2, recursion for splits, epsilon 0.0001; callers seen"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x140661b20",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x140661b20-0x14066267c;xref:0x14065e7ab,0x14065e7f6,0x14065ec91,0x14065f18a,0x14065f57d,0x140660267,0x14066242e,0x14066243b,0x14066244b,0x140662458,0x1406630db,0x140663349",
+   "notes": "V10583 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). 18 call sites re-listed: 14 external (0x14065e7ab, 0x14065e7f6, 0x14065ec91, 0x14065f18a, 0x14065f57d, 0x140660267, 0x1406630db, 0x140663349, 0x1406633eb, 0x140663a56, 0x140663b6b, 0x14066552c, 0x140667abc, 0x14066809a) + 4 self-calls. 2 args (rcx ival, rdx vec). start<end test on [rcx]/[rcx+4], 0x14-byte records, epsilon 1e-4 (0x140661ba5), memmove 0x1453784c0 confirmed."
+  }
+ ],
+ "proofs": []
+}

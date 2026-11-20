@@ -9,10 +9,10 @@ reference that ties them together, so a future addon can edit and add UI in a ge
 
 Distilled from, and kept honest against, three primary sources (all in
 `/mnt/work/VSC/F1ModManager`):
-- the launcher's UI generator — `packages/core/src/ui/{node,pages,patch,check,mod}.rs` (it
+- the launcher's UI generator — `packages/core/src/games/f1_25/ui/{node,pages,patch,check,mod}.rs` (it
   authors working `.ui`/UIDF screens and patches the stock UI ERPs, so it is the Rosetta stone);
 - the binary format crates — `packages/formats/src/{pkg,erp}.rs`;
-- the native runtime loader + view-model binder — `native/src/core/{ui,ui_vm.cpp}`;
+- the native runtime loader + view-model binder — `native/src/core/frontend/{ui,ui_vm}.cpp`;
 - since 2026-10-23, the engine's own loader read from `F1_25.exe` (`vm.md#templates` .. `#failures`,
   `re/db/ui/loader_rules.json`) and the stock catalogue `tools/uicatalog/catalog.json` (345 `.ui`,
   5,208 `.idf`).
@@ -652,7 +652,7 @@ spawn one child per element of their bound `data` array (§2.3).
 `Vm_Resolve_NodePath_Thunk` (0x1442b2770). `overwrite=1` replaces. Names/pins are djb2; the
 registry node tree is the live data a binding reads.
 
-### The launcher's native view model (`native/src/core/ui_vm.cpp`)
+### The launcher's native view model (`native/src/core/frontend/ui_vm.cpp`)
 When a screen sets `allowVMBinding` and is declared `view_model:true`, `ui_vm_attach`:
 1. allocates a 0x300 native VM object;
 2. synthesizes its vtable by **copying `FrontendTransitionViewModel`'s vtable**
@@ -739,7 +739,7 @@ help — hook the builder. Pattern (`docs/reference/addons/in-game-ui.md`, `fe_h
 ] }
 ```
 `swofty build` installs the `.ui` as `swofty/ui/<name>.ui` and lists it in the `ui` block of
-`swofty/settings.json` (`build.rs`, `settings.rs::UI_DIR`). At runtime `native/src/core/ui.cpp`:
+`swofty/settings.json` (`build.rs`, `settings.rs::UI_DIR`). At runtime `native/src/core/frontend/ui.cpp`:
 - hooks the UIDF handler; when the screen's **anchor** resource loads (its name must appear in
   the anchor's `.ui` bytes), it arms the screen and, at the next screen-open, registers it
   through the engine's own screen loader (`Ui_Uidf_LoadScreens`) — so the game builds it exactly
@@ -765,7 +765,7 @@ A node the engine rejects takes down more than itself, and nothing logs it (`vm.
   the era picker it emptied the F1 World play screen **[run; mapping inferred]**;
 - a **duplicate template name**: every later template of that resource **[L2]**.
 
-`packages/core/src/ui/check.rs` checks every edited `.ui`/`.idf` against its stock copy before a build
+`packages/core/src/games/f1_25/ui/check.rs` checks every edited `.ui`/`.idf` against its stock copy before a build
 ships (addon `operations.erp` results, `operations.screens` files, the core menu build) in three layers
 (`docs/reference/ui/patterns.md#checking-ui-edits`):
 - **hard, engine** — the rules in `re/db/ui/loader_rules.json`: `node.record`,
@@ -816,7 +816,7 @@ Tools (`/mnt/work/VSC/F1ModManager/tools/`, mirrored in the `modlist` worktree `
   `uitree.py <file> [--full]` — print the node tree (events/signals with `--full`); `uiops.py` —
   build/patch UI node ops; `ui_catalog.py` — catalog; `erpw.py`/`erpx.py`/`erpdump.py` —
   rebuild/extract/dump archives.
-- Rust: `packages/formats/src/{pkg,erp}.rs`; `packages/core/src/ui/{node,pages,patch,check}.rs`
+- Rust: `packages/formats/src/{pkg,erp}.rs`; `packages/core/src/games/f1_25/ui/{node,pages,patch,check}.rs`
   (generator), `packages/core/src/{erpbuild,pkgedit}.rs` (`operations.erp`/`patch-pkg`).
 
 ---

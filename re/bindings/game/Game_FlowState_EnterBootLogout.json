@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FlowState_EnterBootLogout",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436d9a60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1436d9a60.c;xref:0x14585c030,0x1432bb360",
+  "notes": "Flow state vtable 0x14585c000 slot 6 (ref 0x14585c030), next to StateLaunch: once (+0xef0) flushes analytics ('boot_to_press_start', 0x1434b3fd0), clears VM node 'sync_points.boot.ui', triggerLogout (logs pretty-function, 0x1432bb360 reset login data), posts a bus message on state change, stops sub-tasks and queues a 'NeFunctionSubTask' ('enter_boot'). HYPOTHESIS: return-to-boot / sign-out state enter. Addon: hook for the back-to-title logout path. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3333)"
+ },
+ "signature": {
+  "id": "game.flow_state_enter_boot_logout",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 88 00 00 00 48 89 CE 80 B9 F0 0E 00",
+  "match": "0x1436d9a60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436d9a60",
+  "kind": "func_start",
+  "names": [
+   "Game_FlowState_EnterBootLogout"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_FlowState_EnterBootLogout",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436d9a60.c;xref:0x14585c030",
+   "notes": "V3333 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

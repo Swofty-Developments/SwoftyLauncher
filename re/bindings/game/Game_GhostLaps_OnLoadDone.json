@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GhostLaps_OnLoadDone",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f8bd90",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-GHOSTLAPS",
+  "notes": "named from its log messages (channel GHOSTLAPS): '%s() : Load operation for file '%s' completed with result code: %i | %s() : Load operation canceled'"
+ },
+ "signature": {
+  "id": "game.ghost_laps_on_load_done",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 C5 F8 29 74 24 30 48 89 CE 48 8B 02 48 85 C0",
+  "match": "0x142f8bd90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f8bd90",
+  "kind": "func_start",
+  "names": [
+   "Game_GhostLaps_OnLoadDone"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f8bd90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f8bd90.c;xref:0x142f97f5b",
+   "notes": "V5693 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

@@ -64,6 +64,8 @@ def anchored_candidate(img, va, start, kind):
 
 
 def expect_bytes(img, va, n):
+    if n is None and img.read(va, 1) in (b'\xe8', b'\xe9'):
+        n = 1
     if n is None:
         from capstone import Cs, CS_ARCH_X86, CS_MODE_64
         md = Cs(CS_ARCH_X86, CS_MODE_64)
@@ -108,6 +110,9 @@ def main():
     if existing and existing['name'] != a.name:
         print(f'note: 0x{va:x} is already {existing["name"]} in {table}.tsv; keeping that name')
         name = existing['name']
+    if existing and existing.get('_record'):
+        raise SystemExit(f'{name} is the binding record re/bindings/{existing["_record"]}; edit that file '
+                         '(its signature lives there), then run binding.py check')
 
     doc = json.load(open(SIGS))
     sid = a.id or f'{a.subsystem}.{snake(name)}'
@@ -118,7 +123,7 @@ def main():
         sig = reuse
         print(f'reusing signature {sid}')
     else:
-        if any(s['id'] == sid for s in doc['signatures']):
+        if any(s['id'] == sid for s in kb.load_signatures()['signatures']):
             raise SystemExit(f'signature id {sid} already used for another target; pass --id')
         if a.what == 'data':
             if not a.via or not a.type:

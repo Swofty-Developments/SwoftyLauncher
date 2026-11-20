@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Read_DepartmentRecord",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14350a0b0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "int Career_Read_DepartmentRecord(void * self,uint64_t a2)",
+  "evidence": "decomp:re/decomp/14350a0b0.c;xref:0x14124787b",
+  "notes": "myteam-g1: Deserialises the \"department\" field (save reader)."
+ },
+ "signature": {
+  "id": "career.read_department_record",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 48 89 D0 49 89 CC",
+  "match": "0x14350a0b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14350a0b0",
+  "kind": "func_start",
+  "names": [
+   "Career_Read_DepartmentRecord"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x14350a0b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14350a0b0.c;xref:0x14124787b",
+   "notes": "V10265 Reader of the same nested teams/career/season/weekend structure (department, num_adapted, num_adaptable), not a single department field."
+  }
+ ],
+ "proofs": []
+}

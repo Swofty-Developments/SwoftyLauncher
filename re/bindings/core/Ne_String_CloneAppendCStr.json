@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_String_CloneAppendCStr",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144197b50",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144197b50.c;xref:0x1401a4669",
+  "notes": "New refcounted EGO string = copy of *param_1 (len mask 0xfffff at hdr+6, flags 0x300000, chars at +9, refcount u16 at +4) with C string param_2 appended (Ne_Get_CStrLen); alloc via global allocator _DAT_146ca54a8 vcall +0x18 (len+10 rounded to 16, align 0x10). Generic string-append helper, 122 call sites incl Ne_InternedString_Manage. Hypothesis: concat/append."
+ },
+ "signature": {
+  "id": "core.string_clone_append_c_str",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 50 48 85 D2 0F 84 ?? ?? ?? ?? 48",
+  "match": "0x144197b50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144197b50",
+  "kind": "func_start",
+  "names": [
+   "Ne_String_CloneAppendCStr"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x144197b50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144197b50.c;xref:0x1401a4669",
+   "notes": "V7644 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

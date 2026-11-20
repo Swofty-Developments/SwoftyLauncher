@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Error_Confused",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1431717c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=Error::Confused; log channel -: '? update_eventSelect: unparseable response, posting Error::Confused.'"
+ },
+ "signature": {
+  "id": "game.error_confused",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 03 00 00 C5 F8 29 B4 24 40 03 00 00 48 89 CE 48 8B 49 70",
+  "match": "0x1431717c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1431717c0",
+  "kind": "func_start",
+  "names": [
+   "Game_Error_Confused"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x1431717c0",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/1431717c0.c;xref:0x143160f97",
+   "notes": "V5833 NetworkLeagues_UpdateStateMachine: 248KB ProLeagues state machine (gotoState, environment, substates); Error::Confused is one log"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x1431717c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1431717c0.c",
+   "notes": "V7008 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

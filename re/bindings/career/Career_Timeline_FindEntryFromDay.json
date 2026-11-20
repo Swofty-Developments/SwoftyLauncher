@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Timeline_FindEntryFromDay",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141243f60",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_Timeline_FindEntryFromDay(void *vm, char want_kind, uint16_t from_day, uint8_t inclusive)",
+  "evidence": "decomp:re/decomp/141243f60.c;xref:0x140a80c86;xref:0x140a80cb0;xref:0x140a97f41",
+  "notes": "myteam-g2: Scans the advance timeline entry list (vm+0x50..+0x58) for entries of the registered type whose day (ushort at +10) is after from_day (or equal if inclusive) and whose id is in the team set (vm+0x20); returns the first match. Used for next-event lookups in TeamHqAdvance/MyTeam VMs and the R&D goto-department button."
+ },
+ "signature": {
+  "id": "career.timeline_find_entry_from_day",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 4C 8B 79 50 4C 8B 61 58 4D 39 E7 0F 84 ?? ?? ?? ?? 44 89 CB 44 89 C6 49 89 CE 88 54 24 27 4C 8D 2D ?? ?? ?? ?? 48 8D 2D ?? ?? ?? ?? 48 8D 3D ?? ?? ?? ?? EB 18",
+  "match": "0x141243f60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141243f60",
+  "kind": "func_start",
+  "names": [
+   "Career_Timeline_FindEntryFromDay"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x141243f60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141243f60.c;xref:0x140a80c86;xref:0x140a80cb0",
+   "notes": "V9692 Scans +0x50..0x58 list, day ushort +10, id in set at +0x20; kind byte compared at +0x10; matches."
+  }
+ ],
+ "proofs": []
+}

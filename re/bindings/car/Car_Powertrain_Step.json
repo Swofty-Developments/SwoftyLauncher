@@ -1,0 +1,127 @@
+{
+ "schema": 1,
+ "name": "Car_Powertrain_Step",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446e2290",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "void(void *powertrain)",
+  "evidence": "decomp:re/decomp/1446e2290.c;xref:0x1446dcf6e,0x1446e4312,0x1409d60be",
+  "notes": "Per-car powertrain step. The param is the per-car vehicle-dynamics system (its +0x18 = CarLive, +0x80 = the Engine system, whose +8 = CarLive); called from that system's vtable 0x145bff4d0 slots 2 and 3 (0x1446dcf6e, 0x1446e4312), which ignore the result, and referenced by the lea 0x1409d60be in 0x1409d50b0, which stores it XOR-encoded. It reads the car's Turbo +0x5a0, FuelECU +0x548, GearBox +0x538, ERS +0x5a8, Engine +0x530 and FuelTank +0x540. FuelECU runtime XOR pairs: +0x130^+0x138 fuel burn scale, +0x140^+0x148 power scale, +0x150^+0x158 revs scale. Drive torque = Car_Spline_EvalObfuscated(RevsPowerSpline Engine+0x28, rpm / revs scale) x power scale / rpm x [this+0x4e4] when rpm ([this+0x4c0], rad/s) > 1e-6, else 0. The +0x2208 switch is Engine TurboMode (Off 0, LagSpoof 1, Full 2), not an engine mode: LagSpoof rate-limits throttle rises (0x1446e26b3); Full multiplies drive torque by Turbo efficiency_factor +0x304 and runs a 1 ms turbo substep loop while Turbo+0x2d8 > 1 (0x1446e3a27). Braking = alt + (spline - alt) x t (0x1446e2815..0x1446e281d), where spline is the RevsEngineBrakingSpline (Engine+0x5d8) value, alt is the XOR value at Engine+0x8c0 when [GearBox+0x698] > 0 and the spline value otherwise, and t = clamp01((gear-2)/2) x engine_braking_fraction +0x252c with gear = [GearBox+0x680]: t = 0 (gear 2 or lower) gives alt, t = 1 the spline. ERS (car+0x5a8) +0x1a2c = turbo +0x2fc (1.0 with no turbo) x throttle (before the run-out clamp) x rpm x ExhaustPowerCoefficient (ERS +0x74) x burn scale: ERS exhaust power, not a fuel flow; this body reads no FuelTank +0x108. FuelTank +0x100 < 0.08 with car flag +0x132 bit 2 clamps the throttle [Engine+0x257c] to [Engine+0x2580 + 4*(car+0x124 == 1)] (fuel run-out). ERS deploy: gear modifier [ERS+0x1890 + mode*0x40 + [this+0x4f0]*4] (mode = int ERS+0x1a68), clamped to +-1; deploy factor by mode (switch 0x1446e28d4): modes 0 and 1 [T+0], mode 3 [T+4], mode 2 1.0, where T = ERS+0x1980 when byte ERS+0x19a0 is set, else ERS+0x19a8 (the track or default factors), and 1.0 when car+0x9f40 == 100; modifier x factor is clamped to +-1 again, then multiplied by MaxDeployPower [ERS+0x28]; while 0 <= [ERS+0x1a4c] < [ERS+0x40] the result is at least [ERS+0x34]. The speed spline (+0x88 or +0x330, picked by byte ERS+0x1a62) scales the deploy only when car+0x9f40 < 9 (signed, 0x1446e29eb); otherwise the deploy uses 1.0 and the spline only sets a separate cap. Also runs the BrakeECU ABS/TC spline lookups on car+0x550 (curves at +0x18 inside the +0x10/+0x1000 members, plus five more bank pairs 0xff0 apart, all skipped when car+0x124 == 1). 1.0.145 twin 0x1446e4b00, 1499 of 1509 instructions equal; the ERS fields 0x1a62, 0x1a64, 0x1a65 and 0x1a68 sit 4 bytes higher there (0x1a66, 0x1a68, 0x1a69, 0x1a6c). structs/CarEngine.h, CarErs.h. | TC controller (era-tc): non-AI car (CarLive+0x124 != 1): slip limit = ATCStrengthPeakSlipFactorSpline(+0x504) (BrakeECU +0xd70, wet +0x1d60) x SpeedATCPeakSlipFactorSpline(v) (+0x820, wet +0x1810) (0x1446e2482/0x1446e2492), throttle factor k = ATCStrengthThrottleFactorSpline(+0x504) (+0xac8, wet +0x1ab8; lea 0x1446e24c4/0x1446e24bd); AI car: limit = solver +0x508, k = +0x504 (0x1446e2447/0x1446e244f). Per wheel lane factor solver +0x490 (4 lanes) -= ATCActivationRate (BrakeECU +0x21b8) while slip (+0x760) > limit x peak (+0x7d0) and gate +0x510, else += ATCDeActivationRate (+0x21bc), clamped 0..1 (store 0x1446e2587); engine throttle Engine +0x2574 = min(max(1 - (1 - min(f[0], f[1])) x k, solver +0x514) x +0x4d4, +0x518) (store 0x1446e26a5). Wet set when byte [[wheel0+0xc0]+0xf8] != 0. (engine-re era-tc round 2026-11-18, static, build d873a1c8) raised by engine-re with --force 2026-11-18 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "car.powertrain_step",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 88 01 00 00 C5 78 29 BC 24 70 01 00 00",
+  "match": "0x1446e2290",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446e2290",
+  "kind": "func_start",
+  "names": [
+   "Car_Powertrain_Step"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   },
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-29",
+    "by": "carlive-verify",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v2",
+   "kind": "func",
+   "item": "Car_Powertrain_Step",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1446e2290.c;decomp:re/decomp/1446cfcd0.c;xref:0x1446dcf6e,0x1446e4312,0x1409d60be",
+   "notes": "V1215 The car-b reading is right: param+0x18 = CarLive, param+0x80 = Engine; drive torque from RevsPowerSpline (engine+0x28) at rad/s / revs scale x power scale / rad/s; Full TurboMode (engine+0x2208 == 2, reader +0x21f0) multiplies by Turbo [car+0x5a0]+0x304; braking lerp uses +0x252c and gear +0x680; ERS gear modifier at ers+0x1890 + mode*0x40 + gear*4. Wrong detail in the older text: the +0x1a2c store (0x1446e2290 decomp line ~619) is on the ERS system (car+0x5a8) and its factor +0x74 is ExhaustPowerCoefficient (ERS reader data+0x5c), so +0x1a2c is ERS exhaust power, not a fuel flow (fuel flow is FuelTank +0x108). Drop the superseded 'engine mode +0x2208' wording. Extra ref: lea 0x1409d60be in 0x1409d50b0."
+  },
+  {
+   "date": "2026-10-29",
+   "verifier": "carlive-verify",
+   "kind": "func",
+   "item": "Car_Powertrain_Step",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "xref:0x1446e3a27;xref:0x1446e3e3d",
+   "notes": "V1809 C4/C5 turbo MaxBoost read only in mode 2; diff multiples read plain; every substep unproven"
+  },
+  {
+   "date": "2026-10-29",
+   "verifier": "carlive-verify",
+   "kind": "func",
+   "item": "Car_Powertrain_Step",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "xref:0x1446e3a27;xref:0x1446e3e3d",
+   "notes": "V3939 C4/C5 turbo MaxBoost read only in mode 2; diff multiples read plain; every substep unproven"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446e2290",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446e2290.c;xref:0x1409d60c0",
+   "notes": "V6836 Component offsets and fuel-mode scale offsets, throttle clamp +0x100<0.08, turbo +0x304 confirmed."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Car_Powertrain_Step",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1446e2290-0x1446e42bc,0x142e88290-0x142e883ef,0x1446dceb0-0x1446dcfb3,0x1446e42c0-0x1446e432c,0x1409d60a2-0x1409d60d0,1.0.145 0x1446e4b00-0x1446e6b2c;xref:0x1446dcf6e,0x1446e4312,0x1409d60be,0x1446e2784,0x1446e2e52,0x1446e2dd9,0x1446e26b3,0x1446e2723,0x1446e286f,0x1446e28d4,0x1446e29eb,0x1446e3a1f",
+   "notes": "V100021 Blind: partial. 1 arg (rcx=system; +0x18 car, +0x80 Engine), void; callers 0x1446dcf6e/0x1446e4312 discard, lea 0x1409d60be xor-stores it. Torque = Spline(Engine+0x28, rpm/xor(FuelECU+0x150))*xor(+0x140)/rpm (0x1446e2784) x[this+0x4e4], x Turbo+0x304 when Engine+0x2208==2; ==1 rate-limits throttle (0x1446e26b3). ERS +0x1a2c, fuel run-out clamp, braking lerp match. ERS deploy formula imprecise: table [ERS+0x1890+mode*0x40+[this+0x4f0]*4] and factor are each clamped to +-1, factor is [T+0] modes 0/1, [T+4] mode 3, 1.0 mode 2, and the speed spline is skipped when car+0x9f40>=9 (0x1446e29eb). Twin 1.0.145 0x1446e4b00; ERS fields >=0x1a62 moved +4."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Car_Powertrain_Step",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1446e2290-0x1446e42bc,0x142e88290-0x142e883f0,0x1446dceb0-0x1446dcfb0,0x1446e42c0-0x1446e432c,0x1409d6090-0x1409d6110,1.0.145 0x1446e4b00-0x1446e6b2c;xref:0x1446dcf6e,0x1446e4312,0x1409d60be,0x145bff4e0,0x145bff4e8,0x1446e27e4,0x1446e2815,0x1446e281d",
+   "notes": "V100022 Blind: partial. Own disasm of 0x1446e2290-0x1446e42bc confirms: proto void(P); callers 0x1446dcf6e/0x1446e4312 (vtable 0x145bff4d0 slots 2,3, result unused); XOR-stored lea 0x1409d60be; drive-torque formula; mode 1 throttle lag; mode 2 x Turbo+0x304 and the 1 ms loop; ERS+0x1a2c; run-out clamp; deploy table, switch, clamps and +0x34 floor; the <9 spline rule; 6 S bank pairs 0xff0 apart; 1.0.145 twin (1499/1509, 4 ERS fields +4). Wrong: braking lerps the other way. 0x1446e2815-281d computes Tf=alt+(spline-alt)*t, alt=obf(E+0x8c0) if GearBox+0x698>0 else spline. So t=0 (gear<=2) gives the XOR value and t=1 the spline."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Car_Powertrain_Step",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1446e2290-0x1446e42bc,0x142e88290-0x142e88330,0x1446dceb0-0x1446dcfa0,0x1446e42c0-0x1446e432c,0x1409d6090-0x1409d6110,0x144629443-0x144629460,1.0.145 0x1446e4b00-0x1446e6b2c;xref:0x1446dcf6e,0x1446e4312,0x1409d60be,0x145bff4e0,0x145bff4e8,0x144629443,0x1446e2784,0x1446e26b3,0x1446e2738,0x1446e3a56,0x1446e2815,0x1446e2e52,0x1446e2df5,0x1446e28d4,0x1446e29eb,0x1446e2366",
+   "notes": "V100023 Blind: agree. Own disasm 0x1446e2290-0x1446e42bc: void(this), one ptr arg. Callers 0x1446dcf6e/0x1446e4312 sit in vtable 0x145bff4d0 slots 2/3 (ctor 0x144629443), result unused; lea 0x1409d60be XORs it with a key. Confirmed: drive torque, TurboMode 1 rise limiter 0x1446e26b3, Full x Turbo+0x304 and 1 ms loop gated by +0x2d8>1, braking lerp(alt,spline,t) 0x1446e2815, ERS +0x1a2c, run-out min 0x1446e2df5, deploy table and switch 0x1446e28d4, +0x34 floor, speed spline jl 0x1446e29eb, six bank pairs 0xff0 apart. 1.0.145 0x1446e4b00 1499/1509, only ERS 0x1a62/64/65/68 move +4. Unclaimed: Engine+0x257c is written only when ERS is non-null; the loop runs max(1,ceil(dt/0.001)) steps."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "era-tc-verify",
+   "kind": "func",
+   "item": "0x1446e2290",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1446e2290-0x1446e26b0;xref:none",
+   "notes": "V11804 ecu=rdi=[[rcx+0x18]+0x550], engine=rbx=[rcx+0x80]. car+0x124!=1: spline 0xd70/0x1d60 (no +0x18, arg [rsi+0x504]) times spline 0x820/0x1810 (arg dot product xmm14), via 0x142e88290; third 0xab0/0x1aa0 +0x18 with arg [rsi+0x504]; pair select by byte [[[rsi+0x60]+0xc0]+0xf8]. ==1: [rsi+0x508] and [rsi+0x504] direct. [rsi+0x490] 4 lanes: -[ecu+0x21b8] where masked else +[ecu+0x21bc], clamped 0..1 (0x1446e2587). Store [engine+0x2574] at 0x1446e26a5 = min(max(1-(1-min(l0,l1))*v,0)*[rsi+0x4d4],[rsi+0x518])."
+  }
+ ],
+ "proofs": []
+}

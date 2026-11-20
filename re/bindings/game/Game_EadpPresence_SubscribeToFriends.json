@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EadpPresence_SubscribeToFriends",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440003b0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name subscribeToFriends (class from the log channel); log channel EADP_PRESENCE: 'subscribeToFriends: Failed to subcscribe to friends'"
+ },
+ "signature": {
+  "id": "game.eadp_presence_subscribe_to_friends",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 8B 32 48 C7 02 00 00 00 00",
+  "match": "0x1440003b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440003b0",
+  "kind": "func_start",
+  "names": [
+   "Game_EadpPresence_SubscribeToFriends"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x1440003b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440003b0.c;xref:0x143ff4387",
+   "notes": "V6361 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

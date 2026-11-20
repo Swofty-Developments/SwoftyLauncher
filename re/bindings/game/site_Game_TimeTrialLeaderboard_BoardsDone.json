@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Game_TimeTrialLeaderboard_BoardsDone",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142fced9e",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/142fce500.c;xref:0x142fced9e",
+  "notes": "In Game_TimeTrialLeaderboard_SelectBoard: lea rdi,[rip+...] at the start of the cleanup that follows the board work; releases the locals at rsp+0xb0 and rsp+0x98, then the common exit at 0x142fcee86 releases rsp+0xd0 and rsp+0x70 and returns esi. Reads rsp and esi only (rdi, r12 and rbx are written before use). The rip target of core's time trial leaderboard guard; never hooked."
+ },
+ "signature": {
+  "id": "game.time_trial_leaderboard_boards_done",
+  "section": ".xtls",
+  "pattern": "48 8B 44 24 60 48 89 87 78 08 00 00 48 8D 3D",
+  "match": "0x142fced92",
+  "anchor": "0xc",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142fced9e",
+  "kind": "mid",
+  "expect": "48 8D 3D",
+  "names": [
+   "site_Game_TimeTrialLeaderboard_BoardsDone"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-29",
+    "by": "lbguard",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/frontend/leaderboard_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-29",
+   "verifier": "verify-lbguard",
+   "kind": "global",
+   "item": "site_Game_TimeTrialLeaderboard_BoardsDone",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142fce500.c;xref:0x142fced9e;sig:game.time_trial_leaderboard_boards_done",
+   "notes": "V1276 Re-checked statically by the same session as lbguard (recorded under a verify name, as earlier rows did): disassembled 0x142fce500..0x142fcef6f on the Steam exe; the search at 0x142fce9c3 leaves rcx 0 when no board matches, the cleanup at 0x142fced9e releases the locals the board work built and the exit returns esi. Sigcheck OK on Steam, both patterns match once in the EA dump."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_Interval_AddWeightedRange",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140660140",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_Interval_AddWeightedRange(void *set, float x1, float x2, float v, float vmax, uint32_t tag)",
+  "evidence": "decomp:re/decomp/140660140.c;xref:0x140663257,0x140665f99,0x14066652e",
+  "notes": "Only when x2 - x1 > 0 and v < vmax and set+0xa0 != set+0xa4: clamps x1 and x2 into [min,max] of set+0xa0/+0xa4, maps both to 0..1 ((x - a0)/(a4 - a0), clamped), and if start < end inserts {start, end, w, w, tag} with w = clamp(1 - v/vmax, 0, 1) into the sorted interval list set+0x58 via Ai_Interval_MergeInsert (0x140661b20). Callers: Ai_Unk_140662de0 (x = c -+ half width, tag 0), Ai_Lateral_AddOpponentIntervals (x1/x2 = min/max of Ai_Gap_ComputeOpponentLateralMin/Max per opponent, tag = byte+0x3d), Ai_Unk_1406663d0. L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.interval_add_weighted_range",
+  "section": ".xtls",
+  "pattern": "48 81 EC 98 00 00 00 C5 78 29 94 24 80 00 00 00 C5 78 29 4C 24 70 C5 78 29 44 24 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 C5 EA 5C C1",
+  "match": "0x140660140",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140660140",
+  "kind": "func_start",
+  "names": [
+   "Ai_Interval_AddWeightedRange"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x140660140",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140660140.c;xref:0x140648081,0x140663257",
+   "notes": "V3566 maps [x1,x2] into normalised span of this+0xa0..+0xa4, weight clamp(1-p4/p5), tag p6, inserts into list at +0x58 via MergeInsert; callers seen"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x140660140",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x140660140-0x140660295;xref:0x140663257,0x140665f99,0x14066652e",
+   "notes": "V10618 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Callers 0x140662de0, 0x140665e80, 0x1406663d0 (riprel hit 0x140648081 is a false positive). 6 args (rcx, xmm1, xmm2, xmm3, stack vmax, stack tag). x2-x1 > 0 and vmax > v and set+0xa0 != +0xa4 gates, clamps and maps to 0..1, inserts via 0x140661b20."
+  }
+ ],
+ "proofs": []
+}

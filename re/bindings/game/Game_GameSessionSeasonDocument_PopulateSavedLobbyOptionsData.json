@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionSeasonDocument_PopulateSavedLobbyOptionsData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430350d0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=GameSessionSeasonDocument::populateSavedLobbyOptionsData; log channel NETWORK/F: 'network::GameSessionSeasonDocument::populateSavedLobbyOptionsData(%s)'"
+ },
+ "signature": {
+  "id": "game.game_session_season_document_populate_saved_lobby_options_data",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 70 B8 5B 01 00 00",
+  "match": "0x1430350d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430350d0",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionSeasonDocument_PopulateSavedLobbyOptionsData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x1430350d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430350d0.c;xref:0x143034fb1",
+   "notes": "V5724 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

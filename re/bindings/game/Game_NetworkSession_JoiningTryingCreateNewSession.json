@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkSession_JoiningTryingCreateNewSession",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14307dc70",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-SESSION",
+  "notes": "named from its log messages (channel NETWORK-SESSION): '%s: joining failed, trying to create a new session'"
+ },
+ "signature": {
+  "id": "game.network_session_joining_trying_create_new_session",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 44 89 C7 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01 75 59 B8 F8 00 00 00 48 8D 0D ?? ?? ?? ?? 66 66 66 2E 0F 1F 84 00 00 00 00 00 8B 14 81 85 D2 74 3A 81 FA 88 72 74 16 0F 84 ?? ?? ?? ?? 83 C0 18 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D F8 00 00 00 75 BF 48 83 7E 40 00",
+  "match": "0x14307dc70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14307dc70",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkSession_JoiningTryingCreateNewSession"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x14307dc70",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14307dc70.c;xref:0x14307e3a3",
+   "notes": "V5604 GameSessionMatchingF1WSocialGP::onJoinSessionComplete (+setupRetryJoinSession, notifyJoinDelegate); joining-failed is one branch. Better: Game_GameSessionMatchingF1WSocialGP_OnJoinSessionComplete"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x14307dc70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14307dc70.c;xref:0x14307e3a2",
+   "notes": "V6955 161 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

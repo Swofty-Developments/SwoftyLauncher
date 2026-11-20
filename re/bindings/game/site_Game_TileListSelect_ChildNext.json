@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Game_TileListSelect_ChildNext",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14383904e",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/143838d90.c;xref:0x14383904e,0x143839055,0x14383905b,0x1438390e4",
+  "notes": "In Game_TileList_ApplyBoundSelection (0x143838d90): add r15,8; cmp r15,r12; jne 0x143838fd0; jmp 0x1438390e4, the walk's step to the next child, reached by fall-through when a child's bound handle differs from the new one (je 0x14383907e at 0x14383904c). Reads only r15 and r12; past the last child it leaves at 0x1438390e4, the game's own path for a selection no child carries. The rip target of core's tile list select guard from site_Game_TileListSelect_ChildStep; the frame and r12, r13, rsi, rbp there are the step site's. Never hooked. Same pattern as the step site, anchor 0x99. EA 0x14382628e."
+ },
+ "signature": {
+  "id": "game.tile_list_select_child_next",
+  "section": ".xtls",
+  "pattern": "4C 8D 2D ?? ?? ?? ?? 48 8D 35 ?? ?? ?? ?? 48 8D 2D ?? ?? ?? ?? 66 0F 1F 44 00 00 49 8B 3F 4C 8B 77 30 EB 0F",
+  "match": "0x143838fb5",
+  "anchor": "0x99",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14383904e",
+  "kind": "mid",
+  "names": [
+   "site_Game_TileListSelect_ChildNext"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-14",
+    "by": "re-career-teams",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/frontend/tile_list_select_guard.cpp"
+  ],
+  "expect": "49 83 C7 08 4D 39 E7"
+ },
+ "verify": [
+  {
+   "date": "2026-11-14",
+   "verifier": "kbverify-choose-driver",
+   "kind": "global",
+   "item": "0x14383904e",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143838d90.c;xref:0x14383904c,0x14383904e,0x143839055,0x14383905b,0x1438390e4;sig:game.tile_list_select_child_next",
+   "notes": "V9302 Own capstone sweep: 0x14383904e 49 83 C7 08 add r15,8, cmp r15,r12, jne 0x143838fd0, jmp 0x1438390e4; reached by fall-through from je 0x14383907e at 0x14383904c (no jump targets it), reads r15 and r12 only, and 0x1438390e4 is where the walk ends with no matching child. No push/pop between the step site and here. EA 0x14382628e same bytes at pattern +0x99."
+  }
+ ],
+ "proofs": []
+}

@@ -2,8 +2,8 @@ use gpui_kit::component::{TITLE_BAR_HEIGHT, TitleBar, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 
-use crate::scale::px;
-use crate::theme::Palette;
+use crate::ui::scale::px;
+use crate::ui::theme::Palette;
 
 type Dismiss = Box<dyn Fn(&mut Window, &mut App) + 'static>;
 

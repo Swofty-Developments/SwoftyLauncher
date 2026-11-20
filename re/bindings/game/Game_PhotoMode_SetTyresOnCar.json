@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PhotoMode_SetTyresOnCar",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142bdd220",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142bdd220.c;xref:0x141d09556",
+  "notes": "Applies photo-mode tyre choice: calls 0x142ea1e30 then writes float (+0x88) into per-car tyre record [[table 0x146ce86e0+idx*8]+0x580]+0x70 (wear/damage value). Caller Game_PhotoModeViewModel_SetTyresAllCars. Hypothesis."
+ },
+ "signature": {
+  "id": "game.photo_mode_set_tyres_on_car",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 D6 4C 8B 81 78",
+  "match": "0x142bdd220",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142bdd220",
+  "kind": "func_start",
+  "names": [
+   "Game_PhotoMode_SetTyresOnCar"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x142bdd220",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142bdd220.c;xref:0x141d09556",
+   "notes": "V7549 strings/offsets/constants and callers match decomp; hypothesis supported"
+  }
+ ],
+ "proofs": []
+}

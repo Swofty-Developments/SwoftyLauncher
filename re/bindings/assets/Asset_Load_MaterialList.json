@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Asset_Load_MaterialList",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b130a0",
+  "level": "L2",
+  "subsystem": "assets",
+  "proto": "-",
+  "evidence": "decomp:work/exe/decomp/143b130a0_eaid_parse_a.c;xref:0x143b15122;pat:exe-agent-label;decomp:re/decomp/143b130a0.c",
+  "notes": "eaid:// parse (not analysed) m1-verify: builds eaid://materials/<name>.material paths and resolves each"
+ },
+ "signature": {
+  "id": "assets.parse_eaid_a",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 48 89 CE 48 8B 81 88 00 00",
+  "match": "0x143b130a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b130a0",
+  "kind": "func_start",
+  "names": [
+   "Asset_Load_MaterialList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x143b130a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b130a0.c",
+   "notes": "V4075 eaid:// handled and MaterialList; materials path text not visible in window; headline consistent (vtable/indirect or no direct callsite checked)"
+  }
+ ],
+ "proofs": []
+}

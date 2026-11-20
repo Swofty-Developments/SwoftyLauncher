@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "site_Ne_HwInt_NightShadowMapSize",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x152713456",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/1527133c0.c;xref:0x152713456",
+  "notes": "call Ne_Parse_Long(attr+0x50 value, NULL, 0) for the hardware-settings attribute 'nightShadowMapSize' (name matched case-insensitively against the string loaded at 0x15271340d) in reader 0x1527133c0, a settings listener callback; its return address keys xanpavle.re-optimization's integer enforcement"
+ },
+ "signature": {
+  "id": "core.hw_int_night_shadow_map_size",
+  "section": ".data1",
+  "pattern": "49 8B 4C 24 50 31 D2 45 31 C0 E8 ?? ?? ?? ?? 66",
+  "match": "0x15271344c",
+  "anchor": "0xa",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x152713456",
+  "kind": "mid",
+  "expect": "E8",
+  "names": [
+   "site_Ne_HwInt_NightShadowMapSize"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "reopt-025",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/re-optimization/native/src/re_optimization.cpp (xanpavle.re-optimization)"
+  ],
+  "data1_reason": "return-address key only, never patched: xanpavle.re-optimization wraps Ne_Parse_Long in .xtls and compares its return address with this call; the attribute is read only inside this .data1 body"
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "reopt-025-verify",
+   "kind": "global",
+   "item": "site_Ne_HwInt_NightShadowMapSize",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1527133c0.c;xref:0x152713456,0x15271340d,0x152713443,0x152713469;sig:core.hw_int_night_shadow_map_size",
+   "notes": "V0929 Loop over the element attribute vector (+0x50..+0x58): 0x14534da24(attr+0x18 name, rbx = 'nightShadowMapSize' from lea 0x15271340d, r8d 0x1f) at 0x152713443; on 0 it sets rcx = [attr+0x50], edx = 0, r8d = 0 and the E8 at 0x152713456 calls 0x14534dcd8 (.data1, .pdata 0x1527133c0-0x152713518 covers the body; data1_reason present; reached through the .xtls jmp thunk 0x143d50b40). Result stored to this+0x5a8 at 0x152713469, after two junk instructions that do not touch eax. Pattern note: it keeps the RIP-relative disp32 of the junk instruction at +5 (66 8B 0D 7D 8D 17 FD, mov cx,[rip-0x2e87283]) unwildcarded, which section 7 asks to wildcard; it matches once and resolves correctly on this build, but a relink will drop it. sigcheck: one hit, target 0x152713456"
+  }
+ ],
+ "proofs": []
+}

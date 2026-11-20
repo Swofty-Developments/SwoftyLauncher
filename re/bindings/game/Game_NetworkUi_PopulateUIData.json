@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkUi_PopulateUIData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14309ac00",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name populateUIData (class from the log channel); log channel NETWORK-UI/V: '%s()'"
+ },
+ "signature": {
+  "id": "game.network_ui_populate_ui_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6D",
+  "match": "0x14309ac00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14309ac00",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkUi_PopulateUIData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x14309ac00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14309ac00.c;xref:0x143039707",
+   "notes": "V5309 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamDriverMarket_Close",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1423056e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1423056e0.c;xref:0x14577e128",
+  "notes": "MyTeam Driver Market exit (vtable slot 0x14577e128): posts 'corporate'/'enable_navigation', hides drivers (0x1428e0f40) and despawns custom drivers param_1+0x2d44/+0x2d46 (0x1428db9f0, mgr param_1+0x2d58). | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2951)"
+ },
+ "signature": {
+  "id": "game.my_team_driver_market_close",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 40 48 89 CE 48 C7 81",
+  "match": "0x1423056e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423056e0",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamDriverMarket_Close"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d11-verify",
+   "kind": "func",
+   "item": "Game_MyTeamDriverMarket_Close",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1423056e0.c;xref:0x14577e128",
+   "notes": "V2951 Decomp strings, offsets and callees match the claim; name fits."
+  }
+ ],
+ "proofs": []
+}

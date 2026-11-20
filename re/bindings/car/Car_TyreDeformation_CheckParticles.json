@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_TyreDeformation_CheckParticles",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14470bd80",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "pat:log-channel-DEFORMATION",
+  "notes": "Log channel DEFORMATION: 'Particles have NOT YET been allocated for vehicle %d tyre %d.' | 'Should be 50 physics particles because that is what the data uses for all tyres.'"
+ },
+ "signature": {
+  "id": "car.tyre_deformation_check_particles",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 01 00 00 C5 79 7F BC 24 B0 01 00 00 C5 79 7F B4 24 A0 01 00 00",
+  "match": "0x14470bd80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14470bd80",
+  "kind": "func_start",
+  "names": [
+   "Car_TyreDeformation_CheckParticles"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x14470bd80",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14470bd80.c;xref:0x142f509bc",
+   "notes": "V6870 Logs sit at line 1065/1083 of a 1170-line function that does the full per-tyre particle update (matrices to quats, memset, ComputeContactFrame); better name Car_TyreDeformation_UpdateParticles."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x14470bd80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14470bd80.c;xref:0x142f509bc",
+   "notes": "V7264 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

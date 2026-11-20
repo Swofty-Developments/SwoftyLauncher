@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDTileCountBody",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f49c31",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141f49bc0.c;xref:0x141f49c31;doc:addons/rnd-tyres-thermal/native/HOOKS.md#2-the-tyres-tile-count-flag-pie_tyres_counts-default-on-install-time",
+  "notes": "mov qword [rsp+0xc30],0: first instruction after both guards (join target)"
+ },
+ "signature": {
+  "id": "career.rn_d_tile_count_body",
+  "section": ".xtls",
+  "pattern": "48 C7 84 24 30 0C 00 00 00 00 00 00 48 8B 96 00 0C 00 00",
+  "match": "0x141f49c31",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f49c31",
+  "kind": "mid",
+  "expect": "48 C7 84 24 30 0C 00 00 00 00 00 00",
+  "names": [
+   "site_Career_RnDTileCountBody"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-4",
+   "kind": "global",
+   "item": "site_Career_RnDTileCountBody",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f49bc0.c;xref:0x141f49c2b,0x141f49c31",
+   "notes": "V0165 mov qword [rsp+0xc30],0 at 0x141f49c31 is the fall-through of the index guard (no branch targets it); 12-byte window clean"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Rtt_InitSceneJobPostProcess",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d7bcb0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143d7bcb0.c;xref:0x143d84381",
+  "notes": "Constructor body of the RTT scene job (0x8c8 bytes, from Ne_RttRenderer_CreateSceneJob): opens and keeps resource handles for assao_new.material, deferred_render_new.material, aid://shader_package/post_process_tonemap/tonemap.nefx2, post_process_crossfade/crossfade.nefx2, ego_package/postprocess.psplines, histogram.buffer, lut.image and lutCube.image (each tried under aid://, id://, d://, eaid:// prefixes, hashed with MD5). Addon: shows the post-process / tonemap / LUT asset paths the renderer loads."
+ },
+ "signature": {
+  "id": "render.rtt_init_scene_job_post_process",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 05 00 00 C5 F8 29 BC 24 A0 05 00 00 C5 F8 29 B4 24 90 05 00 00 48 89 CE",
+  "match": "0x143d7bcb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d7bcb0",
+  "kind": "func_start",
+  "names": [
+   "Render_Rtt_InitSceneJobPostProcess"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x143d7bcb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d7bcb0.c;xref:0x143d84381",
+   "notes": "V8345 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

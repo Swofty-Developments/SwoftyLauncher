@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_ConnectionMissingDiscarding",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14316d250",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK",
+  "notes": "named from its log messages (channel NETWORK): 'Connection %d missing, discarding PlayerSet Entry.'"
+ },
+ "signature": {
+  "id": "game.network_connection_missing_discarding",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 CE 48 8B 01 FF 90 40 01 00 00",
+  "match": "0x14316d250",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14316d250",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_ConnectionMissingDiscarding"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x14316d250",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14316d250.c",
+   "notes": "V5822 PlayerSetSubsystem_SendPlayerSetInfoMessages: sendPlayerSetInfoMessage loop over entries; missing-connection discard is one branch"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x14316d250",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14316d250.c",
+   "notes": "V7007 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

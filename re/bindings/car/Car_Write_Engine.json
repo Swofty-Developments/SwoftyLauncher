@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_Write_Engine",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144686830",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144686830.c;xref:0x145bfa1c8",
+  "notes": "VTF Engine: RevsPowerSpline, Mass, Inertia, friction/engine braking splines, idle/limiter rates, EngineLayout, TurboMode, temperature, PU wear (WearICE/TC/MGUH/CE rates and splines), RedLineThrottleCutTime. It never writes ThrottleMap0-14 / ThrottleMapClutchDisengaged0-14: only the reader Car_Read_Engine uses those names (corrected per V1242). Correction: this is the serialiser (component data vtable slot 3): it writes the section back as XML through the writer object's vtable (+0x28 begin element, +0x68 attribute, +0x78 end, +0x98 comment); the field list above is what it writes. The reader is slot 2 (Game_Read_VtfFloat by name, values stored XOR-obfuscated). | car-b: data vtable slot 3 (vtable entry 0x145bfa1c8). Capstone cross-check: it reads the same data offsets the paired Car_Read_ function writes (differences only in vector internals, derived fields and ERS TrackSettings, which are not written back), so the struct offsets in the car-b structs hold for both"
+ },
+ "signature": {
+  "id": "car.parse_engine",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 68 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 48 89 D6 48 89 CF 48 8B 02",
+  "match": "0x144686830",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144686830",
+  "kind": "func_start",
+  "names": [
+   "Car_Write_Engine"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v4",
+   "kind": "func",
+   "item": "Car_Write_Engine",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144686830.c;decomp:re/decomp/144685680.c;xref:0x145bfa1c8",
+   "notes": "V1242 Role right (Engine data vt +0x18 serialiser: begin 'Engine', comments via +0x98, obfuscated pairs XOR-decoded before write). Field-list detail wrong: it never writes ThrottleMap0-14 or ThrottleMapClutchDisengaged0-14. Only the reader 0x144685680 uses 'ThrottleMap%d' and 'ThrottleMapClutchDisengaged%d'. The rest of the list (splines, Mass, Inertia, idle/limiter, EngineLayout, temperature, wear, KERS, TurboMode, RedLineThrottleCutTime) is written."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x144686830",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144686830.c",
+   "notes": "V6750 name and log/strings match; body checked, no broader behaviour (vtable/indirect; no direct call site)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,8 +1,8 @@
-// Host unit test for the hardware settings probe logic (hw_settings_logic.hpp). run_events_test.sh builds and runs it.
+// Host unit test for the hardware settings probe logic (hw_settings_logic.hpp). native/test/run_tests.sh hw_settings builds and runs it.
 #include <cstdio>
 #include <string>
 
-#include "../src/core/hw_settings_logic.hpp"
+#include "core/diagnostics/crash/hw_settings_logic.hpp"
 
 static int fails;
 
@@ -33,7 +33,8 @@ int main()
     p.size = 5120;
     p.attrs = 0x20 | hw::ATTR_RECALL_ON_DATA_ACCESS;
     std::string cloud = hw::line(p);
-    expect(cloud.find("onedrive=yes") != std::string::npos && cloud.find("cloud-only=yes (recall_on_data_access)") != std::string::npos &&
+    expect(cloud.find("onedrive=yes") != std::string::npos &&
+               cloud.find("cloud-only=yes (recall_on_data_access)") != std::string::npos &&
                cloud.find("size=5120") != std::string::npos && cloud.find("read test: skipped") != std::string::npos,
            "a cloud-only file is named and not read: " + cloud);
     p.attrs = 0x20;

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerWizard_ResolveOrExit",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a22ea0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141a22ea0.c;xref:0x141a2910b,0x141a291fb",
+  "notes": "Career wizard view model helper (called at 0x141a2910b/0x141a291fb): looks up a game component (desc 0x145658390 via 0x1407d22d0 on this+0x278) and queries it (vcall +0x10, key 0x1460609c8); stores the result in this+0x2b0 and returns it. If missing: clears +0x2b0, stops busy spinner type 6 ([this+0x2a0]+0x58) and fires VM route 'exit_career_wizard' (Vm_Fire_Route on this+0x28). Addon: point where the career wizard aborts. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3260)"
+ },
+ "signature": {
+  "id": "game.career_wizard_resolve_or_exit",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 70 48 89 CE 48 8B 89 78 02 00",
+  "match": "0x141a22ea0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a22ea0",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerWizard_ResolveOrExit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_CareerWizard_ResolveOrExit",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a22ea0.c;xref:0x141a22ea0",
+   "notes": "V3260 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

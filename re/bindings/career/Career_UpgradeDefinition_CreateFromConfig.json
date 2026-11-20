@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_UpgradeDefinition_CreateFromConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141277150",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *FUN(void **out, void *allocator, void *unused, void *cfg, ...)",
+  "evidence": "decomp:re/decomp/141277150.c;xref:0x1456ce188",
+  "notes": "myteam-g1: Big factory for an upgrade definition: name via obfuscated string table, cost_in_my_team, development_boost_departments, research_boost_departments and many numeric params. Modders: cost_in_my_team is the My Team cost of an upgrade."
+ },
+ "signature": {
+  "id": "career.upgrade_definition_create_from_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 01 00 00 C5 F8 29 BC 24 70 01 00 00 C5 F8 29 B4 24 60 01 00 00 4C 89 CB",
+  "match": "0x141277150",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141277150",
+  "kind": "func_start",
+  "names": [
+   "Career_UpgradeDefinition_CreateFromConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-b",
+   "kind": "func",
+   "item": "0x141277150",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141277150.c;xref:0x1456ce188;str:\"cost_in_my_team\";str:\"development_boost_departments\";str:\"research_boost_departments\";str:\"available_at_start\"",
+   "notes": "V9001 Factory parsing these keys plus group/requirement/repeatable/weekend_cooldown/description_string. Only reachable via ptr table, no direct caller site."
+  }
+ ],
+ "proofs": []
+}

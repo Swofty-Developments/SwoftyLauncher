@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_FlowStateInterruptManager_ConsumeInterrupt",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144426530",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/144426530.c;xref:0x142d5372e,0x142d5387d,0x1436afda1,0x1436cfda2",
+  "notes": "cxx=NeFlowStateInterruptManager::consumeInterrupt; log channel FLOW: 'NeFlowStateInterruptManager::consumeInterrupt - Consuming interrupt type %d \"%s\"'"
+ },
+ "signature": {
+  "id": "core.flow_state_interrupt_manager_consume_interrupt",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 8B 41 18 48 39 41 20",
+  "match": "0x144426530",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144426530",
+  "kind": "func_start",
+  "names": [
+   "Ne_FlowStateInterruptManager_ConsumeInterrupt"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb4-verify-b",
+   "kind": "func",
+   "item": "Ne_FlowStateInterruptManager_ConsumeInterrupt",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144426530.c;xref:0x144426530",
+   "notes": "V2211 pops front 0x18-byte entry of vector, shifts rest, calls entry vcall0; two log lines"
+  }
+ ],
+ "proofs": []
+}

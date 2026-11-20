@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_OsMetrics_RecordArgs",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432bf450",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name recordArgs (class from the log channel); log channel OS_METRICS: 'recordArgs %d: %s'"
+ },
+ "signature": {
+  "id": "game.os_metrics_record_args",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 8E 08 01 00 00 48 85 C9 0F 84 ?? ?? ?? ?? 48 8B 03",
+  "match": "0x1432c33b7",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1432bf450",
+  "kind": "func_start",
+  "names": [
+   "Game_OsMetrics_RecordArgs"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x1432bf450",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432bf450.c;xref:0x1432c33b7",
+   "notes": "V7356 name matches log/pretty-function string and body; sibling-consistent"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamCustomisation_ApplySponsorLivery",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142260f10",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void *vm",
+  "evidence": "decomp:re/decomp/142260f10.c;xref:0x145776f18",
+  "notes": "myteam-g1: My Team customisation scene update: applies title_sponsor and lng_sponsor_%s livery (noyear-custom-myteam livery) to the car; calls Game_MyTeamCustomisation_SpawnScene."
+ },
+ "signature": {
+  "id": "game.my_team_customisation_apply_sponsor_livery",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 01 00 00 C5 F8 29 B4 24 C0 01 00 00 48 89 CE C7 44 24 60 03 00 00 00",
+  "match": "0x142260f10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142260f10",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamCustomisation_ApplySponsorLivery"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x142260f10",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142260f10.c;xref:0x145776f18",
+   "notes": "V10062 Large (2974 lines) My Team customisation overview scene/VM (drivers, car_livery, invoice, badge, c_focus_*); sponsor livery is only one part."
+  }
+ ],
+ "proofs": []
+}

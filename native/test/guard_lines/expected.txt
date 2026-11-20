@@ -1,0 +1,149 @@
+[ai_corner_guard]
+off [ai] brake line guard off (SWOFTY_AI_CORNER_GUARD=%s)
+unresolved [ai] brake line guard off: needs site_Ai_UpdateCars_CornerLineLoad and site_Ai_UpdateCars_NoCornerLine, which this build does not resolve
+armed [ai] brake line guard armed: a car with no brake line ahead drives its line without corner data
+not_installed [ai] brake line guard did not install (see the [core] lines)
+
+[ai_line_set]
+off [ai] line set guard off (SWOFTY_AI_LINE_SET_GUARD=%s)
+unresolved [ai] line set guard off: needs site_Ai_BuildSystem_RecordPushed, which this build does not resolve
+armed [ai] line set guard armed: a car no AI map lists borrows another car's tables and brake line settings
+not_installed [ai] line set guard did not install (see the [core] lines)
+
+[chassis_registry]
+off [car] chassis registry guard off (SWOFTY_CHASSIS_REGISTRY_GUARD=%s)
+unresolved [car] chassis registry guard off: needs site_Car_ChassisRegistryCount, which this build does not resolve
+armed [car] chassis registry guard armed: a 27th car body is not registered
+not_installed [car] chassis registry guard did not install (see the [core] lines)
+
+[ers_mode]
+off [ers] mode guard off (SWOFTY_ERS_MODE_GUARD=%s)
+unresolved [ers] mode guard off: needs site_Car_ErsGearModifierLoad, which this build does not resolve
+armed [ers] mode guard armed: a car whose ERS mode is out of range gets its ERS reset to Medium instead of faulting
+not_installed [ers] mode guard did not install (see the [core] lines)
+
+[ers_newlap]
+off [ers] new-lap guard off (SWOFTY_ERS_GUARD=%s)
+unresolved [ers] new-lap guard off: needs site_Game_ErsNewLap_VehicleLookup and site_Game_ErsNewLap_NextVehicle, which this build does not resolve
+armed [ers] new-lap guard armed: a vehicle_newlap reaching a participant without a vehicle skips it instead of faulting
+not_installed [ers] new-lap guard did not install (see the [core] lines)
+
+[tyre_slots]
+off [tyres] slot guard off (SWOFTY_TYRE_SLOT_GUARD=%s)
+unresolved [tyres] slot guard off: needs site_Sess_TyreVisSlotLookup, site_Sess_TyreVisTailCall, site_Sess_TyreWearSlotLookup and site_Sess_TyreWearReturn, which this build does not resolve
+armed [tyres] slot guard armed: a fitted tyre set whose option has no slot in the car's class takes a slot of the class instead of faulting
+not_installed [tyres] slot guard did not install (see the [core] lines)
+
+[standings_guard]
+off [career] standings guard off (SWOFTY_STANDINGS_GUARD=%s)
+unresolved [career] standings guard off: needs site_Career_StandingsWeekendTrackLoad and site_Career_StandingsWeekendTrackDone, which this build does not resolve
+armed [career] standings guard armed: a standings round whose track has no track data is skipped instead of faulting
+not_installed [career] standings guard did not install (see the [core] lines)
+
+[myteam_vehicle_guard]
+off [myteam] vehicle base guard off (SWOFTY_MYTEAM_VEHICLE_GUARD=%s)
+unresolved [myteam] vehicle base guard off: needs site_Game_MyTeamVehicleBases_AiConfigLoad and site_Game_MyTeamVehicleBases_NextBase, which this build does not resolve
+armed [myteam] vehicle base guard armed: a saved My Team vehicle base whose vehicle row is gone is skipped instead of faulting
+not_installed [myteam] vehicle base guard did not install (see the [core] lines)
+
+[audio_queue]
+off [audio] queue fix off (SWOFTY_AUDIO_QUEUE_FIX=%s)
+unresolved [audio] queue fix off: needs Snd_Request_JobWorker, g_Snd_JobWorkerOverflow and g_Snd_JobWorkerLock, which this build does not resolve
+armed [audio] queue fix armed: audio worker requests queued in slots 12-23 move to slots 0-11, where the workers take them
+not_installed [audio] queue fix did not install (see the [core] lines)
+
+[watchdog_grace]
+off [core] boot watchdog grace off (SWOFTY_BOOT_WATCHDOG_GRACE=%s)
+unresolved [core] boot watchdog grace off: needs site_Ne_WatchdogKillPath and site_Ne_WatchdogKillSkip, which this build does not resolve
+armed [core] boot watchdog grace armed: the game's watchdog kill is held for up to 180 s while a flow is in Entering or recently Updating
+not_installed [core] boot watchdog grace did not install (see the [core] lines)
+
+[fe_tile_guard]
+off [fe] tiles guard off (SWOFTY_FE_TILE_GUARD=%s)
+unresolved [fe] tiles guard off: needs site_FeTile_ListScanStart, site_FeTile_ListScanNone, site_FeTile_ListRowEntry, site_FeTile_ListRowFieldLoad and site_FeTile_ListRowNone, which this build does not resolve
+armed [fe] tiles guard armed: a tile whose entrant list is gone is left without a list instead of faulting
+not_installed [fe] tiles guard did not install (see the [core] lines)
+
+[garage_crew]
+off [garage] crew guard off (SWOFTY_GARAGE_CREW_GUARD=%s)
+unresolved [garage] crew guard off: needs site_Game_GarageCrew_SpawnVector, which this build does not resolve
+armed [garage] crew guard armed: a garage's crew is spawned for its first two cars; a third car is left without one
+not_installed [garage] crew guard did not install (see the [core] lines)
+
+[garage_setup]
+off [garage] setup guard off (SWOFTY_GARAGE_SETUP_GUARD=%s)
+unresolved [garage] setup guard off: needs site_Game_GarageSetups_EntryStep and site_Game_GarageSetups_NotFound, which this build does not resolve
+armed [garage] setup guard armed: a setup whose owner is gone gets an empty owner name
+not_installed [garage] setup guard did not install (see the [core] lines)
+
+[garage_slots]
+off [garage] slot guard off (SWOFTY_GARAGE_SLOT_GUARD=%s)
+unresolved [garage] slot guard off: needs site_Sess_GarageSlots_GarageLoad and site_Sess_GarageSlots_Done, which this build does not resolve
+armed [garage] slot guard armed: a team past the world's garage count gets no garage slot
+not_installed [garage] slot guard did not install (see the [core] lines)
+
+[pit_slots]
+off [pit] slot guard off (SWOFTY_PIT_SLOT_GUARD=%s)
+unresolved [pit] slot guard off: needs site_Sess_PitEvalOwnSlot, site_Sess_PitEvalListSlot, site_Sess_PitEvalListNext, site_Sess_PitEvalReturnFalse, site_Sess_PitRankOwnSlot, site_Sess_PitRankListSlot, site_Sess_PitRankListNext and site_Sess_PitRankEpilogue, which this build does not resolve
+armed [pit] slot guard armed: a pit list car without a race slot is skipped, and a car without one makes no pit decision
+not_installed [pit] slot guard did not install (see the [core] lines)
+
+[estimate_laptime]
+off [session] estimate lap time guard off (SWOFTY_ESTIMATE_LAPTIME_GUARD=%s)
+unresolved [session] estimate lap time guard off: needs site_Sess_VirtualSession_EstimateTyreQuery and site_Sess_VirtualSession_EstimateTail, which this build does not resolve
+armed [session] estimate lap time guard armed: a lap estimate without a tyre object returns the lap time unchanged
+not_installed [session] estimate lap time guard did not install (see the [core] lines)
+
+[red_flag_recompute]
+off [session] red flag recompute guard off (SWOFTY_RED_FLAG_RECOMPUTE_GUARD=%s)
+unresolved [session] red flag recompute guard off: needs Sess_RaceStrategy_RedFlagRecompute, which this build does not resolve
+armed [session] red flag recompute guard armed: a red flag strategy recompute without a race session record returns instead of faulting
+not_installed [session] red flag recompute guard did not install (see the [core] lines)
+
+[replay_grid_guard]
+off [replay] recorder grid guard off (SWOFTY_REPLAY_GRID_GUARD=%s)
+unresolved [replay] recorder grid guard off: needs site_Ne_ReplayAfterRecord, which this build does not resolve
+armed [replay] recorder grid guard armed: a recordable whose state outgrows its holder gets a larger holder
+not_installed [replay] recorder grid guard did not install (see the [core] lines)
+
+[session_enter]
+off [session] enter guard off (SWOFTY_SESSION_ENTER_GUARD=%s)
+unresolved [session] enter guard off: needs site_Sess_AiRecords_NameHash, which this build does not resolve
+armed [session] enter guard armed: a car that no AI asset group lists borrows an entry for its AI record
+not_installed [session] enter guard did not install (see the [core] lines)
+
+[team_slots]
+off [teams] team record slots off (SWOFTY_TEAM_SLOTS=%s)
+unresolved [teams] team record slots off: needs site_Team_LoadInsertCall and site_Team_LoadInserted, which this build does not resolve
+armed [teams] team record slots armed: loaded team records are reachable for dressing
+not_installed [teams] team record slots did not install (see the [core] lines)
+
+[thrustmaster_lcd]
+off [tmlcd] thrustmaster lcd guard off (SWOFTY_TMLCD_GUARD=%s)
+unresolved [tmlcd] thrustmaster lcd guard off: needs site_Game_ThrustmasterLcd_EntrantRecord and site_Game_ThrustmasterLcd_SectorTail, which this build does not resolve
+armed [tmlcd] thrustmaster lcd guard armed: a sector entrant without a record leaves the LCD team name alone
+not_installed [tmlcd] thrustmaster lcd guard did not install (see the [core] lines)
+
+[track_acclim]
+off [acclim] track acclimatisation guard off (SWOFTY_ACCLIM_GUARD=%s)
+unresolved [acclim] track acclimatisation guard off: needs Game_PracticeTrackAcclimatisation_RefreshState, which this build does not resolve
+armed [acclim] track acclimatisation guard armed: a practice programme refresh with no targets returns instead of faulting
+not_installed [acclim] track acclimatisation guard did not install (see the [core] lines)
+part_unresolved [acclim] track acclimatisation penalty guard off: needs site_Game_AcclimPenalty_Entry and site_Game_AcclimPenalty_Return, which this build does not resolve
+part_armed [acclim] track acclimatisation penalty guard armed: a practice programme penalty flag with no targets returns instead of faulting
+part_not_installed [acclim] track acclimatisation penalty guard did not install (see the [core] lines)
+
+[hook ai_curves]
+off [ai] team curves guard off (SWOFTY_AI_CURVES_GUARD=%s)
+failed [ai] team curves guard: the hook failed: %s
+armed [ai] team curves guard armed: a player whose vehicle is not in the vehicle table no longer faults the AI build
+
+[hook race_retirement]
+off [race] retirement driver guard off (SWOFTY_RACE_RETIREMENT_GUARD=%s)
+failed [race] retirement driver guard: the hook failed: %s
+armed [race] retirement driver guard armed: a car that retires with no driver in the entrants system gets a retirement message with no driver name instead of faulting
+
+[hook teammate_pairs]
+off [strategy] teammate pairs guard off (SWOFTY_TEAMMATE_PAIRS_GUARD=%s)
+failed [strategy] teammate pairs guard: the hook failed: %s
+armed [strategy] teammate pairs guard armed: a team with more than two cars pairs its first two for strategy instead of throwing

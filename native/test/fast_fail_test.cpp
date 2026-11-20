@@ -1,8 +1,11 @@
-// Host unit test for the fast-fail crash report logic (fast_fail_logic.hpp). run_fast_fail_test.sh builds and runs it.
-#include "../src/core/fast_fail_logic.hpp"
+// Host unit test for the fast-fail crash report logic (fast_fail_logic.hpp). native/test/run_tests.sh fast_fail builds and runs it.
+#include "core/diagnostics/crash/fast_fail_logic.hpp"
+#include "core/diagnostics/crash/prologue_cache_logic.hpp"
+#include "core/runtime/scan_cache.hpp"
 
 #include <cstdio>
 #include <string>
+#include <vector>
 
 static int fails;
 
@@ -10,6 +13,94 @@ static void expect(bool ok, const std::string &what)
 {
     printf("%s: %s\n", ok ? "ok  " : "FAIL", what.c_str());
     fails += !ok;
+}
+
+struct Exe {
+    std::vector<uint8_t> bytes = std::vector<uint8_t>(4096, 0xCC);
+    int scans = 0;
+
+    uintptr_t base() const { return reinterpret_cast<uintptr_t>(bytes.data()); }
+
+    void put(size_t at, const char *pattern)
+    {
+        auto p = fast_fail::parse_pattern(pattern);
+        for (size_t i = 0; i < p.bytes.size(); i++)
+            bytes[at + i] = p.mask[i] ? p.bytes[i] : uint8_t(0x5A);
+    }
+
+    uintptr_t scan(const fast_fail::Pattern &p)
+    {
+        scans++;
+        uintptr_t found = 0;
+        int hits = 0;
+        for (size_t i = 0; i + p.bytes.size() <= bytes.size(); i++)
+            if (fast_fail::matches(bytes.data() + i, p))
+                found = base() + i, hits++;
+        return hits == 1 ? found : 0;
+    }
+};
+
+static crash::prologue::Found find_cached(Exe &exe, scancache::Cache &cache, const char *pattern)
+{
+    auto p = fast_fail::parse_pattern(pattern);
+    return crash::prologue::find(
+        exe.base(), [&](uint64_t &rva) { return cache.find(crash::prologue::CACHE_SECTION, pattern, rva); },
+        [&](uintptr_t a) {
+            return a >= exe.base() && a - exe.base() + p.bytes.size() <= exe.bytes.size() &&
+                   fast_fail::matches(reinterpret_cast<const uint8_t *>(a), p);
+        },
+        [&] { return exe.scan(p); },
+        [&](int hits, uint64_t rva) { cache.found(crash::prologue::CACHE_SECTION, pattern, hits, rva); });
+}
+
+static void prologue_cache()
+{
+    const char *pattern = "48 83 EC 28 B9 17 00 00 00 FF 15 ?? ?? ?? ?? 85 C0 74 07 B9";
+    Exe exe;
+    exe.put(0x400, pattern);
+    scancache::Cache cache;
+    cache.parse("", 0x1234);
+
+    auto first = find_cached(exe, cache, pattern);
+    expect(first.at == exe.base() + 0x400 && !first.cached && exe.scans == 1, "the first boot of an exe scans for the prologue");
+    uint64_t kept = 0;
+    expect(cache.find(crash::prologue::CACHE_SECTION, pattern, kept) && kept == 0x400 && cache.dirty,
+           "and keeps its address in the scan cache");
+
+    scancache::Cache reread;
+    expect(reread.parse(cache.serialize(), 0x1234) && reread.find(crash::prologue::CACHE_SECTION, pattern, kept) && kept == 0x400,
+           "the address survives the scan cache file");
+    auto again = find_cached(exe, reread, pattern);
+    expect(again.at == exe.base() + 0x400 && again.cached && exe.scans == 1,
+           "the next boot takes the cached address without a scan");
+
+    exe.bytes.assign(exe.bytes.size(), 0xCC);
+    exe.put(0x900, pattern);
+    auto moved = find_cached(exe, reread, pattern);
+    expect(moved.at == exe.base() + 0x900 && !moved.cached && exe.scans == 2,
+           "a stale cached address whose bytes no longer match falls back to the scan");
+    expect(reread.find(crash::prologue::CACHE_SECTION, pattern, kept) && kept == 0x900, "and the scan's address replaces it");
+
+    exe.put(0x200, pattern);
+    auto twice = find_cached(exe, reread, pattern);
+    expect(twice.at == exe.base() + 0x900 && twice.cached,
+           "a cached address is used as long as its bytes match, as the scan cache does for bindings");
+
+    exe.bytes.assign(exe.bytes.size(), 0xCC);
+    exe.put(0x200, pattern);
+    exe.put(0x600, pattern);
+    auto none = find_cached(exe, reread, pattern);
+    expect(none.at == 0 && !none.cached && exe.scans == 3 && !reread.find(crash::prologue::CACHE_SECTION, pattern, kept),
+           "a stale address where the scan finds several matches gives no address and leaves no entry");
+
+    scancache::Cache edge;
+    edge.parse("", 1);
+    edge.rva[scancache::Cache::id(crash::prologue::CACHE_SECTION, pattern)] = 0xFFFFFFF0;
+    exe.bytes.assign(exe.bytes.size(), 0xCC);
+    exe.put(0x10, pattern);
+    auto outside = find_cached(exe, edge, pattern);
+    expect(outside.at == exe.base() + 0x10 && !outside.cached,
+           "a cached address outside the exe is not read and falls back to the scan");
 }
 
 int main()
@@ -58,5 +149,6 @@ int main()
     const uint8_t code[] = {0x90, 0x48, 0x83, 0xEC, 0x28, 0xE8, 0x11, 0x22, 0x33, 0x44, 0x48, 0x85, 0xC0};
     expect(fast_fail::matches(code + 1, p), "a pattern matches across its wildcards");
     expect(!fast_fail::matches(code, p), "a pattern does not match at another offset");
+    prologue_cache();
     return fails ? 1 : 0;
 }

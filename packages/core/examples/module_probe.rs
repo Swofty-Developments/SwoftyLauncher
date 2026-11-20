@@ -5,7 +5,7 @@ use std::path::Path;
 use std::process::ExitCode;
 
 use serde_json::{Value, json};
-use swofty_core::modules::library::{Hooks, Library};
+use swofty_core::online::modules::library::{Hooks, Library};
 
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();

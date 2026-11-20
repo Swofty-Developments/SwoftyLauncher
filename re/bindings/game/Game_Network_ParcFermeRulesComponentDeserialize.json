@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_ParcFermeRulesComponentDeserialize",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140bb7de0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK",
+  "notes": "named from its log messages (channel NETWORK): '! ParcFermeRulesComponent can't deserialize, buffer contains %d, less than a byte.'"
+ },
+ "signature": {
+  "id": "game.network_parc_ferme_rules_component_deserialize",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 38 4C 89 C6 48 89 CF 41 80 78 29 00 74 2E C7 44 24 30 00 00 00 00 C6 44 24 20 00 48 8D 54 24 30 48 89 F1 45 31 C0 41 B9 12 00 00 00 E8 ?? ?? ?? ?? 84 C0 74 5D",
+  "match": "0x140bb7de0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140bb7de0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_ParcFermeRulesComponentDeserialize"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140bb7de0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140bb7de0.c",
+   "notes": "V4478 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

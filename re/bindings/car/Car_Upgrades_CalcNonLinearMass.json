@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_Upgrades_CalcNonLinearMass",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143535480",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "pat:log-channel-VEHICLE_UPGRADES_MASS;decomp:re/decomp/143535480.c;xref:0x142964507,0x142f5a9e4;kb:subsystems/car.md#mass",
+  "notes": "(Upgrades team model, owner). linear = sum over type metadata records (+0x1a38..+0x1a40 stride 0x20) of Car_Upgrades_CalcTypeMass; total = sum of the records' mass at full (+4); f = linear/total; returns linear + f*(f*target - linear) with target = Upgrades+0x50 ('Target mass at max'). Log channel VEHICLE_UPGRADES_MASS. Callers 0x142f5a5d0 (car mass for a pace/strategy estimate: fuel FuelTank+0x100 + Chassis Mass + this) and 0x142962f10 (garage/programme UI). It does not write the physics mass; the physics mass change is the radUpgradeWeightReduction block (Chassis/Mass op -)."
+ },
+ "signature": {
+  "id": "car.upgrades_calc_non_linear_mass",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 48 8B 99 38 1A 00 00",
+  "match": "0x143535480",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143535480",
+  "kind": "func_start",
+  "names": [
+   "Car_Upgrades_CalcNonLinearMass"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v4",
+   "kind": "func",
+   "item": "Car_Upgrades_CalcNonLinearMass",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143535480.c;xref:0x142964507,0x142f5a9e4",
+   "notes": "V1238 linear = sum of CalcTypeMass over records +0x1a38..+0x1a40 (stride 0x20, type byte +0); total = sum of record +4; f = linear/total; returns (f*[+0x50]-linear)*f+linear (linear if total==0); logs VEHICLE_UPGRADES_MASS. Caller 0x142f5a5d0 also loads FuelTank+0x100 at 0x142f5a88c and Chassis."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x143535480",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143535480.c;xref:0x142964506",
+   "notes": "V6082 name/log string and function size match the code; strings verified via cstr"
+  }
+ ],
+ "proofs": []
+}

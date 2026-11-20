@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_MipTailGeneratorFactory_ObtainGeneratorResource",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d39cb0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/143d39cb0.c;xref:0x1459b25c0",
+  "notes": "cxx=NeMipTailGeneratorFactory::obtainGeneratorResource; log channel MIPTAIL: 'NeMipTailGeneratorFactory::obtainGeneratorResource'"
+ },
+ "signature": {
+  "id": "core.mip_tail_generator_factory_obtain_generator_resource",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 CE 80 3D ?? ?? ?? ?? 01 75 66 B8 3D 01 00 00",
+  "match": "0x143d39cb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d39cb0",
+  "kind": "func_start",
+  "names": [
+   "Ne_MipTailGeneratorFactory_ObtainGeneratorResource"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb2-verify-a",
+   "kind": "func",
+   "item": "Ne_MipTailGeneratorFactory_ObtainGeneratorResource",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d39cb0.c;xref:0x1459b25c0",
+   "notes": "V2060 single log, vtable slot, obtains generator resource"
+  }
+ ],
+ "proofs": []
+}

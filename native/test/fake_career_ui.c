@@ -134,10 +134,7 @@ void push_impl(Wizard *w)
 }
 
 static char confirm_seen[64];
-void record_confirm(const char *route)
-{
-    snprintf(confirm_seen, sizeof confirm_seen, "%s", route);
-}
+void record_confirm(const char *route) { snprintf(confirm_seen, sizeof confirm_seen, "%s", route); }
 
 static int tabs_seen;
 static char tabs_names[128];
@@ -183,22 +180,28 @@ void fake_desc_ref(void);
 
 #define TAG(a) ".byte 0x48,0xB8,0x53,0x57,0x46,0x54," a "\n"
 __asm__(".section .xtls,\"xr\"\n"
-        ".globl fake_build_ref\nfake_build_ref:\n" TAG("0x43,0x52,0x45,0x46") "jmp build_ref_impl\n"
-        ".globl fake_list_loaded\nfake_list_loaded:\n" TAG("0x43,0x4C,0x53,0x54") "jmp list_loaded_impl\n"
-        ".globl fake_post_line\nfake_post_line:\n" TAG("0x53,0x50,0x43,0x48") "jmp post_line_impl\n"
-        ".globl fake_starts\nfake_starts:\n" TAG("0x53,0x54,0x46,0x31") "jmp starts_impl\n"
-        ".globl fake_route\nfake_route:\n" TAG("0x52,0x4F,0x55,0x54") "jmp route_impl\n"
-        ".globl fake_push\nfake_push:\n" TAG("0x50,0x55,0x53,0x48") "jmp push_impl\n"
-        ".globl fake_tab_state\nfake_tab_state:\n" TAG("0x54,0x53,0x54,0x41") "jmp tab_state_impl\n"
-        ".globl fake_nestr\nfake_nestr:\n" TAG("0x4E,0x53,0x54,0x52") "jmp nestr_impl\n"
-        ".globl fake_confirm\nfake_confirm:\n"
-        "push %rsi\nsub $0x20, %rsp\nmov %rdx, %rsi\nmov %rcx, %rdx\n" TAG("0x43,0x4F,0x4E,0x46")
-        "mov %rdx, %rcx\ncall record_confirm\nadd $0x20, %rsp\npop %rsi\nret\n"
-        ".globl fake_header_build\nfake_header_build:\n"
-        "sub $0x28, %rsp\n" TAG("0x54,0x41,0x42,0x53") "call build_tabs_impl\nadd $0x28, %rsp\nret\n"
-        ".globl fake_manager_ref\nfake_manager_ref:\n" TAG("0x47,0x4D,0x47,0x52") "lea game_manager_slot(%rip), %rax\nret\n"
-        ".globl fake_desc_ref\nfake_desc_ref:\n" TAG("0x44,0x45,0x53,0x43") "lea setup_desc(%rip), %rax\nret\n"
-        ".text\n");
+        ".globl fake_build_ref\nfake_build_ref:\n" TAG(
+            "0x43,0x52,0x45,0x46") "jmp build_ref_impl\n"
+                                   ".globl fake_list_loaded\nfake_list_loaded:\n" TAG(
+                                       "0x43,0x4C,0x53,0x54") "jmp list_loaded_impl\n"
+                                                              ".globl fake_post_line\nfake_post_line:\n" TAG(
+                                                                  "0x53,0x50,0x43,0x48") "jmp post_line_impl\n"
+                                                                                         ".globl fake_starts\nfake_starts:\n" TAG("0x53,0x54,0x46,0x31") "jmp starts_impl\n"
+                                                                                                                                                         ".globl fake_route\nfake_route:\n" TAG(
+                                                                                                                                                             "0x52,0x4F,0x55,0x54") "jmp route_impl\n"
+                                                                                                                                                                                    ".globl fake_push\nfake_push:\n" TAG(
+                                                                                                                                                                                        "0x50,0x55,0x53,0x48") "jmp push_impl\n"
+                                                                                                                                                                                                               ".globl fake_tab_state\nfake_tab_state:\n" TAG(
+                                                                                                                                                                                                                   "0x54,0x53,0x54,0x41") "jmp tab_state_impl\n"
+                                                                                                                                                                                                                                          ".globl fake_nestr\nfake_nestr:\n" TAG("0x4E,0x53,0x54,0x52") "jmp nestr_impl\n"
+                                                                                                                                                                                                                                                                                                        ".globl fake_confirm\nfake_confirm:\n"
+                                                                                                                                                                                                                                                                                                        "push %rsi\nsub $0x20, %rsp\nmov %rdx, %rsi\nmov %rcx, %rdx\n" TAG("0x43,0x4F,0x4E,0x46") "mov %rdx, %rcx\ncall record_confirm\nadd $0x20, %rsp\npop %rsi\nret\n"
+                                                                                                                                                                                                                                                                                                                                                                                                  ".globl fake_header_build\nfake_header_build:\n"
+                                                                                                                                                                                                                                                                                                                                                                                                  "sub $0x28, %rsp\n" TAG("0x54,0x41,0x42,0x53") "call build_tabs_impl\nadd $0x28, %rsp\nret\n"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                 ".globl fake_manager_ref\nfake_manager_ref:\n" TAG("0x47,0x4D,0x47,0x52") "lea game_manager_slot(%rip), %rax\nret\n"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           ".globl fake_desc_ref\nfake_desc_ref:\n" TAG(
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               "0x44,0x45,0x53,0x43") "lea setup_desc(%rip), %rax\nret\n"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      ".text\n");
 
 static void *vt_any[0x80];
 static void *vt_list[8], *vt_comp[0x60], *vt_emitter[16];
@@ -314,7 +317,9 @@ int main(void)
     HANDLE early = getenv("T_EARLY") ? CreateMutexW(NULL, FALSE, L"Codemasters F1 25") : NULL;
     expect(!getenv("T_EARLY") || (early && GetModuleHandleW(L"swofty_core.dll")),
            "with the early stage on, CreateMutexW('Codemasters F1 25') loaded the core");
-    WNDCLASSEXW wc = {.cbSize = sizeof wc, .lpfnWndProc = DefWindowProcW, .hInstance = GetModuleHandleW(NULL),
+    WNDCLASSEXW wc = {.cbSize = sizeof wc,
+                      .lpfnWndProc = DefWindowProcW,
+                      .hInstance = GetModuleHandleW(NULL),
                       .lpszClassName = L"EGO_WindowClass"};
     extern void *__imp_RegisterClassExW;
     ATOM(WINAPI * rc)(const WNDCLASSEXW *) = (void *)__imp_RegisterClassExW;
@@ -377,8 +382,8 @@ int main(void)
     add_option(&w90, 2);
     add_option(&w90, 10);
     add_option(&w90, 0xb);
-    printf("      1990 options %u %u %u steps %u %u %u\n", w90.opts[0], w90.opts[1], w90.opts[2], w90.steps[0],
-           w90.steps[1], w90.steps[2]);
+    printf("      1990 options %u %u %u steps %u %u %u\n", w90.opts[0], w90.opts[1], w90.opts[2], w90.steps[0], w90.steps[1],
+           w90.steps[2]);
     expect(w90.opts[1] == 9, "options: the 1990 season length records Full Season for Custom Season");
     expect(w90.steps_e - w90.steps_b == 3 && w90.steps[2] == 6,
            "steps: the 1990 classic drivers step is replaced by the confirm step");

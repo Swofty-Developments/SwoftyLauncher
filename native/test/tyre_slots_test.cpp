@@ -1,22 +1,22 @@
-// Host-native unit test for the core's tyre slot guard (native/src/core/tyre_slots_logic.hpp): which slot the
+// Host-native unit test for the core's tyre slot guard (native/src/core/guards/cars/tyre_slots_logic.hpp): which slot the
 // game would pick for a fitted set's option, and what the guard does when that pick is missing or unusable.
-// Built and run by native/test/run_tyre_slots_test.sh.
+// Built and run by native/test/run_tests.sh tyre_slots.
 
-#include "tyre_slots_logic.hpp"
+#include "core/guards/cars/tyre_slots_logic.hpp"
 
 #include <cstdio>
 #include <vector>
 
 static int failures;
 
-#define CHECK(cond, msg)                                                                                                \
-    do {                                                                                                                \
-        if (cond) {                                                                                                     \
-            printf("ok  : %s\n", msg);                                                                                  \
-        } else {                                                                                                        \
-            printf("FAIL: %s\n", msg);                                                                                  \
-            failures++;                                                                                                 \
-        }                                                                                                               \
+#define CHECK(cond, msg)                                                                                                         \
+    do {                                                                                                                         \
+        if (cond) {                                                                                                              \
+            printf("ok  : %s\n", msg);                                                                                           \
+        } else {                                                                                                                 \
+            printf("FAIL: %s\n", msg);                                                                                           \
+            failures++;                                                                                                          \
+        }                                                                                                                        \
     } while (0)
 
 namespace ts = runtime::tyre_slots;
@@ -26,16 +26,12 @@ static ts::Slot slot(uint32_t option, uint64_t physical = 0x1000, uint64_t visua
     return {option, physical ? physical + option : 0, visual ? visual + option : 0};
 }
 
-static ts::Plan plan(const std::vector<ts::Slot> &t, uint32_t option)
-{
-    return ts::plan(t.data(), t.size(), option);
-}
+static ts::Plan plan(const std::vector<ts::Slot> &t, uint32_t option) { return ts::plan(t.data(), t.size(), option); }
 
 int main()
 {
     CHECK(ts::fallback(0) == 1 && ts::fallback(1) == 1 && ts::fallback(2) == 1, "dry options fall back to Medium");
-    CHECK(ts::fallback(3) == 4 && ts::fallback(4) == 4 && ts::fallback(7) == 4,
-          "Intermediate, Wet and higher fall back to Wet");
+    CHECK(ts::fallback(3) == 4 && ts::fallback(4) == 4 && ts::fallback(7) == 4, "Intermediate, Wet and higher fall back to Wet");
 
     std::vector<ts::Slot> f1 = {slot(0), slot(1), slot(2), slot(3), slot(4)};
     for (uint32_t o = 0; o < 5; o++) {

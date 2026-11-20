@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Rnd_OpenChallengers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a58720",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "void FUN(void *view, void *ctx)",
+  "evidence": "decomp:re/decomp/141a58720.c;xref:0x141a560a1",
+  "notes": "myteam-g1: UI binding code; open_rnd_challengers. Static, string-key driven."
+ },
+ "signature": {
+  "id": "ui.rnd_open_challengers",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 48 89 CE 80 3D ?? ?? ?? ?? 00",
+  "match": "0x141a58720",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a58720",
+  "kind": "func_start",
+  "names": [
+   "Ui_Rnd_OpenChallengers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141a58720",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141a58720.c;xref:0x141a560a1",
+   "notes": "V9925 Handler for the open_rnd_challengers event: posts a close event, requests a fade out and stops a busy spinner; it is navigation/transition code, not binding code."
+  }
+ ],
+ "proofs": []
+}

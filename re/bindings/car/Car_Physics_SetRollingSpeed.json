@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Physics_SetRollingSpeed",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1447411f0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1447411f0.c;xref:0x142c2176a",
+  "notes": "Sets a car rolling at speed (xmm1) along direction param_3 (vec4): body linear velocity car+0x558+0x170, angular +0x180 = 0; each wheel ([car+0x580]+0x70..+0x88) spin = speed / radius (+0x3c) into +0x188; engine rpm from gear ratios car+0x538+0x5fc and XOR-obfuscated values ([car+0x530]+8)+0x548 +0x140/+0x150. Caller Sess_Result_RequestVehicleStatus_2. Addon: teleport / rolling-start velocity."
+ },
+ "signature": {
+  "id": "car.physics_set_rolling_speed",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 78 C5 78 29 54 24 60 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 48 89 CE 48 8B",
+  "match": "0x1447411f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1447411f0",
+  "kind": "func_start",
+  "names": [
+   "Car_Physics_SetRollingSpeed"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x1447411f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1447411f0.c;xref:0x142c2176a",
+   "notes": "V3735 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

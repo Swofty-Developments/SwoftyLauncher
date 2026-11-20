@@ -3,8 +3,8 @@ use gpui_kit::component::{Icon, h_flex, v_flex};
 use gpui_kit::*;
 
 use super::tokens::{Tone, radius, space, text};
-use crate::scale::px;
-use crate::theme::palette;
+use crate::ui::scale::px;
+use crate::ui::theme::palette;
 
 /// A tinted box with an icon and a message: info, warning or error.
 #[derive(IntoElement)]

@@ -1,0 +1,44 @@
+{
+ "schema": 1,
+ "name": "vt_Game_TeamHQAdvanceViewModel",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14577a9c0",
+  "type": "vtable[28]",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/1422c3540.c;decomp:re/decomp/1422ca380.c;xref:0x1422cf9ac,0x1423c4aaa;pat:class-name-strings-TeamHQAdvanceViewModel-team_hq_advance;decomp:re/decomp/1422c3540.c;xref:0x1422cf9af",
+  "notes": "cxx=game::TeamHQAdvanceViewModel primary vtable (28 slots 0x14577a9c0..0x14577aa98; secondaries +0x260 0x14577aaa0, +0x268 0x14577aad0). Built inline by the Team HQ container builder 0x1422cf7a0 (allocator vt+0x18, Vm_Construct_TabViewModel at 0x1422cf917, vtable store 0x1422cf9b3) and appended to the container's child list +0x678..+0x680 as {u32 djb2 'advance' 0x2062deb7, +8 node, +0x10 vm} (0x1422cfc15..0x1422cfc20); dtor 0x1423c4aa0. Slot 10 Game_TeamHQAdvanceViewModel_OnCommandRaised 0x1422c3540, slot 12 Game_TeamHQAdvanceViewModel_Update 0x1422ca380 (per frame), slot 6 0x1422bc710, slot 7 0x1422c21f0. Fields: +0x28 router, +0x620 required non-null by OnCommandRaised, +0x6e0 career time component (+0x2b0 u32 clock, day = (clock>>5)/1440), +0x6e8 calendar, +0x728 render-target owner, +0x730 advancer (Career_TeamHqAdvance_*: +0x28 canAdvance=vm+0x758, +0x29 advancing=vm+0x759, +0x2a stopping=vm+0x75a, +0x2c cancelling=vm+0x75c, +0x30 float tick delay s=vm+0x760, +0x34 u16 start day=vm+0x764), +0x766 waiting, +0x767 online career, +0x780 notification card list. ts-v1 signature for the test agent (slots 10 and 12 read from the exe, V1490 and V1491)"
+ },
+ "signature": {
+  "id": "game.team_hq_advance_view_model",
+  "section": ".xtls",
+  "pattern": "C4 C1 78 11 84 24 90 06 00 00 48 8D 05 ?? ?? ?? ?? 49 89 04 24 48 8D 05",
+  "match": "0x1422cf9a2",
+  "anchor": "0xd",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0xa",
+   "len": 7
+  },
+  "target": "0x14577a9c0",
+  "kind": "data",
+  "names": [
+   "vt_Game_TeamHQAdvanceViewModel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "ts-v1",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/testing/agent/agent.cpp"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_SaveSlotManager_SelectSlot",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1429d0b90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "int Game_SaveSlotManager_SelectSlot(void *manager, uint64_t slot_id, bool force, uint32_t a4)",
+  "evidence": "decomp:re/decomp/1429d0b90.c;xref:0x140ba2173,0x140ba245c,0x140c8aa84,0x140c8ab70,0x140fd6263,0x140fdc54d,0x1410077d7,0x141a1ecfe,0x141a2915a,0x141a2924a,0x141fb5624,0x141fc2f1b,0x1429d221b,0x1429d7644,0x142bff717,0x142c0d46b,0x142cc43c0,0x143859667",
+  "notes": "Loads a career slot by id: finds the SaveSlotInfo in manager+0x268..+0x270 whose +0x0 slot_id equals slot_id (0x22 if none; 0x25 if already current and not force), serialises the current slot (+0x280) with 0x1429ce380, stores the new slot at +0x280 (site_Game_SaveSlot_Selected), and if its blob (+0x178) is set deserialises it with 0x1429d1270, restoring the old current slot on failure (0x1429d0c6a). An empty blob logs 'Load postponed due to empty data. Slot %s : %d.' Callers: census steam 0x29d0b90."
+ },
+ "signature": {
+  "id": "game.save_slot_manager_activate_slot",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 48 8B 81 68 02 00 00 48 8B 89 70 02",
+  "match": "0x1429d0b90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1429d0b90",
+  "kind": "func_start",
+  "names": [
+   "Game_SaveSlotManager_SelectSlot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "save-v2",
+   "kind": "func",
+   "item": "Game_SaveSlotManager_SelectSlot",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1429d0b90.c;xref:0x1429d0bc3,0x1429d0be7,0x1429d0bf8",
+   "notes": "V1470 proto checked: rdx compared with the slot's qword +0 (u64 slot_id), r8b tested (bool force), r9d passed on as r8d to 0x1429ce380 (u32); returns 0x22 none, 0x25 same slot without force."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "d10-verify",
+   "kind": "func",
+   "item": "Game_SaveSlotManager_SelectSlot",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1429d0b90.c;xref:0x1429d0b90",
+   "notes": "V2878 decomp checked: offsets/calls/strings match claim"
+  }
+ ],
+ "proofs": []
+}

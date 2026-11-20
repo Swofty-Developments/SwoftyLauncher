@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_OnlineNegotiations_PushEvent12",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ff6be0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void (void *neg, void *event12)",
+  "evidence": "decomp:re/decomp/140ff6be0.c;xref:0x140ff3d75;xref:0x140ff3e45;xref:0x140ff3fd4",
+  "notes": "myteam-g2: vector::push_back of a 12-byte record (8+4 bytes) into the vector at neg+0xd70..0xd80 (allocator neg+0xd68, growth x1.5). Collects negotiation events; no state change beyond the list."
+ },
+ "signature": {
+  "id": "career.online_negotiations_push_event12",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 49 89 D6 48 89 CE 48 8B B9 78 0D 00 00",
+  "match": "0x140ff6be0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ff6be0",
+  "kind": "func_start",
+  "names": [
+   "Career_OnlineNegotiations_PushEvent12"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140ff6be0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ff6be0.c;xref:0x140ff3d75",
+   "notes": "V9628 Push_back of 12-byte record into vector (+0xd70..0xd80, allocator +0xd68) with 1.5x growth."
+  }
+ ],
+ "proofs": []
+}

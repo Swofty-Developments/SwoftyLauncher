@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_SaveSystem_ListDelete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1441418e0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-channel-SAVE;decomp:re/decomp/1441418e0.c;xref:0x145a5c690",
+  "notes": "named from its log messages (channel SAVE): 'List delete requested for \"%s\" | List delete result: 0x%x'"
+ },
+ "signature": {
+  "id": "core.save_system_list_delete",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 88 00 00 00 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01 75 74 B8 81 00 00 00 48 8D 0D ?? ?? ?? ?? 66 66 66 2E 0F 1F 84 00 00 00 00 00 8B 14 81 85 D2 74 55 81 FA 44 AF 7C 7C 74 30 83 C0 14 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D 81 00 00 00 75 C3 EB 1D 48 8B 06 4C 8B 80 C0 00 00 00 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 4C 8B 0E 49 8B 41 78 48 89 44 24 78 49 8B 89 80 00 00 00 48 89 8C 24 80 00 00 00 48 09 C1 75 7B",
+  "match": "0x1441418e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1441418e0",
+  "kind": "func_start",
+  "names": [
+   "Ne_SaveSystem_ListDelete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb4-verify-a",
+   "kind": "func",
+   "item": "Ne_SaveSystem_ListDelete",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1441418e0.c;xref:0x145a5c690",
+   "notes": "V2243 Wrapper, calls SelectAndDelete 1441411a0."
+  }
+ ],
+ "proofs": []
+}

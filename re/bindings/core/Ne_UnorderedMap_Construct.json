@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_UnorderedMap_Construct",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a2d430",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a2d430.c;xref:0x1439be569,0x1439be598",
+  "notes": "Constructs a list container: stores allocator, allocates 0x18-byte sentinel node (self-linked). Callers Render_Gfx2Device_Initialise. vp5-verify partial/disagree"
+ },
+ "signature": {
+  "id": "core.list_construct_with_sentinel",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 8D 8D 70 33 00 00 48 89 9C 24",
+  "match": "0x1439be569",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143a2d430",
+  "kind": "func_start",
+  "names": [
+   "Ne_UnorderedMap_Construct"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x143a2d430",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143a2d430.c;xref:0x140c251a0",
+   "notes": "V8127 Better name Ne_UnorderedMap_Construct: also sets max_load_factor 1.0f (0x3f800000) and allocates 0x80-byte bucket array of 16 sentinel pointers, not only a list"
+  }
+ ],
+ "proofs": []
+}

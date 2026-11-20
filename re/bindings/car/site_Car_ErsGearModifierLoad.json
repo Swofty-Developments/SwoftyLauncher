@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "site_Car_ErsGearModifierLoad",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446e286f",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "car",
+  "evidence": "decomp:re/decomp/1446e2290.c;xref:0x1446e285e",
+  "notes": "vmovss xmm1,[rdx+rcx*4+0x1890] in Car_Powertrain_Step: r14 = ERS system (CarErs), rax = ers_mode, rcx = gear index (0 R, 1 N, 2 1st), xmm1 = modes[mode].gear_modifier[gear] (deploy fraction of MaxDeployPower, clamped to [-1, 1] next). Duplicated notes/evidence and the stale no-signature remark removed per V1250"
+ },
+ "signature": {
+  "id": "car.ers_gear_modifier_load",
+  "section": ".xtls",
+  "pattern": "4C 01 F2 C5 FA 10 8C 8A 90 18 00 00",
+  "match": "0x1446e286c",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446e286f",
+  "kind": "mid",
+  "expect": "C5 FA 10 8C 8A 90 18 00 00",
+  "names": [
+   "site_Car_ErsGearModifierLoad"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "car-re",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/cars/ers_mode.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v4",
+   "kind": "global",
+   "item": "site_Car_ErsGearModifierLoad",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446e2290.c;xref:0x1446e285e;sig:car.ers_gear_modifier_load",
+   "notes": "V1250 r14=[[rsi+0x18]+0x5a8] (ERS), rax=movsxd [r14+0x1a68], rdx=r14+mode*0x40, rcx=[rsi+0x4f0]. Load [rdx+rcx*4+0x1890], then clamp, then [r14+0x28] MaxDeployPower. Gear 2 lands on mode block +0x18 = FirstGearModifier, which agrees with the writer's 0x40-stride mode blocks at system+0x1880. sigcheck passes."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "ers-uninit",
+   "kind": "global",
+   "item": "site_Car_ErsGearModifierLoad",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446e2290.c;xref:0x1446e285e,0x1446e286f;sig:car.ers_gear_modifier_load",
+   "notes": "V2123 sigcheck --only car.ers_gear_modifier_load: OK hits=1 match=0x1446e286c target=0x1446e286f. Disasm 0x1446e2858..0x1446e2894: mov ecx,[rsi+0x4f0]; movsxd rax,[r14+0x1a68]; mov rdx,rax; shl rdx,6; add rdx,r14; vmovss xmm1,[rdx+rcx*4+0x1890] (9 bytes, no rip-relative operand, so a mid hook relocates it as is); then the [-1,1] clamp on xmm1 and vmovss xmm1,[r14+0x28]. [r14+0x1a68] is re-read later in the step (the decomp's switch and the == 2 tests), so a hook that writes the mode to memory and sets rax = mode and rdx = r14 + mode*0x40, the values the instructions before it compute, leaves the rest of the step consistent. EA: the same 12-byte pattern hits once in the decrypted dump F1_25.1789128892.110548.mem at 0x46d8afc (target 0x46d8aff), and the 0x11 bytes before it match the Steam bytes; bindverify --build ea resolves it by the new hint (verified, target 0x46d8aff) and --compare flags nothing. 0x46d8aff = EA Car_Powertrain_Step 0x1446d8520 + 0x5df, the address of the EA crash in the ers-mode-uninit reports."
+  }
+ ],
+ "proofs": []
+}

@@ -3,8 +3,8 @@ use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use std::rc::Rc;
 
-use crate::scale::px;
-use crate::theme::Palette;
+use crate::ui::scale::px;
+use crate::ui::theme::Palette;
 
 type Pick = Rc<dyn Fn(&mut Window, &mut App)>;
 

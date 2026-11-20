@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_TeleFailedTypeNameJoin",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14071e992",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/14071e810.c;xref:0x14071e992;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v090--the-tyres-upgrade-types-setting-tyres_upgrade_types-default-on-install-time",
+  "notes": "mov rcx,rbx ; call 0x14058eed0 of the upgrade-failed report; target of the type >= 19 redirect"
+ },
+ "signature": {
+  "id": "career.tele_failed_type_name_join",
+  "section": ".xtls",
+  "pattern": "0F B6 40 70 48 8B 54 C5 00 48 89 D9 E8",
+  "match": "0x14071e989",
+  "anchor": "0x9",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14071e992",
+  "kind": "mid",
+  "expect": "48 89 D9 E8 36 05 E7 FF",
+  "names": [
+   "site_Career_TeleFailedTypeNameJoin"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-a",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_upgrade_types.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-1",
+   "kind": "global",
+   "item": "site_Career_TeleFailedTypeNameJoin",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14071e810.c;xref:0x14071e98d,0x14071e992,0x14071e995",
+   "notes": "V0037 mov rcx,rbx ; call 0x14058eed0 (8 bytes) directly follows the type-name read; correct redirect target; no branch into window"
+  }
+ ],
+ "proofs": []
+}

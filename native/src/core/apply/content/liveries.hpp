@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lower.hpp"
+#include "core/apply/content/lower.hpp"
 
 #include <functional>
 #include <optional>
@@ -21,14 +21,21 @@ namespace swofty_core::apply::content {
 
 inline constexpr const char *SE_LIVERIES = "customisation.custom_se_liveries.se_liveries";
 inline constexpr const char *UNLOCK_IDS = "livery.unlock";
-inline constexpr const char *UNLOCK_FIELDS[] = {
-    "_metadata_", "customisation_item", "is_new_on_boot", "rarity", "statId", "type_loctag",
-    "_ItemLockServerGeneric_instancecount_", "ItemLockServerGeneric_0._metadata_",
-    "ItemLockServerGeneric_0.ceremony_image", "ItemLockServerGeneric_0.hideWhenLocked",
-    "ItemLockServerGeneric_0.hideWhenUnlocked", "ItemLockServerGeneric_0.message_icon",
-    "ItemLockServerGeneric_0.message_name_loc"};
-inline constexpr const char *SE_LIVERY_FIELDS[] = {"_metadata_", "compatible_vehicle", "desc_loc_tag", "id",
-                                                   "name_loc_tag", "team_customisation", "ui_priority", "wep_override"};
+inline constexpr const char *UNLOCK_FIELDS[] = {"_metadata_",
+                                                "customisation_item",
+                                                "is_new_on_boot",
+                                                "rarity",
+                                                "statId",
+                                                "type_loctag",
+                                                "_ItemLockServerGeneric_instancecount_",
+                                                "ItemLockServerGeneric_0._metadata_",
+                                                "ItemLockServerGeneric_0.ceremony_image",
+                                                "ItemLockServerGeneric_0.hideWhenLocked",
+                                                "ItemLockServerGeneric_0.hideWhenUnlocked",
+                                                "ItemLockServerGeneric_0.message_icon",
+                                                "ItemLockServerGeneric_0.message_name_loc"};
+inline constexpr const char *SE_LIVERY_FIELDS[] = {"_metadata_",   "compatible_vehicle", "desc_loc_tag", "id",
+                                                   "name_loc_tag", "team_customisation", "ui_priority",  "wep_override"};
 
 struct CarPaths {
     std::string label, rp, wep, group, team_dir, common, why;
@@ -65,10 +72,7 @@ inline CarPaths car_paths(const std::string &label, const Read &read)
     return c;
 }
 
-inline std::string path_file(const Value &p)
-{
-    return p.is_string() ? std::string(p.as_string()) : std::string();
-}
+inline std::string path_file(const Value &p) { return p.is_string() ? std::string(p.as_string()) : std::string(); }
 
 inline std::string auto_suffix(int n)
 {
@@ -104,9 +108,8 @@ inline void livery_files(const std::string &id, const Value &rec, const CarPaths
     }
 }
 
-inline void lower_livery(const std::string &id, const Value &rec, const std::vector<std::string> &wearers,
-                         const Lookup &lookup, const Read &read, Plan &plan, const StatIds &stat = {},
-                         int *next_slot = nullptr)
+inline void lower_livery(const std::string &id, const Value &rec, const std::vector<std::string> &wearers, const Lookup &lookup,
+                         const Read &read, Plan &plan, const StatIds &stat = {}, int *next_slot = nullptr)
 {
     plan.owner = addon_of(id);
     auto label_of = [&](const std::string &vid) {
@@ -183,8 +186,8 @@ inline void lower_livery(const std::string &id, const Value &rec, const std::vec
     std::optional<std::string> folder;
     for (int l = 0; l < 8 && !folder; l++)
         for (int f = 0; f < 64 && !folder; f++) {
-            std::string at = "unlockable_content.unlockable_items.unlockable_item_list_" + std::to_string(l) + ".folder_" +
-                             std::to_string(f);
+            std::string at =
+                "unlockable_content.unlockable_items.unlockable_item_list_" + std::to_string(l) + ".folder_" + std::to_string(f);
             auto n = read(at + "._unlockable_se_livery_instancecount_");
             if (n && std::strtoll(n->c_str(), nullptr, 10) > 0)
                 folder = at;
@@ -211,9 +214,7 @@ inline void lower_livery(const std::string &id, const Value &rec, const std::vec
     std::string unlock_from = *folder + ".unlockable_se_livery_0";
     auto unlock_label = read(unlock_from + "._metadata_");
     push_row(plan, *folder, *folder + ".unlockable_se_livery[_metadata_=" + unlock_label.value_or("") + "]",
-             Value::object({{"_metadata_", row_label},
-                            {"customisation_item", row_label},
-                            {"statId", std::to_string(*unlock)}}));
+             Value::object({{"_metadata_", row_label}, {"customisation_item", row_label}, {"statId", std::to_string(*unlock)}}));
     add_fields(plan, (*folder + ".unlockable_se_livery").c_str(), UNLOCK_FIELDS, std::size(UNLOCK_FIELDS));
     auto donor = donor_of(vid);
     livery_files(id, rec, car, donor ? &*donor : nullptr, suffix, plan);
@@ -236,13 +237,32 @@ inline std::vector<PoolScan> scan_livery_pools(const std::function<std::optional
     se.lo = top + 1;
     out.push_back(se);
     // Every kind of row an unlock folder holds, as the launcher's UNLOCK_KINDS (packages/addon-api/src/ops.rs).
-    static constexpr const char *KINDS[] = {
-        "consumable_xp_booster", "currency_reward", "unlockable_badge_bg", "unlockable_badge_emblem",
-        "unlockable_casual_footwear", "unlockable_casual_headwear", "unlockable_decal_group", "unlockable_decal_set",
-        "unlockable_driver", "unlockable_driver_number", "unlockable_eyewear", "unlockable_gloves", "unlockable_head",
-        "unlockable_helmet", "unlockable_item_pack", "unlockable_livery", "unlockable_personal_sticker",
-        "unlockable_podium_emote", "unlockable_pose", "unlockable_se_livery", "unlockable_suit", "unlockable_team",
-        "unlockable_tops", "unlockable_trousers", "unlockable_vehicle", "unlockable_victory_vo"};
+    static constexpr const char *KINDS[] = {"consumable_xp_booster",
+                                            "currency_reward",
+                                            "unlockable_badge_bg",
+                                            "unlockable_badge_emblem",
+                                            "unlockable_casual_footwear",
+                                            "unlockable_casual_headwear",
+                                            "unlockable_decal_group",
+                                            "unlockable_decal_set",
+                                            "unlockable_driver",
+                                            "unlockable_driver_number",
+                                            "unlockable_eyewear",
+                                            "unlockable_gloves",
+                                            "unlockable_head",
+                                            "unlockable_helmet",
+                                            "unlockable_item_pack",
+                                            "unlockable_livery",
+                                            "unlockable_personal_sticker",
+                                            "unlockable_podium_emote",
+                                            "unlockable_pose",
+                                            "unlockable_se_livery",
+                                            "unlockable_suit",
+                                            "unlockable_team",
+                                            "unlockable_tops",
+                                            "unlockable_trousers",
+                                            "unlockable_vehicle",
+                                            "unlockable_victory_vo"};
     PoolScan un{UNLOCK_IDS, "unlockable_content.unlockable_items", 0, 65535, {}};
     int64_t utop = 0;
     for (int l = 0; l < 8; l++) {

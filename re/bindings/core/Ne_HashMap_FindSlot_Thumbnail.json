@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_FindSlot_Thumbnail",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ee5130",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142ee5130.c;xref:0x142ee49d4",
+  "notes": "330-byte slot finder. Caller Game_Thumbnail_HashMap_Insert (0x142ee49d4). Trio with 0x142ee5280 / 0x142ee5120."
+ },
+ "signature": {
+  "id": "core.hash_map_find_slot_thumbnail",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 89 C6 48 89 7C 24 48 48 8B 06",
+  "match": "0x142ee49d4",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x142ee5130",
+  "kind": "func_start",
+  "names": [
+   "Ne_HashMap_FindSlot_Thumbnail"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x142ee5130",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142ee5130.c;xref:0x142eda09a",
+   "notes": "V8225 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Libpng_SetIhdr",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143912170",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143912170.c;xref:0x14379d390",
+  "notes": "Sets PNG header fields (width, height, bit depth, colour type, interlace flags at +0x25..+0x2a) and validates via 0x1439106b0. Callers Game_ThumbnailSystem_RequestAndWriteScreenshot, Render_Write_PngFile, Render_Screenshot_CaptureAndSave."
+ },
+ "signature": {
+  "id": "core.libpng_set_ihdr",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 85 C9 0F 84 ?? ?? ?? ?? 48 89 D6 48",
+  "match": "0x143912170",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143912170",
+  "kind": "func_start",
+  "names": [
+   "Ne_Libpng_SetIhdr"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x143912170",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143912170.c;xref:0x14379d390",
+   "notes": "V7608 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Game_EngineMgmt_AddGridPenalty",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1411d0740",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_EngineMgmt_AddGridPenalty(void *engine_management, const uint32_t *driver, uint32_t places, uint32_t reason)",
+  "evidence": "decomp:re/decomp/1411d0740.c;decomp:re/decomp/1411d00e0.c;decomp:re/decomp/1411cf930.c;xref:0x1411cfbad,0x1411d0601",
+  "notes": "logs ENGINE_MANAGEMENT 'Adding grid penalty to manager for driver %s of %u places %s for infringement' and files a power-unit grid penalty for the driver record (key at +0). Only two callers: the new-component fit 0x1411d00e0 (places = config first_new_grid_drop / subsequent_grid_drop once the component count reaches allocation) and the component switch 0x1411cf930 (parc_ferme_grid_drop when 0x1411d1030 finds a parc ferme change, reason 2). Component config: 0x250-byte sets per season at *(mgmt+0x340)+0x50, season byte +0, then seven 0x54-byte configs from +4 (threshold +0x04, first_new +0x18, subsequent +0x1c, parc_ferme +0x20, allocation +0x24, wear_rates human +0x28/+0x2c, ai_pq +0x30/+0x34, ai_race +0x38/+0x3c), read by 0x1411cb150. Raised by native-1990 for the F1 1990 power-unit rules (doc:/mnt/work/.f1-1990/addon/native-requests.md#pu)"
+ },
+ "signature": {
+  "id": "game.engine_mgmt_add_grid_penalty",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 01 00 00 C5 F9 29 B4 24 40 01 00 00",
+  "match": "0x1411d0740",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1411d0740",
+  "kind": "func_start",
+  "names": [
+   "Game_EngineMgmt_AddGridPenalty"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/pu_rules.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-c",
+   "kind": "func",
+   "item": "Game_EngineMgmt_AddGridPenalty",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1411d0740.c;decomp:re/decomp/1411d00e0.c;decomp:re/decomp/1411cf930.c;decomp:re/decomp/1411d1030.c;decomp:re/decomp/1411cb150.c;xref:0x1411cfbad,0x1411d0601;sig:game.engine_mgmt_add_grid_penalty",
+   "notes": "V0993 V0988 Decompile is (mgmt, uint *driver record [key +0, ptr +0x80], uint places, uint reason), so the proto is right. It logs ENGINE_MANAGEMENT 'Adding grid penalty ... %u places %s' with the reason string 0x14565cfb8[0x2f+reason] (0 eEngineComponentChange, 1 eGearboxChange, 2 eParcFermeChange, >=3 eInvalid), then posts a MisconductMessage or files the penalty through career vt+0x198. A rel32 scan of .xtls and .data1 finds exactly two callers: 0x1411d0601 in 0x1411d00e0 (places = config +0x18 first_new or +0x1c subsequent once the count reaches allocation +0x24; reason from table 0x1456d090c, slots 0-5 give 0 and slot 6 gives 1) and 0x1411cfbad in 0x1411cf930 (places = config +0x20 parc_ferme, reason 2, when 0x1411d1030 returns true). The config offsets match the reader 0x1411cb150, whose leas of 'allocation', 'first_new_grid_drop', 'subsequent_grid_drop', 'parc_ferme_grid_drop' and 'wear_rates.*' store to +0x24/+0x18/+0x1c/+0x20 and +0x28..+0x3c. +0x04 is the 'is_worn' field. sigcheck: one hit at the target"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,91 @@
+{
+ "schema": 1,
+ "name": "Game_Load_TrackDatabaseFull",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e4c640",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Load_TrackDatabaseFull(void *records_vec, void *db, void *a3, void *a4, void *a5)",
+  "evidence": "decomp:re/decomp/142e4c640.c;xref:0x142e5b8fe;kb:subsystems/tracks.md#stat-ids",
+  "notes": "was Game_Read_ERSSettingsConfig (named from 3 of its many DB keys; renamed 2026-11-14 to the name signature game.read_ers_settings_config already lists). The tracks table loader (log 'TrackManager' 'Adding track with fileName [%s]'): only caller Sess_Load_TrackDatabase 0x142e58f20 (call 0x142e5b8fe, rcx = TrackDataSystem+0x20 from lea 0x142e5b8e5). Walks tracks.Track rows, reads statId (low byte -> record +0x01), instanceName (-> record +0xd0 char *), fileName, baseTrack, trackMirrored, is_reverse_track, is_short_version, track_resource, numberOfCorners, proportion_around_track_considered_race_start, track_title / track_select_title, TrackFuelSettings, ERSSettings.deployFactor/harvestFactor/hotlapFactor, builds a local 0xd08 TrackDataRecord and stores it with Trk_TrackData_AddRecord 0x142e57740 (call 0x142e55dfb). 5th argument: the caller stores [rsp+0x20] = [rsp+0x110] (0x142e5b8f1) and the body reads it at 0x142e4c950 (mov rdx,[rsp+0x3cd0]); proto fixed per V10370. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested) | engine-re 2026-11-17 (static): tracks.Track keys latitude (0x1457ed171, lea 0x142e4db6f) and longitude (0x1457ed17a, lea 0x142e4db98) are f32 values stored into the track record at +0x30 / +0x34 (record built on the stack from +0x6c0), length_metres +0x38, weekend_year (lea 0x142e4dbe2) +0x3c; the same offsets Sess_GameWeatherSystem_SetupSession reads as latitude/longitude/year for the sun position. Note added by engine-re with --force 2026-11-17 at user request (lane owner review requested)  2026-11-17 engine-re (note appended with --force at user request, lane owner review requested): per tracks.Track row it reads statId, fileName, instanceName, baseTrack, title ... track_resource (djb2 of the value matched against the track_resource rows, 0x88 stride, unmatched -> 0), numberOfCorners, is_reverse_track, defaultAssetGroup (crowd table TrackCrowds, default asset_groups/crowd_package/cold/config/config.assetgroup), then logs 'Adding track with fileName [%s]' and stores via Trk_TrackData_AddRecord. No hard-coded track names and no count limit in this loop."
+ },
+ "signature": {
+  "id": "game.read_ers_settings_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 68 3C 00 00",
+  "match": "0x142e4c640",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e4c640",
+  "kind": "func_start",
+  "names": [
+   "Game_Load_TrackDatabaseFull"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142e4c640",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142e4c640.c;xref:0x142e5b8fe",
+   "notes": "V5490 7437-line track database loader (tracks table: fileName, gp_long_name, weather, aero_bias, crowd colours, TrackManager Adding track); ERSSettings keys are only part; better Game_Load_TrackDatabase"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142e4c640",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e4c640.c;xref:0x142e5b8fe",
+   "notes": "V6904 7437 decomp lines, strings match current name"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x142e4c640",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x142e4c640-0x142e5773e;xref:0x142e5b8fe",
+   "notes": "V10370 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Role and rename agree: tracks.Track loader (strings statId, instanceName, fileName, baseTrack, trackMirrored, is_reverse_track, is_short_version, track_resource, numberOfCorners, proportion_around_track_considered_race_start, ERSSettings.deploy/harvest/hotlapFactor, TrackFuelSettings, ~90 keys), log TrackManager / Adding track with fileName [%s] (0x142e55dd0) then call 0x142e57740 at 0x142e55dfb with rcx=[rsp+0x670] (arg1) and rdx=rsi=rsp+0x700 = the local record ([rsp+0x700]=1, [rsp+0x701]=statId low byte at 0x142e53c3f/0x142e53c4d). Only caller 0x142e5b8fe in 0x142e58f20, rcx = lea [rdi+0x20] (0x142e5b8e5). Many fields read, so Game_Load_TrackDatabaseFull fits. DIFFERENCE: proto arity. The caller also stores a 5th argument ([rsp+0x20] = [rsp+0x110], 0x142e5b8f1) and the body reads it at 0x142e4c950 (mov rdx,[rsp+0x3cd0] = frame 0x3c68 + 8 pushes + ret + 0x20). Proto lists 4 args; needs a 5th (void *a5)."
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x142e4c640",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142e4c640-0x142e5773e;xref:0x142e5b8fe",
+   "notes": "V10532 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Re-check of V10370: proto now has 5 args (records_vec, db, a3, a4, a5), matching caller store [rsp+0x20] at 0x142e5b8f1 and body read 0x142e4c950; rcx = TrackDataSystem+0x20 (lea 0x142e5b8e5). Fixed."
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "trkerp-verify2",
+   "kind": "func",
+   "item": "Game_Load_TrackDatabaseFull",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm 0x142e53f3f-0x142e53f6a and 0x142e53f6a-0x142e5773e;xref:record rsp+0x700 -> 0x142e57740 at 0x142e55dfb, dtor 0x142e57ad0 at 0x142e55e65",
+   "notes": "V11012 FOLDER inited empty (+0x178=0x80,+0x180=rsp+0x888,byte 0,+0x170 vtbl 0x145613670); no later store/lea to rsp+0x870..0x907 nor reg+0x170..0x18f in the function; 0x142e57740 has no +0x17x/+0x18x refs; later mutators outside function not checked"
+  }
+ ],
+ "proofs": []
+}

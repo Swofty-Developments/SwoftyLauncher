@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Career_DriverMarketXml_FindDriverStatId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14114f480",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:log-channel-DRIVER_MARKET_XML_LOADER",
+  "notes": "named from its log messages (channel DRIVER_MARKET_XML_LOADER): '      Found Driver StatId For Driver: %s Value: %s!' CORRECTION(V9162): The Found Driver StatId log is real but this is a ~4700-line driver statistics / game-setup XML loader (StatisticsDataSet, DynamicStatisticInfo, DriverStatisticsHolder templates), so FindDriverStatId is too narrow."
+ },
+ "signature": {
+  "id": "career.driver_market_xml_find_driver_stat_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 07 00 00 C5 78 29 BC 24 60 07 00 00",
+  "match": "0x14114f480",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14114f480",
+  "kind": "func_start",
+  "names": [
+   "Career_DriverMarketXml_FindDriverStatId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x14114f480",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14114f480.c;xref:0x141146dc7",
+   "notes": "V4622 213KB body = driver_statistics template parse (StatisticInfo/DynamicStatisticInfo/DriverStatisticsHolder) with FindDriverStatId log as one part; better Career_DriverMarketXml_LoadDriverStatistics"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x14114f480",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14114f480.c;xref:0x141146dc7",
+   "notes": "V7184 name fits; finding facts hold; 2 direct calls"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-f",
+   "kind": "func",
+   "item": "0x14114f480",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14114f480.c",
+   "notes": "V9162 The Found Driver StatId log is real but this is a ~4700-line driver statistics / game-setup XML loader (StatisticsDataSet, DynamicStatisticInfo, DriverStatisticsHolder templates), so FindDriverStatId is too narrow."
+  }
+ ],
+ "proofs": []
+}

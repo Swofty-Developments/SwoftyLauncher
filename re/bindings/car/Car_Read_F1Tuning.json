@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Car_Read_F1Tuning",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446d1660",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "void (void *data, void *node)",
+  "evidence": "decomp:re/decomp/1446d1660.c;xref:0x145bfe040;kb:subsystems/car.md#tuning",
+  "notes": "F1Tuning data-class vtable 0x145bfe030 slot 2 (reader). Reads every F1Tuning Min/Max (and LowerBound/UpperBound) key by name with Game_Read_VtfFloat into PLAIN floats (no XOR) at reader offsets +0x10..+0x1f4 (CarTuning +0x28..+0x20c, data object at system+0x18): ChassisCOMZ, differential (or the old DifferentialRearTorque/OffPowerMultiple form, x0.01 derived), engine braking, radiator, camber, toe, suspension height/rest length, ride height, springs, third springs, ARBs, brake pressure/migration/cooling/duct, tyre pressures and tyre spring/damping coefficients, aero drag/lift bounds, gearbox ratio bounds. Checks Min <= Max only (errno trace); missing keys keep the defaults. Proto filled per V1222"
+ },
+ "signature": {
+  "id": "car.override_f1_tuning",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 C5 F8 29 BC 24 C0 00 00 00 C5 F8 29 B4 24 B0 00 00 00 48 89 D7",
+  "match": "0x1446d1660",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446d1660",
+  "kind": "func_start",
+  "names": [
+   "Car_Read_F1Tuning"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v2",
+   "kind": "func",
+   "item": "Car_Read_F1Tuning",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446d1660.c;xref:0x145bfe040",
+   "notes": "V1222 Data vt 0x145bfe030 slot 2 (factory sets sys+0x18 to it). Min/Max pairs written straight to data+off (no xor in the body): ChassisCOMZMin/Max +0x10/+0x14, DifferentialOnThrottle +0x18/+0x1c, OffThrottle +0x20/+0x24, EngineBrakingMin/Max +0x40/+0x44, RadiatorOpening +0x48.., up to +0x1f0/+0x1f4; vucomiss Min<=Max checks. Its Diff and EngineBraking ranges are what the Differential and Engine resets lerp. Proto column empty."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446d1660",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1446d1660.c",
+   "notes": "V6832 Reader confirmed (125 Game_Read_VtfFloat) but values are stored plain (0 XOR in decomp); the boilerplate stores-XOR-obfuscated is wrong here. (vtable/indirect, no direct call site)"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "re-bindings",
+   "kind": "func",
+   "item": "Car_Read_F1Tuning",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm of the archived 1.0.141 exe (PE 1789118616) 0x1446d1660-0x1446d4465;xref:0x145bfe040",
+   "notes": "V20002 Re-verified after V6832: vtable 0x145bfe030 slot 2 (abs 0x145bfe040) = 0x1446d1660; rcx=data, rdx=node; 125 calls to Game_Read_VtfFloat 0x14464e760 with r8 = data+0x10 (ChassisCOMZMin) .. +0x1f0 and names ChassisCOMZ..GearBoxRatio9th bounds, including DifferentialRearTorque/OffPowerMultiple; no xor except register zeroing, so the values are plain floats as the notes say (the XOR boilerplate V6832 refuted is no longer in the notes); Min<=Max by vucomiss, failure stores 0x16 to the TLS errno slot."
+  }
+ ],
+ "proofs": []
+}

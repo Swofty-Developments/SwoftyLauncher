@@ -14,10 +14,7 @@
 
 namespace {
 
-uintptr_t page(uintptr_t a)
-{
-    return a & ~uintptr_t(0xfff);
-}
+uintptr_t page(uintptr_t a) { return a & ~uintptr_t(0xfff); }
 
 void say(const char *s)
 {
@@ -34,10 +31,9 @@ void retarget()
     auto base = reinterpret_cast<uint8_t *>(ntdll);
     auto at = [&](const char *name) { return reinterpret_cast<uintptr_t>(GetProcAddress(ntdll, name)); };
     uintptr_t cont = at("NtContinue"), protect = at("NtProtectVirtualMemory");
-    const char *unused[] = {"NtDisplayString",      "NtCreatePagingFile", "NtLoadDriver",
-                            "NtUnloadDriver",       "NtShutdownSystem",   "NtInitiatePowerAction",
-                            "NtSystemDebugControl", "NtSetSystemTime",    "NtCreateToken",
-                            "NtPrivilegeCheck"};
+    const char *unused[] = {"NtDisplayString",  "NtCreatePagingFile",    "NtLoadDriver",         "NtUnloadDriver",
+                            "NtShutdownSystem", "NtInitiatePowerAction", "NtSystemDebugControl", "NtSetSystemTime",
+                            "NtCreateToken",    "NtPrivilegeCheck"};
     const char *decoy = nullptr;
     uintptr_t to = 0;
     for (int pass = 0; pass < 2 && !decoy && protect; pass++)

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Vm_Unk_141a22240",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a22240",
+  "level": "L1",
+  "subsystem": "vm",
+  "proto": "-",
+  "evidence": "decomp:work/exe/decomp/141a22240_uses_title_loc.c;xref:0x141a2425a,0x141a2432c,0x141a2560b,0x141a2570d,0x141a2581e,0x141a268d5,0x141a26943,0x141a288a7+11;pat:exe-agent-label",
+  "notes": "exe-agent label uses_title_loc"
+ },
+ "signature": {
+  "id": "vm.unk_141a22240",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 01 00 00 C5 F8 29 B4 24 E0 01 00 00 48 89 D7 4C",
+  "match": "0x141a22240",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a22240",
+  "kind": "func_start",
+  "names": [
+   "Vm_Unk_141a22240"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141a22240",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141a22240.c;xref:0x14159fdf7",
+   "notes": "V4926 Binds generic title/title_localised/description/instance_data VM nodes via 0x140846270/0x140975db0; label is not a description. Better: Vm_Bind_TitleDescriptionEntry"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x141a22240",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a22240.c;xref:0x141a24259",
+   "notes": "V7240 name fits; finding facts hold; 23 direct calls"
+  }
+ ],
+ "proofs": []
+}

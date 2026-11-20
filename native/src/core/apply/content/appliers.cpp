@@ -1,40 +1,44 @@
-#include "appliers.hpp"
+#include "core/apply/content/appliers.hpp"
 
-#include "../applier.hpp"
-#include "../database.hpp"
-#include "../files_api.hpp"
-#include "../ids.hpp"
-#include "../moments.hpp"
-#include "../scheduler.hpp"
-#include "boot.hpp"
-#include "garage_build.hpp"
-#include "grid_rules.hpp"
-#include "gvdb.hpp"
-#include "logos.hpp"
-#include "race_fuel.hpp"
-#include "quali_tyres.hpp"
-#include "teams.hpp"
-#include "box_options.hpp"
-#include "tyre_change.hpp"
-#include "tyre_warmers.hpp"
-#include "weekend.hpp"
-#include "../tracks/boot.hpp"
-#include "../tracks/box.hpp"
-#include "../../career_ops/teams_plan.hpp"
-#include "../../registry/older.hpp"
-#include "../../registry/table.hpp"
+#include "core/apply/applier.hpp"
+#include "core/apply/database.hpp"
+#include "core/apply/files_api.hpp"
+#include "core/apply/ids.hpp"
+#include "core/apply/moments.hpp"
+#include "core/apply/scheduler.hpp"
+#include "core/apply/content/boot.hpp"
+#include "core/apply/content/boot_ahead.hpp"
+#include "core/apply/content/garage_build.hpp"
+#include "core/apply/content/grid_rules.hpp"
+#include "core/apply/content/gvdb.hpp"
+#include "core/apply/content/logos.hpp"
+#include "core/apply/content/race_fuel.hpp"
+#include "core/apply/content/quali_tyres.hpp"
+#include "core/apply/content/teams.hpp"
+#include "core/apply/content/box_options.hpp"
+#include "core/apply/content/tyre_change.hpp"
+#include "core/apply/content/tyre_warmers.hpp"
+#include "core/apply/content/weekend.hpp"
+#include "core/apply/tracks/boot.hpp"
+#include "core/apply/tracks/box.hpp"
+#include "core/career/ops/teams_plan.hpp"
+#include "core/registry/older.hpp"
+#include "core/registry/table.hpp"
 
-#include "../../runtime.hpp"
+#include "core/diagnostics/steps.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <swofty/mixin.hpp>
 
 #include <algorithm>
+#include <condition_variable>
 #include <ctime>
 #include <filesystem>
 #include <map>
 #include <memory>
 #include <mutex>
 #include <set>
+#include <thread>
 #include <unordered_map>
 
 // The core's appliers for the content registries. At boot, inside the game database load, the engine sound,
@@ -55,6 +59,15 @@ std::recursive_mutex mu;
 
 std::mutex drs_mu;
 std::map<std::string, DrsGroup> drs_groups;
+
+// Boxes with more teams than their world has garages get a world of their own (box_world.hpp) only with
+// SWOFTY_BOX_WORLDS=1, until an in-game check on 1.0.145 proves it.
+bool box_worlds_on()
+{
+    char v[8] = {};
+    DWORD n = GetEnvironmentVariableA("SWOFTY_BOX_WORLDS", v, sizeof v);
+    return n && n < sizeof v && v[0] == '1';
+}
 
 void publish_drs(Store &st, Expansion &x)
 {
@@ -89,7 +102,7 @@ void publish_points(Store &st, Expansion &x)
 
 struct Database {
     gvdb::File file;
-    std::unordered_map<uint64_t, rows::Rec> edits;
+    OlderEdits edits;
     bool loaded = false, ok = false;
 };
 
@@ -117,17 +130,20 @@ std::string today()
     return b;
 }
 
-void read_edits(Database &d)
+OlderEdits older_edits(const gvdb::File &file)
 {
-    d.edits.clear();
-    runtime::db_older_edits([&d](uint64_t key, int tag, const std::string &text) {
+    OlderEdits edits;
+    runtime::db_older_edits([&](uint64_t key, int tag, const std::string &text) {
         rows::Rec r{tag, text};
         if (r.tag < 0)
-            if (auto f = d.file.get(key))
+            if (auto f = file.get(key))
                 r.tag = f->tag;
-        d.edits[key] = std::move(r);
+        edits[key] = std::move(r);
     });
+    return edits;
 }
+
+void read_edits(Database &d) { d.edits = older_edits(d.file); }
 
 Database &database()
 {
@@ -145,8 +161,8 @@ Database &database()
         return d;
     }
     read_edits(d);
-    swofty::log("[apply] content: read %zu record(s) from the game database file and %zu older addon edit(s)",
-                d.file.size(), d.edits.size());
+    swofty::log("[apply] content: read %zu record(s) from the game database file and %zu older addon edit(s)", d.file.size(),
+                d.edits.size());
     return d;
 }
 
@@ -159,6 +175,13 @@ rows::Base base_of(Database &d)
             return rows::Rec{r->tag, std::move(r->text)};
         return std::nullopt;
     };
+}
+
+std::unique_ptr<Expansion> expansion(Database &d)
+{
+    auto x = std::make_unique<Expansion>(base_of(d));
+    x->box_worlds = box_worlds_on();
+    return x;
 }
 
 void ensure_stock(Store &st)
@@ -178,9 +201,9 @@ void ensure_stock(Store &st)
         return r->text;
     };
     for (auto &c : CONSTRUCTOR_SEEDS)
-        st.add_base("team.constructor", c.key,
-                    Value::object({{"name", Value(std::string(c.name))}, {"country", Value(std::string(c.country))},
-                                   {"team", Value()}}));
+        st.add_base(
+            "team.constructor", c.key,
+            Value::object({{"name", Value(std::string(c.name))}, {"country", Value(std::string(c.country))}, {"team", Value()}}));
     std::size_t teams = 0;
     for (auto &t : stock_teams(read)) {
         st.add_base("team.identity", t.label, t.record);
@@ -205,53 +228,142 @@ Expansion &plan_run(Store &st)
     State &s = state();
     if (!s.plan) {
         Database &d = database();
-        s.plan = std::make_unique<Expansion>(base_of(d));
+        s.plan = expansion(d);
         if (d.ok)
             expand(st, *s.plan, planning_ids());
     }
     return *s.plan;
 }
 
-void define_pools(Database &d, std::vector<std::string> &lines, std::map<std::string, PoolScan> &scans)
+// The boot expansion made ahead on a worker once the database load is hooked (start_boot_ahead). It takes the
+// content lock only to read the database file, then works on its own copies; release_database cancels one that has
+// not started and waits for one that has, and run_boot adopts or drops its work.
+struct AheadJob {
+    std::mutex m;
+    std::condition_variable cv;
+    enum class Phase { waiting, running, done } phase = Phase::waiting;
+    bool cancel = false;
+    double ms = 0;
+    std::string why;
+    Ahead work;
+};
+
+std::mutex ahead_mu;
+std::shared_ptr<AheadJob> ahead_job;
+
+std::shared_ptr<AheadJob> take_ahead()
 {
-    rows::Base base = base_of(d);
-    auto text = [&base](const std::string &path) -> std::optional<std::string> {
-        auto r = base(gvdb::fnv64(path));
-        if (!r)
-            return std::nullopt;
-        return r->text;
-    };
-    for (auto &scan : scan_all_pools(text)) {
-        ids::Pool pool;
-        if (!scan.holes.empty())
-            pool.ranges = scan.holes;
-        else if (scan.lo <= scan.hi)
-            pool.ranges.push_back({scan.lo, scan.hi});
-        for (auto &spec : POOLS)
-            if (scan.registry == spec.registry)
-                pool.cap = spec.cap;
-        ids::store().define_pool(scan.registry, pool);
-        lines.push_back("stat-id pool for " + scan.registry + ": " +
-                        (scan.lo <= scan.hi ? std::to_string(scan.lo) + "-" + std::to_string(scan.hi) : std::string("none")) +
-                        " (" + scan.table + " holds ids to " + std::to_string(scan.lo - 1) + ")");
-        scans[scan.registry] = std::move(scan);
+    std::lock_guard g(ahead_mu);
+    return std::move(ahead_job);
+}
+
+// Called with the content lock held, so a job still waiting for it cannot start: it is cancelled (and `boot` logged),
+// and one that is running is waited for.
+std::shared_ptr<AheadJob> settle_ahead(const char *boot = nullptr)
+{
+    std::shared_ptr<AheadJob> job = take_ahead();
+    if (!job)
+        return job;
+    std::unique_lock g(job->m);
+    if (job->phase == AheadJob::Phase::waiting) {
+        job->cancel = true;
+        if (boot)
+            swofty::log("[apply] boot ahead: %s", boot);
+        return nullptr;
     }
+    perf::Stopwatch wait;
+    job->cv.wait(g, [&] { return job->phase == AheadJob::Phase::done; });
+    swofty::log(perf::STEP_LINE, wait.total_ms(), "boot ahead wait for the expansion off the thread");
+    return job;
 }
 
-void pin_all(Store &st, const std::map<std::string, PoolScan> &scans)
+void run_ahead(const std::shared_ptr<AheadJob> &job)
 {
-    for (auto &line : settle_ids(ids::store(), st, scans, today()))
+    Store &st = registry::store();
+    const gvdb::File *file = nullptr;
+    std::string why;
+    perf::Stopwatch took;
+    try {
+        {
+            std::lock_guard g(mu);
+            std::lock_guard j(job->m);
+            if (job->cancel) {
+                job->phase = AheadJob::Phase::done;
+                job->cv.notify_all();
+                return;
+            }
+            job->phase = AheadJob::Phase::running;
+            if (!has_records(st))
+                why = "no addon content record needs the expansion";
+            else if (Database &d = database(); !d.ok)
+                why = "the game database file is unreadable";
+            else
+                file = &d.file;
+        }
+        took.lap_ms();
+        if (file) {
+            job->work.edits = std::make_shared<const OlderEdits>(older_edits(*file));
+            job->work.box_worlds = box_worlds_on();
+            job->work.day = today();
+            boot_ahead(st, ids::store(), base_over(*file, job->work.edits), job->work);
+        }
+    } catch (const std::exception &e) {
+        why = std::string("the expansion ahead failed: ") + e.what();
+    } catch (...) {
+        why = "the expansion ahead failed";
+    }
+    double ms = took.lap_ms();
+    if (file && why.empty())
+        swofty::log(perf::STEP_LINE, ms, "boot ahead expansion off the thread");
+    std::lock_guard j(job->m);
+    if (!why.empty()) {
+        job->work.boot.reset();
+        job->why = why;
+    }
+    job->ms = ms;
+    job->phase = AheadJob::Phase::done;
+    job->cv.notify_all();
+}
+
+bool ahead_off()
+{
+    char v[8] = {};
+    DWORD n = GetEnvironmentVariableA("SWOFTY_BOOT_AHEAD", v, sizeof v);
+    return n && n < sizeof v && v[0] == '0';
+}
+
+// Adopts the expansion made ahead when nothing it read has changed and the room leaves every addon in: its stat-id
+// store replaces the live one, its held log lines are written in the order the boot writes them, and its
+// expansion becomes the boot's.
+bool boot_from_ahead(Store &st, Database &d, Expansion &plan, uint64_t room, AheadJob &job)
+{
+    State &s = state();
+    Ahead &a = job.work;
+    std::string why = job.why;
+    if (why.empty()) {
+        AheadNow now;
+        now.store_generation = scheduler().boot_generation();
+        now.box_worlds = box_worlds_on();
+        now.day = today();
+        now.edits = &d.edits;
+        now.order = st.order();
+        now.room = room;
+        now.admitted = admit(now.order, plan.addon_fresh, room);
+        why = adopt_ahead(a, now, ids::store());
+    }
+    if (!why.empty()) {
+        swofty::log("[apply] boot ahead: %s; the boot expands again on this thread", why.c_str());
+        return false;
+    }
+    for (auto &line : a.logs)
         swofty::log("%s", line.c_str());
-}
-
-int64_t stat_id(const std::string &registry, const std::string &id, int64_t pin)
-{
-    if (pin >= 0)
-        return ids::store().pin(registry, id, pin, today()).id;
-    ids::Result r = ids::store().allocate(registry, id, today());
-    if (r.how != "kept" && !r.line.empty())
-        swofty::log("%s", r.line.c_str());
-    return r.id;
+    for (auto &line : a.lines)
+        s.boot_lines.push_back(line);
+    s.boot = std::move(a.boot);
+    swofty::log("[apply] boot ahead: the boot adopts the expansion made ahead in %.1f ms off the thread (%zu database "
+                "write(s), %zu stat-id line(s) held)",
+                job.ms, s.boot->engine.writes().size(), a.logs.size());
+    return true;
 }
 
 void report_left_out(const Expansion &x)
@@ -272,23 +384,25 @@ void run_boot(Store &st)
     State &s = state();
     Database &d = database();
     Expansion &plan = plan_run(st);
-    s.boot = std::make_unique<Expansion>(base_of(d));
+    std::shared_ptr<AheadJob> job =
+        settle_ahead("the boot came before the expansion ahead could start; the boot expands on this thread");
+    s.boot = expansion(d);
     if (!d.ok)
         return;
     read_edits(d);
-    std::map<std::string, PoolScan> scans;
-    define_pools(d, s.boot_lines, scans);
-    pin_all(st, scans);
-    for (const char *registry : {"vehicle", "vehicle.package", "content.package", "team.identity"})
-        if (scans.count(registry))
-            ids::store().set_live(registry, st.list(registry, ""));
     uint64_t room = db::staging().room();
     if (room != db::UNMEASURED) {
         uint64_t tracks = scheduler().planned_keys("track");
         room = tracks < room ? room - tracks : 0;
     }
+    if (job && boot_from_ahead(st, d, plan, room, *job))
+        return;
+    std::string day = today();
+    LogLine log = [](const std::string &line) { swofty::log("%s", line.c_str()); };
+    std::map<std::string, PoolScan> scans = boot_ids(st, ids::store(), base_of(d), day, s.boot->box_worlds, s.boot_lines, log);
+    StatIds stat = boot_stat_ids(ids::store(), day, log);
     Admission adm = admit(st.order(), plan.addon_fresh, room);
-    expand(st, *s.boot, stat_id, adm.skip);
+    expand(st, *s.boot, stat, adm.skip);
     for (;;) {
         Admission again = readmit(st.order(), s.boot->addon_fresh, adm, room);
         if (again.skip.size() == adm.skip.size())
@@ -298,8 +412,8 @@ void run_boot(Store &st)
                         "rows are laid out again without it",
                         again.refused[i].first.c_str(), again.refused[i].second);
         adm = std::move(again);
-        s.boot = std::make_unique<Expansion>(base_of(d));
-        expand(st, *s.boot, stat_id, adm.skip);
+        s.boot = expansion(d);
+        expand(st, *s.boot, stat, adm.skip);
     }
     for (auto &[addon, keys] : adm.refused) {
         db::Refusal r{addon, {}, keys};
@@ -419,7 +533,8 @@ void apply_liveries(Expansion &x, Report &report, const std::string &registry)
         if (!g.tmpl.empty())
             e.o.push_back({"template", str(g.tmpl)});
         int rc = runtime::group_add(e);
-        report.lines.push_back(registry + " " + g.id + ": asset group " + g.group + (rc == SWOFTY_ASSET_OK ? " registered" : " not registered"));
+        report.lines.push_back(registry + " " + g.id + ": asset group " + g.group +
+                               (rc == SWOFTY_ASSET_OK ? " registered" : " not registered"));
         if (rc != SWOFTY_ASSET_OK)
             report.refused++;
     }
@@ -450,7 +565,8 @@ void apply_liveries(Expansion &x, Report &report, const std::string &registry)
     }
     std::string summary;
     for (auto &[addon, n] : routed)
-        summary += (summary.empty() ? "" : ", ") + std::to_string(n) + (livery ? " livery file" : " archive") + (n == 1 ? "" : "s") + " redirected to " + addon;
+        summary += (summary.empty() ? "" : ", ") + std::to_string(n) + (livery ? " livery file" : " archive") +
+                   (n == 1 ? "" : "s") + " redirected to " + addon;
     if (!summary.empty())
         report.summary = report.summary.empty() ? summary : report.summary + "; " + summary;
 }
@@ -473,8 +589,8 @@ void apply_texts(Expansion &x, const char *registry, Report &report)
     for (auto &[tag, text] : texts) {
         if (lang->override_set("*", tag.c_str(), text.c_str()) == SWOFTY_ASSET_OK)
             set++;
-        else if (registry::older::string_layer(runtime::older_store(), "swofty.core", tag,
-                                               Value::object({{"*", Value(text)}})) == SWOFTY_ASSET_OK)
+        else if (registry::older::string_layer(runtime::older_store(), "swofty.core", tag, Value::object({{"*", Value(text)}})) ==
+                 SWOFTY_ASSET_OK)
             layered.push_back(tag);
         else
             failed.push_back(tag);
@@ -492,10 +608,11 @@ void apply_texts(Expansion &x, const char *registry, Report &report)
     if (!layered.empty())
         report.lines.push_back(std::string(registry) + ": " + std::to_string(layered.size()) + what +
                                " registered as lang.string layers from swofty.core; the lang override isn't up yet and "
-                               "reads them when it starts (" + list(layered) + ")");
+                               "reads them when it starts (" +
+                               list(layered) + ")");
     if (!failed.empty())
-        report.lines.push_back(std::string(registry) + ": " + std::to_string(failed.size()) + what + " not set (" +
-                               list(failed) + ")");
+        report.lines.push_back(std::string(registry) + ": " + std::to_string(failed.size()) + what + " not set (" + list(failed) +
+                               ")");
 }
 
 void apply_logos(Expansion &x, Report &report)
@@ -511,8 +628,8 @@ void apply_logos(Expansion &x, Report &report)
         swofty::log("[apply] %s", l.c_str());
     }
     report.refused += made.refused;
-    report.lines.push_back("team.logo: " + std::to_string(x.logos.size()) + " logo slot(s) planned, " + std::to_string(made.built) +
-                           " slice(s) built, " + std::to_string(made.refused) + " refused");
+    report.lines.push_back("team.logo: " + std::to_string(x.logos.size()) + " logo slot(s) planned, " +
+                           std::to_string(made.built) + " slice(s) built, " + std::to_string(made.refused) + " refused");
 }
 
 void apply_garages(Expansion &x, Report &report)
@@ -548,7 +665,8 @@ void apply_garages(Expansion &x, Report &report)
         std::sort(inputs.begin(), inputs.end(), [](const garage::Input &a, const garage::Input &b) { return a.rel < b.rel; });
         if (inputs.empty()) {
             report.refused++;
-            report.lines.push_back("team.garage " + g.id + ": " + g.folder + " holds no .dds or .png file in swofty/addons/" + g.addon + "/");
+            report.lines.push_back("team.garage " + g.id + ": " + g.folder + " holds no .dds or .png file in swofty/addons/" +
+                                   g.addon + "/");
             continue;
         }
         uint64_t key = 0xcbf29ce484222325ull;
@@ -599,15 +717,18 @@ void apply_garages(Expansion &x, Report &report)
         std::size_t attached = 0;
         for (auto &group : g.groups) {
             int rc = runtime::group_extend(group, g.game_path);
-            report.lines.push_back("team.garage " + g.id + ": " + group + (rc == SWOFTY_ASSET_OK ? " lists " + g.game_path : " not extended (the manifest is already parsed)"));
+            report.lines.push_back(
+                "team.garage " + g.id + ": " + group +
+                (rc == SWOFTY_ASSET_OK ? " lists " + g.game_path : " not extended (the manifest is already parsed)"));
             attached += rc == SWOFTY_ASSET_OK;
         }
         if (!attached)
             report.refused++;
-        report.lines.push_back("team.garage " + g.id + ": " + std::to_string(inputs.size()) + " texture file(s) of " + g.folder + " in " +
-                               file + " (" + std::to_string(have >> 20) + " MB, " + (reused ? "cached archive reused" : "built") + " in " +
-                               std::to_string(GetTickCount() - t0) + " ms), " + g.game_path + " -> swofty/addons/" + CACHE_ADDON + "/" + file +
-                               ", " + std::to_string(attached) + " of " + std::to_string(g.groups.size()) + " group(s) extended");
+        report.lines.push_back("team.garage " + g.id + ": " + std::to_string(inputs.size()) + " texture file(s) of " + g.folder +
+                               " in " + file + " (" + std::to_string(have >> 20) + " MB, " +
+                               (reused ? "cached archive reused" : "built") + " in " + std::to_string(GetTickCount() - t0) +
+                               " ms), " + g.game_path + " -> swofty/addons/" + CACHE_ADDON + "/" + file + ", " +
+                               std::to_string(attached) + " of " + std::to_string(g.groups.size()) + " group(s) extended");
     }
     WIN32_FIND_DATAW fd;
     HANDLE h = FindFirstFileW((runtime::under_swofty(dir) + L"garage_*").c_str(), &fd);
@@ -650,12 +771,13 @@ void set_up_dresser()
         return v.i;
     };
     runtime::team_record_inserted([](uint16_t stat, uint8_t *record) { redress(stat, record); });
-    career_ops::teams::dresser() = &dress_slot;
+    career::ops::teams::dresser() = &dress_slot;
 }
 
 void release_database()
 {
     State &s = state();
+    settle_ahead();
     s.boot.reset();
     s.plan.reset();
     s.db.reset();
@@ -677,6 +799,20 @@ public:
         return it == x.fresh.end() ? 0 : it->second;
     }
 
+    bool counts_off_thread() const override { return true; }
+
+    bool may_count(Store &st) override
+    {
+        std::lock_guard g(mu);
+        return has_records(st);
+    }
+
+    void forget_count() override
+    {
+        std::lock_guard g(mu);
+        state().plan.reset();
+    }
+
     void boot(Store &st, Report &report) override
     {
         std::lock_guard g(mu);
@@ -684,6 +820,7 @@ public:
         if (!has_records(st))
             return;
         if (!db::staging().available()) {
+            settle_ahead();
             for (auto &id : st.list(registry_, ""))
                 if (id.rfind("game/", 0) != 0)
                     report.refused++;
@@ -791,7 +928,9 @@ public:
                 const Value &v = (*rec)["images"][context];
                 if (v.is_string()) {
                     uint64_t size = 0;
-                    bool found = runtime::file_size(runtime::under_swofty("addons/" + addon_of(id) + "/" + std::string(v.as_string())), &size) && size;
+                    bool found = runtime::file_size(
+                                     runtime::under_swofty("addons/" + addon_of(id) + "/" + std::string(v.as_string())), &size) &&
+                                 size;
                     images++;
                     if (!found) {
                         bad++;
@@ -829,17 +968,20 @@ public:
         for (auto &b : plan.boxes) {
             if (!b.literal.empty() && lang)
                 lang->override_set("*", b.title.c_str(), b.literal.c_str());
-            SwoftyEraBox d{sizeof d, b.entrant_list.c_str(), b.title.c_str(), b.image.c_str(), b.order, b.time_trial.c_str(), b.only};
+            SwoftyEraBox d{sizeof d, b.entrant_list.c_str(), b.title.c_str(), b.image.c_str(),
+                           b.order,  b.time_trial.c_str(),   b.only};
             int rc = era ? era->add_box(&d) : SWOFTY_ASSET_UNAVAILABLE;
             if (rc == SWOFTY_ASSET_OK)
                 report.applied++;
             else
                 report.refused++;
-            report.lines.push_back("era.box " + b.id + ": " + b.entrant_list +
-                                   (b.time_trial.empty() ? std::string() : " (Time Trial " + b.time_trial + ")") +
-                                   (b.only == 1 ? " (Grand Prix only)" : b.only == 2 ? " (Time Trial only)" : "") +
-                                   (rc == SWOFTY_ASSET_OK ? " registered"
-                                                          : " not registered (a box for it exists or the picker is off)"));
+            report.lines.push_back(
+                "era.box " + b.id + ": " + b.entrant_list +
+                (b.time_trial.empty() ? std::string() : " (Time Trial " + b.time_trial + ")") +
+                (b.only == 1   ? " (Grand Prix only)"
+                 : b.only == 2 ? " (Time Trial only)"
+                               : "") +
+                (rc == SWOFTY_ASSET_OK ? " registered" : " not registered (a box for it exists or the picker is off)"));
         }
         for (auto &l : plan.lines)
             report.lines.push_back(l);
@@ -1003,6 +1145,29 @@ TyreChangeBox tyre_change_for_box(const std::string &entrant_list)
         packages.push_back({id, lookup("content.package", id)});
     TyreChangePick pick = tyre_change_pick(entrant_list, packages);
     return {pick.required, pick.line};
+}
+
+void start_boot_ahead()
+{
+    if (ahead_off()) {
+        swofty::log("[apply] boot ahead: SWOFTY_BOOT_AHEAD=0, so the boot expansion runs inside the database load");
+        return;
+    }
+    auto job = std::make_shared<AheadJob>();
+    {
+        std::lock_guard g(ahead_mu);
+        if (ahead_job)
+            return;
+        ahead_job = job;
+    }
+    try {
+        std::thread([job] { run_ahead(job); }).detach();
+    } catch (const std::system_error &) {
+        std::lock_guard g(ahead_mu);
+        if (ahead_job == job)
+            ahead_job.reset();
+        swofty::log("[apply] boot ahead: no worker thread, so the boot expansion runs inside the database load");
+    }
 }
 
 void register_appliers()

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ReplayFile_ReadFooter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1445c5b70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1445c5b70.c;xref:0x145befd68,0x145befef8",
+  "notes": "Replay file stream (vtable, owner = this-0x2d8): ends compression (Game_Replaybuffer_EndCompression) when pending, reads the 0x20-byte footer tagged 'FR' (0x5246), seeks to the overlap frame size and reads it; traces 'overlap frame size footer out of bounds'. Addon: replay file parsing. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2917)"
+ },
+ "signature": {
+  "id": "game.replay_file_read_footer",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 CE 48 8D 99 28 FD FF",
+  "match": "0x1445c5b70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445c5b70",
+  "kind": "func_start",
+  "names": [
+   "Game_ReplayFile_ReadFooter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d10-verify",
+   "kind": "func",
+   "item": "Game_ReplayFile_ReadFooter",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445c5b70.c;xref:0x1445c5b70",
+   "notes": "V2917 decomp checked: offsets/calls/strings match claim"
+  }
+ ],
+ "proofs": []
+}

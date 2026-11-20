@@ -1,7 +1,9 @@
 #pragma once
-#include "../game_manager_layout.hpp"
-#include "live_layout.hpp"
-#include "live_mem.hpp"
+#include "core/runtime/build_proof.hpp"
+#include "core/runtime/car_layout.hpp"
+#include "core/runtime/game_manager_layout.hpp"
+#include "core/live/live_layout.hpp"
+#include "core/live/live_mem.hpp"
 
 namespace swofty_core::live {
 
@@ -16,29 +18,27 @@ struct Row {
     const char *needs;
 };
 
-inline constexpr bool F_CAR_SYSTEMS = LIVE_HAS(CarLiveInputs, throttle) && LIVE_HAS(CarLiveInputs, clutch) &&
-                                      LIVE_HAS(CarLiveInputs, brake) && LIVE_HAS(CarLiveInputs, input_flags) &&
-                                      LIVE_HAS(CarChassisLive, g_lat) && LIVE_HAS(CarChassisLive, g_long) &&
-                                      LIVE_HAS(CarChassisLive, body) && LIVE_HAS(CarBodyActor, state) &&
-                                      LIVE_HAS(CarBodyState, velocity) && LIVE_HAS(CarSteeringLive, steering_angle) &&
-                                      LIVE_HAS(CarGearBox, gear_index) && LIVE_HAS(CarEngine, rotation_rate) &&
-                                      LIVE_HAS(CarEngine, limiter_rotation_rate);
+inline constexpr bool F_CAR_SYSTEMS =
+    LIVE_HAS(CarLiveInputs, throttle) && LIVE_HAS(CarLiveInputs, clutch) && LIVE_HAS(CarLiveInputs, brake) &&
+    LIVE_HAS(CarLiveInputs, input_flags) && LIVE_HAS(CarChassisLive, g_lat) && LIVE_HAS(CarChassisLive, g_long) &&
+    LIVE_HAS(CarChassisLive, body) && LIVE_HAS(CarBodyActor, state) && LIVE_HAS(CarBodyState, velocity) &&
+    LIVE_HAS(CarSteeringLive, steering_angle) && LIVE_HAS(CarGearBox, gear_index) && LIVE_HAS(CarEngine, rotation_rate) &&
+    LIVE_HAS(CarEngine, limiter_rotation_rate);
 inline constexpr bool F_ERS = LIVE_HAS(CarErs, max_deploy_power) && LIVE_HAS(CarErs, energy_store_capacity) &&
-                              LIVE_HAS(CarErs, harvest_lap_mguk) && LIVE_HAS(CarErs, deploy_lap) &&
-                              LIVE_HAS(CarErs, energy) && LIVE_HAS(CarErs, lap_harvest_limit) &&
-                              LIVE_HAS(CarErs, harvest_power_mguk) && LIVE_HAS(CarErs, harvest_power_mguh) &&
-                              LIVE_HAS(CarErs, deploy_power) && LIVE_HAS(CarErs, ers_mode);
+                              LIVE_HAS(CarErs, harvest_lap_mguk) && LIVE_HAS(CarErs, deploy_lap) && LIVE_HAS(CarErs, energy) &&
+                              LIVE_HAS(CarErs, lap_harvest_limit) && LIVE_HAS(CarErs, harvest_power_mguk) &&
+                              LIVE_HAS(CarErs, harvest_power_mguh) && LIVE_HAS(CarErs, deploy_power) &&
+                              LIVE_HAS(CarErs, ers_mode);
 inline constexpr bool F_WORLD = LIVE_HAS(CarBodyState, position);
 inline constexpr bool F_AERO = LIVE_HAS(CarF1Aero, drs_flags);
-inline constexpr bool F_PROGRESS = LIVE_HAS(GameManagerLive, progress_system) &&
-                                   LIVE_HAS(GameVehicleProgressSystem, entries_begin) &&
-                                   LIVE_HAS(GameVehicleProgressSystem, entries_end) && LIVE_HAS(VehicleProgressEntry, lap_a) &&
-                                   LIVE_HAS(VehicleProgressEntry, lap_b) && LIVE_HAS(VehicleProgressEntry, progress_lap_a) &&
-                                   LIVE_HAS(VehicleProgressEntry, progress_lap_b) &&
-                                   LIVE_HAS(VehicleProgressEntry, progress_lap_delta) &&
-                                   LIVE_HAS(VehicleProgressEntry, total_a) && LIVE_HAS(VehicleProgressEntry, total_b);
-inline constexpr bool F_REGISTRY = LIVE_HAS(GameManagerLive, systems_map) && LIVE_HAS(NeRobinHoodMapU64, slots) &&
-                                   LIVE_HAS(NeRobinHoodMapU64, meta);
+inline constexpr bool F_PROGRESS =
+    LIVE_HAS(GameManagerLive, progress_system) && LIVE_HAS(GameVehicleProgressSystem, entries_begin) &&
+    LIVE_HAS(GameVehicleProgressSystem, entries_end) && LIVE_HAS(VehicleProgressEntry, lap_a) &&
+    LIVE_HAS(VehicleProgressEntry, lap_b) && LIVE_HAS(VehicleProgressEntry, progress_lap_a) &&
+    LIVE_HAS(VehicleProgressEntry, progress_lap_b) && LIVE_HAS(VehicleProgressEntry, progress_lap_delta) &&
+    LIVE_HAS(VehicleProgressEntry, total_a) && LIVE_HAS(VehicleProgressEntry, total_b);
+inline constexpr bool F_REGISTRY =
+    LIVE_HAS(GameManagerLive, systems_map) && LIVE_HAS(NeRobinHoodMapU64, slots) && LIVE_HAS(NeRobinHoodMapU64, meta);
 inline constexpr bool F_CLASS = LIVE_HAS(SessionSystem, entries_begin) && LIVE_HAS(SessionSystem, entries_end) &&
                                 LIVE_HAS(SessionVehicleEntry, status) && LIVE_HAS(SessionVehicleEntry, time_penalty_a) &&
                                 LIVE_HAS(SessionVehicleEntry, time_penalty_b) && LIVE_HAS(SessionVehicleEntry, position_a) &&
@@ -60,17 +60,16 @@ inline constexpr bool F_TYRES = LIVE_HAS(VehicleTyreComponent, compound_class) &
                                 LIVE_HAS(VehicleTyreComponent, built) && LIVE_HAS(VehicleTyreComponent, set_begin) &&
                                 LIVE_HAS(VehicleTyreComponent, set_end) && LIVE_HAS(TyreSystem, vehicles_begin) &&
                                 LIVE_HAS(TyreSystem, vehicles_end) && LIVE_HAS(TyreSlot, option) &&
-                                LIVE_HAS(TyreSlot, physical) && LIVE_HAS(TyreSlot, visual) &&
-                                LIVE_HAS(VisualCompound, stat_id) && LIVE_HAS(VisualCompound, audio_compound) &&
-                                LIVE_HAS(PhysicalCompound, stat_id);
+                                LIVE_HAS(TyreSlot, physical) && LIVE_HAS(TyreSlot, visual) && LIVE_HAS(VisualCompound, stat_id) &&
+                                LIVE_HAS(VisualCompound, audio_compound) && LIVE_HAS(PhysicalCompound, stat_id);
 inline constexpr bool F_FLAGS = LIVE_HAS(MarshalZoneMonitor, zones_begin) && LIVE_HAS(MarshalZoneSlot, zone) &&
                                 LIVE_HAS(MarshalZone, definition) && LIVE_HAS(MarshalZone, flag) &&
                                 LIVE_HAS(MarshalZoneDef, start_fraction) && LIVE_HAS(RedFlagSystem, state);
 inline constexpr bool F_CONTROL = LIVE_HAS(ControllerSystem, sets) && LIVE_HAS(ControllerSystem, vehicle_manager) &&
                                   LIVE_HAS(ControllerSystem, sets_built) && LIVE_HAS(ControllerSet, human_controller) &&
                                   LIVE_HAS(ControllerSet, vehicle);
-inline constexpr bool F_SPECTATE = LIVE_HAS(SpectatorDirector, ui_active) && LIVE_HAS(SpectatorDirector, active) &&
-                                   LIVE_HAS(SpectatorDirector, current_driver);
+inline constexpr bool F_SPECTATE =
+    LIVE_HAS(SpectatorDirector, ui_active) && LIVE_HAS(SpectatorDirector, active) && LIVE_HAS(SpectatorDirector, current_driver);
 inline constexpr bool F_SPECTATE_GAP = LIVE_HAS(SpectatorDirectorGap, gap_mode);
 inline constexpr bool F_MODE = LIVE_HAS(GameModeSystem, mode) && LIVE_HAS(GameMode, name);
 inline constexpr bool F_BADGES = LIVE_HAS(GameModeSystem, mode) && LIVE_HAS(GameMode, entrants_manager) &&
@@ -78,8 +77,7 @@ inline constexpr bool F_BADGES = LIVE_HAS(GameModeSystem, mode) && LIVE_HAS(Game
                                  LIVE_HAS(SessionEntrantView, team_stat_id) && LIVE_HAS(SessionEntrantView, vehicle_id) &&
                                  LIVE_HAS(EntrantsSystem, team_sets) && LIVE_HAS(TeamSetRef, slots) &&
                                  LIVE_HAS(TeamSlots, begin) && LIVE_HAS(TeamSlots, end) && LIVE_HAS(TeamSlot, record) &&
-                                 LIVE_HAS(TeamRecord, timing_tower_texture_path) &&
-                                 LIVE_HAS(TeamRecord, show_custom_badge_in_ui);
+                                 LIVE_HAS(TeamRecord, timing_tower_texture_path) && LIVE_HAS(TeamRecord, show_custom_badge_in_ui);
 inline constexpr bool F_DRIVER_NAMES =
     LIVE_HAS(GameModeSystem, mode) && LIVE_HAS(GameMode, entrants_manager) && LIVE_HAS(EntrantsManager, session_begin) &&
     LIVE_HAS(EntrantsManager, session_end) && LIVE_HAS(SessionEntrantView, vehicle_id) &&
@@ -92,6 +90,17 @@ inline constexpr bool F_DRIVER_NAMES =
 inline constexpr bool F_BADGE_RENDER = F_BADGES && LIVE_HAS(SessionEntrantView, badge_stat_id);
 inline constexpr bool F_TRACK_NAME =
     LIVE_HAS(RacingVehicles, owner) && LIVE_HAS(RacingOwner, track) && LIVE_HAS(RacingTrack, name);
+inline constexpr bool F_GRID = LIVE_HAS(SessionVehicleEntry, grid_position_a) && LIVE_HAS(SessionVehicleEntry, grid_position_b);
+inline constexpr bool F_LAP_TIMES =
+    LIVE_HAS(VehicleLapTimesSystem, cars_begin) && LIVE_HAS(VehicleLapTimesSystem, cars_end) &&
+    LIVE_HAS(VehicleLapTimesEntry, data) && LIVE_HAS(VehicleLapTimesData, laps) && LIVE_HAS(VehicleLapTimesData, current_lap) &&
+    LIVE_HAS(LapTimeRecord, lap) && LIVE_HAS(LapTimeRecord, sector1_a) && LIVE_HAS(LapTimeRecord, sector1_b) &&
+    LIVE_HAS(LapTimeRecord, sector2_a) && LIVE_HAS(LapTimeRecord, sector2_b) && LIVE_HAS(LapTimeRecord, sector3_a) &&
+    LIVE_HAS(LapTimeRecord, sector3_b) && LIVE_HAS(LapTimeRecord, valid_a) && LIVE_HAS(LapTimeRecord, valid_b) &&
+    LIVE_HAS(LapTimeRecord, time_a) && LIVE_HAS(LapTimeRecord, time_b) && LIVE_SIZED(LapTimeRecord, layout::lap_times::stride);
+inline constexpr bool F_TYRE_WEAR = LIVE_HAS(CarWheel, wear) && LIVE_HAS(VehicleTyreComponent, physics);
+inline constexpr bool F_TYRE_AGE = LIVE_HAS(TyreStint, compound) && LIVE_HAS(TyreStint, set_index) &&
+                                   LIVE_HAS(TyreStint, end_lap) && LIVE_SIZED(TyreStint, layout::tyres::set_stride);
 
 inline constexpr Row ROWS[G_COUNT] = {
     {G_CAR_SYSTEMS, F_CAR_SYSTEMS, true,
@@ -99,27 +108,53 @@ inline constexpr Row ROWS[G_COUNT] = {
     {G_ERS, F_ERS, true, "CarErs live fields"},
     {G_WORLD, F_WORLD, true, "CarBodyState.position"},
     {G_AERO, F_AERO, true, "CarF1Aero.drs_flags"},
-    {G_PROGRESS, F_PROGRESS && F_REGISTRY, true, "GameVehicleProgressSystem and VehicleProgressEntry fields"},
-    {G_CLASS, F_CLASS && F_REGISTRY, true, "SessionSystem and SessionVehicleEntry fields"},
-    {G_TIMING, F_TIMING && F_REGISTRY, true, "RelativeGapHelper, RelativeGapEntry, SafetyCarLogicSystem fields"},
-    {G_PIT, F_PIT && F_REGISTRY, true, "PitLaneSystem, PitLaneCarSlot, PitLaneCarState.state"},
-    {G_PENALTIES, F_PENALTIES && F_REGISTRY, true, "PenaltyLog, VehicleHelperSystem and the misconduct objects"},
-    {G_TYRES, F_TYRES && F_REGISTRY, true, "VehicleTyreComponent, TyreSystem, TyreSlot, VisualCompound and PhysicalCompound fields"},
-    {G_FLAGS, F_FLAGS && F_REGISTRY, true, "MarshalZoneMonitor, RedFlagSystem, the sector globals"},
+    {G_PROGRESS, F_PROGRESS &&F_REGISTRY, true, "GameVehicleProgressSystem and VehicleProgressEntry fields"},
+    {G_CLASS, F_CLASS &&F_REGISTRY, true, "SessionSystem and SessionVehicleEntry fields"},
+    {G_TIMING, F_TIMING &&F_REGISTRY, true, "RelativeGapHelper, RelativeGapEntry, SafetyCarLogicSystem fields"},
+    {G_PIT, F_PIT &&F_REGISTRY, true, "PitLaneSystem, PitLaneCarSlot, PitLaneCarState.state"},
+    {G_PENALTIES, F_PENALTIES &&F_REGISTRY, true, "PenaltyLog, VehicleHelperSystem and the misconduct objects"},
+    {G_TYRES, F_TYRES &&F_REGISTRY, true,
+     "VehicleTyreComponent, TyreSystem, TyreSlot, VisualCompound and PhysicalCompound fields"},
+    {G_FLAGS, F_FLAGS &&F_REGISTRY, true, "MarshalZoneMonitor, RedFlagSystem, the sector globals"},
     {G_CONTROL, F_CONTROL, true, "ControllerSystem and ControllerSet fields"},
-    {G_SPECTATE, F_SPECTATE && F_REGISTRY, true, "SpectatorDirector fields"},
-    {G_MODE, F_MODE && F_REGISTRY, true, "GameModeSystem.mode and GameMode.name"},
-    {G_BADGES, F_BADGES && F_REGISTRY, true,
-     "the game mode chain, EntrantsManager entrant vector, SessionEntrantView, EntrantsSystem team tables and TeamRecord badge fields"},
+    {G_SPECTATE, F_SPECTATE &&F_REGISTRY, true, "SpectatorDirector fields"},
+    {G_MODE, F_MODE &&F_REGISTRY, true, "GameModeSystem.mode and GameMode.name"},
+    {G_BADGES, F_BADGES &&F_REGISTRY, true,
+     "the game mode chain, EntrantsManager entrant vector, SessionEntrantView, EntrantsSystem team tables and TeamRecord badge "
+     "fields"},
     {G_TRACK, true, true, "g_Game_TrackLength, g_Sess_TyreRulesSessionType"},
-    {G_PIT_LANE, F_PIT_LANE, true, "PitLaneSystem.lane, PitLaneTrack.vehicle_slots, PitLaneVehicle.in_lane, PitLaneCarState.pit_stops"},
+    {G_PIT_LANE, F_PIT_LANE, true,
+     "PitLaneSystem.lane, PitLaneTrack.vehicle_slots, PitLaneVehicle.in_lane, PitLaneCarState.pit_stops"},
     {G_TRACK_NAME, F_TRACK_NAME, true, "RacingVehicles.owner, RacingOwner.track and RacingTrack.name"},
-    {G_SPECTATE_GAP, F_SPECTATE_GAP && F_REGISTRY, true, "SpectatorDirectorGap.gap_mode"},
-    {G_BUS_EVENTS, true, true, "g_Game_MessageBus and Ne_Subscribe_BusMessage; the message layouts are the agreed Live_Subscribe_* rows (no signature, not resolved)"},
-    {G_DRIVER_NAMES, F_DRIVER_NAMES && F_REGISTRY, true,
+    {G_SPECTATE_GAP, F_SPECTATE_GAP &&F_REGISTRY, true, "SpectatorDirectorGap.gap_mode"},
+    {G_BUS_EVENTS, true, true,
+     "g_Game_MessageBus and Ne_Subscribe_BusMessage; the message layouts are the agreed Live_Subscribe_* rows (no signature, not "
+     "resolved)"},
+    {G_DRIVER_NAMES, F_DRIVER_NAMES &&F_REGISTRY, true,
      "the game mode entrant chain, SessionEntrantView.driver_ref, EntrantsSystem driver tables, DriverRecord.display_name, "
      "VehicleHelperSystem participants and player name, VehicleHelperParticipant and CarPhysicsRecord.car"},
-    {G_BADGE_RENDER, F_BADGE_RENDER && F_REGISTRY, true, "the badges rows and SessionEntrantView.badge_stat_id"},
+    {G_BADGE_RENDER, F_BADGE_RENDER &&F_REGISTRY, true, "the badges rows and SessionEntrantView.badge_stat_id"},
+    {G_GRID, F_GRID &&F_REGISTRY, true, "SessionVehicleEntry.grid_position_a and grid_position_b"},
+    {G_LAP_TIMES, F_LAP_TIMES &&F_REGISTRY, true,
+     "VehicleLapTimesSystem, VehicleLapTimesEntry, VehicleLapTimesData and LapTimeRecord fields and the LapTimeRecord size"},
+    {G_TYRE_WEAR, F_TYRE_WEAR && F_TYRES && F_REGISTRY, true, "CarWheel.wear, VehicleTyreComponent.physics and the tyres rows"},
+    {G_TYRE_AGE, F_TYRE_AGE && F_TYRES && F_LAP_TIMES &&F_REGISTRY, true,
+     "TyreStint fields and size, the tyres rows and the lap times rows"},
+};
+
+// Values the live state does not read yet on any build: their have bits stay clear and the core logs
+// "[live] <name> off: needs <rows>" once.
+struct Unread {
+    const char *name;
+    const char *needs;
+};
+
+inline constexpr Unread UNREAD[] = {
+    {"session time left",
+     "a session clock row read without a call (Sess_RaceRuleset_GetTimeRemaining interpolates RaceRuleset +0x2f0 from the "
+     "game timer)"},
+    {"total laps", "the race lap count: RaceRuleset +0x358 with the ruleset class proven on each session type"},
+    {"setup values", "the car setup record rows; CarOps gives several setup values"},
 };
 
 struct Needs {
@@ -152,12 +187,13 @@ inline constexpr Needs NEEDS[] = {
     {G_BUS_EVENTS, {&Sites::bus_slot, &Sites::bus_subscribe}},
     {G_DRIVER_NAMES, {&Sites::game_manager, &Sites::key_game_mode, &Sites::key_team_tables, &Sites::key_session_component}},
     {G_BADGE_RENDER, {&Sites::game_manager, &Sites::key_game_mode, &Sites::key_team_tables}},
+    {G_GRID, {&Sites::game_manager, &Sites::key_results}},
+    {G_LAP_TIMES, {&Sites::game_manager, &Sites::key_lap_times}},
+    {G_TYRE_WEAR, {&Sites::game_manager, &Sites::key_tyres}},
+    {G_TYRE_AGE, {&Sites::game_manager, &Sites::key_tyres, &Sites::key_lap_times}},
 };
 
-constexpr uint32_t bit(Group g)
-{
-    return 1u << g;
-}
+constexpr uint32_t bit(Group g) { return 1u << g; }
 
 // A build other than the KB build reads a group only when the group is listed here for that build's PE timestamp: the
 // layouts the group reads were compared against the KB build's (re/tools/layoutcmp.py, research/ea-layouts.md) and the
@@ -174,23 +210,47 @@ struct BuildProof {
 
 inline constexpr uint32_t ALL_GROUPS = (1u << G_COUNT) - 1;
 
-inline constexpr BuildProof KB_BUILD = {1789118616u, "Steam", ALL_GROUPS, layout::progress::from_manager};
+// Groups whose layouts were compared on the KB build and Steam 26566308 only (re/research/live-steam-26566308.md).
+inline constexpr uint32_t STEAM_ONLY_GROUPS = bit(G_GRID) | bit(G_LAP_TIMES) | bit(G_TYRE_WEAR) | bit(G_TYRE_AGE);
+
+inline constexpr BuildProof KB_BUILD = {runtime::build_proof::known(runtime::build_proof::Build::kb)->pe_timestamp, "Steam",
+                                        ALL_GROUPS, layout::progress::from_manager};
 
 // Driver names read the EntrantsSystem driver tables and VehicleHelperSystem participants, which have not been compared
 // against the EA build's layout yet; the rendered badge path reads a SessionEntrantView field that has not been either.
-inline constexpr uint32_t EA_GROUPS = ALL_GROUPS & ~(bit(G_DRIVER_NAMES) | bit(G_BADGE_RENDER));
+inline constexpr uint32_t EA_GROUPS = ALL_GROUPS & ~(bit(G_DRIVER_NAMES) | bit(G_BADGE_RENDER) | STEAM_ONLY_GROUPS);
 
-inline constexpr BuildProof EA_BUILD = {1789128892u, "EA", EA_GROUPS,
-                                         runtime::game_manager::tail_field(layout::progress::from_manager, "ea")};
+inline constexpr BuildProof EA_BUILD = {runtime::build_proof::known(runtime::build_proof::Build::ea)->pe_timestamp, "EA",
+                                        EA_GROUPS, runtime::game_manager::tail_field(layout::progress::from_manager, "ea")};
 
 // Steam 26566308 (1.0.145.2472): existing Live State layouts checked against this executable.
 // See re/research/live-steam-26566308.md for the build identity and instruction evidence.
-// Resolving a binding alone does not prove the object layout behind it; the current ERS mode moved by four bytes.
+// Resolving a binding alone does not prove the object layout behind it; the current ERS mode moved by four bytes
+// (runtime::car_layout::ERS_MODE).
 inline constexpr uint32_t STEAM_26566308_GROUPS = ALL_GROUPS;
 inline constexpr BuildProof STEAM_26566308_BUILD = {
-    1794312636u, "Steam 26566308", STEAM_26566308_GROUPS, layout::progress::from_manager, 0x1a6c, bit(G_DRIVER_NAMES)};
+    runtime::build_proof::known(runtime::build_proof::Build::steam_1_0_145)->pe_timestamp,
+    "Steam 26566308",
+    STEAM_26566308_GROUPS,
+    layout::progress::from_manager,
+    runtime::car_layout::ers_mode(runtime::build_proof::Build::steam_1_0_145),
+    bit(G_DRIVER_NAMES)};
 
-inline constexpr const BuildProof *PROVEN_BUILDS[] = {&KB_BUILD, &EA_BUILD, &STEAM_26566308_BUILD};
+// EA App 1.0.145: the Live State fields compare equal with the KB build's (re/tools/layoutcmp.py) except the game
+// manager's tail, 0x30 lower as on the EA App KB build (progress +0x2a0), and the ERS mode, moved as on Steam 1.0.145.
+// The driver name getter is the KB's instruction for instruction (re/research/ea-1-0-145.md).
+inline constexpr BuildProof EA_1_0_145_BUILD = {
+    runtime::build_proof::known(runtime::build_proof::Build::ea_1_0_145)->pe_timestamp,
+    "EA 1.0.145",
+    ALL_GROUPS & ~STEAM_ONLY_GROUPS,
+    runtime::game_manager::tail_field(layout::progress::from_manager, "ea"),
+    runtime::car_layout::ers_mode(runtime::build_proof::Build::ea_1_0_145),
+    bit(G_DRIVER_NAMES)};
+
+inline constexpr const BuildProof *PROVEN_BUILDS[] = {&KB_BUILD, &EA_BUILD, &STEAM_26566308_BUILD, &EA_1_0_145_BUILD};
+
+static_assert(runtime::car_layout::ers_mode(runtime::build_proof::Build::kb) == layout::ers::mode,
+              "the KB build reads the ERS mode at the std layout's offset");
 
 inline const BuildProof *proof_for(uint32_t pe_timestamp)
 {

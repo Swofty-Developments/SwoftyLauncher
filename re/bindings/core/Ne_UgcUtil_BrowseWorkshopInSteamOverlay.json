@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_UgcUtil_BrowseWorkshopInSteamOverlay",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144156ee0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-method;decomp:re/decomp/144156ee0.c;xref:0x140c28265,0x141d9fabb",
+  "notes": "logged method name browseWorkshopInSteamOverlay (class from the log channel); log channel NeUgcUtil: 'browseWorkshopInSteamOverlay - SteamFriends() or SteamUtils() returned null'"
+ },
+ "signature": {
+  "id": "core.ugc_util_browse_workshop_in_steam_overlay",
+  "section": ".xtls",
+  "pattern": "48 81 EC B8 00 00 00 48 8D 0D ?? ?? ?? ?? FF 15",
+  "match": "0x144156ee0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144156ee0",
+  "kind": "func_start",
+  "names": [
+   "Ne_UgcUtil_BrowseWorkshopInSteamOverlay"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb4-verify-a",
+   "kind": "func",
+   "item": "Ne_UgcUtil_BrowseWorkshopInSteamOverlay",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144156ee0.c;xref:0x140c27fa0",
+   "notes": "V2249 Builds workshop URL for appid, overlay web page; logs match."
+  }
+ ],
+ "proofs": []
+}

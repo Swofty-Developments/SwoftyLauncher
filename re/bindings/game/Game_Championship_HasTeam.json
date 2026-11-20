@@ -1,0 +1,42 @@
+{
+ "schema": 1,
+ "name": "Game_Championship_HasTeam",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140aea5f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "bool Game_Championship_HasTeam(void *championship, uint32_t team)",
+  "evidence": "decomp:re/decomp/140aea5f0.c;decomp:re/decomp/1407c4080.c;decomp:re/decomp/140c301e0.c;xref:0x14566ac90",
+  "notes": "jmp thunk to the .data1 body 0x149423b70, slot 56 of the championship's +0x208 sub-object (vtable 0x14566ab10; championship = this - 0x208): true when the team key is in one of the championship's game setup modes (this +0x318..+0x320, filled at load from the row's game_setup_modes by name from the game setup registry *0x146079b28) -> entrant setup modes (+0x10[], count +0x70) whose team flags for the key's kind (+0x24c + kind*4) are exactly preloaded, in one of their entrant lists (+0x20[], count +0x120) or their selection domain's teams (+0x18 -> +0x60..+0x68). The career registry's team check (0x1407c4080, career +0x1030 vt+0x1c0) defers to it when career +0x10c8 is set; the entrant reset's validation (0x140c301e0) clears the team and car of an entrant it says no to, and the R&D team models need it"
+ },
+ "signature": {
+  "id": "game.championship_has_team",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 38 87 0F 83 87 E6 44 00 CC",
+  "match": "0x140aea5f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140aea5f0",
+  "kind": "func_start",
+  "names": [
+   "Game_Championship_HasTeam"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "wizard-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/career_wizard.cpp"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Bind_AddForUnbind",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140274c30",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name addForUnbind (class from the log channel); log channel BIND: 'addForUnbind %p %d %d max %d'"
+ },
+ "signature": {
+  "id": "game.bind_add_for_unbind",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 50 44 89 C3 48 89 D6",
+  "match": "0x140274c30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140274c30",
+  "kind": "func_start",
+  "names": [
+   "Game_Bind_AddForUnbind"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x140274c30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140274c30.c",
+   "notes": "V4480 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

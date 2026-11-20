@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_SessionStateIntroCameras_OnEnter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d6b8f0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d6b8f0.c;xref:0x1457df7e0",
+  "notes": "SessionStateIntroCameras enter (vtable 0x1457df7e0): decides skip (+0xdd1) from session type/online/player-list conditions; if not skipped sets timers +0xdb4 = 20.0f, +0xdb8 = 3.0f, +0xdd6 = 1 and subscribes 'intro_cameras_message' (SessionIntroComplete); logs GAME 'failed to find a factory ... skipping SessionStateIntroCameras' when nothing can play. Addon: force/skip intro cameras via +0xdd1."
+ },
+ "signature": {
+  "id": "session.session_state_intro_cameras_on_enter",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC B8 00 00 00 48 89 CE 48 8B 89 A0 0C 00",
+  "match": "0x142d6b8f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d6b8f0",
+  "kind": "func_start",
+  "names": [
+   "Sess_SessionStateIntroCameras_OnEnter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-b",
+   "kind": "func",
+   "item": "Sess_SessionStateIntroCameras_OnEnter",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d6b8f0.c;xref:0x1457df7e0",
+   "notes": "V2480 +0xdd1 skip flag, +0xdb4=20.0f +0xdb8=3.0f +0xdd6=1, subscribes intro_cameras_message, skip log text confirmed"
+  }
+ ],
+ "proofs": []
+}

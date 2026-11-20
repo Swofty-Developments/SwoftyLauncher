@@ -1,0 +1,39 @@
+{
+ "schema": 1,
+ "name": "Sess_TyreAllocation_SendNetMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140bd1ac0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "uint64_t Sess_TyreAllocation_SendNetMessage(void *comp, void *conn)",
+  "evidence": "decomp:re/decomp/140bd1ac0.c;xref:0x140bd1e33;str:s_Championship_TyreAllocationComponent_SendNetMessage;kb:subsystems/session.md#tyre",
+  "notes": "cxx=TyreAllocationComponent::sendNetMessage. Iterates the tyre-allocation entry list (comp+0x20..+0x28); for each non-sentinel entry id (hi16!=0x3fff) it linear-scans the SESSION ENTRANT vector at owner+0x2e0..+0x2e8 (stride 0x88) matching EntrantRecord.id_lo (+0x50 u8) and id_hi (+0x52 u16), then serialises that participant tyre allocation to the connection. owner = *(comp-0x18)."
+ },
+ "signature": {
+  "id": "session.tyre_alloc_send",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 4C 8B 79 20",
+  "match": "0x140bd1ac0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140bd1ac0",
+  "kind": "func_start",
+  "names": [
+   "Sess_TyreAllocation_SendNetMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-19",
+    "by": "session-re"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

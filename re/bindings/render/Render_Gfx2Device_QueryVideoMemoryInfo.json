@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Device_QueryVideoMemoryInfo",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439cadd0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439cadd0.c;xref:0x142435ef8",
+  "notes": "Sets flag +0x3994 and queries two adapters (objects at +0xa40 and +0xa48) with vcall slot 0x70 (node 0, segment 0 local / 1 non-local), i.e. DXGI QueryVideoMemoryInfo, storing infos at +0xa58/+0xac8 and +0xa90/+0xb00 and tracking previous and peak values (+0xa78..+0xaf8). Called after every Gfx2 resource creation (0x1439d55d0). Addon: read VRAM budget/usage here. Hypothesis on exact DXGI slot."
+ },
+ "signature": {
+  "id": "render.gfx2_device_query_video_memory_info",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE C6 81 94 39",
+  "match": "0x1439cadd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439cadd0",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2Device_QueryVideoMemoryInfo"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x1439cadd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439cadd0.c;xref:0x142435ef8",
+   "notes": "V7756 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

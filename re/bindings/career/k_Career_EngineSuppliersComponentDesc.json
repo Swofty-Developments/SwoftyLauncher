@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "k_Career_EngineSuppliersComponentDesc",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x146063140",
+  "type": "void *",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/1412cc2f0.c;decomp:re/decomp/140c31930.c;xref:0x1412cd2de,0x140c31adb;doc:addons/career-editor/protocol/economy.md#components-helper",
+  "notes": "static ECS type descriptor of EngineSuppliersComponent: the registration at 0x1412cd2de writes the class-name pointer at +8; the game passes &desc as the key to the entity component registry get (entity+0x1030 vtable slot +0x10), as at 0x140c31adb"
+ },
+ "signature": {
+  "id": "career.engine_suppliers_component_desc",
+  "section": ".xtls",
+  "pattern": "48 8D 15 ?? ?? ?? ?? FF 50 10 48 89 86 38 04 00 00 48 8B 8E 70 02 00 00",
+  "match": "0x140c31adb",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x146063140",
+  "kind": "data",
+  "names": [
+   "k_Career_EngineSuppliersComponentDesc"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-econ",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/components.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-2",
+   "kind": "global",
+   "item": "k_Career_EngineSuppliersComponentDesc",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1412cc2f0.c;decomp:re/decomp/140c31930.c;xref:0x1412cd2de,0x140c31adb",
+   "notes": "V0270 desc is a 0x20-byte static object {+0 vtbl 0x145890940, +8 class-name ptr, +0x10 u32 name hash, +0x18 parent desc+8} filled at static init; registration writes the name at +8; class name unique among the 26; the address is the key passed in rdx with r8d=1 to registry vtbl+0x10 (entity+0x1030 at most sites), result cached/null-checked; GetType vfuncs return &desc. \"void *\" names only the first field"
+  }
+ ],
+ "proofs": []
+}

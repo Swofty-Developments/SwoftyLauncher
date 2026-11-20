@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Condition_FacilityUpgradedWithinDays_Ctor",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140e3f320",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *self, void *a, void *b, void *props)",
+  "evidence": "decomp:re/decomp/140e3f320.c;xref:0x140ea69d2;xref:0x140edfbc5;xref:0x140ee0999",
+  "notes": "myteam-g1: Constructor of a condition node with facility + upgrade_type and the property number_back_from_current_day (look-back window in days)."
+ },
+ "signature": {
+  "id": "career.condition_facility_upgraded_within_days_ctor",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 40 01 00 00 4C 89 CF 4C 89 C3",
+  "match": "0x140e3f320",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140e3f320",
+  "kind": "func_start",
+  "names": [
+   "Career_Condition_FacilityUpgradedWithinDays_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140e3f320",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140e3f320.c;xref:0x140ea69d2",
+   "notes": "V9571 Same base ctor plus facility/upgrade_type (+0x80/+0x84) and a stack-built key \"number_back_from_current_day\" read into +0x40."
+  }
+ ],
+ "proofs": []
+}

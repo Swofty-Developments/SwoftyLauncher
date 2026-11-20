@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Game_ThrustmasterLcd_SectorTail",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142fdc7b0",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/142fd95e0.c;xref:0x142fdc234,0x142fdc24b,0x142fdc278,0x142fdc284",
+  "notes": "Shared tail of Game_ThrustmasterLcd_UpdateSectors (LAB_142fdc7b0): movzx r14d,[rdi+0xe8] (the player vehicle index) then the THRUSTMASTER_LCD_DATA Set Flags state log and the flags update. The entrant search loop's own not-found exits (je 0x142fdc7b0 at 0x142fdc234, 0x142fdc24b, 0x142fdc284 and the loop end jmp at 0x142fdc278) land here, so a jump here from 0x142fdc299 skips only the team-name part of the sector update; it needs rdi, rsi and r13 as the function holds them throughout."
+ },
+ "signature": {
+  "id": "game.thrustmaster_lcd_sector_tail",
+  "section": ".xtls",
+  "pattern": "44 0F B6 B7 E8 00 00 00 BB FF FF FF FF",
+  "match": "0x142fdc7b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142fdc7b0",
+  "kind": "mid",
+  "expect": "44 0F B6 B7 E8 00 00 00",
+  "names": [
+   "site_Game_ThrustmasterLcd_SectorTail"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "tmlcd",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/session/thrustmaster_lcd.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-01",
+   "verifier": "kbverify-tmlcd",
+   "kind": "global",
+   "item": "0x142fdc7b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142fd95e0.c;xref:0x142fdc234,0x142fdc24b,0x142fdc278,0x142fdc284;sig:game.thrustmaster_lcd_sector_tail",
+   "notes": "V8555 sigcheck --only OK hits=1 target=0x142fdc7b0; four jumps from the entrant search loop land here (je x3, jmp). The tail first writes r14 (movzx from [rdi+0xe8]) and ebx, then reads only rsi, rdi, r13, r12, xmm8 (nonvolatile, untouched by the lookup call) and loads rax/rcx/rdx/r8/r9 before use; no push/lock/buffer is set up between 0x142fdc299 and the tail, rsp is identical, so jumping there from 0x142fdc299 when rax==0 is safe: it skips only the team-name copy path."
+  }
+ ],
+ "proofs": []
+}

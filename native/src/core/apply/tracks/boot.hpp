@@ -1,9 +1,9 @@
 #pragma once
 
-#include "base.hpp"
-#include "seed.hpp"
+#include "core/apply/tracks/base.hpp"
+#include "core/apply/tracks/seed.hpp"
 
-#include "../../registry/store.hpp"
+#include "core/registry/store.hpp"
 
 #include <algorithm>
 #include <functional>
@@ -179,7 +179,13 @@ inline Plan lower_records(registry::Store &st, Db &db, const Tables &t, const Sc
             refuse("code " + code + " is already " + (holder.empty() ? std::string("a track row") : holder + "'s"));
             continue;
         }
-        Request req{id, code, from->second, slot_code, -1, true, ui_lists ? ui_lists(code) : std::vector<std::string>{},
+        Request req{id,
+                    code,
+                    from->second,
+                    slot_code,
+                    -1,
+                    true,
+                    ui_lists ? ui_lists(code) : std::vector<std::string>{},
                     strings_of(rec["sprint"])};
         StatId sid;
         if (!fills && stat) {
@@ -205,15 +211,20 @@ inline Plan lower_records(registry::Store &st, Db &db, const Tables &t, const Sc
         codes.insert(code);
         if (fills)
             p.filled[slot_id] = id;
-        Done d{id, code, base_id, slot_id, addon, std::string(rec["name"].as_string()), l.stat_id, strings_of(rec["provides"]),
-               l.sets, l.new_row};
+        Done d{id,        code,
+               base_id,   slot_id,
+               addon,     std::string(rec["name"].as_string()),
+               l.stat_id, strings_of(rec["provides"]),
+               l.sets,    l.new_row};
         if (d.name.empty())
             d.name = code;
         for (auto &line : l.lines)
             p.lines.push_back("track " + id + ": " + line);
         for (auto &w : l.warnings)
             p.lines.push_back("track " + id + ": " + w);
-        std::string how = fills ? "the dormant row " + slot_id + "'s" : sid.how.empty() ? std::string("first free from 254 down") : sid.how;
+        std::string how = fills             ? "the dormant row " + slot_id + "'s"
+                          : sid.how.empty() ? std::string("first free from 254 down")
+                                            : sid.how;
         p.stat_lines.push_back("[tracks] " + code + ": stat id " + std::to_string(l.stat_id) + " (" + how + ")");
         p.done.push_back(std::move(d));
     }

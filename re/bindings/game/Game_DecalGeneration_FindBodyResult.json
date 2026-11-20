@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DecalGeneration_FindBodyResult",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1414377b0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1414377b0.c;xref:0x141436461",
+  "notes": "FNV-1a over a 32-bit id (from 0x143a3d780) mixed with an object key at [..+0x30]+0x20 and a multiplicative finaliser (>>0x21) giving the hash used to look up decal generation results. Caller Game_DecalGeneration_UpdateService (string \"body\"). vp0-verify partial"
+ },
+ "signature": {
+  "id": "game.decal_generation_hash_request_key",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 8B 81 E8 01 00 00 48 85",
+  "match": "0x1414377b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1414377b0",
+  "kind": "func_start",
+  "names": [
+   "Game_DecalGeneration_FindBodyResult"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x1414377b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1414377b0.c;xref:0x141436461",
+   "notes": "V8043 Game_DecalGeneration_FindBodyResult: FNV details right but it looks up the body key in a map and returns the entry value; not a hash producer"
+  }
+ ],
+ "proofs": []
+}

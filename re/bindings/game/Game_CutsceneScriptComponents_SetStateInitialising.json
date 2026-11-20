@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CutsceneScriptComponents_SetStateInitialising",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140251d10",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name setStateInitialising (class from the log channel); log channel CUTSCENE_SCRIPT_COMPONENTS_VERBOSE: 'setStateInitialising %p %s'"
+ },
+ "signature": {
+  "id": "game.cutscene_script_components_set_state_initialising",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 75 4F B8 56 01 00 00",
+  "match": "0x140251d10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140251d10",
+  "kind": "func_start",
+  "names": [
+   "Game_CutsceneScriptComponents_SetStateInitialising"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x140251d10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140251d10.c",
+   "notes": "V4468 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

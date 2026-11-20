@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Game_ThrustmasterLcd_EntrantRecord",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142fdc299",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/142fd95e0.c;xref:0x142fdc294,0x142fdc596",
+  "notes": "In Game_ThrustmasterLcd_UpdateSectors: call FUN_1423dbcf0 (thunk to the .data1 body 0x14c970d00, lookup(mgr=[lcd+0x760], entrant)) then mov rbp,rax. The lookup takes the entrant's kind byte (+0, must be 0..2) and index word (+2) and returns the record at table[kind*0x10 + 0x268].items[index*0x10 + 8], or 0 when the kind is above 2, the table is absent or the index is past its end. rbp is the entrant record and the code reads [rbp+0xc8] (its team name string) at 0x142fdc596 after the team name copy; rax = 0 faults there with rbp = 0 (crash reports reading 0xc8 at Game_ThrustmasterLcd_UpdateSectors+0x2fb6, Thrustmaster wheel with a 24-car box)."
+ },
+ "signature": {
+  "id": "game.thrustmaster_lcd_entrant_record",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 89 C5 0F B6 43 08",
+  "match": "0x142fdc294",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142fdc299",
+  "kind": "mid",
+  "expect": "48 89 C5 0F B6 43 08",
+  "names": [
+   "site_Game_ThrustmasterLcd_EntrantRecord"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "tmlcd",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/session/thrustmaster_lcd.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-01",
+   "verifier": "kbverify-tmlcd",
+   "kind": "global",
+   "item": "0x142fdc299",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142fd95e0.c;xref:0x142fdc294,0x142fdc596;sig:game.thrustmaster_lcd_entrant_record",
+   "notes": "V8554 sigcheck --only OK hits=1 match=0x142fdc294 target=0x142fdc299; instruction at target is 48 89 C5 mov rbp,rax directly after the call, instruction boundary, 5-byte window contains no branch target (preceding insns are straight-line)."
+  }
+ ],
+ "proofs": []
+}

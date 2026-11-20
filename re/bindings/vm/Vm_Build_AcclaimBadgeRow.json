@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_Build_AcclaimBadgeRow",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14167c320",
+  "level": "L1",
+  "subsystem": "vm",
+  "proto": "int64_t Vm_Build_AcclaimBadgeRow(void *vm, void *a, void *b, int64_t *node, void *c)",
+  "evidence": "decomp:re/decomp/14167c320.c;xref:0x1419aa466;xref:0x141a12bae;xref:0x141a6bdee",
+  "notes": "myteam-g2: Creates/refreshes a corporate/sponsor row node: Vm_Resolve_RegistryNode, Ui_Build_ShowAcclaim, Vm_Holder_SetCStr and Ne_Property_SetUIDBRefIfChanged on its bindings. UI only (contract hub, corporate setup cards, sponsor livery)."
+ },
+ "signature": {
+  "id": "vm.build_acclaim_badge_row",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 50 C5 F8 29 74 24 40 4C 89 C0 48 89 D7",
+  "match": "0x14167c320",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14167c320",
+  "kind": "func_start",
+  "names": [
+   "Vm_Build_AcclaimBadgeRow"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x14167c320",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14167c320.c;xref:0x1419aa466;xref:0x141a12bae",
+   "notes": "V9740 Init/ctor of a teammate contract invoice card (invoice_data, lng_team_mate_contract_cost, teammate_icon_small) that embeds an acclaim block via Ui_Build_ShowAcclaim; not a corporate/sponsor row."
+  }
+ ],
+ "proofs": []
+}

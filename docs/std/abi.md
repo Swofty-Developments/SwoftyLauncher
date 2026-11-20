@@ -197,6 +197,8 @@ typedef struct SwoftyCareerOps {
     int (*set_look)(const char *driver_ref, const char *look_ref);             /* version 6 */
     int (*current_round)(int32_t *season_index, int32_t *round, int32_t *rounds);   /* version 7 */
     int (*team_stat)(const char *team_ref, uint32_t *out);                     /* version 7 */
+    int (*set_dropped_scores)(const char *data_group, uint32_t best);          /* version 7 */
+    int (*standings)(char *json, size_t cap, size_t *len);                     /* version 8 */
 } SwoftyCareerOps;
 
 enum { SWOFTY_REFUSED = 5 };

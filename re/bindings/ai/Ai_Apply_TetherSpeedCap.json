@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_Apply_TetherSpeedCap",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140669790",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_Apply_TetherSpeedCap(void *self, void *ai_car_record, void *ai_ctx)",
+  "evidence": "decomp:re/decomp/140669790.c;xref:0x145635088",
+  "notes": "Slot 1 of the speed-modifier vtable 0x145635080 built for every AI driver by Ai_Build_BehaviourSystem 0x1405f11b0 (ex Ai_ScDeltaPace). car = AiCarRecord (byte veh +0, handling +0x230, limits [+0x10]). Entry = [[ctx+0x10]+0xe8]+0x60[veh] cache, else search list +0x48..+0x50 by [[e+0x18]+0x58]+0xe8 == veh; acts only if e+0x69. gap = e+0x30 + under_safety_car.delta_pace_time_adjustment (handling +0x6c8, 0x14066981f); if gap >= 0: lap fraction from Game_VehicleProgressSystem_GetLapProgress (obf distance - lap * g_Game_TrackLength 0x146ce66b8, clamped, normalised); target = vcall +0x138 on [..+0x150] (spline speed at fraction, 0x1406698d2) * [..]+0x1c4 - delta_pace_high_speed_point (+0x6b8) * gap; if e+0x30 > 0 also - delta_pace_low_speed_point (+0x6c0) and, when [[ctx+0x10]+0xa8]+0x368 is an object of a specific RTTI type, target = its +0x4c (mph) * 0.44704 * 1.01. Writes [car+0x10]+0xdc = min(cur, target) with +0xe8 = 2, +0xec = 0xff (0x1406699bd); +0xe0/+0xe4 = min(1e38, cur). Used by vmknolle red-flag-pit / sc-unlapping. (corrected 2026-11-14: config fields named; 'online' branch is an RTTI type check, the online meaning is not proven) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.sc_delta_pace",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 0F B6 02",
+  "match": "0x140669790",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140669790",
+  "kind": "func_start",
+  "names": [
+   "Ai_Apply_TetherSpeedCap"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-24",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-f",
+   "kind": "func",
+   "item": "0x140669790",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:work/verify_f/decomp/140669790.c;decomp:work/verify_f/decomp/142f21ee0.c;xref:0x145635088",
+   "notes": "V1188 agree it is a vtable-slot speed-cap constraint (sibling 0x140669c20 same pattern): looks up per-car entity by car idx, if active (+0x69) takes delta (+0x30)+tunable, computes cap = vfunc+0x138*factor - k*delta, or expected-speed(+0x4c mph->m/s)*1.01 from the TimeBelowExpectedSpeed rule (type 0x146096700), and lowers car target speed +0xdc with reason 2; proto (self,ai_car,ctx) matches. NOT shown from code: that the delta entity is the safety-car delta (no SC string/type in reach) and name lacks a verb (§3)"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x140669790",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x140669790-0x140669add;xref:0x145635088",
+   "notes": "V10602 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only ref abs64 0x145635088 = slot 1 of vtable 0x145635080 (lea 0x1405f25d2 in Ai_Build_BehaviourSystem). 3 args (self unused). Reads handling +0x6c8 (0x14066981f), +0x6b8, +0x6c0, vcall +0x138 (0x1406698d2), ctx +0x368 object, * 1.01; writes +0xdc min and +0xe8 = 2 (0x1406699bd)."
+  }
+ ],
+ "proofs": []
+}

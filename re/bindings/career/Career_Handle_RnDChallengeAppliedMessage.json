@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Handle_RnDChallengeAppliedMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f49f80",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Handle_RnDChallengeAppliedMessage(int64_t *self)",
+  "evidence": "decomp:re/decomp/141f49f80.c;xref:0x14575e3a0",
+  "notes": "myteam-g1: Handles rnd_challenge_applied_message; tears down Career_Teardown_RnDPieOverview."
+ },
+ "signature": {
+  "id": "career.handle_rn_dchallenge_applied_message",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 80 B9 80 06 00 00 00",
+  "match": "0x141f49f80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f49f80",
+  "kind": "func_start",
+  "names": [
+   "Career_Handle_RnDChallengeAppliedMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141f49f80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f49f80.c;xref:0x14575e3a0",
+   "notes": "V10023 Handles rnd_challenge_applied_message, MessageRnDTreeUpdated, disables tab, calls teardown/refresh helpers."
+  }
+ ],
+ "proofs": []
+}

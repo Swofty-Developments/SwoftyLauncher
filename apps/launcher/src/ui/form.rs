@@ -3,15 +3,15 @@
 
 use std::rc::Rc;
 
-use crate::scale::{Hit, px};
+use crate::ui::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
-use gpui_kit::component::{Icon, Sizable, h_flex, v_flex};
+use gpui_kit::component::{Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 
-use crate::theme::{Palette, palette};
+use crate::ui::theme::{Palette, palette};
 
 const ROW_PAD_X: f32 = 20.;
 const ROW_PAD_Y: f32 = 14.;

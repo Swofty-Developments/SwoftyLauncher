@@ -1,8 +1,8 @@
 // Host unit test for the core's per-car AI racecraft fields (ai_racecraft.hpp and car_live.hpp, ai.blocking.*) on a
 // fake AI system laid out as the KB's: the record vector at S+0xa8..0xb0, stride 0x508, the vehicle index at R+0 and
 // the driver config slots at R+0x238+off, each slot a pointer to a cell holding a pointer to the record whose float
-// is at +8 (a curve key: the baked curve record). run_car_live_test.sh builds and runs it.
-#include "../../src/core/hooks/car_live.hpp"
+// is at +8 (a curve key: the baked curve record). native/test/run_tests.sh car_live builds and runs it.
+#include "core/hooks/car_live.hpp"
 
 #include <cmath>
 #include <cstdio>
@@ -185,7 +185,8 @@ int main()
     build(w);
     Ops::bind(make_env());
     uint32_t id = 0;
-    expect(Ops::op_field("ai.blocking.max_blocking_distance", &id) == SWOFTY_ASSET_OK && id == SWOFTY_CAR_AI_BLOCKING_MAX_DISTANCE,
+    expect(Ops::op_field("ai.blocking.max_blocking_distance", &id) == SWOFTY_ASSET_OK &&
+               id == SWOFTY_CAR_AI_BLOCKING_MAX_DISTANCE,
            "the four fields resolve by path");
     expect(Ops::op_field("ai.blocking.fraction_of_follow_speed_at_race_start", &id) == SWOFTY_ASSET_OK &&
                id == SWOFTY_CAR_AI_BLOCKING_FRACTION_RACE_START,
@@ -209,7 +210,8 @@ int main()
     expect(slot_of(w, 1, SLOT2) != original1, "once settled the car's slot points at an own cell");
     expect(get(1, SWOFTY_CAR_AI_BLOCKING_MAX_DISTANCE) == 40.0f, "get returns the value the AI reads");
     expect(db_float(w, 1, 2) == 30.0f, "the game's cell is never written");
-    expect(slot_of(w, 0, SLOT2) == uint64_t(reinterpret_cast<uintptr_t>(&w.db[0][2].cell)) && get(0, SWOFTY_CAR_AI_BLOCKING_MAX_DISTANCE) == 30.0f,
+    expect(slot_of(w, 0, SLOT2) == uint64_t(reinterpret_cast<uintptr_t>(&w.db[0][2].cell)) &&
+               get(0, SWOFTY_CAR_AI_BLOCKING_MAX_DISTANCE) == 30.0f,
            "another car's slot is untouched");
     expect(slot_of(w, 1, SLOT0) == uint64_t(reinterpret_cast<uintptr_t>(&w.db[1][0].cell)), "another field's slot is untouched");
     {
@@ -294,7 +296,7 @@ int main()
     int h = 0;
     get(1, SWOFTY_CAR_AI_BLOCKING_FRACTION, &h);
     expect(h == SWOFTY_ASSET_UNAVAILABLE, "after the reset nothing is read until the next AI system");
-    World w2;
+    alignas(0x10000) World w2;
     build(w2);
     std::vector<uint8_t> w1_records = w.records;
     Ops::racecraft_pushed(reinterpret_cast<uintptr_t>(w2.system));
@@ -327,7 +329,7 @@ int main()
     before = writes;
     Ops::racecraft_tick();
     Ops::op_unlayer(t9);
-    expect(writes == before, "an unreadable AI system is forgotten and not written to");
+    expect(Ops::racecraft.system() == 0 && writes == before, "an unreadable AI system is forgotten and not written to");
     dead.clear();
 
     Ops::bind(make_env());
@@ -335,7 +337,8 @@ int main()
     settle();
     rows_off.insert("AiCarRecord.driver_config");
     uint32_t t10 = 0;
-    expect(Ops::op_layer("lap1", 1, SWOFTY_CAR_AI_BLOCKING_FRACTION, SWOFTY_CAR_OP_SET, 0.1f, 0, &t10) == SWOFTY_ASSET_UNAVAILABLE,
+    expect(Ops::op_layer("lap1", 1, SWOFTY_CAR_AI_BLOCKING_FRACTION, SWOFTY_CAR_OP_SET, 0.1f, 0, &t10) ==
+               SWOFTY_ASSET_UNAVAILABLE,
            "the fields are off until their KB rows have an agree verify row");
     rows_off.clear();
     rows_off.insert("AiDriverConfig.blocking_max_blocking_distance");
@@ -346,9 +349,11 @@ int main()
     rows_off.clear();
 
     {
-        constexpr uint32_t QUEUE = SWOFTY_CAR_AI_SPACE_SEEKING_TOTAL_QUEUE_NEEDED, OVERLAP = SWOFTY_CAR_AI_OVERTAKE_OVERLAP_PERCENTAGE,
+        constexpr uint32_t QUEUE = SWOFTY_CAR_AI_SPACE_SEEKING_TOTAL_QUEUE_NEEDED,
+                           OVERLAP = SWOFTY_CAR_AI_OVERTAKE_OVERLAP_PERCENTAGE,
                            SLOWDOWN = SWOFTY_CAR_AI_OVERTAKE_CONCEDE_SLOWDOWN_SPEED_DIFF;
-        constexpr uintptr_t QUEUE_SLOT = rc::R_DRIVER + 0x268, OVERLAP_SLOT = rc::R_DRIVER + 0x1d0, SLOWDOWN_SLOT = rc::R_DRIVER + 0x1e0;
+        constexpr uintptr_t QUEUE_SLOT = rc::R_DRIVER + 0x268, OVERLAP_SLOT = rc::R_DRIVER + 0x1d0,
+                            SLOWDOWN_SLOT = rc::R_DRIVER + 0x1e0;
 
         expect(rc::FIELD_COUNT == 59, "the driver table has the four blocking floats, 43 more and 12 more blocking keys");
         bool table_ok = true;
@@ -400,15 +405,19 @@ int main()
         settle();
         auto slot3 = [&](int car, uintptr_t off) { return slot_of(w3, car, off); };
         auto db3 = [&](int car, int s) { return uint64_t(reinterpret_cast<uintptr_t>(&w3.extra[car][s].cell)); };
-        auto bytes_of = [&](int car, int s) { return std::vector<uint8_t>(w3.extra[car][s].record, w3.extra[car][s].record + 0x80); };
+        auto bytes_of = [&](int car, int s) {
+            return std::vector<uint8_t>(w3.extra[car][s].record, w3.extra[car][s].record + 0x80);
+        };
 
-        expect(get(1, QUEUE) == 7.0f && get(1, SLOWDOWN) == 12.5f, "get reads an int cell as its integer and a float cell as its float");
+        expect(get(1, QUEUE) == 7.0f && get(1, SLOWDOWN) == 12.5f,
+               "get reads an int cell as its integer and a float cell as its float");
         expect(get(1, OVERLAP) == 49.0f, "get on an untouched curve field is the curve at x = 0 (LUT sample 96 * 0.5 + 1)");
 
         std::vector<uint8_t> stock_int = bytes_of(1, 0), stock_curve = bytes_of(1, 1), stock_float = bytes_of(1, 2);
         uint32_t ta = 0, tb = 0, tc = 0;
         Ops::op_layer("a", 1, QUEUE, SWOFTY_CAR_OP_SET, 3.4f, 0, &ta);
-        expect(slot3(1, QUEUE_SLOT) != db3(1, 0) && get(1, QUEUE) == 3.0f, "an int field is written as an integer, rounded to nearest");
+        expect(slot3(1, QUEUE_SLOT) != db3(1, 0) && get(1, QUEUE) == 3.0f,
+               "an int field is written as an integer, rounded to nearest");
         {
             uint64_t cellp = slot3(1, QUEUE_SLOT), recp = 0;
             int32_t n = 0;
@@ -448,7 +457,8 @@ int main()
             const uint8_t *orig = w3.extra[1][1].record;
             bool matches = rc::curve_at(orig, 0.0f) == 49.0f && rc::curve_at(orig, 1.0f) == 3.0f &&
                            rc::curve_at(orig, 0.37f) == 3.0f && std::fabs(rc::curve_at(orig, 0.1f) - 68.2f) < 0.01f;
-            expect(matches, "the evaluator reproduces the original curve: x = 0 mid-table, 0.1 interpolated, 0.37 and 1 the last value");
+            expect(matches,
+                   "the evaluator reproduces the original curve: x = 0 mid-table, 0.1 interpolated, 0.37 and 1 the last value");
         }
         uint32_t tscale = 0;
         Ops::op_layer("s", 1, OVERLAP, SWOFTY_CAR_OP_SCALE, 2.0f, 5, &tscale);
@@ -456,7 +466,8 @@ int main()
         Ops::op_unlayer(tcur);
         expect(get(1, OVERLAP) == 98.0f, "dropping the set layer leaves the scale on the curve's stock value at x = 0 (49 * 2)");
         Ops::op_unlayer(tscale);
-        expect(slot3(1, OVERLAP_SLOT) == db3(1, 1) && get(1, OVERLAP) == 49.0f, "the last curve layer going puts the game's curve back");
+        expect(slot3(1, OVERLAP_SLOT) == db3(1, 1) && get(1, OVERLAP) == 49.0f,
+               "the last curve layer going puts the game's curve back");
         Ops::op_unlayer(ta);
         Ops::op_unlayer(tc);
         expect(slot3(1, QUEUE_SLOT) == db3(1, 0) && slot3(1, SLOWDOWN_SLOT) == db3(1, 2) && get(1, QUEUE) == 7.0f &&
@@ -500,7 +511,8 @@ int main()
                "a new field is gated by its own KB row");
         rows_off.clear();
         Ops::op_unlayer(tg2);
-        for (const char *row : {"AiDriverConfig.space_seeking_total_queue_needed", "AiDriverConfig.alongside_yield_overtake_rate"}) {
+        for (const char *row :
+             {"AiDriverConfig.space_seeking_total_queue_needed", "AiDriverConfig.alongside_yield_overtake_rate"}) {
             rows_off.insert(row);
         }
         uint32_t tg3 = 0;

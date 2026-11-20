@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Find_NodeByName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144343aa0",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "void **Find(void *vm, void **name)",
+  "evidence": "decomp:re/decomp/144343aa0.c;xref:0x141a58f19;xref:0x141c45894;xref:0x141c71464",
+  "notes": "myteam-g2: Ne_Crt_Strcmp scan of a name table returning the matching node pointer; used by header builders and Select_TopLevelFacility."
+ },
+ "signature": {
+  "id": "ui.find_node_by_name",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 48 89 D7 4C 8B 71 08",
+  "match": "0x144343aa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144343aa0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Find_NodeByName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x144343aa0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144343aa0.c;xref:0x141a58f19",
+   "notes": "V10357 It is a red-black tree (std::map-style) find keyed by strcmp of a name, returning the node or end, rather than a linear scan."
+  }
+ ],
+ "proofs": []
+}

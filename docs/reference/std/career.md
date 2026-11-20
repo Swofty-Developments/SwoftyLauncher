@@ -189,6 +189,56 @@ The core installs one read-only site, `site_FeFlow_SetStateStatus`, in the sette
 [career] flow "#0776f07b" None -> Entering (first sighting)
 ```
 
+## Weekend diagnostics
+
+Right after each `career.hub entered` line, the core logs the career's current weekend: the round, whether the weekend is not started, in progress or complete, the current session and how many of its sessions are complete. A weekend in progress with no session complete gets its own line, `weekend already started, session never ran`:
+
+```text
+[career] career.hub entered (mode driver_career)
+[career] Team HQ weekend: round 4/17, weekend not started, current session 1 of 7 (practice_1), 0 of 7 sessions complete, track game/silverstone
+[career] career.hub entered (mode driver_career)
+[career] weekend already started, session never ran: round 4/17, weekend in progress, current session 1 of 7 (practice_1), 0 of 7 sessions complete, track game/silverstone
+```
+
+After a `weekend already started, session never ran` line the core logs the player's calendar items running that day and the item the game's calendar check picks, as `Team HQ calendar`, in the same form as `hub opened` below:
+
+```text
+[career] weekend already started, session never ran: round 4/17, weekend in progress, current session 1 of 7 (practice_1), 0 of 7 sessions complete, track game/silverstone
+[career] Team HQ calendar: day 2045, season 0, 2 of 58 calendar items running today (driver 0x00020000, calendar 0x2a1f40e10); the calendar check reads: stay in the hub (item 1, RaceWeekend, decides)
+[career]   item 1/2: RaceWeekend (0x0a) days 2045-2048 state 1 id 12 at 0x2a1f6c2a0 vt 0x1456d10d0
+[career]   item 2/2: FreeTime (0x06) days 2030-2059 state 1 id 3 at 0x2a1f6c340 vt 0x1456d10d0
+```
+
+The launcher reads the `weekend already started, session never ran` line to learn [a save stuck in a started race weekend](/reference/saves#a-save-stuck-in-a-started-race-weekend).
+
+A career session enters `SessionStateCareerHub` (`#42843edb`) right after `StateSession` and leaves it in the same frame. As the hub opens, the core logs the player's calendar items running that day and the item the game's calendar check picks. When `StateSession` ends within 2 seconds of entering after the hub opened, the core logs `session ended <N> ms after start`, with the weekend and the calendar items again, before `session.end`:
+
+```text
+[career] hub opened: day 2045, season 0, 2 of 58 calendar items running today (driver 0x00020000, calendar 0x2a1f40e10); the calendar check reads: stay in the hub (item 1, RaceWeekend, decides)
+[career]   item 1/2: RaceWeekend (0x0a) days 2045-2048 state 1 id 12 at 0x2a1f6c2a0 vt 0x1456d10d0
+[career]   item 2/2: FreeTime (0x06) days 2030-2059 state 1 id 3 at 0x2a1f6c340 vt 0x1456d10d0
+[career] session ended 590 ms after start (StateSession exited; the career hub opened 545 ms after start): round 4/17, weekend in progress, current session 1 of 7 (practice_1), 0 of 7 sessions complete, track game/silverstone; day 2045, season 0, 2 of 58 calendar items running today (driver 0x00020000, calendar 0x2a1f40e10); the calendar check reads: stay in the hub (item 1, RaceWeekend, decides)
+[career]   item 1/2: RaceWeekend (0x0a) days 2045-2048 state 1 id 12 at 0x2a1f6c2a0 vt 0x1456d10d0
+[career]   item 2/2: FreeTime (0x06) days 2030-2059 state 1 id 3 at 0x2a1f6c340 vt 0x1456d10d0
+[events] session.end (StateSession exited)
+```
+
+A calendar can start a race weekend inside the season break. The stock 2026 season's break, `season_break_2026`, runs 15 days from 27 July, and Historical Calendar 1.4.8 has a round on 30 July in 2016, 2017, 2019 to 2022, 2024 and 2025. The break starts first and is item 1: the calendar check sends the session to Team HQ as practice 1 opens, and the game crashes at `F1_25.exe+0x1f8be5c`. As the hub opens, the core sets every started season break listed ahead of a started race weekend running that day to ignored (state 4), the state the game gives a season break inside a dynamic break, and logs the calendar again:
+
+```text
+[career] hub opened: day 170, season 0, 2 of 29 calendar items running today (driver 0x00090000, calendar 0x345517370); the calendar check reads: go to Team HQ (item 1, SeasonBreak, decides)
+[career]   item 1/2: SeasonBreak (0x0c) days 166-180 state 1 id 36 at 0x16ef13c0 vt 0x1456d31f0
+[career]   item 2/2: RaceWeekend (0x0a) days 169-172 state 1 id 41 at 0x16ef13e0 vt 0x1456d31f0
+[career] season break over race weekend: SeasonBreak (0x0c) days 166-180 state 1 id 36 at 0x16ef13c0 vt 0x1456d31f0 runs over the race weekend days 169-172 (id 41) that the session is in; set to ignored (state 4), so the race weekend decides
+[career] hub calendar after the season break fix: day 170, season 0, 2 of 29 calendar items running today (driver 0x00090000, calendar 0x345517370); the calendar check reads: stay in the hub (item 2, RaceWeekend, decides)
+[career]   item 1/2: SeasonBreak (0x0c) days 166-180 state 4 id 36 at 0x16ef13c0 vt 0x1456d31f0
+[career]   item 2/2: RaceWeekend (0x0a) days 169-172 state 1 id 41 at 0x16ef13e0 vt 0x1456d31f0
+```
+
+The rest of the break doesn't run. A break with any other item the check weighs ahead of the weekend, or with no started weekend running that day, is left as it is. `SWOFTY_HUB_BREAK_FIX=0` turns the fix off, and the line then ends `left as it is (SWOFTY_HUB_BREAK_FIX=0)`.
+
+All of these come from the flow-state site. Apart from the season break fix, they read the game without writing to it. The calendar reads use `ScheduleComponent` (`seasons_begin`, `seasons_end`, `current_season`, `season_over`), `ScheduleSeason`, `DriverCalendar`, `CalendarActivity` (`day`, `state`, `activity`), `ActivityDef` (`id`, `type`, `duration`) and `CareerTimeComponent.current_minutes` from the generated game headers; the core does not compile without one of them. The weekend reads need `vt_Career_Championship`, `vt_Career_Season` and `vt_Career_Weekend`; the calendar reads need the career components. A build without them logs `the current weekend is not readable` or `the calendar is not readable (<reason>)` in the same lines.
+
 ## Components
 
 ```cpp

@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Car_GearBox_UpdateShiftTimersAndFaults",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446a60d0",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "void Car_GearBox_UpdateShiftTimersAndFaults(void *gearbox, float dt)",
+  "evidence": "decomp:re/decomp/1446a60d0.c;decomp:re/decomp/1446a6b60.c;xref:0x1446a6b72;xref:0x1409d52f0",
+  "notes": "E3 2026-11-18 (engine-re, static): GearBox wear and fault step, first call of Car_GearBox_Update 0x1446a6b60 (0x1446a6b72; that update is called from Car_Dynamics_Update 0x1446dce0c). Gated by CarLive+0x130 bit 6 and +0x131 bit 6 (SimFlags idx 0xb). Expires timed faults against CarLive+0x9db0 (temporary jam bit 3 with +0x65c, shift_fault_scale +0x66c back to 1 after +0x670, missing gear +0x664 back to 11 after +0x668). damage +0x674 grows by three terms, each x dt x CarLive+0x9f30 (session gearbox wear scale): (1) mid-shift: fault bits 2..4 clear, a shift pending (+0x680 != +0x684) and time_since_shift +0x690 < up/downshift delay (+0x170 / +0x180 obf) x ShiftTimeFaultDamageScale (+0x520): DamageRateMidShift (+0x3d0); (2) OVER-REV, only while is_slipping +0x694 == 0: when Engine rotation_rate +0x2538 > limiter +0x2528, (rate - limiter) / (limiter x MaxLimiterRateFactor Engine+0x890) x OverrevvingDamageScale (+0x3f0); (3) running wear, same clutch gate, gear_index != 1 (not neutral) and rotation_rate > 1.1 x IdleRotationRate: WearRate (+0x3e0) / 3600. Result clamped to [0,1]. With fault bits 0..2 clear: damage >= 1 -> LCG CarLive+0x178 roll, fault_flags |= 1 or 2 (50/50). While time_since_shift <= TimeVulnerableAfterGearChange (+0x400) and the damage grew by DamageIncrementToTriggerFault (+0x410) since damage_at_last_fault +0x678, it rolls in order: permanent jam (damage >= +0x420, chance +0x430) -> |= 4; temporary jam (>= +0x440, chance +0x450 x dt x 60) -> |= 8 for random +0x460..+0x470 s; shift-time fault (>= +0x4c0, chance +0x4d0 x dt x 60) -> +0x66c = random +0x4e0..+0x4f0 for +0x500..+0x510 s; missing gear (>= +0x480, chance +0x490 x dt x 60) -> +0x664 = random gear 3..+0x5f8 for +0x4a0..+0x4b0 s; then +0x678 = damage. Also lea 0x1409d52f0 in Game_ObfKeyedTable_StaticInit (do not patch the body). raised by engine-re with --force 2026-11-18 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "car.gear_box_update_shift_timers",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 10 C5 F8 29 34 24 48 8B 41 08",
+  "match": "0x1446a60d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446a60d0",
+  "kind": "func_start",
+  "names": [
+   "Car_GearBox_UpdateShiftTimersAndFaults"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446a60d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1446a60d0.c;xref:0x1409d52f2",
+   "notes": "V6810 Also rolls gearbox faults (LCG 0x41c64e6d, +0x658 bits 1/2/4, +0x400 threshold) besides clearing timers; better name Car_GearBox_UpdateShiftTimersAndFaults."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x1446a60d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446a60d0.c;xref:0x1409d52f2",
+   "notes": "V7256 name fits, facts hold"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "e3-verify",
+   "kind": "func",
+   "item": "0x1446a60d0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446a60d0.c;decomp:own capstone disasm 0x1446a60d0-0x1446a67ae;xref:0x1446a6b72 first call in 0x1446a6b60",
+   "notes": "V11703 All terms/offsets confirmed; shift delay = dec(0x170/0x178 or 0x180/0x188 by gear direction)*dec(0x520). Notes: fault-roll threshold compares the UNCLAMPED new damage sum (xmm0) with dec(0x410)+0x678; perm jam also needs clamped damage<1 and u<dec(0x430); temp/shift/missing probs scaled by dt/(1/60); rolls mutually exclusive; afterwards +0x678=+0x674. Start also clears expired 0x658 bit3, 0x66c, 0x664 vs car+0x9db0."
+  }
+ ],
+ "proofs": []
+}

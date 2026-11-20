@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_SponsorGoal_GetScaledRewardD4",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1411060f0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int32_t (void *goal, void *modifiers_ref)",
+  "evidence": "decomp:re/decomp/1411060f0.c;xref:0x1410f511f;xref:0x1410f7bfb;xref:0x14110546b",
+  "notes": "myteam-g2: Returns goal+0xd4 scaled by the team modifier id 7 (float from the modifier entry list): round(((m*base+base)/1000))*1000 where base = goal+0xd4; falls back to the raw base if the modifier list is missing. A sponsor goal reward amount rounded to thousands."
+ },
+ "signature": {
+  "id": "career.sponsor_goal_get_scaled_reward_d4",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 20 48 89 D6 48 89 CF 48 8B 4A 08 48 85 C9 0F 84 ?? ?? ?? ?? 8B 41 08 85 C0 0F 84 ?? ?? ?? ?? 8D 50 01 F0 0F B1 51 08 75 EE 4C 8B 36 48 8B 5E 08 4D 85 F6 74 32 8B 87 D4 00 00 00",
+  "match": "0x1411060f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1411060f0",
+  "kind": "func_start",
+  "names": [
+   "Career_SponsorGoal_GetScaledRewardD4"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x1411060f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1411060f0.c;xref:0x1410f511f",
+   "notes": "V9656 Finds modifier id 7 in list, round((m*base+base)/1000)*1000 with base=goal+0xd4; falls back to raw."
+  }
+ ],
+ "proofs": []
+}

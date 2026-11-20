@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_SponsorInvoice_Bind",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141682750",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "int64_t (void *vm, uint64_t a, uint64_t b, void **ctx)",
+  "evidence": "decomp:re/decomp/141682750.c;xref:0x142261791;xref:0x14226b539;xref:0x14226dd80",
+  "notes": "myteam-g1: Binds a sponsor invoice entry: invoice_data, stat_id, display_name, initial_payment, available_for_selection, lng_sponsor_initial_income and the sponsor_icon_small override."
+ },
+ "signature": {
+  "id": "vm.sponsor_invoice_bind",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 4C 89 C0",
+  "match": "0x141682750",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141682750",
+  "kind": "func_start",
+  "names": [
+   "Vm_SponsorInvoice_Bind"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x141682750",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141682750.c;xref:0x142261791;xref:0x14226b539",
+   "notes": "V9742 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

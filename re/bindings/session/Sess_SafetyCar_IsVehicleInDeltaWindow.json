@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_SafetyCar_IsVehicleInDeltaWindow",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f57810",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f57810.c;xref:0x142f2365f,0x1435c1df8",
+  "notes": "(sc, carIdx) Finds participant (+0xa0 cache / scan); false if flags +0x32 bit7 or 0x40, +0x36 bits 2/0x10/0x18, +0x35 >= 0x40, or not running (+0x32 bit 0x20); else converts sc speed sc+0x4c (mph -> m/s) and returns participant+0x84 < v < participant+0x88. Callers Sess_SafetyCar_OnLapChanged, Sess_Rules_ReadSafetyCarPacePenalties. Hypothesis."
+ },
+ "signature": {
+  "id": "session.safety_car_is_vehicle_in_delta_window",
+  "section": ".xtls",
+  "pattern": "56 53 80 FA FF 74 33 48 8B 41 20 44 0F B6 CA 4E",
+  "match": "0x142f57810",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f57810",
+  "kind": "func_start",
+  "names": [
+   "Sess_SafetyCar_IsVehicleInDeltaWindow"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x142f57810",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f57810.c;xref:0x142f2365f,0x1435c1df8",
+   "notes": "V3739 Flag tests +0x32 bit7/0x40/0x20, +0x36 bits 2/0x10/0x18, +0x35 >=0x40, mph->m/s (*1.609344/0.001/3600), returns +0x84 < v < +0x88; callers OnLapChanged and ReadSafetyCarPacePenalties verified."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Car_TyreAllocation_RebuildForSession",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e8edd0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e8edd0.c;xref:0x140bcd045",
+  "notes": "Rebuilds a car's tyre allocation for the session (param_3 = session type, 0x10/0x11 special-cased): reads options via 0x140b03110, refills compound groups 0,1,2,3,5,6 through 0x142e8eaf0 and merges 0x6c-byte set records. Caller Sess_TyreAllocation_OnSessionStart."
+ },
+ "signature": {
+  "id": "car.tyre_allocation_rebuild_for_session",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 05 00 00 C5 79 7F 9C 24",
+  "match": "0x142e8edd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e8edd0",
+  "kind": "func_start",
+  "names": [
+   "Car_TyreAllocation_RebuildForSession"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x142e8edd0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142e8edd0.c;xref:0x140bcd045",
+   "notes": "V3685 Reads options via 140b03110, refills groups via 142e8eaf0 (6 calls) and special-cases param_3 0x10/0x11, but the first group id is computed (0x0f/0x10/0x11 from option) not 0; groups are {x,1,2,3,5,6}."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x142e8edd0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142e8edd0.c;xref:0x140bcd045",
+   "notes": "V4017 Reads options via 140b03110, refills groups via 142e8eaf0 (6 calls) and special-cases param_3 0x10/0x11, but the first group id is computed (0x0f/0x10/0x11 from option) not 0; groups are {x,1,2,3,5,6}."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la1-verify",
+   "kind": "func",
+   "item": "0x142e8edd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e8edd0.c;xref:0x140bcd045",
+   "notes": "V4164 param_3 session type 0x10/0x11 special-cased (line ~232), options via 0x140b03110 (modes 1 and 2), 0x142e8eaf0 called for groups cVar11,1,2,3,5,6, merges 0x6c-byte records; sole caller Sess_TyreAllocation_OnSessionStart"
+  }
+ ],
+ "proofs": []
+}

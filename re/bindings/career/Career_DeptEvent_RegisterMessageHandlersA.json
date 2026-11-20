@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_DeptEvent_RegisterMessageHandlersA",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140cbacf0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void FUN(void *component)",
+  "evidence": "decomp:re/decomp/140cbacf0.c;xref:0x145686b70",
+  "notes": "myteam-g1: Subscribes the department event component to MessageDepartmentEventStartedDriver/Team, MessageMyTeamTeamAttributeSetAdded/Removed and team_hq_department_event_resolved_message; handlers call Career_DeptEvent_Start and Career_DeptEvent_CompleteTimedGoal."
+ },
+ "signature": {
+  "id": "career.dept_event_register_message_handlers_a",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 CE B9 E0 00 00 00",
+  "match": "0x140cbacf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140cbacf0",
+  "kind": "func_start",
+  "names": [
+   "Career_DeptEvent_RegisterMessageHandlersA"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140cbacf0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140cbacf0.c;str:\"MessageDepartmentEventStartedDriver\"",
+   "notes": "V9521 Five FUN_143987810 subscribes: DepartmentEventStartedDriver/Team, resolved message, TeamAttributeSetAdded/Removed."
+  }
+ ],
+ "proofs": []
+}

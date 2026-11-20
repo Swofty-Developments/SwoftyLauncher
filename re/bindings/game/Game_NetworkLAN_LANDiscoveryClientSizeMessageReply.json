@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkLAN_LANDiscoveryClientSizeMessageReply",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144090ac0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-LAN",
+  "notes": "named from its log messages (channel NETWORK-LAN): 'LAN Discovery Client: Size of message reply (%d) not big enough.  Ignoring.'"
+ },
+ "signature": {
+  "id": "game.network_lan_lan_discovery_client_size_message_reply",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 06 00 00 48 89 CE",
+  "match": "0x144090ac0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144090ac0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkLAN_LANDiscoveryClientSizeMessageReply"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x144090ac0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144090ac0.c",
+   "notes": "V6518 better name Game_NetworkLAN_DiscoveryClientReceiveReply: size check is one branch; function validates magic/title id/version/relevance and fires listeners (vtable/indirect, no direct call site)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144090ac0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144090ac0.c",
+   "notes": "V7153 name fits, facts hold; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ProfanityFilter_CheckWord",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1441e0fe0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1441e0fe0.c;xref:0x1416cd4ba,0x141a3824f",
+  "notes": "Profanity check of one word: skips whitelisted words (trace 'Detected whitelisted word') then matches the blacklist via Game_ProfanityFilter_MatchList. Callers: text-entry/UI paths and Game_ProfanityFilter_FilterText. Addon: player-name/chat filtering. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2909)"
+ },
+ "signature": {
+  "id": "game.profanity_filter_check_word",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 4C 89 C7 48 89 D6 48 89 CB 48 85 D2",
+  "match": "0x1441e0fe0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1441e0fe0",
+  "kind": "func_start",
+  "names": [
+   "Game_ProfanityFilter_CheckWord"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d10-verify",
+   "kind": "func",
+   "item": "Game_ProfanityFilter_CheckWord",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1441e0fe0.c;xref:0x1441e0fe0",
+   "notes": "V2909 decomp checked: offsets/calls/strings match claim"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqFacilities_CameraCycleFadeIn",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140df20b0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140df20b0.c;xref:0x140df209c",
+  "notes": "TeamHQ facilities camera cycle: releases fade reason FacilitiesCameraCycle (bit 18) and starts the fade in when none is left. Addon: facility camera cut fades. | #587: L2 by lead-authorised promotion for lane owner career-re (independent agree V2656)"
+ },
+ "signature": {
+  "id": "career.team_hq_facilities_camera_cycle_fade_in",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 48 89 CF 0F B6 41 14 A8 FD 74",
+  "match": "0x140df20b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140df20b0",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqFacilities_CameraCycleFadeIn"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d7-verify",
+   "kind": "func",
+   "item": "Career_TeamHqFacilities_CameraCycleFadeIn",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140df20b0.c;xref:0x140df20b0",
+   "notes": "V2656 fade/hide bit ids, offsets, states and curves checked against decomp; role as claimed"
+  }
+ ],
+ "proofs": []
+}

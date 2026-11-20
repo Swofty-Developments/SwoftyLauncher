@@ -31,8 +31,7 @@ Value parse_text(SwoftyText t, bool &ok)
     Value v = swofty::json::parse(std::string_view(t.data ? t.data : "", t.data ? t.size : 0), &e);
     ok = e.message.empty();
     if (!ok)
-        set_last_error("JSON at line " + std::to_string(e.line) + ", column " + std::to_string(e.column) + ": " +
-                       e.message);
+        set_last_error("JSON at line " + std::to_string(e.line) + ", column " + std::to_string(e.column) + ": " + e.message);
     return v;
 }
 
@@ -60,7 +59,10 @@ int put_id(const std::string &s, char *out, size_t cap)
     return SWOFTY_ASSET_OK;
 }
 
-Scope scope_of(uint32_t s) { return s == SWOFTY_SCOPE_PROFILE ? Scope::profile : s == SWOFTY_SCOPE_CAREER ? Scope::career : Scope::global; }
+Scope scope_of(uint32_t s)
+{
+    return s == SWOFTY_SCOPE_PROFILE ? Scope::profile : s == SWOFTY_SCOPE_CAREER ? Scope::career : Scope::global;
+}
 
 int no_caller(const char *what)
 {
@@ -224,8 +226,7 @@ int c_add(const char *registry, const char *key, SwoftyText value, char *id, siz
     return r;
 }
 
-int c_variant(const char *registry, const char *key, const char *base, SwoftyEditFn edit, void *user, char *id,
-              size_t cap)
+int c_variant(const char *registry, const char *key, const char *base, SwoftyEditFn edit, void *user, char *id, size_t cap)
 {
     std::string who = caller(__builtin_return_address(0));
     if (who.empty())
@@ -258,8 +259,8 @@ int c_layer_fn(const char *registry, const char *id, SwoftyEditFn edit, void *us
     return store().layer(sp, nullptr);
 }
 
-int c_layer_select(const char *registry, SwoftyMatchFn match, const char *prefix, const char *const *except,
-                   size_t except_count, SwoftyEditFn edit, void *user, uint32_t scope)
+int c_layer_select(const char *registry, SwoftyMatchFn match, const char *prefix, const char *const *except, size_t except_count,
+                   SwoftyEditFn edit, void *user, uint32_t scope)
 {
     std::string who = caller(__builtin_return_address(0));
     if (who.empty())
@@ -695,10 +696,7 @@ IndexResult load_index(const std::string &swofty_dir)
     return out;
 }
 
-void set_stat_id_source(StatIdSource fn)
-{
-    stat_id_source() = std::move(fn);
-}
+void set_stat_id_source(StatIdSource fn) { stat_id_source() = std::move(fn); }
 
 int write_reports(const std::string &registry_dir, const std::function<void(Value &, Value &)> &extend)
 {

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FanZone_BuildStandingsDriverList",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1421cb310",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1421cb310.c;xref:0x1421caf1e,0x1421caf7d",
+  "notes": "Fan Zone season standings (driver) list: builds list_entry_%d tiles (front runners/midfield/backmarkers), driver numbers override #overrides.f1_world.fz_standings_driver_numbers.%hs, spawns selected driver at DriverSelect01/DriverSpawn2 (FindOrCreateNewCustomDriver/SetupCustomDriver). Addon: Fan Zone driver display. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2948)"
+ },
+ "signature": {
+  "id": "game.fan_zone_build_standings_driver_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 05 00 00 C5 F8 29 B4 24",
+  "match": "0x1421cb310",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1421cb310",
+  "kind": "func_start",
+  "names": [
+   "Game_FanZone_BuildStandingsDriverList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d11-verify",
+   "kind": "func",
+   "item": "Game_FanZone_BuildStandingsDriverList",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1421cb310.c;xref:0x1421cb310",
+   "notes": "V2948 Decomp strings, offsets and callees match the claim; name fits."
+  }
+ ],
+ "proofs": []
+}

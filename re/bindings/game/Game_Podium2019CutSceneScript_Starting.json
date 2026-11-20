@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Podium2019CutSceneScript_Starting",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403622c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=Podium2019CutSceneScript::starting; log channel CUTSCENE_PODIUM: 'Podium2019CutSceneScript::starting'  | 2026-11-17 engine-re round A2: hard-coded track: 'las_vegas' (0x1403623dd, record+0x68 string) and time-of-day value (vt+0x238 -> +0x110 -> +0x26c8) > 1.6580628 sets world render-state bool 0x23 = 0; otherwise sets g 0x145f979c8 = 1."
+ },
+ "signature": {
+  "id": "game.podium2019_cut_scene_script_starting",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 89 CE 80 3D ?? ?? ?? ?? 01 75 61 B8 4C 01 00 00",
+  "match": "0x1403622c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403622c0",
+  "kind": "func_start",
+  "names": [
+   "Game_Podium2019CutSceneScript_Starting"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1403622c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403622c0.c;xref:0x368bf9",
+   "notes": "V4539 string/behaviour in decomp matches name"
+  }
+ ],
+ "proofs": []
+}

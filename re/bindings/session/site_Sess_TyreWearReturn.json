@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Sess_TyreWearReturn",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ea2a65",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/142ea2300.c;xref:0x142ea25f1",
+  "notes": "Car_Tyre_SetWearFactor's epilogue: vmovaps xmm6,[rsp+0x280]; add rsp,0x298; 8 pops; ret. Also the target of the early return je at 0x142ea25f1 (no car). xmm6 is saved at 0x142ea2313 and rsp is fixed after sub rsp,0x298, so jumping here from site_Sess_TyreWearSlotLookup returns without touching the wheels. The rip target of core's tyre slot guard; never hooked."
+ },
+ "signature": {
+  "id": "session.tyre_wear_return",
+  "section": ".xtls",
+  "pattern": "48 8D 54 24 50 E8 ?? ?? ?? ?? C5 F8 28 B4 24 80 02 00 00",
+  "match": "0x142ea2a5b",
+  "anchor": "0xa",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ea2a65",
+  "kind": "mid",
+  "expect": "C5 F8 28 B4 24 80 02 00 00",
+  "names": [
+   "site_Sess_TyreWearReturn"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "fix-sc",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/cars/tyre_slots.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "kbverify-tyre7",
+   "kind": "global",
+   "item": "0x142ea2a65",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "xref:0x142ea25f1,0x142ea230c,0x142ea2313;pat:capstone-disasm",
+   "notes": "V2196 epilogue vmovaps xmm6,[rsp+0x280]; add rsp,0x298; pop rbx,rbp,rdi,rsi,r12-r15; ret. rsp at 0x142ea2356 equals rsp after sub 0x298 (no rsp change in between, branch/rsp scan); xmm6 saved at 2313; pushes match pops in order. Also target of je at 25f1. Safe continue"
+  }
+ ],
+ "proofs": []
+}

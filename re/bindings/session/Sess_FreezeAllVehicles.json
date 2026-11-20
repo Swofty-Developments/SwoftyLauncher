@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_FreezeAllVehicles",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c76220",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void(SessionState*)",
+  "evidence": "decomp:ghidra-headless-2026-10-25;decomp:re/decomp/142c76220.c;xref:0x142d5eff9,0x142d5f8fc,0x142d6fac2,0x142d6fadd",
+  "notes": "RedFlagFreezeVehicles helper: setController(0x146096578, car, AI 1, mode 10) for every car, participant +0x17c |= 0x80, every car controller ([entry+0x20] slot 3) +0x1c |= 0x20 (the hold bit of the start hold)."
+ },
+ "signature": {
+  "id": "session.freeze_all_vehicles",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 48 8B 89 A8 0D 00 00 48",
+  "match": "0x142c76220",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c76220",
+  "kind": "func_start",
+  "names": [
+   "Sess_FreezeAllVehicles"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb2-verify-a",
+   "kind": "func",
+   "item": "Sess_FreezeAllVehicles",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c76220.c;xref:0x142d5eff9",
+   "notes": "V1883 setController thunk(0x146096578,i,1,10) per car; participants (+0xd40 list +0x70..0x78) +0x17c|=0x80; controller vtable+0x18 result +0x1c|=0x20; also second pass sets +4=1"
+  }
+ ],
+ "proofs": []
+}

@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 use std::path::PathBuf;
 
 use swofty_core::asset::Source;
-use swofty_core::erpbuild::ErpBuild;
+use swofty_core::erp::ErpBuild;
 use swofty_core::ops::{ErpOp, MaterialValue};
 use swofty_formats::material;
 

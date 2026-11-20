@@ -3,6 +3,9 @@ EXE = os.environ.get('EXE', os.path.join(os.path.dirname(os.path.dirname(os.path
 BASE = 0x140000000
 _pe = pefile.PE(EXE, fast_load=True)
 SECS = [(s.Name.rstrip(b'\0').decode(), s.VirtualAddress, max(s.Misc_VirtualSize, s.SizeOfRawData), s.PointerToRawData, s.SizeOfRawData) for s in _pe.sections]
+# Every section the loader maps executable: .xtls and .data1 on the KB build, .tls$ and .trace on 1.0.145, plus the
+# protector's few-byte stubs. Section names move between builds, so scans go by this flag, never by a name.
+EXEC = [s.Name.rstrip(b'\0').decode() for s in _pe.sections if s.Characteristics & 0x20000000 and s.SizeOfRawData]
 DATA = np.memmap(EXE, dtype=np.uint8, mode='r')
 def off2rva(o):
     for n, va, vs, ro, rs in SECS:
@@ -20,20 +23,27 @@ _pdata = None
 def pdata():
     global _pdata
     if _pdata is None:
-        for n, va, vs, ro, rs in SECS:
-            if n == '.srdata':
-                arr = np.frombuffer(DATA[ro:ro+0x17c1f0].tobytes(), dtype=np.uint32).reshape(-1, 3)
-                arr = arr[arr[:,0] != 0]
-                _pdata = arr[np.argsort(arr[:,0])]
+        d = _pe.OPTIONAL_HEADER.DATA_DIRECTORY[3]
+        o = rva2off(d.VirtualAddress)
+        arr = np.frombuffer(DATA[o:o + d.Size - d.Size % 12].tobytes(), dtype=np.uint32).reshape(-1, 3)
+        arr = arr[arr[:,0] != 0]
+        _pdata = arr[np.argsort(arr[:,0])]
     return _pdata
 def func_of(rva):
     p = pdata()
     i = np.searchsorted(p[:,0], rva, side='right') - 1
     if i >= 0 and p[i,0] <= rva < p[i,1]: return int(p[i,0]), int(p[i,1])
     return None
-def riprel_refs(targets, secname='.xtls', chunk=1<<24):
-    va, b = code_bytes(secname)
+def riprel_refs(targets, secname=None, chunk=1<<24):
+    """(site, target) for every rel32/disp32 that ends an instruction and reaches a target, in secname or, by
+    default, in every executable section."""
     targets = np.array(sorted(set(targets)), dtype=np.int64)
+    out = []
+    for name in ([secname] if secname else EXEC):
+        out += _riprel_in(name, targets, chunk)
+    return sorted(out)
+def _riprel_in(secname, targets, chunk):
+    va, b = code_bytes(secname)
     out = []
     n = len(b)
     for st in range(0, n - 4, chunk):

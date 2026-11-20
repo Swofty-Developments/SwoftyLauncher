@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_VteEnabled",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1407972c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "uint64_t(void *self)",
+  "evidence": "decomp:re/decomp/1407972c0.c",
+  "notes": "Reads the engine setting VTE.enabled (Ne_Get_SettingBool 0x143a43b90, default = current value) into self+0x18. VTE.enabled is off in the shipped game and switches on the VTE race data export (output folder 0x14473a400)."
+ },
+ "signature": {
+  "id": "game.read_vte_enabled",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 48 8B 41 10 48 8B 40 18 44 0F B6 49 18 4C 8D 41 18 48 8D 15 ?? ?? ?? ?? 48 89 C1 E8 ?? ?? ?? ?? 31 C0 48 83 C4 28 C3 CC CC CC CC CC 31 C0 C3 CC CC CC CC CC CC CC CC CC CC CC CC CC 56 57 53 48 81 EC 40 01 00 00",
+  "match": "0x1407972c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407972c0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_VteEnabled"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb02-verify",
+   "kind": "func",
+   "item": "0x1407972c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1407972c0.c",
+   "notes": "V4293 log/string match decomp"
+  }
+ ],
+ "proofs": []
+}

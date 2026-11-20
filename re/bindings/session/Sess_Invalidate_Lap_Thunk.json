@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Invalidate_Lap_Thunk",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143572680",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_Invalidate_Lap_Thunk(void *rules, uint32_t vehicle, uint32_t reason, char mode)",
+  "evidence": "decomp:re/decomp/143572680.c;xref:0x14356bcc0,0x14356bf29,0x14356c953,0x14356d886",
+  "notes": "jmp stub into .data1 (0x1505beb00). Invalidate a lap of car param_2 for reason param_3 (byte; 0x22 skips the record in mode 1), mode param_4: 1 = current lap, 2 = next lap, 3 = previous lap; 0 = nothing. Uses the car's lap-history ring ([[rules+0x1c48]+0x58][car], index byte +0x9c80, 200 entries of 200 bytes, valid bit at +0xe0 vs +0xd8) and returns without effect when the target lap is already invalid. Records it via 0x1435668e0 (types 10/11/14) and 0x143573400 (types 12/13/15) and posts the penalty bus message (vtable 0x14584ec18, car, reason, kind 1/2/3) to [0x14618b3b8]+8. Callers 0x14356bcc0, 0x14356bf29, 0x14356c953, 0x14356d886 (track-limit / corner-cut checks). (used by vmknolle track-limits)"
+ },
+ "signature": {
+  "id": "session.invalidate_lap_thunk",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 69 53 0F 86 97 88 C4",
+  "match": "0x143572680",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143572680",
+  "kind": "func_start",
+  "names": [
+   "Sess_Invalidate_Lap_Thunk"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-c",
+   "kind": "func",
+   "item": "0x143572680",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_c/decomp/143572680.c;decomp:work/verify_c/decomp/14356bb00.c;xref:0x14356bcc0,0x14356bf29,0x14356c953,0x14356d886",
+   "notes": "V1045 5-byte jmp to .data1 0x1505beb00; mode 1/2/3 checks the per-lap valid flag (lap ring at +0x9c80, 200B records) and issues penalty types 10/12, 11/13, 14/15 (this / this+next / this+previous lap invalidated, with/without reason) via 0x1435668e0 + 0x143573400 and posts event 0x14584ec18; 4 args match proto"
+  }
+ ],
+ "proofs": []
+}

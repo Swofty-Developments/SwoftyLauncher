@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Particles_RestoreParticleSlot",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143af4710",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143af4710.c;xref:0x143b0e886,0x143b0ec64",
+  "notes": "Inverse of Game_Particles_StoreParticleSlot: writes the AoS snapshot back into SoA slot param_2 and sets mask bits +4/+6 (trace 'odd velocity in restore'). Called by Game_Particles_RestoreLongLivedParticles. Addon: replay particle restore. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2893)"
+ },
+ "signature": {
+  "id": "game.particles_restore_particle_slot",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 28 44 89 CD 4C 89 C7 89 D3",
+  "match": "0x143af4710",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143af4710",
+  "kind": "func_start",
+  "names": [
+   "Game_Particles_RestoreParticleSlot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d10-verify",
+   "kind": "func",
+   "item": "Game_Particles_RestoreParticleSlot",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143af4710.c;xref:0x143af4710",
+   "notes": "V2893 decomp checked: offsets/calls/strings match claim"
+  }
+ ],
+ "proofs": []
+}

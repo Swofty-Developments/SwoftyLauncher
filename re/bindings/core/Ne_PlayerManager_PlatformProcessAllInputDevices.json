@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_PlayerManager_PlatformProcessAllInputDevices",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14411b260",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/14411b260.c;xref:0x144118f74,0x1530bd248",
+  "notes": "cxx=NePlayerManager::platformProcessAllInputDevices; log channel INPUT/V: 'NePlayerManager::platformProcessAllInputDevices - redistributing input providers to players'"
+ },
+ "signature": {
+  "id": "core.player_manager_platform_process_all_input_devices",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 48 89 4C 24 20 80 3D ?? ?? ?? ?? 01",
+  "match": "0x14411b260",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14411b260",
+  "kind": "func_start",
+  "names": [
+   "Ne_PlayerManager_PlatformProcessAllInputDevices"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb4-verify-a",
+   "kind": "func",
+   "item": "Ne_PlayerManager_PlatformProcessAllInputDevices",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14411b260.c;xref:0x144117e00",
+   "notes": "V2224 Log INPUT/V string present; loops player list (+0x40/+0x50) vs input provider lists +0x1b0/+0x1b8, vcalls to redistribute/remove providers. Role matches."
+  }
+ ],
+ "proofs": []
+}

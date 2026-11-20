@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1os_F1CGTask_Reset",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1427a13a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1427a13a0.c;xref:0x14579fd58",
+  "notes": "Virtual (slot ref 0x14579fd58) of the F1CG online-service task (log F1CG-OS), twin of F1WorldTask_Reset 0x14273d530: clears +0x278 and fatal flag +0x1e0, resets reply +0x1e8 (0x1442ccac0), cancels current request +0xc0 (entry+0x14 = 0x306, result 0x1427a1940), stops busy spinner type 7 (counter [+0x1d0]+0x5c, TOP_LEVEL_UI log), releases +0x118/+0x120, clears +0x128/+0x12d, cleanup 0x1427a14f0, clears +0x70. Addon: observe F1CG task resets. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3275)"
+ },
+ "signature": {
+  "id": "game.f1os_f1_c_g_task_reset",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE C6 81 78 02 00 00 00",
+  "match": "0x1427a13a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1427a13a0",
+  "kind": "func_start",
+  "names": [
+   "Game_F1os_F1CGTask_Reset"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_F1os_F1CGTask_Reset",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1427a13a0.c;xref:0x14579fd58",
+   "notes": "V3275 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

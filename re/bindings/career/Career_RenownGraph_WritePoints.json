@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_RenownGraph_WritePoints",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f74e30",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int (void *json, void *graph)",
+  "evidence": "decomp:re/decomp/140f74e30.c;xref:0x140f781e5;xref:0x140f792e9;xref:0x140f7ab31",
+  "notes": "myteam-g2: Save writer counterpart of 140f75060: creates the array node UNK_1456ae9d8 and, for each of the graph points (count at graph+0x78, 0x18-byte stride), writes the two fields (values at graph+0x10 and graph+0). Used for renown_diff_graph and the workforce difference graph."
+ },
+ "signature": {
+  "id": "career.renown_graph_write_points",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 D6 48 89 CF 48 8B 19 48 C7 44 24 28 00 00 00 00",
+  "match": "0x140f74e30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f74e30",
+  "kind": "func_start",
+  "names": [
+   "Career_RenownGraph_WritePoints"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140f74e30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f74e30.c;xref:0x140f781e5;str:\"statistic_weights\"",
+   "notes": "V9585 Creates array node \"statistic_weights\", per 0x18-stride point writes stat_id (graph+0x10) and weight (graph+0); stride matches."
+  }
+ ],
+ "proofs": []
+}

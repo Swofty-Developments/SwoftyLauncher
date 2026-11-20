@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_SettingsConfig_3",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430b7a90",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: network.current_session.settings.return_to_garage, settings.current_settings.time_of_day.custom.practice_1.progression, settings.current_settings.time_of_day.custom.practice_1.start_time, settings.current_settings.time_of_day.custom.practice_2.progression, settings.curre'"
+ },
+ "signature": {
+  "id": "game.read_settings_config_3",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 50 48 89 CE 48 8B 01",
+  "match": "0x1430b7a90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430b7a90",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_SettingsConfig_3"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430b7a90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430b7a90.c;xref:0x143065560",
+   "notes": "V5354 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

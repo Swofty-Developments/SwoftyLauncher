@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineSubsystemTaskBase_EndTask",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432c0a20",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "str:s_OnlineSubsystemTaskBase_EndTask;xref:0x1432c0aad,0x1432c0b30",
+  "notes": "cxx=game::OnlineSubsystemTaskBase::endTask; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "game.online_subsystem_task_base_end_task",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 60 48 89 CE 80 3D ?? ?? ?? ?? 01 75 7F B8",
+  "match": "0x1432c0a20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432c0a20",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineSubsystemTaskBase_EndTask"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1432c0a20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432c0a20.c;xref:0x1432c050d",
+   "notes": "V5906 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

@@ -4,7 +4,7 @@ members = ["addons/builtins", "apps/ads-helper", "apps/cli", "apps/launcher", "i
 default-members = ["addons/builtins", "apps/cli", "packages/addon-api", "packages/ads", "packages/core", "packages/formats", "packages/i18n", "packages/sdk", "packages/shaders", "templates/launcher-addon", "templates/std/whatif/launcher"]
 
 [workspace.package]
-version = "1.9.79"
+version = "1.10.9"
 edition = "2024"
 rust-version = "1.95"
 license = "PolyForm-Noncommercial-1.0.0"
@@ -39,10 +39,7 @@ sha1 = "0.11"
 sha2 = "0.11"
 tar = { version = "0.4", default-features = false }
 thiserror = "2"
-tungstenite = { version = "0.30", default-features = false, features = ["handshake"] }
 ureq = "3"
-webpki-roots = "1"
-zeroize = "1"
 zip = { version = "9", default-features = false, features = ["deflate"] }
 zstd = { version = "0.14", features = ["zstdmt"] }
 
@@ -65,6 +62,54 @@ opt-level = 2
 
 [profile.dev.package.gpui-component]
 opt-level = 2
+
+# The compression, checksum and image codecs are optimized in dev and test builds, so tests that pack or
+# hash real-sized archives do not run their -O0 builds (zstd's C code included). Optimizing every
+# dependency instead doubles a cold build of the tests on a hosted runner (Windows 562-696 s to 1471 s).
+[profile.dev.package.zstd-sys]
+opt-level = 3
+
+[profile.dev.package.zstd-safe]
+opt-level = 3
+
+[profile.dev.package.zstd]
+opt-level = 3
+
+[profile.dev.package.miniz_oxide]
+opt-level = 3
+
+[profile.dev.package.flate2]
+opt-level = 3
+
+[profile.dev.package.crc32fast]
+opt-level = 3
+
+[profile.dev.package.adler2]
+opt-level = 3
+
+[profile.dev.package.sha1]
+opt-level = 3
+
+[profile.dev.package.sha2]
+opt-level = 3
+
+[profile.dev.package.md-5]
+opt-level = 3
+
+[profile.dev.package.aes]
+opt-level = 3
+
+[profile.dev.package.png]
+opt-level = 3
+
+[profile.dev.package.fdeflate]
+opt-level = 3
+
+[profile.dev.package.bcdec_rs]
+opt-level = 3
+
+[profile.dev.package.zip]
+opt-level = 3
 
 [profile.dev.package.taffy]
 opt-level = 3

@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_Sort_IntroSort16",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143f11790",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143f11790.c;xref:0x143b7cd1e,0x143b7cda7",
+  "notes": "Introsort (std::sort) on 16-byte elements: depth limit param_3, insertion sort below 0x107 bytes, heap sort fallback. Called by Ne_Gfx2Renderer_RenderFrame (draw item / batch sorting). Hypothesis on element meaning."
+ },
+ "signature": {
+  "id": "core.sort_intro_sort16",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 89 FB 48 8B 8E 88 0B 00 00 48",
+  "match": "0x143b7cd1e",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143f11790",
+  "kind": "func_start",
+  "names": [
+   "Ne_Sort_IntroSort16"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x143f11790",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143f11790.c;xref:0x143b7cd1e",
+   "notes": "V8165 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

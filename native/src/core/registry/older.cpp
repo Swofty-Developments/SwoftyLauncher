@@ -45,15 +45,9 @@ int provide_string(void *, const char *, const char *, char *out, size_t cap, si
     return SWOFTY_ASSET_OK;
 }
 
-std::string str(const Value &v, const char *field)
-{
-    return std::string(v[field].as_string());
-}
+std::string str(const Value &v, const char *field) { return std::string(v[field].as_string()); }
 
-Value text_of(const std::string &s)
-{
-    return Value(s);
-}
+Value text_of(const std::string &s) { return Value(s); }
 
 std::string text_from(const Value &v, const std::string &fallback)
 {
@@ -67,10 +61,7 @@ std::string text_from(const Value &v, const std::string &fallback)
 constexpr uint32_t MODEL_2026 = 0;
 constexpr uint32_t MODEL_2025 = 1;
 
-std::string model_ref(uint32_t model)
-{
-    return model == MODEL_2025 ? "game/f1_career_2025" : "game/f1_career_2026";
-}
+std::string model_ref(uint32_t model) { return model == MODEL_2025 ? "game/f1_career_2025" : "game/f1_career_2026"; }
 
 }
 
@@ -79,9 +70,9 @@ void declare(Store &st)
     struct Reg {
         const char *name, *applies, *required;
     };
-    static const Reg regs[] = {{CONTENT, "boot", "data_group"}, {HUB_TAB, "read", "data_group"},
+    static const Reg regs[] = {{CONTENT, "boot", "data_group"},   {HUB_TAB, "read", "data_group"},
                                {WIZARD, "content", "data_group"}, {CHARACTER, "content", "data_group"},
-                               {STRING, "read", nullptr},        {OPTION, "read", "value"},
+                               {STRING, "read", nullptr},         {OPTION, "read", "value"},
                                {HUD_ELEMENT, "boot", nullptr}};
     for (auto &r : regs)
         if (!st.declared(r.name))
@@ -213,7 +204,7 @@ bool content_from(const std::string &id, const Value &rec, const Value &mode, Co
         return false;
     }
     std::string mode_id = content_mode_id(id, rec);
-    std::string from_mode = has_mode ? ", and its career.mode record " + mode_id + " gives none"
+    std::string from_mode = has_mode          ? ", and its career.mode record " + mode_id + " gives none"
                             : mode_id.empty() ? std::string()
                                               : ", and its mode " + mode_id + " is no career.mode record";
     if (d.data_group.empty())
@@ -398,6 +389,29 @@ int string_layer(Store &st, const std::string &addon, const std::string &key, co
     spec.source = "lang::set";
     uint32_t handle = 0;
     return st.layer(spec, &handle);
+}
+
+int string_layers(Store &st, const std::string &addon, const std::vector<std::pair<std::string, Value>> &texts)
+{
+    std::vector<LayerOp> ops;
+    ops.reserve(texts.size());
+    for (auto &[key, text] : texts) {
+        string_keys_seen().insert(key);
+        LayerOp op;
+        op.spec.addon = addon;
+        op.spec.registry = STRING;
+        op.spec.id = "game/" + key;
+        op.spec.scope = Scope::global;
+        if (!text.is_object() || !text.size())
+            op.clear = true;
+        else {
+            op.spec.change.is_patch = true;
+            op.spec.change.patch = Value::object({{"text", text}});
+            op.spec.source = "lang::set";
+        }
+        ops.push_back(std::move(op));
+    }
+    return st.layer_batch(addon, STRING, ops);
 }
 
 std::vector<std::pair<std::string, std::string>> string_texts(const Value &rec)

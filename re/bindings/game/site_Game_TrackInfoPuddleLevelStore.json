@@ -1,0 +1,41 @@
+{
+ "schema": 1,
+ "name": "site_Game_TrackInfoPuddleLevelStore",
+ "table": "globals",
+ "author": "jonnoAUS",
+ "row": {
+  "addr": "0x144796141",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "game",
+  "evidence": "decomp:own capstone disasm 0x144795cf0-0x144799ecc;xref:0x14479613c,0x144796141,0x144795d60;doc:re/research/weather_strategy_bindings.md#sites",
+  "notes": "vmovss [r14+0x3f0a54],xmm0 (9 bytes): puddle level from the curve call at site-5; r14 = weather surface state loaded at 0x144795d60 from g_Game_WeatherSurfaceState. Realistic Rain skips it with EB 07 while it drives the level. Proposed L2 (game inbox)."
+ },
+ "signature": {
+  "id": "game.track_info_puddle_level_store",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C4 C1 7A 11 86 54 0A 3F 00",
+  "match": "0x14479613c",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144796141",
+  "kind": "mid",
+  "expect": "C4 C1 7A 11",
+  "names": [
+   "site_Game_TrackInfoPuddleLevelStore"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-17",
+    "by": "rr-bindings",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

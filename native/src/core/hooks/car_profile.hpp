@@ -9,7 +9,7 @@
 #include <swofty/json.hpp>
 #include <swofty/systems/cars.hpp>
 
-#include "car_live.hpp"
+#include "core/hooks/car_live.hpp"
 
 // car.profile records applied as core-owned layers (standard library 1.6, experimental). A profile names a
 // scope (the selectors in `within`, the session types in `when`, the cars in `cars`, ai_only and player_only)
@@ -71,8 +71,10 @@ inline std::vector<Spec> specs(const swofty::cars::Profile &p, std::vector<std::
                 for (const auto &[op, n] : *fields) {
                     if (!n.is_number())
                         continue;
-                    uint32_t code = op == "scale" ? SWOFTY_CAR_OP_SCALE : op == "add" ? SWOFTY_CAR_OP_ADD
-                                    : op == "set" ? SWOFTY_CAR_OP_SET : 99u;
+                    uint32_t code = op == "scale" ? SWOFTY_CAR_OP_SCALE
+                                    : op == "add" ? SWOFTY_CAR_OP_ADD
+                                    : op == "set" ? SWOFTY_CAR_OP_SET
+                                                  : 99u;
                     if (code != 99u)
                         out.push_back({path, code, float(n.as_double())});
                 }
@@ -84,8 +86,7 @@ inline std::vector<Spec> specs(const swofty::cars::Profile &p, std::vector<std::
 
 enum class Match { yes, no, needs_identity };
 
-inline Match matches(const swofty::cars::Profile &p, const std::string &session_type, bool within, bool is_ai,
-                     uint32_t index)
+inline Match matches(const swofty::cars::Profile &p, const std::string &session_type, bool within, bool is_ai, uint32_t index)
 {
     if (!within)
         return Match::no;
@@ -100,8 +101,7 @@ inline Match matches(const swofty::cars::Profile &p, const std::string &session_
         return Match::no;
     if (p.player_only && is_ai)
         return Match::no;
-    if (!p.cars.indices.empty() &&
-        std::find(p.cars.indices.begin(), p.cars.indices.end(), index) == p.cars.indices.end())
+    if (!p.cars.indices.empty() && std::find(p.cars.indices.begin(), p.cars.indices.end(), index) == p.cars.indices.end())
         return Match::no;
     if (!p.cars.vehicle_package.empty() || !p.cars.vehicle.empty() || !p.cars.team.empty())
         return Match::needs_identity;

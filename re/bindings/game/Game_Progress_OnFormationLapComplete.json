@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Progress_OnFormationLapComplete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f0c900",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name onFormationLapComplete (class from the log channel); log channel PROGRESS: 'onFormationLapComplete - Sending reset lap progress data message for vehicle %d, of lap %d, progress lap %d'"
+ },
+ "signature": {
+  "id": "game.progress_on_formation_lap_complete",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 8B 41 40",
+  "match": "0x142f0c900",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f0c900",
+  "kind": "func_start",
+  "names": [
+   "Game_Progress_OnFormationLapComplete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f0c900",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f0c900.c;xref:0x142d5ec4e",
+   "notes": "V5568 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Gdb_HashMap_Rehash",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1445a66c0",
+  "level": "L2",
+  "subsystem": "gamedb",
+  "proto": "void Gdb_HashMap_Rehash(GdbValueMap *map, uint64_t num_buckets)",
+  "evidence": "decomp:re/decomp/1445a66c0.c;xref:0x1445a0aa3,0x1445a1325;kb:subsystems/gamedb.md#value-map",
+  "notes": "martinus robin_hood Table::rehashPowerOfTwo for the GVDB value map (its only two callers: the load's reserve 0x1445a0aa3 and Gdb_HashMap_Insert's growth 0x1445a1325). num_buckets must be a power of two >= 8: sets mask=num_buckets-1, max_num_elements_allowed=num_buckets*80/100, count=0, info_inc=0x20, allocates (num_buckets+min(max,0xff))*17+8 bytes from map->allocator vt+0x10 (slots 16 B each, then info bytes; null -> fatal 0x1403139f0), then re-inserts every old slot. GAME BUG: each moved slot is copied (0x1445a6bd1..0x1445a6bd6) and then the old record is destroyed (record vt+8, flag 0, 0x1445a6c09) and freed through g_Gdb_RecordAllocator vt+0x38 (0x1445a6c1b), so after a rehash of a map that holds records every slot points at freed memory. Safe only on the empty map (count 0, mask 0: the old storage is the inline &mask dummy, nothing moved or freed). Old storage freed through map->allocator vt+0x38 unless it is the dummy"
+ },
+ "signature": {
+  "id": "gamedb.hash_map_rehash",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 49 89 D4 48 89 CE 48 B8 5C 8F C2 F5 28 5C 8F 02",
+  "match": "0x1445a66c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445a66c0",
+  "kind": "func_start",
+  "names": [
+   "Gdb_HashMap_Rehash"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "w7-sizing",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "w7v",
+   "kind": "func",
+   "item": "Gdb_HashMap_Rehash",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445a66c0.c;xref:0x1445a0aa3,0x1445a1325,0x1445a66e0,0x1445a6746,0x1445a6753,0x1445a67af,0x1445a67f3,0x1445a6834,0x1445a683d,0x1445a6bd1,0x1445a6bd6,0x1445a6be7,0x1445a6bfa,0x1445a6c09,0x1445a6c1b,0x1445a6870,0x1445a6cb6",
+   "notes": "V1344 robin_hood rehashPowerOfTwo; uses num_buckets as given: the power-of-two/80% choice is the caller's (reserve loop 0x1445a0a30..0x1445a0a82: smallest 2^k >= 8 with k*80/100 >= target, (n*80)/100 below 0x28f5c28f5c28f5c else (n/100)*80; insert growth 2*(mask+1) or same size). count=0 (0x1445a6746), mask=N-1, max=N*80/100 (0x1445a67af), block (N+min(max,0xff))*17+8 from map->allocator vt+0x10 (tag 0x145612f08, 0x34, size, 1; null -> 0x1403139f0 then int3), info zeroed, sentinel, info_inc 0x20 shift 0. Bug confirmed: vmovups [rbp] to the new slot (0x1445a6bd1/0x1445a6bd6), then rbx=[rbp+8], the same record, gets vt[1](rbx,0) (0x1445a6c09) and g_Gdb_RecordAllocator vt+0x38 (0x1445a6c1b), then [rbp+8]=0 (0x1445a6870); every re-insert path joins there. Empty map: old mask 0 gives old size 1 and min(calcMax(1)=0,0xff)=0, so r15=1 and cmp r15,2; jb 0x1445a6cb9 returns before the loop and before the old-block free (the &mask dummy is never freed). Proto (map rcx, num_buckets rdx) matches. Only callers 0x1445a0aa3 and 0x1445a1325"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "w7v",
+   "kind": "sig",
+   "item": "gamedb.hash_map_rehash",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445a0350.c;decomp:re/decomp/1445a12d0.c;decomp:re/decomp/1445a66c0.c",
+   "notes": "V1361 sigcheck OK hits=1 on d873a1c8d2044cef; own wildcard regex over every section: one .xtls hit; 0x1445a66c0 function start, 32 bytes"
+  }
+ ],
+ "proofs": []
+}

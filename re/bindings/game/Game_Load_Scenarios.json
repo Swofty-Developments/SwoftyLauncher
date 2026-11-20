@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Load_Scenarios",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a224f0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_Load_Scenarios(void *registry, void *alloc)",
+  "evidence": "decomp:re/decomp/142a224f0.c",
+  "notes": "Reads game_setup.scenarios (cursor on the table, row count from _scenario_instancecount_), finds each row's game setup mode, reads statId, display_name, race_class, use_custom_vehicle_spec and entrant_list, and registers the scenario (0x142a33aa0, 0x50-byte entries) when the entrant list is one of the setup mode's entrant setup mode lists; else logs GAME 'Scenario %s not available as entrant list %s is not'. Called from .data1 at 0x14d83faeb."
+ },
+ "signature": {
+  "id": "game.load_scenarios",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 05 00 00 C5 F8 29 B4 24 E0 05 00 00 48 89 94 24",
+  "match": "0x142a224f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a224f0",
+  "kind": "func_start",
+  "names": [
+   "Game_Load_Scenarios"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142a224f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a224f0.c;xref:0x14d83faea",
+   "notes": "V5164 game_setup.scenarios keys, 0x50-byte entries via 0x142a33aa0 and log confirmed"
+  }
+ ],
+ "proofs": []
+}

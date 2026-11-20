@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1Life_EnterLobby",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142540070",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-F1LifeSystem",
+  "notes": "named from its log messages (channel F1LifeSystem): 'Going into the F1 life lobby | Data Mode Changed Prev - [%s] To Curr [%s] | Trying to swap to the F1 life lobby before it is spawned | Going from F1Life Lobby to the following race status: %s'"
+ },
+ "signature": {
+  "id": "game.f1_life_enter_lobby",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 60 48 89 CE 80 B9 08 1B 00 00 00",
+  "match": "0x142540070",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142540070",
+  "kind": "func_start",
+  "names": [
+   "Game_F1Life_EnterLobby"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142540070",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142540070.c;xref:0x14253e6a6",
+   "notes": "V5097 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

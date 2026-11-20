@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Copy_SponsorSlotRecord",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ce3080",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_Copy_SponsorSlotRecord(void *dst, int64_t src)",
+  "evidence": "decomp:re/decomp/140ce3080.c;xref:0x140c2c73d;xref:0x1410f44e6;xref:0x1410f476d",
+  "notes": "myteam-g2: Copy-constructs a sponsor slot / record with its strings (Ne_String_Reserve, FUN_140ce34a0, FUN_140ce3bb0). Used in sponsor add / setup VM code (Sponsors_Add, Corporate setup cards)."
+ },
+ "signature": {
+  "id": "career.copy_sponsor_slot_record",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 48 89 D7 48 89 CE 48 8D 41 20",
+  "match": "0x140ce3080",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ce3080",
+  "kind": "func_start",
+  "names": [
+   "Career_Copy_SponsorSlotRecord"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140ce3080",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ce3080.c",
+   "notes": "V9528 Large copy-constructor (fields to +0x120) with strings, calls 140ce34a0 and 140ce3bb0."
+  }
+ ],
+ "proofs": []
+}

@@ -1,8 +1,9 @@
 name: Release binaries
 
 # The release build of the swofty CLI, the launcher and Swofty UI for Linux and Windows. CI calls it on every
-# push to main: the run saves the release cache, and a tag on that commit takes the binaries from it instead
-# of building again (release.yml). The release workflow calls it itself only when it finds none.
+# push to main, and a tag on that commit takes the binaries from that run
+# instead of building again (release.yml). The release workflow calls it itself, on hosted runners, only when
+# it finds none. CI's call also builds the installer people test, so main needs no separate installer build.
 on:
   workflow_call:
     inputs:
@@ -15,13 +16,17 @@ on:
         type: number
         default: 1
       linux-runner:
-        description: The runner label for the Linux build; CI passes an EC2 runner of the same Ubuntu release
+        description: The runner label for the Linux build
         type: string
         default: ubuntu-22.04
       windows-runner:
         description: The runner label for the Windows build
         type: string
         default: windows-latest
+      installer:
+        description: Also build the installer and upload it as installer-Linux and installer-Windows
+        type: boolean
+        default: false
 
 env:
   CARGO_TERM_COLOR: always
@@ -31,28 +36,15 @@ jobs:
     name: Linux build
     # The oldest supported runner gives the oldest glibc baseline, for SteamOS.
     runs-on: ${{ inputs.linux-runner }}
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref }}
 
-      - uses: actions-rust-lang/setup-rust-toolchain@v2
-        with:
-          cache: false
-
-      # Only a run on main saves; a tag's own cache would be of no use to the next tag.
-      - uses: Swatinem/rust-cache@v2
-        with:
-          add-rust-environment-hash-key: false
-          shared-key: release
-          save-if: ${{ github.ref == 'refs/heads/main' }}
-
-      # GTK and WebKitGTK are for the swofty-ads helper, which hosts the launcher's ad slots on Linux.
-      - name: GPUI system libraries
-        run: |
-          .github/runners/apt-install.sh pkg-config libfontconfig-dev libfreetype-dev libwayland-dev \
-            libxkbcommon-dev libxkbcommon-x11-dev libx11-xcb-dev libxcb1-dev libvulkan-dev \
-            libgtk-3-dev libwebkit2gtk-4.1-dev
+      # No Rust cache: a cold release build takes about as long as restoring one. GTK and
+      # WebKitGTK are for the swofty-ads helper, which hosts the launcher's ad slots on Linux.
+      - uses: ./.github/actions/setup-rust
 
       # The binaries the release ships, not the installer or the addon template.
       # The log server "Send Logs to Developers" uploads to; without it the button is disabled.
@@ -86,24 +78,33 @@ jobs:
           if-no-files-found: error
           retention-days: ${{ inputs.retention-days }}
 
+      # The installer as ci.yml's pull request Installer job builds it: without the server addresses, and in a
+      # cargo run of its own, so that its features cannot change the binaries above. It comes after their
+      # upload; rebuilding swofty-core without the addresses leaves the linked binaries as they are.
+      - name: Build the installer
+        if: inputs.installer
+        run: cargo build --release -p swofty-launcher-installer
+
+      - name: Upload the installer
+        if: inputs.installer
+        uses: actions/upload-artifact@v7
+        with:
+          name: installer-${{ runner.os }}
+          path: target/release/swofty-launcher-installer
+          if-no-files-found: error
+          retention-days: 14
+
   windows-build:
     name: Windows build
     runs-on: ${{ inputs.windows-runner }}
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref }}
 
-      - uses: actions-rust-lang/setup-rust-toolchain@v2
-        with:
-          cache: false
-
-      # Only a run on main saves; a tag's own cache would be of no use to the next tag.
-      - uses: Swatinem/rust-cache@v2
-        with:
-          add-rust-environment-hash-key: false
-          shared-key: release
-          save-if: ${{ github.ref == 'refs/heads/main' }}
+      # No Rust cache: a cold release build takes about as long as restoring one.
+      - uses: ./.github/actions/setup-rust
 
       # Only the two binaries the release ships, not the installer or the addon template.
       # The log server "Send Logs to Developers" uploads to; without it the button is disabled.
@@ -139,3 +140,19 @@ jobs:
             dist/swofty-ui/swofty-ui.exe
           if-no-files-found: error
           retention-days: ${{ inputs.retention-days }}
+
+      # The installer as ci.yml's pull request Installer job builds it: without the server addresses, and in a
+      # cargo run of its own, so that its features cannot change the binaries above. It comes after their
+      # upload; rebuilding swofty-core without the addresses leaves the linked binaries as they are.
+      - name: Build the installer
+        if: inputs.installer
+        run: cargo build --release -p swofty-launcher-installer
+
+      - name: Upload the installer
+        if: inputs.installer
+        uses: actions/upload-artifact@v7
+        with:
+          name: installer-${{ runner.os }}
+          path: target/release/swofty-launcher-installer.exe
+          if-no-files-found: error
+          retention-days: 14

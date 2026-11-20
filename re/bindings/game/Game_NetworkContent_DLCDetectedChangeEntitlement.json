@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkContent_DLCDetectedChangeEntitlement",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14303f970",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-CONTENT",
+  "notes": "named from its log messages (channel NETWORK-CONTENT): 'DLC %s detected change in entitlement %s: %s'"
+ },
+ "signature": {
+  "id": "game.network_content_dlc_detected_change_entitlement",
+  "section": ".xtls",
+  "pattern": "56 53 48 83 EC 28 39 51 10 0F 85 ?? ?? ?? ?? 44 89 C3",
+  "match": "0x14303f970",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14303f970",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkContent_DLCDetectedChangeEntitlement"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x14303f970",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14303f970.c;xref:0x14234d6ed",
+   "notes": "V5454 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

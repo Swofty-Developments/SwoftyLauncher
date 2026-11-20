@@ -4,7 +4,7 @@ on:
   pull_request:
     paths:
       - native/src/core/hooks/**
-      - native/src/core/mem_pages.cpp
+      - native/src/core/runtime/mem_pages.cpp
       - native/test/mem_pages_test.cpp
       - native/test/mem_addon_test.cpp
       - native/test/mem_addon_core.cpp
@@ -20,7 +20,7 @@ on:
     branches: [main, "perf/guarded-reads-*", "perf/mem-page-cache"]
     paths:
       - native/src/core/hooks/**
-      - native/src/core/mem_pages.cpp
+      - native/src/core/runtime/mem_pages.cpp
       - native/test/mem_pages_test.cpp
       - native/test/mem_addon_test.cpp
       - native/test/mem_addon_core.cpp

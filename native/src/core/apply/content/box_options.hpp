@@ -30,19 +30,25 @@ using Value = swofty::json::Value;
 
 // One box rule that maps onto one game option.
 struct BoxOptionRule {
-    const char *rule;                       // the key under content.package rules
-    std::array<const char *, 4> options;    // game option names, tried in order (nullptr ends the list)
-    bool boolean;                           // a bool rule: true -> "on", false -> "off"
-    std::array<const char *, 4> settings;   // the string settings the schema allows (string rules)
+    const char *rule;                     // the key under content.package rules
+    std::array<const char *, 4> options;  // game option names, tried in order (nullptr ends the list)
+    bool boolean;                         // a bool rule: true -> "on", false -> "off"
+    std::array<const char *, 4> settings; // the string settings the schema allows (string rules)
 };
 
 inline constexpr std::array<BoxOptionRule, 4> BOX_OPTION_RULES = {{
-    {"safety_car", {"safety_car_frequency", "safety_car", "safety_car_intensity", "safety_car_setting"}, false,
+    {"safety_car",
+     {"safety_car_frequency", "safety_car", "safety_car_intensity", "safety_car_setting"},
+     false,
      {"off", "reduced", "standard", "increased"}},
     {"formation_lap", {"formation_lap", nullptr, nullptr, nullptr}, true, {nullptr, nullptr, nullptr, nullptr}},
-    {"penalties", {"rules_and_penalties_mode", "rules_and_penalties", "rules_and_penalites", nullptr}, false,
+    {"penalties",
+     {"rules_and_penalties_mode", "rules_and_penalties", "rules_and_penalites", nullptr},
+     false,
      {"off", "corner_cutting_only", "esports", "on"}},
-    {"corner_cutting", {"corner_cutting_mode", "corner_cutting", nullptr, nullptr}, false,
+    {"corner_cutting",
+     {"corner_cutting_mode", "corner_cutting", nullptr, nullptr},
+     false,
      {"regular", "strict", nullptr, nullptr}},
 }};
 inline constexpr size_t BOX_OPTION_COUNT = BOX_OPTION_RULES.size();
@@ -83,7 +89,7 @@ inline std::optional<std::string> box_option_from(const BoxOptionRule &r, const 
 
 struct BoxOptionsPick {
     std::string package;
-    std::array<std::optional<std::string>, BOX_OPTION_COUNT> settings;   // per BOX_OPTION_RULES entry
+    std::array<std::optional<std::string>, BOX_OPTION_COUNT> settings; // per BOX_OPTION_RULES entry
     std::string line;
 };
 
@@ -109,8 +115,8 @@ inline BoxOptionsPick box_options_pick(const std::string &entrant_list,
         if (p.settings[i])
             set += (set.empty() ? "" : ", ") + std::string(BOX_OPTION_RULES[i].rule) + " " + *p.settings[i];
     }
-    p.line = "box " + entrant_list + " (" + p.package + "): " +
-             (set.empty() ? std::string("no option rules; the options keep the player's settings") : set);
+    p.line = "box " + entrant_list + " (" + p.package +
+             "): " + (set.empty() ? std::string("no option rules; the options keep the player's settings") : set);
     return p;
 }
 
@@ -200,7 +206,7 @@ struct OptionForce {
             option = opt;
             prior = now;
         } else if (now != ours) {
-            prior = now;   // the player changed it since the last press: that is the value to give back
+            prior = now; // the player changed it since the last press: that is the value to give back
         }
         ours = index;
         if (now != index)

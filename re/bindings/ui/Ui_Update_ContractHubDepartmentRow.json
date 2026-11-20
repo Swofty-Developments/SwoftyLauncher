@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Update_ContractHubDepartmentRow",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1416e0310",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Update(void *row)",
+  "evidence": "decomp:re/decomp/1416e0310.c;xref:0x141878de7;xref:0x141c8847f;xref:0x1420bba20",
+  "notes": "myteam-g2: Updates a contract/department row: bool nodes, string nodes, RP text (Ui_Format_ResourcePointsAmountText), float nodes (offsets 0x2f8..0x3dc). UI only."
+ },
+ "signature": {
+  "id": "ui.update_contract_hub_department_row",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 68 80 79 2D 00",
+  "match": "0x1416e0310",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416e0310",
+  "kind": "func_start",
+  "names": [
+   "Ui_Update_ContractHubDepartmentRow"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x1416e0310",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1416e0310.c;xref:0x141878de7;xref:0x141c8847f",
+   "notes": "V9764 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

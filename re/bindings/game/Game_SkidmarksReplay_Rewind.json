@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_SkidmarksReplay_Rewind",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144725390",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-SKIDMARKS_REPLAY",
+  "notes": "named from its log messages (channel SKIDMARKS_REPLAY): '- | rewindFadeMaker() mark %d | rewindQuadMaker() quad %d | rewindMarkMaker() mark %d | rewindMarkKiller() mark %d | rewindQuadKiller() quad %d | replayMarkKiller() mark %d | replayFadeMaker() mark %d'"
+ },
+ "signature": {
+  "id": "game.skidmarks_replay_rewind",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 C5 78 29 8C 24 B0 00 00 00 C5 78 29 84 24 A0 00 00 00 C5 F8 29 BC 24 90 00 00 00 C5 F8 29 B4 24 80 00 00 00 48 89 CB",
+  "match": "0x144725390",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144725390",
+  "kind": "func_start",
+  "names": [
+   "Game_SkidmarksReplay_Rewind"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb24-verify",
+   "kind": "func",
+   "item": "0x144725390",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144725390.c;xref:0x1447277ef",
+   "notes": "V6611 not only rewind: contains all 5 rewind and 5 replay handlers (replayQuadMaker/MarkMaker/FadeMaker/MarkKiller, rewindQuadKiller...) plus flush frame and read error logs; better name Game_SkidmarksReplay_StepFrame"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144725390",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144725390.c;xref:0x1447277ef",
+   "notes": "V7273 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

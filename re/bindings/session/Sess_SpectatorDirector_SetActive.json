@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Sess_SpectatorDirector_SetActive",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e18650",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void(SpectatorDirector*, bool on)",
+  "evidence": "decomp:re/decomp/142e18650.c;xref:0x142d6977e,0x142d6ab7f,0x142d6acfd,0x142d6e970,0x142d900f4,0x142daa178,0x142e17f73,0x143611277,0x143612147",
+  "notes": "game::SpectatorDirector::setActive. on=0: when active ([dir+0xd1]) resets current driver [dir+0xd6]=0xff, current camera [dir+0xd8]=-1, requested driver [dir+0xdc]=0xff, requested camera [dir+0xe0]=-1, [dir+0xd1]=0, runs the UI-flag thunk (0x142e18d10) with 0, clears bit 8 of [[dir+0x30]+0x54] and posts the activation message with false. on=1 (only when not already active): resets current and requested to 0xff/-1, [dir+0xd1]=1, [dir+0xd3]=0 (should quit), picks the first requested driver (the player's car, else the first entrant whose state byte is 2) into [dir+0xdc], requested camera [dir+0xe0]=2 (broadcast), runs the UI-flag thunk with 1, calls vtable slots +0x130 of [dir+0x40] and posts MessageSpectatorDirectorActivation (message vtable 0x1457f1200, byte +0x10 = active). Callers are session-state enter/exit handlers (0x142d692e0, 0x142d6a8e0, 0x142d6e950, 0x142d8fcc0, 0x142daa070, 0x142e17e50, 0x1436111c0, 0x143611bf0). Callers: census steam 0x2e18650."
+ },
+ "signature": {
+  "id": "session.spectator_director_set_active",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 70 89 D3",
+  "match": "0x142e18650",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e18650",
+  "kind": "func_start",
+  "names": [
+   "Sess_SpectatorDirector_SetActive"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "re-ai",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "ai-v1",
+   "kind": "func",
+   "item": "0x142e18650",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e18650.c;xref:0x142d6977e,0x142d6ab7f,0x142d6acfd,0x142d6e970,0x142d900f4,0x142daa178,0x142e17f73,0x143611277,0x143612147",
+   "notes": "V1534 Re-derived: on=0 calls SetUiFlag(0) first (before the already-inactive check), then if active resets current driver/camera and requested driver/camera (0xff/-1), clears [dir+0xd1], calls SetUiFlag(0) again and posts the activation message false. on=1 returns if already active; else resets, sets [dir+0xd1]=1 and [dir+0xd3]=0, picks the player's vehicle (Sess_Get_PlayerVehicleIndex, state byte [entrant+0x18]==2) into [dir+0xdc], sets requested camera [dir+0xe0]=2, SetUiFlag(1), posts activation. Nine call sites found by E8 scan, matching the KB list."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142e18650",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e18650.c;xref:0x142d6977d,0x142d6ab7e,0x142daa177,0x143612146",
+   "notes": "V3821 active=0 resets +0xd1/+0xd6/+0xd8/+0xdc/+0xe0, walks g 0x146cc3a80 +0x60 20-byte entries, active=1 uses Sess_Get_PlayerVehicleIndex, posts 0x1457f1200; named callers confirmed"
+  }
+ ],
+ "proofs": []
+}

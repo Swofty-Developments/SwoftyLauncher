@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_IntrusiveList_ClearAndRelease",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14083a3e0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14083a3e0.c;xref:0x140796fc4,0x14081b2d6",
+  "notes": "Walks an intrusive list (head ptr at +0x18), calls each node owner vcall +0x38 to free it, resets head/count. Callers Game_Steam_ParsePriceOverview, Game_F1os_OnResult_* cleanup."
+ },
+ "signature": {
+  "id": "core.intrusive_list_clear_and_release",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 48 8B 79 18 48 85 FF 0F 84 ?? ?? ?? ?? 48 8B 1F 0F 1F 40 00 48 8B 4F 10 48 39 CB 0F 94 C0 48 85 DB 74 1F 48",
+  "match": "0x14083a3e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14083a3e0",
+  "kind": "func_start",
+  "names": [
+   "Ne_IntrusiveList_ClearAndRelease"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x14083a3e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14083a3e0.c;xref:0x140796fc4",
+   "notes": "V8013 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

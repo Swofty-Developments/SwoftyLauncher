@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Ne_Format_String_Entry",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1441630f0",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/1441630f0.c",
+  "notes": "entry of Ne_Format_String: rcx = NeStr **out, rdx = fmt, r8, r9, then [rsp+0x28...] (MS x64 varargs; float varargs are mirrored in the integer registers). The first three instructions (push r15; push r14; push rsi, 5 bytes) relocate cleanly; no branch targets them."
+ },
+ "signature": {
+  "id": "core.format_string_entry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 48 02 00 00 48 89 D7 48 89 CE 4C 89 84 24 90 02 00 00",
+  "match": "0x1441630f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1441630f0",
+  "kind": "mid",
+  "expect": "41 57 41 56",
+  "names": [
+   "site_Ne_Format_String_Entry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-17",
+    "by": "gamelog",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/gamelog/gamelog.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-17",
+   "verifier": "gamelog-verify",
+   "kind": "global",
+   "item": "site_Ne_Format_String_Entry",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1441630f0.c;xref:0x1441820a9,0x1441820e1,0x14418c134",
+   "notes": "V0017 Entry 0x1441630f0 is a .pdata start (0x1441630f0-0x1441633d3) in .xtls. push r15 (41 57), push r14 (41 56), push rsi (56) = 5 bytes; no rel32 in .xtls/.data1 targets 0x1441630f1..f4 (only 2 false-positive disp32 hits inside vmovaps at 0x144162fdc/0x144162fe4), no short jump in the preceding function 0x144163010 reaches it, no branch in the function before 0x14416327d. rcx to rsi = out (stored at 0x1441633bd), rdx to rdi = fmt, r8/r9 stored to [rsp+0x290/0x298] = entry home slots 3/4 and their address is the va_list, so further varargs start at entry [rsp+0x28]. sigcheck core.format_string_entry passes, match = target = 0x1441630f0."
+  }
+ ],
+ "proofs": []
+}

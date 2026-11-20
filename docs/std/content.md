@@ -380,6 +380,8 @@ Classic Seasons 2016 to 2024 each register the season's real calendar and name i
 
 When the box is picked, or a career season that races in the box starts, the core applies its view to the track data the game reads. It puts the view back when that content ends. See [Tracks](/std/systems/tracks).
 
+A session that loads a box's list with no press makes that box's content active as a press does: a Grand Prix Continue, and a session of any other game mode that is not a career or a Time Trial, such as split screen or a custom session. `loader.log` says `[apply] <mode> session content follows the loaded list: <package>`.
+
 <template #example>
 <Example root="swofty.classic-seasons-2017" code-file="native/src/tracks.cpp" data-file="registry/tracks.json" files="swofty.json, native/src/content.cpp, native/src/calendar.cpp">
 <template #code>

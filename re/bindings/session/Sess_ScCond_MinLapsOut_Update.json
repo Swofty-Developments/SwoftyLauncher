@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_ScCond_MinLapsOut_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143636870",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void(ScCondition*, float dt)",
+  "evidence": "decomp:ghidra-headless-2026-10-25;decomp:re/decomp/143636870.c;xref:0x145853d40",
+  "notes": "SC logic condition update (slot 2): shifts the 2-byte results per SC entry (prev = cur, cur = 0), then holds when the SC laps (+0x58 of the SC vehicle) >= max(g 0x145f96a78, g 0x145f96a7c) + per-entry offset (+0x48 table); clears a7c."
+ },
+ "signature": {
+  "id": "session.sc_cond_min_laps_out_update",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 8B 51 10 48 8B 41 18 48 39 C2 74 74",
+  "match": "0x143636870",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143636870",
+  "kind": "func_start",
+  "names": [
+   "Sess_ScCond_MinLapsOut_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb4-verify",
+   "kind": "func",
+   "item": "Sess_ScCond_MinLapsOut_Update",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143636870.c;xref:0x145853d40",
+   "notes": "V1951 vtable slot2; compare ok, a7c cleared only on success"
+  }
+ ],
+ "proofs": []
+}

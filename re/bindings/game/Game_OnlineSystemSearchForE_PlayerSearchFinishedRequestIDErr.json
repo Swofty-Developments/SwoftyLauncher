@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineSystemSearchForE_PlayerSearchFinishedRequestIDErr",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432cd2b0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-OnlineSystemSearchForEADPFriendTask",
+  "notes": "named from its log messages (channel OnlineSystemSearchForEADPFriendTask): 'Player search has finished: requestID = %I64u, err = %d, num = %d'"
+ },
+ "signature": {
+  "id": "game.online_system_search_for_e_player_search_finished_request_id_err",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 01 00 00 4C 89 CF 48 89 CE 8B 9C 24 C0 01 00 00",
+  "match": "0x1432cd2b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432cd2b0",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineSystemSearchForE_PlayerSearchFinishedRequestIDErr"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1432cd2b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432cd2b0.c;xref:0x1432cd112",
+   "notes": "V5930 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_SafetyCarTether_ApplyAssistOverrides",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14360ba60",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14360ba60.c;xref:0x14360b90b,0x14360c27b,0x14360e6b0",
+  "notes": "Per tethered vehicle: when race-status flags (+0x35 bit2) set, writes 0x4b18967f (9999999.0) to [car+0x58]+0x530 +0x256c and clears [[g 0x1460fe690]+0x70][idx]+0x24; with +0x30 bit0 and +0x32 bit5 it copies two option values (option provider [g 0x1460fe6c0]+0x128 vcall +0x268 ids 5 and 4, clamped) into the per-car table [g 0x1460fe688] +200 (0/1) and +0xd0 (0, f[0x145f94138], f[0x145f9413c], 1.0) stride 0x14 for car < 0x1a. Hypothesis: forces assist levels while the SC tether drives the car. (3 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "session.safety_car_tether_apply_assist_overrides",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 8B 41 20 F6 40 35 04 0F",
+  "match": "0x14360ba60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14360ba60",
+  "kind": "func_start",
+  "names": [
+   "Sess_SafetyCarTether_ApplyAssistOverrides"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x14360ba60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14360ba60.c;xref:0x14360b90b",
+   "notes": "V6765 Values, offsets and car<0x1a check match."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDResearchRowCategoryIcon",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c78018",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141c76b60.c;xref:0x141c78018,0x141c78022;doc:addons/rnd-tyres-thermal/native/HOOKS.md#category-icons-rnd_dept_tagscpp",
+  "notes": "lea r9,[rnd_category_icons] (7 bytes) after mov [rsp+0x20],r15, before call Ne_Format_String(\"%s.%s.%s\", [rbx+0x10], atlas, frame); research category rows; frame = \"%s_%s\" of department and upgrade type (\"error_department_<type>\" for department 4); the hook rewrites [rsp+0x20]"
+ },
+ "signature": {
+  "id": "career.rnd_research_row_category_icon",
+  "section": ".xtls",
+  "pattern": "4C 8D 0D ?? ?? ?? ?? 4C 89 F1 E8 ?? ?? ?? ?? 48 8B 44 24 50 48 8D 50 09",
+  "match": "0x141c78018",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c78018",
+  "kind": "mid",
+  "expect": "4C 8D 0D 00 1D AA 03",
+  "names": [
+   "site_Career_RnDResearchRowCategoryIcon"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-d",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_dept_tags.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-2",
+   "kind": "global",
+   "item": "site_Career_RnDResearchRowCategoryIcon",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c76b60.c;xref:0x141c77ea1,0x141c77ebc,0x141c77ed2,0x141c77fc7,0x141c77fd3,0x141c78008,0x141c7800c,0x141c78018,0x141c78022",
+   "notes": "V0099 lea r9,rnd_category_icons (7B) after mov [rsp+0x20],r15, before Ne_Format_String(%s.%s.%s,[rbx+0x10],atlas,frame), rbx=[r13+0x20]; r15 = %s_%s(dept [r15+0x348]<=3 ? k_Career_RnDDeptNameTable : error_department, type); only on the [rsp+0xb0]==0xff path (else supplier_upgrade); window hits from 0x141c77ff7 and .data1 0x1545a9135 are mid-insn/junk"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ent_EntrantsSystem_ReplaceDriverCustomisation",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14246fde0",
+  "level": "L1",
+  "subsystem": "entrants",
+  "proto": "-",
+  "evidence": "pat:log-channel-ENTRANTS_SYSTEM",
+  "notes": "named from its log messages (channel ENTRANTS_SYSTEM): 'Driver customisation replaced with stat id %s | Couldn't find array to replace driver customisation with stat id %s | Failed to add driver customisation with stat id %s'"
+ },
+ "signature": {
+  "id": "entrants.entrants_system_replace_driver_customisation",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 88 C5 00 00 E8 ?? ?? ?? ?? 48 29 C4 89 54 24 2C",
+  "match": "0x14246fde0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14246fde0",
+  "kind": "func_start",
+  "names": [
+   "Ent_EntrantsSystem_ReplaceDriverCustomisation"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x14246fde0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14246fde0.c;xref:0x1414011a7",
+   "notes": "V5283 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

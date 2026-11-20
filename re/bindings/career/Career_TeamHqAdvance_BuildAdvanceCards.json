@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqAdvance_BuildAdvanceCards",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1419a64b0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_TeamHqAdvance_BuildAdvanceCards(void *advance, void *out)",
+  "evidence": "decomp:re/decomp/1419a64b0.c;xref:0x145721338",
+  "notes": "myteam-g1: Large builder of the My Team advance-time cards: fills lng_advance_card_contract_negotiations_description/subtitle (and other card strings) from calendar/team data (+0x238 card vector, +0xe8 session, flags +0x248/0x249/0x24a/0x24b). Creates the contract negotiations advance card when talks are due."
+ },
+ "signature": {
+  "id": "career.team_hq_advance_build_advance_cards",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 06 00 00 C5 F8 29 B4 24 F0 05 00 00 48 89 D3 48 89 CE",
+  "match": "0x1419a64b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419a64b0",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqAdvance_BuildAdvanceCards"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x1419a64b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1419a64b0.c;xref:0x145721338",
+   "notes": "V9890 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

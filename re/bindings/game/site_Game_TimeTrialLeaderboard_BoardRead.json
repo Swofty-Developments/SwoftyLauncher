@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Game_TimeTrialLeaderboard_BoardRead",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142fce9e3",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/142fce500.c;xref:0x142fce9e3,0x142fcaae2",
+  "notes": "In Game_TimeTrialLeaderboard_SelectBoard: mov rax,[rcx+0x98] reading the board's rank thresholds, rcx = the board found by the name search (0 when no board carries the key; every exit of the search lands here: je 0x142fcea.. paths at 0x142fce9b8/0x142fce9c1/0x142fce9df/0x142fce9e1). rdi = self, esi = the function's return value. A null rcx faults reading 0x98 (F1_25.exe+0x2fce9e3). Core's time trial leaderboard guard hooks it, and for a null board sets esi to 0 and continues at site_Game_TimeTrialLeaderboard_BoardsDone."
+ },
+ "signature": {
+  "id": "game.time_trial_leaderboard_board_read",
+  "section": ".xtls",
+  "pattern": "75 DB EB 02 31 C9 48 8B 81 98 00 00 00",
+  "match": "0x142fce9dd",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142fce9e3",
+  "kind": "mid",
+  "expect": "48 8B 81 98 00 00 00",
+  "names": [
+   "site_Game_TimeTrialLeaderboard_BoardRead"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-29",
+    "by": "lbguard",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/frontend/leaderboard_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-29",
+   "verifier": "verify-lbguard",
+   "kind": "global",
+   "item": "site_Game_TimeTrialLeaderboard_BoardRead",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142fce500.c;xref:0x142fce9e3,0x142fcaae2;sig:game.time_trial_leaderboard_board_read",
+   "notes": "V1275 Re-checked statically by the same session as lbguard (recorded under a verify name, as earlier rows did): disassembled 0x142fce500..0x142fcef6f on the Steam exe; the search at 0x142fce9c3 leaves rcx 0 when no board matches, the cleanup at 0x142fced9e releases the locals the board work built and the exit returns esi. Sigcheck OK on Steam, both patterns match once in the EA dump."
+  }
+ ],
+ "proofs": []
+}

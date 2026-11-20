@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Game_HandleInterruptEvent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1407fd8d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_Game_HandleInterruptEvent(void *game, const void *event)",
+  "evidence": "str:s_cfg_TestingEnableSmokeTest;decomp:re/decomp/1407fd8d0.c;xref:0x1407f77e4,0x1407fd8ec,0x1407fd8ed",
+  "notes": "Event handler registered by Game_Read_GameConfig 0x1407f7320 (lea at 0x1407f77e4) as delegate {fn, this} for event id 0xc through the dispatcher vtable +0x20; neighbours registered the same way: id 4 -> Game_GameAchievementSubsystem_OnApplicationSuspending 0x1407fd010, id 6 -> Game_Game_HandleApplicationResumeFromSuspended 0x1407fd310, id 7 -> 0x1407fd470. Testing.EnableSmokeTest (lea 0x1407fd8ec) -> Ne_Get_SettingBool 0x143a43b90 on *(game+0x40)+0x18, default 0; when set the handler does nothing. Otherwise event+0x10 selects: 0 = interrupt begin: posts message 8 to the 'InterruptQueue' (0x140799d20), game+0x231 = 0, and unless 0x14077c790(session,1) is true sets the global pause byte *(*(0x14601f5c8)+0xc0)+0x1b8 = 1, pauses the 'fullscreen' video (Ne_VideoManager_PauseVideo 0x143f91e90; game+0x1a4 remembers it was already paused), sends audio state 3 via 0x140b4de60, posts bus message 0x14564b670 (Ne_Post_BusMessage 0x1439876c0) and sets game+0x231 = 1 (the other branch only sends state 3 and sets game+0x232). 1 = interrupt end: message 9 and the reverse (Ne_VideoManager_ResumeVideo 0x143f92260, pause byte 0, audio state 4, bus message 0x14564b680, then 0x142a83c70 when service 0x146079b70 exists). Returns 0. Which OS event id 0xc is (focus, overlay, constrained) is not proven, hence the neutral name. hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "game.game_handle_interrupt_event",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 48 89 D7 48 89 CE C6 44 24 2F 00",
+  "match": "0x1407fd8d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407fd8d0",
+  "kind": "func_start",
+  "names": [
+   "Game_Game_HandleInterruptEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-3",
+   "kind": "func",
+   "item": "0x1407fd8d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1407fd8d0.c;xref:0x1407f77e4",
+   "notes": "V9352 Handler registered (lea + vcall id 0xc) in Game_Read_GameConfig; skipped when Testing.EnableSmokeTest (default false); event byte +0x10 == 0 = interrupt begin (posts 8 to InterruptQueue, pauses 'fullscreen' video, sets pause flag, posts bus message), else interrupt end (posts 9, resumes video, posts bus message); returns 0; arity 2 matches."
+  }
+ ],
+ "proofs": []
+}

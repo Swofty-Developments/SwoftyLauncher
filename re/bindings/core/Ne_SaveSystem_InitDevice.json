@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Ne_SaveSystem_InitDevice",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144137890",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "int Ne_SaveSystem_InitDevice(void *save_system)",
+  "evidence": "decomp:re/decomp/144137890.c;xref:0x1407fa7c0;kb:subsystems/core.md#save-sandbox",
+  "notes": "Builds the NeSaveSystem2Win device (0x3f0 bytes, vt_Ne_SaveSystem2Win) into save_system+0x490 and starts it. device+0x18 = save_system+0x50 (its +0x70 is the wide title save dir), +0x20 = save_system+0x2d0 (cipher key source), +0x3e8 = save_system+0x498 (m_storeInCloud). Only when g_Ne_SaveSteamEnabled (0x14604e0ec) is set it allocates the 0x110-byte Steam helper: helper+0x108 = *SteamInternal_ContextInit(k_Ne_SteamRemoteStorageContext) (ISteamRemoteStorage v016), then ISteamUser022 vt+0x30 GetUserDataFolder(helper, 0x104) fills helper+0x00 (char, ANSI), and stores it at device+0x30. Then device+0x490 is set and vt+0x08 (Ne_SaveSystem2Win_Start) runs. The only write of helper+0x108 in the exe. Called once, from Game_Read_GameConfig at 0x1407fa7c0."
+ },
+ "signature": {
+  "id": "core.save_system_init_device",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 98 00 00 00 C5 F8 29 B4 24 80 00 00 00 80 B9 DC 02 00 00 00",
+  "match": "0x144137890",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144137890",
+  "kind": "func_start",
+  "names": [
+   "Ne_SaveSystem_InitDevice"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "ts3",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/testing/save_sandbox.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "save-v3",
+   "kind": "func",
+   "item": "0x144137890",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144137890.c;decomp:re/decomp/1407f7320.c;xref:0x1407fa7c0;pat:whole-save-range-0x108-write-scan",
+   "notes": "V1471 Single caller Game_Read_GameConfig 0x1407fa7c0 (right after save_system+0x498 = Steam.cloudEnabled). Allocates the 0x3f0 device, helper 0x110 only if g_Ne_SaveSteamEnabled, helper+0x108 = *ContextInit(k_Ne_SteamRemoteStorageContext), ISteamUser vt+0x30(helper,0x104), device+0x30 = helper, +0x3e8 = save_system+0x498, save_system+0x490 = device, then vt+0x08. 0x144137c5c is the only +0x108 write in the save range and 0x144137c15 the only byte write of device+0x3e8; re-entry returns 0x25 when save_system+0x2dc is set."
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "save-v3",
+   "kind": "sig",
+   "item": "core.save_system_init_device",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "pat:sigcheck-hits-1;decomp:re/decomp/144137890.c;xref:0x144137890",
+   "notes": "V1481 sigcheck on d873a1c8: exactly one match in .xtls at 0x144137890, func_start, target is the decompiled function."
+  }
+ ],
+ "proofs": []
+}

@@ -122,11 +122,55 @@ Creators with the [Addon Creator role](/using/addon-browser#publish-your-own) pu
 
 - **Id:** a new addon's id starts with one of your namespaces ([`id`](./manifest#identity)). The site lists them above the upload box. The preview refuses any other id before the upload, with your namespaces and a suggested id.
 - **Confirmation:** a required checkbox confirms that everything in the addon is your own work. **Publish** turns on once it's ticked.
-- **Changelog:** Markdown, shown when the launcher offers the version. You can't edit it once the version is approved, so put a correction in the next version's changelog.
-- **Description:** Markdown, and the preview shows it as the launcher does. Images don't show there; add pictures to the gallery instead.
+- **Changelog:** [Markdown](#markdown), shown when the launcher offers the version. You can't edit it once the version is approved, so put a correction in the next version's changelog.
+- **Description:** [Markdown](#markdown), and the preview shows it as the launcher does. Images don't show there; add pictures to the gallery instead.
 - **Gallery:** pictures, videos and YouTube, Vimeo or Streamable links, shown on the addon's page in the launcher. See [Gallery](/using/addon-browser#gallery).
 - **Review:** the version shows **Pending review**, and Swofty sends a Discord message when it's reviewed.
 - **Yank:** **Stop offering this version to players** yanks a version, and **Unyank** undoes it. It's the only action on a version.
+
+### Markdown {#markdown}
+
+Descriptions and changelogs show headings, paragraphs, bullet and numbered lists, quotes, code blocks, rules, tables, columns, bold, italics, inline code and links. HTML and pictures inside the text are left out. Links open when they start with `https://`, `mailto:` or `/`; other links show as plain text.
+
+**Tables** are pipe tables. The line under the header sets each column's alignment: `---` or `:---` left, `:---:` centred and `---:` right. Cells take bold, italics, inline code and links, and `\|` writes a `|` inside a cell.
+
+```md
+| Car | Team | Year |
+| :--- | :---: | ---: |
+| **FW35** | Williams | 2013 |
+| `F138` | Ferrari \| Scuderia | 2013 |
+```
+
+- A row with fewer cells than the header gets empty cells, and cells past the header's count are left out.
+- A table ends at a blank line, or at a heading, list, quote, code block, rule or `:::` line.
+- A table is at most 32 columns. A table wider than the page scrolls sideways.
+- Without the alignment line, each row shows as one line of text with ` · ` between its cells.
+
+**Columns** put blocks side by side. Wrap the columns in `::: columns`, start each one with `::: column`, and close each with `:::`:
+
+```md
+::: columns
+::: column
+### Install
+1. Turn the addon on.
+2. Press **Play**.
+:::
+::: column
+### Works with
+| Season | Game build |
+| --- | --- |
+| 2025 | 1.18 |
+:::
+:::
+```
+
+- A `:::` line closes the innermost `::: columns`, `::: column` or other `:::` block.
+- Columns share the width equally. Below 220 pixels per column, the last columns move onto a new line.
+- Text inside `::: columns` and outside a `::: column` is a column of its own.
+- A `::: columns` block with one column shows its content without columns. A `::: columns` inside a column doesn't start new columns.
+- `:::: {.columns}` and `::: {.column}` work too.
+
+Launchers before 1.9.82 show each table row as one line of text with ` · ` between its cells, and show columns one after another.
 
 ## Reference
 

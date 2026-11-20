@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_ParsingTitleConfigData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430f6890",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK",
+  "notes": "named from its log messages (channel NETWORK): '[CONFIG] parsing title config data (%d bytes).'"
+ },
+ "signature": {
+  "id": "game.network_parsing_title_config_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 4C 89 C7 49 89 D6",
+  "match": "0x1430f6890",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430f6890",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_ParsingTitleConfigData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430f6890",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430f6890.c;xref:0x1430f00ba",
+   "notes": "V5413 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

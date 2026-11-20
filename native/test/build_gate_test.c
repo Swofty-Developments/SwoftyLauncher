@@ -15,11 +15,13 @@ static void check(int cond, const char *what)
 int main(void)
 {
     const unsigned long long steam = 408063872ULL, ea_old = 342936448ULL, steam_new = 391613312ULL;
+    const unsigned long long ea_new = 355003776ULL;
     const unsigned long long unlisted = 370000000ULL, ea_pre_update = 358465536ULL;
 
     check(!swofty_build_blocked(steam, 1789118616UL, NULL), "the first Steam build loads");
     check(!swofty_build_blocked(ea_old, 1789128892UL, NULL), "the first EA build loads");
     check(!swofty_build_blocked(steam_new, 1794312636UL, NULL), "the 1.0.145 Steam build loads");
+    check(!swofty_build_blocked(ea_new, 1794315435UL, NULL), "the 1.0.145 EA build loads");
     check(!swofty_build_blocked(steam_new, 1794312636UL, ""), "an empty override leaves a supported build loaded");
 
     check(swofty_build_blocked(unlisted, 1794000000UL, NULL), "an exe the table does not list is blocked");

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetPlayerSync_OnPlayerSetEntryDiscarded",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14327bf70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14327bf70.c;xref:0x14582ed98",
+  "notes": "onPlayerSetEntryDiscarded(entry): logs the player and sets dirty +0x38=1 (same class as Game_NetPlayerSync_OnMutableRoleChanged). | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2775)"
+ },
+ "signature": {
+  "id": "game.net_player_sync_on_player_set_entry_discarded",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 78 48 89 CE C5 F8 10 42 18 C5 F8",
+  "match": "0x14327bf70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14327bf70",
+  "kind": "func_start",
+  "names": [
+   "Game_NetPlayerSync_OnPlayerSetEntryDiscarded"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d8-verify",
+   "kind": "func",
+   "item": "Game_NetPlayerSync_OnPlayerSetEntryDiscarded",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14327bf70.c;xref:0x14327bf70",
+   "notes": "V2775 log + dirty +0x38=1 confirmed"
+  }
+ ],
+ "proofs": []
+}

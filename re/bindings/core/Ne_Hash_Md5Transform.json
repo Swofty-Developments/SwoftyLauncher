@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Hash_Md5Transform",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143928ed0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143928ed0.c;xref:0x143928eb0,0x14392986c,0x143929899",
+  "notes": "MD5 block transform (constants 0xd76aa478, 0xe8c7b756...). 20 callers; used by Ne_Hash_Md5U64 / HashedName_FromString. Named callers: Ne_Hash_Md5U64, Render_Model_ValidateMaterialParams."
+ },
+ "signature": {
+  "id": "core.hash_md5_transform",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 49 89 D1 48 89 4C 24 50",
+  "match": "0x143928ed0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143928ed0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Hash_Md5Transform"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x143928ed0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143928ed0.c;xref:0x143928eb0",
+   "notes": "V7626 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

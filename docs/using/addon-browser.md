@@ -25,6 +25,8 @@ Every card shows a tag for each platform its creator tested the addon on: **Stea
 
 Select an addon for its description, a 30-day downloads chart, its file size and checksum, the launcher version it needs, and every version's changelog. When the creator lists the addon's source code, a **Source code** button opens it; an addon without one has no button, and an installed addon's page shows **Not listed** under **Source code**. **More from** lists the same creator's other addons.
 
+An addon's page, a creator's page and **Creators** have a **Back** button pinned at the top that stays in view while the page scrolls. It returns to where you came from, scrolled where you left it, with your search and filters kept. **Escape**, **Alt+Left** and the mouse's back button do the same.
+
 ### Media {#media}
 
 An addon whose creator added pictures, videos or video links shows a **Media** card at the top of its page: the selected item, its caption, and a row of thumbnails to pick from.
@@ -49,7 +51,7 @@ The download card sits at the bottom right of every page while a job is queued o
 - **Retry** starts a failed job again. If its version is no longer available, **Request current version** queues the current compatible version instead.
 - **Clear finished** removes completed and failed rows. It leaves queued and active jobs alone.
 
-The launcher remembers the concurrency limit, but clears the queue and history when it closes. If you close it while jobs are pending, it warns that active work will be interrupted and queued jobs lost. Launcher updates and other downloads do not appear on this page.
+The launcher remembers the concurrency limit, but clears the queue and history when it closes. If you close it while jobs are pending, it warns that active work will be interrupted and queued jobs lost. An interrupted install or update leaves the addon at the version it had, and the next start deletes the unfinished copy and writes the job's result to `state/registry.log`; **Play** stops with a **Reinstall** button when a file the build or the game loads from an addon that is on is missing, empty, all zeros, or no longer what its install wrote. Launcher updates and other downloads do not appear on this page.
 
 A job keeps the profile it was requested from, even if you switch profiles while it waits. If that profile is deleted, the launcher leaves the installed addon out of other profiles and notes this in the result.
 

@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "site_Ne_HwBool_NightShadowCharCast",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14728dd18",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/14728dc90.c;xref:0x14728dd18",
+  "notes": "call Ne_Compare_StringNoCase(attr+0x50 value, \"true\") for the hardware-settings attribute 'nightShadowCharacterCast' (name loaded at 0x14728dccf) in reader 0x14728dc90; the reader stores (result == 0) as the bool; xanpavle.re-optimization redirects it to pin the value"
+ },
+ "signature": {
+  "id": "core.hw_bool_night_shadow_char_cast",
+  "section": ".data1",
+  "pattern": "E8 ?? ?? ?? ?? 40 8A 3D ?? ?? ?? ?? 31 3D",
+  "match": "0x14728dd18",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14728dd18",
+  "kind": "mid",
+  "expect": "E8",
+  "names": [
+   "site_Ne_HwBool_NightShadowCharCast"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "reopt-025",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/re-optimization/native/src/re_optimization.cpp (xanpavle.re-optimization)"
+  ],
+  "data1_reason": "redirected: the attribute is read only inside this .data1 body and the only .xtls route is wrapping Ne_Compare_StringNoCase, which has 1553 rel32 callers"
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "reopt-025-verify",
+   "kind": "global",
+   "item": "site_Ne_HwBool_NightShadowCharCast",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14728dc90.c;xref:0x14728dd18,0x14728dccf,0x14728dd03,0x14728dd2c;sig:core.hw_bool_night_shadow_char_cast",
+   "notes": "V0946 Loop over the element attribute vector (+0x50..+0x58): 0x14534da24(attr+0x18 name, rbx = 'nightShadowCharacterCast' from lea 0x14728dccf, r8d 0x1f) at 0x14728dd03; on 0 it sets rcx = [attr+0x50], rdx = \"true\" (0x145612a6a) and the E8 at 0x14728dd18 calls 0x14534d918 (.data1, .pdata 0x14728dc90-0x14728de6c covers the body; data1_reason present; reached through the .xtls jmp thunk 0x140180730). After two junk instructions that leave eax alone, sete stores (result == 0) to this+0x5c1 at 0x14728dd2c (cleared to 0 at entry); the reader then feeds it into bit 19 of the flags of each object in the this+0x610 list. sigcheck: one hit, target 0x14728dd18"
+  }
+ ],
+ "proofs": []
+}

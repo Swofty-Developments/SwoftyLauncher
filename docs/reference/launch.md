@@ -51,6 +51,8 @@ From 1.3.1, **Play** on an [EA app copy](/using/game-copies) runs in this order:
 3. It hands the EA app the launch link `origin2://game/launch?offerIds=<ids>&autoDownload=1`, with `&cmdParams=-vr` for **Play in VR**. The IDs are the `<contentID>` values in the game folder's `__Installer/installerdata.xml`. The status line reads **Starting F1 25 through the EA app…**.
 4. It waits for F1 25 to start and close, including a second copy the EA app starts, then rolls the game folder back.
 
+On Windows, the launcher opens a handle on the F1 25 the EA app started as soon as it appears and reads its exit code when it closes. The session log says `[ea app] F1 25 exited (pid <pid>, exit code 0x<code>)`, with the crash's name for a crash code, and `end.json` holds the code. When Windows refuses the handle, the log says `could not open F1 25 (pid <pid>) to read its exit code (<error>)` once and the session goes on without the code. On Linux the launcher can't read it, and the code comes from offline play's session launcher line in `loader.log`; the vanilla profile has no such line.
+
 When F1 25 hasn't started 5 minutes after the link, the launcher opens the EA app and the status line reads **Press Play on F1 25 in the EA app**. Pressing **Play** there starts the modded session. After 10 more minutes without the game, the launch stops and the game folder rolls back. The `[ea app]` line after the link says whether offline play's file is still in place. When the EA app took it out to repair F1 25, the status line reads **The EA app is repairing F1 25** instead, and F1 25 starts without mods after the repair.
 
 ### Programs set to run as administrator
@@ -193,7 +195,7 @@ Each session's `end.json` says how the game ended, with its exit code (`null` wh
 | `quit` | The game exited with code 0. |
 | `crash` | The game exited with a crash code (`0xC0000000` and up, other than -1), or `loader.log` shows an unhandled exception before the exit. |
 | `stopped` | **Stop** in the launcher, `swofty run --restart` or a stop signal to the wrapper closed the game. |
-| `unknown` | Anything else, such as -1 with no unhandled exception, or an EA app launch with no exit code. F1 25's crash handler exits with -1, and the game also leaves -1 when it fails while closing. |
+| `unknown` | Anything else, such as -1 with no unhandled exception, or an EA app session whose exit code the session couldn't read. F1 25's crash handler exits with -1, and the game also leaves -1 when it fails while closing. |
 
 The launcher shows a crash for `crash`, and for `unknown` with a non-zero exit code. It doesn't show one after **Stop**.
 

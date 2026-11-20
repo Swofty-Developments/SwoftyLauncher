@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "site_Game_CareerEventsSequencerFirstRecord",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c72ea0",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/140c71e80.c;xref:0x140c72e93,0x140c72ea0",
+  "notes": "mov rdx,[rax] (3 bytes) in Game_CareerEventsSequencer_Initialise (+0x1020) right after the call to Game_CareerEventTable_CollectMatchingRecords (0x140c72e93, rcx = pointer vector at [rsp+0x98]); rax = [rsp+0xa0] = the vector's begin, read as the first collected record to name the team mate asset group (add rdx,0x50; 0x1423dbcf0; 0x140c808e0). Begin is 0 when no record of the career event table matches the session's event record (its +0x5e is 0x3fff, or the equality 0x14309c1e0 fails), which faults reading 0x0. Core hooks it and, for rax == 0, sets rip to site_Game_CareerEventsSequencerRecordsJoin."
+ },
+ "signature": {
+  "id": "game.career_events_sequencer_first_record",
+  "section": ".xtls",
+  "pattern": "48 8B 84 24 A0 00 00 00 48 8B 10 48 83 C2 50",
+  "match": "0x140c72e98",
+  "anchor": "0x8",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c72ea0",
+  "kind": "mid",
+  "expect": "48 8B 10 48",
+  "names": [
+   "site_Game_CareerEventsSequencerFirstRecord"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-03",
+    "by": "seqagree",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/career/sequencer_records_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-03",
+   "verifier": "seqagree",
+   "kind": "global",
+   "item": "0x140c72ea0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c71e80.c;xref:0x140c72e93,0x140c72ea0",
+   "notes": "V8653 own disasm: lea rcx,[rsp+0x98] at 0x140c72e86 passes the out vector to 0x1424ceb70 (call 0x140c72e93); 0x140c72e98 loads rax=[rsp+0xa0]=out.begin and 0x140c72ea0 is mov rdx,[rax], the first load through it; no null test between the call and the load; not a branch target so the 3-byte mid-hook window is clean"
+  },
+  {
+   "date": "2026-11-03",
+   "verifier": "seqverify2",
+   "kind": "global",
+   "item": "0x140c72ea0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c71e80.c;xref:0x140c72e93,0x140c72ea0",
+   "notes": "V8656 seqverify2 independent: rcx=lea [rsp+0x98] out vector, call 0x1424ceb70 at 0x140c72e93, rax=[rsp+0xa0]=out+8=begin, 0x140c72ea0 mov rdx,[rax] with no null test between; 3-byte insn, no branch lands on 0x140c72ea1..a4 (only predecessor fallthrough)"
+  }
+ ],
+ "proofs": []
+}

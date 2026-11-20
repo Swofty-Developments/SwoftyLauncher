@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Car_Tyre_GripScale",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446b7240",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446b7240.c;xref:0x1446df89a,0x1446df8ce,0x1446df901,0x1446df949;kb:subsystems/car.md#tyres",
+  "notes": "Per-wheel grip multiplier, arg = CarTyreState+8: t = [arg] (CarSuspTyreType), car = [arg+8]; ai = (car+0x124 == 1). f1 = 1 - WetnessDownslopeFactor[+0x638|+0x63c if ai] * clamp(wetness[arg+0x84]/0.2, 0, 1); f2 = 1 - SpeedDownslopeFactor[+0x640|+0x644] * clamp((RotRate[+0x648] - max(|wheel spin +0x188|, |contact vel (+0x3a8,+0x3ac)|/TyreRadius[+0x1c])) / RotRate); returns max(DownslopeScaleMinimum[+0x64c], f1*f2). Wheel = g_Sess_VehicleTable[car+0xe8]->+0x580 SuspensionSystem->wheels[arg+0xc8]. Only called when CarLive.handling_version > 6; results to solver +0x830..+0x83c."
+ },
+ "signature": {
+  "id": "car.tyre_grip_scale",
+  "section": ".xtls",
+  "pattern": "48 83 EC 18 C5 F8 29 34 24 48 8B 01 48 8B 51 08",
+  "match": "0x1446b7240",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446b7240",
+  "kind": "func_start",
+  "names": [
+   "Car_Tyre_GripScale"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v3",
+   "kind": "func",
+   "item": "Car_Tyre_GripScale",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446b7240.c;decomp:re/decomp/1446dee60.c;xref:0x1446df89a,0x1446df8ce,0x1446df901,0x1446df949",
+   "notes": "V1290 Formula re-derived as stated (0x638/0x63c and 0x640/0x644 by car+0x124==1, wetness +0x84/0.2, RotRate +0x648, wheel via g_Sess_VehicleTable[car+0xe8]+0x580 +0x70+[arg+0xc8]*8, +0x188, +0x3a8/+0x3ac, TyreRadius +0x1c, floor +0x64c). All four calls are guarded by cmp [car+0x9f40],7 / jl and store to +0x830/+0x834/+0x838/+0x83c (1.0 default when skipped)."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x1446b7240",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1446b7240.c",
+   "notes": "V4142 floor +0x64c, f1 via this+0x84/0.2 with +0x638/+0x63c, f2 via +0x640/+0x644 and +0x648, wheel +0x3a8/+0x3ac/+0x188 confirmed; \"wheel+0x8c tyre water\" contradicts this+0x84 in code (vtable/indirect or no direct callsite checked)"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "re-bindings",
+   "kind": "func",
+   "item": "Car_Tyre_GripScale",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm of the archived 1.0.141 exe (PE 1789118616) 0x1446b7240-0x1446b7390;xref:0x1446df89a,0x1446df8ce,0x1446df901,0x1446df949",
+   "notes": "V20003 Re-verified after V4142: the wetness term reads [arg+0x84] / 0.2 (constant at 0x1453ca848) as the notes now say, not wheel+0x8c. Everything else holds: ai = car+0x124 == 1 picks +0x638/+0x63c and +0x640/+0x644, RotRate +0x648, wheel = g_Sess_VehicleTable (0x146ce86e0)[car+0xe8]->+0x580->[+0x70+[arg+0xc8]*8], |+0x188| vs sqrt(+0x3a8^2+0x3ac^2)/[t+0x1c], floor +0x64c, returns xmm0. The four call sites are the only references, each behind cmp [car+0x9f40],7 / jl and stored to +0x830/+0x834/+0x838/+0x83c (1.0 when skipped). The row has no proto; the code is float(void *tyre_state_plus_8)."
+  }
+ ],
+ "proofs": []
+}

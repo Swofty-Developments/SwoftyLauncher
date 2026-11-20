@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Build_RnDDriverUpgradeLists",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f3a150",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Build_RnDDriverUpgradeLists(void * self)",
+  "evidence": "decomp:re/decomp/141f3a150.c;xref:0x14575dcd8",
+  "notes": "myteam-g1: Builds display_driver_upgrades, player_driver_upgrades(_is_empty), team_mate_upgrades(_is_empty), team_hq_rnd_in_progress."
+ },
+ "signature": {
+  "id": "career.build_rn_ddriver_upgrade_lists",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC D0 00 00 00 C5 F8 29 B4 24 C0 00 00 00 48 89 CE 0F B6 81 28 06 00 00 89 C1 80 C9 01 88 8E 28 06 00 00 A8 02 74 08 48 89 F1 E8 ?? ?? ?? ?? C7 44 24 30 04 00 00 00",
+  "match": "0x141f3a150",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f3a150",
+  "kind": "func_start",
+  "names": [
+   "Career_Build_RnDDriverUpgradeLists"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141f3a150",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f3a150.c;xref:0x14575dcd8",
+   "notes": "V10016 Builds team/player/teammate upgrade lists with *_is_empty flags and team_hq_rnd_in_progress."
+  }
+ ],
+ "proofs": []
+}

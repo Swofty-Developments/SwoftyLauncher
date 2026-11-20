@@ -1,0 +1,60 @@
+{
+ "schema": 1,
+ "name": "Ne_Get_SettingDouble",
+ "table": "functions",
+ "author": "load-game",
+ "row": {
+  "addr": "0x143a43ea0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t(void *node, const char *name, double *out, double def)",
+  "evidence": "decomp:own Ghidra 0x143a43ea0-0x143a44084;xref:0x140a28cfb,0x14304c98f,0x1443da510,0x144420b12",
+  "notes": "Engine setting getter for doubles, sibling of Ne_Get_SettingU32: same lock (node+0x10) and map lookup (0x143905280); parses with the float parser 0x145343ff4, widens to double and stores 8 bytes; default in xmm3 (moved to xmm6 at 0x143a43eaf). Returns 0 found, 2 missing. Four direct callers read Audio.speechVO_delayForRadioBeep, TimeManager.fixedTimeStep (0x1443da510) and Flow.enterExitTimeLimit (0x144420b12). The float getter 0x143a44090 has the same body but stores 4 bytes."
+ },
+ "signature": {
+  "id": "core.setting_get_double",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 C5 F8 29 74 24 30 C5 F8 28 F3 4C 89 C3 48 89 CF 48 89 54 24 28 48 8D 71 10 48 89 F1 E8 ?? ?? ?? ?? 48 8B 7F 08 48 85 FF 74 3E 48 8D 54 24 28",
+  "match": "0x143a43ea0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a43ea0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Get_SettingDouble"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-17",
+    "by": "load-game",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "load-game",
+   "date": "2026-11-17",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143a43ea0",
+    "target": "0x143a43ea0"
+   },
+   "sigcheck": "passed",
+   "digest": "c95b20bb51684f078faed9f9880d66b1ea20aa6e5829b81367107f0a0791c4d1"
+  }
+ ]
+}

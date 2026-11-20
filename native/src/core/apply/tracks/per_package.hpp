@@ -1,6 +1,6 @@
 #pragma once
 
-#include "base.hpp"
+#include "core/apply/tracks/base.hpp"
 
 #include <swofty/json.hpp>
 
@@ -23,8 +23,8 @@ struct Entry {
     bool offered = true;
     int order = 0;
     std::optional<float> burn;
-    std::optional<float> pit_speed;   // pit.speed_limit, km/h (TrackDataTrack +0x21c)
-    std::optional<int32_t> laps;      // laps: the race's laps at full race length (TrackDataTrack +0xe0 number_of_laps)
+    std::optional<float> pit_speed; // pit.speed_limit, km/h (TrackDataTrack +0x21c)
+    std::optional<int32_t> laps;    // laps: the race's laps at full race length (TrackDataTrack +0xe0 number_of_laps)
 };
 
 // Race laps the core writes: a whole number from 1 to 999 (0 or anything else leaves the track's own).

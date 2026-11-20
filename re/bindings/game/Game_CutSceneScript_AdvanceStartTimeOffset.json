@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CutSceneScript_AdvanceStartTimeOffset",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1402405c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1402405c0.c;xref:0x14023dbb5,0x140256a67",
+  "notes": "CutSceneScript::advanceStartTimeOffset(script, scene): adds scene length to script+0x53c (scene+0x68 - scene+0x64 when scene+0x74 bit2, else clip [scene+8]+0x50), logs 'advanceStartTimeOffset %s %f %f'; returns scene. Used by many initialisers to chain scenes back to back. Addon: chain/shorten scenes by editing the scene window +0x58/+0x5c/+0x64/+0x68. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3115)"
+ },
+ "signature": {
+  "id": "game.cut_scene_script_advance_start_time_offset",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 C5 F8 29 74 24 30 48 89 D6 48 85 D2 0F",
+  "match": "0x1402405c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1402405c0",
+  "kind": "func_start",
+  "names": [
+   "Game_CutSceneScript_AdvanceStartTimeOffset"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d13-verify",
+   "kind": "func",
+   "item": "Game_CutSceneScript_AdvanceStartTimeOffset",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1402405c0.c;xref:0x1402553c0",
+   "notes": "V3115 role/offsets/strings confirmed in decomp (INIT pattern calls thunks 140240410/140240700 -> alt copy 147562600 of advanceStartTimeOffset)"
+  }
+ ],
+ "proofs": []
+}

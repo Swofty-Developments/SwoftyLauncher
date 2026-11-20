@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DecalCustomisation_IsEditorCarReady",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14142bc30",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14142bc30.c;xref:0x14142ebb7",
+  "notes": "Looks up car index byte param_2 in the car list this+0x2d8..0x2e0 (refcounted) and returns readiness. Callers Game_GameDecalCustomisationSystem_Update, 0x1428b36d0."
+ },
+ "signature": {
+  "id": "game.decal_customisation_is_editor_car_ready",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 0F B6 2A 40",
+  "match": "0x14142bc30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14142bc30",
+  "kind": "func_start",
+  "names": [
+   "Game_DecalCustomisation_IsEditorCarReady"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x14142bc30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14142bc30.c;xref:0x14142ebb7",
+   "notes": "V8035 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDPiePopulateGate",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f48228",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141f48030.c;xref:0x141f48228;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v071--the-pie-crash-at-career-load-slot-4-was-never-constructed",
+  "notes": "mov esi,r14d after both guards: r13d = slot index, r14d = code, [rsp+0x40] = view model"
+ },
+ "signature": {
+  "id": "career.rn_d_pie_populate_gate",
+  "section": ".xtls",
+  "pattern": "44 89 F6 41 83 FE 03 77 22 48 8D 0D",
+  "match": "0x141f48228",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f48228",
+  "kind": "mid",
+  "expect": "44 89 F6 41 83 FE 03",
+  "names": [
+   "site_Career_RnDPiePopulateGate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-4",
+   "kind": "global",
+   "item": "site_Career_RnDPiePopulateGate",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f48030.c;xref:0x141f48055,0x141f48222,0x141f48228,0x141f4822b,0x141f496df",
+   "notes": "V0162 mov esi,r14d; cmp r14d,3 after both guards; r13d = slot index, r14d = code, [rsp+0x40] = rcx this (only write 0x141f48055); 7-byte window, no branch inside"
+  }
+ ],
+ "proofs": []
+}

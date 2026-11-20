@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Car_ObfSpline_Ctor",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14466b6e0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14466b6e0.c;xref:0x1447546c0",
+  "notes": "(ObfSpline *s, Allocator *a, uint capacity): allocates capacity*32 bytes, initialises the obfuscated header fields (+0x20..+0x58) with fresh MT19937 keys (global 0x146108c00), +0x90 = -1. Called from 0x1447546c0 (steering spline load)."
+ },
+ "signature": {
+  "id": "car.obf_spline_ctor",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 D0 48",
+  "match": "0x14466b6e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14466b6e0",
+  "kind": "func_start",
+  "names": [
+   "Car_ObfSpline_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x14466b6e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14466b6e0.c;xref:0x1407af6af",
+   "notes": "V3694 ctor matches (cap*32 alloc, MT keys, +0x90=-1) but 77 call sites in 12 funcs (engine, suspension, tyre model reads): generic obfuscated curve, not steering-specific"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x14466b6e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14466b6e0.c;xref:0x1407af6af",
+   "notes": "V4020 ctor matches (cap*32 alloc, MT keys, +0x90=-1) but 77 call sites in 12 funcs (engine, suspension, tyre model reads): generic obfuscated curve, not steering-specific"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x14466b6e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14466b6e0.c;xref:0x1407af6af,0x143e61050",
+   "notes": "V4136 ctor; caller block 0x144754743.. (steering spline load) confirmed"
+  }
+ ],
+ "proofs": []
+}

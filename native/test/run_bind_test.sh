@@ -5,9 +5,8 @@
 set -euo pipefail
 SELF=$(readlink -f "$0")
 cd "$(dirname "$SELF")"
-if ! command -v wine >/dev/null || ! command -v zig >/dev/null; then
-    exec nix shell nixpkgs#zig nixpkgs#wineWow64Packages.stable -c "$SELF" "$@"
-fi
+NEEDS="zig wine"
+. "$(dirname "$SELF")/lib/env.sh"
 . ./game_lock.sh
 OUT=${1:-$PWD/../build/bind-test}
 DIST=${DIST:-$PWD/../dist}
@@ -15,9 +14,8 @@ EXE=${SWOFTY_TEST_EXE:-$PWD/../../work/exe/F1_25.exe}
 BASE=${SWOFTY_BASE_DIST:-}
 export ZIG_GLOBAL_CACHE_DIR=$PWD/../build/zig-cache ZIG_LOCAL_CACHE_DIR=$PWD/../build/zig-cache
 export WINEPREFIX="$OUT/prefix" WINEDEBUG=-all WINEDLLOVERRIDES="mscoree,mshtml=;winemenubuilder.exe,winedbg.exe=d"
-PIN=(taskset -c 2-7,10,11,14-31 nice -n 10)
 mkdir -p "$OUT"
-"${PIN[@]}" zig c++ -target x86_64-windows-gnu -std=c++23 -O2 -Wall -Wextra -I../../packages/sdk/include -I../include \
+"${PIN[@]}" zig c++ -target x86_64-windows-gnu -I../src -std=c++23 -O2 -Wall -Wextra -I../../packages/sdk/include -I../include \
     -o "$OUT/bind_harness.exe" bind_harness.cpp
 status=0
 win() { echo "Z:${1//\//\\}"; }

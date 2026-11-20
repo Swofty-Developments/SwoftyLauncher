@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "site_Car_AeroStoreRearDownforce",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446dda91",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "car",
+  "evidence": "decomp:re/decomp/1446dceb0.c;xref:0x1446dda91;kb:subsystems/car.md#f1aero",
+  "notes": "vmovss [rdi+0x19ec], xmm0 in Car_Physics_StepVehicle: rdi = F1Aero system (CarLive+0x570), xmm0 = the rear body lift COEFFICIENT (CarF1Aero.rear_lift_coeff: RearCoeffLiftMultiplier x lift_scale x ...), not a force: live 0.96 parked and 1.11 at speed for the player car (T115, 2026-10-28 snapshots; the field is L3, this store site was not traced). A trace here logs the per-car rear coefficient every step; a MidHook can scale xmm0."
+ },
+ "signature": {
+  "id": "car.aero_store_rear_downforce",
+  "section": ".xtls",
+  "pattern": "C5 FA 11 87 EC 19 00 00 C5 FA 59 44 24 30",
+  "match": "0x1446dda91",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446dda91",
+  "kind": "mid",
+  "expect": "C5 FA 11 87 EC 19 00 00",
+  "names": [
+   "site_Car_AeroStoreRearDownforce"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "car-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v3",
+   "kind": "global",
+   "item": "site_Car_AeroStoreRearDownforce",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446dceb0.c;xref:0x1446dda91",
+   "notes": "V1295 0x1446dda91 is vmovss [rdi+0x19ec],xmm0; rdi = [[vehicle_sim+0x18]+0x570] (0x1446dd3fb/0x1446dd3ff), and CarLive+0x570 is the F1Aero slot (Car_Build_VtfComponents 0x14473c6ff lea F1Aero, store 0x14473c77e). xmm0 = (...) x RearCoeffLiftMultiplier (sys+0x1718^0x1720) x xmm9 x lift_scale [rdi+0x19a4]. Read back at 0x1446dde59."
+  }
+ ],
+ "proofs": []
+}

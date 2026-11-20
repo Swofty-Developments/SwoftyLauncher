@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_LocationCutscene_SetInputBlockBit",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142df8980",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142df8980.c;xref:0x142df859e,0x142df85b1",
+  "notes": "(bool clear): lazily inits global FlagMaskSet 0x14604ed68 and sets (arg 0) or clears (arg 1) bit 0x4000 in word +0x30, notifying via 0x14144d8b0. Caller: Sess_LocationLoadCutscene_OnStateUpdate."
+ },
+ "signature": {
+  "id": "session.location_cutscene_set_input_block_bit",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 8B 05 ?? ?? ?? ?? 8B 15",
+  "match": "0x142df8980",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142df8980",
+  "kind": "func_start",
+  "names": [
+   "Sess_LocationCutscene_SetInputBlockBit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142df8980",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142df8980.c;xref:0x142df859e",
+   "notes": "V3815 global FlagMaskSet 0x14604ed68 lazily init'd (CS 0x14604edc0), arg0 sets / arg1 clears bit 0x4000 of word +0x30, notify 0x14144d8b0; caller Sess_LocationLoadCutscene_OnStateUpdate (+1 unnamed)"
+  }
+ ],
+ "proofs": []
+}

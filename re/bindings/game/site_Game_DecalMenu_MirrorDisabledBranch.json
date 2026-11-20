@@ -1,0 +1,43 @@
+{
+ "schema": 1,
+ "name": "site_Game_DecalMenu_MirrorDisabledBranch",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141ff7f7b",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/141ff79b0.c;doc:re/research/sponsors.md#decal-editor",
+  "notes": "Disabled-Mirror entry of the slot menu builder 0x141ff79b0 (menu+0x5cb): builds the greyed Mirror entry with the message in r15. A plugin resumes here from site_Game_DecalMenu_MirrorCheck to grey Mirror for a decal. [static L2; added at L1]"
+ },
+ "signature": {
+  "id": "game.decal_menu_mirror_disabled_branch",
+  "section": ".xtls",
+  "pattern": "EB 21 48 8B 8E 30 05 00 00 48 85 C9",
+  "match": "0x141ff7f79",
+  "anchor": "0x2",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141ff7f7b",
+  "kind": "mid",
+  "expect": "48 8B 8E 30 05 00 00",
+  "names": [
+   "site_Game_DecalMenu_MirrorDisabledBranch"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-05",
+    "by": "sponsor-studio",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "jonniedesigns.sponsor-base"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_PurchasePopup_Refresh",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1419e2b70",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "uint32_t* (void *vm, void **msg)",
+  "evidence": "decomp:re/decomp/1419e2b70.c;xref:0x145724980",
+  "notes": "myteam-g1: Refreshes the purchase popup: price, tier_range tier_begin/tier_end, item_ID.Value from transaction_queue purchase_message, attach/detach tile spawner. Shop UI."
+ },
+ "signature": {
+  "id": "ui.purchase_popup_refresh",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 80 01 00 00 C5 F8 29 B4 24 70 01 00 00 48 89 D7",
+  "match": "0x1419e2b70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419e2b70",
+  "kind": "func_start",
+  "names": [
+   "Ui_PurchasePopup_Refresh"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x1419e2b70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1419e2b70.c;xref:0x145724980",
+   "notes": "V9912 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

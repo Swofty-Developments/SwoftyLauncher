@@ -1,8 +1,9 @@
-#include "box.hpp"
-#include "fuel_plan.hpp"
+#include "core/apply/tracks/box.hpp"
+#include "core/apply/tracks/fuel_plan.hpp"
 
-#include "../applier.hpp"
-#include "../../runtime.hpp"
+#include "core/apply/applier.hpp"
+#include "core/runtime/pages.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
@@ -32,7 +33,7 @@ namespace swofty_core::apply::tracks {
 
 namespace {
 
-namespace pf = ::career_ops::fuel;
+namespace pf = ::career::ops::fuel;
 
 constexpr uintptr_t ENTITY_MODE = 0x2b0, MODE_STAT = 0x80, ENTITY_LIST = 0xe18, LIST_SEASON = 0xb0;
 
@@ -47,25 +48,7 @@ struct GameMem {
     bool c_string(uintptr_t at, std::string &out) { return swofty::mem::c_string(at, out, 64); }
 };
 
-bool writable(uintptr_t at, size_t n)
-{
-    if (!swofty::mem::readable(at, n))
-        return false;
-    uintptr_t p = at, end = at + n;
-    while (p < end) {
-        MEMORY_BASIC_INFORMATION mbi{};
-        if (!VirtualQuery(reinterpret_cast<const void *>(p), &mbi, sizeof mbi) || mbi.State != MEM_COMMIT)
-            return false;
-        DWORD prot = mbi.Protect & 0xff;
-        if (mbi.Protect & (PAGE_GUARD | PAGE_NOACCESS) || !(prot == PAGE_READWRITE || prot == PAGE_EXECUTE_READWRITE))
-            return false;
-        uintptr_t next = reinterpret_cast<uintptr_t>(mbi.BaseAddress) + mbi.RegionSize;
-        if (next <= p)
-            return false;
-        p = next;
-    }
-    return true;
-}
+bool writable(uintptr_t at, size_t n) { return runtime::pages::read_write_span(at, n); }
 
 bool put(uintptr_t at, const void *src, size_t n)
 {
@@ -340,7 +323,9 @@ public:
                     report.applied += write_laps(a, into, code);
             } else {
                 swofty::log("[tracks] box %s: %s for %s not written: %s", a.package.c_str(),
-                            box_pit && box_laps ? "pit speed limit and race laps" : box_pit ? "pit speed limit" : "race laps",
+                            box_pit && box_laps ? "pit speed limit and race laps"
+                            : box_pit           ? "pit speed limit"
+                                                : "race laps",
                             code.c_str(), pwhy.c_str());
             }
         }
@@ -454,7 +439,10 @@ int write_box_fuel_now(const Active &a, int mode_stat)
                 write_laps(a, into, "");
         } else {
             swofty::log("[tracks] box %s: %s waits for the session load: %s", a.package.c_str(),
-                        pit && laps ? "pit speed limit and race laps" : pit ? "pit speed limit" : "race laps", pwhy.c_str());
+                        pit && laps ? "pit speed limit and race laps"
+                        : pit       ? "pit speed limit"
+                                    : "race laps",
+                        pwhy.c_str());
         }
     }
     if (!any)

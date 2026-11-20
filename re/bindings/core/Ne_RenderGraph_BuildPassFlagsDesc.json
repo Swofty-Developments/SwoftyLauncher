@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_RenderGraph_BuildPassFlagsDesc",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bdc3e0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bdc3e0.c;xref:0x143c7243d",
+  "notes": "Hypothesis: builds a pass descriptor with flag mask &0x1280 from entry param_3; used by decal bake. Named callers: Ne_CustomisationDecalRenderer_BakePasses."
+ },
+ "signature": {
+  "id": "core.render_graph_build_pass_flags_desc",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC A8 01 00 00 48 89 D6 48 89 CF 49",
+  "match": "0x143bdc3e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bdc3e0",
+  "kind": "func_start",
+  "names": [
+   "Ne_RenderGraph_BuildPassFlagsDesc"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143bdc3e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143bdc3e0.c;xref:0x143c7243d",
+   "notes": "V7818 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

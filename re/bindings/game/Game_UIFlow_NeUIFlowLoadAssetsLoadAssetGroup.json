@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_UIFlow_NeUIFlowLoadAssetsLoadAssetGroup",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1441db170",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-UI_FLOW",
+  "notes": "named from its log messages (channel UI_FLOW): 'NeUIFlow::loadAssets Load AssetGroup=%hs'"
+ },
+ "signature": {
+  "id": "game.ui_flow_ne_ui_flow_load_assets_load_asset_group",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 01 00 00 C5 78 29 BC 24 90 01 00 00 C5 78 29 B4 24 80 01 00 00 C5 78 29 AC 24 70 01 00 00 C5 78 29 A4 24 60 01 00 00 C5 78 29 9C 24 50 01 00 00 C5 78 29 94 24 40 01 00 00 C5 78 29 8C 24 30 01 00 00 C5 78 29 84 24 20 01 00 00 C5 F8 29 BC 24 10 01 00 00 C5 F8 29 B4 24 00 01 00 00 48 89 D7",
+  "match": "0x1441db170",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1441db170",
+  "kind": "func_start",
+  "names": [
+   "Game_UIFlow_NeUIFlowLoadAssetsLoadAssetGroup"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x1441db170",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1441db170.c;xref:0x1444a313e",
+   "notes": "V6567 better name Game_UIFlow_Update: 14.5 KB NeUIFlow function (callbacks, asset group load/unload, hash map); channel of the logged line is UI_ASSETS not UI_FLOW"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x1441db170",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1441db170.c;xref:0x1444a313e",
+   "notes": "V7186 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

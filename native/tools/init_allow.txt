@@ -1,0 +1,146 @@
+# Objects in src/core with a dynamic initializer that tools/init_check.py lets through, each as
+# "<source>: <declaration>", as "<header>: #define <MACRO>" for every object spelled in that core macro, or as
+# "type: <type>" for every object of that type declared without an initializer, under the reason its initializer
+# reads no other translation unit's object, and each static constructor's reference to another unit's object as
+# "refers: <source>: <object>" (or, for the constructor of an inline variable or a class template's static member,
+# "refers: inline <variable>: <object>"), under the reason it reads nothing of it.
+
+# Constructs a HookGuard, which writes itself into hook_guards(), a function-local static in guards/registry.cpp; the
+# guards arm in HookGuardId order from there, whatever order their units initialize in.
+src/core/guards/career/resume_gate_guard.cpp: ResumeGateGuard guard;
+src/core/guards/guard.hpp: #define SWOFTY_HOOK_GUARD
+
+# Constructs a RankMark, which writes the length of the SDK mixin list into a constinit array in
+# runtime/loader/core_rank.cpp. The length depends on the order units initialize in, but rank_core_mixins orders the
+# list by rank from these marks, whatever that order.
+src/core/runtime/loader/core_rank.hpp: #define SWOFTY_CORE_RANK
+
+# A string copied from a literal.
+src/core/assets/gamedb.cpp: std::string reserve_off = "the reserve site is not hooked";
+
+# Binds a reference to frontend::popup::messages.queue_lock in frontend/popup.cpp, whose address is fixed at link time; it
+# reads nothing of it.
+src/core/hud/race_hud.cpp: RaceHud state{frontend::popup::messages.queue_lock};
+refers: src/core/hud/race_hud.cpp: frontend::popup::messages
+
+# Reads the system clock.
+src/core/career/career_saves.cpp: std::string session_id = std::to_string(
+
+# Empty containers and a mutex: their constructors read no other unit's object.
+src/core/render/badges/badge_images.cpp: std::map<std::string, Image> images;
+src/core/render/badges/badge_images.cpp: ArchiveAccess archive_access;
+
+# Reads the process environment.
+src/core/testing/direct_start.cpp: const bool diag_on = env_flag("SWOFTY_DIRECT_DIAG");
+# Write constinit function pointers in testing/direct_start.cpp, which hold their value before any dynamic
+# initializer runs.
+src/core/testing/direct_start_tt.cpp: const bool screen_registered = (runtime::direct_start_register_time_trial_screen(on_screen), true);
+src/core/testing/direct_start_tt.cpp: const bool registered_at_load = (runtime::direct_start_register_time_trial(registered), true);
+
+# Default-constructed hooks, containers, mutexes and function objects: their constructors set their own members and
+# read nothing else. clang reports them only as needing a destructor.
+type: ArmHooks
+type: CategoryHooks
+type: DeviceHooks
+type: ListHooks
+type: SwapchainHooks
+type: EntrantCapHooks
+type: FirstReadHooks
+type: safetyhook::InlineHook
+type: safetyhook::MidHook
+type: std::deque
+type: std::function
+type: std::map
+type: std::recursive_mutex
+type: std::set
+type: std::unordered_map
+type: std::unordered_set
+
+# Construct a CoreSet, which writes itself into the slot of its CoreSetId in registered(), a function-local static in
+# runtime/loader/core_sets.cpp, from the unit's own mixin table and commit function. The loader reads the sets in
+# CoreSetId order, whatever order their units initialize in. clang does not report them: CoreSet's destructor is a
+# defaulted virtual one.
+src/core/boxes/box_grid.cpp: static loader::FunctionSet box_grid_core_set{loader::CoreSetId::box_grid, box_grid_mixins, box_grid_commit};
+src/core/boxes/car_category.cpp: static loader::FunctionSet car_category_core_set{loader::CoreSetId::car_category, car_category_mixins, car_category_commit};
+src/core/boxes/era_picker.cpp: static loader::FunctionSet career_alias_core_set{loader::CoreSetId::career_alias, career_alias_mixins, career_alias_commit};
+src/core/boxes/era_picker.cpp: static loader::FunctionSet era_core_set{loader::CoreSetId::era, era_mixins, era_commit};
+src/core/boxes/era_picker.cpp: static loader::FunctionSet tt_guard_core_set{loader::CoreSetId::tt_guard, tt_guard_mixins, tt_guard_commit};
+src/core/career/career_content.cpp: static loader::FunctionSet career_content_core_set{loader::CoreSetId::career_content, career_content_mixins,
+src/core/career/career_content.cpp: static loader::FunctionSet tile_route_core_set{loader::CoreSetId::tile_route, tile_route_mixins, tile_route_commit};
+src/core/career/career_wizard.cpp: static loader::FunctionSet wizard_core_set{loader::CoreSetId::wizard, wizard_mixins, wizard_commit};
+src/core/career/characters.cpp: static loader::FunctionSet characters_core_set{loader::CoreSetId::characters, characters_mixins, characters_commit};
+src/core/career/save_splice.cpp: static loader::FunctionSet save_splice_core_set{loader::CoreSetId::save_splice, save_splice_mixins, save_splice_commit};
+src/core/diagnostics/tyre_models.cpp: static loader::FunctionSet tyre_models_core_set{loader::CoreSetId::tyre_models, tyre_models_mixins, tyre_models_commit};
+src/core/garage/garage_placement.cpp: static loader::FunctionSet garage_placement_core_set{loader::CoreSetId::garage_placement, garage_placement_mixins};
+src/core/guards/ai/ai_corner_guard.cpp: guards::SiteGuard guard{guards::CoreSetId::ai_corner_guard,
+src/core/guards/ai/ai_line_set_guard.cpp: guards::SiteGuard guard{guards::CoreSetId::ai_line_set,
+src/core/guards/career/myteam_vehicle_guard.cpp: guards::SiteGuard guard{guards::CoreSetId::myteam_vehicle_guard,
+src/core/guards/career/myteam_vehicle_heal.cpp: HealGuard guard;
+src/core/guards/career/myteam_vehicle_keep.cpp: KeepGuard guard;
+src/core/guards/career/standings_guard.cpp: StandingsGuard guard;
+src/core/guards/cars/chassis_registry.cpp: guards::SiteGuard guard{guards::CoreSetId::chassis_registry,
+src/core/guards/cars/ers_mode.cpp: guards::SiteGuard guard{guards::CoreSetId::ers_mode,
+src/core/guards/cars/ers_newlap.cpp: guards::SiteGuard guard{guards::CoreSetId::ers_newlap,
+src/core/guards/cars/tyre_slots.cpp: guards::SiteGuard guard{
+src/core/guards/engine/audio_queue.cpp: guards::SiteGuard guard{
+src/core/guards/engine/heap_sizes.cpp: HeapSizes guard;
+src/core/guards/engine/watchdog_grace.cpp: guards::SiteGuard guard{
+src/core/guards/frontend/fe_tile_guard.cpp: guards::SiteGuard guard{guards::CoreSetId::fe_tile_guard,
+src/core/guards/frontend/gp_continue_guard.cpp: ContinueGuard guard;
+src/core/guards/frontend/leaderboard_guard.cpp: LeaderboardGuard guard;
+src/core/guards/frontend/theatre_list.cpp: TheatreListGuard guard;
+src/core/guards/frontend/tile_list_select_guard.cpp: TileListSelectGuard guard;
+src/core/guards/garage/garage_crew.cpp: CrewGuard guard;
+src/core/guards/garage/garage_setup.cpp: guards::SiteGuard guard{guards::CoreSetId::garage_setup,
+src/core/guards/garage/garage_slots.cpp: guards::SiteGuard guard{guards::CoreSetId::garage_slots,
+src/core/guards/garage/pit_box.cpp: PitBoxGuard guard;
+src/core/guards/garage/pit_slots.cpp: guards::SiteGuard guard{
+src/core/guards/session/estimate_laptime_guard.cpp: guards::SiteGuard guard{guards::CoreSetId::estimate_laptime,
+src/core/guards/session/quali_tyres_guard.cpp: QualiTyresGuard guard;
+src/core/guards/session/red_flag_recompute_guard.cpp: guards::SiteGuard guard{guards::CoreSetId::red_flag_recompute,
+src/core/guards/session/session_enter.cpp: guards::SiteGuard guard{guards::CoreSetId::session_enter,
+src/core/guards/session/team_slots.cpp: guards::SiteGuard guard{guards::CoreSetId::team_slots,
+src/core/guards/session/thrustmaster_lcd.cpp: guards::SiteGuard guard{guards::CoreSetId::thrustmaster_lcd,
+src/core/guards/tracks/track_acclim.cpp: guards::SiteGuard guard{guards::CoreSetId::track_acclim,
+src/core/guards/tracks/track_list_guard.cpp: TrackListGuard guard;
+src/core/guards/tracks/track_select.cpp: TrackSelectGuard guard;
+src/core/hooks/car_live.cpp: static loader::FunctionSet car_levers_core_set{loader::CoreSetId::car_levers, car_levers_mixins, car_levers_commit};
+src/core/loading/game_settings.cpp: static loader::FunctionSet loading_core_set{loader::CoreSetId::loading, loading_mixins, loading_commit};
+src/core/services/lap_host.cpp: static loader::FunctionSet lap_host_core_set{loader::CoreSetId::lap_host, lap_host_mixins, lap_host_commit};
+src/core/testing/save_sandbox.cpp: static loader::FunctionSet save_sandbox_core_set{loader::CoreSetId::save_sandbox, save_sandbox_mixins, save_sandbox_commit};
+src/core/weather/setup.cpp: runtime::loader::FunctionSet weather_core_set{runtime::loader::CoreSetId::weather_chain, weather_mixins, weather_commit};
+
+# Default-constructed objects of the unit's own types, whose members are hooks, containers, mutexes, atomics and
+# constants of their own; their constructors read no other unit's object.
+src/core/apply/tracks/list.cpp: Active current;
+src/core/assets/gamedb.cpp: room::Report room_report;
+src/core/boxes/era_picker.cpp: BoxRules box_rules;
+src/core/boxes/era_picker.cpp: VirtualLists virtual_lists;
+src/core/career/ops/career_ops.cpp: Bindings bindings;
+src/core/career/ops/career_ops.cpp: Tables tables;
+src/core/career/snapshots/runtime.cpp: sn::Clock the_clock;
+src/core/diagnostics/crash/capture.cpp: FaultCapture capture;
+src/core/diagnostics/crash/fatal_paths.cpp: GameFatalPaths game_paths;
+src/core/diagnostics/crash/report_writer.cpp: ReportWriter report_writer;
+src/core/diagnostics/net_trace.cpp: Hook hooks[C_COUNT];
+src/core/diagnostics/perf.cpp: Profiler profiler;
+src/core/frontend/main_menu.cpp: MainMenu menu;
+src/core/frontend/mfd.cpp: MfdTest mfd_test;
+src/core/frontend/player_name.cpp: TimeTrialName tt_name;
+src/core/frontend/popup.cpp: MessageSystem messages;
+src/core/frontend/ui.cpp: ScreenLoader loader;
+src/core/frontend/view_state.cpp: ViewState view_state;
+src/core/guards/career/myteam_vehicle_keep.cpp: mk::Shadows shadows;
+src/core/guards/engine/placed_record.cpp: runtime::placed::Parked<void *> parked;
+src/core/guards/tracks/track_list_guard.cpp: tl::Load load;
+src/core/hooks/car_live.hpp: static inline Env env;
+src/core/hooks/game_points.hpp: static inline Probe probe;
+src/core/hooks/hooks.cpp: RecordFn records_fn;
+src/core/hooks/session_points.hpp: static inline Env env;
+src/core/hooks/session_points.hpp: static inline GameOps ops;
+src/core/hud/toast.cpp: LapToasts toasts;
+src/core/render/d3d12/rtas_guard.cpp: RtasGuard guard;
+src/core/render/d3d12/srv_clamp.cpp: SrvReports reports;
+src/core/render/grade.cpp: Grader grader;
+src/core/render/postfx.cpp: Pipeline pipeline;
+src/core/telemetry/udp_ids.cpp: ids::Map map;

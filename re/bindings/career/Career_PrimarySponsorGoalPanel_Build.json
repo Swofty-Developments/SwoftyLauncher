@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_PrimarySponsorGoalPanel_Build",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1415d7550",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *panel",
+  "evidence": "decomp:re/decomp/1415d7550.c;xref:0x1456f49f8",
+  "notes": "myteam-g1: Builds the primary sponsor goal panel: lng_primary_sponsor / \"primary sponsor goal\" widgets, goal text and progress (many vcalls into the goal object)."
+ },
+ "signature": {
+  "id": "career.primary_sponsor_goal_panel_build",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 04 00 00 C5 F8 29 B4 24 B0 04 00 00 48 89 CF 48 8B 81 A0 02 00 00",
+  "match": "0x1415d7550",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1415d7550",
+  "kind": "func_start",
+  "names": [
+   "Career_PrimarySponsorGoalPanel_Build"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x1415d7550",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1415d7550.c;xref:0x1456f49f8",
+   "notes": "V9722 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

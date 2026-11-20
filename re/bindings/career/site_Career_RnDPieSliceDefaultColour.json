@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDPieSliceDefaultColour",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f485b5",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141f48030.c;xref:0x141f485b5;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v070--the-five-sector-development-potential-pie-folded-in",
+  "notes": "Career_Populate_RnDPieSlices default case: lea rsi,[rsp+0x1b0] right after mov eax,0xffffffff; eax = slot colour (white) before the join stores it to [rsp+0x64], r14d = code"
+ },
+ "signature": {
+  "id": "career.rnd_pie_slice_default_colour",
+  "section": ".xtls",
+  "pattern": "B8 FF FF FF FF 48 8D B4 24 B0 01 00 00",
+  "match": "0x141f485b0",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f485b5",
+  "kind": "mid",
+  "expect": "48 8D B4 24 B0 01 00 00",
+  "names": [
+   "site_Career_RnDPieSliceDefaultColour"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-c",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_fifth_pie.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-2",
+   "kind": "global",
+   "item": "site_Career_RnDPieSliceDefaultColour",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f48030.c;xref:0x141f485b0,0x141f485b5,0x141f485bd,0x141f485c4,0x141f48629",
+   "notes": "V0112 lea rsi,[rsp+0x1b0] (8B) right after mov eax,0xffffffff in the default case; jmp @0x141f485c4 reaches mov [rsp+0x64],eax @0x141f48629; r14d = code; no branch into window (other cases use their own lea rsi @0x141f48621)"
+  }
+ ],
+ "proofs": []
+}

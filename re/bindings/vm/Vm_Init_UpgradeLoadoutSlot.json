@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_Init_UpgradeLoadoutSlot",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141708ad0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void *Vm_Init_UpgradeLoadoutSlot(void *self)",
+  "evidence": "decomp:re/decomp/141708ad0.c;xref:0x14170a23b;xref:0x141ae8106",
+  "notes": "myteam-g2: Initialises an upgrade loadout slot view-model: string and bool properties (Vm_Set_String, Vm_Set_Bool) from FUN_141706a50 and FUN_140974550. UI only."
+ },
+ "signature": {
+  "id": "vm.init_upgrade_loadout_slot",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 58 C5 F8 29 74 24 40 48 89 CE E8",
+  "match": "0x141708ad0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141708ad0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Init_UpgradeLoadoutSlot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x141708ad0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141708ad0.c;xref:0x14170a23b;xref:0x141ae8106",
+   "notes": "V9773 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

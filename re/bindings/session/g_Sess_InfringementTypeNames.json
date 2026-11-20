@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "g_Sess_InfringementTypeNames",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14584ed88",
+  "type": "const char*[6]",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:ghidra-headless-2026-10-25;xref:0x1435b1b0c",
+  "notes": "watched incident kinds: 0 Corner_Cutting, 1 Car_To_Car_Collision, 2 Yellow_Flag, 3 Blue_Flag, 4 Allowed_Pace_Exceeded, 5 Allowed_Pace_Falling_Back."
+ },
+ "signature": {
+  "id": "session.infringement_type_names",
+  "section": ".xtls",
+  "pattern": "48 8D 0D ?? ?? ?? ?? 48 8B 04 C1 48 89 44 24 78",
+  "match": "0x1435b1b0c",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x14584ed88",
+  "kind": "data",
+  "names": [
+   "g_Sess_InfringementTypeNames"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x14584ed88",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x1435b1b0f;decomp:re/decomp/1435b1550.c",
+   "notes": "V7460 content and refs match"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamSeasonal_SetStage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14101ca40",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t f(void *ctx)",
+  "evidence": "decomp:re/decomp/14101ca40.c;xref:0x1456b7d08",
+  "notes": "myteam-g1: Creates My_Team_Seasonal tag and applies it to the career state object at ctx+0x400."
+ },
+ "signature": {
+  "id": "career.my_team_seasonal_set_stage",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 8B B1 00 04 00 00",
+  "match": "0x14101ca40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14101ca40",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamSeasonal_SetStage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x14101ca40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14101ca40.c;xref:0x1456b7d08;str:\"My_Team_Seasonal\"",
+   "notes": "V9639 Builds string My_Team_Seasonal and passes it with ctx+0x400 to 142e6f060 (tutorial step table indexing by name hash); sets the My Team seasonal stage."
+  }
+ ],
+ "proofs": []
+}

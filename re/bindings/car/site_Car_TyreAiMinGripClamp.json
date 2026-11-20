@@ -1,0 +1,41 @@
+{
+ "schema": 1,
+ "name": "site_Car_TyreAiMinGripClamp",
+ "table": "globals",
+ "author": "jonnoAUS",
+ "row": {
+  "addr": "0x1446b7979",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "car",
+  "evidence": "decomp:own capstone disasm 0x1446b76f0-0x1446b79b1;xref:0x1446b7979,0x1446b7980,0x1446b7985,0x1446b798a,0x1446b798c;doc:re/research/weather_strategy_bindings.md#sites",
+  "notes": "AI grip floor in Car_Tyre_ComputeFfbGripFactor: cmp [car+0x124],1 (is AI), MinGrip [tt+0x24]/MaxGrip [tt+0x28], jne +8 at site+0x11 over vmaxss xmm2,[0.6] at site+0x13. Realistic Rain flips the jne to jmp in offline races so AI cars can aquaplane. Proposed L2 (car inbox)."
+ },
+ "signature": {
+  "id": "car.tyre_ai_min_grip_clamp",
+  "section": ".xtls",
+  "pattern": "83 BB 24 01 00 00 01 C5 FA 10 51 24",
+  "match": "0x1446b7979",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446b7979",
+  "kind": "mid",
+  "expect": "83 BB 24 01",
+  "names": [
+   "site_Car_TyreAiMinGripClamp"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-17",
+    "by": "rr-bindings",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

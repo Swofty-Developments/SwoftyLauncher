@@ -18,8 +18,12 @@ result-*
 docs/.vitepress/dist/
 docs/.vitepress/cache/
 
+/dxc/
 native/build/
 native/dist/
+native/dist-*/
+native/release/
+native/release-*/
 re/decomp/
 re/ghidra/*
 !re/ghidra/scripts/

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DriverCustomisationReplicationManager_HandleDriverCustomisa",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14313c810",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=DriverCustomisationReplicationManager::handleDriverCustomisationReplace; log channel NETWORK-ENTRANTS: 'void network::DriverCustomisationReplicationManager::handleDriverCustomisationReplace(neon::NeNetMessage &, neon::NeNetConnectionID) | %s : new driver customisation for %s is not the default one, reco'"
+ },
+ "signature": {
+  "id": "game.driver_customisation_replication_manager_handle_driver_customisa",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 D8 C5 00 00",
+  "match": "0x14313c810",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14313c810",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverCustomisationReplicationManager_HandleDriverCustomisa"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x14313c810",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14313c810.c;xref:0x14313c7e0",
+   "notes": "V5904 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

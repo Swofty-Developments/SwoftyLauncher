@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Game_CareerEventsSequencerPlayerDriver",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c73111",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/140c71e80.c;decomp:re/decomp/140c808e0.c;decomp:re/decomp/1431146d0.c;xref:0x140c730c6,0x140c73104,0x140c73111,0x140c73114,0x140c80962",
+  "notes": "mov r8,rax (3 bytes) in Game_CareerEventsSequencer_Initialise (+0x1291), right after the call to Ent_Get_Driver_Thunk at 0x140c73104 (rcx = r15 = [g_Game_Manager+0x290] = the entrants system, loaded at 0x140c730ec/0x140c730f3; rdx = r12 = the player's entrant record + 0x50, its packed driver ref: domain byte, u16 stat id at +2). r12 is the player's own entrant: 0x140c730a1..0x140c730db walks the game module's 0x88-byte entrant list [r15+0x2e0..+0x2e8] with Sess_Match_EntrantIdentity_Thunk (0x1431146d0 at 0x140c730c6) against a key at [rsp+0x98] whose +0x48 is the human bit 0x10000000 (0x140c7308e) and whose id block is the one g_Game_Manager+0x140 -> +0x198 -> +0x1c0 vcall +0x38 writes (0x140c72fd8..0x140c73013, after Ne_Make_RandomIdBlock as the default); the identity compare returns false when the human bits differ and compares the id block for human rows, so the match is the human entrant of the signed-in user. rax is that entrant's driver record, or 0 when the ref names no driver. The next instruction calls Game_CareerEventResourceManager_AddDriverMorphData (0x140c808e0, rcx = [rsp+0x38], rdx = r15, r8 = rax), which reads [r8+8] at +0x82 (0x140c80962) with no test and faults reading 0x8. Core hooks it and, for rax == 0, sets rip to site_Game_CareerEventsSequencerPlayerDriverJoin. A 5-byte jump covers this instruction and the call (relocated); a 14-byte jump would be refused for the call's rel32."
+ },
+ "signature": {
+  "id": "game.career_events_sequencer_player_driver",
+  "section": ".xtls",
+  "pattern": "48 8B 4C 24 38 4C 89 FA 49 89 C0 E8",
+  "match": "0x140c73109",
+  "anchor": "0x8",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c73111",
+  "kind": "mid",
+  "expect": "49 89 C0 E8",
+  "names": [
+   "site_Game_CareerEventsSequencerPlayerDriver"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "seqmate",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/career/sequencer_records_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "seqplayer-verify",
+   "kind": "global",
+   "item": "0x140c73111",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x140c71e80-0x140c74008,0x14feb1940-0x14feb19f8,0x140c808e0-0x140c80a0e,0x14c970d00-0x14c970d4c,0x1441183e1-0x1441185e3,0x1400fa590-0x1400fa644;xref:0x140c72ef8,0x140c72f6d,0x140c72fd8,0x140c73013,0x140c7308e,0x140c73099,0x140c730c6,0x140c730ec,0x140c730f3,0x140c73104,0x140c73111,0x140c73114,0x140c80962,0x14411848d,0x1441185d4;sig:game.career_events_sequencer_player_driver",
+   "notes": "V9282 Blind re-derivation on d873a1c8. 0x140c73111 = 49 89 C0 mov r8,rax, +0x1291 in .pdata 0x140c71e80..0x140c74008 (linear sweep lands exactly on 0x140c74008, 0x140c73111/14/19 are boundaries, no indirect jumps). rcx at 0x140c73104 = r15 = [[0x14604c2c8]+0x290] (0x140c730ec/0x140c730f3), rdx = r12+0x50; Ent_Get_Driver body 0x14c970d00 reads domain byte [rdx] (<=2) and u16 [rdx+2], returns 0 when absent. r12 choice: r15 = [[[g_Game_Manager]+0xc0]+0x88]+0x260 (0x140c72f53..0x140c72f6d, type-checked), loop [r15+0x2e0..0x2e8) step 0x88 calling 0x1431146d0 (jmp 0x14feb1940) with rdx = key [rsp+0x98]. Key: +0 = 0x145612e20 (EntrantRecord vtable, rdi from 0x140c72ef8, callee-saved, untouched), +8..+0x48 = id block (Ne_Make_RandomIdBlock 0x1441207d0 default, overwritten by [[[g_Game_Manager]+0x140]+0x198]+0x1c0 vcall +0x38 at 0x140c73013, copied 0x140c73016..0x140c73085), +0x48 = 0x10000000 (0x140c7308e). Matcher: false if (a+0x48 ^ b+0x48) & 0x10000000; bit clear -> whole dword equal; bit set -> id block compare (type 7: q+0x28^q+0x20; type 3 special; else 0x144121bc0(a+8,b+8)). So only human rows match, on the id block. Own evidence that mgr+0x198 is the lead (signed-in) player: in 0x144117e00 after players[0]=[mgr+0x1c0] loses its user ([+0x1c0] cleared), cmp [mgr+0x198],players[0] (0x14411848d) gates closing popups and arming Ne_PlayerManager_HandleLeadPlayerLogoutOrChangeCallback 0x14411aeb0 (lea 0x1441185d4); the same +0x1c0 players array -> +0x1c0 user layout is what Sess_Get_PlayerVehicleIndex reads off g+0x140, and the g+0x140->+0x198->+0x1c0 vcall +0x38 chain occurs 1160 times in the exe. Conclusion: r12 is the lead signed-in user's own human entrant record (+0x50 = its packed driver ref); in split-screen it is player 1 only; with no user the random id block makes the search miss and the game takes je 0x140c730ea. AddDriverMorphData 0x140c808e0: mov rbx,r8 at +0xa, mov edx,[rbx+8] at 0x140c80962 (+0x82) with no test. No branch into 0x140c73112..0x140c73118 (sweep + raw rel8/rel32/jcc32 scan of 0x140c60000..0x140c90000). sigcheck OK hits=1 match=0x140c73109 target=0x140c73111."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Sort_IntrosortU16",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140cd9da0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Sort_IntrosortU16(uint16_t *first, uint16_t *last, int64_t depth)",
+  "evidence": "decomp:re/decomp/140cd9da0.c;xref:0x140bbb37c;xref:0x140cd9e89;xref:0x140cd9ea6",
+  "notes": "myteam-g2: std::sort on uint16_t (insertion sort below 0x42 bytes, partition via FUN_140cda0b0). Used to sort id lists (resource point award ids / team department state) before saving."
+ },
+ "signature": {
+  "id": "core.sort_introsort_u16",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 38 48 89 D7 48 89 CE 48 89 D0",
+  "match": "0x140cd9da0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140cd9da0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Sort_IntrosortU16"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140cd9da0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140cd9da0.c",
+   "notes": "V9527 std::sort on ushort: insertion below 0x42 bytes, depth-limited partition."
+  }
+ ],
+ "proofs": []
+}

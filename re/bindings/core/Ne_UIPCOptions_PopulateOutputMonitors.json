@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_UIPCOptions_PopulateOutputMonitors",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c970c0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/142c970c0.c;xref:0x150482819,0x1457d50c8",
+  "notes": "cxx=NeUIPCOptions::populateOutputMonitors; log channel PC_OPTIONS: 'NeUIPCOptions::populateOutputMonitors - Adapter %d. name = %S, vendor id = %x'"
+ },
+ "signature": {
+  "id": "core.uipc_options_populate_output_monitors",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 04 00 00 C5 F8 29 B4 24 60 04 00 00 4C 89 C6 49 89 CD",
+  "match": "0x142c970c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c970c0",
+  "kind": "func_start",
+  "names": [
+   "Ne_UIPCOptions_PopulateOutputMonitors"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb1-verify",
+   "kind": "func",
+   "item": "Ne_UIPCOptions_PopulateOutputMonitors",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c970c0.c;xref:0x150482819",
+   "notes": "V1995 log strings and role confirmed in decomp"
+  }
+ ],
+ "proofs": []
+}

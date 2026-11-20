@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Init_TeamHqTabButtonData_A",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1414bf8c0",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "void Init(void *tab, ... )",
+  "evidence": "decomp:re/decomp/1414bf8c0.c;xref:0x141c407a1;xref:0x141c41c2f;xref:0x141efde7a",
+  "notes": "myteam-g2: Fills a tab descriptor struct (fixed strings via Ne_Set_FixedString, resource handle init) with flags at +0x11c..0x16d/+0x8ec; used by HubLaptop and TeamHq tab build."
+ },
+ "signature": {
+  "id": "ui.init_team_hq_tab_button_data_a",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 68 C5 F8 29 74 24 50 4D 89 C6",
+  "match": "0x1414bf8c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1414bf8c0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Init_TeamHqTabButtonData_A"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x1414bf8c0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1414bf8c0.c;xref:0x141c407a1;xref:0x141c41c2f",
+   "notes": "V9714 Constructor of a tab button widget (base ctor 1414bdac0, installs vtables 1456f7c90 etc., empty-string members), more than filling a descriptor struct."
+  }
+ ],
+ "proofs": []
+}

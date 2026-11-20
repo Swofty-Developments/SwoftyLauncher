@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Render_Material_CountResourceSlots",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c07890",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c07890.c;xref:0x143b1b629,0x143b636da,0x143b72f2f;kb:subsystems/render.md#materials",
+  "notes": "Reads NeMaterialResource (string) slot table: base count 2 plus one per slot whose type field (|2)!=3 (stride 0x28 from +0x78 list, count +0x68), hashes names via Ne_HashedName_FromString. Hypothesis: computes/binds material resource slot layout for a pass. | CORRECTION 2026-11-17 engine-re: not a counter; builds the material GPU bind layout. Slot count = 2 + number of texture records; Render_Gfx2_BindLayout_Create 0x1439917c0 (tag NeMaterialResource) -> mat+0x38; slot 0 = material constants mat+0x50, slot 1 = static 0x1458bd9d8, slots 2.. = every parameter record whose kind|2 != 3 (records stride 0x28 at mat+0x78, count mat+0x68, kind at rec+0x10; constants kind 1 and heap-index kind 3 get no slot), slot index written to rec+0x20, name from rec+0x18 (re-hashed by 0x143994bc0 when param_3). mat+0x30 >= 2 uses the 0x30-stride list mat+0x120..+0x128 instead. Bumps mat+0x1b0. 39 call sites. raised by engine-re with --force 2026-11-17 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.material_count_resource_slots",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 80 00 00 00 48 89 CE 83 79 30 01",
+  "match": "0x143c07890",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c07890",
+  "kind": "func_start",
+  "names": [
+   "Render_Material_CountResourceSlots"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143c07890",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c07890.c;xref:0x143b1b629",
+   "notes": "V7853 name and concrete claims match code"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "rndr-verify",
+   "kind": "func",
+   "item": "0x143c07890",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c07890.c;xref:143b1b629,143b636da,143b72f2f",
+   "notes": "V10812 count 2 + records with (kind|2)!=3 (stride 0x28 at [obj+0x78], count obj+0x68, kind +0x10), 0x1439917c0, slot0 obj+0x50, slot1 0x1458bd9d8, index to record+0x20; obj+0x30>=2 uses vector +0x120..+0x128 stride 0x30"
+  }
+ ],
+ "proofs": []
+}

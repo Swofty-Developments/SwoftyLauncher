@@ -1,4 +1,4 @@
-#include "../../src/core/registry/table.hpp"
+#include "core/registry/table.hpp"
 
 #include <swofty/fake_core.hpp>
 
@@ -154,10 +154,10 @@ int steps_edit(void *user, SwoftyText in, char *out, size_t cap, size_t *len)
             return SWOFTY_ASSET_INVALID;
         else if (op == "add")
             *at = at->is_int() && s["value"].is_int() ? Value(at->as_int() + s["value"].as_int())
-                                                       : Value(at->as_double() + s["value"].as_double());
+                                                      : Value(at->as_double() + s["value"].as_double());
         else if (op == "mul")
             *at = at->is_int() && s["value"].is_int() ? Value(at->as_int() * s["value"].as_int())
-                                                       : Value(at->as_double() * s["value"].as_double());
+                                                      : Value(at->as_double() * s["value"].as_double());
     }
     std::string text = swofty::json::dump(v);
     if (len)
@@ -187,7 +187,9 @@ int when_edit(void *user, SwoftyText in, char *out, size_t cap, size_t *len)
     bool have = store().read_option(w->addon, option, got);
     bool on = false;
     if (have) {
-        auto truthy = [](const Value &v) { return v.is_bool() ? v.as_bool() : v.is_number() ? v.as_double() != 0 : !v.is_null(); };
+        auto truthy = [](const Value &v) {
+            return v.is_bool() ? v.as_bool() : v.is_number() ? v.as_double() != 0 : !v.is_null();
+        };
         if (auto is = w->when.find("is"))
             on = got == *is;
         else if (auto list = w->when.find("in")) {
@@ -352,9 +354,8 @@ void setup(const Value &cs, const Value &ectx, CaseValidator &validator)
         out = *v;
         return true;
     });
-    st.set_override_source([settings](const std::string &addon) {
-        return settings[addon]["also_change_year_packs"].as_bool(false);
-    });
+    st.set_override_source(
+        [settings](const std::string &addon) { return settings[addon]["also_change_year_packs"].as_bool(false); });
     for (auto &[name, reg] : *cs["registries"].if_object()) {
         Value schema = Value::object();
         schema["x-registry"] = Value(name);
@@ -422,7 +423,9 @@ void setup(const Value &cs, const Value &ectx, CaseValidator &validator)
                 std::string kind(op["op"].as_string()), reg(op["registry"].as_string());
                 Context c = st.context();
                 std::string scope(op["scope"].as_string("global"));
-                uint32_t sc = scope == "profile" ? SWOFTY_SCOPE_PROFILE : scope == "career" ? SWOFTY_SCOPE_CAREER : SWOFTY_SCOPE_GLOBAL;
+                uint32_t sc = scope == "profile"  ? SWOFTY_SCOPE_PROFILE
+                              : scope == "career" ? SWOFTY_SCOPE_CAREER
+                                                  : SWOFTY_SCOPE_GLOBAL;
                 if (scope == "profile")
                     c.profile = std::string(op["profile"].as_string());
                 if (scope == "career")
@@ -437,12 +440,10 @@ void setup(const Value &cs, const Value &ectx, CaseValidator &validator)
                     std::string key(op["key"].as_string()), base(op["base"].as_string());
                     if (op.find("patch")) {
                         std::string v = swofty::json::dump(op["patch"]);
-                        t->variant_patch(reg.c_str(), key.c_str(), base.c_str(), SwoftyText{v.data(), v.size()}, id,
-                                         sizeof id);
+                        t->variant_patch(reg.c_str(), key.c_str(), base.c_str(), SwoftyText{v.data(), v.size()}, id, sizeof id);
                     } else {
                         keep_steps.push_back(std::make_unique<Steps>(Steps{op["edit"]}));
-                        t->variant(reg.c_str(), key.c_str(), base.c_str(), steps_edit, keep_steps.back().get(), id,
-                                   sizeof id);
+                        t->variant(reg.c_str(), key.c_str(), base.c_str(), steps_edit, keep_steps.back().get(), id, sizeof id);
                     }
                 } else if (kind == "provide") {
                     keep_provided.push_back(std::make_unique<Provided>(Provided{addon, op["records"]}));
@@ -732,8 +733,7 @@ int run_case(const std::string &path, bool verbose)
                 for (auto &x : got)
                     g.push_back(Value(x));
                 if (!(g == l["ids"]))
-                    fail("list " + std::string(l["registry"].as_string()) + " '" + std::string(l["prefix"].as_string()) +
-                             "'",
+                    fail("list " + std::string(l["registry"].as_string()) + " '" + std::string(l["prefix"].as_string()) + "'",
                          swofty::json::dump(l["ids"]), swofty::json::dump(g));
             }
         if (auto ts = ev["tag_members"].if_array())
@@ -810,7 +810,8 @@ int bench(const std::string &perf_log)
     reset_store();
     Store &st = store();
     const SwoftyRegistry *t = table();
-    std::string schema = R"({"x-registry":"bench.thing","x-applies":"read","type":"object","properties":{"items":{"type":"array","x-key":["key"],"items":{"type":"object"}}}})";
+    std::string schema =
+        R"({"x-registry":"bench.thing","x-applies":"read","type":"object","properties":{"items":{"type":"array","x-key":["key"],"items":{"type":"object"}}}})";
     t->declare("bench.thing", SwoftyText{schema.data(), schema.size()});
     const int records = 2000, addons = 8;
     std::vector<std::string> order;
@@ -891,7 +892,7 @@ int main(int argc, char **argv)
     for (auto &f : files)
         failed += run_case(f, argc >= 3);
     g_core.reset();
-    std::printf("registry corpus%s: %zu case(s), %d failure(s)\n", g_fake ? " through swofty/fake_core.hpp" : "",
-                files.size(), failed);
+    std::printf("registry corpus%s: %zu case(s), %d failure(s)\n", g_fake ? " through swofty/fake_core.hpp" : "", files.size(),
+                failed);
     return failed ? 1 : 0;
 }

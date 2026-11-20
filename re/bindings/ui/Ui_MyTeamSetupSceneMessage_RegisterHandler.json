@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_MyTeamSetupSceneMessage_RegisterHandler",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141642ee0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void (void *registry)",
+  "evidence": "decomp:re/decomp/141642ee0.c;xref:0x141641a44;xref:0x1416624f3",
+  "notes": "myteam-g2: Allocates a 0x40-byte handler object (vtable 1457799b0, id 0xffff), registers it in the handler map under key 0x14606dca0 (Ne_RobinHoodMap helpers 1416235d0/141624590) and stores it in the table at registry+0x90. Part of Ui_MyTeamSetupSceneMessage_Handle."
+ },
+ "signature": {
+  "id": "ui.my_team_setup_scene_message_register_handler",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 60 48 89 CE 48 8B 39",
+  "match": "0x141642ee0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141642ee0",
+  "kind": "func_start",
+  "names": [
+   "Ui_MyTeamSetupSceneMessage_RegisterHandler"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x141642ee0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141642ee0.c;xref:0x141641a44;xref:0x1416624f3",
+   "notes": "V9729 Allocates 0x40-byte object (vtable 1457799b0, id 0xffff), inserts via the two map helpers, stores at table +0x90."
+  }
+ ],
+ "proofs": []
+}

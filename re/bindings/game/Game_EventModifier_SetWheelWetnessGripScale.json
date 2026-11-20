@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_EventModifier_SetWheelWetnessGripScale",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1413a6330",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_EventModifier_SetWheelWetnessGripScale(void *self, uint8_t driver, float scale)",
+  "evidence": "decomp:re/decomp/1413a6330.c;doc:re/db/subsystems/game.md;xref:0x1413a69f0,0x1413a6b5c,0x14144f33c",
+  "notes": "Event modifier 'wetness_grip_scale' (EventModifierWetnessGripScale vtable 0x1456dfb60, scale +0xc8, apply 0x1413a68a0, remove 0x1413a6a10 with 1.0): writes scale to wheel+0x90 of all 4 wheels [[car+0x58]+0x580]+0x70..+0x88; flag 0x100|(scale!=1) at driver record +0x15. wheel+0x90 multiplies only the tyre water fed to WetnessGrip (wx-drive, static) | findings from PR #471 by vogtmarcel07-cloud  | engine-re 2026-11-14 re-read: wheel+0x90 is the second factor of the WetnessGrip input (tyre water wheel+0x8c * wheel+0x90, Car_Tyre_ComputeGripMultiplier 0x1446b75a1/0x1446b75a9 with this = wheel+8); default 1.0.  raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.event_modifier_set_wheel_wetness_grip_scale",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 C5 F8 29 74 24 20 80 FA FF 0F",
+  "match": "0x1413a6330",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1413a6330",
+  "kind": "func_start",
+  "names": [
+   "Game_EventModifier_SetWheelWetnessGripScale"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la0-verify",
+   "kind": "func",
+   "item": "0x1413a6330",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1413a6330.c;xref:0x1413a69f0,0x1413a6b5c",
+   "notes": "V4132 writes scale to wheel+0x90 of the 4 wheels [[car+0x58]+0x580]+0x70..+0x88 confirmed"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "wx-verify",
+   "kind": "func",
+   "item": "0x1413a6330",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1413a6330-0x1413a64c2;xref:0x1413a69f0,0x1413a6b5c,0x14144f33c",
+   "notes": "V9444 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans). driver dl (0xff -> return), scale xmm2. Entity component lookup, then writes scale to [[[car+0x58]+0x580]+0x70/+0x78/+0x80/+0x88]+0x90 (0x1413a640a-0x1413a6449) and word (scale != 1.0)|0x100 at record+0x15 (0x1413a64b1). Vtable 0x1456dfb60: slot 8 0x1413a68a0 passes [self+0xc8] (0x1413a69e5), slot 9 0x1413a6a10 passes 1.0 (0x1413a6a47); bytes after the vtable spell wetness_grip_scale. wheel+0x90 is the second factor of the WetnessGrip input in 0x1446b7390 (0x1446b75a9)."
+  }
+ ],
+ "proofs": []
+}

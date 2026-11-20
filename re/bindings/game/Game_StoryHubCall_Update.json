@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StoryHubCall_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141ecc200",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141ecc200.c;xref:0x145759140",
+  "notes": "Phone-call VM tick: triggers calls ('call triggered (%s)'), auto-declines on timeout, builds character_list with lng_2_callers / lng_3_callers, call_open. Addon: trigger or suppress story hub calls. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3076)"
+ },
+ "signature": {
+  "id": "game.story_hub_call_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 04 00 00 48 89 CE 48 8B",
+  "match": "0x141ecc200",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141ecc200",
+  "kind": "func_start",
+  "names": [
+   "Game_StoryHubCall_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d12-verify",
+   "kind": "func",
+   "item": "Game_StoryHubCall_Update",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141ecc200.c;xref:0x145759140",
+   "notes": "V3076 strings/offsets/calls match claim"
+  }
+ ],
+ "proofs": []
+}

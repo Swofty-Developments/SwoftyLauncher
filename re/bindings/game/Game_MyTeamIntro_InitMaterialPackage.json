@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamIntro_InitMaterialPackage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140265930",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void f(void)",
+  "evidence": "decomp:re/decomp/140265930.c;xref:0x1455efe08",
+  "notes": "myteam-g1: Static one-time init of the f1_my_team_int* cinematic material package (eaid environment_package path), guarded by a TLS init flag."
+ },
+ "signature": {
+  "id": "game.my_team_intro_init_material_package",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 58 E8 ?? ?? ?? ?? 48 8B 05",
+  "match": "0x140265930",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140265930",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamIntro_InitMaterialPackage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140265930",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140265930.c;str:\"VideoModuleQueue\"",
+   "notes": "V9462 Not just the my_team material: it queues several package paths on VideoModuleQueue (main_front_end videos, car_reveal, f1_my_team_int, f1_world/home); TLS guard is for the queue singleton init."
+  }
+ ],
+ "proofs": []
+}

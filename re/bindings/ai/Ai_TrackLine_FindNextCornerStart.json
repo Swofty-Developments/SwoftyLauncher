@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_TrackLine_FindNextCornerStart",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14066e830",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_TrackLine_FindNextCornerStart(void *result, float car_dist, float query_dist, void *spline_data, int route_idx)",
+  "evidence": "decomp:re/decomp/14066e830.c;decomp:re/decomp/140677ae0.c;xref:0x14066dee6,0x15499a6f4",
+  "notes": "CORRECTED 2026-11-16: reads lane+0x498 = channel 1 = BRAKE LINES (brake_line elements, type 1, 0xc8 bytes, linked at gate+0xd0 by 0x14066a8e0), not corner starts; code-true name Ai_TrackLine_FindNextBrakeLine. Name kept because native/src/core/guards/ai/ai_corner_guard.cpp and site_Ai_UpdateCars_CornerLineLoad use it (their guard logic is unaffected: result+8 can still be 0). First brake line key > query -> result+0x08, accepted if its gate lies between the corner start (result+0x20) and corner end (result+0x18) gates; result+0x38 = distance - car, else 0 / 1e38. Second pass: last brake line key < car distance -> result+0x10 with the same window test; result+0x3c = car - distance, else 0 / 1e38. Ai_Job_UpdateCarsParallel reads [result+8]+0xb8+route*8 (0x14064069e): inside the 0xc8-byte brake element (fields +0xb8/+0xc0 zeroed by the reader 0x14067ca90; a 0x40-byte corner_start element would be too small). Nordschleife r71b crash note kept: lines out of order B4 before S4, E7 = S8. L2 2026-11-16 (engine-re racing-line round): decomp read, claims checked against the disassembly, refs from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1; blind verifier agreed. raised by engine-re with --force 2026-11-16 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.track_line_find_next_corner_start",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 90 00 00 00 C5 78 29 A4 24 80 00 00 00 C5 78 29 5C 24 70 C5 78 29 54 24 60 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 C5",
+  "match": "0x14066e830",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14066e830",
+  "kind": "func_start",
+  "names": [
+   "Ai_TrackLine_FindNextCornerStart"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la0-verify",
+   "kind": "func",
+   "item": "0x14066e830",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14066e830.c;xref:0x14066dee6",
+   "notes": "V4092 route+0x498 table to result+8/+0x10/+0x38, caller Ai_Overtake_EvaluateGap"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "triage-verify",
+   "kind": "func",
+   "item": "0x14066e830",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own re/tools/decomp read on the KB build;xref:0x14066dee6",
+   "notes": "V10744 Own read. Reads lane+0x498 = channel 1 = gate+0xd0 = brake lines (brake linker stores gate+0xd0). The KB name says corner start but the code reads brake lines; the PR documents the mismatch and keeps the name only because native code binds it. Behaviour and table claims agree, the name is misleading (rename left to the corner-guard work)."
+  }
+ ],
+ "proofs": []
+}

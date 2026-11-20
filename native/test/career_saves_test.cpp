@@ -1,12 +1,12 @@
 // Host unit test for career saves: the index model (career_saves_logic.hpp) and the SDK's career::saves calls
-// over the in-memory fake table (fake_saves.hpp). run_events_test.sh builds and runs it.
-#include "../src/core/career_saves_logic.hpp"
+// over the in-memory fake table (fake_saves.hpp). native/test/run_tests.sh career_saves builds and runs it.
+#include "core/career/career_saves_logic.hpp"
 
 #include <swofty/fake_saves.hpp>
 
 #include <cstdio>
 
-namespace cs = runtime::career_saves;
+namespace cs = career::saves;
 using swofty::json::Value;
 
 static int fails;
@@ -33,7 +33,8 @@ static void index_model()
     cs::Index back;
     expect(back.load(text) && back.size() == 1, "the index reads back");
     const Value *c = back.find("m:1");
-    expect(c && (*c)["driver"].as_string() == "Max" && (*c)["season"].as_int() == 2016, "fields survive; an empty value is not written");
+    expect(c && (*c)["driver"].as_string() == "Max" && (*c)["season"].as_int() == 2016,
+           "fields survive; an empty value is not written");
     expect(c && (*c)["addons"].size() == 2 && (*c)["addons"][0]["need"].as_string() == "^1.0.0" &&
                (*c)["addons"][0]["why"].as_string() == "again",
            "a repeated need updates the addon's row and keeps the range");
@@ -85,13 +86,15 @@ static void data_files()
     uint32_t v = 0;
     std::string value;
     expect(cs::unwrap_data(wrapped, v, value) && v == 3 && value == "{\"k\":[1,2]}", "data round-trips with its version");
-    expect(!cs::unwrap_data("{\"data\":1}", v, value) && !cs::unwrap_data("nope", v, value), "a file without a version is refused");
+    expect(!cs::unwrap_data("{\"data\":1}", v, value) && !cs::unwrap_data("nope", v, value),
+           "a file without a version is refused");
     expect(cs::label_of("g", "Max", "RB", 2016) == "g: Max, RB, 2016", "label");
 }
 
 static void sdk_over_fake()
 {
     using namespace swofty;
+    namespace career = swofty::career;
     expect(!career::saves::available() && career::saves::index().empty() && career::saves::current().empty(),
            "without a table nothing is available");
     expect(career::saves::need("a.b") == career::Result::unavailable, "need is unavailable without a table");
@@ -120,8 +123,10 @@ static void sdk_over_fake()
         auto got = mine.get_current();
         expect(got && got->version == 2 && got->value["x"].as_int() == 1, "get returns the version and the value");
         expect(career::saves::data("c.d").get("m:1") == std::nullopt, "another addon's data is separate");
-        expect(mine.set("zzz", json::parse("1")) == career::Result::refused, "data for a career the index does not know is refused");
-        expect(mine.set("m:1", json::parse("{}")) == career::Result::ok && mine.get("m:1")->version == 1, "the default version is 1");
+        expect(mine.set("zzz", json::parse("1")) == career::Result::refused,
+               "data for a career the index does not know is refused");
+        expect(mine.set("m:1", json::parse("{}")) == career::Result::ok && mine.get("m:1")->version == 1,
+               "the default version is 1");
         saves.save();
         expect(career::saves::find("m:1")->last_saved == saves.clock(), "save stamps last_saved");
         expect(career::saves::missing().empty(), "nothing missing yet");
@@ -191,7 +196,8 @@ static void slot_list()
     cs::Index old;
     old.load(ix.to_json());
     r = old.apply_list({slot(1, 0xa1)}, ctx("s2", true));
-    expect(r.missing.size() == 2 && r.deleted.empty() && (*old.find("my_team:00000000000000c3"))["status"].as_string() == "missing",
+    expect(r.missing.size() == 2 && r.deleted.empty() &&
+               (*old.find("my_team:00000000000000c3"))["status"].as_string() == "missing",
            "a slot gone since a list of an earlier session is missing, not deleted");
     r = old.apply_list({slot(1, 0xa1)}, ctx("s2", false));
     expect(r.deleted.empty() && r.missing.empty(), "a career already missing stays missing");
@@ -205,7 +211,8 @@ static void slot_list()
     cs::Index sw;
     sw.apply_list({slot(1, 0xa1), slot(2, 0xb2)}, ctx("s1", true));
     r = sw.apply_list({slot(8, 0xd8)}, ctx("s1", true));
-    expect(r.missing.size() == 2 && r.deleted.empty(), "a load that shares no career with this session's list is another profile: missing");
+    expect(r.missing.size() == 2 && r.deleted.empty(),
+           "a load that shares no career with this session's list is another profile: missing");
     cs::Index none;
     none.apply_list({slot(1, 0xa1)}, ctx("s1", true));
     r = none.apply_list({}, ctx("s1", false));
@@ -221,7 +228,8 @@ static void slot_list()
     nm.apply_list({slot(1, 0xa1, 5)}, ctx("s1", true));
     nm.set_text("driver_career:00000000000000a1", "driver", "Oscar");
     nm.apply_list({slot(1, 0xa1, 5)}, ctx("s1", false));
-    expect((*nm.find("driver_career:00000000000000a1"))["driver"].as_string() == "Oscar", "a known driver name stays while the driver id is the same");
+    expect((*nm.find("driver_career:00000000000000a1"))["driver"].as_string() == "Oscar",
+           "a known driver name stays while the driver id is the same");
     nm.apply_list({slot(1, 0xa1, 6)}, ctx("s1", false));
     expect(!nm.find("driver_career:00000000000000a1")->contains("driver"), "a name is dropped when the driver id changed");
 

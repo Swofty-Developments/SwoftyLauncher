@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Objectives_Pass",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ab45a0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-OBJECTIVES",
+  "notes": "named from its log messages (channel OBJECTIVES): 'Objective [%s] has been sucessfully passed.'"
+ },
+ "signature": {
+  "id": "game.objectives_pass",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 C6 41 18 02 80 3D ?? ?? ?? ?? 01",
+  "match": "0x142ab45a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ab45a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Objectives_Pass"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142ab45a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142ab45a0.c",
+   "notes": "V5000 name/strings/body match; log-based claim holds for this function size (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "site_Car_EngineDriveTorque",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446e27a1",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "car",
+  "evidence": "decomp:re/decomp/1446e2290.c;xref:0x1446e275f",
+  "notes": "vmulss xmm9,xmm8,xmm0 in Car_Powertrain_Step: xmm0 = engine drive torque per full throttle = RevsPowerSpline(rad/s / revs_scale) x power_scale / rad/s (0 below 1e-6 rad/s, branch from 0x1446e275f lands here), xmm8 = turbo/assist factor, rbx = Engine system (CarEngine), xmm7 = rad/s. Scaling xmm0 here scales engine power for this car without touching the obfuscated spline. 4-byte insn. Duplicated notes/evidence and the stale no-signature remark removed per V1249"
+ },
+ "signature": {
+  "id": "car.engine_drive_torque",
+  "section": ".xtls",
+  "pattern": "C5 FA 5E C7 C5 3A 59 C8 48 8D 8B D8 05 00 00",
+  "match": "0x1446e279d",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446e27a1",
+  "kind": "mid",
+  "expect": "C5 3A 59 C8 48 8D 8B D8 05 00 00",
+  "names": [
+   "site_Car_EngineDriveTorque"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "car-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v4",
+   "kind": "global",
+   "item": "site_Car_EngineDriveTorque",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446e2290.c;xref:0x1446e275f;sig:car.engine_drive_torque",
+   "notes": "V1249 0x1446e27a1 vmulss xmm9,xmm8,xmm0 (4 bytes), the target of jbe 0x1446e275f (xmm0=0 when rad/s <= 1e-6). Otherwise xmm0 = spline(rbx+0x28)(xmm7/[FuelECU+0x150^0x158]) * [FuelECU+0x140^0x148] / xmm7. xmm8 = [rsi+0x4e4] * turbo +0x304 when mode 2. sigcheck passes. Notes and evidence are duplicated, and 'no signature yet' is stale."
+  }
+ ],
+ "proofs": []
+}

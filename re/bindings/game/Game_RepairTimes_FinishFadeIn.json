@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RepairTimes_FinishFadeIn",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142bf50a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142bf50a0.c;xref:0x142bf4c73,0x142bf53d0",
+  "notes": "Repair-times completion: releases fade reason RepairTimes (bit 8) on two paths -> fade in. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2700)"
+ },
+ "signature": {
+  "id": "game.repair_times_finish_fade_in",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 70 C5 78 29 4C 24 60 C5 78 29 44 24 50 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 48 89 CE 48 8B 41 70 48 8B",
+  "match": "0x142bf50a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142bf50a0",
+  "kind": "func_start",
+  "names": [
+   "Game_RepairTimes_FinishFadeIn"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d7-verify",
+   "kind": "func",
+   "item": "Game_RepairTimes_FinishFadeIn",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142bf50a0.c;xref:0x142bf50a0",
+   "notes": "V2700 fade/hide bit ids, offsets, states and curves checked against decomp; role as claimed"
+  }
+ ],
+ "proofs": []
+}

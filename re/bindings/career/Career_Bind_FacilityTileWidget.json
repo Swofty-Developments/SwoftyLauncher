@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Bind_FacilityTileWidget",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141970610",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *widget)",
+  "evidence": "decomp:re/decomp/141970610.c;xref:0x142313b1e",
+  "notes": "myteam-g1: UI widget binding for a facility tile: facility_amount, facility_colour, facility_icon, facility_name."
+ },
+ "signature": {
+  "id": "career.bind_facility_tile_widget",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 4C 89 C7 48 89 CE",
+  "match": "0x141970610",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141970610",
+  "kind": "func_start",
+  "names": [
+   "Career_Bind_FacilityTileWidget"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x141970610",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141970610.c;xref:0x142313b1e",
+   "notes": "V9842 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

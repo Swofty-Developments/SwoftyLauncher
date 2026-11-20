@@ -74,7 +74,13 @@ Before a rollback undoes a journal, the files in each `swofty/addons/<id>/` fold
 
 ## Free space
 
-Before an install backs up or copies anything, it adds up what it writes on each volume: on the game folder's, the files it copies less the files they replace; on the data folder's, the originals it backs up for the first time and 2 KB per file for the journal and the other state files. Both folders on one volume count together. When a volume has less free space than that, the install stops with `not enough free space on <drive>: this profile needs about <X> GB, <Y> GB free`, in GB of 1024³ bytes. A write that fails on a full volume during the install stops it with the same message, and the session rolls back.
+Before an install backs up or copies anything, it adds up the free space it needs on each volume. On the data folder's, that is the originals it backs up for the first time and 2 KB per file for the journal and the other state files. On the game folder's:
+
+- A file linked straight from the build output needs none.
+- The files linked from the link cache (`swofty-cache/overlay`, see [The game drive copy](/using/settings#the-game-drive-copy)) need the ones the cache doesn't hold yet, matched by size, modified time and SHA-256 as the cache matches them, plus 2 GB to spare; or, when it is less, what copying them straight into the game folder needs, less the files they replace. Play copies them that way when the cache has too little room. Cached files the profile no longer places are deleted first and count as freed. With an empty cache, every file counts.
+- With `SWOFTY_INSTALL_COPY=1`, or when the launcher can't tell the drives apart, every file counts as copied, less the files they replace.
+
+Both folders on one volume count together. When a volume has less free space than that, the install stops with `not enough free space on <drive>: this profile needs about <X> GB, <Y> GB free`, in GB of 1024³ bytes, with what that volume needs and has free. A write that fails on a full volume during the install stops it with the same message and what copying every file needs there, and the session rolls back.
 
 ## Sessions
 
@@ -85,6 +91,8 @@ While the wrapper builds and installs the profile, it rewrites `build.json` ever
 A session journal still open while the lock is free belongs to a session that ended without rolling back. `swofty run`, `swofty apply` and the wrapper roll back every open journal before they start. The launcher rolls back session journals when it starts, and keeps a `swofty apply` install. A `build.json` left while the lock is free belongs to a build whose process ended; the same rollback deletes it and `cancel-build`, and logs `the last Play stopped while <step>; Play starts the build again`. The launcher runs that rollback as soon as it finds one.
 
 Each session journal records the game folder it was written for (`"game"`). When that folder no longer has `F1_25.exe` and the rollback runs for another folder, as after Steam moved the library or the game was reinstalled elsewhere, the journal rolls back there only the files that hold exactly what it wrote: a replaced file goes back to its original and an added file is removed. Every other file of the journal is left in place and reported as `<file> is not what the earlier session wrote in the old game folder nor its original; left in place`; the stock check then names it. The journal closes either way and never stops a launch.
+
+When a file of offline play's journal stays locked, as while F1 25 or the EA app is still open, the roll back names each locked file and the journal stays. The direct `swofty run`, the next launcher start and the next Play replay it before anything else, and until one finishes the log never says the game files are rolled back: the wrapper says `rolled the profile's game files back, but not the offline play files above`, and the direct `swofty run` ends on `not every game file is back yet`.
 
 Offline play's journal names its game folder on its `meta` line. When that folder no longer has `F1_25.exe`, recovery and `swofty restore` move the journal's paths to the game folder they run for, when that folder holds at least one file the journal staged with the recorded digest and none that differs. Otherwise they stop with `offline play's record is for F1 25 in <folder>, which is gone, ...` and the journal stays.
 

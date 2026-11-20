@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Ai_Parse_DriverConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14065dc50",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_Parse_DriverConfig(AiDriverConfig *cfg, void *row)",
+  "evidence": "decomp:re/decomp/14065dc50.c;xref:0x14246671e,0x14249a748,0x14cb3433c",
+  "notes": "Fills the whole 0x2a0 AiDriverConfig, not only cede_position: alongside.* +0x00..+0x38 (Ai_Read_AlongsideConfig 0x14065da00, rcx=cfg 0x14065dc5c), blocking.* +0x40 (Ai_Parse_BlockingConfig, 0x14065dc61), cede_position.{ceding_radius, ignore_ceding_over_speed, max/min_cede_time_ratio, flying_lap_yield_to_human_track_speed_diff, yellow_flag_ramp_up_time} +0xc0..+0xe8, divebomb_defense.{max_presence_alongside, max_time_to_ignore, max_track_offset, max_track_radius} +0xf0..+0x108, exit_fallibility.throttle_error_practice/_qualifying_race +0x110/+0x118, offset_variation.* (7) +0x120..+0x150, overtake.* +0x158 (Ai_Parse_OvertakeConfig), race_start.* +0x1f0 (Ai_Parse_RaceStartConfig), space_seeking.* (13) +0x238..+0x298; each slot = Gdb field slot pointer from 0x1445a2cf0. Callers: entrants driver loader 0x142463b40 (conditional, 0x14246671e), Ai_DriverConfig_InitDefault (default_driver), 0x14cb33e40 (.data1 clone). (corrected 2026-11-14: was cede_position+divebomb only) (renamed 2026-11-14 from Ai_Parse_CedePositionConfig: the code contradicts the old name) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.parse_cede_position_config",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D6 48 89 CF E8 ?? ?? ?? ?? 48 8D 4F 40",
+  "match": "0x14065dc50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14065dc50",
+  "kind": "func_start",
+  "names": [
+   "Ai_Parse_DriverConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x14065dc50",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14065dc50.c;xref:0x246671e",
+   "notes": "V4715 parses cede_position.* and divebomb_defense.* but also exit_fallibility, offset_variation, space_seeking and calls Parse_RaceStartConfig (+0x1f0); better Ai_Parse_VehicleConfigGroups"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x14065dc50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14065dc50.c;xref:0x14246671e",
+   "notes": "V7140 name fits; finding facts hold; 3 direct calls"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x14065dc50",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14065dc50-0x14065de7e;xref:0x14246671e,0x14249a748,0x14cb3433c",
+   "notes": "V10581 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Callers 0x14246671e (0x142463b40), 0x14249a748 (Ai_DriverConfig_InitDefault), 0x14cb3433c (0x14cb33e40). 2 args. Calls Ai_Read_AlongsideConfig(cfg), Ai_Parse_BlockingConfig(cfg+0x40), cede_position +0xc0..+0xe8, divebomb +0xf0..+0x108, exit_fallibility +0x110/+0x118, offset_variation +0x120..+0x150, Ai_Parse_OvertakeConfig(cfg+0x158), Ai_Parse_RaceStartConfig(cfg+0x1f0), tail jmp 0x14065e120: binds the whole config, rename from Ai_Parse_CedePositionConfig justified."
+  }
+ ],
+ "proofs": []
+}

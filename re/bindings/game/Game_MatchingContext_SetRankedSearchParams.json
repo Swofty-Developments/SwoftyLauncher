@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MatchingContext_SetRankedSearchParams",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14315be10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14315be10.c;xref:0x14581d960",
+  "notes": "Ranked search: safety class into +0x78/+0xb0, class letter +0xb1, ranking +0xb4/+0xb8; sets matching attributes RankingMin/RankingMax/SafetyMin/SafetyMax (0x14315fb90). Addon: ranked lobby rank/safety windows. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2623)"
+ },
+ "signature": {
+  "id": "game.matching_context_set_ranked_search_params",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC A0 00 00 00 48 89 CE 80 3D",
+  "match": "0x14315be10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14315be10",
+  "kind": "func_start",
+  "names": [
+   "Game_MatchingContext_SetRankedSearchParams"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d6-verify",
+   "kind": "func",
+   "item": "Game_MatchingContext_SetRankedSearchParams",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14315be10.c;xref:0x14315be10",
+   "notes": "V2623 role/offsets/log strings match decomp"
+  }
+ ],
+ "proofs": []
+}

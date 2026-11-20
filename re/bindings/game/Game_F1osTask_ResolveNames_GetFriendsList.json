@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1osTask_ResolveNames_GetFriendsList",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432c7590",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432c7590.c;xref:0x145835008",
+  "notes": "OnlineSystemGetFriendsListTask vtable 0x145834f90 slot 15 (ref 0x145835008): unless byte +0xa2 is set, walks the friend entries (+0x120..+0x128, stride 0x80, max 256 per call) whose resolved flag (entry+0x78) is clear, looks up the display name with 0x140816b10([task+0x38]+0x540, 0x40-byte id) and stores it inline (<=32 chars) in the entry, setting the flag; when all are resolved it finishes the task ('setting finished', done +0xa1). Addon: read friend display names after this runs. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3297)"
+ },
+ "signature": {
+  "id": "game.f1os_task_resolve_names_get_friends_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 80 B9 A2 00 00",
+  "match": "0x1432c7590",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432c7590",
+  "kind": "func_start",
+  "names": [
+   "Game_F1osTask_ResolveNames_GetFriendsList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_F1osTask_ResolveNames_GetFriendsList",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432c7590.c;xref:0x145835008",
+   "notes": "V3297 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

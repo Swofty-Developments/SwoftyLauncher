@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VirtualSession_Simulate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f6e150",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f6e150.c;xref:0x140bd4cb3",
+  "notes": "Called by Game_Championship_VirtualiseSession: simulates a skipped championship::Session (param_2) without driving: resets sub-systems (vcalls +0x70/+0x58 on members +0x30/+0xb8/+0x88/+0xa8/+0x98/+0x70), Sess_GameWeatherSystem_SetActiveSessionType(sessionId Session+8), sets Session+0x94 (fraction of laps completed) = 1.0, logs VIRTUAL-SESSION 'Preparing to virtualse session %s' (names table 0x145803d30), then builds results per ruleset Session+0xc (switch 1..13) using duration +0x64 and Session+0x90/+0x91. Addon: hook to change results of simulated (skipped) sessions. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2487)"
+ },
+ "signature": {
+  "id": "game.virtual_session_simulate",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 0B 00 00 C5 F8 29 B4 24 70 0B 00 00 44 89 CF 4D",
+  "match": "0x142f6e150",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f6e150",
+  "kind": "func_start",
+  "names": [
+   "Game_VirtualSession_Simulate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-b",
+   "kind": "func",
+   "item": "Game_VirtualSession_Simulate",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f6e150.c;xref:0x140bd4cb3",
+   "notes": "V2487 SetActiveSessionType(weather,+8), Session+0x94=1.0, VIRTUAL-SESSION log, switch on Session+0xc (1..13) using +0x64 and +0x90/+0x91"
+  }
+ ],
+ "proofs": []
+}

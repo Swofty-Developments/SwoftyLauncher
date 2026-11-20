@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Car_Input_SmsSteer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446ce000",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446ce000.c;doc:re/db/subsystems/car.md",
+  "notes": "Pad SMS steering: grip-limited target angle from v^2/(grip*g), lock/rate fields block +0x22dc..+0x239c, rate * block+0x54 (user steering_rate_scale) (agent options, partly H)"
+ },
+ "signature": {
+  "id": "car.input_sms_steer",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C4 C1 7A 10 8F C8 01 00 00 C5 FA",
+  "match": "0x1446cdd02",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1446ce000",
+  "kind": "func_start",
+  "names": [
+   "Car_Input_SmsSteer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x1446ce000",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1446ce000.c;xref:0x1446cdd02",
+   "notes": "V7418 grip-limited angle v^2/(grip*9.81) and block fields +0x22dc/+0x239c confirmed; no +0x54 steering_rate_scale access found; caller Car_PadAssist_DriftAssist"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "k_Ne_MemWriteStreamVtbl",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145bf0f20",
+  "type": "vtable[33]",
+  "level": "L3",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/1429ce380.c;xref:0x1429ce7c0;trace:T010/run2:86288;trace:T010/run4:86249;trace:T010/run3",
+  "notes": "Memory write stream (0x28 bytes: data +0x8, capacity +0x10, position +0x18, high-water size +0x20): vt+0x48 0x1445da3d0 returns 0x37 when vt+0x100 (0x1445da910, capacity - position) is below the length, else copies to data+position and advances; vt+0x50 0x1445da490 writes one byte through vt+0x48. Never grows."
+ },
+ "signature": {
+  "id": "core.mem_write_stream_vtbl",
+  "section": ".xtls",
+  "pattern": "49 89 C6 48 8D 05 ?? ?? ?? ?? 48 89 44 24 68",
+  "match": "0x1429ce7bd",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x3",
+   "len": 7
+  },
+  "target": "0x145bf0f20",
+  "kind": "data",
+  "names": [
+   "k_Ne_MemWriteStreamVtbl"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-27",
+    "by": "splicesaves",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/career/save_splice.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-27",
+   "verifier": "splice-verify",
+   "kind": "global",
+   "item": "k_Ne_MemWriteStreamVtbl",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1429ce380.c;xref:0x1445da3d0,0x1445da490,0x1445da910,0x1445da430;xref:0x1429ce7c0,0x1429ce7c7,0x1429ce7cc,0x1429ce7d1,0x1429ce7da,0x1429ce8ad,0x1429ce8d4;xref:0x140c90598,0x140fd0c93,0x140fe9938,0x14258af38,0x1429ce7c3,0x142c4743f,0x1432c6d38,0x14364acd2",
+   "notes": "V1120 vt+0x48 = 0x1445da3d0: rax=[this]->vt+0x100(); if rax < len it returns 0x37 before any write; else memcpy(data[+8] + position[+0x18], src, len), position += len, and if position > [+0x20] then [+0x20] = position; returns 0. vt+0x100 = 0x1445da910 returns [+0x10]-[+0x18] (capacity - position). vt+0x50 = 0x1445da490 writes one byte through vt+0x48. Neither slot (nor vt+0x40 0x1445da430, the stream-to-stream copy) allocates or reallocates; the capacity is fixed by the owner (0x1429ce380 allocates (count+0x20)*1.01 bytes up front). 27 lea refs in 26 functions."
+  }
+ ],
+ "proofs": []
+}

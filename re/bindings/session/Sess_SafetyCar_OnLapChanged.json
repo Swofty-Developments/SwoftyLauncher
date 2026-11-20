@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_SafetyCar_OnLapChanged",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f223c0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-SAFETY_CAR;decomp:re/decomp/142f223c0.c;xref:0x142f2748e,0x142f2750a,0x14302669d",
+  "notes": "Log channel SAFETY_CAR: 'Safety Car Lap Number Changed from: %d to %d' sb-verify-a: large SC update function, the log string is incidental"
+ },
+ "signature": {
+  "id": "session.safety_car_on_lap_changed",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 7C 24 40 C5 F9 29 74 24 30",
+  "match": "0x142f223c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f223c0",
+  "kind": "func_start",
+  "names": [
+   "Sess_SafetyCar_OnLapChanged"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb-verify-a",
+   "kind": "func",
+   "item": "Sess_SafetyCar_OnLapChanged",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f223c0.c;xref:0x14302669d",
+   "notes": "V1842 log SAFETY_CAR 'Safety Car Lap Number Changed from: %d to %d' when +0x24 != +0x28; function is a large update, log is incidental"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,42 @@
+{
+ "schema": 1,
+ "name": "Loc_LocaleModule_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144435970",
+  "level": "L2",
+  "subsystem": "loc",
+  "proto": "int32_t Loc_LocaleModule_Init(void *module)",
+  "evidence": "decomp:re/decomp/144435970.c;xref:0x1455f3df0",
+  "notes": "vt_Loc_LocaleModule slot +0x20 (postConnect): allocates the 0x13 language sets (0xb8, vt_Loc_LangSet) at module+0x28+lang*0x10, the listener list at module+0x170 ({alloc, begin +8, end +0x10}, 16-byte {fn, ctx} entries), loads the current language and on success stores module+0x160 = language index and calls every listener fn(ctx, language, 1). Registered by native-1990 for the core runtime string overrides (feat/lang-override); map in f1-modding re/db/subsystems/loc.md."
+ },
+ "signature": {
+  "id": "loc.locale_module_init",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC A0 03 00 00",
+  "match": "0x144435970",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144435970",
+  "kind": "func_start",
+  "names": [
+   "Loc_LocaleModule_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/assets/lang_override.cpp"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

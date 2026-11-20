@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_JobQueue_RunPendingJobs",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ac0d90",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143ac0d90.c;xref:0x143ac0303,0x143b5a892",
+  "notes": "Runs queued jobs of a job queue until empty or a signal fires: iterates the queue lists (flags +0xab/+0xac), uses Ne_JobQueue_TryAcquireJob and 0x143ac5030, tracks a time budget (+0xb4 / 1e6 seconds), sets job-done bits in the owner (+0xc4). Callers Ne_JobSignal_WaitWithTimeout (0x143ac0303) and the frame start/end path 0x143b5a720. Hypothesis."
+ },
+ "signature": {
+  "id": "core.job_queue_run_pending_jobs",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 01 00 00 4C 89 C6 48 89 D7 48 89 CB",
+  "match": "0x143ac0d90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143ac0d90",
+  "kind": "func_start",
+  "names": [
+   "Ne_JobQueue_RunPendingJobs"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x143ac0d90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ac0d90.c;xref:0x143ac0303",
+   "notes": "V8317 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

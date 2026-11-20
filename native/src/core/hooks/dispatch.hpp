@@ -13,8 +13,8 @@
 
 #include "swofty_api.h"
 
-#include "catalogue.hpp"
-#include "context.hpp"
+#include "core/hooks/catalogue.hpp"
+#include "core/hooks/context.hpp"
 
 // Hook points and events (standard library 1.6). A point is a name with a kind (notify: after; modify:
 // before and after; cancel: before, replace and after), a payload version and, for an addon's point,
@@ -59,8 +59,7 @@ struct GameLink {
 struct Platform {
     std::function<void(const std::string &)> log;
     std::function<int(const Handler &, SwoftyHookCall *, bool isolate, Fault *)> call;
-    std::function<void(const std::string &point, const char *phase, const std::string &addon, const std::string &what)>
-        faulted;
+    std::function<void(const std::string &point, const char *phase, const std::string &addon, const std::string &what)> faulted;
     std::function<void(Handler &, const std::string &point)> attached;
     // An addon's place in load order (1 = first; 0 = unknown, ranked after every known addon in the
     // order it first attached).
@@ -146,8 +145,7 @@ public:
         const char *tag = event ? "[events]" : "[hooks]";
         if (kind > SWOFTY_POINT_CANCEL || name.empty())
             return refuse(std::string(tag) + " define " + name + " by " + who(addon) + " refused: no such kind");
-        if (addon.empty() || name.size() <= addon.size() + 1 || name.compare(0, addon.size(), addon) ||
-            name[addon.size()] != '.')
+        if (addon.empty() || name.size() <= addon.size() + 1 || name.compare(0, addon.size(), addon) || name[addon.size()] != '.')
             return refuse(std::string(tag) + " define " + name + " by " + who(addon) +
                           " refused: an addon defines points under its own id (" + who(addon) + ".*)");
         Selectors scope;
@@ -173,22 +171,21 @@ public:
         }
         for (auto &line : refused)
             log(line);
-        log(std::string(tag) + " define " + name + " (" + catalogue::kind_name(kind) + ", payload v" +
-            std::to_string(version) + (scope_json.empty() || scope_json == "[]" ? "" : ", scope " + std::string(scope_json)) +
-            ") by " + addon + " -> ok");
+        log(std::string(tag) + " define " + name + " (" + catalogue::kind_name(kind) + ", payload v" + std::to_string(version) +
+            (scope_json.empty() || scope_json == "[]" ? "" : ", scope " + std::string(scope_json)) + ") by " + addon + " -> ok");
         return SWOFTY_ASSET_OK;
     }
 
-    int attach(const std::string &addon, const std::string &name, uint32_t phase, int32_t priority,
-               std::string_view selectors, SwoftyHookFn fn, void *user, uint32_t *token, uint64_t module = 0)
+    int attach(const std::string &addon, const std::string &name, uint32_t phase, int32_t priority, std::string_view selectors,
+               SwoftyHookFn fn, void *user, uint32_t *token, uint64_t module = 0)
     {
         if (!fn || name.empty() || phase > SWOFTY_PHASE_AFTER)
             return refuse("[hooks] attach to " + name + " by " + who(addon) + " refused: no handler, point or phase");
         auto h = std::make_shared<Handler>();
         std::string why;
         if (!Selectors::compile(selectors, h->scope, &why))
-            return refuse("[hooks] attach " + std::string(catalogue::phase_name(phase)) + " on " + name + " by " +
-                          who(addon) + " refused: " + why);
+            return refuse("[hooks] attach " + std::string(catalogue::phase_name(phase)) + " on " + name + " by " + who(addon) +
+                          " refused: " + why);
         h->addon = addon, h->phase = phase, h->priority = priority, h->fn = fn, h->user = user, h->module = module;
         GameLink *install = nullptr;
         std::string line, subs;
@@ -361,7 +358,9 @@ public:
             if (!h->scope.empty() && !h->scope.match(*snap))
                 continue;
             bool owner = is_owner(*snap, h->addon);
-            (h->phase == SWOFTY_PHASE_BEFORE ? before : h->phase == SWOFTY_PHASE_REPLACE ? replace : after)
+            (h->phase == SWOFTY_PHASE_BEFORE    ? before
+             : h->phase == SWOFTY_PHASE_REPLACE ? replace
+                                                : after)
                 .push_back({h.get(), owner});
         }
         auto ordered = [](const Pick &a, const Pick &b) {
@@ -412,8 +411,8 @@ public:
             if (f.faulted) {
                 detach(x.h->token);
                 x.h->live = false;
-                faults.push_back(p.event ? std::string(tag) + " after handler from " + who(x.h->addon) + " faulted on " +
-                                               name + " (" + f.what + "); handler detached for this session"
+                faults.push_back(p.event ? std::string(tag) + " after handler from " + who(x.h->addon) + " faulted on " + name +
+                                               " (" + f.what + "); handler detached for this session"
                                          : std::string(tag) + " " + name + ": after handler from " + who(x.h->addon) +
                                                " faulted (" + f.what + "); handler detached for this session");
                 if (p_.faulted)
@@ -477,7 +476,9 @@ public:
                 for (auto &h : p.handlers) {
                     if (!h->live || !catalogue::has_phase(p.kind, h->phase))
                         continue;
-                    (h->phase == SWOFTY_PHASE_BEFORE ? next->before : h->phase == SWOFTY_PHASE_REPLACE ? next->replace : next->after)
+                    (h->phase == SWOFTY_PHASE_BEFORE    ? next->before
+                     : h->phase == SWOFTY_PHASE_REPLACE ? next->replace
+                                                        : next->after)
                         .push_back(h);
                 }
                 auto ordered = [](const std::shared_ptr<Handler> &a, const std::shared_ptr<Handler> &b) {
@@ -743,9 +744,8 @@ private:
 
     static std::string no_phase(const Point &p, uint32_t phase, const std::string &addon)
     {
-        return std::string(p.event ? "[events] " : "[hooks] ") + p.name + " has no " + catalogue::phase_name(phase) +
-               " phase (" + catalogue::kind_name(p.kind) + (p.event ? " event" : " point") + "); handler from " +
-               who(addon) + " not attached";
+        return std::string(p.event ? "[events] " : "[hooks] ") + p.name + " has no " + catalogue::phase_name(phase) + " phase (" +
+               catalogue::kind_name(p.kind) + (p.event ? " event" : " point") + "); handler from " + who(addon) + " not attached";
     }
 
     std::vector<std::string> prune(Point &p)

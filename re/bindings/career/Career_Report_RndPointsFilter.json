@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Report_RndPointsFilter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14071f070",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t FUN(void *career_ctx, void *event)",
+  "evidence": "decomp:re/decomp/14071f070.c;xref:0x1406dbcf4;xref:0x1406fdc45",
+  "notes": "myteam-g1: Matches an R&D points event against the team record list (0x88-byte entries at team+0x2e0..0x2e8, compares +0x50/+0x52) and builds the rnd_points_report; returns 0 if nothing matches. Reads career ctx +0x209c0."
+ },
+ "signature": {
+  "id": "career.report_rnd_points_filter",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC C8 00 00 00 48 89 D3 48 89 CE",
+  "match": "0x14071f070",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14071f070",
+  "kind": "func_start",
+  "names": [
+   "Career_Report_RndPointsFilter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x14071f070",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14071f070.c;str:\"rnd_points_report\"",
+   "notes": "V9474 Scans 0x88 entries at team+0x2e0..0x2e8 comparing +0x50/+0x52 with the event key, builds rnd_points_report; career ctx +0x209c0 used."
+  }
+ ],
+ "proofs": []
+}

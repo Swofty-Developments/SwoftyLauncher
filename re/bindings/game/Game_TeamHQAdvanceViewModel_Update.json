@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Game_TeamHQAdvanceViewModel_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422ca380",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_TeamHQAdvanceViewModel_Update(void *vm)",
+  "evidence": "decomp:re/decomp/1422ca380.c;xref:0x14577aa20;decomp:re/decomp/1422ca380.c;xref:0x14577aa20",
+  "notes": "slot 12 (vt+0x60) of vt_Game_TeamHQAdvanceViewModel, the view model's per-frame update and only reached through that slot: returns 0 while the calendar lookup on vm+0x6e8 is null; online careers re-check the super-ready window; while advancing or stopping (vm+0x759|vm+0x75a) and the tick delay vm+0x760 has elapsed since vm+0x740 (QPC, freq vm+0x750) and nothing waits (vm+0x766|vm+0x922) it runs Career_TeamHqAdvance_OnTimer(vm). rcx = the TeamHQAdvanceViewModel: the capture point for test code. ts-v1 signature for the test agent (V1490 agree) Callers: census steam 0x22ca380."
+ },
+ "signature": {
+  "id": "game.team_hq_advance_view_model_update",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 CE 48 8B 89 E8 06 00 00",
+  "match": "0x1422ca380",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422ca380",
+  "kind": "func_start",
+  "names": [
+   "Game_TeamHQAdvanceViewModel_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "ts-v1",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/testing/agent/agent.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "ts-v1",
+   "kind": "func",
+   "item": "0x1422ca380",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422ca380.c;xref:0x14577aa20",
+   "notes": "V1491 ts-v1 re-read: slot 12 (+0x60) of vt 0x14577a9c0 (exe: 0x1422ca380); rcx = the view model; only runs Career_TeamHqAdvance_OnTimer while advancing (+0x759) or stopping (+0x75a). A mid hook at the entry capturing rcx is sound. Agrees."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "d12-verify",
+   "kind": "func",
+   "item": "Game_TeamHQAdvanceViewModel_Update",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422ca380.c;xref:0x14577aa20",
+   "notes": "V3090 strings/offsets/calls match claim"
+  }
+ ],
+ "proofs": []
+}

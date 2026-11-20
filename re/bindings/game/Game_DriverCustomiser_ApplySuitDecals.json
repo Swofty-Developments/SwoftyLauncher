@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DriverCustomiser_ApplySuitDecals",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401a9390",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-DRIVER_ACTOR_CUSTOMISER/DECALS",
+  "notes": "named from its log messages (channel DRIVER_ACTOR_CUSTOMISER/DECALS): 'applySuitDecals (%p, %f, %f)' | callers 0x1401b7540,0x14288f950,0x142893ae0,0x1428a2ef0"
+ },
+ "signature": {
+  "id": "game.driver_customiser_apply_suit_decals",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 06 00 00 C5 F8 29 B4 24 90 06 00 00",
+  "match": "0x1401a9390",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401a9390",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverCustomiser_ApplySuitDecals"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1401a9390",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401a9390.c",
+   "notes": "V4330 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

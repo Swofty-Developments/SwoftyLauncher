@@ -1,4 +1,4 @@
-"""Static mirror of the core's runtime string-anchor resolver (native/src/core/manager.cpp).
+"""Static mirror of the core's runtime string-anchor resolver (native/src/core/runtime/manager.cpp).
 
 A binding is normally resolved by scanning for a byte pattern baked from one build. That fails on
 any other build. The string-anchor path instead, for each binding:
@@ -211,7 +211,7 @@ def best_anchor_string(func_rva, locs=None, funcmap=None):
 
 
 def apply_resolve(match_va, anchor, resolve):
-    """Reproduce native/src/core/manager.cpp resolve_binding: match + anchor/resolve -> target VA."""
+    """Reproduce native/src/core/runtime/manager.cpp resolve_binding: match + anchor/resolve -> target VA."""
     kind = resolve.get('kind', 'addr')
     at = match_va + int(str(anchor), 0)
     if kind == 'addr':

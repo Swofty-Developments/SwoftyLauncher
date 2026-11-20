@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_BenchmarkBenchmarkResultsConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1407acba0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: GameVersionNumber.display_cl, benchmark.benchmark_results, benchmark.benchmark_results.antialiasing.value, benchmark.benchmark_results.average_fps.value, benchmark.benchmark_results.average_frame_time.value, benchmark.benchmark_results.cpu.value, benchmark.benchmark_resu'"
+ },
+ "signature": {
+  "id": "game.read_benchmark_benchmark_results_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 07 00 00 48 89 CD",
+  "match": "0x1407acba0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407acba0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_BenchmarkBenchmarkResultsConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb02-verify",
+   "kind": "func",
+   "item": "0x1407acba0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1407acba0.c",
+   "notes": "V4299 log/string match decomp"
+  }
+ ],
+ "proofs": []
+}

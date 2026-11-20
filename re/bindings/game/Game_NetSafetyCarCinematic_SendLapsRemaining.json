@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetSafetyCarCinematic_SendLapsRemaining",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14362b9f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14362b9f0.c;xref:0x145852bc0",
+  "notes": "Sends the laps remaining message {0xa0} per SC to a connection. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2785)"
+ },
+ "signature": {
+  "id": "game.net_safety_car_cinematic_send_laps_remaining",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 83 79 48 01 0F 8F ?? ?? ?? ?? 48 89 CE 48 8B 41 38 4C 8B 68 48 48 8B 68 50 49 39 ED 0F 84 ?? ?? ?? ?? 89 D3 80 FA 01 BF 02 00 00 00 83 DF 00 4C 8D 25 ?? ?? ?? ?? 4C 8D 74 24 28 4C",
+  "match": "0x14362b9f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14362b9f0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetSafetyCarCinematic_SendLapsRemaining"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d8-verify",
+   "kind": "func",
+   "item": "Game_NetSafetyCarCinematic_SendLapsRemaining",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14362b9f0.c;xref:0x14362b9f0",
+   "notes": "V2785 msg {0xa0} confirmed"
+  }
+ ],
+ "proofs": []
+}

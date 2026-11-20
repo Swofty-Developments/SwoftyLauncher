@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetTransportLAN_OnConnectionLost",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144092b90",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144092b90.c;xref:0x14406029b",
+  "notes": "Reliable-socket lost callback: finds the store entry by address (type 1 ip/port or 2 string) and clears its bit in the connectivity matrix of transport this+0x60."
+ },
+ "signature": {
+  "id": "core.net_transport_l_a_n_on_connection_lost",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 8B 42 08 89",
+  "match": "0x144092b90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144092b90",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetTransportLAN_OnConnectionLost"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d6-verify",
+   "kind": "func",
+   "item": "Ne_NetTransportLAN_OnConnectionLost",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144092b90.c;xref:0x144092b90",
+   "notes": "V2646 role/offsets/log strings match decomp"
+  }
+ ],
+ "proofs": []
+}

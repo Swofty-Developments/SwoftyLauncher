@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TabHostVM_OnCommand",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a7d6e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141a7d6e0.c;xref:0x14572b1e0",
+  "notes": "Slot 10 (OnAction) of tab-host VM vt 0x14572b190: logs UI 'Command Raised: %s' and dispatches the command to the tab list (0x142554d10 / 0x142555050). Addon: log/hook for every UI command name. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3208)"
+ },
+ "signature": {
+  "id": "game.tab_host_v_m_on_command",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 70 4C 89 C6 48 89 D7 48 89 CB 80 3D",
+  "match": "0x141a7d6e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a7d6e0",
+  "kind": "func_start",
+  "names": [
+   "Game_TabHostVM_OnCommand"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d14-verify",
+   "kind": "func",
+   "item": "Game_TabHostVM_OnCommand",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/41a7d6e0.c;xref:None",
+   "notes": "V3208 offsets, vtable slot/callers, strings and calls checked in decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

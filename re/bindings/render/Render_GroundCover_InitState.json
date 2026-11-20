@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_GroundCover_InitState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143cee760",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143cee760.c;xref:0x143ce0a31",
+  "notes": "Initialiser of the large ground-cover (vegetation instance) state block: zeroes ~0x2400 bytes of SIMD slots (+0x4e0..+0xad0), fills 0xFF mask arrays (+0x640..+0x690) and seven empty-string slots (0x1456135b2) at +0xb30.. Caller Render_GroundCover_Construct. Hypothesis on field meaning."
+ },
+ "signature": {
+  "id": "render.ground_cover_init_state",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 C5 F9 7F 7C 24 30 C5 F8 29 74 24",
+  "match": "0x143cee760",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143cee760",
+  "kind": "func_start",
+  "names": [
+   "Render_GroundCover_InitState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143cee760",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143cee760.c;xref:0x143ce0a31",
+   "notes": "V7899 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,62 @@
+{
+ "schema": 1,
+ "name": "Ne_PhysWorld_InitFromConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440c3940",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1440c3940.c;xref:0x14445798c",
+  "notes": "Fills a physics world from the PhysicsWorldConfig struct (u32 counts at cfg idx 0x2c..0x35 size pools <<3, deg->rad 0.017453292, defaults 0.3/0.7/0.5/1.0). 1426 lines; called twice by Game_Read_PhysicsWorldConfig (0x144457220). Addon: pool sizes and tolerances of the physics world come from this block. | 2026-11-17 engine-re: object pools (each {base, free list, element size, capacity +0x18, used +0x1c}): world+0x30 = cfg+0xc0 maxFixedObjects (element 0xa0, 0x1440c5c5b), world+0x38 = cfg+0xc4 maxRigidBodies (0x4b0, 0x1440c5d5b), world+0x40 = cfg+0xc8 maxLargeGeoms (0x220, 0x1440c5e5b, stored 0x1440c5f36). The +0x40 pool is the one Ne_MoverCollision_BuildMoverShapes takes every VCQTC tile object from, so maxLargeGeoms caps the number of track collision tiles (shared with other large geoms in that world)."
+ },
+ "signature": {
+  "id": "core.phys_world_init_from_config",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 89 7E 20 48 8B 47 08 48 8B 40",
+  "match": "0x14445798c",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1440c3940",
+  "kind": "func_start",
+  "names": [
+   "Ne_PhysWorld_InitFromConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x1440c3940",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440c3940.c;xref:0x14445798c",
+   "notes": "V8167 decomp body and callers match claim"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "trkrt-verify",
+   "kind": "func",
+   "item": "Ne_PhysWorld_InitFromConfig",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440c3940.c",
+   "notes": "V10777 pools +0x30/+0x38/+0x40 from cfg +0xc0/+0xc4/+0xc8, element sizes 0xa0/0x4b0/0x220"
+  }
+ ],
+ "proofs": []
+}

@@ -1,6 +1,6 @@
 #pragma once
-#include "live_mem.hpp"
-#include "live_state.hpp"
+#include "core/live/live_mem.hpp"
+#include "core/live/live_state.hpp"
 
 #include <mutex>
 #include <vector>

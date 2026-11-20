@@ -1,0 +1,43 @@
+{
+ "schema": 1,
+ "name": "site_Sess_Strategy_TeammatePairSort",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436abcaa",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/1436abb70.c;decomp:re/decomp/1436b36f0.c;xref:0x1436abca4,0x1436abcaa,0x1436abcf4",
+  "notes": "cmp r13,0x10 (4 bytes) then jb rel32 to 0x1436abd80 (10-byte window; no branch lands inside) in Sess_Strategy_UpdateTeammatePairs, in the per-team loop after 0x1424abd60 returns the team car vector: r12 = vector begin, rbp = end, r13 = rbp - r12 (bytes, 8 per car record pointer), r14 = pointer to the team entry in the participant list (team id dword at [[r14]+0x28]), rsi = the session. Below 0x10 bytes the team has no pair and the code goes to 0x1436abd80. Otherwise, when the +0x81 bytes of records 0 and 1 are both set it calls the introsort 0x1436b36f0 (sorts by byte +0x80; every compare throws through Ne_Std_ThrowBadOptionalAccess when a record has +0x81 == 0), both clear it calls 0x1436b3e00, different it skips the sort. After the sort only records 0 and 1 are read (0x1436abd80). A team with a third car (garage third car in the garage crew guard) has a record with +0x81 == 0, so the sort throws as the session is entered: FatalExceptionTerminate, FAST_FAIL_INVALID_ARG (Panzerfaust_975, 1.7.16, 24 participants on 23 vehicles). Core sets rbp = r12 + 0x10 and r13 = 0x10 for a vector of more than two cars, so only the first two are sorted and paired. L1: the site is found by byte scan."
+ },
+ "signature": {
+  "id": "session.strategy_teammate_pair_sort",
+  "section": ".xtls",
+  "pattern": "49 83 FD 10 0F 82 ?? ?? ?? ?? 49 8B 04 24 49 8B 54 24 08 0F B6 88 81 00 00 00",
+  "match": "0x1436abcaa",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436abcaa",
+  "kind": "mid",
+  "expect": "49 83 FD 10 0F 82",
+  "names": [
+   "site_Sess_Strategy_TeammatePairSort"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-02",
+    "by": "tp-guard",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/session/teammate_pairs_guard.cpp"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

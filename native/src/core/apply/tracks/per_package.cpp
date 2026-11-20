@@ -1,7 +1,7 @@
-#include "box.hpp"
+#include "core/apply/tracks/box.hpp"
 
-#include "../applier.hpp"
-#include "../scheduler.hpp"
+#include "core/apply/applier.hpp"
+#include "core/apply/scheduler.hpp"
 
 #include <swofty/mixin.hpp>
 
@@ -86,9 +86,6 @@ private:
 
 }
 
-void register_per_package()
-{
-    make<PerPackage>();
-}
+void register_per_package() { make<PerPackage>(); }
 
 }

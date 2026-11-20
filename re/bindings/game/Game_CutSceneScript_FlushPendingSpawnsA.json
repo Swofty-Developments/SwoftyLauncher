@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CutSceneScript_FlushPendingSpawnsA",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14018eb70",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14018eb70.c;xref:0x14024093d",
+  "notes": "Under critical section (+200) moves every pointer from the pending list (+0x28..+0x30) into the active vector (+0x68, 1.5x growth, allocator +0x60) then clears pending. Variant A of the two near-identical cutscene spawn-queue flushes; 142 callers (every cutscene Initialise). Hypothesis."
+ },
+ "signature": {
+  "id": "game.cut_scene_script_flush_pending_spawns_a",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 48 89 CE 48 8B 89 C8 00 00 00 FF 15 ?? ?? ?? ?? 48 8B 46 30 49",
+  "match": "0x14018eb70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14018eb70",
+  "kind": "func_start",
+  "names": [
+   "Game_CutSceneScript_FlushPendingSpawnsA"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x14018eb70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14018eb70.c;xref:0x1402507d4",
+   "notes": "V7966 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

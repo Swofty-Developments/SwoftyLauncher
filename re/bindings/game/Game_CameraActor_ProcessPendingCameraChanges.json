@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CameraActor_ProcessPendingCameraChanges",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140183ca0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140183ca0.c;xref:0x14018cbaa",
+  "notes": "CameraActor::processPendingCameraChanges (static, lock 0x14601db48): needs racing camera system [0x14604c2c8]+0x98 and camera arbitrator [0x14604c2c8]+0x270 (ERROR log when missing). Pending lists: disable 0x14601db78, enable 0x14601db80 (vectors +8..+0x10), active count 0x14601db88, last ids 0x14601db90/94. Disable: clears sun override (+0xc40) and +0xc44 binding. Enable (first entry = CameraActor A): copies DOF/exposure params A+0x60c..0x824 into world post-process obj +0xa18, captures previous camera (A+0x5b5): A+0x5b8 = prev camera, A+0x5c8 = its FOV = 2*atan(h*0.5/(far-near)) (log capturePreviousCamera fov near far), copies transform component 0x146cc21a8, then calls 0x144534390 (Game_RacingCameraArbitrator_RequiresCrossfade) with crossfade flag. Callers 0x14018cb90, Game_Scenemanagerspawn_RemoveScene. Addon: cinematic camera enable/disable point and crossfade source. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2327)"
+ },
+ "signature": {
+  "id": "game.camera_actor_process_pending_camera_changes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 C5 F8 29 BC 24 C0 00 00 00 C5 F8 29 B4 24 B0 00 00 00 48 8B 0D",
+  "match": "0x140183ca0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140183ca0",
+  "kind": "func_start",
+  "names": [
+   "Game_CameraActor_ProcessPendingCameraChanges"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d2-verify",
+   "kind": "func",
+   "item": "Game_CameraActor_ProcessPendingCameraChanges",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140183ca0.c;xref:0x14018cbaa",
+   "notes": "V2327 lock/ptr offsets, disable +0xc40/+0xc44, enable DOF copy +0x60c..0x824 to +0xa18, prev cam +0x5b5/+0x5b8, FOV atan, call 144534390 all match"
+  }
+ ],
+ "proofs": []
+}

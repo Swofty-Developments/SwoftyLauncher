@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Career_Read_ScoringConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141200980",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: scoring.score_awarded_for_clean_laps, scoring.score_awarded_for_fastest_lap, scoring.score_awarded_for_finishing_1st, scoring.score_awarded_for_finishing_2nd, scoring.score_awarded_for_finishing_3rd, scoring.score_awarded_for_finishing_4th, scoring.score_awarded_for_fini'"
+ },
+ "signature": {
+  "id": "career.read_scoring_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 18 04 00 00 C5 79 7F BC 24 00 04 00 00",
+  "match": "0x141200980",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141200980",
+  "kind": "func_start",
+  "names": [
+   "Career_Read_ScoringConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x141200980",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141200980.c;xref:0x1412006b3",
+   "notes": "V4667 reads scoring.* keys but also assist/difficulty options (steering_assist, gearbox, flashbacks, ai_difficulty); better Career_Read_ScoringAndDifficultyConfig"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x141200980",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141200980.c",
+   "notes": "V7190 name fits; finding facts hold; vtable/indirect (no direct call)"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-f",
+   "kind": "func",
+   "item": "0x141200980",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141200980.c;str:\"Reads settings/game DB keys: scoring.score_awarded_for_clean\"",
+   "notes": "V9164 Decompile contains the claimed log string and the function is a small logger/wrapper whose name matches it."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Livery_UpdateSlotPropertiesFromPackedIds",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1418cba70",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1418cba70.c;xref:0x14187004b",
+  "notes": "If decals are enabled (+0x1e7): evaluates a decal texture object [this+0x110] (vcall +0x20) and updates placement from a {flag, short 0x3fff} param pair. Callers Game_Read_TexturesConfig, 0x141870760, 0x1418cbe00. Hypothesis. vp0-verify partial"
+ },
+ "signature": {
+  "id": "game.livery_update_decal_placement_from_texture",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 48 80 B9 E7 01",
+  "match": "0x1418cba70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1418cba70",
+  "kind": "func_start",
+  "names": [
+   "Game_Livery_UpdateSlotPropertiesFromPackedIds"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x1418cba70",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1418cba70.c;xref:0x14187004b",
+   "notes": "V8052 Game_Livery_UpdateSlotPropertiesFromPackedIds: pushes packed ids ({byte,u16 0x3fff}) into property objects +0x110/+0x130 and name strings; no texture or placement"
+  }
+ ],
+ "proofs": []
+}

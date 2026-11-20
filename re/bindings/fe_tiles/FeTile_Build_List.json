@@ -1,0 +1,48 @@
+{
+ "schema": 1,
+ "name": "FeTile_Build_List",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14173df80",
+  "level": "L3",
+  "subsystem": "fe_tiles",
+  "proto": "void FeTile_Build_List(TileList *self, void *ctx, void *a3, void *a4, uint8_t menu_kind, uint8_t sub_kind, uint32_t a7)",
+  "evidence": "decomp:work/exe/decomp/14173df80_home_buttons_build.c;xref:0x141a48cc5,0x141bb2125;doc:research/exe.md#3.1;trace:T000/run1:54",
+  "notes": "generic tile-menu builder (home, MP, F1 World, showroom, customisation, career); home case (0,0) block 0x141742f8f-0x141743055; populate loop after the switch at 0x141745016; runtime: home build observed twice"
+ },
+ "signature": {
+  "id": "fe_tiles.tile_list_builder",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 02 00 00 C5 F8 29 B4 24 70 02 00 00 4C 89 8C 24",
+  "match": "0x14173df80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14173df80",
+  "kind": "func_start",
+  "names": [
+   "FeTile_Build_List"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-17",
+    "by": "exe-agent",
+    "how": "static"
+   },
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-17",
+    "by": "T000/run1",
+    "how": "runtime scan, 1 hit"
+   }
+  ],
+  "used_by": [
+   "native/src/core/frontend/swofty_core.cpp"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

@@ -25,7 +25,9 @@ def main():
     sys.path.insert(0, HERE)
     import anchorlib as A
 
-    sigdoc = json.load(open(os.path.join(DB, 'signatures.json')))
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import kb
+    sigdoc = kb.load_signatures()
     sigs = {s['id']: s for s in sigdoc['signatures']}
     anchors = json.load(open(os.path.join(DB, 'anchors.json')))
     ib = A.IMAGE_BASE

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionMatchingHopperCommon_OnSessionCreateComplete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430860a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430860a0.c;xref:0x14308251b",
+  "notes": "GameSessionMatchingHopperCommon::onSessionCreateComplete(bool, err): error to [[this+0x10]+0x4d8]+0x34 and this+0x608; hopper state byte this+0x580 (StateUnset..StateError, table 0x145823290) -> StateJoined(6) on success, StateError(7) on failure; clears pending list +0x7d8 (stride 0x130). Addon: quick-match (hopper) state. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2594)"
+ },
+ "signature": {
+  "id": "game.game_session_matching_hopper_common_on_session_create_complete",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 60 44 89 C7 89 D3 48",
+  "match": "0x1430860a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430860a0",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionMatchingHopperCommon_OnSessionCreateComplete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d6-verify",
+   "kind": "func",
+   "item": "Game_GameSessionMatchingHopperCommon_OnSessionCreateComplete",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430860a0.c;xref:0x1430860a0",
+   "notes": "V2594 role/offsets/log strings match decomp"
+  }
+ ],
+ "proofs": []
+}

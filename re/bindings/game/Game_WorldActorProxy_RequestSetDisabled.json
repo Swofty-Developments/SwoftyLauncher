@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_WorldActorProxy_RequestSetDisabled",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140190110",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name requestSetDisabled (class from the log channel); log channel WorldActorProxy: 'requestSetDisabled [%] STORE'"
+ },
+ "signature": {
+  "id": "game.world_actor_proxy_request_set_disabled",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 38 91 D8 00 00 00",
+  "match": "0x140190110",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140190110",
+  "kind": "func_start",
+  "names": [
+   "Game_WorldActorProxy_RequestSetDisabled"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x140190110",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140190110.c",
+   "notes": "V4324 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

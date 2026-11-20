@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VideoExport_InitWebm",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1444b1f20",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-VIDEO_EXPORT",
+  "notes": "named from its log messages (channel VIDEO_EXPORT): 'Using %s | Failed to get default codec config. | Failed to allocate image. | Failed to initialize encoder | Cannot open webm export file | Could not initialize muxer segment! | Could not add video tra'"
+ },
+ "signature": {
+  "id": "game.video_export_init_webm",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 30 44 89 CF 44 89 C3 49 89 D6 48 89 CE",
+  "match": "0x1444b1f20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1444b1f20",
+  "kind": "func_start",
+  "names": [
+   "Game_VideoExport_InitWebm"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x1444b1f20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1444b1f20.c;xref:0x142bd1e0e",
+   "notes": "V6668 name and log/strings match; body checked, no broader behaviour"
+  }
+ ],
+ "proofs": []
+}

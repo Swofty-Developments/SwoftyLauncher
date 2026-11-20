@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_ChallengeRuleset_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d3e5d0",
+  "level": "L1",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d3e5d0.c;xref:0x1457dcb28",
+  "notes": "Slot +0x78 of challenge vt 0x1457dcab0, (rs, dt): vt+0x218; countdown rs+0x414 -= dt while state rs+0x418 == 1 and session type ([rs+0x328]+0x1e8) != 0x10, at 0 -> state 2 and 0x142d34a70 (start); toggles flag 2 at +0x13c of the object list rs+0x480..+0x488 (16-byte) by [rs+0x340]+0x20 == 5 / +0x3c, queuing job 0x143d3ce20. Logs SESSION-RESULT on status requests. d1-verify-a correction: 0x142d34a70 is called every tick while countdown rs+0x414 > 0; at 0 it only sets countdown 0 and state 2; session type 4 also finishes cars (eFinished + R+0x125 = 1)"
+ },
+ "signature": {
+  "id": "session.challenge_ruleset_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 C5 F8 28 F1",
+  "match": "0x142d3e5d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d3e5d0",
+  "kind": "func_start",
+  "names": [
+   "Sess_ChallengeRuleset_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d1-verify-a",
+   "kind": "func",
+   "item": "Sess_ChallengeRuleset_Update",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142d3e5d0.c;xref:0x1457dcab0",
+   "notes": "V2298 Wrong: 142d34a70 is called every tick while countdown rs+0x414 > 0 (then decremented by dt); at <=0 only cd=0 and state rs+0x418=2 (no call). Missed: for session type ([rs+0x328]+0x1e8)==4 it completes cars (eFinished 3/2 + R+0x125=1, 142d3d340) when the progress target is reached. Flag-toggle part (+0x13c bit 2, job 143d3ce20) confirmed."
+  }
+ ],
+ "proofs": []
+}

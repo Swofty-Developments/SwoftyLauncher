@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_SaveBlobCurve_Deserialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144507820",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "int Deserialise(void *blob, void *src_stream, void *reader)",
+  "evidence": "decomp:re/decomp/144507820.c;xref:0x140c711d8;xref:0x140f76113;xref:0x140f784da",
+  "notes": "myteam-g2: Reads a binary save chunk: size must be >0xc and (size&4)==0; header words -> blob+0xc, +0x18, +0x1c, +0x20, then (u32,u32) pairs appended to the vector at blob+0x70 (feeds Career_Eval_Curve). Returns 0 or errno 0x16. Used by bank facility budget, renown data and workforce difference loading."
+ },
+ "signature": {
+  "id": "career.save_blob_curve_deserialise",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 60 C5 78 29 44 24 50 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 4C 89 C0",
+  "match": "0x144507820",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144507820",
+  "kind": "func_start",
+  "names": [
+   "Career_SaveBlobCurve_Deserialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x144507820",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144507820.c;xref:0x140c711d8",
+   "notes": "V10362 Size checks and header/pair parsing match, but it also bakes a 65-entry byte LUT (+0x24) by evaluating the curve and sets inverse range at +8."
+  }
+ ],
+ "proofs": []
+}

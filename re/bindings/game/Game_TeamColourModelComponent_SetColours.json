@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Game_TeamColourModelComponent_SetColours",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142aa1b30",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=TeamColourModelComponent::setColours; log channel TeamColourModelComponent: 'TeamColourModelComponent::setColours: Primary - [%.2f, %.2f, %.2f, %.2f]; Secondary - [%.2f, %.2f, %.2f, %.2f]; Tertiary - [%.2f, %.2f, %.2f, %.2f]; Alpha - [%.'"
+ },
+ "signature": {
+  "id": "game.team_colour_model_component_set_colours",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 38 01 00 00 C5 78 29 BC 24 20 01 00 00 C5 78 29 B4 24 10 01 00 00 C5 78 29 AC 24 00 01 00 00 C5 78 29 A4 24 F0 00 00 00 C5 78 29 9C 24 E0 00 00 00 C5 78 29 94 24 D0 00 00 00 C5 78 29 8C 24 C0 00 00 00 C5 78 29 84 24 B0 00 00 00 C5 F8 29 BC 24 A0 00 00 00 C5 F8 29 B4 24 90 00 00 00 48 89 D6",
+  "match": "0x142aa1b30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142aa1b30",
+  "kind": "func_start",
+  "names": [
+   "Game_TeamColourModelComponent_SetColours"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

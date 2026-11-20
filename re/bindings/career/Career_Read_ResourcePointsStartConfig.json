@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Read_ResourcePointsStartConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434fd100",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *cfg, void *out)",
+  "evidence": "decomp:re/decomp/1434fd100.c;xref:0x14122a385;xref:0x1434fd058;xref:0x143508a71",
+  "notes": "myteam-g1: Reads num_initial_spendable_resource_points and per_driver_mode.num_initial_spendable_resource_points / num_spendable_resource_points_awarded_per_week. Hook for the starting RP and weekly RP."
+ },
+ "signature": {
+  "id": "career.read_resource_points_start_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 09 00 00 48 89 D6",
+  "match": "0x1434fd100",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434fd100",
+  "kind": "func_start",
+  "names": [
+   "Career_Read_ResourcePointsStartConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-a",
+   "kind": "func",
+   "item": "0x1434fd100",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434fd100.c;xref:0x14122a385;str:\"num_initial_spendable_resource_points\";str:\"per_driver_mode.num_spendable_resource_points_awarded_per_week\"",
+   "notes": "V8981 Output struct: byte0 found flag, +4 num_initial_spendable_resource_points, +8 per_driver_mode initial, +0xc per_driver_mode weekly award; teams/user_defined/teams_linked_to lookup is the filter."
+  }
+ ],
+ "proofs": []
+}

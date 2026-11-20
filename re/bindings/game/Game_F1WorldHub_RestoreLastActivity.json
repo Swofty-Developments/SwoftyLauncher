@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1WorldHub_RestoreLastActivity",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141abd180",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141abd180.c;xref:0x141abc8b7",
+  "notes": "F1 World hub: on focus return (+0x867 == 0) uses selected tab +0x840 / sub index +0x838 and '#f1_world_flow.last_visited_activity_tile' / 'container_going_back' to reopen the last activity; when hub state +0x86c == 6 sets entry point 0 and routes 'activity' (or 'back'). | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2451)"
+ },
+ "signature": {
+  "id": "game.f1_world_hub_restore_last_activity",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 58 80 B9 67 08 00 00 00",
+  "match": "0x141abd180",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141abd180",
+  "kind": "func_start",
+  "names": [
+   "Game_F1WorldHub_RestoreLastActivity"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-a",
+   "kind": "func",
+   "item": "Game_F1WorldHub_RestoreLastActivity",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141abd180.c;xref:0x141abd180",
+   "notes": "V2451 Role, offsets and calls checked against decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

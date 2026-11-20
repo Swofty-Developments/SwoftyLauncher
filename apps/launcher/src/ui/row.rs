@@ -1,10 +1,10 @@
 use gpui_kit::component::switch::Switch;
-use gpui_kit::component::{Disableable, Sizable, h_flex, v_flex};
+use gpui_kit::component::{Disableable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 
-use crate::scale::{Hit, px};
-use crate::theme::Palette;
+use crate::ui::scale::{Hit, px};
+use crate::ui::theme::Palette;
 
 /// One row of a list card: a top divider unless it is `first`, tinted while `open`.
 pub(crate) fn row(first: bool, open: bool, p: Palette) -> Div {
@@ -87,10 +87,10 @@ impl RenderOnce for Toggle {
             .when_some(self.on_change, |s, f| s.on_change(f));
         div()
             .id(hold)
-            .min_h(crate::scale::ctl(26.))
+            .min_h(crate::ui::scale::ctl(26.))
             .flex()
             .items_center()
-            .px(crate::scale::ctl(4.))
+            .px(crate::ui::scale::ctl(4.))
             .on_click(|_, _, cx| cx.stop_propagation())
             .child(switch)
     }

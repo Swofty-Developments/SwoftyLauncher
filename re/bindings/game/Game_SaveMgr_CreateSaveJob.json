@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Game_SaveMgr_CreateSaveJob",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143659750",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_SaveMgr_CreateSaveJob(void *jobs, uint64_t kind, uint32_t type, const char *save_name, uint64_t a5, uint64_t a6, uint64_t a7, uint64_t a8, uint64_t a9)",
+  "evidence": "decomp:re/decomp/143659750.c;xref:0x14365a1f0,0x14365a570;decomp:re/decomp/150bf28c0.c;decomp:re/decomp/150bfbb30.c;decomp:re/decomp/14365a1b0.c",
+  "notes": "thunk (jmp, no .pdata) -> .data1 0x150bf6c00, the save-job factory: looks the job type (param 3) up in the job map (jobs+0xd8..+0x110) and constructs a 0x518-byte job with 0x14364a310, passing kind and save_name (the save folder name; on Steam files are savegame@<save_name>#<file>). The profile save/load requests (.data1 0x150bf28c0 SaveProfile, 0x150bfbb30 LoadProfile, behind thunks 0x1436595b0 / 0x1436598e0) call it with (saveMgr+0x38, 1, 0, \"profile\" 0x1456e6f9e, ...); 0x14365a1b0 / 0x14365a530 with highlights%03d. The five trailing u8 flags travel in 8-byte stack slots; the binding declares them uint64_t so a wrap forwards the slots unchanged. Signature anchored in the bytes before the thunk (no unique pattern on the thunk alone). Raised by native-1990 for the F1 1990 save separation (doc:/mnt/work/.f1-1990/addon/native-requests.md#N2)"
+ },
+ "signature": {
+  "id": "game.save_mgr_create_save_job",
+  "section": ".xtls",
+  "pattern": "FE 02 56 D9 3C 50 4C E9 ?? ?? ?? ?? 31 BD 0F 81 7E FA C8 FE E7 06 A6 9F CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC E9 ?? ?? ?? ?? E9",
+  "match": "0x143659720",
+  "anchor": "0x30",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143659750",
+  "kind": "func_start",
+  "names": [
+   "Game_SaveMgr_CreateSaveJob"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

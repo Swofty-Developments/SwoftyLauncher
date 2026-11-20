@@ -5,18 +5,21 @@
   sigverify.py --src a.cpp b.cpp            Sigs of these sources
   sigverify.py --only S_PUSH,S_XML          a subset
   sigverify.py --json out.json              also write the per-signature results
+  sigverify.py --port DUMP --restore LOG    first put back over a dump taken with the core running the bytes the
+                                            core's unique scans matched on the live image (LOG is that run's loader.log)
   sigverify.py --mk RVA [--kind riprel|rel32] [--back N] [--max N]
                                             print a pattern at the KB RVA that matches once on BOTH images
   sigverify.py --refs RVA [--on port] [--section NAME]
                                             code sites whose rip-relative operand or rel32 reaches RVA (the image's own section name)
   sigverify.py --dis ref|port RVA [LEN]     disassemble
   sigverify.py --twin RVA                   the port's address of the KB function at RVA, by a both-unique pattern
+                                            (at a call site when RVA is a protector thunk)
   sigverify.py --disp RVA LEN HEX[,HEX]     per image: instructions in [RVA, RVA+LEN) of the KB function and of
                                             its --twin that use one of these displacements
 
 Images are a PE file or a flat dump (file offset = RVA), read as bindverify.py reads them. A Sig's section is the
 KB build's name; the port's name comes from re/db/builds/<build>.json "sections" (.xtls -> .rdata on EA).
-The rules are runtime::find's (native/src/core/stage.cpp): the pattern must match exactly once in the section;
+The rules are runtime::find's (native/src/core/runtime/stage.cpp): the pattern must match exactly once in the section;
 addr resolves to match + anchor, rel32 and riprel to match + insn + len + int32 at match + anchor.
 
 Per signature: hits on each image, the KB target against the declared rva, and whether both targets are the same
@@ -27,7 +30,7 @@ compares the relocated bodies. A Sig that scans the protector's section itself i
 it is unique on the KB build: the core hooks there on the KB build only. Data targets (globals, vtables) compare the section and, for a
 vtable, the first slots' functions. Exit status 0 only when every signature is unique on both and the same.
 """
-import argparse, difflib, json, os, re, struct, sys
+import argparse, bisect, difflib, json, os, re, struct, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
@@ -36,58 +39,66 @@ import numpy as np
 from capstone import Cs, CS_ARCH_X86, CS_MODE_64
 from capstone.x86 import X86_OP_MEM, X86_REG_RIP, X86_GRP_JUMP, X86_GRP_CALL, X86_OP_IMM
 from bindverify import Image, SCN_EXECUTE
+import sigdecl
 
 STEAM = '/mnt/gaming/SteamLibrary/steamapps/common/F1 25/F1_25.exe'
 EA = '/mnt/gaming/EAApp/ai-fix/dumps/F1_25.1789128892.110548.mem'
 CORE = os.path.join(ROOT, 'native', 'src', 'core')
-SOURCES = ['tt_bridge.cpp', 'direct_start.cpp', 'direct_start_tt.cpp', 'lap_rec.cpp', 'era_picker.cpp', 'player_name.cpp']
+
+
+def core_sources():
+    """Every core source that declares a Sig."""
+    out = []
+    for d, _, files in os.walk(CORE):
+        for f in sorted(files):
+            if f.endswith(('.cpp', '.hpp')):
+                path = os.path.join(d, f)
+                if re.search(r'\bSig\s+\w+\s*\{', open(path).read()):
+                    out.append(path)
+    return sorted(out)
+
+
 BASE = 0x140000000
 
 md = Cs(CS_ARCH_X86, CS_MODE_64)
 md.detail = True
 
 
-def strip_comments(text):
-    return re.sub(r'//[^\n]*', '', re.sub(r'/\*.*?\*/', '', text, flags=re.S))
-
-
-def split_args(body):
-    out, cur, depth, quoted = [], '', 0, False
-    for ch in body:
-        if ch == '"':
-            quoted = not quoted
-        if not quoted and ch in '({':
-            depth += 1
-        if not quoted and ch in ')}':
-            depth -= 1
-        if ch == ',' and not quoted and depth == 0:
-            out.append(cur.strip())
-            cur = ''
-        else:
-            cur += ch
-    if cur.strip():
-        out.append(cur.strip())
-    return out
-
-
 def parse_sigs(path):
-    text = strip_comments(open(path).read())
-    consts = {m.group(1): ''.join(re.findall(r'"([^"]*)"', m.group(2)))
-              for m in re.finditer(r'constexpr\s+const\s+char\s*\*\s*(\w+)\s*=\s*((?:"[^"]*"\s*)+);', text)}
+    with open(path) as f:
+        text = f.read()
+    strings, ints = sigdecl.string_consts(text), sigdecl.int_consts(text)
     sigs = []
-    for m in re.finditer(r'\bSig\s+(\w+)\s*\{(.*?)\}\s*;', text, flags=re.S):
-        a = split_args(m.group(2))
-        if len(a) < 3 or not a[0].startswith('"'):
-            continue
-        pat = ''.join(re.findall(r'"([^"]*)"', a[1])) if '"' in a[1] else consts.get(a[1])
-        if pat is None:
-            raise SystemExit(f'{path}: {m.group(1)}: pattern {a[1]} is not a literal or a known constant')
-        num = lambda i: int(a[i], 0) if len(a) > i else 0
-        kind = a[3].split('::')[-1] if len(a) > 3 else 'addr'
-        sigs.append({'name': m.group(1), 'what': a[0].strip('"'), 'pattern': ' '.join(pat.split()), 'rva': int(a[2], 0),
-                     'kind': kind, 'insn': num(4), 'anchor': num(5), 'len': num(6),
-                     'section': a[7].strip('"') if len(a) > 7 else '.xtls', 'file': os.path.basename(path)})
+    for _, name, _, args in sigdecl.declarations(text):
+        try:
+            v = sigdecl.fields(args, strings=strings, ints=ints)
+        except ValueError as err:
+            raise SystemExit(f'{path}: {name}: {err}')
+        sigs.append({'name': name, **{k: v[k] for k in sigdecl.SIG_LAYOUT}, 'file': os.path.basename(path)})
     return sigs
+
+
+SCAN_HIT = re.compile(r'scan (\S+) \[([^\]]+)\] -> 1 hit at 0x[0-9a-f]+ \(base\+0x([0-9a-f]+)\)')
+
+
+def restore(img, log_lines):
+    """Writes over img the fixed bytes of each pattern a loader.log line says matched once on the live image
+    ("scan SEC [PATTERN] -> 1 hit at ... (base+0xRVA)"): the bytes the core's patches covered in a dump taken with the
+    core running. Returns (patterns that differed, bytes put back)."""
+    hits = {}
+    for line in log_lines:
+        m = SCAN_HIT.search(line)
+        if m:
+            hits[(m.group(1), m.group(2))] = int(m.group(3), 16)
+    mem, patterns, put = bytearray(img.mem), 0, 0
+    for (_, text), at in hits.items():
+        fixed = [(k, int(t, 16)) for k, t in enumerate(text.split()) if t != '??' and at + k < len(mem)]
+        wrong = [(k, b) for k, b in fixed if mem[at + k] != b]
+        for k, b in wrong:
+            mem[at + k] = b
+        patterns, put = patterns + bool(wrong), put + len(wrong)
+    img.mem, img._scans = mem, {}
+    return patterns, put
 
 
 def resolve(img, section, s):
@@ -100,15 +111,22 @@ def resolve(img, section, s):
     return hits, out, at
 
 
-def norm(img, rva, n):
-    """Instructions of [rva, rva+n) with rip displacements and branch/call targets masked."""
+def rip_relative(i):
+    """Whether `i` has a rip-relative memory operand. Its displacement is always the 4 bytes at disp_offset: capstone
+    gives disp_size 2 for some VEX stores (vmovupd [rip+d], xmm)."""
+    return bool(i.disp_size) and any(o.type == X86_OP_MEM and o.mem.base == X86_REG_RIP for o in i.operands)
+
+
+def norm(img, rva, n, to_ret=False):
+    """Instructions of [rva, rva+n) with rip displacements and branch/call targets masked; with to_ret, up to the first
+    ret (a short function's padding and the unrelated function after it are left out)."""
     out, code = [], img.read(rva, n + 16) or b''
     for i in md.disasm(code, rva):
-        if i.address - rva >= n:
+        if i.address - rva >= n or (to_ret and out and out[-1] == 'c3'):
             break
         b = bytearray(i.bytes)
-        if i.disp_size and any(o.type == X86_OP_MEM and o.mem.base == X86_REG_RIP for o in i.operands):
-            b[i.disp_offset:i.disp_offset + i.disp_size] = b'\0' * i.disp_size
+        if rip_relative(i):
+            b[i.disp_offset:i.disp_offset + 4] = b'\0' * 4
         if (i.group(X86_GRP_JUMP) or i.group(X86_GRP_CALL)) and i.imm_size and any(o.type == X86_OP_IMM for o in i.operands):
             b[i.imm_offset:i.imm_offset + i.imm_size] = b'\0' * i.imm_size
         out.append(bytes(b).hex())
@@ -119,10 +137,22 @@ def ratio(a, b):
     return difflib.SequenceMatcher(None, a, b, autojunk=False).ratio() if a and b else 0.0
 
 
+def aligned(a, b, least=1):
+    """{index in a: index in b} for the entries of a that difflib matches into b, in matching runs of at least `least`."""
+    sm = difflib.SequenceMatcher(None, a, b, autojunk=False)
+    return {i + k: j + k for i, j, n in sm.get_matching_blocks() if n >= least for k in range(n)}
+
+
 def follow(img, rva, hops=4):
     while hops and img.readable(rva, 5) and img.mem[rva] == 0xE9:
         rva, hops = rva + 5 + img.i32(rva + 1), hops - 1
     return rva
+
+
+def protector_thunk(img, rva):
+    """A jmp out of its own section to a body the protector relocated; the bytes after the jmp are per-build filler."""
+    s = img.section_of(rva)
+    return s is not None and img.readable(rva, 5) and img.mem[rva] == 0xE9 and not img.section_named(follow(img, rva), s.name)
 
 
 def classify(img, rva):
@@ -151,10 +181,10 @@ def same(ref, port, rt, pt, kind):
             b = struct.unpack_from('<Q', port.mem, pt + 8 * k)[0] - port.image_base
             if not (0 < a < ref.size and ref.in_exec(a)) or not (0 < b < port.size and port.in_exec(b)):
                 break
-            sims.append(ratio(norm(ref, follow(ref, a), 0x40), norm(port, follow(port, b), 0x40)))
+            sims.append(ratio(norm(ref, follow(ref, a), 0x40, True), norm(port, follow(port, b), 0x40, True)))
         ok = len(sims) >= 2 and sum(x >= 0.7 for x in sims) >= len(sims) - 1
         return ('same' if ok else 'DIFFERENT'), f'vtable, {len(sims)} slot(s) alike ' + ' '.join(f'{x:.2f}' for x in sims)
-    if kind in ('func', 'site') and ref.mem[rt] == 0xE9 and port.mem[pt] == 0xE9 and not ref.section_named(follow(ref, rt), ref.section_of(rt).name):
+    if kind in ('func', 'site') and protector_thunk(ref, rt) and port.mem[pt] == 0xE9:
         # A protector thunk: a jump out of the code section to the relocated body, then filler. The bodies are compared.
         a, b = norm(ref, follow(ref, rt), 0x60), norm(port, follow(port, pt), 0x60)
         r = ratio(a, b)
@@ -166,6 +196,26 @@ def same(ref, port, rt, pt, kind):
     a, b = norm(ref, follow(ref, rt), 0x60), norm(port, follow(port, pt), 0x60)
     r = ratio(a, b)
     return ('same' if r >= 0.9 else 'likely' if r >= 0.7 else 'DIFFERENT'), f'entry 0x60 alike {r:.2f}'
+
+
+def chunk_of(img, rva):
+    """[start, end) of the exception directory entry that holds rva, or None."""
+    f = img.func_base_of(rva)
+    if f is None:
+        return None
+    starts, ends = img.pdata()
+    return f, ends[bisect.bisect_left(starts, f)]
+
+
+def caller_same(ref, port, rsite, psite):
+    """The instruction count of the code around two call sites when it is the same on both images with the call at the
+    same place, else 0. Such a call reaches the same function even where the protector rewrote that function's
+    relocated body differently on each build."""
+    a, b = chunk_of(ref, rsite), chunk_of(port, psite)
+    if not a or not b or rsite - a[0] != psite - b[0] or a[1] - a[0] != b[1] - b[0]:
+        return 0
+    x, y = norm(ref, a[0], a[1] - a[0]), norm(port, b[0], b[1] - b[0])
+    return len(x) if x == y else 0
 
 
 def section_map(build):
@@ -195,8 +245,8 @@ def masked_pattern(img, rva, n):
     pat, code = [], img.read(rva, n + 16)
     for i in md.disasm(code, rva):
         b = [f'{x:02X}' for x in i.bytes]
-        if i.disp_size and any(o.type == X86_OP_MEM and o.mem.base == X86_REG_RIP for o in i.operands):
-            b[i.disp_offset:i.disp_offset + i.disp_size] = ['??'] * i.disp_size
+        if rip_relative(i):
+            b[i.disp_offset:i.disp_offset + 4] = ['??'] * 4
         if (i.group(X86_GRP_JUMP) or i.group(X86_GRP_CALL)) and i.imm_size >= 4 and any(o.type == X86_OP_IMM for o in i.operands):
             b[i.imm_offset:i.imm_offset + i.imm_size] = ['??'] * i.imm_size
         pat.append(b)
@@ -226,6 +276,9 @@ def make(ref, port, smap, rva, section='.xtls', back=0, maxlen=96):
 
 
 def twin(ref, port, smap, rva):
+    if protector_thunk(ref, rva):
+        from sigport import port_one
+        return port_one(ref, port, smap, 'twin', rva, ref.section_of(rva).name).get('port')
     for section in ('.xtls', '.data1'):
         s = ref.section_of(rva)
         if s is None or s.name != section:
@@ -259,8 +312,13 @@ def main():
     ap.add_argument('--dis', nargs='+')
     ap.add_argument('--twin')
     ap.add_argument('--disp', nargs=3)
+    ap.add_argument('--restore')
     a = ap.parse_args()
     ref, port, smap = Image(a.ref), Image(a.port), section_map(a.build)
+    if a.restore:
+        with open(a.restore, errors='replace') as f:
+            n, put = restore(port, f)
+        print(f'restored {put} byte(s) under {n} pattern(s) the live run matched ({a.restore})')
 
     if a.dis:
         img = ref if a.dis[0] == 'ref' else port
@@ -303,7 +361,7 @@ def main():
         return 0
 
     sigs = []
-    for src in a.src or [os.path.join(CORE, s) for s in SOURCES]:
+    for src in a.src or core_sources():
         sigs += parse_sigs(src)
     if a.only:
         keep = set(a.only.split(','))
@@ -325,6 +383,10 @@ def main():
         if rh == 1 and ph == 1:
             kind = classify(ref, rt)
             verdict, detail = same(ref, port, rt, pt, kind)
+            if verdict == 'DIFFERENT' and s['kind'] == 'rel32' and detail.startswith('thunk'):
+                n = caller_same(ref, port, rm + s['insn'], pm + s['insn'])
+                if n:
+                    verdict, detail = 'same', detail + f'; the calling code is the same ({n} insns, the call at the same place)'
             if port.page_encrypted(pt) or port.page_encrypted(pm):
                 notes.append('port page reads encrypted')
             row['class'] = kind

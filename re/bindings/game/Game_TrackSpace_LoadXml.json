@@ -1,0 +1,101 @@
+{
+ "schema": 1,
+ "name": "Game_TrackSpace_LoadXml",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1445eb600",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1445eb600.c;xref:0x145bf1500",
+  "notes": "TrackSpace XML loader (vt slot 0x145bf1500, 5282 decomp lines): three XML readers: volumes from the reader at TS+0x80 (root Trackspace -> VolumeList -> Volume -> Gates/Gate point1..point4), splines from the reader embedded at [ctx+0x18]+0x28 (root rootnode: TrackSpaceSpline, AiSpline) and markup from TS+0x88 (TrackspaceMarkup -> MarkupList -> MarkupElement: Name, SplineName, Start/End, Attributes/Attribute Type; sector_1..3 and pit are markup type or spline names; property keys include focuscar_name, carbehind_name, woosh_type, template_name, chance_blowout, radius_modifier, cull_distance, transition_duration, screen_culling). Logs TRACKSPACE 'Loading TrackSpace Markup Element: %s (%s)', 'Volume type \"%s\" is invalid!', 'Volume remap overlap detected at dist %f...', 'Recalculating volume length: oldLength %f, newLength %f...'. Track modding: the parser that reads the TrackSpace data a custom track ships. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2317) | 2026-11-17 engine-re track runtime round 2, static. Gate points: <Gate> point4..point1 are read in that order into slots 0..3 (each 'x,y,z'), up to two <Gate> per <Gates> element and one Game_TrackSpace_AddVolumeFromGates call per <Gates> (0x1445ec55b; 3 strip volumes each, split above 100 m). After all volumes: grid sized by Game_TrackSpaceGrid_Init_Thunk and filled by Game_TrackSpaceGrid_InsertVolume. TrackSpaceSpline and AiSpline both go to Game_TrackSpace_ReadSplineKnots; the 4 route splines are finalised with closed hard-coded (main 1, pit 0). raised by engine-re with --force 2026-11-17 at user request (lane owner review requested) TrackspaceMarkup part (engine-re track RE round B 2026-11-17, static): per MarkupElement it reads Start/End (floats, default 0), SplineName and each Attributes/Attribute Type. Type is matched as a whole string, case-insensitively (_stricmp 0x14534d918), against the 49 names of k_Game_TrackMarkup_TypeNames (table 0x145bf2b30, Game_TrackMarkup_GetTypeName); 'sector_1'/'sector_2'/'sector_3' go to Game_TrackMarkup_AddSector_Thunk; any other unknown Type logs TRACKSPACE 'Unknown property type: %hs' and the attribute is skipped (no crash). A switch on the type id allocates the item (0x18, 0x20, 0x28, 0x70, 0xc8, 0xd0, 0x120 or 0x180 bytes, the last for visually_impaired_turn_assist at 0x1445edd0d; vtables 0x145bf1af0..0x145bf23d0), reads its properties (Game_TrackMarkup_ReadProperties_Thunk directly, from 10 call sites, for ids 1, 3, 7, 9-11, 14, 21-24, 27, 28, 30, 36, 37, 46 and 47; Game_TrackMarkup_ParseZoneIdType 0x1445f8530, which calls it in turn, for drs_det, drs_act and x_mode; own readers for ids 2, 5, 6, 8, 35, 44 and 45; none for the 20 plain 0x18-byte types with vtable 0x145bf23d0) and checks it (vtable slot 2 at 0x1445ee102 for drs_det, drs_act, x_mode and ids 7-11, 14, 21-24, 27, 28, 30, 36 and 37; inline checks for the others; none for plain items); items that fail (ai_hint without a known template_name, aud_env_zone / spch_vo_trig with empty names, ...) are freed. Plain 'sector' (id 0) has no case and is dropped. Kept items get +0x10 Start and +0x14 End clamped to 0..1 (0x1445ee37d..); End == 0 with Start != 0 becomes End = 1.0 (wrap to the lap end); +0xc = spline byte of the container (+0x40). Each item is appended to the container's all-items vector (+0x28) and to the per-type vector: arr = [container+8], begin at arr + id*0x20 + 8 (count bound container+0x10) (skipped if id >= the type count). There is no limit on the number of items per type and no duplicate-ID check here. | re-bindings 2026-11-18: corrected the reader layout, the case-insensitive type match, the item sizes and which types read properties and get the slot 2 check, from the blind partial V20013. | re-bindings 2026-11-18: the property readers per type, the gate grouping and the spline reader from the blind partial V20018."
+ },
+ "signature": {
+  "id": "game.track_space_load_xml",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 C8 80 00",
+  "match": "0x1445eb600",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445eb600",
+  "kind": "func_start",
+  "names": [
+   "Game_TrackSpace_LoadXml"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d1-verify-b",
+   "kind": "func",
+   "item": "Game_TrackSpace_LoadXml",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445eb600.c;xref:0x145bf1500",
+   "notes": "V2317 Log strings (Volume remap overlap, Recalculating volume length, TrackspaceMarkup, focuscar_name, screen_culling) all present in the exe; large XML loader consistent."
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "trkrt2-verify",
+   "kind": "func",
+   "item": "0x1445eb600",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm of 0x1445ec570..0x1445ec9e4;xref:0x1445ec6ed;xref:0x1445ec5bd",
+   "notes": "V10792 Attr table at 0x1445ec6ed..0x1445ec7b9 = point4 (0x145bf179a), point3, point2, point1 into rsp+0x2b0/2b8/2c0/2c8, parsed in that order (comma split, 0x145343fec atof). Register trace: point4 xyz -> xmm7/xmm6/xmm14 stored at rsp+0x180+gate*0x40 +0..+8 (slot0), point3 -> slot1 (+0x10), point2 -> slot2 (+0x20, y,z via rsp+0x48/0x40), point1 -> slot3 (+0x30, xmm8/xmm11/xmm15); w=0; gate index r12d 0 then 1 (0x1445ec670). Confirmed slot0=point4..slot3=point1."
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "trkb-verify",
+   "kind": "func",
+   "item": "0x1445eb600",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 1445ecc39-1445ecea2,1445ecee4-1445ed128,1445ee36b-1445ee594;xref:1445f8a00 calls,1445ee57c log",
+   "notes": "V11102 sector_1/2/3 -> call 1445f8a00(edx 0/1/2) OK; r15==-1 logs 'Unknown property type: %hs' OK; End==0&&Start!=0 -> End=1.0 OK; Start->item+0x10 End->+0x14 clamped [0,1] (xmm6=0,xmm7=1.0) OK. WRONG/imprecise: per-type array is via pointer: arr=*(container+8) (count bound container+0x10), vector begin at arr+type*0x20+8 (not inline container+8+type*0x20+8); item is also first pushed to flat vector container+0x28/0x30/0x38; type index 0 (sector) items are dropped by the switch (type-1>0x2f)"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_TrackSpace_LoadXml",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1445eb600-0x1445f1b87, 0x1445f1f30-0x1445f2600, 0x1445f2b60-0x1445f329d, 0x1445f88a0-0x1445f88bc, 0x1445f8530-0x1445f8700, 0x1445f75f0-0x1445f7700, 0x14534d918-0x14534d9a0, 0x144502490-0x144502540;xref:0x145bf1500,0x1445ec6ed,0x1445ec550,0x1445eca8d,0x1445ecae9,0x1445ee611,0x1445ecff0,0x1445ed046,0x1445ee30e,0x1445ed117,0x1445edd0d,0x1445ee102,0x1445ece75,0x1445ee374,0x1445ee3b3,0x1445ee3ba,0x1445ee468",
+   "notes": "V20013 Blind: read 0x1445eb600..0x1445f1b87 plus callees f1f30, f24c0, f2b60, f88a0, f8530, f75f0, 0x14534d918, 0x144502490, tables 0x145bf2b30/0x145bf2cb8, slot 0x145bf1500, derived before reading the notes. Confirmed: point4..point1 into slots 0..3, AddVolumeFromGates (3 strips, split >100), grid Init/Insert, both splines to ReadSplineKnots, closed main 1/pit 0, 49 names, sector_1..3 to AddSector, unknown-type log, id 0 dropped, End=1 rule, 0..1 clamps, +0xc from +0x40, all-items and per-type vectors, vtable range. Wrong: sizes reach 0x180 (VI turn assist), not 0x120. Imprecise: Type match is _stricmp; ReadProperties and slot-2 validate only for some types; overview nesting mixes 3 readers; Attribute reads only Type."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_TrackSpace_LoadXml",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1445eb600-0x1445f1b87, 0x1445f2b60-0x1445f329d, 0x1445f24c0-0x1445f2640, 0x1445f88a0-0x1445f88bc, 0x1445f8530-0x1445f85e2, 0x144502490-0x144502548, 0x14534d918-0x14534d978;xref:0x145bf1500,0x1445ec5a8,0x1445ec55b,0x1445ec584,0x1445eca8d,0x1445ecae9,0x1445ee611,0x1445ee629,0x1445ecffe,0x1445eceee,0x1445ee583,0x1445ed11b,0x1445ed1bf,0x1445f857d,0x1445ed255,0x1445ee108,0x1445ece97,0x1445ee3b7,0x1445ee481,0x1445edd0d",
+   "notes": "V20018 Blind: own capstone of 0x1445eb600-0x1445f1b87 plus callee heads, derived before reading the notes. Confirmed vt slot 0x145bf1500, readers TS+0x80/TS+0x88, node/attr names, 4 logs, point4..point1 into slots 0..3, AddVolumeFromGates (3 strips, split >100), Grid Init/Insert, ReadSplineKnots, closed 1/0, 49-name _stricmp match, sector_1..3 -> AddSector, unknown log+skip, sizes, vtable range, slot-2 id list, frees, clamp/wrap, +0xc, both item vectors and bound. Wrong: drs_det/drs_act/x_mode call ParseZoneIdType 0x1445f8530 (0x1445ed1bf), not ReadProperties_Thunk, which 18 other types call directly (10 sites). Imprecise: two Gate per <Gates> (one call each, 0x1445ec55b); spline reader is [ctx+0x18]+0x28."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_TrackSpace_LoadXml",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1445eb600-0x1445f1b87, 0x1445f2b60-0x1445f2f80, 0x1445f1f30-0x1445f2194, 0x1445f24c0-0x1445f2b5f, 0x1445f8530-0x1445f85ef, 0x1445f88a0-0x1445f88bc, 0x1445f75f0-0x1445f76cc, 0x144502490-0x144502577;xref:0x145bf1500,0x1445ec7d3,0x1445ec5bd,0x1445ec55b,0x1445eca8d,0x1445ecae9,0x1445ee611,0x1445ee629,0x1445eb87f,0x1445ecffe,0x1445ed00a,0x1445ed04d,0x1445ee583,0x1445ed128,0x1445edd0d,0x1445ee108,0x1445ee113,0x1445ece97,0x1445ee37d,0x1445ee3b7,0x1445ee460,0x1445ee47e",
+   "notes": "V20021 Blind: agree, derived before reading the notes. Own capstone pass over 0x1445eb600-0x1445f1b87; only absolute pointer to it is 0x145bf1500. Readers [[ctx+0x10]+0x28]+0x80 (volumes), +0x88 (markup), [ctx+0x18]+0x28 (splines). Gate attrs point4..point1 into slots 0..3, 2 Gate per Gates, one AddVolumeFromGates per Gates (0x1445ec55b; 3 strips, split >100). TrackSpaceSpline/AiSpline -> ReadSplineKnots, finalise closed main 1/pit 0. Type _stricmp over 49 names, sector_1..3 -> AddSector, unknown logged. Sizes, vtables, 10 ReadProperties sites and ids, ZoneIdType for 31/32/48, slot-2 ids, inline checks, clamp/wrap, +0xc and both stores match. Note: own readers 2,5,8,35,44,45 also call ReadProperties."
+  }
+ ],
+ "proofs": []
+}
