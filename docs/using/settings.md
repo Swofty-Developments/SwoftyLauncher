@@ -102,7 +102,7 @@ A hard link joins two names for one file and only works inside one drive. Play k
 
 The first Play copies every file; later Plays copy only files that are new or whose size or modified time changed, and delete files that are no longer placed. A cached copy the game wrote to is copied again.
 
-The copy stays when the game goes back to stock. It needs the size of those files on F1 25's drive plus 2 GB to spare; with less room, Play copies each file straight into the game folder and the Play log says why. **Clear** removes the copy at any time and doesn't run while F1 25 is open; the next Play rebuilds it.
+The copy stays when the game goes back to stock. Play needs room on F1 25's drive for the files the copy doesn't hold yet, plus 2 GB to spare; with less room, Play copies each file straight into the game folder and the Play log says why. With the copy up to date, Play needs at most those 2 GB there, not the size of the profile. When neither fits, Play stops with `not enough free space on <drive>` and the room it needs; see [Free space](/reference/restore#free-space). **Clear** removes the copy at any time and doesn't run while F1 25 is open; the next Play rebuilds it.
 
 ### Low space when you press Play
 

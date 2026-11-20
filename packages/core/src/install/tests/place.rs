@@ -2,6 +2,8 @@ use std::cell::RefCell;
 use std::path::Path;
 
 use super::*;
+use crate::cache::link::Pending;
+use crate::game_folder::baseline::Hashes;
 use crate::game_folder::placed::Placed;
 use crate::install::checks::refuse_drop_ins;
 use crate::install::copy::{Copied, Linker, copy_report};
@@ -504,4 +506,163 @@ fn any_upscaler_drop_in_in_a_plan_refuses_it() {
     let mut plan = f.plan();
     plan.added.insert(format!("bin/{rel}"), f.built(rel, "dll"));
     refuse_drop_ins(&plan).unwrap();
+}
+
+fn apart(path: &Path) -> Option<Volume> {
+    let id = if path.components().any(|c| c.as_os_str() == "data") {
+        "data"
+    } else {
+        "game"
+    };
+    Some(Volume {
+        id: id.into(),
+        name: id.into(),
+    })
+}
+
+fn hashes(f: &Fixture) -> Hashes {
+    Hashes::open(f.root.join("hashes.json"))
+}
+
+#[test]
+fn the_free_space_check_counts_only_the_files_the_link_cache_lacks() {
+    let f = Fixture::new("space-cache");
+    let game = f.game();
+    let mut plan = f.plan();
+    plan.data.insert(GVDB.into(), f.built(GVDB, "db-modded"));
+    plan.added.insert(FIRST.into(), f.built(FIRST, "first"));
+    plan.added.insert(SECOND.into(), f.loose(SECOND, "second"));
+    let lines = RefCell::new(Vec::new());
+    let out = |l: &str| lines.borrow_mut().push(l.to_owned());
+    let inst = Installer {
+        volume: apart,
+        ..installer(&f, &game, &out)
+    };
+    let copying = ("db-modded".len() - "db-v1".len() + "first".len() + "second".len()) as u64;
+    let every = ("db-modded".len() + "first".len() + "second".len()) as u64;
+    let baseline = inst.baseline().unwrap();
+    let empty = Pending {
+        copies: every,
+        frees: 0,
+    };
+    assert_eq!(inst.linking(&plan, &mut hashes(&f)), Some((empty, copying)));
+    assert_eq!(
+        inst.need(&plan, &baseline, &mut hashes(&f)),
+        Some(inst.space(&plan, &baseline)),
+        "an empty cache needs room for every copy"
+    );
+
+    inst.apply(&plan).unwrap();
+    inst.roll_back(false).unwrap();
+    let full = Pending::default();
+    assert_eq!(inst.linking(&plan, &mut hashes(&f)), Some((full, copying)));
+
+    plan.added.insert(FIRST.into(), f.built(FIRST, "first, changed"));
+    let changed = Pending {
+        copies: "first, changed".len() as u64,
+        frees: 0,
+    };
+    let copying = copying + ", changed".len() as u64;
+    assert_eq!(inst.linking(&plan, &mut hashes(&f)), Some((changed, copying)));
+
+    plan.added.remove(SECOND);
+    let gone = Pending {
+        copies: changed.copies,
+        frees: "second".len() as u64,
+    };
+    let copying = copying - "second".len() as u64;
+    assert_eq!(inst.linking(&plan, &mut hashes(&f)), Some((gone, copying)));
+}
+
+#[test]
+fn files_linked_straight_from_the_build_need_no_room_on_the_game_drive() {
+    let f = Fixture::new("space-straight");
+    let game = f.game();
+    let mut plan = f.plan();
+    plan.data.insert(GVDB.into(), f.built(GVDB, "db-modded"));
+    plan.added.insert(FIRST.into(), f.built(FIRST, "first"));
+    let out = |_: &str| {};
+    let inst = installer(&f, &game, &out);
+    assert_eq!(
+        inst.linking(&plan, &mut hashes(&f)),
+        Some((Pending::default(), 0))
+    );
+    plan.added.insert(SECOND.into(), f.loose(SECOND, "second"));
+    let loose = Pending {
+        copies: "second".len() as u64,
+        frees: 0,
+    };
+    assert_eq!(
+        inst.linking(&plan, &mut hashes(&f)),
+        Some((loose, "second".len() as u64))
+    );
+    let baseline = inst.baseline().unwrap();
+    let copy_only = Installer {
+        copy_only: true,
+        ..installer(&f, &game, &out)
+    };
+    assert_eq!(copy_only.need(&plan, &baseline, &mut hashes(&f)), None);
+    let unknown = Installer {
+        volume: |_| None,
+        ..installer(&f, &game, &out)
+    };
+    assert_eq!(unknown.need(&plan, &baseline, &mut hashes(&f)), None);
+}
+
+static FREE: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+
+fn free(_: &Path) -> Option<u64> {
+    Some(FREE.load(std::sync::atomic::Ordering::SeqCst))
+}
+
+#[test]
+fn a_play_the_drive_cannot_hold_is_refused_with_the_drive_what_it_needs_and_what_is_free() {
+    let f = Fixture::new("space-refused");
+    let game = f.game();
+    let original = f.snapshot();
+    let mut plan = f.plan();
+    plan.data.insert(GVDB.into(), f.built(GVDB, "db-modded"));
+    plan.added.insert(SECOND.into(), f.loose(SECOND, "second"));
+    let out = |_: &str| {};
+    let inst = Installer {
+        volume: apart,
+        free_space: free,
+        ..installer(&f, &game, &out)
+    };
+    let baseline = inst.baseline().unwrap();
+    let need = inst.need(&plan, &baseline, &mut hashes(&f)).unwrap();
+    let (_, volume, bytes) = need[0].clone();
+    FREE.store(bytes - 1, std::sync::atomic::Ordering::SeqCst);
+    match inst.apply(&plan).unwrap_err() {
+        Error::NoSpace {
+            drive,
+            need: asked,
+            free,
+        } => {
+            assert_eq!(
+                (drive.as_str(), asked, free),
+                (volume.name.as_str(), bytes, bytes - 1)
+            );
+            let colon = if drive.ends_with(':') { "" } else { ":" };
+            assert_eq!(
+                Error::NoSpace {
+                    drive: drive.clone(),
+                    need: asked,
+                    free
+                }
+                .to_string(),
+                format!(
+                    "not enough free space on {drive}{colon} this profile needs about {} GB, {} GB free",
+                    crate::platform::disk::gb(bytes),
+                    crate::platform::disk::gb(bytes - 1)
+                )
+            );
+        }
+        e => panic!("{e}"),
+    }
+    assert_eq!(f.snapshot(), original);
+    assert!(Journal::open(&f.data).unwrap().is_empty());
+    FREE.store(bytes, std::sync::atomic::Ordering::SeqCst);
+    inst.apply(&plan).unwrap();
+    assert_eq!(f.read(SECOND).as_deref(), Some("second"));
 }

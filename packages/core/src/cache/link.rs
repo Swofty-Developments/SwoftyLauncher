@@ -116,6 +116,81 @@ fn prune_empty(dir: &Path) {
     }
 }
 
+/// The files in the cache at `cache` whose game path `wanted` does not take.
+fn unwanted(cache: &Path, wanted: impl Fn(&str) -> bool) -> Vec<PathBuf> {
+    let mut present = Vec::new();
+    files(cache, &mut present);
+    present.retain(|path| {
+        !path
+            .strip_prefix(cache)
+            .is_ok_and(|r| wanted(r.to_string_lossy().replace('\\', "/").as_str()))
+    });
+    present
+}
+
+/// Whether the cached copy `kept`, whose file is stamped `copy`, can stay for `src` stamped `now`: the copy
+/// is untouched since it was written, and was copied from `src` as it is now or holds the SHA-256 `sha`
+/// names for it.
+fn keeps(
+    kept: &Kept,
+    copy: Option<Stamp>,
+    src: &Path,
+    now: Stamp,
+    sha: impl FnOnce() -> Option<String>,
+) -> bool {
+    copy == Some(kept.copy)
+        && ((kept.from == src && kept.source == now)
+            || kept.sha256.as_ref().is_some_and(|k| sha().as_ref() == Some(k)))
+}
+
+/// What a [`sync`] does on the game's drive: the bytes it copies into the cache, and the bytes of the cached
+/// files it deletes before it checks the free space.
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+pub struct Pending {
+    pub copies: u64,
+    pub frees: u64,
+}
+
+impl Pending {
+    /// The free space the game's drive needs for the files Play hands the sync: what the sync copies plus
+    /// [`MARGIN`], or `copying` when copying those files straight into the game folder, as Play does when the
+    /// sync fails, needs less; less what the sync deletes before either.
+    pub fn need(self, copying: u64) -> u64 {
+        self.copies
+            .saturating_add(MARGIN)
+            .min(copying)
+            .saturating_sub(self.frees)
+    }
+}
+
+/// What a [`sync`] of `sources` would do, by the same stamps and SHA-256s, without changing anything.
+/// `sha` names a source's SHA-256; it is asked only when a cached copy from another source may hold the
+/// same bytes.
+pub fn pending(
+    game: &Path,
+    sources: &[(&str, &Path)],
+    sha: &mut dyn FnMut(&Path) -> Option<String>,
+) -> Pending {
+    let cache = root(game);
+    let wanted: BTreeMap<&str, &Path> = sources.iter().copied().collect();
+    let frees = unwanted(&cache, |rel| wanted.contains_key(rel))
+        .iter()
+        .map(|p| std::fs::metadata(p).map_or(0, |m| m.len()))
+        .sum();
+    let index = load(game);
+    let copies = wanted
+        .iter()
+        .filter_map(|(k, src)| {
+            let now = stamp(src)?;
+            let kept = index
+                .get(*k)
+                .is_some_and(|i| keeps(i, stamp(&cache.join(k)), src, now, || sha(src)));
+            (!kept).then_some(now.len)
+        })
+        .sum();
+    Pending { copies, frees }
+}
+
 /// Brings the cache in `game` up to date with `sources`: copies the files that
 /// are new, come from another source, or whose size or modified time changed,
 /// unless the cached copy is untouched since it was written and holds the
@@ -135,13 +210,8 @@ pub fn sync(
         .map(|(rel, src, sha)| (*rel, (*src, *sha)))
         .collect();
     let mut out = Synced::default();
-    let mut present = Vec::new();
-    files(&cache, &mut present);
-    for path in present {
-        let known = path
-            .strip_prefix(&cache)
-            .is_ok_and(|r| wanted.contains_key(r.to_string_lossy().replace('\\', "/").as_str()));
-        if !known && std::fs::remove_file(&path).is_ok() {
+    for path in unwanted(&cache, |rel| wanted.contains_key(rel)) {
+        if std::fs::remove_file(&path).is_ok() {
             out.removed += 1;
         }
     }
@@ -153,26 +223,20 @@ pub fn sync(
         let now = stamp(src).ok_or_else(|| format!("cannot read {}", src.display()))?;
         let at = cache.join(k);
         let copy = stamp(&at);
-        let kept = index
+        match index
             .get_mut(*k)
-            .filter(|i| copy == Some(i.copy))
-            .is_some_and(|i| {
-                if i.from == *src && i.source == now {
-                    return true;
-                }
-                let same = sha.is_some() && i.sha256.as_deref() == *sha;
-                if same {
-                    i.from = src.to_path_buf();
-                    i.source = now;
-                }
-                same
-            });
-        if kept {
-            out.reused += 1;
-            out.files.insert((*k).to_owned(), at);
-        } else {
-            index.remove(*k);
-            todo.push((*k, *src, *sha, now));
+            .filter(|i| keeps(i, copy, src, now, || sha.map(str::to_owned)))
+        {
+            Some(i) => {
+                i.from = src.to_path_buf();
+                i.source = now;
+                out.reused += 1;
+                out.files.insert((*k).to_owned(), at);
+            }
+            None => {
+                index.remove(*k);
+                todo.push((*k, *src, *sha, now));
+            }
         }
     }
     let need: u64 = todo.iter().map(|(_, _, _, s)| s.len).sum();
@@ -487,6 +551,82 @@ mod tests {
             "db-B"
         );
         std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn pending_counts_what_a_sync_copies_and_deletes() {
+        let root = tmp("pending");
+        let (built, game) = (root.join("built"), root.join("game"));
+        put(&built.join("a.bin"), "one");
+        put(&built.join("sub/b.bin"), "two!");
+        let (a, b) = (built.join("a.bin"), built.join("sub/b.bin"));
+        let both = [("a.bin", a.as_path()), ("sub/b.bin", b.as_path())];
+        let mut unnamed = |_: &Path| None;
+        let p = |copies, frees| Pending { copies, frees };
+        assert_eq!(pending(&game, &both, &mut unnamed), p(7, 0), "an empty cache");
+        run(&built, &game, &["a.bin", "sub/b.bin"]).unwrap();
+        assert_eq!(pending(&game, &both, &mut unnamed), p(0, 0), "all cached");
+        put(&built.join("a.bin"), "three");
+        assert_eq!(pending(&game, &both, &mut unnamed), p(5, 0), "one changed");
+        assert_eq!(run(&built, &game, &["a.bin", "sub/b.bin"]).unwrap().copied, 1);
+        assert_eq!(
+            pending(&game, &both[..1], &mut unnamed),
+            p(0, 4),
+            "one no longer placed"
+        );
+        std::thread::sleep(std::time::Duration::from_millis(30));
+        put(&root_of(&game).join("a.bin"), "three");
+        assert_eq!(
+            pending(&game, &both, &mut unnamed),
+            p(5, 0),
+            "a copy written through its link"
+        );
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn pending_keeps_the_same_bytes_from_a_rebuild_by_their_digest_and_asks_for_it_only_then() {
+        let root = tmp("pending-digest");
+        let game = root.join("game");
+        let (a, b) = (root.join("a/db.bin"), root.join("b/db.bin"));
+        put(&a, "database");
+        put(&b, "database");
+        let digest = sha("database");
+        sync(
+            &game,
+            &[("db.bin", a.as_path(), Some(&digest))],
+            roomy,
+            &mut |_, _| {},
+        )
+        .unwrap();
+        let mut asked = 0;
+        let mut named = |_: &Path| {
+            asked += 1;
+            Some(digest.clone())
+        };
+        assert_eq!(pending(&game, &[("db.bin", a.as_path())], &mut named).copies, 0);
+        assert_eq!(pending(&game, &[("db.bin", b.as_path())], &mut named).copies, 0);
+        assert_eq!(asked, 1);
+        let other = sha("another");
+        let mut differs = |_: &Path| Some(other.clone());
+        assert_eq!(pending(&game, &[("db.bin", b.as_path())], &mut differs).copies, 8);
+        assert_eq!(
+            pending(&game, &[("db.bin", b.as_path())], &mut |_| None).copies,
+            8
+        );
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_sync_needs_what_it_copies_plus_the_margin_unless_copying_instead_needs_less() {
+        let gb = 1u64 << 30;
+        let p = |copies, frees| Pending { copies, frees };
+        assert_eq!(p(0, 0).need(14 * gb), MARGIN, "everything cached");
+        assert_eq!(p(gb, 0).need(14 * gb), gb + MARGIN, "one file changed");
+        assert_eq!(p(14 * gb, 0).need(13 * gb), 13 * gb, "an empty cache");
+        assert_eq!(p(gb, 2 * gb).need(14 * gb), gb, "a cached file no longer placed");
+        assert_eq!(p(gb, 4 * gb).need(14 * gb), 0);
+        assert_eq!(p(0, 0).need(0), 0, "nothing to cache");
     }
 
     #[test]

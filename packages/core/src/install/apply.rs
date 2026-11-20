@@ -3,8 +3,9 @@
 use std::path::{Path, PathBuf};
 
 use super::checks::{hashed, refuse_drop_ins};
-use super::copy::{copy_report, sources};
+use super::copy::{copy_report, sources, through_cache};
 use super::{Installer, Plan};
+use crate::cache::link::Pending;
 use crate::diagnostics::phases;
 use crate::game_folder::baseline::{Baseline, Hashes};
 use crate::game_folder::placed::Placed;
@@ -57,8 +58,9 @@ impl<'a> Installer<'a> {
         let started = std::time::Instant::now();
         let loaded = self.baseline()?;
         let space = self.space(plan, &loaded);
+        let need = self.need(plan, &loaded, hashes).unwrap_or_else(|| space.clone());
         phases::record("install.baseline", started.elapsed());
-        for (dir, v, need) in &space {
+        for (dir, v, need) in &need {
             if let Some(free) = (self.free_space)(dir).filter(|free| need > free) {
                 return Err(Error::NoSpace {
                     drive: v.name.clone(),
@@ -93,27 +95,92 @@ impl<'a> Installer<'a> {
         })
     }
 
-    /// The bytes an install of `plan` writes on each volume: its copies, less
-    /// the files they replace, on the game folder's; the originals it backs
-    /// up for the first time and its state files on the data folder's.
+    /// The bytes an install of `plan` writes on each volume when it copies
+    /// every file: its copies, less the files they replace, on the game
+    /// folder's; the originals it backs up for the first time and its state
+    /// files on the data folder's.
     pub(super) fn space(
         &self,
         plan: &Plan,
         baseline: &Baseline,
     ) -> Vec<(PathBuf, crate::platform::disk::Volume, u64)> {
+        let game = sources(plan)
+            .into_iter()
+            .map(|(rel, src)| self.copied(plan, rel, src))
+            .sum();
+        self.on_volumes(game, self.backed_up(plan, baseline))
+    }
+
+    /// The free space an install of `plan` that links its files needs on each volume: [`Self::space`], except
+    /// on the game folder's, where it is what [`Pending::need`] says for the files it links from the link
+    /// cache. Those linked straight from the build output on that drive need none. None when it copies
+    /// every file, or the drives can't be told apart, and needs [`Self::space`].
+    pub(super) fn need(
+        &self,
+        plan: &Plan,
+        baseline: &Baseline,
+        hashes: &mut Hashes,
+    ) -> Option<Vec<(PathBuf, crate::platform::disk::Volume, u64)>> {
+        let (pending, copying) = self.linking(plan, hashes)?;
+        Some(self.on_volumes(pending.need(copying), self.backed_up(plan, baseline)))
+    }
+
+    /// For the files the install of `plan` links from the link cache: what the sync of the cache does, and
+    /// the bytes copying them straight into the game folder adds instead. None when the install copies every
+    /// file, or the drives can't be told apart.
+    pub(super) fn linking(&self, plan: &Plan, hashes: &mut Hashes) -> Option<(Pending, u64)> {
+        if self.copy_only {
+            return None;
+        }
+        let built = crate::store::overlay_root(self.data);
+        let apart = crate::cache::link::apart((self.volume)(&built), (self.volume)(&self.game.dir))?;
+        let cached: Vec<(&str, &Path)> = sources(plan)
+            .into_iter()
+            .filter(|(_, src)| through_cache(Some(apart), &built, src))
+            .map(|(rel, src)| (rel, src.as_path()))
+            .collect();
+        if cached.is_empty() {
+            return Some((Pending::default(), 0));
+        }
+        let copying = cached.iter().map(|(rel, src)| self.copied(plan, rel, src)).sum();
+        let pending =
+            crate::cache::link::pending(&self.game.dir, &cached, &mut |src| hashes.sha256(src).ok());
+        phases::note(format!(
+            "space link cache copies {} MB of {} file(s), frees {} MB; copying {} MB",
+            pending.copies >> 20,
+            cached.len(),
+            pending.frees >> 20,
+            copying >> 20
+        ));
+        Some((pending, copying))
+    }
+
+    /// The bytes copying `src` to the game path `rel` adds on the game's drive: its size, less the game file
+    /// it replaces.
+    fn copied(&self, plan: &Plan, rel: &str, src: &Path) -> u64 {
         let size = |p: &Path| std::fs::metadata(p).map_or(0, |m| m.len());
-        let (mut game, mut data) = (0, 0);
-        for (rel, src) in &plan.data {
-            let now = size(&self.path(rel));
-            game += size(src).saturating_sub(now);
-            if !baseline.files.contains_key(rel) {
-                data += now;
-            }
-        }
-        for src in plan.added.values().chain(plan.loader.values()) {
-            game += size(src);
-        }
-        data += (plan.data.len() + plan.added.len() + plan.loader.len()) as u64 * STATE_PER_FILE;
+        let replaced = if plan.data.contains_key(rel) {
+            size(&self.path(rel))
+        } else {
+            0
+        };
+        size(src).saturating_sub(replaced)
+    }
+
+    /// The bytes an install of `plan` writes on the data folder's volume: the originals it backs up for the
+    /// first time and its state files.
+    fn backed_up(&self, plan: &Plan, baseline: &Baseline) -> u64 {
+        let originals: u64 = plan
+            .data
+            .keys()
+            .filter(|rel| !baseline.files.contains_key(*rel))
+            .map(|rel| std::fs::metadata(self.path(rel)).map_or(0, |m| m.len()))
+            .sum();
+        originals + (plan.data.len() + plan.added.len() + plan.loader.len()) as u64 * STATE_PER_FILE
+    }
+
+    /// `game` bytes on the game folder's volume and `data` on the data folder's, added up when they are one.
+    fn on_volumes(&self, game: u64, data: u64) -> Vec<(PathBuf, crate::platform::disk::Volume, u64)> {
         crate::platform::disk::volumes([(self.game.dir.as_path(), game), (self.data, data)])
     }
 

@@ -74,7 +74,13 @@ Before a rollback undoes a journal, the files in each `swofty/addons/<id>/` fold
 
 ## Free space
 
-Before an install backs up or copies anything, it adds up what it writes on each volume: on the game folder's, the files it copies less the files they replace; on the data folder's, the originals it backs up for the first time and 2 KB per file for the journal and the other state files. Both folders on one volume count together. When a volume has less free space than that, the install stops with `not enough free space on <drive>: this profile needs about <X> GB, <Y> GB free`, in GB of 1024³ bytes. A write that fails on a full volume during the install stops it with the same message, and the session rolls back.
+Before an install backs up or copies anything, it adds up the free space it needs on each volume. On the data folder's, that is the originals it backs up for the first time and 2 KB per file for the journal and the other state files. On the game folder's:
+
+- A file linked straight from the build output needs none.
+- The files linked from the link cache (`swofty-cache/overlay`, see [The game drive copy](/using/settings#the-game-drive-copy)) need the ones the cache doesn't hold yet, matched by size, modified time and SHA-256 as the cache matches them, plus 2 GB to spare; or, when it is less, what copying them straight into the game folder needs, less the files they replace. Play copies them that way when the cache has too little room. Cached files the profile no longer places are deleted first and count as freed. With an empty cache, every file counts.
+- With `SWOFTY_INSTALL_COPY=1`, or when the launcher can't tell the drives apart, every file counts as copied, less the files they replace.
+
+Both folders on one volume count together. When a volume has less free space than that, the install stops with `not enough free space on <drive>: this profile needs about <X> GB, <Y> GB free`, in GB of 1024³ bytes, with what that volume needs and has free. A write that fails on a full volume during the install stops it with the same message and what copying every file needs there, and the session rolls back.
 
 ## Sessions
 

@@ -115,6 +115,12 @@ pub(super) fn copy_report(c: &Copied, copy_only: bool) -> String {
     format!("installing: {mode}; {linked} file(s) linked, {copied} copied")
 }
 
+/// Whether the file from `src` is placed from the link cache: every file when the build output in `built` is
+/// on another drive than the game folder (`apart`), else the ones from outside it.
+pub(super) fn through_cache(apart: Option<bool>, built: &Path, src: &Path) -> bool {
+    apart == Some(true) || !src.starts_with(built)
+}
+
 /// The source of each file `plan` places, by game path.
 pub(super) fn sources(plan: &Plan) -> BTreeMap<&str, &PathBuf> {
     plan.data
@@ -307,7 +313,7 @@ impl<'a> Installer<'a> {
                     e.after.as_deref(),
                 )
             })
-            .filter(|(_, s, _)| apart == Some(true) || !s.starts_with(built))
+            .filter(|(_, s, _)| through_cache(apart, built, s))
             .collect();
         if srcs.is_empty() {
             if crate::cache::link::dir(&self.game.dir).exists() {
