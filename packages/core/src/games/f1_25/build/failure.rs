@@ -124,3 +124,14 @@ pub fn stale_text(detail: &str, rel: &str, play: bool) -> String {
          again"
     )
 }
+
+/// The refusal a check before Play shows for a build that stopped on `e`.
+pub fn check_refusal(data: &Path, game: &Path, e: Error) -> Error {
+    if let Error::StaleInput { rel, detail } = &e {
+        return Error::Other(stale_text(detail, rel, true));
+    }
+    match refused_fix(data, game, &e) {
+        Some(fix) => Error::Other(format!("{e}. {fix}")),
+        None => e,
+    }
+}

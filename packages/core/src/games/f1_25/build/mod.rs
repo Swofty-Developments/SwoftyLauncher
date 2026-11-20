@@ -41,7 +41,7 @@ use crate::profile::resolver::resolve;
 use crate::store::Store;
 use crate::{Error, Result};
 
-pub use self::failure::{named, refused_fix, stale_text};
+pub use self::failure::{check_refusal, named, refused_fix, stale_text};
 pub use self::loader::{Plugins, build_menus, plugin_files, screen_files};
 pub use self::lock::{BuildLock, lock};
 pub use self::op_files::read_op_file;
