@@ -6672,6 +6672,7 @@ mod tests {
 
     #[test]
     fn a_track_record_places_the_files_only_and_the_build_writes_the_track_files() {
+        let _lending = LENDING.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
         use swofty_formats::gvdb::Record;
         if loader_dir().is_some() {
             return;
@@ -6955,6 +6956,7 @@ mod tests {
 
     #[test]
     fn skips_removals_of_the_records_a_track_adds() {
+        let _lending = LENDING.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
         use swofty_formats::gvdb::Record;
         if loader_dir().is_some() {
             return;
@@ -7070,6 +7072,7 @@ mod tests {
 
     #[test]
     fn an_added_track_gets_the_stock_ai_data_and_difficulties_of_a_seasons_own_ai_folder() {
+        let _lending = LENDING.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
         use swofty_formats::gvdb::Record;
         if loader_dir().is_some() {
             return;
@@ -7244,6 +7247,7 @@ mod tests {
 
     #[test]
     fn keeps_the_track_changes_a_whole_database_mod_carries_back() {
+        let _lending = LENDING.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
         use swofty_formats::gvdb::Record;
         if loader_dir().is_some() {
             return;
@@ -7354,6 +7358,7 @@ mod tests {
 
     #[test]
     fn put_targets_take_the_games_spelling_and_the_ers_pass_builds_on_the_addons_file() {
+        let _lending = LENDING.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
         use swofty_formats::bxml::{Document, Element, Kind};
         use swofty_formats::erp::{Erp, ErpFile, Fragment, HEADER_LEN, MAGIC, Resource, STORED};
         use swofty_formats::gvdb::Record;
@@ -7625,6 +7630,7 @@ mod tests {
 
     #[test]
     fn track_ers_settings_survive_an_addon_that_writes_the_handling_file() {
+        let _lending = LENDING.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
         use swofty_formats::bxml::{Document, Element, Kind};
         use swofty_formats::erp::{Erp, ErpFile, Fragment, HEADER_LEN, MAGIC, Resource, STORED};
         use swofty_formats::gvdb::Record;
