@@ -1,6 +1,8 @@
 // Host unit test for the main menu logic (main_menu_logic.hpp): the row layout, the removed entries, the status
-// strip text, the home menu state file and the Time Trial warning rule. native/test/run_tests.sh main_menu builds and runs it.
+// strip text, the home menu state file, the Time Trial warning rule and the watch bind's focus rule.
+// native/test/run_tests.sh main_menu builds and runs it.
 #include "core/frontend/main_menu_logic.hpp"
+#include "core/runtime/focus_logic.hpp"
 #include "core/runtime/pages_logic.hpp"
 
 #include <cmath>
@@ -73,6 +75,29 @@ int main()
     expect(mm::discord_line(s) == "Signed in to Discord as swofty", "signed in line");
     expect(mm::has_avatar(s) && mm::has_video(s), "avatar and video present");
     expect(mm::watch_line("RB") == "Press RB to watch", "watch line");
+    expect(mm::watch_pressed(true, false, true), "the watch bind fires when RB or the key goes down in the game");
+    expect(!mm::watch_pressed(true, true, true), "a held watch bind fires once");
+    expect(!mm::watch_pressed(false, false, true) && !mm::watch_pressed(false, true, true), "no press, no video");
+    expect(!mm::watch_pressed(true, false, false), "the watch key pressed in another window does not open the video");
+    expect(!mm::watch_pressed(true, true, true),
+           "a key held down in another window does not open the video when the player switches back to the game");
+    {
+        bool was = false;
+        int opened = 0;
+        const bool down[] = {true, true, false, true, true, false, true};
+        const bool focused[] = {false, true, true, true, true, false, true};
+        for (size_t i = 0; i < sizeof down; i++) {
+            opened += mm::watch_pressed(down[i], was, focused[i]);
+            was = down[i];
+        }
+        expect(opened == 2, "typing V elsewhere, switching back with it held, then two presses in the game opens the video "
+                            "twice");
+    }
+    expect(runtime::focus::game_focused(4242, 4242, false), "the game's own window in front has focus");
+    expect(!runtime::focus::game_focused(1111, 4242, false), "another process's window in front takes focus from the game");
+    expect(!runtime::focus::game_focused(0, 4242, false) && !runtime::focus::game_focused(0, 0, false),
+           "no foreground window is not focus");
+    expect(!runtime::focus::game_focused(4242, 4242, true), "a minimized game window is not focused");
     expect(std::string(mm::template_for("story")) == mm::TEMPLATE_TOP_LEFT &&
                std::string(mm::template_for("career")) == mm::TEMPLATE_TOP_RIGHT &&
                std::string(mm::template_for("swofty_grand_prix")) == mm::TEMPLATE_MODES_LEFT &&

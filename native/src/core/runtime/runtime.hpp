@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/runtime/focus_logic.hpp"
 #include "core/runtime/presence_id_logic.hpp"
 
 #include "core/testing/direct_start_logic.hpp"
@@ -138,6 +139,14 @@ void popup_setup();
 void popup_tick();
 void hud_rebuilt();
 bool typing(const char *what);
+inline bool game_in_front()
+{
+    HWND w = GetForegroundWindow();
+    DWORD pid = 0;
+    if (w)
+        GetWindowThreadProcessId(w, &pid);
+    return focus::game_focused(pid, GetCurrentProcessId(), w && IsIconic(w));
+}
 void mfd_setup();
 void mfd_tick();
 int popup_show(const std::string &title, const std::string &body, const std::string &by);

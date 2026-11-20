@@ -530,7 +530,7 @@ The Time Trial and Grand Prix cards open the activity container without the F1 W
 [main-menu] nav: session-end hand-over landed on the activity container (the F1 World hub was skipped); raising 'solo_gp' on it once it is active
 ```
 
-While the main menu is open the overlay paints the Swofty Launcher version, the Discord sign-in state and avatar in the top right, and the latest video's thumbnail with `Press RB to watch` (`Press V to watch` without a gamepad) in the bottom right. Pressing the key writes `swofty/open_url.json`. Entering Time Trial while signed out of Discord shows the game's message popup once per session; its OK continues.
+While the main menu is open the overlay paints the Swofty Launcher version, the Discord sign-in state and avatar in the top right, and the latest video's thumbnail with `Press RB to watch` (`Press V to watch` without a gamepad) in the bottom right. Pressing RB or V while the game's window has focus writes `swofty/open_url.json`; a press in another window, or while the game is minimized, does not. Entering Time Trial while signed out of Discord shows the game's message popup once per session; its OK continues.
 
 The top-right account panel and the bottom-right video card are game UI. The launcher build adds two component slots to `fe_home.idf` (`swofty_details_account` and `swofty_details_video`, copies of the `details_offline` and `details_news` slots of the "Launched with" and news cards) and two groups to `contextual_panels` in `fe_home.ui` (`swofty_account_panel` and `swofty_video_panel`, copies of `offline_contextual_panel` and `news_contextual_panel`, always visible). Their text reads `ui_menu_data.swofty_panel_text`, `swofty_video_title` and `swofty_video_prompt`, which the core sets on the flow thread.
 

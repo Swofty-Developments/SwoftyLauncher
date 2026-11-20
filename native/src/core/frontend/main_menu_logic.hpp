@@ -327,6 +327,9 @@ inline bool has_avatar(const State &s) { return s.signed_in && !s.avatar.empty()
 inline bool has_video(const State &s) { return !s.video_url.empty() && !s.video_thumbnail.empty(); }
 
 inline std::string watch_line(const std::string &button) { return "Press " + button + " to watch"; }
+// The watch bind fires on the sample where RB or the key goes down while the game has focus. A press made in another
+// window, or held down while the player switches back to the game, does not open the video.
+inline bool watch_pressed(bool down, bool was_down, bool game_focused) { return game_focused && down && !was_down; }
 
 inline bool panel_due(bool patched, bool home_open, bool loaded, bool disabled, bool prepared)
 {

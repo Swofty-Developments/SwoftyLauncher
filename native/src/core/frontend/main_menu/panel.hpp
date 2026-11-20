@@ -10,8 +10,9 @@
 
 namespace frontend::main_menu {
 
-// The video card's watch bind, pad Y or the key. XInputGetState and the key sweep can block for about a second each under
-// Wine, so they are sampled on a thread of its own while the flow thread asks, and the flow thread only reads the result.
+// The video card's watch bind, pad RB or the key, read only while the game's window has focus. XInputGetState and the key
+// sweep can block for about a second each under Wine, so they are sampled on a thread of its own while the flow thread
+// asks, and the flow thread only reads the result.
 class BindSampler {
 public:
     bool poll(uint64_t now);

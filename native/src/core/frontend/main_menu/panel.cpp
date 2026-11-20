@@ -86,19 +86,19 @@ bool BindSampler::pressed_edge(bool *on_pad)
     if (!std::exchange(xinput_tried, true))
         xinput_get = xinput_get_state();
     PadSample p = sample_pad(xinput_get);
-    if (p.connected && p.packet != last_packet)
+    bool front = runtime::game_in_front();
+    if (front && p.connected && p.packet != last_packet)
         pad_at = now;
     last_packet = p.packet;
-    bool key_active = GetForegroundWindow() != nullptr && any_key_down();
-    if (key_active)
+    if (front && any_key_down())
         key_at = now;
     if (pad_at != key_at)
         shown_pad = p.connected && pad_at > key_at;
     *on_pad = shown_pad;
-    bool y = p.connected && (p.buttons & WATCH_PAD_MASK);
-    bool key = (GetAsyncKeyState(WATCH_KEY_VK) & 0x8000) != 0 && GetForegroundWindow() != nullptr;
-    bool down = y || key;
-    bool edge = down && !was;
+    bool rb = p.connected && (p.buttons & WATCH_PAD_MASK);
+    bool key = (GetAsyncKeyState(WATCH_KEY_VK) & 0x8000) != 0;
+    bool down = rb || key;
+    bool edge = watch_pressed(down, was, front);
     was = down;
     return edge;
 }

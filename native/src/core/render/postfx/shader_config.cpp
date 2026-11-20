@@ -67,13 +67,6 @@ PassTexture fresh_texture(const postfx::PlanTex &pt)
     return t;
 }
 
-bool game_in_front()
-{
-    DWORD pid = 0;
-    GetWindowThreadProcessId(GetForegroundWindow(), &pid);
-    return pid == GetCurrentProcessId();
-}
-
 }
 
 std::string ShaderConfig::describe(const RenderPass &p)
@@ -290,7 +283,7 @@ void ShaderConfig::load_effects()
 
 void ShaderConfig::poll_toggles()
 {
-    bool front = game_in_front();
+    bool front = runtime::game_in_front();
     for (auto &t : toggles) {
         bool raw = t.vk && front && (GetAsyncKeyState(t.vk) & 0x8000);
         if (raw && !t.down && !runtime::typing("a shader key")) {
