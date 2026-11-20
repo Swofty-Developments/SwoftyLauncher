@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetVoiceNotificationClient_WaveInAddBuffer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144038c70",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/144038c70.c;xref:0x144038b6f,0x144038bac,0x14403bff1",
+  "notes": "cxx=NeNetVoiceNotificationClient::waveInAddBuffer; log channel NETWORK-VOICE: 'NeNetVoiceNotificationClient::waveInAddBuffer has failed, err = %d!'"
+ },
+ "signature": {
+  "id": "core.net_voice_notification_client_wave_in_add_buffer",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 D3 48 89 CE 48 8B 49 48",
+  "match": "0x144038c70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144038c70",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetVoiceNotificationClient_WaveInAddBuffer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb2-verify-b",
+   "kind": "func",
+   "item": "Ne_NetVoiceNotificationClient_WaveInAddBuffer",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144038c70.c;xref:0x144038c70",
+   "notes": "V2024 under CS +0x48: waveInUnprepareHeader, PrepareHeader, AddBuffer (0x30 header), logs each failure on NETWORK-VOICE; requeues a capture buffer; returns bool"
+  }
+ ],
+ "proofs": []
+}

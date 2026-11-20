@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Car_Ers_IntegrateAndPublishWheels",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446e4330",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446e4330.c;xref:0x145bff4f0",
+  "notes": "Per-step (vt_Car_Dynamics table ref 0x145bff4f0) ERS energy integration plus wheel publish. ERS part (the CarErs object, param+0xa4c = substep count): integrates harvest power MGU-K/MGU-H and deploy into the energy store +0x19f0 (clamped by the +0x1080 spline), accumulates the lap counters +0x19c8..+0x19d8 (skipped when CarLive.flags bit 1 is set), writes the per-second channels +0x1a00 +0x1a04 +0x1a14 +0x1a18 +0x1a1c, and steps the value +0x1a28 (clamped +-5000). Wheel part: copies the solver per-wheel arrays into the wheel objects (SuspensionSystem +0x60 + i*8): +0x3b4 slip ratio <- +0x760, +0x3c4 longitudinal force <- +0x7e0 and ~15 more fields (+0x3a4, +0x3ac, +0x3bc, +0x3cc). Renamed from Car_Suspension_PublishWheelState (mislabelled; osd-vc name check V8816, re-read by car-re 2026-11-11)"
+ },
+ "signature": {
+  "id": "car.suspension_publish_wheel_state",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 C5 78 29 BC 24 E0 00 00 00 C5 78 29 B4 24 D0 00 00 00 C5 78 29 AC 24 C0 00 00 00 C5 78 29 A4 24 B0 00 00 00 C5 78 29 9C 24 A0 00 00 00 C5 78 29 94 24 90 00 00 00 C5 78 29 8C 24 80 00 00 00 C5 78 29 44 24 70 C5 F8 29 7C 24 60 C5 F8 29 74 24 50 48 89 CE C5 FA 2A B9 4C 0A 00 00",
+  "match": "0x1446e4330",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446e4330",
+  "kind": "func_start",
+  "names": [
+   "Car_Ers_IntegrateAndPublishWheels"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

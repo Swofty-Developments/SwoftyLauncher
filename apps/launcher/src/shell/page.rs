@@ -1,4 +1,4 @@
-use crate::game::Owner;
+use crate::services::game::Owner;
 use swofty_core::session::SessionRecord;
 use swofty_i18n::tr;
 
@@ -16,7 +16,7 @@ pub enum Page {
     Multiplayer,
     Online,
     Moderation,
-    Support,
+    Store,
     Settings,
     Section(usize),
 }
@@ -36,7 +36,7 @@ impl Page {
             Self::Multiplayer => tr("Multiplayer"),
             Self::Online => tr("Online"),
             Self::Moderation => tr("Moderation"),
-            Self::Support => tr("Support"),
+            Self::Store => tr("Donate"),
             Self::Settings => tr("Settings"),
             Self::Section(_) => "",
         }

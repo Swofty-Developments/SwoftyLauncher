@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_IntroVideo_ParseParams",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d6cc30",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "uint64_t Sess_IntroVideo_ParseParams(void *state, void *params)",
+  "evidence": "str:s_cfg_GameSkipIntroVideo;decomp:re/decomp/142d6cc30.c;xref:0x142d6cfa0,0x142d6cfa1,0x1457df8e8",
+  "notes": "Slot 7 of vt_Sess_IntroVideo 0x1457df8b0 (pointer 0x1457df8e8), cxx=SessionStateIntroVideo; parses the flow-state parameter list params (+8..+0x10, 0x10-byte name/value pairs, Ne_Compare_StringNoCase): videoType (FNV-1a hash -> u16 +0xdc0 = 0x100..0x103), showInMultiplayer -> +0xdc2, showInLocalMultiplayer -> +0xdc3, isSting -> +0xdc4, isQuickPractice -> +0xdc5 (Ne_Parse_BoolCString). Finally reads Game.SkipIntroVideo (Ne_Get_SettingBool 0x143a43b90, node [[state+0xdb0]+0x18], default 0) into +0xdc6, the skip flag Sess_IntroVideo_CanFinish 0x142d6d3b0 checks. Returns 0. hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile. Callers: census steam 0x2d6cc30."
+ },
+ "signature": {
+  "id": "session.intro_video_parse_params",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 48 89 D7 48 89 CE E8 ?? ?? ?? ?? C6 86 C1 0D 00 00 00",
+  "match": "0x142d6cc30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d6cc30",
+  "kind": "func_start",
+  "names": [
+   "Sess_IntroVideo_ParseParams"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-0",
+   "kind": "func",
+   "item": "0x142d6cc30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d6cc30.c;xref:0x1457df8e8",
+   "notes": "V9315 SessionStateIntroVideo (vt_Sess_IntroVideo, string \"SessionStateIntroVideo\") parameter parser: case-insensitive key lookup for videoType (FNV hash -> 0x101..0x103), showInMultiplayer (default false), showInLocalMultiplayer (default true), isSting etc into +0xdc0..; 2 args match"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_SponsorRenewalCounterofferVM_OnActivate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141cc1fe0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *vm",
+  "evidence": "decomp:re/decomp/141cc1fe0.c;xref:0x145742918",
+  "notes": "myteam-g1: Activates my_team_sponsor_renewal_counteroffers screen: reads sponsor_info node and binds the counter-offer data."
+ },
+ "signature": {
+  "id": "career.sponsor_renewal_counteroffer_vm_on_activate",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 01 00 00 C5 F8 29 B4 24 50 01 00 00 48 89 CE C6 81 F8 05 00 00 00",
+  "match": "0x141cc1fe0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141cc1fe0",
+  "kind": "func_start",
+  "names": [
+   "Career_SponsorRenewalCounterofferVM_OnActivate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141cc1fe0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141cc1fe0.c;xref:0x145742918",
+   "notes": "V10001 Sponsor renewal counteroffers screen: sponsor_info, counter_offer_tile_spawner, spawn_counter_offer_contract_tiles."
+  }
+ ],
+ "proofs": []
+}

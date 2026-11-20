@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Open_RnDDevelopmentConfirmation",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c4f490",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Open_RnDDevelopmentConfirmation(void * self)",
+  "evidence": "decomp:re/decomp/141c4f490.c;xref:0x14573eb28",
+  "notes": "myteam-g1: Opens the my_team_development_confirmation dialog for the selected upgrade (upgrade_hash_name/uid, upgrade_dual_develop_selected)."
+ },
+ "signature": {
+  "id": "career.open_rn_ddevelopment_confirmation",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 0D 00 00 48 89 CE 48 8B 81 88 02 00 00",
+  "match": "0x141c4f490",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c4f490",
+  "kind": "func_start",
+  "names": [
+   "Career_Open_RnDDevelopmentConfirmation"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141c4f490",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c4f490.c;xref:0x14573eb28",
+   "notes": "V9969 Opens my_team_development_confirmation with upgrade_hash_name/uid and dual_develop_selected."
+  }
+ ],
+ "proofs": []
+}

@@ -255,6 +255,8 @@ A record can carry the `switch` itself (schema `1.4`), so a plain dial record (n
 
 The switch's `default` (a bool, `true` when absent) is the state while the leaf has not been written: the record's root starts with it and every `v_stock_<part>` with its inverse. With `"default": false` the stock dial shows from the first frame and keeps showing if the addon's native code never runs. `switch` is for dial records: the check refuses it on a screen record (use `show`), on a scene target, and with `stock: park`.
 
+Several records with `stock: hide` on one dial (season HUDs that each show with their own cars) each hide the stock parts while their own leaf is on. Two `visible` bindings on one part fight, and the record composed last wins, so the first record by prefix binds the stock parts and each later record wraps them in a null of its own, `<prefix>_w_<part>` in the part's place in the dial scene, and binds that: with `s10_onboard` and `s11_onboard`, `s10_onboard_ctl.v_stock_frame` binds `frame` and `s11_onboard_ctl.v_stock_frame` binds `boundless_customisation.s11_onboard_w_frame`, the null around `frame`. A third record's null goes inside `s11_onboard_w_frame`. The stock dial then shows only while every record's leaf is off. The build log says which record hides its parts through wrappers.
+
 A variant's `add` entries go last at the top level unless one names its place: `before` or `after` an element of the base, or `replace` for one it stands in for. An id the variant removes or replaces is free inside that variant, so a swapped part keeps its id and its spot in the draw order. A variant also carries `decisions` of its own, built for its dial only and after the record's; they may show the variant's own `add` elements, and each dial still needs exactly one stock `MVCD` on the value (`drs_pit_state` has one in the f1_25 and f2 dials). Here the 2025 dial swaps the energy group under the bars and adds a two-state pill the 2026 dial has no value for:
 
 ```jsonc
@@ -376,6 +378,26 @@ Two limits:
 - A whole-archive `put` of `flow_race.erp`, `flow_options.erp`, `persistent.erp` or `screens/hud_spectator_2.erp` is read as that archive, and a later put of one of them drops the composed overlay for it like any other overlay.
 
 A compose error (an unknown game value, a missing sprite, a prefix two records share) stops the build with `the HUD elements do not compose: <reason>`.
+
+## When another addon claims the same part
+
+The editor `.uipre` the composer writes starts from the copy step 2 leaves. A setter that copy already has with the same value is kept once: an addon that ships its own copy of `driver_position_table_stacked.uipre` with `mask` hidden (Project Halo does) and a screen record that hides `mask` too compose, and the file lists `mask` once. Element names the composer adds carry the record's prefix, so they never meet another addon's.
+
+Three claims stop the build, naming the addons on both sides and the addons to turn off:
+
+| claim | when |
+|---|---|
+| the editor preview | the copy already sets one of the composer's setters to another value (shows what the composer hides, another text in a label) |
+| the board | a node under a screen's parent that the game's template has not got already shows and hides the stock board the screen masks (`mask` on the standings): another addon replaces the same board |
+| a stock part | a node the game's template has not got already shows and hides an element a record's `stock_nodes` or `restyle` hides |
+
+Two template nodes that show and hide one element fight: one board takes one addon's tower. Project Halo's timing tower (`tt_ctl.tt_mask` on `mask`) and TV Timing Tower's record stop the build with:
+
+```text
+the HUD elements do not compose: Project Halo and TV Timing Tower both replace the Track Position list, and only one of them can switch the game's own list off; turn Project Halo or TV Timing Tower off in this profile (Project Halo's template node hud_track_position.osd_visibility_option.track_position.tt_ctl.tt_mask already shows and hides mask)
+```
+
+The other side is the addon whose archive change put the node or setter there. When no addon's change holds it, the refusal says "another addon" and asks for Send Logs.
 
 ## Rules the composer keeps
 

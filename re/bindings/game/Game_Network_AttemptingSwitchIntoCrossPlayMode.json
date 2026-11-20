@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_AttemptingSwitchIntoCrossPlayMode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430e0560",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK",
+  "notes": "named from its log messages (channel NETWORK): 'Attempting to switch into CrossPlay mode post Authentication with server.'"
+ },
+ "signature": {
+  "id": "game.network_attempting_switch_into_cross_play_mode",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 78 1B 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 79 7F BC 24 60 1B 00 00",
+  "match": "0x1430e0560",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430e0560",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_AttemptingSwitchIntoCrossPlayMode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430e0560",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1430e0560.c",
+   "notes": "V5380 better name Game_NetworkSubsystem_Update: 8224-line main update (cable/online events, matching, invite manager state machine, kicks, leaderboards cache, restrictions); CrossPlay switch is one tiny part"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x1430e0560",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430e0560.c",
+   "notes": "V6973 8224 decomp lines, strings match current name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

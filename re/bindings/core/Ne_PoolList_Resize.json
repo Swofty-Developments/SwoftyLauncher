@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_PoolList_Resize",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ed2ce0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143ed2ce0.c;xref:0x143b5f845,0x143b5f89f",
+  "notes": "Resize of a node-pool list (free-list nodes at +0x18/+0x20, counts +0x30/+0x38): shrinks by moving nodes to the free list or grows by allocating, runs per-node dtor 0x143bfced0. Called in Gfx2Renderer_Initialise. Generic container helper."
+ },
+ "signature": {
+  "id": "core.pool_list_resize",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 4C 89 C6 48 89 D3 48 89 CF 49 89 D5 4C 2B 69 38 0F 83 ?? ?? ?? ?? 48 39 5F 30 76 3B",
+  "match": "0x143ed2ce0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143ed2ce0",
+  "kind": "func_start",
+  "names": [
+   "Ne_PoolList_Resize"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143ed2ce0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ed2ce0.c;xref:0x143b5f845",
+   "notes": "V7940 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

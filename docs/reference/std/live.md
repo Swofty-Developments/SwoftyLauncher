@@ -59,7 +59,7 @@ SWOFTY_ADDON()
 ```
 
 - **Header:** `swofty/live.hpp`, namespace `swofty::live`; host test fake `swofty/fake_live.hpp`
-- **Table:** the core export `SwoftyCoreLive` (`SwoftyLive`, table version 5 appends `tyre_icon_texture`; version 4 appends image access; version 2 adds `driver_name` and version 1 ends at `seq`; version 3 adds `team_badge_texture`); `SWOFTY_API_VERSION` is unchanged
+- **Table:** the core export `SwoftyCoreLive` (`SwoftyLive`, table version 6 appends `car_detail`; version 5 appends `tyre_icon_texture`; version 4 appends image access; version 2 adds `driver_name` and version 1 ends at `seq`; version 3 adds `team_badge_texture`); `SWOFTY_API_VERSION` is unchanged
 - **Feature:** `telemetry`, experimental, off by default (the live state is the memory source of std telemetry)
 - **Thread:** any thread; car/session calls copy the core's per-frame snapshot. Badge/name getters read the game's memory at the call; `tyre_icon_texture` resolves the snapshot's fitted visual compound through the loaded GameDB.
 
@@ -85,6 +85,8 @@ A call answers empty while no session is live, on a core without the live state,
 [live] tyres off: VehicleTyreComponent, TyreSystem, TyreSlot, VisualCompound and PhysicalCompound fields (SWOFTY_LIVE_FORCE=1 reads it unverified)
 [live] timing off on the EA build: k_Live_RelativeGapHelperKey does not resolve in this build's bindings
 [live] pit lane off on the EA build: its layout is not proven there (SWOFTY_LIVE_FORCE=1 reads it anyway)
+[live] lap times off on the EA build: its layout is not proven there (SWOFTY_LIVE_FORCE=1 reads it anyway)
+[live] session time left off: needs a session clock row read without a call (Sess_RaceRuleset_GetTimeRemaining interpolates RaceRuleset +0x2f0 from the game timer)
 [live] off: build 1234567890 has no proven live layouts
 ```
 
@@ -125,7 +127,11 @@ typedef struct SwoftyLiveCar {
     uint8_t drs;
     uint8_t pit_status;            // 0 on track, 1 in the pit lane, 2 in the pit box (SWOFTY_LIVE_HAVE_PIT_LANE)
     uint8_t pit_stops;             // completed stops
-    uint32_t reserved[7];
+    uint8_t garage;                // pit lane garage index, 99 the safety car (SWOFTY_LIVE_HAVE_GARAGE)
+    uint8_t pit_box;               // garage / 2, 12 for the safety car (SWOFTY_LIVE_HAVE_GARAGE)
+    uint8_t tyre_damage[4];        // RL RR FL FR: 0 none, 2 punctured, 3 burst (SWOFTY_LIVE_HAVE_TYRE_DAMAGE)
+    float tyre_deflation[4];       // RL RR FL FR: 0, 1 when a puncture starts, 2 when the tyre bursts
+    uint32_t reserved[1];
 } SwoftyLiveCar;
 ```
 
@@ -137,6 +143,64 @@ typedef struct SwoftyLiveCar {
 | `live::turn(car)` | the official turn near `car.lap_m` |
 
 `speed_kmh`, `ers_fraction`, `gap_ahead_ms`, `gap_leader_ms`, `in_pit`, `pit_status` and `pit_stops` return `std::optional` and are empty when the value is not there.
+
+`garage` and `pit_box` take the first word of what was `reserved[7]` in earlier releases. `SwoftyLiveCar` keeps its 208 bytes and every other offset. They are 0, with `SWOFTY_LIVE_HAVE_GARAGE` clear, on a build whose live state does not walk the pit lane or whose game header does not export `PitLaneVehicle.garage_index`. Read them through [`swofty/systems/pitlane.hpp`](./pitlane).
+
+`tyre_damage` and `tyre_deflation` take the next five words. They are 0, with `SWOFTY_LIVE_HAVE_TYRE_DAMAGE` clear, while the tyres group is off, on a build without the wheel puncture proof (the KB build and Steam 1.0.145 have it), or on a game header that does not export `CarWheel.tyre_flags` and `CarWheel.deflation`. Read them through [`swofty/systems/tyre_damage.hpp`](./tyre-damage).
+
+## car_detail
+
+```cpp
+auto d = live::car_detail(7);
+if (d && live::has(*d, SWOFTY_LIVE_HAVE_LAP_TIMES)) {
+    uint32_t running = d->current_lap_ms;
+    if (auto best = live::best_lap_ms(*d))
+        swofty::log("[my-osd] best %u.%03u on lap %u", *best / 1000, *best % 1000, d->best_lap_number);
+}
+if (d && live::has(*d, SWOFTY_LIVE_HAVE_TYRE_WEAR))
+    swofty::log("[my-osd] front left %.0f%%, %u laps on the set", d->tyre_wear[2], d->tyre_age_laps);
+if (auto slot = d ? live::grid_position(*d) : std::nullopt)
+    swofty::log("[my-osd] started P%u", *slot);
+```
+
+```c
+typedef struct SwoftyLiveCarDetail {
+    uint32_t version, size;
+    uint64_t have;                 // the car's SWOFTY_LIVE_HAVE_* bits, as in SwoftyLiveCar.have
+    uint32_t vehicle;
+    uint8_t grid_position;         // starting grid slot from 1 (SWOFTY_LIVE_HAVE_GRID)
+    uint8_t tyre_age_laps;         // laps on the fitted set, earlier stints on it included (SWOFTY_LIVE_HAVE_TYRE_AGE)
+    uint8_t tyre_stint_laps;       // laps since the set was fitted (SWOFTY_LIVE_HAVE_TYRE_AGE)
+    uint8_t lap_flags;             // SWOFTY_LIVE_LAP_CURRENT_VALID, SWOFTY_LIVE_LAP_LAST_VALID
+    float tyre_wear[4];            // RL RR FL FR, percent: 0 new, 100 worn out (SWOFTY_LIVE_HAVE_TYRE_WEAR)
+    uint32_t laps_completed;       // the rest: SWOFTY_LIVE_HAVE_LAP_TIMES
+    uint32_t current_lap_ms;       // the lap in progress so far
+    uint32_t current_sector_ms[2]; // its sector 1 and 2, 0 until the car crosses that line
+    uint32_t last_lap_ms;          // 0 before the first completed lap
+    uint32_t last_sector_ms[3];
+    uint32_t best_lap_ms;          // fastest valid completed lap, 0 while there is none
+    uint32_t best_lap_number;      // from 1
+    uint32_t best_sector_ms[3];    // the best lap's sectors
+    uint32_t reserved[17];
+} SwoftyLiveCarDetail;
+```
+
+| Call | Answers |
+|---|---|
+| `live::car_detail(vehicle)` | the car's detail from the same snapshot as `live::car`; empty on a core older than table version 6 |
+| `live::grid_position(d)`, `live::last_lap_ms(d)`, `live::best_lap_ms(d)` | `std::optional`, empty when the bit is clear or the lap time is 0 |
+
+The values are the ones the game sends in its UDP output:
+
+| Value | Game source |
+|---|---|
+| `grid_position` | `SessionVehicleEntry.grid_position_a ^ grid_position_b`, plus 1 |
+| `tyre_wear` | 100 x `CarWheel.wear` of each wheel (the UDP car damage `tyresWear`) |
+| `laps_completed`, lap and sector times | `VehicleLapTimesData`: record `current_lap` is the lap in progress, the record before it the last lap |
+| best lap | of the records whose three sectors are set and whose valid pair holds, the first with the lowest time (`Sess_LapTimes_IsNewFastestLap`) |
+| `tyre_age_laps` | the UDP car status `tyresAgeLaps`: the laps of every stint on the fitted set's compound and set index |
+
+Lap times read every 0.1 s and the best lap every second; tyre wear and age every 0.5 s.
 
 Gaps follow the game's rule. They are valid in a race while the car is running or finished and not in the pit; a lapped car's gap is invalid, so compute "+1 LAP" from the lap counters. In practice, qualifying and Time Trial the game's gap system is not fed, so the gaps stay empty.
 
@@ -175,9 +239,13 @@ typedef struct SwoftyLiveSession {
     uint32_t classified;
     uint32_t road_order[32];       // vehicle ids by distance covered, `on_track` of them
     uint32_t on_track;
-    uint32_t reserved[8];
+    float time_left_s;             // SWOFTY_LIVE_SHAVE_TIME_LEFT: not read yet, always 0
+    uint32_t total_laps;           // SWOFTY_LIVE_SHAVE_TOTAL_LAPS: not read yet, always 0
+    uint32_t reserved[6];
 } SwoftyLiveSession;
 ```
+
+`time_left_s` and `total_laps` take the first two words of what was `reserved[8]`; `SwoftyLiveSession` keeps its 440 bytes. Their bits stay clear on every build (see [Not read yet](#not-read-yet)).
 
 The watched car follows the spectator director only while the spectator HUD is up. The safety car cinematic and the winner sequence also switch the director on, and those do not count. A red flag is reported when the game's red flag system says so, or when every marshal zone reads red; the game's own byte stayed 0 through a red flag in a race, so the zones are the second witness. The safety car value is 0 while a red flag is out, because the game's byte also reads 1 then.
 
@@ -303,15 +371,18 @@ fake.set_turns({/* SwoftyLiveTurn rows */});
 fake.set_driver_name(1, "Charles Leclerc");
 fake.set_badge(1, "ferrari_2026");                 // team_badge and the catalogue team_badge_texture
 fake.set_badge_texture(0, "eaid://ui_package/art/textures/render_badge_ePreLoaded 7");
+fake.car(0).have |= SWOFTY_LIVE_HAVE_LAP_TIMES;
+fake.detail(0).best_lap_ms = 90500;                // car_detail answers detail(0) with car(0).have
 fake.install();
 
 assert(swofty::live::gap_ahead_ms(*swofty::live::car(0)) == 950);
 assert(swofty::live::order().ahead(0)->vehicle == 1);
+assert(swofty::live::best_lap_ms(*swofty::live::car_detail(0)) == 90500u);
 ```
 
 ## When a group reads
 
-The core reads each group (car systems, ERS, progress, classification, timing, pit, pit lane, penalties, tyres, flags, controllers, spectator, game mode, team badges, rendered badges, driver names, track and the game's message bus) only when every site it needs resolves on the running build and its KB rows are verified. The two tests are the same one: the generated bindings export a site only for a row that is L2 or better with an independent `agree`, and the generated game headers declare a struct field under the same rule, so a group turns on by itself when its rows land and the headers are regenerated. The offsets the reader uses are tied to the generated structs with `static_assert`s, so a header that declares a field somewhere else fails the build.
+The core reads each group (car systems, ERS, progress, classification, timing, pit, pit lane, penalties, tyres, flags, controllers, spectator, game mode, team badges, rendered badges, driver names, track, grid, lap times, tyre wear, tyre age and the game's message bus) only when every site it needs resolves on the running build and its KB rows are verified. The two tests are the same one: the generated bindings export a site only for a row that is L2 or better with an independent `agree`, and the generated game headers declare a struct field under the same rule, so a group turns on by itself when its rows land and the headers are regenerated. The offsets the reader uses are tied to the generated structs with `static_assert`s, so a header that declares a field somewhere else fails the build.
 
 A group also needs its layout proven for the running build. The Steam build is the one the knowledge base describes. The EA App build (PE timestamp 1789128892) runs every group but driver names and rendered badges, because each struct field the groups read was compared against the Steam code that reads it, and every site they need resolves in the EA bindings set. One displacement differs and the core applies it for you: the game manager's progress system is at `+0x2a0` on EA and at `+0x2d0` on Steam, so the progress group (and everything the core derives from lap distance) reads that field at the right place on each build. A build in neither column, such as a future patch, runs no group at all.
 
@@ -325,6 +396,9 @@ A group also needs its layout proven for the running build. The Steam build is t
 | bus events (collision, retirement) | yes | yes |
 | driver names | yes | no, layout not compared yet |
 | rendered badges | yes | no |
+| grid, lap times, tyre wear, tyre age | yes | no, layout not compared yet |
+
+Grid, lap times, tyre wear and tyre age read on the KB Steam build and on Steam 26566308; both EA App builds (the older one and 1.0.145) leave them off. Tyre wear also needs the wheel chain proof that tyre damage reads through.
 
 A group that is yes still waits for its rows, as above, and the EA proof is static: it compares code, so run an EA race with `SWOFTY_TELEMETRY_VERIFY=1` once to compare the values with the game's UDP output. A group with any site that does not resolve stays off even with `SWOFTY_LIVE_FORCE=1`, which reads the groups whose sites resolve without waiting for verification, and on EA also without waiting for the layout proof; use it on a test machine to produce the evidence that verifies them, together with `SWOFTY_TELEMETRY_VERIFY=1` (see [Telemetry](./telemetry#memory-source)).
 
@@ -336,7 +410,15 @@ The core also subscribes to the game's `r_car_to_car_col` and `vehicle_status_ch
 
 ## Not read yet
 
-Active aero mode, Boost and Overtake state, DRS allowed and distance, the pit limiter, driver name and team colour, the session clock and lap total, lap and sector times, and tyre temperatures have no verified memory source. `SWOFTY_LIVE_HAVE_BOOST`, `_AERO_MODE` and `_IDENTITY` are declared so the structs stay stable when they land and stay clear until then. The game's own view-model leaves carry most of these values, but the core has no leaf reader: the node's value layout is not in the knowledge base, so there is no `hud::get` yet.
+Active aero mode, Boost and Overtake state, DRS allowed and distance, the pit limiter, driver name and team colour, the session time left and the race lap count, car setup values, personal best sector times and tyre temperatures have no verified memory source. `SWOFTY_LIVE_HAVE_BOOST`, `_AERO_MODE` and `_IDENTITY`, and `SWOFTY_LIVE_SHAVE_TIME_LEFT` and `_TOTAL_LAPS` (with `time_left_s` and `total_laps`), are declared so the structs stay stable when they land and stay clear until then. The core logs the unread session and setup values once:
+
+```text
+[live] session time left off: needs a session clock row read without a call (Sess_RaceRuleset_GetTimeRemaining interpolates RaceRuleset +0x2f0 from the game timer)
+[live] total laps off: needs the race lap count: RaceRuleset +0x358 with the ruleset class proven on each session type
+[live] setup values off: needs the car setup record rows; CarOps gives several setup values
+```
+
+The setup values the car carries (brake bias, differential, suspension and the others in [Changing a car live](/std/systems/car-physics#changing-a-car-live)) read through the car operations instead. The game's own view-model leaves carry most of these values, but the core has no leaf reader: the node's value layout is not in the knowledge base, so there is no `hud::get` yet.
 
 ## Images through the live API (table v4)
 

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EntrantsManager_OnMutableRoleChanged",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1431187c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1431187c0.c;xref:0x145816848",
+  "notes": "vtable onMutableRoleChanged(role): role 0 clears pending ops (+0xc0..+0xc8) and the document-open flag +0xdc and unregisters entries; otherwise +0xdc from vfunc +0x38. Addon: entrants host/client role switch. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2610)"
+ },
+ "signature": {
+  "id": "game.entrants_manager_on_mutable_role_changed",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 5A B8 63 00",
+  "match": "0x1431187c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1431187c0",
+  "kind": "func_start",
+  "names": [
+   "Game_EntrantsManager_OnMutableRoleChanged"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d6-verify",
+   "kind": "func",
+   "item": "Game_EntrantsManager_OnMutableRoleChanged",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1431187c0.c;xref:0x1431187c0",
+   "notes": "V2610 role/offsets/log strings match decomp"
+  }
+ ],
+ "proofs": []
+}

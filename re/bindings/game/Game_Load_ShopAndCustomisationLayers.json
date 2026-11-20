@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Load_ShopAndCustomisationLayers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142510a80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t (void *loader)",
+  "evidence": "decomp:re/decomp/142510a80.c;xref:0x145790018",
+  "notes": "myteam-g1: Queues .layer files for shop/customisation/facilities screens: ShopElements.layer, stripes_*.layer, facilities_objects_finances.layer, facilities_objects_team.layer. Asset loading, no finance logic."
+ },
+ "signature": {
+  "id": "game.load_shop_and_customisation_layers",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 68 48 89 CE 48 8D 79 20",
+  "match": "0x142510a80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142510a80",
+  "kind": "func_start",
+  "names": [
+   "Game_Load_ShopAndCustomisationLayers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x142510a80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142510a80.c",
+   "notes": "V10221 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

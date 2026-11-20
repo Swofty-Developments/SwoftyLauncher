@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamTeamAttributeSet_FindOrCreate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141215fb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *f(void *self)",
+  "evidence": "decomp:re/decomp/141215fb0.c;xref:0x140c300f1;xref:0x141216f78",
+  "notes": "myteam-g1: Constructs MyTeamTeamAttributeSet (fields +0x290..+0x2d8), the team-level attribute container used for My Team upgrades/modifiers. DISPUTE(V9005) role per verifier: Takes (comp, team id): scans the vector at +0x2c8..+0x2d0 (0x30-byte entries) for a matching id, otherwise looks up the MyTeamTeamAttributeSet resource via +0x290, then writes the team id into it. It is a find-or-create/ensure for a team attribute set, not a constructor with signature f(self)."
+ },
+ "signature": {
+  "id": "game.my_team_team_attribute_set_find_or_create",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 89 D7 48 89 CE 89 D5 C1 ED 10 48 8B 81 C8 02 00 00",
+  "match": "0x141215fb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141215fb0",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamTeamAttributeSet_FindOrCreate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-b",
+   "kind": "func",
+   "item": "0x141215fb0",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/141215fb0.c;xref:0x140c300f1;xref:0x141216f78;str:\"MyTeamTeamAttributeSet\"",
+   "notes": "V9005 Takes (comp, team id): scans the vector at +0x2c8..+0x2d0 (0x30-byte entries) for a matching id, otherwise looks up the MyTeamTeamAttributeSet resource via +0x290, then writes the team id into it. It is a find-or-create/ensure for a team attribute set, not a constructor with signature f(self)."
+  },
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x141215fb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141215fb0.c;xref:0x140c300f1;str:\"MyTeamTeamAttributeSet\"",
+   "notes": "V9672 Find-or-create by team id in vector +0x2c8..+0x2d0 (0x30 stride) via resource lookup of MyTeamTeamAttributeSet; the dispute text is right."
+  }
+ ],
+ "proofs": []
+}

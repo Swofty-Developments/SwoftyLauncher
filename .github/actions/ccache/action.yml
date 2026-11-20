@@ -1,0 +1,35 @@
+name: Set up ccache
+description: >
+  ccache 4.14.2 (the static Linux build) on PATH as zig, checked against its release archive's SHA-256. Every compile
+  the native build and test graphs run is looked up in the cache first; links and other zig commands run as they are.
+  It runs after mlugg/setup-zig, since its folder has to come first on PATH. Entries are keyed by the Zig version, not
+  by the zig binary's modification time, which the copy into the runner's tool cache sets anew on every job.
+
+inputs:
+  dir:
+    description: The cache folder
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        DIR: ${{ inputs.dir }}
+      run: |
+        curl -fsSL --retry 5 -o "$RUNNER_TEMP/ccache.tar.gz" \
+          https://github.com/ccache/ccache/releases/download/v4.14.2/ccache-4.14.2-linux-x86_64-musl-static.tar.gz
+        echo "d540ba01f160addbd3dd5e18eda9bd34005591b095c09ac8ae9d0a1b655e7ef5  $RUNNER_TEMP/ccache.tar.gz" | sha256sum -c -
+        bin=$RUNNER_TEMP/ccache-bin
+        mkdir -p "$bin"
+        tar xzf "$RUNNER_TEMP/ccache.tar.gz" -C "$bin" --strip-components 1 ccache-4.14.2-linux-x86_64-musl-static/ccache
+        ln -sf ccache "$bin/zig"
+        version=$(zig version)
+        echo "$bin" >> "$GITHUB_PATH"
+        {
+          echo "CCACHE_COMPILERCHECK=string:zig $version"
+          echo "CCACHE_DIR=$DIR"
+          echo "CCACHE_BASEDIR=$GITHUB_WORKSPACE"
+          echo "CCACHE_MAXSIZE=1G"
+        } >> "$GITHUB_ENV"
+        mkdir -p "$DIR"

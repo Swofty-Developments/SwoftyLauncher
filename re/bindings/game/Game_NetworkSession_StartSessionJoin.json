@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkSession_StartSessionJoin",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440638b0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-SESSION",
+  "notes": "named from its log messages (channel NETWORK-SESSION): '%s: Failed to start session join, error: %s'"
+ },
+ "signature": {
+  "id": "game.network_session_start_session_join",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 50 48 89 CF 48 8B 89 48 01 00 00 48 85 C9 0F 84",
+  "match": "0x1440638b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440638b0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkSession_StartSessionJoin"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x1440638b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440638b0.c;xref:0x143072c9e",
+   "notes": "V6490 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

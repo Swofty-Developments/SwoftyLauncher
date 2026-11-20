@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleProgressSync_AdvanceChassisPhysics",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143274180",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=VehicleProgressSync::advanceChassisPhysics; log channel NETWORK-PROGRESS/V: 'NEbool network::VehicleProgressSync::advanceChassisPhysics(racing::dynamics::Chassis *, racing::dynamics::NetworkProgress &, NEfloat) | %s: calculated progress: %s'"
+ },
+ "signature": {
+  "id": "game.vehicle_progress_sync_advance_chassis_physics",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 00 04 00 00 C5 78 29 BC 24 F0 03 00 00",
+  "match": "0x143274180",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143274180",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleProgressSync_AdvanceChassisPhysics"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x143274180",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143274180.c;xref:0x143261fe9",
+   "notes": "V5839 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

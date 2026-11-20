@@ -1,0 +1,42 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationDecals_WriteBackEditorDecals",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14142d800",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14142d800.c;xref:0x141fec9a0,0x141ff8790,0x141ffdef0,0x141ffea20;doc:re/research/sponsors.md#decal-system",
+  "notes": "writeback(system, u8 flag): editor list (system+0x178/+0x180) -> 0x142477900 (store into the selected vehicle customisation), then 0x14142daa0; flag != 0 also posts via system+0x278 and clears dirty byte +0x168; then sets +0x1a8 = 0x3fff0000 and copy(old key) reloads. NOT a clear-all. Editor callers pass flag 0 after each edit. Within it the call site 0x14142da2a leads to the driver-customisation decal copy 0x141401110 (T015). [static L2 evidence in the doc; added at L1 for the lane owner to raise]"
+ },
+ "signature": {
+  "id": "game.customisation_decals_write_back_editor_decals",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 98 4A 00 00 E8 ?? ?? ?? ?? 48 29 C4 88 54 24 2F",
+  "match": "0x14142d800",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14142d800",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomisationDecals_WriteBackEditorDecals"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-05",
+    "by": "sponsor-studio",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "jonniedesigns.sponsor-base"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

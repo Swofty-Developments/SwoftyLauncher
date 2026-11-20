@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Get_FacilityUpgradeSlotEntry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1423e3f10",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_Get_FacilityUpgradeSlotEntry(void *scene, int index)",
+  "evidence": "decomp:re/decomp/1423e3f10.c;xref:0x1423df493;xref:0x1423e42d2;xref:0x1423e4781",
+  "notes": "myteam-g2: Walks up to 100 linked nodes of the facility-upgrade list at scene+0x858 and returns the entry at index or the empty-entry sentinel DAT_146ca0e90. UI lookup of the nth upgrade card."
+ },
+ "signature": {
+  "id": "career.get_facility_upgrade_slot_entry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 89 D6 48 89 CF",
+  "match": "0x1423e3f10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423e3f10",
+  "kind": "func_start",
+  "names": [
+   "Career_Get_FacilityUpgradeSlotEntry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1423e3f10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1423e3f10.c",
+   "notes": "V10195 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

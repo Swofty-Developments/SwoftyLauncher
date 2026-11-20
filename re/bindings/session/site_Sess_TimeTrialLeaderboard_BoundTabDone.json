@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Sess_TimeTrialLeaderboard_BoundTabDone",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142fcd176",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:own capstone disasm 0x142fcd0d0-0x142fcd17c;xref:0x142fcd0dc",
+  "notes": "In Sess_TimeTrialLeaderboard_ActivateTabBound: the nop after the call to FUN_142fb6630, directly before add rsp,0x40; pop rsi; ret, and the target of the function's own je for an unbound model at 0x142fcd0dc. No push/sub between 0x142fcd166 and here (calls balanced), so rsp equals that at site_Sess_TimeTrialLeaderboard_BoundTabChild. Reads rsp only. The rip target of core's time trial leaderboard tab guard when the child model is null; never hooked."
+ },
+ "signature": {
+  "id": "session.time_trial_leaderboard_bound_tab_done",
+  "section": ".xtls",
+  "pattern": "90 48 83 C4 40 5E C3 CC CC CC 56 48 83 EC 40",
+  "match": "0x142fcd176",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142fcd176",
+  "kind": "mid",
+  "expect": "90 48 83 C4 40",
+  "names": [
+   "site_Sess_TimeTrialLeaderboard_BoundTabDone"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "ttgaragetab",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/frontend/leaderboard_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "ttgaragetab-verify",
+   "kind": "global",
+   "item": "0x142fcd176",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142fcd0d0-0x142fcd17c;decomp:own capstone disasm 0x141f75806-0x141f75888,0x142fc10b0-0x142fc115c;xref:0x142fcd0dc,0x142fcd16b,0x142fcd171,0x141f75868,0x142fc10bc;sig:session.time_trial_leaderboard_bound_tab_done",
+   "notes": "V9265 Static: 0x142fcd176 nop; 0x142fcd177 add rsp,0x40; 0x142fcd17b pop rsi; 0x142fcd17c ret are the last bytes of the .pdata function 0x142fcd0d0-0x142fcd17d. They read rsp and the stack only (the saved rsi and the return address). It is the function's own exit: je at 0x142fcd0dc (test byte [rcx+0x25c],4) jumps there right after push rsi; sub rsp,0x40, and the normal path falls through to it after call 0x142fb6630. Between 0x142fcd166 and 0x142fcd176 there are only mov dl,1, call [rax+0x30], mov rcx,rsi and call 0x142fb6630: no push, pop, sub or add of rsp. So rsp from the site equals rsp on the je path (entry-0x48), and the epilogue returns to 0x141f7586d with the caller's rsi. The function writes no other callee-saved register, and the only caller (0x141f75868) ignores rax. Signature: sigcheck OK (hits=1, target 0x142fcd176). The 15-byte pattern is unique in Steam .xtls and EA .rdata (0x2fc1156, which is the target of the EA twin's je at 0x142fc10bc), and expect '90 48 83 C4 40' holds on both. bindverify's Resolver (with the gate patched to emit this unverified L2 site) resolves it on EA and on Steam, both by hint and by scan. The full sigcheck gate exits 1 on 875 other ids, all hits=1 and all name-table bookkeeping; none of them is either of these two ids."
+  }
+ ],
+ "proofs": []
+}

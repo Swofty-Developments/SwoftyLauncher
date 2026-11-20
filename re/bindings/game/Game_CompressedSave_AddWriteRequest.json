@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_CompressedSave_AddWriteRequest",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14364a730",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-CompressedSaveDataSerialiser",
+  "notes": "named from its log messages (channel CompressedSaveDataSerialiser): 'Unexpected state | Adding write request for file '%s' with size %u'"
+ },
+ "signature": {
+  "id": "game.compressed_save_add_write_request",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 A8 11 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 F8 29 B4 24 90 11 00 00",
+  "match": "0x14364a730",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14364a730",
+  "kind": "func_start",
+  "names": [
+   "Game_CompressedSave_AddWriteRequest"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "save-v2",
+   "kind": "func",
+   "item": "Game_CompressedSave_AddWriteRequest",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14364a730.c;decomp:re/decomp/14365a8b0.c;decomp:re/decomp/143658ea0.c;xref:0x1445da3ec,0x14364b840;imm:0xe00000;imm:0x37",
+   "notes": "V1478 Buffer = max(0xe00000, [cfg+0xa8]) from serialiser+0x248, cached at +0x4d0/+0x4c8. 0x14365a8b0 registers kind 0 profile 0xa00000 (lng_save_profile_sub_title), 1 ghost 0xe00000, 2 and 5 mid-session 0xc00000 and 0x1900000, so the profile's buffer is the 14 MB floor; it is not fixed for every kind (kind 5 gets 25 MB). The memory stream's write (k_Ne_MemWriteStreamVtbl+0x48 = 0x1445da3d0) returns 0x37 when the remaining space is below the size; the request is added (0x1436825a0, 'Adding write request for file') only when the serialise returned 0, else the code goes to +0x28 and the function returns 3 with no file request, so the old file stays. The bag itself is built in the SAVE_TEMP_ALLOC pool with the same fatal flag as the load, so a save-side pool overflow is fatal too."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x14364a730",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14364a730.c",
+   "notes": "V6100 4491-byte state machine (switch on state +0x250, getNextAction label, LeaveCriticalSection, returns 1/3/4); the write-request log is just one step. Better: Game_CompressedSave_GetNextAction. (no direct call site; vtable/indirect)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x14364a730",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14364a730.c",
+   "notes": "V7086 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

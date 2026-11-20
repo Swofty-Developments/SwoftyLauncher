@@ -1,0 +1,85 @@
+{
+ "schema": 1,
+ "name": "vt_Render_ModelComponent",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145a908a0",
+  "type": "vtable",
+  "level": "L1",
+  "subsystem": "render",
+  "evidence": "xref:0x1444e0243,0x1444d118c;decomp:re/decomp/1444e0210.c",
+  "notes": "Render model component vtable: slot 0 0x1444d1180, slot 3 = Render_ModelComponent_Load 0x14446a6d0, slot 4 0x14446b640 (slot count not proven). NOT 0x145a90b10, which is vt_Ne_ParticleEffectComponent. Stored at 0x1444e0243 and by the ctor family 0x1444d118c, 0x1444d131c, 0x1444d145c, 0x1444d158c. Used by the wet-track addon (slot 3)."
+ },
+ "signature": {
+  "id": "render.model_component_vtable",
+  "section": ".xtls",
+  "pattern": "48 8D 15 ?? ?? ?? ?? 48 89 10 48 8D 15 ?? ?? ?? ?? 48 89 50 18 48 8D 15 ?? ?? ?? ?? 48 89 50 20 48 8D 15",
+  "match": "0x1444e0243",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x145a908a0",
+  "kind": "data",
+  "names": [
+   "vt_Render_ModelComponent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/wet-track"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "af-verify",
+   "kind": "global",
+   "item": "vt_Render_ModelComponent",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "xref:0x1444e0243;sig:render.model_component_vtable",
+   "notes": "V3976 Slots 0/3/4 = 0x1444d1180/0x14446a6d0/0x14446b640 confirmed; differs from 0x145a90b10 (slots 0x1444d1840,..0x1444725e0); sig unique hit at 0x1444e0243. Not verified: +0xd8 path, 0x118 size."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "af2-verify",
+   "kind": "global",
+   "item": "vt_Render_ModelComponent",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "xref:0x1444e0243;sig:render.model_component_vtable",
+   "notes": "V3977 Slots 0/3/4 correct (0x1444d1180, 0x14446a6d0, 0x14446b640); distinct from 0x145a90b10 (stores 0x1444d184c,0x1444e059f); lea stores at 0x1444d118c,131c,145c,158c,0x1444e0243; sig unique. Slot count '8' not provable: table continues with plausible code pointers past slot 7."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "af3-verify",
+   "kind": "global",
+   "item": "vt_Render_ModelComponent",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x1444e0243;sig:render.model_component_vtable",
+   "notes": "V3978 Slots 0/3/4 = 0x1444d1180/0x14446a6d0/0x14446b640; slot3 loads 'model'/'mat binding' (Load). 0x145a90b10 distinct (slot0 0x1444d1840, ParticleEffect). lea refs at 0x1444d118c,131c,145c,158c,0x1444e0243 (store at e0243 confirmed). sig unique hit 0x1444e0243."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x145a908a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x1444d118f",
+   "notes": "V7508 name/class, slots and refs match"
+  }
+ ],
+ "proofs": []
+}

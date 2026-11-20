@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_SharedPtr_Release",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d4e1c0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d4e1c0.c;xref:0x142d82c38,0x142d82c7c",
+  "notes": "(sp): releases control block at sp+8 (strong +8 -> vtbl[0], weak +0xc -> vtbl[1]). Caller: Sess_PreRaceGridState_OnEnter."
+ },
+ "signature": {
+  "id": "core.shared_ptr_release",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 8B 71 08 48 85 F6 74 23 F0 FF 4E 08 75 1D 48 8B 06 48 89 F1 FF 10 F0 FF 4E 0C 75 0F 48 8B 06 48 89 F1 48 83 C4 20 5E 48 FF 60 08 90 48 83 C4 20 5E C3 CC CC CC CC CC CC CC CC E9 ?? ?? ?? ?? 53 5A FD",
+  "match": "0x142d4e1c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d4e1c0",
+  "kind": "func_start",
+  "names": [
+   "Ne_SharedPtr_Release"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142d4e1c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d4e1c0.c;xref:0x142d82c38",
+   "notes": "V3556 dec strong at sp+8 -> call vtbl[0]; dec weak at +0xc -> vtbl[1]; caller Sess_PreRaceGridState_OnEnter"
+  }
+ ],
+ "proofs": []
+}

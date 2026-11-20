@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_EntrantFilterSet_CopyCtor",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141830580",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141830580.c;xref:0x14182fb0b,0x14182fc97",
+  "notes": "Copy constructor of an entrant filter set (vtable 0x14566eea0): copies +8/+0x10, allocator +0x18 and the vector of 0x88-byte filters (+0x20..+0x30). Callers Sess_CopyOptionsToState, Game_FrontendSceneDriver_FillHelmetPreviewData."
+ },
+ "signature": {
+  "id": "session.entrant_filter_set_copy_ctor",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D7 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 48 8B 42 08 48 89 41 08 8B 42",
+  "match": "0x141830580",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141830580",
+  "kind": "func_start",
+  "names": [
+   "Sess_EntrantFilterSet_CopyCtor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x141830580",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141830580.c;xref:0x142cfd478,0x14182fb0b",
+   "notes": "V3374 vtable 0x14566eea0, +8/+0x10 copied, allocator +0x18, vector of 0x88-byte elems +0x20..+0x30; callers Sess_CopyOptionsToState, FillHelmetPreviewData"
+  }
+ ],
+ "proofs": []
+}

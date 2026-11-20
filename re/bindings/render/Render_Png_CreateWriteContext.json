@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Png_CreateWriteContext",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143914f20",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143914f20.c;xref:0x14379d2d9,0x144493ac4",
+  "notes": "libpng-style context create: allocates 0x1d8+ struct via 0x14390e310, sets defaults (0xffffffff00002000, 0x100000008, 0xf00000008); message Cannot set both read_data_fn and write_data_fn in the same structure is from the shared set_rw_fn code. Callers Render_Screenshot_CaptureAndSave, Game_ThumbnailSystem_RequestAndWriteScreenshot."
+ },
+ "signature": {
+  "id": "render.png_create_write_context",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 40 C5 F8 57 C0 C5 F8 11 44 24 20 48",
+  "match": "0x143914f20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143914f20",
+  "kind": "func_start",
+  "names": [
+   "Render_Png_CreateWriteContext"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x143914f20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143914f20.c;xref:0x14379d2d9",
+   "notes": "V7614 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

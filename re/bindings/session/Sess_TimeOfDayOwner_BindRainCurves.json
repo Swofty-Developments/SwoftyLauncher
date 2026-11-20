@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Sess_TimeOfDayOwner_BindRainCurves",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14479b950",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void(TimeOfDayOwner*)",
+  "evidence": "decomp:re/decomp/14479b950.c;xref:0x14479c417,0x151a358d7;kb:subsystems/session.md#weather",
+  "notes": "Binds the TimeOfDayOwner curves between Game_TimeOfDay_LockAll / UnlockAll / UnlockAll_B on tod = owner+0x2d0: sky/sunLightIntensity -> +0x20, weather/rainfall/sheet_tint_colour -> +0x50 (vector binding 0x14460f1d0), weather/atmospherics/wind_scale -> +0xa0 (each: first dataset clock in the order 0x145bf461c {0,1,2,3}, 1 = the active clock, that has the parameter), and weather/rainfall/intensity once per dataset clock tod+0x2c8+d*0x288 -> owner+0xd0+d*0x30, d = 0..9 (ten, not four: V1985). Callers: Game_Update_WeatherTimelineScalar 0x14479c417 when TimeOfDayOwner.tod_version != TimeOfDaySystem.curve_version, and Sess_GameWeatherSystem_ApplySettings_Body 0x151a358d7. Name kept for the signature; it binds sun and wind too."
+ },
+ "signature": {
+  "id": "session.time_of_day_owner_bind_rain_curves",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 01 00 00 48 89 CE 48 8B 81 D0 02 00",
+  "match": "0x14479b950",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14479b950",
+  "kind": "func_start",
+  "names": [
+   "Sess_TimeOfDayOwner_BindRainCurves"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb5-verify",
+   "kind": "func",
+   "item": "Sess_TimeOfDayOwner_BindRainCurves",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14479b950.c;xref:0x14479c417,0x151a358d7",
+   "notes": "V1985 ten datasets, not four: owner +0xd0..+0x2ac stride 0x30 from TOD +0x2c8 + n*0x288 up to +0x1990; sun +0x20, sheet_tint +0x50, wind_scale +0xa0 hold (first loops use TOD+0x1c18 table / +0x2c8+[0x26c4]*0x288)"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "wx-verify",
+   "kind": "func",
+   "item": "0x14479b950",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14479b950-0x14479c3bd;xref:0x14479c417,0x151a358d7;str:weather/rainfall/intensity",
+   "notes": "V9373 Blind re-derivation on d873a1c8 (own capstone disasm, own rel32/riprel/abs64 scan over .xtls/.xtext/.data1). One arg (rcx owner); tod = [owner+0x2d0]; between Game_TimeOfDay_LockAll 0x14460e820 and UnlockAll 0x14460ea80 + UnlockAll_B 0x141d057e0. sky/sunLightIntensity -> owner+0x20 (0x14479ba7d), weather/rainfall/sheet_tint_colour via 0x14460f1d0 -> +0x50, weather/atmospherics/wind_scale -> +0xa0 (0x14479bc6d), each searching the order 0x145bf461c {0,1,2,3} where index 1 = tod+0x2c8+active*0x288 and the others tod+0x1c18+i*0x288. weather/rainfall/intensity: ten FindParam calls on tod+0x2c8, +0x550, +0x7d8 ... +0x1990 (step 0x288) stored at owner+0xd0 ... +0x280 (step 0x30). Callers 0x14479c3f0 and 0x151a35840."
+  }
+ ],
+ "proofs": []
+}

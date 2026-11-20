@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "vt_Sess_AiController",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145882150",
+  "type": "vtable[4]",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/1438968e0.c;decomp:re/decomp/143895940.c;xref:0x143896a90,0x143897429",
+  "notes": "AI controller class (0x28-byte object: +8 input record, +0x10 owner system, +0x18 vehicle byte, +0x20 allocator), the only AI controller vtable: written by Game_ControllerSet_Create (0x143896a90) and Game_ControllerSet_CreateController (0x143897429) and the .data1 bodies behind them. Slots: 0 destructor (thunk into .data1), 1 update 0x143895940 (leaf, no .pdata entry), 2 0x1438d2920, 3 0x1438d2930. Hook slot 1 through this table."
+ },
+ "signature": {
+  "id": "session.ai_controller",
+  "section": ".xtls",
+  "pattern": "48 89 C3 48 85 C0 74 5A 4C 8B 36 48 8D 05",
+  "match": "0x143896a82",
+  "anchor": "0xe",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0xb",
+   "len": 7
+  },
+  "target": "0x145882150",
+  "kind": "data",
+  "names": [
+   "vt_Sess_AiController"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "re-ai",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "ai-v1",
+   "kind": "global",
+   "item": "0x145882150",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1438968e0.c;decomp:re/decomp/143895940.c;xref:0x143896a90,0x143897429",
+   "notes": "V1529 Raw read of the vtable: slot0 0x1438d2850 dtor, slot1 0x143895940 update, slot2 0x1438d2920 getter of [rcx+8], slot3 0x1438d2930. Human vtable is the next table at 0x145882170 (slot1 0x1438959c0), so the AI table is 4 slots and a slot-1 patch touches only AI controllers."
+  }
+ ],
+ "proofs": []
+}

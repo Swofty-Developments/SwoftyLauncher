@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Particles_ApplyEmitterScale",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143af9740",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143af9740.c;xref:0x143afad5b,0x143afaf41",
+  "notes": "Applies per-instance scale (float at [param_1[3]+8] when type==1) to emitter parameter floats param_3[0..]; uses temp vec4 array. Caller Game_Particles_UpdateEmitters. Hypothesis."
+ },
+ "signature": {
+  "id": "game.particles_apply_emitter_scale",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 81 EC 28 01 00 00 C5 79 7F B4 24",
+  "match": "0x143af9740",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143af9740",
+  "kind": "func_start",
+  "names": [
+   "Game_Particles_ApplyEmitterScale"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x143af9740",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143af9740.c;xref:0x143afad5b",
+   "notes": "V7870 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

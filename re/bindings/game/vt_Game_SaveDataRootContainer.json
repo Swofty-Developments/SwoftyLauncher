@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "vt_Game_SaveDataRootContainer",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145855f80",
+  "type": "vtable[7]",
+  "level": "L3",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/143654650.c;xref:0x1436548f7,0x14367a04f,0x14367a15c;kb:subsystems/game.md#save-containers;trace:T010/run2:86315;trace:T010/run4:86256;trace:T010/run3",
+  "notes": "vtable of the save system's root container save_game (SaveDataContainer at SaveDataSystem+0x20): the ctor Game_SaveDataSystem_Construct 0x143654650 builds the container with Ne base ctor 0x14364d570 (name save_game, group ~r^r = all groups, all three flag pairs false) and stores this vtable at +0x20 (0x1436548fe). Only other refs: the system dtors 0x14367a030/0x14367a140. 7 slots: 0 dtor 0x14367a140, 2 serialise 0x143656210, 3 deserialise 0x143656980 (build info), 4 reset 0x143658120. Every registered game mode container (register_save_container) and the system containers are its children."
+ },
+ "signature": {
+  "id": "game.save_data_root_container",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 46 20 48 8D 8E 58 02 00 00",
+  "match": "0x1436548f7",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x145855f80",
+  "kind": "data",
+  "names": [
+   "vt_Game_SaveDataRootContainer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-27",
+    "by": "keepsaves",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-27",
+   "verifier": "keepsaves-verify",
+   "kind": "global",
+   "item": "vt_Game_SaveDataRootContainer",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143654650.c;decomp:re/decomp/14364d570.c;xref:0x1436548f7,0x1436548fe,0x1436548e8,0x143654890;xref:0x14367a04c,0x14367a159,0x145855e58;xref:0x1407ef847;xref:0x143654745,0x143654747,0x14365478a,0x143654794,0x1436547d7,0x1436547e1,0x143654821,0x14365482c;imm:0x6d61675f65766173;sig:game.save_data_root_container",
+   "notes": "V1107 Re-derived. The vtable has 7 code slots (0x14367a140, 0x14367a250, 0x143656210, 0x143656980, 0x143658120, 0x14367a260, 0x14028ea70); the qword at slot 7 is string bytes. A RIP-relative scan of all sections finds 3 references. (1) The lea at 0x1436548f7 in 0x143654650, stored by mov [rsi+0x20],rax at 0x1436548fe, right after the base ctor call at 0x1436548e8 with rcx = rsi+0x20 (0x143654890). (2) 0x14367a04c in 0x14367a030, the system's deleting dtor, which is slot 1 of the system vtable 0x145855e50 (qword at 0x145855e58). (3) 0x14367a159 in 0x14367a140, the this-adjusting deleting dtor that is slot 0 of this vtable and restores [rcx-0x20]=0x145855e50. Both dtors free on edx. 0x143654650 has one caller, 0x1407ef847 in 0x1407e5420. The base ctor's 4th arg (r9) is an inline string, save_game (imm 0x6d61675f65766173 plus 0x65 at 0x143654886), and its 5th is an empty string. Args 7, 8 and 9 point at pairs built as key = (rand<<32)|rand2 and byte = rand2&1 (0x1436547d7/0x1436547e1, 0x14365478a/0x143654794, 0x14365473d/0x143654747). So byte == key&1 and all three bools read false. Arg 6 is (~k, k), an all-ones groups mask. sigcheck: game.save_data_root_container OK, hits=1, match=0x1436548f7, target=0x145855f80."
+  }
+ ],
+ "proofs": []
+}

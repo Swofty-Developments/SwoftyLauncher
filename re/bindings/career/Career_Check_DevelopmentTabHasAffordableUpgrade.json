@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Check_DevelopmentTabHasAffordableUpgrade",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14197a5b0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t (void *tab, void *ctx, uint64_t day_mask)",
+  "evidence": "decomp:re/decomp/14197a5b0.c;xref:0x141979f64;xref:0x14197fc2c;xref:0x141c45e48",
+  "notes": "myteam-g2: Variant of the development tab check that tests each upgrade for affordability (FUN_141993d00/1419947e0 with team modifiers Career_Get_TeamModifiers at +0xc90). Returns true if one can be bought. Read-only. Callers: census steam 0x197a5b0."
+ },
+ "signature": {
+  "id": "career.check_development_tab_has_affordable_upgrade",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 18 1B 00 00",
+  "match": "0x14197a5b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14197a5b0",
+  "kind": "func_start",
+  "names": [
+   "Career_Check_DevelopmentTabHasAffordableUpgrade"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x14197a5b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14197a5b0.c;xref:0x141979f64",
+   "notes": "V9851 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

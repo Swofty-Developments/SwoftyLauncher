@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Ne_Property_SetUIDBRefIfChanged",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140977b20",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140977b20.c;xref:0x1406a7517",
+  "notes": "Sets a property value and notifies listeners on a change: rcx property P, rdx -> new value, r8d (0 at every call site; copied into the message), r9b force; returns bool. Returns 0 at once when P+0x26 bit 0 is set (0x140977b31). Reads the current value through vtable slot 0x38 of V=[P+0x58]; unless force is set, an equal first qword returns 1 with no store and no notification (0x140977b54). The compare is the only 64-bit part: every caller first checks the value type at 0x146ca5550, and most pass a 24-byte weak object handle {ptr, next, prev} and destroy it after the call, so the test is object identity, not a numeric S64 compare (a sibling for a plain qword is 0x141b85c40). Under P+0x60 bit 1 it calls 0x1442bc5b0 before the store and 0x1442bc390 after it. With listeners (P+0x40 != P+0x48) the old value is copied into a stack arena allocator (vtable 0x14565f2b0, named \"unknown\", 0x200-byte inline buffer). The new value is stored through V slot 0x40 (0x140977cba). When the value type is the float type at 0x146129be0, a NaN is replaced by the old value and the call returns 0 with no post hook and no notification (0x140977def), or by 1.0f when there is no non-NaN old value. Then a 0x40-byte message at rsp+0x20 (vtable 0x14565f3d0; +8 r8d, +0x10 P+8, +0x30 the old-value copy or null, +0x38 V) goes to 0x1442bc760 (0x140977dbb), which calls the 24-byte listener entries at P+0x40..+0x48 in reverse order behind a re-entrancy bit at P+0x60 bit 0. Returns 1. Callers: census steam 0x977b20, e.g. Game_Game_SetCurrentGameMode. Int32 twin = Ne_Property_SetS32IfChanged (0x140972de0)."
+ },
+ "signature": {
+  "id": "core.property_set_s64_if_changed",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC 20 03 00 00 F6 41 26 01 0F 85 ?? ?? ?? ?? 44 89 CB 44 89 C7 49 89 D6 48 89 CE 48 8B 49 58 48 8B 01 FF 50 38 84 DB 75 0C 48 8B 00",
+  "match": "0x140977b20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140977b20",
+  "kind": "func_start",
+  "names": [
+   "Ne_Property_SetUIDBRefIfChanged"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x140977b20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140977b20.c;xref:0x1407d0af9",
+   "notes": "V8016 name and concrete claims match decomp"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "retired:Ne_Property_SetS64IfChanged",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x140977b20-0x140977e0d,0x1442bc5b0-0x1442bc6e1,0x1442bc390-0x1442bc4c4,0x1442bc760-0x1442bc863,0x1453484a0-0x1453484cb,0x140972de0-0x1409730ce,0x141b85c40-0x141b85f2f,1.0.145 0x140977b70-0x140977e5d;xref:0x140977b2d,0x140977b54,0x140977b66,0x140977bf7,0x140977cba,0x140977d6e,0x140977dbb,0x140977def,0x1406a7517,0x1407d0af9,0x14099b99b,0x1442b1766,0x141ac0b4f",
+   "notes": "V100063 Blind: partial. Confirmed: +0x26&1 -> ret 0 (0x140977b31); current via [P+0x58] vslot 0x38; force (r9b) or qword-differs gate, equal -> ret 1 (0x140977b57); 0x1442bc5b0 under +0x60&2; listener notify via 0x1442bc760; census row 772/481/5 jumps/1 thunk exact; caller 0x1407d07a0; S32 twin 0x140972de0. Imprecise: not plain S64. All 777 sites gate on type 0x146ca5550 and 701 pass then destroy a 24-byte weak object handle, so the compare is pointer identity (plain-qword twin 0x141b85c40). The 'unknown' object at rsp+0x60 is a 0x200-byte arena allocator for the old-value copy; the message is 0x40 bytes at rsp+0x20. Unclaimed: store via vslot 0x40, 0x1442bc390 post-hook, NaN guard/restore ret 0."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Ne_Property_SetUIDBRefIfChanged",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x140977b20-0x140977e0d,0x1442bc390-0x1442bc4c4,0x1442bc5b0-0x1442bc6e1,0x1442bc760-0x1442bc863,0x1453484a0-0x1453484cb,0x14083c960-0x14083ca17,0x1442ba4d0-0x1442ba540,0x1443a85f2-0x1443a8613,0x1439540a0-0x1439540dc,0x140972de0-0x140972e2c,0x141b85c40-0x141b85c79,0x148755470-0x1487554f0,1.0.145 0x140977b70-0x140977e5d;xref:0x140977b31,0x140977b54,0x140977cba,0x140977def,0x140977dbb,0x1406a7517,0x1407d0af9,0x1442b1766,0x1487554e0,0x1443a860c",
+   "notes": "V100064 Blind: agree. Own disasm 0x140977b20-0x140977e0d: bool f(P, const void *v, int r8d, bool force). P+0x26 bit0 -> 0; !force and equal first qword -> 1; P+0x60&2 hooks 0x1442bc5b0/0x1442bc390; old copy in stack arena only with listeners; store via V+0x40; float NaN guard (rollback -> 0 at 0x140977def, else 1.0f); 0x40-byte message to 0x1442bc760; returns 1. All 777 call/jump sites gate on type 0x146ca5550 (registered \"UIDBRef\", 0x18-byte value) with r8d=0; census row 772/481/.data1:33,.xtls:739/1 thunk/5 jumps matches a fresh run. 0x141b85c40s 7 callers gate on int64; 0x140972de0 compares 32 bits. 1.0.145 twin 0x140977b70, 170/170 equal. The S64 in the name misleads; the notes say so."
+  }
+ ],
+ "proofs": []
+}

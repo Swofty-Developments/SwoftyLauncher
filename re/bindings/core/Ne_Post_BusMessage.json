@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "Ne_Post_BusMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439876c0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_Post_BusMessage(void *bus, void *msg)",
+  "evidence": "decomp:re/decomp/1439876c0.c;decomp:re/decomp/140c68310.c;decomp:re/decomp/140d6b750.c;xref:0x140c68476,0x140d6b7c0,0x141124497;doc:addons/career-editor/protocol/economy.md#cash-my-team-only;doc:re/db/subsystems/core.md",
+  "notes": "synchronous publish: if bus+0x68, under the bus critical section (bus+200) looks up msg->vtbl[1]() (the type key) and calls every subscriber delegate {fn, ctx} with the message before returning; flushes deferred unsubscribes. Always returns 0 (not a success flag) | fb-verify C4: confirmed as the synchronous post (msg vt+8 name lookup, every delegate called); the queued post is Ne_Post_BusMessageQueued 0x142cb7130"
+ },
+ "signature": {
+  "id": "core.post_bus_message",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 80 79 68 00 0F 84 ?? ?? ?? ?? 48 89 D7 48 89 CE 48 8B 89 C8 00 00 00",
+  "match": "0x1439876c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439876c0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Post_BusMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-econ",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/economy.cpp",
+   "native/src/core/career/career.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-2",
+   "kind": "func",
+   "item": "Ne_Post_BusMessage",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439876c0.c;decomp:re/decomp/143988350.c;xref:0x1434ff1c3,0x14398771a,0x1439877ca",
+   "notes": "V0278 proto (bus,msg) and behaviour exact: bus+0x68 gate, EnterCriticalSection(bus+0xc8), key = msg->vtbl[1](), lookup in map bus+0x80, each delegate fn(ctx,msg), bus+0x6b dispatch flag, deferred-unsubscribe flush via 0x143988350 before and after. Always returns 0 (xor eax,eax); 1524 call sites"
+  }
+ ],
+ "proofs": []
+}

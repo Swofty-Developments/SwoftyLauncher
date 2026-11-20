@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_Engine_UpdateWear",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446893c0",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "void Car_Engine_UpdateWear(void *engine, float dt)",
+  "evidence": "decomp:re/decomp/1446893c0.c;decomp:re/decomp/144688610.c;xref:0x144688682;xref:0x1409d519d",
+  "notes": "E3 2026-11-18 (engine-re, static): Engine wear step, called once per engine step by Car_Engine_StepInput (call 0x144688682: rcx = engine, xmm1 = dt; right after Car_Engine_UpdateTemperature 0x144689710). Gate: CarLive+0x130 byte >= 0xC0 (bit 6 = physics step, bit 7 = PU wear) and rotation_rate +0x2538 > 1.1 x IdleRotationRate (+0x8a0 obf); at or below 1.1 x idle nothing wears. k = dt / 3600 x CarLive+0x9f2c (session PU wear scale, written by Sess_Setup_VehicleComponents) x WearCEPenaltySpline (+0x1f40) at wear_ce +0x2560 x Engine+0x25a8 (per-engine scale, 1.0 at create). ICE +0x254c += WearICERate (+0x1168) x WearICERevsSpline (+0x1178) at rotation_rate x k: rpm is the only ICE driver (no temperature, boost or limiter term); while state_flags +0x2530 & 3 is set ICE is pinned to 0.99 (0x3f7d70a4) instead. TC +0x2550 += WearTCRate (+0x16c8) x k: flat per running hour, no boost or turbo input. MGU-H +0x2558 += WearMGUHRate (+0x1980) x WearMGUHTempSpline (+0x1990) at temperature +0x253c x k, only when CarLive+0x5a8 (ERS) is set. CE +0x2560 += WearCERate (+0x1ee0) x k, plus for the first wheel i of the list at CarLive+0x578 (count +0xa8, wheel pointers +0xb0) accepted by Car_Engine_IsWheelOnCeVibrationSurface: min(1, (|v| - WearCEVibrationMinSpeed +0x1f10) / (WearCEVibrationMaxSpeed +0x1f20 - min)) x WearCEDVibrationRate (+0x1f30) x k, v = dot(phys+0x1b0, phys+0x170), phys = CarLive+0x558; only when min speed > 0 and |v| > min. Each result is clamped to [0,1]. Failure roll: when the new ICE value is >= 1.0 and CarLive+0x130 bit 6 and bit 1 (damage not Off, SimFlags idx 0x1a) and +0x131 bit 0 (SimFlags idx 5) are set, it steps the LCG CarLive+0x178 (x*0x41c64e6d+0x596f0ddf ^ 0x40e72031); u = (r & 0xffff)/65535: u >= 0.5 and +0x131 bit 5 -> state_flags |= 2 (engine seized), u < 0.5 and +0x131 bit 4 -> |= 1 (engine blown) (bit names from the UDP damage record order in 0x142d00060: bit 0 -> +0x2416, bit 1 -> +0x2417). ES and MGU-K are not here (Car_Ers_StepWear_Body 0x1446d1460). A lea at 0x1409d519d in Game_ObfKeyedTable_StaticInit (the same keyed table that holds Car_Tyre_UpdateWear) references the function: do not patch its body; hook the call 0x144688682 or change the data. raised by engine-re with --force 2026-11-18 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "car.engine_update_wear",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 60 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 48 8B",
+  "match": "0x1446893c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446893c0",
+  "kind": "func_start",
+  "names": [
+   "Car_Engine_UpdateWear"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x1446893c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446893c0.c;xref:0x1409d519f",
+   "notes": "V6752 offsets +0x254c..+0x2560, +0x9f2c, +0x25a8, car+0x131, LCG +0x178 verified"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "e3-verify",
+   "kind": "func",
+   "item": "0x1446893c0",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1446893c0.c;decomp:own capstone disasm 0x1446893c0-0x1446896e2;imm:0x145382110=1.1,0x1453ca7f0=1/3600,0x145382510=1.0;xref:0x144688682,0x1409d519d",
+   "notes": "V11700 All formula/gate/LCG/flag offsets confirmed in disasm (gate strict 0x2538 > 1.1*dec(0x8a0^0x8a8); fault sets 0x254c=0.99 0x3f7d70a4; clamp via vmaxss 0 + blend 1.0). Correction: the lea referencing the function is at 0x1409d519d (rel32 at 0x1409d51a0), not 0x1409d519f; pointer is XOR-masked after the lea (registration in 0x1409d50b0)."
+  }
+ ],
+ "proofs": []
+}

@@ -3,7 +3,7 @@
 
 use serde::{Deserialize, Deserializer, Serialize};
 
-use crate::home_menu::https_host_in;
+use crate::ui::home_menu::https_host_in;
 
 /// The registry's public file host.
 pub const CDN_HOST: &str = "cdn.swofty.net";

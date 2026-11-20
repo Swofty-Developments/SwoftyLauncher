@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_HudCustomisation_CreateSavePath",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14388dfc0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-HUD_CUSTOMISATION",
+  "notes": "named from its log messages (channel HUD_CUSTOMISATION): 'Failed to find hud customisation settings save path - trying to create | Failed to create hud customisation settings save path'"
+ },
+ "signature": {
+  "id": "game.hud_customisation_create_save_path",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 06 00 00 4C 89 CE",
+  "match": "0x14388dfc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14388dfc0",
+  "kind": "func_start",
+  "names": [
+   "Game_HudCustomisation_CreateSavePath"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x14388dfc0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14388dfc0.c;xref:0x141c11409",
+   "notes": "V6365 0x721 body also serialises HudConfigSets xml (HudElements, opacity, scale); not only save-path creation. Better Game_HudCustomisation_LoadSaveConfigSets"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x14388dfc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14388dfc0.c;xref:0x141c11409",
+   "notes": "V7131 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

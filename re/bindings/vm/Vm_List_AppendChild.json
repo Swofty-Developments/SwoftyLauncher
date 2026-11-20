@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "Vm_List_AppendChild",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1442bb920",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void **Vm_List_AppendChild(void *list)",
+  "evidence": "decomp:re/decomp/1442bb920.c;decomp:re/decomp/141a40060.c;xref:0x141a402c9,0x141a402fd",
+  "notes": "5-byte jmp thunk into the .data1 body 0x153a974b0. list = a VM list handle holder {vtable, node, next, prev} (vm+0x630 in the DLC select tab). Counts the list node's children (node vtable +0x10 true: (node[9]-node[8])>>3; else vtable +0x28 true: node+0x80), finds the first free index name (format at 0x14570bdc8, existence check 0x1442bb690), and returns Vm_GetOrCreate_ChildNode(registry, list node+8, hash) for it: the parent handle pointer the setters take."
+ },
+ "signature": {
+  "id": "vm.list_append_child",
+  "section": ".xtls",
+  "pattern": "48 8D BE 30 06 00 00 80 BE 70 07 00 00 00 74 0F 48 89 F9 E8 ?? ?? ?? ?? C6 86 70 07 00 00 00 48 8B 46 10 48 8D 50 08 48 85 C0 4C 8D 35 ?? ?? ?? ?? 49 0F 44 D6 4C 8D 05 93 BB CC 03 48 89 F9 E8 ?? ?? ?? ?? 48 8D 9E 50 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? 48 8D 9E D0 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? C6 44 24 30 00",
+  "match": "0x141a4027b",
+  "anchor": "0x4f",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x4e"
+  },
+  "target": "0x1442bb920",
+  "kind": "call",
+  "names": [
+   "Vm_List_AppendChild"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-27",
+    "by": "mp-carcat",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/boxes/car_category.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-27",
+   "verifier": "verify-mp-carcat",
+   "kind": "func",
+   "item": "Vm_List_AppendChild",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1442bb920.c;xref:0x141a402c9,0x141a402fd;sig:vm.list_append_child",
+   "notes": "V1157 Re-checked: jmp thunk to 0x153a974b0; its result is passed straight to FillTile as the parent handle at both builder sites. Same-session verify pass."
+  }
+ ],
+ "proofs": []
+}

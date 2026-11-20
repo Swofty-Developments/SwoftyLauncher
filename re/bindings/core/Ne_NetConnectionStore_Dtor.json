@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_NetConnectionStore_Dtor",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14405a2c0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "str:s_NeNetConnectionStore_NeNetConnectionStore;xref:0x14405a340;decomp:re/decomp/14405a2c0.c",
+  "notes": "cxx=neon::NeNetConnectionStore::~NeNetConnectionStore; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "core.net_connection_store_dtor",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 85 FF 74 4B 8B 05 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? 65 48 8B 14 25 58 00 00 00 48 8B 0C CA 3B 81 04 00 00 00 0F 8F ?? ?? ?? ?? 48 8B 3D ?? ?? ?? ?? 48 8B 07 48 89 F9 48 89 F2 FF 90 E0 00 00 00 84 C0 74 0C 48 8B 07 48 89 F9 48 89 F2 FF 50 38 48 89 F0 48 83 C4 20 5B",
+  "match": "0x1440ae296",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14405a2c0",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetConnectionStore_Dtor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cs-verify",
+   "kind": "func",
+   "item": "Ne_NetConnectionStore_Dtor",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14405a2c0.c;xref:0x14409367d",
+   "notes": "V2272 frees member, destroys vector of 0x190-byte connection slots (each with vec @+0x178), frees impl; logs own name"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,32 @@
+{
+  "about": "The list of Time Trial boards.",
+  "answer": {
+    "body": {
+      "rows": [
+        {
+          "content": "game/f1_2025",
+          "name": "F1 25",
+          "tracks": [
+            {
+              "laps": 40,
+              "track": "bahrain",
+              "weather": "dry"
+            }
+          ]
+        }
+      ]
+    },
+    "status": 200
+  },
+  "request": {
+    "body": null,
+    "headers": {
+      "accept": "*/*",
+      "accept-encoding": "identity",
+      "authorization": "Bearer <token>",
+      "user-agent": "swofty-launcher"
+    },
+    "method": "GET",
+    "path": "/v1/tt/boards"
+  }
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_Damage_SetComponentDamage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144660cd0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "pat:log-channel-VEHICLE_DAMAGE",
+  "notes": "Log channel VEHICLE_DAMAGE: '%s: damage: %x, was broken: %d, is broken: %d' | '%s: reset damage' | '%s: left damage: %f, right damage: %f' | '%s: setFrontWingDamage: %f' | PR #453/#448 (vmknolle): VEHICLE_DAMAGE log '%s: damage: %x, was broken, is broken': if the wing was broken and the bits clear (& 0x3ff == 0) -> slot 0x18(0x1000) reset ('reset damage'); else left damage = max * (bits >> 5) / 30, right = max * (bits & 0x1f) / 30, total ratio clamped to [0,1] into [+0x90]+0x199c ('setFrontWingDamage')."
+ },
+ "signature": {
+  "id": "car.damage_set_component_damage",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 58 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 89 D7",
+  "match": "0x144660cd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144660cd0",
+  "kind": "func_start",
+  "names": [
+   "Car_Damage_SetComponentDamage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x144660cd0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144660cd0.c;xref:0x14324b85d",
+   "notes": "V6733 strings name the function racing::collision::F1WingDamage::setNetBits; body is the wing damage net-bits setter. Better: Car_F1WingDamage_SetNetBits"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144660cd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144660cd0.c;xref:0x14324b85d",
+   "notes": "V7247 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Save_RndChallengeState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14122dd90",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int FUN(void *state, void *field_list)",
+  "evidence": "decomp:re/decomp/14122dd90.c;xref:0x1456cc530",
+  "notes": "myteam-g1: Serializer for rnd_challenges with removed_upgrades_due_to_balancing_out_the_field and upgrade_hash_name."
+ },
+ "signature": {
+  "id": "career.save_rnd_challenge_state",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 78 29 44 24 70 C5 F8 29 7C 24 60 C5 F8 29 74 24 50 48 89 D7 48 89 CE 41 80 78 08 00",
+  "match": "0x14122dd90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14122dd90",
+  "kind": "func_start",
+  "names": [
+   "Career_Save_RndChallengeState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x14122dd90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14122dd90.c;xref:0x1456cc530",
+   "notes": "V9687 Strings rnd_challenges, removed_upgrades_due_to_balancing_out_the_field, upgrade_hash_name, day_removed_on present; writer."
+  }
+ ],
+ "proofs": []
+}

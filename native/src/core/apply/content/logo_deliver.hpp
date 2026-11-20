@@ -1,8 +1,8 @@
 #pragma once
 
-#include "erp_file.hpp"
-#include "logo_cache.hpp"
-#include "overlay_copies.hpp"
+#include "core/apply/content/erp_file.hpp"
+#include "core/apply/content/logo_cache.hpp"
+#include "core/apply/content/overlay_copies.hpp"
 
 #include <functional>
 #include <map>
@@ -38,7 +38,7 @@ inline std::set<std::string> arrays_of(const erpfile::Changes &changes, const st
 
 // The line the core logs when the game can't create files in `dir`, the folder the build writes its archives in, and
 // no earlier build of the same inputs is there to reuse. The launcher's known problem logos_not_built
-// (packages/core/src/known_problems.rs) reads it.
+// (packages/core/src/diagnostics/known_problems/logos.rs) reads it.
 inline std::string unwritable_line(const std::string &dir, unsigned long error)
 {
     return "team.logo: the game can't create files in " + dir + " (error " + std::to_string(error) +
@@ -117,13 +117,14 @@ inline Outcome deliver(Attempt first, const std::function<Attempt(const std::set
             sink.unroute();
         size_t before = out.dropped.size();
         if (a.cached)
-            out.lines.push_back("team.logo: the cached archives could not all be delivered (" + failed[0].rel + ": " + failed[0].why +
-                                "); built again");
+            out.lines.push_back("team.logo: the cached archives could not all be delivered (" + failed[0].rel + ": " +
+                                failed[0].why + "); built again");
         else
             for (auto &[array, f] : blamed()) {
                 out.dropped.insert(array);
                 out.lines.push_back("team.logo: " + array + " is left at its stock size in every archive this boot: " + f.rel +
-                                    " could not be delivered (" + f.why + "), and the game must read the array's image and view at the same size");
+                                    " could not be delivered (" + f.why +
+                                    "), and the game must read the array's image and view at the same size");
             }
         if (!a.cached && out.dropped.size() == before) {
             out.failed = std::move(failed);

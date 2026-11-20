@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Sess_IntroVideo_CanFinish",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d6d3b0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d6d3b0.c;xref:0x142d6cfd9,0x142d6d593",
+  "notes": "(this) -> bool in al. True when byte this+0xdc6 is set (0x142d6d3b9). Otherwise it reads the session mode object x = [[[this+0xca0]+0x88]+0x260] with no null checks (a null [[this+0xca0]+0x88] faults reading 0xf10 at 0x142d6d48d) and returns true when byte x+0xf10 is set. When x is not of type 0x14604ec58 (its type from vtable +0x28, walked up the node+0x10 parents, reaches k_Ne_TypeRoot 0x146129ca0 first: 0x142d6d3ff-0x142d6d443) it goes straight to the last test. Otherwise it returns true when (x+0x1030)->vtbl+0x10(type 0x14605b0c8, 1) is non-null and this+0xdc2 is clear; then, with this+0xdc3 clear, true when byte x+0xe35 is set. Last test: rec = 0x140ac13d0([this+0xdb8]), the first matching 0x370-byte record in that controller's list or its first record, and it returns rec+0x126 == 0 (0x142d6d4a2-0x142d6d4ae). Callers: Sess_IntroVideo_OnStateEnter (0x142d6cfc0), Sess_IntroVideo_OnVideoDoneFadeIn (0x142d6db20), 0x142d6d4c0 and .data1 0x14e9ef0a0. Callers: census steam 0x2d6d3b0."
+ },
+ "signature": {
+  "id": "session.intro_video_can_finish",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 B3 01 80 B9 C6 0D 00 00 00",
+  "match": "0x142d6d3b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d6d3b0",
+  "kind": "func_start",
+  "names": [
+   "Sess_IntroVideo_CanFinish"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142d6d3b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d6d3b0.c;xref:0x142d6cfd9,0x142d6db4a",
+   "notes": "V3620 skip flag +0xdc6, session +0xca0->+0x88->+0x260 type check, +0xdc2/+0xdc3, mode byte +0xe35, controller +0xdb8 byte +0x126; callers Sess_IntroVideo_OnStateEnter and OnVideoDoneFadeIn"
+  },
+  {
+   "date": "2026-11-19",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Sess_IntroVideo_CanFinish",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x142d6d3b0-0x142d6d4b6,0x140ac13d0-0x140ac13d5,0x1493645d0-0x1493646ea,0x142d6cfc0-0x142d6d020,0x142d6d4c0-0x142d6d5c0,0x142d6db20-0x142d6db70,0x14e9ef0a0-0x14e9ef0d0,1.0.145 0x142d6f940-0x142d6fa46,1.0.145 0x1490df6e0-0x1490df7ea;xref:0x142d6cfd9,0x142d6d593,0x142d6db4a,0x14e9ef0ac,0x142d6d3b9,0x142d6d3ed,0x142d6d3fc,0x142d6d460,0x142d6d468,0x142d6d475,0x142d6d47e,0x142d6d48d,0x142d6d4a2,0x142d6d4a7",
+   "notes": "V100068 Blind: partial. this-only bool in al confirmed; +0xdc6 early true (0x142d6d3b9); chain +0xca0->+0x88->+0x260 (0x142d6d3cf-3e6) with IsA check via vtbl+0x28 (0x142d6d3fc); +0xdc2/+0xdc3 (0x142d6d468/475); mode byte +0xe35 (0x142d6d47e). Imprecise: +0x126 is not a byte of the +0xdb8 object but of the record returned by 0x140ac13d0([this+0xdb8]) (0x142d6d4a2/4a7); true when it is 0. Census 4/4 (.xtls 3, .data1 1) matches; only 2 callers named, 0x142d6d4c0 and 0x14e9ef0a0 not. Unclaimed: mode +0xf10 true path, (mode+0x1030)->vtbl+0x10 lookup, null [[+0xca0]+0x88] reads [0xf10] (0x142d6d48d). 1.0.145 twin 0x142d6f940 identical."
+  },
+  {
+   "date": "2026-11-19",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Sess_IntroVideo_CanFinish",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142d6d3b0-0x142d6d4b6,0x1493645d0-0x1493646ea,0x1407c1200-0x1407c132e,0x14097d8ba-0x14097d9c0,0x140d6a064-0x140d6a0e5,0x142d6cfc0-0x142d6d3a4,0x142d6d4c0-0x142d6d825,0x142d6db20-0x142d6dd63,0x14e9ef0a0-0x14e9ef3a5,1.0.145 0x142d6f940-0x142d6fa46;xref:0x142d6d3b9,0x142d6d3dd,0x142d6d48d,0x142d6d3ed,0x142d6d443,0x142d6d460,0x142d6d468,0x142d6d475,0x142d6d47e,0x142d6d4a7,0x142d6cfd9,0x142d6d593,0x142d6db4a,0x14e9ef0ac",
+   "notes": "V100069 Blind: agree. Own disasm 0x142d6d3b0-4b6: dc6 -> true; G=[[S+0xca0]+0x88]+0x260, only the +0x88 hop is tested (0x142d6d3dd) and its null branch reads abs 0xf10 (0x142d6d48d), so no effective null check; G+0xf10 -> true; walk vs node 0x14604ec60 (GameModeChampionship, init 0x14097d99a), not-type -> tail; (G+0x1030) vt+0x10(0x14605b0c8 OnlineDocumentComponent,1)!=0 && !dc2 -> true; !dc3 && G+0xe35 -> true; tail byte [0x140ac13d0([S+0xdb8])+0x126]==0 (stride-0x370 scan, else first record). 4 callers = census row. 1.0.145 twin 0x142d6f940 63/63 equal."
+  }
+ ],
+ "proofs": []
+}

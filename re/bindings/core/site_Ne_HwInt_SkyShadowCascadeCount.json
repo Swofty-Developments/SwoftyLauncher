@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Ne_HwInt_SkyShadowCascadeCount",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143dc3b96",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/143dc39f0.c;xref:0x143dc3b96",
+  "notes": "call Ne_Parse_Long(attr+0x50 value, NULL, 0) for the hardware-settings attribute 'skyShadowCascadeCount' (name matched case-insensitively against the string loaded at 0x143dc3b4f) in reader 0x143dc39f0, a settings listener callback; its return address keys xanpavle.re-optimization's integer enforcement"
+ },
+ "signature": {
+  "id": "core.hw_int_sky_shadow_cascade_count",
+  "section": ".xtls",
+  "pattern": "45 31 C0 E8 ?? ?? ?? ?? 89 86 E8 1E 00 00",
+  "match": "0x143dc3b93",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143dc3b96",
+  "kind": "mid",
+  "expect": "E8",
+  "names": [
+   "site_Ne_HwInt_SkyShadowCascadeCount"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "reopt-025",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/re-optimization/native/src/re_optimization.cpp (xanpavle.re-optimization)"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "reopt-025-verify",
+   "kind": "global",
+   "item": "site_Ne_HwInt_SkyShadowCascadeCount",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143dc39f0.c;xref:0x143dc3b96,0x143dc3b4f,0x143dc3b83,0x143dc3b9b;sig:core.hw_int_sky_shadow_cascade_count",
+   "notes": "V0935 Loop over the element attribute vector (+0x50..+0x58): 0x14534da24(attr+0x18 name, rbx = 'skyShadowCascadeCount' from lea 0x143dc3b4f, r8d 0x1f) at 0x143dc3b83; on 0 it sets rcx = [attr+0x50], edx = 0, r8d = 0 and the E8 at 0x143dc3b96 calls 0x14534dcd8 (.xtls, .pdata 0x143dc39f0-0x143dc40ef). Result stored to this+0x1ee8 at 0x143dc3b9b. sigcheck: one hit, target 0x143dc3b96"
+  }
+ ],
+ "proofs": []
+}

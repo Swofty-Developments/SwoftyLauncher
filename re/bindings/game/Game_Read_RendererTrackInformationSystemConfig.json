@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_RendererTrackInformationSystemConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144790c60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144790c60.c;xref:0x145c06720",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: Renderer.TrackInformationSystem.enableErrorHandling, Renderer.TrackInformationSystem.enableTrackDataDebugDisplay, Renderer.TrackInformationSystem.enabled' L2 2026-11-14 (engine-re round 2): decomp read; 1 reference(s) (0x145c06720); the body itself references 'Renderer.TrackInformationSystem.enabled' / 'Renderer.TrackInformationSystem.enableErrorHandling' / 'Renderer.TrackInformationSystem.enableTrackDataDebugDisplay'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.read_renderer_track_information_system_config",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 4C 89 C6 48 89 D3 48 89 CF 48 8B 02 48 8D 15 ?? ?? ?? ?? 48 89 D9 FF 50 28 48 89 87 F0 0C 00 00",
+  "match": "0x144790c60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144790c60",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_RendererTrackInformationSystemConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb24-verify",
+   "kind": "func",
+   "item": "0x144790c60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144790c60.c",
+   "notes": "V6645 reads Renderer.TrackInformationSystem.enabled/enableErrorHandling/enableTrackDataDebugDisplay; no direct caller (vtable/indirect)"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x144790c60",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x144790c60-0x1447911fe;xref:0x145c06720",
+   "notes": "V10528 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only abs64 0x145c06720. Renderer.TrackInformationSystem.enabled / enableErrorHandling / enableTrackDataDebugDisplay via 0x143a43b90."
+  }
+ ],
+ "proofs": []
+}

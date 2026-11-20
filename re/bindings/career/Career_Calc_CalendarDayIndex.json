@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Calc_CalendarDayIndex",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14111dbc0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Calc(void *calendar, uint32_t minutes, uint32_t *entry_idx, uint32_t *minute_in_entry)",
+  "evidence": "decomp:re/decomp/14111dbc0.c;xref:0x140c683cb;xref:0x140d81856;xref:0x140d8cead",
+  "notes": "myteam-g2: Maps a minute timestamp to (calendar entry index, minute within entry): walks calendar vector (calendar+8, stride 0x10), converts entry timestamps with Ne_Crt_DiffClock into days*0x5a0 (1440 min/day). Hook value: the career date arithmetic; used by driver age and advance cards."
+ },
+ "signature": {
+  "id": "career.calc_calendar_day_index",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 38 C5 F8 29 74 24 20 4C 89 CE",
+  "match": "0x14111dbc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14111dbc0",
+  "kind": "func_start",
+  "names": [
+   "Career_Calc_CalendarDayIndex"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x14111dbc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14111dbc0.c;xref:0x140c683cb",
+   "notes": "V9665 Accumulates per-entry day lengths (x 0x5a0 minutes) and returns entry index plus minutes within entry."
+  }
+ ],
+ "proofs": []
+}

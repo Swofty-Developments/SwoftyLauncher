@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_Car_UpdateAttitudeState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14060b360",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_Car_UpdateAttitudeState(uint8_t *ctl, float dt, AiCarRecord *rec)",
+  "evidence": "decomp:re/decomp/14060b360.c;xref:0x1405f67d9",
+  "notes": "ctl byte 0 = vehicle index into g_Sess_VehicleTable 0x146ce86e0. Computes the signed angle (acos polynomial, sign from 2D cross) between ctl displacement (ctl+0xa0 - ctl+0xb0, x/z) and the car forward axis [veh+0x558]+0x1b0 -> float ctl+8. Picks the axle/wheel object of [veh+0x580]+0x80/+0x88 with larger |+0x3c8|; exp smoothing factor = expf(-dt/[[rec+0x230]+0x5a0]) applied to ctl+0x20 (|+0x3c8|) and ctl+4 (|+0x3b0|). Threshold [[rec+0x230]+0x580] is in degrees (/57.29578); ratio +0x3b0/+0x3c8 vs [hcfg+0x588], gain [hcfg+0x590], scale [hcfg+0x5a8], obf limits [veh+0x560]+0x28/0x30 and +0xe8/0xf0 -> correction ctl+0xc; final ctl+0x24 = clamp((value + ctl+0x10)/limit, -1, 1) (ctl+0x10 dropped when mode [..+0xa0]+0x50 in 3..4), zeroed if NaN/inf. Caller 0x1405f5dd0 copies ctl+0x24 into [rec+0x48]+0x14 (AI output block). (corrected 2026-11-14: +0x24..+0x27 is one float output in [-1,1], not 'state bytes'; 57.29578 converts a degree threshold). L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.car_update_attitude_state",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC B8 00 00 00 C5 78 29 B4 24",
+  "match": "0x14060b360",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14060b360",
+  "kind": "func_start",
+  "names": [
+   "Ai_Car_UpdateAttitudeState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14060b360",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14060b360.c;xref:0x1405f67d9",
+   "notes": "V3538 uses 57.29578 as deg->rad divisor and Exp2f smoothing, but result is a single float at +0x24 (or four zero bytes +0x24..+0x27 in the reset path), not four separate state bytes"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x14060b360",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14060b360-0x14060b8df;xref:0x1405f67d9",
+   "notes": "V10579 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only caller 0x1405f67d9 (Ai_Update_DriverTick); riprel hit 0x1405dacd8 is not a reference. 3 args (rcx ctl, xmm1 dt, r8 rec). [veh+0x580] axle objects +0x3c8/+0x3b0, hcfg = [rec+0x230] fields +0x580 (deg, /57.2958 at 0x14060b720), +0x588, +0x590, +0x5a0 (expf 0x145354ae0), +0x5a8, store ctl+0x24 (0x14060b877) confirmed."
+  }
+ ],
+ "proofs": []
+}

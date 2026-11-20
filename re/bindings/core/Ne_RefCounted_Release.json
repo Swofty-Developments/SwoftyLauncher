@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_RefCounted_Release",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a59950",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a59950.c;xref:0x14143704d",
+  "notes": "Releases a refcounted handle: clears *param_1, decrements the count at obj+0x24 and on zero returns the buffer to its pool (allocator vcall +0x38). Caller Game_DecalGeneration_UpdateService."
+ },
+ "signature": {
+  "id": "core.ref_counted_release",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 8B 31 48 85 F6 74 5D 48",
+  "match": "0x143a59950",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a59950",
+  "kind": "func_start",
+  "names": [
+   "Ne_RefCounted_Release"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x143a59950",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a59950.c;xref:0x14143704d",
+   "notes": "V7826 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

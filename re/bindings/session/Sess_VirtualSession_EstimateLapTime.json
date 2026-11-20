@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_VirtualSession_EstimateLapTime",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f6c8e0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f6c8e0.c;xref:0x142980806,0x142f6b866",
+  "notes": "Simulated session: estimates a lap time for vehicle param_2 from the session rules entry (Game_RuleSet_FindForSessionFilter, factor +0xf0) and the car's XOR-obfuscated performance values (car+0x58->+0x548, pairs +0x28/+0x30 indexed by param_7), with params param_3/param_5/param_8. Callers Ai_QualiPace_Debug, Game_Network_VirtualSessionEntrant, Game_GarageReturn_ComputeTimeSkip. Callers: census steam 0x2f6c8e0."
+ },
+ "signature": {
+  "id": "session.virtual_session_estimate_lap_time",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 88 00 00 00 C5 78 29 4C 24 70 C5 78 29 44 24 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 C5",
+  "match": "0x142f6c8e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f6c8e0",
+  "kind": "func_start",
+  "names": [
+   "Sess_VirtualSession_EstimateLapTime"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x142f6c8e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f6c8e0.c;xref:0x142980806,0x142f6b866",
+   "notes": "V3752 Uses 142e60e00 rules entry +0xf0, car+0x58->+0x548 XOR pairs indexed by param_7, returns time via curve helpers 142e7bfa0/142e7c5f0."
+  }
+ ],
+ "proofs": []
+}

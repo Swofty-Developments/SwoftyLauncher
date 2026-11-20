@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetConnectionStore_Initialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14405a430",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "str:s_NeNetConnectionStore_Initialise;xref:0x14405a4c0;decomp:re/decomp/14405a430.c",
+  "notes": "cxx=neon::NeNetConnectionStore::initialise; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "core.net_connection_store_initialise",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 01 00 00 C5 F8 29 B4 24 C0 01 00 00 44 89 C3 48",
+  "match": "0x14405a430",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14405a430",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetConnectionStore_Initialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb3-verify-a",
+   "kind": "func",
+   "item": "Ne_NetConnectionStore_Initialise",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14405a430.c;xref:0x144079332",
+   "notes": "V2067 Own pretty fn string + initialiseConnectionList/FreeConnectionList (NETWORK-TRANSPORT); allocs 400-byte connection slots; called by NeNetTransportCommon::initialiseClient"
+  }
+ ],
+ "proofs": []
+}

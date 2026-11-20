@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_LineFollow_AdvanceDistance",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14060c960",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_LineFollow_AdvanceDistance(void *c, float metres)",
+  "evidence": "decomp:re/decomp/14060c960.c;xref:0x140625d4f,0x140640bfa,0x140640f04,0x14066af6d,0x14066b076",
+  "notes": "SplineCursor advance (same struct as Ai_SplineCursor_*): returns at once for 0 m; adds metres (xmm1) to [c+0x268], wraps with fmod 0x1453556a4 when line+0x88 is set, else clamps to [0, len] (len = [[line+0x20]-8]+0xb0); line c[4] via 0x140679dd0 into c+0x210, then samples the other 8 lines into +0x50, +0xc0, +0x130, +0x1a0, +0x280, +0x2f0, +0x360, +0x3d0. Callers: 0x140625d4f (in 0x140624e60), Ai_Job_UpdateCarsParallel (2), 0x14066a980 (2) (corrected per V10468). L2 2026-11-14 (engine-re round 2): decomp read; 5 reference(s) (0x140625d4f, 0x140640bfa, 0x140640f04, 0x14066af6d, 0x14066b076). raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.line_follow_advance_distance",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 78 C5 78 29 54 24 60 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 C5 F8 57 C0",
+  "match": "0x14060c960",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14060c960",
+  "kind": "func_start",
+  "names": [
+   "Ai_LineFollow_AdvanceDistance"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14060c960",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14060c960.c;xref:0x140640bfa",
+   "notes": "V3542 advance distance with param_2 + field at qword idx 0x4d (+0x268), fmod wrap (Ne_Crt_Fmodf), spline point 0x140679dd0, and refreshes +0x440 distances; but it samples EIGHT splines via 0x14067a120 (c[0..3], c[5..8]) into stride-0x70 records, not three lines"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x14060c960",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x14060c960-0x14060cc3e;xref:0x140625d4f,0x140640bfa,0x140640f04,0x14066af6d,0x14066b076",
+   "notes": "V10468 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Same 5 call refs (0x140625d4f in 0x140624e60, 2 in Ai_Job_UpdateCarsParallel, 2 in 0x14066a980). 2 args (cursor, float metres xmm1; 0 -> return). Adds [c+0x268], wrap via fmod 0x1453556a4 when line+0x88 else clamp [0,len] (len [[line+0x20]-8]+0xb0), 0x140679dd0 -> c+0x210. DIFFERENCE: it then samples 8 lines (+0x50,+0xc0,+0x130,+0x1a0,+0x280,+0x2f0,+0x360,+0x3d0), not three. It is the SplineCursor advance (same struct as Ai_SplineCursor_*)."
+  }
+ ],
+ "proofs": []
+}

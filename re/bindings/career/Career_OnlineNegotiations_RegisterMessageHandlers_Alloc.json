@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_OnlineNegotiations_RegisterMessageHandlers_Alloc",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ff1480",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_OnlineNegotiations_RegisterMessageHandlers_Alloc(void *neg)",
+  "evidence": "decomp:re/decomp/140ff1480.c;xref:0x1456b4660",
+  "notes": "myteam-g1: Registers the 14 online-negotiation message handlers (OnStarted, OnApproachFailed, OnApproachSucceeded, OnDriverEnteredAuction, OnTeamOffer, OnOfferAccepted ...) via 143987810 heap functors. Subscribes StartContractNegotiationsSync / FinishContractNegotiationSync / MessageContractNegotiationFinished; touches neg+0x298 and +0x2b8."
+ },
+ "signature": {
+  "id": "career.online_negotiations_register_message_handlers_alloc",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 70 48 89 CE C7 81 B8 02 00 00 00 00 00 00",
+  "match": "0x140ff1480",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ff1480",
+  "kind": "func_start",
+  "names": [
+   "Career_OnlineNegotiations_RegisterMessageHandlers_Alloc"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140ff1480",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ff1480.c;xref:0x1456b4660;str:\"StartContractNegotiationsSync\"",
+   "notes": "V9626 14 Ne_Subscribe_BusMessage (143987810) calls for the negotiation messages incl. StartContractNegotiationsSync, FinishContractNegotiationSync, MessageContractNegotiationFinished."
+  }
+ ],
+ "proofs": []
+}

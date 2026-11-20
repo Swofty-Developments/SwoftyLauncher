@@ -1,0 +1,84 @@
+{
+ "schema": 1,
+ "name": "Game_Read_SeasonRef",
+ "table": "functions",
+ "author": "re-bindings",
+ "row": {
+  "addr": "0x142a23850",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint8_t *Game_Read_SeasonRef(uint8_t *out, void *row)",
+  "evidence": "decomp:own disasm KB 0x142a23850-0x142a23a31, 1.0.145 0x142a25c10 the same 123/123;xref:0x142455786",
+  "notes": "Reads a row's 'season' string field: when it is non-empty, out[0] = statId of game_setup.seasons[label] (0 when no row has that label) and out[1] = 1; when it is empty out[1] = 0. Returns out. Sess_Load_AvailableEntrantLists (0x142455786) stores it as the entrant list record's u16 at +0xb0 (record base rsp+0x38, pushed at 0x1424560c1), which Trk_ChampionshipEntity_TrackDataQuery_Body 0x1485962f0 copies into the track query's bytes 2-3."
+ },
+ "signature": {
+  "id": "game.read_season_ref",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 0F B7 84 24 58 01 00 00",
+  "match": "0x142455786",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x142a23850",
+  "kind": "call",
+  "names": [
+   "Game_Read_SeasonRef"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-18",
+    "by": "re-bindings",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142457386",
+  "made_on_target": "0x142a25c10",
+  "twin": "made on steam-26566308; the target 0x142a25c10 is KB 0x142a23850: Sess_Load_GameSetupBranding (0x2a15340) and Game_Garage_FadeOutForExit (0x2a3c920) on either side both sit 0x23c0 above their KB addresses; the match 0x142457386 is KB 0x142455786: Sess_Parse_EntrantList (0x2455840) and Career_Build_LineupChanges (0x2459690) on either side both sit 0x1c00 above their KB addresses; checked on the KB exe: same: entry 0x60 alike 1.00"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142457386",
+    "target": "0x142a25c10"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "64ce5f906c1f85e063bd94f9fb7bfecac7678a5ddfd43667a355488e87bd149c"
+  },
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142455786",
+    "target": "0x142a23850"
+   },
+   "sigcheck": "passed",
+   "digest": "9935efcd247180b498dcc2f5f72dcfb84a82493ed33b48285dae78b151a2f2ad"
+  }
+ ]
+}

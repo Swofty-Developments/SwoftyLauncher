@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Vm_Unk_141b012b0",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141b012b0",
+  "level": "L1",
+  "subsystem": "vm",
+  "proto": "-",
+  "evidence": "decomp:work/exe/decomp/141b012b0_uses_desc_loc.c;xref:0x141b00f63;pat:exe-agent-label",
+  "notes": "exe-agent label uses_desc_loc (113 KB decompile)"
+ },
+ "signature": {
+  "id": "vm.unk_141b012b0",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 07 00 00 C5 F8 29 B4 24",
+  "match": "0x141b012b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141b012b0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Unk_141b012b0"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141b012b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141b012b0.c;xref:0x141b00f62",
+   "notes": "V4935 113 KB list-entry builder (entry_%d: name, position, marker_flags, state, esports_event, reward boost, vehicle type, info_1..3, track, mods, description); label only covers description loc. Better: Vm_Build_EventListEntries"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x141b012b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141b012b0.c;xref:0x141b00f62",
+   "notes": "V7249 name fits; finding facts hold; 1 direct calls"
+  }
+ ],
+ "proofs": []
+}

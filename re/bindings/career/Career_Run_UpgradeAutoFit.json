@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Run_UpgradeAutoFit",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1412484e0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:cmp-byte-rcx+0x72-3-ja-ret@0x1412486b8;xref:0x141246d11,0x141247bc0;kb:subsystems/rnd_ui.md#instances",
+  "notes": "Auto-fit pass over the team upgrade instances. Returns at once for department > 3 (cmp byte [rcx+0x72],3 ; ja @0x1412486b8), so a dept-4 (ENUM A Fake) instance never leaves the init sentinel. CORRECTION(V9169): Auto-fit loop over team upgrade instances calling 1435157d0 is right, but the department > 3 check (cmp byte [rcx+0x72],3 ; ja at 0x1412486bc) jumps to the loop continue 0x141248650 and skips that instance rather than returning from the function."
+ },
+ "signature": {
+  "id": "career.run_upgrade_auto_fit",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 48 89 4C 24 38 48 8B 89",
+  "match": "0x1412484e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1412484e0",
+  "kind": "func_start",
+  "names": [
+   "Career_Run_UpgradeAutoFit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x1412484e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1412484e0.c;xref:0x141246d11",
+   "notes": "V4699 cmp [rcx+0x72],3 ja @0x1412486b8 only skips that instance (jumps back into the loop), does not return; dept<4 instances get Set_UpgradeFitted; rest of claim ok"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-f",
+   "kind": "func",
+   "item": "0x1412484e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1412484e0.c;xref:0x141246d11;xref:0x141247bc0",
+   "notes": "V9169 Auto-fit loop over team upgrade instances calling 1435157d0 is right, but the department > 3 check (cmp byte [rcx+0x72],3 ; ja at 0x1412486bc) jumps to the loop continue 0x141248650 and skips that instance rather than returning from the function."
+  }
+ ],
+ "proofs": []
+}

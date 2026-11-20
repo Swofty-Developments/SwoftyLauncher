@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_DriverMarket_SetOpenedFromRenewalPopup",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422d6940",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_DriverMarket_SetOpenedFromRenewalPopup(uint8_t value)",
+  "evidence": "decomp:re/decomp/1422d6940.c;xref:0x1422d6906;xref:0x1422d6f24",
+  "notes": "myteam-g2: Writes a bool into the bound property #ui_menu_data.driver_market.opened_from_renewal_popup (resolved via the global UI data root 0x146ca54f8). Hook: set before opening the driver market to make it behave as the renewal flow."
+ },
+ "signature": {
+  "id": "ui.driver_market_set_opened_from_renewal_popup",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 88 4C 24 37 48 8B 0D",
+  "match": "0x1422d6940",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422d6940",
+  "kind": "func_start",
+  "names": [
+   "Ui_DriverMarket_SetOpenedFromRenewalPopup"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1422d6940",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422d6940.c;xref:0x1422d6906",
+   "notes": "V10091 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

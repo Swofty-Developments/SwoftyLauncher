@@ -1,9 +1,9 @@
-#include "../src/core/save_diag_logic.hpp"
+#include "core/career/save_diag_logic.hpp"
 
 #include <cstdio>
 
-namespace sd = runtime::save_diag;
-namespace cs = runtime::career_saves;
+namespace sd = career::save_diag;
+namespace cs = career::saves;
 
 static int fails;
 static void expect(bool ok, const std::string &what)
@@ -18,7 +18,8 @@ int main()
     expect(sd::utc(0) == "unknown", "no time reads unknown");
     expect(sd::utc(1762000000) == "2025-11-01 12:26:40 UTC", "a unix time formats as UTC: " + sd::utc(1762000000));
     expect(sd::utc(951782400) == "2000-02-29 00:00:00 UTC", "a leap day formats");
-    expect(has(sd::off_line(true, "main", ""), "off for profile main: the game reads Steam's saves natively"), "off with a profile");
+    expect(has(sd::off_line(true, "main", ""), "off for profile main: the game reads Steam's saves natively"),
+           "off with a profile");
     expect(has(sd::off_line(false, "", ""), "no launcher_saves") && has(sd::off_line(false, "", ""), "Steam's saves natively"),
            "off without settings still says Steam natively");
     expect(has(sd::off_line(true, "p", "asked once"), "(asked once)"), "off carries why");
@@ -31,12 +32,14 @@ int main()
     expect(has(l, "profile load 2: manager 0 slot 1: gm_driver_career id=3 key=0000000000abcdef career=dc-000b0000"), l);
     expect(has(l, "season=5 weekend=7 date=99 name=\"Run\""), "slot details");
     s.flags = cs::FLAG_MY_TEAM;
-    expect(has(sd::slot_line(1, 1, 0, s, ""), "gm_my_team") && has(sd::slot_line(1, 1, 0, s, ""), "career=?"), "my team, unknown career");
+    expect(has(sd::slot_line(1, 1, 0, s, ""), "gm_my_team") && has(sd::slot_line(1, 1, 0, s, ""), "career=?"),
+           "my team, unknown career");
     cs::SlotRead h;
     h.details = true, h.flags = cs::FLAG_HIDDEN;
     expect(has(sd::slot_line(1, 0, 0, h, ""), "(not a career slot)"), "hidden slot flagged");
     expect(has(sd::manager_line(1, 0, 3, 0x1234), "manager 0 (vtable +0x1234): 3 slot(s)"), "manager line");
-    expect(has(sd::kept_line(1, "gm_driver_career_progressive", 900), "container gm_driver_career_progressive: 900 bytes"), "kept line");
+    expect(has(sd::kept_line(1, "gm_driver_career_progressive", 900), "container gm_driver_career_progressive: 900 bytes"),
+           "kept line");
     printf("save diag: %d failed\n", fails);
     return fails != 0;
 }

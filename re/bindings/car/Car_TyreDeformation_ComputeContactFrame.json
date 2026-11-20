@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_TyreDeformation_ComputeContactFrame",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14465e830",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14465e830.c;xref:0x14465c39b,0x14465c3be,0x14465c3de",
+  "notes": "Builds a tyre contact transform from the car body matrices ([+8]+0x558 +0x1d0..+0x208) and Car_Compute_ChassisMatrix. Hypothesis. Callers: 4 tyre thunks, Car_TyreDeformation_CheckParticles. (6 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "car.tyre_deformation_compute_contact_frame",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 30 01 00 00 C5 78 29 BC 24 20",
+  "match": "0x14465e830",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14465e830",
+  "kind": "func_start",
+  "names": [
+   "Car_TyreDeformation_ComputeContactFrame"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x14465e830",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14465e830.c;xref:0x14470d5e0",
+   "notes": "V6802 Reads body matrices [+8]+0x558 +0x1d0..0x208 and Car_Compute_ChassisMatrix confirmed."
+  }
+ ],
+ "proofs": []
+}

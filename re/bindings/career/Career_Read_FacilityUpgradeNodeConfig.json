@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Read_FacilityUpgradeNodeConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f8a800",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *node, void *xml)",
+  "evidence": "decomp:re/decomp/140f8a800.c;xref:0x1456af460",
+  "notes": "myteam-g1: Reads one facility upgrade node definition (key_upgrade flag at +0xa0, workforce_capacity_increase at +0x40/+0x80/+0xa8, team entries). Sits next to Career_Complete_FacilityStartNode; defines how much workforce an upgrade adds. CORRECTION(V8978): key_upgrade is stored at +0xa0 as claimed, but workforce_capacity_increase is written to +0xa4; +0x40 is phase, +0x80 is cost and +0xa8 is days_to_complete. Rest of the role (upgrade node definition) is right."
+ },
+ "signature": {
+  "id": "career.read_facility_upgrade_node_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 04 00 00 48 89 D0",
+  "match": "0x140f8a800",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f8a800",
+  "kind": "func_start",
+  "names": [
+   "Career_Read_FacilityUpgradeNodeConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-a",
+   "kind": "func",
+   "item": "0x140f8a800",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140f8a800.c;xref:0x1456af460;str:\"workforce_capacity_increase\";str:\"key_upgrade\"",
+   "notes": "V8978 key_upgrade is stored at +0xa0 as claimed, but workforce_capacity_increase is written to +0xa4; +0x40 is phase, +0x80 is cost and +0xa8 is days_to_complete. Rest of the role (upgrade node definition) is right."
+  },
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140f8a800",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f8a800.c;xref:0x1456af460;str:\"workforce_capacity_increase\"",
+   "notes": "V9599 phase +0x40, cost +0x80, days_to_complete +0xa8, key_upgrade +0xa0, workforce_capacity_increase +0xa4 all match the correction."
+  }
+ ],
+ "proofs": []
+}

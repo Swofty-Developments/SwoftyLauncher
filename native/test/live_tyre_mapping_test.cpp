@@ -1,4 +1,4 @@
-#include "../src/core/live/live_tyre_images.hpp"
+#include "core/live/live_tyre_images.hpp"
 #include <cassert>
 #include <cstdio>
 #include <map>
@@ -10,21 +10,25 @@ static int available() { return ready; }
 static int integer(const char *key, int64_t *out)
 {
     auto it = ints.find(key);
-    if (it == ints.end()) return SWOFTY_ASSET_UNAVAILABLE;
+    if (it == ints.end())
+        return SWOFTY_ASSET_UNAVAILABLE;
     *out = it->second;
     return SWOFTY_ASSET_OK;
 }
 static int string(const char *key, const char **out)
 {
     auto it = strings.find(key);
-    if (it == strings.end()) return SWOFTY_ASSET_UNAVAILABLE;
+    if (it == strings.end())
+        return SWOFTY_ASSET_UNAVAILABLE;
     *out = it->second.c_str();
     return SWOFTY_ASSET_OK;
 }
 static void mapping()
 {
     SwoftyDb db{};
-    db.available = available; db.int_at = integer; db.string_at = string;
+    db.available = available;
+    db.int_at = integer;
+    db.string_at = string;
     ints["tyres.visual_compounds._VisualCompound_instancecount_"] = 5;
     const std::string templates = "entrants.ui.asset_templates.tyre_compounds.textures";
     ints[templates + "._ui_texture_path_instancecount_"] = 1;

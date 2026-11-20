@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1WorldGoals_HandleCommand",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141ad6da0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141ad6da0.c;xref:0x141adb357,0x14572e740",
+  "notes": "F1 World goals screen command handler (GoalsMain; commands attach_rewards_context/detach_goals/open_vendors/focus_vendor/partial_spawn/delete; logs GOALS 'Command Raised'); hides/shows frontend drivers by comp id. vtable slot 0x14572e740. Addon: low. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2934)"
+ },
+ "signature": {
+  "id": "game.f1_world_goals_handle_command",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 90 01 00 00 48 89 D7",
+  "match": "0x141ad6da0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141ad6da0",
+  "kind": "func_start",
+  "names": [
+   "Game_F1WorldGoals_HandleCommand"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d11-verify",
+   "kind": "func",
+   "item": "Game_F1WorldGoals_HandleCommand",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141ad6da0.c;xref:0x14572e740",
+   "notes": "V2934 Decomp strings, offsets and callees match the claim; name fits."
+  }
+ ],
+ "proofs": []
+}

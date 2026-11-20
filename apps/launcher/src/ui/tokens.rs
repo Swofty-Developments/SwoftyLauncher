@@ -1,7 +1,7 @@
 use gpui_kit::{Hsla, Pixels};
 
-use crate::scale::px;
-use crate::theme::Palette;
+use crate::ui::scale::px;
+use crate::ui::theme::Palette;
 
 /// Font sizes, unscaled. Use the matching function for a scaled [`Pixels`].
 pub mod text {
@@ -41,7 +41,9 @@ pub mod radius {
     pub const XS: f32 = 4.;
     pub const SM: f32 = 5.;
     pub const MD: f32 = 6.;
+    #[allow(dead_code)]
     pub const LG: f32 = 10.;
+    #[allow(dead_code)]
     pub const XL: f32 = 14.;
 
     pub fn xs() -> Pixels {
@@ -56,10 +58,12 @@ pub mod radius {
         px(MD)
     }
 
+    #[allow(dead_code)]
     pub fn lg() -> Pixels {
         px(LG)
     }
 
+    #[allow(dead_code)]
     pub fn xl() -> Pixels {
         px(XL)
     }
@@ -73,6 +77,7 @@ pub mod space {
     pub const SM: f32 = 8.;
     pub const MD: f32 = 12.;
     pub const LG: f32 = 16.;
+    #[allow(dead_code)]
     pub const XL: f32 = 24.;
     /// The page's left and right padding.
     pub const GUTTER: f32 = 28.;
@@ -93,6 +98,7 @@ pub mod space {
         px(LG)
     }
 
+    #[allow(dead_code)]
     pub fn xl() -> Pixels {
         px(XL)
     }
@@ -107,7 +113,6 @@ pub mod space {
 pub enum Tone {
     #[default]
     Info,
-    Success,
     Warning,
     Error,
 }
@@ -116,7 +121,6 @@ impl Tone {
     pub fn color(self, p: &Palette) -> Hsla {
         match self {
             Self::Info => p.accent,
-            Self::Success => p.success,
             Self::Warning => p.warning,
             Self::Error => p.error,
         }
@@ -126,7 +130,6 @@ impl Tone {
         use gpui_kit::assets::IconName;
         match self {
             Self::Info => IconName::Info,
-            Self::Success => IconName::CircleCheck,
             Self::Warning => IconName::TriangleAlert,
             Self::Error => IconName::CircleX,
         }

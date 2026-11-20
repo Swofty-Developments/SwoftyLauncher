@@ -1,0 +1,104 @@
+{
+ "schema": 1,
+ "name": "Vm_Release_Node",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1442b3d70",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Release_Node(void *registry, void *node)",
+  "evidence": "decomp:re/decomp/1442b3d70.c;decomp:re/decomp/141b6ba20.c;xref:0x141b6ba9d,0x141b6bb07,0x141b6bb71;xref:0x1407a4860,0x1407bb6c0",
+  "notes": "Drops one reference a VM handle holds on node (refcount u16 at node+0x24); at 1 left it destroys the node (vtable +8) and frees it through the registry's allocator. Callers first unlink the handle {node,next,prev} from the node's holder list at node+0x28 (0x141b6ba20 does it for each handle of a tile set). | (Allocator **a, Resource *r), a null r returns at once (0x1442b3d76). Before the lock dec of the u16 at r+0x24 (0x1442b3dee) it releases r's children synchronously, through 0x1442b3e30 (child map, count at +0x80) or 0x1442b4120 (child vector +0x40..+0x48) as vtable +0x28 picks, when the count equals the children plus 2 (0x1442b3dc2, 0x1442b3de1); that step is skipped when the qword at +0x30 is set, vtable +0x20 returns true or the count is 1, and the helpers call Vm_Release_Node again for r and for each child, so a hook here is re-entered for the same node. When the count re-read after the dec is 1 (0x1442b3df7) it calls the dtor (vtable +8, edx 0) and tail-jumps to the allocator's vtable +0x38 with (alloc, r) (0x1442b3e1e). Callers: census steam 0x42b3d70, among them game mode parse, the session HUD and the season UI. | #589 proposed the name Ne_Resource_Release | #589 proposed the subsystem core"
+ },
+ "signature": {
+  "id": "vm.release_node",
+  "section": ".xtls",
+  "pattern": "48 89 CF 48 8D 71 08 48 89 F2 E8 28 13 6A 02 48 8D 1D ?? ?? ?? ?? 48 89 9F 20 01 00 00 48 8B 87 28 01 00 00 48 85 C0 74 57 48 8B 8F 30 01 00 00 48 8B 97 38 01 00 00 48 85 D2 74 04 48 89 4A 08 4C 8D B7 28 01 00 00 4C 8D 87 30 01 00 00 48 85 C9 74 04 48 89 51 10 C5 F8 57 C0 C4 C1 78 11 00 4C 39 70 28 75 04 48 89 48 28 48 8B 0D ?? ?? ?? ?? 49 8B 16 E8 ?? ?? ?? ?? 49 C7 06 00 00 00 00",
+  "match": "0x141b6ba29",
+  "anchor": "0x75",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x74"
+  },
+  "target": "0x1442b3d70",
+  "kind": "call",
+  "names": [
+   "Vm_Release_Node"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-27",
+    "by": "mp-carcat",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/boxes/car_category.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-27",
+   "verifier": "verify-mp-carcat",
+   "kind": "func",
+   "item": "Vm_Release_Node",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1442b3d70.c;xref:0x141b6ba9d;sig:vm.release_node",
+   "notes": "V1158 Re-checked: 0x141b6ba20 unlinks each handle (prev.next=next, next.prev=prev, node+0x28 head fix) and then calls it with g_Vm_Registry and the node. Same-session verify pass."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x1442b3d70",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1442b3d70.c;xref:0x1400f7534",
+   "notes": "V3659 refcount u16 +0x24 and async-unload checks match, but 31340 call sites in ~5000 funcs (not 105): generic ref release"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x1442b3d70",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1442b3d70.c;xref:0x1400f7534",
+   "notes": "V4015 refcount u16 +0x24 and async-unload checks match, but 31340 call sites in ~5000 funcs (not 105): generic ref release"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x1442b3d70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1442b3d70.c;xref:0x1400f7534,0x140309127",
+   "notes": "V4120 ref release with atomic refcount; 31340 callers"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Vm_Release_Node",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1442b3d70-0x1442b3e29,0x1442b3e30-0x1442b4162,0x153aa73d0-0x153aa74f7,0x1442bd4f0-0x1442bd619,0x141b6ba20-0x141b6bb7d,1.0.145 0x1442b6340-0x1442b63f9;xref:0x1442b3d85,0x1442b3d92,0x1442b3dc2,0x1442b3de1,0x1442b3dee,0x1442b3df3,0x1442b3e08,0x1442b3e1e,0x1442b3eed,0x1442b3efc,0x141b6ba9d,0x141b6bb07,0x141b6bb71,0x146ca54f8",
+   "notes": "V100054 Blind: partial. Proto (2 ptr args, void), u16 count +0x24 (lock dec at 0x1442b3dee, then plain re-read), destroy at 1 via vt+8 (edx=0) then tail jmp [*registry] vt+0x38, census row (31254/5031/.data1 605,.xtls 30649/86/24/10/0/1/0) and the handle {node,next,prev} unlink at node+0x28 all match; all 31254 E8 sites pass rcx=*(0x146ca54f8). Wrong: 'async unload when idle' - 0x1442b3e30/0x1442b4120 run synchronously before the dec when count==children+2 (map +0x80 or vector +0x40..+0x48, picked by vt+0x28), skipped if +0x30!=0, vt+0x20 true or count==1, and re-enter Release on the same node. 1.0.145 twin 0x42b6340 61/61."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Vm_Release_Node",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1442b3d70-0x1442b3e29,0x1442b3e30-0x1442b4120,0x1442b4120-0x1442b4162,0x153aa73d0-0x153aa75bd,0x1442bd3e0-0x1442bd4f0,0x1442bd4f0-0x1442bd619,0x1442bd620-0x1442bd79f,0x1443328a0-0x144332a10,0x14419a35a-0x14419a417,0x141b6ba20-0x141b6be1f,1.0.145 0x1442b6340-0x1442b63f9,1.0.145 0x1442b6400-0x1442b66f0,1.0.145 0x1442b66f0-0x1442b6732;xref:0x1442b3d76,0x1442b3d85,0x1442b3d92,0x1442b3d9d,0x1442b3da9,0x1442b3dc2,0x1442b3de1,0x1442b3dee,0x1442b3df7,0x1442b3e08,0x1442b3e1e,0x1442b3eed,0x1442b3efc,0x1442b3fd7,0x153aa754c,0x153aa755b,0x14419a3af,0x14419a47c,0x141b6ba9d,0x141b6bb07,0x141b6bb71",
+   "notes": "V100055 Blind: agree. Own disasm 0x1442b3d70-0x1442b3e29 (1.0.145 twin 0x1442b6340 byte-identical). rcx=ctx read from [0x146ca54f8] at all 31254 E8 sites, *ctx=allocator; rdx=node, null returns (0x1442b3d76). u16 rc at +0x24, lock dec 0x1442b3dee then plain re-read; ==1 -> vtbl+8(node,0), tail jmp alloc vtbl+0x38 (0x1442b3e1e). Pre-dec: skipped if [+0x30]!=0, vtbl+0x20 true or rc==1; else vtbl+0x28 picks 0x1442b3e30 (map, [+0x80]) or 0x1442b4120 (vector +0x40..+0x48) when rc==children+2; both re-enter for node and child (0x1442b3eed/0x1442b3efc, 0x153aa754c/0x153aa755b). rc 1 = self-link only (ctor 0x14419a3af). Census row matches. Game names, #589, decomp files not checkable."
+  }
+ ],
+ "proofs": []
+}

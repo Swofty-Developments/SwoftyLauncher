@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_MyTeamSponsors_Bind",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1423f4510",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void (void *vm)",
+  "evidence": "decomp:re/decomp/1423f4510.c;xref:0x1457879e0",
+  "notes": "myteam-g1: Binds the sponsors screen: season_index, sponsors, secondary_sponsors, selected_sponsor, sort modes (by_name, by_weekly_income, by_goal_income, by_acclaim_bonus), to_overview."
+ },
+ "signature": {
+  "id": "vm.my_team_sponsors_bind",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 C5 F8 29 B4 24 E0 00 00 00 48 89 CE 48 8B 81 40 06 00 00",
+  "match": "0x1423f4510",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423f4510",
+  "kind": "func_start",
+  "names": [
+   "Vm_MyTeamSponsors_Bind"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1423f4510",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1423f4510.c",
+   "notes": "V10204 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

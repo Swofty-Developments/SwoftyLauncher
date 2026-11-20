@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_WorldInstance_DestroyAllWorldObjectsInLayer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1444bc8b0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-method;decomp:re/decomp/1444bc8b0.c;xref:0x142df0118,0x142df0140",
+  "notes": "logged method name destroyAllWorldObjectsInLayer (class from the log channel); log channel NeWorldInstance: 'destroyAllWorldObjectsInLayer %p %s %s %s %s layerResourceId %s'"
+ },
+ "signature": {
+  "id": "core.world_instance_destroy_all_world_objects_in_layer",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 48 89 D7 48 89 CE 48 8B 81 40 01 00 00",
+  "match": "0x1444bc8b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1444bc8b0",
+  "kind": "func_start",
+  "names": [
+   "Ne_WorldInstance_DestroyAllWorldObjectsInLayer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb4-verify-b",
+   "kind": "func",
+   "item": "Ne_WorldInstance_DestroyAllWorldObjectsInLayer",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1444bc8b0.c;xref:0x1444bc8b0",
+   "notes": "V2216 finds layer by id in vector (+0x150), pops/destroys its object list"
+  }
+ ],
+ "proofs": []
+}

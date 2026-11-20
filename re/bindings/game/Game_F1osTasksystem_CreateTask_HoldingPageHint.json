@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1osTasksystem_CreateTask_HoldingPageHint",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143431960",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143431960.c;xref:0x1433738eb",
+  "notes": "F1OS task-system typed task allocator for HoldingPageHintTask (type name static init 0x143458b37): allocates a 0x168-byte OnlineSubsystemTaskBase (0x1432c1ee0) with sub-objects (vtables 0x14583f1e0, 0x14583ce30) and final vtable 0x14583eee0, wraps it in a ref holder (vtable 0x14583f1c0), logs 'Allocated new task %s' on F1OS-TASKSYSTEM and adds it via Game_F1osTasksystem_AddTask 0x1432dd060. Called from code after Game_CheckPrivilegeTask_OnFinished 0x143372d60. Addon: hook to see the holding-page hint request. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3326)"
+ },
+ "signature": {
+  "id": "game.f1os_tasksystem_create_task_holding_page_hint",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 40 4C 89 CF 48 89",
+  "match": "0x143431960",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143431960",
+  "kind": "func_start",
+  "names": [
+   "Game_F1osTasksystem_CreateTask_HoldingPageHint"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_F1osTasksystem_CreateTask_HoldingPageHint",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143431960.c;xref:0x143431960",
+   "notes": "V3326 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

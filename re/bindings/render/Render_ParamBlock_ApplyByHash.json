@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Render_ParamBlock_ApplyByHash",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144115f50",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144115f50.c;xref:0x141c0d662;xref:0x143895d40",
+  "notes": "Walks a list of param holders (this+0x38..0x40), checks enable flag +0x1d8 and matches a 64-bit key param_2 against a static key table at 0x146ca4aa0 (0x27 entries), then reads values through 0x144434690 into float accumulators. Callers 0x141c0d270, 0x141dcb8c0 (many). Hypothesis. | engine-re E1 2026-11-18 (static, rename proposed, owner review requested): this is the input mapper's analog action query, i.e. Ne_InputMapper_GetActionValue(NePlayer *mapper, const u64 *action_handle, bool, int) -> float: walks the mapper's input maps (+0x38..+0x40, enabled +0x1d8), skips the special ids of table 0x146ca4aa0, for ids in the special table 0x146ca4ab0 finds the binding with Ne_InputMapper_FindBindingByHash 0x144434690 and takes the max of the binding values (+0xd0, stride 0xd8); other ids read 0x143aa0a20 on [map+0x10]; returns the first non-zero map value (verify V11513 partial). Sess_HumanController_Update calls it for Clutch, Gear Up/Down, Gear 1..7/Reverse, KERS, DRS, Overtake, Pit Limiter; nothing render-related. Name kept here because signatures.json names the same id."
+ },
+ "signature": {
+  "id": "render.param_block_apply_by_hash",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 38 C5 F8 29 74 24 20 48 89 CE 48 8B 41 38 48 8B",
+  "match": "0x144115f50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144115f50",
+  "kind": "func_start",
+  "names": [
+   "Render_ParamBlock_ApplyByHash"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x144115f50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144115f50.c;xref:0x141c0d662",
+   "notes": "V7633 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "era-input-verify",
+   "kind": "func",
+   "item": "0x144115f50",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x144115f50-0x1441162e2;xref:called from 0x1438959c0 (e.g. 0x143895d41, 0x14389605a)",
+   "notes": "V11513 maps at mapper+0x38..+0x40, enabled byte +0x1d8 is on the mapper; max of +0xd0 over stride 0xd8 records (via 0x144434690) only when the action id is found in the id table at 0x146ca4ab0 (index != 0x27); otherwise value comes from 0x143aa0a20 on [map+0x10]; returns the first non-zero map value (not a max across maps); with param3 set copies device info into mapper+0x50.."
+  }
+ ],
+ "proofs": []
+}

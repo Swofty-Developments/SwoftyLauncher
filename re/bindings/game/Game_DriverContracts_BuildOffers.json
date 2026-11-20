@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DriverContracts_BuildOffers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d80ef0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_DriverContracts_BuildOffers(void *contracts, uint32_t driver)",
+  "evidence": "decomp:re/decomp/140d80ef0.c;decomp:re/decomp/141873a30.c;xref:0x141875f9d,0x141001c85",
+  "notes": "driver career contracts manager (DriverCareerContractsManagerComponent, +0x278 the game mode): rebuilds the contract offers for a driver key; the offer list is +0x3c8..+0x3d0. Called by the Team Select team list builder 0x141873a30 (0x141875f9d) before it lists the teams. It ranks the driver's team with Game_DriverContracts_RankTeam (0x140d811dc) and builds no offers when the rank is not valid. Raised by wizard-1990"
+ },
+ "signature": {
+  "id": "game.driver_contracts_build_offers",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 0A 00 00 4C 8B A9 C8 03 00 00",
+  "match": "0x140d80ef0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d80ef0",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverContracts_BuildOffers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "wizard-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-26",
+   "verifier": "progressive-wizvis",
+   "kind": "func",
+   "item": "Game_DriverContracts_BuildOffers",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d80ef0.c;decomp:re/decomp/141873a30.c;xref:0x141875f9d",
+   "notes": "V1057 Read independently of wizard-1990: void (rcx contracts, edx driver key), body 0x140d80ef0-0x140d817b9. Returns at once when contracts+0x3c8..+0x3d0 (0x48 entries, key byte +0 and u16 +2) has no entry for the driver. Lists the game mode's entrant rows through [contracts+0x278]+0x1030 vt+0x1c8, finds the driver's row (+0x50/+0x52) and appends its team (+0x58) to the entry's u32 team vector (+0x8 allocator, +0x10 begin, +0x18 end, +0x20 capacity in elements, grown 1.5x) unless it is there, or clears the vector (end=begin) on the +0x2c flag path, then ranks with Game_DriverContracts_RankTeam (standings +0x398, alloc +0x210). Team Select's team list 0x141873a30 calls it at 0x141875f9d with the focused driver and enables only the carousel items whose team is in that entry's vector (all when no entry)."
+  }
+ ],
+ "proofs": []
+}

@@ -1,8 +1,8 @@
 // Host unit test for the grid rules per box (box_grid_logic.hpp): qualifying scoring (best_lap, best_of, aggregate),
 // the 107 % rule, the position base, drivers without a time, and the row pattern layout (design only).
-// run_events_test.sh builds and runs it.
+// native/test/run_tests.sh box_grid builds and runs it.
 #include <cmath>
-#include "../src/core/box_grid_logic.hpp"
+#include "core/boxes/box_grid_logic.hpp"
 
 #include <cstdio>
 #include <string>
@@ -39,10 +39,10 @@ static void scoring_tests()
 {
     // Two sessions (Friday, Saturday). The game ranked by Saturday: A, B, C, D (1-based positions).
     std::vector<bg::Driver> d = {
-        drv(1, 1, {80.0f, 79.0f}),   // A: best 79.0, sum 159.0
-        drv(2, 2, {78.5f, 79.5f}),   // B: best 78.5, sum 158.0
-        drv(3, 3, {81.0f, 79.8f}),   // C: best 79.8, sum 160.8
-        drv(4, 4, {77.9f, 0.0f}),    // D: Friday only, best 77.9
+        drv(1, 1, {80.0f, 79.0f}), // A: best 79.0, sum 159.0
+        drv(2, 2, {78.5f, 79.5f}), // B: best 78.5, sum 158.0
+        drv(3, 3, {81.0f, 79.8f}), // C: best 79.8, sum 160.8
+        drv(4, 4, {77.9f, 0.0f}),  // D: Friday only, best 77.9
     };
     auto lap = bg::rank(d, rule(bg::Scoring::best_lap));
     expect(lap.positions == std::vector<int32_t>({1, 2, 3, 4}) && !lap.changed, "best_lap keeps the game's order");

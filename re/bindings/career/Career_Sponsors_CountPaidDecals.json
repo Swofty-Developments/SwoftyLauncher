@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Career_Sponsors_CountPaidDecals",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141104190",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "doc:re/research/sponsors.md#career-sponsors",
+  "notes": "Weekly per-decal income count (career.my_team_sponsors.weekly_income_per_decal_thresholds). Branch A (no per-decal data) sums 0x141103de0 = unlocked slots per area at renown minus reserved; branch B counts saved livery nodes (cust+0xe8..+0xf0, 16-byte entries) minus reserved per area. Not sponsor-specific: every placed decal pays, reserved (title) slots do not. Site 0x141104491 (rsi = count, r15 = livery)."
+ },
+ "signature": {
+  "id": "career.sponsors_count_paid_decals",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 CB 48 8B 81 78 02 00 00",
+  "match": "0x141104190",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141104190",
+  "kind": "func_start",
+  "names": [
+   "Career_Sponsors_CountPaidDecals"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-05",
+    "by": "sponsor-studio",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "jonniedesigns.sponsor-base"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-f",
+   "kind": "func",
+   "item": "0x141104190",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141104190.c",
+   "notes": "V9154 Branch A sums 141103de0 minus reserved per area, branch B uses (livery +0xf0 - +0xe8)>>4 minus reserved; only the weekly-income-threshold meaning is not provable from the code."
+  }
+ ],
+ "proofs": []
+}

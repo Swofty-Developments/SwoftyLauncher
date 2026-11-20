@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Update_RnDCancelResearchPanel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c6e1b0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void f(void *panel)",
+  "evidence": "decomp:re/decomp/141c6e1b0.c;xref:0x14573fd48",
+  "notes": "myteam-g1: R&D cancel-research panel (lng_rnd_cancel_research, upgrade_hash_name); uses Career_Query_EnabledUpgrades, Career_Get_RpWallet, Career_Get_TeamModifiers."
+ },
+ "signature": {
+  "id": "career.update_rn_dcancel_research_panel",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 48 31 00 00",
+  "match": "0x141c6e1b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c6e1b0",
+  "kind": "func_start",
+  "names": [
+   "Career_Update_RnDCancelResearchPanel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141c6e1b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141c6e1b0.c;xref:0x14573fd48",
+   "notes": "V9984 Start/cancel research panel (button_text/icon/enabled, resource_points, timeline_data); the adjacent strings include lng_rnd_start_research and lng_rnd_cancel_research, so cancel is only one of the states."
+  }
+ ],
+ "proofs": []
+}

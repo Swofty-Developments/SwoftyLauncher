@@ -13,12 +13,12 @@
 using namespace swofty;
 
 static int failures = 0;
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d: %s\n", __FILE__, __LINE__, #c);                                                    \
-            ++failures;                                                                                                \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d: %s\n", __FILE__, __LINE__, #c);                                                             \
+            ++failures;                                                                                                          \
+        }                                                                                                                        \
     } while (0)
 
 static std::string g_request;
@@ -82,25 +82,31 @@ static int apply_teams(SwoftyText request, char *out, size_t cap, size_t *len)
     return SWOFTY_ASSET_OK;
 }
 
-static const SwoftyCareerOps kOps = {1,       available, driver_stat, set_slots, apply_lineup, set_driver_ratings, swap,
-                                     nullptr, nullptr,   nullptr,     nullptr,   nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
-static const SwoftyCareerOps kOps2 = {2,    available,     driver_stat, set_slots, apply_lineup, set_driver_ratings,
-                                      swap, report_season, nullptr,     nullptr,   nullptr,      nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
-static const SwoftyCareerOps kOps3 = {3,    available,     driver_stat, set_slots, apply_lineup, set_driver_ratings,
-                                      swap, report_season, apply_teams, nullptr,   nullptr,      nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
+static const SwoftyCareerOps kOps = {1,       available, driver_stat, set_slots, apply_lineup, set_driver_ratings,
+                                     swap,    nullptr,   nullptr,     nullptr,   nullptr,      nullptr,
+                                     nullptr, nullptr,   nullptr,     nullptr,   nullptr,      nullptr};
+static const SwoftyCareerOps kOps2 = {2,       available,     driver_stat, set_slots, apply_lineup, set_driver_ratings,
+                                      swap,    report_season, nullptr,     nullptr,   nullptr,      nullptr,
+                                      nullptr, nullptr,       nullptr,     nullptr,   nullptr,      nullptr};
+static const SwoftyCareerOps kOps3 = {3,       available,     driver_stat, set_slots, apply_lineup, set_driver_ratings,
+                                      swap,    report_season, apply_teams, nullptr,   nullptr,      nullptr,
+                                      nullptr, nullptr,       nullptr,     nullptr,   nullptr,      nullptr};
 
 int main()
 {
     career::Season s;
     s.data_group = "f1_career_progressive";
     s.year = 2017;
-    s.teams.push_back({.slot = 1, .team = {}, .seats = {Ref<drivers::Identity>("game/fernando_alonso"),
-                                                          Ref<drivers::Identity>("game/valtteri_bottas")}});
+    s.teams.push_back(
+        {.slot = 1,
+         .team = {},
+         .seats = {Ref<drivers::Identity>("game/fernando_alonso"), Ref<drivers::Identity>("game/valtteri_bottas")}});
     career::ApplyReport report;
     report.changed = 99;
     CHECK(career::apply_lineup(s, &report) == career::Result::unavailable);
     CHECK(report.changed == 0 && report.refusals.empty());
-    CHECK(career::swap_drivers(Ref<drivers::Identity>("game/a"), Ref<drivers::Identity>("game/b")) == career::Result::unavailable);
+    CHECK(career::swap_drivers(Ref<drivers::Identity>("game/a"), Ref<drivers::Identity>("game/b")) ==
+          career::Result::unavailable);
     CHECK(!career::ops());
 
     career::detail::set_ops_table(&kOps);
@@ -151,6 +157,7 @@ int main()
         std::printf("sdk_ops_test: %d failure(s)\n", failures);
         return 1;
     }
-    std::printf("sdk_ops_test: apply_lineup request and report, set_driver_ratings ids, swap_drivers, report_season on table versions 1 and 2, apply_teams on table versions 2 and 3, no table: ok\n");
+    std::printf("sdk_ops_test: apply_lineup request and report, set_driver_ratings ids, swap_drivers, report_season on table "
+                "versions 1 and 2, apply_teams on table versions 2 and 3, no table: ok\n");
     return 0;
 }

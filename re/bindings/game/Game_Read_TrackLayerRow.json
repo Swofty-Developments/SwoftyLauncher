@@ -1,0 +1,100 @@
+{
+ "schema": 1,
+ "name": "Game_Read_TrackLayerRow",
+ "table": "functions",
+ "author": "re-bindings",
+ "row": {
+  "addr": "0x142e587e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_Read_TrackLayerRow(void *row, void *reader)",
+  "evidence": "decomp:re/decomp/142e587e0.c;decomp:own disasm KB 0x142e587e0-0x142e58980 and 0x142a0ddb0-0x142a0e4c1, 1.0.145 0x142e5ad70 the same 118/118 and 0x142a10170 the same 450/450;xref:0x142e5bd03,0x142e5bdc4",
+  "notes": "Reads one track_data.track_layers row (TrackLayer, 0x28 bytes) into rcx from the database row reader rdx and returns rcx. It first calls the base reader 0x142a0ddb0 (r8b 1, r9 0, which it does not read; 11 call sites in 10 functions, this one at 0x142e58803), which zeroes +0x0..+0xb and, unless the row's is_invalid is set (0x142a0de07), fills three masks: +0x0 setup modes, one bit per listed game_setup.game_setup_modes row at its stat_id (0x142a0dfbe); +0x4 seasons, one bit per listed game_setup.seasons row at its statId (0x142a0e20e); an absent id sets bit 0 and an id of 32 or more calls the bitset range failure 0x1411c04f0 (0x142a0e025, 0x142a0e292); +0x8 weekend formats, written once at 0x142a0e495: bit 1 for a listed format whose lower-cased name hashes (FNV-1a 64, 0x0b4d8c10d825b055) like sprint, bit 0 for any other or an unnamed one. Then the row's own fields: statId as a u8 -> +0xc (0x142e58826, 0 when absent); the row key, decoded in place from the string object of 0x1445a3900, -> +0x10 as a char * (0x142e58904; +0x10 of the static 0x146cc42e8 when there is no key object); the field slot pointers of worldAssetGroup -> +0x18 (0x142e5891a) and worldEri -> +0x20 (0x142e58930), which Game_TrackLayer_BuildExtraWorldDesc expands later. Callers: Sess_Load_TrackDatabase 0x142e5bd03 (at the vector end) and 0x142e5bdc4 (after growing the vector by half), one row per database row in database order, into the TrackDataSystem vector begin +0x1e0, end +0x1e8, capacity +0x1f0, allocator +0x1d8, stride 0x28; Trk_TrackData_CollectLayersForQuery reads the three masks. Steam 1.0.145 (sigport --witness): this function 0x142e5ad70 118/118 with +0xc, +0x10, +0x18 and +0x20 at the same instructions, the base reader 0x142a10170 450/450 with +0x4 and +0x8, Sess_Load_TrackDatabase 0x142e5b4b0 4530/4530 with +0x1d8, +0x1e0, +0x1e8 and +0x1f0. | 2026-11-17 engine-re raised it to L2 with --force at user request (lane owner review requested). | re-bindings 2026-11-18: the masks, the table and the 1.0.145 witness."
+ },
+ "signature": {
+  "id": "game.read_track_layer_row",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 D7 48 89 CE C6 44 24 20 00",
+  "match": "0x142e587e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e587e0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_TrackLayerRow"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-18",
+    "by": "re-bindings",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-17",
+   "verifier": "trkerp-verify",
+   "kind": "func",
+   "item": "Game_Read_TrackLayerRow",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm 0x142e587e0-0x142e58980;xref:callers 0x142e5bd03,0x142e5bdc4 (in 0x142e58f20)",
+   "notes": "V11003 statId byte -> +0xc; +0x10 = XOR-deobfuscated string from 0x1445a3900 (row key); worldAssetGroup field -> +0x18; worldEri field -> +0x20"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_Read_TrackLayerRow",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142e587e0-0x142e58980,0x142a0ddb0-0x142a0e4c1,0x1445a3900-0x1445a3c79,0x1445a2bd0-0x1445a2ce8,0x1445a2cf0-0x1445a2fa9,0x142e5bc59-0x142e5be04,0x142e60550-0x142e605ec,0x142e57e90-0x142e587e0, 1.0.145 0x142e5ad70,0x142a10170,0x142e5b4b0,0x142e62ae0;xref:0x142e58803,0x142a0de07,0x142a0dfbe,0x142a0e20e,0x142a0e025,0x142a0e292,0x142a0e29b,0x142a0e487,0x142a0e495,0x142e58826,0x142e58904,0x142e5891a,0x142e58930,0x142e5bd03,0x142e5bdc4,0x142e5bd50,0x142e60554,0x1407a1383,0x142e57f13,0x142e5825c",
+   "notes": "V20024 Blind: agree, derived before reading the notes. Own disasm: rcx=out rdx=row ret rcx; base 0x142a0ddb0 (r8b/r9/arg5 unread) zeroes +0..+0xb; is_invalid exits 0x142a0de07; +0 bit per game_setup.game_setup_modes stat_id 0x142a0dfbe, +4 per game_setup.seasons statId 0x142a0e20e; absent id->bit0, >=32->0x1411c04f0 via 0x142a0e29b; +8 store 0x142a0e495, FNV1a64 0x0b4d8c10d825b055=='sprint'->bit1 else bit0; +0xc u8 statId, +0x10 _metadata_ char*, +0x18/+0x20 slots. Callers 0x142e5bd03/0x142e5bdc4 in 0x142e58f20, vec +0x1d8..+0x1f0 stride 0x28, grow max(1.5n,n+1); 0x142e60550 tests masks. 11 helper call sites in 10 funcs. 1.0.145 118/450/4530/41 equal."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142e587e0",
+    "target": "0x142e587e0"
+   },
+   "sigcheck": "passed",
+   "digest": "04b5039034114ae50b281b00b7a665a2a519c80004e357b761bd044a7fa4d220"
+  },
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142e5ad70",
+    "target": "0x142e5ad70"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ee2ec4ba7cfdf0b161ea6dd8117b9e365a8e6ae92efe267c5d759182a4ce9839"
+  }
+ ]
+}

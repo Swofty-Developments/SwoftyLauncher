@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Vector2A8_PushBackGrow",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144686300",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144686300.c;xref:0x144685763,0x1446858d3",
+  "notes": "(vec, elem): grow-and-move path of push_back for 0x2a8-byte elements (move 4 qwords + memcpy 0x288). Caller: Car_Read_Engine (engine map/curve records)."
+ },
+ "signature": {
+  "id": "core.vector2_a8_push_back_grow",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 30 C5 F8 29 74 24 20 48 89 D7 48 89 CE 48 8B 49 10 48",
+  "match": "0x144686300",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144686300",
+  "kind": "func_start",
+  "names": [
+   "Ne_Vector2A8_PushBackGrow"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x144686300",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144686300.c;xref:0x144685763",
+   "notes": "V3702 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

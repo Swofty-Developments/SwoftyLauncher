@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_TeamHqMyTeam_HandleNavigation",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142338d90",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void (void *vm, int64_t msg)",
+  "evidence": "decomp:re/decomp/142338d90.c;xref:0x1457804a8",
+  "notes": "myteam-g1: Routes navigation targets to_messages, to_vehicles, to_renown_and_form, to_research, to_history, to_performance, to_finances, to_drivers and opens team_hq_my_team_constructors_rivalries."
+ },
+ "signature": {
+  "id": "vm.team_hq_my_team_handle_navigation",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 40 01 00 00 83 7A 10 50",
+  "match": "0x142338d90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142338d90",
+  "kind": "func_start",
+  "names": [
+   "Vm_TeamHqMyTeam_HandleNavigation"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x142338d90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142338d90.c",
+   "notes": "V10144 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

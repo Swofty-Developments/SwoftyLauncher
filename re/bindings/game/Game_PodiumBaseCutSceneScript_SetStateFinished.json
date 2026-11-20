@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PodiumBaseCutSceneScript_SetStateFinished",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140362c00",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=PodiumBaseCutSceneScript::setStateFinished; log channel CUTSCENE_PODIUM: 'PodiumBaseCutSceneScript::setStateFinished'"
+ },
+ "signature": {
+  "id": "game.podium_base_cut_scene_script_set_state_finished",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 58 02 00 00 C5 F8 29 B4 24 40 02 00 00",
+  "match": "0x140362c00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140362c00",
+  "kind": "func_start",
+  "names": [
+   "Game_PodiumBaseCutSceneScript_SetStateFinished"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x140362c00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140362c00.c;xref:0x362b95",
+   "notes": "V4546 string/behaviour in decomp matches name"
+  }
+ ],
+ "proofs": []
+}

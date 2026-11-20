@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_BakedLiverySponsor_WriteJson",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140420190",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *rec, void *json_writer",
+  "evidence": "decomp:re/decomp/140420190.c;xref:0x1404537a4;xref:0x14052fd74;xref:0x140bb8f9d",
+  "notes": "myteam-g1: Analytics JSON writer: baked_livery_sponsor_id / baked_livery_sponsor_name (sponsor sub-record at +0x50 with bool/int/string, then int +0x60 and a bool-selected text field at +0x64)."
+ },
+ "signature": {
+  "id": "game.analytics_baked_livery_sponsor_write_json",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 D6 48 89 CF 48 8B 59 50",
+  "match": "0x140420190",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140420190",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_BakedLiverySponsor_WriteJson"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140420190",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140420190.c;str:\"baked_livery_sponsor_id\"",
+   "notes": "V9466 Writes baked_livery_sponsor_id/name from sub-record +0x50, packed_customisation_livery_id (+0x60) and baked_livery_used bool (+0x64)."
+  }
+ ],
+ "proofs": []
+}

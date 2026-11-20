@@ -1,0 +1,132 @@
+{
+ "schema": 1,
+ "name": "vt_Game_CareerContinueDriverViewModel",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1457264a0",
+  "type": "vtable[28]",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:own capstone disasm of factory 0x141649f80 tail 0x14164a1b0-0x14164a2f4 on KB 1.0.141 (lea rax at 0x14164a1cd = 0x1457264a0 stored at r12) and own vtable dump slot 10 +0x50 HandleCommand KB 0x141a1db90 and slot 24 +0xc0 PressSlot KB 0x141a1eb80;xref:0x14164a1cd,0x14164a1d4,0x1457264f0;imm:0x1505;imm:0x540;imm:0x1380;pat:Steam 1.0.145 vtable 0x1457285d0 found by the same signature and its slot 24 PressSlot 0x141a20360 = KB+0x17e0",
+  "notes": "ts-v1: CareerContinueDriverViewModel (resume screen, Driver Career); slot 10 = Game_CareerContinue_HandleCommand, slot 24 = PressSlot (read from the exe); built by the screen factory 0x141649f80"
+ },
+ "signature": {
+  "id": "game.career_continue_driver_view_model",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 49 89 04 24 48 8D 05 ?? ?? ?? ?? 49 89 84 24 60 02 00 00 48 8D 05 ?? ?? ?? ?? 49 89 84 24 68 02 00 00 49 C7 84 24 B8 13 00 00 00 00 00 00",
+  "match": "0x14164a1cd",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x1457264a0",
+  "kind": "data",
+  "names": [
+   "vt_Game_CareerContinueDriverViewModel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "ts-v1",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/testing/agent/agent.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-19",
+   "verifier": "saves-blind",
+   "kind": "global",
+   "item": "vt_Game_CareerContinueDriverViewModel",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm of factory 0x141649f80 (allocs 0x13c0, base ctor name career_continue_driver, lea rax at 0x14164a1cd = 0x1457264a0 stored at [r12]) and vtable dump slot 10 = 0x141a1db90 slot 24 = 0x141a1eb80;xref:0x14164a1cd;imm:0x13c0;imm:0x1505;imm:0x540",
+   "notes": "gh:saves-blind factory string career_continue_driver at 0x14572647c; slot 10 reads event id [rdx]->dword (0x1505 ignore, 0xbda0a8b0 clears +0x136a, else tail-jumps to base 0x141a0b280) = HandleCommand; slot 24 takes slot index in dl, indexes slot array +0x328 stride 0x540, returns 3 if slot absent = PressSlot; Steam 145 vtable 0x1457285d0 slots 10/24 = 0x141a1f370/0x141a20360 by same signature"
+  }
+ ],
+ "proofs": [
+  {
+   "by": "swofty",
+   "date": "2026-11-19",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14164a1cd",
+    "target": "0x1457264a0"
+   },
+   "sigcheck": "passed",
+   "digest": "52a5c6e2786c80db7d519fee2db44b12a8a0434fd76492ef2daee32357dd168f"
+  },
+  {
+   "by": "swofty",
+   "date": "2026-11-19",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14164b7bd",
+    "target": "0x1457285d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "20f2536c8a4d0027fc568b5e61c35d3c985a60d033f4c51568bec14044e3d0bc"
+  },
+  {
+   "by": "saves-blind",
+   "date": "2026-11-19",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14164b7bd",
+    "target": "0x1457285d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "20f2536c8a4d0027fc568b5e61c35d3c985a60d033f4c51568bec14044e3d0bc"
+  },
+  {
+   "by": "saves-blind",
+   "date": "2026-11-19",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14164a1cd",
+    "target": "0x1457264a0"
+   },
+   "sigcheck": "passed",
+   "digest": "52a5c6e2786c80db7d519fee2db44b12a8a0434fd76492ef2daee32357dd168f"
+  }
+ ]
+}

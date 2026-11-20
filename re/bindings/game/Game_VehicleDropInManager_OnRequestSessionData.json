@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleDropInManager_OnRequestSessionData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14323fa80",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=VehicleDropInManager::onRequestSessionData; log channel NETWORK/F: 'VehicleDropInManager::onRequestSessionData(%d)'"
+ },
+ "signature": {
+  "id": "game.vehicle_drop_in_manager_on_request_session_data",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 38 83 79 08 01 0F 8F ?? ?? ?? ?? 89 D3 48 89 CE 48 8B 79 30",
+  "match": "0x14323fa80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14323fa80",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleDropInManager_OnRequestSessionData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x14323fa80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14323fa80.c",
+   "notes": "V6054 name and log/cxx claim match body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

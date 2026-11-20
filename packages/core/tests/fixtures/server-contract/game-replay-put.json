@@ -1,0 +1,24 @@
+{
+  "about": "The game's replay of the driver's best lap, uploaded once the server has taken the lap, with its setup.",
+  "answer": {
+    "body": {
+      "ok": true
+    },
+    "status": 200
+  },
+  "request": {
+    "body": {
+      "bytes": 8192
+    },
+    "headers": {
+      "accept": "*/*",
+      "accept-encoding": "gzip",
+      "authorization": "Bearer <token>",
+      "content-type": "application/octet-stream",
+      "user-agent": "swofty-launcher",
+      "x-swofty-replay-setup": "{\"box\":\"f1_2025\",\"lap_ms\":91234,\"mode\":\"tt\",\"tail_ms\":1500,\"team\":\"mclaren\",\"track\":\"bahrain\"}"
+    },
+    "method": "PUT",
+    "path": "/v1/tt/laps/2949b7d7eaf78422/game-replay"
+  }
+}

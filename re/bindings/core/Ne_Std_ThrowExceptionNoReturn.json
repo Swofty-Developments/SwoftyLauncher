@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_Std_ThrowExceptionNoReturn",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1449e16b4",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1449e16b4.c;xref:0x1401b034e",
+  "notes": "Builds an exception object from the message (1449e1a2c) and throws it via _CxxThrowException(type 0x145f6be68), then int3. Shared bitset/invalid-position throw sink; 109 callers incl. Ne_Bitset_ThrowInvalidPosition_B."
+ },
+ "signature": {
+  "id": "core.std_throw_exception_no_return",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? CC CC CC CC CC CC CC CC CC CC CC CC CC 48 89 C8 80 7A 30",
+  "match": "0x1401b034e",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1449e16b4",
+  "kind": "func_start",
+  "names": [
+   "Ne_Std_ThrowExceptionNoReturn"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x1449e16b4",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1449e16b4.c;xref:0x1401b034e",
+   "notes": "V8312 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

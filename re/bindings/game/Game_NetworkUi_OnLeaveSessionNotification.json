@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkUi_OnLeaveSessionNotification",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430ac600",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name onLeaveSessionNotification (class from the log channel); log channel NETWORK-UI: '%s().'  registered as the UI command 'leaveSession' in the NetworkUi init 0x1430aa810 (cancelInvite -> OnInviteCancelled 0x1430ac6e0 = this + InviteManager::cancel). Resets the VM sync point, Leave(Network,1,0,1), no explicit interrupt."
+ },
+ "signature": {
+  "id": "game.network_ui_on_leave_session_notification",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 75 67 B8 70 01 00 00",
+  "match": "0x1430ac600",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430ac600",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkUi_OnLeaveSessionNotification"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430ac600",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430ac600.c;xref:0x1430aad09",
+   "notes": "V5328 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

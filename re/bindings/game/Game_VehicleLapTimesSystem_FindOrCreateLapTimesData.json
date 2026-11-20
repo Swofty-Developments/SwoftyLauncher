@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleLapTimesSystem_FindOrCreateLapTimesData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f32ee0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=VehicleLapTimesSystem::findOrCreateLapTimesData; log channel LAPTIMES/V: 'VehicleLapTimesSystem::findOrCreateLapTimesData(%d)'"
+ },
+ "signature": {
+  "id": "game.vehicle_lap_times_system_find_or_create_lap_times_data",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CF 80 3D ?? ?? ?? ?? 01 0F B6 F2 75 6F B8 8E 00 00 00",
+  "match": "0x142f32ee0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f32ee0",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleLapTimesSystem_FindOrCreateLapTimesData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f32ee0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f32ee0.c;xref:0x142f31cac",
+   "notes": "V5613 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

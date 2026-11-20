@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_ModuleSystem_StartModules",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ae0d60",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-channel-MODULE_SYSTEM;decomp:re/decomp/143ae0d60.c;xref:0x1443cb5d2",
+  "notes": "named from its log messages (channel MODULE_SYSTEM): 'Starting module \"%s\"' cb2-verify-a: starts ALL modules: creates the Update/Render/Single_Thread module jobs and the startup job; Starting module is a per-module log"
+ },
+ "signature": {
+  "id": "core.module_system_start_module",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 01 00 00 C5 F8 29 B4 24 90 01 00 00 4C 89 CB 4D 89 C6",
+  "match": "0x143ae0d60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143ae0d60",
+  "kind": "func_start",
+  "names": [
+   "Ne_ModuleSystem_StartModules"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x143ae0d60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ae0d60.c",
+   "notes": "V4072 Starting module / Update / Single_Thread strings confirmed (vtable/indirect or no direct callsite checked)"
+  }
+ ],
+ "proofs": []
+}

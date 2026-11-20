@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamSetup_CommitTeamIdentity",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c2c800",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void (void *setup)",
+  "evidence": "decomp:re/decomp/140c2c800.c;xref:0x140b2cffa;xref:0x142053c85;xref:0x14205c8eb",
+  "notes": "myteam-g2: Applies the My Team team identity from the setup record to the game entrants: gets the setup data (vtbl+0x1c8 on setup+0x270), finds the player team entry, calls Ent_EntrantsSystem_ReplaceTeam(entrants,team_key,&newTeam) and Ent_EntrantsSystem_ReplaceVehicle(entrants,vehicle_key,&newVehicle), updates FUN_140c2e220/140c2c5f0 (livery/colours) and finally Career_OwnerSetup_ApplySuit. Hook: this is where the chosen team name, colours and car replace the stock entrant."
+ },
+ "signature": {
+  "id": "career.my_team_setup_commit_team_identity",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 48 8B 89 78 02 00 00 E8 ?? ?? ?? ?? 84 C0 74 35",
+  "match": "0x140c2c800",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c2c800",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamSetup_CommitTeamIdentity"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-d",
+   "kind": "func",
+   "item": "0x140c2c800",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c2c800.c",
+   "notes": "V9024 Setup data via vtbl+0x1c8 on setup+0x270, Ent_EntrantsSystem_ReplaceTeam (about line 714) and ReplaceVehicle (about line 1011), FUN_140c2e220 and FUN_140c2c5f0, and Career_OwnerSetup_ApplySuit (141401dd0) at the end are all present."
+  }
+ ],
+ "proofs": []
+}

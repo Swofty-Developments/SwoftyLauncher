@@ -1,0 +1,43 @@
+{
+  "about": "The session nonce asked for again while the game runs, after the start could not get one.",
+  "answer": {
+    "body": {
+      "challenge": {
+        "build": "46009bd3c0de46009bd3c0de46009bd3c0de46009bd3c0de46009bd3c0de4600",
+        "regions": [
+          [
+            "text",
+            4128768,
+            65536
+          ],
+          [
+            "rdata",
+            1310720,
+            16384
+          ]
+        ],
+        "salt": "c2FsdHNhbHRzYWx0c2FsdHNhbHRzYWx0c2FsdHNhbHQ=",
+        "v": 1
+      },
+      "expires": 1795010000,
+      "nonce": "5e5510b0c0de5e5510b0c0de5e5510b0"
+    },
+    "status": 200
+  },
+  "request": {
+    "body": {
+      "json": {
+        "game_build": "46009bd3c0de46009bd3c0de46009bd3c0de46009bd3c0de46009bd3c0de4600"
+      }
+    },
+    "headers": {
+      "accept": "*/*",
+      "accept-encoding": "gzip",
+      "authorization": "Bearer <token>",
+      "content-type": "application/json",
+      "user-agent": "swofty-launcher"
+    },
+    "method": "POST",
+    "path": "/v1/tt/sessions"
+  }
+}

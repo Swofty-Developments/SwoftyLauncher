@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_SaveError_CorruptFmtSUU",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144152a80",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144152a80.c;xref:0x14414fadc,0x144151589",
+  "notes": "SAVE error helper, fixed code 0x56 (save corrupt), fmt (char*, u32, u32): 'Save %s file header fileSize %u does not match destSize %u', 'security info file claims more than maximum expected number of files'. Addon: code 0x56 = corrupt save, 0x58 = OS error, 0x22 = bad index, 0x16 = invalid argument."
+ },
+ "signature": {
+  "id": "core.save_error_corrupt_fmt_s_u_u",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 48 08 00 00 48 89 C8 48 8D 4C 24 48 48 C7 44 24 38 00 08 00 00 48 89 4C 24 40 C6 44 24 48 00 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 30 41 8B 09 45",
+  "match": "0x144152a80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144152a80",
+  "kind": "func_start",
+  "names": [
+   "Ne_SaveError_CorruptFmtSUU"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d5-verify",
+   "kind": "func",
+   "item": "Ne_SaveError_CorruptFmtSUU",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144152a80.c;xref:0x144152a80",
+   "notes": "V2575 fixed code 0x56"
+  }
+ ],
+ "proofs": []
+}

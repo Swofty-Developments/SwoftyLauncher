@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Game_GarageCrew_SceneRead",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14038ba20",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "pat:disasm-0x14038b9ce-0x14038baff;xref:0x14038ba19,0x14038ba20,0x14038ba27;decomp:re/decomp/140388cf0.c;sig:game.garage_crew_scene_read;xref:0x14038ba19,0x14038ba27,0x14038ba2a,0x14038baff,0x14038bb19",
+  "notes": "In Game_GarageCrewModule_SpawnGarageCrew (0x140388cf0): rdi = [rbp+0xc8], the garage crew scene handle (the scene lookup leaves it null when findScene fails for garagecrew, e.g. an imported track with no garage scenes). The compiler hoists movzx esi,[rdi+0xe0] above the test rdi,rdi at 0x14038ba27, so a null scene faults at 0x14038ba20 (reading 0xe0; 1.7.9 imported Hockenheim Time Trial, rdi=rcx=rbx=0) although the code after the test handles null (je 0x14038baff zeroes ebx/eax). Core sets esi = 0 and continues at site_Game_GarageCrew_SceneTest. Owner review re-career-teams 2026-11-02: own disasm: mov rdi,[rbp+0xc8] at ba19 (7 bytes), movzx esi,[rdi+0xe0] at ba20 (7 bytes), no jump or call in the function lands in ba21..ba26. Faults for rdi=0. Agrees with V8625."
+ },
+ "signature": {
+  "id": "game.garage_crew_scene_read",
+  "section": ".xtls",
+  "pattern": "0F B6 B7 E0 00 00 00 48 85 FF 0F 84",
+  "match": "0x14038ba20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14038ba20",
+  "kind": "mid",
+  "expect": "0F B6 B7 E0 00 00 00",
+  "names": [
+   "site_Game_GarageCrew_SceneRead"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "crewpit",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/garage/garage_crew.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-01",
+   "verifier": "pit-crew-verifier",
+   "kind": "global",
+   "item": "0x14038ba20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140388cf0.c;xref:0x14038ba19,0x14038b9d5,0x14038ba0d",
+   "notes": "V8625 mov rdi,[rbp+0xc8] at ba19 (7 bytes) so ba20 starts movzx esi,[rdi+0xe0] (7 bytes); only jumps to ba19 (b9d5,ba0d), none targets ba21..ba26 anywhere in 140388cf0..14038c864 ret; faults for rdi=0."
+  }
+ ],
+ "proofs": []
+}

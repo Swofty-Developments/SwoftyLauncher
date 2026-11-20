@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_TeamHq_BuildTabs",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422cf7a0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void (void *vm)",
+  "evidence": "decomp:re/decomp/1422cf7a0.c;xref:0x1422cf05d",
+  "notes": "myteam-g1: Builds the Team HQ main tab controller (team_hq_tab_secondary_controller, lng_overview, lng_advance, finances/cost cap strings via the shared pool)."
+ },
+ "signature": {
+  "id": "vm.team_hq_build_tabs",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 01 00 00 C5 F8 29 B4 24 30 01 00 00 48 89 CE 48 8B 99 68 02 00 00",
+  "match": "0x1422cf7a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422cf7a0",
+  "kind": "func_start",
+  "names": [
+   "Vm_TeamHq_BuildTabs"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1422cf7a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422cf7a0.c;xref:0x1422cf05d",
+   "notes": "V10089 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

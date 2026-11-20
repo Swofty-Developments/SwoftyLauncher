@@ -1,8 +1,10 @@
-// Host-native unit test for the core's front-end tile list guard (native/src/core/fe_tile_guard_logic.hpp): which
+// Host-native unit test for the core's front-end tile list guard (native/src/core/guards/frontend/fe_tile_guard_logic.hpp): which
 // entrant-list slot arrays hold a label, which database answers are the miss pointer, how often a label is logged and
-// how the env switch parses. Built and run by native/test/run_fe_tile_guard_test.sh.
+// how the env switch parses. Built and run by native/test/run_tests.sh fe_tile_guard.
 
-#include "fe_tile_guard_logic.hpp"
+#include "core/guards/env.hpp"
+#include "core/guards/frontend/fe_tile_guard_logic.hpp"
+#include "core/guards/skips.hpp"
 
 #include <cstdio>
 #include <map>
@@ -49,10 +51,7 @@ struct Fake {
         texts[chars] = name;
     }
 
-    void empty(uint64_t slot)
-    {
-        words[slot + ft::SLOT_RECORD] = 0;
-    }
+    void empty(uint64_t slot) { words[slot + ft::SLOT_RECORD] = 0; }
 };
 
 int main()
@@ -85,20 +84,24 @@ int main()
     expect(!ft::canonical(0x08000f000800000eull), "the database miss value is not canonical");
     expect(!ft::canonical(0xffffffffffff0000ull & ~(1ull << 47)), "a pointer with mixed top bits is not canonical");
 
-    ft::Labels labels;
-    expect(labels.first("f2_2026"), "the first sighting of a label is logged");
-    expect(!labels.first("f2_2026"), "the same label is not logged twice");
-    expect(labels.first("f3_2026"), "another label is logged");
+    swofty_core::guards::FirstKeys<std::string, ft::LOG_LABELS> labels{"lists"};
+    expect(bool(labels.note("f2_2026")), "the first sighting of a label is logged");
+    expect(!labels.note("f2_2026"), "the same label is not logged twice");
+    expect(bool(labels.note("f3_2026")), "another label is logged");
     bool capped = false;
-    for (int i = 0; i < 100; i++)
-        capped |= !labels.first("label" + std::to_string(i)) && labels.last();
-    expect(capped && labels.seen.size() == ft::LOG_LABELS, "labels past the cap are not logged");
+    int tails = 0;
+    for (int i = 0; i < 100; i++) {
+        auto line = labels.note("label" + std::to_string(i));
+        tails += line && *line.tail;
+        capped |= !line && labels.size() == ft::LOG_LABELS;
+    }
+    expect(capped && labels.size() == ft::LOG_LABELS && tails == 1, "labels past the cap are not logged");
 
-    expect(ft::switch_off("0"), "0 turns the guard off");
-    expect(ft::switch_off("off"), "off turns the guard off");
-    expect(!ft::switch_off("1"), "1 leaves the guard on");
-    expect(!ft::switch_off("00"), "00 leaves the guard on");
-    expect(!ft::switch_off(nullptr), "an unset switch leaves the guard on");
+    expect(swofty_core::guards::switch_off("0"), "0 turns the guard off");
+    expect(swofty_core::guards::switch_off("off"), "off turns the guard off");
+    expect(!swofty_core::guards::switch_off("1"), "1 leaves the guard on");
+    expect(!swofty_core::guards::switch_off("00"), "00 leaves the guard on");
+    expect(!swofty_core::guards::switch_off(nullptr), "an unset switch leaves the guard on");
 
     std::printf("%s\n", failed ? "FAILED" : "all ok");
     return failed ? 1 : 0;

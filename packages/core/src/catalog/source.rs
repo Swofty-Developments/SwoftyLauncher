@@ -12,9 +12,9 @@ use crate::manifest::AddonManifest;
 pub const SKIPPED_FILE: &str = "state/skipped-updates.json";
 
 /// Whether the play bar offers `m` the Addon Browser's newer versions of its id: an addon installed
-/// from the Addon Browser or from a file does, an import ([`crate::imported::is_import`]) doesn't.
+/// from the Addon Browser or from a file does, an import ([`crate::addons::imported::is_import`]) doesn't.
 pub fn takes_updates(m: &AddonManifest) -> bool {
-    !crate::imported::is_import(m)
+    !crate::addons::imported::is_import(m)
 }
 
 fn skipped_path(root: &Path) -> PathBuf {

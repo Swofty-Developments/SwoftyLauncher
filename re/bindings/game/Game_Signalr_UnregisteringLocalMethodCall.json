@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Signalr_UnregisteringLocalMethodCall",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432b9ff0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-SIGNALR/V",
+  "notes": "named from its log messages (channel SIGNALR/V): '%s: unregistering local method call %s'"
+ },
+ "signature": {
+  "id": "game.signalr_unregistering_local_method_call",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 80 3D ?? ?? ?? ?? 01 75 69 B8 F9 00 00 00",
+  "match": "0x1432b9ff0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432b9ff0",
+  "kind": "func_start",
+  "names": [
+   "Game_Signalr_UnregisteringLocalMethodCall"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1432b9ff0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432b9ff0.c;xref:0x14259feac",
+   "notes": "V5897 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

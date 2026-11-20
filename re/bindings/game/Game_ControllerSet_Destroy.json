@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ControllerSet_Destroy",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143896ed0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-CONTROLLER_SET",
+  "notes": "named from its log messages (channel CONTROLLER_SET): 'ControllerSet(%d / %s) : destroyed%s%s.'"
+ },
+ "signature": {
+  "id": "game.controller_set_destroy",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 80 3D ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? B8 7A 00 00 00",
+  "match": "0x143896ed0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143896ed0",
+  "kind": "func_start",
+  "names": [
+   "Game_ControllerSet_Destroy"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143896ed0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143896ed0.c;xref:0x143899f68",
+   "notes": "V6368 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

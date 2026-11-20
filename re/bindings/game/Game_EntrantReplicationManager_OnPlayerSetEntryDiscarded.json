@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EntrantReplicationManager_OnPlayerSetEntryDiscarded",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143121410",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=EntrantReplicationManager::onPlayerSetEntryDiscarded; log channel NETWORK-ENTRANTS: 'virtual void network::EntrantReplicationManager::onPlayerSetEntryDiscarded(const PlayerSetEntry *) | %s: discarded player: %s'"
+ },
+ "signature": {
+  "id": "game.entrant_replication_manager_on_player_set_entry_discarded",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 78 48 85 D2 0F 84 ?? ?? ?? ?? 48 89 CE",
+  "match": "0x143121410",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143121410",
+  "kind": "func_start",
+  "names": [
+   "Game_EntrantReplicationManager_OnPlayerSetEntryDiscarded"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143121410",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143121410.c",
+   "notes": "V5827 Body matches the logged text/signature; vtable/indirect, no direct call site"
+  }
+ ],
+ "proofs": []
+}

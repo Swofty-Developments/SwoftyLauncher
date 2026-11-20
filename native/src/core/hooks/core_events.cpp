@@ -3,14 +3,17 @@
 #include <swofty/systems/cars.hpp>
 #include <swofty/systems/content.hpp>
 #include <swofty/systems/laps.hpp>
+#include <swofty/systems/race_control.hpp>
 #include <swofty/systems/sessions.hpp>
 #include <swofty/systems/sounds.hpp>
 #include <swofty/systems/spectator.hpp>
 #include <swofty/systems/tracks.hpp>
+#include <swofty/systems/tyre_damage.hpp>
+#include <swofty/systems/weather.hpp>
 
-#include "core_events.hpp"
-#include "hooks.hpp"
-#include "payloads.hpp"
+#include "core/hooks/core_events.hpp"
+#include "core/hooks/hooks.hpp"
+#include "core/hooks/payloads.hpp"
 
 namespace swofty_core::hooks::events {
 namespace {
@@ -58,11 +61,19 @@ static_assert(declared<ca::PartsRegister>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<ca::Damage>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<swofty::sessions::events::Pit>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<swofty::sessions::events::PitStop>(SWOFTY_POINT_NOTIFY));
+static_assert(declared<swofty::sessions::events::PitStopTyres>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<ca::ControllersRebuilt>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<swofty::ai::events::ControllerUpdate>(SWOFTY_POINT_CANCEL));
 static_assert(declared<swofty::sessions::events::PlayerControl>(SWOFTY_POINT_CANCEL));
 static_assert(declared<swofty::sessions::events::Lap>(SWOFTY_POINT_NOTIFY));
+static_assert(declared<swofty::race_control::events::Flag>(SWOFTY_POINT_NOTIFY));
+static_assert(declared<swofty::race_control::events::SafetyCar>(SWOFTY_POINT_NOTIFY));
+static_assert(declared<swofty::race_control::events::RedFlag>(SWOFTY_POINT_NOTIFY));
+static_assert(declared<swofty::race_control::events::Sector>(SWOFTY_POINT_NOTIFY));
+static_assert(declared<swofty::race_control::events::CarStatus>(SWOFTY_POINT_NOTIFY));
+static_assert(declared<swofty::tyre_damage::events::Damage>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<swofty::laps::events::Sealing>(SWOFTY_POINT_MODIFY));
+static_assert(declared<swofty::weather::events::Setup>(SWOFTY_POINT_MODIFY));
 static_assert(declared<swofty::laps::events::Recorded>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<swofty::spectator::events::HudVisible>(SWOFTY_POINT_MODIFY));
 static_assert(declared<so::BundleResolve>(SWOFTY_POINT_MODIFY));
@@ -104,14 +115,12 @@ bool car_setup_applied(ca::SetupApplied &payload) { return fire(payload); }
 bool car_parts_register(ca::PartsRegister &payload) { return fire(payload); }
 bool audio_bundle_resolve(so::BundleResolve &payload) { return fire(payload); }
 
-bool car_upgrades_fit(int32_t car, const char *vehicle, swofty::cars::Department department, float driver_stat,
-                      float &rating)
+bool car_upgrades_fit(int32_t car, const char *vehicle, swofty::cars::Department department, float driver_stat, float &rating)
 {
     return payloads::upgrades_fit(fire_core, car, vehicle, department, driver_stat, rating);
 }
 
-bool car_vtf_read(const swofty::cars::live::Car &car, const char *section, const char *field, const char *upgrade,
-                  float &value)
+bool car_vtf_read(const swofty::cars::live::Car &car, const char *section, const char *field, const char *upgrade, float &value)
 {
     return payloads::vtf_read(fire_core, car, section, field, upgrade, value);
 }
@@ -139,12 +148,11 @@ bool car_damage(const swofty::cars::live::Car &car, uint32_t part, float amount)
     return payloads::damage(fire_core, car, part, amount);
 }
 
-bool session_pit(uint32_t car, uint32_t previous, uint32_t status)
-{
-    return payloads::pit(fire_core, car, previous, status);
-}
+bool session_pit(uint32_t car, uint32_t previous, uint32_t status) { return payloads::pit(fire_core, car, previous, status); }
 
 bool session_pit_stop(uint32_t car, uint32_t stops) { return payloads::pit_stop(fire_core, car, stops); }
+
+bool session_pit_stop_tyres(uint32_t car, bool kept) { return payloads::pit_stop_tyres(fire_core, car, kept); }
 
 bool session_lap(uint32_t car)
 {
@@ -153,7 +161,15 @@ bool session_lap(uint32_t car)
     return fire(e);
 }
 
+bool session_flag(swofty::race_control::events::Flag &payload) { return fire(payload); }
+bool session_safety_car(swofty::race_control::events::SafetyCar &payload) { return fire(payload); }
+bool session_red_flag(swofty::race_control::events::RedFlag &payload) { return fire(payload); }
+bool session_sector(swofty::race_control::events::Sector &payload) { return fire(payload); }
+bool session_car_status(swofty::race_control::events::CarStatus &payload) { return fire(payload); }
+bool car_tyre_damage(swofty::tyre_damage::events::Damage &payload) { return fire(payload); }
+
 bool laps_sealing(swofty::laps::events::Sealing &payload) { return fire(payload); }
+bool weather_setup(swofty::weather::events::Setup &payload) { return fire(payload); }
 
 bool laps_recorded(const char *path, int32_t time_ms, int32_t valid)
 {

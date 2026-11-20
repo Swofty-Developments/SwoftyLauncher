@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_UITextElement_SetText",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14430bd40",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/14430bd40.c;xref:0x14430baa3,0x145a72ae0",
+  "notes": "cxx=NeUITextElement::setText; log channel UI_latency: '***** Frame:%I64u NeUITextElement::setText: %hs'"
+ },
+ "signature": {
+  "id": "core.ui_text_element_set_text",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 D7 48 89 CE 48 8B 02",
+  "match": "0x14430bd40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14430bd40",
+  "kind": "func_start",
+  "names": [
+   "Ne_UITextElement_SetText"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb4-verify-b",
+   "kind": "func",
+   "item": "Ne_UITextElement_SetText",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14430bd40.c;xref:0x14430bd40",
+   "notes": "V2206 djb2 hash compare vs +0x1e8, log, copy string into +0x1e0 buffer"
+  }
+ ],
+ "proofs": []
+}

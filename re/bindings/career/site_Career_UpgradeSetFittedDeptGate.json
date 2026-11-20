@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_UpgradeSetFittedDeptGate",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435157e0",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "pat:cmp-byte-rcx+0x72-3-ja;kb:subsystems/rnd_ui.md;decomp:re/decomp/1435157d0.c;xref:0x1435157e0;doc:addons/rnd-tyres-thermal/native/HOOKS.md#the-fix-flag-instantiate_tyres_upgrades-default-on-install-time",
+  "notes": "Career_Set_UpgradeFitted dept > 3 early return (ja @0x1435157e4). cmp byte [rcx+0x72],3 ; ja ret: rcx = instance"
+ },
+ "signature": {
+  "id": "career.upgrade_set_fitted_dept_gate",
+  "section": ".xtls",
+  "pattern": "80 79 72 03 0F 87 ?? ?? ?? ?? 44 89 CF",
+  "match": "0x1435157e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435157e0",
+  "kind": "mid",
+  "expect": "80 79 72 03 0F 87 36 02 00 00",
+  "names": [
+   "site_Career_UpgradeSetFittedDeptGate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-4",
+   "kind": "global",
+   "item": "site_Career_UpgradeSetFittedDeptGate",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435157d0.c;xref:0x1435157e0,0x1435157e4,0x143515a20",
+   "notes": "V0170 cmp byte [rcx+0x72],3; ja 0x143515a20 (epilogue+ret) right after the prologue, rcx = instance (+0xc0/+0xc8 state vector); 10-byte window, rel8 candidate 0x1435157e2 is mid-instruction"
+  }
+ ],
+ "proofs": []
+}

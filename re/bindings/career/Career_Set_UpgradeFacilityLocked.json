@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Career_Set_UpgradeFacilityLocked",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143523730",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Set_UpgradeFacilityLocked(void *inst, uint8_t locked, uint16_t day)",
+  "evidence": "pat:cmp-byte-rcx+0x72-3-ja-ret@0x143523740;xref:0x14352ef94;kb:subsystems/rnd_ui.md#instances;decomp:re/decomp/143523730.c;xref:0x143517ec2;doc:addons/career-editor/protocol/rnd.md#rnd-unlock",
+  "notes": "Records the facility-locked flag in the 16-byte state history (+0xc0..+0xc8): returns at once for department > 3 (cmp byte [rcx+0x72],3 at 0x143523740; ja at 0x143523744); no-op if the latest entry's +0xd already equals locked; if the latest entry's day (u16 +4) == day it updates +0xd in place, otherwise it appends a copy of the latest entry stamped with day and the new flag; on an empty history it first creates an Invalid (5) sentinel entry. For a dept-4 instance it is a no-op; Career_Push_UpgradeState 0x1435230e0 has the same guard. Callers Car_Reset_LastFittedUpgrade 0x143517d80 (tail jmp), 0x14352ee70 (wording: ce-verify-1 V0239)"
+ },
+ "signature": {
+  "id": "career.set_upgrade_facility_locked",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 80 79 72 03 0F 87 ?? ?? ?? ?? 44 89 C6 89 D3 48 89 CF 48 8B 81 C0 00 00 00 4C 8B A1 C8 00 00 00 4C 39 E0 0F 84 ?? ?? ?? ?? 41 38 5C 24 FD",
+  "match": "0x143523730",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143523730",
+  "kind": "func_start",
+  "names": [
+   "Career_Set_UpgradeFacilityLocked"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-rnd",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/rnd.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-1",
+   "kind": "func",
+   "item": "Career_Set_UpgradeFacilityLocked",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143523730.c;decomp:re/decomp/1435230e0.c;xref:0x143517eb8,0x14352ef94",
+   "notes": "V0239 proto (rcx inst, dl locked, r8w day) and the dept>3 early return check; but it does not just set +0xd of the current entry. Corrected: records the facility-locked flag in the 16-byte state history (+0xc0..+0xc8): returns at once for department > 3 (cmp byte [rcx+0x72],3 at 0x143523740; ja at 0x143523744); no-op if the latest entry's +0xd already equals locked; if the latest entry's day (u16 +4) == day it updates +0xd in place, otherwise it appends a copy of the latest entry stamped with day and the new flag; on an empty history it first creates an Invalid (5) sentinel entry. For a dept-4 instance it is a no-op; Career_Push_UpgradeState 0x1435230e0 has the same guard, which is what keeps such an instance at its initial state. Callers Car_Reset_LastFittedUpgrade 0x143517d80 (tail jmp), 0x14352ee70"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-3",
+   "kind": "func",
+   "item": "Career_Set_UpgradeFacilityLocked",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143523730.c;xref:0x143517eb8,0x14352ef94",
+   "notes": "V0308 Independent: rcx inst, dl locked, r8w day; dept>3 early return at 0x143523740/44; same +0xd no-op; same day u16 +4 -> in-place +0xd; else append copy of latest stamped day+flag; empty history -> Invalid(5) sentinel 0xffff3fff0000 then stamped; callers tail jmp 0x143517eb8 (Car_Reset_LastFittedUpgrade) and call 0x14352ef94."
+  }
+ ],
+ "proofs": []
+}

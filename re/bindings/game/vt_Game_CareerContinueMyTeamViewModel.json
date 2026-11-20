@@ -1,0 +1,132 @@
+{
+ "schema": 1,
+ "name": "vt_Game_CareerContinueMyTeamViewModel",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145726670",
+  "type": "vtable[28]",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:own capstone disasm of factory 0x14164a4d0-0x14164a52a on KB 1.0.141 (lea rax at 0x14164a4f6 = 0x145726670 stored at r12) and own vtable dump slot 10 +0x50 HandleCommand KB 0x141a1db90 and slot 24 +0xc0 PressSlot KB 0x141a1eb80;xref:0x14164a4f6,0x14164a4fd,0x1457266c0;imm:0x1505;imm:0x540;imm:0x1380;pat:Steam 1.0.145 vtable 0x1457287a0 found by the same signature and its slot 24 PressSlot 0x141a20360 = KB+0x17e0",
+  "notes": "ts-v1: CareerContinueMyTeamViewModel (resume screen, My Team); slot 10 = Game_CareerContinue_HandleCommand, slot 24 = PressSlot (read from the exe)"
+ },
+ "signature": {
+  "id": "game.career_continue_my_team_view_model",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 49 89 04 24 48 8D 05 ?? ?? ?? ?? 49 89 84 24 60 02 00 00 48 8D 05 ?? ?? ?? ?? 49 89 84 24 68 02 00 00 48 8B 4B E8",
+  "match": "0x14164a4f6",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x145726670",
+  "kind": "data",
+  "names": [
+   "vt_Game_CareerContinueMyTeamViewModel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "ts-v1",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/testing/agent/agent.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-19",
+   "verifier": "saves-blind",
+   "kind": "global",
+   "item": "vt_Game_CareerContinueMyTeamViewModel",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm of the My Team factory 0x14164a2fc-0x14164a52a (allocs 0x13b8, base ctor name career_continue_my_team at 0x14572664f, lea rax at 0x14164a4f6 = 0x145726670 stored at [r12]) and vtable dump slot 10 = 0x141a1db90 slot 24 = 0x141a1eb80;xref:0x14164a4f6;imm:0x13b8;imm:0x1505;imm:0x540",
+   "notes": "gh:saves-blind same shared HandleCommand and PressSlot as the Driver vtable; own slots 5,13,15,22,25 differ (0x141a11300 etc); Steam 145 vtable 0x1457287a0 slots 10/24 = 0x141a1f370/0x141a20360"
+  }
+ ],
+ "proofs": [
+  {
+   "by": "swofty",
+   "date": "2026-11-19",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14164a4f6",
+    "target": "0x145726670"
+   },
+   "sigcheck": "passed",
+   "digest": "de339db35db69f426a5c3769070921e5ad1d875c19668412501f31827946547c"
+  },
+  {
+   "by": "swofty",
+   "date": "2026-11-19",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14164bae6",
+    "target": "0x1457287a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d314ab2555304d87ef8ce3915b5fdf3c938cf9728794f9c5bbb1495143410f1a"
+  },
+  {
+   "by": "saves-blind",
+   "date": "2026-11-19",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14164bae6",
+    "target": "0x1457287a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d314ab2555304d87ef8ce3915b5fdf3c938cf9728794f9c5bbb1495143410f1a"
+  },
+  {
+   "by": "saves-blind",
+   "date": "2026-11-19",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14164a4f6",
+    "target": "0x145726670"
+   },
+   "sigcheck": "passed",
+   "digest": "de339db35db69f426a5c3769070921e5ad1d875c19668412501f31827946547c"
+  }
+ ]
+}

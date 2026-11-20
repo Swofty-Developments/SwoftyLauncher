@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_UpgradeAutoFitBody",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1412486be",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/1412484e0.c;xref:0x1412486be;doc:addons/rnd-tyres-thermal/native/HOOKS.md#the-fix-flag-instantiate_tyres_upgrades-default-on-install-time",
+  "notes": "mov [rsp+0x20],r14w: fall-through of the dept gate (join target)"
+ },
+ "signature": {
+  "id": "career.upgrade_auto_fit_body",
+  "section": ".xtls",
+  "pattern": "80 79 72 03 77 92 66 44 89 74 24 20",
+  "match": "0x1412486b8",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1412486be",
+  "kind": "mid",
+  "expect": "66 44 89 74 24 20",
+  "names": [
+   "site_Career_UpgradeAutoFitBody"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-3",
+   "kind": "global",
+   "item": "site_Career_UpgradeAutoFitBody",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1412484e0.c;xref:0x1412486be,0x1412486bc,0x1412486d1",
+   "notes": "V0120 mov word [rsp+0x20],r14w is the fall-through of the ja gate, start of the Set_UpgradeFitted arg setup; 6B single-insn window, nothing branches into it"
+  }
+ ],
+ "proofs": []
+}

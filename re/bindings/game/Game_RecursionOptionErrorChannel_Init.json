@@ -1,0 +1,72 @@
+{
+ "schema": 1,
+ "name": "Game_RecursionOptionErrorChannel_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d325d0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140d325d0.c;xref:0x140be9c8e",
+  "notes": "Static-local init (guard 0x14605abc8): allocates a 0xa0-byte reporter (hashed name 'recursion_option_error', vtable 0x14568b310, critical section) and stores globals 0x14605abb8/0x14605abc0. Caller Sess_WeekendOptions_OnRaceLengthChanged."
+ },
+ "signature": {
+  "id": "game.recursion_option_error_channel_init",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 48 89 CE",
+  "match": "0x140be9c8e",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x140d325d0",
+  "kind": "func_start",
+  "names": [
+   "Game_RecursionOptionErrorChannel_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x140d325d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140d325d0.c;xref:0x140be9c8e",
+   "notes": "V3453 0xa0-byte reporter with hashed recursion_option_error, vtable 0x14568b310, critical section, globals 0x14605abb8/0x14605abc0 confirmed; but guard 0x14605abc8 is not in this function and it takes allocator param_1 + owner param_2 (not a static-local init)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x140d325d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140d325d0.c;xref:0x140be9c8e",
+   "notes": "V3989 0xa0-byte reporter with hashed recursion_option_error, vtable 0x14568b310, critical section, globals 0x14605abb8/0x14605abc0 confirmed; but guard 0x14605abc8 is not in this function and it takes allocator param_1 + owner param_2 (not a static-local init)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la0-verify",
+   "kind": "func",
+   "item": "0x140d325d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d325d0.c;xref:0x140be9c8e",
+   "notes": "V4117 0xa0 reporter, vtable 0x14568b310, critical section, globals 0x14605abb8/c0 confirmed; static guard 0x14605abc8 sits in the caller"
+  }
+ ],
+ "proofs": []
+}

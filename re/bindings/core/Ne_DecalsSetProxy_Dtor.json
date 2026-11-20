@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_DecalsSetProxy_Dtor",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c76f50",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c76f50.c;xref:0x142a938d2,0x143e9f6bb",
+  "notes": "NeCustomisationDecalsSetProxy destructor (logs %p)."
+ },
+ "signature": {
+  "id": "core.decals_set_proxy_dtor",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 89 CE 80 3D ?? ?? ?? ?? 01 75 50 B8 54 01",
+  "match": "0x143c76f50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c76f50",
+  "kind": "func_start",
+  "names": [
+   "Ne_DecalsSetProxy_Dtor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d12-verify",
+   "kind": "func",
+   "item": "Ne_DecalsSetProxy_Dtor",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c76f50.c;xref:0x143c76f50",
+   "notes": "V3105 strings/offsets/calls match claim"
+  }
+ ],
+ "proofs": []
+}

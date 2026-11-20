@@ -1,0 +1,75 @@
+{
+ "schema": 1,
+ "name": "k_Live_MarshalZoneMonitorKey",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1460fdde0",
+  "type": "uint8_t",
+  "level": "L2",
+  "subsystem": "live",
+  "evidence": "decomp:re/decomp/1435cc0d0.c;decomp:re/decomp/144500dc0.c;decomp:re/decomp/142cf5c00.c;xref:0x14584aa90,0x1435f7042,0x140806469,0x14148938b,0x142c77efd,0x143095b15,0x1435682c1,0x1435cc0d3,0x1435cc193,0x1435f705d;pat:type-name-MarshalZoneMonitor;xref:0x143095b12",
+  "notes": "registry key (address of the static type record; its +8 holds the name \"MarshalZoneMonitor\", stored at 0x1435f7042); class vtable 0x14584aa90 slot 0 = 0x1435cc0d0 returns it; marshal zone monitor; getter 0x141489380 feeds the UDP state +0xd290"
+ },
+ "signature": {
+  "id": "live.marshal_zone_monitor_key",
+  "section": ".xtls",
+  "pattern": "48 89 86 60 04 00 00 48 8B 86 20 04 00 00 48 8B 40 40 48 8B 78 30 48 8D 05",
+  "match": "0x143095afc",
+  "anchor": "0x19",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x16",
+   "len": 7
+  },
+  "target": "0x1460fdde0",
+  "kind": "data",
+  "names": [
+   "k_Live_MarshalZoneMonitorKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "osd-l1",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/live/live_state.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "osd-vb",
+   "kind": "global",
+   "item": "k_Live_MarshalZoneMonitorKey",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141489380.c;xref:0x1435f7044",
+   "notes": "V8780 own check (disx + type record scan): static init at 0x1435f7044 loads a string address and stores it at key+8; the string bytes are \"MarshalZoneMonitor\". FUN_141489380 looks the key up; 142cf5c00 stores it at state+0xd290 and 142cfaec0 reads +0x88/+0x90. Slot-0 getter and registry-hash insert not re-derived"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "osd-va",
+   "kind": "global",
+   "item": "k_Live_MarshalZoneMonitorKey",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144500dc0.c;decomp:re/decomp/141489380.c;decomp:re/decomp/142cfaec0.c;xref:0x14148938b,0x142cf5f40",
+   "notes": "V8743 own disx: type record +8 name string = 'MarshalZoneMonitor' (static init store at 0x1435f7045); slot-0 0x1435cc0d0 = lea rax,[k_Live_MarshalZoneMonitorKey] ret and qword at vtable 0x14584aa90 == 0x1435cc0d0; consumer: Live_Get_MarshalZoneMonitor 0x141489380 (FindIndex(key)) stored into UDP state+0xd290; 0x142cfaec0 reads [state+0xd290]+0x88/+0x90 (zones_begin/end, count = diff>>4)"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "osd-vd",
+   "kind": "sig",
+   "item": "live.marshal_zone_monitor_key",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "sig:live.marshal_zone_monitor_key",
+   "notes": "V8906 sigcheck hits=1, anchor disassembled and resolve re-computed by hand to the claimed target; target is the first field of a static type record whose +8 name pointer (set at the init stores) points at the type-name string, e.g. marshal_zone_monitor_key; the name strings were read from the exe for all 13 keys and match the k_Live_* names; consumers pass the key address to FindIndex (0x14030ffd0)"
+  }
+ ],
+ "proofs": []
+}

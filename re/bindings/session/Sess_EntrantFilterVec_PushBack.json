@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Sess_EntrantFilterVec_PushBack",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1424596a0",
+  "level": "L1",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1424596a0.c;xref:0x1424595f8,0x1424a3620",
+  "notes": "vector<EntrantFilter>::push_back for 0x88-byte filter objects (vtable 0x145612e20 header + copied fields). Callers Career_Build_LineupChanges, Sess_Select_Entrants."
+ },
+ "signature": {
+  "id": "session.entrant_filter_vec_push_back",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 45 31 E4 44 89 E0 48 81 C4 68",
+  "match": "0x1424595f8",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1424596a0",
+  "kind": "func_start",
+  "names": [
+   "Sess_EntrantFilterVec_PushBack"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x1424596a0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1424596a0.c;xref:0x1424a3620",
+   "notes": "V3460 0x88-byte element push_back with vtable 0x145612e20 header, growth 1.5x: ok; caller Sess_Select_Entrants ok; other caller is pdata fn 0x142458f20 (site 0x1424595f8), Career_Build_LineupChanges starts 0x142457a90 so attribution unconfirmed"
+  }
+ ],
+ "proofs": []
+}

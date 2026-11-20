@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EgoErpLoader_TryAllocTempSection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a69e90",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name tryAllocTempSection (class from the log channel); log channel EGO_ERP_LOADER_VERBOSE: 'tryAllocTempSection - waiting for temp memory to be free (size=%I64u,alignment=%I64u).'"
+ },
+ "signature": {
+  "id": "game.ego_erp_loader_try_alloc_temp_section",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 44 0F B6 42 20",
+  "match": "0x143a69e90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a69e90",
+  "kind": "func_start",
+  "names": [
+   "Game_EgoErpLoader_TryAllocTempSection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143a69e90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a69e90.c;xref:0x143a65ede",
+   "notes": "V6435 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

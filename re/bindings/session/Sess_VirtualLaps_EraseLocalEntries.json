@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_VirtualLaps_EraseLocalEntries",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143196350",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143196350.c;xref:0x142d451dc",
+  "notes": "Walks a robin-hood map (this+0x60/+0x68/+0x70) and erases entries whose vehicle is local (lobby slot [sess+0xf88]+0x101+idx*2 == local machine) or all when offline (+0x28 <= 1), back-shifting followers. Caller Sess_VirtualLapsRuleset_ForceFinishAll."
+ },
+ "signature": {
+  "id": "session.virtual_laps_erase_local_entries",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 28 48 89 CE 48 83 79 70 00",
+  "match": "0x143196350",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143196350",
+  "kind": "func_start",
+  "names": [
+   "Sess_VirtualLaps_EraseLocalEntries"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x143196350",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143196350.c;xref:0x142d451dc",
+   "notes": "V3760 Robin-hood map iteration (+0x60/+0x68/+0x70), erases entries whose lobby slot machine id (+0x101+idx*2) equals local; caller ForceFinishAll verified."
+  }
+ ],
+ "proofs": []
+}

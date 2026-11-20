@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DriverCareerTeamSelectViewModel_OnClearWaitingMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a691e0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "str:s_DriverCareerTeamSelectViewModel_OnClearWaitingMessage;xref:0x141a69250",
+  "notes": "cxx=game::DriverCareerTeamSelectViewModel::onClearWaitingMessage; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "game.driver_career_team_select_view_model_on_clear_waiting_message",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 68 B8 24 01",
+  "match": "0x141a691e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a691e0",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverCareerTeamSelectViewModel_OnClearWaitingMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141a691e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a691e0.c;xref:0x141a68716",
+   "notes": "V4930 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

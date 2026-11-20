@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_NotificationButton_BuildNameCommand",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1419a43b0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void *Vm_NotificationButton_BuildNameCommand(void *out, void *src, void *a3, void *a4)",
+  "evidence": "decomp:re/decomp/1419a43b0.c;xref:0x1419a53fd;xref:0x1419a56cc;xref:0x1419a5f0e",
+  "notes": "myteam-g2: Builds a {name, command} button struct for a notification (strings name and command). Used by the department event goto button and the workforce cap notification."
+ },
+ "signature": {
+  "id": "vm.notification_button_build_name_command",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 4C 89 CF 4C 89 C3 48 89 CE 48 8B 42 08",
+  "match": "0x1419a43b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419a43b0",
+  "kind": "func_start",
+  "names": [
+   "Vm_NotificationButton_BuildNameCommand"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x1419a43b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1419a43b0.c;xref:0x1419a53fd",
+   "notes": "V9887 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

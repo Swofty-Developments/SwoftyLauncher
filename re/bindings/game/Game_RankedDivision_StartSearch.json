@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RankedDivision_StartSearch",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141be1770",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141be1770.c;xref:0x141be0f77",
+  "notes": "On popup result hash 0xb88c316: entry point 3 (0x146066c74), Game_Game_SetCurrentGameMode, logs rankedDivisionSearch, checks the cable (Game_NetworkUI_NetworkCableUnplugged), cancels the hopper (Game_GameSessionMatchingHopper_Cancel 0xb), sets match search params (safety rating, race length), Game_Network_SingleSessionSet(2) and Game_NetworkSession_SearchMatch. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2459)"
+ },
+ "signature": {
+  "id": "game.ranked_division_start_search",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 60 48 89 D7 48 89 CE 48 81 C1",
+  "match": "0x141be1770",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141be1770",
+  "kind": "func_start",
+  "names": [
+   "Game_RankedDivision_StartSearch"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-a",
+   "kind": "func",
+   "item": "Game_RankedDivision_StartSearch",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141be1770.c;xref:0x141be1770",
+   "notes": "V2459 Role, offsets and calls checked against decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

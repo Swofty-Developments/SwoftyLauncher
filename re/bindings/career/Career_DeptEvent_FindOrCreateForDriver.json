@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_DeptEvent_FindOrCreateForDriver",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140cb0750",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "uint64_t Career_DeptEvent_FindOrCreateForDriver(void *mgr, void *args)",
+  "evidence": "decomp:re/decomp/140cb0750.c;xref:0x140cac42f;xref:0x140cad197;xref:0x140cadfe3",
+  "notes": "myteam-g2: Wrapper that resolves a department event record via the lookup FUN_140cb0e30 for ChooseOutcome / Schedule / Start. Read mostly."
+ },
+ "signature": {
+  "id": "career.dept_event_find_or_create_for_driver",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 50 48 89 CB",
+  "match": "0x140cb0750",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140cb0750",
+  "kind": "func_start",
+  "names": [
+   "Career_DeptEvent_FindOrCreateForDriver"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140cb0750",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140cb0750.c",
+   "notes": "V9514 More than a wrapper: finds the driver entry (0x88 stride, key +0x58/+0x5a) of param_2 key, calls 140cb0e30, then fetches contracts (func_0x142456530) and notifies via vcall +0x1c8."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Struct_CopyConstructInlineStrings",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14096ccf0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14096ccf0.c;xref:0x1407a0f46",
+  "notes": "Copy-constructs a big record with several inline string buffers (cap 0x100, vtable 0x145613540) and POD blocks (1148 lines). Hypothesis: analytics/online event record. 40 callers."
+ },
+ "signature": {
+  "id": "core.struct_copy_construct_inline_strings",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 D7 48 89 CE 8B 02",
+  "match": "0x14096ccf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14096ccf0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Struct_CopyConstructInlineStrings"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x14096ccf0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14096ccf0.c;xref:0x1407a0f46",
+   "notes": "V8452 copy-constructs big record with inline string buffer (cap 0x100, vtable 145613540) and memcpy blocks"
+  }
+ ],
+ "proofs": []
+}

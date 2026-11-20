@@ -1,4 +1,4 @@
-#include "calendar_track_logic.hpp"
+#include "core/guards/career/calendar_track_logic.hpp"
 
 #include <cstdio>
 #include <cstring>
@@ -7,14 +7,14 @@
 
 static int failures;
 
-#define CHECK(cond, msg)                                                                                                \
-    do {                                                                                                                \
-        if (cond) {                                                                                                     \
-            printf("ok  : %s\n", msg);                                                                                  \
-        } else {                                                                                                        \
-            printf("FAIL: %s\n", msg);                                                                                  \
-            failures++;                                                                                                 \
-        }                                                                                                               \
+#define CHECK(cond, msg)                                                                                                         \
+    do {                                                                                                                         \
+        if (cond) {                                                                                                              \
+            printf("ok  : %s\n", msg);                                                                                           \
+        } else {                                                                                                                 \
+            printf("FAIL: %s\n", msg);                                                                                           \
+            failures++;                                                                                                          \
+        }                                                                                                                        \
     } while (0)
 
 using namespace runtime::calendar_track;
@@ -130,11 +130,14 @@ int main()
         CHECK(kept(after.rounds).empty(), "a calendar with track data for every round is left as it is");
     }
     {
-        Game g({89, 33, 36, 2, 10, 11, 16, 29, 31, 27}, [] {
-            auto l = loaded_2026();
-            l.push_back(89);
-            return l;
-        }(), 90);
+        Game g(
+            {89, 33, 36, 2, 10, 11, 16, 29, 31, 27},
+            [] {
+                auto l = loaded_2026();
+                l.push_back(89);
+                return l;
+            }(),
+            90);
         Calendar cal = g.scan();
         std::vector<size_t> keep = kept(cal.rounds);
         CHECK(cal.read && !cal.rounds[1].data && !cal.rounds[2].data && cal.rounds[0].data,

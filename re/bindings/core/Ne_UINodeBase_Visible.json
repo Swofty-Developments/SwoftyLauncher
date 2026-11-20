@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_UINodeBase_Visible",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1442399c0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/1442399c0.c;xref:0x14426bdd8,0x1442a5598,0x144326770,0x1517753c9",
+  "notes": "cxx=NeUINodeBase::visible; log channel UI_latency: '***** Frame:%I64u NeUINodeBase::visible: %hs->%hs Node:%hs'"
+ },
+ "signature": {
+  "id": "core.ui_node_base_visible",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 89 D3 48 89 CE 8B 41 08",
+  "match": "0x1442399c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442399c0",
+  "kind": "func_start",
+  "names": [
+   "Ne_UINodeBase_Visible"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb4-verify-b",
+   "kind": "func",
+   "item": "Ne_UINodeBase_Visible",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1442399c0.c;xref:0x1442399c0",
+   "notes": "V2201 setVisible(bool,force): bit24 flag at +8, log old->new via vcall 0xf8, dispatches show/hide events"
+  }
+ ],
+ "proofs": []
+}

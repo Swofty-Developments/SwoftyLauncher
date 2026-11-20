@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Ne_HwBool_SkyShadowMap32Bits",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143dc3b28",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/143dc39f0.c;xref:0x143dc3b28",
+  "notes": "call Ne_Compare_StringNoCase(attr+0x50 value, \"true\") for the hardware-settings attribute 'skyShadowMap32Bits' (name loaded at 0x143dc3ada) in reader 0x143dc39f0; the reader stores (result == 0) as the bool; xanpavle.re-optimization redirects it to pin the value"
+ },
+ "signature": {
+  "id": "core.hw_bool_sky_shadow_map32_bits",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 85 C0 0F 94 86 F1 1E 00 00",
+  "match": "0x143dc3b28",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143dc3b28",
+  "kind": "mid",
+  "expect": "E8",
+  "names": [
+   "site_Ne_HwBool_SkyShadowMap32Bits"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "reopt-025",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/re-optimization/native/src/re_optimization.cpp (xanpavle.re-optimization)"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "reopt-025-verify",
+   "kind": "global",
+   "item": "site_Ne_HwBool_SkyShadowMap32Bits",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143dc39f0.c;xref:0x143dc3b28,0x143dc3ada,0x143dc3b13,0x143dc3b2f;sig:core.hw_bool_sky_shadow_map32_bits",
+   "notes": "V0941 Loop over the element attribute vector (+0x50..+0x58): 0x14534da24(attr+0x18 name, rbx = 'skyShadowMap32Bits' from lea 0x143dc3ada, r8d 0x1f) at 0x143dc3b13; on 0 it sets rcx = [attr+0x50], rdx = \"true\" (0x145612a6a) and the E8 at 0x143dc3b28 calls 0x14534d918 (.xtls, .pdata 0x143dc39f0-0x143dc40ef). sete stores (result == 0) to this+0x1ef1 at 0x143dc3b2f (the entry word write sets it to 0 and +0x1ef0 to 1). sigcheck: one hit, target 0x143dc3b28"
+  }
+ ],
+ "proofs": []
+}

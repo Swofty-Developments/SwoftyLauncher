@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Game_TeamHQAdvanceViewModel_OnCommandRaised",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422c3540",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_TeamHQAdvanceViewModel_OnCommandRaised(void *vm, NeStr **cmd, void *data)",
+  "evidence": "str:s_TeamHQAdvanceViewModel_OnCommandRaised;decomp:re/decomp/1422c3540.c;xref:0x1422c466e,0x14577aa10;decomp:re/decomp/1422c3540.c;xref:0x14577aa10",
+  "notes": "cxx=game::TeamHQAdvanceViewModel::onCommandRaised, slot 10 (vt+0x50) of vt_Game_TeamHQAdvanceViewModel 0x14577a9c0 (only reference 0x14577aa10). (vm, NeStr **cmd, NeUIPrimitiveType *data); returns at once when vm+0x620 is null or *cmd is null; dispatches on djb2 *(u32*)*cmd: timeline_advance_pressed 0xdb427f42 -> tail jmp Game_TeamHQAdvanceViewModel_PressAdvance (0x1422c47c9); timeline_stop_pressed 0x91c24f96 -> offline Game_TeamHQAdvanceViewModel_StopAdvance (0x1422c4584), online sets cancelling vm+0x75c or 0x1422c6a60 while stopping; online_career_unready 0xc44fdf92, end_season 0xc9817724, goto_contract_negotiations 0x8c50168e, goto_department_event 0xbfd0c072, enter_invitational 0x859aac94, enter_press_interview 0xb9c15f8b, view_cutscene_rnd_intro 0xd0805787. Neither advance command reads the data argument. ts-v1 signature for the test agent (V1491 agree)"
+ },
+ "signature": {
+  "id": "game.team_hq_advance_view_model_on_command_raised",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 03 00 00 4C 8B B1 20 06 00 00",
+  "match": "0x1422c3540",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422c3540",
+  "kind": "func_start",
+  "names": [
+   "Game_TeamHQAdvanceViewModel_OnCommandRaised"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "ts-v1",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/testing/agent/agent.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "ts-v1",
+   "kind": "func",
+   "item": "0x1422c3540",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422c3540.c;xref:0x14577aa10",
+   "notes": "V1492 ts-v1 re-read: slot 10 (+0x50) of vt 0x14577a9c0 (exe: 0x1422c3540); timeline_advance_pressed 0xdb427f42 and timeline_stop_pressed 0x91c24f96 reproduced from djb2; neither reads the data argument; offline (+0x767 clear) advance runs ShowTodayCards else Career_TeamHqAdvance_Start(vm+0x730, day) with day = (clock>>5)/45 where clock = u32 [[vm+0x6e0]+0x2b0] (the minutes clock; = minutes/1440), and stop runs StopAdvance. Agrees."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x1422c3540",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422c3540.c;xref:0x1422ca377",
+   "notes": "V5259 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

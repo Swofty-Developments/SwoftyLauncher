@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "k_Career_TeamHqDeptEventColourTable",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145784c18",
+  "type": "uint32_t[6]",
+  "level": "L1",
+  "subsystem": "career",
+  "evidence": "pat:readers-0x1422fe430-0x1422e5af0;kb:subsystems/rnd_ui.md#tags",
+  "notes": "Team HQ department tiles 0x1422fe430 and department events 0x1422e5af0 index this by an EVENT department, so [4] need not mean R&D department 4."
+ },
+ "signature": {
+  "id": "career.team_hq_dept_event_colour_table",
+  "section": ".xtls",
+  "pattern": "48 8D 0D ?? ?? ?? ?? 8B 0C 81 89 8C 24 70 03 00",
+  "match": "0x1422e60e7",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x145784c18",
+  "kind": "data",
+  "names": [
+   "k_Career_TeamHqDeptEventColourTable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x145784c18",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x1422e60ea",
+   "notes": "V7436 table content and refs match"
+  }
+ ],
+ "proofs": []
+}

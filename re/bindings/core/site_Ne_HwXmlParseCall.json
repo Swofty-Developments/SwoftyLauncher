@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Ne_HwXmlParseCall",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14401dc46",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/14401da80.c;xref:0x14401dc46",
+  "notes": "call Ne_Parse_XmlDoc_Thunk(rcx=doc, rdx=reader at rsp+0x70, r8d, r9d) inside Ne_Load_XmlFromMount; reader+8 -> MemStream {+8 data (NUL-terminated), +0x10 size, +0x18 pos}. Parses system/hardware_settings_config.xml and the options file into their docs"
+ },
+ "signature": {
+  "id": "core.hw_xml_parse_call",
+  "section": ".xtls",
+  "pattern": "48 8D 54 24 70 48 89 D9 41 89 E8 41 89 F1 E8 ?? ?? ?? ?? 89 C6 48 8B 07 48 89 F9 4C 89 F2 FF 50 38",
+  "match": "0x14401dc38",
+  "anchor": "0xe",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14401dc46",
+  "kind": "mid",
+  "expect": "E8",
+  "names": [
+   "site_Ne_HwXmlParseCall"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "reopt-port",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/re-optimization/native/src/re_optimization.cpp (xanpavle.re-optimization)"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "reopt-verify",
+   "kind": "global",
+   "item": "0x14401dc46",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14401da80.c;xref:0x14401dc46;sig:core.hw_xml_parse_call",
+   "notes": "V0028 Disasm: lea rdx,[rsp+0x70] (reader: vt 0x1458999c0, +8 MemStream at rsp+0xb0 with vt 0x145899750, data, size, pos 0); mov rcx,rbx (doc arg); mov r8d,ebp; mov r9d,esi; call 0x1440142c0 at 0x14401dc46, the only thunk call in Ne_Load_XmlFromMount. sigcheck core.hw_xml_parse_call is unique (match 0x14401dc38, anchor 0xe, E8) with target 0x14401dc46 on an instruction boundary inside .pdata 0x14401da80-0x14401de34."
+  }
+ ],
+ "proofs": []
+}

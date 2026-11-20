@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_PurchaseMessage_ApplySelectedTier",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1419e4a10",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void (void *vm)",
+  "evidence": "decomp:re/decomp/1419e4a10.c;xref:0x1419e2f12",
+  "notes": "myteam-g1: Reads purchase_message user_attributes.selected_tier.Value and applies the selected tier."
+ },
+ "signature": {
+  "id": "ui.purchase_message_apply_selected_tier",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 CB 48 8B 0D",
+  "match": "0x1419e4a10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419e4a10",
+  "kind": "func_start",
+  "names": [
+   "Ui_PurchaseMessage_ApplySelectedTier"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x1419e4a10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1419e4a10.c;xref:0x1419e2f12",
+   "notes": "V9915 Reads purchase_message user_attributes.selected_tier, then calls Ui_Purchase_SelectTierButton(1418df8e0) and sets a bool node; matches."
+  }
+ ],
+ "proofs": []
+}

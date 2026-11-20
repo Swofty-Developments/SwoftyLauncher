@@ -1,4 +1,4 @@
-#include "../src/core/udp_ids_logic.hpp"
+#include "core/telemetry/udp_ids_logic.hpp"
 
 #include <cstdio>
 #include <cstdlib>
@@ -10,12 +10,12 @@ namespace ids = runtime::udp_ids;
 
 static int failures;
 
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                         \
-            failures++;                                                                                                \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                                   \
+            failures++;                                                                                                          \
+        }                                                                                                                        \
     } while (0)
 
 static const char *MAP = R"j({
@@ -204,10 +204,7 @@ static void test_time_trial_2026()
     CHECK(!ids::rewrite(m, b.data(), b.size()));
 }
 
-static int team16(const Bytes &b, size_t at)
-{
-    return b[at] | b[at + 1] << 8;
-}
+static int team16(const Bytes &b, size_t at) { return b[at] | b[at + 1] << 8; }
 
 static void test_models_2026()
 {

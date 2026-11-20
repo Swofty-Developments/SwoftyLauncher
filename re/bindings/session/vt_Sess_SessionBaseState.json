@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "vt_Sess_SessionBaseState",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1457d31d0",
+  "type": "vtable[11]",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "pat:flow-state-type-record;xref:0x14607bf10;decomp:re/decomp/142c75730.c",
+  "notes": "cxx=SessionBaseState; neon flow state (slot 2 = NeFlowState base 0x1436aef00, slot 0 returns type record 0x14607bf10 whose +8 names the class); onStateEnter 0x1436af570, onStateUpdate 0x1436af580, onStateExit 0x1436af590 (slots 8/9/10). (vmknolle session-flow map)"
+ },
+ "signature": {
+  "id": "session.session_base_state",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 01 48 8B 89 88 0C 00 00 48 89 F2 E8 ?? ?? ?? ?? 48 8B 86 88 0C 00 00 48 8B 48 28 48 8B 41 10 48 83 C1 10 FF 90 F0 00 00 00 48 8B 80 08 01 00 00 48 85 C0 74 1B 48 39",
+  "match": "0x142c75739",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x1457d31d0",
+  "kind": "data",
+  "names": [
+   "vt_Sess_SessionBaseState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x1457d31d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x142c7573c;decomp:re/decomp/142d9bf60.c",
+   "notes": "V7438 name/class, slots and refs match"
+  }
+ ],
+ "proofs": []
+}

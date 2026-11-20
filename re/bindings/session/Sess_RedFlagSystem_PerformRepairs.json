@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Sess_RedFlagSystem_PerformRepairs",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143584710",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void(RedFlagSystem*)",
+  "evidence": "decomp:re/decomp/143584710.c;xref:0x142dfbd1f",
+  "notes": "red flag repairs: row of the repair table +0xc0..+0xc8 (24-byte rows, key float <= +0x6c) gives flags and 4 amounts; for every car whose status byte (+0xe0 + car*2) < 3: front wing fix (0x1434bdf40) when damaged at deploy, reduces the damage channels of table +0x1a0 (+0xa8/+0xac/+0xb0/+0xb4 + car*0x70), energy top-up ([car]+0x5a8 +0x19f0 by +0x12c of capacity +0x60), tyres (0x142f46510), then status = 0x103 (3, dirty). sb-verify-a correction: the front-wing fix 0x1434bdf40 tests the LIVE damage (+0xa4 + car*0x70 of table +0x1a0) != 0 AND repair-row flag byte +4 != 0 (not the deploy snapshot); the +0xb4 amount goes to a tyre-component sub-item"
+ },
+ "signature": {
+  "id": "session.red_flag_system_perform_repairs",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 C5 78 29 AC 24 A0 00 00 00 C5 78 29 A4 24 90 00 00 00 C5 78 29 9C 24 80 00 00 00 C5 78 29 54 24 70 C5 78 29 4C 24 60 C5 78 29 44 24 50 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 48 89 CE 48",
+  "match": "0x143584710",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143584710",
+  "kind": "func_start",
+  "names": [
+   "Sess_RedFlagSystem_PerformRepairs"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb-verify-a",
+   "kind": "func",
+   "item": "Sess_RedFlagSystem_PerformRepairs",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143584710.c;xref:0x142dfbd1f",
+   "notes": "V1849 role/offsets hold (row 6 floats, key<=+0x6c, flag byte +4, amounts [2]->+0xa8 [3]->+0xac [5]->+0xb0 [4]->+0xb4 tyre-component item, energy +0x19f0 by +0x12c of +0x60, 0x103). Detail wrong: front wing fix 0x1434bdf40 tests LIVE damage +0xa4 != 0 AND row flag byte != 0, not the deploy snapshot (+0x100)"
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "sb-verify-a",
+   "kind": "func",
+   "item": "Sess_RedFlagSystem_PerformRepairs",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143584710.c;xref:0x142dfbd1f",
+   "notes": "V3951 role/offsets hold (row 6 floats, key<=+0x6c, flag byte +4, amounts [2]->+0xa8 [3]->+0xac [5]->+0xb0 [4]->+0xb4 tyre-component item, energy +0x19f0 by +0x12c of +0x60, 0x103). Detail wrong: front wing fix 0x1434bdf40 tests LIVE damage +0xa4 != 0 AND row flag byte != 0, not the deploy snapshot (+0x100)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la1-verify",
+   "kind": "func",
+   "item": "0x143584710",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143584710.c;xref:0x142dfbd1f",
+   "notes": "V4187 Repair table +0xc0..+0xc8 keyed by float <= +0x6c, status byte (+0xe0+car*2) < 3, front-wing fix 0x1434bdf40 tests live damage +0xa4+car*0x70 of table +0x1a0 (matches the correction), damage channel reductions +0xa8/+0xac/+0xb0/+0xb4, energy top-up [car]+0x5a8 +0x19f0, tyres via 0x142f46510; caller Sess_RedFlagPerformRepairs_Update"
+  }
+ ],
+ "proofs": []
+}

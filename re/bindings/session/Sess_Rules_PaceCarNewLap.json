@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Rules_PaceCarNewLap",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14359f2b0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-RULES;decomp:re/decomp/14359f2b0.c;xref:0x14584c0a0,0x14584c6a0",
+  "notes": "per car under SC/VSC (replaces the old name Sess_Rules_PaceCarNewLap): accumulates time and distance in the 0xc0-byte record (+0x18 time, +0x14 distance, +0x3c gap time vs +0x40 limit -> +0x38 infringement count), max delta +0x84; the car counts as too slow (+0x8d/+0x8e) when its speed +0x84 < the rule speed (table 0x145f9622c + rule*0xb8, mph) and it is not flagged 0x40."
+ },
+ "signature": {
+  "id": "session.rules_pace_car_new_lap",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 40 C5 F8 29 74 24 30 C5 F8 28 F2",
+  "match": "0x14359f2b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14359f2b0",
+  "kind": "func_start",
+  "names": [
+   "Sess_Rules_PaceCarNewLap"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb-verify-a",
+   "kind": "func",
+   "item": "Sess_Rules_PaceCarNewLap",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14359f2b0.c;xref:0x14584c0a0",
+   "notes": "V1858 two vtables (SC/VSC); 0xc0 record: +0x18 time +0x14 dist +0x3c/+0x40 -> +0x38, +0x84 max, +0x8d/+0x8e vs table 0x145f9622c+rule*0xb8 mph*1.609344/0.001/3600 and vehicle [+0x32]&0x40"
+  }
+ ],
+ "proofs": []
+}

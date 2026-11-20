@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_PenaltyLog_RemoveMatchingRecord",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143566070",
+  "level": "L1",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143566070.c;xref:0x143563e94,0x143564556",
+  "notes": "Penalty log vector (this+8..+0x10, stride 0x30): searches an equal record (bytes +8..+0xb car/type/reason, ints +0xc..+0x20, floats +0x24/+0x28, int +0x2c); appends it when absent (error-trace code 2 path). Callers: Sess_PenaltyLog_ReceiveAddRecord, Sess_PenaltyLog_RemoveVehicle, Sess_PenaltyLog_SendRecord, Sess_PenaltyLog_SendRecord_2. cv2-verify: finds an equal record and erases it; never appends"
+ },
+ "signature": {
+  "id": "session.penalty_log_find_or_add_record",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 8B 41 08",
+  "match": "0x143566070",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143566070",
+  "kind": "func_start",
+  "names": [
+   "Sess_PenaltyLog_RemoveMatchingRecord"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x143566070",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/143566070.c;xref:0x143563e94,0x143564556",
+   "notes": "V3775 Loop compares record fields (+8..+0xb, ints +0xc..+0x20, +0x1c, floats +0x24/+0x28, +0x2c) with param_2 and on a match ERASES it (shifts followers down, shrinks end -0x30); when absent it only does an error-trace (code 2) and returns - it never appends. Better name Sess_PenaltyLog_RemoveMatchingRecord."
+  }
+ ],
+ "proofs": []
+}

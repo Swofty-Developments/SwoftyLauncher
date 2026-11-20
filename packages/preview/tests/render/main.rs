@@ -1,0 +1,381 @@
+mod params;
+mod textures;
+
+use std::path::{Path, PathBuf};
+use std::process::Command;
+use std::time::Instant;
+
+use sha2::Digest;
+
+use swofty_preview::{ActiveInstance, Clip, ClipInfo, CompiledEffect, Frame, Preview};
+use swofty_shaders::{Effect, Origin, PassDecl, TextureDecl};
+
+fn dxc() -> Option<PathBuf> {
+    swofty_shaders::find_dxc(&[Path::new(env!("CARGO_MANIFEST_DIR")).join("../../dxc")])
+        .filter(|p| p.exists())
+}
+
+fn spirv(dxc: &Path, dir: &Path, name: &str, source: &str) -> Vec<u8> {
+    let include = Path::new(env!("CARGO_MANIFEST_DIR")).join("../sdk/include");
+    let file = dir.join(format!("{name}.hlsl"));
+    let out = dir.join(format!("{name}.spv"));
+    std::fs::write(&file, source).unwrap();
+    let mut command = Command::new(dxc);
+    if let Some(lib) = dxc.parent().and_then(|p| p.parent()).map(|p| p.join("lib")) {
+        command.env("LD_LIBRARY_PATH", lib);
+    }
+    let result = command
+        .args([
+            "-T",
+            "cs_6_0",
+            "-E",
+            "main",
+            "-spirv",
+            "-fspv-target-env=vulkan1.1",
+            "-fvk-use-dx-layout",
+        ])
+        .args([
+            "-fvk-b-shift",
+            "0",
+            "0",
+            "-fvk-t-shift",
+            "10",
+            "0",
+            "-fvk-u-shift",
+            "30",
+            "0",
+            "-fvk-s-shift",
+            "40",
+            "0",
+        ])
+        .arg("-I")
+        .arg(&include)
+        .arg(&file)
+        .arg("-Fo")
+        .arg(&out)
+        .output()
+        .unwrap();
+    assert!(
+        result.status.success(),
+        "dxc failed: {}",
+        String::from_utf8_lossy(&result.stderr)
+    );
+    std::fs::read(out).unwrap()
+}
+
+fn pass(name: &str, inputs: &[&str], output: Option<&str>) -> PassDecl {
+    PassDecl {
+        name: name.into(),
+        shader: format!("{name}.hlsl"),
+        entry: None,
+        raw: false,
+        threads: None,
+        inputs: inputs.iter().map(|s| s.to_string()).collect(),
+        output: output.map(str::to_string),
+        when: None,
+        budget_ms: None,
+    }
+}
+
+fn texture(name: &str, persistent: bool) -> TextureDecl {
+    TextureDecl {
+        name: name.into(),
+        scale: None,
+        width: None,
+        height: None,
+        format: Some("rgba16f".into()),
+        persistent,
+        file: None,
+        mips: None,
+    }
+}
+
+fn effect(id: &str, textures: Vec<TextureDecl>, passes: Vec<PassDecl>) -> Effect {
+    Effect {
+        id: id.into(),
+        name: id.into(),
+        description: String::new(),
+        params: Vec::new(),
+        textures,
+        passes,
+        slots: 1,
+        origin: Origin::Library,
+        warnings: Vec::new(),
+    }
+}
+
+const COUNT: &str = r#"#include "swofty/postfx.hlsli"
+float4 effect(float2 uv, uint2 pixel) { return input(0, uv) + float4(0.1, 0, 0, 0); }"#;
+
+const PREP: &str = r#"#include "swofty/postfx.hlsli"
+float4 effect(float2 uv, uint2 pixel) { return float4(1.0 - scene(uv).rgb, 1); }"#;
+
+const APPLY: &str = r#"#include "swofty/postfx.hlsli"
+float4 effect(float2 uv, uint2 pixel)
+{
+    float3 c = input(0, uv).rgb * 0.5;
+    if (has_previous())
+        c += input(1, uv).rgb * 0.5;
+    c.r += input(2, uv).r;
+    c += option(0);
+    return float4(c, 1);
+}"#;
+
+fn compiled(dxc: &Path, dir: &Path) -> CompiledEffect {
+    let fx = effect(
+        "temporal",
+        vec![texture("tmp", false), texture("acc", true)],
+        vec![
+            pass("count", &["acc"], Some("acc")),
+            pass("prep", &[], Some("tmp")),
+            pass("apply", &["tmp", "previous", "acc"], None),
+        ],
+    );
+    let spirv = vec![
+        spirv(dxc, dir, "count", COUNT),
+        spirv(dxc, dir, "prep", PREP),
+        spirv(dxc, dir, "apply", APPLY),
+    ];
+    CompiledEffect {
+        effect: fx,
+        blobs: spirv,
+        images: Vec::new(),
+    }
+}
+
+fn solid(index: usize, w: u32, h: u32, rgb: [u8; 3]) -> Frame {
+    let mut rgba = Vec::with_capacity((w * h * 4) as usize);
+    for _ in 0..w * h {
+        rgba.extend_from_slice(&[rgb[0], rgb[1], rgb[2], 255]);
+    }
+    Frame {
+        index,
+        width: w,
+        height: h,
+        rgba,
+    }
+}
+
+fn near(frame: &Frame, expect: [f32; 3]) {
+    for (x, y) in [
+        (0, 0),
+        (frame.width / 2, frame.height / 2),
+        (frame.width - 1, frame.height - 1),
+    ] {
+        let at = ((y * frame.width + x) * 4) as usize;
+        for (c, e) in expect.iter().enumerate() {
+            let got = f32::from(frame.rgba[at + c]);
+            let want = (e.clamp(0.0, 1.0) * 255.0).round();
+            assert!(
+                (got - want).abs() <= 2.0,
+                "pixel ({x},{y}) channel {c}: got {got}, want {want}"
+            );
+        }
+    }
+}
+
+fn preview(effects: Vec<CompiledEffect>, params: f32) -> Option<Preview> {
+    let mut preview = match Preview::new() {
+        Ok(p) => p,
+        Err(e) => {
+            eprintln!("skipping: {e}");
+            return None;
+        }
+    };
+    eprintln!("adapter: {}", preview.adapter_name());
+    preview.set_effects(effects);
+    preview.set_instances(vec![ActiveInstance {
+        effect: "temporal".into(),
+        label: String::new(),
+        params: vec![params],
+    }]);
+    Some(preview)
+}
+
+#[test]
+fn passes_previous_and_persistent_textures() {
+    let Some(dxc) = dxc() else {
+        eprintln!("skipping: no dxc");
+        return;
+    };
+    let dir = tempfile::tempdir().unwrap();
+    let Some(mut preview) = preview(vec![compiled(&dxc, dir.path())], 0.0) else {
+        return;
+    };
+    let a = [51, 102, 153];
+    let b = [204, 0, 102];
+    let f0 = preview.render(&solid(0, 64, 48, a)).unwrap();
+    let out0 = [0.5 * 0.8 + 0.1, 0.5 * 0.6, 0.5 * 0.4];
+    near(&f0, out0);
+
+    let f1 = preview.render(&solid(1, 64, 48, b)).unwrap();
+    let out1 = [
+        0.5 * 0.2 + 0.5 * out0[0] + 0.2,
+        0.5 * 1.0 + 0.5 * out0[1],
+        0.5 * 0.6 + 0.5 * out0[2],
+    ];
+    near(&f1, out1);
+
+    let jump = preview.render(&solid(20, 64, 48, b)).unwrap();
+    near(&jump, [0.5 * 0.2 + 0.1, 0.5 * 1.0, 0.5 * 0.6]);
+
+    let again = preview.render(&solid(21, 64, 48, b)).unwrap();
+    near(
+        &again,
+        [
+            0.5 * 0.2 + 0.5 * (0.5 * 0.2 + 0.1) + 0.2,
+            0.5 * 1.0 + 0.5 * 0.5,
+            0.5 * 0.6 + 0.5 * 0.3,
+        ],
+    );
+}
+
+#[test]
+fn clip_opens_and_decodes() {
+    let dir = tempfile::tempdir().unwrap();
+    let info = ClipInfo {
+        title: "test".into(),
+        fps: 30.0,
+        width: 16,
+        height: 8,
+        frames: 3,
+        view: "cockpit".into(),
+    };
+    std::fs::write(
+        dir.path().join("clip.json"),
+        serde_json::to_string(&info).unwrap(),
+    )
+    .unwrap();
+    for i in 0..3u8 {
+        let image = image::RgbaImage::from_pixel(16, 8, image::Rgba([i * 80, 10, 20, 255]));
+        image.save(dir.path().join(format!("{i:04}.webp"))).unwrap();
+    }
+    let clip = Clip::open(dir.path()).unwrap();
+    assert_eq!(clip.len(), 3);
+    let f = clip.frame(2).unwrap();
+    assert_eq!((f.width, f.height, f.rgba[0], f.rgba[1]), (16, 8, 160, 10));
+    assert!(clip.frame(3).is_err());
+}
+
+#[test]
+fn store_installs_a_checked_zip_and_lists_it() {
+    use std::io::Write;
+    let mut bytes = Vec::new();
+    {
+        let mut zip = zip::ZipWriter::new(std::io::Cursor::new(&mut bytes));
+        let options = zip::write::SimpleFileOptions::default();
+        zip.start_file("clip.json", options).unwrap();
+        zip.write_all(br#"{"title":"Lap","fps":30,"width":4,"height":4,"frames":1,"view":"cockpit"}"#)
+            .unwrap();
+        zip.start_file("0000.webp", options).unwrap();
+        let mut webp = Vec::new();
+        image::RgbaImage::from_pixel(4, 4, image::Rgba([1, 2, 3, 255]))
+            .write_to(&mut std::io::Cursor::new(&mut webp), image::ImageFormat::WebP)
+            .unwrap();
+        zip.write_all(&webp).unwrap();
+        zip.finish().unwrap();
+    }
+    let sha: String = sha2::Sha256::digest(&bytes)
+        .iter()
+        .map(|b| format!("{b:02x}"))
+        .collect();
+    let cache = tempfile::tempdir().unwrap();
+    let store = swofty_preview::ClipStore::new(cache.path());
+    assert!(store.cached().is_empty());
+    let mut entry = swofty_preview::ClipEntry {
+        id: "lap".into(),
+        title: "Lap".into(),
+        url: String::new(),
+        sha256: "0".repeat(64),
+        size: bytes.len() as u64,
+    };
+    assert!(store.install(&entry, &bytes).is_err());
+    entry.sha256 = sha;
+    let dir = store.install(&entry, &bytes).unwrap();
+    let listed = store.cached();
+    assert_eq!(listed.len(), 1);
+    assert_eq!((listed[0].id.as_str(), listed[0].title.as_str()), ("lap", "Lap"));
+    let clip = Clip::open(&dir).unwrap();
+    assert_eq!(clip.frame(0).unwrap().rgba[..3], [1, 2, 3]);
+}
+
+const BLUR: &str = r#"#include "swofty/postfx.hlsli"
+float4 effect(float2 uv, uint2 pixel)
+{
+    float4 sum = 0;
+    for (int y = -1; y <= 1; y++)
+        for (int x = -1; x <= 1; x++)
+            sum += scene_at(int2(pixel) + int2(x, y));
+    return sum / 9.0;
+}"#;
+
+#[test]
+fn ten_passes_at_720p_stay_under_a_frame() {
+    let Some(dxc) = dxc() else {
+        eprintln!("skipping: no dxc");
+        return;
+    };
+    let dir = tempfile::tempdir().unwrap();
+    let blob = spirv(&dxc, dir.path(), "blur", BLUR);
+    let passes = (0..10).map(|i| pass(&format!("blur{i}"), &[], None)).collect();
+    let fx = effect("temporal", Vec::new(), passes);
+    let compiled = CompiledEffect {
+        effect: fx,
+        blobs: vec![blob; 10],
+        images: Vec::new(),
+    };
+    let Some(mut preview) = preview(vec![compiled], 0.0) else {
+        return;
+    };
+    let mut frame = solid(0, 1280, 720, [90, 120, 200]);
+    preview.render(&frame).unwrap();
+    let start = Instant::now();
+    let n = 30;
+    for i in 1..=n {
+        frame.index = i;
+        let out = preview.render(&frame).unwrap();
+        assert_eq!(out.rgba.len(), frame.rgba.len());
+        if i == 1 {
+            assert_eq!(&out.rgba[..4], &[90, 120, 200, 255]);
+        }
+    }
+    let ms = start.elapsed().as_secs_f64() * 1000.0 / n as f64;
+    eprintln!("1280x720, 10 passes: {ms:.2} ms per frame (render + readback)");
+    assert!(ms < 33.0, "{ms} ms per frame");
+}
+
+#[test]
+fn no_instances_returns_the_frame() {
+    let Ok(mut preview) = Preview::new() else {
+        return;
+    };
+    let f = solid(0, 33, 17, [51, 102, 153]);
+    let out = preview.render(&f).unwrap();
+    assert_eq!(out.rgba, f.rgba);
+}
+
+const RAW: &str = r#"#define SWOFTY_RAW
+#include "swofty/postfx.hlsli"
+[numthreads(8, 8, 1)] void main(uint3 id : SV_DispatchThreadID)
+{
+    swofty_output[id.xy] = float4(1, 0.5, 0.25, 1);
+}"#;
+
+#[test]
+fn raw_passes_write_the_picture() {
+    let Some(dxc) = dxc() else { return };
+    let dir = tempfile::tempdir().unwrap();
+    let blob = spirv(&dxc, dir.path(), "raw", RAW);
+    let mut p = pass("raw", &[], None);
+    p.raw = true;
+    let compiled = CompiledEffect {
+        effect: effect("temporal", Vec::new(), vec![p]),
+        blobs: vec![blob],
+        images: Vec::new(),
+    };
+    let Some(mut preview) = preview(vec![compiled], 0.0) else {
+        return;
+    };
+    let out = preview.render(&solid(0, 32, 32, [1, 2, 3])).unwrap();
+    assert_eq!(&out.rgba[..4], &[255, 127, 64, 255]);
+}

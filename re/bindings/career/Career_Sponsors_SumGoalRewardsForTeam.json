@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Sponsors_SumGoalRewardsForTeam",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1410f7990",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int32_t (void *sponsors, uint32_t ctx, uint32_t team_key, void *sponsor)",
+  "evidence": "decomp:re/decomp/1410f7990.c;xref:0x1415d8316;xref:0x14186192b;xref:0x1420d407c",
+  "notes": "myteam-g2: Sums the goal rewards (goal+0x3c) of the sponsor goals selected by Career_SponsorGoal_SelectGoalListByModifier, multiplied by Game_SponsorGoal_FindIntGameValue when the goal has a value condition, adds a My Team scaling (sponsors+0x3a8->+0x368 float) for the player and passes each amount through Career_Sponsors_ScaleAmountByTeamModifier(reason 2). Returns the total goal income. Hook: total sponsor goal reward."
+ },
+ "signature": {
+  "id": "career.sponsors_sum_goal_rewards_for_team",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 44 89 C6 89 54 24 2C",
+  "match": "0x1410f7990",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1410f7990",
+  "kind": "func_start",
+  "names": [
+   "Career_Sponsors_SumGoalRewardsForTeam"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x1410f7990",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1410f7990.c;xref:0x1415d8316",
+   "notes": "V9653 Sums goal+0x3c times FindIntGameValue over goals from SelectGoalListByModifier, scales by +0x3a8 -> +0x368 for player, then ScaleAmountByTeamModifier(reason 2)."
+  }
+ ],
+ "proofs": []
+}

@@ -14,12 +14,12 @@
 using namespace swofty;
 
 static int failures = 0;
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d: %s\n", __FILE__, __LINE__, #c);                                                    \
-            ++failures;                                                                                                \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d: %s\n", __FILE__, __LINE__, #c);                                                             \
+            ++failures;                                                                                                          \
+        }                                                                                                                        \
     } while (0)
 
 static std::string g_seat, g_fuel;
@@ -67,12 +67,15 @@ static int set_logo(const char *team, const char *logo)
     return std::string_view(logo) == "swofty.progressive/missing" ? int(SWOFTY_REFUSED) : int(SWOFTY_ASSET_OK);
 }
 
-static const SwoftyCareerOps kOps2 = {2,       available, driver_stat, nullptr, nullptr,       nullptr, nullptr, nullptr,
-                                      nullptr, set_seat,  set_car_number, set_track_fuel, nullptr, nullptr, nullptr, nullptr, nullptr};
-static const SwoftyCareerOps kOps4 = {4,       available, driver_stat, nullptr, nullptr,       nullptr, nullptr, nullptr,
-                                      nullptr, set_seat,  set_car_number, set_track_fuel, set_logo, nullptr, nullptr, nullptr, nullptr};
-static const SwoftyCareerOps kOps5 = {5,       available, driver_stat, nullptr, nullptr,       nullptr, nullptr, nullptr,
-                                      nullptr, set_seat,  set_car_number, set_track_fuel, set_logo, nullptr, nullptr, nullptr, nullptr};
+static const SwoftyCareerOps kOps2 = {2,       available, driver_stat, nullptr,  nullptr,        nullptr,
+                                      nullptr, nullptr,   nullptr,     set_seat, set_car_number, set_track_fuel,
+                                      nullptr, nullptr,   nullptr,     nullptr,  nullptr,        nullptr};
+static const SwoftyCareerOps kOps4 = {4,        available, driver_stat, nullptr,  nullptr,        nullptr,
+                                      nullptr,  nullptr,   nullptr,     set_seat, set_car_number, set_track_fuel,
+                                      set_logo, nullptr,   nullptr,     nullptr,  nullptr,        nullptr};
+static const SwoftyCareerOps kOps5 = {5,        available, driver_stat, nullptr,  nullptr,        nullptr,
+                                      nullptr,  nullptr,   nullptr,     set_seat, set_car_number, set_track_fuel,
+                                      set_logo, nullptr,   nullptr,     nullptr,  nullptr,        nullptr};
 
 int main()
 {

@@ -17,10 +17,26 @@ __declspec(dllimport) int WSAAPI t2_bind(SOCKET, const struct sockaddr *, int);
 __declspec(dllimport) int WSAAPI t2_sendto(SOCKET, const char *, int, int, const struct sockaddr *, int);
 __declspec(dllimport) int WSAAPI t2_closesocket(SOCKET);
 
-static const char *traced[] = {"socket", "WSASocketW", "bind", "connect", "setsockopt", "ioctlsocket", "getsockname",
-                               "sendto", "send", "WSASendTo", "recvfrom", "recv", "WSARecvFrom", "WSARecv",
-                               "WSAGetOverlappedResult", "WSAWaitForMultipleEvents", "WSAEventSelect",
-                               "WSACreateEvent", "WSAIoctl", "closesocket"};
+static const char *traced[] = {"socket",
+                               "WSASocketW",
+                               "bind",
+                               "connect",
+                               "setsockopt",
+                               "ioctlsocket",
+                               "getsockname",
+                               "sendto",
+                               "send",
+                               "WSASendTo",
+                               "recvfrom",
+                               "recv",
+                               "WSARecvFrom",
+                               "WSARecv",
+                               "WSAGetOverlappedResult",
+                               "WSAWaitForMultipleEvents",
+                               "WSAEventSelect",
+                               "WSACreateEvent",
+                               "WSAIoctl",
+                               "closesocket"};
 #define NTRACED (sizeof traced / sizeof *traced)
 
 typedef struct {
@@ -163,7 +179,9 @@ int main(void)
     expect(GetFileVersionInfoSizeW(L"C:\\windows\\system32\\kernel32.dll", &dummy) != 0, "version.dll forwarding works");
     HMODULE ws = GetModuleHandleW(L"ws2_32.dll");
     scan(ws);
-    WNDCLASSEXW wc = {.cbSize = sizeof wc, .lpfnWndProc = DefWindowProcW, .hInstance = GetModuleHandleW(NULL),
+    WNDCLASSEXW wc = {.cbSize = sizeof wc,
+                      .lpfnWndProc = DefWindowProcW,
+                      .hInstance = GetModuleHandleW(NULL),
                       .lpszClassName = L"EGO_WindowClass"};
     extern void *__imp_RegisterClassExW;
     ATOM(WINAPI * rc)(const WNDCLASSEXW *) = (void *)__imp_RegisterClassExW;
@@ -222,7 +240,8 @@ int main(void)
     int fromlen = sizeof from;
     int pr = WSARecvFrom(rs, &wb, 1, NULL, &flags, (struct sockaddr *)&from, &fromlen, &ov, NULL);
     int pe = WSAGetLastError();
-    expect(pr == SOCKET_ERROR && pe == WSA_IO_PENDING, "the overlapped WSARecvFrom is pending with WSA_IO_PENDING after the hook");
+    expect(pr == SOCKET_ERROR && pe == WSA_IO_PENDING,
+           "the overlapped WSARecvFrom is pending with WSA_IO_PENDING after the hook");
 
     static const char msg[] = "swofty-net-trace";
     struct sockaddr_in to = loop_addr(rport);
@@ -237,8 +256,8 @@ int main(void)
     expect(from.sin_family == AF_INET && ntohs(from.sin_port) == sport && fromlen == sizeof from,
            "the from address is the sender's 127.0.0.1 port");
 
-    typedef int(WSAAPI * SendToFn)(SOCKET, LPWSABUF, DWORD, LPDWORD, DWORD, const struct sockaddr *, int,
-                                   LPWSAOVERLAPPED, LPWSAOVERLAPPED_COMPLETION_ROUTINE);
+    typedef int(WSAAPI * SendToFn)(SOCKET, LPWSABUF, DWORD, LPDWORD, DWORD, const struct sockaddr *, int, LPWSAOVERLAPPED,
+                                   LPWSAOVERLAPPED_COMPLETION_ROUTINE);
     typedef int(WSAAPI * SelectFn)(SOCKET, WSAEVENT, long);
     SendToFn wsasendto = (SendToFn)(void *)GetProcAddress(ws, "WSASendTo");
     SelectFn evsel = (SelectFn)(void *)GetProcAddress(ws, "WSAEventSelect");

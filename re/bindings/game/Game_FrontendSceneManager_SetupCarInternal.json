@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneManager_SetupCarInternal",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428e53a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1428e53a0.c;xref:0x14d3f8b02,0x14d401df6",
+  "notes": "setupCar(mgr, carComp, carSetupData): when idle runs Car ChangeCarSpawnPoint with placement (data+0x68a0..+0x68b8); on respawn 'startSpawn' + copies setup data into comp; else 'Car [%u] Has had a new set of data / updated its data' resets pending data. Callers 0x14d3f8b02, 0x14d401df6. Addon: hook to swap car setup (livery/model) before spawn. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3014)"
+ },
+ "signature": {
+  "id": "game.frontend_scene_manager_setup_car_internal",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 B8 40 69 00 00",
+  "match": "0x1428e53a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428e53a0",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneManager_SetupCarInternal"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d11-verify",
+   "kind": "func",
+   "item": "Game_FrontendSceneManager_SetupCarInternal",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428e53a0.c;xref:0x14d3f8b02",
+   "notes": "V3014 Decomp strings, offsets and callees match the claim; name fits."
+  }
+ ],
+ "proofs": []
+}

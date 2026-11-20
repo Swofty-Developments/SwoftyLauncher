@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Msg_PopupRequest_Construct",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422777b0",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "void* (void *msg, void *s1, void *s2, void *s3, int a, int b, char c, int d, int e)",
+  "evidence": "decomp:re/decomp/1422777b0.c;xref:0x142276f90;xref:0x1423f3333",
+  "notes": "myteam-g2: Constructor of the three-string message class 14565a998 posted by Ui_Post_PopupRequestMessage: copies the three strings into inline 0x20-byte buffers and stores the scalar fields."
+ },
+ "signature": {
+  "id": "ui.msg_popup_request_construct",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 4C 89 CF 4C 89 C3 49 89 D6 48 89 CE 48 C7 41 08 00 00 00 00",
+  "match": "0x1422777b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422777b0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Msg_PopupRequest_Construct"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1422777b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1422777b0.c;xref:0x142276f90",
+   "notes": "V10071 Three-string message constructor matches; popup meaning is inference only."
+  }
+ ],
+ "proofs": []
+}

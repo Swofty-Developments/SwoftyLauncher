@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_ScState_VscEnding_Enter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436483f0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void(ScState*, ScEntry*)",
+  "evidence": "decomp:ghidra-headless-2026-10-25;decomp:re/decomp/1436483f0.c;xref:0x15270ddca,0x145855290",
+  "notes": "posts the SafetyCarDeployment record (vt 0x1457e7840 {entry, vehicle, phase, type}) through Sess_Set_SafetyCarDeploymentType: phase 1 type 2 (VSC ending)."
+ },
+ "signature": {
+  "id": "session.sc_state_vsc_ending_enter",
+  "section": ".xtls",
+  "pattern": "48 83 EC 48 48 8B 42 18 48 8B 40 58 48 85 C0 74 09 0F B6 80 E8 00 00 00 EB 02 B0 FF 8B 52 38 48 C7 44 24 30 00 00 00 00 4C 8D 05 ?? ?? ?? ?? 4C 89 44 24 28 89 54 24 38 88 44 24 3C C7 44 24 40 01 00 00 00",
+  "match": "0x1436483f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436483f0",
+  "kind": "func_start",
+  "names": [
+   "Sess_ScState_VscEnding_Enter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb5-verify",
+   "kind": "func",
+   "item": "Sess_ScState_VscEnding_Enter",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436483f0.c;xref:0x15270ddca,0x145855290",
+   "notes": "V1977 record phase 1 type 2"
+  }
+ ],
+ "proofs": []
+}

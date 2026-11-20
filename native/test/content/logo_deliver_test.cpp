@@ -1,7 +1,7 @@
 #define ZSTD_STATIC_LINKING_ONLY
-#include "../../src/core/apply/content/logo_build.hpp"
-#include "../../src/core/apply/content/logo_deliver.hpp"
-#include "../../src/core/apply/files.hpp"
+#include "core/apply/content/logo_build.hpp"
+#include "core/apply/content/logo_deliver.hpp"
+#include "core/apply/files.hpp"
 
 #include <cstdio>
 #include <filesystem>
@@ -47,8 +47,10 @@ static std::shared_ptr<ef::Source> open_bytes(std::shared_ptr<std::string> bytes
 }
 
 static const std::string ARRAY = "teams.driver_select_team_logos";
-static const std::string IMAGE = std::string(lb::ARRAY_URI) + ARRAY + ".texarray.image", VIEW = std::string(lb::ARRAY_URI) + ARRAY + ".texarray";
-static const std::string DB = lb::DATABASES, FLOW = "2025_asset_groups/ui_package/flow_a.erp", NONE = "2025_asset_groups/ui_package/flow_none.erp",
+static const std::string IMAGE = std::string(lb::ARRAY_URI) + ARRAY + ".texarray.image",
+                         VIEW = std::string(lb::ARRAY_URI) + ARRAY + ".texarray";
+static const std::string DB = lb::DATABASES, FLOW = "2025_asset_groups/ui_package/flow_a.erp",
+                         NONE = "2025_asset_groups/ui_package/flow_none.erp",
                          SCREEN = "2025_asset_groups/ui_package/screens/b.erp", OVERLAY = "swofty/assets/resources/0.erp";
 static const std::string ADDON = "swofty.logos", COPIES = "swofty/addons/swofty.logos/";
 
@@ -128,7 +130,13 @@ struct Boot {
             ef::Archive arc;
             std::string why, bytes;
             ef::open(*src, arc, why);
-            ef::rewrite(*src, arc, changes, [&](const char *p, size_t n) { bytes.append(p, n); return true; }, why);
+            ef::rewrite(
+                *src, arc, changes,
+                [&](const char *p, size_t n) {
+                    bytes.append(p, n);
+                    return true;
+                },
+                why);
             written[file_of(rel)] = std::make_shared<std::string>(std::move(bytes));
             a.routes.emplace_back(rel, file_of(rel));
         }
@@ -215,10 +223,7 @@ static size_t lines_with(const std::vector<std::string> &lines, std::initializer
     }));
 }
 
-static std::string show(Counts c)
-{
-    return "image " + std::to_string(c.image) + ", view " + std::to_string(c.view);
-}
+static std::string show(Counts c) { return "image " + std::to_string(c.image) + ", view " + std::to_string(c.view); }
 
 int main(int argc, char **argv)
 {
@@ -236,8 +241,9 @@ int main(int argc, char **argv)
         Boot stock(root, true);
         stock.register_overlay();
         Counts c = stock.reads(FLOW);
-        check(c.image == 4 && c.view == 3, "the fixture: an overlay that holds the array's image only (4 slices) over an archive whose view says 3 (" +
-                                               show(c) + ")");
+        check(c.image == 4 && c.view == 3,
+              "the fixture: an overlay that holds the array's image only (4 slices) over an archive whose view says 3 (" +
+                  show(c) + ")");
     }
 
     {
@@ -255,7 +261,8 @@ int main(int argc, char **argv)
         Counts c = old.reads(FLOW);
         check(a.arrays[OVERLAY].count(ARRAY) && a.arrays[FLOW].count(ARRAY) && overlay_refused,
               "the build grows the array in the overlay too and the file route refuses a path inside swofty/");
-        check(c.image == 4 && c.view == 6, "redirect by redirect, the game reads the overlay's stale image under the grown view (" + show(c) + ")");
+        check(c.image == 4 && c.view == 6,
+              "redirect by redirect, the game reads the overlay's stale image under the grown view (" + show(c) + ")");
     }
 
     {
@@ -269,7 +276,8 @@ int main(int argc, char **argv)
         check(boot.registered == COPIES + Boot::file_of(OVERLAY) && !boot.routes.count(OVERLAY),
               "the overlay's copy is registered in the overlay's place and is not a file route");
         check(flow.image == 6 && flow.view == 6, "the game reads the grown image and the grown view (" + show(flow) + ")");
-        check(screen.image == 6 && screen.view == 6, "an archive with no overlay reads its own grown image and view (" + show(screen) + ")");
+        check(screen.image == 6 && screen.view == 6,
+              "an archive with no overlay reads its own grown image and view (" + show(screen) + ")");
         check(boot.copies.offer({{OVERLAY, {COPIES + Boot::file_of(OVERLAY), boot.written[Boot::file_of(OVERLAY)]->size()}}}) &&
                   !boot.copies.offer({{OVERLAY, {COPIES + "logos_other.erp", 1}}}) && !boot.copies.offer({}),
               "after the overlay is registered only the copies it took are accepted");
@@ -282,15 +290,18 @@ int main(int argc, char **argv)
         late.register_overlay();
         ld::Outcome done = late.deliver();
         Counts flow = late.reads(FLOW), screen = late.reads(SCREEN);
-        check(done.dropped == std::set<std::string>{ARRAY} && late.builds == 2, "an overlay copy that cannot be registered drops the array and builds again");
+        check(done.dropped == std::set<std::string>{ARRAY} && late.builds == 2,
+              "an overlay copy that cannot be registered drops the array and builds again");
         check(late.routes.empty() && late.router.size() == 0 && done.last.routes.empty() && late.registered == OVERLAY,
               "no archive is redirected and the stock overlay stays registered");
         check(flow.image == 4 && flow.view == 3 && screen.image == 3 && screen.view == 3,
               "every archive reads the array as it does with no team logo (" + show(flow) + "; " + show(screen) + ")");
         check(lines_with(done.lines, {"team.logo: " + ARRAY + " is left at its stock size in every archive this boot", OVERLAY,
-                                      "handed to the game before the logo build ended"}) == 1 && done.lines.size() == 1,
+                                      "handed to the game before the logo build ended"}) == 1 &&
+                  done.lines.size() == 1,
               "one line names the array, the archive and the reason");
-        check(late.last.refused == 0 && late.last.built == 0 && late.last.changes.empty(), "the second build has nothing left to change");
+        check(late.last.refused == 0 && late.last.built == 0 && late.last.changes.empty(),
+              "the second build has nothing left to change");
     }
 
     {
@@ -300,11 +311,13 @@ int main(int argc, char **argv)
         ld::Outcome done = blocked.deliver();
         blocked.register_overlay();
         Counts flow = blocked.reads(FLOW), screen = blocked.reads(SCREEN);
-        check(done.dropped == std::set<std::string>{ARRAY} && blocked.routes.empty() && blocked.router.size() == 0 && blocked.registered == OVERLAY,
+        check(done.dropped == std::set<std::string>{ARRAY} && blocked.routes.empty() && blocked.router.size() == 0 &&
+                  blocked.registered == OVERLAY,
               "a stock archive that cannot be redirected drops the array in every archive, the overlay included");
         check(flow.image == 4 && flow.view == 3 && screen.image == 3 && screen.view == 3,
               "every archive reads the stock array (" + show(flow) + "; " + show(screen) + ")");
-        check(lines_with(done.lines, {ARRAY, SCREEN, "not available on this build"}) == 1, "the line names the archive that could not be redirected");
+        check(lines_with(done.lines, {ARRAY, SCREEN, "not available on this build"}) == 1,
+              "the line names the archive that could not be redirected");
     }
 
     {
@@ -314,8 +327,8 @@ int main(int argc, char **argv)
         ld::Outcome done = unwritten.deliver();
         unwritten.register_overlay();
         Counts flow = unwritten.reads(FLOW);
-        check(done.dropped == std::set<std::string>{ARRAY} && unwritten.routes.empty() && unwritten.registered == OVERLAY && flow.image == 4 &&
-                  flow.view == 3 && lines_with(done.lines, {ARRAY, OVERLAY, "could not be rewritten"}) == 1,
+        check(done.dropped == std::set<std::string>{ARRAY} && unwritten.routes.empty() && unwritten.registered == OVERLAY &&
+                  flow.image == 4 && flow.view == 3 && lines_with(done.lines, {ARRAY, OVERLAY, "could not be rewritten"}) == 1,
               "an overlay copy that cannot be written drops the array before anything is redirected");
     }
 
@@ -326,14 +339,20 @@ int main(int argc, char **argv)
         lb::build(plain.env(), wants, direct);
         ld::Outcome done = plain.deliver();
         plain.register_overlay();
-        bool same = done.last.routes.size() == direct.changes.size() && plain.last.lines == direct.lines && plain.builds == 1 && done.lines.empty() &&
-                    done.dropped.empty() && done.failed.empty();
+        bool same = done.last.routes.size() == direct.changes.size() && plain.last.lines == direct.lines && plain.builds == 1 &&
+                    done.lines.empty() && done.dropped.empty() && done.failed.empty();
         for (auto &[rel, changes] : direct.changes) {
             auto src = open_bytes(plain.game[rel]);
             ef::Archive arc;
             std::string why, bytes;
             ef::open(*src, arc, why);
-            ef::rewrite(*src, arc, changes, [&](const char *p, size_t n) { bytes.append(p, n); return true; }, why);
+            ef::rewrite(
+                *src, arc, changes,
+                [&](const char *p, size_t n) {
+                    bytes.append(p, n);
+                    return true;
+                },
+                why);
             same = same && plain.routes.count(rel) && *plain.written[plain.routes[rel]] == bytes;
         }
         Counts flow = plain.reads(FLOW);
@@ -364,8 +383,9 @@ int main(int argc, char **argv)
         stale.register_overlay();
         done = stale.deliver(first);
         flow = stale.reads(FLOW);
-        check(stale.builds == 2 && !done.last.cached && done.dropped == std::set<std::string>{ARRAY} && stale.routes.empty() && flow.image == 4 &&
-                  flow.view == 3 && lines_with(done.lines, {"cached archives could not all be delivered"}) == 1,
+        check(stale.builds == 2 && !done.last.cached && done.dropped == std::set<std::string>{ARRAY} && stale.routes.empty() &&
+                  flow.image == 4 && flow.view == 3 &&
+                  lines_with(done.lines, {"cached archives could not all be delivered"}) == 1,
               "cached copies that cannot all be delivered are built again, and the array is then dropped");
     }
 
@@ -403,24 +423,28 @@ int main(int argc, char **argv)
         sink.unroute = [&] { routed.clear(); };
         sink.offer = [&](const content::logo_cache::Routes &list, std::string &) { return offered = list.empty(); };
         ld::Outcome done = ld::deliver(make({}), make, sink);
-        check(done.dropped == std::set<std::string>{"x"} && makes == 2 && routed == std::set<std::string>{"shared.erp", "q.erp"} && offered,
+        check(done.dropped == std::set<std::string>{"x"} && makes == 2 &&
+                  routed == std::set<std::string>{"shared.erp", "q.erp"} && offered,
               "only the array of the archive that failed is dropped; the other array is delivered");
         check(done.failed.size() == 1 && done.failed[0].rel == "db.erp" && done.last.routes.size() == 3,
               "an archive that carries no array and cannot be redirected fails alone, without another build");
     }
 
     {
-        std::set<std::string> a = ld::arrays_of({{IMAGE, {}}, {VIEW, {}}, {lb::OVERRIDES, {}},
-                                                 {std::string(lb::ARRAY_URI) + "team_logos.x.texarray", {}}}, lb::ARRAY_URI);
+        std::set<std::string> a = ld::arrays_of(
+            {{IMAGE, {}}, {VIEW, {}}, {lb::OVERRIDES, {}}, {std::string(lb::ARRAY_URI) + "team_logos.x.texarray", {}}},
+            lb::ARRAY_URI);
         check(a == std::set<std::string>{ARRAY, "team_logos.x"} && ld::overlay_key("\\Swofty\\Assets/Resources/0.ERP") == OVERLAY,
               "an archive's arrays are the images and views it changes; an overlay is keyed by its lower-case game path");
     }
 
     {
         std::string line = ld::unwritable_line("swofty/addons/swofty.logos/", 5);
-        check(line == "team.logo: the game can't create files in swofty/addons/swofty.logos/ (error 5), so no team logo is built this session",
+        check(line == "team.logo: the game can't create files in swofty/addons/swofty.logos/ (error 5), so no team logo is built "
+                      "this session",
               "a cache folder the game can't create files in is named with its Windows error, in the line the launcher's known "
-              "problem reads: " + line);
+              "problem reads: " +
+                  line);
     }
 
     std::printf("logo deliver: %d check(s), %d failure(s)\n", checks, failures);

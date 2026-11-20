@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_EventDispatcher_TrackQueuePeak",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14400cb00",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14400cb00.c;xref:0x143fdc635",
+  "notes": "Tracks queue high-water mark (+0xb8) and logs \"NeEventDispatcher::queue_peak_1 - %u\"; swaps double buffer (+0x78/+0x88, flag +0x90). Callers Ne_EventDispatcher_ProcessQueue, Game_EadpSDK_ParseSubscriptionsResponse."
+ },
+ "signature": {
+  "id": "core.event_dispatcher_track_queue_peak",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 83 79 58 00 0F 84",
+  "match": "0x14400cb00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14400cb00",
+  "kind": "func_start",
+  "names": [
+   "Ne_EventDispatcher_TrackQueuePeak"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x14400cb00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14400cb00.c;xref:0x143fdc635",
+   "notes": "V8368 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

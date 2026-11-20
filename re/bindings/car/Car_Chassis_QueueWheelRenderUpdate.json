@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Car_Chassis_QueueWheelRenderUpdate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c86b70",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c86b70.c;xref:0x144631e1e",
+  "notes": "Allocates a 0x1d0-byte update block from the job allocator (vcall +0x20 of 0x146c621e0), copies the 3 matrix rows/translation and wheel params (flags param_5/6, floats param_7/8) for the render thread. Caller Car_Chassis_UpdateWheelVisibility. Hypothesis."
+ },
+ "signature": {
+  "id": "car.chassis_queue_wheel_render_update",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C5 F8 28 B4 24 90 00 00 00 C5 F8 28 BC 24 A0 00 00 00 C5 78 28 84 24 B0 00 00 00 48 81 C4 C0",
+  "match": "0x144631e1e",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143c86b70",
+  "kind": "func_start",
+  "names": [
+   "Car_Chassis_QueueWheelRenderUpdate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x143c86b70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c86b70.c;xref:0x144631e1e",
+   "notes": "V8149 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

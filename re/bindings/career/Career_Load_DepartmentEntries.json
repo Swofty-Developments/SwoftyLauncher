@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Career_Load_DepartmentEntries",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1412326e0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Load_DepartmentEntries(longlong self, void *ctx)",
+  "evidence": "decomp:re/decomp/1412326e0.c;xref:0x1456cc930;kb:subsystems/career.md#dept-entries",
+  "notes": "UpgradeDepartmentEntry loader: loops DB row_count (not hard 4), per row reads department + the economy vocabulary (research/development/adapting cost+time scales, fail/delay rates, max_simultaneous_research/development, dual_development_*, rush_*, upgradeTierAttribute, morale_effect_message). Stores entries into pointer array [self+0xc60] stride 0x10. Vtable slot 0x1456cc930."
+ },
+ "signature": {
+  "id": "career.load_department_entries",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 06 00 00 48 89 CE 48 8D 8C 24 70 01 00 00",
+  "match": "0x1412326e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1412326e0",
+  "kind": "func_start",
+  "names": [
+   "Career_Load_DepartmentEntries"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-19",
+    "by": "career-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

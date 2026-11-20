@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_State_HandleFlowInterrupt",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d53660",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d53660.c;xref:0x142d535e0,0x142d54cb0",
+  "notes": "(state, outRoute, interrupt) Common session-state handler for flow interrupts: switch on interrupt+0x10 - types 1,2,5,6,7,0xa..0xc,0xe..0x10 check the state's allowed-interrupt list (+0xaf4, count +0x166*8) and async job state (g 0x14607f080 +0x48: 2/5) and stop the job (Ne_AsyncJob_StopAndNotify); 3 = consume interrupt (Ne_FlowStateInterruptManager_ConsumeInterrupt on this[0x17f]) and vcall +0x80; others route via Sess_State_Unpause. Returns route ptr (default 0x146cb2280). 15 callers: IntroVideo, PlayCutScene, TalkingPoints, Quit, career hub unload."
+ },
+ "signature": {
+  "id": "session.state_handle_flow_interrupt",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 D6 41 8B 40 10 48 8D 1D ?? ?? ?? ?? FF C8 83",
+  "match": "0x142d53660",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d53660",
+  "kind": "func_start",
+  "names": [
+   "Sess_State_HandleFlowInterrupt"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142d53660",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d53660.c;xref:0x142d6db2d,0x142d959a0,0x142d88f2c",
+   "notes": "V3559 switch on interrupt+0x10: 1,2,5,6,7,0xa-0xc,0xe-0x10 check allowed list +0xaf4 count +0x166, async job g 0x14607f080+0x48 (2/5); case 3 ConsumeInterrupt(this[0x17f]) + vcall +0x80; default route 0x146cb2280; 15 call sites"
+  }
+ ],
+ "proofs": []
+}

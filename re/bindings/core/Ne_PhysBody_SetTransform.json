@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_PhysBody_SetTransform",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440c17c0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1440c17c0.c;xref:0x14038b91d,0x1403b271d",
+  "notes": "Sets a physics body world transform from 4x4 matrix param_2 (copied to +0x190..+0x1c8), recomputes derived data and optionally (param_3) updates broadphase. Used by garage crew spawn, pit-stop crew setup, breakables, plank placement, teleport. Callers: Game_GarageCrewModule_SpawnGarageCrew, Game_PitStops_SetupCrew."
+ },
+ "signature": {
+  "id": "core.phys_body_set_transform",
+  "section": ".xtls",
+  "pattern": "56 53 48 83 EC 58 C5 78 29 44 24 40 C5 F8 29 7C",
+  "match": "0x1440c17c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440c17c0",
+  "kind": "func_start",
+  "names": [
+   "Ne_PhysBody_SetTransform"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x1440c17c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440c17c0.c;xref:0x14038b91d",
+   "notes": "V3638 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,72 @@
+{
+ "schema": 1,
+ "name": "Game_Mfd_FuelMixUp",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141533370",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "int Game_Mfd_FuelMixUp(void *mfd_car_settings_vm)",
+  "evidence": "doc:re/db/subsystems/game.md;decomp:re/decomp/141533370.c;xref:0x142a8eb8b",
+  "notes": "Returns 0 early if [[this+0x290]+carIdx*0x14+0xd7] FuelAuto (cmp 0x141533398); needs VM bools [this+0x310] editable and [this+0x330]; mix int via controls list [[this+0x290]+0x30][this+0xb90]+0x20 -> vfunc+0x18; up if mix != 3 and bit(mix+1) in mask [this+0x604]. Down = 0x141533570 (fuel-mix, fuel-verify claim 2) | findings from PR #474 by vogtmarcel07-cloud; independent check 2026-10-28 by fuel-verify: agree | engine-re E1 2026-11-18: only caller Game_GameMfdSystem_Update 0x142a8e070 on action 'Fuel Mix Up' (handle 0x146078cc8); the mix int it bumps is InputRecord+0x00 of the human controller (controller vfunc +0x18), allowed only when bit (mix+1) of [vm+0x604] is set, max 3. | raised by engine-re with --force 2026-11-18 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.mfd_fuel_mix_up",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4C 89 E9 44 89 F2 E8 ?? ?? ?? ?? B3 01 48 89 F9 48 8D 15 ?? ?? ?? ?? 41 B0 01 E8 ?? ?? ?? ?? 84 C0 74 33",
+  "match": "0x142a8eb8a",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x141533370",
+  "kind": "func_start",
+  "names": [
+   "Game_Mfd_FuelMixUp"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "fuel-verify",
+   "kind": "func",
+   "item": "Game_Mfd_FuelMixUp",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x141533398,0x14153355c",
+   "notes": "V1656 fuel-verify: cmp byte [rcx+rax*4+0xd7],0; jne -> return 0"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "fuel-verify",
+   "kind": "func",
+   "item": "Game_Mfd_FuelMixUp",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x141533398,0x14153355c",
+   "notes": "V3897 fuel-verify: cmp byte [rcx+rax*4+0xd7],0; jne -> return 0"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "era-input-verify",
+   "kind": "func",
+   "item": "0x141533370",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x141533370-0x141533566",
+   "notes": "V11507 byte [[vm+0x290]+0xd7+veh*0x14] with veh=[[vm+0xb38]+0xe8] gates; controller picked from list [vm+0x290]+0x30 by index [vm+0xb90]; mix=[vfunc+0x18], if !=3 and bt [vm+0x604],mix+1 then store mix+1; extra gates on objects vm+0x310/0x330 and a notify via vm+0xb68, sets [vm+0xb80]=1"
+  }
+ ],
+ "proofs": []
+}

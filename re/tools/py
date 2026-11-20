@@ -1,6 +1,37 @@
 #!/usr/bin/env bash
-P=/nix/store/b9jqx1ly7sjsdw12pknds5jqc70i40c1-python3-3.14.6-env/bin/python3
-if [ ! -x "$P" ]; then
-    P=$(nix build --no-link --print-out-paths --impure --expr 'with import <nixpkgs> {}; python3.withPackages (p: [p.numpy p.pefile p.capstone])')/bin/python3 || exit 1
+# A Python with pefile, numpy and capstone for the RE tools: $SWOFTY_PY, the pinned Nix one, a Nix build of it,
+# or python3 when it already has the three. Pinned to the E-cores on a machine with at least 32 CPUs.
+want='import pefile, numpy, capstone'
+P=${SWOFTY_PY:-}
+if [ -z "$P" ]; then
+    P=/nix/store/b9jqx1ly7sjsdw12pknds5jqc70i40c1-python3-3.14.6-env/bin/python3
+    if [ ! -x "$P" ]; then
+        P=
+        if command -v nix >/dev/null 2>&1; then
+            P=$(nix build --no-link --print-out-paths --impure --expr 'with import <nixpkgs> {}; python3.withPackages (p: [p.numpy p.pefile p.capstone])' 2>/dev/null)/bin/python3
+            [ -x "$P" ] || P=
+        fi
+    fi
 fi
-exec taskset -c 2-7,10,11,14-31 nice -n 10 "$P" "$@"
+if [ -z "$P" ]; then
+    for c in python3 python; do
+        if command -v "$c" >/dev/null 2>&1 && "$c" -c "$want" 2>/dev/null; then
+            P=$c
+            break
+        fi
+    done
+fi
+if [ -z "$P" ]; then
+    echo "re/tools/py: no Python with pefile, numpy and capstone. Install them with" >&2
+    echo "  python3 -m pip install pefile numpy capstone" >&2
+    echo "or set SWOFTY_PY to a Python that has them." >&2
+    exit 1
+fi
+run=()
+if command -v taskset >/dev/null 2>&1 && [ "$(nproc --all 2>/dev/null || echo 0)" -ge 32 ]; then
+    run=(taskset -c 2-7,10,11,14-31)
+fi
+if command -v nice >/dev/null 2>&1; then
+    run+=(nice -n 10)
+fi
+exec "${run[@]}" "$P" "$@"

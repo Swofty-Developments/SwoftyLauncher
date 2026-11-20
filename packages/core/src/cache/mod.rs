@@ -1,0 +1,313 @@
+pub mod archive_entry;
+pub mod link;
+
+use std::collections::BTreeMap;
+use std::path::{Path, PathBuf};
+
+use crate::build::PLAN_FILE;
+
+fn children(dir: &Path) -> Vec<PathBuf> {
+    std::fs::read_dir(dir)
+        .into_iter()
+        .flatten()
+        .flatten()
+        .filter(|e| e.file_type().is_ok_and(|t| t.is_dir()))
+        .map(|e| e.path())
+        .collect()
+}
+
+fn planned_sources(plan: &Path) -> Vec<PathBuf> {
+    let Ok(v) = crate::read_json::<serde_json::Value>(plan) else {
+        return Vec::new();
+    };
+    ["replace", "add", "loader"]
+        .iter()
+        .filter_map(|k| v.get(k)?.as_object())
+        .flat_map(|m| m.values())
+        .filter_map(|s| s.as_str().map(PathBuf::from))
+        .collect()
+}
+
+pub fn latest_plan(profile_dir: &Path) -> Option<PathBuf> {
+    children(profile_dir)
+        .into_iter()
+        .filter_map(|b| {
+            let plan = b.join(PLAN_FILE);
+            Some((plan.metadata().ok()?.modified().ok()?, plan))
+        })
+        .max()
+        .map(|(_, plan)| plan)
+}
+
+pub fn prune(cache: &Path, profile: &str, used: &[PathBuf]) -> usize {
+    let overlays = cache.join("overlay");
+    let mut used = used.to_vec();
+    for dir in children(&overlays) {
+        if dir.file_name().is_some_and(|n| n != profile)
+            && let Some(plan) = latest_plan(&dir)
+        {
+            used.extend(planned_sources(&plan));
+        }
+    }
+    let maps = cache.join("maps");
+    let mut stamps = children(&overlays.join(profile));
+    stamps.extend(children(&cache.join("menus")));
+    stamps.extend(children(&cache.join("ers")));
+    stamps.extend(children(&cache.join(LIVERIES_DIR)));
+    for code in children(&maps) {
+        stamps.extend(children(&code));
+    }
+    let mut removed = 0;
+    for stamp in stamps {
+        if !used.iter().any(|u| u.starts_with(&stamp)) && std::fs::remove_dir_all(&stamp).is_ok() {
+            removed += 1;
+        }
+    }
+    for code in children(&maps) {
+        std::fs::remove_dir(code).ok();
+    }
+    removed
+}
+
+pub const PACKED_DIR: &str = "zstd";
+
+/// Livery archives with the handling of the car that wears them, one folder per archive and handling.
+pub const LIVERIES_DIR: &str = "liveries";
+
+/// Rebuilt archives kept between builds, linked into each overlay that needs
+/// the same archive again.
+pub const ARCHIVES_DIR: &str = "archives";
+
+/// Drop cached archives not used for `max_age`, then the least recently used
+/// until the rest fit in `max_bytes`. An archive an overlay still links keeps
+/// its bytes there.
+/// Marks the archive cache entry at `entry` used now, for [`prune_archives`]. The mark is a file of its own
+/// beside the entry: the entry shares its inode with every overlay file linked to it, whose write time
+/// must stay the time the archive was written.
+pub fn mark_used(entry: &Path) {
+    let mark = entry.with_extension("used");
+    if let Ok(f) = std::fs::File::create(&mark) {
+        f.set_modified(std::time::SystemTime::now()).ok();
+    }
+}
+
+/// Prunes the archive cache in `dir` to the entries used within `max_age`, most recently used first up to
+/// `max_bytes`. An entry is the files under one key, its archive and the records and use mark beside it, last
+/// used when the newest of them was written or marked; the entries removed.
+pub fn prune_archives(dir: &Path, max_age: std::time::Duration, max_bytes: u64) -> usize {
+    let mut entries: BTreeMap<PathBuf, (std::time::SystemTime, u64, Vec<PathBuf>)> = BTreeMap::new();
+    for e in children(dir)
+        .iter()
+        .flat_map(|sub| std::fs::read_dir(sub).into_iter().flatten().flatten())
+    {
+        let Some((at, len)) = e
+            .metadata()
+            .ok()
+            .and_then(|m| Some((m.modified().ok()?, m.len())))
+        else {
+            continue;
+        };
+        let path = e.path();
+        let entry = entries.entry(path.with_extension("")).or_insert((
+            std::time::SystemTime::UNIX_EPOCH,
+            0,
+            Vec::new(),
+        ));
+        entry.0 = entry.0.max(at);
+        entry.1 += len;
+        entry.2.push(path);
+    }
+    let mut entries: Vec<_> = entries.into_values().collect();
+    entries.sort_by_key(|e| std::cmp::Reverse(e.0));
+    let (mut kept, mut removed) = (0u64, 0);
+    for (at, len, files) in entries {
+        let stale = at.elapsed().is_ok_and(|age| age > max_age);
+        if stale || kept + len > max_bytes {
+            let gone = files.iter().filter(|f| std::fs::remove_file(f).is_ok()).count();
+            removed += usize::from(gone > 0);
+        } else {
+            kept += len;
+        }
+    }
+    removed
+}
+
+/// Drop the oldest files directly in `dir` until the rest fit in `max_bytes`.
+pub fn prune_files(dir: &Path, max_bytes: u64) -> usize {
+    let mut files: Vec<(std::time::SystemTime, u64, PathBuf)> = std::fs::read_dir(dir)
+        .into_iter()
+        .flatten()
+        .flatten()
+        .filter_map(|e| {
+            let meta = e.metadata().ok().filter(std::fs::Metadata::is_file)?;
+            Some((meta.modified().ok()?, meta.len(), e.path()))
+        })
+        .collect();
+    files.sort_by_key(|f| std::cmp::Reverse(f.0));
+    let (mut kept, mut removed) = (0u64, 0);
+    for (_, len, path) in files {
+        if kept + len > max_bytes {
+            if std::fs::remove_file(&path).is_ok() {
+                removed += 1;
+            }
+        } else {
+            kept += len;
+        }
+    }
+    removed
+}
+
+pub fn prune_packed(dir: &Path, max_age: std::time::Duration) -> usize {
+    let mut removed = 0;
+    for sub in children(dir) {
+        for e in std::fs::read_dir(&sub).into_iter().flatten().flatten() {
+            let stale = e
+                .metadata()
+                .and_then(|m| m.modified())
+                .ok()
+                .and_then(|t| t.elapsed().ok())
+                .is_some_and(|age| age > max_age);
+            if stale && std::fs::remove_file(e.path()).is_ok() {
+                removed += 1;
+            }
+        }
+        std::fs::remove_dir(&sub).ok();
+    }
+    removed
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn stamp(dir: &Path) -> PathBuf {
+        std::fs::create_dir_all(dir).unwrap();
+        std::fs::write(dir.join(".done"), "").unwrap();
+        dir.to_path_buf()
+    }
+
+    #[test]
+    fn pruning_archives_drops_the_least_recently_used_entry_whatever_its_write_time() {
+        let dir = std::env::temp_dir().join(format!("swofty-prune-archives-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        std::fs::create_dir_all(dir.join("ab")).unwrap();
+        let now = std::time::SystemTime::now();
+        let hours = |n: u64| now - std::time::Duration::from_secs(n * 3600);
+        let file = |name: &str, bytes: &[u8], at: std::time::SystemTime| {
+            let path = dir.join("ab").join(name);
+            std::fs::write(&path, bytes).unwrap();
+            std::fs::File::options()
+                .write(true)
+                .open(&path)
+                .unwrap()
+                .set_modified(at)
+                .unwrap();
+            path
+        };
+        let used = file("ab01.erp", &[1; 10], hours(3));
+        mark_used(&used);
+        let unused = file("ab02.erp", &[2; 10], hours(1));
+        let record = file("ab02.json", b"[0,[]]", hours(1));
+        let stale = file("ab03.json", b"[0,[]]", hours(100));
+        let removed = prune_archives(&dir, std::time::Duration::from_secs(72 * 3600), 16);
+        let left = |p: &Path| p.is_file();
+        assert_eq!(
+            (left(&used), left(&used.with_extension("used"))),
+            (true, true),
+            "the entry used last stays, though written first"
+        );
+        assert_eq!(
+            (left(&unused), left(&record)),
+            (false, false),
+            "an entry goes whole"
+        );
+        assert!(!left(&stale));
+        assert_eq!(removed, 2);
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn prune_files_keeps_the_newest_that_fit() {
+        let dir = std::env::temp_dir().join(format!("swofty-cache-files-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        std::fs::create_dir_all(dir.join("sub")).unwrap();
+        let now = std::time::SystemTime::now();
+        for (i, name) in ["old", "mid", "new"].iter().enumerate() {
+            let path = dir.join(name);
+            std::fs::write(&path, [0u8; 10]).unwrap();
+            let at = now - std::time::Duration::from_secs(60 * (3 - i as u64));
+            std::fs::File::options()
+                .write(true)
+                .open(&path)
+                .unwrap()
+                .set_modified(at)
+                .unwrap();
+        }
+        assert_eq!(prune_files(&dir, 25), 1);
+        assert!(!dir.join("old").exists() && dir.join("mid").exists() && dir.join("new").exists());
+        assert!(dir.join("sub").is_dir());
+        assert_eq!(prune_files(&dir.join("missing"), 0), 0);
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn keeps_the_current_build_and_other_profiles_latest_plans() {
+        let cache = std::env::temp_dir().join(format!("swofty-cache-prune-{}", std::process::id()));
+        std::fs::remove_dir_all(&cache).ok();
+        let track = |code: &str, s: &str| stamp(&cache.join("maps").join(code).join(s));
+        let (okayama_22, okayama_24) = (track("okayama", "a22"), track("okayama", "a24"));
+        let (bahrain_old, bahrain_new) = (track("bahrain24", "b1"), track("bahrain24", "b2"));
+        let gone = track("gone", "g1");
+        let (menus_old, menus_new) = (stamp(&cache.join("menus/m1")), stamp(&cache.join("menus/m2")));
+        let (ers_old, ers_new) = (stamp(&cache.join("ers/e1")), stamp(&cache.join("ers/e2")));
+        let (livery_old, livery_new) = (
+            stamp(&cache.join(LIVERIES_DIR).join("l1")),
+            stamp(&cache.join(LIVERIES_DIR).join("l2")),
+        );
+        let (mine_old, mine_new) = (
+            stamp(&cache.join("overlay/default/h1")),
+            stamp(&cache.join("overlay/default/h2")),
+        );
+        let other_old = stamp(&cache.join("overlay/other/o1"));
+        crate::write_json(
+            &other_old.join(PLAN_FILE),
+            &serde_json::json!({ "replace": { "x.erp": bahrain_old.join("x.erp") } }),
+        )
+        .unwrap();
+        std::thread::sleep(std::time::Duration::from_millis(20));
+        let other_new = stamp(&cache.join("overlay/other/o2"));
+        crate::write_json(
+            &other_new.join(PLAN_FILE),
+            &serde_json::json!({ "add": { "t.erp": okayama_22.join("t.erp") } }),
+        )
+        .unwrap();
+        let used = [
+            okayama_24.join("2025_asset_groups/t.erp"),
+            bahrain_new.clone(),
+            menus_new.clone(),
+            ers_new.clone(),
+            livery_new.join("cars/redbull.erp"),
+            mine_new.clone(),
+        ];
+        assert_eq!(prune(&cache, "default", &used), 6);
+        for kept in [
+            &okayama_22,
+            &okayama_24,
+            &bahrain_new,
+            &menus_new,
+            &ers_new,
+            &livery_new,
+            &mine_new,
+            &other_old,
+            &other_new,
+        ] {
+            assert!(kept.is_dir(), "{} was removed", kept.display());
+        }
+        for removed in [&bahrain_old, &menus_old, &ers_old, &livery_old, &mine_old, &gone] {
+            assert!(!removed.exists(), "{} was kept", removed.display());
+        }
+        assert!(!cache.join("maps/gone").exists());
+        assert_eq!(prune(&cache, "default", &used), 0);
+        std::fs::remove_dir_all(&cache).ok();
+    }
+}

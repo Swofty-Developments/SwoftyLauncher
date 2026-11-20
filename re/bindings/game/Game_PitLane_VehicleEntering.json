@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_PitLane_VehicleEntering",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434cf7c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1434cf7c0.c;xref:0x1434cb8c4,0x1434d12b5,0x1504308ae,0x15043094c",
+  "notes": "Log channel PITLANE: 'PitLaneSystem::vehicleEnteringPitLane(%d:%s)' | 'PitLaneSystem::vehicleEnteringPitLane(%d) - Not eOnTrack: is %s' | 'PitLaneSystem::vehicleEnteringPitLane(%d) - Vehicle is not active in the session' L2 2026-11-14 (engine-re round 2): decomp read; 4 reference(s) (0x1434cb8c4, 0x1434d12b5, 0x1504308ae, 0x15043094c); the body itself references 'Invalid' / 'PITLANE' / 'PitLaneSystem::vehicleEnteringPitLane(%d:%s)' / 'PitLaneSystem::vehicleEnteringPitLane(%d) - Not eOnTrack: is %s'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.pit_lane_vehicle_entering",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 89 D3 48 89 CF",
+  "match": "0x1434cf7c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434cf7c0",
+  "kind": "func_start",
+  "names": [
+   "Game_PitLane_VehicleEntering"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1434cf7c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434cf7c0.c;xref:0x1434cb8c5",
+   "notes": "V6027 name and description match body; log string/pretty name present"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x1434cf7c0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1434cf7c0-0x1434cfa9b;xref:0x1434cb8c4,0x1434d12b5,0x1504308ae,0x15043094c",
+   "notes": "V10510 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Same 4 refs (jmp 0x1434cb8c4, call 0x1434d12b5, jmp 0x1504308ae, call 0x15043094c). vehicleEnteringPitLane logs incl. Not eOnTrack and not active in the session."
+  }
+ ],
+ "proofs": []
+}

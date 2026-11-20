@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Game_ContractTeamSelect_OnExit",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436c57e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_ContractTeamSelect_OnExit(void *state)",
+  "evidence": "decomp:re/decomp/1436c57e0.c;xref:0x14585a6b0",
+  "notes": "TeamSelect onExit (vtable slot +0x50, abs ptr 0x14585a6b0). flow state StateDriverCareerContractNegotiationsTeamSelect (name string 0x14585a5b0, vtable 0x14585a660; the same layout as the Intro vtable 0x14585a470, whose slot +0x40 is Career_ContractIntro_OnEnter): the team select step of the Driver Career contract negotiation, entered after ContractNegotiationsDecision when the player's contract ends (before Intro, Update and Outro); it is absent from the start-of-career flow. When the screen was entered (+0xc9c) it tears it down (0x1436c39e0, Game_Flow_StateDeactivatingSubTask), clears +0xd6a, +0xc98 and +0xc9c and requests a fade out; then returns 1 only when +0xc18 == 1 and +0xc9a is set and either +0xd48 is set, +0xca8 is null or [+0xca8]+0x48 is 0, otherwise 0 (on the +0xc9a path, for a career game mode, it also clears bit 0x2000 of the front-end flags at 0x14604edb0; V1087). Raised by laneS."
+ },
+ "signature": {
+  "id": "game.contract_team_select_on_exit",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 48 89 CE 80 B9 9C 0C 00 00 00",
+  "match": "0x1436c57e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436c57e0",
+  "kind": "func_start",
+  "names": [
+   "Game_ContractTeamSelect_OnExit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-26",
+    "by": "laneS",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/progressive/native/src/ui/follow.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-26",
+   "verifier": "laneS-verify2",
+   "kind": "func",
+   "item": "Game_ContractTeamSelect_OnExit",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436c57e0.c;xref:0x14585a6b0",
+   "notes": "V1087 Only reference is the abs pointer 0x14585a6b0 = vtable 0x14585a660 slot +0x50 (no rel32 refs); Intro/Outro vtables carry their own +0x50 entries (0x1436c2e80, 0x1436c3820). Disasm: if byte +0xc9c set: 0x14416cf60 when +0xca8 nonnull, 0x1436c39e0, Game_Flow_StateDeactivatingSubTask, then +0xd6a=0, dword +0xc98=0, +0xc9c=0 and a fade-out request. Return is mov eax,edi: 1 only when +0xc18==1 and +0xc9a set, and either +0xd48 set or +0xca8 null or [+0xca8]+0x48==0; otherwise 0 (edi cleared at 0x1436c593c/0x1436c5982). One arg, 0/1 eax: proto agrees. Precision note on the row text: +0xd48 bypasses only the +0xca8 busy check, not the +0xc18==1 test, and +0xc9a clear also returns 0."
+  }
+ ],
+ "proofs": []
+}

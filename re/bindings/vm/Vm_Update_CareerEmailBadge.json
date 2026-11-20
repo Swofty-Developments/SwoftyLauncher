@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_Update_CareerEmailBadge",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14166d4e0",
+  "level": "L1",
+  "subsystem": "vm",
+  "proto": "uint8_t Vm_Update_CareerEmailBadge(void *vm)",
+  "evidence": "decomp:re/decomp/14166d4e0.c;xref:0x141ee5914;xref:0x141eea2d4;xref:0x142329f81",
+  "notes": "myteam-g2: Resolves the My Team component (+0x88 -> +0x260 type check), gets the career email store (+0x208 sub-object) and the global game-state clock (_DAT_14604c2c8+0x140) to set whether unread emails exist. UI only."
+ },
+ "signature": {
+  "id": "vm.update_career_email_badge",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC D8 00 00 00 48 8B 81 88 00 00 00",
+  "match": "0x14166d4e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14166d4e0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Update_CareerEmailBadge"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x14166d4e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14166d4e0.c;xref:0x141ee5914;xref:0x141eea2d4",
+   "notes": "V9736 Iterates records of stride 0xa8 in a found entry and returns 1 if byte +0x90 set; structure matches but email/unread semantics are not provable from code."
+  }
+ ],
+ "proofs": []
+}

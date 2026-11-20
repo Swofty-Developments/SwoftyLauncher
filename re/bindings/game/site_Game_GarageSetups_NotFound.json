@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Game_GarageSetups_NotFound",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c22cbf",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/140c22ad0.c;xref:0x140c22b8e,0x140c22b9d",
+  "notes": "In Game_GarageSetups_FindOwnerName: xor esi,esi; mov rax,rsi; add rsp,0xc0; pop rsi; ret (0x140c22cbf), the function's own not-found exit (je 0x140c22cbf at 0x140c22b8e when the registry node is missing, jne at 0x140c22ca1, 0x140c22c89, 0x140c22b2d id mismatch). Returns null; the caller passes it on to Vm_Holder_SetCStr, which treats null as an empty string. The rip target of core's garage setup guard from site_Game_GarageSetups_EntryStep (frame identical: push rsi, sub rsp 0xc0, nothing else); never hooked."
+ },
+ "signature": {
+  "id": "game.garage_setups_not_found",
+  "section": ".xtls",
+  "pattern": "31 F6 48 89 F0 48 81 C4 C0 00 00 00",
+  "match": "0x140c22cbf",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c22cbf",
+  "kind": "mid",
+  "expect": "31 F6 48 89 F0",
+  "names": [
+   "site_Game_GarageSetups_NotFound"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "c22c47",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/garage/garage_setup.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-01",
+   "verifier": "kbverify-garagesetup",
+   "kind": "global",
+   "item": "0x140c22cbf",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c22ad0.c;xref:0x140c22b8e,0x140c22b9d;sig:game.garage_setups_not_found",
+   "notes": "V8612 sigcheck --only OK hits=1 target=0x140c22cbf. xor esi,esi; mov rax,rsi; add rsp,0xc0; pop rsi; ret. Prologue is push rsi; sub rsp,0xc0 only. Jumping from 0x140c22c43 (rsp unchanged, no lock, no refcount, no iterator held in the walk; the Printf buffer/registry node are created later at b33+) is safe; rsi is not modified in the walk and is restored by pop; the exit zeroes rax so the caller gets null."
+  }
+ ],
+ "proofs": []
+}

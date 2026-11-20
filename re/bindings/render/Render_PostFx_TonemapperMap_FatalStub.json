@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_PostFx_TonemapperMap_FatalStub",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ecb9e0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143ecb9e0.c;xref:0x143bca5b8,0x143ecc100",
+  "notes": "13-byte noreturn fatal stub for the assert in Render_PostFx_TonemapperMap_Rehash. Name only."
+ },
+ "signature": {
+  "id": "render.post_fx_tonemapper_map_fatal_stub",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC E9 ?? ?? ?? ?? F5 CC CC",
+  "match": "0x143ecb9e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143ecb9e0",
+  "kind": "func_start",
+  "names": [
+   "Render_PostFx_TonemapperMap_FatalStub"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x143ecb9e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ecb9e0.c;xref:0x143bca5b8",
+   "notes": "V8360 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

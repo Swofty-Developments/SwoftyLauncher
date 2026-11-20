@@ -1,20 +1,20 @@
-// Host-native unit test for the core's shader resource view clamp (native/src/core/srv_clamp_logic.hpp).
-// Built and run by native/test/run_srv_clamp_test.sh.
+// Host-native unit test for the core's shader resource view clamp (native/src/core/render/srv_clamp_logic.hpp).
+// Built and run by native/test/run_tests.sh srv_clamp.
 
-#include "srv_clamp_logic.hpp"
+#include "core/render/srv_clamp_logic.hpp"
 
 #include <cstdio>
 
-namespace sc = runtime::srv_clamp;
+namespace sc = render::srv_clamp;
 
 static int g_fail;
 
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                    \
-            g_fail++;                                                                                                  \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                              \
+            g_fail++;                                                                                                            \
+        }                                                                                                                        \
     } while (0)
 
 int main()

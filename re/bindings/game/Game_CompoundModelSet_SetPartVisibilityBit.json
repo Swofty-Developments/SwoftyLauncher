@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CompoundModelSet_SetPartVisibilityBit",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d3d320",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143d3d320.c;xref:0x1401cdd75",
+  "notes": "Sets/clears one bit (index param_2) of the per-part visibility bitfield (bounds from [[this+0xd0]+0x48]); queues refresh job on change. 26 callers incl. SetWingVisibilityOnCar, SetTyreVisibility."
+ },
+ "signature": {
+  "id": "game.compound_model_set_set_part_visibility_bit",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 38 44 89 C3 89",
+  "match": "0x143d3d320",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d3d320",
+  "kind": "func_start",
+  "names": [
+   "Game_CompoundModelSet_SetPartVisibilityBit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143d3d320",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d3d320.c;xref:0x1401cdd75",
+   "notes": "V7912 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

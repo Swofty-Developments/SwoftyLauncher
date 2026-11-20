@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EndRaceUiSequencer_OnVictoryVOAvailable",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ea3ba0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name onVictoryVOAvailable (class from the log channel); log channel END_RACE_UI_SEQUENCER: 'onVictoryVOAvailable() called'"
+ },
+ "signature": {
+  "id": "game.end_race_ui_sequencer_on_victory_vo_available",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 48 48 89 CE 80 3D ?? ?? ?? ?? 01 75 4F B8 A1 00 00 00",
+  "match": "0x142ea3ba0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ea3ba0",
+  "kind": "func_start",
+  "names": [
+   "Game_EndRaceUiSequencer_OnVictoryVOAvailable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142ea3ba0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142ea3ba0.c;xref:0x142ea336b",
+   "notes": "V5542 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

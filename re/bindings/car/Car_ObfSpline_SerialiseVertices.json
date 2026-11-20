@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Car_ObfSpline_SerialiseVertices",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14466d150",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14466d150.c;xref:0x144674a61",
+  "notes": "(writer *w, name, ObfSpline *s): writes numVertices then a SplineElement {x,y} per 32-byte element via writer vtable (+0x28 begin, +0x48 array(name,count), +0x68 write float, +0x78 end); x = e[0]^e[2], y = e[4]^e[6] (XOR de-obfuscation). Called from the steering-spline save path (0x144674a61 block, Car_PadAssist steering splines)."
+ },
+ "signature": {
+  "id": "car.obf_spline_serialise_vertices",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 4C 89 C3 48 89 CE 48 8B 01 FF 50 28",
+  "match": "0x14466d150",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14466d150",
+  "kind": "func_start",
+  "names": [
+   "Car_ObfSpline_SerialiseVertices"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x14466d150",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14466d150.c;xref:0x144674a61",
+   "notes": "V3696 serialiser matches (numVertices, SplineElement, x=e0^e2) but callers are Car_Write_BrakeECU/Engine/SuspensionSystem/Turbo/F1Aero/EnergyRecovery: generic curve writer, not steering path"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x14466d150",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14466d150.c;xref:0x144674a61",
+   "notes": "V4021 serialiser matches (numVertices, SplineElement, x=e0^e2) but callers are Car_Write_BrakeECU/Engine/SuspensionSystem/Turbo/F1Aero/EnergyRecovery: generic curve writer, not steering path"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x14466d150",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14466d150.c;xref:0x144674a61,0x144674a77",
+   "notes": "V4137 serialise; callers block 0x144674a61.. confirmed"
+  }
+ ],
+ "proofs": []
+}

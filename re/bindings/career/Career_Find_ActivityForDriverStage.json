@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Find_ActivityForDriverStage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141268490",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void *Find(void *mgr, char flag, uint16_t stage, uint8_t strict)",
+  "evidence": "decomp:re/decomp/141268490.c;xref:0x140a80ad7;xref:0x140bf1aea;xref:0x140bf2165",
+  "notes": "myteam-g2: Scans activity list (mgr+0x50..0x58) for an item at stage >= given (== with strict flag), with a valid driver id (*(item+0x10)+8 != -1), then finds its entry in the swiss-table at mgr+0x20 (stride 0xc0); returns the activity or 0. Used by timeline initialisation."
+ },
+ "signature": {
+  "id": "career.find_activity_for_driver_stage",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 4C 8B 79 50 4C 8B 61 58 4D 39 E7 0F 84 ?? ?? ?? ?? 44 89 CB 44 89 C6 49 89 CE 88 54 24 27 4C 8D 2D ?? ?? ?? ?? 48 8D 2D ?? ?? ?? ?? 48 8D 3D ?? ?? ?? ?? EB 28",
+  "match": "0x141268490",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141268490",
+  "kind": "func_start",
+  "names": [
+   "Career_Find_ActivityForDriverStage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x141268490",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141268490.c;xref:0x140a80ad7;xref:0x140bf1aea",
+   "notes": "V9697 Near twin of 141243f60: kind byte matched at entry+0x10, stage compare is strictly greater unless the flag allows equal (not >= / == as claimed); driver id != -1 and swiss-table lookup match."
+  }
+ ],
+ "proofs": []
+}

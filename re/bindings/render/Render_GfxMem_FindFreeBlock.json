@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_GfxMem_FindFreeBlock",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a2fbc0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a2fbc0.c;xref:0x1439e6eb9",
+  "notes": "Skip-list style search (stack array of up to 0x20 node ptrs, key at node+0x2c) for a free memory block >= param_3; initialises result {0, 0xffffffff}. 412 bytes. Callers Render_GfxMem_Allocate (0x1439e6eb9), 0x143a2fb38. Hypothesis."
+ },
+ "signature": {
+  "id": "render.gfx_mem_find_free_block",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 20 01 00 00 48 89 D0 48",
+  "match": "0x143a2fbc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a2fbc0",
+  "kind": "func_start",
+  "names": [
+   "Render_GfxMem_FindFreeBlock"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x143a2fbc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a2fbc0.c;xref:0x1439e6eb9",
+   "notes": "V8532 skip-list search with stack array of node ptrs, key at node+0x2c, result init {0,0xffffffff}"
+  }
+ ],
+ "proofs": []
+}

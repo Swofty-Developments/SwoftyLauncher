@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SettingsTabbingBaseViewModel_ApplyFilterRebuildCategories",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141dd1af0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141dd1af0.c;xref:0x14574e878",
+  "notes": "Settings hub override (vt slot @0x14574e878): applies the filter then rebuilds the category tiles: cat_time_trial, cat_story_options, lng_cat_zenith_difficulty, lng_cat_advance_career/story/event_mode, career_wizard safety-rating popup (lng_safety_rating_%s_text_1..4, show_safety_rating), F1 World tech level overrides (#overrides.f1_world.tech_level_bg_large.*), block_%d/tile_%d; calls Game_SettingsTabbingBaseViewModel_WorkoutCategoriesAction and fires rebuilt_list. Shares the inlined UIOptionsSystem::setSelectedFilter block: filter level global 0x14606aa34 (0=filter_basic,1=filter_advanced,2=filter_expert) is matched by name in the options list [this+0x630]+0x70..0x78, then UIOptionsSystem refresh 0x142adc6d0(this+0x640 if this[0x114]) and vcall this+0x118 (refresh view). Addon: where settings categories per game mode are chosen (add/hide category tiles). | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2464)"
+ },
+ "signature": {
+  "id": "game.settings_tabbing_base_view_model_apply_filter_rebuild_categories",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 03 00 00 C5 F8 29 B4 24",
+  "match": "0x141dd1af0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141dd1af0",
+  "kind": "func_start",
+  "names": [
+   "Game_SettingsTabbingBaseViewModel_ApplyFilterRebuildCategories"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-a",
+   "kind": "func",
+   "item": "Game_SettingsTabbingBaseViewModel_ApplyFilterRebuildCategories",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141dd1af0.c;xref:0x141dd1af0",
+   "notes": "V2464 Role, offsets and calls checked against decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

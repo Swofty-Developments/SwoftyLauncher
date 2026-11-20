@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_TeamHqMyTeam_FindBoundStatId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422b6830",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint64_t Vm_TeamHqMyTeam_FindBoundStatId(void *vm)",
+  "evidence": "decomp:re/decomp/1422b6830.c;xref:0x1422b8c4a;xref:0x142329e31;xref:0x14232e6a5",
+  "notes": "myteam-g2: Same bound-chain walk as Vm_TeamHqMyTeam_FindBoundIndexA but for the statId binding at vm+0xa8 (string statId). Returns the stat id shown by the My Team header slot."
+ },
+ "signature": {
+  "id": "vm.team_hq_my_team_find_bound_stat_id",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 40 48 8B 81 A8 00 00 00",
+  "match": "0x1422b6830",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422b6830",
+  "kind": "func_start",
+  "names": [
+   "Vm_TeamHqMyTeam_FindBoundStatId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1422b6830",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422b6830.c;xref:0x1422b8c4a",
+   "notes": "V10077 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

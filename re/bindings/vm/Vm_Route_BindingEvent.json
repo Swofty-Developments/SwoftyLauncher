@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_Route_BindingEvent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1414bf420",
+  "level": "L1",
+  "subsystem": "vm",
+  "proto": "-",
+  "evidence": "pat:10-entry-jump-table;kb:subsystems/rnd_ui.md#pie",
+  "notes": "View-model vt[11]: Vm_Dispatch_BindingMessage (0x1442c00e0) delivers a 0x4d binding event here; a 10-entry jump table maps ev 0->slot 13, 1->14, 2->20+15 (when +0x628&1), 3->6, 4->7, 7->19, 8->20, 9->21. For the class-B R&D VM slot 19 is Career_Build_RnDPieOverview. No E8 callers."
+ },
+ "signature": {
+  "id": "vm.route_binding_event",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 83 FA 09 77 2A 48 89 CE 89 D0 48",
+  "match": "0x1414bf420",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1414bf420",
+  "kind": "func_start",
+  "names": [
+   "Vm_Route_BindingEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x1414bf420",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1414bf420.c",
+   "notes": "V4874 name/description match decomp: strings and callees consistent (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

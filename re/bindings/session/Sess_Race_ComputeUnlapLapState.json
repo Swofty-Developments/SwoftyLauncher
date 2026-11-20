@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Race_ComputeUnlapLapState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435a85d0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1435a85d0.c;xref:0x140a9ff71,0x142f29579,0x1435a8853",
+  "notes": "(sys, carIdx) picks the smallest valid lap index among 4 signed bytes in the car record (+0x68 table stride 0x28) and compares with total laps [0x145f96450] and the car's lap (+0x28); returns 0xff when none. Hypothesis: laps-behind / rejoin eligibility. Callers: Sess_SafetyCar_CanVehicleRejoin, strategy update. (5 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "session.race_compute_unlap_lap_state",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 0F B6 C2 4C 8B 59 68 48 8D 34",
+  "match": "0x1435a85d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435a85d0",
+  "kind": "func_start",
+  "names": [
+   "Sess_Race_ComputeUnlapLapState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x1435a85d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435a85d0.c;xref:0x140a9ff71",
+   "notes": "V6762 4 signed bytes stride 0x28, 0xff none, total laps byte verified"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "site_Game_SaveData_ContainersChildren",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143651be4",
+  "type": "code",
+  "level": "L3",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/143651030.c;xref:0x143651bde,0x143651c47;trace:T010/run2:86526;trace:T010/run4:86637;trace:T010/run3",
+  "notes": "In Game_SaveData_SerialiseContainer_2, the first instruction after the 'containers' child count was written and checked (mov [r12],eax; test; jne 0x143651cbc at 0x143651bde), before the child loop 0x143651bfc. Every child is written to [rsp+0x50] as name (string type vt+0x78), the bag type id [rsp+0x58] (u32, 0x143651c47) and the recursive body. Bytes written here land after the count and before the first registered child. EA (re/db/builds/ea.json): EA 0x143641de4 in Game_SaveData_SerialiseContainer_2 EA 0x143641230, which is instruction-for-instruction Steam's (801 instructions, same registers and rsp slots), so the splice's r12, r15 and [rsp+0x30/0x38/0x50/0x58/0x90] reads hold the same values; only the lea rbp disp32 in expect differs (EA 48 8D 2D DD D8 C1 02, the string64 type record at the 0x135c70 data shift of g_Ne_StringTable)."
+ },
+ "signature": {
+  "id": "game.save_data_containers_children",
+  "section": ".xtls",
+  "pattern": "41 89 04 24 85 C0 0F 85 ?? ?? ?? ?? 48 8D 2D",
+  "match": "0x143651bd8",
+  "anchor": "0xc",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143651be4",
+  "kind": "mid",
+  "expect": "48 8D 2D 6D 7E AD 02",
+  "names": [
+   "site_Game_SaveData_ContainersChildren"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-27",
+    "by": "splicesaves",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/career/save_splice.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-27",
+   "verifier": "splice-verify",
+   "kind": "global",
+   "item": "site_Game_SaveData_ContainersChildren",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143651030.c;decomp:re/decomp/1439477a0.c;xref:0x143651bd8,0x143651bde,0x143651be4;xref:0x143651c18,0x143651c25,0x143651c47,0x143651c7a,0x143651c9d;xref:0x14365199f,0x14365188e",
+   "notes": "V1114 sigcheck game.save_data_containers_children OK (target 0x143651be4). Instruction boundary; no branch targets it or +1..+4; reached only by fall-through from 0x143651bde jne 0x143651cbc after mov [r12],eax; test eax,eax, i.e. only when the count write returned 0. Then rbp=0x146129a58 (st64 type), r13=rsp+0x90, rdi=[rsp+0x38]; loop 0x143651bfc: rbx=[rdi] child; [rsp+0x90]={0x145892430, child+0x70}; call [0x146129a58].vt+0x78(type, rsp+0x90, [rsp+0x50]); then [rsp+0x50]->vt+0x48(stream, rsp+0x58, 4); then the recursive body call 0x143651030(child, r12, r14=stream, [rsp+0x78], [rsp+0x180], [rsp+0x188]) at 0x143651c7a; rdi+=8 until r15. [rsp+0x58] low dword = k_Ne_PropertyType_Bag vt+0x10 ('pbag'), last written at 0x14365199f. Item 2 frame values still hold here: the only instruction between is the stream write call, which reads rsp+0x90; [rsp+0x90] still equals the count at this address and is first overwritten at 0x143651c03. The loop is do-while with no begin!=end test at entry; it relies on the empty case having already left at 0x143651ab2 (begin==end -> join), so the vector is non-empty here. Any loop write failure exits to 0x143651cbc; a recursive failure goes via 0x143651e24 (sets [r12+0x10]) then 0x143651cbc."
+  },
+  {
+   "date": "2026-10-27",
+   "verifier": "easites-verify",
+   "kind": "sig",
+   "item": "game.save_data_containers_children",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "sig:game.save_data_containers_children;xref:0x143651be4,0x143651030,0x143651bbf,0x146129a58;pat:41 89 04 24 85 C0 0F 85 ?? ?? ?? ?? 48 8D 2D",
+   "notes": "V1149 EA overlay: the pattern matches EA .rdata once at 0x3641dd8, and the target 0x143641de4 holds 48 8D 2D DD D8 C1 02 (lea rbp of 0x14625f6c8, which reads string64 at +0x10 in the dump; Steam 0x146129a58 and EA 0x14625f6c8 each have 85 rel32 refs, 81 checked map one to one). EA SerialiseContainer_2 0x143641230 is instruction-identical to Steam 0x143651030 (801 insns, same frame, site at +0xbb4), so r12, r15 and [rsp+0x30/0x38/0x50/0x58/0x90] hold the same values at the children and count sites, and the jne before the site goes to ContainersDone 0x143641ebc as on Steam."
+  }
+ ],
+ "proofs": []
+}

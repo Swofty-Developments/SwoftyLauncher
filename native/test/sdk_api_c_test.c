@@ -23,7 +23,8 @@ _Static_assert(sizeof(SwoftyText) == 16, "text layout");
 _Static_assert(SWOFTY_MEM_VERSION == 1 && offsetof(SwoftyMem, readable) == 8 && offsetof(SwoftyMem, invalidate) == 16 &&
                    sizeof(SwoftyMem) == 24,
                "memory table version 1 layout");
-_Static_assert(SWOFTY_TOO_SMALL == 4 && SWOFTY_SCOPE_CAREER == 2 && SWOFTY_SCOPE_AUTOMATIC == 3 && SWOFTY_PHASE_AFTER == 2, "codes");
+_Static_assert(SWOFTY_TOO_SMALL == 4 && SWOFTY_SCOPE_CAREER == 2 && SWOFTY_SCOPE_AUTOMATIC == 3 && SWOFTY_PHASE_AFTER == 2,
+               "codes");
 
 #define SWOFTY_C_SIZE(C, ns, T, n) _Static_assert(sizeof(C) == n, #C " size");
 SWOFTY_EV_PAYLOADS(SWOFTY_C_SIZE)

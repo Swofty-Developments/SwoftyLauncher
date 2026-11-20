@@ -4,7 +4,7 @@
 #pragma once
 #include <swofty_api.h>
 
-#include "live_corners_data.hpp"
+#include "core/live/live_corners_data.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -26,15 +26,30 @@ struct Alias {
 inline const Alias *aliases(size_t &n)
 {
     static const Alias table[] = {
-        {0, {"melbourne", "australia", "albert"}}, {2, {"shanghai", "china"}}, {3, {"sakhir", "bahrain"}},
-        {4, {"catalunya", "barcelona", "spain"}}, {5, {"monaco", "montecarlo"}}, {6, {"montreal", "canada"}},
-        {7, {"silverstone", "britain", "greatbritain"}}, {9, {"hungaroring", "hungary", "budapest"}},
-        {10, {"spa", "belgium", "francorchamps"}}, {11, {"monza", "italy"}}, {12, {"singapore", "marinabay"}},
-        {13, {"suzuka", "japan"}}, {14, {"abudhabi", "yas", "yasmarina"}}, {15, {"austin", "texas", "cota"}},
-        {16, {"interlagos", "brazil", "saopaulo"}}, {17, {"spielberg", "austria", "redbullring"}},
-        {19, {"mexico", "mexicocity"}}, {20, {"baku", "azerbaijan"}}, {26, {"zandvoort", "netherlands"}},
-        {27, {"imola", "emilia", "emiliaromagna"}}, {29, {"jeddah", "saudi", "saudiarabia"}}, {30, {"miami"}},
-        {31, {"vegas", "lasvegas"}}, {32, {"losail", "qatar"}},
+        {0, {"melbourne", "australia", "albert"}},
+        {2, {"shanghai", "china"}},
+        {3, {"sakhir", "bahrain"}},
+        {4, {"catalunya", "barcelona", "spain"}},
+        {5, {"monaco", "montecarlo"}},
+        {6, {"montreal", "canada"}},
+        {7, {"silverstone", "britain", "greatbritain"}},
+        {9, {"hungaroring", "hungary", "budapest"}},
+        {10, {"spa", "belgium", "francorchamps"}},
+        {11, {"monza", "italy"}},
+        {12, {"singapore", "marinabay"}},
+        {13, {"suzuka", "japan"}},
+        {14, {"abudhabi", "yas", "yasmarina"}},
+        {15, {"austin", "texas", "cota"}},
+        {16, {"interlagos", "brazil", "saopaulo"}},
+        {17, {"spielberg", "austria", "redbullring"}},
+        {19, {"mexico", "mexicocity"}},
+        {20, {"baku", "azerbaijan"}},
+        {26, {"zandvoort", "netherlands"}},
+        {27, {"imola", "emilia", "emiliaromagna"}},
+        {29, {"jeddah", "saudi", "saudiarabia"}},
+        {30, {"miami"}},
+        {31, {"vegas", "lasvegas"}},
+        {32, {"losail", "qatar"}},
     };
     n = std::size(table);
     return table;

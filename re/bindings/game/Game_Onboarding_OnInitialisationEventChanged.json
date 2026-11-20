@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Onboarding_OnInitialisationEventChanged",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143848840",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name onInitialisationEventChanged (class from the log channel); log channel ONBOARDING: 'onInitialisationEventChanged %d %d'"
+ },
+ "signature": {
+  "id": "game.onboarding_on_initialisation_event_changed",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 4A B8 79 00 00 00",
+  "match": "0x143848840",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143848840",
+  "kind": "func_start",
+  "names": [
+   "Game_Onboarding_OnInitialisationEventChanged"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143848840",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143848840.c;xref:0x1438479f0",
+   "notes": "V6315 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

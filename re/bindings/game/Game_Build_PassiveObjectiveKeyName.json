@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Build_PassiveObjectiveKeyName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14297bd90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_Build_PassiveObjectiveKeyName(void *out, int index)",
+  "evidence": "decomp:re/decomp/14297bd90.c;xref:0x142955b35;xref:0x14295607b;xref:0x1429560d8",
+  "notes": "myteam-g2: Formats a passive_objective_<n> style key with Ne_StrBuf_Printf and checks Gdb_Find_RowByLabel for it; returns the key string or an Invalid marker. Helper of the passive-objective My Team attribute modifier."
+ },
+ "signature": {
+  "id": "game.build_passive_objective_key_name",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 48 03 00 00 89 D7 48 89 CE",
+  "match": "0x14297bd90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14297bd90",
+  "kind": "func_start",
+  "names": [
+   "Game_Build_PassiveObjectiveKeyName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x14297bd90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14297bd90.c",
+   "notes": "V10241 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

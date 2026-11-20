@@ -1,0 +1,101 @@
+{
+ "schema": 1,
+ "name": "Game_PitLane_VehicleExiting",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434bf980",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1434bf980.c;xref:0x142f73540,0x1434bcf85,0x1434cb804,0x1434cb81f,0x1434cb832",
+  "notes": "Log channel PITLANE: 'PitLaneSystem::vehicleExitingPitLane(%d:%s)' L2 2026-11-14 (engine-re round 2): decomp read; 5 reference(s) (0x142f73540, 0x1434bcf85, 0x1434cb804, 0x1434cb81f, 0x1434cb832); the body itself references 'PITLANE' / 'PitLaneSystem::vehicleExitingPitLane(%d:%s)'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested) | engine-re 2026-11-17 track round C: sets status 1 OnTrack: any status != 1 -> Game_Pitlane_SetVehicleStatus 0x1434bc540(this, id, 1) at 0x1434bfb01, then MessageCarExitedPitLane (vtable 0x145845968, byte +0x10 = id) through the dispatcher 0x1439876c0 (a vehicle already at 1 gets neither; between the two a conditional 0x14389cc90 call). A vehicle id above 0x1a returns at once. Guard: in sessions whose type [[0x14604c2c8]+0x1a8]+4 is 1..14 or 0x12 (or 0xf..0x11 with bit 3 of byte +7 of the 0x1413ca0d0 result), a vehicle at status 9 InGarage stays when byte +0x1cb of [[[this+0x270]+0x88]+0x260]+0x2b0 is set. It is not the only writer of status 1 (corrected by re-bindings 2026-11-18 from 'the only non-network writer of status 1 during a session'). Among other callers of 0x1434bc540, these pass the constant 1: 0x1434c0050 (reset to track 0x1434bff40), 0x14293fcda (0x14293f9e0), 0x142941260 (0x1429410f0), 0x142d59d76 (Sess_DoughnutSequence_Enter), the .data1 body 0x150472ad2 of stub 0x1434d1490 (a near twin: status 1 and the same message, without the log or the guards) and the .data1 body 0x1504496ac of stub 0x1434cf430 (every vehicle, reached from Game_PitLane_SetInitialStatuses at 0x1434cb34b); Game_PitLane_SetInitialStatuses also passes 1 or 9 at 0x1434cb3d5 and Game_Network_ApplyInitialPitAndGridState a computed status at 0x143251cc9. Callers: the plr_pit_trgr exit callback 0x1434cb7f0 (je at 0x1434cb804, jmp at 0x1434cb81f and 0x1434cb832; also with vehicle 0xff when the entity is unknown, which returns at once), Game_PitLane_IllegalPitEntry (call at 0x1434bcf85) and 0x142f71790 (call at 0x142f73540). So EnteringPitBox (3) -> OnTrack (1) happens when the car leaves the plr_pit_trgr TrackMarkup zone before the stop is done (pit box outside / beyond the zone, car pushed out of it) or on an illegal entry. raised by engine-re with --force 2026-11-17 at user request (lane owner review requested) | re-bindings 2026-11-18: the writers of status 1 are no longer given as a complete list, from the blind partial."
+ },
+ "signature": {
+  "id": "game.pit_lane_vehicle_exiting",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 89 D3 48 89 CE 48 8B 81 70 02 00 00",
+  "match": "0x1434bf980",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434bf980",
+  "kind": "func_start",
+  "names": [
+   "Game_PitLane_VehicleExiting"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1434bf980",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434bf980.c;xref:0x142f73541",
+   "notes": "V6020 name and description match body; log string/pretty name present"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x1434bf980",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1434bf980-0x1434bfbfe;xref:0x142f73540,0x1434bcf85,0x1434cb804,0x1434cb81f,0x1434cb832",
+   "notes": "V10505 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Refs: call 0x142f73540, call 0x1434bcf85, jcc 0x1434cb804, jmps 0x1434cb81f/0x1434cb832. PitLaneSystem::vehicleExitingPitLane(%d:%s). 2 args."
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "trkps-verify",
+   "kind": "func",
+   "item": "Game_PitLane_VehicleExiting",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1434bf980.c;xref:0x1434bfb01",
+   "notes": "V11208 status!=1 -> 0x1434bc540(..,1) at 0x1434bfb01 confirmed, but guards: id>0x1a returns; in some sessions (type 0xf-0x11 flag or not 1..14/0x12) with flag +0x1cb returns if status 9. E8-scan 0x1434a-0x1434f: constant r8d=1 only at 0x1434bfb01/0x1434c0050, r8d=3 only 0x1434b8048 - BUT SetInitialStatuses also sets 1 (0x1434cb3d5 computed 1/9; .data1 0x1504496a6)."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings",
+   "kind": "func",
+   "item": "Game_PitLane_VehicleExiting",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1434bf980-0x1434bfbfe;xref:0x1434bfb01,0x14293fcda,0x142941260,0x142d59d76,0x1434c0050,0x1434cb804",
+   "notes": "V20010 Re-check of the notes after V11208. Holds: PITLANE and the vehicleExitingPitLane format string, status != 1 -> 0x1434bc540(this, id, 1) at 0x1434bfb01, message 0x145845968. Wrong: 'the only non-network writer of status 1 during a session': 0x1434bc540 also gets the constant 1 at 0x14293fcda, 0x142941260 and 0x142d59d76 (all 40 call sites read). Imprecise: the +0x1cb status 9 guard holds only for some session types; ids above 0x1a return at once; 0x1434cb7f0 enters by three branches (je 0x1434cb804, jmp 0x1434cb81f, 0x1434cb832); the call sites are 0x1434bcf85 and 0x142f73540. The notes are corrected; the agree must come from a verifier who did not correct them."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_PitLane_VehicleExiting",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1434bf980-0x1434bfc00, 0x1434cb760-0x1434cb8a0, 0x1434cb0a0-0x1434cb160, 0x1434bc540-0x1434bc6a0, 0x1439876c0-0x143987800, 0x1434cb300-0x1434cb470, 0x143251c60-0x143251d00, 0x1434d1bc0-0x1434d1c60, 0x150472ac0-0x150472b80, 0x150449670-0x1504496b8;xref:0x1434bf9fa,0x1434bfa2a,0x1434bfa03,0x1434bfa1c,0x1434bfaec,0x1434bfb01,0x1434bfb83,0x1434bfb9c,0x1434cb804,0x1434cb81f,0x1434cb832,0x1434cb0db,0x142f73540,0x1434bcf85,0x1434d1490,0x150472acc,0x1504496a6,0x1434cb34b,0x1434d1e3c",
+   "notes": "V20014 Blind: own capstone read of 0x1434bf980-0x1434bfbfe and every rel32 site of it and of 0x1434bc540 in .xtls and executable .data1, derived before reading the notes. Confirmed: PITLANE log, 5 refs, id>0x1a return, InGarage(9) guard and mode test, already-OnTrack exit 0x1434bfaec, 0x1434bc540(this,id,1) at 0x1434bfb01, MessageCarExitedPitLane (vtable 0x145845968) via 0x1439876c0, the 4 const-1 sites, 1/9 at 0x1434cb3d5, computed 0x143251cc9, delegate 0x1434cb7f0 for type 0x11 plr_pit_trgr. Wrong: 40 call sites; .xtls has 41 calls + jmp 0x1434d1e4f (status [rsi+0x14]), .data1 7 more, two passing 1: 0x150472ad2 (stub 0x1434d1490: status 1 + same message, 5 callers) and 0x1504496ac (stub 0x1434cf430, all cars, from 0x1434cb34b)."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_PitLane_VehicleExiting",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1434bf980-0x1434bfc00, 0x1434bc540-0x1434bc640, 0x1434cb000-0x1434cb200, 0x1434cb300-0x1434cb470, 0x1434cb760-0x1434cb8d0, 0x1434bceb0-0x1434bcfa0, 0x142f73440-0x142f73560, 0x1434bff40-0x1434c0080, 0x143251c60-0x143251cf0, 0x150472ac0-0x150472bed, 0x150449670-0x150449780, 0x1434e4a00-0x1434e4b80, 0x1434cf7c0-0x1434cfa00;xref:0x1434bf9fa,0x1434bfa03,0x1434bfa1c,0x1434bfa2a,0x1434bfaf0,0x1434bfb01,0x1434bfb6e,0x1434bfb83,0x1434bfb9c,0x142f73540,0x1434bcf85,0x1434cb804,0x1434cb81f,0x1434cb832,0x1434cb0db,0x1434c004a,0x14293fcd4,0x14294125a,0x142d59d70,0x1434d1490,0x150472acc,0x1434cb34b,0x1434cf430,0x1434cb402,0x143251cc6",
+   "notes": "V20017 Blind: own capstone read of 0x1434bf980-0x1434bfbff plus E8/E9/0F8x rel32 scans of .xtls and .data1, derived before reading the notes. Confirmed: exactly 5 refs (calls 0x142f73540, 0x1434bcf85; je 0x1434cb804, jmp 0x1434cb81f/0x1434cb832 in callback 0x1434cb7f0, registered for markup id 0x11 = plr_pit_trgr, dl=0xff on miss); id>0x1a returns; type guard 1..14/0x12/0xf..0x11+bit3 with flag +0x1cb keeps status 9; PITLANE log; status!=1 -> 0x1434bc540(this,id,1) at 0x1434bfb01, conditional 0x14389cc90, MessageCarExitedPitLane vptr 0x145845968, byte +0x10 via 0x1439876c0. All 6 listed constant-1 setter sites, stubs 0x1434d1490/0x1434cf430, 1-or-9 at 0x1434cb3d5, r12d at 0x143251cc9 match. Names unchecked."
+  }
+ ],
+ "proofs": []
+}

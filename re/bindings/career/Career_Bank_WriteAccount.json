@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Bank_WriteAccount",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c6dcb0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t (void *account, void **json)",
+  "evidence": "decomp:re/decomp/140c6dcb0.c;xref:0x140c5f851;xref:0x140c60251",
+  "notes": "myteam-g1: Writes one bank account: accountGUID (+8), accountType (+0xc), amount (+0x10), minimumAmount (+0x14), completed_transactions (+0x38), pending_transactions (+0x18), has_budget (account+0x1a0 != 0) and budget (+0x60). Account struct is 0x1b0 bytes."
+ },
+ "signature": {
+  "id": "career.bank_write_account",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 78 C5 78 29 44 24 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 48 89 D7 48 89 CE 66 83 7A 12 07",
+  "match": "0x140c6dcb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c6dcb0",
+  "kind": "func_start",
+  "names": [
+   "Career_Bank_WriteAccount"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-a",
+   "kind": "func",
+   "item": "0x140c6dcb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c6dcb0.c;str:\"has_budget\";str:\"completed_transactions\"",
+   "notes": "V8968 Writes the same keys from account+8/+0xc/+0x10/+0x14/+0x38/+0x18; has_budget = (account+0x1a0 != 0), budget via 140c6ef50 at +0x60. 0x1b0 account size confirmed by the stride in the save writer."
+  }
+ ],
+ "proofs": []
+}

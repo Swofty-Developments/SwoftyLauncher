@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationDecals_DestroyMaterialOverride",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a92700",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a92700.c;xref:0x142a924a7,0x142a92ece",
+  "notes": "destroyClonedMaterialOverride per vehicle (NeMultiSubMaterialResourceFactory destroyOverrideMaterialAsync, body material proxy). Called by Game_CustomDecalModel_Bake. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3099)"
+ },
+ "signature": {
+  "id": "game.customisation_decals_destroy_material_override",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 80 3D ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? B8 54 01 00 00",
+  "match": "0x142a92700",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a92700",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomisationDecals_DestroyMaterialOverride"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d12-verify",
+   "kind": "func",
+   "item": "Game_CustomisationDecals_DestroyMaterialOverride",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a92700.c;xref:0x142a92700",
+   "notes": "V3099 strings/offsets/calls match claim"
+  }
+ ],
+ "proofs": []
+}

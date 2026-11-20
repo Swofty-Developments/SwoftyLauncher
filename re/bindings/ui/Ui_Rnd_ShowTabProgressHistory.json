@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Rnd_ShowTabProgressHistory",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c43710",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void FUN(void *view, void *ctx)",
+  "evidence": "decomp:re/decomp/141c43710.c;xref:0x141c41ced",
+  "notes": "myteam-g1: UI binding code; tab_content_rnd_upgrades_progress_history. Static, string-key driven."
+ },
+ "signature": {
+  "id": "ui.rnd_show_tab_progress_history",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 4D 89 CF",
+  "match": "0x141c43710",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c43710",
+  "kind": "func_start",
+  "names": [
+   "Ui_Rnd_ShowTabProgressHistory"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141c43710",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c43710.c;xref:0x141c41ced",
+   "notes": "V9959 Shows tab_content_rnd_upgrades_progress_history with lng_r_and_d_history."
+  }
+ ],
+ "proofs": []
+}

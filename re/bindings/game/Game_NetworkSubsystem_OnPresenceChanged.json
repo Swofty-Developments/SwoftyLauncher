@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkSubsystem_OnPresenceChanged",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430f53f0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=NetworkSubsystem::onPresenceChanged; log channel NETWORK-PRESENCE: 'virtual void network::NetworkSubsystem::onPresenceChanged(NEuint8, neon::NePresence *, neon::NePresence::PresenceStatus, neon::NePresence::PresenceStatus) | %s: CurrentPresence signed in.'"
+ },
+ "signature": {
+  "id": "game.network_subsystem_on_presence_changed",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 4C 89 C7 48 89 CE 8B 44 24 60",
+  "match": "0x1430f53f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430f53f0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkSubsystem_OnPresenceChanged"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430f53f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430f53f0.c;xref:0x14288c8a3",
+   "notes": "V5403 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

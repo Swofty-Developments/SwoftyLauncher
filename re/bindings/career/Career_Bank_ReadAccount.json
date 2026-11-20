@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Bank_ReadAccount",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c6d3d0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int (void *account_obj, void *json, int64_t flags)",
+  "evidence": "decomp:re/decomp/140c6d3d0.c;xref:0x140c5e052;xref:0x140c5ebbe",
+  "notes": "myteam-g1: Reads one bank account: accountGUID (+8), accountType (+0xc), amount (+0x10), minimumAmount (+0x14), pending_transactions (+0x18), completed_transactions (+0x38), has_budget/budget (+0x60 via Career_Bank_ReadBudgetData). Account amount at +0x10 is the balance."
+ },
+ "signature": {
+  "id": "career.bank_read_account",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 70 01 00 00 C5 F8 29 B4 24 60 01 00 00 4C 89 C3",
+  "match": "0x140c6d3d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c6d3d0",
+  "kind": "func_start",
+  "names": [
+   "Career_Bank_ReadAccount"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-a",
+   "kind": "func",
+   "item": "0x140c6d3d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c6d3d0.c;xref:0x140c5d990;str:\"accountGUID\";str:\"minimumAmount\"",
+   "notes": "V8967 Field offsets match: GUID +8 (u32), type byte +0xc, amount +0x10, minimumAmount +0x14, completed +0x38 (param_1+7), pending +0x18 (param_1+3), has_budget then budget handed to 140c6f9e0 at +0x60 (param_1+0xc). All strings resolved in order."
+  }
+ ],
+ "proofs": []
+}

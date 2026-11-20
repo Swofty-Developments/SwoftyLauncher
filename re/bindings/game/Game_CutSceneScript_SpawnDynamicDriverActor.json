@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CutSceneScript_SpawnDynamicDriverActor",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140244660",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140244660.c;xref:0x1455eb208,0x1455eb9b8",
+  "notes": "Shared CutSceneScript virtual (119 vtable slots) that spawns DynamicDriverActor/DynamicCasualDriverActor from the cutscene params: chooses outfit scene by flags (SpawndriverWithHelmet..NoGloves/NoBoots/NoHans/NoBalaclava, NoHelmet, HeadOnly, BodyOnlyFirstPerson, RaceSuitFirstPerson, Gendered/LowQuality), copySkinColour, team owner/teammate; logs CUTSCENE_SCRIPT when no driver/animation set. Addon: driver outfit variants used in cutscenes. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2806)"
+ },
+ "signature": {
+  "id": "game.cut_scene_script_spawn_dynamic_driver_actor",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 03 00 00 C5 F8 29 B4 24 50 03 00 00 4C 89 8C 24",
+  "match": "0x140244660",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140244660",
+  "kind": "func_start",
+  "names": [
+   "Game_CutSceneScript_SpawnDynamicDriverActor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d9-verify",
+   "kind": "func",
+   "item": "Game_CutSceneScript_SpawnDynamicDriverActor",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140244660.c;xref:0x140244660",
+   "notes": "V2806 strings/calls/offsets checked in decomp+disasm; role and name hold"
+  }
+ ],
+ "proofs": []
+}

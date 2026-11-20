@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Trk_CareerWizardTrackSelectVm_OnCommandRaised",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a325e0",
+  "level": "L2",
+  "subsystem": "tracks",
+  "proto": "int *Trk_CareerWizardTrackSelectVm_OnCommandRaised(void *vm, uint32_t **cmd)",
+  "evidence": "decomp:re/decomp/141a325e0.c;decomp:re/decomp/141b3efb0.c;xref:0x145728140;kb:subsystems/tracks.md#select",
+  "notes": "slot 10 of vt_Trk_CareerWizardTrackSelectVm (only reference 0x145728140). djb2 switch on **cmd: advance_pressed 0xfc8f026c (game mode check via RTTI 0x146129ca0 and 0x140778420, then continuation 0x141a33df0), reset_to_default 0x3a9d59ae, selected_track_changed 0xdcd54bcb (round_number, track_set_name lookup, 0x1407a17a0, contextual_ui_data), 0x6457e9ec, 0xb1b04119, and 0xf59cda77 (djb2 of 'update_tracks_selected', found by a dictionary search; the string itself is not in the exe, so the label is a match, not a read: its branch 0x141a3263d takes the last item of the list [[vm+0x3a8]+0xa8], passes it to 0x1414c70f0([vm+0x3a8]+0xc0, item) and calls 0x141a34320). track_list_type (djb2 0xec606116) is a VM child read in the reset_to_default branch (0x141a326ca), not a command (corrected per V10384). Raises track_selection_updated (0x141a32b0c); track_toggled is raised in 0x141a32fe0, reached by the tail jmp 0x141a32d74. Career calendar wizard (custom calendar), not a box track list. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "tracks.career_wizard_track_select_vm_on_command_raised",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 01 00 00 C5 F8 29 B4 24 30 01 00 00 48 89 D7 48 89 CE E8 ?? ?? ?? ?? 48 8B 07",
+  "match": "0x141a325e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a325e0",
+  "kind": "func_start",
+  "names": [
+   "Trk_CareerWizardTrackSelectVm_OnCommandRaised"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "trk-t5",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/tracks/track_select.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x141a325e0",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x141a325e0-0x141a32fd3;xref:0x145728140",
+   "notes": "V10384 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only ref abs64 0x145728140 = slot 10 of 0x1457280f0. Hash constants match djb2 (h*33+c): advance_pressed 0xfc8f026c, reset_to_default 0x3a9d59ae, selected_track_changed 0xdcd54bcb; 0x6457e9ec, 0xb1b04119, 0xf59cda77 also compared. RTTI 0x146129ca0 + 0x140778420 + continuation 0x141a33df0 (lea 0x141a32c2f) on advance; 0x1407a17a0; round_number/track_set_name/contextual_ui_data strings; track_selection_updated raised at 0x141a32b0c; track_toggled is raised in 0x141a32fe0 reached by tail jmp 0x141a32d74. DIFFERENCE: 0xf59cda77 is NOT the track_list_type case (djb2(track_list_type)=0xec606116): track_list_type is read in the reset_to_default branch (0x141a326ca). The 0xf59cda77 branch (0x141a3263d) takes the last item of the list [[vm+0x3a8]+0xa8], passes it to 0x1414c70f0(+0x3a8 obj+0xc0, item) and calls 0x141a34320. Role/name/proto fine, notes need the hash label fix."
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x141a325e0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x141a325e0-0x141a32fd3;xref:0x145728140",
+   "notes": "V10533 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Re-check of V10384: djb2(update_tracks_selected) = 0xf59cda77 (computed), string absent from the exe (my scan), branch 0x141a3263d as described; djb2(track_list_type) = 0xec606116 read in the reset_to_default branch. Fixed."
+  }
+ ],
+ "proofs": []
+}

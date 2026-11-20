@@ -1,8 +1,8 @@
 #pragma once
 
-#include "liveries.hpp"
-#include "lower.hpp"
-#include "rows.hpp"
+#include "core/apply/content/liveries.hpp"
+#include "core/apply/content/lower.hpp"
+#include "core/apply/content/rows.hpp"
 
 #include <set>
 
@@ -28,9 +28,9 @@ inline constexpr const char *KIT_YEARS = "entrants.team_customisation";
 inline constexpr const char *STATS_TABLE = "driver_statistics.driver_statistics";
 inline constexpr const char *WEAR_RATES = "engine_management.driver_wear_rates";
 
-inline constexpr const char *WEAR_REGISTRIES[] = {"helmet", "suit", "gloves", "driver.head", "driver.look",
-                                                  "driver.person", "driver.identity", "driver.stats",
-                                                  "wearable.season_set"};
+inline constexpr const char *WEAR_REGISTRIES[] = {"helmet",          "suit",         "gloves",
+                                                  "driver.head",     "driver.look",  "driver.person",
+                                                  "driver.identity", "driver.stats", "wearable.season_set"};
 
 inline bool is_wear_registry(std::string_view reg)
 {
@@ -50,15 +50,9 @@ struct WearCtx {
     std::map<std::string, std::string> person_driver;
 };
 
-inline std::string label_of(const Lookup &lookup, const char *reg, std::string_view id)
-{
-    return record_label(lookup, reg, id);
-}
+inline std::string label_of(const Lookup &lookup, const char *reg, std::string_view id) { return record_label(lookup, reg, id); }
 
-inline std::string person_key(std::string_view id)
-{
-    return "person/" + key_of(id);
-}
+inline std::string person_key(std::string_view id) { return "person/" + key_of(id); }
 
 inline std::string archive_file(const Value &p)
 {
@@ -87,10 +81,7 @@ inline std::string argb_text(std::string_view c)
     return std::to_string(static_cast<int32_t>(v));
 }
 
-inline std::string text_of(const Value &t)
-{
-    return title_text(t);
-}
+inline std::string text_of(const Value &t) { return title_text(t); }
 
 inline std::string driver_name_tag(std::string_view label, std::string_view part)
 {
@@ -278,7 +269,7 @@ inline void lower_head(const std::string &id, const Value &rec, const Lookup &lo
     std::string addon = addon_of(id);
     std::string heads = "asset_groups/animation_package/scenes/cinematics/drivers/";
     for (auto [kind, value] : {std::pair<const char *, std::string>{"heads", folder_file(rec["archive"], label)},
-                                {"morph_poses", folder_file(rec["morph"], label)}}) {
+                               {"morph_poses", folder_file(rec["morph"], label)}}) {
         if (value.empty())
             continue;
         Group g;
@@ -334,9 +325,9 @@ inline void lower_person(const std::string &id, const Value &rec, const Lookup &
 {
     plan.owner = addon_of(id);
     auto it = ctx.person_driver.find(person_key(id));
-    plan.lines.push_back("driver.person " + id + " (" + std::string(rec["name"].as_string()) + "): " + person_key(id) +
-                         (it == ctx.person_driver.end() ? " has no driver"
-                                                        : " resolves to " + label_of(lookup, "driver.identity", it->second)));
+    plan.lines.push_back(
+        "driver.person " + id + " (" + std::string(rec["name"].as_string()) + "): " + person_key(id) +
+        (it == ctx.person_driver.end() ? " has no driver" : " resolves to " + label_of(lookup, "driver.identity", it->second)));
 }
 
 inline void side_row(Plan &plan, const Read &read, const char *table, const char *row, const std::string &donor,
@@ -391,26 +382,29 @@ inline void lower_identity(const std::string &id, const Value &rec, const Lookup
     plan.owner = addon_of(id);
     std::string label = label_of(lookup, "driver.identity", id);
     if (!rec["donor"].is_string()) {
-        plan.lines.push_back("driver.identity " + id + ": no donor row to copy; the record names a driver row something else made, nothing applied");
+        plan.lines.push_back("driver.identity " + id +
+                             ": no donor row to copy; the record names a driver row something else made, nothing applied");
         return;
     }
     if (!rec["look"].is_string() || rec["look"].as_string().empty()) {
-        plan.lines.push_back("driver.identity " + id + ": no look; a seated driver without one hangs the next session load; nothing applied");
+        plan.lines.push_back("driver.identity " + id +
+                             ": no look; a seated driver without one hangs the next session load; nothing applied");
         plan.refused++;
         return;
     }
     std::string donor = label_of(lookup, "driver.identity", rec["donor"].as_string());
     std::string from = row_at(DRIVERS, "driver", donor);
     if (!read(from + "._metadata_")) {
-        plan.lines.push_back("driver.identity " + id + ": the donor row " + donor + " is not in the game database; nothing applied");
+        plan.lines.push_back("driver.identity " + id + ": the donor row " + donor +
+                             " is not in the game database; nothing applied");
         plan.refused++;
         return;
     }
     Value set = Value::object({{"_metadata_", label}, {"available", "True"}});
     const Value &n = rec["names"];
     std::vector<std::string> tags;
-    for (auto [field, key] : {std::pair<const char *, const char *>{"first_name", "first"}, {"last_name", "last"},
-                               {"full_name", "full"}}) {
+    for (auto [field, key] :
+         {std::pair<const char *, const char *>{"first_name", "first"}, {"last_name", "last"}, {"full_name", "full"}}) {
         std::string value = text_of(n[key]);
         if (value.empty())
             continue;
@@ -557,7 +551,8 @@ inline void lower_season_set(const std::string &id, const Value &rec, const Look
         set["stat_id"] = std::to_string(*sid);
     push_row(plan, year_row, year_row + ".team_customisation_0", std::move(set));
     plan.lines.push_back("wearable.season_set " + id + ": kit " + label + " for " + team + " in " + year_row +
-                         (found.empty() ? " (no season_" + std::to_string(year) + " row; the nearest year row, which the game's kit pick falls back to)"
+                         (found.empty() ? " (no season_" + std::to_string(year) +
+                                              " row; the nearest year row, which the game's kit pick falls back to)"
                                         : std::string()) +
                          (list.empty() ? "; no drivers declared, so the kit's suit and gloves replace every driver's"
                                        : "; official looks " + list));

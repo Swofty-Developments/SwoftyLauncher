@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CollisionBasedShakeCameraModifier_OnEnable",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144558650",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144558650.c;xref:0x145bea9d0",
+  "notes": "CollisionBasedShakeCameraModifier: clears this+0x38/+0x80, Car -> this+0x90; once (this+0x98) subscribes bus messages r_car_to_world_col (handler 0x144558d50) and r_car_to_car_col (handler 0x144558e60) via Ne_Subscribe_BusMessage. Camera component onEnable (slot next to the class-name string): binds target entity components via Ne_Entity_FindComponent(target+0x200, type); logs CAMERA warning Problem enabling camera component and returns 0x57 when missing, else 0. Type ids: 0x146ce6690 VehicleProgressComponent, 0x146ce8b40 VehicleDataComponent, 0x146ce8b00 VehicleComponent (its +0x58 = Car). Addon: hook the two collision messages for own camera shake / effects. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2347)"
+ },
+ "signature": {
+  "id": "game.collision_based_shake_camera_modifier_on_enable",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 48 C7 41 38",
+  "match": "0x144558650",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144558650",
+  "kind": "func_start",
+  "names": [
+   "Game_CollisionBasedShakeCameraModifier_OnEnable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d2-verify",
+   "kind": "func",
+   "item": "Game_CollisionBasedShakeCameraModifier_OnEnable",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144558650.c;xref:0x144558650",
+   "notes": "V2347 +0x38/+0x80 cleared, VehicleComponent->Car +0x90, once +0x98, bus msgs r_car_to_world_col (handler 144558d50) and r_car_to_car_col (handler 144558e60) confirmed by strings"
+  }
+ ],
+ "proofs": []
+}

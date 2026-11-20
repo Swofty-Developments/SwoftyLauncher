@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_Read_F1Assists",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446cb880",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "pat:log-channel-PAD_ASSISTS;decomp:re/decomp/1446cb880.c;xref:0x145bfcbf0;kb:subsystems/car.md#assists",
+  "notes": "This is the F1Assists READER (Car_Read_F1Assists; data-class vtable 0x145bfcbe0 slot 2; name kept for its signature). Loads twelve 0x2a8 CarSpline objects via Car_Assets_FindSpline (+0x10 SteerOutRateVSSpeedSpline .. +0x17f8 BrakeVSRearPeakSlipRatioProportionWetSpline, +0x1aa0/+0x1d48 drift splines), the XOR scalars +0x1ff0..+0x20c8 (MinimumSteeringLock .. WheelSteeringDeadzoneIncrement), then the SteerModel*0..2 keys by formatted name. Log channel PAD_ASSISTS ('Failed to load m_steerOutRateVSSpeedSpline spline.'). structs/CarAssists.h  | renamed 2026-10-28 from Car_PadAssist_LoadSteeringSplines: it is the F1Assists data-class reader (vtable 0x145bfcbe0 slot 2), see car.md#assists"
+ },
+ "signature": {
+  "id": "car.pad_assist_load_steering_splines",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 49 89 D4 48 89 CE 4C 8D 41 10",
+  "match": "0x1446cb880",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446cb880",
+  "kind": "func_start",
+  "names": [
+   "Car_Read_F1Assists"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v3",
+   "kind": "func",
+   "item": "Car_Read_F1Assists",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446cb880.c;xref:0x145bfcbf0",
+   "notes": "V1283 Vtable 0x145bfcbe0 slot 2. 10 FindSpline keys at +0x10 stride 0x2a8 to +0x17f8 plus the two drift splines (+0x1d48, +0x1aa0), XOR scalars +0x1ff0..+0x20c8 MinimumSteeringLock..WheelSteeringDeadzoneIncrement, then SteerModel{Speed,MaxLock,SteerInertia,InputStiffness,CounterSteerStiffness}%d for i=0..2 into +0x20e0+i*0x14; PAD_ASSISTS log strings present."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x1446cb880",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446cb880.c",
+   "notes": "V4144 Failed to read / m_steerOutRateVSSpeedSpline / m_lockProportionVSSpeedSpline strings confirmed (vtable/indirect or no direct callsite checked)"
+  }
+ ],
+ "proofs": []
+}

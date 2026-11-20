@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StateFrontendWorld_OnStateInterrupt",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436d7ca0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=StateFrontendWorld::onStateInterrupt; log channel FLOW: 'TEMP_LOG: StateFrontendWorld::onStateInterrupt CONSUMING: %d'"
+ },
+ "signature": {
+  "id": "game.state_frontend_world_on_state_interrupt",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D6 48 89 CF 45 8B 40 10",
+  "match": "0x1436d7ca0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436d7ca0",
+  "kind": "func_start",
+  "names": [
+   "Game_StateFrontendWorld_OnStateInterrupt"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1436d7ca0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436d7ca0.c",
+   "notes": "V6129 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

@@ -56,7 +56,7 @@ struct Rules {
     std::optional<float> refuel_stint_kg;   // content.package 1.5: a pit stop fills to this; empty = race_fuel_kg, else a full tank
     std::optional<float> quali_fuel_kg;     // content.package 1.5: the fuel each car starts qualifying with; empty = the game's
     bool race_start_fuel_from_quali = false; // content.package 1.5: parc ferme, the race starts with the fuel left after qualifying
-    bool race_tyre_change = true;           // content.package 1.5: false keeps the tyres at race pit stops (damage excepted)
+    bool race_tyre_change = true;           // content.package 1.5: false keeps unpunctured tyres at race pit stops
     std::optional<int> race_time_limit_s;   // content.package 1.5: the race time limit in seconds (60..86400); empty = the mode's
     std::string weekend_mode;           // content.package 1.5: a game_setup_modes row whose weekend the box runs; empty = the mode's
     std::optional<std::string> safety_car;   // content.package 1.5: off, reduced, standard or increased; empty = the player's
@@ -131,6 +131,17 @@ struct PitStop {
     uint32_t size, payload_version;
     uint32_t car;
     uint32_t stops;
+};
+
+// A car's pit crew has fitted its tyres at a pit stop (notify), after the game's change (Game_PitLane_ApplyPitstopTyres).
+// kept is 1 when the box rule race_tyre_change false kept the fitted set for this stop.
+struct PitStopTyres {
+    static constexpr const char *point = "session.pit_stop.tyres";
+    static constexpr uint32_t version = 1;
+    uint32_t size, payload_version;
+    uint32_t car;
+    uint8_t kept;
+    uint8_t reserved[3];
 };
 
 }

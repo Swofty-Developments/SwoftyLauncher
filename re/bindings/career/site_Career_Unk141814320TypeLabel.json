@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_Unk141814320TypeLabel",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141814638",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141814320.c;xref:0x141814638,0x14181465a;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v090--the-tyres-upgrade-types-setting-tyres_upgrade_types-default-on-install-time",
+  "notes": "cmp rax,0x12 ; ja 0x14181465a: head of the inlined upgrade type switch in the upgrade card binder 0x141814320 (rax = type). Placing the hook on the head instead of the default 0x14181465a (lea r8,[\"INVALID UPGRADE\"]) is a choice: a redirect from the head leaves every register as the default path does (only the jump-table dispatch writes rax/rcx), and the join (lea rdx,[fmt] ; lea rcx,[buf] ; call Ne_Format_String) reads only r8. rnd-tyres sets r8 = its type suffix for 19..22 and jumps to the join; other types fall through"
+ },
+ "signature": {
+  "id": "career.unk141814320_type_label",
+  "section": ".xtls",
+  "pattern": "41 0F B6 46 70 48 83 F8 12 77 1C 48 8D 0D",
+  "match": "0x141814633",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141814638",
+  "kind": "mid",
+  "expect": "48 83 F8 12 77 1C",
+  "names": [
+   "site_Career_Unk141814320TypeLabel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-a",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_upgrade_types.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-1",
+   "kind": "global",
+   "item": "site_Career_Unk141814320TypeLabel",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141814320.c;xref:0x141814633,0x141814638,0x14181463c,0x14181464c,0x14181465a",
+   "notes": "V0044 movzx eax,[r14+0x70] ; cmp rax,0x12 ; ja 0x14181465a (6 bytes) head; default is lea r8 'INVALID UPGRADE'; join only reads r8 (rax/rcx clobbered by call). Note: rationale 'default has no unique signature' is inaccurate (a head-to-default pattern 0x141814633..0x141814661 is unique), harmless"
+  }
+ ],
+ "proofs": []
+}

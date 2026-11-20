@@ -558,7 +558,10 @@ struct F1SeasonStandings {
     uint8_t _pad_0x8[0x18];
     StandingsRound *points_begin; // L2 experimental
     StandingsRound *points_end; // L2 experimental
-    uint8_t _pad_0x30[0x78];
+    uint8_t _pad_0x30[0x10];
+    StandingsRound *table_begin; // L2 experimental
+    StandingsRound *table_end; // L2 experimental
+    uint8_t _pad_0x50[0x58];
     StandingsPoints *extra_points_begin; // L2 experimental
     StandingsPoints *extra_points_end; // L2 experimental
     uint8_t _pad_0xb8[0x18];
@@ -568,6 +571,8 @@ struct F1SeasonStandings {
 static_assert(offsetof(F1SeasonStandings, vtable) == 0x0);
 static_assert(offsetof(F1SeasonStandings, points_begin) == 0x20);
 static_assert(offsetof(F1SeasonStandings, points_end) == 0x28);
+static_assert(offsetof(F1SeasonStandings, table_begin) == 0x40);
+static_assert(offsetof(F1SeasonStandings, table_end) == 0x48);
 static_assert(offsetof(F1SeasonStandings, extra_points_begin) == 0xa8);
 static_assert(offsetof(F1SeasonStandings, extra_points_end) == 0xb0);
 static_assert(offsetof(F1SeasonStandings, results_begin) == 0xd0);
@@ -868,6 +873,14 @@ static_assert(offsetof(StandingsSession, records_end) == 0x10);
 static_assert(offsetof(StandingsSession, session_id) == 0x20);
 static_assert(sizeof(StandingsSession) == 0x28);
 
+struct StandingsTableEntry {
+    uint32_t key; // L2 experimental
+    int32_t total; // L2 experimental
+};
+static_assert(offsetof(StandingsTableEntry, key) == 0x0);
+static_assert(offsetof(StandingsTableEntry, total) == 0x4);
+static_assert(sizeof(StandingsTableEntry) == 0x8);
+
 struct StatInfo {
     uint8_t _pad_0x0[0x8];
     uint16_t stat_id; // L2 experimental
@@ -1022,6 +1035,8 @@ using Career_Add_SeasonWeekend_t = uint64_t(void *season, void *weekend);
 inline constexpr fn<"Career_Add_SeasonWeekend", Career_Add_SeasonWeekend_t> Career_Add_SeasonWeekend{}; // L2 experimental
 using Career_Add_TeamModifier_t = void(void *list, uint32_t key, float value);
 inline constexpr fn<"Career_Add_TeamModifier", Career_Add_TeamModifier_t> Career_Add_TeamModifier{}; // L2 experimental
+using Career_Add_TrackSetToSeason_t = void(void *doc, uint32_t index, const char *track_set_name);
+inline constexpr fn<"Career_Add_TrackSetToSeason", Career_Add_TrackSetToSeason_t> Career_Add_TrackSetToSeason{}; // L2 experimental
 using Career_Adjust_RpDriverWallet_t = void(void *wallets, uint32_t driver_key, int32_t delta);
 inline constexpr fn<"Career_Adjust_RpDriverWallet", Career_Adjust_RpDriverWallet_t> Career_Adjust_RpDriverWallet{}; // L2 experimental
 using Career_Adjust_RpTeamWallet_t = void(void *wallets, uint32_t team_key, int32_t delta);

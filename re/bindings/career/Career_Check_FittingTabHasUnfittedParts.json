@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Check_FittingTabHasUnfittedParts",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14197b310",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "bool (void *tab)",
+  "evidence": "decomp:re/decomp/14197b310.c;xref:0x14197b257;xref:0x14197fc3b",
+  "notes": "myteam-g2: Fitting-tab check: queries the owner setup record and FUN_143536fe0 and returns whether there is a part available to fit (result field != 0). Part of the left-without-research onboarding check."
+ },
+ "signature": {
+  "id": "career.check_fitting_tab_has_unfitted_parts",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC C0 0C 00 00 48 8B 81 88 00 00 00",
+  "match": "0x14197b310",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14197b310",
+  "kind": "func_start",
+  "names": [
+   "Career_Check_FittingTabHasUnfittedParts"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x14197b310",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14197b310.c;xref:0x14197b257",
+   "notes": "V9852 same pattern as the development check (owner record + FUN_143536fe0) but additionally matches an id in list at +0x298; fitting semantics unprovable from code alone"
+  }
+ ],
+ "proofs": []
+}

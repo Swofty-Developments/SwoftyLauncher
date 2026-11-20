@@ -1,7 +1,7 @@
-// Host-native unit test for the core's direct start (native/src/core/direct_start_logic.hpp).
-// Built and run by native/test/run_direct_start_test.sh.
+// Host-native unit test for the core's direct start (native/src/core/testing/direct_start_logic.hpp).
+// Built and run by native/test/run_tests.sh direct_start.
 
-#include "direct_start_logic.hpp"
+#include "core/testing/direct_start_logic.hpp"
 
 #include <cstdio>
 #include <vector>
@@ -23,8 +23,7 @@ int main()
 {
     ds::Driver d;
     expect(d.on_update(ds::STATE_FTUE, FTUE_DONE, false) == FTUE_DONE, "an unarmed start leaves the menu path alone");
-    expect(d.on_update(ds::STATE_FRONTEND_WORLD, ds::LINK_STAY, false) == ds::LINK_STAY,
-           "an unarmed start forces nothing");
+    expect(d.on_update(ds::STATE_FRONTEND_WORLD, ds::LINK_STAY, false) == ds::LINK_STAY, "an unarmed start forces nothing");
     expect(!d.engage_title(), "an unarmed start leaves the title alone");
 
     d.arm(ds::session_target());
@@ -52,8 +51,7 @@ int main()
     expect(d.on_update(ds::STATE_FRONTEND_WORLD, 0x42b3b163, false) == ds::LINK_SESSION,
            "the front end world leaves with session whatever it picked");
     expect(d.phase == ds::Phase::left && !d.engage_title(), "the start is done after the forced session link");
-    expect(d.on_update(ds::STATE_FRONTEND_WORLD, ds::LINK_STAY, false) == ds::LINK_STAY,
-           "a later front end world is left alone");
+    expect(d.on_update(ds::STATE_FRONTEND_WORLD, ds::LINK_STAY, false) == ds::LINK_STAY, "a later front end world is left alone");
 
     ds::Driver f;
     f.arm(ds::session_target());
@@ -78,17 +76,24 @@ int main()
     expect(r.on_update(ds::STATE_ONLINE_FRONTEND, ds::LINK_STAY, false) == ds::LINK_STAY,
            "a room target lets home take the lobby link itself");
 
-    expect(ds::link_needed(ds::Phase::profile, true, false, 0, 0, 60000, false) && ds::link_needed(ds::Phase::setup, false, false, 0, 0, 60000, false) &&
+    expect(ds::link_needed(ds::Phase::profile, true, false, 0, 0, 60000, false) &&
+               ds::link_needed(ds::Phase::setup, false, false, 0, 0, 60000, false) &&
                ds::link_needed(ds::Phase::leave, false, false, 0, 0, 60000, false),
            "the link hook works while the start drives the flow");
-    expect(!ds::link_needed(ds::Phase::failed, true, false, 0, 0, 60000, false) && !ds::link_needed(ds::Phase::off, true, false, 0, 0, 60000, false),
+    expect(!ds::link_needed(ds::Phase::failed, true, false, 0, 0, 60000, false) &&
+               !ds::link_needed(ds::Phase::off, true, false, 0, 0, 60000, false),
            "a failed or unarmed start needs no link work");
-    expect(!ds::link_needed(ds::Phase::left, false, false, 0, 0, 60000, false), "a room or screen target is done once it left the front end");
-    expect(ds::link_needed(ds::Phase::left, true, false, 0, 5000, 60000, false), "a session target waits for its session to start");
-    expect(ds::link_needed(ds::Phase::left, true, false, 1000, 1000 + 59999, 60000, false), "and for its screen within the cover's wait");
-    expect(!ds::link_needed(ds::Phase::left, true, true, 1000, 2000, 60000, false), "a session target is done once its screen is up");
+    expect(!ds::link_needed(ds::Phase::left, false, false, 0, 0, 60000, false),
+           "a room or screen target is done once it left the front end");
+    expect(ds::link_needed(ds::Phase::left, true, false, 0, 5000, 60000, false),
+           "a session target waits for its session to start");
+    expect(ds::link_needed(ds::Phase::left, true, false, 1000, 1000 + 59999, 60000, false),
+           "and for its screen within the cover's wait");
+    expect(!ds::link_needed(ds::Phase::left, true, true, 1000, 2000, 60000, false),
+           "a session target is done once its screen is up");
     expect(!ds::link_needed(ds::Phase::left, true, false, 1000, 1000 + 60000, 60000, false), "or once the cover's wait ran out");
-    expect(ds::link_needed(ds::Phase::left, false, true, 1000, 1000000, 60000, true), "the direct start diag keeps the link hook working");
+    expect(ds::link_needed(ds::Phase::left, false, true, 1000, 1000000, 60000, true),
+           "the direct start diag keeps the link hook working");
 
     std::vector<ds::SetupModeOffer> modes = {{"f1_25", true}, {"f1_26", true}, {"swofty_f1", true}};
     expect(ds::pick_setup_mode(modes, "", "swofty_f1") == 2, "the host setup mode is taken when it offers the list");
@@ -100,8 +105,7 @@ int main()
     expect(ds::pick_setup_mode(modes, "", "swofty_f1") == 2, "the host mode is kept when no mode offers the list");
     expect(ds::pick_setup_mode(modes, "f1_25", "swofty_f1") == 0, "a requested setup mode is taken as it is");
     expect(ds::pick_setup_mode(modes, "f1_99", "swofty_f1") == ds::NO_SETUP_MODE, "a requested mode the game lacks is none");
-    expect(ds::pick_setup_mode({{"f1_26", false}}, "", "swofty_f1") == ds::NO_SETUP_MODE,
-           "no host mode and no offer is none");
+    expect(ds::pick_setup_mode({{"f1_26", false}}, "", "swofty_f1") == ds::NO_SETUP_MODE, "no host mode and no offer is none");
 
     std::printf("%s\n", failed ? "FAILED" : "all passed");
     return failed ? 1 : 0;

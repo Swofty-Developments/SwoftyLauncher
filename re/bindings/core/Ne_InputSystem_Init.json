@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_InputSystem_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14442f0c0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-channel-INPUT;decomp:re/decomp/14442f0c0.c;xref:0x145a8d860",
+  "notes": "named from its log messages (channel INPUT): 'NeInputSystem - adding default actions for all connected devices | Input.maxSimultaneousDevices = %d | Initialising Track IR | Initialising Tobii'"
+ },
+ "signature": {
+  "id": "core.input_system_init",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 C5 F9 7F BC 24 B0 00 00 00",
+  "match": "0x14442f0c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14442f0c0",
+  "kind": "func_start",
+  "names": [
+   "Ne_InputSystem_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb4-verify-b",
+   "kind": "func",
+   "item": "Ne_InputSystem_Init",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14442f0c0.c;xref:0x14442f0c0",
+   "notes": "V2212 giant init: registers events on device manager, logs; no direct callers (vtable)"
+  }
+ ],
+ "proofs": []
+}

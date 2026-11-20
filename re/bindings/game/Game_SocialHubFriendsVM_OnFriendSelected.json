@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SocialHubFriendsVM_OnFriendSelected",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141dfc830",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141dfc830.c;xref:0x141dfc7d2",
+  "notes": "Social hub friends tab VM friend-selected handler (lea 0x141dfc7d2): mode this+0x818: career setup -> fires 'career_setup_friend_selected'; online career (2/4) -> resolves the friend (0x14387c970 on this+0x2f0), starts busy spinner type 6 (delay 0.01 s) and sends the online career invite via 0x140fd8a00 with callback Game_SocialHubFriendsVM_OnInviteResult, handle this+0x820/+0x828 (blocks double invites); otherwise fires 'frontend_lobby_friend_selected' and handles lobby invite lists (+0x288/+0x290, +0x570). Addon: hook friend invite for online career / lobby. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3265)"
+ },
+ "signature": {
+  "id": "game.social_hub_friends_v_m_on_friend_selected",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 4C 89 84 24 88",
+  "match": "0x141dfc830",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141dfc830",
+  "kind": "func_start",
+  "names": [
+   "Game_SocialHubFriendsVM_OnFriendSelected"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_SocialHubFriendsVM_OnFriendSelected",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141dfc830.c;xref:0x141dfc7d2",
+   "notes": "V3265 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

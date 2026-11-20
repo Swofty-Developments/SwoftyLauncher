@@ -1,9 +1,9 @@
-// Host-native unit test for the Game_Vfx_UpdateWheelTyreInstance entry probe (native/src/core/session_job_probe_logic.hpp):
+// Host-native unit test for the Game_Vfx_UpdateWheelTyreInstance entry probe (native/src/core/diagnostics/session_job_probe_logic.hpp):
 // the size verdicts the game's unsigned loop test turns into a hang, the armed window (on at a session's entry, off at
 // its deadline, after StateSession updates and at the value cap), the lock-free dedupe under 8 threads, that the logic
-// has no mutex, and the log and [warning] lines. Built and run by native/test/run_session_job_probe_test.sh.
+// has no mutex, and the log and [warning] lines. Built and run by native/test/run_tests.sh session_job_probe.
 
-#include "session_job_probe_logic.hpp"
+#include "core/diagnostics/session_job_probe_logic.hpp"
 
 #if defined(_GLIBCXX_MUTEX) || defined(_LIBCPP_MUTEX)
 #error "the probe's logic must not use a mutex: its hot path runs on the game's job threads"
@@ -18,12 +18,12 @@ namespace sj = runtime::session_job_probe;
 
 static int g_fail;
 
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                    \
-            g_fail++;                                                                                                  \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                              \
+            g_fail++;                                                                                                            \
+        }                                                                                                                        \
     } while (0)
 
 static sj::Span span(uint64_t begin, int64_t bytes)

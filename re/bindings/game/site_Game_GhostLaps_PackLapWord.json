@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "site_Game_GhostLaps_PackLapWord",
+ "table": "globals",
+ "author": "load-game",
+ "row": {
+  "addr": "0x142fa3254",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:own disasm 0x142fa31e0-0x142fa3dde;decomp:own disasm 0x142f8a0c0-0x142f8a3f3;xref:0x142fa327c,0x142fa39ff,0x142fa3a5d,0x142fa3b9a,0x142fa3bf6,0x142f8ac28,0x142f89978,0x142f994bc,0x142f99c41,0x142f99d52",
+  "notes": "mov r13d, [rbx+0x2c0] in Game_GhostLaps_SavePersonalBest, rbx = telemetry lap slot 3 (the best, 0x142fa3238). r13d = int(slot+0x268 * 1000) | (bit 0 of the summary flags +0x2c0) << 30 (0x142fa3254..0x142fa3263): bit 30 of the ghost's lap word is the game's not-clean flag. A committed best word handler+0x300 below it skips the save (0x142fa327c). The word is description +0x70 (0x142fa39ff, description at rsp+0x70), and the description's in-memory byte +0x8d = (bit 0 clear) (0x142fa3a5d), not serialised. Game_GhostLap_SerialiseDescription (0x142fa3b9a) writes, in order: u32 +0x00, u32 +0x04, u32 n and n bytes from the +0x08 field, u32 +0x48 (0x3fff0000 when +0x4c is 0), u32 +0x4e, u16 +0x56, u32 +0x5c, u8 +0x60, u32 +0x64/+0x68/+0x6c, u32 +0x70 lap word, u32 +0x74/+0x78/+0x7c sector ms, u64 +0x80, u32 +0x88, u8 +0x8c: the lap word sits at blob offset 39 + n and the header ends at 68 + n. SavePersonalBest then writes u64 (trace size + 0x80), the 0x6c summary block from slot+0x260 (0x142fa3bf6, flags at block +0x60, bit 2 set there first when slot+0x250 is not 0), 20 pad bytes and the trace. Readers of bit 30: Game_GhostlapTrace_ReadAndValidate masks it for the sector sum check (0x142f8ac28), Game_Ghostlaps_EvaluateRivalLaptime (0x142f89978) and findRival in Game_GhostLapHandler_Update (0x142f994bc, 0x142f99c41, 0x142f99d52) skip a lap that has it. Steam 1.0.145 0x142fa57e4 and EA 1.0.145 0x142f997c4 (restored dump): SavePersonalBest's 618 instructions and SerialiseDescription's 227 are the same on both."
+ },
+ "signature": {
+  "id": "game.ghost_laps_pack_lap_word",
+  "section": ".xtls",
+  "pattern": "C5 FA 2C F8 44 8B AB C0 02 00 00 41 83 E5 01",
+  "match": "0x142fa3250",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142fa3254",
+  "kind": "mid",
+  "expect": "44 8B AB C0 02 00 00",
+  "names": [
+   "site_Game_GhostLaps_PackLapWord"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-18",
+    "by": "load-game",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "load-game",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142fa3250",
+    "target": "0x142fa3254"
+   },
+   "sigcheck": "passed",
+   "digest": "01b43a3fd2333ae59f3f98dc05065fd8df6afd39c1de17ba2633db4b41bd4262"
+  }
+ ]
+}

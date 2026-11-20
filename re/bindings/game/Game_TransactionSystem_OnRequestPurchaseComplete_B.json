@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TransactionSystem_OnRequestPurchaseComplete_B",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e680b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void (void *self, int error)",
+  "evidence": "decomp:re/decomp/142e680b0.c;xref:0x142b96c90;xref:0x142e67651;xref:0x143374bb8",
+  "notes": "myteam-g1: Same purchase-complete handler variant (cxx=game::GameTransactionSystem::onRequestPurchaseComplete(PurchaseError)); also closes transaction_queue."
+ },
+ "signature": {
+  "id": "game.transaction_system_on_request_purchase_complete_b",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 00 01 00 00 C5 F8 29 B4 24 F0 00 00 00 89 D7",
+  "match": "0x142e680b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e680b0",
+  "kind": "func_start",
+  "names": [
+   "Game_TransactionSystem_OnRequestPurchaseComplete_B"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x142e680b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e680b0.c",
+   "notes": "V10253 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

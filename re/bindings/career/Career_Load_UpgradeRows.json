@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Career_Load_UpgradeRows",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143539bc0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Load_UpgradeRows(void *out_vec, longlong team_ctx, uint8_t flag)",
+  "evidence": "decomp:re/decomp/143539bc0.c;xref:0x1435392ac,0x1435394bd;kb:subsystems/career.md#load-upgrade-rows",
+  "notes": "per-department R&D upgrade-row parser (cxx game::upgrades::). Outer loop over dept codes k_Career_UpgradeDeptCodeTable(0x145735d60 0..5), opens the upgrade table per dept, reads every column by name via Gdb_Get_FieldInt, resolves upgrade_type(0..18)/upgrade_size(0..2)/upgrade_department enum A (ci-fnv1a switch @0x14353a6dd, inlined ~27x), builds 0x80-byte UpgradeRecord into out_vec. weighting=AI pick weight."
+ },
+ "signature": {
+  "id": "career.load_upgrade_rows",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 07 00 00 C5 F8 29 B4 24 B0 07 00 00 4C 89 4C 24 48",
+  "match": "0x143539bc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143539bc0",
+  "kind": "func_start",
+  "names": [
+   "Career_Load_UpgradeRows"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-19",
+    "by": "career-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

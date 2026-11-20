@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Ne_MemoryMapHeapSize",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14396f140",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/14396e9d0.c;xref:0x14396f145",
+  "notes": "mov [rsp+0x58],r9 in Ne_MemoryMap_CreateHeap (0x14396e9d0), right before the call to Ne_MemoryMap_AllocHeapBlock (0x14396f145). r9 = the heap's size in bytes after the virtualExpandPercent scaling (stock AUDIO_BUNDLE: 45088768 = 43M); the spill at [rsp+0x58] feeds the heap object's capacity at every later construction path (mov rdx,[rsp+0x58]), so writing r9 here resizes the allocation and the heap together. rdi = the heap config struct (+0x4 virtual, +0x20 pagesize). The name is in the frame as scrambled byte slots: char k of the name at rsp+{0x60,0x6f,0x6a,0x6e,0x64,0x6d,0x68,0x6c,0x80,0xa7,0x9c,0xa6,0x90,0xa5,0x9a,0xa4,0x78,0xa3,0x98,...}. Reached once per HEAP element while system/memory_map.xml loads (Boot_Load_SystemConfig); only the early stage (CreateMutexW trigger) is before it."
+ },
+ "signature": {
+  "id": "core.memory_map_heap_size",
+  "section": ".xtls",
+  "pattern": "48 8B 8C 24 F0 00 00 00 4C 89 4C 24 58 E8",
+  "match": "0x14396f138",
+  "anchor": "0x8",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14396f140",
+  "kind": "mid",
+  "expect": "4C 89 4C 24 58",
+  "names": [
+   "site_Ne_MemoryMapHeapSize"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "audioheap",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/audio_heap.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-01",
+   "verifier": "audioheap-verify",
+   "kind": "global",
+   "item": "0x14396f140",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14396e9d0.c;xref:0x14396f145;pat:sigcheck core.memory_map_heap_size 1 hit",
+   "notes": "V8620 disasm: mov [rsp+0x58],r9 (5 bytes) then call 0x143969af0; r9 is size or size*(pct+100)/100 loaded from [rsp+0xe8] at 0x14396f0a3; later mov rdx,[rsp+0x58] feeds the heap object constructor; no branch targets inside the 5 bytes; no pushes since the prologue so rsp matches"
+  }
+ ],
+ "proofs": []
+}

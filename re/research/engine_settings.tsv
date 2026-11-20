@@ -1,0 +1,753 @@
+# Every direct call to the engine setting getters in F1_25.exe build d873a1c8d2044cef (KB build), found by a capstone scan of
+# E8/E9 rel32 references to the getters in both code sections, .xtls and .data1 (88 sites, among them the talking points state's
+# reader of Game.SkipTalkingPoints at 0x14eb3ac2a). name: the C string in rdx (empty when rdx is not a rip-relative literal); default:
+# the immediate in r9 or the float constant in xmm3 at the call, else the register or memory it came from (the reader passes its
+# previous value). These are code defaults; system/config.xml, config_platform.xml and config_sku.xml in game.dat may set any of them.
+# getter: bool Ne_Get_SettingBool 0x143a43b90, u32 Ne_Get_SettingU32 0x143a43240, i32 Ne_Map_FindOrDefaultWithErrorContext
+# 0x143a42f10, float Ne_Config_GetFloatOrDefault 0x143a44090, double Ne_Get_SettingDouble 0x143a43ea0, string Ne_Config_GetString
+# 0x143a44700, string_set Ne_Config_GetStringWithDefault 0x143a44280. Evidence L1 per row (static scan, call site and literal only).
+# retail: the value system/config.xml, then config_platform.xml, then config_sku.xml give the name (the later file wins), read from
+# game.dat of the installed build (F1_25.exe sha256 46009bd3..., game.dat 170,184,448 bytes) with packages/formats NeFS; empty when
+# none of the three sets it, so the code default applies. Names compare case-insensitively.
+name	getter	default	site	func	call	retail	retail_file
+Achievements.Enabled	bool	(mem: r9d, byte ptr [rsi + 0x3e9])	0x147286d99	0x147286d70	call	true	config_sku.xml
+ai.exit_fallibility_enabled	bool	0x1	0x1406032f3	0x1405ff750	call		
+ai.offset_variation_enabled	bool	0x1	0x14060188c	0x1405ff750	call		
+ai_dev.tool_name	string	(rip: rip:0x145612762)	0x1405f586a	0x1405f11b0	call		
+ai_dev.tool_name	string	(rip: rip:0x145612762)	0x1405f59b0	0x1405f11b0	call		
+ai_dev.tool_name	string	(rip: rip:0x145612762)	0x140602c5f	0x1405ff750	call		
+ai_dev.tool_name	string	(rip: rip:0x145612762)	0x140604f0d	0x140604d30	call		
+ai_dev.tool_name	string	(rip: rip:0x145612762)	0x140658a51	0x1406589f0	call		
+ai_dev.tool_name	string	(rip: rip:0x145612762)	0x14802a88b	0x14802a7b0	call		
+Animation.initialAnimArrayCapacity	u32	0x40	0x1443bae44	0x1443ba3d0	call	128	config.xml
+Animation.initialAnimPlayerCapacity	u32	0x80	0x1443bad9d	0x1443ba3d0	call		
+Animation.initialStringsCapacity	u32	0x200	0x1443ba5e6	0x1443ba3d0	call	16384	config.xml
+Animation.useSapienPackages	bool	0x0	0x1407e4d48	0x1407e4a70	call	false	config.xml
+Art.soloAlbedo	bool	0x0	0x14447839b	0x1444767d0	call	false	config.xml
+AssetGroupLoader.pathPrefix	string_set	0x40	0x1443dbdc5	0x1443db170	call	2025_	config_sku.xml
+AssetGroupLoader.pathSuffix	string_set	0x40	0x1443dbde6	0x1443db170	call		
+AssetGroupLoader.retryOnDescriptionLoadError	bool	0x0	0x1443dbd96	0x1443db170	call		
+AssetGroupLoader.rollbackOnLoadError	bool	0x0	0x1443dbd7f	0x1443db170	call		
+AssetManifest.fileName	string_set	0x20	0x143a5aab4	0x143a5a550	call	f1_2025.manifest	config_sku.xml
+Audio.asserts	bool	(rip: rip:0x146c642a0)	0x1443ed879	0x1443ed5c0	call		
+Audio.audio_thread_affinity_mask	i32	0xffffffff	0x1443c9550	0x1443c8d70	call		
+Audio.bankDataPath	string	(mem: r9, qword ptr [rsi + 0x1b8])	0x1443ed892	0x1443ed5c0	call	audio/2025/soundbanks	config_sku.xml
+Audio.bankDataPathSubfolder	string	(rip: rip:0x145612762)	0x1443ed904	0x1443ed5c0	call		
+Audio.cameraDiscontinuityThreshold	float	4f	0x1443edea5	0x1443ed5c0	call		
+Audio.enabled	bool	0x1	0x1443ed85b	0x1443ed5c0	call		
+Audio.enableDiffractionOnReflections	bool	(mem: r9d, byte ptr [rsi + 0x5bc])	0x148ee9a3d	0x148ee99d0	call		
+Audio.enableRandomCrowdSpawning	bool	(mem: r9d, byte ptr [rsi + 0x1237])	0x140a0438a	0x140a036c0	call		
+Audio.ignoreCameraFocusOnCars	bool	0x0	0x1443ed983	0x1443ed5c0	call		
+Audio.maxAnimationObjectDistance	float	100f	0x14451d48a	0x14451c3d0	call		
+Audio.maxSoundEmitterDistance	float	(mem: xmm3, dword ptr [rsi + 0x510])	0x1443ede7d	0x1443ed5c0	call		
+Audio.microphonePositionsEnabled	bool	(mem: r9d, byte ptr [rsi + 0x5bd])	0x148ee9a68	0x148ee99d0	jmp		
+Audio.motionEngine_enabled	bool	(mem: r9d, byte ptr [rbx + 8])	0x14451d8ae	0x14451c3d0	call		
+Audio.occlusionLerpTime	float	1f	0x144521e97	0x144521e20	call		
+Audio.passbySystem_enabled	bool	(mem: r9d, byte ptr [r15 + 1])	0x140a26923	0x140a249f0	call		
+Audio.speechDataPath	string	(mem: r9, qword ptr [rsi + 0x3f8])	0x1443ed8c4	0x1443ed5c0	call	audio/2025/speech	config_sku.xml
+Audio.speechVO_delayForRadioBeep	double	(?: call-before)	0x140a28cfb	0x140a249f0	call		
+Audio.speechVO_enabled	bool	0x1	0x140a28b5c	0x140a249f0	call		
+Audio.Subtitles.valid_languages	string	(rip: rip:0x145612762)	0x14099a484	0x14099a340	call		
+Audio.VoiceChatEnabled	bool	(mem: r9d, byte ptr [rdi + 0x2968])	0x143055be8	0x143054470	call		
+Audio.xmlDataPath	string	(mem: r9, qword ptr [rsi + 0x2d8])	0x1443ed8ab	0x1443ed5c0	call	audio/2025	config_sku.xml
+Beta.Enabled	bool	(mem: r9d, byte ptr [rsi + 0x38])	0x1483978c3	0x1483977d0	call	false	config_sku.xml
+BuildTypeAndPlaytestID.buildType	string	(rip: rip:0x145612762)	0x1406c2642	0x1406c2600	call		
+BuildTypeAndPlaytestID.hostUser	string	(rip: rip:0x145612762)	0x1406c2923	0x1406c2600	call		
+BuildTypeAndPlaytestID.playtestID	string	(rip: rip:0x145612762)	0x1406c27a3	0x1406c2600	call		
+Career.Online.KickFailingSynchronisation	bool	0x0	0x140fcd811	0x140fcd6b0	call		
+ContentSet.currentContentSet	string	(reg: rdi)	0x1413e1d42	0x1413e1cd0	call	2026	config_sku.xml
+Crowd.enabled	bool	0x1	0x1407b802a	0x1407b7b90	call	true	config.xml
+Crowd.enabled	bool	0x1	0x143b6573b	0x143b5eb60	call	true	config.xml
+DebugCamera.enableDpadCommands	bool	0x0	0x140ad24b7	0x140ad22a0	call	true	config.xml
+DebugCamera.fov	float	90f	0x140ad24ea	0x140ad22a0	call	90.0	config.xml
+DebugCamera.invertVerticalLook	bool	0x0	0x140ad2544	0x140ad22a0	call	false	config.xml
+DebugCamera.quickSpeedMultiplier	float	5f	0x140ad246b	0x140ad22a0	call		
+DebugCamera.shake.isActive	bool	0x0	0x1542afceb	0x1542afcc0	call		
+DebugCamera.shake.positionLimitsInMetres.x	float	(reg: xmm6)	0x1542afd0b	0x1542afcc0	call		
+DebugCamera.shake.positionLimitsInMetres.y	float	(reg: xmm6)	0x1542afd23	0x1542afcc0	call		
+DebugCamera.shake.positionLimitsInMetres.z	float	(reg: xmm6)	0x1542afd3b	0x1542afcc0	call		
+DebugCamera.speedMultiplier	float	(reg: xmm6)	0x140ad240f	0x140ad22a0	call		
+DebugCamera.wobble.isActive	bool	0x0	0x1542afd7d	0x1542afcc0	call		
+DebugCamera.wobble.overallSpeedMultipler	float	(reg: xmm6)	0x1542afe86	0x1542afcc0	jmp		
+DebugCamera.wobble.rotationLimitsInDegrees.x	float	(reg: xmm6)	0x1542afda0	0x1542afcc0	call		
+DebugCamera.wobble.rotationLimitsInDegrees.y	float	0.5f	0x1542afdbf	0x1542afcc0	call		
+DebugCamera.wobble.rotationLimitsInDegrees.z	float	0x0	0x1542afdda	0x1542afcc0	call		
+DebugCamera.wobble.rotationSpeedMultipliers.x	float	(reg: xmm6)	0x1542afe0e	0x1542afcc0	call		
+DebugCamera.wobble.rotationSpeedMultipliers.y	float	(reg: xmm6)	0x1542afe24	0x1542afcc0	call		
+DebugCamera.wobble.rotationSpeedMultipliers.z	float	(reg: xmm6)	0x1542afe3a	0x1542afcc0	call		
+DebugOSD.DisplayFPSonSpeedo	bool	0x0	0x141d5dc35	0x141d5d910	call	false	config.xml
+DebugOSD.DisplayFPSonSpeedo	bool	0x0	0x14af78118	0x14af780c0	call	false	config.xml
+DebugOSD.DisplayResOnERS	bool	0x0	0x14af7813a	0x14af780c0	jmp	false	config.xml
+DebugOSD.GameInputModule.showInputProviders	bool	(mem: r9d, byte ptr [rbx + 0x71])	0x142a74dcf	0x142a733f0	call	false	config.xml
+DevSessionDataContract.ChampionshipComponentEnabled	bool	0x1	0x1409995e3	0x1409995c0	call		
+DevSessionDataContract.ChampionshipComponentEnabled	bool	0x1	0x140b00cd4	0x140affe60	call		
+DevSessionDataContract.ChampionshipComponentEnabled	bool	0x1	0x141127e7a	0x141125e80	call		
+DevSessionDataContract.Entrants.entrant_list	string	(rip: rip:0x145612762)	0x1407a3a0a	0x1407a38e0	call		
+DevSessionDataContract.Entrants.entrant_list	string	(rip: rip:0x145612762)	0x14112602e	0x141125e80	call		
+DevSessionDataContract.ForceStaggeredStart	bool	0x0	0x1405ffec4	0x1405ff750	call		
+DevSessionDataContract.Game.DefaultEntrantGarageOverrides	bool	0x0	0x141129532	0x141127eb0	call		
+DevSessionDataContract.Game.entrant_setup_mode	string	(rip: rip:0x145612762)	0x141125fcc	0x141125e80	call		
+DevSessionDataContract.Game.equalPerformance	bool	0x0	0x1411266f0	0x141125e80	call		
+DevSessionDataContract.Game.laps	i32	0x0	0x141124c07	0x141124b30	call	25	config.xml
+DevSessionDataContract.Game.race_length	string	(rip: rip:0x145612762)	0x141124c6e	0x141124b30	call		
+DevSessionDataContract.Game.session_id	string	(rip: rip:0x145612762)	0x14112799e	0x141125e80	call	race	config.xml
+DevSessionDataContract.Game.sessionLengthInSeconds	i32	0x0	0x141124ca3	0x141124b30	call		
+DevSessionDataContract.Game.setup_mode	string	(rip: rip:0x145612762)	0x141125fa1	0x141125e80	call		
+DevSessionDataContract.Track.clear_extra_worlds	bool	0x0	0x141124eb1	0x141124b30	call	false	config.xml
+DevSessionDataContract.Track.layer	string	(rip: rip:0x145612762)	0x141126ff9	0x141125e80	call		
+DevSessionDataContract.Track.list	string	(rip: rip:0x145612762)	0x141126a7c	0x141125e80	call		
+DevSessionDataContract.Track.name	string	(rip: rip:0x146ca5548)	0x141126aea	0x141125e80	call	silverstone	config.xml
+DevSessionDataContract.Track.worldAssetGroup	string	(mem: r9, [rsp + 0x358])	0x141126e38	0x141125e80	call		
+EADP.adeptTelemetryEnabled	bool	0x0	0x1406d7030	0x1406d6360	call	false	config.xml
+EADP.autoLoginEnabled	bool	0x0	0x1406d7051	0x1406d6360	call	true	config.xml
+EADP.autoLoginEnabled	bool	(mem: r9d, byte ptr [rdi + 0x4a9])	0x14329612e	0x1432952c0	call	true	config.xml
+EADP.autoLoginEnabled	bool	0x0	0x14337220e	0x143372170	call	true	config.xml
+EADP.autoLoginEnabled	bool	0x0	0x14b771757	0x14b771730	call	true	config.xml
+EADP.blockListCacheEnabled	bool	0x1	0x143fcd12d	0x143fcd060	call	true	config.xml
+EADP.friendCacheEnabled	bool	0x1	0x143fcd10c	0x143fcd060	call	true	config.xml
+EADP.logLevel	string	(rip: rip:0x14563ca72)	0x143fcd0eb	0x143fcd060	call	none	config.xml
+EADP.serverEnvironment	string	(rip: rip:0x14570c942)	0x143fcd602	0x143fcd400	call	auto	config.xml
+ElasticSearch.Enabled	bool	(mem: r9d, byte ptr [rsi + 0x38])	0x1406d70d7	0x1406d6360	call	true	config.xml
+EnvArtMode.enabled	bool	0x0	0x142d80c13	0x142d80950	call	false	config.xml
+EnvArtMode.enabled	bool	0x0	0x1436e5943	0x1436e5850	call	false	config.xml
+ErpLoader.forceSequentialReads	bool	0x0	0x1443db526	0x1443db170	call	true	config_platform.xml
+ErpLoader.readBufferCount	u32	0x4	0x1443db50e	0x1443db170	call	4	config_platform.xml
+ErpLoader.readBufferSize	u32	0x200000	0x1443db4f3	0x1443db170	call	4M	config_platform.xml
+ErpLoader.useApr	bool	(mem: r9d, byte ptr [rsp + 0x67])	0x1443db541	0x1443db170	call		
+EventSystem.captureBufferSize	u32	0x100000	0x144415a84	0x1444136d0	call		
+EventSystem.maxEventIterations	u32	(rip: rip:0x145f985c4)	0x144413b6b	0x1444136d0	call	2000	config.xml
+F1DataFeed.configEnabled	bool	0x0	0x142c18049	0x142c17ba0	call		
+Flow.enterExitTimeLimit	double	(?: call-before)	0x144420b12	0x144420400	call	300	config.xml
+Flow.stateMachineFilename	string	(rip: rip:0x145a8ce91)	0x144420aef	0x144420400	call	system/state_machine.xml	config.xml
+Game.AlwaysVirtualiseSessionsIndividually	bool	0x0	0x140bd42d7	0x140bd3b30	call		
+Game.AlwaysVirtualiseSessionsIndividually	bool	0x0	0x140bd4cde	0x140bd4bc0	call		
+Game.AlwaysVirtualiseSessionsIndividually	bool	0x0	0x14eaf3029	0x14eaf2f40	call		
+Game.AutoProfile.enabled	bool	0x0	0x1407fb8ec	0x1407f7320	call		
+Game.AutoProfile.framesToCapture	u32	0x8	0x1407fb915	0x1407f7320	call		
+Game.AutoProfile.framesToWait	u32	0x8	0x1407fb92d	0x1407f7320	call		
+Game.Career.Online.EnableSaving	bool	0x1	0x140ff7f7f	0x140ff7cf0	call		
+Game.CareerSync.DumpComponents	bool	0x0	0x140fd0e51	0x140fd0990	call		
+Game.CareerSync.DumpComponentsVerbose	bool	0x0	0x140fd1365	0x140fd0990	call		
+Game.ChampionshipWon.ForceOn	bool	0x0	0x142d550fe	0x142d54f20	call		
+Game.Context.overrideEmote	i32	0xffffffff	0x140356f96	0x140356a20	call		
+Game.Context.overrideTeamLivery	bool	0x0	0x14023d8f8	0x14023c600	call	false	config.xml
+Game.Context.overrideTeamLivery	bool	0x0	0x142a9dcc7	0x142a9d730	call	false	config.xml
+Game.Context.overrideTeamLivery	bool	0x0	0x142a9ffbd	0x142a9f390	call	false	config.xml
+Game.Context.overrideTrackName	bool	0x0	0x14020a651	0x14020a460	call	false	config.xml
+Game.Context.overrideTrackName	bool	0x0	0x140345fb2	0x140345f60	call	false	config.xml
+Game.Context.overrideTrackName	bool	0x0	0x140356acc	0x140356a20	call	false	config.xml
+Game.Context.overrideTrackName	bool	0x0	0x142aa060b	0x142aa0330	call	false	config.xml
+Game.Context.TeamLivery	string_set	0x40	0x14023d937	0x14023c600	call	2018-mercedes	config.xml
+Game.Context.TeamLivery	string_set	0x40	0x142a9dd07	0x142a9d730	call	2018-mercedes	config.xml
+Game.Context.TeamLivery	string_set	0x40	0x142a9fff5	0x142a9f390	call	2018-mercedes	config.xml
+Game.Context.TrackName	string	0x0	0x14020a6a2	0x14020a460	call		
+Game.Context.TrackName	string	0x0	0x140346003	0x140345f60	call		
+Game.Context.TrackName	string	0x0	0x140356b21	0x140356a20	call		
+Game.Context.TrackName	string_set	0x40	0x142aa0646	0x142aa0330	call		
+Game.DecalGenerationService.MandatoryMipsDefault	u32	(mem: r9d, dword ptr [r12 + 4])	0x14142886d	0x141428060	call	8	config.xml
+Game.DecalGenerationService.MandatoryMipsForLocalHumanPlayer	u32	(mem: r9d, dword ptr [r12])	0x141428852	0x141428060	call	10	config.xml
+Game.DonutSequence.Endless	bool	0x0	0x142d5a1de	0x142d5a150	call		
+Game.DonutSequence.ForceOn	bool	0x0	0x142d599b3	0x142d59920	call		
+Game.DonutSequence.Vehicle	u32	0x0	0x142d59a53	0x142d59920	call		
+Game.DriverHQIntro.DriverHQIntro.ForceOn	bool	0x0	0x1436c665b	0x1436c5ef0	call		
+Game.DriverHQIntro.DriverRatingsMilestone.ForceOn	bool	0x0	0x1436c6ac5	0x1436c5ef0	call		
+Game.DriverHQIntro.DriverWonWorldChampionship.ForceOn	bool	0x0	0x1436c6e26	0x1436c5ef0	call		
+Game.DriverHQIntro.NewSeasonEstablishingCutscene.ForceOn	bool	0x0	0x1436c6443	0x1436c5ef0	call		
+Game.driverSelectOverride	string	(rip: rip:0x145612762)	0x14245a617	0x14245a0d0	call		
+Game.DRL.IgnoreCarSpeed	bool	(mem: r9d, byte ptr [rdi + 0x140])	0x14243aaf6	0x14243a840	call		
+Game.ecaEnabled	bool	0x1	0x14244ff33	0x14244fe70	call	true	config.xml
+Game.ecaEnabled	bool	0x1	0x14eb3ac49	0x14eb3abf0	call	true	config.xml
+Game.EnableLoading	bool	0x1	0x14365acb3	0x14365a8b0	call	true	config.xml
+Game.EnableMarshalLightShaders	bool	(mem: r9d, byte ptr [rsi + 0xa0])	0x14e5d3ff1	0x14e5d3fc0	call	true	config.xml
+Game.EnablePitExitLights	bool	(mem: r9d, byte ptr [rsi + 0x9c])	0x14e5e1157	0x14e5e1130	call	true	config.xml
+Game.EnablePitExitLightShdaers	bool	(mem: r9d, byte ptr [rsi + 0x9d])	0x14e5e117d	0x14e5e1130	call		
+Game.EnableRaceUI	bool	0x1	0x1436f684e	0x1436f6740	call		
+Game.EnableSaveGame	bool	0x1	0x1407fa034	0x1407f7320	call	true	config.xml
+Game.EnableSaveGame	bool	0x1	0x14365a955	0x14365a8b0	call	true	config.xml
+Game.EnableSaveSystemInSkipFE	bool	(mem: r9d, byte ptr [rsi + 0x1b7])	0x14365ad5e	0x14365a8b0	call		
+Game.EnableSaving	bool	0x1	0x14365ac1a	0x14365a8b0	call	true	config.xml
+Game.F1World.ForceFanzoneChoices	bool	0x0	0x14170c8f7	0x14170c8c0	call		
+Game.F1World.ForceFanzoneChoices	bool	0x0	0x1418cfcda	0x1418cfc90	call		
+Game.F1World.ForceFanzoneChoices	bool	0x0	0x1418cfe72	0x1418cfc90	call		
+Game.F1World.ForceFanzoneChoices	bool	0x0	0x141b1a0b4	0x141b19e80	call		
+Game.F1World.ForceFanzoneChoices	bool	0x0	0x14b6b969c	0x14b6b95c0	call		
+Game.F1World.ForceFanzoneChoices	bool	0x0	0x14b6bbc7f	0x14b6bbc50	call		
+Game.F1World.Ranked.AutoUpdateCadence	float	900f	0x1427480ad	0x142747e00	call		
+Game.F1World.SkipFanzoneChoices	bool	0x0	0x1418cfeb7	0x1418cfc90	call		
+Game.F1World.SkipFanzoneChoices	bool	0x0	0x141b1a0f5	0x141b19e80	call		
+Game.F1World.SkipFanzoneChoices	bool	0x0	0x14b6b96dd	0x14b6b95c0	call		
+Game.F1World.SkipFanzoneChoices	bool	0x0	0x14b6bbcc0	0x14b6bbc50	call		
+Game.F1World.SkipOnboarding	bool	0x0	0x142744805	0x1427447d0	call	false	config.xml
+Game.F1World.SkipOnboarding	bool	0x0	0x14b6b9604	0x14b6b95c0	call	false	config.xml
+Game.forceIgnoreCareerDriverInTT	bool	0x0	0x142933e34	0x142933c70	call	false	config.xml
+Game.ForceTrackReload	bool	0x0	0x142d48106	0x142d48040	call		
+Game.ForceTrackReload	bool	0x0	0x142d48a82	0x142d48040	call		
+Game.ForceTrackReload	bool	0x0	0x142d4b620	0x142d4b4c0	call		
+Game.ForceTrackReload	bool	0x0	0x1436f84bf	0x1436f8340	call		
+Game.IgnoreMinimumLoadingTime	bool	0x0	0x142da791c	0x142da7870	call		
+Game.IgnoreMinimumLoadingTime	bool	0x0	0x1436f98ff	0x1436f9890	call		
+Game.IgnoreMinimumLoadingTime	bool	0x0	0x1436fb667	0x1436fb5e0	call		
+Game.IgnoreMinimumLoadingTime	bool	0x0	0x150f50f95	0x150f50eb0	call		
+Game.LoadForever	bool	0x0	0x150f50ee2	0x150f50eb0	call		
+Game.NegotiationsAfterEveryWeekend	bool	0x0	0x14126a782	0x14126a1a0	call	false	config.xml
+Game.ReturnToGarageTimeLimit	float	10f	0x1424ac84d	0x1424ac650	call		
+Game.SkipCamSequence	bool	0x0	0x14e88f4e4	0x14e88f420	call	false	config.xml
+Game.SkipGridRundown	bool	0x0	0x140ac6b5c	0x140ac6b30	call	false	config.xml
+Game.SkipIntroVideo	bool	0x0	0x142d6cfad	0x142d6cc30	call	false	config.xml
+Game.SkipPreRace	bool	0x0	0x142d78cc5	0x142d78c80	call	false	config.xml
+Game.SkipPreRace	bool	0x0	0x142d817ef	0x142d81270	call	false	config.xml
+Game.SkipPreRace	bool	0x0	0x14eae38ea	0x14eae38b0	call	false	config.xml
+Game.SkipPreRace	bool	0x0	0x14eae3a38	0x14eae38b0	call	false	config.xml
+Game.SkipRewardSequence	bool	0x0	0x142c7484d	0x142c747f0	call	false	config.xml
+Game.SkipTalkingPoints	bool	0x0	0x14eb3ac2a	0x14eb3abf0	call	false	config.xml
+Game.SkipWinnerSequence	bool	0x0	0x14ebd449e	0x14ebd43b0	call		
+Game.suppressWarnings	bool	0x0	0x1407f747b	0x1407f7320	call	true	config.xml
+Game.teamPositionOverride	i32	0x0	0x142933e54	0x142933c70	call	0	config.xml
+Game.teamSelectOverride	string	(rip: rip:0x145612762)	0x1424a19ba	0x1424a15d0	call		
+Game.Thumbnails.driverPreloadTimeoutInSeconds	float	20f	0x142e22efe	0x142e22c60	call	20.0	config.xml
+Game.Thumbnails.enableThumbnailGeneration	bool	0x0	0x142e22ebd	0x142e22c60	call	true	config.xml
+Game.Thumbnails.preloadTimeoutInSeconds	float	7.5f	0x142e22edc	0x142e22c60	call	7.5	config.xml
+Game.Tutorials.SkipVideoTutorials	bool	0x0	0x14f3838b7	0x14f383890	call	false	config.xml
+Game.Tyres.WarmUpSetsPerCompound	u32	0x6	0x140bce988	0x140bce940	call		
+Game.UseSMSSteer	bool	0x0	0x14475511c	0x1447546c0	call	false	config.xml
+Game.VehicleDamage.tyres	bool	0x1	0x14463a8e9	0x14463a800	call	true	config.xml
+Game.vehicleSelectOverride	string	(rip: rip:0x145612762)	0x1424a201b	0x1424a1c20	call		
+Game.VehicleSpawning.EnableMemorySnapshots	bool	(mem: r9d, byte ptr [rsi + 0xe8])	0x142f3a6c2	0x142f3a5d0	call	false	config.xml
+Game.VehicleSpawning.VehicleTimeout	float	(mem: xmm3, dword ptr [rsi + 0xec])	0x142f3a6e0	0x142f3a5d0	call	45.0f	config.xml
+Game.WeekendSessionManagerInFirstSession	bool	0x0	0x142409e02	0x142409db0	call		
+Game.WeekendSessionManagerInFirstSession	bool	0x0	0x14ebce010	0x14ebcdf40	call		
+GameDatabase.fileName	string	(rip: rip:0x145bee5e0)	0x1445a055d	0x1445a0350	call	gamedatabases.2025.bin	config_sku.xml
+GameVersionNumber.display_cl	bool	0x0	0x1407ad183	0x1407acba0	call	true	config_sku.xml
+GameVersionNumber.display_cl	bool	0x0	0x1437d7a22	0x1437d4130	call	true	config_sku.xml
+GameVersionNumber.display_revision	bool	0x1	0x1437d7a06	0x1437d4130	call	false	config_sku.xml
+GameVersionNumber.major	u32	0x1	0x1437d79a9	0x1437d4130	call	1	config_sku.xml
+GameVersionNumber.major	string	(rip: rip:0x14565f10d)	0x15558f09f	0x15558eff0	call	1	config_sku.xml
+GameVersionNumber.minor	u32	0x0	0x1437d79c8	0x1437d4130	call	27	config_sku.xml
+GameVersionNumber.minor	string	(rip: rip:0x14565e3dc)	0x15558f0c2	0x15558eff0	call	27	config_sku.xml
+GameVersionNumber.revision	u32	0x0	0x1437d79e7	0x1437d4130	call	0	config_sku.xml
+Grid.CarsInRow	string	(rip: rip:0x145612762)	0x142f621a2	0x142f62120	call		
+Grid.Override	bool	0x0	0x142f619ba	0x142f61640	call		
+Grid.PoleLR	string	(reg: rbx)	0x142f622ea	0x142f62120	call		
+Grid.RowOffset	float	10f	0x142f622c9	0x142f62120	call		
+Grid.StaggerOffset	float	2f	0x142f622ab	0x142f62120	call		
+HudCustomisation.disableLegacyScript	bool	0x1	0x1437d8198	0x1437d4130	call		
+HudCustomisation.disableLegacyScript	bool	0x1	0x143808895	0x143808570	call		
+HudCustomisation.imguiEnabled	bool	0x0	0x1438073c7	0x1438072f0	call	false	config.xml
+Input.DBOXAppKey	string	(rip: rip:0x145612762)	0x14472a8f1	0x14472a6e0	call	F12025	config_sku.xml
+Input.DBOXAppVersion	u32	0x0	0x14472a90b	0x14472a6e0	call	1001	config_sku.xml
+Input.ignoreUnsupportedDeviceCheck	bool	(mem: r9d, byte ptr [rsi + 0x30])	0x144117059	0x144116f50	call		
+Input.maxSimultaneousDevices	u32	0x2	0x144430c07	0x14442f0c0	call	8	config.xml
+Input.Tobii.enabled	bool	0x0	0x144431d1b	0x14442f0c0	call	true	config.xml
+Input.TrackIR.developerId	u32	0x0	0x144431cfa	0x14442f0c0	call	8112	config.xml
+Input.TrackIR.enabled	bool	0x0	0x144431cdb	0x14442f0c0	call	true	config.xml
+Input.useDefaultDeviceAssignment	bool	0x1	0x144431256	0x14442f0c0	call	false	config.xml
+InputLibs.direct_input	bool	0x0	0x14442f37e	0x14442f0c0	call	true	config_platform.xml
+InputLibs.keyboard	bool	0x0	0x14442f346	0x14442f0c0	call	true	config_platform.xml
+InputLibs.mouse	bool	0x0	0x14442f362	0x14442f0c0	call	true	config_platform.xml
+InputLibs.ps_pad_for_win	bool	0x0	0x14442f3b6	0x14442f0c0	call	true	config_platform.xml
+InputLibs.x_input	bool	0x0	0x14442f39a	0x14442f0c0	call	true	config_platform.xml
+JobQueueSystem.allowJobStealingAcrossPolicies	bool	0x1	0x1443c9e8c	0x1443c8d70	call	true	config.xml
+JobQueueSystem.allowWakingWhenAnyOtherWorkerHasJobs	bool	0x1	0x1443c9cfc	0x1443c8d70	call	false	config_platform.xml
+JobQueueSystem.assignAllJobsToCurrentThread	bool	0x0	0x1443c9505	0x1443c8d70	call	true	config_platform.xml
+JobQueueSystem.enableRaiserThread	bool	0x0	0x1443c9e4c	0x1443c8d70	call	true	config_platform.xml
+JobQueueSystem.enableSpinning	bool	0x0	0x1443c9d88	0x1443c8d70	call	false	config.xml
+JobQueueSystem.minWorkerThreadCount	u32	0x2	0x1443c940d	0x1443c8d70	call	2	config.xml
+JobQueueSystem.runRenderAndUpdateQueuesInParallel	bool	0x1	0x1443c94c5	0x1443c8d70	call	true	config.xml
+JobQueueSystem.wakeAllEligibleThreadsOnJobSubmission	bool	0x0	0x1443c9d42	0x1443c8d70	call	true	config_platform.xml
+JobQueueSystem.workerThreadCount	i32	(reg: ebx)	0x1443c93c7	0x1443c8d70	call	0	config.xml
+JobQueueSystem.workerThreadSpinCount	u32	0x0	0x1443c9dc6	0x1443c8d70	call	16	config.xml
+JobQueueSystem.workerThreadSpinIntervalUs	u32	0x0	0x1443c9e09	0x1443c8d70	call	10	config.xml
+JobQueueSystem.workerThreadStackSize	u32	0x100000	0x1443c9476	0x1443c8d70	call	2M	config.xml
+legal.using_placeholder_cars	bool	0x1	0x141e9e391	0x141e9d630	call	false	config.xml
+legal.using_placeholder_tracks	bool	0x1	0x141e9e3b4	0x141e9d630	call	false	config.xml
+LiveEdit.maxMsgTypes	i32	0x8	0x1444629ac	0x1444626e0	call		
+Localisation.localisationReporting	bool	0x0	0x144435a04	0x144435970	call		
+Localisation.pool	string	(rip: rip:0x145a8dba4)	0x14443541a	0x1444353b0	call	EGO_LOCALISATION	config_sku.xml
+Localisation.showLocalisationTagsOnFail	bool	0x0	0x1444359e8	0x144435970	call	false	config_sku.xml
+Memory.isolated	i32	0x0	0x1443c3aee	0x1443c36d0	call		
+Memory.VirtualMemoryEnabled	bool	0x1	0x1443c3786	0x1443c36d0	call	true	config_platform.xml
+MemoryTracker.MemoryMetricsPools.CsvFile.writeMemoryMapPerFrame	bool	0x0	0x1443c4b70	0x1443c49b0	call	false	config.xml
+MemoryTracker.MemoryMetricsPools.CsvFile.writeMemoryMapStride	u32	0x186a0	0x1443c4bb3	0x1443c49b0	call	1000	config.xml
+MemoryTracker.MemoryMetricsPools.CsvFile.writePerFrameStride	u32	0x1	0x1443c4b30	0x1443c49b0	call	10	config.xml
+MemoryTracker.MemoryMetricsPools.CsvFile.writePoolsPerFrame	bool	0x0	0x1443c4aed	0x1443c49b0	call	false	config.xml
+MemoryTracker.MemoryMetricsPools.TraceFile.enable	bool	0x0	0x1443c4bf5	0x1443c49b0	call	false	config.xml
+Network.Dev.FailSteamAuthentication	float	0x0	0x143369a9e	0x143369930	call		
+Network.Dev.ForceDirectP2P	bool	0x0	0x14fe39276	0x14fe391b0	call		
+Network.ForceMPMode	string	(rip: rip:0x145612762)	0x1430ed3bd	0x1430ed330	call		
+Network.Journal.loadFileData	bool	0x0	0x14fe3e921	0x14fe3e6b0	call		
+Network.Journal.useTimer	bool	0x0	0x14fe3e8dc	0x14fe3e6b0	call		
+Network.Journal.writeFreq	u32	0x1e	0x14fe3e8f5	0x14fe3e6b0	call		
+Network.Journal.writeToFile	bool	0x0	0x14fe3e90b	0x14fe3e6b0	call		
+Network.LAN.active	bool	0x0	0x14172c65c	0x14172c5a0	call	true	config_platform.xml
+Network.LAN.active	bool	0x0	0x14172c966	0x14172c840	call	true	config_platform.xml
+Network.Privilege.MultiplayerCheckRequired	bool	0x1	0x144117040	0x144116f50	call		
+OnlineServices.enabled	bool	0x0	0x1432961f1	0x1432952c0	call		
+OnlineServices.LogToFile	bool	0x0	0x14329620d	0x1432952c0	call	false	config.xml
+OnlineServices.OfflineMode	bool	0x0	0x143369edd	0x143369ea0	call	false	config.xml
+OnlineServices.OfflineMode	bool	0x0	0x1516e56fa	0x1516e5690	call	false	config.xml
+OnlineServices.ServerName	string	(rip: rip:0x145612762)	0x143295397	0x1432952c0	call	Prod25	config_sku.xml
+OnlineServices.ServerName_win	string	(rip: rip:0x145612762)	0x1432953bd	0x1432952c0	call		
+OnlineServices.WebSocketEnabled	bool	0x1	0x150055d6e	0x150055b00	call		
+OptionsSystem.AddDummyUnhandledOptions	bool	0x0	0x142acd004	0x142accfc0	call	false	config.xml
+OptionsSystem.watchedOption	string	(mem: r9, [rsp + 0x7c8])	0x142ad00d4	0x142ace510	call		config.xml
+ParameterStudio.enabled	bool	(mem: r9d, byte ptr [rdi + 0x88])	0x14337a329	0x14337a150	call	true	config.xml
+ParameterStudio.enabled	bool	0x0	0x1436c80cc	0x1436c7af0	call	true	config.xml
+ParameterStudio.Enabled	bool	0x0	0x1445a830a	0x1445a8250	call	true	config.xml
+ParameterStudio.highQualityVolumes	bool	0x0	0x14337a3af	0x14337a150	call	false	config.xml
+ParameterStudio.Particles.enabled	bool	0x1	0x14337a34a	0x14337a150	call	true	config.xml
+ParameterStudio.Particles.enabled	bool	0x1	0x150276d0f	0x150276c60	call	true	config.xml
+ParameterStudio.volumeLightBakes	bool	0x0	0x14337a38e	0x14337a150	call	false	config.xml
+ParameterStudio.volumeShadowBakes	bool	0x0	0x14337a36d	0x14337a150	call	true	config.xml
+PerformanceMonitoring.clearResourceTypeStatsAfterDumping	bool	(mem: r9d, byte ptr [rsi + 0x629])	0x1434b31fe	0x1434b3190	call	true	config.xml
+PerformanceMonitoring.dumpResourceTypeStats	bool	(mem: r9d, byte ptr [rsi + 0x628])	0x1434b31db	0x1434b3190	call	false	config.xml
+PerformanceMonitoring.ResourceTypeStats.mode	string_set	0x40	0x1434b3229	0x1434b3190	call		
+PhotoMode.allow360VideosWithAnyReplayDuration	bool	0x0	0x141ceac2b	0x141cea5d0	call	false	config.xml
+PhotoMode.allowAllWeatherChanges	bool	0x0	0x141ceabf4	0x141cea5d0	call	false	config.xml
+PhotoMode.allowPhotoModeInPitlane	bool	0x0	0x14e3acd2c	0x14e3acc40	call	false	config.xml
+PhotoMode.cameraCollisionAvoidance	bool	0x1	0x14e3acd02	0x14e3acc40	call	true	config.xml
+PhotoMode.cameraLockedToBoundingBoxAroundCar	bool	0x1	0x14e3accd8	0x14e3acc40	call	false	config.xml
+PhotoMode.cameraLockedToHeightAboveTrack	bool	0x1	0x14e3acced	0x14e3acc40	call	true	config.xml
+PhotoMode.canPositionCars	bool	0x0	0x14e3acd17	0x14e3acc40	call		
+PhotoMode.debugNum360VideoFramesToStopAfter	i32	0x0	0x142bcd852	0x142bcd750	call	0	config.xml
+PhotoMode.devEnabled	bool	0x0	0x141cea89c	0x141cea5d0	call	false	config.xml
+PhotoMode.devEnabled	bool	0x0	0x14e3acc78	0x14e3acc40	call	false	config.xml
+PhotoMode.showCaptureTypeMenuOptions	bool	0x0	0x141ceac0f	0x141cea5d0	call	true	config_platform.xml
+PhotoMode.showLogoPositionOffOption	bool	0x0	0x141ceabdb	0x141cea5d0	call	false	config.xml
+PhysicsWorld.gravity	float	-9.81f	0x144457685	0x144457220	call	-9.81	config.xml
+PhysicsWorld.maxBodiesInIsland	i32	0x100	0x1444577cc	0x144457220	call	256	config.xml
+PhysicsWorld.maxBroadPhaseCollisions	i32	0x2710	0x144457768	0x144457220	call	27500	config.xml
+PhysicsWorld.maxBroadPhaseCollisionsTrigger	i32	0x5dc	0x1444579bd	0x144457220	call	4000	config.xml
+PhysicsWorld.maxConstraints	i32	0x3e8	0x14445770e	0x144457220	call	1200	config.xml
+PhysicsWorld.maxConstraintsInIsland	i32	0x3e8	0x1444577e5	0x144457220	call	1536	config.xml
+PhysicsWorld.maxContacts	i32	0x2710	0x144457786	0x144457220	call	5000	config.xml
+PhysicsWorld.maxEntityEvents	i32	0x64	0x14459338d	0x1445926f0	call	100	config.xml
+PhysicsWorld.maxFixedObjects	i32	0x3e8	0x1444576c3	0x144457220	call	2000	config.xml
+PhysicsWorld.maxLargeGeoms	i32	0x7d0	0x1444576f5	0x144457220	call	1500	config.xml
+PhysicsWorld.maxRigidBodies	i32	0x3e8	0x1444576dc	0x144457220	call	4000	config.xml
+PhysicsWorld.maxSmallGeoms	i32	0x3e8	0x144457727	0x144457220	call	9000	config.xml
+Playfab.pool	string	(rip: rip:0x145a55088)	0x14409d2b4	0x14409d250	call		
+Product.Name	string	(rip: rip:0x145611ff6)	0x1406d7243	0x1406d6360	call	2025_release	config_sku.xml
+Product.Name	string_set	0x20	0x1444361a1	0x144436130	call	2025_release	config_sku.xml
+ProLeagues.Environment	string_set	0x18	0x143172e7c	0x1431717c0	call		
+ProLeagues.Test.AlwaysFill	bool	0x0	0x1431793b7	0x1431717c0	call		
+Properties.messageQueueSize	u32	0x10000	0x1444628c9	0x1444626e0	call		
+RearViewMirrors.enabled	bool	0x1	0x14014d6f5	0x14014d230	call	true	config.xml
+RearViewMirrors.ultraMode	bool	0x0	0x14014d711	0x14014d230	call	false	config.xml
+RearViewMirrors.updateMode	u32	0x0	0x14014d730	0x14014d230	call	0	config.xml
+RecommendedPCSpec.AMDMinimumDredDriverVersion.value	u32	(mem: r9d, dword ptr [rsp + 0x50])	0x1443d645e	0x1443d5ce0	call	19300109	config_platform.xml
+RecommendedPCSpec.AMDRecommendedDriverVersion.displayValue	string_set	0x20	0x1443d638c	0x1443d5ce0	call	24.9.1	config_platform.xml
+RecommendedPCSpec.AMDRecommendedDriverVersion.value	u32	(mem: r9d, dword ptr [rsp + 0x58])	0x1443d6341	0x1443d5ce0	call	23192101	config_platform.xml
+RecommendedPCSpec.AMDRequiredMinimumDriverVersion.displayValue	string_set	0x20	0x1443d641c	0x1443d5ce0	call	23.2.1	config_platform.xml
+RecommendedPCSpec.AMDRequiredMinimumDriverVersion.value	u32	(mem: r9d, dword ptr [rsp + 0x54])	0x1443d63ce	0x1443d5ce0	call	22400145	config_platform.xml
+RecommendedPCSpec.DisableDredOnIntelGraphics	bool	(mem: r9d, byte ptr [rsp + 0x2c])	0x1443d61a3	0x1443d5ce0	call	false	config_platform.xml
+RecommendedPCSpec.disableHardCheck	bool	(mem: r9d, byte ptr [rsp + 0x2b])	0x1443d5f33	0x1443d5ce0	call		
+RecommendedPCSpec.fakeBelowMinSpecGraphicsDriver	bool	(mem: r9d, byte ptr [rsp + 0x2e])	0x1443d5ffc	0x1443d5ce0	call		
+RecommendedPCSpec.fakeBelowMinSpecHardCheck	bool	(mem: r9d, byte ptr [rsp + 0x2a])	0x1443d5f76	0x1443d5ce0	call		
+RecommendedPCSpec.fakeBelowMinSpecSoftCheck	bool	(mem: r9d, byte ptr [rsp + 0x29])	0x1443d5fb9	0x1443d5ce0	call		
+RecommendedPCSpec.fakeInVR	bool	(mem: r9d, byte ptr [rsp + 0x2d])	0x1443d603f	0x1443d5ce0	call		
+RecommendedPCSpec.GpuCapabilitiesChecksAreFatal	bool	(mem: r9d, byte ptr [rsp + 0x28])	0x1443d6846	0x1443d5ce0	call	false	config_platform.xml
+RecommendedPCSpec.IntelRecommendedDriverVersion.displayValue	string_set	0x20	0x1443d60d3	0x1443d5ce0	call	32.0.101.6559	config_platform.xml
+RecommendedPCSpec.IntelRecommendedDriverVersion.value	u32	(mem: r9d, dword ptr [rsp + 0x6c])	0x1443d6081	0x1443d5ce0	call	537704863	config_platform.xml
+RecommendedPCSpec.IntelRequiredMinimumDriverVersion.displayValue	string_set	0x20	0x1443d6160	0x1443d5ce0	call	32.0.101.6449	config_platform.xml
+RecommendedPCSpec.IntelRequiredMinimumDriverVersion.value	u32	(mem: r9d, dword ptr [rsp + 0x68])	0x1443d6115	0x1443d5ce0	call	537704753	config_platform.xml
+RecommendedPCSpec.MinMemoryBytes.displayValue	string_set	0x20	0x1443d6533	0x1443d5ce0	call	8	config_platform.xml
+RecommendedPCSpec.MinNumProcessors.value	u32	(mem: r9d, dword ptr [rsp + 0x4c])	0x1443d64a0	0x1443d5ce0	call	4	config_platform.xml
+RecommendedPCSpec.NVidiaMinimumDredDriverVersion.value	u32	(mem: r9d, dword ptr [rsp + 0x5c])	0x1443d62ff	0x1443d5ce0	call	43136	config_platform.xml
+RecommendedPCSpec.NVidiaRecommendedDriverVersion.displayValue	string_set	0x20	0x1443d6230	0x1443d5ce0	call	576.52	config_platform.xml
+RecommendedPCSpec.NVidiaRecommendedDriverVersion.value	u32	(mem: r9d, dword ptr [rsp + 0x64])	0x1443d61e5	0x1443d5ce0	call	57652	config_platform.xml
+RecommendedPCSpec.NVidiaRequiredMinimumDriverVersion.displayValue	string_set	0x20	0x1443d62bd	0x1443d5ce0	call	522.25	config_platform.xml
+RecommendedPCSpec.NVidiaRequiredMinimumDriverVersion.value	u32	(mem: r9d, dword ptr [rsp + 0x60])	0x1443d6272	0x1443d5ce0	call	52225	config_platform.xml
+RecommendedPCSpec.RecommendedMinGpuMemoryBytes.displayValue	string_set	0x20	0x1443d65c6	0x1443d5ce0	call	4	config_platform.xml
+RecommendedPCSpec.RecommendedMinGpuMemoryBytesVR.displayValue	string_set	0x20	0x1443d66ec	0x1443d5ce0	call	6	config_platform.xml
+RecommendedPCSpec.RequiredGpuResourceBindingTier.value	u32	(mem: r9d, dword ptr [rsp + 0x44])	0x1443d6803	0x1443d5ce0	call	3	config_platform.xml
+RecommendedPCSpec.RequiredGpuShaderModel.value	u32	(mem: r9d, dword ptr [rsp + 0x48])	0x1443d67c1	0x1443d5ce0	call	0x66	config_platform.xml
+RecommendedPCSpec.RequiredMinGpuMemoryBytes.displayValue	string_set	0x20	0x1443d6659	0x1443d5ce0	call	2	config_platform.xml
+RecommendedPCSpec.RequiredMinGpuMemoryBytesVR.displayValue	string_set	0x20	0x1443d677f	0x1443d5ce0	call	6	config_platform.xml
+RecommendedPCSpec.skipCheck	bool	(mem: r9d, byte ptr [rsp + 0x2f])	0x1443d5ef0	0x1443d5ce0	call	false	config_platform.xml
+Renderer.ACES.enabled	bool	0x0	0x143b6e5aa	0x143b5eb60	call	true	config.xml
+Renderer.ACES.optimised	bool	0x0	0x143b6e5da	0x143b5eb60	call	true	config_platform.xml
+Renderer.Blitter.maxTexBlits	u32	0x1000	0x15446b035	0x15446aff0	call	20480	config.xml
+Renderer.Blitter.maxTexSwaps	u32	0x40	0x15446b073	0x15446aff0	call	512	config.xml
+Renderer.Blitter.maxUntexBlits	u32	0x200	0x15446b054	0x15446aff0	call	4096	config.xml
+Renderer.Font.fontQueueSize	u32	0x8000	0x15446b092	0x15446aff0	call	64K	config.xml
+Renderer.Font.outlined	bool	0x1	0x15446b0ae	0x15446aff0	call		
+Renderer.Gfx.AcesExposureCompensation	bool	0x1	0x143b6e601	0x143b5eb60	call	false	config.xml
+Renderer.Gfx.allow_rt_graphics_mode	bool	0x0	0x14deba498	0x14deba470	call		
+Renderer.Gfx.allowLensDistortion	bool	0x0	0x14014d38e	0x14014d230	call	false	config.xml
+Renderer.Gfx.allowPerfomanceModeOnXboxSeriesS	bool	0x0	0x14014d778	0x14014d230	call		
+Renderer.Gfx.AssetPreviewer.PauseAllTime	bool	0x0	0x143b657d4	0x143b5eb60	call		
+Renderer.Gfx.CarDamage.DamageMask.height	u32	0x80	0x142f1ab65	0x142f1a700	call		
+Renderer.Gfx.CarDamage.DamageMask.width	u32	0x40	0x142f1aae7	0x142f1a700	call		
+Renderer.Gfx.CarDamage.enabled	bool	0x0	0x14014d995	0x14014d230	call	true	config.xml
+Renderer.Gfx.CarDamage.maxCollisionsPerVehicle	u32	0x80	0x142f1abe8	0x142f1a700	call	128	config.xml
+Renderer.Gfx.CarDynamicCubeMap.enabled	bool	0x1	0x14014d756	0x14014d230	call	true	config_platform.xml
+Renderer.Gfx.CarDynamicEnvMap.cameraHeightAdjustment	float	(mem: xmm3, dword ptr [rsi + 0x40])	0x1445b67c8	0x1445b66f0	call	0.0	config.xml
+Renderer.Gfx.clearColour	float	0x0	0x1443cd4d1	0x1443cc250	call	0	config.xml
+Renderer.Gfx.clearGBufferTargets	bool	0x0	0x1401056f3	0x140104f70	call	false	config.xml
+Renderer.Gfx.d3dDebugBreakOnCorruption	bool	0x1	0x1443cca61	0x1443cc250	call	true	config.xml
+Renderer.Gfx.d3dDebugBreakOnError	bool	0x1	0x1443cca1e	0x1443cc250	call	true	config.xml
+Renderer.Gfx.d3dDebugBreakOnInfo	bool	0x1	0x1443cc998	0x1443cc250	call	true	config.xml
+Renderer.Gfx.d3dDebugBreakOnMessage	bool	0x1	0x1443cc955	0x1443cc250	call	true	config.xml
+Renderer.Gfx.d3dDebugBreakOnWarning	bool	0x1	0x1443cc9db	0x1443cc250	call	true	config.xml
+Renderer.Gfx.d3DDebugMuteFilters	string_set	0x80	0x1443ccb8e	0x1443cc250	call	1328, 820, 679	config.xml
+Renderer.Gfx.DDGI	bool	0x0	0x143b63e7e	0x143b5eb60	call	true	config.xml
+Renderer.Gfx.DebugResolution.autoscale	bool	(mem: r9d, byte ptr [rsi + 0x44])	0x14708a065	0x14708a030	call	true	config.xml
+Renderer.Gfx.DebugResolution.debugResolutionScale	float	(reg: xmm6)	0x14708a08d	0x14708a030	call	1.0	config.xml
+Renderer.Gfx.enableAsyncCompute	bool	0x1	0x1443cc6fa	0x1443cc250	call	true	config.xml
+Renderer.Gfx.enableBarrierLogging	bool	0x0	0x1443cc780	0x1443cc250	call		
+Renderer.Gfx.enableCustomisationDecals	bool	0x0	0x1414282e3	0x141428060	call	true	config.xml
+Renderer.Gfx.enableCustomisationDecals	bool	0x0	0x141434ce1	0x141434cb0	call	true	config.xml
+Renderer.Gfx.enableCustomisationDecals	bool	0x0	0x142a919a9	0x142a91720	call	true	config.xml
+Renderer.Gfx.enableCustomisationDecals	bool	0x0	0x143b70d63	0x143b5eb60	call	true	config.xml
+Renderer.Gfx.enableCustomisationDecalsIndirectPlacementOverride	bool	0x0	0x141420937	0x14141efe0	call	true	config.xml
+Renderer.Gfx.enableD3DDebugRuntime	bool	0x0	0x1443cc7c3	0x1443cc250	call	false	config.xml
+Renderer.Gfx.enableDisplayPlanes	bool	0x0	0x1443cc413	0x1443cc250	call	false	config.xml
+Renderer.Gfx.enableDRED	bool	(mem: r9d, byte ptr [rsi + 0x114])	0x1443dd33e	0x1443dd2b0	call	true	config.xml
+Renderer.Gfx.enableDynamicResAutoScaling	bool	(rip: rip:0x145f8d26c)	0x140105804	0x140104f70	call	true	config.xml
+Renderer.Gfx.enableFSR3	bool	0x0	0x1444a4c8f	0x1444a4b70	call		
+Renderer.Gfx.enableGpuShaderValidation	bool	0x0	0x1443cc88c	0x1443cc250	call	false	config.xml
+Renderer.Gfx.enableGpuTrace	bool	(mem: r9d, byte ptr [rsi + 0xc7])	0x1443dd31d	0x1443dd2b0	call	false	config.xml
+Renderer.Gfx.enableHDR	bool	0x1	0x1443cc631	0x1443cc250	call	true	config.xml
+Renderer.Gfx.enableIblOnRtt	bool	0x0	0x143b6e807	0x143b5eb60	call	false	config.xml
+Renderer.Gfx.enableLightweightGpuShaderValidation	bool	0x0	0x1443cc8cf	0x1443cc250	call	false	config.xml
+Renderer.Gfx.enableNvidiaRaytracingValidation	bool	0x0	0x1443cc912	0x1443cc250	call	false	config.xml
+Renderer.Gfx.enableNvidiaShaderExtensions	bool	(mem: r9d, byte ptr [rsi + 0x117])	0x1443dd431	0x1443dd2b0	call		
+Renderer.Gfx.enablePixEventPerDrawCall	bool	0x0	0x1443cc849	0x1443cc250	call	false	config.xml
+Renderer.Gfx.enablePlanarReflections	bool	0x1	0x14014d515	0x14014d230	call	true	config.xml
+Renderer.Gfx.enablePrototypeModifiers	bool	0x0	0x14018c1ec	0x14018bdb0	call	false	config.xml
+Renderer.Gfx.enableRealTimePathTracer	bool	0x0	0x1443dd3f5	0x1443dd2b0	call	true	config_platform.xml
+Renderer.Gfx.enableRealTimePathTracer	bool	0x0	0x1444a4ced	0x1444a4b70	call	true	config_platform.xml
+Renderer.Gfx.enableRT	bool	(mem: r9d, byte ptr [rsi + 0x115])	0x1443dd3dc	0x1443dd2b0	call	true	config.xml
+Renderer.Gfx.enableSER	bool	(mem: r9d, byte ptr [rsi + 0x116])	0x1443dd413	0x1443dd2b0	call	true	config.xml
+Renderer.Gfx.enableSSRT	bool	0x1	0x14014d536	0x14014d230	call		
+Renderer.Gfx.enableSSRT	bool	0x1	0x14726ce74	0x14726ce40	call		
+Renderer.Gfx.enableVRS	bool	0x1	0x1443cc6b7	0x1443cc250	call	true	config.xml
+Renderer.Gfx.enableXeSS	bool	0x0	0x1444a4cbe	0x1444a4b70	call	true	config.xml
+Renderer.Gfx.forceHDR	bool	0x0	0x1443cc674	0x1443cc250	call	false	config.xml
+Renderer.Gfx.fpsTarget	float	-1f	0x140150878	0x14014d230	call		
+Renderer.Gfx.frostedGlassEnabled	bool	0x0	0x14014d3fd	0x14014d230	call	true	config.xml
+Renderer.Gfx.groundCover2Enabled	bool	0x0	0x14014d46e	0x14014d230	call	true	config.xml
+Renderer.Gfx.groundCover2MaxInstances	u32	0x249f0	0x14014d490	0x14014d230	call	150000	config.xml
+Renderer.Gfx.groundCover2MaxMeshInstances	u32	0x1f40	0x14014d4b2	0x14014d230	call	8000	config.xml
+Renderer.Gfx.groundCoverDebugEnabled	bool	0x0	0x140150087	0x14014d230	call	false	config.xml
+Renderer.Gfx.groundCoverEnabled	bool	0x1	0x14014d41b	0x14014d230	call	true	config.xml
+Renderer.Gfx.groundCoverForceUltraQuality	bool	0x0	0x14014d4f7	0x14014d230	call		
+Renderer.Gfx.groundCoverMaxInstances	u32	0x124f8	0x14014d448	0x14014d230	call	75000	config.xml
+Renderer.Gfx.hintMaxBlendStates	u32	0x10	0x1443cd06e	0x1443cc250	call	55	config.xml
+Renderer.Gfx.hintMaxBuffers	u32	0x2000	0x1443cce84	0x1443cc250	call	25000	config.xml
+Renderer.Gfx.hintMaxCommandLists	u32	0x100	0x1443ccdf8	0x1443cc250	call	256	config.xml
+Renderer.Gfx.hintMaxCommands	u32	0x2000	0x1443cd186	0x1443cc250	call	630000	config.xml
+Renderer.Gfx.hintMaxComputeContexts	u32	0x1	0x1443ccd6c	0x1443cc250	call	16	config.xml
+Renderer.Gfx.hintMaxContextSetups	u32	0x200	0x1443ccdb2	0x1443cc250	call	2200	config.xml
+Renderer.Gfx.hintMaxDepthStencilStates	u32	0x10	0x1443cd0b4	0x1443cc250	call	48	config.xml
+Renderer.Gfx.hintMaxDSVs	u32	0x80	0x1443ccf9c	0x1443cc250	call	290	config.xml
+Renderer.Gfx.hintMaxFences	u32	0x100	0x1443ccce0	0x1443cc250	call		
+Renderer.Gfx.hintMaxGfxContexts	u32	0x8	0x1443ccd26	0x1443cc250	call	16	config.xml
+Renderer.Gfx.hintMaxIds	u32	0x4000	0x1443cd1cc	0x1443cc250	call	614400	config.xml
+Renderer.Gfx.hintMaxRasterStates	u32	0x10	0x1443cd028	0x1443cc250	call	41	config.xml
+Renderer.Gfx.hintMaxRTVs	u32	0x40	0x1443ccf10	0x1443cc250	call	950	config.xml
+Renderer.Gfx.hintMaxSamplerStates	u32	0x1770	0x1443ccfe2	0x1443cc250	call	64	config.xml
+Renderer.Gfx.hintMaxShaderGroups	u32	0x100	0x1443cd0fa	0x1443cc250	call	4900	config.xml
+Renderer.Gfx.hintMaxShaderInstances	u32	0x1000	0x1443cd140	0x1443cc250	call	96000	config.xml
+Renderer.Gfx.hintMaxSRVs	u32	0x2000	0x1443cceca	0x1443cc250	call	44000	config.xml
+Renderer.Gfx.hintMaxSurfaces	u32	0x1000	0x1443cce3e	0x1443cc250	call	8000	config.xml
+Renderer.Gfx.hintMaxUAVs	u32	0x20	0x1443ccf56	0x1443cc250	call	800	config.xml
+Renderer.Gfx.jitPsoCreation	bool	0x0	0x1443cd379	0x1443cc250	call	false	config.xml
+Renderer.Gfx.largeAllocSize	u32	0x100000	0x1443ccc57	0x1443cc250	call	8M	config_platform.xml
+Renderer.Gfx.linearUI	bool	0x0	0x1443cd5a0	0x1443cc250	call		
+Renderer.Gfx.maxPsoCreationThreads	i32	(mem: r9d, dword ptr [rsp + 0x14c])	0x1443cd336	0x1443cc250	call		
+Renderer.Gfx.MotionBlur.NewMotionBlurMaxLengthScale	float	(reg: xmm6)	0x143bc38b3	0x143bc2ff0	call	3.0	config.xml
+Renderer.Gfx.MotionBlur.OldMotionBlurMaxLengthScale	float	(reg: xmm6)	0x143bc38c9	0x143bc2ff0	call	1.0	config.xml
+Renderer.Gfx.MotionBlur.UseNewMotionBlurIn30HzMode	bool	0x0	0x143bc3880	0x143bc2ff0	call	true	config.xml
+Renderer.Gfx.MotionBlur.UseNewMotionBlurInNot30HzMode	bool	0x0	0x143bc3895	0x143bc2ff0	call	false	config.xml
+Renderer.Gfx.nightShadowsEnabled	bool	0x1	0x14014d3b7	0x14014d230	call	true	config.xml
+Renderer.Gfx.PerformanceMode.height	u32	(reg: edi)	0x14015d3ef	0x14015d050	call		
+Renderer.Gfx.PerformanceMode.width	u32	0xa00	0x14015d3d3	0x14015d050	call		
+Renderer.Gfx.planarReflectionFadeDistanceRange	float	1f	0x14014d6bf	0x14014d230	call		
+Renderer.Gfx.planarReflectionMinStartFadeDistance	float	1f	0x14014d67b	0x14014d230	call		
+Renderer.Gfx.planarReflectionNonPlanarUvOffset	float	(reg: xmm6)	0x14014d5ae	0x14014d230	call		
+Renderer.Gfx.planarReflectionPlanarUvOffset	float	1f	0x14014d586	0x14014d230	call		
+Renderer.Gfx.planarReflectionUvThreshold	float	0.15f	0x14014d5d2	0x14014d230	call		
+Renderer.Gfx.platformSpecificModifiers	bool	0x0	0x14018c1cd	0x14018bdb0	call	true	config.xml
+Renderer.Gfx.printLiveD3dObjectsOnBackbufferDestroyed	bool	0x0	0x1443cc806	0x1443cc250	call	false	config.xml
+Renderer.Gfx.printObjectAllocations	bool	0x0	0x1443ccc9a	0x1443cc250	call	false	config.xml
+Renderer.Gfx.reflectionsFarClip	float	10f	0x14014d9c4	0x14014d230	call		
+Renderer.Gfx.reflex	bool	0x0	0x1443cc73d	0x1443cc250	call	true	config.xml
+Renderer.Gfx.resolutionMultiplier	float	(reg: xmm7)	0x14014e21a	0x14014d230	call	1.0	config.xml
+Renderer.Gfx.shadowsEnabled	bool	0x1	0x14014d36d	0x14014d230	call	true	config.xml
+Renderer.Gfx.skidmarksEnabled	bool	0x1	0x14471d955	0x14471d900	call	true	config.xml
+Renderer.Gfx.slLogLevel	u32	(mem: r9d, dword ptr [rsi + 0x124])	0x1443dd2ff	0x1443dd2b0	call		
+Renderer.Gfx.slWindow	bool	(mem: r9d, byte ptr [rdx + 0x120])	0x1443dd2e2	0x1443dd2b0	call		
+Renderer.Gfx.SSAO.assao.adaptiveQualityLimit	float	0.45f	0x143b6ed07	0x143b5eb60	call	0.45	config.xml
+Renderer.Gfx.SSAO.assao.blurPassCount	i32	(rip: rip:0x145f96fb4)	0x143b6ed24	0x143b5eb60	call		
+Renderer.Gfx.SSAO.assao.detailShadowStrength	float	0.5f	0x143b6ed9c	0x143b5eb60	call	0.5	config.xml
+Renderer.Gfx.SSAO.assao.fadeOutFrom	float	50f	0x143b6ecae	0x143b5eb60	call	50.0	config.xml
+Renderer.Gfx.SSAO.assao.fadeOutTo	float	300f	0x143b6eccc	0x143b5eb60	call	300.0	config.xml
+Renderer.Gfx.SSAO.assao.horizonAngleThreshold	float	0.06f	0x143b6ec90	0x143b5eb60	call	0.06	config.xml
+Renderer.Gfx.SSAO.assao.qualityLevel	i32	(rip: rip:0x145f96fac)	0x143b6ece9	0x143b5eb60	call	2	config.xml
+Renderer.Gfx.SSAO.assao.radius	float	0.2f	0x143b6ec18	0x143b5eb60	call	0.2	config.xml
+Renderer.Gfx.SSAO.assao.shadowClamp	float	0.98f	0x143b6ec72	0x143b5eb60	call	0.98	config.xml
+Renderer.Gfx.SSAO.assao.shadowMultiplier	float	1f	0x143b6ec36	0x143b5eb60	call	1.0	config.xml
+Renderer.Gfx.SSAO.assao.shadowPower	float	1.5f	0x143b6ec54	0x143b5eb60	call	1.5	config.xml
+Renderer.Gfx.SSAO.assao.sharpness	float	0.98f	0x143b6ed42	0x143b5eb60	call	0.98	config.xml
+Renderer.Gfx.SSAO.assao.temporalSupersamplingAngleOffset	float	0f	0x143b6ed60	0x143b5eb60	call	0.0	config.xml
+Renderer.Gfx.SSAO.assao.temporalSupersamplingRadiusOffset	float	1f	0x143b6ed7e	0x143b5eb60	call	1.0	config.xml
+Renderer.Gfx.SSAO.Hemi.blurTolerance	float	-3f	0x143b6ee6b	0x143b5eb60	call	-8.0	config.xml
+Renderer.Gfx.SSAO.Hemi.combineResolutionsBeforeBlur	bool	(rip: rip:0x145f96fcc)	0x143b6edf5	0x143b5eb60	call	true	config.xml
+Renderer.Gfx.SSAO.Hemi.combineResolutionsWithMul	bool	(rip: rip:0x146441533)	0x143b6ee13	0x143b5eb60	call	true	config.xml
+Renderer.Gfx.SSAO.Hemi.hierarchyDepth	u32	(rip: rip:0x145f96fc8)	0x143b6edb9	0x143b5eb60	call	1	config.xml
+Renderer.Gfx.SSAO.Hemi.maxDepthDownsample	bool	(rip: rip:0x146441532)	0x143b6edd7	0x143b5eb60	call	true	config.xml
+Renderer.Gfx.SSAO.Hemi.noiseFilterTolerance	float	-3f	0x143b6ee4d	0x143b5eb60	call	-3.0	config.xml
+Renderer.Gfx.SSAO.Hemi.qualityLevel	u32	0x4	0x143b6ee2f	0x143b5eb60	call	4	config.xml
+Renderer.Gfx.SSAO.Hemi.rejectionFalloff	float	2.5f	0x143b6eea7	0x143b5eb60	call	2	config.xml
+Renderer.Gfx.SSAO.Hemi.upsampleTolerance	float	-5f	0x143b6ee89	0x143b5eb60	call	-12.0	config.xml
+Renderer.Gfx.SSGI	bool	0x0	0x140142b41	0x140141420	call	false	config.xml
+Renderer.Gfx.SSGI	bool	0x0	0x1443cd2e3	0x1443cc250	call	false	config.xml
+Renderer.Gfx.stateLockFrameRate	bool	0x1	0x14ea4afcc	0x14ea4ad70	call	true	config.xml
+Renderer.Gfx.suballocBufferSize	u32	0x200000	0x1443cd212	0x1443cc250	call		
+Renderer.Gfx.suballocMaxAllocations	u32	0x5000	0x1443cd258	0x1443cc250	call		
+Renderer.Gfx.translucentShadowsEnabled	bool	0x0	0x14014d3d8	0x14014d230	call	true	config.xml
+Renderer.Gfx.useHighPrecisionMainRenderTarget	bool	0x0	0x14014e3bc	0x14014d230	call	false	config.xml
+Renderer.Gfx.useWarpDevice	bool	0x0	0x1443ccaa4	0x1443cc250	call		
+Renderer.Gfx.vendorShaderPacksAllowed	bool	0x1	0x1436c827d	0x1436c7af0	call		
+Renderer.Gfx.volumetricFogEnabled	bool	0x0	0x144466baf	0x144466b60	call	true	config.xml
+Renderer.Gfx.WIN.uploadHeapSize	u32	0x4b00000	0x1443cd29e	0x1443cc250	call		
+Renderer.Global.enablePerItemProfileMarkers	bool	0x0	0x143b6ebfa	0x143b5eb60	call	false	config.xml
+Renderer.Global.messageQueueSize	u32	0x100000	0x14447682b	0x1444767d0	call	16M	config_platform.xml
+Renderer.gpuprofiling	bool	0x0	0x143b6e61b	0x143b5eb60	call		
+Renderer.maxPVSRenderInstances	u32	0x1000	0x1401553d1	0x140153d60	call	24800	config.xml
+Renderer.maxStaticInstances	u32	0x2cec	0x1401552c2	0x140153d60	call	24500	config.xml
+Renderer.PathTracer.enablePointLights	bool	0x0	0x143b6e3d3	0x143b5eb60	call		
+Renderer.PathTracer.enableRealtimeRadianceCache	bool	(mem: r9d, byte ptr [rsp + 0xc80])	0x143b6e42b	0x143b5eb60	call		
+Renderer.PathTracer.enableReferenceRadianceCache	bool	0x1	0x143b6e40b	0x143b5eb60	call		
+Renderer.PathTracer.maxSampleCount	u32	(rip: rip:0x145f978b0)	0x143b6e46d	0x143b5eb60	call		
+Renderer.pathTracerIndirectTargets32Bit	bool	0x0	0x1443dd44d	0x1443dd2b0	call		
+Renderer.Postprocess.ignoreDOFDelegate	bool	0x0	0x142f81fab	0x142f81d60	call		
+Renderer.Postprocess.ignoreVignetteDelegate	bool	0x0	0x142f81fcc	0x142f81d60	call		
+Renderer.RayTracing.ao	bool	0x0	0x140142b5b	0x140141420	call	true	config.xml
+Renderer.RayTracing.ao	bool	0x0	0x14014e67f	0x14014d230	call	true	config.xml
+Renderer.RayTracing.enableRelaxDenoiserOption	bool	0x0	0x14014e6fb	0x14014d230	call	true	config_platform.xml
+Renderer.RayTracing.limitRayTracingToFrontend	bool	0x0	0x14014d7c0	0x14014d230	call		
+Renderer.RayTracing.reflections	bool	0x0	0x14014e6bd	0x14014d230	call	true	config.xml
+Renderer.RayTracing.shadows	bool	0x0	0x14014e69e	0x14014d230	call	true	config.xml
+Renderer.RayTracing.transparentReflections	bool	0x0	0x14014e6dc	0x14014d230	call	true	config.xml
+Renderer.reflectionsSampleSkyOnMiss	bool	0x1	0x140105711	0x140104f70	call		
+Renderer.RenderFrameGraph.debug	bool	0x0	0x143b6e635	0x143b5eb60	call		
+Renderer.RenderFrameGraph.debugFileName	string	(rip: rip:0x145612762)	0x143b6e68d	0x143b5eb60	call		
+Renderer.RenderFrameGraph.resource_name	string	(rip: rip:0x145612762)	0x143b6e75e	0x143b5eb60	call		
+Renderer.showRenderMode	bool	0x0	0x1445b0ce0	0x1445b0b90	call		
+Renderer.TextureStreaming.autoPurge	bool	0x0	0x143b6e541	0x143b5eb60	call	false	config.xml
+Renderer.TextureStreaming.enabled	bool	0x0	0x143b6e49a	0x143b5eb60	call	true	config.xml
+Renderer.TextureStreaming.enabledPreloadOnly	bool	0x0	0x143b6e4ca	0x143b5eb60	call	false	config.xml
+Renderer.TextureStreaming.enableHiRes	bool	0x1	0x143b5fb90	0x143b5eb60	call		
+Renderer.TextureStreaming.forceLoadAll	bool	0x0	0x143b6e4f7	0x143b5eb60	call	false	config.xml
+Renderer.TextureStreaming.loadHiRes	bool	0x1	0x143b5fbd8	0x143b5eb60	call		
+Renderer.TextureStreaming.meshDensityThreshold	float	0.01f	0x143b6e516	0x143b5eb60	call	0.01	config.xml
+Renderer.TextureStreaming.streamingCacheSize	u32	0x12c00000	0x143b6e8d2	0x143b5eb60	call	350M	config_platform.xml
+Renderer.TextureStreaming.streamingCacheSize_ext	u32	0x12c00000	0x143b6e84e	0x143b5eb60	call		
+Renderer.TextureStreaming.textureCullScale	u32	0xa	0x143b6e57b	0x143b5eb60	call		
+Renderer.TimeOfDay.displayScreenInfo	bool	0x0	0x144619ab0	0x144619760	call	false	config.xml
+Renderer.TimeOfDay.forceRandomDynamicScenario	bool	0x0	0x1446199c0	0x144619760	call	false	config.xml
+Renderer.TimeOfDay.overrideScenario	bool	0x0	0x1446199e1	0x144619760	call	false	config.xml
+Renderer.TimeOfDay.overrideTime	bool	0x0	0x144619a27	0x144619760	call	false	config.xml
+Renderer.TimeOfDay.overrideTimeOfDay	bool	0x0	0x144619a6a	0x144619760	call	false	config.xml
+Renderer.TimeOfDay.randomSeed	u32	(mem: r9d, dword ptr [rsi + 0xb33c])	0x144619ad1	0x144619760	call		
+Renderer.TimeOfDay.time	float	0x0	0x144619a49	0x144619760	call	0	config.xml
+Renderer.TrackInformationSystem.enabled	bool	0x1	0x144790dd5	0x144790c60	call	true	config.xml
+Renderer.TrackInformationSystem.enableErrorHandling	bool	0x0	0x144790df4	0x144790c60	call	false	config.xml
+Renderer.TrackInformationSystem.enableTrackDataDebugDisplay	bool	0x0	0x144790e11	0x144790c60	call		
+Renderer.UI.Draw.maxAAGraphCount	u32	(mem: r9d, dword ptr [rsi + 0x134])	0x1442e3048	0x1442e2f80	call	100	config.xml
+Renderer.UI.Draw.maxCanvasCount	u32	(mem: r9d, dword ptr [rsi + 0x128])	0x1442e2fe5	0x1442e2f80	call	10	config.xml
+Renderer.UI.Draw.maxLineSegmentCount	u32	(mem: r9d, dword ptr [rsi + 0x12c])	0x1442e3006	0x1442e2f80	call	4096	config.xml
+Renderer.UI.Draw.maxShapeInstanceCount	u32	(mem: r9d, dword ptr [rsi + 0x124])	0x1442e2fc4	0x1442e2f80	call	512	config.xml
+Renderer.UI.Draw.maxTriangleCount	u32	(mem: r9d, dword ptr [rsi + 0x130])	0x1442e3027	0x1442e2f80	call	4096	config.xml
+Renderer.UI.forcePeakNitAdjustment	bool	0x0	0x141e9c5f6	0x141e9b9f0	call	false	config.xml
+Renderer.UI.max2dCharacterInstances	u32	0x400	0x1442e75cb	0x1442e7210	call	5000	config.xml
+Renderer.UI.sourceResolutionHeight	u32	(mem: r9d, dword ptr [rsi + 0xa0])	0x1444a8813	0x1444a8780	call	1080	config.xml
+Renderer.UI.sourceResolutionWidth	u32	(mem: r9d, dword ptr [rsi + 0x9c])	0x1444a87f1	0x1444a8780	call	1920	config.xml
+Renderer.Video.showOsd	bool	0x0	0x1444b3ea9	0x1444b3e60	call	false	config.xml
+Renderer.Weather.cloudSystemEnabled	bool	0x0	0x14477964a	0x144779530	call		
+Renderer.Weather.debugEnabled	bool	0x0	0x14479b54b	0x14479b3a0	call	false	config.xml
+Renderer.Weather.postProcessTODDelegateEnable	bool	0x0	0x1438b0c9b	0x1438b09d0	call	true	config.xml
+Renderer.Weather.rainfallEnabled	bool	0x1	0x143d7941a	0x143d793d0	call	true	config.xml
+Renderer.Weather.rainSheetsEnabled	bool	0x1	0x143d7943b	0x143d793d0	call	true	config.xml
+Renderer.Weather.weatherSystemEnabled	bool	0x1	0x14479b52c	0x14479b3a0	call	true	config.xml
+Replay.disable_onboarding_tutorials	bool	0x0	0x142c04acb	0x142c04a30	call		
+Replay.force_advanced_replay_ui	bool	0x0	0x142c04a57	0x142c04a30	call		
+Replay.FullRaceReplay.Enabled	bool	(mem: r9d, byte ptr [rsi + 0x6e1])	0x142c4529c	0x142c45070	call	true	config.xml
+Replay.reset_onboarding_flags	bool	0x0	0x142c04a94	0x142c04a30	call		
+ResourceMessageHandler.synchronousResourceProcessingTimeBudget	float	10f	0x1443db6c9	0x1443db170	call		
+ResourceMessageHandler.synchronousResourceProcessingTimeBudget_master	float	(mem: xmm3, dword ptr [rsp + 0x68])	0x1443db6e2	0x1443db170	call		
+SafetyCar.noGhost	bool	0x0	0x142f1b90f	0x142f1b700	call		
+Save.SaveTitleOverride	string	(rip: rip:0x145612762)	0x14365adb0	0x14365a8b0	call		
+SKU.Name	string	(rip: rip:0x145612762)	0x154211b00	0x154211aa0	call	World	config_sku.xml
+SpeechRecognition.enabled	bool	0x1	0x144494b11	0x144494aa0	call		
+SpeechRecognition.nfsDataPath	string	(mem: r9, qword ptr [rsi + 0x50])	0x144494b37	0x144494aa0	call	audio/2025/speech_recognition	config_sku.xml
+SpeechRecognition.xmlDataPath	string	(reg: r14)	0x144494bee	0x144494aa0	call	audio/2025	config_sku.xml
+StateLaunch.synchroniseSeasonDocument	bool	0x0	0x1436db19e	0x1436daf60	call		
+StateSynchroniseCloseDocument.synchroniseSeasonDocument	bool	0x0	0x1436fe1f4	0x1436fe120	call		
+Steam.cloudEnabled	bool	0x1	0x1407fa6f7	0x1407f7320	call	true	config_platform.xml
+Steam.EnhancedRichPresenceEnabled	bool	(mem: r9d, byte ptr [rdi + 0x260])	0x142c5e915	0x142c5e4c0	call	true	config_platform.xml
+Steam.ugcFallbackPreviewImageFilePath	string_set	0x104	0x14449d960	0x14449d820	call	steam_workshop/fallback_preview.png	config_platform.xml
+Storage.UserMarkers.createDestroyResource	bool	0x0	0x1443db974	0x1443db170	call	false	config.xml
+Storage.UserMarkers.decompressErp	bool	0x0	0x1443db559	0x1443db170	call	false	config.xml
+Storage.UserMarkers.linkResolver	bool	0x0	0x1443db98e	0x1443db170	call	false	config.xml
+Storage.UserMarkers.rendererMessageQueue	bool	0x0	0x143b6eec9	0x143b5eb60	call	false	config.xml
+Storage.UserMarkers.textureStreamingVerbose	bool	0x0	0x1443db9a8	0x1443db170	call		
+Story.disableCinematicCinemascope	bool	0x0	0x14c49676a	0x14c496720	call		
+Story.disableCinematicCinemascope	bool	0x0	0x14c56041d	0x14c5603a0	call		
+Story.disableCinematicCinemascope	bool	0x0	0x14f227783	0x14f227740	call		
+Story.forcedTitleUpdateValue	bool	0x0	0x1418696c4	0x141869690	call		
+Testing.EnableSmokeTest	bool	0x0	0x140105822	0x140104f70	call		
+Testing.EnableSmokeTest	bool	0x0	0x1407d54a7	0x1407d2820	call		
+Testing.EnableSmokeTest	bool	0x0	0x1407fd8fe	0x1407fd8d0	call		
+Testing.EnableSmokeTest	bool	0x0	0x1418cfe9f	0x1418cfc90	call		
+Testing.EnableSmokeTest	bool	0x0	0x141b1a0dd	0x141b19e80	call		
+Testing.EnableSmokeTest	bool	0x0	0x141bb4d54	0x141bb48a0	call		
+Testing.EnableSmokeTest	bool	0x0	0x142b9d3c2	0x142b9d370	call		
+Testing.EnableSmokeTest	bool	0x0	0x1436e3a40	0x1436e3980	call		
+Testing.EnableSmokeTest	bool	0x0	0x144432572	0x144432540	call		
+Testing.EnableSmokeTest	bool	(mem: r9d, byte ptr [rdi + 0xed])	0x1445b0d13	0x1445b0b90	call		
+Testing.EnableSmokeTest	bool	0x0	0x14b6b95ea	0x14b6b95c0	call		
+Testing.EnableSmokeTest	bool	0x0	0x14b6b96c5	0x14b6b95c0	call		
+Testing.EnableSmokeTest	bool	0x0	0x14b6bbca8	0x14b6bbc50	call		
+Testing.EnableSmokeTest	bool	0x0	0x150f49d2b	0x150f49d00	call		
+Testing.OverrideGraphicsPreset	i32	0x0	0x1443c672c	0x1443c4fa0	call		
+TimeManager.cap	bool	0x1	0x1443d2036	0x1443d1bc0	call	true	config.xml
+TimeManager.capValue	float	0.08f	0x1443d2091	0x1443d1bc0	call	0.0833	config.xml
+TimeManager.fixedTimeStep	float	(reg: xmm6)	0x1443d1ed8	0x1443d1bc0	call	60	config.xml
+TimeManager.fixedTimeStep	double	(?)	0x1443da510	0x1443da4d0	call	60	config.xml
+TimeManager.mode	string	(rip: rip:0x145a88e71)	0x1443d1c68	0x1443d1bc0	call	anti_spiking	config_platform.xml
+TimeManager.mode	string	(rip: rip:0x145a88e71)	0x1541d82e5	0x1541d8270	call	anti_spiking	config_platform.xml
+TimeManager.smoothing	float	0.05f	0x1443d1fdd	0x1443d1bc0	call	0.99	config.xml
+TraceFile.enable	bool	0x0	0x1443c4a07	0x1443c49b0	call	false	config.xml
+UI.ChallengeCareer.shouldValidateTracks	bool	0x1	0x141fc090e	0x141fc0740	call	true	config.xml
+UI.DemoEvent	bool	(?)	0x148473d9a	0x148473d70	call	false	config.xml
+UI.DisableMessages	bool	0x0	0x1442a3b50	0x1442a3070	call		
+UI.DisplayWatermark	bool	0x0	0x150eaa650	0x150eaa5b0	call	false	config.xml
+UI.EnableAttract	bool	0x1	0x1419f4f76	0x1419f4b20	call		
+UI.EnableAttract	bool	0x1	0x141e9e2fb	0x141e9d630	call		
+UI.EnableCredits	bool	0x1	0x14dcfdc55	0x14dcfdaa0	call	true	config.xml
+UI.EnableMouseSupport	bool	0x0	0x1444a1be2	0x1444a1b30	call		
+UI.ForceFanZoneSeasonResults	bool	0x0	0x14238ddfd	0x14238da40	call		
+UI.IsTextProcessorEnabled	bool	0x0	0x1444a1c00	0x1444a1b30	call	true	config.xml
+UI.MovieBuild	bool	(mem: r9d, byte ptr [rcx + 0x18])	0x143034b3f	0x143034b20	call	false	config.xml
+UI.PreviewEvent	bool	0x0	0x140a26bc3	0x140a249f0	call	false	config.xml
+UI.PreviewEvent	bool	0x0	0x140a28f36	0x140a249f0	call	false	config.xml
+UI.PreviewEvent	bool	0x0	0x141758941	0x141758910	call	false	config.xml
+UI.PreviewEvent	bool	0x0	0x141a10e83	0x141a10d50	call	false	config.xml
+UI.PreviewEvent	bool	0x0	0x141a11803	0x141a116d0	call	false	config.xml
+UI.PreviewEvent	bool	0x0	0x141a140c2	0x141a12430	call	false	config.xml
+UI.PreviewEvent	bool	0x0	0x141a1dc26	0x141a1dbf0	call	false	config.xml
+UI.PreviewEvent	bool	0x0	0x142087726	0x142085820	call	false	config.xml
+UI.PreviewEvent	bool	0x0	0x142af9f36	0x142af9d10	call	false	config.xml
+UI.PreviewEvent	bool	0x0	0x142afa0db	0x142af9d10	call	false	config.xml
+UI.PreviewEvent	bool	0x0	0x148f8c9df	0x148f8c9b0	call	false	config.xml
+UI.RoundSwipeAnimation	bool	0x1	0x1437f4eca	0x1437f47d0	call		
+UI.ShowInProgressRoute	bool	0x1	0x1444a21e6	0x1444a1b30	call		
+UI.ShowLoadingTips	bool	0x1	0x141ca6719	0x141ca43e0	call	true	config.xml
+UI.ShowLoadingTips	bool	0x1	0x142bbd80d	0x142bb74b0	call	true	config.xml
+UI.skipDLCUpsell	bool	0x0	0x141a25e2d	0x141a25dd0	call		
+UI.skipDLCUpsell	bool	0x0	0x141a2d6a3	0x141a2d460	call		
+UI.skipDLCUpsell	bool	0x0	0x141a5e13b	0x141a5df70	call		
+UI.skipDLCUpsell	bool	0x0	0x141abcc15	0x141abc1b0	call		
+UI.skipDLCUpsell	bool	0x0	0x141f6b710	0x141f6b410	call		
+UI.SkipFanZoneSeasonResults	bool	0x0	0x14238ddde	0x14238da40	call		
+UI.skipFEFullPlatformLoginFlowEnabled	bool	0x0	0x150eaa7ab	0x150eaa5b0	call		
+UI.skipFirstTimeBoot	bool	0x0	0x141bb827f	0x141bb7bf0	call		
+UI.skipFirstTimeBoot	bool	0x0	0x141e9c4a9	0x141e9b9f0	call		
+UI.skipFirstTimeBoot	bool	0x0	0x1436d18c5	0x1436d1500	call		
+UI.TextProcessorAffectsRTLLanguagesOnly	bool	0x1	0x1444a1c1e	0x1444a1b30	call	false	config.xml
+UI.UnicodePlurals	bool	0x0	0x15330ef0b	0x15330eec0	call	true	config.xml
+UI.UseKeyboardOnlyIconFont	bool	0x0	0x1437d41b4	0x1437d4130	call		
+UnrankedTemplate.EnableCache	bool	0x1	0x1487d13f0	0x1487d13d0	call		
+Vehicle.FineUpdateRate	float	360f	0x14463a90f	0x14463a800	call	360	config.xml
+Vehicle.FineUpdateRateAI	float	360f	0x14463a935	0x14463a800	call	360	config.xml
+Vehicle.TyreContactSubStepCycleAI	i32	(rip: rip:0x145faa618)	0x14463a97f	0x14463a800	call	3	config.xml
+Vehicle.TyreContactSubStepCyclePlayer	i32	(rip: rip:0x145faa614)	0x14463a95a	0x14463a800	call	1	config.xml
+VideoCapture.enabled	bool	0x0	0x140ad231e	0x140ad22a0	call		
+VideoCapture.enabled	bool	0x0	0x14442f3d1	0x14442f0c0	call		
+VideoCapture.enabled	bool	0x0	0x1445d57b1	0x1445d54e0	call		
+VideoCapture.farMax	float	20000f	0x140ad2690	0x140ad22a0	call		
+VideoCapture.farMin	float	10000f	0x140ad26b3	0x140ad22a0	call		
+VideoCapture.fovMax	float	180f	0x140ad2608	0x140ad22a0	call		
+VideoCapture.fovMin	float	20f	0x140ad262b	0x140ad22a0	call		
+VideoCapture.nearMax	float	250f	0x140ad264e	0x140ad22a0	call		
+VideoCapture.nearMin	float	(reg: xmm6)	0x140ad266d	0x140ad22a0	call		
+VideoCapture.rotationSpeedMax	float	(reg: xmm7)	0x140ad257c	0x140ad22a0	call		
+VideoCapture.rotationSpeedMin	float	(reg: xmm6)	0x140ad259b	0x140ad22a0	call		
+VideoCapture.translationSpeedMax	float	3f	0x140ad25be	0x140ad22a0	call		
+VideoCapture.translationSpeedMin	float	(reg: xmm6)	0x140ad25e5	0x140ad22a0	call		
+VideoExport.Enabled	bool	0x1	0x1444b117d	0x1444b1130	call		
+VTE.enabled	bool	(mem: r9d, byte ptr [rcx + 0x18])	0x1407972df	0x1407972c0	call		
+VTE.enabled	bool	0x0	0x1407f735e	0x1407f7320	call		
+VTE.enabled	bool	0x0	0x142f618c5	0x142f61640	call		
+VTE.enabled	bool	0x0	0x142f7f831	0x142f7f7b0	call		
+VTE.enabled	bool	0x0	0x14472a74b	0x14472a6e0	call		
+VTE.imgui	bool	0x0	0x142f7f850	0x142f7f7b0	call		
+VTE.Sessions.override	bool	0x0	0x142f7f86f	0x142f7f7b0	call		
+WatchDog.delay	u32	(mem: r9d, dword ptr [rsp + 0x24])	0x1443c0ac3	0x1443c0560	call		
+WatchDog.enabled	bool	(mem: r9b, byte ptr [rsp + 0x21])	0x1443c0a67	0x1443c0560	call	true	config.xml
+Window.AllowWebViewCreation	bool	0x0	0x1443cd55e	0x1443cc250	call		
+Window.displayMode	u32	0x1	0x1443cc4d6	0x1443cc250	call		
+Window.HeadlessFrameRateLimit	u32	(mem: r9d, dword ptr [rsi + 0x30])	0x1443cc3d0	0x1443cc250	call		
+Window.height	u32	(mem: r9d, dword ptr [rsp + 0x184])	0x1443cc5de	0x1443cc250	call		
+Window.width	u32	(mem: r9d, dword ptr [rsp + 0x180])	0x1443cc55a	0x1443cc250	call		
+	string	(rip: rip:0x145612762)	0x1407dfc17	0x1407dfb60	call		
+	string	(rip: rip:0x145612762)	0x1407dffa2	0x1407dfda0	call		
+	string	(rip: rip:0x145612762)	0x1407e0db3	0x1407e0d00	call		
+	string	(rip: rip:0x145612762)	0x1407e11db	0x1407e1040	call		
+	string	(rip: rip:0x145612762)	0x1407e1ad4	0x1407e1470	call		
+	bool	0x0	0x1407e1dff	0x1407e1d90	call		
+	bool	(?: call-before)	0x140a28cdf	0x140a249f0	call		
+	string	(reg: rdi)	0x141125033	0x141124b30	call		
+	string	(reg: rdi)	0x141125063	0x141124b30	call		
+	string	(reg: rdi)	0x141125093	0x141124b30	call		
+	string	(reg: rdi)	0x1411250c8	0x141124b30	call		
+	string	(rip: rip:0x145612762)	0x141126f9e	0x141125e80	call		
+	string	(reg: rbp)	0x1411270ad	0x141125e80	call		
+	string	(rip: rip:0x145612762)	0x141127fb5	0x141127eb0	call		
+	string	(reg: rsi)	0x1411281ca	0x141127eb0	call		
+	string	(reg: rsi)	0x14112820e	0x141127eb0	call		
+	string	(reg: rsi)	0x14112827e	0x141127eb0	call		
+	string	(reg: rsi)	0x1411283b9	0x141127eb0	call		
+	string	(reg: rsi)	0x1411285ff	0x141127eb0	call		
+	string	(reg: rsi)	0x141128781	0x141127eb0	call		
+	string	(reg: rsi)	0x1411288df	0x141127eb0	call		
+	string	(reg: rsi)	0x141128a50	0x141127eb0	call		
+	string	(reg: rsi)	0x141128b6d	0x141127eb0	call		
+	string	(reg: rsi)	0x141128d16	0x141127eb0	call		
+	string	(reg: rsi)	0x141128d45	0x141127eb0	call		
+	string	(reg: rsi)	0x141128e8c	0x141127eb0	call		
+	string	(reg: rsi)	0x141129038	0x141127eb0	call		
+	u32	(mem: r9d, dword ptr [rsp + 0x3c])	0x141129362	0x141127eb0	call		
+	u32	(mem: r9d, dword ptr [rsp + 0x50])	0x14112939f	0x141127eb0	call		
+	string	(reg: rsi)	0x141129496	0x141127eb0	call		
+	string	(reg: r13)	0x1411298f8	0x141129850	call		
+	string	(reg: r13)	0x141129958	0x141129850	call		
+	string	(reg: r13)	0x1411299b8	0x141129850	call		
+	string	(reg: r13)	0x141129a0f	0x141129850	call		
+	u32	0x0	0x141129c61	0x141129850	call		
+	string	(rip: rip:0x145612762)	0x14173ce0b	0x14173cd40	call		
+	string	(rip: rip:0x145612762)	0x14173ede2	0x14173df80	call		
+	float	25f	0x142f1a0b4	0x142f19ad0	call		
+	float	1f	0x142f1a370	0x142f19ad0	call		
+	float	(?)	0x142f1a620	0x142f19ad0	call		
+	double	(?)	0x14304c98f	0x143040da0	call		
+	bool	(mem: r9d, byte ptr [r8])	0x14304c9f0	0x143040da0	call		
+	string_set	(mem: r9d, dword ptr [r13 + 0x14])	0x14304ca3a	0x143040da0	call		
+	string	(reg: r14)	0x14304ca4e	0x143040da0	call		
+	i32	(mem: r9d, dword ptr [r8])	0x14304ca62	0x143040da0	call		
+	u32	(mem: r9d, dword ptr [r8])	0x14304ca76	0x143040da0	call		
+	float	(mem: xmm3, dword ptr [r8])	0x14304cab4	0x143040da0	call		
+	bool	0x1	0x1430d869f	0x1430d7d10	call		
+	bool	(mem: r9d, byte ptr [rsp + 0x37])	0x1430d86f3	0x1430d7d10	call		
+	bool	(mem: r9d, byte ptr [rsp + 0x37])	0x1430d8747	0x1430d7d10	call		
+	string	(reg: r13)	0x1443c4ca0	0x1443c49b0	call		
+	bool	(?)	0x14ce50beb		jmp		
+	bool	(?: call-before)	0x1505450ef	0x1505450d0	call		
+	bool	(?)	0x15262750c		jmp		
+	bool	(?)	0x153285034		jmp		
+	bool	(?)	0x154f12ec9		jmp		
+	bool	(?)	0x15530abd6		jmp		
+	bool	(?)	0x15736c0d2		jmp		

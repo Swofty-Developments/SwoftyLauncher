@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ShaderPackage_RegisterSponsorScreenEffects",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143e8ad80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143e8ad80.c;xref:0x143d46bee",
+  "notes": "myteam-g1: Huge shader package setup referencing eaid://shader_package/sponsor/sponsor_screen.nefx2 and screen_flickbook_anim.nefx2 (sponsor LED screen effect)."
+ },
+ "signature": {
+  "id": "game.shader_package_register_sponsor_screen_effects",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 04 00 00 C5 F8 29 B4 24 A0 04 00 00 48 89 CB 41 8B 89 08 02 00 00",
+  "match": "0x143e8ad80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143e8ad80",
+  "kind": "func_start",
+  "names": [
+   "Game_ShaderPackage_RegisterSponsorScreenEffects"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x143e8ad80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143e8ad80.c;xref:0x143d46bee",
+   "notes": "V10342 Shader package setup for sponsor_screen, screen_flickbook_anim, jumbotron_video and me_logo params."
+  }
+ ],
+ "proofs": []
+}

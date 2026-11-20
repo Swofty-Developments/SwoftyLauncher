@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_PitStopLogic_StateJobComplete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403bb360",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1403bb360.c;xref:0x14561d328",
+  "notes": "Log channel PITSTOP_LOGIC: 'StateJobComplete, forcing m_transitionCompletem, failsafe fired! pitState: %s' | 'StateJobComplete, forcing m_transitionCompletem, job hasn't finished but we've started leaving pit box! pitState: %s' | 'PitStopLogic::StateJobComplete::processEvent we have a 2nd car Crew %d CAR %d NEWCAR %d' L2 2026-11-14 (engine-re round 2): decomp read; 1 reference(s) (0x14561d328); the body itself references 'StateJobComplete, forcing m_transitionCompletem, leaving pit lane or on track! pitState: %s' / 'InactiveInGarage' / 'PITSTOP_LOGIC' / 'StateJobComplete, forcing m_transitionCompletem, failsafe fired! pitState: %s'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.pit_stop_logic_state_job_complete",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 30 48 89 D6 48 83 BA 68 01 00 00 00",
+  "match": "0x1403bb360",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403bb360",
+  "kind": "func_start",
+  "names": [
+   "Game_PitStopLogic_StateJobComplete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1403bb360",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403bb360.c",
+   "notes": "V4632 string/behaviour in decomp matches name; vtable/indirect"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x1403bb360",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1403bb360-0x1403bbc1e;xref:0x14561d328",
+   "notes": "V10461 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only ref abs64 0x14561d328. StateJobComplete forcing m_transitionComplete logs (failsafe / leaving pit box / pit lane), 2nd car log, pit-state names. 2 args (+xmm2)."
+  }
+ ],
+ "proofs": []
+}

@@ -307,6 +307,9 @@ events::on<sessions::events::Pit>().after([](const sessions::events::Pit &e, con
 events::on<sessions::events::PitStop>().after([](const sessions::events::PitStop &e, const events::Context &) {
     log("car %u has made %u stop(s)", e.car, e.stops);
 });
+events::on<sessions::events::PitStopTyres>().after([](const sessions::events::PitStopTyres &e, const events::Context &) {
+    log("car %u: %s", e.car, e.kept ? "tyres kept (no change in the race)" : "new tyres fitted");
+});
 ```
 
 - `car.built` fires once for every car the game builds: at session load and when a restart builds the cars again.
@@ -315,7 +318,7 @@ events::on<sessions::events::PitStop>().after([](const sessions::events::PitStop
 - `car.setup.applied` fires after a setup is written to the car: the differential, suspension, brakes and centre of mass.
 - `car.parts.register` fires after the game has registered the front wing's own 11 pieces, once per car (not on a reset or an upgrade replay). `add` registers one more piece on that wing: `node` is the model node, `detach_at` the multiplier `k` the piece comes off at (it comes off when `k` times the wing's full detach scale is at most the left and right damage together), and a node the car's model doesn't have adds nothing. `debris` is stored, not applied.
 - `car.damage` fires after the front wing takes a hit that adds damage: `part` is `front_wing_left` or `front_wing_right` and `amount` the damage the hit added to that side. It fires on the next frame, like the events above.
-- `session.pit` fires when a car's pit status changes, with the status it had and the one the game stored. `session.pit_stop` fires on the change where the game adds one to the car's stop count. A stop's stationary time and tyre change are off: they need a row for the PitStopInstance's car.
+- `session.pit` fires when a car's pit status changes, with the status it had and the one the game stored. `session.pit_stop` fires on the change where the game adds one to the car's stop count. `session.pit_stop.tyres` fires when the crew has fitted the car's tyres (`Game_PitLane_ApplyPitstopTyres`, after the game's change), on the KB build, Steam 1.0.145 and EA 1.0.145; `kept` is 1 when the box rule `race_tyre_change` false kept the fitted set. A stop's stationary time is off: it needs a row for the PitStopInstance's car.
 
 The game builds cars on a loading thread, so the core holds each event and fires it on the next frame, on the flow thread, where `set` works. The core applies its layers and profiles to the car first, so a handler sees the layered values. A car already gone from its slot by then gets none.
 

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_TextureStreaming_ScanEntries",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bf1f30",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bf1f30.c;xref:0x143eb94b5,0x143ebb64d",
+  "notes": "Hypothesis: scans entries (type==1 skipped), strncmp against '/temp' paths; from AdjustQualityFactor. Named callers: Game_TextureStreaming_AdjustQualityFactor."
+ },
+ "signature": {
+  "id": "render.texture_streaming_scan_entries",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 CE 4C 8B 71 28 4C",
+  "match": "0x143bf1f30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bf1f30",
+  "kind": "func_start",
+  "names": [
+   "Render_TextureStreaming_ScanEntries"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143bf1f30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143bf1f30.c;xref:0x143eb94b5",
+   "notes": "V7836 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Deformation_AcquireParticles",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144108740",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144108740.c;xref:0x14465d860",
+  "notes": "Deformable body (this = body from Car_Deformation_CreateBody): releases its old particles, needs one particle per node of its node graph ([body+0x1e8]+8..+0x10, stride 0x10). If pool free count mgr+0xac0 < needed -> TLS error 0xc and returns (tyre stays undeformed). Else takes free slots (flag mgr+0x50[i]), binds them to nodes (per-node params body+0x214/+0x220), stores particle ptrs in body+0x178..+0x188 and links +0x1b8..+0x1c8, logs 'Successfully requested %I64u free particles. There are now %I64u free particles.'. Addon: failure path explains tyres without deformation when the pool is exhausted. | #587: L2 by lead-authorised promotion for lane owner car-re (independent agree V2315)"
+ },
+ "signature": {
+  "id": "car.deformation_acquire_particles",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 01 00 00 C5 78 29 9C 24",
+  "match": "0x144108740",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144108740",
+  "kind": "func_start",
+  "names": [
+   "Car_Deformation_AcquireParticles"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d1-verify-b",
+   "kind": "func",
+   "item": "Car_Deformation_AcquireParticles",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144108740.c;xref:0x14465d3a0",
+   "notes": "V2315 Verified: free count check mgr+0xac0 < needed -> errno 0xc; ptr list body+0x178..0x188."
+  }
+ ],
+ "proofs": []
+}

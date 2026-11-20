@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamRewards_ReportEvent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fc6320",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void f(void *writer, void *out)",
+  "evidence": "decomp:re/decomp/140fc6320.c;xref:0x1456aff68;xref:0x1456b0048;xref:0x1456b0128",
+  "notes": "myteam-g1: Analytics hook: writes the MY_TEAM_REWARDS event through a writer vtable slot +0x30 after hashing the name (hash 0x21c83a88)."
+ },
+ "signature": {
+  "id": "game.my_team_rewards_report_event",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 50 48 8D 74 24 48 48 C7 44 24 30 01 00 00 00",
+  "match": "0x140fc6320",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fc6320",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamRewards_ReportEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140fc6320",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140fc6320.c;xref:0x1456aff68;str:\"MY_TEAM_REWARDS\"",
+   "notes": "V9615 Formats an object via writer vtbl +0x30 into a string and logs \" - %s\" on channel MY_TEAM_REWARDS if enabled (channel hash 0x21c83a88); a logging helper, not an analytics event."
+  }
+ ],
+ "proofs": []
+}

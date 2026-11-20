@@ -1,0 +1,43 @@
+{
+ "schema": 1,
+ "name": "site_Game_CarSetupVm_OnValueChangedCarLoadA",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c1ed9f",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/140c1e690.c;xref:0x140c1ed8b,0x140c1ed97",
+  "notes": "Same idiom in the setup value handler Car_Setup_OnValueChanged region after UpdateFuelRange at 0x140c1ed86; jne is rel32. cmp dword [rax+0x9f40],0x64 on the car of the car setup screen: rax = [[vm+0x268]+0x28], 0 when the setup data has no car. [vm+0x268] is tested just before, [+0x28] is not. The jne after the cmp is the game's own path for a car that is not handling version 100; core jumps there when rax is 0."
+ },
+ "signature": {
+  "id": "game.car_setup_vm_on_value_changed_car_load_a",
+  "section": ".xtls",
+  "pattern": "48 8B 40 28 83 B8 40 9F 00 00 64 0F 85",
+  "match": "0x140c1ed9b",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c1ed9f",
+  "kind": "mid",
+  "expect": "83 B8 40 9F 00 00 64",
+  "names": [
+   "site_Game_CarSetupVm_OnValueChangedCarLoadA"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-02",
+    "by": "setup-vm",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/frontend/setup_vm_guard.cpp"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

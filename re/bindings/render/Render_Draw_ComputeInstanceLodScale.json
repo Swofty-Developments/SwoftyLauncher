@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Render_Draw_ComputeInstanceLodScale",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d41770",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143d41770.c;xref:0x143d40955,0x143d4b4ad;kb:subsystems/render.md#lod",
+  "notes": "Hypothesis: float: distance to camera (param_1+0x120) via rsqrt, apparent size ratio, atan2f, threshold 0.2; used in Render_Draw_ProcessInstanceBatch (LOD/fade). Named callers: Render_Draw_ProcessInstanceBatch. | CORRECTION 2026-11-17 engine-re: projected size of a bounding sphere for LOD/fade selection. rcx = view (camera block: eye +0x120, projection +0x70.., view +0xb0.., size scale +0x68, perspective flag +0x24), rdx = sphere {xyz, radius w}. Perspective: s = r * rsqrt(|c - eye|^2), if s > 0.2 s = atan2-based angle, returns s*s*view+0x68 (screen-area measure, not distance). Orthographic (+0x24 == 0): returns 2 * |radius pushed through view*proj|. Callers Render_Draw_ProcessInstanceBatch 0x143d4a870 and 0x143d405b0. raised by engine-re with --force 2026-11-17 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.draw_compute_instance_lod_scale",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 48 89 CE C5 FA 10 42 0C C5",
+  "match": "0x143d41770",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d41770",
+  "kind": "func_start",
+  "names": [
+   "Render_Draw_ComputeInstanceLodScale"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143d41770",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d41770.c;xref:0x143d40955",
+   "notes": "V7917 name and concrete claims match code"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "rndr-verify",
+   "kind": "func",
+   "item": "0x143d41770",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d41770.c;xref:143d40955,143d4b4ad,143d417da",
+   "notes": "V10813 view+0x24!=0: s=r*rsqrt(|c-eye@+0x120|^2), s>0.2 -> 0x145352cec(r,dist) (2-float CRT routine, atan2f), returns s*s*[view+0x68]; else 2*|xyz| of (r,0,0,0) through matrices +0x70 and +0xb0"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDBoxGridNameClamp",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c86c87",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "pat:cmp-al-4-cmovae;kb:subsystems/rnd_ui.md;decomp:re/decomp/141c85f70.c;xref:0x141c86c87;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v050--the-5th-department-selection-flag-select_fifth_dept-default-on",
+  "notes": "Career_Build_RnDDeptBoxGrid: cmp al,4 ; cmovae eax,ecx before mov rdx,[k_Career_RnDDeptNameTable+rax*8] @0x141c86c97. Relaxing it alone reads colour[0] as a char*. cmp al,4 ; cmovae eax,ecx: al = g_Career_RnDOverviewSelectedDept, ecx = 0"
+ },
+ "signature": {
+  "id": "career.rn_d_box_grid_name_clamp",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 0F B6 05 ?? ?? ?? ?? 31 C9 3C 04 0F 43 C1 48 0F BE C0",
+  "match": "0x141c86c79",
+  "anchor": "0xe",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c86c87",
+  "kind": "mid",
+  "expect": "3C 04 0F 43 C1",
+  "names": [
+   "site_Career_RnDBoxGridNameClamp"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-3",
+   "kind": "global",
+   "item": "site_Career_RnDBoxGridNameClamp",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c85f70.c;xref:0x141c86c7e,0x141c86c85,0x141c86c87,0x141c86c89,0x141c86c90,0x141c86c97",
+   "notes": "V0140 al=movzx [0x145f93c08] g_Career_RnDOverviewSelectedDept, ecx=0, cmp al,4; cmovae; table 0x145755e58 has 4 ptrs then k_Career_RnDDeptColourTable at +0x20, so index 4 reads colour[0..1] as char*; 5B window clean"
+  }
+ ],
+ "proofs": []
+}

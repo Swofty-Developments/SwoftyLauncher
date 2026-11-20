@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Progress_ComputeTimeGap",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143609050",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143609050.c;xref:0x142a55b1c,0x142a55c06,0x143622ab9",
+  "notes": "(sys, carA, carB, bool withLaps) -> seconds: lap-fraction delta (+0x74, +laps +0x58 when withLaps, wrap +1) * track length f[0x146ce66b8] / speed of carA's vehicle (weather/world [g 0x146081788]+0x38 +0xa8 +0x38+idx*0x508 +0x2c); 0 when speed <= 0. Used by engineer SC messages and SC unlap gate. (3 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "session.progress_compute_time_gap",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 C5 F8 57 C0 44 38 C2 0F 84",
+  "match": "0x143609050",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143609050",
+  "kind": "func_start",
+  "names": [
+   "Sess_Progress_ComputeTimeGap"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x143609050",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143609050.c;xref:0x142a55b1c",
+   "notes": "V6763 +0x74,+0x58, 0x146ce66b8, speed chain verified"
+  }
+ ],
+ "proofs": []
+}

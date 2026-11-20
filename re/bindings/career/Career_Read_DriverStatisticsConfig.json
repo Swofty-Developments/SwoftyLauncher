@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Read_DriverStatisticsConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14114bb60",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: driver_statistics.driver_statistics.driver_statistics_info, driver_statistics.driver_statistics.dynamic_driver_statistics_info, driver_statistics.story_mode_driver_statistics.driver_statistics_info'"
+ },
+ "signature": {
+  "id": "career.read_driver_statistics_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 A8 10 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 78 29 BC 24 90 10 00 00",
+  "match": "0x14114bb60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14114bb60",
+  "kind": "func_start",
+  "names": [
+   "Career_Read_DriverStatisticsConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x14114bb60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14114bb60.c;xref:0x141133588",
+   "notes": "V4619 name and quoted log strings/pretty-function present in body"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-f",
+   "kind": "func",
+   "item": "0x14114bb60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14114bb60.c",
+   "notes": "V9161 Picks the story-mode or normal driver_statistics_info key by param_3 and the dynamic_driver_statistics_info string is referenced at 0x14114cd0a inside the function."
+  }
+ ],
+ "proofs": []
+}

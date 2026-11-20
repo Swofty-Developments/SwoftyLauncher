@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_RaceStrategy_BuildPitPlan",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14369a120",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14369a120.c;xref:0x14369b050,0x14369b18a",
+  "notes": "Builds the race strategy pit plan for a car: walks stint list param_2 (stride 0x38), resolves the car via Ne_Entity_FindComponent, current tyre set (+0x9c68/+0x9c98, set stride 0x6c), lap limit 0x1a4, uses 0x142e8cab0 and Game_LapStats_RecordVehicleLap. Callers: Sess_RaceStrategy_RedFlagRecompute."
+ },
+ "signature": {
+  "id": "session.race_strategy_build_pit_plan",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F9 7F 7C 24 40 C5 F9 7F 74 24 30 48 89 CE 48",
+  "match": "0x14369a120",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14369a120",
+  "kind": "func_start",
+  "names": [
+   "Sess_RaceStrategy_BuildPitPlan"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x14369a120",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14369a120.c;xref:0x14369cbb1,0x14369d786",
+   "notes": "V3831 Stint list stride 0x38, component 146080cc8 via 143f9b3c0, car +0x9c68/+0x9c98 set stride 0x6c, limit 0x1a4, calls 142e8cab0 and Game_LapStats_RecordVehicleLap 142e9e6c0."
+  }
+ ],
+ "proofs": []
+}

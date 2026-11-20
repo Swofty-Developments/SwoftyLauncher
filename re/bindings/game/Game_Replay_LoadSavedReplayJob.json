@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Replay_LoadSavedReplayJob",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c460e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142c460e0.c;xref:0x142c460ae",
+  "notes": "Job/callback (arg2 = replay manager): restores main module buffers (as Game_Replay_RestoreMainModuleBuffers) + reset, then Game_Replay_LoadFullReplay(mgr, path=mgr+0x170, keepSaveSlot=1, deserialise=1, ...). On failure code 1 and !mgr+0x430 marks the matching saved-replay entry broken (list mgr+0x6d8: +0x18..+0x20, stride 0x2e8, path +0x10, flag +0x2e1=1), calls 0x142c422f0 and restores buffers + reset again. Called from 0x142c45ec0 (also ref 0x157039b5a). Addon: saved replay list layout + safe load path for replay files. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2340)"
+ },
+ "signature": {
+  "id": "game.replay_load_saved_replay_job",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC 30 03",
+  "match": "0x142c460e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c460e0",
+  "kind": "func_start",
+  "names": [
+   "Game_Replay_LoadSavedReplayJob"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d2-verify",
+   "kind": "func",
+   "item": "Game_Replay_LoadSavedReplayJob",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c460e0.c;xref:0x142c460e0",
+   "notes": "V2340 restore buffers+reset, load via 142c4ade0(mgr,mgr+0x170,1,1,..), failure marks entry +0x2e1 in list mgr+0x6d8 (stride 0x2e8 path +0x10) if !mgr+0x430; also sets mgr+0x448 +0x1b0|=4"
+  }
+ ],
+ "proofs": []
+}

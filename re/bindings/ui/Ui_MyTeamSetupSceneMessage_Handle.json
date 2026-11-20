@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_MyTeamSetupSceneMessage_Handle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141641950",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "void f(void *self, void *msg)",
+  "evidence": "decomp:re/decomp/141641950.c;xref:0x1456fa0a8",
+  "notes": "myteam-g1: Message handler for MyTeamSetupSceneMessage (scene setup for My Team creation); reads attribute container fields +0x290..+0x2d8."
+ },
+ "signature": {
+  "id": "ui.my_team_setup_scene_message_handle",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 50 48 89 CE 48 8B 89 28 03 00 00",
+  "match": "0x141641950",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141641950",
+  "kind": "func_start",
+  "names": [
+   "Ui_MyTeamSetupSceneMessage_Handle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x141641950",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141641950.c;xref:0x1456fa0a8",
+   "notes": "V9728 28 KB function with Ne_Subscribe_BusMessage and strings for customisation texture queue/process/unload messages plus MyTeamSetupSceneMessage: looks like a subscriber/setup of several messages, not only a single handler."
+  }
+ ],
+ "proofs": []
+}

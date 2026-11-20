@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Tweakables_FindOrAddDamageGroup",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14465ef40",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14465ef40.c;xref:0x14465eee1",
+  "notes": "Finds (list this+0x28, stride 0x38) or creates a tweakable group named \"damage\", then registers an entry via FUN_144727d90 (name 0x1456f8737, default 1.0, flags 0x10). Caller Game_Register_TyreDamageTweakables (4 sites). Addon: tyre-damage tweakable registration point."
+ },
+ "signature": {
+  "id": "game.tweakables_find_or_add_damage_group",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC 70 02 00 00 C5 F8 29 B4 24 60 02 00 00 4D 89 CE 4C 89 C3 48 89 D7 48 89 CE 48",
+  "match": "0x14465ef40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14465ef40",
+  "kind": "func_start",
+  "names": [
+   "Game_Tweakables_FindOrAddDamageGroup"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x14465ef40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14465ef40.c;xref:0x14465eee1",
+   "notes": "V7691 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

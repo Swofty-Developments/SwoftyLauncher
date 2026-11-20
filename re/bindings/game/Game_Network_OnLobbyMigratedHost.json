@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_OnLobbyMigratedHost",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144098c10",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name onLobbyMigratedHost (class from the log channel); log channel NETWORK: '%s() : failed.'"
+ },
+ "signature": {
+  "id": "game.network_on_lobby_migrated_host",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC F0 00 00 00 44 89 C3 48 89 D7 48 89 CE 48 8D 0D ?? ?? ?? ?? 31 D2 E8 ?? ?? ?? ?? 8B 0F 89 44 24 30 C7 44 24 34 5F 02 02 00",
+  "match": "0x144098c10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144098c10",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_OnLobbyMigratedHost"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x144098c10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144098c10.c;xref:0x144099d6f",
+   "notes": "V6529 size=1152; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

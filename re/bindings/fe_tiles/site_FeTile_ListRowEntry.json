@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_FeTile_ListRowEntry",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1424287a1",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "fe_tiles",
+  "evidence": "decomp:re/decomp/142428790.c;xref:0x1417384ce",
+  "notes": "mov rsi,rcx after mov r8,rdx at the start of FeTile_Check_EntrantListUsable: r8 = the list label chars (the Gdb_Find_RowByLabel argument), rcx = the tile context."
+ },
+ "signature": {
+  "id": "fe_tiles.list_row_entry",
+  "section": ".xtls",
+  "pattern": "49 89 D0 48 89 CE 48 8B 99 28 02 00 00",
+  "match": "0x14242879e",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424287a1",
+  "kind": "mid",
+  "expect": "48 89 CE 48 8B 99 28 02 00 00",
+  "names": [
+   "site_FeTile_ListRowEntry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "fe-tile-guard",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/frontend/fe_tile_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-02",
+   "verifier": "verify-fe-tile",
+   "kind": "global",
+   "item": "site_FeTile_ListRowEntry",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/vfe/142428790.c;xref:0x14242879e,0x1417384ce",
+   "notes": "V8627 own disasm: 1424287a1 mov rsi,rcx directly follows mov r8,rdx at 14242879e, so r8 is the label chars; r8 is not written between entry and 1424287a1. Window 1424287a1..1424287a5 has no inbound branch (the function's targets are 83f,874,878,888,88f,8d7,8d9). Guard stores r8 in a thread_local; the function does not recurse."
+  }
+ ],
+ "proofs": []
+}

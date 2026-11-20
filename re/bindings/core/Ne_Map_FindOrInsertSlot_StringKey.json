@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Map_FindOrInsertSlot_StringKey",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141b53d80",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Find(void *map, uint64_t *slot, void **key)",
+  "evidence": "decomp:re/decomp/141b53d80.c;xref:0x141a5a195;xref:0x141b53ba7;xref:0x141b9c258",
+  "notes": "myteam-g2: Robin-Hood hash map probe keyed by a string (Ne_Crt_Strcmp, entry stride matches map at +0x10..0x44); used by RnD department label resolution and research project events. Generic container."
+ },
+ "signature": {
+  "id": "core.map_find_or_insert_slot_string_key",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 4C 89 44 24 38 48 89 54 24 28",
+  "match": "0x141b53d80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141b53d80",
+  "kind": "func_start",
+  "names": [
+   "Ne_Map_FindOrInsertSlot_StringKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141b53d80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141b53d80.c;xref:0x141a5a195;xref:0x141b53ba7",
+   "notes": "V9947 Robin-Hood style probe of a hash map keyed by interned string (hash/len compare, Strcmp 14535d850, status 0-3 result)."
+  }
+ ],
+ "proofs": []
+}

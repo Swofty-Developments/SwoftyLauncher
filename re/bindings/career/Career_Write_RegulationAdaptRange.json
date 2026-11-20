@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Write_RegulationAdaptRange",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14350d5c0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Write_RegulationAdaptRange(int *self,uint64_t *a2)",
+  "evidence": "decomp:re/decomp/14350d5c0.c;xref:0x150563a9f",
+  "notes": "myteam-g1: Writes min/max_percentage_upgrades_that_can_be_adapted (+ nested adaptable counts)."
+ },
+ "signature": {
+  "id": "career.write_regulation_adapt_range",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 48 89 CE 8B 01 C1 E0 0E",
+  "match": "0x14350d5c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14350d5c0",
+  "kind": "func_start",
+  "names": [
+   "Career_Write_RegulationAdaptRange"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x14350d5c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14350d5c0.c;xref:0x150563a9f",
+   "notes": "V10266 Writes team_id, min/max_percentage_upgrades_that_can_be_adapted then calls 14350d740 for the counts."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Find_CareerSaveByPredicate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1407d22d0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void* (void *saves, void *predicate)",
+  "evidence": "decomp:re/decomp/1407d22d0.c;xref:0x1400fb9a2;xref:0x1407d22a4;xref:0x140a97a31",
+  "notes": "myteam-g2: Iterates the hash set at saves+0x58..0x68 of career save/profile objects (component at obj+0x38->+0x260), skips those with +0x2ac set, calls the std::function predicate (param+0x38; throws Ne_Std_ThrowBadFunctionCall if empty) and returns the last match. Used by the My Team homescreen/wizard/renown popup."
+ },
+ "signature": {
+  "id": "career.find_career_save_by_predicate",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 83 79 68 00",
+  "match": "0x1407d22d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407d22d0",
+  "kind": "func_start",
+  "names": [
+   "Career_Find_CareerSaveByPredicate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x1407d22d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1407d22d0.c",
+   "notes": "V9478 Walks swiss-style hash set at +0x58..+0x68, component obj+0x38->+0x260, skips +0x2ac set, calls std::function (param+0x38 vcall 0x10, bad-call on empty), last match wins."
+  }
+ ],
+ "proofs": []
+}

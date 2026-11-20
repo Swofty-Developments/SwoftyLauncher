@@ -1,6 +1,6 @@
-#include "../../src/core/career_content_logic.hpp"
-#include "../../src/core/registry/older.hpp"
-#include "../../src/core/registry/table.hpp"
+#include "core/career/career_content_logic.hpp"
+#include "core/registry/older.hpp"
+#include "core/registry/table.hpp"
 
 #include <cstdio>
 #include <string>
@@ -76,14 +76,13 @@ int main()
         call.data_group = "f1_career_1990";
         call.suffix = "90";
         call.mode = "driver_career_1990";
-        call.model = runtime::content::MODEL_2025;
+        call.model = career::content::MODEL_2025;
         call.car_group = 2;
         call.badge = 1;
         call.entitlement = "ent";
-        call.careers = runtime::content::CAREER_ALL;
+        call.careers = career::content::CAREER_ALL;
         swofty::json::Value rec = older::content_record(call);
-        check(rec["model"].as_string() == "game/f1_career_2025",
-              "career.content: a 2025-model call records game/f1_career_2025");
+        check(rec["model"].as_string() == "game/f1_career_2025", "career.content: a 2025-model call records game/f1_career_2025");
         older::ContentDesc back;
         std::string why;
         check(older::content_from("ex.addon/f1_1990", rec, swofty::json::Value(), back, why) && why.empty(),
@@ -125,13 +124,13 @@ int main()
         auto from = [&](const char *id, older::ContentDesc &d, std::string &why) {
             swofty::json::Value rec = older::effective(st, older::CONTENT, id);
             std::string mode = older::content_mode_id(id, rec);
-            return older::content_from(id, rec, mode.empty() ? swofty::json::Value() : older::effective(st, older::MODE, mode),
-                                       d, why);
+            return older::content_from(id, rec, mode.empty() ? swofty::json::Value() : older::effective(st, older::MODE, mode), d,
+                                       why);
         };
         auto passes = [](const older::ContentDesc &d) {
-            runtime::content::Desc c{d.id,    d.title,     d.description, d.data_group, d.suffix, d.mode,
-                                     d.entitlement, d.model, d.car_group, d.badge,     d.careers};
-            return runtime::content::check(c, [](const char *, const std::string &) { return false; });
+            career::content::Desc c{d.id,          d.title, d.description, d.data_group, d.suffix, d.mode,
+                                    d.entitlement, d.model, d.car_group,   d.badge,      d.careers};
+            return career::content::check(c, [](const char *, const std::string &) { return false; });
         };
         bool listed = false;
         for (auto &id : older::in_load_order(st, older::CONTENT))
@@ -142,13 +141,13 @@ int main()
         check(from("ex.data/f1_2012", d, why), "career.content: a data-file record with a mode makes a tile");
         check(d.id == "f1_2012" && d.data_group == "f1_career_2012" && d.mode == "driver_career_2012" &&
                   d.title == "lng_f1_2012_title" && d.description == "lng_f1_2012_title" && d.suffix == "12" &&
-                  d.model == runtime::content::MODEL_2026 && d.careers == runtime::content::CAREER_ALL && d.badge == 3 &&
+                  d.model == career::content::MODEL_2026 && d.careers == career::content::CAREER_ALL && d.badge == 3 &&
                   d.car_group == -1,
               "career.content: data group, save container and title come from the career.mode record, the description "
               "from the title, the model defaults to 2026");
         check(passes(d).empty(), "career.content: the data-file descriptor passes the call's check");
         check(from("ex.data/f1_2012_short", d, why) && d.title == "F1 2012" && d.data_group == "f1_career_2012b" &&
-                  d.mode == "driver_career_2012b" && d.model == runtime::content::MODEL_2025 &&
+                  d.mode == "driver_career_2012b" && d.model == career::content::MODEL_2025 &&
                   d.description == "lng_f1_2012b_desc" && passes(d).empty(),
               "career.content: a bare mode key names the record's own addon's mode; the record's fields win over it");
         check(from("ex.data/f1-1990", d, why) && d.id == "f1-1990" && d.car_group == 2 && d.mode == "driver_career_1990" &&
@@ -163,8 +162,7 @@ int main()
         check(layer_patch(st, "other.addon", older::CONTENT, "ex.data/f1_2012", R"({"title":"lng_retitled","badge":9})") ==
                   SWOFTY_ASSET_OK,
               "career.content: another addon layers a data-file record");
-        check(from("ex.data/f1_2012", d, why) && d.title == "lng_retitled" && d.description == "lng_retitled" &&
-                  d.badge == 9,
+        check(from("ex.data/f1_2012", d, why) && d.title == "lng_retitled" && d.description == "lng_retitled" && d.badge == 9,
               "career.content: the tile reads the layered data-file record");
     }
 
@@ -176,7 +174,8 @@ int main()
         t.group = "prog";
         t.options = {"a", "b"};
         older::put(st, t.addon, older::HUB_TAB, t.name, older::hub_record(t), "test");
-        older::HubTab back = older::hub_from("ex.addon/progressive", older::effective(st, older::HUB_TAB, "ex.addon/progressive"));
+        older::HubTab back =
+            older::hub_from("ex.addon/progressive", older::effective(st, older::HUB_TAB, "ex.addon/progressive"));
         check(back.addon == t.addon && back.name == t.name && back.title == t.title && back.group == t.group &&
                   back.options == t.options,
               "hub.tab: the record reads back field for field");
@@ -201,7 +200,8 @@ int main()
         check(same, "career.wizard: every entry reads back in order");
         layer_patch(st, "other.addon", older::WIZARD, "ex.addon/g", R"({"starts_in_f1":false})");
         back = older::wizard_entries(older::effective(st, older::WIZARD, "ex.addon/g"));
-        check(back.size() == given.size() - 1 && back[0].kind == older::W_TILE_ROUTE, "career.wizard: a layer turns the start off");
+        check(back.size() == given.size() - 1 && back[0].kind == older::W_TILE_ROUTE,
+              "career.wizard: a layer turns the start off");
         older::put(st, "ex.addon", older::WIZARD, "g", older::wizard_record("g", {}), "test");
         check(older::wizard_entries(older::effective(st, older::WIZARD, "ex.addon/g")).empty(),
               "career.wizard: a rewrite replaces the addon's state");

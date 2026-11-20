@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_VirtualPerformance_CalcPace",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1438a9d10",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1438a9d10.c;xref:0x14298081e,0x142f6c4ba",
+  "notes": "Virtual performance: pace factor for vehicle param_2 using the session rules (Game_RuleSet_FindForSessionFilter) and the car's 'SDT+' (0x2b544453) data block (car+0x58->+0xd8 ... +0x120/+0x128). Callers Ai_QualiPace_Debug, Game_VirtualPerformance_Initialise, Game_VirtualSessionEntrant_SetNumPartialLapsAccordingToProgress."
+ },
+ "signature": {
+  "id": "session.virtual_performance_calc_pace",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 79 29 A4 24 90 00 00 00 C5 78 29 9C",
+  "match": "0x1438a9d10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1438a9d10",
+  "kind": "func_start",
+  "names": [
+   "Sess_VirtualPerformance_CalcPace"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x1438a9d10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1438a9d10.c;xref:0x14298081e,0x142f71d45",
+   "notes": "V3841 Rules entry via 142e60e00, car data block 'SDT+' 0x2b544453 at car+0x58->+0xd8 with +0x120/+0x128 indices."
+  }
+ ],
+ "proofs": []
+}

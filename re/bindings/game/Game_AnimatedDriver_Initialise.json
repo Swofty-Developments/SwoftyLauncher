@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_AnimatedDriver_Initialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144645540",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144645540.c;xref:0x145bf8070",
+  "notes": "Module slot 2 of vt 0x145bf8060: resolves two resources (0x146cb8278 -> +0x50, 0x146cb8018 -> +0x58) and a service (key 0x46ce5180) -> +0x48, then creates the 'animated_driver_jobs' queue with default job policy -> +0x60; sets error 0x16 on failure. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3252)"
+ },
+ "signature": {
+  "id": "game.animated_driver_initialise",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 4C 89 C7 48 89 D3 48 89 CE 48 8B 02 48 8D 15 ?? ?? ?? ?? 48 89 D9 FF 50 28 48 89 46 50 48 85 C0 0F 84 ?? ?? ?? ?? 48 8B 03 48 8D 15 ?? ?? ?? ?? 48 89 D9 FF 50 28 48 89 46 58 48 85 C0 0F 84 ?? ?? ?? ?? 48 8D",
+  "match": "0x144645540",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144645540",
+  "kind": "func_start",
+  "names": [
+   "Game_AnimatedDriver_Initialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d14-verify",
+   "kind": "func",
+   "item": "Game_AnimatedDriver_Initialise",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/44645540.c;xref:None",
+   "notes": "V3252 offsets, vtable slot/callers, strings and calls checked in decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

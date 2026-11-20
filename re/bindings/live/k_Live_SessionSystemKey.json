@@ -1,0 +1,75 @@
+{
+ "schema": 1,
+ "name": "k_Live_SessionSystemKey",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14607f1a0",
+  "type": "uint8_t",
+  "level": "L2",
+  "subsystem": "live",
+  "evidence": "decomp:re/decomp/142daf390.c;decomp:re/decomp/144500dc0.c;decomp:re/decomp/1435676a0.c;xref:0x1457d89d0,0x142df23e4,0x1400f8caa,0x140213561,0x1403d5a24,0x1403d969d,0x1405fc988,0x14064a1c7,0x1406adcf8,0x1406b264b;pat:type-name-SessionSystem;xref:0x14021355e",
+  "notes": "registry key (address of the static type record; its +8 holds the name \"SessionSystem\", stored at 0x142df23e4); class vtable 0x1457d89d0 slot 0 = 0x142daf390 returns it; results: per-vehicle SessionVehicleEntry at SessionSystem+0x148; linked to the rule manager +0x1c68"
+ },
+ "signature": {
+  "id": "live.session_system_key",
+  "section": ".xtls",
+  "pattern": "31 C0 48 89 86 A0 00 00 00 48 8D 05",
+  "match": "0x140213555",
+  "anchor": "0xc",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x9",
+   "len": 7
+  },
+  "target": "0x14607f1a0",
+  "kind": "data",
+  "names": [
+   "k_Live_SessionSystemKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "osd-l1",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/live/live_state.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "osd-vb",
+   "kind": "global",
+   "item": "k_Live_SessionSystemKey",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435676a0.c;xref:0x142df23e6",
+   "notes": "V8775 own check (disx + type record scan): static init at 0x142df23e6 loads a string address and stores it at key+8; the string bytes are \"SessionSystem\". Sess_RuleManager_Initialise stores registry[key] at rm+0x1c68 (0x143567788/0x1435677c7 area). Slot-0 getter and registry-hash insert not re-derived"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "osd-va",
+   "kind": "global",
+   "item": "k_Live_SessionSystemKey",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144500dc0.c;decomp:re/decomp/143568260.c;decomp:re/decomp/142c74bf0.c;xref:0x1435678c0,0x142c74c0a",
+   "notes": "V8735 own disx: type record +8 name string = 'SessionSystem' (static init store at 0x142df23e4); slot-0 0x142daf390 = lea rax,[k_Live_SessionSystemKey] ret and qword at vtable 0x1457d89d0 == 0x142daf390; registry[key] consumers: Sess_RuleManager_Initialise stores it at rules+0x1c68 (Sess_Issue_TimePenalty then reads [rules+0x1c68]+0x148/+0x150 entries and +0x38/+0x40 penalty); 0x142c74bf0 does *(g_Game_Manager+0x30) then FindIndex(key) and reads +0xf0/+0x180; UDP SyncLapData state+0xd1d8 (thunk body 0x14ae7db20 leas this key) reads +0x148/+0x150"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "osd-vd",
+   "kind": "sig",
+   "item": "live.session_system_key",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "sig:live.session_system_key",
+   "notes": "V8900 sigcheck hits=1, anchor disassembled and resolve re-computed by hand to the claimed target; target is the first field of a static type record whose +8 name pointer (set at the init stores) points at the type-name string, e.g. session_system_key; the name strings were read from the exe for all 13 keys and match the k_Live_* names; consumers pass the key address to FindIndex (0x14030ffd0)"
+  }
+ ],
+ "proofs": []
+}

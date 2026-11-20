@@ -1,4 +1,4 @@
-#include "../../src/core/registry/table.hpp"
+#include "core/registry/table.hpp"
 
 #include <cstdio>
 #include <string>
@@ -6,13 +6,13 @@
 using namespace swofty_core::registry;
 
 static int failures = 0;
-#define CHECK(c, ...)                          \
-    do {                                       \
-        if (!(c)) {                            \
-            std::printf("FAIL: " __VA_ARGS__); \
-            std::printf("\n");                 \
-            failures++;                        \
-        }                                      \
+#define CHECK(c, ...)                                                                                                            \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL: " __VA_ARGS__);                                                                                   \
+            std::printf("\n");                                                                                                   \
+            failures++;                                                                                                          \
+        }                                                                                                                        \
     } while (0)
 
 namespace {
@@ -72,7 +72,8 @@ int main()
     patch("a.prog", "test.boot", "x.base/car", R"({"v":"prog"})", true);
 
     CHECK(load_data_file("b.classic", "registry/layers.json",
-                         R"({"test.swap":{"$select":[{"ids":"x.base/*","scope":"global","patch":{"s":"classic-global"}}]}})") == 0,
+                         R"({"test.swap":{"$select":[{"ids":"x.base/*","scope":"global","patch":{"s":"classic-global"}}]}})") ==
+              0,
           "a select with scope global loads");
     CHECK(load_data_file("a.prog", "registry/layers.json",
                          R"({"test.swap":{"$select":[{"ids":"x.base/*","scope":"career","patch":{"s":"x"}}]}})") != 0,

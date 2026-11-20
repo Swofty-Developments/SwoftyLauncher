@@ -27,8 +27,7 @@ HRESULT(WINAPI *describe)(HANDLE, PWSTR *);
 bool on_writer()
 {
     PWSTR d = nullptr;
-    bool yes = describe && SUCCEEDED(describe(GetCurrentThread(), &d)) && d &&
-               !wcscmp(d, L"swofty crash report writer");
+    bool yes = describe && SUCCEEDED(describe(GetCurrentThread(), &d)) && d && !wcscmp(d, L"swofty crash report writer");
     if (d)
         LocalFree(d);
     return yes;

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_HudCustomisation_ApplyData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14380fe20",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-HUD_CUSTOMISATION",
+  "notes": "named from its log messages (channel HUD_CUSTOMISATION): '[this=%p,editorMode=%d] applyCurrentCustomisationDataToUIData'"
+ },
+ "signature": {
+  "id": "game.hud_customisation_apply_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 89 D7 48 89 CE",
+  "match": "0x14380fe20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14380fe20",
+  "kind": "func_start",
+  "names": [
+   "Game_HudCustomisation_ApplyData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x14380fe20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14380fe20.c;xref:0x14380ab8c",
+   "notes": "V6292 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

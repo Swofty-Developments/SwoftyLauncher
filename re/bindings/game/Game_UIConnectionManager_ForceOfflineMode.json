@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UIConnectionManager_ForceOfflineMode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143884c00",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "str:s_UIConnectionManager_ForceOfflineMode;xref:0x143884c7b",
+  "notes": "cxx=game::UIConnectionManager::forceOfflineMode; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "game.u_i_connection_manager_force_offline_mode",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 4B B8",
+  "match": "0x143884c00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143884c00",
+  "kind": "func_start",
+  "names": [
+   "Game_UIConnectionManager_ForceOfflineMode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143884c00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143884c00.c;xref:0x1417845ab",
+   "notes": "V6357 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

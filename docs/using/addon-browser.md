@@ -25,6 +25,8 @@ Every card shows a tag for each platform its creator tested the addon on: **Stea
 
 Select an addon for its description, a 30-day downloads chart, its file size and checksum, the launcher version it needs, and every version's changelog. When the creator lists the addon's source code, a **Source code** button opens it; an addon without one has no button, and an installed addon's page shows **Not listed** under **Source code**. **More from** lists the same creator's other addons.
 
+An addon's page, a creator's page and **Creators** have a **Back** button pinned at the top that stays in view while the page scrolls. It returns to where you came from, scrolled where you left it, with your search and filters kept. **Escape**, **Alt+Left** and the mouse's back button do the same.
+
 ### Media {#media}
 
 An addon whose creator added pictures, videos or video links shows a **Media** card at the top of its page: the selected item, its caption, and a row of thumbnails to pick from.

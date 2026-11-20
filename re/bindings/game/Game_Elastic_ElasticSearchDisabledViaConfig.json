@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Elastic_ElasticSearchDisabledViaConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1406d6360",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-ELASTIC",
+  "notes": "named from its log messages (channel ELASTIC): 'ElasticSearch disabled via config'"
+ },
+ "signature": {
+  "id": "game.elastic_elastic_search_disabled_via_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 48 89 CE 48 8B 59 30",
+  "match": "0x1406d6360",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1406d6360",
+  "kind": "func_start",
+  "names": [
+   "Game_Elastic_ElasticSearchDisabledViaConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1406d6360",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1406d6360.c",
+   "notes": "V4755 string/behaviour in decomp matches name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

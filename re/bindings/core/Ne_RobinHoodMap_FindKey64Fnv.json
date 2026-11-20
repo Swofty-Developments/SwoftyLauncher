@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_FindKey64Fnv",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141624590",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t* (void *map, uint64_t *out, uint8_t *key8)",
+  "evidence": "decomp:re/decomp/141624590.c;xref:0x1415dbd10;xref:0x141642fa9;xref:0x1416471c3",
+  "notes": "myteam-g2: FNV-1a hashes the 8 key bytes, probes the robin-hood table (+0x18 slots of 0x18 bytes, +0x20 ctrl bytes) and returns found/not found and the slot; grows through FUN_141624770 when the load factor is hit. Generic container code."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_find_key64_fnv",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 4C 89 C3 48 89 D6 48 89 CF 31 ED 49 BF B3 01 00 00 00 01 00 00",
+  "match": "0x141624590",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141624590",
+  "kind": "func_start",
+  "names": [
+   "Ne_RobinHoodMap_FindKey64Fnv"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x141624590",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141624590.c;xref:0x1415dbd10;xref:0x141642fa9",
+   "notes": "V9727 FNV-1a over 8 key bytes, slots of 0x18 at +0x18, ctrl at +0x20, grow via FUN_141624770; matches."
+  }
+ ],
+ "proofs": []
+}

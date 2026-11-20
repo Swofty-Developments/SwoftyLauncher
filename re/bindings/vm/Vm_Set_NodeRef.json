@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "Vm_Set_NodeRef",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14083c270",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void **Vm_Set_NodeRef(void *registry, void *parent, const char *name, void *value, int overwrite)",
+  "evidence": "decomp:re/decomp/14083c270.c;decomp:re/decomp/141a6e980.c;decomp:re/decomp/141a6d0e0.c;xref:0x141a6eeb9,0x141a6d797,0x1407bc72c,0x1407bd50d+1358",
+  "notes": "Node-reference member of the typed setter family (same template as Vm_Set_Bool and Vm_Set_String). name is hashed with djb2; when the parent already has that child it type-checks it against the reference type descriptor 0x146ca5550 and, with overwrite 1, stores value through 0x140977b20; otherwise it allocates a 0x68-byte node from *registry (vt+0x18), constructs it with 0x14083c570 from value and links it into the parent by keyed insert (0x1442b3770, object parent) or list append (0x1442b32b0, list parent). value points at a node handle {node, next, prev}; an empty handle stores a null reference. Returns a pointer to the child's node handle, 0x146048da0 (empty) on failure. Not unique at its prologue among the template clones, so it binds through its call in FeTile_Build_EraTiles (0x141a6eeb9), which creates the view model's selected_tile reference (empty, overwrite 1) under the root node and move-assigns the handle into vm+0x6b8; FeTile_Press_EraTile follows that reference to the pressed tile node. FeTile_Add_EraTile creates each tile's image reference with it (0x141a6d797). 1362 rel32 callers."
+ },
+ "signature": {
+  "id": "vm.set_node_ref",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 89 6C 24 60 C5 F8 11 74 24 68",
+  "match": "0x141a6eeb9",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x14083c270",
+  "kind": "call",
+  "names": [
+   "Vm_Set_NodeRef"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-23",
+    "by": "era-picker",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/boxes/era_picker.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-23",
+   "verifier": "verify-era-picker",
+   "kind": "func",
+   "item": "Vm_Set_NodeRef",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14083c270.c;decomp:re/decomp/14083c570.c;decomp:re/decomp/141a6e980.c;xref:0x141a6eeb9,0x141a6ef15,0x141a6d797,0x1407bc72c,0x1407bd50d;sig:vm.set_node_ref",
+   "notes": "V1013 Fresh decompile of 0x14083c270 (.pdata 0x14083c270-0x14083c56b): 5 args (registry, parent handle payload, name, value, int overwrite), returning a handle pointer. That matches the proto. It uses the same template as Vm_Set_Bool 0x140975db0: the same 0x500000000000801 path-character reject, the same register and stack argument layout, and the same 0x146048da0 failure sentinel. A null name, a null parent, or a name containing # . [ ] returns 0x146048da0. Existing child (looked up with 0x14429db40 for object parents, 0x1442b1130 for list parents): it must be a value node (vt+0x20) whose box type id (node[0xb] vt+8, then vt+0x10) equals that of 0x146ca5550, or the call fails. With overwrite != 1 it returns the existing handle. With overwrite 1, if the node is not the sentinel and read-only bit +0x26&1 is clear, it stores value through 0x140977b20(node, value, 0, 1). New child: it hashes the name with djb2 (5381, *33), allocates 0x68 bytes through (*registry) vt+0x18 and constructs the node with 0x14083c570(node, alloc, 0, &hash, value). It then appends with 0x1442b32b0(parent, node, -1) when parent vt+0x10 is true, or does a keyed insert with 0x1442b3770 when parent vt+0x28 is true, and returns node+8. If linking fails, the node is destroyed and freed. Value is a node handle: 0x14083c570 reads *value as the target node, links a new {node,next,prev} entry onto node+0x28 and bumps the refcount at node+0x24. A null *value leaves the reference null. Call site 0x141a6eeb9: rcx = g_Vm_Registry, rdx = *(vm+0x10)+8 or k_Vm_EmptyNodeHandle, r8 = 'selected_tile' (0x14570bf69), r9 = rsp+0xa0 zeroed over 0x18 bytes (an empty handle), [rsp+0x20] = 1. The result is assigned into vm+0x6b8 by 0x1442bc170(r15, temp) at 0x141a6ef15; r15 is set to vm+0x6b8 at 0x141a6ed5c. 0x141a6d797 in FeTile_Add_EraTile also calls it, with name 'image' and overwrite 1. Callers: 1362 rel32 calls in .xtls, which matches the row, plus 13 from .data1. sigcheck: one hit"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Load_SetupPreset",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c04fd0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "void Car_Load_SetupPreset(void *out, uint8_t variant, const char *package_label)",
+  "evidence": "decomp:re/decomp/140c04fd0.c;xref:0x149a21759,0x149a21779,0x149a21799,0x149a217b9,0x149a217d9;kb:subsystems/gamedb.md#side-data",
+  "notes": "Gdb_Find_RowByLabel(car_setup.presets, vehicle_package_setups, package_label) (both names stack-built), then reads <row>.<ai|player>.<variant>.<slider> with Gdb_Get_FieldInt for the 42 car_setup.sliders labels; variant names from the table at 0x14568eaf0 (index 0..4, else 0x145636190). A package without a preset row gets no setup; a row with only _metadata_ crashed session load (read of index -1)."
+ },
+ "signature": {
+  "id": "car.load_setup_preset",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 0D 00 00 C7",
+  "match": "0x140c04fd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c04fd0",
+  "kind": "func_start",
+  "names": [
+   "Car_Load_SetupPreset"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140c04fd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c04fd0.c",
+   "notes": "V4556 log/pretty strings and body checked in decomp; vtable/indirect callers"
+  }
+ ],
+ "proofs": []
+}

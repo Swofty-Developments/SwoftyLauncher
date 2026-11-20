@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_ComponentDefinitions_CreateComponent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143f97d20",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143f97d20.c;xref:0x143f9d026",
+  "notes": "NeComponentDefinitions::createComponent: creates an entity component by definition (thread-local scratch, ring of recent creates at 0x146107830); WARN 'Failed to create component [%s] [%s]'. Caller 0x143f9cf90."
+ },
+ "signature": {
+  "id": "core.component_definitions_create_component",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 80 79 08 00",
+  "match": "0x143f97d20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143f97d20",
+  "kind": "func_start",
+  "names": [
+   "Ne_ComponentDefinitions_CreateComponent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d9-verify",
+   "kind": "func",
+   "item": "Ne_ComponentDefinitions_CreateComponent",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143f97d20.c;xref:0x143f97d20",
+   "notes": "V2851 strings/calls/offsets checked in decomp+disasm; role and name hold"
+  }
+ ],
+ "proofs": []
+}

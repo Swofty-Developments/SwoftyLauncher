@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_DeptEvent_Start",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140cbbc00",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:log-channel-DEPARTMENT_EVENTS",
+  "notes": "named from its log messages (channel DEPARTMENT_EVENTS): 'Failed to start department event as the department Event start message recieved was invalid. Team: %s Department Event hash: %u | Failed to start department event as the department Event start message'"
+ },
+ "signature": {
+  "id": "career.dept_event_start",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 48 89 D6 48 89 CF 48 8B 89 78 02 00 00",
+  "match": "0x140cbbc00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140cbbc00",
+  "kind": "func_start",
+  "names": [
+   "Career_DeptEvent_Start"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140cbbc00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140cbbc00.c;xref:0x140cbad5a,0x140cbafa6",
+   "notes": "V4663 log/pretty strings and body checked in decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140cbbc00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140cbbc00.c",
+   "notes": "V9065 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

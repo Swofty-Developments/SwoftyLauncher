@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneComponent_RefreshActiveScene",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428f0cf0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name refreshActiveScene (class from the log channel); log channel FRONTEND_SCENE_COMPONENT/MAINSCENE: '%s() - %s'"
+ },
+ "signature": {
+  "id": "game.frontend_scene_component_refresh_active_scene",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 02 00 00 48 89 CE C5 F8 57 C0",
+  "match": "0x1428f0cf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428f0cf0",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneComponent_RefreshActiveScene"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1428f0cf0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428f0cf0.c;xref:0x14059c825",
+   "notes": "V5153 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

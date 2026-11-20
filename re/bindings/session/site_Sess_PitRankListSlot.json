@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Sess_PitRankListSlot",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143691da6",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/143691b40.c;xref:0x143691d80,0x143691d98,0x143691da2,0x143691db4",
+  "notes": "Same sibling, list loop (critical section held): rdx = slot of listed vehicle loaded at 0x143691da2, read at +0x48/+0x50 by 0x143691da6. A null slot skips the entry through site_Sess_PitRankListNext."
+ },
+ "signature": {
+  "id": "session.pit_rank_list_slot",
+  "section": ".xtls",
+  "pattern": "49 8B 14 D0 44 8B 42 48 44 33 42 50",
+  "match": "0x143691da2",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143691da6",
+  "kind": "mid",
+  "expect": "44 8B 42 48 44 33 42 50",
+  "names": [
+   "site_Sess_PitRankListSlot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "pitguard",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/garage/pit_slots.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "kbverify-pit1",
+   "kind": "global",
+   "item": "0x143691da6",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143691b40.c;xref:0x143691da2,0x143691d80,0x143691db4",
+   "notes": "V3861 rdx holds the listed slot ptr (loaded da2), fault at da6/daa. CS held. only rdx,r8,flags are clobbered before da6; counter ebp and xmm0, rax/rcx iterator live across the skip"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EngineMgmt_OnRaceSessionEnded",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1411d5860",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1411d5860.c;xref:0x1411d24b6",
+  "notes": "EngineManagementComponent handler: only for session types 15..17 (vfunc+0xa8 -> +8) and when no red-flag/abort state ([mgmt+0x308]+0xf0 bit check) and +0x10 != 2: same component-slot grid penalty apply/clear as Game_EngineMgmt_ClearRaceGridPenalties; post-session penalties only when mgmt+0x320 is null; then 0x1411cdca0. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2281)"
+ },
+ "signature": {
+  "id": "game.engine_mgmt_on_race_session_ended",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 CE 48 8B 89 70 02 00",
+  "match": "0x1411d5860",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1411d5860",
+  "kind": "func_start",
+  "names": [
+   "Game_EngineMgmt_OnRaceSessionEnded"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d1-verify-a",
+   "kind": "func",
+   "item": "Game_EngineMgmt_OnRaceSessionEnded",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1411d5860.c;xref:0x1411d42a0",
+   "notes": "V2281 types 15..17 via vfunc+0xa8, red-flag bit, +0x10!=2; post-session only when mgmt+0x320 null; then 1411cdca0. Confirmed."
+  }
+ ],
+ "proofs": []
+}

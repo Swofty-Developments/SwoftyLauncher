@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_MyTeamDecalEditor_Page",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141ff48f0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void f(void *self)",
+  "evidence": "decomp:re/decomp/141ff48f0.c;xref:0x148f31ca1;xref:0x1457646d8",
+  "notes": "myteam-g1: Decal editor page: my_team_decal_editor and my_team_decal_editor_visited."
+ },
+ "signature": {
+  "id": "ui.my_team_decal_editor_page",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 70 C5 F8 29 74 24 60 48 89 CE C7 05 ?? ?? ?? ?? FF FF FF FF",
+  "match": "0x141ff48f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141ff48f0",
+  "kind": "func_start",
+  "names": [
+   "Ui_MyTeamDecalEditor_Page"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x141ff48f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141ff48f0.c;xref:0x148f31ca1",
+   "notes": "V10030 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

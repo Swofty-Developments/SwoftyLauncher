@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GhostlapTrace_OnGhostlapDownloadCompleted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141484aa0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name onGhostlapDownloadCompleted (class from the log channel); log channel GHOSTLAP-TRACE: '%s() success: %d, errorCode: %u'"
+ },
+ "signature": {
+  "id": "game.ghostlap_trace_on_ghostlap_download_completed",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC E8 00 00 00 4C 89 CF",
+  "match": "0x141484aa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141484aa0",
+  "kind": "func_start",
+  "names": [
+   "Game_GhostlapTrace_OnGhostlapDownloadCompleted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141484aa0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141484aa0.c;xref:0x141482ff1",
+   "notes": "V4871 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

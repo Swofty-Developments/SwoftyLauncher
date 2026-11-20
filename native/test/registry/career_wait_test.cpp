@@ -1,4 +1,4 @@
-#include "../../src/core/registry/table.hpp"
+#include "core/registry/table.hpp"
 
 #include <atomic>
 #include <chrono>

@@ -1,8 +1,8 @@
-// Host-native unit test for the core's boot watchdog grace (native/src/core/watchdog_grace_logic.hpp): which stalls
+// Host-native unit test for the core's boot watchdog grace (native/src/core/guards/engine/watchdog_grace_logic.hpp): which stalls
 // the grace holds the game's watchdog kill for and which it lets through, against the stall shapes seen in the
-// 1.6.11-1.7.2 hang reports. Built and run by native/test/run_watchdog_grace_test.sh.
+// 1.6.11-1.7.2 hang reports. Built and run by native/test/run_tests.sh watchdog_grace.
 
-#include "watchdog_grace_logic.hpp"
+#include "core/guards/engine/watchdog_grace_logic.hpp"
 
 #include <cstdio>
 #include <cstring>
@@ -11,12 +11,12 @@ namespace wg = runtime::watchdog_grace;
 
 static int g_fail;
 
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                    \
-            g_fail++;                                                                                                  \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                              \
+            g_fail++;                                                                                                            \
+        }                                                                                                                        \
     } while (0)
 
 int main()

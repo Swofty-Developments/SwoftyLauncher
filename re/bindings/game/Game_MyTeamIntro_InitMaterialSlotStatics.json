@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamIntro_InitMaterialSlotStatics",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14416e6a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_MyTeamIntro_InitMaterialSlotStatics(void *obj, void *arg)",
+  "evidence": "decomp:re/decomp/14416e6a0.c;xref:0x140265976;xref:0x1402661b5;xref:0x140aca55a",
+  "notes": "myteam-g2: Calls obj vtable +0xd0, FUN_14421cfe0, then one-time static init (critical section at 0x14604e0b8, vtable 145899160) of the shared material package state. Level 1."
+ },
+ "signature": {
+  "id": "game.my_team_intro_init_material_slot_statics",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 D6 48 89 CF 48 8B 01 31 D2 45 31 C0",
+  "match": "0x14416e6a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14416e6a0",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamIntro_InitMaterialSlotStatics"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x14416e6a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14416e6a0.c;xref:0x140265976",
+   "notes": "V10345 Calls vtable+0xd0 and 14421cfe0, then one-time static init (critical section 0x14604e0b8, vtable 145899160)."
+  }
+ ],
+ "proofs": []
+}

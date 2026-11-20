@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_ContractRenewal_TeamHasSlotWithStatus",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d8d150",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "uint64_t Career_ContractRenewal_TeamHasSlotWithStatus(void *comp, uint32_t team_key, char status)",
+  "evidence": "decomp:re/decomp/140d8d150.c;xref:0x1407c11c4;xref:0x140d8c0f8;xref:0x140d8c282",
+  "notes": "myteam-g2: Gets the team record (FUN_14126f540 on comp+0x2a8) and its drivers (FUN_1407c6380), looks up each driver in the driver hash table at +0x378 and returns false if any driver slot has status byte (+0x10) == status. Used by AddEvent / Retire / ForceToLowestTeam."
+ },
+ "signature": {
+  "id": "career.contract_renewal_team_has_slot_with_status",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 44 89 C3 89 D7",
+  "match": "0x140d8d150",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d8d150",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractRenewal_TeamHasSlotWithStatus"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140d8d150",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140d8d150.c",
+   "notes": "V9540 FUN_14126f540 is an activity record lookup and FUN_1407c6380 collects activities by stage (param 2 = stage), then checks status byte (+0x10) in the +0x378 hash; team/driver reading is unproven."
+  }
+ ],
+ "proofs": []
+}

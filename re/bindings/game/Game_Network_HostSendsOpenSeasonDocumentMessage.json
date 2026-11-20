@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_HostSendsOpenSeasonDocumentMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430a5170",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK",
+  "notes": "named from its log messages (channel NETWORK): 'Host sends open Season Document Message on role changed'"
+ },
+ "signature": {
+  "id": "game.network_host_sends_open_season_document_message",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 48 89 CE 48 8B 89 20 04 00 00",
+  "match": "0x1430a5170",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430a5170",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_HostSendsOpenSeasonDocumentMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430a5170",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430a5170.c",
+   "notes": "V5318 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

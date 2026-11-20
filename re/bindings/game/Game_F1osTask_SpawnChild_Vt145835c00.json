@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1osTask_SpawnChild_Vt145835c00",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432d5a60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432d5a60.c;xref:0x145835c10,0x1432c7b10",
+  "notes": "Vtable 0x145835c00 slot 2 (ref 0x145835c10) of a composite online task: when state +0x118==1 takes params +0x11c/+0x120/+0x128/+0x130, allocates a 0x168-byte child OnlineSubsystemTask ('Created OnlineSubsystemTaskBase'), constructs it via 0x1432c7b10 and starts it (0x1432bf840). Sits next to OnlineWeeklyEvent code. Addon: composite task start. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3304)"
+ },
+ "signature": {
+  "id": "game.f1os_task_spawn_child_vt145835c00",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 50 C5 F8 29 74 24 40 48 89 CE 83",
+  "match": "0x1432d5a60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432d5a60",
+  "kind": "func_start",
+  "names": [
+   "Game_F1osTask_SpawnChild_Vt145835c00"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_F1osTask_SpawnChild_Vt145835c00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432d5a60.c;xref:0x145835c10",
+   "notes": "V3304 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

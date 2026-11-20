@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_FinanceTransactionRow_SetIcon",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14167bfc0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void (void *vm, int amount, uint32_t a, uint8_t b, char show_zero, uint8_t c, char d)",
+  "evidence": "decomp:re/decomp/14167bfc0.c;xref:0x14167c840;xref:0x141682d24;xref:0x1416838e6",
+  "notes": "myteam-g1: Selects the transaction row state: amount>0 -> positive/income icon override (team_hq.finance_transaction_icons.income), amount<0 -> negative/outgoing icon, zero -> none."
+ },
+ "signature": {
+  "id": "vm.finance_transaction_row_set_icon",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 88 00 00 00 44 89 CF",
+  "match": "0x14167bfc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14167bfc0",
+  "kind": "func_start",
+  "names": [
+   "Vm_FinanceTransactionRow_SetIcon"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x14167bfc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14167bfc0.c;xref:0x14167c840;xref:0x141682d24",
+   "notes": "V9739 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

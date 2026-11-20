@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_TodStitch_GetWetDeltaAtPos",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144616670",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144616670.c;xref:0x14461e058,0x14461e083",
+  "notes": "(todData, pos) -> float: reads 'weather/track/wet_delta' (Game_TodData_FindParam) and interpolates the wetness curve at the stitch read position (logs 'wetness %f, neg %f (%f), pos %f (%f)', 'readpos %f' on TOD_STITCHING). Caller: Sess_Tod_StitchWeatherScenario."
+ },
+ "signature": {
+  "id": "session.tod_stitch_get_wet_delta_at_pos",
+  "section": ".xtls",
+  "pattern": "48 81 EC F8 00 00 00 C5 78 29 A4 24 E0 00 00 00",
+  "match": "0x144616670",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144616670",
+  "kind": "func_start",
+  "names": [
+   "Sess_TodStitch_GetWetDeltaAtPos"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x144616670",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144616670.c;xref:0x14461e058",
+   "notes": "V3674 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

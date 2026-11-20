@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Sess_Hud_SetVisibilityBit",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a39bc0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void(Hud*, uint32_t bit, bool on)",
+  "evidence": "decomp:re/decomp/141a39bc0.c;xref:0x141a361c0,0x141a36254,0x141a368cd,0x141a368ed,0x141a3694f,0x141a39304",
+  "notes": "Sets or clears the bit in the HUD visibility mask [hud+0xb50] (bit 4 is the spectator HUD, bits 1 and 2 other panels) and refreshes the dependent view-model nodes."
+ },
+ "signature": {
+  "id": "session.hud_set_visibility_bit",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 28 44 89 C3 89 D7 48 89 CE 45 84 C0 74 08",
+  "match": "0x141a39bc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a39bc0",
+  "kind": "func_start",
+  "names": [
+   "Sess_Hud_SetVisibilityBit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "re-ai",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

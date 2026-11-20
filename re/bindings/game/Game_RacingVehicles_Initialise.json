@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_RacingVehicles_Initialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14463adc0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14463adc0.c;xref:0x145bf7d10",
+  "notes": "Module slot 4 of vt 0x145bf7cf0 (3 = Game_Read_VehicleConfig): RACING_VEHICLE_DEFAULT / ASSETS and RACING_CARS pools, 'car_handling' job queue, surface materials (Car_Parse_SurfaceMaterial), Car_Deformation_ReservePool, subscribes r_part_detached (scrape/particle effects). Addon: car_handling queue and part-detach message. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3251) | engine-re 2026-11-17 track round C (surface): registers the MECHANICS extension on the physics material library ([[self+0xe8]+0x30], 0x14463b7a0..): parse/copy callbacks Car_Parse_SurfaceMaterial, data at material + (library size + 0x50), library entry size grows by 0x80, extension index -> self+0x128 (-1 when the registry is locked byte +0x18 or full). Every track material therefore gets a MECHANICS block only if the MATERIALS source lists one. raised by engine-re with --force 2026-11-17 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.racing_vehicles_initialise",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 01 00 00 C5 F8 29 B4 24 20 01 00 00 48 89 CE 48 8B 0D",
+  "match": "0x14463adc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14463adc0",
+  "kind": "func_start",
+  "names": [
+   "Game_RacingVehicles_Initialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d14-verify",
+   "kind": "func",
+   "item": "Game_RacingVehicles_Initialise",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/4463adc0.c;xref:None",
+   "notes": "V3251 offsets, vtable slot/callers, strings and calls checked in decomp; claim holds"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "trkps-verify",
+   "kind": "func",
+   "item": "Game_RacingVehicles_Initialise",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14463adc0.c;xref:0x14463b762",
+   "notes": "V11212 Registry = [self+0xe8]+0x30 stored at self+0x120; if not locked and room: entry {offset=size+0x50, fn 0x14463d0d0 x2}, size+=0x80, index -> self+0x128 else -1."
+  }
+ ],
+ "proofs": []
+}

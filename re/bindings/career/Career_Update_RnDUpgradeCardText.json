@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Update_RnDUpgradeCardText",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1418169f0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *card)",
+  "evidence": "decomp:re/decomp/1418169f0.c;xref:0x141803ca3;xref:0x1418188d4",
+  "notes": "myteam-g1: R&D upgrade card text builder: lng_rnd_%s, lng_rnd_dept_%s, lng_rnd_facility_spec_required, lng_rnd_secret_upgrade_locked, INVALID UPGRADE fallback and error_department."
+ },
+ "signature": {
+  "id": "career.update_rn_dupgrade_card_text",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 01 00 00 48 85 D2",
+  "match": "0x1418169f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1418169f0",
+  "kind": "func_start",
+  "names": [
+   "Career_Update_RnDUpgradeCardText"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x1418169f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1418169f0.c;xref:0x141803ca3",
+   "notes": "V9813 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

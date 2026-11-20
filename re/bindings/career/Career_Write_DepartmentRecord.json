@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Write_DepartmentRecord",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143509590",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "int Career_Write_DepartmentRecord(uint64_t self,int64_t *a2,void * a3,void * a4)",
+  "evidence": "decomp:re/decomp/143509590.c;xref:0x14a6f159a",
+  "notes": "myteam-g1: Serialises a \"department\" field (save writer)."
+ },
+ "signature": {
+  "id": "career.write_department_record",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 4D 89 CC 4C 89 C3",
+  "match": "0x143509590",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143509590",
+  "kind": "func_start",
+  "names": [
+   "Career_Write_DepartmentRecord"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x143509590",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143509590.c;xref:0x14a6f159a",
+   "notes": "V10264 Writes nested teams[] -> team_id, career[] -> season_index, season[] -> weekend_index, weekend[] -> department, num_adapted, num_adaptable; not just a department field."
+  }
+ ],
+ "proofs": []
+}

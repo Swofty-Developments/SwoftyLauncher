@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "k_Career_ChampionshipComponentDesc",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1460544f0",
+  "type": "void *",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/140b6ebb0.c;decomp:re/decomp/140aeb970.c;xref:0x140b76bb6,0x140aeb9f1;doc:addons/career-editor/protocol/economy.md#components-helper",
+  "notes": "static ECS type descriptor of ChampionshipComponent (0x20-byte {vtbl 0x145890940, name, hash, parent+8}); the registration at 0x140b76bb6 writes the class-name pointer at +8; the GetType vfuncs 0x140b0b020/0x140b0b470 return &desc and 0x140aeb9f1 compares a component vtbl+0x28 (GetType) result against &desc; no entity+0x1030 registry get uses it, so a registry lookup by this key is unproven. Not used by components.cpp (Id::Championship goes through k_Career_ChampionshipDesc + a vt_Career_Championship check)"
+ },
+ "signature": {
+  "id": "career.championship_component_desc",
+  "section": ".xtls",
+  "pattern": "FF 50 28 4C 8D 35 ?? ?? ?? ?? 4C 39 F0 0F 84",
+  "match": "0x140aeb9ee",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x3",
+   "len": 7
+  },
+  "target": "0x1460544f0",
+  "kind": "data",
+  "names": [
+   "k_Career_ChampionshipComponentDesc"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-econ",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/components.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-2",
+   "kind": "global",
+   "item": "k_Career_ChampionshipComponentDesc",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140b6ebb0.c;decomp:re/decomp/140aeb970.c;decomp:re/decomp/140b0b020.c;xref:0x140b76bb6,0x140b76bdc,0x140aeb9f1,0x140b0b020,0x140b0b470",
+   "notes": "V0247 name/+8/uniqueness OK (registration 0x140b6ebb0 writes +8 name, +0x10 0x2de1595b, +0x18 0x14604ea38, +0 vtbl 0x145890940). Wrong: this desc is never passed to a registry get in .xtls (5 refs only). Corrected: \"static ECS type descriptor of ChampionshipComponent (0x20-byte {vtbl 0x145890940, name, hash, parent+8}); the registration at 0x140b76bb6 writes the class-name pointer at +8; the GetType vfuncs 0x140b0b020/0x140b0b470 return &desc and 0x140aeb9f1 compares a component vtbl+0x28 (GetType) result against &desc; no entity+0x1030 registry get uses it, so a registry lookup by this key is unproven\""
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-4",
+   "kind": "global",
+   "item": "k_Career_ChampionshipComponentDesc",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140b6ebb0.c;decomp:re/decomp/140aeb970.c;decomp:re/decomp/140b0b020.c;decomp:re/decomp/140b0b470.c;xref:0x140b76bb6,0x140b76bbd,0x140b76bc4,0x140b76bdc,0x140aeb9f1,0x140b0b020,0x140b0b470",
+   "notes": "V0470 sigcheck OK. lea name at 0x140b76bb6, store to +8 at 0x140b76bbd; +0x10 0x2de1595b; +0x18 = 0x14604ea38; +0 vtbl 0x145890940 (r12 from 0x140b6f1b5); 0x140b0b020/0x140b0b470 are lea desc; ret GetType slots (vtables at 0x14566ad20/0x14566af68); 0x140aeb9f1 lea r14,desc / cmp with the GetType result, and the add loop stops there; refs are only these, no registry get. Previous partial fully applied. components.cpp clause is addon code, not checked"
+  }
+ ],
+ "proofs": []
+}

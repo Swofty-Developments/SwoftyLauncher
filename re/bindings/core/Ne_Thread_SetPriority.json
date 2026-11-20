@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Thread_SetPriority",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14391dde0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14391dde0.c;xref:0x140219e7c,0x1409cbc5c,0x140a28e3a",
+  "notes": "(thread, level<7) SetThreadPriority(thread+8, table 0x1458900e0[level]); on failure maps GetLastError via 0x14391ac40 and records the error. 33 callers (cutscenes, audio, Gfx2Device, strategy init). (33 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "core.thread_set_priority",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 89 D0 31 F6 BA 00 00 00 00",
+  "match": "0x14391dde0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14391dde0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Thread_SetPriority"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x14391dde0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14391dde0.c;xref:0x140219e7c",
+   "notes": "V6780 SetThreadPriority with table 0x1458900e0, error record confirmed."
+  }
+ ],
+ "proofs": []
+}

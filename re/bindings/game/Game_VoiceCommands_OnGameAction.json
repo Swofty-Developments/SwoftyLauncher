@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VoiceCommands_OnGameAction",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f7a6b0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-VOICE_COMMANDS",
+  "notes": "named from its log messages (channel VOICE_COMMANDS): '%s eGameAction_Pause | %s eGameAction_Resume | %s eGameAction_Repeat | %s eGameAction_Mute | %s eGameAction_Unmute'"
+ },
+ "signature": {
+  "id": "game.voice_commands_on_game_action",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 FF CA 83 FA 15",
+  "match": "0x142f7a6b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f7a6b0",
+  "kind": "func_start",
+  "names": [
+   "Game_VoiceCommands_OnGameAction"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f7a6b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f7a6b0.c;xref:0x142f7993f",
+   "notes": "V5660 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

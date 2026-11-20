@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkEntrants_PlayerAlreadyEntrantDoNothing",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143116ca0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-ENTRANTS",
+  "notes": "named from its log messages (channel NETWORK-ENTRANTS): 'Player is already this entrant, do nothing!'"
+ },
+ "signature": {
+  "id": "game.network_entrants_player_already_entrant_do_nothing",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 70 C5 F8 29 74 24 60 48 8B 41 28",
+  "match": "0x143116ca0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143116ca0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkEntrants_PlayerAlreadyEntrantDoNothing"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143116ca0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143116ca0.c;xref:0x143111e52",
+   "notes": "V5804 Bool wrapper: if no entrants doc compares params, else builds descriptor and calls registerEntrant 0x14310c1d0; log only in one branch. Better: Game_NetworkEntrants_TryRegisterEntrant"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x143116ca0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143116ca0.c;xref:0x143111e52",
+   "notes": "V6991 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

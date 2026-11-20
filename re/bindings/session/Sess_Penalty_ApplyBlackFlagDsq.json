@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Penalty_ApplyBlackFlagDsq",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143573760",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143573760.c;xref:0x14356b7be,0x14356d6cd",
+  "notes": "Black flag / disqualification: if rules enabled ([this+0x1c78]+0x40) and car *param_2 not yet DSQ (bitmask +0x1d08) calls Sess_Rules_Disqualify, sets bits +0x1d0c/+0x1d08, logs penalty type 7 and posts the Flags_Black message. Callers: Sess_Rules_DisqualifyForPenaltyPoints, Sess_Infringement_ProcessQueue."
+ },
+ "signature": {
+  "id": "session.penalty_apply_black_flag_dsq",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 88 00 00 00 44 89 C3 48 89 D7 48 89 CE 48 8B 81 78",
+  "match": "0x143573760",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143573760",
+  "kind": "func_start",
+  "names": [
+   "Sess_Penalty_ApplyBlackFlagDsq"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x143573760",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143573760.c;xref:0x14356b7be,0x14356d6cd",
+   "notes": "V3783 Guard [this+0x1c78]+0x40, DSQ masks +0x1d08/+0x1d0c, Disqualify, penalty type 7 record, posts message; 'Flags_Black' string present."
+  }
+ ],
+ "proofs": []
+}

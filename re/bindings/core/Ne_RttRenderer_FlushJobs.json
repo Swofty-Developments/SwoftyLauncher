@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_RttRenderer_FlushJobs",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d8efd0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143d8efd0.c;xref:0x140176b6e",
+  "notes": "Flushes pending RTT jobs and logs 'RTT - flushed %d jobs'. Called via jmp from 0x140176b6e."
+ },
+ "signature": {
+  "id": "core.rtt_renderer_flush_jobs",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D7 48 89 CE 48 8B 89 D8 00 00 00 FF",
+  "match": "0x143d8efd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d8efd0",
+  "kind": "func_start",
+  "names": [
+   "Ne_RttRenderer_FlushJobs"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d5-verify",
+   "kind": "func",
+   "item": "Ne_RttRenderer_FlushJobs",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d8efd0.c;xref:0x140176b6e",
+   "notes": "V2549 RTT - flushed %d jobs"
+  }
+ ],
+ "proofs": []
+}

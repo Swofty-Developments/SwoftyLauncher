@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Pod2019First_RequestPodiumThumbnails",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140361670",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140361670.c;xref:0x140364af9,0x140368b9a",
+  "notes": "Podium script (Pod2019First) helper called from Game_Pod2019FirstScript_Initialise 0x140363850 and 0x140368990: looks up ThumbnailSystem (service key 0x146080c00 in registry [g 0x14604c2c8]+0x30), sets request bit 8 (+0x141 or 1, reason 8) if +0x144 enabled else logs 'rejected because the Thumbnail System is disabled', then queues driver thumbnails (Game_ThumbnailSystem_AddingPendingDriverThumbnail) for the podium / PodiumTunnelWall set; handle kept at this+0x928. Addon: podium thumbnail capture hook. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3174)"
+ },
+ "signature": {
+  "id": "game.pod2019_first_request_podium_thumbnails",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 02 00 00 83 B9 28 09 00",
+  "match": "0x140361670",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140361670",
+  "kind": "func_start",
+  "names": [
+   "Game_Pod2019First_RequestPodiumThumbnails"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d14-verify",
+   "kind": "func",
+   "item": "Game_Pod2019First_RequestPodiumThumbnails",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/40361670.c;xref:None",
+   "notes": "V3174 offsets, vtable slot/callers, strings and calls checked in decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

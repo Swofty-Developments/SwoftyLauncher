@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_TableCursor_Update3DKeyed",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140695330",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_TableCursor_Update3DKeyed(void *table, const int *query, int *cursor)",
+  "evidence": "decomp:re/decomp/140695330.c;xref:0x14063ed5a",
+  "notes": "query = {int key, x, y, z}. Returns if key and all three floats equal the cursor's. Otherwise per axis (values [table+0x38]/[table+0x68]/[table+0x98], ends +0x40/+0x70/+0xa0): if the coordinate leaves the current bracket (cursor+0x10/+0x18, +0x20/+0x28, +0x30/+0x38) it re-brackets: single-value axis -> {0,0}, else axis object at table+0x28/+0x58/+0x88 vtable +0x10 (flag +0x50/+0x80/+0xb0 == 0) or +8. Finally copies the 16-byte query into cursor+0. Caller Ai_Job_UpdateCarsParallel. L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.table_cursor_update3_d_keyed",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 4C 89 C6 48 89 D7 48 89 CB 8B 02 41 39",
+  "match": "0x140695330",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140695330",
+  "kind": "func_start",
+  "names": [
+   "Ai_TableCursor_Update3DKeyed"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x140695330",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140695330.c;xref:0x14063ed5a",
+   "notes": "V3581 int key + three float query components compared with cursor, re-brackets via index arrays at +0x38; Ai_Job_UpdateCarsParallel caller seen"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x140695330",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x140695330-0x1406954d9;xref:0x14063ed5a",
+   "notes": "V10588 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only caller 0x14063ed5a in Ai_Job_UpdateCarsParallel 0x14063e370. 3 args. Axis tables +0x38/+0x68/+0x98 with ends +0x40/+0x70/+0xa0, axis objects +0x28/+0x58/+0x88 with flags +0x50/+0x80/+0xb0, cursor brackets +0x10..+0x38, final 16-byte copy query -> cursor (0x1406954c9)."
+  }
+ ],
+ "proofs": []
+}

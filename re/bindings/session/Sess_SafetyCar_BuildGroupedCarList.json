@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Sess_SafetyCar_BuildGroupedCarList",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14360a880",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14360a880.c;xref:0x143609fbe,0x14362163e",
+  "notes": "Builds a vector of progress records: first the given car (param_3 car idx via [[+0x18]+0x58]+0xe8), then every record without +0x32 bit1, then sorts them (inline insertion/heap sort). Used by SafetyCar teleport message and RC grouped cars data. (2 xref site(s), fb.py callers.) lb23-verify partial"
+ },
+ "signature": {
+  "id": "session.safety_car_build_ordered_car_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 4D 89 C6 49 89 D3 48 8B",
+  "match": "0x14360a880",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14360a880",
+  "kind": "func_start",
+  "names": [
+   "Sess_SafetyCar_BuildGroupedCarList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x14360a880",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14360a880.c;xref:0x143609fbe",
+   "notes": "V6764 Not a sort: after collecting the car list it only swaps entries so neighbours share a key byte (table stride 0x14, +2); better name Sess_SafetyCar_BuildGroupedCarList."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x14360a880",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14360a880.c;xref:0x143609fbe",
+   "notes": "V7080 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

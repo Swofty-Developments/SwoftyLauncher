@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_F1DataFeed_SkipStreamLine",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c29190",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-F1-DATA-FEED-REAL-WORLD",
+  "notes": "Log channel F1-DATA-FEED-REAL-WORLD: 'F1DataFeedSystem::skipStreamDataLine called, streamOffset = %d, m_carPosDataCurrentAbsoluteStreamPosition = %d, m_carPosDataLoadedStreamDataOffset = %d' | 'Adding first entry %d - timestamp = %s - %s' | 'Adding entry %d - timestamp = %s - %s, nextOffset = %I64u, allCarsStationary = %s' | 'Pa"
+ },
+ "signature": {
+  "id": "game.f1_data_feed_skip_stream_line",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 D8 53 00 00",
+  "match": "0x142c29190",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c29190",
+  "kind": "func_start",
+  "names": [
+   "Game_F1DataFeed_SkipStreamLine"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142c29190",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142c29190.c;xref:0x141e2008c",
+   "notes": "V5043 21KB requestLoadReplay (STARTING/FINISHED LOADING, entrants, time of day, weather); skip-stream-line is a part; better Game_F1DataFeedSystem_RequestLoadReplay"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142c29190",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c29190.c;xref:0x141e2008c",
+   "notes": "V6886 3076 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

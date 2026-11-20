@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_OSHttpRequest_Send",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14443af90",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14443af90.c;xref:0x14336ecde,0x14336ed7e,0x14443ac39",
+  "notes": "Sends a neon OS HTTP request object: cancels the previous request id +0x14 (0x14443f310), resets state, picks TLS when the URL +0x38 starts with 'https', creates the request via 0x14404b7e0 with response cb 0x14443f420 (Ne_OSHTTPRequestAndResponseResponseHandler_CbHttpResponse), stores id +0x14 in the pending map 0x146cb4840 under lock 0x146cb36d0, logs 'Created request %s, request id is %d' on F1OS. Callers: OS HTTP operation onStart, geolocation/server status, SignalR. Addon: hook to see non-F1OS URL fetches."
+ },
+ "signature": {
+  "id": "core.o_s_http_request_send",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 88 00 00 00 44 89 CF 4C",
+  "match": "0x14443af90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14443af90",
+  "kind": "func_start",
+  "names": [
+   "Ne_OSHttpRequest_Send"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Ne_OSHttpRequest_Send",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14443af90.c;xref:0x14443af90",
+   "notes": "V3336 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

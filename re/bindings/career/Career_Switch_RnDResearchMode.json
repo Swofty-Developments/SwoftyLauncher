@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Switch_RnDResearchMode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f41050",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Switch_RnDResearchMode(void * self)",
+  "evidence": "decomp:re/decomp/141f41050.c;xref:0x14575e030",
+  "notes": "myteam-g1: Raises my_team_entering_research / my_team_exiting_research and rebuilds team_hq_rnd_upgrades."
+ },
+ "signature": {
+  "id": "career.switch_rn_dresearch_mode",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 01 00 00 48 89 CE E8 ?? ?? ?? ?? F6 40 03 01",
+  "match": "0x141f41050",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f41050",
+  "kind": "func_start",
+  "names": [
+   "Career_Switch_RnDResearchMode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141f41050",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f41050.c;xref:0x14575e030",
+   "notes": "V10019 Switches research mode: my_team_entering/exiting_research and team_hq_rnd_upgrades."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_Mfd_FuelMixDown",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141533570",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "int Game_Mfd_FuelMixDown(void *mfd_car_settings_vm)",
+  "evidence": "doc:re/db/subsystems/game.md;decomp:re/decomp/141533570.c;xref:0x142a8eb5b",
+  "notes": "Mirror of Game_Mfd_FuelMixUp (FuelAuto check 0x141533598), steps mix-1 down to 0 (fuel-mix) | findings from PR #474 by vogtmarcel07-cloud | engine-re E1 2026-11-18: only caller Game_GameMfdSystem_Update 0x142a8e070 on action 'Fuel Mix Down' (handle 0x146078cd0); writes InputRecord+0x00. | raised by engine-re with --force 2026-11-18 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.mfd_fuel_mix_down",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4C 89 E9 44 89 F2 E8 ?? ?? ?? ?? B3 01 48 89 F9 48 8D 15 ?? ?? ?? ?? 41 B0 01 E8 ?? ?? ?? ?? 84 C0 74 1A 4B 8B 8C F5 00 01 00 00 E8 ?? ?? ?? ?? 4C 89 E9 44 89 F2 E8 ?? ?? ?? ?? B3 01 48 89 F9 48 8D 15 ?? ?? ?? ?? 41 B0 01 E8 ?? ?? ?? ?? 84 C0 74 33",
+  "match": "0x142a8eb5a",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x141533570",
+  "kind": "func_start",
+  "names": [
+   "Game_Mfd_FuelMixDown"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x141533570",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141533570.c;xref:0x142a8eb5a",
+   "notes": "V7334 FuelAuto check +0xd7 at 0x141533598 and mix-1 step with mask bit [vm+0x604] confirmed"
+  }
+ ],
+ "proofs": []
+}

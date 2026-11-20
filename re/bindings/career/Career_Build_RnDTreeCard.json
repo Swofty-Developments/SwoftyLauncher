@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Build_RnDTreeCard",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c82470",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int64_t * Career_Build_RnDTreeCard(int64_t *self,int64_t *a2)",
+  "evidence": "decomp:re/decomp/141c82470.c;xref:0x141c7e502;xref:0x141c7e645",
+  "notes": "myteam-g1: Builds rnd_card_with_info / rnd_card_pip widgets for tree cards."
+ },
+ "signature": {
+  "id": "career.build_rn_dtree_card",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 88 19 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 F8 29 B4 24 70 19 00 00 48 8B 41 10",
+  "match": "0x141c82470",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c82470",
+  "kind": "func_start",
+  "names": [
+   "Career_Build_RnDTreeCard"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141c82470",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c82470.c;xref:0x141c7e502;xref:0x141c7e645",
+   "notes": "V9996 Builds rnd_card_with_info / rnd_card_pip tree cards."
+  }
+ ],
+ "proofs": []
+}

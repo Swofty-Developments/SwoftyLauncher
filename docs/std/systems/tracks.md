@@ -391,6 +391,7 @@ A track that doesn't fit is left out of that box, with the reason in the log. A 
 - **Grid size.** That world, with any extra slots from `tracks::slots`, has a grid slot for every car the box runs. Grid size is one boot setting per install, and each box is clamped to it.
 - **AI data.** Every car in the box has AI data at the track: an AI line for its `ai_package_folder/asset_filename`, and the track's `ai_track_difficulties` entry for its package.
 - **Time Trial support.** In a Time Trial box, the track is a stock track, a track made for 1.5 or a record track with `time_trial` set, and its facts don't say `time_trial: false`.
+- **Garages.** In a box with a [world of its own](#a-boxs-own-world), that world has a garage and a pit box for every team.
 
 A box with no `content.package` record, such as an addon's [era box](/std/systems/ui#an-era-box-and-a-team-logo), is read from the database the game reads: the core counts the teams and cars of its entrant list (its `entrant_list_references` included), reads the list's season and takes the setup mode whose entrant setup mode lists it. An addon's own entrant setup mode comes before `swofty_f1`, which holds every era box's list. A stock box with no record keeps unknown teams and cars, and those rules pass.
 
@@ -481,6 +482,34 @@ Mugello can't run in game/bdx_s5_2012
 ```
 
 When the entrant list's counts can't be read, the box logs `not fully read (<why>)` and the grid rule assumes the grid size as cars, so a track with fewer grid slots is refused instead of passing with no facts.
+
+## A box's own world
+
+A `swofty_f1` box with 11 or 12 teams loads the `f1` world, which has 10 garages at every stock track. With `SWOFTY_BOX_WORLDS=1` in the game's environment, the core's boot lowering of `content.package` gives such a box a season and a track layer of its own, so its sessions load an `f1_26` world (11 garages) or a My Team world (12). For SWOFTY 2013 (11 teams) the rows are:
+
+```jsonc
+[
+  { "op": "add-row", "table": "game_setup.seasons", "from": "game_setup.seasons.season[_metadata_=season_2025]",
+    "set": { "_metadata_": "swofty_box_sw_f1_2013", "statId": "16" } },
+  { "op": "list-append", "select": "track_data.game_setup.TrackDataSet_2", "field": "seasons", "value": "swofty_box_sw_f1_2013" },
+  // ... the same on every seasons list that holds season_2025
+  { "op": "add-row", "table": "track_data.track_layers", "from": "track_data.track_layers.TrackLayer[_metadata_=f1_26]",
+    "set": { "_metadata_": "swofty_box_sw_f1_2013_world", "statId": "21", "game_setup_modes": "swofty_f1",
+             "seasons": "swofty_box_sw_f1_2013" } }
+]
+```
+
+and the box's entrant list row gets `"season": "swofty_box_sw_f1_2013"`. The boot log says:
+
+```text
+[content] content.package swofty.swofty-seasons-2013/sw_2013: 11 teams, its world holds 10 garages: season swofty_box_sw_f1_2013 (statId 16), layer swofty_box_sw_f1_2013_world (f1_26, 11 garages, statId 21), 38 season lists
+```
+
+- **Which boxes:** a `swofty_f1` box whose list's layers (setup mode and season) load no world with a garage for each of its teams. A 10-team box, a box in an addon's own setup mode, a box whose world already has room (Classic Seasons' `swofty_f1` layer is an `f1_26` copy) and every stock list are not changed. A box with more than 12 teams keeps its world and logs it.
+- **The season** copies the list's own season (`entrant_list_set.season`, or `season_2025`) and is appended to every `seasons` list that holds it except the track layer rows: track data sets, drivers' seasonal infos, specialisation sets, branding, practice programmes, schedule track lists, restricted tracks and tyre compound classes. Only the box's layer row lists it, so the box's sessions load that world alone.
+- **Ids:** the season id comes from the `content.package.season` pool (0 to 31, a bit of the layer's season mask) and the layer id from `content.package.layer` (0 to 255, a u8 the world's name takes). Both are kept in `ids.json` like the other pools. A full pool leaves the box's world as it is, with a line.
+- **The track list** leaves out a track whose box world has fewer garages or pit boxes than the box's teams (the garages rule), with the guard's popup "Its pit lane holds 10 teams. SWOFTY 2013 runs 11."
+- **When:** worlds are picked at each session's settings build, from the database the core edits at boot.
 
 ## A box's own track data
 

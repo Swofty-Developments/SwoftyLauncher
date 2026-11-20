@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetSessionLAN_MigrateSessionHost",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14408d920",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/14408d920.c;xref:0x145a543c0",
+  "notes": "cxx=NeNetSessionLAN::migrateSessionHost; log channel NETWORK-MIGRATION: 'NeNetSessionLAN::migrateSessionHost:'"
+ },
+ "signature": {
+  "id": "core.net_session_lan_migrate_session_host",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC 80 01 00 00 C5 F8 29 B4 24 70 01 00 00",
+  "match": "0x14408d920",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14408d920",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetSessionLAN_MigrateSessionHost"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb3-verify-b",
+   "kind": "func",
+   "item": "Ne_NetSessionLAN_MigrateSessionHost",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14408d920.c;xref:0x14408d920",
+   "notes": "V2107 Logs host name/max players, creates session container, own pretty string"
+  }
+ ],
+ "proofs": []
+}

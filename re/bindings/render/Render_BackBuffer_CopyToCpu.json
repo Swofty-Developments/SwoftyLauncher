@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_BackBuffer_CopyToCpu",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143f09c10",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143f09c10.c;xref:0x145a3bd30",
+  "notes": "Back-buffer to CPU copy (BackBuffer CPU Copy / reading surface to cpu, HBCN path) under lock self+0x50; WARN 'killing commands %d %d' when pending commands are dropped. Addon: screenshot / frame capture path. | #587: L2 by lead-authorised promotion for lane owner overlay (independent agree V2850)"
+ },
+ "signature": {
+  "id": "render.back_buffer_copy_to_cpu",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 01 00 00 4C 89 C7 48 89",
+  "match": "0x143f09c10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143f09c10",
+  "kind": "func_start",
+  "names": [
+   "Render_BackBuffer_CopyToCpu"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d9-verify",
+   "kind": "func",
+   "item": "Render_BackBuffer_CopyToCpu",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143f09c10.c;xref:0x143f09c10",
+   "notes": "V2850 strings/calls/offsets checked in decomp+disasm; role and name hold"
+  }
+ ],
+ "proofs": []
+}

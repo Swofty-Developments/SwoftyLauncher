@@ -1,7 +1,8 @@
-// Host-native unit test for the core's session enter guard (native/src/core/session_enter_logic.hpp).
-// Built and run by native/test/run_session_enter_test.sh.
+// Host-native unit test for the core's session enter guard (native/src/core/guards/session/session_enter_logic.hpp).
+// Built and run by native/test/run_tests.sh session_enter.
 
-#include "session_enter_logic.hpp"
+#include "core/guards/session/session_enter_logic.hpp"
+#include "core/guards/skips.hpp"
 
 #include <cstdio>
 #include <cstring>
@@ -29,10 +30,7 @@ struct Memory {
             bytes[a + i] = static_cast<const uint8_t *>(p)[i];
     }
 
-    void put64(uint64_t a, uint64_t v)
-    {
-        put(a, &v, 8);
-    }
+    void put64(uint64_t a, uint64_t v) { put(a, &v, 8); }
 };
 
 static bool read(uint64_t address, void *out, size_t n, void *user)
@@ -194,7 +192,8 @@ int main()
         Memory m = world({10, 20, 30});
         se::Memo memo;
         m.put64(MANAGER + se::GROUPS_BEGIN_AT, 0);
-        expect(!memo.decide(MANAGER, RSP, 25, 1000, read, &m).replace && memo.entries.empty(), "unreadable groups are not memoised");
+        expect(!memo.decide(MANAGER, RSP, 25, 1000, read, &m).replace && memo.entries.empty(),
+               "unreadable groups are not memoised");
         m.put64(MANAGER + se::GROUPS_BEGIN_AT, GROUPS);
         expect(memo.decide(MANAGER, RSP, 25, 1010, read, &m).replace, "the next lookup retries after a failed read");
     }
@@ -224,13 +223,13 @@ int main()
         expect(per < 80 && m.reads < 80, "a decision over a 4000-entry group map reads a bounded number of words");
     }
     {
-        se::Skips k;
-        int a = k.note(), b = k.note();
-        expect(k.logged(a) && k.logged(b) && !k.last(b), "early fixes are logged");
+        swofty_core::guards::LogFirst<se::LOG_FIRST> k{"fixes"};
+        auto a = k.note(), b = k.note();
+        expect(a && b && !*b.tail, "early fixes are logged");
         for (int i = 2; i < se::LOG_FIRST; i++)
             b = k.note();
-        expect(k.last(b) && k.logged(b), "the last logged fix says so");
-        expect(!k.logged(k.note()), "later fixes are not logged");
+        expect(b && !std::strcmp(b.tail, " (further fixes are not logged)"), "the last logged fix says so");
+        expect(!k.note(), "later fixes are not logged");
     }
     std::printf("%s\n", failed ? "FAILED" : "all passed");
     return failed ? 1 : 0;

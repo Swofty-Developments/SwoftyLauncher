@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TelemetryUdp_BuildLapPositions",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d025a0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d025a0.c;xref:0x142cfa941,0x142d0562e",
+  "notes": "(state, lap) Fills the lap-positions table at state+0xc820 (stride 0x18 per lap, byte per car): for lap 0 the grid position (vehicle +0x90 ^ +0x98) +1; for lap n collects each car's lap time (Sess_LapTimes_GetCarData +0x40/+0x48 + lap*200), sorts (0x142dd87d0) and writes 1-based positions; max lap +0xc81c. Feeds packet LapPositions. Callers Game_TelemetryUdp_UpdateRace, UDP preferences changed, Sess_ViewInstantReplay_Update."
+ },
+ "signature": {
+  "id": "game.telemetry_udp_build_lap_positions",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 48 89 4C 24 28 48 8B 81",
+  "match": "0x142d025a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d025a0",
+  "kind": "func_start",
+  "names": [
+   "Game_TelemetryUdp_BuildLapPositions"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142d025a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d025a0.c;xref:0x142cfa941,0x142d0562e,0x142da2af6",
+   "notes": "V3505 table state+0xc820 stride 0x18/lap byte per car, lap0 grid pos (v+0x90^+0x98)+1, sort 0x142dd87d0, max lap +0xc81c; 3 callers ok"
+  }
+ ],
+ "proofs": []
+}

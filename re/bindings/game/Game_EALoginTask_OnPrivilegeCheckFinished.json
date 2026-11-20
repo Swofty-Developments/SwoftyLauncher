@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EALoginTask_OnPrivilegeCheckFinished",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143372d60",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143372d60.c;xref:0x1433728af,0x143372a1f,0x143372c70,0x143373520",
+  "notes": "F1OS CheckPrivilegeTask completion (param_2=done/failed, param_3=keep spinner): stamps QPC time task[0x29]/[0x2a], clears task[0x27]. param_2==0: if a session user exists ([[task[0x34]+0x140]+0x198]+0x1c0) and no popup text pending, restarts busy spinner type 5 (0x14079c940, delay 0.01) unless param_3, then issues an async platform privilege request (user vcall +0x40 id -> service vcall +0x10, callback 0x143373270) and posts bus message vt 0x14583eea8. Otherwise sets task+0x1ba=0x100, runs 0x143371ff0, F1OS-TASKSYSTEM log 'setting finished on %s : %s' (OK!/with error from task+0x48), shows a pending popup (task+0x90 via 0x1442ccac0), marks done +0xa1, clears spinner count and posts message vt 0x14583eed0 with result byte. Addon: hook to see/force privilege-check results (online/crossplay/UGC gate). d16-verify: works on the EALoginTask (timer +0x148/+0x150, field +0x1ba), not a separate CheckPrivilegeTask"
+ },
+ "signature": {
+  "id": "game.check_privilege_task_on_finished",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 68 44 89 C3 89 D7 48 89",
+  "match": "0x143372d60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143372d60",
+  "kind": "func_start",
+  "names": [
+   "Game_EALoginTask_OnPrivilegeCheckFinished"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la1-verify",
+   "kind": "func",
+   "item": "0x143372d60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143372d60.c;xref:0x1433728af,0x143372a1f,0x143372c70",
+   "notes": "V4191 QPC stamps into task[0x29]/[0x2a], clears task[0x27]; param_2==0 path with session user [[task[0x34]+0x140]+0x198]+0x1c0, vcall +0x40 and service vcall +0x10; else task+0x1ba=0x100, F1OS-TASKSYSTEM 'setting finished on %s : %s' / 'with error', marks +0xa1=1, spinner stop log (type,count); callers Game_EALoginTask_OnStart x2 and Update seen (not claimed)"
+  }
+ ],
+ "proofs": []
+}

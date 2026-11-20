@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Flags_SetVehicleYellow",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143581970",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143581970.c;xref:0x14356f79a,0x14356f7aa",
+  "notes": "(flags, vehIdx, bool on, zoneIdx): sets/clears bit 0x20 at vehicle state+0xff8 (state from map +0x40->+0xa0->+0xb98); when on and zone (flags+0x108, 0x18 stride) belongs to this car plays 'flags_yellow' audio and stamps time at +0x1110. Caller: Sess_Flags_UpdateYellowReasons."
+ },
+ "signature": {
+  "id": "session.flags_set_vehicle_yellow",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 80 B9 F1 00",
+  "match": "0x143581970",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143581970",
+  "kind": "func_start",
+  "names": [
+   "Sess_Flags_SetVehicleYellow"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x143581970",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143581970.c;xref:0x14356f79a,0x14356f7aa",
+   "notes": "V3788 Clears/sets bit 0x20 at vehicle state +0xff8, state via 14450aaf0, zone table +0x108 stride 0x18, 'flags_yellow' (0x14584a960) played, timestamp stored at +0x1110."
+  }
+ ],
+ "proofs": []
+}

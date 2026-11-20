@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_ActorManager_InsertEntryNode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143997960",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143997960.c;xref:0x143995745",
+  "notes": "268-byte node insert called from Ne_ActorManager_RegisterEntry (0x143995745). Hypothesis."
+ },
+ "signature": {
+  "id": "core.actor_manager_insert_entry_node",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 38 4D 89 CF 4D 89 C4 48 89 D6 48 89 CF 4C 8D 71 08 48 8B 59 08 48 85 DB 75 0B 4C 89 F1 E8 ?? ?? ?? ?? 48 89 C3 48 8B 03 49 89 06 C4",
+  "match": "0x143997960",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143997960",
+  "kind": "func_start",
+  "names": [
+   "Ne_ActorManager_InsertEntryNode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x143997960",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143997960.c;xref:0x143995745",
+   "notes": "V8491 takes node from free list +8, fills 3 fields, inserts via 143997a70, switch on result; caller RegisterEntry"
+  }
+ ],
+ "proofs": []
+}

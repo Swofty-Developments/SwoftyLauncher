@@ -1,0 +1,56 @@
+{
+ "schema": 1,
+ "name": "site_Career_ApplyUpgradeBlockEntry",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14fa63050",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/14fa63050.c;xref:0x14fa63050,0x142f64860;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v090--the-tyres-upgrade-types-setting-tyres_upgrade_types-default-on-install-time",
+  "notes": "mov r8,[rcx+0x28] ; mov r9,[r8+8]: entry of the per-type upgrade block apply (rcx = vehicle upgrade component, dl = type; comp+0x28 = map<u8, map<u8,{progress,mass,bhp}>>). rnd-tyres reads only (log) SUPERSEDED 2026-10-20: rnd_upgrade_types.cpp no longer hooks this .data1 site; the read-only apply log moved to the .xtls site_Career_UpgradeBlockReplayEntry 0x144742c70 (the body's tail-jump target). The signature's used_by entry is stale."
+ },
+ "signature": {
+  "id": "career.apply_upgrade_block_entry",
+  "section": ".data1",
+  "pattern": "4C 8B 41 28 4D 8B 48 08 41 80 79 19 00",
+  "match": "0x14fa63050",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14fa63050",
+  "kind": "mid",
+  "expect": "4C 8B 41 28 4D 8B 48 08",
+  "names": [
+   "site_Career_ApplyUpgradeBlockEntry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-a",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_upgrade_types.cpp"
+  ],
+  "func_start": "0x14fa63050",
+  "data1_reason": "read-only log at the .data1 body entry; its only .xtls route is the 5-byte jmp thunk 0x142f64860, which no .pdata function covers"
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-1",
+   "kind": "global",
+   "item": "site_Career_ApplyUpgradeBlockEntry",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14fa63050.c;xref:0x14fa63050,0x14fa63054,0x14fa63074,0x14fa6309b,0x14fa6317b,0x142f64860,0x144742c70",
+   "notes": "V0084 entry semantics right (rcx=comp, dl=type, comp+0x28 map<u8,map<u8 key@+0x1c,{f32 +0x20,+0x24,+0x28}>>) but data1_reason is incomplete: the body tail-jumps at 0x14fa6317b into .pdata-covered .xtls 0x144742c70 (rdx=block name), an .xtls place for a read-only log; a log-only hook is trace-type and §2 keeps those out of .data1"
+  }
+ ],
+ "proofs": []
+}

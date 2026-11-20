@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ProfanityFilter_MatchList",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1441e14b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1441e14b0.c;xref:0x1441e13e5,0x1441e1411",
+  "notes": "Matches text param_2 against word list this+0x10..+0x18 (a leading '#' marks whole-word entries) with case-insensitive compare; returns 2 on empty input; traces 'ProfanityFilter: Detected %s'. Addon: filter list reference. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2910)"
+ },
+ "signature": {
+  "id": "game.profanity_filter_match_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 4C 89 4C 24 28 4C 89 44",
+  "match": "0x1441e14b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1441e14b0",
+  "kind": "func_start",
+  "names": [
+   "Game_ProfanityFilter_MatchList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d10-verify",
+   "kind": "func",
+   "item": "Game_ProfanityFilter_MatchList",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1441e14b0.c;xref:0x1441e14b0",
+   "notes": "V2910 decomp checked: offsets/calls/strings match claim"
+  }
+ ],
+ "proofs": []
+}

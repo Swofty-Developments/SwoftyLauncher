@@ -1,0 +1,60 @@
+{
+ "schema": 1,
+ "name": "Ne_BagCodec_WriteList",
+ "table": "functions",
+ "author": "swofty",
+ "row": {
+  "addr": "0x143934410",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "int Ne_BagCodec_WriteList(NeBagCodec *codec, void *list)",
+  "evidence": "decomp:own disasm 0x143934410-0x14393461a;xref:0x14393437e,0x14393457e",
+  "notes": "List writer: called by Game_SaveData_WriteBag for a plst entry and recursively. Writes the codec header (codec vt+0x18, 1) as 8 bytes, the item count (list +0x10, u16) as 8 bytes, then per item the u32 type id and the value: a bag through codec vt+0x8, a list by recursion, any other type through its vt+0x78 writer. Items have no keys. Inverse: 0x143935010."
+ },
+ "signature": {
+  "id": "core.bag_codec_write_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 D6 48 89 CF 48 8B 01",
+  "match": "0x143934410",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143934410",
+  "kind": "func_start",
+  "names": [
+   "Ne_BagCodec_WriteList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-19",
+    "by": "swofty",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "swofty",
+   "date": "2026-11-19",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143934410",
+    "target": "0x143934410"
+   },
+   "sigcheck": "passed",
+   "digest": "1b73cbe3d2d836424ee9581ed604c9e8f978c18defa9f5dc5cc1b2524440fc8c"
+  }
+ ]
+}

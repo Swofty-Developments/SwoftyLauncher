@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkUi_OnHopperSearchSuccessPopupCompleted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430ad6d0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name onHopperSearchSuccessPopupCompleted (class from the log channel); log channel NETWORK-UI: '%s().'"
+ },
+ "signature": {
+  "id": "game.network_ui_on_hopper_search_success_popup_completed",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 68 01 00 00 48 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x1430ad6d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430ad6d0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkUi_OnHopperSearchSuccessPopupCompleted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430ad6d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430ad6d0.c;xref:0x1430b055c",
+   "notes": "V5337 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

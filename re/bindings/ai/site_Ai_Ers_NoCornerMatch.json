@@ -1,0 +1,43 @@
+{
+ "schema": 1,
+ "name": "site_Ai_Ers_NoCornerMatch",
+ "table": "globals",
+ "author": "brands-hatch",
+ "row": {
+  "addr": "0x140649cc6",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "ai",
+  "evidence": "decomp:own capstone disasm 0x1406497a0-0x140649d40;xref:0x1406497cf,0x140649802,0x1406497d9",
+  "notes": "vmovss [r15+0x5c],xmm0 in Ai_Ers_DecidePushReasons: the path the game takes when the ERS boost entry's corner_id list is empty (je at 0x1406497cf) or no id matches the line (jmp at 0x140649802), with xmm0 = [rcx+0x10]; reads r15, rcx, xmm0, xmm6 only, then returns. A jump from site_Ai_Ers_CornerLineRead with r8 0 has the same state as the je at 0x1406497cf (no stack change between). The rip target of core's AI ERS corner guard; never hooked."
+ },
+ "signature": {
+  "id": "ai.ers_no_corner_match",
+  "section": ".xtls",
+  "pattern": "C4 A1 7A 10 44 C8 04 C4 C1 7A 11 47 5C",
+  "match": "0x140649cbf",
+  "anchor": "0x7",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140649cc6",
+  "kind": "mid",
+  "expect": "C4 C1 7A 11 47 5C",
+  "names": [
+   "site_Ai_Ers_NoCornerMatch"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-18",
+    "by": "brands-hatch",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/ai_ers_guard.cpp"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

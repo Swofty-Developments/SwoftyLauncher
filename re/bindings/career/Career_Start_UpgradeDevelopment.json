@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Career_Start_UpgradeDevelopment",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435173e0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Start_UpgradeDevelopment(void *upgrades, uint32_t owner, void *inst, uint16_t start_day, uint16_t end_day, uint8_t option, uint8_t dual, uint8_t roll_failure, void *rng, uint8_t store_duration)",
+  "evidence": "decomp:re/decomp/1435173e0.c;xref:0x143514da4,0x141242abb,0x141244acb,0x14352f194;xref:0x141242abb;doc:addons/career-editor/protocol/rnd.md#rnd-complete",
+  "notes": "U-level DEVELOPMENT start (formerly Car_Apply_UpgradeToVehicle, car lane; renamed per ce-verify-1 V0238): if inst+0x7c==0xff stores the enabled index at +0xa8 and 0x14351df60(upgrades,owner,inst,0) at +0xa4; failure roll only when roll_failure and latest state != Failed; pushes InDevelopment (7) with +0x98/+0x9a start/end and +0xa0 fail; end==start clears +0xa0 and pushes PendingFitting (8) only when DAT_1460fc310==2 (otherwise it stays InDevelopment); dual==1 in upgrades+8==2 mode mirrors to the same-id instances of the other owners; then fitted-ratio post if Completed / 0x143530430 if PendingFitting, availability refresh, upgrades-changed message. Callers 0x141242530, 0x1412447b0, Car_Fit_UpgradesToRating 0x143514670, 0x14352f060"
+ },
+ "signature": {
+  "id": "career.start_upgrade_development",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 F8 18 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 78 29 94 24 E0 18 00 00",
+  "match": "0x1435173e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435173e0",
+  "kind": "func_start",
+  "names": [
+   "Career_Start_UpgradeDevelopment"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-rnd",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/rnd.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-3",
+   "kind": "func",
+   "item": "Career_Start_UpgradeDevelopment",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435173e0.c;decomp:re/decomp/14351df60.c;xref:0x141242abb,0x141244acb,0x143514da4,0x14352f194",
+   "notes": "V0307 Independent: frame 8 pushes+0x18f8 so [rsp+0x1960..0x1988] = end u16, option u8, dual u8, roll u8, rng, store u8; r9 used as 16-bit (bp). inst+0x7c==0xff -> +0xa8 enabled index, +0xa4 = 0x14351df60(u,owner,inst,0); Push(7), +0x98/+0x9a/+0xa0; end==start clears +0xa0 and pushes 8 only when lifecycle==2; dual==1 && upgrades+8==2 mirror; fitted post on 3, 0x143530430 on 8, refresh/+0x1aa8, bus msg; callers exactly the four listed. Wording note: the failure roll also requires inst+0x7c==0xff (cmp at 0x1435174e1), not only roll_failure and latest != Failed."
+  }
+ ],
+ "proofs": []
+}

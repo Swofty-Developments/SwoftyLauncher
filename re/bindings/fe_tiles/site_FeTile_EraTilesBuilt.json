@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_FeTile_EraTilesBuilt",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a6f728",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "fe_tiles",
+  "evidence": "decomp:re/decomp/141a6e980.c;xref:0x141a6f723,0x141a6f6b5",
+  "notes": "In FeTile_Build_EraTiles (the DynamicEraSelectTabViewModel tile build, vtable slot at 0x14572a538): mov byte [rsi+0x6f0],1 right after the last FeTile_Add_EraTile call; every skipped-tile branch joins here. rsi = the view model: tile set at rsi+0x690 (allocator *(rsi+0x270), tile vector [+0x6d8,+0x6e0) of 0x10-byte {allocator, Tile*} entries), mode *(rsi+0x670). Tiles added here are pressed like stock ones (the press handler 0x141a6e420 reads the tile vector). Predecessors: the fall-through from the call at 0x141a6f723 and je 0x141a6f6b5 (f2_2023 skipped). At the site rbx = the allocator and rdi = vm+0x690 on both paths; r12b is the last index (count-1) on the fall-through path, so take the count from the vector (V1006)."
+ },
+ "signature": {
+  "id": "fe_tiles.era_tiles_built",
+  "section": ".xtls",
+  "pattern": "C6 86 F0 06 00 00 01 C6 86 08 07 00 00 00",
+  "match": "0x141a6f728",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a6f728",
+  "kind": "mid",
+  "expect": "C6 86 F0 06 00 00 01",
+  "names": [
+   "site_FeTile_EraTilesBuilt"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "classic-seasons",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/classic-seasons/native/src/era_tiles.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-seasons",
+   "kind": "global",
+   "item": "site_FeTile_EraTilesBuilt",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a6e980.c;xref:0x141a6f723,0x141a6f6b5;sig:fe_tiles.era_tiles_built",
+   "notes": "V1006 0x141a6f728 is c6 86 f0 06 00 00 01, mov byte [rsi+0x6f0],1, right after the 11th add call (0x141a6f723). It has exactly two predecessors: the fall-through from that call and je 0x141a6f728 at 0x141a6f6b5 (f2_2023 unavailable). The row's 0x141a6f6c6 is mid-instruction and should be 0x141a6f6b5. Each earlier skip jumps to the next tile's check, so every path reaches the site. No other branch in the function lands in 0x141a6f700-0x141a6f740. rsi is written once (mov rsi,rcx at 0x141a6e99c) and is nonvolatile, so rsi = vm at the site. tiles = rsi+0x690 is rcx of all 11 adds: rbx first, then rdi (rdi = rbx and rbx = alloc at 0x141a6f0e0 and 0x141a6f112, on both paths). alloc = *(rsi+0x270): it is read into [rsp+0x98] and rbx and also stored as the vector allocator at rsi+0x6d0. The tile vector is [rsi+0x6d8,+0x6e0) of 0x10-byte entries, and mode is *(rsi+0x670). The index arg r12b and the select_tile_%d counter [rsp+0x88] (fmt 0x14572a260, formatted by 0x1439182c0 into a 0x20-byte buffer) both start at 0 and step only when a tile is added. The vector is zeroed at 0x141a6ebd8, so index = n = vector size, and appending with index = size and node select_tile_<size> matches. Hook note: at the site r12b is size-1 on the fall-through path, and [rsp+0x98] is overwritten at 0x141a6f3e7 on the f1_world path. Use rsi and the vector size. sigcheck: one hit"
+  }
+ ],
+ "proofs": []
+}

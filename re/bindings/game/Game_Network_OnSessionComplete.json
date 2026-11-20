@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_OnSessionComplete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430f3b60",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name onSessionComplete (class from the log channel); log channel NETWORK: '%s'"
+ },
+ "signature": {
+  "id": "game.network_on_session_complete",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 68 B8 00 01 00 00 48 8D 0D ?? ?? ?? ?? 0F 1F 00 8B 14 81 81 FA BB 5E FE A7 74 34 85 D2 74 4A 83 C0 19 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D 00 01 00 00 75 C3 EB 1A 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 86 C0 03 00 00 48 8B 88 A8 00 00 00 BA 0B 00 00 00",
+  "match": "0x1430f3b60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430f3b60",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_OnSessionComplete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430f3b60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430f3b60.c",
+   "notes": "V5400 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

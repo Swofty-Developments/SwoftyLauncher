@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_UnmutingPlayerAfterUnblocking",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430cb940",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK",
+  "notes": "named from its log messages (channel NETWORK): 'Unmuting player %llu after unblocking'"
+ },
+ "signature": {
+  "id": "game.network_unmuting_player_after_unblocking",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 83 3A 0B",
+  "match": "0x1430cb940",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430cb940",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_UnmutingPlayerAfterUnblocking"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430cb940",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430cb940.c;xref:0x143055c45",
+   "notes": "V5366 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

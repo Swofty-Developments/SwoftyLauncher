@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_OptionalSharedPtr_Reset",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140b78510",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140b78510.c;xref:0x140b9fc31",
+  "notes": "If optional flag (+0x10) set releases shared_ptr control block at +8 (atomic dec use count -> dispose vcall 0, weak dec -> delete vcall 8). Callers Game_Read_WeatherScenarios, Game_Tyres_ShouldShowScreenDuringLoading."
+ },
+ "signature": {
+  "id": "core.optional_shared_ptr_reset",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 80 79 10 00 74 2C 48 8B 71 08 48 85 F6 74 23 F0 FF 4E 08 75 1D 48 8B 06 48 89 F1 FF 10 F0 FF 4E 0C 75 0F 48 8B 06 48 89 F1 48 83 C4 20 5E 48 FF 60 08 90 48 83 C4 20 5E C3 CC CC C3 CC CC CC",
+  "match": "0x140b78510",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140b78510",
+  "kind": "func_start",
+  "names": [
+   "Ne_OptionalSharedPtr_Reset"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x140b78510",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140b78510.c;xref:0x140b9fc31",
+   "notes": "V8019 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

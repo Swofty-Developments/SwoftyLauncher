@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TodData_FindParam",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14460ec40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14460ec40.c;xref:0x141cf0434,0x141d00a14",
+  "notes": "TOD data lookup for the CURRENT scenario (hash data+0x1d8): djb2(groupAndParamName) matched in data+0x28 (stride 0x20); fills curve binding param_2 (0x142ff65e0) and logs TIME_OF_DAY 'not specified in data' if missing. 202 call sites: 90 in Game_TimeOfDaySystem_FinaliseTimeOfDay, 12 in Sess_TimeOfDayOwner_BindRainCurves. Addon: hook to see/override every TOD curve (sun, fog, sky, rain) by param name. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2520)"
+ },
+ "signature": {
+  "id": "game.tod_data_find_param",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 4C 89 C7 48 89 D6 48 89 C8 41 0F",
+  "match": "0x14460ec40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14460ec40",
+  "kind": "func_start",
+  "names": [
+   "Game_TodData_FindParam"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-b",
+   "kind": "func",
+   "item": "Game_TodData_FindParam",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14460ec40.c;xref:0x141cf0434",
+   "notes": "V2520 current scenario hash data+0x1d8, param hash djb2 in data+0x28 stride 0x20, binding 142ff65e0, log not specified in data; 12 refs in BindRainCurves confirmed, 90/202 counts not verified"
+  }
+ ],
+ "proofs": []
+}

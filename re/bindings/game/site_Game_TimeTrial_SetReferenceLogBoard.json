@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Game_TimeTrial_SetReferenceLogBoard",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14147bc94",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/14147b720.c;xref:0x14147bc5f,0x14147bc19",
+  "notes": "In Game_TimeTrial_SetReference: mov rax,[rsi+0x20278] that starts the GAME log line '[TIME TRIALS] New reference : track(%d, %s), weather(%s), leaderboard(%s).' (format 0x1456e7b97), reached only when g_Ne_LogGate is enabled and holds the GAME hash 0x7c7c88cb (je 0x14147bc94 at 0x14147bc5f). rsi = the Time Trial presenter; +0x20278 is the board the lookup at 0x14147bc14 (call 0x142f8baf0 with the track and weather) stored at 0x14147bc19, 0 when no board is listed for the track (offline play has no online board list). The next instruction mov rdi,[rax+0x40] reads the board name with no null check and faults (ACCESS_VIOLATION reading 0x40 at F1_25.exe+0x147bc9b, Game_TimeTrial_SetReference+0x57b, from Game_TimeTrial_Leave+0x1ea7 on setCurrentGameMode none -> time_trial). Stock builds keep the GAME channel closed; swofty_gamelog opens it for a GAME channel rule. 7-byte patch window, no branch lands inside it. Core's time trial reference log guard continues at site_Game_TimeTrial_SetReferenceLogDone for a null board."
+ },
+ "signature": {
+  "id": "game.time_trial_set_reference_log_board",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 48 8B 86 78 02 02 00 48 8B 78 40",
+  "match": "0x14147bc8f",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14147bc94",
+  "kind": "mid",
+  "expect": "48 8B 86 78 02",
+  "names": [
+   "site_Game_TimeTrial_SetReferenceLogBoard"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "ttrefnull",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/frontend/leaderboard_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "ttrefnull-verify",
+   "kind": "global",
+   "item": "0x14147bc94",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14147b720.c;xref:0x14147bc5f;sig:game.time_trial_set_reference_log_board",
+   "notes": "V9252 Static: disassembled 0x14147bb00..0x14147bdb0. The only writer of +0x20278 in the exe is 0x14147bc19 (scan for disp 0x20278); the store follows call 0x142f8baf0. bc94 is the je target of the GAME hash match; no branch lands in 0x14147bc95..0x14147bc9a."
+  }
+ ],
+ "proofs": []
+}

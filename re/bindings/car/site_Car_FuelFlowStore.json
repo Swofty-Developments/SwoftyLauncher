@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "site_Car_FuelFlowStore",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14468f03c",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "car",
+  "evidence": "decomp:re/decomp/14468edb0.c;xref:0x14468f034",
+  "notes": "vmovss [rsi+0x108],xmm0 in Car_FuelTank_StepBurn: xmm0 = fuel flow kg/s (rad/s x Nm x BSFC x active_burn_scale x 0.001), rsi = FuelTank system, rbx = CarLive, xmm6 = dt. The burn below uses xmm0, so scaling xmm0 before this store scales consumption. Duplicated notes/evidence and the stale no-signature remark removed per V1251"
+ },
+ "signature": {
+  "id": "car.fuel_flow_store",
+  "section": ".xtls",
+  "pattern": "C5 FA 11 86 08 01 00 00 F6 83 32 01 00 00 04",
+  "match": "0x14468f03c",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14468f03c",
+  "kind": "mid",
+  "expect": "C5 FA 11 86 08 01 00 00",
+  "names": [
+   "site_Car_FuelFlowStore"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "car-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v4",
+   "kind": "global",
+   "item": "site_Car_FuelFlowStore",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14468edb0.c;xref:0x14468f034;sig:car.fuel_flow_store",
+   "notes": "V1251 0x14468f03c vmovss [rsi+0x108],xmm0 after *0.001 at 0x14468f034. rsi=tank, rbx=[tank+8], xmm6=dt (0x14468edf3). xmm0 feeds the burn at 0x14468f055, so scaling it scales consumption. sigcheck passes."
+  }
+ ],
+ "proofs": []
+}

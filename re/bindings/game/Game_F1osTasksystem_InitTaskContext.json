@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1osTasksystem_InitTaskContext",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432c0610",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432c0610.c;xref:0x1432d98b4",
+  "notes": "Stores param_2 at +0x28, queries interface id 0x146cb8258 (vcall +0x28 of param_3) into +0x88; on null uses TLS function-static error list and Ne_RobinHoodMap_U64_FindIndex. Callers Game_F1osTasksystem_InternalStartTask, Game_F1osTasksystem_AddTask. Hypothesis."
+ },
+ "signature": {
+  "id": "game.f1os_tasksystem_init_task_context",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 4C 89 CE 4C 89 C7 49",
+  "match": "0x1432c0610",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432c0610",
+  "kind": "func_start",
+  "names": [
+   "Game_F1osTasksystem_InitTaskContext"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x1432c0610",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432c0610.c;xref:0x1432d98b4",
+   "notes": "V7581 strings/offsets/constants and callers match decomp; hypothesis supported"
+  }
+ ],
+ "proofs": []
+}

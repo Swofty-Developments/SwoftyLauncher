@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkTraffic_QueuedPacketSizeConnectionId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14406f280",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-TRAFFIC",
+  "notes": "named from its log messages (channel NETWORK-TRAFFIC): '%s: queued packet(%p) size(%d bytes) connectionId(%d) m_packetCount(%d) m_largePacketCount(%d) m_maxByteAccum(%d) maxPacketCount(%d) maxLargePacketCount(%d) m_l'"
+ },
+ "signature": {
+  "id": "game.network_traffic_queued_packet_size_connection_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 4C 89 CF 49 89 C9",
+  "match": "0x14406f280",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14406f280",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkTraffic_QueuedPacketSizeConnectionId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x14406f280",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14406f280.c;xref:0x14406f225",
+   "notes": "V6498 better name Game_NetworkTraffic_PushPacket: log method is push: queues packet into throttle queue + stats, broader than a size log"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x14406f280",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14406f280.c;xref:0x14406f225",
+   "notes": "V7146 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

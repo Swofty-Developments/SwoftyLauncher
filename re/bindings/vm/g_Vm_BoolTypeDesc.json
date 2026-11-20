@@ -1,0 +1,44 @@
+{
+ "schema": 1,
+ "name": "g_Vm_BoolTypeDesc",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x146129dc0",
+  "type": "void",
+  "level": "L1",
+  "subsystem": "vm",
+  "evidence": "decomp:re/decomp/1442626c0.c;xref:0x1402572ce,0x14037a1db",
+  "notes": "ts-v1: the bool VM value type descriptor; vt+0x10 of it is compared with the node holder type vt+0x10 as the sync point and the resume screens do"
+ },
+ "signature": {
+  "id": "vm.bool_type_desc",
+  "section": ".xtls",
+  "pattern": "48 8D 0D ?? ?? ?? ?? FF 50 10 39 C3 75 17 48 8B 07",
+  "match": "0x1402572ce",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x146129dc0",
+  "kind": "data",
+  "names": [
+   "g_Vm_BoolTypeDesc"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "ts-v1",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/testing/agent/agent.cpp"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

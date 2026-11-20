@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NeosWS_WebSocketTransportWinHttp",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144447d60",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NEOS_WS",
+  "notes": "named from its log messages (channel NEOS_WS): 'WebSocketTransportWinHttp::cbHttpResponse - Status code = %d, dataSize=%d'"
+ },
+ "signature": {
+  "id": "game.neos_ws_web_socket_transport_win_http",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 44 89 C5 89 D7",
+  "match": "0x144447d60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144447d60",
+  "kind": "func_start",
+  "names": [
+   "Game_NeosWS_WebSocketTransportWinHttp"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x144447d60",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144447d60.c;xref:0x144447637",
+   "notes": "V6656 body = cbHttpResponse + handleResponse (Upgrade failed, expected 101) log paths; name is only the class. Better: Game_NeosWS_WinHttpHandleUpgradeResponse"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144447d60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144447d60.c;xref:0x144447637",
+   "notes": "V7218 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

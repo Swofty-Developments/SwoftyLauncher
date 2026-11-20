@@ -31,10 +31,12 @@ public:
         session_.safety_car = 0xff;
         session_.have = SWOFTY_LIVE_SHAVE_TYPE | SWOFTY_LIVE_SHAVE_CARS;
         std::memset(cars_, 0, sizeof cars_);
+        std::memset(details_, 0, sizeof details_);
         std::memset(present_, 0, sizeof present_);
         table_ = {SWOFTY_LIVE_VERSION, &Live::t_available, &Live::t_session, &Live::t_car, &Live::t_subject,
                   &Live::t_turn,       &Live::t_track_turns, &Live::t_badge, &Live::t_seq,
-                  &Live::t_driver_name, &Live::t_badge_texture, nullptr, &Live::t_tyre_icon_texture};
+                  &Live::t_driver_name, &Live::t_badge_texture, nullptr, &Live::t_tyre_icon_texture,
+                  &Live::t_car_detail};
     }
 
     ~Live() { uninstall(); }
@@ -70,6 +72,11 @@ public:
         c.gap_leader_ms = c.gap_ahead_ms = SWOFTY_LIVE_NO_GAP;
         c.have = SWOFTY_LIVE_HAVE_IDENT | (position ? SWOFTY_LIVE_HAVE_CLASS : 0);
         c.flags = SWOFTY_LIVE_CAR_RACER;
+        SwoftyLiveCarDetail &d = details_[vehicle];
+        std::memset(&d, 0, sizeof d);
+        d.version = SWOFTY_LIVE_VERSION;
+        d.size = sizeof d;
+        d.vehicle = vehicle;
         present_[vehicle] = true;
         session_.cars = 0;
         for (bool p : present_)
@@ -78,6 +85,8 @@ public:
     }
 
     SwoftyLiveCar &car(uint32_t vehicle) { return cars_[vehicle]; }
+    // The car's detail; set its fields and their have bits (car_detail answers detail.have | car.have).
+    SwoftyLiveCarDetail &detail(uint32_t vehicle) { return details_[vehicle]; }
 
     void set_player(uint32_t vehicle)
     {
@@ -109,7 +118,8 @@ public:
     void set_turns(const std::vector<SwoftyLiveTurn> &turns) { turns_ = turns; }
     void set_badge(uint32_t vehicle, const std::string &key) { badges_[vehicle] = key; }
     void set_driver_name(uint32_t vehicle, const std::string &name) { names_[vehicle] = name; }
-    // Answer as an older core does: version 1 has no driver_name member, version 2 no team_badge_texture member.
+    // Answer as an older core does: version 1 has no driver_name member, version 2 no team_badge_texture member,
+    // version 5 no car_detail member.
     void set_table_version(uint32_t v) { table_.version = v; }
     void set_badge_texture(uint32_t vehicle, const std::string &path) { textures_[vehicle] = path; }
     void set_tyre_icon_texture(uint32_t vehicle, const std::string &path) { tyre_textures_[vehicle] = path; }
@@ -251,10 +261,24 @@ private:
         return SWOFTY_ASSET_OK;
     }
 
+    static int t_car_detail(uint32_t vehicle, SwoftyLiveCarDetail *out)
+    {
+        if (!t_available())
+            return SWOFTY_ASSET_UNAVAILABLE;
+        if (!out || vehicle >= SWOFTY_LIVE_MAX_CARS)
+            return SWOFTY_ASSET_INVALID;
+        if (!current()->present_[vehicle])
+            return SWOFTY_ASSET_UNAVAILABLE;
+        *out = current()->details_[vehicle];
+        out->have |= current()->cars_[vehicle].have;
+        return SWOFTY_ASSET_OK;
+    }
+
     bool available_ = true;
     uint64_t frame_ = 1;
     SwoftyLiveSession session_;
     SwoftyLiveCar cars_[SWOFTY_LIVE_MAX_CARS];
+    SwoftyLiveCarDetail details_[SWOFTY_LIVE_MAX_CARS];
     bool present_[SWOFTY_LIVE_MAX_CARS];
     std::vector<SwoftyLiveTurn> turns_;
     std::map<uint32_t, std::string> badges_, textures_;

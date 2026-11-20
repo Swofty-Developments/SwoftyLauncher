@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_UgcSearcher_StartSearch",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1441562f0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-method;decomp:re/decomp/1441562f0.c;xref:0x140c28688,0x142a6cdf6",
+  "notes": "logged method name startSearch (class from the log channel); log channel NeUgcSearcher: 'startSearch - accountID=%d, appID=%d'"
+ },
+ "signature": {
+  "id": "core.ugc_searcher_start_search",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 F7 01 FD FF FF FF",
+  "match": "0x1441562f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1441562f0",
+  "kind": "func_start",
+  "names": [
+   "Ne_UgcSearcher_StartSearch"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb4-verify-a",
+   "kind": "func",
+   "item": "Ne_UgcSearcher_StartSearch",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1441562f0.c;xref:0x140c27fa0",
+   "notes": "V2246 startSearch logs, AddRequiredTag, SendQueryUGCRequest."
+  }
+ ],
+ "proofs": []
+}

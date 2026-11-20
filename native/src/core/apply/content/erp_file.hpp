@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../erp_zstd.hpp"
+#include "core/assets/erp_zstd.hpp"
 
 #include <zstd.h>
 
@@ -81,8 +81,8 @@ inline bool open(const Source &src, Archive &out, std::string &why)
     out.version = rd32(out.header, 4);
     uint64_t info_off = rd64(out.header, 0x10), info_size = rd64(out.header, 0x18);
     out.data_off = rd64(out.header, 0x20);
-    if (out.version < 3 || info_off != 0x30 || info_size < 8 || info_size > (256u << 20) || out.data_off != info_off + info_size ||
-        out.data_off > src.size)
+    if (out.version < 3 || info_off != 0x30 || info_size < 8 || info_size > (256u << 20) ||
+        out.data_off != info_off + info_size || out.data_off > src.size)
         return why = "unsupported ERP header", false;
     std::string idx(size_t(info_size), '\0');
     if (!src.read(info_off, idx.size(), idx.data()))
@@ -150,9 +150,9 @@ inline void md5(const std::string &data, char out[16])
         0x289b7ec6, 0xeaa127fa, 0xd4ef3085, 0x04881d05, 0xd9d4d039, 0xe6db99e5, 0x1fa27cf8, 0xc4ac5665, 0xf4292244, 0x432aff97,
         0xab9423a7, 0xfc93a039, 0x655b59c3, 0x8f0ccc92, 0xffeff47d, 0x85845dd1, 0x6fa87e4f, 0xfe2ce6e0, 0xa3014314, 0x4e0811a1,
         0xf7537e82, 0xbd3af235, 0x2ad7d2bb, 0xeb86d391};
-    static const int R[64] = {7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 5, 9,  14, 20, 5, 9,
-                              14, 20, 5, 9,  14, 20, 5, 9,  14, 20, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23,
-                              4, 11, 16, 23, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21};
+    static const int R[64] = {7,  12, 17, 22, 7,  12, 17, 22, 7,  12, 17, 22, 7,  12, 17, 22, 5,  9,  14, 20, 5,  9,
+                              14, 20, 5,  9,  14, 20, 5,  9,  14, 20, 4,  11, 16, 23, 4,  11, 16, 23, 4,  11, 16, 23,
+                              4,  11, 16, 23, 6,  10, 15, 21, 6,  10, 15, 21, 6,  10, 15, 21, 6,  10, 15, 21};
     uint32_t a0 = 0x67452301, b0 = 0xefcdab89, c0 = 0x98badcfe, d0 = 0x10325476;
     std::string m = data;
     m += char(0x80);

@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Ne_Compare_StringNoCase",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14534d918",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "int32_t Ne_Compare_StringNoCase(const char *a, const char *b)",
+  "evidence": "decomp:re/decomp/14534d918.c;decomp:re/decomp/143dc39f0.c;xref:0x143dc3c08,0x142c8d638,0x14015abec,0x143ce4288,0x14874aa08",
+  "notes": "cxx=_stricmp (static UCRT): with the C locale (0x1460142e0 == 0) folds A-Z to lower case byte by byte and returns the difference; otherwise uses the locale's lower-case map; null a or b sets errno 0x16 (EINVAL) and returns 0x7fffffff. 1553 rel32 callers (1379 .xtls, 174 .data1). Hardware-settings readers call it as (attr->value, \"true\") and store (result == 0) as the bool. xanpavle F1-25-RE-Optimization FUN_14534d918 (bool check)"
+ },
+ "signature": {
+  "id": "core.compare_string_no_case",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 83 3D ?? ?? ?? ?? 00 75 2D 48 85 C9 75 1A E8 ?? ?? ?? ?? C7 00 16 00 00 00 E8 ?? ?? ?? ?? B8 FF FF FF 7F 48 83 C4 28 C3 48 85 D2 74 E1 48 83 C4 28 E9 ?? ?? ?? ?? 45 33 C0 48 83 C4 28 E9 ?? ?? ?? ?? CC CC 48 89 5C 24 08 57 48 83 EC 40",
+  "match": "0x14534d918",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14534d918",
+  "kind": "func_start",
+  "names": [
+   "Ne_Compare_StringNoCase"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "reopt-025",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/re-optimization/native/src/re_optimization.cpp (xanpavle.re-optimization)"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "reopt-025-verify",
+   "kind": "func",
+   "item": "Ne_Compare_StringNoCase",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14534d918.c;decomp:re/decomp/143dc39f0.c;xref:0x143dc3c08,0x142c8d638,0x14015abec,0x143ce4288,0x14874aa08;sig:core.compare_string_no_case",
+   "notes": "V0927 _stricmp, 2 args. When 0x1460142e0 (locale-changed flag) is 0 it folds A-Z to lower case byte by byte and returns the difference at the first mismatch, so 0 means a case-insensitive match. A null a or b sets errno 22 and returns 0x7fffffff. Otherwise it tail-jumps with r8d = 0 to the locale variant, which compares through the lower-case map at locale+0x110. The .pdata entry is 0x14534d918-0x14534d95e; Ghidra's body up to 0x14534da23 includes the tail-jumped code. A rel32 scan finds 1553 calls (1379 .xtls, 174 .data1) plus 26 jmps. The name matcher 0x14534da24 is the length-bounded sibling (_strnicmp, third arg 0x1f at every site below). sigcheck: one hit at 0x14534d918"
+  }
+ ],
+ "proofs": []
+}

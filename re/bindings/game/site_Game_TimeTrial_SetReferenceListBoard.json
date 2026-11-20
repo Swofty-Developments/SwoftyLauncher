@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Game_TimeTrial_SetReferenceListBoard",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14147bbf2",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/14147b720.c;xref:0x14147bbf9,0x14147c0e1",
+  "notes": "In Game_TimeTrial_SetReference: cmp byte [rdx+0xf0],0 then je 0x14147c0e1, the call to Ne_Std_ThrowBadOptionalAccess (bad optional access, a 0xc0000409 fast fail). Reached when the reference track changed: ecx holds the presenter old track [rsi+0x3c] and ebp the new one, and the stores to [rsi+0x41], [rsi+0x40] and [rsi+0x3c] at 0x14147bbcb..0x14147bbd6 are done. rdx = [[[[rsi+0x20]+0x88]+0x260]+0xe18], the selected entrant list of the current game mode entity; list +0xe0 is its leaderboard descriptor stat id, +0xf0 the engaged byte. rsi = the Time Trial presenter. The hook point of the core time trial reference list guard."
+ },
+ "signature": {
+  "id": "game.time_trial_set_reference_list_board",
+  "section": ".xtls",
+  "pattern": "80 BA F0 00 00 00 00 0F 84 ?? ?? ?? ?? 45 85 F6",
+  "match": "0x14147bbf2",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14147bbf2",
+  "kind": "mid",
+  "names": [
+   "site_Game_TimeTrial_SetReferenceListBoard"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "ttlistboard",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/frontend/leaderboard_guard.cpp"
+  ],
+  "expect": "80 BA F0 00 00 00 00"
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "ttlistboard-verify",
+   "kind": "global",
+   "item": "0x14147bbf2",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14147b720-0x14147c0e6;decomp:own capstone disasm 0x14029b020-0x14029b085,0x14029b140,0x145349d58-0x145349d70,0x14fb01540-0x14fb0161a;str:0x145612dfa;str:0x1457fcece;xref:0x14147bb32,0x14147bbb5,0x14147bbcb,0x14147bbcf,0x14147bbd4,0x14147bbd6,0x14147bbd9,0x14147bbeb,0x14147bbf2,0x14147bbf9,0x14147c0e1,0x14147bc06,0x14147bc14,0x14fb01586;sig:game.time_trial_set_reference_list_board",
+   "notes": "V9259 Re-derived from own capstone disassembly of Game_TimeTrial_SetReference (Steam 0x14147b720-0x14147c0e6). 0x14147bbf2 cmp byte [rdx+0xf0],0; 0x14147bbf9 je 0x14147c0e1 = call 0x14029b020 (Ne_Std_ThrowException): object with vtable 0x145612dd0 whose slot +8 (0x14029b140) returns 'Bad optional access' (0x145612dfa), thrown via 0x14029b050 -> 0x145349d58 int 0x29 code 5 (0xc0000409; 0xc0000417 only without PF_FASTFAIL_AVAILABLE). ecx=[rsi+0x3c] loaded at 0x14147bbb5 before the store at 0x14147bbd6; ebp=movzx [r13+1] at 0x14147bb32; the site is reached only by fall-through past je 0x14147bbd4 (ecx==ebp goes to 0x14147bc35), so only on a track change, after 0x14147bbcb [rsi+0x41]=dil, 0x14147bbcf [rsi+0x40]=al, 0x14147bbd6 [rsi+0x3c]=ebp. rdx=[[[[rsi+0x20]+0x88]+0x260]+0xe18] at 0x14147bbd9-0x14147bbeb, the chain null-tested at 0x14147bae0-0x14147bb25 (+0xe18 = EntrantsManager selectable_list in the KB). List +0xe0: add rdx,0xe0 at 0x14147bc06 -> 0x142f8baf0 (jmp 0x14fb01540), which reads byte [rdx] as the %02u of 'LBV%02u%02d%s' (0x1457fcece) with r9d=track and W/D from the wet flag, strcmp-searches [[rcx+0x478]+0x10] entries by name +0x68 and returns the board stored at [rsi+0x20278]; so +0xe0 is the board stat id of an optional whose engaged byte is +0xf0. rsi=rcx from 0x14147b73c, the object that logs '[TIME TRIALS] New reference'. No branch in the function and no E8/E9/Jcc rel32 in .xtls or .data1 targets 0x14147bbf3..0x14147bbf8. Signature: sigcheck OK; pattern unique in Steam .xtls (0x147bbf2) and EA .rdata (0x1475fc2); the 0x20 bytes at both are byte-identical (je rel32 equal); expect 80 BA F0 00 00 00 00 also matches EA; resolves on both images by hint and by scan with bindverify's Resolver. EA twin 0x141475af0: 561 insns, same mnemonics and lengths, internal branches shifted by -0x5c30, only rip and external call displacements differ."
+  }
+ ],
+ "proofs": []
+}

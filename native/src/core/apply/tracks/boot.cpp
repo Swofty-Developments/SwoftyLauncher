@@ -1,12 +1,12 @@
-#include "boot.hpp"
-#include "box.hpp"
+#include "core/apply/tracks/boot.hpp"
+#include "core/apply/tracks/box.hpp"
 
-#include "../applier.hpp"
-#include "../database.hpp"
-#include "../ids.hpp"
-#include "../content/gvdb.hpp"
+#include "core/apply/applier.hpp"
+#include "core/apply/database.hpp"
+#include "core/apply/ids.hpp"
+#include "core/apply/content/gvdb.hpp"
 
-#include "../../runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <swofty/mixin.hpp>
 
@@ -144,7 +144,8 @@ void ensure(registry::Store &st)
                 s.scan.rows.size(), dormant, std::size(VENUE_SEEDS), s.scan.blocks.size(), s.scan.sets.size(),
                 s.older.tracks.size());
     for (auto &o : s.older.tracks) {
-        std::string how = "the launcher's; made for 1.5 by " + o.addon + (o.venue.empty() ? ", no venue" : ", provides " + o.venue);
+        std::string how =
+            "the launcher's; made for 1.5 by " + o.addon + (o.venue.empty() ? ", no venue" : ", provides " + o.venue);
         swofty::log("[tracks] %s: stat id %lld (%s)", o.code.c_str(), static_cast<long long>(o.stat_id), how.c_str());
     }
 }
@@ -294,8 +295,9 @@ public:
             record += t.kind == Kind::record;
         }
         report.lines.push_back("base: " + std::to_string(b.tracks.size()) + " track(s) (" + std::to_string(record) + " record, " +
-                               std::to_string(older) + " made for 1.5), " + std::to_string(b.dormant.size()) + " dormant row(s), " +
-                               std::to_string(b.venues.size()) + " of " + std::to_string(venues.size()) + " venue(s) provided");
+                               std::to_string(older) + " made for 1.5), " + std::to_string(b.dormant.size()) +
+                               " dormant row(s), " + std::to_string(b.venues.size()) + " of " + std::to_string(venues.size()) +
+                               " venue(s) provided");
         Base &live = base();
         live.tracks = std::move(b.tracks);
         live.dormant = std::move(b.dormant);

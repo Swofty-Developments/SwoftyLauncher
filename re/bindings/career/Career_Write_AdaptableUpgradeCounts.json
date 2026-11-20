@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Write_AdaptableUpgradeCounts",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14350d740",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Write_AdaptableUpgradeCounts(void * self,int64_t *a2)",
+  "evidence": "decomp:re/decomp/14350d740.c;xref:0x14350d725;xref:0x14350f574",
+  "notes": "myteam-g1: Writes num_adaptable_upgrades / num_adapted_upgrades / percentage_upgrades_that_can_be_adapted array."
+ },
+ "signature": {
+  "id": "career.write_adaptable_upgrade_counts",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 D6 48 89 CB 48 8B 3A 48 C7 44 24 28 00 00 00 00 4C 8B 05 ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 4C 8D 4C 24 28 48 89 F1 E8 ?? ?? ?? ?? 85 C0 0F 85",
+  "match": "0x14350d740",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14350d740",
+  "kind": "func_start",
+  "names": [
+   "Career_Write_AdaptableUpgradeCounts"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x14350d740",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14350d740.c;xref:0x14350d725",
+   "notes": "V10267 Writes season_restrictions array with season_index, percentage_upgrades_that_can_be_adapted, num_adapted_upgrades, num_adaptable_upgrades."
+  }
+ ],
+ "proofs": []
+}

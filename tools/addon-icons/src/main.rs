@@ -1,11 +1,11 @@
-// addon-icons <out.bc7> <in.svg>...: the ADDON SETTINGS tile icons (packages/core/src/ui/icons.rs), one 144 px
+// addon-icons <out.bc7> <in.svg>...: the ADDON SETTINGS tile icons (packages/core/src/games/f1_25/ui/icons.rs), one 144 px
 // BC7 slice per SVG in order, drawn like the game's settings category icons: white, alpha fading from 202 at
 // the glyph's top to 102 at its bottom, the glyph fitted to 110 px. Writes a preview of each over dark grey
 // next to the output (<out>.<n>.png).
 //
-//   cargo run --release --manifest-path tools/addon-icons/Cargo.toml -- packages/core/src/ui/icons.bc7 \
-//       packages/core/src/ui/icons/swoftymod.svg packages/core/src/ui/icons/simplified.svg \
-//       packages/core/src/ui/icons/addon.svg
+//   cargo run --release --manifest-path tools/addon-icons/Cargo.toml -- packages/core/src/games/f1_25/ui/icons.bc7 \
+//       packages/core/src/games/f1_25/ui/icons/swoftymod.svg packages/core/src/games/f1_25/ui/icons/simplified.svg \
+//       packages/core/src/games/f1_25/ui/icons/addon.svg
 use resvg::{tiny_skia, usvg};
 
 const SIZE: u32 = 144;

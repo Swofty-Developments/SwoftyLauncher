@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2_CreateSrvBuffer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b73720",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b73720.c;xref:0x14014f98f",
+  "notes": "Creates a Render_Gfx2Buffer_Construct buffer used as SRV (string-pool name, registered via 0x143a181d0, VRAM query 0x1439cadd0). Callers Game_Read_RendererGfxConfig, 0x140153140."
+ },
+ "signature": {
+  "id": "render.gfx2_create_srv_buffer",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 81 EC A8 00 00 00 48 89 CE 8B AC",
+  "match": "0x143b73720",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b73720",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2_CreateSrvBuffer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143b73720",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b73720.c;xref:0x14014f98f",
+   "notes": "V7774 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

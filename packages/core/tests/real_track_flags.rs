@@ -2,7 +2,7 @@ use std::path::{Path, PathBuf};
 
 use swofty_core::activation::place::track_group;
 use swofty_core::activation::ui::{MapUi, UiBuild, build_ui};
-use swofty_core::map::TrackPackage;
+use swofty_core::content::track_package::TrackPackage;
 use swofty_formats::erp::{Entry, Erp, ErpFile, Resource};
 use swofty_formats::pkg::{Node, Pkg, Val};
 
@@ -100,7 +100,7 @@ fn build(game: &Path, pkg: &TrackPackage, dir: &Path, db: Option<&Path>, cache: 
         dir,
         asset_group: track_group("flagtest", "flagtest"),
     }];
-    build_ui(&maps, &resolve, cache).unwrap()
+    build_ui(&maps, &resolve, cache, &swofty_formats::erp::Packer::default()).unwrap()
 }
 
 #[test]
@@ -151,7 +151,7 @@ fn a_flag_list_longer_than_its_array_pads_the_array() {
 #[test]
 fn an_addon_with_its_own_track_pictures_leaves_the_built_menus() {
     use swofty_core::asset::Source;
-    use swofty_core::erpbuild::ErpBuild;
+    use swofty_core::erp::ErpBuild;
     use swofty_core::ops::ErpOp;
     let Some(game) = std::env::var_os("F1_25_DIR").map(PathBuf::from) else {
         eprintln!("F1_25_DIR is not set; skipping");
@@ -221,7 +221,13 @@ fn an_addon_with_its_own_track_pictures_leaves_the_built_menus() {
         asset_group: track_group("kepttest", "kepttest"),
     }];
     let resolve = |rel: &str| game.join(rel);
-    let built = build_ui(&maps, &resolve, &out.join("cache")).unwrap();
+    let built = build_ui(
+        &maps,
+        &resolve,
+        &out.join("cache"),
+        &swofty_formats::erp::Packer::default(),
+    )
+    .unwrap();
 
     let addon = out.join("addon");
     std::fs::create_dir_all(&addon).unwrap();

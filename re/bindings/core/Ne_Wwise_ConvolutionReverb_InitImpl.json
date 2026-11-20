@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Wwise_ConvolutionReverb_InitImpl",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144caf430",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_Wwise_ConvolutionReverb_InitImpl(void *fx, uint32_t a2, uint32_t a3)",
+  "evidence": "decomp:re/decomp/144caf430.c;xref:0x144cadb8b",
+  "notes": "myteam-g2: Wwise AkConvolutionReverbFX init/allocation code (source path AkConvolutionReverbFX.cpp). Generic audio plugin code; unrelated to My Team."
+ },
+ "signature": {
+  "id": "core.wwise_convolution_reverb_init_impl",
+  "section": ".xtls",
+  "pattern": "48 89 5C 24 08 48 89 6C 24 10 48 89 74 24 18 57 48 83 EC 20 48 8B E9 0F B6 F2",
+  "match": "0x144caf430",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144caf430",
+  "kind": "func_start",
+  "names": [
+   "Ne_Wwise_ConvolutionReverb_InitImpl"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x144caf430",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144caf430.c;xref:0x144cadb8b",
+   "notes": "V10367 AkConvolutionReverbFX.cpp source path; Wwise code."
+  }
+ ],
+ "proofs": []
+}

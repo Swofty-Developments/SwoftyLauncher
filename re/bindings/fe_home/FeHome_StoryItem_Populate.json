@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "FeHome_StoryItem_Populate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14172e6e0",
+  "level": "L2",
+  "subsystem": "fe_home",
+  "proto": "-",
+  "evidence": "decomp:work/exe/decomp/14172e6e0_item_story_populate.c;xref:0x145704c10;pat:vt_FeHome_StoryItem-slot4;decomp:re/decomp/14172e6e0.c",
+  "notes": "Braking Point item populate"
+ },
+ "signature": {
+  "id": "fe_home.story_item_populate",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 C5 F8 29 B4 24 D0 00 00 00 48 89 CE E8",
+  "match": "0x14172e6e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14172e6e0",
+  "kind": "func_start",
+  "names": [
+   "FeHome_StoryItem_Populate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "m1-verify",
+   "kind": "func",
+   "item": "FeHome_StoryItem_Populate",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14172e6e0.c;xref:0x145704c10",
+   "notes": "V2261 vtable slot at 0x145704c10; strings lng_mode_story, lng_mode_story_description, lng_chapter_%d, lng_epilogue, session_data, team, difficulty"
+  }
+ ],
+ "proofs": []
+}

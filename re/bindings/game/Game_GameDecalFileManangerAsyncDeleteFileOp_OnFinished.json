@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameDecalFileManangerAsyncDeleteFileOp_OnFinished",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141434c30",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "str:s_GameDecalFileMananger_AsyncDeleteFileOp_OnFinished;xref:0x141434ca0",
+  "notes": "cxx=game::GameDecalFileMananger::AsyncDeleteFileOp::onFinished; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "game.game_decal_file_mananger_async_delete_file_op_on_finished",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 80 3D ?? ?? ?? ?? 01 75 6C B8 54 01",
+  "match": "0x141434c30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141434c30",
+  "kind": "func_start",
+  "names": [
+   "Game_GameDecalFileManangerAsyncDeleteFileOp_OnFinished"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141434c30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141434c30.c",
+   "notes": "V4861 name/description match decomp: strings and callees consistent (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

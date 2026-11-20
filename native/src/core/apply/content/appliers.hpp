@@ -1,10 +1,10 @@
 #pragma once
 
-#include "box_options.hpp"
-#include "race_fuel.hpp"
+#include "core/apply/content/box_options.hpp"
+#include "core/apply/content/race_fuel.hpp"
 
 #include <cstdint>
-#include "../../box_grid_logic.hpp"
+#include "core/boxes/box_grid_logic.hpp"
 
 #include <cstdint>
 #include <optional>
@@ -14,6 +14,8 @@
 namespace swofty_core::apply::content {
 
 void register_appliers();
+// Starts the boot expansion ahead on a worker once the database load is hooked; SWOFTY_BOOT_AHEAD=0 turns it off.
+void start_boot_ahead();
 void undress_teams(const char *why);
 
 // The DRS group the box with this entrant list runs: the label of its content.package's rules.drs group if the

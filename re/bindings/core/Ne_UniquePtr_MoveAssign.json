@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_UniquePtr_MoveAssign",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ce9fa0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143ce9fa0.c;xref:0x143d88874",
+  "notes": "Move-assign for a {allocator, owned object} unique-ptr pair: steals param_2[1], destroys the previously owned object through its virtual dtor (vcall +8) and frees it with allocator vcall +0x38, then copies the allocator. Caller Game_Rtt_CreateScenes (x2)."
+ },
+ "signature": {
+  "id": "core.unique_ptr_move_assign",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 9C 24 B8 00 00 00 48 85 DB 74 24 4C 8B B4 24 B0 00",
+  "match": "0x143d88874",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143ce9fa0",
+  "kind": "func_start",
+  "names": [
+   "Ne_UniquePtr_MoveAssign"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x143ce9fa0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ce9fa0.c;xref:0x143d88874",
+   "notes": "V8150 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

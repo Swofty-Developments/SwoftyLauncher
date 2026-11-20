@@ -7,38 +7,18 @@
 
 use std::path::{Path, PathBuf};
 
-/// Modules of this crate that don't decide what a build writes.
+/// Paths under `src` that don't decide what a build writes. The build fails when one is gone, so the
+/// list cannot drift from the tree.
 const UNRELATED: &[&str] = &[
-    "addon_storage.rs",
-    "app_control.rs",
     "catalog",
-    "compat.rs",
-    "crash.rs",
-    "disk.rs",
-    "ea_app.rs",
-    "install.rs",
-    "journal.rs",
-    "known_problems.rs",
-    "launch.rs",
-    "loader_check.rs",
-    "mpauth.rs",
-    "multiplayer",
-    "offline.rs",
-    "overlay_guard.rs",
-    "process.rs",
-    "quarantine.rs",
-    "recovery.rs",
-    "save_backup.rs",
-    "saves.rs",
-    "send_logs",
-    "session.rs",
-    "setup.rs",
-    "steam_client.rs",
-    "stock.rs",
-    "update.rs",
-    "updater.rs",
-    "usage.rs",
-    "vault",
+    "diagnostics",
+    "install",
+    "online/modules",
+    "online/timetrial",
+    "session",
+    "games/f1_25/loader_check",
+    "games/f1_25/offline",
+    "games/f1_25/testsuite",
 ];
 
 /// Files outside the source trees that the build embeds.
@@ -53,18 +33,17 @@ const DATA: &[&str] = &[
     "../../re/db/ui/loader_rules.json",
 ];
 
-fn files(dir: &Path, skip: &[&str], out: &mut Vec<PathBuf>) {
+fn files(dir: &Path, skip: &[PathBuf], out: &mut Vec<PathBuf>) {
     let Ok(entries) = std::fs::read_dir(dir) else {
         return;
     };
     for e in entries.flatten() {
         let path = e.path();
-        let name = e.file_name().to_string_lossy().into_owned();
-        if skip.contains(&name.as_str()) {
+        if skip.contains(&path) {
             continue;
         }
         if path.is_dir() {
-            files(&path, &[], out);
+            files(&path, skip, out);
         } else {
             out.push(path);
         }
@@ -101,7 +80,15 @@ fn fnv(hash: &mut u64, bytes: &[u8]) {
 fn main() {
     let root = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").expect("set by cargo"));
     let mut paths = Vec::new();
-    files(&root.join("src"), UNRELATED, &mut paths);
+    let skip: Vec<PathBuf> = UNRELATED.iter().map(|p| root.join("src").join(p)).collect();
+    for p in &skip {
+        assert!(
+            p.exists(),
+            "{} is listed as unrelated to builds and is gone",
+            p.display()
+        );
+    }
+    files(&root.join("src"), &skip, &mut paths);
     for krate in ["../formats/src", "../addon-api/src"] {
         files(&root.join(krate), &[], &mut paths);
     }

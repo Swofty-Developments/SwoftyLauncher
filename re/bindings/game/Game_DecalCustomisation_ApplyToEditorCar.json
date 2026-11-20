@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DecalCustomisation_ApplyToEditorCar",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141428e60",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141428e60.c;xref:0x14142c84c",
+  "notes": "Gets the editor car via Game_DecalCustomisation_GetEditorCarObject and, when the decal flag is set and param_3, scans this+0x178.. entries for the matching asset id (obj+0x68) to apply decals. Callers 0x14142c6f0, 0x14142d290, 0x14142d630."
+ },
+ "signature": {
+  "id": "game.decal_customisation_apply_to_editor_car",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 68 44 89 C5 48",
+  "match": "0x141428e60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141428e60",
+  "kind": "func_start",
+  "names": [
+   "Game_DecalCustomisation_ApplyToEditorCar"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x141428e60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141428e60.c;xref:0x14142c84c",
+   "notes": "V8032 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

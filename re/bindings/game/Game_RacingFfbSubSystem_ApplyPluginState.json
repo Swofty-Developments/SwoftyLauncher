@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RacingFfbSubSystem_ApplyPluginState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446f83f0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-FFB_DEBUG",
+  "notes": "named from its log messages (channel FFB_DEBUG): 'RacingFFBSubSystem - applying plugin state change %d -> %d | RacingFFBSubSystem - applying plugin state change - stoping FFB effects | RacingFFBSubSystem - applying plugin state change - resuming FFB '"
+ },
+ "signature": {
+  "id": "game.racing_ffb_sub_system_apply_plugin_state",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 80 B9 C9 02 00 00 00",
+  "match": "0x1446f83f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446f83f0",
+  "kind": "func_start",
+  "names": [
+   "Game_RacingFfbSubSystem_ApplyPluginState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446f83f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446f83f0.c",
+   "notes": "V6857 Plugin state change strings confirmed. (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

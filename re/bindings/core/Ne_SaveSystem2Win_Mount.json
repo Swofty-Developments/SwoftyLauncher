@@ -1,0 +1,73 @@
+{
+ "schema": 1,
+ "name": "Ne_SaveSystem2Win_Mount",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144145650",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint32_t Ne_SaveSystem2Win_Mount(void *device, void *op, void *save, uint8_t for_saving, uint8_t a5, uint8_t *created)",
+  "evidence": "pat:log-channel-NeSaveSystem2Win;decomp:re/decomp/144145650.c;xref:0x14413f1c4,0x144152290;kb:subsystems/core.md#save-sandbox",
+  "notes": "named from its log messages (channel NeSaveSystem2Win): 'Mount save requested for '%s': forSaving=%d, saveExists=%d Callers: census steam 0x4145650. | Mount target is '%s' | Mounting saves in directory '%S' | Mount save result: 0x%x | %s | Copy files requested from '%s' to '%s' | Copy file'"
+ },
+ "signature": {
+  "id": "core.save_system2_win_mount",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 28 17 00 00",
+  "match": "0x144145650",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144145650",
+  "kind": "func_start",
+  "names": [
+   "Ne_SaveSystem2Win_Mount"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/testing/save_sandbox.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "save-v3",
+   "kind": "func",
+   "item": "0x144145650",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144145650.c;decomp:re/decomp/14413ecd0.c;decomp:re/decomp/153102120.c;xref:0x14413f1c4,0x144152290",
+   "notes": "V1469 Only two callers (SelectAndLoad 0x14413f1c4, SaveSelected 0x144152290); no pointer or .data1 refs; the .data1 load body 0x153102120 reaches it only via SelectAndLoad. It is the only copy-in of a save's files (helper+0x108 GetFileCount/GetFileNameAndSize/FileRead). Note for the sandbox: BuildSaveInfoList runs before it on load/save and already reads each save's SECUINFO through helper+0x108 (ReadSaveIndex FileExists/GetFileSize/FileRead), and Enumerate (+0x18), the wipe (+0x78) and the corrupt upload (+0x58) never mount, so save_sandbox.cpp's 'before any file is read' overstates the second-line guard; the row's claims hold."
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "save-v3",
+   "kind": "sig",
+   "item": "core.save_system2_win_mount",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "pat:sigcheck-hits-1;decomp:re/decomp/144145650.c;xref:0x144145650",
+   "notes": "V1479 sigcheck on d873a1c8: exactly one match in .xtls at 0x144145650, func_start, target is the decompiled function."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "cb4-verify-a",
+   "kind": "func",
+   "item": "Ne_SaveSystem2Win_Mount",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144145650.c;xref:0x14413ecd0",
+   "notes": "V2245 Mount save log + target dir, backup dir, GetFileAttributesW, then Copy files (also in this function). Matches."
+  }
+ ],
+ "proofs": []
+}

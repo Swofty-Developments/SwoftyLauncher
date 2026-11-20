@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionMigrationManager_OnNewConnection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14308a620",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=GameSessionMigrationManager::onNewConnection; log channel NETWORK-MIGRATION: 'virtual void network::GameSessionMigrationManager::onNewConnection(neon::NeNetConnectionID) | %s(%d).'"
+ },
+ "signature": {
+  "id": "game.game_session_migration_manager_on_new_connection",
+  "section": ".xtls",
+  "pattern": "56 53 48 83 EC 28 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01 75 69 B8 84 00 00 00 48 8D 0D ?? ?? ?? ?? 8B 14 81 85 D2 74 56 81 FA 7A 2E 11 58 74 30 83 C0 19 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D 84 00 00 00 75 C3 EB 1E 44 0F B6 CB 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 89 F1 89 DA E8",
+  "match": "0x14308a620",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14308a620",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionMigrationManager_OnNewConnection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x14308a620",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14308a620.c",
+   "notes": "V5288 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PhysicsSystemComponent_Initialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1445914c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=PhysicsSystemComponent::initialise; log channel WARN: 'PhysicsSystemComponent::initialise [instance=\"%s\"] Physics system resource parameter has not been set'"
+ },
+ "signature": {
+  "id": "game.physics_system_component_initialise",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 80 02 00 00 4D 89 C6",
+  "match": "0x1445914c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445914c0",
+  "kind": "func_start",
+  "names": [
+   "Game_PhysicsSystemComponent_Initialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x1445914c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445914c0.c",
+   "notes": "V6684 name and log/strings match; body checked, no broader behaviour (vtable/indirect; no direct call site)"
+  }
+ ],
+ "proofs": []
+}

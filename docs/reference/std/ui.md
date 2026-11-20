@@ -151,7 +151,7 @@ To build tiles for the home screen, use these [Game API](/reference/game/) bindi
 - [`g_Vm_Registry`](/reference/game/vm#g_Vm_Registry): the view-model registry.
 - [`Ne_Make_StrFromCStr`](/reference/game/core#Ne_Make_StrFromCStr): makes an engine string.
 
-A tile is a `HomeItem`. Its virtual table has `populate` in slot 4 and `get_action` in slot 5; replace both for one tile with [`swofty::subclass`](./mixin#subclass). `get_action` returns an `Action` of type 1 whose `str` is the route to open. swofty_core's ADDON SETTINGS tile, from `native/src/core/swofty_core.cpp`:
+A tile is a `HomeItem`. Its virtual table has `populate` in slot 4 and `get_action` in slot 5; replace both for one tile with [`swofty::subclass`](./mixin#subclass). `get_action` returns an `Action` of type 1 whose `str` is the route to open. swofty_core's ADDON SETTINGS tile, from `native/src/core/frontend/home_tiles.cpp`:
 
 ```cpp
 #include <swofty/game.hpp>

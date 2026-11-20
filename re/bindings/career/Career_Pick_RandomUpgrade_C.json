@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Pick_RandomUpgrade_C",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435d06a0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t * Career_Pick_RandomUpgrade_C(uint64_t *self,void * a2,void * a3)",
+  "evidence": "decomp:re/decomp/1435d06a0.c;xref:0x143519670",
+  "notes": "myteam-g1: pickRandomUpgrade variant: filters candidate list (kind 3 or 8), picks index with RNG % count."
+ },
+ "signature": {
+  "id": "career.pick_random_upgrade_c",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 E8 2B 00 00",
+  "match": "0x1435d06a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435d06a0",
+  "kind": "func_start",
+  "names": [
+   "Career_Pick_RandomUpgrade_C"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x1435d06a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435d06a0.c;xref:0x143519670",
+   "notes": "V10302 Filters candidates with state byte 3 or 8, picks index random % count; strings pickRandomUpgrade."
+  }
+ ],
+ "proofs": []
+}

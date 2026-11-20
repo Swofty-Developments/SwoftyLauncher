@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_CustomisationDecalRenderer_Render",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c6e260",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/143c6e260.c;xref:0x1458e7518",
+  "notes": "cxx=NeCustomisationDecalRenderer::render; log channel CUSTOMISATION_DECALS: 'Abort drawcall in NeCustomisationDecalRenderer::render - Couldn't allocate SCB 'NeCustomisationDecalRenderer::render' into SCB in scene '%s''"
+ },
+ "signature": {
+  "id": "core.customisation_decal_renderer_render",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 0A 00 00 C5 78 29 BC 24 50 0A 00 00",
+  "match": "0x143c6e260",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c6e260",
+  "kind": "func_start",
+  "names": [
+   "Ne_CustomisationDecalRenderer_Render"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb2-verify-a",
+   "kind": "func",
+   "item": "Ne_CustomisationDecalRenderer_Render",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c6e260.c;xref:0x1458e7518",
+   "notes": "V2052 decal_indirect_placement/decal_customisation passes, SCB allocation abort logs; vtable slot"
+  }
+ ],
+ "proofs": []
+}

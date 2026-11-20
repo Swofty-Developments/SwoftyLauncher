@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_RenderSettingsConfig_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d222a0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: render_settings.default_gate_colour, render_settings.fade_enabled, render_settings.height, render_settings.near_fade_end, render_settings.near_fade_start, render_settings.original_width, render_settings.render_gates, render_settings.width_multiplier, render_settings.y_of'"
+ },
+ "signature": {
+  "id": "game.read_render_settings_config_2",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 05 00 00 C5 78 29 BC 24 E0 05 00 00 C5 78 29 B4 24 D0 05 00 00 C5 78 29 AC 24 C0 05 00 00 C5 78 29 A4 24 B0 05 00 00 C5 78 29 9C 24 A0 05 00 00 C5 78 29 94 24 90 05 00 00 C5 78 29 8C 24 80 05 00 00 C5 78 29 84 24 70 05 00 00 C5 F8 29 BC 24 60 05 00 00 C5 F8 29 B4 24 50 05 00 00 48 89 CE 48 8D 7C 24 30",
+  "match": "0x142d222a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d222a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_RenderSettingsConfig_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142d222a0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142d222a0.c",
+   "notes": "V5375 time-attack checkpoint timing (time_between_checkpoints,max/min_time) + gate render settings + VehiclePlacement ResolveTransform/PlaceOnSlot; better Game_TimeAttack_ReadCheckpointConfigAndPlace"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142d222a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d222a0.c",
+   "notes": "V6890 671 decomp lines, strings match current name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

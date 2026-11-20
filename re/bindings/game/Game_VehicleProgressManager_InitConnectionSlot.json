@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleProgressManager_InitConnectionSlot",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143267140",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143267140.c;xref:0x14582dbc8",
+  "notes": "onNewConnection(conn): refreshes machine ids and sends progress/authority state of all vehicles to the new connection (lookup 0x143089210). d8-verify (disagree with old reading): sends nothing; re-initialises the per-connection record [this+0x40]+0x160+conn*0x140 (name from 0x143089210, defaults 10000), sets per-vehicle slots to 0xffffffff, clears counter +0x1d8[conn]"
+ },
+ "signature": {
+  "id": "game.vehicle_progress_manager_on_new_connection",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 08 02 00 00 89 D3 48 89",
+  "match": "0x143267140",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143267140",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleProgressManager_InitConnectionSlot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

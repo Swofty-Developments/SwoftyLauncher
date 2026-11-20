@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_DeserialiseUpgradesEnd",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14353610f",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/143536000.c;xref:0x14353610f;doc:addons/rnd-tyres-thermal/native/HOOKS.md#the-fix-flag-instantiate_tyres_upgrades-default-on-install-time",
+  "notes": "lea rdx,[rip+..] after the per-tree restore in Career_Deserialise_Upgrades: rdi = Upgrades"
+ },
+ "signature": {
+  "id": "career.deserialise_upgrades_end",
+  "section": ".xtls",
+  "pattern": "85 C0 74 B6 E9 ?? ?? ?? ?? 48 8D 15",
+  "match": "0x143536106",
+  "anchor": "0x9",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14353610f",
+  "kind": "mid",
+  "expect": "48 8D 15 4B 14 31 02",
+  "names": [
+   "site_Career_DeserialiseUpgradesEnd"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-4",
+   "kind": "global",
+   "item": "site_Career_DeserialiseUpgradesEnd",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143536000.c;xref:0x143536016,0x143536042,0x14353604b,0x1435360c9,0x14353610f",
+   "notes": "V0185 lea rdx,[rip+0x231144b] at 0x14353610f joins the single-tree restore (jmp 0x143536042), the version<2 skip (jb 0x14353604b) and the end of the per-tree loop (jae 0x1435360c9); rdi = rcx Upgrades (only write 0x143536016); error returns (eax!=0) go to 0x1435367f5 and skip it; 7-byte window clean"
+  }
+ ],
+ "proofs": []
+}

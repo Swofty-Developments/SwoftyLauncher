@@ -1,18 +1,19 @@
-#include "../runtime.hpp"
+#include "core/runtime/runtime.hpp"
+#include "core/runtime/settings.hpp"
 
 #include <swofty/mixin.hpp>
 
-#include "../blackbox.hpp"
-#include "../perf.hpp"
-#include "core_events.hpp"
-#include "guard.hpp"
-#include "hooks.hpp"
+#include "core/diagnostics/crash/blackbox.hpp"
+#include "core/diagnostics/perf.hpp"
+#include "core/hooks/core_events.hpp"
+#include "core/hooks/guard.hpp"
+#include "core/hooks/hooks.hpp"
+#include "core/live/race_control.hpp"
+#include "core/live/tyre_damage.hpp"
 
 #include <mutex>
 #include <string>
 #include <vector>
-
-std::string settings_addon(const void *from, std::string &dll);
 
 namespace runtime {
 void crash_blame(const char *text);
@@ -23,7 +24,6 @@ std::string mixin_occupying(uintptr_t at);
 
 namespace swofty_core::hooks {
 namespace {
-
 
 std::mutex faults_lock;
 std::vector<FaultRecord> fault_list;
@@ -76,8 +76,8 @@ std::string module_at(uintptr_t a)
 std::string describe(DWORD code, uintptr_t at, const char *thrown = "")
 {
     if (code == guard::HANDLER_THREW)
-        return std::string("C++ exception") + (thrown && *thrown ? std::string(": ") + thrown : std::string()) +
-               " from " + module_at(at);
+        return std::string("C++ exception") + (thrown && *thrown ? std::string(": ") + thrown : std::string()) + " from " +
+               module_at(at);
     const char *what = code == EXCEPTION_ACCESS_VIOLATION                  ? "access violation"
                        : code == guard::MSVC_CXX || code == guard::GCC_CXX ? "C++ exception"
                        : code == EXCEPTION_ILLEGAL_INSTRUCTION             ? "illegal instruction"
@@ -96,8 +96,7 @@ void blame(const void *ctx, unsigned long code, uintptr_t at, const char *thrown
     auto *b = static_cast<const std::pair<const Handler *, const SwoftyHookCall *> *>(ctx);
     std::string what = describe(DWORD(code), at, thrown);
     std::string addon = b->first->addon.empty() ? std::string("the core") : b->first->addon;
-    std::string line = "Crash in " + addon + "'s " + catalogue::phase_name(b->second->phase) + " handler on " +
-                       b->second->point;
+    std::string line = "Crash in " + addon + "'s " + catalogue::phase_name(b->second->phase) + " handler on " + b->second->point;
     runtime::crash_blame((line + " (" + what + ")").c_str());
     blackbox::note("hooks", line.c_str(), (" (" + what + ")").c_str());
     swofty::log("[hooks] %s: %s; a before or replace handler that faults crashes the game", line.c_str(), what.c_str());
@@ -167,25 +166,23 @@ int put(const std::string &value, char *out, size_t cap, size_t *len)
     return SWOFTY_ASSET_OK;
 }
 
-std::string text(SwoftyText t)
-{
-    return t.data && t.size ? std::string(t.data, t.size) : std::string();
-}
+std::string text(SwoftyText t) { return t.data && t.size ? std::string(t.data, t.size) : std::string(); }
 
-int h_available()
-{
-    return runtime::enabled("events", nullptr) ? 1 : 0;
-}
+int h_available() { return runtime::enabled("events", nullptr) ? 1 : 0; }
 
 int h_live(const char *point, uint32_t *version)
 {
     if (!point)
         return SWOFTY_ASSET_INVALID;
-    return the_table().live(point, version);
+    int r = the_table().live(point, version);
+    if (r == SWOFTY_ASSET_OK && (swofty_core::live::race_control::fires(point) || swofty_core::live::tyre_damage::fires(point)) &&
+        !runtime::live_on())
+        return SWOFTY_ASSET_UNAVAILABLE;
+    return r;
 }
 
-int attach_from(const void *from, const char *point, uint32_t phase, int32_t priority, SwoftyText selectors,
-                SwoftyHookFn fn, void *user, uint32_t *token)
+int attach_from(const void *from, const char *point, uint32_t phase, int32_t priority, SwoftyText selectors, SwoftyHookFn fn,
+                void *user, uint32_t *token)
 {
     if (!runtime::enabled("events", nullptr))
         return SWOFTY_ASSET_UNAVAILABLE;
@@ -255,8 +252,8 @@ int h_context_in(const void *context, SwoftyText selectors, int *out)
     return the_table().context_in(context, text(selectors), out);
 }
 
-const SwoftyHooks hooks_table = {SWOFTY_HOOKS_VERSION, h_available, h_live,   h_attach,     h_detach,  h_define,
-                                 h_fire,               h_attach_in, h_define_in, h_context, h_context_in};
+const SwoftyHooks hooks_table = {SWOFTY_HOOKS_VERSION, h_available, h_live,    h_attach,    h_detach, h_define, h_fire,
+                                 h_attach_in,          h_define_in, h_context, h_context_in};
 
 const char *mode_of(int64_t m)
 {
@@ -265,20 +262,11 @@ const char *mode_of(int64_t m)
 
 }
 
-const SwoftyHooks *table()
-{
-    return &hooks_table;
-}
+const SwoftyHooks *table() { return &hooks_table; }
 
-std::string describe_fault(unsigned long code, uintptr_t at, const char *what)
-{
-    return describe(DWORD(code), at, what);
-}
+std::string describe_fault(unsigned long code, uintptr_t at, const char *what) { return describe(DWORD(code), at, what); }
 
-Table &core()
-{
-    return the_table();
-}
+Table &core() { return the_table(); }
 
 GameOps game_ops()
 {
@@ -352,6 +340,8 @@ void bridge_legacy(const char *event, int64_t a, int64_t b, const void *data)
         events::session_lap(uint32_t(a));
         return;
     }
+    if (id == "session.flag")
+        return; // race control fires the typed session.flag itself (core/live/race_control.cpp)
     fire_shell(e->id);
     if (id == "career.unloaded")
         update_facts([](Facts &f) {
@@ -366,7 +356,4 @@ void bridge_legacy(const char *event, int64_t a, int64_t b, const void *data)
 
 }
 
-extern "C" __declspec(dllexport) const SwoftyHooks *SwoftyCoreHooks(void)
-{
-    return swofty_core::hooks::table();
-}
+extern "C" __declspec(dllexport) const SwoftyHooks *SwoftyCoreHooks(void) { return swofty_core::hooks::table(); }

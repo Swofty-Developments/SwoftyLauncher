@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkVoice_SetChatPermissions",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14403e810",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name setChatPermissions (class from the log channel); log channel NETWORK-VOICE: '%s: allow communication with connection #%d on channel #%u...'"
+ },
+ "signature": {
+  "id": "game.network_voice_set_chat_permissions",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 48 89 CE 48 8D 44 24 58",
+  "match": "0x14403e810",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14403e810",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkVoice_SetChatPermissions"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x14403e810",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14403e810.c;xref:0x14403e3ca",
+   "notes": "V6430 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

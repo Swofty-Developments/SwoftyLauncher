@@ -1,0 +1,88 @@
+{
+  "about": "A lap from a session that placed no integrity module, driven with no timing marks sent: no timing. It is lap 3: the plugin discarded lap 2, which keeps its number, so lap numbers have gaps.",
+  "answer": {
+    "body": {
+      "best": false,
+      "id": "7d0c2a91be55f013",
+      "rank": 5,
+      "status": "accepted",
+      "total": 40
+    },
+    "status": 200
+  },
+  "request": {
+    "body": {
+      "multipart": [
+        {
+          "content_type": "application/json",
+          "json": {
+            "fingerprint": {
+              "addons": [
+                {
+                  "id": "swofty.core",
+                  "source": "core",
+                  "version": "1.10.0"
+                },
+                {
+                  "id": "swofty.std",
+                  "source": "builtin",
+                  "version": "1.10.0"
+                }
+              ],
+              "digest": "c2b0a649b668c0b17420d1fcf15a73b92e5d55f03c46bd38095d2a3f1d5ec549",
+              "game_build": "46009bd3c0de46009bd3c0de46009bd3c0de46009bd3c0de46009bd3c0de4600",
+              "launcher": "<launcher>"
+            },
+            "gzip": true,
+            "integrity": {
+              "detail": "couldn't reach the server: timeout: global",
+              "source": null,
+              "state": "fetch_failed",
+              "version": null
+            },
+            "launcher": "<launcher>",
+            "os": "<os>",
+            "session": "5e5510b0c0de5e5510b0c0de5e5510b0"
+          },
+          "name": "meta"
+        },
+        {
+          "content_type": "application/octet-stream",
+          "file_name": "lap.swlap.gz",
+          "gzip_of_swlap": {
+            "header": {
+              "board": {
+                "content": "game/f1_2025",
+                "track": "bahrain",
+                "weather": "dry"
+              },
+              "core": "1.10.0",
+              "format": 1,
+              "lap": {
+                "lap_index": 3,
+                "sectors_ms": [
+                  28411,
+                  30609,
+                  32214
+                ],
+                "time_ms": 90870,
+                "valid": true
+              },
+              "nonce": "5e5510b0c0de5e5510b0c0de5e5510b0"
+            }
+          },
+          "name": "lap"
+        }
+      ]
+    },
+    "headers": {
+      "accept": "*/*",
+      "accept-encoding": "gzip",
+      "authorization": "Bearer <token>",
+      "content-type": "multipart/form-data; boundary=<boundary>",
+      "user-agent": "swofty-launcher"
+    },
+    "method": "POST",
+    "path": "/v1/tt/laps"
+  }
+}

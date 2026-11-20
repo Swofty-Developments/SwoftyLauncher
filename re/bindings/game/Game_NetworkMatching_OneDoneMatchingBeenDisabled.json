@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkMatching_OneDoneMatchingBeenDisabled",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1431588e0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-MATCHING",
+  "notes": "named from its log messages (channel NETWORK-MATCHING): 'One-And-Done Matching has been disabled'"
+ },
+ "signature": {
+  "id": "game.network_matching_one_done_matching_been_disabled",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 80 79 40 00 0F 84 ?? ?? ?? ?? 48 89 CE",
+  "match": "0x1431588e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1431588e0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkMatching_OneDoneMatchingBeenDisabled"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x1431588e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1431588e0.c",
+   "notes": "V5988 One-And-Done weekend evaluation: disabled / more sessions / end of last / no active weekend. Better: Game_NetworkMatching_OneAndDoneEvaluateWeekend; vtable/indirect"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x1431588e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1431588e0.c",
+   "notes": "V6997 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

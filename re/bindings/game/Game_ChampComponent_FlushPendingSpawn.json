@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ChampComponent_FlushPendingSpawn",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140b7a8c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140b7a8c0.c;xref:0x142d52b99,0x142dad7aa",
+  "notes": "For eligible session types (type < 0x11, mask 0x1e73e) spawns the pending entity (+0x2a0 world, +0x2b0 prefab, +0x2b8 slot) with its transform components (0x146cc20a8/0x146cc39d8) via 0x144534390, clears +0x2a8, stops async job +0x2d0 and posts message 0x145688bc8. Callers Sess_Loader_RequestCareerHubUnload, Sess_StartLightsSync_MustAdvance."
+ },
+ "signature": {
+  "id": "game.champ_component_flush_pending_spawn",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC 80 00 00 00 C5 F8 29 74 24 70 48 89 CE 48 8B 89 78 02 00 00 48 8B",
+  "match": "0x140b7a8c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140b7a8c0",
+  "kind": "func_start",
+  "names": [
+   "Game_ChampComponent_FlushPendingSpawn"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x140b7a8c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140b7a8c0.c;xref:0x142d52b99",
+   "notes": "V3852 session type [..+0x1030 vcall +0xa0]+8 <0x11 and mask 0x1e73e, pending entity +0x2a0/+0x2a8/+0x2b0; caller Sess_Loader_RequestCareerHubUnload seen"
+  }
+ ],
+ "proofs": []
+}

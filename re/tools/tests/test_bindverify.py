@@ -93,6 +93,17 @@ class Synthetic(unittest.TestCase):
         r = self.run_one(img, binding('Fn', match='0x1100', expect='E8'))
         self.assertEqual((r['result'], r['method'], r['reason']), ('unresolved', '-', 'expect bytes differ'))
 
+    def test_a_live_verdict_stands_in_for_expect_bytes_under_the_cores_hook(self):
+        img = self.image(pe({'.xtls': (0x1000, CODE, page((0x100, FUNC)))}))
+        b = binding('Fn', match='0x1100', expect='E8')
+        line = '[bind] id=Fn build=ea pass=init result=resolved method=scan matches=1 rva=0x1100 match=0x1100 verified=yes'
+        proven = bindverify.live_verified([line, 'unrelated'])
+        self.assertEqual(proven, {'Fn': 0x1100})
+        self.assertEqual(bindverify.Resolver(img, doc(b)).run()[0]['reason'], 'expect bytes differ')
+        self.assertEqual(bindverify.Resolver(img, doc(b), live_verified=proven).run()[0]['result'], 'resolved')
+        other = {'Fn': 0x1200}
+        self.assertEqual(bindverify.Resolver(img, doc(b), live_verified=other).run()[0]['result'], 'unresolved')
+
     def test_rel32_and_riprel(self):
         call = b'\xE8' + struct.pack('<i', 0x400 - 0x105) + FUNC
         lea = b'\x48\x8D\x05' + struct.pack('<i', 0x2010 - 0x1207) + FUNC
@@ -166,6 +177,46 @@ class Synthetic(unittest.TestCase):
         odd = bindverify.compare(ref, d, ref_res, moved, d, bindverify.verify(moved, d))
         self.assertEqual([i for i, _ in odd], ['site_X'])
 
+    def test_compare_reads_a_protector_thunk_by_its_relocated_body(self):
+        body = b'\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x20\x48\x8B\xF9\xE8\x10\x20\x30\x40' + bytes(range(14))
+        other = bytes(range(100, 132))
+
+        def build(filler, to):
+            jmp = b'\xE9' + struct.pack('<i', 0x2000 + 0x400 - (0x1000 + 0x100 + 5))
+            code = page((0x0F0, filler), (0x100, jmp + FUNC), (0x100 + 5 + len(FUNC), filler))
+            return self.image(pe({'.xtls': (0x1000, CODE, code), '.data1': (0x2000, RWX, page((0x400, to)))}))
+        b = binding('Fn_Thunk', pattern='E9 ?? ?? ?? ?? ' + PATTERN)
+        d = doc(b)
+        ref = build(bytes(range(16)), body)
+        moved_filler, other_body = build(bytes(range(200, 216)), body), build(bytes(range(200, 216)), other)
+        ref_res = bindverify.verify(ref, d)
+        self.assertEqual(bindverify.compare(ref, d, ref_res, moved_filler, d, bindverify.verify(moved_filler, d)), [])
+        odd = bindverify.compare(ref, d, ref_res, other_body, d, bindverify.verify(other_body, d))
+        self.assertEqual([i for i, _ in odd], ['Fn_Thunk'])
+        self.assertIn('thunk body', odd[0][1])
+
+    def test_compare_reads_an_override_at_a_caller_by_the_code_it_reaches(self):
+        stub = b'\x48\x83\xEC\x28\xE8\x00\x01\x00\x00\xCC\xCC\xCC\xCC\xCC\xCC\xCC'
+        other = bytes(range(16))
+        caller = b'\x49\x8B\x4C\x24\x50\xE8' + struct.pack('<i', 0x800 - 0x30A) + b'\x48\x8B\x5C\x24\x30\x90'
+
+        def build(at_stub):
+            code = page((0x2F0, bytes(range(140, 156))), (0x300, caller), (0x310, bytes(range(120, 136))),
+                        (0x800, at_stub))
+            return self.image(pe({'.xtls': (0x1000, CODE, code)}))
+        ref_d = doc(binding('Fn'))
+        ref_d['bindings'][0]['pattern'] = '48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC'
+        ea_b = binding('Fn', pattern='49 8B 4C 24 50 E8 ?? ?? ?? ?? 48 8B 5C 24 30', anchor=6,
+                       resolve={'kind': 'rel32', 'insn': 5})
+        ref = self.image(pe({'.xtls': (0x1000, CODE, page((0x500, bytes(range(60, 76))), (0x510, stub),
+                                                          (0x520, bytes(range(80, 96)))))}))
+        ref_res = bindverify.verify(ref, ref_d)
+        same, moved = build(stub), build(other)
+        self.assertEqual(bindverify.compare(ref, ref_d, ref_res, same, doc(ea_b), bindverify.verify(same, doc(ea_b))), [])
+        odd = bindverify.compare(ref, ref_d, ref_res, moved, doc(ea_b), bindverify.verify(moved, doc(ea_b)))
+        self.assertEqual([i for i, _ in odd], ['Fn'])
+        self.assertIn('code at the target', odd[0][1])
+
 
 def resolves(r, method, hinted):
     if r['id'] in hinted:
@@ -173,7 +224,8 @@ def resolves(r, method, hinted):
     return r['result'] == 'resolved'
 
 
-SAME_FUNCTION_DIFFERENT_BYTES = {'Ne_Log_Thunk', 'g_Ne_LogGate', 'g_Vm_Registry'}
+SAME_FUNCTION_DIFFERENT_BYTES = {'Ne_Log_Thunk', 'g_Ne_LogGate', 'g_Vm_Registry', 'FeTile_ItemBase_Slot78_Thunk',
+                                 'Game_HandleUserEntitlementsUpdateTask_OnChildDone'}
 
 
 @unittest.skipUnless(os.environ.get('SWOFTY_STEAM_EXE'), 'set SWOFTY_STEAM_EXE to the KB build F1_25.exe')
@@ -208,6 +260,111 @@ class EaDump(unittest.TestCase):
         steam, sd = bindverify.Image(os.environ['SWOFTY_STEAM_EXE']), bindverify.gen_set('steam')
         odd = bindverify.compare(steam, sd, bindverify.verify(steam, sd), ea, d, bindverify.verify(ea, d))
         self.assertEqual([i for i, _ in odd if i not in SAME_FUNCTION_DIFFERENT_BYTES], [])
+
+
+
+HOOK_SPAN = 0x10000000
+
+
+def hooked_at(img, rva):
+    """A jmp from rva into memory past the image end, where a dump taken with the core running holds its hooks."""
+    if not img.readable(rva, 5) or img.mem[rva] != 0xE9:
+        return False
+    return img.size <= rva + 5 + img.i32(rva + 1) < img.size + HOOK_SPAN
+
+
+def same_code(a, b):
+    """Equal bytes, except the rel32 of a call or jmp that both hold at the same place."""
+    i = 0
+    while i < len(a):
+        if a[i] != b[i]:
+            return False
+        i += 5 if a[i] in (0xE8, 0xE9) and i + 5 <= len(a) else 1
+    return True
+
+
+def why_it_differs(img, ref, b, r, rr):
+    """Why a binding that compare() flags still lands on the reference build's code, or None."""
+    t, rt = r['target'], rr['target']
+    m = r['match'] if r['match'] is not None else t
+    spots = {t, m} | set(range(m, m + len(b['pattern'].split())))
+    if img.readable(t, 5) and img.mem[t] == 0xE8:
+        spots.add(t + 5 + img.i32(t + 1))
+    if any(hooked_at(img, s) for s in spots):
+        return 'a live hook of the core'
+    call = ref.readable(rt, 5) and ref.mem[rt] == 0xE8
+    if same_code(img.read(t - 12, 12), ref.read(rt - 12, 12)) or \
+            (img.read(t + 5, 11) == ref.read(rt + 5, 11) if call else img.read(t, 16) == ref.read(rt, 16)):
+        return 'the same code at the target'
+    return None
+
+
+@unittest.skipUnless(os.environ.get('SWOFTY_EA_145_DUMP'), 'set SWOFTY_EA_145_DUMP to a decrypted EA 1.0.145 image dump')
+class Ea145Dump(unittest.TestCase):
+    """The EA 1.0.145 dump was taken with the core running, so some code holds its hooks."""
+
+    def test_every_binding_resolves_by_hint_and_by_scan(self):
+        img = bindverify.Image(os.environ['SWOFTY_EA_145_DUMP'])
+        d = bindverify.gen_set_for(img)
+        self.assertTrue(img.flat)
+        self.assertEqual(d['build']['pe_timestamp'], img.stamp)
+        hinted = {b['id'] for b in d['bindings'] if b.get('match')}
+        for kb_first, method in ((True, 'hint'), (False, 'scan')):
+            res = bindverify.Resolver(img, d, d['build']['size'], kb_first=kb_first).run()
+            bad = [(r['id'], r['result'], r['reason']) for r in res
+                   if r['result'] != 'unresolvable' and not resolves(r, method, hinted)]
+            self.assertEqual(bad, [], method)
+
+    @unittest.skipUnless(os.environ.get('SWOFTY_STEAM_145_EXE'), 'set SWOFTY_STEAM_145_EXE to compare with Steam 1.0.145')
+    def test_every_binding_lands_on_the_steam_1_0_145_code(self):
+        ea = bindverify.Image(os.environ['SWOFTY_EA_145_DUMP'])
+        d = bindverify.gen_set_for(ea)
+        steam = bindverify.Image(os.environ['SWOFTY_STEAM_145_EXE'])
+        sd = bindverify.gen_set_for(steam)
+        er, sr = bindverify.verify(ea, d), bindverify.verify(steam, sd)
+        mine = {b['id']: (b, r) for b, r in zip(d['bindings'], er)}
+        ref = {b['id']: r for b, r in zip(sd['bindings'], sr)}
+        odd = [(i, why) for i, why in bindverify.compare(steam, sd, sr, ea, d, er)
+               if i not in SAME_FUNCTION_DIFFERENT_BYTES and why_it_differs(ea, steam, *mine[i], ref[i]) is None]
+        self.assertEqual(odd, [])
+
+
+class FakeSection:
+    def __init__(self, name):
+        self.name = name
+
+
+class FakePort:
+    def section_of(self, rva):
+        return FakeSection('.tls$') if rva < 0x100000 else FakeSection('.trace') if rva < 0x200000 else None
+
+
+MARKS = [(0x1000, 0x900, 'A', '.tls$'), (0x3000, 0x2900, 'B', '.tls$'), (0x5000, 0x4800, 'C', '.tls$'),
+         (0x101000, 0x100000, 'D', '.trace'), (0x103000, 0x102000, 'E', '.trace')]
+
+
+class KbTwin(unittest.TestCase):
+    def twin(self, rva):
+        return bindverify.kb_twin(FakePort(), 'port', rva, MARKS)
+
+    def test_between_two_bindings_that_moved_alike(self):
+        kb, why = self.twin(0x2000)
+        self.assertEqual((kb, why['how'], why['shift'], why['below'], why['above']), (0x1900, 'neighbours', 0x700, 'A', 'B'))
+
+    def test_a_bound_address_is_its_binding(self):
+        self.assertEqual(self.twin(0x3000)[0], 0x2900)
+
+    def test_neighbours_that_moved_differently_give_no_twin(self):
+        kb, why = self.twin(0x4000)
+        self.assertIsNone(kb)
+        self.assertIn('moved by different amounts', why)
+
+    def test_neighbours_come_from_the_same_section(self):
+        self.assertEqual(self.twin(0x102000)[0], 0x101000)
+        kb, why = self.twin(0x6000)
+        self.assertIsNone(kb)
+        self.assertIn('no binding above', why)
+        self.assertIn('no section', self.twin(0x300000)[1])
 
 
 if __name__ == '__main__':

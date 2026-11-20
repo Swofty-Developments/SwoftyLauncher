@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_UINodeBase_ParentVisible",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14423a040",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/14423a040.c;xref:0x144227817,0x144276ab8,0x1442a55b8,0x151778c65",
+  "notes": "cxx=NeUINodeBase::parentVisible; log channel UI_latency: '***** Frame:%I64u NeUINodeBase::parentVisible: %hs->%hs Node:%hs'"
+ },
+ "signature": {
+  "id": "core.ui_node_base_parent_visible",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 0F B6 41 08",
+  "match": "0x14423a040",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14423a040",
+  "kind": "func_start",
+  "names": [
+   "Ne_UINodeBase_ParentVisible"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb4-verify-b",
+   "kind": "func",
+   "item": "Ne_UINodeBase_ParentVisible",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14423a040.c;xref:0x14423a040",
+   "notes": "V2202 setParentVisible(bool): bit4 flag at +8, same dispatch as visible"
+  }
+ ],
+ "proofs": []
+}

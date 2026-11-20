@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TrackExtraYacht_Initialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140269c10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140269c10.c;xref:0x145606740",
+  "notes": "Track extras cutscene initialise: setLocation('yacht') with fallback location 'SafetyCar', spawns man_on_yacht_working_01/_02, start offset reset. Plays as track-side vignette (Register_Cutscenes table). Track mod: the track needs locator 'yacht' or the vignette falls back to the SafetyCar locator; hook to skip on custom tracks. Vt slot 0x145606740. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3143)"
+ },
+ "signature": {
+  "id": "game.track_extra_yacht_initialise",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 90 01 00 00 C5 F8",
+  "match": "0x140269c10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140269c10",
+  "kind": "func_start",
+  "names": [
+   "Game_TrackExtraYacht_Initialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d13-verify",
+   "kind": "func",
+   "item": "Game_TrackExtraYacht_Initialise",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140269c10.c;xref:0x145606740",
+   "notes": "V3143 role/offsets/strings confirmed in decomp (INIT pattern calls thunks 140240410/140240700 -> alt copy 147562600 of advanceStartTimeOffset)"
+  }
+ ],
+ "proofs": []
+}

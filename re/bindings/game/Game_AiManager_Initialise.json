@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_AiManager_Initialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1405fe750",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1405fe750.c;xref:0x1456341f8",
+  "notes": "Module slot 3 of vt 0x1456341e0 (11 = Sess_Build_AiSystem): allocates the 0x238-byte AI manager state and 0x108-byte worker (critical section), creates 'ai_manager_jobs' queue with default job policy (POLICY log). | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3178)"
+ },
+ "signature": {
+  "id": "game.ai_manager_initialise",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 CE 48 8B 0D ?? ?? ?? ?? 48 8B 01 48 8D 15 ?? ?? ?? ?? FF 50 08 48 89 46 20 48 8B",
+  "match": "0x1405fe750",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1405fe750",
+  "kind": "func_start",
+  "names": [
+   "Game_AiManager_Initialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d14-verify",
+   "kind": "func",
+   "item": "Game_AiManager_Initialise",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/405fe750.c;xref:None",
+   "notes": "V3178 offsets, vtable slot/callers, strings and calls checked in decomp; claim holds"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "trkb2-verify",
+   "kind": "func",
+   "item": "0x1405fe750",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 1405feab6-1405febc6,1407e5b4b-1407e5bfa;xref:none",
+   "notes": "V11125 0x100 alloc from [mgr+0x10], +8=[mgr+0x10] value, +0xe8 16B from 0x14562f1d0 'AIBrakeSettings', final vt 0x145638da0/+0x10 0x145638e10, stored mgr+0xb8; 0x145638da0[12]=0x14066c2d0; 1407e5b55 'AI_SYSTEM' heap -> obj+0x10, obj vt 0x1456341e0"
+  }
+ ],
+ "proofs": []
+}

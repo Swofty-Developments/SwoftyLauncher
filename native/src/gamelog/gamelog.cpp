@@ -9,7 +9,7 @@
 #include <vector>
 #include <swofty/game.hpp>
 #include <swofty/mixin.hpp>
-#include "../core/json.hpp"
+#include "core/runtime/json.hpp"
 
 extern "C" _invalid_parameter_handler __cdecl _set_thread_local_invalid_parameter_handler(_invalid_parameter_handler);
 
@@ -43,11 +43,10 @@ const char *const ROUTE_ERRORS[] = {
 };
 
 const char *const ERROR_WORDS[] = {"error", "fail", "assert", "fatal", "exception", "crash"};
-const char *const WARN_WORDS[] = {"warn",       "invalid",   "missing",     "unable",    "can't",         "cannot",
-                                  "could not",  "couldn't",  "not found",   "not exist", "doesn't exist", "unknown",
-                                  "unexpected", "mismatch",  "corrupt",     "timed out", "timeout",       "overflow",
-                                  "no such",    "not supported", "unsupported", "ignor", "skipping",      "too many",
-                                  "rejected",   "refused",   "denied"};
+const char *const WARN_WORDS[] = {
+    "warn",      "invalid",       "missing",     "unable",     "can't",    "cannot",   "could not", "couldn't", "not found",
+    "not exist", "doesn't exist", "unknown",     "unexpected", "mismatch", "corrupt",  "timed out", "timeout",  "overflow",
+    "no such",   "not supported", "unsupported", "ignor",      "skipping", "too many", "rejected",  "refused",  "denied"};
 
 struct Rule {
     std::string glob;
@@ -165,10 +164,7 @@ Level parse_level(std::string s, Level def)
     return def;
 }
 
-const char *level_name(Level l)
-{
-    return l == L_INFO ? "info" : l == L_WARN ? "warn" : l == L_ERROR ? "error" : "off";
-}
+const char *level_name(Level l) { return l == L_INFO ? "info" : l == L_WARN ? "warn" : l == L_ERROR ? "error" : "off"; }
 
 void parse_rules(const std::string &spec)
 {
@@ -376,10 +372,7 @@ uint32_t exe_stamp()
     return nt->FileHeader.TimeDateStamp;
 }
 
-size_t gate_slot(uint32_t h, size_t i)
-{
-    return (h % GATE_SLOTS + (13 + h % 13) * i) % GATE_SLOTS;
-}
+size_t gate_slot(uint32_t h, size_t i) { return (h % GATE_SLOTS + (13 + h % 13) * i) % GATE_SLOTS; }
 
 bool has_hash(const NeLogGate *gate, uint32_t h)
 {
@@ -477,9 +470,8 @@ void perf_report()
     if (calls != calls0)
         swofty::log("[perf] gamelog: %llu call(s) on open channels in the last 10 s (%.0f/s): %llu written, %llu over the "
                     "repeat cap, %llu over the rate limit",
-                    (unsigned long long)(calls - calls0), double(calls - calls0) / 10.0,
-                    (unsigned long long)(written - written0), (unsigned long long)(repeat - repeat0),
-                    (unsigned long long)(rate - rate0));
+                    (unsigned long long)(calls - calls0), double(calls - calls0) / 10.0, (unsigned long long)(written - written0),
+                    (unsigned long long)(repeat - repeat0), (unsigned long long)(rate - rate0));
     calls0 = calls, written0 = written, repeat0 = repeat, rate0 = rate;
 }
 
@@ -514,8 +506,8 @@ bool check()
     active = cfg.level != L_OFF;
     swofty::log("[gamelog] game log to loader.log: %s (level %s, from %s), channels '%s', %u line(s)/s, %u repeat(s) per "
                 "format, cap %u line(s)",
-                active ? "on" : "off", level_name(cfg.level), cfg.source.c_str(), cfg.channels.c_str(), cfg.rate,
-                cfg.repeat, cfg.max_lines);
+                active ? "on" : "off", level_name(cfg.level), cfg.source.c_str(), cfg.channels.c_str(), cfg.rate, cfg.repeat,
+                cfg.max_lines);
     return true;
 }
 
@@ -553,8 +545,7 @@ SWOFTY_OVERWRITE(0, Ne_Log_Thunk, void, const char *channel, const char *fmt, ..
     format(text, sizeof text, fmt, ap);
     va_end(ap);
     perf_written.fetch_add(1, std::memory_order_relaxed);
-    swofty::log("[game] %s%s: %s", channel, level == L_ERROR ? " (error)" : level == L_WARN ? " (warn)" : "",
-                text);
+    swofty::log("[game] %s%s: %s", channel, level == L_ERROR ? " (error)" : level == L_WARN ? " (warn)" : "", text);
 }
 
 SWOFTY_SITE(site_Ne_Format_String_Entry, swofty::Context &c)

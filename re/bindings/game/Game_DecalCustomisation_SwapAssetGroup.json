@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_DecalCustomisation_SwapAssetGroup",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14142e7f0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-CUSTOMISATION_DECALS",
+  "notes": "named from its log messages (channel CUSTOMISATION_DECALS): 'Asset group triggerAssetGroupSwap() | Service for id %I64d is deactivated, removing from GameDecalCustomisationSystem | Vehicle %d; Advanced generation state by %d states'"
+ },
+ "signature": {
+  "id": "game.decal_customisation_swap_asset_group",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 01 00 00 C5 F8 29 B4 24 00 01 00 00 49 89 D6 48 89 CE",
+  "match": "0x14142e7f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14142e7f0",
+  "kind": "func_start",
+  "names": [
+   "Game_DecalCustomisation_SwapAssetGroup"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x14142e7f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14142e7f0.c",
+   "notes": "V4857 Whole body is the decal-customisation system Update(dt): pending file processing, per-service update (calls 0x141435170 x5), removes deactivated services; asset group swap log is one branch. Better: Game_GameDecalCustomisationSystem_Update (vtable/indirect, no direct call site)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x14142e7f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14142e7f0.c",
+   "notes": "V7201 name fits; finding facts hold; vtable/indirect (no direct call)"
+  }
+ ],
+ "proofs": []
+}

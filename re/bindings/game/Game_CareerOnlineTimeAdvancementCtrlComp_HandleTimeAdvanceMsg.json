@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerOnlineTimeAdvancementCtrlComp_HandleTimeAdvanceMsg",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ffa6f0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "str:s_Championship_CareerOnlineTimeAdvancementControllerComponent_HandleTime;xref:0x140ffa7a6",
+  "notes": "cxx=game::championship::CareerOnlineTimeAdvancementControllerComponent::handleTimeAdvanceMessage; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "game.career_online_time_advancement_ctrl_comp_handle_time_advance_msg",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 50 48 89 D6 80 3D ?? ?? ?? ?? 01 0F",
+  "match": "0x140ffa6f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ffa6f0",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerOnlineTimeAdvancementCtrlComp_HandleTimeAdvanceMsg"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x140ffa6f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ffa6f0.c;xref:0x140ffa24d",
+   "notes": "V4529 name and quoted log strings/pretty-function present in body"
+  }
+ ],
+ "proofs": []
+}

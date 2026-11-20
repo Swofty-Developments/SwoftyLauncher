@@ -5,10 +5,12 @@
 // globals, the car list and the slot/owner/handle checks, decoding and re-encoding (the key is kept, the
 // plain half changes), range refusals (steering lock, differential, fuel over capacity, NaN), writes off
 // the flow thread, a car without a system, cars::live::cars/get/set/scale/is_ai through the table, and the builds
-// the operations run on (car_build_for).
-// run_car_live_test.sh builds and runs it.
-#include "../../src/core/hooks/car_live.hpp"
-#include "../../src/core/hooks/player_facts.hpp"
+// the builds the operations, points and levers run on (car_proofs.hpp, runtime/car_layout.hpp).
+// native/test/run_tests.sh car_live builds and runs it.
+#include "core/hooks/car_live.hpp"
+#include "core/hooks/car_proofs.hpp"
+#include "core/hooks/player_facts.hpp"
+#include "core/runtime/build_proof.hpp"
 
 #include <swofty/systems/cars.hpp>
 
@@ -33,8 +35,8 @@ using Ops = cl::Ops<Tag>;
 
 static constexpr int CARS = 3;
 alignas(16) static uint8_t car_mem[CARS][0x600];
-alignas(16) static uint8_t steering[CARS][0x100], gearbox[CARS][0x700], diff[CARS][0x100], turbo[CARS][0x310],
-    tank[CARS][0x110], wing[CARS][0xc8], susp[CARS][0x140], engine[CARS][0x8c0];
+alignas(16) static uint8_t steering[CARS][0x100], gearbox[CARS][0x700], diff[CARS][0x100], turbo[CARS][0x310], tank[CARS][0x110],
+    wing[CARS][0xc8], susp[CARS][0x140], engine[CARS][0x8c0];
 static uintptr_t table[32];
 static uint32_t count;
 static bool flow = true;
@@ -147,8 +149,7 @@ static void core_ops()
 
     expect(Ops::op_get(0, nullptr, SWOFTY_CAR_STEERING_LOCK, &v) == SWOFTY_ASSET_OK && std::fabs(v - 0.34034f) < 1e-6f,
            "steering lock decodes the XOR pair");
-    expect(Ops::op_get(1, car_mem[1], SWOFTY_CAR_SUSP_FRONT_DAMAGE_SCALE, &v) == SWOFTY_ASSET_OK &&
-               std::fabs(v - 0.001f) < 1e-9f,
+    expect(Ops::op_get(1, car_mem[1], SWOFTY_CAR_SUSP_FRONT_DAMAGE_SCALE, &v) == SWOFTY_ASSET_OK && std::fabs(v - 0.001f) < 1e-9f,
            "suspension front damage scale decodes with the handle checked");
     expect(Ops::op_get(0, nullptr, SWOFTY_CAR_CLUTCH_TORQUE, &v) == SWOFTY_ASSET_OK && v == 1.5f, "clutch torque plain");
     expect(Ops::op_get(0, nullptr, 200, &v) == SWOFTY_ASSET_INVALID, "an unknown field is invalid");
@@ -165,14 +166,12 @@ static void core_ops()
     expect(Ops::op_set(0, nullptr, SWOFTY_CAR_STEERING_LOCK, 2.0f) == SWOFTY_ASSET_INVALID &&
                Ops::op_set(0, nullptr, SWOFTY_CAR_STEERING_LOCK, 0.0f) == SWOFTY_ASSET_INVALID,
            "steering lock outside 0.01 .. pi/2 is refused");
-    expect(Ops::op_set(0, nullptr, SWOFTY_CAR_DIFF_ON_THROTTLE, 1.2f) == SWOFTY_ASSET_INVALID &&
-               plain(diff[0], 0xf0) == 0.5f,
+    expect(Ops::op_set(0, nullptr, SWOFTY_CAR_DIFF_ON_THROTTLE, 1.2f) == SWOFTY_ASSET_INVALID && plain(diff[0], 0xf0) == 0.5f,
            "differential above 1 is refused and untouched");
     expect(Ops::op_set(0, nullptr, SWOFTY_CAR_DIFF_OFF_THROTTLE, 0.3f) == SWOFTY_ASSET_OK && plain(diff[0], 0xec) == 0.3f,
            "differential off throttle written plain");
     expect(Ops::op_set(0, nullptr, SWOFTY_CAR_WING_DAMAGE_SCALE, NAN) == SWOFTY_ASSET_INVALID, "NaN is refused");
-    expect(Ops::op_set(0, nullptr, SWOFTY_CAR_FUEL_MASS, 120.0f) == SWOFTY_ASSET_INVALID &&
-               plain(tank[0], 0x100) == 100.0f,
+    expect(Ops::op_set(0, nullptr, SWOFTY_CAR_FUEL_MASS, 120.0f) == SWOFTY_ASSET_INVALID && plain(tank[0], 0x100) == 100.0f,
            "fuel over the tank's capacity is refused");
     expect(Ops::op_set(0, nullptr, SWOFTY_CAR_FUEL_MASS, 50.0f) == SWOFTY_ASSET_OK && plain(tank[0], 0x100) == 50.0f,
            "fuel within capacity is written");
@@ -306,8 +305,7 @@ static void gear_ratios()
                (at<uint32_t>(gearbox[0], 0x28) ^ 0x0f0f0f0fu) == bits(4.9f),
            "with setup ratios on the handling ratios would be ignored: unavailable, nothing written");
     gearbox[0][cl::GEARBOX_USE_SETUP_RATIOS] = 0;
-    expect(Ops::op_set(0, nullptr, SWOFTY_CAR_GEAR_RATIO_1, 0.0f) == SWOFTY_ASSET_INVALID,
-           "a zero ratio is invalid");
+    expect(Ops::op_set(0, nullptr, SWOFTY_CAR_GEAR_RATIO_1, 0.0f) == SWOFTY_ASSET_INVALID, "a zero ratio is invalid");
 }
 
 alignas(16) static uint8_t aero[CARS][0x1a10], brake[CARS][0x2210], chassis[CARS][0x200], suspension[CARS][0xd8],
@@ -363,8 +361,7 @@ static void v2_fields()
                 expect(false, std::string("duplicate field ") + cl::FIELDS[i].name);
     float v = 0;
     expect(Ops::op_get(0, nullptr, SWOFTY_CAR_AERO_LIFT_SCALE, &v) == SWOFTY_ASSET_OK && v == 1.0f &&
-               Ops::op_set(0, nullptr, SWOFTY_CAR_AERO_DRAG_SCALE, 0.96f) == SWOFTY_ASSET_OK &&
-               plain(aero[0], 0x19a0) == 0.96f,
+               Ops::op_set(0, nullptr, SWOFTY_CAR_AERO_DRAG_SCALE, 0.96f) == SWOFTY_ASSET_OK && plain(aero[0], 0x19a0) == 0.96f,
            "the aero scales are plain floats at +0x19a4 and +0x19a0 of F1Aero");
     expect(Ops::op_get(0, nullptr, SWOFTY_CAR_AERO_SLIPSTREAM_DRAG, &v) == SWOFTY_ASSET_OK && std::fabs(v - 0.65f) < 1e-6f &&
                Ops::op_set(0, nullptr, SWOFTY_CAR_AERO_SLIPSTREAM_DRAG, 0.6f) == SWOFTY_ASSET_OK &&
@@ -401,7 +398,13 @@ static void v2_fields()
     Ops::bind(std::move(e));
     expect(Ops::op_set(0, nullptr, SWOFTY_CAR_CHASSIS_BALLAST_KG, 20.0f) == SWOFTY_ASSET_OK &&
                (at<uint32_t>(chassis[0], 0x28) ^ 0x31415926u) == bits(820.0f) &&
-               std::fabs(std::sqrt(820.0f) - [] { uint32_t b = at<uint32_t>(chassis[0], 0x98) ^ 0x27182818u; float f; memcpy(&f, &b, 4); return f; }()) < 1e-4f &&
+               std::fabs(std::sqrt(820.0f) -
+                         [] {
+                             uint32_t b = at<uint32_t>(chassis[0], 0x98) ^ 0x27182818u;
+                             float f;
+                             memcpy(&f, &b, 4);
+                             return f;
+                         }()) < 1e-4f &&
                chassis_reset_on == reinterpret_cast<uintptr_t>(chassis[0]) && chassis_flags == 0x208,
            "ballast adds to the VTF mass, writes its square root and runs the chassis reset with 0x208");
     expect(Ops::op_get(0, nullptr, SWOFTY_CAR_CHASSIS_BALLAST_KG, &v) == SWOFTY_ASSET_OK && std::fabs(v - 20.0f) < 1e-3f,
@@ -419,7 +422,8 @@ static void v2_layers()
     Ops::bind(make_env());
     float v = 0;
     uint32_t a = 0, b = 0, c = 0;
-    expect(Ops::op_layer("one", SWOFTY_CAR_ALL, SWOFTY_CAR_AERO_LIFT_SCALE, SWOFTY_CAR_OP_SCALE, 0.5f, 0, &a) == SWOFTY_ASSET_OK &&
+    expect(Ops::op_layer("one", SWOFTY_CAR_ALL, SWOFTY_CAR_AERO_LIFT_SCALE, SWOFTY_CAR_OP_SCALE, 0.5f, 0, &a) ==
+                   SWOFTY_ASSET_OK &&
                plain(aero[0], 0x19a4) == 0.5f && plain(aero[1], 0x19a4) == 0.5f && plain(aero[2], 0x19a4) == 0.5f,
            "a layer for all cars applies at once on the flow thread");
     Ops::flush();
@@ -440,7 +444,8 @@ static void v2_layers()
     for (auto &p : Ops::take())
         Ops::apply_car(p.index);
     expect(plain(aero[0], 0x19a4) == 0.5f, "after car.reset the layers are applied again to the game's value");
-    expect(Ops::op_unlayer(a) == SWOFTY_ASSET_OK && plain(aero[0], 0x19a4) == 1.0f && std::fabs(plain(aero[1], 0x19a4) - 2.1f) < 1e-6f,
+    expect(Ops::op_unlayer(a) == SWOFTY_ASSET_OK && plain(aero[0], 0x19a4) == 1.0f &&
+               std::fabs(plain(aero[1], 0x19a4) - 2.1f) < 1e-6f,
            "unlayer restores a car with no layer left and recomposes the others");
     expect(Ops::op_unlayer(a) == SWOFTY_ASSET_INVALID, "an unknown token is invalid");
     Ops::drop_owner("one", SWOFTY_CAR_ALL);
@@ -497,7 +502,8 @@ static void v2_virtual()
     expect(std::fabs(Ops::drive_torque(eng, 100.0f, 1000.0f, 1371.8f) - 120.0f) < 1e-3f &&
                std::fabs(Ops::drive_torque(reinterpret_cast<uintptr_t>(engine[0]), 100.0f, 1000.0f, 1371.8f) - 97.25f) < 1e-3f,
            "a layer for one car does not reach the others, and the higher priority set wins");
-    expect(Ops::op_set(0, nullptr, SWOFTY_CAR_ENGINE_POWER_SCALE, 9.0f) == SWOFTY_ASSET_INVALID, "power scale above 4 is refused");
+    expect(Ops::op_set(0, nullptr, SWOFTY_CAR_ENGINE_POWER_SCALE, 9.0f) == SWOFTY_ASSET_INVALID,
+           "power scale above 4 is refused");
     expect(std::fabs(cl::shaped_torque(100.0f, 1300.0f, 1371.8f, 1.0f, 300.0f) - 100.0f) < 1e-4f,
            "a positive limiter offset changes nothing");
     Ops::drop_owner("profile", SWOFTY_CAR_ALL);
@@ -526,10 +532,12 @@ static void v2_gating()
                Ops::op_layer("x", SWOFTY_CAR_ALL, SWOFTY_CAR_AI_GRIP_SCALE, SWOFTY_CAR_OP_SET, 0.5f, 0, nullptr) ==
                    SWOFTY_ASSET_UNAVAILABLE,
            "a layer on an off field is unavailable, and AI grip stays off until its site row is verified");
-    expect(Ops::op_layer("x", SWOFTY_CAR_ALL, SWOFTY_CAR_AERO_DRAG_SCALE, SWOFTY_CAR_OP_SET, 0.9f, 0, nullptr) == SWOFTY_ASSET_OK &&
+    expect(Ops::op_layer("x", SWOFTY_CAR_ALL, SWOFTY_CAR_AERO_DRAG_SCALE, SWOFTY_CAR_OP_SET, 0.9f, 0, nullptr) ==
+                   SWOFTY_ASSET_OK &&
                plain(aero[0], 0x19a0) == 0.9f,
            "the other fields keep working");
-    expect(Ops::op_refit_tyres(0, "F1_1990") == SWOFTY_ASSET_UNAVAILABLE && Ops::op_refit_tyres(0, "bad name") == SWOFTY_ASSET_INVALID &&
+    expect(Ops::op_refit_tyres(0, "F1_1990") == SWOFTY_ASSET_UNAVAILABLE &&
+               Ops::op_refit_tyres(0, "bad name") == SWOFTY_ASSET_INVALID &&
                Ops::op_refit_tyres(0, nullptr) == SWOFTY_ASSET_INVALID,
            "refit_tyres is unavailable without its rows and refuses a bad group name");
 }
@@ -553,7 +561,8 @@ static void v2_refit()
     refitted = 0;
     expect(Ops::op_refit_tyres(2, "F1_1990") == SWOFTY_ASSET_UNAVAILABLE && !refitted,
            "a car without a tyre component is unavailable and nothing is written");
-    expect(Ops::op_refit_tyres(0, "ThisGroupNameIsFarTooLongForTheStringXX") == SWOFTY_ASSET_INVALID, "a name past 31 characters is invalid");
+    expect(Ops::op_refit_tyres(0, "ThisGroupNameIsFarTooLongForTheStringXX") == SWOFTY_ASSET_INVALID,
+           "a name past 31 characters is invalid");
 }
 
 alignas(16) static uint8_t ecu[CARS][0x170];
@@ -632,19 +641,21 @@ static void v3_fuel()
     Ops::unlock_tick();
     expect(writes == 1 && at<uint32_t>(avail_mem, cl::MODE_AVAIL_FUEL + 1 * cl::MODE_AVAIL_STRIDE + 8) == 0,
            "only the entry the game relocked is written");
-    expect(Ops::op_unlock_fuel_mixes("a", 0) == SWOFTY_ASSET_OK && Ops::unlocked_mask() == 0, "withdrawing the mask stops the writes");
+    expect(Ops::op_unlock_fuel_mixes("a", 0) == SWOFTY_ASSET_OK && Ops::unlocked_mask() == 0,
+           "withdrawing the mask stops the writes");
 
     expect(SWOFTY_CAR_OPS_VERSION >= 4 && Ops::table.version >= 4 && Ops::table.set_fuel_mix == Ops::op_set_fuel_mix,
            "the op table offers set_fuel_mix from version 4");
     calls.clear();
     memset(avail_mem, 0xff, sizeof avail_mem);
-    for (uint32_t m : { 0u, 1u })
+    for (uint32_t m : {0u, 1u})
         memset(avail_mem + cl::MODE_AVAIL_FUEL + m * 4, 0, 4);
     at<int32_t>(ecu[0], cl::FUEL_ECU_MODE) = 0;
     expect(Ops::op_set_fuel_mix(0, 4) == SWOFTY_ASSET_INVALID && Ops::op_set_fuel_mix(0, 0xffffffffu) == SWOFTY_ASSET_INVALID,
            "a mode above 3 is invalid");
     expect(Ops::op_set_fuel_mix(CARS, 1) != SWOFTY_ASSET_OK, "an unknown car is refused");
-    expect(Ops::op_set_fuel_mix(0, 2) == SWOFTY_ASSET_INVALID && calls.empty(), "a mix the MFD does not offer is refused untouched");
+    expect(Ops::op_set_fuel_mix(0, 2) == SWOFTY_ASSET_INVALID && calls.empty(),
+           "a mix the MFD does not offer is refused untouched");
     expect(Ops::op_set_fuel_mix(0, 1) == SWOFTY_ASSET_OK && calls.size() == 1 &&
                calls[0] == std::make_pair(reinterpret_cast<uintptr_t>(ecu[0]), 1),
            "an offered mix goes through the game's mode switch");
@@ -685,7 +696,8 @@ static void replay_frames()
         for (int c = 0; c < CARS; c++)
             Ops::replayed(reinterpret_cast<uintptr_t>(car_mem[c]) + cl::CAR_LOADER, 0.75f);
         auto batch = Ops::take_frame();
-        expect(batch.size() == size_t(CARS) && batch[0].progress == 0.75f, "a replay frame queues each car once, with its last progress");
+        expect(batch.size() == size_t(CARS) && batch[0].progress == 0.75f,
+               "a replay frame queues each car once, with its last progress");
         for (auto &p : batch)
             Ops::apply_car(p.index);
     }
@@ -747,8 +759,10 @@ static void player_facts_control()
     control_modes[2] = 0;
 
     auto built = hk::player_facts::sync<Ops>(cache, f, fake_control);
-    expect(built && built->player && built->player->car == 2, "a table with every is_ai flag clear takes the car the controller calls human");
-    expect(built && built->participants[0].human == false && built->participants[2].human, "a flagged car under an AI controller is not human");
+    expect(built && built->player && built->player->car == 2,
+           "a table with every is_ai flag clear takes the car the controller calls human");
+    expect(built && built->participants[0].human == false && built->participants[2].human,
+           "a flagged car under an AI controller is not human");
 
     hk::player_facts::Cache fresh;
     control_answer = SWOFTY_ASSET_LATE;
@@ -824,16 +838,37 @@ static void player_facts_sync()
 
 static void car_builds()
 {
-    const cl::CarBuild *kb = cl::car_build_for(1789118616u, 0x193e6000u);
-    expect(kb && kb->mode_avail_rva == 0x606ec28, "the KB build runs with g_Game_EngineModeAvail at 0x606ec28");
-    expect(!cl::car_build_for(1789118616u, 0x5000000u), "the KB stamp on a packed image is off");
-    const cl::CarBuild *steam = cl::car_build_for(1794312636u, 0x18434000u);
-    expect(steam && steam->mode_avail_rva == 0x6070c28, "Steam 26566308 runs with g_Game_EngineModeAvail at 0x6070c28");
-    const cl::CarBuild *ea = cl::car_build_for(1794315435u, 0x1615e000u);
-    expect(ea && ea->mode_avail_rva == 0x61a7968, "EA 1.0.145 runs with g_Game_EngineModeAvail at 0x61a7968");
-    expect(!cl::car_build_for(1794312636u, 0x1615e000u), "a known stamp with another image size is off");
-    expect(!cl::car_build_for(1789128892u, 0x155dc000u), "the unchecked EA KB-version build is off");
-    expect(!cl::car_build_for(0, 0), "an unknown build is off");
+    namespace bp = runtime::build_proof;
+    namespace cp = swofty_core::hooks::car_proofs;
+    namespace layout = runtime::car_layout;
+    auto all = [](const char *) { return true; };
+    auto runs = [&](bp::Exe exe) {
+        bp::Build b = bp::identify(exe);
+        bool points = bool(bp::check(cp::POINTS, b, all)), ops = bool(bp::check(cp::OPERATIONS, b, all)),
+             levers = bool(bp::check(cp::LEVERS, b, all));
+        expect(points == ops && ops == levers, "the car points, operations and levers run on the same builds");
+        return ops ? b : bp::Build::unknown;
+    };
+    bp::Build kb = runs({1789118616u, 0x193e6000u});
+    expect(kb == bp::Build::kb && layout::mode_avail_rva(kb) == 0x606ec28,
+           "the KB build runs with g_Game_EngineModeAvail at 0x606ec28");
+    expect(runs({1789118616u, 0x5000000u}) == bp::Build::unknown, "the KB stamp on a packed image is off");
+    bp::Build steam = runs({1794312636u, 0x18434000u});
+    expect(steam == bp::Build::steam_1_0_145 && layout::mode_avail_rva(steam) == 0x6070c28,
+           "Steam 26566308 runs with g_Game_EngineModeAvail at 0x6070c28");
+    bp::Build ea = runs({1794315435u, 0x1615e000u});
+    expect(ea == bp::Build::ea_1_0_145 && layout::mode_avail_rva(ea) == 0x61a7968,
+           "EA 1.0.145 runs with g_Game_EngineModeAvail at 0x61a7968");
+    expect(runs({1794312636u, 0x1615e000u}) == bp::Build::unknown, "a known stamp with another image size is off");
+    expect(runs({1789128892u, 0x155dc000u}) == bp::Build::unknown, "the unchecked EA KB-version build is off");
+    expect(runs({0, 0}) == bp::Build::unknown, "an unknown build is off");
+    expect(!layout::mode_avail_rva(bp::Build::ea) && !layout::mode_avail_rva(bp::Build::unknown),
+           "no g_Game_EngineModeAvail address where the operations do not run");
+    expect(bool(bp::check(cp::OPERATIONS, bp::Build::kb, [](const char *) { return false; })),
+           "the gates name no binding: a binding the operations need refuses by its own line");
+    expect(std::strcmp(cp::log_name(kb), "Steam KB") == 0 && std::strcmp(cp::log_name(steam), "Steam 26566308") == 0 &&
+               std::strcmp(cp::log_name(ea), "EA 1.0.145") == 0 && !cp::log_name(bp::Build::ea),
+           "the operations' log line names the build as it has since 1.9.74");
 }
 
 int main()

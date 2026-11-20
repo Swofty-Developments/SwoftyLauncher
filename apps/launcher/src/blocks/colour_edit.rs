@@ -1,13 +1,13 @@
 use std::rc::Rc;
 
-use crate::scale::px;
+use crate::ui::scale::px;
 use gpui_kit::*;
 use serde_json::Value;
 use swofty_core::view::colour_hex;
 
 use super::state::*;
-use crate::colour::{ColourEvent, ColourPicker};
 use crate::shell::Shell;
+use crate::ui::colour_picker::{ColourEvent, ColourPicker};
 
 impl Shell {
     pub(super) fn colour_shown(&self, key: &str, cx: &App) -> Option<[u8; 3]> {

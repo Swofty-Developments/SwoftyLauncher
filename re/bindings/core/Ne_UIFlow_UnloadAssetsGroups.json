@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_UIFlow_UnloadAssetsGroups",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14416c1c0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/14416c1c0.c;xref:0x14385530f,0x1438555e7,0x158ad613f",
+  "notes": "cxx=NeUIFlow::unloadAssetsGroups; log channel UI_ASSETS: 'NeUIFlow::unloadAssetsGroups Unload AssetGroup=%hs'"
+ },
+ "signature": {
+  "id": "core.ui_flow_unload_assets_groups",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 50 48 89 CE 48 8B 02 48 89 81 D0 01 00 00",
+  "match": "0x14416c1c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14416c1c0",
+  "kind": "func_start",
+  "names": [
+   "Ne_UIFlow_UnloadAssetsGroups"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb4-verify-a",
+   "kind": "func",
+   "item": "Ne_UIFlow_UnloadAssetsGroups",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14416c1c0.c;xref:0x143854570",
+   "notes": "V2254 Stores completion callback; if group loaded, starts unload with callback assetGroupPreUnloaded (14421a8b0); log string UI_ASSETS."
+  }
+ ],
+ "proofs": []
+}

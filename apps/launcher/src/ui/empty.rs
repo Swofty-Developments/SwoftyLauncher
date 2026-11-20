@@ -3,9 +3,9 @@ use gpui_kit::component::v_flex;
 use gpui_kit::*;
 
 use super::tokens::{space, text};
-use crate::pages::badge;
-use crate::scale::px;
-use crate::theme::palette;
+use crate::ui::badge;
+use crate::ui::scale::px;
+use crate::ui::theme::palette;
 
 /// The centred icon, title, text and optional action shown when a page has nothing.
 #[derive(IntoElement)]

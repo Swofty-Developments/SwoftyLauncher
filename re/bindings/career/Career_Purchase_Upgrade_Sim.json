@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Purchase_Upgrade_Sim",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143521a70",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Purchase_Upgrade_Sim(void * self)",
+  "evidence": "decomp:re/decomp/143521a70.c;xref:0x14123abd7",
+  "notes": "myteam-g1: UPGRADES/R purchaseUpgrade (simulated-team path): seeded RNG per team (hash 0x1145aa78) walks candidate upgrades, Career_Get_TeamModifiers."
+ },
+ "signature": {
+  "id": "career.purchase_upgrade_sim",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 08 17 00 00",
+  "match": "0x143521a70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143521a70",
+  "kind": "func_start",
+  "names": [
+   "Career_Purchase_Upgrade_Sim"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x143521a70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143521a70.c;xref:0x14123abd7",
+   "notes": "V10286 Strings UPGRADES/R, purchaseUpgrade, randVal; seed XOR 0x1145aa78 present."
+  }
+ ],
+ "proofs": []
+}

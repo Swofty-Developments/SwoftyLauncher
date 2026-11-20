@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Career_Create_SeasonWeekend",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ae6050",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_Create_SeasonWeekend(void *season, uint64_t index, uint8_t track, const char *name)",
+  "evidence": "decomp:re/decomp/140ae6050.c;xref:0x14309aba1;decomp:re/decomp/140ae6050.c;decomp:re/decomp/140aee2b0.c;decomp:re/decomp/143099650.c;xref:0x14309aba1;doc:addons/career-editor/protocol/season.md#season-calendar-set-round",
+  "notes": "Season: allocates 0x4f0 from the season allocator (season+0x280, vt+0x18, align 0x10) and builds a Weekend via Career_Build_WeekendFromName 0x140aee2b0, named name (copied into a 64-byte fixed string, max 63 chars) or the %I64u index when name is null; track = track_stat_id stored at weekend+0x278 (0xff = no track, only a placeholder Season deserialise uses before the weekend's own deserialise; pass a real track id); returns the weekend (NULL on alloc failure), not yet in the season. Only xtls caller Career_Add_TrackSetToSeason 0x143099650 (index 0, name NULL) (V0231)"
+ },
+ "signature": {
+  "id": "career.create_season_weekend",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 90 00 00 00 44 89 C3 48 89 CE",
+  "match": "0x140ae6050",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ae6050",
+  "kind": "func_start",
+  "names": [
+   "Career_Create_SeasonWeekend"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-season",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/season.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-1",
+   "kind": "func",
+   "item": "Career_Create_SeasonWeekend",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140ae6050.c;decomp:re/decomp/140aee2b0.c;decomp:re/decomp/140afbef0.c;decomp:re/decomp/140ad6520.c;xref:0x14309aba0,0x140aee534,0x140afc10d,0x140ad6590,0x14309e33b",
+   "notes": "V0231 proto ok (rdx index formatted %I64u, r8b track, r9 name); wrong: the third arg is the track byte (track_stat_id), not a format byte, and 0xff is not 'resolve by name': nothing compares +0x278 with 0xff to resolve a name; Weekend deserialise 0x140afbef0 overwrites it from the saved track_stat_id; readers index a 16-byte track table with it (0x140ad6590 bounds-checks, 0x14309e33b does not). Corrected: Season: allocates 0x4f0 from the season allocator (season+0x280, vt+0x18, align 0x10) and builds a Weekend via Career_Build_WeekendFromName 0x140aee2b0, named name (copied into a 64-byte fixed string, max 63 chars) or the %I64u index when name is null; track = track_stat_id stored at weekend+0x278 (0xff = no track, only a placeholder Season deserialise uses before the weekend's own deserialise; pass a real track id); returns the weekend (NULL on alloc failure), not yet in the season. Only xtls caller Career_Add_TrackSetToSeason 0x143099650 (index 0, name NULL)"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-3",
+   "kind": "func",
+   "item": "Career_Create_SeasonWeekend",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ae6050.c;decomp:re/decomp/140aee2b0.c;decomp:re/decomp/143099650.c;xref:0x14309aba0",
+   "notes": "V0301 Independent: rcx season, rdx index -> %I64u (0x14565e6bb) when r9 name is NULL, else up to 63 chars + NUL into the 64-byte string; r8b track -> [rsp+0x30] -> builder param_7 -> weekend+0x278; 0x4f0/align 0x10 via season+0x280 vt+0x18; returns rdi (NULL on alloc failure), no Career_Add_SeasonWeekend; only caller 0x14309aba0 (edx=0, r9=0, r8d=r12d); Weekend deserialise overwrites +0x278 (0x140afc10d)."
+  }
+ ],
+ "proofs": []
+}

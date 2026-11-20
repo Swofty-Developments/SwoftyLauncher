@@ -27,10 +27,7 @@ SWOFTY_ON_CHANGE(verbose, bool v)
     swofty::log("[t_settings] on_change verbose -> %s (call %lld)", v ? "true" : "false", seen(0, v));
 }
 
-SWOFTY_ON_CHANGE(greeting_count, int v)
-{
-    swofty::log("[t_settings] on_change greeting_count -> %d (call %lld)", v, seen(1, v));
-}
+SWOFTY_ON_CHANGE(greeting_count, int v) { swofty::log("[t_settings] on_change greeting_count -> %d (call %lld)", v, seen(1, v)); }
 
 SWOFTY_ON_CHANGE(offset, double v)
 {
@@ -42,10 +39,7 @@ SWOFTY_ON_CHANGE(flavour, std::string_view v)
     swofty::log("[t_settings] on_change flavour -> %s (call %lld)", v.data(), seen(3, reinterpret_cast<intptr_t>(v.data())));
 }
 
-SWOFTY_ON_CHANGE(mismatched, bool v)
-{
-    swofty::log("[t_settings] on_change mismatched -> %d (call %lld)", v, seen(4, v));
-}
+SWOFTY_ON_CHANGE(mismatched, bool v) { swofty::log("[t_settings] on_change mismatched -> %d (call %lld)", v, seen(4, v)); }
 
 extern "C" __declspec(dllexport) void t_settings_read()
 {
@@ -60,8 +54,7 @@ extern "C" __declspec(dllexport) void t_settings_read()
     p[6] = audi_name.get();
     swofty::log("[t_settings] read verbose=%d greeting_count=%d offset=%.2f flavour=%s mismatched=%d undeclared=%d "
                 "audi_name=%d",
-                verbose.get(), greeting_count.get(), offset.get(), f.data(), mismatched.get(), undeclared.get(),
-                audi_name.get());
+                verbose.get(), greeting_count.get(), offset.get(), f.data(), mismatched.get(), undeclared.get(), audi_name.get());
 }
 
 SWOFTY_ADDON()

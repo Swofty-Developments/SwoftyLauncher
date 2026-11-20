@@ -1,0 +1,43 @@
+{
+ "schema": 1,
+ "name": "site_Career_DecalIncome_Count",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141104491",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141104190.c;doc:re/research/sponsors.md#career-sponsors",
+  "notes": "mov rdx,[rbx+0x298]; at this point rsi = decal count on the saved livery, r15 = livery (nodes +0xe8/+0xf0)."
+ },
+ "signature": {
+  "id": "career.decal_income_count",
+  "section": ".xtls",
+  "pattern": "48 C1 EE 04 48 8B 93 98 02 00 00 4C 8B 83 A0 02 00 00",
+  "match": "0x14110448d",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141104491",
+  "kind": "mid",
+  "expect": "48 8B 93 98 02 00 00",
+  "names": [
+   "site_Career_DecalIncome_Count"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-05",
+    "by": "sponsor-studio",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "jonniedesigns.sponsor-base"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

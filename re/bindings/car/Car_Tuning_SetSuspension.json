@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_Tuning_SetSuspension",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446a7be0",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "void (void *axle, uint32_t flags)",
+  "evidence": "decomp:re/decomp/1446a7be0.c;xref:0x15543f4d2,0x15543f4e0;kb:subsystems/car.md#suspension",
+  "notes": "Suspension setup apply for one axle (param_1 = axle, flags); the body runs only under flags & 0x2000. One call sets either the rear set (its own axle +0x1598 <= 0; sliders from +0x22c) or the front set (front camber slider +0x228), not both; .data1 0x15543f450 calls it twice, rcx = [susp+0x90] then [susp+0x98] (corrected per V1234). Each slider (F1Tuning system float, clamped 0..1) is lerped over the F1Tuning range block returned by the F1Tuning vtable +0x40 (rear camber min/max +0x58/+0x5c, rear ARB +0xc8/+0xcc; the other ranges sit at +0x50..+0x6c and +0xc0/+0xc4, not split) into the axle chosen by LocalRestPositionZ sign (axle+0x1598 <= 0 = rear): camber axle+0x1650, toe +0x1654, anti-roll constant +0x1664; logs F1_TUNING 'Setting front/rear camber/toe/anti-roll bar'."
+ },
+ "signature": {
+  "id": "car.tuning_set_suspension",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 68 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 F7 C2 00 20 00 00",
+  "match": "0x1446a7be0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446a7be0",
+  "kind": "func_start",
+  "names": [
+   "Car_Tuning_SetSuspension"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v4",
+   "kind": "func",
+   "item": "Car_Tuning_SetSuspension",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1446a7be0.c;xref:0x15543f4d2,0x15543f4e0",
+   "notes": "V1234 Role right (camber +0x1650, toe +0x1654, ARB +0x1664 from F1Tuning sliders over the vt+0x40 range block; ranges as claimed). Details wrong: param_1 is one axle and the body runs only under flags&0x2000. A call does either the rear set (own axle +0x1598 <= 0) or the front set, not rear then front. 0x15543f450 calls it twice, rcx=[susp+0x90] then [susp+0x98]. Front camber slider is +0x228, below the claimed 'from +0x22c'."
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "su-verify",
+   "kind": "func",
+   "item": "Car_Tuning_SetSuspension",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1446a7be0.c;xref:0x15543f450",
+   "notes": "V1746 claim 8; range +0x228..+0x254"
+  }
+ ],
+ "proofs": []
+}

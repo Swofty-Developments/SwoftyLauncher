@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Loader_RequestCareerHubUnload",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d52540",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-SESSION_LOADER;decomp:re/decomp/142d52540.c;xref:0x141beaf7e,0x1457dde60",
+  "notes": "named from its log messages (channel SESSION_LOADER): 'Post career hub unload requested'"
+ },
+ "signature": {
+  "id": "session.loader_request_career_hub_unload",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 48 89 CE 8B 05",
+  "match": "0x142d52540",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d52540",
+  "kind": "func_start",
+  "names": [
+   "Sess_Loader_RequestCareerHubUnload"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb2-verify-b",
+   "kind": "func",
+   "item": "Sess_Loader_RequestCareerHubUnload",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d52540.c;xref:0x142d52f91",
+   "notes": "V1861 string 'Post career hub unload requested' verified"
+  }
+ ],
+ "proofs": []
+}
