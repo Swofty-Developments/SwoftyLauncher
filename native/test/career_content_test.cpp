@@ -94,8 +94,10 @@ static void stock_db()
 {
     texts.clear(), ints.clear(), lists.clear();
     ints["game_modes._ModeChampionship_instancecount_"] = 3;
+    texts["game_modes.ModeChampionship_0._metadata_"] = "driver_career_25";
     texts["game_modes.ModeChampionship_0.save_data.name"] = "driver_career_24";
     ints["game_modes.ModeChampionship_0.statId"] = 28;
+    texts["game_modes.ModeChampionship_1._metadata_"] = "driver_career_26";
     texts["game_modes.ModeChampionship_1.save_data.name"] = "driver_career_26";
     ints["game_modes.ModeChampionship_1.statId"] = 78;
     texts["game_modes.ModeChampionship_2.save_data_0.name"] = "driver_career_1990";
@@ -280,6 +282,17 @@ int main()
         r = content::requirements(desc1990(), db);
         expect(!r.ok && r.why.find("F1CAREER_90") != std::string::npos,
                "requirements: no F1CAREER_<suffix> list fails the requirements");
+        stock_db();
+        expect(content::mode_stat_id(db, "driver_career_25") == 28,
+               "mode: the stock 2025 container driver_career_25 resolves its row's statId 28 (save_data.name driver_career_24)");
+        expect(content::mode_stat_id(db, "driver_career_26") == 78, "mode: driver_career_26 resolves statId 78");
+        expect(content::mode_stat_id(db, "driver_career_1990") == 81, "mode: a row with no label matches by save_data_0.name");
+        expect(content::mode_stat_id(db, "driver_career_24") == 28, "mode: a save_data.name still matches its row");
+        expect(content::mode_stat_id(db, "driver_career_23") == -1 && content::mode_stat_id(db, "") == -1,
+               "mode: an unknown or empty container resolves nothing");
+        texts["game_modes.ModeChampionship_2._metadata_"] = "driver_career_24";
+        expect(content::mode_stat_id(db, "driver_career_24") == 81,
+               "mode: a row named after the container wins over a save_data.name");
         stock_db();
         texts.erase("content_sets.content_set_1.official_entrant_list_3.name");
         r = content::requirements(desc1990(), db);

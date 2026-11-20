@@ -405,20 +405,24 @@ inline bool text_is(const Db &db, const std::string &key, const std::string &wan
     return db.text(key, v, db.user) && v == want;
 }
 
-// The statId of the game_modes.ModeChampionship row that saves to save (save_data.name or
-// save_data_0.name), or -1.
+// The statId of the game_modes.ModeChampionship row whose mode container is save, or -1. The container is named after
+// the row (_metadata_), which is not always its save_data.name: the stock 2025 Driver Career row driver_career_25 has
+// save_data.name driver_career_24. A row whose save_data.name (or save_data_0.name) is save matches when no row is
+// named save.
 inline int64_t mode_stat_id(const Db &db, const std::string &save)
 {
     int64_t n = 0;
-    if (!count_of(db, "game_modes._ModeChampionship_instancecount_", n))
+    if (save.empty() || !count_of(db, "game_modes._ModeChampionship_instancecount_", n))
         return -1;
-    for (int64_t i = 0; i < n; i++) {
-        std::string row = "game_modes.ModeChampionship_" + std::to_string(i);
-        int64_t stat = -1;
-        if ((text_is(db, row + ".save_data.name", save) || text_is(db, row + ".save_data_0.name", save)) &&
-            db.integer(row + ".statId", stat, db.user))
-            return stat;
-    }
+    for (int pass = 0; pass < 2; pass++)
+        for (int64_t i = 0; i < n; i++) {
+            std::string row = "game_modes.ModeChampionship_" + std::to_string(i);
+            bool named = pass == 0 ? text_is(db, row + "._metadata_", save)
+                                   : text_is(db, row + ".save_data.name", save) || text_is(db, row + ".save_data_0.name", save);
+            int64_t stat = -1;
+            if (named && db.integer(row + ".statId", stat, db.user))
+                return stat;
+        }
     return -1;
 }
 

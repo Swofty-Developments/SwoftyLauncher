@@ -44,6 +44,15 @@ inline std::string suffix_for(std::string_view group, std::string_view content_s
     return std::string(content_suffix);
 }
 
+// The data group a row's press loads under: the row's own (a mode with a year in its name), else the group of the
+// registered content whose mode container is the row's, else the careers index's.
+inline std::string group_choice(const std::string &row, const std::string &content, const std::string &index)
+{
+    if (!row.empty())
+        return row;
+    return content.empty() ? index : content;
+}
+
 inline bool group_ok(std::string_view want, std::string_view current) { return !want.empty() && current == want; }
 
 inline bool group_needs_write(std::string_view want, std::string_view current) { return !want.empty() && want != current; }

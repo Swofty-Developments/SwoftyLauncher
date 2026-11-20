@@ -425,12 +425,21 @@ struct ListAsk {
     rl::Target target;
 } list_ask;
 
-void refuse(size_t row, const std::string &why)
+void go_back(Handle *orig, void *vm);
+
+void refuse(Handle *orig, void *vm, const rl::Facts &f, const std::string &why)
 {
-    swofty::log("[career] resume screen: row %zu: not pressed: %s", row, why.c_str());
+    if (!rl::busy_reason(f).empty()) {
+        swofty::log("[career] resume screen: row %zu: not pressed: %s", f.row, why.c_str());
+        return;
+    }
+    swofty::log("[career] resume screen: row %zu: not pressed: %s; the continue screen says so and goes back", f.row,
+                why.c_str());
+    go_back(orig, vm);
+    runtime::popup_show(rl::REFUSE_TITLE, rl::failed_text(), "swofty_core");
 }
 
-void press_selected(void *vm, bool my_team, const rl::Target &t)
+void press_selected(Handle *orig, void *vm, bool my_team, const rl::Target &t)
 {
     uintptr_t fn = 0;
     if (!press_slot_shaped(vm, fn, "resume screen", false))
@@ -444,7 +453,7 @@ void press_selected(void *vm, bool my_team, const rl::Target &t)
     read_mode(vm, t, f);
     std::string why = rl::press_refusal(f);
     if (!why.empty()) {
-        refuse(t.row, why);
+        refuse(orig, vm, f, why);
         return;
     }
     using PressSlot = void(void *vm, uint8_t card);
@@ -492,7 +501,7 @@ void list_answered(void *, void **answer)
     if (!a.open || !a.vm)
         return;
     if (rg::loads(text))
-        press_selected(a.vm, a.my_team, a.target);
+        press_selected(a.orig, a.vm, a.my_team, a.target);
     else
         go_back(a.orig, a.vm);
 }
@@ -537,14 +546,14 @@ void load_target(Handle *orig, bool my_team, void *vm)
         why = rl::wizard_reason(f);
     }
     if (!why.empty()) {
-        refuse(t.row, why);
+        refuse(orig, vm, f, why);
         return;
     }
     uint64_t was = rewrite_card0(vm, t.sel);
     swofty::log("[career] resume screen: row %zu: card 0 slot id %llu rewritten to %llu on the %s continue screen", t.row,
                 (unsigned long long)was, (unsigned long long)t.sel.id, my_team ? "My Team" : "Driver Career");
     if (!t.ask) {
-        press_selected(vm, my_team, t);
+        press_selected(orig, vm, my_team, t);
         return;
     }
     {

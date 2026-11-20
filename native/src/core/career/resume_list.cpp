@@ -111,7 +111,8 @@ bool pressed(size_t index)
     }
     target_on = true;
     target_at = GetTickCount64();
-    std::string group = e->group.empty() ? runtime::career_saves_content_for_slot(e->key) : e->group;
+    std::string group =
+        group_choice(e->group, career::content::group_of_mode(e->game_mode), runtime::career_saves_content_for_slot(e->key));
     target_ = {sel,
                e->my_team,
                press(*e) == Action::Ask,

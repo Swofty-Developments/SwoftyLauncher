@@ -123,6 +123,15 @@ static void press()
     f.game_mode = "driver_career_25";
     f.mode_stat = f.want_stat = 70;
     expect(rl::press_refusal(f).empty(), "a stock career with its own group and mode passes");
+    expect(rl::group_choice("f1_career_2025", "f1_career_progressive", "x") == "f1_career_2025",
+           "a row's own group is used first");
+    expect(rl::group_choice("", "f1_career_progressive", "x") == "f1_career_progressive",
+           "a row with no group takes the group of the content whose mode container it is");
+    expect(rl::group_choice("", "", "f1_career_old") == "f1_career_old",
+           "with no content for its mode the careers index's group");
+    expect(rl::group_choice("", "", "").empty(), "no group anywhere stays unknown");
+    expect(!rl::failed_text().empty() && std::string(rl::REFUSE_TITLE) == "Career can't load",
+           "a refused press names the failure in the Career can't load message");
 }
 
 static void new_career()

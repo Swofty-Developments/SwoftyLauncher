@@ -94,6 +94,16 @@ std::string suffix_of_group(const std::string &group)
     return {};
 }
 
+std::string group_of_mode(const std::string &mode)
+{
+    if (mode.empty())
+        return {};
+    for (size_t i = 0; i < used(); i++)
+        if (slots[i].desc.mode == mode)
+            return slots[i].desc.data_group;
+    return {};
+}
+
 namespace {
 
 void redirect_resume(Action *out)
