@@ -35,6 +35,9 @@ pub const DIR: &str = "plain";
 pub const CURRENT: &str = "CURRENT";
 pub const GENERATIONS: &str = "generations";
 const PINS: &str = "pins.json";
+/// How many generations back from `CURRENT` the core looks for the one it puts containers back from
+/// (native/src/core/career/plain_saves_logic.hpp `MAX_SCAN`).
+pub const SCAN: usize = 4096;
 
 pub fn root_of_profile(data: &Path, profile: &str) -> PathBuf {
     crate::saves::launcher::root(data).join(profile).join(DIR)
@@ -167,6 +170,18 @@ impl Plain {
             .into_iter()
             .filter(|n| *n <= current)
             .find_map(|n| self.manifest(n))
+    }
+
+    /// The newest generation a session with the core wrote at a profile save: the one the core puts containers back
+    /// from at load. Like the core, it looks at the newest [`SCAN`] generations only.
+    pub fn newest_session_save(&self) -> Option<Manifest> {
+        let current = self.current()?;
+        self.numbers()
+            .into_iter()
+            .filter(|n| *n <= current)
+            .take(SCAN)
+            .filter_map(|n| self.manifest(n))
+            .find(Manifest::is_session_save)
     }
 
     pub fn careers(&self) -> Vec<CareerRow> {

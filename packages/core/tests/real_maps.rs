@@ -354,9 +354,7 @@ fn map_worlds_get_room_for_the_grid() {
     }
 }
 
-#[test]
-fn stock_ai_lines_need_no_passing_space_fix() {
-    use swofty_core::activation::ailine::{Spacing, give_routes_space};
+fn stock_ai_lines(mut check: impl FnMut(&str, &[u8])) {
     use swofty_formats::erp::ErpFile;
 
     let Some(dir) = std::env::var_os("F1_25_DIR").map(PathBuf::from) else {
@@ -376,10 +374,24 @@ fn stock_ai_lines_need_no_passing_space_fix() {
             continue;
         };
         for r in file.erp.resources.iter().filter(|r| r.kind() == "AISplineData") {
-            let data = file.load(r).unwrap().fragments[0].data().unwrap();
-            assert_eq!(give_routes_space(&data), Spacing::Fine, "{}", r.name);
+            check(&r.name, &file.load(r).unwrap().fragments[0].data().unwrap());
             lines += 1;
         }
     }
     eprintln!("{lines} stock AI racing line(s) checked");
+}
+
+#[test]
+fn stock_ai_lines_need_no_passing_space_fix() {
+    use swofty_core::activation::ailine::{Spacing, give_routes_space};
+
+    stock_ai_lines(|name, data| assert_eq!(give_routes_space(data), Spacing::Fine, "{name}"));
+}
+
+#[test]
+fn stock_ai_lines_load_in_the_game() {
+    use swofty_core::activation::ailine::loadable;
+    use swofty_formats::bxml::Document;
+
+    stock_ai_lines(|name, data| assert_eq!(loadable(&Document::parse(data).unwrap()), Ok(()), "{name}"));
 }

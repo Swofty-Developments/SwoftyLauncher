@@ -1,6 +1,7 @@
 // Host unit test for car.profile (car_profile.hpp) on fake cars: the F1 1990 race engine and AI quali DLLs as one
 // record, scope (session types, ai_only and player_only, car indices, identity-needing selectors), priority order,
-// extra live field paths, re-evaluation dropping the old layers, and the record parsing.
+// extra live field paths, re-evaluation dropping the old layers, the record parsing, and within against a Grand Prix
+// and a Time Trial box's facts with the check that names a within no box can hold.
 // native/test/run_tests.sh car_live builds and runs it.
 #include "core/hooks/car_profile.hpp"
 
@@ -172,9 +173,56 @@ int main()
         },
         0, false);
     expect(asked == 1 && none.matched == 0, "a profile whose within selector does not match the session is skipped");
+    const std::string gp = "swofty.swofty-seasons-2012/sw_2012", tt = "swofty.swofty-seasons-2012/sw_2012_tt";
+    auto facts_of = [](const std::string &box, const char *mode, const char *type) {
+        swofty_core::hooks::Facts f;
+        f.mode = mode;
+        f.content = box;
+        f.content_registry = "content.package";
+        f.content_owner = "swofty.swofty-seasons-2012";
+        f.chain = {box};
+        f.owners = {f.content_owner};
+        f.session.emplace();
+        f.session->type = type;
+        f.session->setup_mode = "swofty_f1";
+        return f;
+    };
+    auto time_trial = facts_of(tt, "time_trial", "time_trial");
+    auto grand_prix = facts_of(gp, "grand_prix", "race");
+    auto either = entry("a/either", (R"({"within":[{"content":[")" + gp + R"(",")" + tt + R"("]}],"lift_scale":0.9})").c_str());
+    auto both =
+        entry("a/both", (R"({"within":[{"content":")" + gp + R"("},{"content":")" + tt + R"("}],"lift_scale":0.9})").c_str());
+    std::string why;
+    expect(cp::within_matches(either.profile, time_trial, &why) && cp::within_matches(either.profile, grand_prix, &why),
+           "one content entry naming the Grand Prix and Time Trial boxes matches both sessions");
+    expect(!cp::within_matches(both.profile, time_trial, &why) && !cp::within_matches(both.profile, grand_prix, &why) &&
+               why.empty(),
+           "two content entries have to hold at once, so neither box matches");
+    auto tt_only = entry("a/tt_only", (R"({"within":{"content":")" + tt + R"("},"lift_scale":0.9})").c_str());
+    expect(cp::within_matches(tt_only.profile, time_trial, &why) && !cp::within_matches(tt_only.profile, grand_prix, &why),
+           "a single within object scopes the Time Trial box alone");
+    auto broken = entry("a/broken", R"({"within":[{"colour":"red"}],"lift_scale":0.9})");
+    expect(!cp::within_matches(broken.profile, time_trial, &why) && why.find("colour") != std::string::npos,
+           "a within that does not compile matches nowhere and says why");
+
+    auto boxes = [&] { return std::vector<std::vector<std::string>>{{gp}, {tt}, {"game/f1_2025"}}; };
+    std::string never = cp::unreachable(both.profile.within, boxes);
+    expect(never.find(gp + " and " + tt) != std::string::npos &&
+               never.find(R"({"content": [")" + gp + R"(", ")" + tt + R"("]})") != std::string::npos,
+           "a within whose content entries no box holds at once is named, with the one-entry form");
+    expect(cp::unreachable(either.profile.within, boxes).empty() && cp::unreachable(tt_only.profile.within, boxes).empty() &&
+               cp::unreachable(swofty::json::Value(), boxes).empty(),
+           "one content entry, a single object and no within are never named");
+    auto variant = [&] { return std::vector<std::vector<std::string>>{{"a/f1_2017_v10", "a/f1_2017"}}; };
+    auto nested = entry("a/nested", R"({"within":[{"content":"a/f1_2017"},{"content":"a/f1_2017_v10"}]})");
+    expect(cp::unreachable(nested.profile.within, variant).empty(),
+           "two content entries a variant and its base both hold are not named");
+    auto exact = entry("a/exact", R"({"within":[{"content":"a/f1_2017"},{"content_exact":"a/f1_2017"}]})");
+    expect(!cp::unreachable(exact.profile.within, variant).empty(),
+           "content_exact holds only in the box itself, not in its variants");
+
     auto bad = swofty::json::parse(R"({"power_scale":"fast"})");
     swofty::cars::Profile p;
-    std::string why;
     expect(!cp::parse(bad, p, &why), "a record with a wrong type is refused");
 
     if (fails) {

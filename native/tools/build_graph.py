@@ -23,11 +23,12 @@ CORE_EXCLUDE = {
     'src/core/registry/engine.cpp',
 }
 
-# Structured exception handling (__try/__except) only parses with -fms-extensions. These two compile without the
-# core's defines and game headers, as they always have.
+# Structured exception handling (__try/__except) only parses with -fms-extensions. These compile without the core's
+# defines and game headers, as they always have.
 SEH_SOURCES = {
     'src/core/hooks/guard.cpp': ['-I$sdk'],
     'src/core/diagnostics/crash/stall_walk.cpp': [],
+    'src/core/diagnostics/perf/pdh.cpp': ['-I$sdk'],
 }
 
 SAFETYHOOK = 'third_party/safetyhook'

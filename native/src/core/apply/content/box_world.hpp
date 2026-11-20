@@ -8,7 +8,8 @@
 #include <string_view>
 #include <vector>
 
-// The world of a box with more teams than the f1 world has garages (SWOFTY 2010 to 2014 and 2016 race 11 or 12).
+// The world of a box with more teams than the f1 world has garages (SWOFTY 2010 to 2014 and 2016 race 11 or 12,
+// and the Time Trial lists of 2010 to 2012 hold 12 teams with no season of their own).
 // Each session's settings build loads one extra world for every track_data.track_layers row whose setup modes,
 // seasons and weekend formats hold the session's setup mode, its entrant list's season (when the list sets one) and
 // its weekend format (Game_GameMode_AddTrackLayerWorlds 0x1407a1310). A box's list copies f1_2025's season, so its
@@ -37,6 +38,11 @@ inline constexpr int64_t LAYER_ID_MAX = 255;
 inline constexpr const char *SETUP_MODE = "swofty_f1";
 // The season a list with no season of its own copies.
 inline constexpr const char *DEFAULT_SEASON = "season_2025";
+// The game environment variable that turns box worlds off (SWOFTY_BOX_WORLDS=0); unset or any other value leaves
+// them on.
+inline constexpr const char *ENV = "SWOFTY_BOX_WORLDS";
+
+inline bool enabled(std::string_view env) { return env != "0"; }
 
 struct World {
     const char *layer, *world;

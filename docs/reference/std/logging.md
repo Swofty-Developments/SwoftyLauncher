@@ -275,6 +275,7 @@ These environment variables change what swofty_core and the loader log. Set them
 - `SWOFTY_PROFILE=0`: turns the [performance report](#performance-report) off.
 - `SWOFTY_PERF_HITCH_MS=<ms>`: the frame time the performance report counts as a hitch. Default 50.
 - `SWOFTY_PERF_SLOW_CALL_MS=<ms>`: the time a single hook or callback takes before the performance report lists it as a slow call. Default 8.
+- `SWOFTY_PERF_GPU_ENGINE=0`: turns the 3D engine use in the performance report off. The core then makes no GPU Engine performance counter calls.
 - `SWOFTY_FRAME_CAPTURE=<folder>`: writes the presented frame, overlay included, to `<folder>\frame-NNNN.png` every `SWOFTY_FRAME_CAPTURE_EVERY` seconds (default 10). Under Proton, give a Windows path such as `Z:\mnt\work\shots`. It arms the overlay's present hook even when no addon turns the overlay on, and captures only swapchains the overlay would draw on:
 
   ```text
@@ -385,7 +386,11 @@ After the three lines above, the core logs six more every minute:
 
 `presents` counts the `Present` and `Present1` calls on the game's swapchain, timed in the core's Present hook: their intervals, with the same measures as `pacing`, the time the call took (with VSync on, the wait for a free back buffer shows here), the sync interval the game passed and the share of presents with the tearing flag. Presents to other swapchains, occluded presents and failed presents, with the last error code, are counted at the end. `per game frame` above 1 means the game presents more often than its frame index advances.
 
-`gpu N` is the GPU the game's swapchain runs on, sampled every 5 seconds. The clocks, temperature, power and fan come from the graphics driver; a driver that gives none logs one `[perf] gpu N: the driver gives no ...` line and the minute line says `clocks and sensors unavailable`. The 3D engine use comes from the Windows GPU Engine performance counters, split into the game and the other processes, with the busiest other process. `[perf] gpu engine use:` says once how it is sampled; a counter read over 250 ms moves sampling to every 30 seconds, and one over 2 seconds turns it off.
+`gpu N` is the GPU the game's swapchain runs on, sampled every 5 seconds. The clocks, temperature, power and fan come from the graphics driver; a driver that gives none logs one `[perf] gpu N: the driver gives no ...` line and the minute line says `clocks and sensors unavailable`. The 3D engine use comes from the Windows GPU Engine performance counters, read through pdh.dll, which the core keeps loaded until the game closes. It is split into the game and the other processes, with the busiest other process. `[perf] gpu engine use:` says once how it is sampled; a counter read over 250 ms moves sampling to every 30 seconds, and one over 2 seconds turns it off. A fault in a counter call turns it off for the session, with one line that names the call, the exception code and the address:
+
+```text
+[perf] gpu engine use: PdhAddEnglishCounterW faulted (0xc0000005 at pdh.dll+0x6a35); 3D engine use is not sampled from now on
+```
 
 `cpu` has the load of the whole system and of its busiest core, sampled every 5 seconds, the clocks Windows reports with their limit (a limit under the maximum is throttling), and the busiest thread that swofty code did not start.
 

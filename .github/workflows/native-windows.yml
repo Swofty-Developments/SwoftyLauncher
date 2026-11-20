@@ -11,6 +11,9 @@ on:
       - native/test/run_mem_pages_test.sh
       - native/test/hooks/**
       - native/test/run_guard_test.sh
+      - native/src/core/diagnostics/perf/pdh.*
+      - native/test/pdh_test.cpp
+      - native/test/run_pdh_test.sh
       - packages/sdk/include/swofty/mem.hpp
       - native/include/pe_imports.h
       - native/test/pe_imports_test.cpp
@@ -27,6 +30,9 @@ on:
       - native/test/run_mem_pages_test.sh
       - native/test/hooks/**
       - native/test/run_guard_test.sh
+      - native/src/core/diagnostics/perf/pdh.*
+      - native/test/pdh_test.cpp
+      - native/test/run_pdh_test.sh
       - packages/sdk/include/swofty/mem.hpp
       - native/include/pe_imports.h
       - native/test/pe_imports_test.cpp
@@ -56,3 +62,7 @@ jobs:
         if: always()
         shell: bash
         run: bash native/test/run_pe_imports_test.sh
+      - name: GPU Engine counter calls
+        if: always()
+        shell: bash
+        run: bash native/test/run_pdh_test.sh

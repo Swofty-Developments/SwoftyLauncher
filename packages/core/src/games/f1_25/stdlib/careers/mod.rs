@@ -24,8 +24,8 @@ pub use index_file::{
     data_path, keep, kept_ids, migrate, parse, read, rename_profile, replace_profile, sync,
 };
 pub use list::{
-    READY as SEVERITY_READY, ResumeRow, RowAddon, VERSION as SEVERITY_VERSION, date_text, resume_list_for,
-    resume_rows, save_file_careers, save_state, wanted as resume_list_wanted,
+    ListSave, READY as SEVERITY_READY, ResumeRow, RowAddon, VERSION as SEVERITY_VERSION, date_text,
+    list_save, resume_list_for, resume_rows, save_file_careers, wanted as resume_list_wanted,
 };
 pub use play::{in_save_of, missing, needing, play_line, stop_line, unowned_line};
 pub use record::{lost_cars, record_cars, record_session, refresh_versions};
