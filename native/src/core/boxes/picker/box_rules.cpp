@@ -1,4 +1,5 @@
 #include "core/boxes/picker/picker.hpp"
+#include "core/guards/guard.hpp"
 
 #include "core/runtime/runtime.hpp"
 
@@ -72,9 +73,17 @@ void apply_warmers(void *mode, const char *list)
 
 // Rev lights per box: the stat id of the engine most of the pressed box's vehicles name goes into every swofty_f1 mode's
 // equal_performance_engine, the row the wheel LEDs and the HUD rev bar take for a car running equal performance; a box
-// whose vehicles name no engine, or an engine the database lacks, puts the game's engine back.
+// whose vehicles name no engine, or an engine the database lacks, puts the game's engine back. SWOFTY_REV_LIGHTS=0 turns
+// it off.
 void apply_rev_lights(void *mode, const char *list)
 {
+    char off[16];
+    if (swofty_core::guards::env_off("SWOFTY_REV_LIGHTS", off)) {
+        box_rules.rev_lights.put_back();
+        box_rules.rev_lights_log.say(std::string("off (SWOFTY_REV_LIGHTS=") + off + "): " + std::string(logic::HOST) +
+                                     " keeps its own equal-performance engine");
+        return;
+    }
     auto box = swofty_core::apply::content::rev_lights_for_box(list);
     if (box.engine.empty()) {
         box_rules.rev_lights.put_back();

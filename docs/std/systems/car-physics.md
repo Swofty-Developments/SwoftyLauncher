@@ -587,6 +587,8 @@ Every box shares the `swofty_f1` setup mode. Pressing a box writes the engine mo
 [rev-lights] box sw_f1_2012_tt (swofty.swofty-seasons-2012/sw_2012_tt): equal-performance sessions show the rev lights of engine Renault_F1_V8_2009-2013 (4 of 12 vehicle engine(s)) (stat id 27)
 ```
 
+`SWOFTY_REV_LIGHTS=0` turns it off: every box keeps the mode's own engine.
+
 ### A livery's archive
 
 A livery record's `archive` replaces the whole car archive in game, its handling file and car layer included. The build changes the copy the core routes:
