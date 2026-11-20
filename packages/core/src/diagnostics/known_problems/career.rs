@@ -3,6 +3,7 @@ use std::collections::BTreeMap;
 use super::Diagnosis;
 use super::crash_record::{Fatal, NEAR_FRAMES, crash_lines, crash_time, game_function, stamp};
 use super::evidence::Evidence;
+use super::weekend::Weekend;
 use super::wording::{list, name};
 
 /// The entrant list search by name (fn 0x141738eb0) that runs off the end of the
@@ -51,6 +52,24 @@ pub(super) const THIRD_CAR: &str = "is the third car of its garage";
 
 /// How long after a career loaded a crash counts as loading its next session.
 pub(super) const CAREER_LOAD_SECS: f64 = 10.0;
+
+/// The core's line for a session that ended moments after it started, with the career hub opened inside it: the
+/// game's calendar check sent the career to Team HQ as the session opened.
+pub(super) const QUICK_END: &str = "] [career] session ended ";
+pub(super) const HUB_INSIDE: &str = "the career hub opened ";
+/// The core's calendar line as the hub opens, and the item the calendar check picks in it.
+pub(super) const HUB_OPENED: &str = "] [career] hub opened: ";
+/// The core's season break fix, as the hub opens.
+pub(super) const BREAK_FIX: &str = "] [career] season break over race weekend: ";
+/// Where F1 25 faults after such a session closes: `cmp qword [rdi+0x9c58],0` with no object found (KB build
+/// 0x141f8a25c, after `xor edi,edi` at 0x141f8a253). The Steam build 26566308 names no symbol there.
+pub(super) const CLOSED_SESSION_AT: [&str; 2] = [
+    "Game_Read_OverridesCarMonitorMaximisedConfig_2+0xe6c",
+    " fn base+0x1f8aff0+0xe6c",
+];
+pub(super) const CLOSED_SESSION_READ: &str = "reading 0x9c58";
+/// How long before the crash the session's [`QUICK_END`] line counts.
+pub(super) const QUICK_END_SECS: f64 = 10.0;
 
 pub(super) fn entrant_list_crash(e: &Evidence, f: &Fatal) -> bool {
     let at = |l: &str| l.contains("unhandled ") && l.contains(ENTRANT_LIST_SEARCH);
@@ -414,6 +433,91 @@ pub(super) fn career_content_off(e: &Evidence) -> Diagnosis {
             },
             "Press Play again.".to_owned(),
         ],
+    }
+}
+
+/// The [`QUICK_END`] line with the hub opened inside the session, at most [`QUICK_END_SECS`] before `end`.
+fn quick_end(e: &Evidence, end: f64) -> Option<&str> {
+    e.loader
+        .lines()
+        .rev()
+        .filter_map(|l| Some((stamp(l)?, l)))
+        .skip_while(|(t, _)| *t > end)
+        .take_while(|(t, _)| end - t <= QUICK_END_SECS)
+        .find(|(_, l)| l.contains(QUICK_END) && l.contains(HUB_INSIDE))
+        .map(|(_, l)| l)
+}
+
+/// Whether F1 25 faulted as a session it had sent to Team HQ closed: the nearest frame is in
+/// [`CLOSED_SESSION_AT`], the fault read [`CLOSED_SESSION_READ`], and the core logged [`QUICK_END`] with the hub
+/// opened inside the session just before.
+pub(super) fn sent_to_team_hq_crash(e: &Evidence, f: &Fatal) -> bool {
+    f.module.as_deref() == Some("f1_25.exe")
+        && f.frames
+            .first()
+            .is_some_and(|l| CLOSED_SESSION_AT.iter().any(|at| l.trim_end().ends_with(at)))
+        && f.record.iter().any(|l| l.contains(CLOSED_SESSION_READ))
+        && crash_time(e, f).is_some_and(|end| quick_end(e, end).is_some())
+}
+
+/// The item the calendar check picked in the last [`HUB_OPENED`] line before `line`, as in `SeasonBreak` from
+/// `(item 1, SeasonBreak, decides)`, and whether the core's season break fix ran between them.
+fn hub_decision<'a>(e: &'a Evidence, line: &str) -> (Option<&'a str>, bool) {
+    let before = e
+        .loader
+        .find(line)
+        .map_or(e.loader.as_str(), |at| &e.loader[..at]);
+    let Some(at) = before.rfind(HUB_OPENED) else {
+        return (None, false);
+    };
+    let opened = &before[at..];
+    let item = opened
+        .lines()
+        .next()
+        .and_then(|l| l.split_once("(item ")?.1.split_once(", decides)"))
+        .and_then(|(item, _)| item.split_once(", ").map(|(_, kind)| kind));
+    (item, opened.contains(BREAK_FIX))
+}
+
+/// A session the game's calendar check sent to Team HQ as it opened, and the crash as it closed.
+pub(super) fn sent_to_team_hq(e: &Evidence, f: &Fatal) -> Diagnosis {
+    let line = crash_time(e, f).and_then(|end| quick_end(e, end));
+    let weekend = line
+        .and_then(|l| l.split_once("after start): "))
+        .and_then(|(_, w)| Weekend::parse(w.split("; ").next()?))
+        .map_or("the race weekend".to_owned(), |w| {
+            format!("the {} weekend", w.text())
+        });
+    let (item, fixed) = line.map_or((None, false), |l| hub_decision(e, l));
+    let unreadable = item.is_none();
+    let why = match item {
+        Some("SeasonBreak") if !fixed => {
+            " The calendar has a season break running over this race weekend, and the check put the break first."
+                .to_owned()
+        }
+        Some(kind) => format!(" The check put the calendar item {kind} first."),
+        None => String::new(),
+    };
+    let mut steps = Vec::new();
+    if !fixed && (unreadable || item == Some("SeasonBreak")) {
+        steps.push(
+            "Update Swofty Launcher to the newest version. As the session opens, its core sets a season break that \
+             runs over the race weekend to ignored, and the weekend's first session loads."
+                .to_owned(),
+        );
+    }
+    steps.push(
+        "If Team HQ then has no Advance, open Career saves: Restore puts back an earlier version of your save.".to_owned(),
+    );
+    steps.push("If F1 25 crashes here again, press Send Logs.".to_owned());
+    Diagnosis {
+        id: "sent_to_team_hq",
+        title: "F1 25 left the race weekend for Team HQ as it opened".to_owned(),
+        what: format!(
+            "As the first session of {weekend} opened, the game's calendar check sent the career to Team HQ, and \
+             F1 25 crashed as the session closed.{why}"
+        ),
+        steps,
     }
 }
 
