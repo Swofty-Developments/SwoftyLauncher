@@ -45,6 +45,16 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/142cfaec0.c;xref:0x142cf999f",
    "notes": "V1889 +0x348=piVar18[3] (rules R+0xc); bytes +0x349..+0x353, +0x356,+0x357 stored from option objects +0xd9d8.. (vtable+0x10); +0x354/+0x355 conditional; names are hypothesis only; also +0x358..0x35f"
+  },
+  {
+   "date": "2026-11-20",
+   "verifier": "ailim-verify",
+   "kind": "func",
+   "item": "0x142cfaec0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "pat:disasm-0x142cfb6cf;pat:disasm-0x142cfb727;pat:disasm-0x142cfb750;pat:disasm-0x142cfba89;xref:0x142cf5f40",
+   "notes": "V12207 clear starts 0x142cfb6cf (+0xc4) incl +0xb4..+0x11c = 105 B = 21x5; [+0xd290] stored at 0x142cf5f45 from call 0x141489380; byte count=(+0x90-+0x88)>>4 to +0xb3 (truncating); loop bounded only by real count. Correction: float is [[entry+8]]+0x10 (double deref), byte is [entry+8]+0x14. +0x11d written at 0x142cfba89 from [rax+0x108]."
   }
  ],
  "proofs": []

@@ -65,6 +65,16 @@
    "verdict": "agree",
    "evidence": "decomp:own re/tools/decomp read on the KB build;xref:0x140677ee9",
    "notes": "V10747 Own read of the channel store: per lane, gates gather gate+0xc8+c*8 for c=0..6 into 256-entry arrays and the lane gets +0x490+c*8 = compiled array (0x140677ee9)."
+  },
+  {
+   "date": "2026-11-20",
+   "verifier": "ailim-verify",
+   "kind": "func",
+   "item": "0x140677ae0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "pat:disasm-0x140677aec;pat:disasm-0x140677d00;pat:disasm-0x140677cf1",
+   "notes": "V12202 0x5478 via chkstk; 7 channels: floats at rsp+0x70+ch*0x400 and ptrs at rsp+0x1c70+ch*0x800 = 256 entries each; counts r9d/r8d/r11d/r10d/edi/esi/ebx incremented with no cmp 0x100 anywhere in pdata bounds 0x140677ae0..0x1406781bc."
   }
  ],
  "proofs": []

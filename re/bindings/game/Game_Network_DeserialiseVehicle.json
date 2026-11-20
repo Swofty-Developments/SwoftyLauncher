@@ -45,6 +45,16 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/14326a9c0.c;xref:0x143241538",
    "notes": "V5831 name and description match body; log string/pretty name present"
+  },
+  {
+   "date": "2026-11-20",
+   "verifier": "ailim-verify",
+   "kind": "func",
+   "item": "0x14326a9c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "pat:disasm-0x14326b251;pat:disasm-0x14326b25b;pat:disasm-0x14326b267;pat:disasm-0x14326b293",
+   "notes": "V12206 byte r9b stored to rsp+0x348; ==0xff -> box path reading floats 0x1460bff88..0x1460bff9c; else movzx, cmp [0x1460bffa4],eax jle 0x14326ad01 (bounds check present), point=[[0x1460bffb0]+idx*16]."
   }
  ],
  "proofs": []
