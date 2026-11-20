@@ -123,6 +123,30 @@ pub(super) fn anchor(old: &[AddonListItem], new: &[AddonListItem], top: usize) -
         .find_map(|(n, item)| at.get(&item.key()).map(|&ix| (ix, n == 0)))
 }
 
+/// The list index of `id`'s row.
+pub(super) fn row_of(items: &[AddonListItem], id: &str) -> Option<usize> {
+    items
+        .iter()
+        .position(|item| matches!(item, AddonListItem::Addon { id: at, .. } if at == id))
+}
+
+/// Where Back from the panel open inline under row `row` scrolls the list: to where it was
+/// when that panel opened, or else to the row itself when it's above the top of the list.
+pub(super) fn back_offset(
+    opened_from: Option<&(String, ListOffset)>,
+    id: &str,
+    row: usize,
+    top: ListOffset,
+) -> Option<ListOffset> {
+    match opened_from {
+        Some((at, offset)) if at == id && offset.item_ix <= row => Some(*offset),
+        _ => (top.item_ix > row).then_some(ListOffset {
+            item_ix: row,
+            offset_in_item: px(0.),
+        }),
+    }
+}
+
 pub(crate) struct AddonsPage {
     pub(super) search: Entity<InputState>,
     pub(super) window: AnyWindowHandle,
@@ -132,6 +156,8 @@ pub(crate) struct AddonsPage {
     pub(super) list_items: Vec<AddonListItem>,
     pub(super) seen: Option<Instant>,
     pub(super) scroll_pending: bool,
+    /// The addon a row click opened, and where the list was scrolled then.
+    pub(super) opened_from: Option<(String, ListOffset)>,
     pub(super) animating: bool,
     pub(super) read_at: Option<Instant>,
     pub(super) open_pairs: HashSet<(String, String)>,
@@ -175,6 +201,7 @@ impl AddonsPage {
             list_items: Vec::new(),
             seen: None,
             scroll_pending: false,
+            opened_from: None,
             animating: false,
             read_at: None,
             open_pairs: HashSet::new(),
@@ -256,7 +283,8 @@ impl Conflicts {
 
 #[cfg(test)]
 mod tests {
-    use super::{AddonListItem, Conflicts, anchor};
+    use super::{AddonListItem, Conflicts, anchor, back_offset, row_of};
+    use gpui_kit::{ListOffset, px};
     use swofty_core::profile::conflicts::Report;
 
     fn addon(id: &str, index: usize) -> AddonListItem {
@@ -296,6 +324,48 @@ mod tests {
     #[test]
     fn anchor_is_none_without_old_rows() {
         assert_eq!(anchor(&[], &[AddonListItem::Heading], 0), None);
+    }
+
+    fn at(item_ix: usize, offset: f32) -> ListOffset {
+        ListOffset {
+            item_ix,
+            offset_in_item: px(offset),
+        }
+    }
+
+    #[test]
+    fn back_from_an_inline_panel_returns_the_list_to_where_it_was_when_the_panel_opened() {
+        let items = [
+            AddonListItem::Heading,
+            addon("a", 0),
+            addon("b", 1),
+            AddonListItem::Detail("b".to_owned()),
+            addon("c", 2),
+        ];
+        let row = row_of(&items, "b").unwrap();
+        assert_eq!(row, 2);
+        let opened = ("b".to_owned(), at(1, 12.));
+        assert_eq!(
+            back_offset(Some(&opened), "b", row, at(3, 900.)),
+            Some(at(1, 12.))
+        );
+        assert_eq!(back_offset(Some(&opened), "b", row, at(1, 12.)), Some(at(1, 12.)));
+    }
+
+    #[test]
+    fn back_without_a_saved_scroll_shows_the_row_once_it_is_above_the_list() {
+        let opened = ("a".to_owned(), at(0, 0.));
+        assert_eq!(back_offset(Some(&opened), "b", 2, at(3, 400.)), Some(at(2, 0.)));
+        assert_eq!(back_offset(None, "b", 2, at(3, 0.)), Some(at(2, 0.)));
+        assert_eq!(back_offset(None, "b", 2, at(2, 30.)), None);
+        assert_eq!(back_offset(None, "b", 2, at(0, 0.)), None);
+    }
+
+    #[test]
+    fn a_saved_scroll_below_the_row_is_not_used() {
+        let opened = ("b".to_owned(), at(4, 0.));
+        assert_eq!(back_offset(Some(&opened), "b", 2, at(1, 0.)), None);
+        assert_eq!(row_of(&[AddonListItem::Heading], "b"), None);
     }
 
     fn report(profile: &str) -> Report {

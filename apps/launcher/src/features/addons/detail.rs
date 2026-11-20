@@ -1,11 +1,12 @@
-use super::DETAIL_W;
+use super::model::{back_offset, row_of};
 use super::needs::{Need, NeedKind};
 use super::row::{experimental_labels, fallback_icon};
+use super::{DETAIL_W, SPLIT_AT};
 use crate::services::library::{AddonItem, Changes, Source, Type};
 use crate::shell::Shell;
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::{Palette, ScrollArea};
-use crate::ui::{addon_icon, chevron, fact, label, logo, tag};
+use crate::ui::{addon_icon, back_row, chevron, fact, label, logo, tag};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::tooltip::Tooltip;
@@ -56,17 +57,6 @@ impl Shell {
             return div().into_any_element();
         };
         let man = &m.manifest;
-        let close = (!inline).then(|| {
-            Button::new("detail-close")
-                .ghost()
-                .tap_sm()
-                .icon(IconName::X)
-                .tooltip(tr("Close"))
-                .on_click(cx.listener(|this, _, _, cx| {
-                    this.navigation.open_addon = None;
-                    cx.notify();
-                }))
-        });
         let head = h_flex()
             .gap(px(12.))
             .items_start()
@@ -92,8 +82,7 @@ impl Shell {
                             author => trf!("{version} · by {author}", version = man.version, author = author),
                         },
                     )),
-            )
-            .children(close);
+            );
         let facts = self.detail_facts(m, p, cx);
         let advanced = self.detail_advanced(man, p, cx);
         let what = detail_what(m, &changes, p);
@@ -147,7 +136,13 @@ impl Shell {
                 .border_color(p.border_variant)
                 .into_any_element();
         }
-        div()
+        let back = self
+            .panel_back(&man.name, p, cx)
+            .px(px(18.))
+            .py(px(10.))
+            .border_b_1()
+            .border_color(p.border_variant);
+        v_flex()
             .w(px(DETAIL_W))
             .flex_shrink_0()
             .h_full()
@@ -156,8 +151,44 @@ impl Shell {
             .border_color(p.border)
             .bg(p.surface)
             .overflow_hidden()
-            .child(body.size_full().p(px(18.)).scroll_y(key))
+            .child(back)
+            .child(
+                div()
+                    .flex_1()
+                    .min_h_0()
+                    .child(body.size_full().p(px(18.)).scroll_y(key)),
+            )
             .into_any_element()
+    }
+
+    /// Back and the addon's name, at the top of its panel.
+    pub(super) fn panel_back(&self, name: &str, p: Palette, cx: &mut Context<Self>) -> Div {
+        let name = div()
+            .min_w_0()
+            .truncate()
+            .text_color(p.text)
+            .font_weight(FontWeight::MEDIUM)
+            .child(name.to_owned())
+            .into_any_element();
+        back_row(self.page_back_button(cx), [name], p)
+    }
+
+    /// Closes the open addon's panel. Open inline in the list, the list goes back to where it
+    /// was scrolled when the panel opened.
+    pub(crate) fn close_addon_panel(&mut self, cx: &mut Context<Self>) {
+        let Some(id) = self.navigation.open_addon.take() else {
+            return;
+        };
+        let opened_from = self.addons.opened_from.take();
+        let a = &self.addons;
+        if self.layout.content_width < SPLIT_AT
+            && let Some(row) = row_of(&a.list_items, &id)
+            && let Some(to) = back_offset(opened_from.as_ref(), &id, row, a.scroll.logical_scroll_top())
+        {
+            a.smooth.cancel();
+            a.scroll.scroll_to(to);
+        }
+        cx.notify();
     }
 }
 

@@ -275,9 +275,9 @@ impl Shell {
         let body = v_flex()
             .id("browser-creators-page")
             .px(px(GUTTER))
+            .pt(px(18.))
             .pb(px(24.))
             .gap(px(GAP))
-            .child(self.back_bar(p, cx))
             .child(
                 v_flex()
                     .gap(px(2.))

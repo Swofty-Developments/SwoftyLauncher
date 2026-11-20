@@ -3,6 +3,7 @@
 //! Sizes go through [`crate::ui::scale::px`], colours come from [`crate::ui::theme::Palette`].
 
 mod atoms;
+mod back;
 mod callout;
 mod card;
 mod chip;
@@ -28,6 +29,7 @@ pub(crate) mod theme;
 pub mod tokens;
 
 pub(crate) use atoms::*;
+pub(crate) use back::{back_button, back_row};
 pub(crate) use callout::Callout;
 pub(crate) use card::Card;
 pub(crate) use chip::Chip;

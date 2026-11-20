@@ -1,3 +1,4 @@
+use gpui_kit::component::button::Button;
 use gpui_kit::*;
 use std::time::Instant;
 
@@ -15,6 +16,23 @@ pub(crate) struct Navigation {
 }
 
 impl Shell {
+    /// Goes back from the addon page that's open: along the Addon Browser's trail, or out of
+    /// the Addons page's panel. Back, Escape, Alt+Left and the mouse's back button all come here.
+    pub(crate) fn page_back(&mut self, cx: &mut Context<Self>) -> bool {
+        match self.navigation.page {
+            Page::Browser if self.browser.has_back() => self.browse_back(cx),
+            Page::Addons if self.navigation.open_addon.is_some() => self.close_addon_panel(cx),
+            _ => return false,
+        }
+        true
+    }
+
+    pub(crate) fn page_back_button(&self, cx: &mut Context<Self>) -> Button {
+        crate::ui::back_button("page-back").on_click(cx.listener(|this, _, _, cx| {
+            this.page_back(cx);
+        }))
+    }
+
     pub(crate) fn cancel_scroll(&self) {
         self.news_scroll.cancel();
         self.addons.cancel_scroll();

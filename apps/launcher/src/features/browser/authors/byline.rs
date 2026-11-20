@@ -11,8 +11,10 @@ use swofty_i18n::{tr, trf};
 
 use super::{CRUMBS_SHOWN, View, face_color};
 use crate::shell::Shell;
+use crate::ui::back_row;
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::Palette;
+use crate::ui::tokens::space::GUTTER;
 
 impl Shell {
     pub(in crate::features::browser) fn publisher_avatar(
@@ -119,6 +121,7 @@ impl Shell {
             .children(credit)
     }
 
+    /// The Back button and the trail, above the part of the page that scrolls.
     pub(in crate::features::browser) fn back_bar(&self, p: Palette, cx: &mut Context<Self>) -> Div {
         let b = &self.browser;
         let mut crumbs: Vec<(Option<usize>, String)> = b
@@ -162,29 +165,11 @@ impl Shell {
                     .into_any_element(),
             });
         }
-        h_flex()
-            .gap(px(14.))
-            .flex_shrink_0()
-            .items_center()
-            .text_size(px(13.))
-            .text_color(p.text_muted)
-            .child(
-                h_flex()
-                    .id("browser-back")
-                    .h(px(26.))
-                    .px(px(8.))
-                    .ml(px(-8.))
-                    .gap(px(6.))
-                    .flex_shrink_0()
-                    .rounded(px(5.))
-                    .cursor_pointer()
-                    .hover(move |s| s.bg(p.hover).text_color(p.text))
-                    .child(Icon::new(IconName::ArrowLeft).size(px(14.)))
-                    .child(tr("Back"))
-                    .on_click(cx.listener(|this, _, _, cx| this.browse_back(cx))),
-            )
-            .child(div().w(px(1.)).h(px(14.)).bg(p.border))
-            .child(h_flex().gap(px(6.)).min_w_0().overflow_hidden().children(parts))
+        back_row(self.page_back_button(cx), parts, p)
+            .px(px(GUTTER))
+            .pb(px(12.))
+            .border_b_1()
+            .border_color(p.border_variant)
     }
 
     pub(in crate::features::browser) fn creators_button(&self, cx: &mut Context<Self>) -> Button {

@@ -417,7 +417,8 @@ impl Shell {
         installed_version(&self.library, id)
     }
 
-    pub(super) fn open_details(&mut self, id: &str, cx: &mut Context<Self>) {
+    pub(super) fn open_details(&mut self, id: &str, window: &mut Window, cx: &mut Context<Self>) {
+        window.focus(&self.root_focus, cx);
         self.browse(View::Addon(id.to_owned()), cx);
     }
 }

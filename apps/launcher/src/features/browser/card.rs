@@ -257,7 +257,7 @@ impl Shell {
             .bg(p.surface)
             .cursor_pointer()
             .hover(move |s| s.border_color(p.accent).bg(p.hover))
-            .on_click(cx.listener(move |this, _, _, cx| this.open_details(&id, cx)))
+            .on_click(cx.listener(move |this, _, window, cx| this.open_details(&id, window, cx)))
             .child(
                 h_flex()
                     .gap(px(12.))

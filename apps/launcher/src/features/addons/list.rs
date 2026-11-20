@@ -1,5 +1,6 @@
+use super::SPLIT_AT;
 use super::drag::{Dragged, drop_mark};
-use super::model::{AddonListItem, anchor};
+use super::model::{AddonListItem, anchor, row_of};
 use crate::services::library::AddonItem;
 use crate::shell::Shell;
 use crate::ui::scale::{Hit, px};
@@ -363,8 +364,36 @@ impl Shell {
                 .min_h_0()
                 .pb(px(6.)),
             )
+            .children(self.inline_back(p, cx))
             .child(self.addons.smooth.overlay(&self.addons.scroll, cx))
             .into_any_element()
+    }
+
+    /// Back and the addon's name over the top of the list, while the panel open inline
+    /// has its row scrolled away above.
+    fn inline_back(&self, p: Palette, cx: &mut Context<Self>) -> Option<Div> {
+        if self.layout.content_width >= SPLIT_AT {
+            return None;
+        }
+        let id = self.navigation.open_addon.as_deref()?;
+        let row = row_of(&self.addons.list_items, id)?;
+        if self.addons.scroll.logical_scroll_top().item_ix <= row {
+            return None;
+        }
+        let m = self.library.addons.iter().find(|a| a.manifest.id == id)?;
+        Some(
+            self.panel_back(&m.manifest.name, p, cx)
+                .absolute()
+                .top_0()
+                .left_0()
+                .right_0()
+                .px(px(14.))
+                .py(px(8.))
+                .bg(p.surface)
+                .border_b_1()
+                .border_color(p.border)
+                .occlude(),
+        )
     }
 
     fn list_item(

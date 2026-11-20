@@ -47,11 +47,16 @@ impl Shell {
                     .disabled(self.browser.feed.fetching)
                     .on_click(cx.listener(|this, _, _, cx| Browser::fetch_catalog(this, cx))),
             );
-        let (content, ad) = match self.browser.trail.view().clone() {
-            View::Addon(id) if self.browser.find(&id).is_some() => (self.browser_detail(&id, p, cx), None),
-            View::Author(id) => (self.author_page(&id, p, cx), None),
-            View::Creators => (self.creators_page(p, cx), None),
-            _ => (
+        let page = match self.browser.trail.view().clone() {
+            View::Addon(id) if self.browser.find(&id).is_some() => Some(self.browser_detail(&id, p, cx)),
+            View::Author(id) => Some(self.author_page(&id, p, cx)),
+            View::Creators => Some(self.creators_page(p, cx)),
+            _ => None,
+        };
+        let (back, content, ad) = match page {
+            Some(page) => (Some(self.back_bar(p, cx)), page, None),
+            None => (
+                None,
                 self.browser_grid(p, cx),
                 self.ad_header(crate::features::ads::Unit::Discover, p),
             ),
@@ -64,6 +69,7 @@ impl Shell {
                     .middle(ad),
             )
             .children(self.trouble_banner(p, cx))
+            .children(back)
             .child(content)
             .when(self.browser.activity_open, |d| {
                 d.child(self.activity_panel(p, cx))

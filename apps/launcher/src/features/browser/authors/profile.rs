@@ -199,9 +199,9 @@ impl Shell {
         let body = v_flex()
             .id("browser-author")
             .px(px(GUTTER))
+            .pt(px(18.))
             .pb(px(24.))
             .gap(px(GAP))
-            .child(self.back_bar(p, cx))
             .child(head)
             .child(
                 h_flex()

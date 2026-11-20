@@ -187,6 +187,16 @@ impl Shell {
             cx.notify();
             return;
         }
+        let m = ev.keystroke.modifiers;
+        let back = match key {
+            "escape" => !m.modified() && self.root_focus.is_focused(window),
+            "left" => m == Modifiers::alt(),
+            _ => false,
+        };
+        if back && self.navigation.cursor.is_none() && self.page_back(cx) {
+            cx.stop_propagation();
+            return;
+        }
         if self.navigation.cursor.is_none()
             && self.navigation.page == Page::Online
             && self.root_focus.is_focused(window)

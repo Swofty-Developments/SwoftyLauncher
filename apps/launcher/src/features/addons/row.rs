@@ -168,14 +168,17 @@ impl Shell {
             )
             .on_click(cx.listener({
                 let id = id.clone();
-                move |this, ev: &ClickEvent, _, cx| {
+                move |this, ev: &ClickEvent, window, cx| {
                     if !this.vanilla() && ev.modifiers().secondary(cx) {
                         this.addons.selection.toggle(&id);
                         cx.notify();
                         return;
                     }
-                    this.navigation.open_addon =
-                        (this.navigation.open_addon.as_ref() != Some(&id)).then(|| id.clone());
+                    window.focus(&this.root_focus, cx);
+                    let opening = this.navigation.open_addon.as_ref() != Some(&id);
+                    this.addons.opened_from = (opening && this.navigation.open_addon.is_none())
+                        .then(|| (id.clone(), this.addons.scroll.logical_scroll_top()));
+                    this.navigation.open_addon = opening.then(|| id.clone());
                     cx.notify();
                 }
             }));

@@ -115,6 +115,14 @@ impl Render for Shell {
             .relative()
             .track_focus(&self.root_focus)
             .on_key_down(cx.listener(|this, ev: &KeyDownEvent, window, cx| this.nav_key(ev, window, cx)))
+            .on_mouse_down(
+                MouseButton::Navigate(NavigationDirection::Back),
+                cx.listener(|this, _, _, cx| {
+                    if this.page_back(cx) {
+                        cx.stop_propagation();
+                    }
+                }),
+            )
             .size_full()
             .on_drag_move::<ExternalPaths>(cx.listener(|this, _, _, cx| {
                 if !this.overlays.dropping {

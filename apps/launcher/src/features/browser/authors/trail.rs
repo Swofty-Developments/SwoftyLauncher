@@ -40,6 +40,11 @@ impl Trail {
         &self.steps
     }
 
+    /// Every view but the grid has a Back.
+    pub(crate) fn has_back(&self) -> bool {
+        self.view != View::Grid
+    }
+
     /// Shows `to`, remembering the current view, scrolled to `scrolled`, to come back to.
     /// A view already on the trail is gone back to instead.
     pub(crate) fn open(&mut self, to: View, scrolled: Point<Pixels>) -> Option<Landing> {
@@ -117,7 +122,7 @@ impl Shell {
         }
     }
 
-    pub(super) fn browse_back(&mut self, cx: &mut Context<Self>) {
+    pub(crate) fn browse_back(&mut self, cx: &mut Context<Self>) {
         if let Some(landing) = self.browser.trail.back() {
             self.land(landing, cx);
         }
@@ -149,6 +154,10 @@ impl Shell {
 }
 
 impl Browser {
+    pub(crate) fn has_back(&self) -> bool {
+        self.trail.has_back()
+    }
+
     pub(in crate::features::browser) fn load_view<H: Host<Self>>(
         host: &mut H,
         view: &View,
@@ -259,13 +268,16 @@ mod tests {
     #[test]
     fn back_from_an_addon_returns_to_the_grid() {
         let mut t = Trail::default();
+        assert!(!t.has_back());
         assert_eq!(
             t.open(addon("a"), down(0.)),
             Some(Landing::View(addon("a"), down(0.)))
         );
+        assert!(t.has_back());
         assert_eq!(t.back(), Some(Landing::View(View::Grid, down(0.))));
         assert_eq!(t.view(), &View::Grid);
         assert!(t.steps().is_empty());
+        assert!(!t.has_back());
         assert_eq!(t.back(), None);
     }
 

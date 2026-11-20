@@ -160,7 +160,7 @@ impl Shell {
                             .child(format::compact(a.downloads)),
                     ),
             )
-            .on_click(cx.listener(move |this, _, _, cx| this.open_details(&target, cx)))
+            .on_click(cx.listener(move |this, _, window, cx| this.open_details(&target, window, cx)))
             .into_any_element()
     }
 

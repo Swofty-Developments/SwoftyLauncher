@@ -194,6 +194,9 @@ impl Shell {
         if selected.is_none() {
             self.navigation.open_addon = None;
         }
+        if self.addons.opened_from.as_ref().map(|(id, _)| id) != selected.as_ref() {
+            self.addons.opened_from = None;
+        }
         if self.vanilla() {
             self.addons.selection.clear();
         } else {
