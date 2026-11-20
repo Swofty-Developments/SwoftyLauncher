@@ -131,6 +131,29 @@ transition` and `spectator_mode_2 > session_timer > Scene Root`. Every binding i
 stock template of its screen (a wrong tag crashes the game when the screen opens), and the stock
 nodes are left byte for byte as they were.
 
+### Several records on one screen
+
+Each mask is one `visible` binding on a stock element, and two bindings on one element fight: the
+record composed last wins, so the stock board shows while the other record is on. With two or more
+records on a screen, the first record by prefix keeps the stock chains. Each later record wraps the
+masked element in a null of its own, `<prefix>_w_<element>`, and its masks bind that null:
+
+| screen | mask | the later record's wrapper | in |
+|---|---|---|---|
+| `standings` | `mask` | `<prefix>_w_mask` | `driver_position_table_stacked.idf` |
+| `replay` | `driver_table > Scene Root` | `<prefix>_w_driver_table` | `theatre/replay_highlights.idf` |
+| `replay` | `session_timer > Scene Root` | `<prefix>_w_session_timer` | `theatre/replay_highlights.idf` |
+| `spectator` | `… > transition` | `spectator_mode_2 > driver_position_table > <prefix>_w_transition` | `spectator_mode/spec_driver_position_table.idf` |
+| `spectator` | `… > session_timer > Scene Root` | `spectator_mode_2 > <prefix>_w_session_timer` | `screens/spectator_mode_2.idf` |
+
+A third record's null goes inside the second's, as for `stock_nodes`. Every record's mask hides the
+board while its own `show` leaf is true, and the board shows only while every leaf is false. The
+composer writes these scenes only with two or more records on the screen. A screen spelled out
+names each mask's scene in `mask_scenes`; without it, the wrappers go into the instance scene.
+
+The host instances need nothing of this: each record shows its own `<prefix>_host`, and `o_<other>`
+hides the other records' roots inside it.
+
 ## The three presets
 
 | | `standings` | `replay` | `spectator` |
@@ -140,7 +163,9 @@ nodes are left byte for byte as they were.
 | root follows | — | `#replay_flow.replays_and_highlights.show_drivers_list` | `show_left_side` |
 | stock read from | flow_race.erp | flow_replay.erp | flow_race.erp |
 
-`spectator_mode_2.idf` itself is left stock: another addon replaces it, and the later wins.
+`spectator_mode_2.idf` itself is left stock while one record is on the spectator screen: another
+addon replaces it, and the later wins. With two or more, the composer writes it for the second
+record's `session_timer` wrapper.
 
 ## A screen spelled out
 
@@ -156,6 +181,7 @@ For a screen the core does not know, `screen` takes the same struct the presets 
   "instance": { "in": "eaid://ui_package/art/osd/screens/my_screen.idf", "clone": "some_xref",
                 "under": "elements_null", "at": { "of": "session_timer" }, "scale": 0.78, "retarget": true },
   "masks": [["some_xref", "Scene Root"]],
+  "mask_scenes": ["eaid://ui_package/art/osd/screens/my_screen.idf"],  // the scene of each mask's element
   "root_switch": "show_left_side",
   "erps": { "scene": ["2025_asset_groups/ui_package/flow_frontend.erp"],
             "template": ["2025_asset_groups/ui_package/screens/my_screen.erp"] },

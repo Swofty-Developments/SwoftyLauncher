@@ -8,6 +8,7 @@ use super::model::{Dial, StockMode};
 use super::scene::{Builder, Mode, Plan, Sprites};
 use super::sprites::{Expanded, Loaded, SpriteEnv, load_sprites, stock_parts, tinted_sprites};
 use super::stock::Stock;
+use super::stock_edit::{self, StockNodes};
 use super::template::StockTags;
 use super::textures::Res;
 use super::{Built, Input, Output, TemplateBase, err};
@@ -250,6 +251,40 @@ pub fn compose_with(
             }
         }
         let mut new_scene = b.finish(footprint)?;
+        let mut taken = BTreeSet::new();
+        let mut by_pfx: Vec<usize> = (0..plans.len()).collect();
+        by_pfx.sort_by(|a, b| pfx_of[plans[*a].0.input].cmp(&pfx_of[plans[*b].0.input]));
+        for i in by_pfx {
+            let (e, plan) = &mut plans[i];
+            if e.rec.effective_stock() != StockMode::Hide {
+                continue;
+            }
+            let pfx = &pfx_of[e.input];
+            let entry = StockNodes {
+                template: facts.race_parent.to_owned(),
+                scene: None,
+                hide: stock_parts(&e.rec),
+                wrap: Vec::new(),
+                while_: None,
+            };
+            let (entry, moved) = stock_edit::share(&entry, facts.scene, &mut taken);
+            if moved.is_empty() {
+                continue;
+            }
+            let (bytes, names) = stock_edit::wrap_scene(&new_scene, &entry, pfx, None)?;
+            new_scene = bytes;
+            for (part, wrapper) in moved.iter().zip(&names) {
+                let name = format!("v_stock_{part}");
+                for v in plan.vis.iter_mut().filter(|v| v.name == name) {
+                    v.element = wrapper.clone();
+                }
+            }
+            out.lines.push(format!(
+                "{pfx}: another record hides the stock {} of {} too, so this record hides them through wrapper nulls",
+                moved.join(", "),
+                facts.scene.rsplit('/').next().unwrap_or(facts.scene)
+            ));
+        }
         let planned: Vec<&Plan> = plans.iter().map(|(_, p)| p).collect();
         clip_resources(stock, facts, &clip_template, &planned, &mut scene_resources)?;
         scene_resources.push((

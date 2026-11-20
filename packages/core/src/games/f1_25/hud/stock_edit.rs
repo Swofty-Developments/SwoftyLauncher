@@ -94,6 +94,24 @@ fn child_at_mut<'a>(e: &'a mut Node, path: &[usize]) -> Result<&'a mut Node> {
     Ok(cur)
 }
 
+fn drawn(e: &Node) -> bool {
+    e.as_obj()
+        .and_then(|o| o.get("geoms"))
+        .and_then(Node::as_arr)
+        .is_some_and(|a| !a.items.is_empty())
+}
+
+/// The first null of a scene that draws nothing, to clone a wrapper from in a scene that has no null.
+pub fn plain_null(bytes: &[u8]) -> Result<Node> {
+    let pkg = Pkg::parse(bytes)?;
+    idf::elements(scene_root(&pkg)?)
+        .into_iter()
+        .map(|(_, e)| e)
+        .find(|e| crate::ui::catalog::element_type(e) == "eNull" && !drawn(e))
+        .map(idf::detached)
+        .ok_or_else(|| err("the scene has no undrawn eNull"))
+}
+
 /// The entry with each `hide` element another record's group already shows and hides in `scene`
 /// (in `taken`) moved to `wrap`, so an element keeps one `visible` binding; `taken` gains the rest.
 /// Returns the entry and the moved elements.
@@ -110,10 +128,15 @@ pub fn share(s: &StockNodes, scene: &str, taken: &mut BTreeSet<String>) -> (Stoc
 /// The scene with a new null `<pfx>_w_<element>` around each of `s.wrap`, in the element's place
 /// in its parent's children, so every stock name and the drawing order stay; the ids of the moved
 /// subtrees follow their new paths and the lookup grows by the wrappers. The null is a copy of one of
-/// the scene's nulls, an undrawn one when there is one, with no art. A scene another record wrapped
-/// already gets the new null inside that record's, around the element. Returns the bytes and the
-/// wrapper names.
-pub fn wrap_scene(bytes: &[u8], s: &StockNodes, pfx: &str) -> Result<(Vec<u8>, Vec<String>)> {
+/// the scene's nulls, an undrawn one when there is one, or of `donor` (a null of another scene) when
+/// the scene has none, with no art. A scene another record wrapped already gets the new null inside
+/// that record's, around the element. Returns the bytes and the wrapper names.
+pub fn wrap_scene(
+    bytes: &[u8],
+    s: &StockNodes,
+    pfx: &str,
+    donor: Option<&Node>,
+) -> Result<(Vec<u8>, Vec<String>)> {
     let mut pkg = Pkg::parse(bytes)?;
     let root = scene_root(&pkg)?;
     let all = idf::elements(root);
@@ -122,17 +145,13 @@ pub fn wrap_scene(bytes: &[u8], s: &StockNodes, pfx: &str) -> Result<(Vec<u8>, V
         .filter(|(_, e)| crate::ui::catalog::element_type(e) == "eNull")
         .map(|(_, e)| *e)
         .collect();
-    let drawn = |e: &Node| {
-        e.as_obj()
-            .and_then(|o| o.get("geoms"))
-            .and_then(Node::as_arr)
-            .is_some_and(|a| !a.items.is_empty())
-    };
     let tmpl = nulls
         .iter()
         .find(|e| !drawn(e))
         .or(nulls.first())
-        .map(|e| idf::detached(e))
+        .copied()
+        .or(donor)
+        .map(idf::detached)
         .ok_or_else(|| {
             err(format!(
                 "stock_nodes {}: the scene has no eNull to clone a wrapper from",
@@ -1065,8 +1084,8 @@ mod tests {
         assert_eq!(b.hide, ["centre"]);
         assert_eq!(b.wrap, ["edge_base", "lap_bg", "logo"]);
 
-        let (first, wraps_a) = wrap_scene(&stock, &a, "aa").unwrap();
-        let (second, wraps_b) = wrap_scene(&first, &b, "bb").unwrap();
+        let (first, wraps_a) = wrap_scene(&stock, &a, "aa", None).unwrap();
+        let (second, wraps_b) = wrap_scene(&first, &b, "bb", None).unwrap();
         assert_eq!(wraps_a, ["aa_w_edge_base", "aa_w_lap_bg"]);
         assert_eq!(wraps_b, ["bb_w_edge_base", "bb_w_lap_bg", "bb_w_logo"]);
         let p = Pkg::parse(&second).unwrap();

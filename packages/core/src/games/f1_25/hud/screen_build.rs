@@ -767,21 +767,59 @@ pub fn compose_screens(
         let read = |name: &str| read_from(&facts.stock_erp, name);
         let prefixes: Vec<String> = members.iter().map(|i| recs[*i].pfx.clone()).collect();
         let instance = add_instances(&read(&facts.instance.scene)?, facts, &prefixes, &read)?;
-        let res: Res = (facts.instance.scene.clone(), "UILayout", vec![instance]);
-        match key.as_str() {
-            "standings" => {
-                standings = true;
-                out.scene.push(res);
+        let mut scenes: Vec<Res> = vec![(facts.instance.scene.clone(), "UILayout", vec![instance])];
+        let mut own_masks: BTreeMap<usize, ScreenFacts> = BTreeMap::new();
+        let mut by_pfx = members.clone();
+        by_pfx.sort_by(|a, b| recs[*a].pfx.cmp(&recs[*b].pfx));
+        let donor = match by_pfx.len() {
+            0 | 1 => None,
+            _ => Some(stock_edit::plain_null(&race_read(screens::LAPC_SCENE)?)?),
+        };
+        for &ri in by_pfx.iter().skip(1) {
+            let pfx = &recs[ri].pfx;
+            let mut mine = facts.clone();
+            for ((k, el, scene), chain) in facts.mask_wraps().into_iter().zip(&mut mine.masks) {
+                let bytes = match scenes.iter().find(|res| res.0 == scene) {
+                    Some(res) => res.2[0].clone(),
+                    None => read(&scene).or_else(|_| race_read(&scene))?,
+                };
+                let entry = StockNodes {
+                    template: facts.parent_ui.clone(),
+                    scene: Some(scene.clone()),
+                    hide: Vec::new(),
+                    wrap: vec![el],
+                    while_: None,
+                };
+                let (new, names) = stock_edit::wrap_scene(&bytes, &entry, pfx, donor.as_ref())?;
+                match scenes.iter_mut().find(|res| res.0 == scene) {
+                    Some(res) => res.2 = vec![new],
+                    None => scenes.push((scene, "UILayout", vec![new])),
+                }
+                chain.truncate(k);
+                chain.extend(names);
             }
-            "replay" => {
-                out.replay_template.push(res.clone());
-                out.replay_scene.push(res);
+            out.lines.push(format!(
+                "{pfx}: screen {key}: another record masks the stock board too, so this record masks it through wrapper nulls"
+            ));
+            own_masks.insert(ri, mine);
+        }
+        for res in scenes {
+            match key.as_str() {
+                "standings" => {
+                    standings = true;
+                    out.scene.push(res);
+                }
+                "replay" => {
+                    out.replay_template.push(res.clone());
+                    out.replay_scene.push(res);
+                }
+                "spectator" => out.spectator_scene.push(res),
+                _ => out.scene.push(res),
             }
-            "spectator" => out.spectator_scene.push(res),
-            _ => out.scene.push(res),
         }
         for &ri in members {
             let r = &recs[ri];
+            let facts = own_masks.get(&ri).unwrap_or(facts);
             let target = r.targets.iter().find(|t| t.facts.key == *key).expect("a member");
             let show = &target.show;
             let hide = &target.hide;
@@ -999,7 +1037,7 @@ pub fn compose_screens(
                     Some(res) => res.2[0].clone(),
                     None => race_read(&scene).or_else(|_| read_from(screens::FLOW_REPLAY, &scene))?,
                 };
-                let (new, names) = stock_edit::wrap_scene(&bytes, s, &r.pfx)?;
+                let (new, names) = stock_edit::wrap_scene(&bytes, s, &r.pfx, None)?;
                 wraps = names;
                 put_scene(
                     &mut out,
@@ -1087,22 +1125,35 @@ pub fn compose_screens(
     Ok(out)
 }
 
-/// The scenes the `stock_nodes` of more than one entry hide one element of: the later entries wrap it
-/// ([`stock_edit::share`]), so the composer writes those scenes too.
+/// The scenes the composer writes only when several records share a stock part: a scene the
+/// `stock_nodes` of more than one entry hide one element of (the later entries wrap it,
+/// [`stock_edit::share`]), and the mask scenes of a screen more than one record is on (the later
+/// records mask the board through wrappers).
 pub fn shared_scenes(stock: &dyn Stock, inputs: &[Input]) -> Result<Vec<String>> {
+    let mut out = BTreeSet::new();
+    let mut on: BTreeMap<String, (ScreenFacts, usize)> = BTreeMap::new();
+    for i in inputs {
+        for t in screens::targets(&i.record)?.unwrap_or_default() {
+            on.entry(t.facts.key.clone()).or_insert((t.facts.clone(), 0)).1 += 1;
+        }
+    }
+    for (facts, n) in on.values() {
+        if *n > 1 {
+            out.extend(facts.mask_wraps().into_iter().map(|(_, _, scene)| scene));
+        }
+    }
     let entries: Vec<&StockNodes> = inputs
         .iter()
         .filter(|i| i.record.screen.is_some())
         .flat_map(|i| &i.record.stock_nodes)
         .collect();
     if entries.len() < 2 {
-        return Ok(Vec::new());
+        return Ok(out.into_iter().collect());
     }
     let read =
         |name: &str| -> Result<Pkg> { Ok(Pkg::parse(&first(stock.read(dials::STOCK_ERP, name)?, name)?)?) };
     let (race, spectator) = (read(dials::TEMPLATE)?, read(dials::SPECTATOR)?);
     let mut seen = BTreeSet::new();
-    let mut out = BTreeSet::new();
     for s in entries {
         let template = match template_of_path(&s.template) {
             "spectator" => &spectator,

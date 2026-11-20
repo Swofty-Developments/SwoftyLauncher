@@ -151,6 +151,10 @@ pub struct ScreenFacts {
     pub instance: Instance,
     #[serde(default)]
     pub masks: Vec<Vec<String>>,
+    /// The scene of each mask's element (the one before a final `Scene Root`), where a later
+    /// record's wrapper goes; the instance scene when left out.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub mask_scenes: Vec<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub root_switch: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -211,6 +215,7 @@ pub fn standings() -> ScreenFacts {
             retarget: false,
         },
         masks: vec![vec![s(STACKED_MASK)]],
+        mask_scenes: vec![s(STACKED)],
         root_switch: None,
         extra_hide: None,
         series_logo: Some(s(HUD_SERIES_LOGO)),
@@ -244,6 +249,7 @@ pub fn replay() -> ScreenFacts {
             vec![s(REPLAY_TABLE), s(SCENE_ROOT)],
             vec![s(REPLAY_HEADER), s(SCENE_ROOT)],
         ],
+        mask_scenes: vec![s(REPLAY_SCENE), s(REPLAY_SCENE)],
         root_switch: Some(s(REPLAY_SHOW)),
         extra_hide: Some(ScreenSwitch {
             layout: vec![s(SCENE_ROOT)],
@@ -286,6 +292,7 @@ pub fn spectator() -> ScreenFacts {
             vec![s(SPECT_PREFIX), s(SPECT_TABLE_EL), s(SPECT_GROUP)],
             vec![s(SPECT_PREFIX), s(SPECT_HEADER_EL), s(SCENE_ROOT)],
         ],
+        mask_scenes: vec![s(SPECT_TABLE), s(SPECT_SCREEN)],
         root_switch: Some(s(SPECT_SHOW)),
         extra_hide: None,
         series_logo: Some(s(SPECT_SERIES_LOGO)),
@@ -361,6 +368,15 @@ impl ScreenFacts {
                 self.key
             )));
         }
+        if !self.mask_scenes.is_empty() && self.mask_scenes.len() != self.masks.len() {
+            return Err(err(format!(
+                "screen {}: mask_scenes names one scene per mask",
+                self.key
+            )));
+        }
+        if !self.mask_scenes.iter().all(|m| idf(m)) {
+            return Err(err(format!("screen {}: scenes are eaid://….idf paths", self.key)));
+        }
         if self.erps.scene.is_empty() || self.erps.template.is_empty() {
             return Err(err(format!(
                 "screen {}: erps.scene and erps.template name archives",
@@ -374,6 +390,27 @@ impl ScreenFacts {
             )));
         }
         Ok(())
+    }
+
+    /// Per mask: the index in its chain of the element a later record's wrapper goes around (the
+    /// one before a final `Scene Root`), the element and its scene.
+    pub fn mask_wraps(&self) -> Vec<(usize, String, String)> {
+        self.masks
+            .iter()
+            .enumerate()
+            .map(|(i, chain)| {
+                let k = match chain.last() {
+                    Some(l) if l == SCENE_ROOT && chain.len() > 1 => chain.len() - 2,
+                    _ => chain.len() - 1,
+                };
+                let scene = self
+                    .mask_scenes
+                    .get(i)
+                    .cloned()
+                    .unwrap_or_else(|| self.instance.scene.clone());
+                (k, chain[k].clone(), scene)
+            })
+            .collect()
     }
 
     /// The host instance's element name for a record.
@@ -457,6 +494,22 @@ mod tests {
             ["spectator_mode_2", "driver_position_table", "transition"]
         );
         assert_eq!(sp.root_switch.as_deref(), Some("show_left_side"));
+        let w = |k: usize, el: &str, sc: &str| (k, el.to_owned(), sc.to_owned());
+        assert_eq!(st.mask_wraps(), [w(0, STACKED_MASK, STACKED)]);
+        assert_eq!(
+            rp.mask_wraps(),
+            [
+                w(0, REPLAY_TABLE, REPLAY_SCENE),
+                w(0, REPLAY_HEADER, REPLAY_SCENE)
+            ]
+        );
+        assert_eq!(
+            sp.mask_wraps(),
+            [
+                w(2, "transition", SPECT_TABLE),
+                w(1, SPECT_HEADER_EL, SPECT_SCREEN)
+            ]
+        );
         assert_eq!(sp.scene_file, sp.template_file);
         for k in PRESETS {
             let f = preset(k).unwrap();

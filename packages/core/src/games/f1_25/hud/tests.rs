@@ -803,7 +803,14 @@ fn two_screen_records_wrap_the_lap_counter_inside_each_other() {
     let inputs = [mk("two.season"), mk("one.season")];
     let t_stock = Pkg::parse(&stock.read(dials::STOCK_ERP, dials::TEMPLATE).unwrap()[0]).unwrap();
     let flag = stock_edit::scene_of(&t_stock.root, flag_node).unwrap().unwrap();
-    let mut shared = vec![screens::LAPC_SCENE.to_owned(), flag.clone()];
+    let mut shared = vec![
+        screens::LAPC_SCENE.to_owned(),
+        flag.clone(),
+        screens::STACKED.to_owned(),
+        screens::REPLAY_SCENE.to_owned(),
+        screens::SPECT_TABLE.to_owned(),
+        screens::SPECT_SCREEN.to_owned(),
+    ];
     shared.sort();
     assert_eq!(screen_build::shared_scenes(&stock, &inputs).unwrap(), shared);
     let out = compose(&stock, &inputs).unwrap();
@@ -888,6 +895,177 @@ fn two_screen_records_wrap_the_lap_counter_inside_each_other() {
     assert_eq!(
         targets(flag_node, &format!("{b}_sn1")),
         [stock_edit::wrap_name(&b, "boundless")]
+    );
+
+    let chain = |root: &swofty_formats::pkg::Node, path: &str| -> Vec<String> {
+        let at = crate::ui::node::find_path(root, path).unwrap_or_else(|_| panic!("{path}"));
+        crate::ui::node::node_at(root, &at)
+            .unwrap()
+            .slot(crate::ui::node::LAYOUT)
+            .unwrap()
+            .iter()
+            .flat_map(|c| c.as_arr().unwrap().items.clone())
+            .map(|o| o.as_obj().unwrap().str_at("debugName").unwrap().to_owned())
+            .collect()
+    };
+    let paths_of = |erp: &Erp, scene: &str| -> Vec<String> {
+        let p = pkg_in(erp, scene);
+        assert!(crate::ui::idf::id_problems(&p).unwrap().is_empty(), "{scene}");
+        crate::ui::idf::elements(stock_edit::scene_root(&p).unwrap())
+            .into_iter()
+            .map(|(p, _)| p)
+            .collect()
+    };
+    let spec = file("hud_spectator.erp");
+    let replay_scene = file("hud_replay_scene.erp");
+    let screens_of = [
+        (
+            &t,
+            screens::standings(),
+            &scene,
+            vec![vec![stock_edit::wrap_name(&b, "mask")]],
+        ),
+        (
+            &pkg_in(&spec, dials::SPECTATOR),
+            screens::spectator(),
+            &spec,
+            vec![
+                vec![
+                    screens::SPECT_PREFIX.to_owned(),
+                    screens::SPECT_TABLE_EL.to_owned(),
+                    stock_edit::wrap_name(&b, "transition"),
+                ],
+                vec![
+                    screens::SPECT_PREFIX.to_owned(),
+                    stock_edit::wrap_name(&b, screens::SPECT_HEADER_EL),
+                ],
+            ],
+        ),
+        (
+            &pkg_in(&file("hud_replay.erp"), screens::REPLAY_UI),
+            screens::replay(),
+            &replay_scene,
+            vec![
+                vec![stock_edit::wrap_name(&b, screens::REPLAY_TABLE)],
+                vec![stock_edit::wrap_name(&b, screens::REPLAY_HEADER)],
+            ],
+        ),
+    ];
+    for (tp, facts, erp, want_b) in screens_of {
+        for (i, (stock_chain, want)) in facts.masks.iter().zip(&want_b).enumerate() {
+            let at = |p: &str| format!("{}.{p}_ctl.mask_{i}", facts.parent_ui);
+            assert_eq!(&chain(&tp.root, &at(&a)), stock_chain, "{} {a}", facts.key);
+            assert_eq!(&chain(&tp.root, &at(&b)), want, "{} {b}", facts.key);
+        }
+        for (_, el, sc) in facts.mask_wraps() {
+            let wrapper = stock_edit::wrap_name(&b, &el);
+            let paths = paths_of(erp, &sc);
+            assert!(
+                paths.iter().any(|p| p.ends_with(&format!("{wrapper}.{el}"))),
+                "{el} inside {wrapper} in {sc}"
+            );
+            assert!(!paths.iter().any(|p| p.contains(&stock_edit::wrap_name(&a, &el))));
+        }
+    }
+    std::fs::remove_dir_all(dir).ok();
+}
+
+#[test]
+fn two_dial_records_hide_the_stock_dial_through_their_own_wrappers() {
+    let Some(stock) = game() else { return };
+    let dir = addon_dir("two-dials");
+    let mk = |addon: &str, leaf: &str| Input {
+        addon: addon.into(),
+        key: "dial".into(),
+        dir: dir.clone(),
+        record: HudElement::parse(&serde_json::json!({
+            "dial": "f1_25",
+            "stock": "hide",
+            "switch": { "view_model": leaf, "default": false },
+            "sprites": { "base": { "png": "art/base.png", "bounds": [-60, -20, 60, 20] } },
+            "elements": [ { "kind": "sprite", "id": "base", "sprite": "base", "layer": 20 } ]
+        }))
+        .unwrap(),
+    };
+    let inputs = [
+        mk("two.season", "view_model_data.hud_b_dial"),
+        mk("one.season", "view_model_data.hud_a_dial"),
+    ];
+    let out = compose(&stock, &inputs).unwrap();
+    let a = prefix_for("one.season", "dial", None).unwrap();
+    let b = prefix_for("two.season", "dial", None).unwrap();
+    let facts = dials::facts(Dial::F125);
+    let find = |name: &str| {
+        out.archives
+            .iter()
+            .map(|x| Erp::parse(&x.bytes).unwrap())
+            .find(|e| e.find(name).is_ok())
+            .unwrap_or_else(|| panic!("{name}"))
+    };
+    let scene = pkg_in(&find(facts.scene), facts.scene);
+    assert!(crate::ui::idf::id_problems(&scene).unwrap().is_empty());
+    let paths: Vec<String> = crate::ui::idf::elements(stock_edit::scene_root(&scene).unwrap())
+        .into_iter()
+        .map(|(p, _)| p)
+        .collect();
+    for part in dials::STOCK_KIDS {
+        let nested = format!(
+            "{}.{}.{part}",
+            dials::CUSTOMISATION,
+            stock_edit::wrap_name(&b, part)
+        );
+        assert!(paths.contains(&nested), "{nested}");
+        assert!(!paths.iter().any(|p| p.contains(&stock_edit::wrap_name(&a, part))));
+    }
+    let t = pkg_in(&find(dials::TEMPLATE), dials::TEMPLATE);
+    let mut nodes = Vec::new();
+    crate::ui::node::node_paths_of(&t.root, "", &mut nodes);
+    let stock_hides = |pfx: &str| -> Vec<(String, String)> {
+        nodes
+            .iter()
+            .filter(|(p, _)| p.contains(&format!(".{pfx}_ctl.v_stock_")))
+            .map(|(p, n)| {
+                let el = n
+                    .slot(crate::ui::node::LAYOUT)
+                    .unwrap()
+                    .iter()
+                    .flat_map(|c| c.as_arr().unwrap().items.clone())
+                    .map(|o| o.as_obj().unwrap().str_at("debugName").unwrap().to_owned())
+                    .collect::<Vec<_>>()
+                    .join(".");
+                let db = n
+                    .props()
+                    .unwrap()
+                    .get("visible")
+                    .unwrap()
+                    .as_obj()
+                    .unwrap()
+                    .str_at("dbentry")
+                    .unwrap()
+                    .to_owned();
+                (p.rsplit('.').next().unwrap().to_owned(), format!("{el} <- {db}"))
+            })
+            .collect()
+    };
+    let want = |pfx: &str, leaf: &str, wrapped: bool| -> Vec<(String, String)> {
+        dials::STOCK_KIDS
+            .iter()
+            .map(|part| {
+                let el = if wrapped {
+                    stock_edit::wrap_name(pfx, part)
+                } else {
+                    (*part).to_owned()
+                };
+                (format!("v_stock_{part}"), format!("{el} <- #{leaf}"))
+            })
+            .collect()
+    };
+    assert_eq!(stock_hides(&a), want(&a, "view_model_data.hud_a_dial", false));
+    assert_eq!(stock_hides(&b), want(&b, "view_model_data.hud_b_dial", true));
+    assert!(
+        out.lines
+            .iter()
+            .any(|l| l.starts_with(&format!("{b}: another record hides the stock")))
     );
     std::fs::remove_dir_all(dir).ok();
 }
