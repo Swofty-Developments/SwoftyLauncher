@@ -2,6 +2,7 @@ use super::images::Art;
 use super::model::*;
 use super::{Load, Online, Target};
 use crate::shell::Shell;
+use crate::shell::tabs::OnlineTab;
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::Palette;
 use crate::ui::{Callout, EmptyState, Segmented};
@@ -262,25 +263,27 @@ impl Shell {
         ] {
             device = device.item(l, on, f);
         }
+        let group = |label: &'static str, control: Segmented| {
+            h_flex()
+                .flex_shrink_0()
+                .gap(px(10.))
+                .items_center()
+                .child(
+                    div()
+                        .text_size(px(11.))
+                        .font_weight(FontWeight::SEMIBOLD)
+                        .text_color(p.text_placeholder)
+                        .child(label),
+                )
+                .child(control)
+        };
         h_flex()
-            .gap(px(10.))
+            .flex_wrap()
+            .gap_x(px(10.))
+            .gap_y(px(8.))
             .items_center()
-            .child(
-                div()
-                    .text_size(px(11.))
-                    .font_weight(FontWeight::SEMIBOLD)
-                    .text_color(p.text_placeholder)
-                    .child(tr("ASSISTS")),
-            )
-            .child(assists)
-            .child(
-                div()
-                    .text_size(px(11.))
-                    .font_weight(FontWeight::SEMIBOLD)
-                    .text_color(p.text_placeholder)
-                    .child(tr("INPUT")),
-            )
-            .child(device)
+            .child(group(tr("ASSISTS"), assists))
+            .child(group(tr("INPUT"), device))
             .into_any_element()
     }
 
@@ -415,76 +418,119 @@ impl Shell {
         out
     }
 
-    pub(super) fn crumb_bar(&self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
-        let crumbs: Vec<(usize, String)> = self
-            .online
-            .trail
-            .crumbs()
-            .into_iter()
-            .map(|(d, l)| (d, l.to_owned()))
-            .collect();
+    /// The trail over an Online page: none at a tab's root, else `Online › <tab> › …` with a back arrow. On the
+    /// Multiplayer tab `room` is the room shown. Time Trial without access keeps 1.10's trail, from `Time Trial`
+    /// and at its root too.
+    pub(crate) fn crumb_bar(
+        &self,
+        tab: OnlineTab,
+        room: Option<String>,
+        p: Palette,
+        cx: &mut Context<Self>,
+    ) -> AnyElement {
+        let classic = tab == OnlineTab::TimeTrial && self.trial_look().trail_at_root();
+        let in_room = room.is_some();
+        let crumbs: Vec<(usize, String)> = match (tab, room) {
+            (_, Some(name)) => vec![(0, name)],
+            (OnlineTab::TimeTrial, None) => self
+                .online
+                .trail
+                .crumbs()
+                .into_iter()
+                .map(|(d, l)| (d, l.to_owned()))
+                .collect(),
+            (OnlineTab::Multiplayer, None) => Vec::new(),
+        };
         let last = crumbs.len();
-        h_flex()
+        let refresh = (!in_room).then(|| {
+            Button::new("online-refresh")
+                .ghost()
+                .tap_sm()
+                .icon(IconName::RefreshCw)
+                .label(tr("Refresh"))
+                .on_click(cx.listener(|this, _, _, cx| Online::reload(this, cx)))
+        });
+        let row = h_flex()
             .px(px(28.))
             .pt(px(18.))
             .pb(px(10.))
             .gap(px(8.))
             .items_center()
-            .text_size(px(13.))
-            .child(
-                Button::new("trail-back")
-                    .ghost()
-                    .tap_sm()
-                    .icon(IconName::ChevronLeft)
-                    .disabled(self.online.trail.depth() <= 1)
-                    .on_click(cx.listener(|this, _, _, cx| Online::back(this, cx))),
-            )
-            .child(
+            .text_size(px(13.));
+        if last == 0 && !classic {
+            return row.child(div().flex_1()).children(refresh).into_any_element();
+        }
+        let to_root = move |this: &mut Shell, cx: &mut Context<Shell>| match tab {
+            OnlineTab::Multiplayer => this.room_step_out(cx),
+            OnlineTab::TimeTrial => Online::jump(this, 1, cx),
+        };
+        let tab_name = match tab {
+            OnlineTab::Multiplayer => tr("Multiplayer"),
+            OnlineTab::TimeTrial => tr("Time Trial"),
+        };
+        let root_crumb = |id: &'static str, label: &'static str, current: bool| {
+            div()
+                .id(id)
+                .cursor_pointer()
+                .text_color(if current { p.text } else { p.text_muted })
+                .font_weight(if current {
+                    FontWeight::SEMIBOLD
+                } else {
+                    FontWeight::NORMAL
+                })
+                .hover(move |s| s.text_color(p.text))
+                .child(label)
+                .on_click(cx.listener(move |this, _, _, cx| to_root(this, cx)))
+        };
+        let chevron = || {
+            Icon::new(IconName::ChevronRight)
+                .size(px(13.))
+                .text_color(p.text_placeholder)
+        };
+        let roots: Vec<AnyElement> = match classic {
+            true => vec![root_crumb("crumb-root", tab_name, last == 0).into_any_element()],
+            false => vec![
+                root_crumb("crumb-root", tr("Online"), false).into_any_element(),
+                chevron().into_any_element(),
+                root_crumb("crumb-tab", tab_name, false).into_any_element(),
+            ],
+        };
+        row.child(
+            Button::new("trail-back")
+                .ghost()
+                .tap_sm()
+                .icon(IconName::ChevronLeft)
+                .disabled(classic && self.online.trail.depth() <= 1)
+                .on_click(cx.listener(move |this, _, _, cx| match tab {
+                    OnlineTab::Multiplayer => this.room_step_out(cx),
+                    OnlineTab::TimeTrial => Online::back(this, cx),
+                })),
+        )
+        .children(roots)
+        .children(crumbs.into_iter().enumerate().flat_map(|(i, (depth, label))| {
+            let current = i + 1 == last;
+            [
+                chevron().into_any_element(),
                 div()
-                    .id("crumb-root")
+                    .id(SharedString::from(format!("crumb-{depth}")))
                     .cursor_pointer()
-                    .text_color(if last == 0 { p.text } else { p.text_muted })
-                    .font_weight(if last == 0 {
+                    .text_color(if current { p.text } else { p.text_muted })
+                    .font_weight(if current {
                         FontWeight::SEMIBOLD
                     } else {
                         FontWeight::NORMAL
                     })
                     .hover(move |s| s.text_color(p.text))
-                    .child(tr("Time Trial"))
-                    .on_click(cx.listener(|this, _, _, cx| Online::jump(this, 1, cx))),
-            )
-            .children(crumbs.into_iter().enumerate().flat_map(|(i, (depth, label))| {
-                let current = i + 1 == last;
-                [
-                    Icon::new(IconName::ChevronRight)
-                        .size(px(13.))
-                        .text_color(p.text_placeholder)
-                        .into_any_element(),
-                    div()
-                        .id(SharedString::from(format!("crumb-{depth}")))
-                        .cursor_pointer()
-                        .text_color(if current { p.text } else { p.text_muted })
-                        .font_weight(if current {
-                            FontWeight::SEMIBOLD
-                        } else {
-                            FontWeight::NORMAL
-                        })
-                        .hover(move |s| s.text_color(p.text))
-                        .child(label)
-                        .on_click(cx.listener(move |this, _, _, cx| Online::jump(this, depth, cx)))
-                        .into_any_element(),
-                ]
-            }))
-            .child(div().flex_1())
-            .child(
-                Button::new("online-refresh")
-                    .ghost()
-                    .tap_sm()
-                    .icon(IconName::RefreshCw)
-                    .label(tr("Refresh"))
-                    .on_click(cx.listener(|this, _, _, cx| Online::reload(this, cx))),
-            )
-            .into_any_element()
+                    .child(label)
+                    .when(depth > 0, |d| {
+                        d.on_click(cx.listener(move |this, _, _, cx| Online::jump(this, depth, cx)))
+                    })
+                    .into_any_element(),
+            ]
+        }))
+        .child(div().flex_1())
+        .children(refresh)
+        .into_any_element()
     }
 
     pub(super) fn sign_in_banner(&self, p: Palette, cx: &mut Context<Self>) -> Option<AnyElement> {

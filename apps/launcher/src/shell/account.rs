@@ -304,6 +304,7 @@ impl Host<Account> for Shell {
         if matches!(change, AccountChange::Left) {
             self.room_leave(cx);
         }
+        self.follow_online_access(cx);
     }
 }
 

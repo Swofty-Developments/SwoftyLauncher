@@ -253,7 +253,7 @@ impl Shell {
             .into_any_element()
     }
 
-    /// "Play <host>'s Lobby" while a room is open on the Multiplayer page. `primary` gives it the Play button's
+    /// "Play <host>'s Lobby" while a room is open on the Online page. `primary` gives it the Play button's
     /// filled look, for when it stands in for Play.
     pub(super) fn room_button(
         &self,

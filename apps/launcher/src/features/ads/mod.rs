@@ -35,6 +35,7 @@ use windows::{Backend, Opener, View};
 mod none;
 #[cfg(not(any(windows, target_os = "linux")))]
 use none::{Backend, Opener, View};
+mod stand_in;
 mod ui;
 
 pub(crate) use ui::AdVideo;

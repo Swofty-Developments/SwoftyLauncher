@@ -122,7 +122,9 @@ impl Shell {
         if !Self::ad_fits(unit, width) {
             return None;
         }
-        let ad = self.ad_box(unit, p.background, p)?;
+        let ad = self
+            .ad_box(unit, p.background, p)
+            .or_else(|| super::stand_in::stand_in(unit, p))?;
         Some(h_flex().w_full().justify_center().child(ad).into_any_element())
     }
 

@@ -12,122 +12,177 @@ use swofty_i18n::{tr, trf, trn};
 
 use super::model::*;
 use super::state::*;
-use crate::shell::{Page, Shell};
+use crate::shell::Shell;
 use crate::ui::badge;
-use crate::ui::theme::{Palette, ScrollArea};
-use crate::ui::tokens::space::GUTTER;
+use crate::ui::theme::Palette;
 
 impl Shell {
-    pub(super) fn room_lobby(&mut self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
-        let subtitle =
-            "Race with players who use the same addons. The host picks tracks in F1 25's LAN lobby."
-                .to_owned();
-        let actions = h_flex()
-            .gap(px(14.))
-            .items_center()
-            .child(self.game_status(p))
+    /// The Multiplayer page's main column: the open rooms with the create form and joining by code.
+    pub(crate) fn room_column(&mut self, width: f32, p: Palette, cx: &mut Context<Self>) -> AnyElement {
+        let lobby = &self.rooms.lobby;
+        let title = if lobby.rooms_loaded {
+            trf!("OPEN ROOMS \u{00b7} {count}", count = lobby.rooms.len())
+        } else {
+            tr("OPEN ROOMS").to_owned()
+        };
+        let head = self
+            .section_head(title, p)
+            .flex_wrap()
+            .child(div().flex_1())
+            .when(width >= 900., |d| d.child(self.game_status(p)))
+            .child(self.code_join("mp-join-code", false, p, cx))
             .child(
                 Button::new("mp-create-open")
                     .outline()
+                    .tap_sm()
                     .icon(IconName::Plus)
                     .label(tr("Create room"))
-                    .disabled(self.rooms.form)
+                    .disabled(self.rooms.form || self.rooms.busy())
                     .on_click(cx.listener(|this, _, window, cx| this.room_open_form(window, cx))),
             );
-        let rooms: AnyElement = if let Some(why) = &self.rooms.refused {
-            div()
+        v_flex()
+            .gap(px(8.))
+            .children(self.room_strip(p, cx))
+            .child(head)
+            .when_some(self.rooms.notice.clone(), |d, n| {
+                d.child(div().text_size(px(13.)).text_color(p.text_muted).child(n))
+            })
+            .when_some(self.rooms.error.clone(), |d, e| {
+                d.child(div().text_size(px(13.)).text_color(p.error).child(e))
+            })
+            .when(self.rooms.form, |d| d.child(self.create_form(p, cx)))
+            .child(self.room_list(p, cx))
+            .into_any_element()
+    }
+
+    /// The room this launcher is in, while its player is on the list of rooms or on Time Trial.
+    pub(crate) fn room_strip(&self, p: Palette, cx: &mut Context<Self>) -> Option<AnyElement> {
+        let state = self.rooms.state.as_ref().filter(|_| self.rooms.in_room())?;
+        let name = state
+            .room
+            .as_ref()
+            .map_or_else(|| tr("Room").to_owned(), |r| r.name.clone());
+        let status = room_status(state);
+        Some(
+            h_flex()
+                .px(px(16.))
+                .py(px(12.))
+                .gap(px(14.))
+                .items_center()
+                .rounded(px(6.))
+                .border_1()
+                .border_color(p.accent)
+                .bg(p.selected)
+                .child(Icon::new(IconName::Users).size(px(18.)).text_color(p.accent))
+                .child(
+                    v_flex()
+                        .flex_1()
+                        .min_w_0()
+                        .gap(px(2.))
+                        .child(
+                            div()
+                                .text_size(px(14.))
+                                .font_weight(FontWeight::SEMIBOLD)
+                                .truncate()
+                                .child(trf!("You're in {room}", room = name)),
+                        )
+                        .child(
+                            div()
+                                .text_size(px(13.))
+                                .text_color(p.text_muted)
+                                .truncate()
+                                .child(status.progress.label.clone()),
+                        ),
+                )
+                .child(
+                    Button::new("mp-back-to-room")
+                        .primary()
+                        .tap_sm()
+                        .label(tr("Open room"))
+                        .on_click(cx.listener(|this, _, _, cx| this.room_step_in(cx))),
+                )
+                .into_any_element(),
+        )
+    }
+
+    fn room_list(&self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
+        let lobby = &self.rooms.lobby;
+        if let Some(why) = &self.rooms.refused {
+            return div()
                 .text_size(px(13.))
                 .text_color(p.text_muted)
                 .child(refusal_text(why))
-                .into_any_element()
-        } else if !self.rooms.lobby.rooms_loaded && self.rooms.lobby.rooms_error.is_none() {
-            div()
-                .text_size(px(13.))
-                .text_color(p.text_muted)
-                .child(tr("Loading rooms\u{2026}"))
-                .into_any_element()
-        } else if self.rooms.lobby.rooms.is_empty() {
-            let body = match &self.rooms.lobby.rooms_error {
+                .into_any_element();
+        }
+        if !lobby.rooms_loaded && lobby.rooms_error.is_none() {
+            return v_flex()
+                .rounded(px(6.))
+                .border_1()
+                .border_color(p.border)
+                .children((0..2).map(|i| {
+                    h_flex()
+                        .h(px(64.))
+                        .px(px(16.))
+                        .gap(px(14.))
+                        .items_center()
+                        .when(i > 0, |d| d.border_t_1().border_color(p.border_variant))
+                        .child(div().size(px(32.)).rounded_full().bg(p.elevated))
+                        .child(div().h(px(14.)).w(px(220.)).rounded(px(4.)).bg(p.elevated))
+                        .when(i == 0, |d| {
+                            d.child(div().flex_1()).child(
+                                div()
+                                    .text_size(px(13.))
+                                    .text_color(p.text_muted)
+                                    .child(tr("Loading rooms\u{2026}")),
+                            )
+                        })
+                }))
+                .into_any_element();
+        }
+        if lobby.rooms.is_empty() {
+            let body = match &lobby.rooms_error {
                 Some(_) => tr("The room list didn't load. It tries again in a few seconds."),
                 None => tr("Create one, or join a private room with its invite code."),
             };
-            v_flex()
-                .py(px(40.))
+            return h_flex()
+                .px(px(16.))
+                .py(px(16.))
+                .gap(px(14.))
                 .items_center()
-                .gap(px(8.))
                 .rounded(px(6.))
                 .border_1()
                 .border_color(p.border)
-                .child(badge(IconName::Users, 40., p))
+                .child(badge(IconName::Users, 36., p))
                 .child(
-                    div()
-                        .pt(px(6.))
-                        .text_size(px(15.))
-                        .font_weight(FontWeight::SEMIBOLD)
-                        .child(tr("No open rooms")),
+                    v_flex()
+                        .gap(px(2.))
+                        .child(
+                            div()
+                                .text_size(px(14.))
+                                .font_weight(FontWeight::SEMIBOLD)
+                                .child(tr("No open rooms")),
+                        )
+                        .child(div().text_size(px(13.)).text_color(p.text_muted).child(body)),
                 )
-                .child(div().text_size(px(13.)).text_color(p.text_muted).child(body))
-                .into_any_element()
-        } else {
-            let list = self.rooms.lobby.rooms.clone();
-            v_flex()
-                .rounded(px(6.))
-                .border_1()
-                .border_color(p.border)
-                .overflow_hidden()
-                .children(
-                    list.iter()
-                        .enumerate()
-                        .map(|(i, r)| self.room_row(r, i == 0, p, cx)),
-                )
-                .into_any_element()
-        };
-        let ad = self.page_ad(self.rooms.form, p);
+                .into_any_element();
+        }
         v_flex()
-            .size_full()
-            .child(self.header(Page::Multiplayer.label(), subtitle, actions, p))
-            .child(
-                v_flex()
-                    .flex_1()
-                    .min_h_0()
-                    .scroll_y("mp-lobby")
-                    .px(px(GUTTER))
-                    .pt(px(4.))
-                    .pb(px(24.))
-                    .gap(px(24.))
-                    .children(ad)
-                    .when(self.rooms.form, |d| d.child(self.create_form(p, cx)))
-                    .child(
-                        v_flex()
-                            .gap(px(8.))
-                            .child(
-                                self.section_head(
-                                    if self.rooms.lobby.rooms_loaded {
-                                        trf!(
-                                            "OPEN ROOMS \u{00b7} {count}",
-                                            count = self.rooms.lobby.rooms.len()
-                                        )
-                                    } else {
-                                        tr("OPEN ROOMS").to_owned()
-                                    },
-                                    p,
-                                )
-                                .child(div().flex_1())
-                                .child(self.code_join(p, cx)),
-                            )
-                            .when_some(self.rooms.notice.clone(), |d, n| {
-                                d.child(div().text_size(px(13.)).text_color(p.text_muted).child(n))
-                            })
-                            .when_some(self.rooms.error.clone(), |d, e| {
-                                d.child(div().text_size(px(13.)).text_color(p.error).child(e))
-                            })
-                            .child(rooms),
-                    ),
+            .rounded(px(6.))
+            .border_1()
+            .border_color(p.border)
+            .overflow_hidden()
+            .children(
+                lobby
+                    .rooms
+                    .iter()
+                    .enumerate()
+                    .map(|(i, r)| self.room_row(r, i == 0, p, cx)),
             )
             .into_any_element()
     }
 
-    pub(super) fn code_join(&self, _p: Palette, cx: &mut Context<Self>) -> Div {
+    /// The invite code box and its join button. From the rooms card, `card` joins on the Multiplayer page.
+    pub(super) fn code_join(&self, id: &'static str, card: bool, _p: Palette, cx: &mut Context<Self>) -> Div {
         let typed = !self.rooms.code.read(cx).value().trim().is_empty();
         let joining = self
             .rooms
@@ -142,13 +197,19 @@ impl Shell {
                     .child(Input::new(&self.rooms.code).tap_sm().disabled(self.rooms.busy())),
             )
             .child(
-                Button::new("mp-join-code")
+                Button::new(id)
                     .outline()
                     .tap_sm()
                     .label(tr("Join with code"))
                     .loading(joining && typed)
                     .disabled(!typed || self.rooms.busy())
-                    .on_click(cx.listener(|this, _, window, cx| this.room_join_code(window, cx))),
+                    .on_click(cx.listener(move |this, _, window, cx| {
+                        if card {
+                            this.room_join_code_from_card(window, cx);
+                        } else {
+                            this.room_join_code(window, cx);
+                        }
+                    })),
             )
     }
 
@@ -164,16 +225,16 @@ impl Shell {
         let names = card_addons(room);
         h_flex()
             .px(px(16.))
-            .py(px(14.))
+            .py(px(10.))
             .gap(px(14.))
             .items_center()
             .when(!first, |d| d.border_t_1().border_color(p.border_variant))
-            .child(self.face(&room.host.name, room.host.avatar.as_deref(), 36., p))
+            .child(self.face(&room.host.name, room.host.avatar.as_deref(), 32., p))
             .child(
                 v_flex()
                     .flex_1()
                     .min_w_0()
-                    .gap(px(3.))
+                    .gap(px(2.))
                     .child(
                         div()
                             .text_size(px(14.))
@@ -182,28 +243,29 @@ impl Shell {
                             .child(room.name.clone()),
                     )
                     .child(
-                        div()
-                            .text_size(px(13.))
+                        h_flex()
+                            .gap(px(6.))
+                            .items_center()
+                            .text_size(px(12.))
                             .text_color(p.text_muted)
-                            .truncate()
-                            .child(room_meta(room)),
-                    )
-                    .when(!names.is_empty(), |d| {
-                        d.child(
-                            h_flex()
-                                .gap(px(6.))
-                                .items_start()
-                                .text_size(px(12.))
-                                .text_color(p.text_placeholder)
-                                .child(
+                            .child(div().flex_shrink_0().child(room_meta(room)))
+                            .when(!names.is_empty(), |d| {
+                                d.child(
                                     Icon::new(IconName::Package)
                                         .size(px(13.))
-                                        .mt(px(1.))
+                                        .ml(px(6.))
                                         .text_color(p.text_placeholder),
                                 )
-                                .child(div().flex_1().min_w_0().child(names.join(", "))),
-                        )
-                    }),
+                                .child(
+                                    div()
+                                        .flex_1()
+                                        .min_w_0()
+                                        .truncate()
+                                        .text_color(p.text_placeholder)
+                                        .child(names.join(", ")),
+                                )
+                            }),
+                    ),
             )
             .child(
                 div()

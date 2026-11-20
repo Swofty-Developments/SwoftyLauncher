@@ -15,7 +15,7 @@ use swofty_core::platform::process::GameProcess;
 use swofty_core::store::Store;
 use swofty_i18n::tr;
 
-use super::model::{OwnPrint, exit_notice, leaves_on_exit};
+use super::model::{OwnPrint, RoomFocus, exit_notice, leaves_on_exit, room_focus};
 use super::preview::{self, RoomPreview};
 use super::room_game::RoomGame;
 use super::steward::{self, Steward};
@@ -73,6 +73,7 @@ pub(crate) struct Multiplayer {
     pub(super) state: Option<SessionState>,
     pub(super) leaving: bool,
     pub(super) viewing: Option<String>,
+    pub(super) away: bool,
     pub(super) notice: Option<String>,
     pub(super) error: Option<String>,
     pub(super) copied: Option<Instant>,
@@ -83,7 +84,6 @@ pub(crate) struct Multiplayer {
     pub(super) lobby: Lobby,
     pub(super) steward: Steward,
     pub(super) preview: Option<RoomPreview>,
-    pub(super) ad_stand_in: bool,
 }
 
 impl Multiplayer {
@@ -118,6 +118,7 @@ impl Multiplayer {
             state,
             leaving: false,
             viewing: None,
+            away: false,
             notice: None,
             error: None,
             copied: None,
@@ -128,13 +129,25 @@ impl Multiplayer {
             lobby,
             steward: Steward::default(),
             preview,
-            ad_stand_in: preview::ad_stand_in(debug, std::env::var_os(preview::AD_ENV).as_deref()),
         }
     }
 
     /// Whether the page shows a room: one this launcher is in, or a previewed one.
-    pub(super) fn in_room(&self) -> bool {
+    pub(crate) fn in_room(&self) -> bool {
         self.session.is_some() || self.preview.is_some()
+    }
+
+    pub(crate) fn form_open(&self) -> bool {
+        self.form
+    }
+
+    /// Ends a step out of the room, so the Multiplayer page shows the room again.
+    pub(crate) fn show_room(&mut self) {
+        self.away = false;
+    }
+
+    pub(crate) fn focus(&self) -> RoomFocus {
+        room_focus(self.in_room(), self.away, self.viewing.as_deref())
     }
 
     /// League Stewarding's page, when the room page offers it.
@@ -164,6 +177,7 @@ impl Multiplayer {
         self.state = None;
         self.leaving = false;
         self.viewing = None;
+        self.away = false;
         self.lobby.refresh();
     }
 }
@@ -273,6 +287,7 @@ impl Multiplayer {
     pub(crate) fn leave(&mut self) -> bool {
         if self.preview.take().is_some() {
             self.state = None;
+            self.away = false;
             return true;
         }
         let Some(session) = &self.session else {
@@ -377,7 +392,8 @@ impl Host<Multiplayer> for Shell {
                 busy: self.launching.launch.is_some()
                     || self.game.build.is_some()
                     || self.launching.restoring,
-                shown: self.navigation.page == Page::Multiplayer && self.account.allowed(),
+                shown: matches!(self.navigation.page, Page::Online | Page::Multiplayer)
+                    && self.account.allowed(),
                 token: self.account.session.as_ref().map(|m| m.token.as_str()),
             },
         )

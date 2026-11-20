@@ -17,6 +17,14 @@ impl Link {
             count,
         }
     }
+
+    pub(super) fn named(page: Page, label: String) -> Self {
+        Self {
+            page,
+            label: label.into(),
+            count: None,
+        }
+    }
 }
 
 fn link_width(link: &Link) -> f32 {

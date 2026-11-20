@@ -1,10 +1,11 @@
 mod actions;
-mod lobby;
+mod card;
 mod model;
 mod page;
 mod preview;
 mod room;
 mod room_game;
+mod rooms;
 mod state;
 mod steward;
 #[cfg(test)]

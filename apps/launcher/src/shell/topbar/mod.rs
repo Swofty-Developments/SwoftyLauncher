@@ -9,7 +9,7 @@ use std::collections::HashMap;
 use std::sync::{Arc, LazyLock, Mutex};
 use swofty_i18n::trn;
 
-use crate::shell::tabs::{ACTIONS, Action, Cursor, Key, Row, Step, Tab};
+use crate::shell::tabs::{ACTIONS, Action, Cursor, Key, Row, Step, Tab, online_pages};
 use crate::shell::{Page, Shell};
 use overflow::{Link, split_overflow};
 
@@ -74,13 +74,15 @@ impl Shell {
                 (links, 3)
             }
             Some(Tab::Online) => {
-                let mut links = vec![Link::new(Page::Online, None)];
-                if self.nav_mp() {
-                    links.push(Link::new(Page::Multiplayer, None));
-                }
-                if self.tt_admin() {
-                    links.push(Link::new(Page::Moderation, None));
-                }
+                let access = self.nav_mp();
+                let links: Vec<Link> = online_pages(access, self.tt_admin())
+                    .into_iter()
+                    .map(|page| match page {
+                        Page::Multiplayer => Link::named(page, self.rooms_tab_label()),
+                        Page::Online if access => Link::named(page, self.trial_tab_label()),
+                        page => Link::new(page, None),
+                    })
+                    .collect();
                 let n = links.len();
                 (links, n)
             }
@@ -246,7 +248,7 @@ impl Shell {
                     let page = if self.navigation.page.tab() == Some(tab) {
                         self.navigation.page
                     } else {
-                        tab.home()
+                        self.tab_home(tab)
                     };
                     self.open_page(page, cx);
                 }

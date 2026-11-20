@@ -41,29 +41,19 @@ impl Shell {
             _ => Vec::new(),
         };
         let custom_shown: Vec<TrackCard> = filter.apply(&custom, &mine_keys).into_iter().cloned().collect();
-        let mut bylines = self
-            .online_bylines(&shown.iter().chain(&custom_shown).collect::<Vec<_>>())
-            .into_iter();
-        let mut track_row = |this: &mut Self, t: &TrackCard, items: &mut Vec<Target>| {
-            let idx = this.target_item(items, Target::Board(Box::new(t.clone()), t.name.clone()));
-            let mine = this.online.my_times.get(&t.key).copied();
-            this.thin_track_row(t, bylines.next().flatten(), idx, mine, p, cx)
-        };
-        let rows: Vec<AnyElement> = shown.iter().map(|t| track_row(self, t, &mut items)).collect();
-        let custom_rows: Vec<AnyElement> = custom_shown
-            .iter()
-            .map(|t| track_row(self, t, &mut items))
-            .collect();
+        let main_width = self.layout.content_width
+            - 56.
+            - 20.
+            - RAIL_W
+            - if wide { 20. + super::ranking::RIGHT_W } else { 0. };
+        let in_place = self.trial_look().opens_in_place();
+        let rows = self.track_rows(&shown, main_width, in_place, &mut items, p, cx);
+        let custom_rows = self.track_rows(&custom_shown, main_width, in_place, &mut items, p, cx);
         let ranking = self.rank_column(id, tr("SEASON RANKING"), &mut items, p, cx);
         self.online.items = items;
         let header = self.season_header(&page.season, p);
         let bar = self.track_filter_bar(&page.tracks, &filter, me.is_some(), p, cx);
         let rail = self.season_rail(id, p, cx);
-        let main_width = self.layout.content_width
-            - 56.
-            - 20.
-            - RAIL_W
-            - if wide { 20. + super::landing::RIGHT_W } else { 0. };
         let ad = self.ad_banner(crate::features::ads::Unit::Online, main_width, p);
         let empty = rows.is_empty() && custom_rows.is_empty();
         let (narrow_ranking, side_ranking) = if wide {
@@ -122,7 +112,7 @@ impl Shell {
             .when(wide, |d| {
                 d.child(
                     v_flex()
-                        .w(px(super::landing::RIGHT_W))
+                        .w(px(super::ranking::RIGHT_W))
                         .flex_shrink_0()
                         .h_full()
                         .pb(px(20.))

@@ -12,8 +12,8 @@ use super::model::{
     restart_ok_text, room_meta,
 };
 use super::model::{
-    StepCard, StepRow, default_room_name, fix_lines, leaves_on_exit, lobby_hint, shows_ad, starting,
-    step_title,
+    RoomFocus, StepCard, StepRow, card_rooms, default_room_name, fix_lines, leaves_on_exit, lobby_hint,
+    room_focus, shows_ad, starting, step_title,
 };
 use super::state::{Lobby, room_sizes, unasked};
 use swofty_core::online::multiplayer::types::RoomContent;
@@ -817,4 +817,27 @@ fn a_fix_plan_reads_as_one_sentence_per_change() {
             "Update F1 25 to the host's version.",
         ]
     );
+}
+
+#[test]
+fn the_multiplayer_page_shows_the_room_until_its_player_steps_out_to_the_list() {
+    assert_eq!(room_focus(true, false, None), RoomFocus::InRoom);
+    assert_eq!(room_focus(true, false, Some("KX7P2Q")), RoomFocus::InRoom);
+    assert_eq!(room_focus(true, true, None), RoomFocus::List);
+    assert_eq!(
+        room_focus(false, false, Some("KX7P2Q")),
+        RoomFocus::Viewing("KX7P2Q".into())
+    );
+    assert_eq!(
+        room_focus(false, true, Some("KX7P2Q")),
+        RoomFocus::Viewing("KX7P2Q".into())
+    );
+    assert_eq!(room_focus(false, false, None), RoomFocus::List);
+}
+
+#[test]
+fn the_rooms_card_lists_the_first_three_rooms() {
+    assert_eq!(card_rooms(0), 0);
+    assert_eq!(card_rooms(2), 2);
+    assert_eq!(card_rooms(9), 3);
 }

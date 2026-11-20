@@ -26,18 +26,17 @@ impl Shell {
         let sectors = self.layout.content_width >= 900.;
         let best = best_sectors(&page.rows, 3);
         let leader = page.rows.first().map_or(0, |r| r.time_ms);
-        let me = self.account.display_name();
+        let own = self.own_lap(&page).cloned();
         let mut body: Vec<AnyElement> = Vec::new();
         for r in &page.rows {
             let idx = self.target_item(&mut items, Target::Profile(r.driver.clone()));
-            let mine = me.as_deref() == Some(r.driver.name.as_str());
+            let mine = own.as_ref().is_some_and(|m| m.lap_id == r.lap_id);
             body.push(self.board_row(r, idx, leader, &best, sectors, mine, p, cx));
             if SHOW_SETUPS
                 && self.online.setup_open.as_deref() == Some(r.lap_id.as_str())
                 && let Some(setup) = &r.setup
             {
-                let mine = page
-                    .mine
+                let mine = own
                     .as_ref()
                     .filter(|m| m.lap_id != r.lap_id)
                     .and_then(|m| m.setup.as_ref());
@@ -84,11 +83,8 @@ impl Shell {
             self.layout.content_width - 56.,
             p,
         );
-        let pinned = page
-            .mine
-            .clone()
-            .filter(|m| page.rows.iter().all(|r| r.lap_id != m.lap_id))
-            .map(|m| self.board_row(&m, usize::MAX, leader, &best, sectors, true, p, cx));
+        let pinned = pinned_row(&page.rows, own.as_ref())
+            .map(|m| self.board_row(m, usize::MAX, leader, &best, sectors, true, p, cx));
         let history = self.history_strip(&page, p);
         let watch = self.online.watch_notice().map(|(ok, text)| {
             div()

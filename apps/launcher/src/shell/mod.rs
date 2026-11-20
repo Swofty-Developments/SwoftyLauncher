@@ -27,7 +27,7 @@ mod reload;
 mod render;
 mod seen;
 mod startup;
-mod tabs;
+pub(crate) mod tabs;
 mod topbar;
 pub(crate) mod ui_mode;
 

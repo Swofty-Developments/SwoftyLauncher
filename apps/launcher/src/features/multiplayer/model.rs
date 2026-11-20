@@ -510,6 +510,30 @@ pub(crate) fn shows_ad(form_open: bool) -> bool {
     !form_open
 }
 
+/// What the Multiplayer page shows: the room this launcher is in, a room looked at before joining it, or the list
+/// of open rooms.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(crate) enum RoomFocus {
+    InRoom,
+    Viewing(String),
+    List,
+}
+
+/// `away` is a player in a room who stepped out to the list; the room keeps running and the list links back to it.
+pub(crate) fn room_focus(in_room: bool, away: bool, viewing: Option<&str>) -> RoomFocus {
+    match (in_room, viewing) {
+        (true, _) if away => RoomFocus::List,
+        (true, _) => RoomFocus::InRoom,
+        (false, Some(code)) => RoomFocus::Viewing(code.to_owned()),
+        (false, None) => RoomFocus::List,
+    }
+}
+
+/// How many rooms the Time Trial page's rooms card lists out of `total`.
+pub(crate) fn card_rooms(total: usize) -> usize {
+    total.min(3)
+}
+
 #[derive(Clone)]
 pub(super) enum Start {
     Create(RoomSettings),

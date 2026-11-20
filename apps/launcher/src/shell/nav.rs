@@ -2,6 +2,7 @@ use gpui_kit::component::button::Button;
 use gpui_kit::*;
 use std::time::Instant;
 
+use super::tabs::{OnlineTab, Tab, after_access, online_home};
 use super::{Page, Shell};
 
 /// Which page is open, where keyboard focus is in the tabs, and what the top bar has open.
@@ -13,6 +14,8 @@ pub(crate) struct Navigation {
     pub(crate) open_addon: Option<String>,
     /// The addon the Addons page highlights, and since when.
     pub(crate) highlight: Option<(String, Instant)>,
+    /// The Online page a player with access used last.
+    pub(crate) online_tab: Option<OnlineTab>,
 }
 
 impl Shell {
@@ -41,15 +44,47 @@ impl Shell {
         self.db.list_motion.cancel();
     }
 
+    /// The page a tab opens when another tab is open.
+    pub(crate) fn tab_home(&self, tab: Tab) -> Page {
+        match tab {
+            Tab::Online => online_home(self.nav_mp(), self.rooms.in_room(), self.navigation.online_tab),
+            _ => tab.home(),
+        }
+    }
+
+    /// Follows access to the rooms being given or taken away: off the Multiplayer page without it, and no
+    /// Multiplayer tab kept as the one used last.
+    pub(crate) fn follow_online_access(&mut self, cx: &mut Context<Self>) {
+        let (page, kept) = after_access(self.nav_mp(), self.navigation.page, self.navigation.online_tab);
+        if kept != self.navigation.online_tab {
+            self.navigation.online_tab = kept;
+            OnlineTab::keep(kept, &self.store.root);
+        }
+        if page != self.navigation.page {
+            self.open_page(page, cx);
+        }
+    }
+
     pub(crate) fn open_page(&mut self, page: Page, cx: &mut Context<Self>) {
+        let page = match page {
+            Page::Multiplayer if !self.nav_mp() => Page::Online,
+            page => page,
+        };
         if self.navigation.page != page {
             self.cancel_scroll();
         }
         self.db_page_change(page, cx);
         let was = self.navigation.page;
         self.navigation.page = page;
-        if page == Page::Online {
+        if page == Page::Multiplayer && was.tab() != Some(Tab::Online) {
+            self.rooms.show_room();
+        }
+        if let Some(tab) = OnlineTab::of(page) {
             crate::features::online::Online::enter(self, cx);
+            if self.nav_mp() && self.navigation.online_tab != Some(tab) {
+                self.navigation.online_tab = Some(tab);
+                tab.save(&self.store.root);
+            }
         }
         if page == Page::Shaders {
             self.sync_shaders(true, cx);

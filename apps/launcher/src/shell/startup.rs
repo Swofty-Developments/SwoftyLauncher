@@ -167,15 +167,18 @@ impl Shell {
                 profiles_open: true,
                 open_addon: None,
                 highlight: None,
+                online_tab: crate::shell::tabs::OnlineTab::load(&root),
             },
         };
         crate::features::sections::AddonViews::refresh(&mut shell, cx);
+        shell.follow_online_access(cx);
         match std::env::var("SWOFTY_LAUNCHER_OPEN_PAGE").as_deref() {
             Ok("saves") => shell.open_page(Page::Careers, cx),
             Ok("shaders") => shell.open_page(Page::Shaders, cx),
             Ok("addons") => shell.open_page(Page::Addons, cx),
-            Ok("online") => shell.open_page(Page::Online, cx),
-            Ok("multiplayer") if shell.account.allowed() => shell.open_page(Page::Multiplayer, cx),
+            Ok("online") => shell.open_page(shell.tab_home(crate::shell::tabs::Tab::Online), cx),
+            Ok("multiplayer") => shell.open_page(Page::Multiplayer, cx),
+            Ok("time-trial" | "timetrial") => shell.open_page(Page::Online, cx),
             Ok("browser") => shell.open_page(Page::Browser, cx),
             Ok("settings") => shell.open_page(Page::Settings, cx),
             Ok("donate" | "store" | "support") => shell.open_page(Page::Store, cx),

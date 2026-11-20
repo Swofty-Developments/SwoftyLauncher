@@ -191,6 +191,41 @@ impl Shell {
         cx.notify();
     }
 
+    /// Back to the list of rooms from the room page: a room looked at closes, and a room joined keeps running.
+    pub(crate) fn room_step_out(&mut self, cx: &mut Context<Self>) {
+        match self.rooms.focus() {
+            RoomFocus::InRoom => self.rooms.away = true,
+            RoomFocus::Viewing(_) => self.rooms.viewing = None,
+            RoomFocus::List => return,
+        }
+        cx.notify();
+    }
+
+    pub(super) fn room_step_in(&mut self, cx: &mut Context<Self>) {
+        self.rooms.away = false;
+        self.open_page(Page::Multiplayer, cx);
+    }
+
+    /// A room from the Time Trial page's rooms card, looked at on the Multiplayer page.
+    pub(super) fn room_open_from_card(&mut self, code: String, cx: &mut Context<Self>) {
+        self.open_page(Page::Multiplayer, cx);
+        self.room_open(code, cx);
+    }
+
+    /// The create form, opened on the Multiplayer page from the rooms card.
+    pub(super) fn room_create_from_card(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.open_page(Page::Multiplayer, cx);
+        if !self.rooms.form {
+            self.room_open_form(window, cx);
+        }
+    }
+
+    /// A private room's code typed on the rooms card, joined on the Multiplayer page.
+    pub(super) fn room_join_code_from_card(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.open_page(Page::Multiplayer, cx);
+        self.room_join_code(window, cx);
+    }
+
     pub(super) fn room_copy_code(&mut self, code: String, cx: &mut Context<Self>) {
         cx.write_to_clipboard(ClipboardItem::new_string(code));
         self.rooms.copied = Some(Instant::now());
@@ -354,6 +389,7 @@ impl Multiplayer {
                         m.state = Some(session.state());
                         m.session = Some(session);
                         m.form = false;
+                        m.away = false;
                     }
                     Err(e) => m.error = Some(e),
                 }

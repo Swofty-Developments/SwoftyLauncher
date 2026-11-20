@@ -108,7 +108,7 @@ impl Shell {
 
     pub(crate) fn play_bar(&self, p: Palette, wide: bool, cx: &mut Context<Self>) -> impl IntoElement {
         let state = self.play_state();
-        // With a room open on the Multiplayer page and the game ready, the room's button replaces Play.
+        // With a room open on the Online page and the game ready, the room's button replaces Play.
         let ready = matches!(state, PlayState::Ready | PlayState::Crashed(_));
         let room = self.room_button(&state, ready, p, cx);
         let lobby_only = ready && room.is_some();

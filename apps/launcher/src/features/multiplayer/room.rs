@@ -119,7 +119,7 @@ impl Shell {
                     .into_any_element()
             }))
             .collect();
-        let ad = self.page_ad(false, p);
+        let ad = self.page_ad(false, self.layout.content_width - 2. * GUTTER, p);
         v_flex()
             .size_full()
             .child(self.header(room.name.clone(), subtitle, actions, p))
@@ -558,7 +558,7 @@ impl Shell {
                         .child(div().text_size(px(13.)).text_color(p.text_muted).child(text)),
                 )
         });
-        let ad = self.page_ad(false, p);
+        let ad = self.page_ad(false, self.layout.content_width - 2. * GUTTER, p);
         v_flex()
             .size_full()
             .child(self.header(title, subtitle, actions, p))

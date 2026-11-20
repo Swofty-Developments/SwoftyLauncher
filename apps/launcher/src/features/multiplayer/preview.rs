@@ -1,6 +1,5 @@
-//! The room page drawn from a saved `session.state` answer, to look at the page without a room, and a stand-in
-//! where the page's ad goes while ads are off. Debug builds only, like the local module overrides: a release
-//! build never reads either variable.
+//! The room page drawn from a saved `session.state` answer, to look at the page without a room. Debug builds
+//! only, like the local module overrides: a release build never reads either variable.
 
 use std::ffi::OsStr;
 
@@ -12,8 +11,6 @@ use swofty_core::online::multiplayer::types::{RoomSummary, SessionState};
 pub(super) const ROOM_ENV: &str = "SWOFTY_ROOM_PREVIEW";
 /// Names a saved room list, as the room server lists rooms, for the room browser.
 pub(super) const ROOMS_ENV: &str = "SWOFTY_ROOMS_PREVIEW";
-/// Set, the page draws a stand-in where its ad goes while ads are off.
-pub(super) const AD_ENV: &str = "SWOFTY_ROOM_PREVIEW_AD";
 
 /// What a previewed room shows beyond its state.
 pub(crate) struct RoomPreview {
@@ -39,18 +36,11 @@ pub(super) fn rooms(debug: bool, file: Option<&OsStr>) -> Option<Vec<RoomSummary
     serde_json::from_str(&std::fs::read_to_string(file?).ok()?).ok()
 }
 
-/// Whether the page draws the ad stand-in: in a `debug` build with [`AD_ENV`] `set`.
-pub(super) fn ad_stand_in(debug: bool, set: Option<&OsStr>) -> bool {
-    debug && set.is_some_and(|v| !v.is_empty())
-}
-
 #[cfg(test)]
 mod tests {
-    use std::ffi::OsStr;
-
     use swofty_core::online::multiplayer::types::{Phase, StepState};
 
-    use super::{ad_stand_in, room, rooms};
+    use super::{room, rooms};
 
     const ANSWER: &str = r#"{
         "state": {"phase": {"phase": "in_lobby"}, "host": true, "members": [], "mismatches": [],
@@ -97,13 +87,5 @@ mod tests {
         assert_eq!(list[0].max_members, 20);
         assert!(rooms(true, None).is_none());
         std::fs::remove_dir_all(&dir).ok();
-    }
-
-    #[test]
-    fn only_a_debug_build_draws_the_ad_stand_in() {
-        assert!(ad_stand_in(true, Some(OsStr::new("1"))));
-        assert!(!ad_stand_in(false, Some(OsStr::new("1"))), "a release build");
-        assert!(!ad_stand_in(true, None));
-        assert!(!ad_stand_in(true, Some(OsStr::new(""))));
     }
 }
