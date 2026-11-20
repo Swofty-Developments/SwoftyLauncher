@@ -70,8 +70,12 @@ pub(super) fn stamp_resume_list(
         true => sha256_file(&careers)?,
         false => "absent".to_owned(),
     };
+    let ids = match crate::stdlib::reports::found(data, Some(&game.dir), crate::stdlib::reports::IDS) {
+        Some(p) => sha256_file(&p)?,
+        None => "absent".to_owned(),
+    };
     hash.update(format!(
-        "resume list|{stamp}|{};",
+        "resume list|{stamp}|{ids}|{};",
         crate::stdlib::careers::save_state(data, profile, game)
     ));
     Ok(())

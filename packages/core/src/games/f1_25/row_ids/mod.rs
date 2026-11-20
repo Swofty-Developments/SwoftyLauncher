@@ -27,7 +27,9 @@ mod tests;
 
 pub use self::aliases::IdAliases;
 pub use self::overrides::{Overrides, ROOM_STAT_IDS_FILE, lend, lent};
-pub use self::owners::{IdOwners, Kept, id_owners, kept_rows, label_owners, save_owners, stock_max_ids};
+pub use self::owners::{
+    IdOwners, Kept, id_owners, kept_rows, label_owners, registry_rows, save_owners, stock_max_ids,
+};
 pub use self::recover::Recovery;
 use self::registry::{career_ids, registry_ids};
 pub use self::scoped::Scoped;

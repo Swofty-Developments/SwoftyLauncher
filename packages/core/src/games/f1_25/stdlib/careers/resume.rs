@@ -44,6 +44,20 @@ impl RowSet {
         }
     }
 
+    /// Adds rows the database file lacks but the game holds once it has loaded, by table (`entrants.teams.team`,
+    /// `entrants.vehicles.vehicle`, `entrants.drivers.driver`): the rows the core adds from registry records.
+    pub fn add(&mut self, added: &BTreeMap<String, BTreeSet<i64>>) {
+        for (table, ids) in added {
+            let rows = match SAVE_IDS.iter().find(|(_, t)| t == table).map(|(field, _)| *field) {
+                Some("team_raw") => &mut self.teams,
+                Some("vehicle_raw") => &mut self.vehicles,
+                Some(_) => &mut self.drivers,
+                None => continue,
+            };
+            rows.extend(ids);
+        }
+    }
+
     /// The id a save's `id` of `field` (`team_raw`, `vehicle_raw`, `driver_raw`) names in the build: itself
     /// when a row has it, else the id its alias gives when a row has that. `None` when no row does.
     pub fn resolve(&self, field: &str, id: i64) -> Option<i64> {

@@ -127,44 +127,73 @@ pub fn id_owners(data: &Path) -> IdOwners {
             put(key, *id);
         }
     }
-    let Some(doc) = std::fs::read(reports::path(data, reports::IDS))
-        .ok()
-        .and_then(|b| serde_json::from_slice::<Value>(&b).ok())
-    else {
+    let Some(doc) = read_ids(&reports::path(data, reports::IDS)) else {
         return out;
     };
-    let held = REGISTRY_TABLES
-        .iter()
-        .filter(|(_, table)| ALIAS_TABLES.iter().any(|(t, _)| t == table));
-    for (registry, table) in held {
-        let records = |of: &Value| -> Vec<(i64, String)> {
-            of[*registry]
-                .as_object()
-                .into_iter()
-                .flatten()
-                .filter_map(|(record, e)| {
-                    let id = e.as_i64().or_else(|| e["id"].as_i64())?;
-                    Some((id, record.split_once('/')?.0.to_owned()))
-                })
-                .collect()
-        };
-        for (id, addon) in records(&doc["ids"]) {
-            out.now
-                .entry(((*table).to_owned(), id))
-                .or_default()
-                .insert(addon);
+    for (registry, table) in held_registries() {
+        for (id, addon) in registry_records(&doc["ids"], registry) {
+            out.now.entry((table.to_owned(), id)).or_default().insert(addon);
         }
         for (career, kept) in doc["careers"].as_object().into_iter().flatten() {
-            for (id, addon) in records(kept) {
+            for (id, addon) in registry_records(kept, registry) {
                 out.careers
                     .entry(career.clone())
                     .or_default()
-                    .entry(((*table).to_owned(), id))
+                    .entry((table.to_owned(), id))
                     .or_default()
                     .insert(addon);
             }
         }
     }
+    out
+}
+
+fn read_ids(path: &Path) -> Option<Value> {
+    std::fs::read(path)
+        .ok()
+        .and_then(|b| serde_json::from_slice::<Value>(&b).ok())
+}
+
+/// The core registries whose ids are ids of the team, vehicle and driver rows a save holds, with that table.
+fn held_registries() -> impl Iterator<Item = (&'static str, &'static str)> {
+    REGISTRY_TABLES
+        .iter()
+        .filter(|(_, table)| ALIAS_TABLES.iter().any(|(t, _)| t == table))
+        .copied()
+}
+
+/// The `(id, addon)` of each `<addon>/<label>` record of `registry` in `of`: `ids.json`'s `ids`, or the ids it
+/// keeps for one career.
+fn registry_records(of: &Value, registry: &str) -> Vec<(i64, String)> {
+    of[registry]
+        .as_object()
+        .into_iter()
+        .flatten()
+        .filter_map(|(record, e)| {
+            let id = e.as_i64().or_else(|| e["id"].as_i64())?;
+            Some((id, record.split_once('/')?.0.to_owned()))
+        })
+        .collect()
+}
+
+/// The team, vehicle and driver rows the core adds from the registry records of the addons in `on` while the game
+/// loads, by table (`entrants.teams.team`): the ids the core's `ids.json` (in the data folder, else the game
+/// folder `game`) gives those records and keeps for each career. No build's database file holds these rows.
+pub fn registry_rows(data: &Path, game: Option<&Path>, on: &[String]) -> BTreeMap<String, BTreeSet<i64>> {
+    let mut out: BTreeMap<String, BTreeSet<i64>> = BTreeMap::new();
+    let Some(doc) = reports::found(data, game, reports::IDS).and_then(|p| read_ids(&p)) else {
+        return out;
+    };
+    let careers = doc["careers"].as_object().into_iter().flat_map(|c| c.values());
+    for (registry, table) in held_registries() {
+        let ids = std::iter::once(&doc["ids"])
+            .chain(careers.clone())
+            .flat_map(|of| registry_records(of, registry))
+            .filter(|(_, addon)| on.contains(addon))
+            .map(|(id, _)| id);
+        out.entry(table.to_owned()).or_default().extend(ids);
+    }
+    out.retain(|_, ids| !ids.is_empty());
     out
 }
 

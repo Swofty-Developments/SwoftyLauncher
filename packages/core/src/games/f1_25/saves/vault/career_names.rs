@@ -232,6 +232,15 @@ impl Names {
         self
     }
 
+    /// The names with the rows of `added` (by table) the game holds once it has loaded besides the database file's.
+    pub fn with_rows(
+        mut self,
+        added: &std::collections::BTreeMap<String, std::collections::BTreeSet<i64>>,
+    ) -> Self {
+        self.rows.add(added);
+        self
+    }
+
     pub fn rows(&self) -> &RowSet {
         &self.rows
     }

@@ -1058,6 +1058,37 @@ fn a_career_whose_team_and_car_rows_the_build_lacks_says_which_addon_made_them()
 }
 
 #[test]
+fn a_career_driving_a_car_the_core_adds_from_the_registry_is_not_missing_rows() {
+    let list = parse(
+        r#"[{"career":"driver_career:667c9aad208c7d9c","slot":"667c9aad208c7d9c","mode":"driver_career",
+              "team_raw":476,"vehicle_raw":509,"driver_raw":16386,
+              "addons":[{"id":"swofty.classic-seasons-2016","version":"0.8.2","why":"the career's team, car or driver"}]}]"#,
+    );
+    let installed: BTreeMap<String, AddonManifest> =
+        [named("swofty.classic-seasons-2016", "F1 2016 GP/TT Addon")]
+            .into_iter()
+            .collect();
+    let mut rows = ids(&[476, 500], &[3], &[]);
+    let gap = resume_needs(&list, &[], &installed, Some(&rows))[0]
+        .missing_rows
+        .clone()
+        .unwrap();
+    assert_eq!(
+        gap.tables,
+        ["vehicle"],
+        "the database file alone lacks the registry's car"
+    );
+    assert_eq!(gap.text(), "Mismatched rows from F1 2016 GP/TT Addon");
+    rows.add(&[("entrants.vehicles.vehicle".to_owned(), [509].into())].into());
+    assert_eq!(
+        resume_needs(&list, &[], &installed, Some(&rows))[0].missing_rows,
+        None
+    );
+    rows.add(&[("entrants.engines.Engine".to_owned(), [600].into())].into());
+    assert!(!rows.vehicles.contains(&600) && !rows.teams.contains(&600));
+}
+
+#[test]
 fn a_content_career_is_labelled_by_its_addon_though_its_mode_is_driver_career() {
     let list = parse(
         r#"[{"career":"driver_career_1990:a","slot":"7","mode":"driver_career","content":"f1_career_1990",

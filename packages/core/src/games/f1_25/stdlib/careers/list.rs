@@ -504,9 +504,10 @@ pub fn resume_list_for(
     aliases: crate::row_ids::IdAliases,
     pending: Option<&swofty_formats::lng::Lng>,
 ) -> Option<(Vec<CareerNeeds>, Vec<ResumeRow>)> {
-    let names = Names::of_build(store, game, build, aliases, pending)?;
-    let installed = store.addons().ok()?;
     let on: Vec<String> = order.iter().map(|m| m.id.clone()).collect();
+    let registry = crate::row_ids::registry_rows(&store.root, Some(&game.dir), &on);
+    let names = Names::of_build(store, game, build, aliases, pending)?.with_rows(&registry);
+    let installed = store.addons().ok()?;
     let index = super::read(&super::data_path(&store.root));
     let careers = super::of_profile(&index, profile);
     let mut needs = super::resume_needs(&careers, &on, &installed, Some(names.rows()));

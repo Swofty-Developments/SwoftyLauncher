@@ -95,6 +95,38 @@ fn id_owners_name_the_addon_of_a_registry_id_and_of_a_careers_pin() {
 }
 
 #[test]
+fn registry_rows_are_the_team_car_and_driver_ids_of_the_records_of_addons_on() {
+    let data = data_dir("registry-rows");
+    assert!(registry_rows(&data, None, &["x.season".into()]).is_empty());
+    put(
+        &reports::path(&data, reports::IDS),
+        r#"{"version":1,"ids":{
+              "team.identity":{"x.season/t":{"id":536},"off.season/t":{"id":537}},
+              "vehicle":{"x.season/mercedes":{"id":509,"since":"2026-11-02"},"z.season/w":528,"off.season/v":{"id":530}},
+              "driver.identity":{"x.season/d":{"id":255}},
+              "driver.head":{"x.season/h":{"id":300}},
+              "vehicle.package":{"x.season/p":{"id":600}}},
+              "careers":{"c":{"vehicle":{"x.season/mercedes":541,"off.season/v":542}}}}"#,
+    );
+    let on = ["x.season".to_owned(), "z.season".to_owned()];
+    let rows = registry_rows(&data, None, &on);
+    let ids = |table: &str| -> Vec<i64> { rows.get(table).into_iter().flatten().copied().collect() };
+    assert_eq!(ids("entrants.teams.team"), [536]);
+    assert_eq!(ids("entrants.vehicles.vehicle"), [509, 528, 541]);
+    assert_eq!(ids("entrants.drivers.driver"), [255]);
+    assert_eq!(
+        rows.len(),
+        3,
+        "heads, packages and other registries hold no row a save names"
+    );
+    assert!(
+        registry_rows(&data, None, &[]).is_empty(),
+        "an addon that is off adds no row"
+    );
+    std::fs::remove_dir_all(&data).ok();
+}
+
+#[test]
 fn stock_max_ids_are_the_highest_stat_id_of_each_stock_table() {
     use swofty_formats::gvdb::Record;
     let mut records = vec![Record::new(
