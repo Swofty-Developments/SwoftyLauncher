@@ -331,8 +331,8 @@ fn a_restore_pressed_while_play_checks_the_game_files_waits_for_it_then_restores
     let data = f.data.clone();
     let play = std::thread::spawn(move || {
         std::thread::sleep(std::time::Duration::from_millis(600));
-        busy::Busy::clear(&data);
         drop(wrapper);
+        busy::Busy::clear(&data);
     });
     let wait = recovery::Wait {
         build: std::time::Duration::from_secs(30),
