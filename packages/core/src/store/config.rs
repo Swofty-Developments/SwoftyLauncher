@@ -113,7 +113,7 @@ impl Store {
         (s.launcher_saves, s.plain_saves) =
             crate::saves::launcher::session_saves(&self.root, &p.name, p.launcher_saves, p.is_vanilla());
         let on: Vec<String> = p.enabled().map(str::to_owned).collect();
-        s.resume_needs = crate::stdlib::careers::session_needs(&self.root, &on, &installed);
+        s.resume_needs = crate::stdlib::careers::session_needs(&self.root, &p.name, &on, &installed);
         s.addons
             .retain(|a| a.id == CORE_ID || !self.is_builtin(&a.id) || !a.options.is_empty());
         Ok(s)
