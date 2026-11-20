@@ -466,7 +466,22 @@ fn hash_sources(hasher: &mut Sha256, store: &Store, addon: &str, ops: &[AssetOp]
     Ok(())
 }
 
+thread_local! {
+    pub(crate) static HASH_TRACE: std::cell::RefCell<Vec<String>> = const { std::cell::RefCell::new(Vec::new()) };
+}
+
+pub(crate) fn ht(hasher: &Sha256, label: &str) {
+    let at = hex(&hasher.clone().finalize())[..12].to_owned();
+    HASH_TRACE.with(|t| t.borrow_mut().push(format!("{at} {label}")));
+}
+
 fn stamp(hasher: &mut Sha256, label: &str, path: &Path) {
+    if let Ok(meta) = std::fs::metadata(path) {
+        ht(
+            hasher,
+            &format!("stamp {label}|{}|{:?}", meta.len(), meta.modified().ok()),
+        );
+    }
     match std::fs::metadata(path) {
         Ok(meta) => hasher.update(format!("{label}|{}|{:?};", meta.len(), meta.modified().ok())),
         Err(_) => hasher.update(format!("{label}|missing;")),
@@ -1561,6 +1576,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         runtime.enable("postfx");
     }
     hasher.update(format!("shaders {};", shader_files.digest));
+    ht(&hasher, "after shaders");
     built.lines.extend(shader_files.line);
     built.warnings.extend(shader_files.warnings);
     let mut head_puts = crate::heads::Puts::default();
@@ -1572,6 +1588,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         let m = &addons[id];
         let mut out = OutputBuilder::default();
         hasher.update(format!("{id}@{};", m.version));
+        ht(&hasher, &format!("addon {id}"));
         let dir = store.addons_dir().join(id);
         let origin = Origin {
             addon: id.clone(),
@@ -1852,12 +1869,26 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
     }
     let slots: Vec<Option<&str>> = (0..maps.len()).map(|i| (!natural).then(|| SLOTS[i])).collect();
     let reg = Registry::builtin();
+    ht(&hasher, "before maps");
     hasher.update(crate::activation::db::REGISTRY_JSON);
     for (dir, pkg) in &maps {
         hasher.update(serde_json::to_vec(pkg).expect("serialisable"));
+        ht(
+            &hasher,
+            &format!("map pkg {}", serde_json::to_string(pkg).unwrap_or_default()),
+        );
         let erp = dir.join(&pkg.erp);
         let meta = std::fs::metadata(&erp).map_err(io_err(&erp))?;
         hasher.update(format!("{}|{:?}", meta.len(), meta.modified().ok()));
+        ht(
+            &hasher,
+            &format!(
+                "map erp {}|{}|{:?}",
+                erp.display(),
+                meta.len(),
+                meta.modified().ok()
+            ),
+        );
     }
     let resolve = |rel: &str| original(&store.root, game, rel);
     let addon_dir = |id: &str| store.addons_dir().join(id);
@@ -1886,6 +1917,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
     if !handling_maps.is_empty() {
         let sources = handling::sources(&handling_maps, &resolve, &addon_dir);
         hasher.update(handling::stamp(&handling_maps, &sources)?);
+        ht(&hasher, "handling");
     }
     let ui_maps: Vec<MapUi> = maps
         .iter()
@@ -1902,6 +1934,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         .collect();
     if !ui_maps.is_empty() {
         hasher.update(ui_stamp(&ui_maps, &resolve)?);
+        ht(&hasher, "ui stamp");
     }
     let record_ui = record_ui_lists(&ui_maps, &tracks, &recorded, &resolve, &mut built.warnings);
     let mut caches = Vec::new();
@@ -1912,6 +1945,10 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
     session.set_maps(tracks.iter().map(|(_, pkg, origin)| (pkg, origin.addon.as_str())));
     session.set_mods(mods.into_iter());
     hasher.update(serde_json::to_vec(&session).expect("serialisable"));
+    ht(
+        &hasher,
+        &format!("session {}", serde_json::to_string(&session).unwrap_or_default()),
+    );
     let menus = loader_dir().is_some();
     if menus {
         for rel in MENU_ERPS.iter().chain(MENU_READS) {
@@ -1922,8 +1959,10 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
     }
     let db_src = original(&store.root, game, GVDB);
     hasher.update(sha256_file(&db_src)?);
+    ht(&hasher, &format!("db {}", db_src.display()));
     let order: Vec<&AddonManifest> = resolved.order.iter().map(|id| &addons[id]).collect();
     hash_unread(&mut hasher, store, game, &order, planner.erp_ops(), &resolve)?;
+    ht(&hasher, &format!("unread game {}", game.identity.key()));
     let std_index = loader_dir()
         .is_some()
         .then(|| {
@@ -1969,6 +2008,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
     if let Some(stamp) = lent_ids.as_ref().and_then(|o| o.stamp(&resolved.order)) {
         hasher.update(stamp);
     }
+    ht(&hasher, "final");
     built.buildhash = hex(&hasher.finalize())[..16].to_owned();
     built.overlay = store.overlay_dir(profile, &built.buildhash);
     built.warnings.extend(core_warning);
@@ -6793,6 +6833,7 @@ mod tests {
             ),
         );
 
+        HASH_TRACE.with(|t| t.borrow_mut().clear());
         let built = build(&store, "default", &game).unwrap();
         for code in ["testring", "ring2"] {
             let line = format!("{code}: files only; its track record adds its rows in game");
@@ -6841,8 +6882,23 @@ mod tests {
             .unwrap()
             .modified()
             .unwrap();
+        let first: Vec<String> = HASH_TRACE.with(|t| std::mem::take(&mut *t.borrow_mut()));
         let again = build(&store, "default", &game).unwrap();
-        assert_eq!(again.buildhash, built.buildhash);
+        let second: Vec<String> = HASH_TRACE.with(|t| std::mem::take(&mut *t.borrow_mut()));
+        if again.buildhash != built.buildhash {
+            let n = first.len().max(second.len());
+            let mut out = String::new();
+            for i in 0..n {
+                let a = first.get(i).map_or("-", |s| s.as_str());
+                let b = second.get(i).map_or("-", |s| s.as_str());
+                let mark = if a == b { "  " } else { "!!" };
+                out += &format!("{mark} {i}\n   1: {a}\n   2: {b}\n");
+            }
+            panic!(
+                "HASHDIFF {} vs {} reused={} lines1={:?} lines2={:?}\n{out}",
+                built.buildhash, again.buildhash, again.reused, built.lines, again.lines
+            );
+        }
         let kept = std::fs::metadata(crate::activation::facts::path(&store.root))
             .unwrap()
             .modified()
