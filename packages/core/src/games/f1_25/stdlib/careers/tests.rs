@@ -956,6 +956,14 @@ fn resume_needs_say_what_is_off_missing_or_another_version() {
     assert!(by("a.on").on && by("a.on").at_version);
     assert!(!by("a.off").on && by("a.off").at_version);
     assert!(by("a.old").on && !by("a.old").at_version);
+    assert_eq!(
+        (by("a.old").made_with.as_str(), by("a.old").wants.as_str()),
+        ("1.0.0", "^1.0.0")
+    );
+    assert_eq!(
+        (by("a.off").made_with.as_str(), by("a.off").wants.as_str()),
+        ("1.0.0", "")
+    );
     assert!(!by("a.gone").on && by("a.gone").name == "a.gone");
     assert_eq!(out[0].addons.len(), 4);
     assert_eq!(out[1].key, "7");

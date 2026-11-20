@@ -16,6 +16,12 @@ pub struct ResumeNeed {
     pub version: String,
     pub on: bool,
     pub at_version: bool,
+    /// The version the career was saved with, when the index records one.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub made_with: String,
+    /// The version range the career needs, when the index records one.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub wants: String,
 }
 
 /// The team, car and driver rows the database a career will load into holds, by stat id.
@@ -251,6 +257,8 @@ pub fn resume_needs(
                         version: a.version.clone().unwrap_or_default(),
                         on: false,
                         at_version: false,
+                        made_with: a.version.clone().unwrap_or_default(),
+                        wants: a.need.clone().unwrap_or_default(),
                     },
                     Some(m) => ResumeNeed {
                         id: a.id.clone(),
@@ -258,6 +266,8 @@ pub fn resume_needs(
                         version: m.version.to_string(),
                         on: order.contains(&a.id),
                         at_version: at_version(a, m),
+                        made_with: a.version.clone().unwrap_or_default(),
+                        wants: a.need.clone().unwrap_or_default(),
                     },
                 })
                 .collect();

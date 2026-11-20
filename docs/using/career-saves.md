@@ -54,6 +54,7 @@ John BENNETT       wefew                    F1® 2026 My Team    Season 1, Race 
   - `Made with another version of <addon>`: the addon is on, at a different version from the one the career was saved with.
 - A ready row loads the career.
 - A row that is not ready opens **Add-ons do not match** with **Load Anyway** and **Back**. **Load Anyway** loads the career. **Back** returns to the list.
+- **Add-ons do not match** names the addons that are off or not installed, and each addon the career was saved with at another version as `<addon> (saved with <version>, installed <version>)`.
 - A `Missing rows from <addon>` row does not load: the database lacks the career's own team, car or driver. Pressing it shows **Career can't load** on the list. Turn on the addon build the career was made with to load it.
 - A career of an addon's own career mode (Progressive, F1 1990) is listed when that addon is off or not installed, as `Missing: <addon>`. It does not load: pressing it shows **Career can't load**. Turn the addon on to load it.
 - When the list can't open a row's career, the game's Resume Career screen stays open with **Career can't load**. Pick the career on that screen. `loader.log` names the reason on its `[career] resume screen: row <n>: not pressed` line.

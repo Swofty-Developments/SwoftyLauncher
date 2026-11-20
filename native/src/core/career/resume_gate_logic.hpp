@@ -18,6 +18,7 @@ constexpr size_t MAX_NAMES = 4;
 struct Need {
     std::string id, name, version;
     bool on = false, at_version = false;
+    std::string made_with, wants;
 };
 
 struct Entry {
@@ -55,6 +56,8 @@ inline Table parse(std::string_view text)
             need.version = n["version"].str();
             need.on = n["on"].type == json::Value::Bool && n["on"].b;
             need.at_version = n["at_version"].type == json::Value::Bool && n["at_version"].b;
+            need.made_with = n["made_with"].str();
+            need.wants = n["wants"].str();
             entry.needs.push_back(std::move(need));
         }
         t.entries.push_back(std::move(entry));
@@ -72,12 +75,38 @@ inline const Entry *find(const Table &t, const std::string &key)
     return nullptr;
 }
 
-inline std::vector<std::string> unmet(const Entry &e)
+inline std::string other_version_text(const Need &n)
+{
+    std::string installed = n.version.empty() ? std::string() : "installed " + n.version;
+    std::string asked = !n.wants.empty() ? "needs " + n.wants : !n.made_with.empty() ? "saved with " + n.made_with : "";
+    if (asked.empty())
+        return installed.empty() ? n.name : n.name + " " + n.version;
+    return n.name + " (" + asked + (installed.empty() ? "" : ", " + installed) + ")";
+}
+
+inline std::vector<std::string> missing(const Entry &e)
 {
     std::vector<std::string> out;
     for (const Need &n : e.needs)
-        if (!n.on || !n.at_version)
-            out.push_back(n.name + (n.on && !n.version.empty() ? " " + n.version : std::string()));
+        if (!n.on)
+            out.push_back(n.name);
+    return out;
+}
+
+inline std::vector<std::string> other_versions(const Entry &e)
+{
+    std::vector<std::string> out;
+    for (const Need &n : e.needs)
+        if (n.on && !n.at_version)
+            out.push_back(other_version_text(n));
+    return out;
+}
+
+inline std::vector<std::string> unmet(const Entry &e)
+{
+    std::vector<std::string> out = missing(e);
+    for (std::string &v : other_versions(e))
+        out.push_back(std::move(v));
     return out;
 }
 
@@ -96,24 +125,37 @@ inline std::string status_line(const Entry *e)
 {
     if (!e)
         return {};
-    std::vector<std::string> names = unmet(*e);
-    return names.empty() ? "All addons ready" : "Missing: " + join(names);
+    std::vector<std::string> off = missing(*e), other = other_versions(*e);
+    if (off.empty() && other.empty())
+        return "All addons ready";
+    std::string out = off.empty() ? std::string() : "Missing: " + join(off);
+    if (!other.empty())
+        out += (out.empty() ? "" : "; ") + std::string("Other version: ") + join(other);
+    return out;
+}
+
+inline std::string needs_text(const Entry &e)
+{
+    std::vector<std::string> off = missing(e), other = other_versions(e);
+    std::string out;
+    if (!off.empty())
+        out = "This career was made with add-ons this profile does not have on: " + join(off) + ".";
+    if (!other.empty())
+        out += (off.empty() ? "This career was saved with other versions of add-ons this profile has on: "
+                            : " It was saved with other versions of: ") +
+               join(other) + ".";
+    return out;
 }
 
 inline std::string prompt_text(const Entry &e)
 {
-    return "This career was made with add-ons this profile does not have on: " + join(unmet(e)) +
-           ". Loading it can break it. Press the career again to load it anyway, or press Back.";
+    return needs_text(e) + " Loading it can break it. Press the career again to load it anyway, or press Back.";
 }
 
 constexpr const char *ANSWER_LOAD = "load_anyway";
 constexpr const char *STOCK_TITLE_KEY = "lng_homescreen_driver_career";
 
-inline std::string dialog_text(const Entry &e)
-{
-    return "This career was made with add-ons this profile does not have on: " + join(unmet(e)) +
-           ". Loading it anyway can break it.";
-}
+inline std::string dialog_text(const Entry &e) { return needs_text(e) + " Loading it anyway can break it."; }
 
 inline bool loads(std::string_view answer) { return answer == ANSWER_LOAD; }
 
