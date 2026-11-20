@@ -475,7 +475,7 @@ pub fn resume_list_for(
     let names = Names::of_build(store, game, build, aliases, pending)?;
     let installed = store.addons().ok()?;
     let on: Vec<String> = order.iter().map(|m| m.id.clone()).collect();
-    let careers = super::read(&super::data_path(&store.root));
+    let careers = super::of_profile(&super::read(&super::data_path(&store.root)), profile);
     let needs = super::resume_needs(&careers, &on, &installed, Some(names.rows()));
     let (saved, created) = profile_careers(&store.root, profile);
     let rows = resume_rows(&saved, &created, &needs, &names);

@@ -962,6 +962,35 @@ fn resume_needs_say_what_is_off_missing_or_another_version() {
     assert!(out[1].addons.is_empty());
 }
 
+#[test]
+fn resume_status_comes_from_the_played_profiles_career_with_the_same_slot_key() {
+    let list = parse(
+        r#"[{"career":"a","profile":"A","slot":"5","addons":[{"id":"x.gone","version":"1.0.0"}]},
+          {"career":"b","profile":"B","slot":"5","addons":[]}]"#,
+    );
+    let installed = BTreeMap::new();
+    let a = resume_needs(&of_profile(&list, "A"), &[], &installed, None);
+    assert_eq!(a.len(), 1);
+    assert_eq!(a[0].career, "a");
+    assert_eq!(a[0].addons.len(), 1);
+    let b = resume_needs(&of_profile(&list, "B"), &[], &installed, None);
+    assert_eq!(b.len(), 1);
+    assert_eq!(b[0].career, "b");
+    assert!(b[0].addons.is_empty());
+}
+
+#[test]
+fn a_career_with_no_profile_counts_only_where_no_career_of_the_profile_has_its_slot() {
+    let list = parse(
+        r#"[{"career":"own","profile":"A","slot":"5","addons":[]},
+          {"career":"old5","slot":"5","addons":[{"id":"x.gone"}]},
+          {"career":"old6","slot":"6","addons":[]},
+          {"career":"other","profile":"B","slot":"7","addons":[]}]"#,
+    );
+    let out: Vec<String> = of_profile(&list, "A").into_iter().map(|c| c.career).collect();
+    assert_eq!(out, ["own", "old6"]);
+}
+
 fn ids(teams: &[i64], vehicles: &[i64], drivers: &[i64]) -> RowSet {
     RowSet {
         teams: teams.iter().copied().collect(),

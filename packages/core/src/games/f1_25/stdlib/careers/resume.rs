@@ -203,10 +203,28 @@ pub fn resume_needs(
         .collect()
 }
 
+/// The careers of `list` the save of `profile` holds: the ones made under it, and a career with no profile
+/// only where no career of `profile` has its slot key. Profiles sharing a source save share slot keys, so
+/// a slot key alone does not name one profile's career.
+pub fn of_profile(list: &[Career], profile: &str) -> Vec<Career> {
+    let own = |c: &Career| c.profile.as_deref() == Some(profile);
+    let taken: BTreeSet<&str> = list
+        .iter()
+        .filter(|c| own(c))
+        .filter_map(|c| c.field("slot"))
+        .collect();
+    list.iter()
+        .filter(|c| own(c) || (c.profile.is_none() && c.field("slot").is_none_or(|k| !taken.contains(k))))
+        .cloned()
+        .collect()
+}
+
 pub fn session_needs(
     data: &std::path::Path,
+    profile: &str,
     order: &[String],
     installed: &BTreeMap<String, AddonManifest>,
 ) -> Vec<CareerNeeds> {
-    resume_needs(&super::read(&super::data_path(data)), order, installed, None)
+    let list = of_profile(&super::read(&super::data_path(data)), profile);
+    resume_needs(&list, order, installed, None)
 }
