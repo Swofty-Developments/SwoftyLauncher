@@ -141,8 +141,8 @@ constexpr const char *REFUSE_TITLE = "Career can't load";
 
 inline std::string refuse_text(const Entry &e)
 {
-    return "This career's team, car or driver is not in this profile's add-ons (" + e.status +
-           "). Turn on the add-on build it was made with to load it.";
+    return "This career needs what this profile's add-ons don't have (" + e.status +
+           "). Turn on the add-on it was made with to load it.";
 }
 
 inline bool setup_after_press(std::string_view flow, uint64_t press_at, uint64_t now)

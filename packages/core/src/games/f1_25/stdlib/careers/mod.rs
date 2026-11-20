@@ -29,7 +29,10 @@ pub use list::{
 };
 pub use play::{in_save_of, missing, needing, play_line, stop_line, unowned_line};
 pub use record::{lost_cars, record_cars, record_session};
-pub use resume::{CareerNeeds, MissingRows, ResumeNeed, RowSet, of_profile, resume_needs, session_needs};
+pub use resume::{
+    CareerNeeds, MissingRows, ResumeNeed, RowSet, mark_missing_modes, mode_owners, mode_suffix, of_profile,
+    resume_needs, session_needs,
+};
 pub use rows::{Played, drop_former_owners, settle_rows, stock_max_for};
 
 pub const GAME_PATH: &str = "swofty/careers/index.json";

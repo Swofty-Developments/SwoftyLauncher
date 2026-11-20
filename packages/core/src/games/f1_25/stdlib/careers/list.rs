@@ -83,6 +83,13 @@ fn pill(n: &CareerNeeds) -> (String, &'static str) {
             }
         }
     }
+    if let Some(name) = &n.missing_mode {
+        let text = format!("Missing: {name}");
+        if !parts.contains(&text) {
+            parts.insert(0, text);
+        }
+        severity = MISSING;
+    }
     if let Some(m) = &n.missing_rows {
         parts.push(m.text());
         severity = MISSING;
@@ -279,6 +286,16 @@ pub fn save_file_careers(path: &std::path::Path) -> Option<(Vec<SaveCareer>, Cre
     Some((careers, created))
 }
 
+/// The slots of a slot container the game did not register (its addon's mode is not in the build), read from the
+/// container the plain store kept.
+fn kept_slots(plain: &Plain, generation: u64, c: &crate::saves::plain::Container) -> Vec<Slot> {
+    std::fs::read(plain.bag_path(generation, c))
+        .ok()
+        .and_then(|b| crate::saves::bag::decode(&b).ok())
+        .map(|bag| slots_of(&bag))
+        .unwrap_or_default()
+}
+
 /// The careers of the newest generation in `plain`, with the player-made names its entrants container holds.
 pub fn save_careers(plain: &Plain) -> (Vec<SaveCareer>, Created) {
     let Some(m) = plain.newest() else {
@@ -289,10 +306,14 @@ pub fn save_careers(plain: &Plain) -> (Vec<SaveCareer>, Created) {
         .iter()
         .filter(|c| career_mode(&c.mode()))
         .flat_map(|c| {
-            c.slots.iter().filter(|s| is_career(s)).map(|s| SaveCareer {
-                mode: c.mode(),
-                slot: s.clone(),
-            })
+            let slots = match c.registered || !c.name.ends_with(SLOT_SUFFIX) {
+                true => c.slots.clone(),
+                false => kept_slots(plain, m.generation, c),
+            };
+            slots
+                .into_iter()
+                .filter(is_career)
+                .map(|slot| SaveCareer { mode: c.mode(), slot })
         })
         .collect();
     let created = m
@@ -408,7 +429,7 @@ pub fn resume_rows(
                 group: group_of(&c.mode),
                 game_mode: c.mode.clone(),
                 ready: severity == READY,
-                loadable: n.is_none_or(|n| n.missing_rows.is_none()),
+                loadable: n.is_none_or(|n| n.missing_rows.is_none() && n.missing_mode.is_none()),
                 severity: severity.into(),
                 status,
                 badge,
@@ -475,9 +496,12 @@ pub fn resume_list_for(
     let names = Names::of_build(store, game, build, aliases, pending)?;
     let installed = store.addons().ok()?;
     let on: Vec<String> = order.iter().map(|m| m.id.clone()).collect();
-    let careers = super::of_profile(&super::read(&super::data_path(&store.root)), profile);
-    let needs = super::resume_needs(&careers, &on, &installed, Some(names.rows()));
+    let index = super::read(&super::data_path(&store.root));
+    let careers = super::of_profile(&index, profile);
+    let mut needs = super::resume_needs(&careers, &on, &installed, Some(names.rows()));
     let (saved, created) = profile_careers(&store.root, profile);
+    let keyed: Vec<(String, String)> = saved.iter().map(|c| (key_of(&c.slot), c.mode.clone())).collect();
+    super::mark_missing_modes(&mut needs, &keyed, &super::mode_owners(&index), &on, &installed);
     let rows = resume_rows(&saved, &created, &needs, &names);
     Some((needs, rows))
 }
@@ -553,6 +577,7 @@ mod tests {
             mode_label: String::new(),
             addons,
             missing_rows: rows,
+            missing_mode: None,
         }
     }
 
@@ -1028,6 +1053,145 @@ mod tests {
         )
         .unwrap();
         path
+    }
+
+    #[test]
+    fn a_career_of_an_addon_mode_that_is_off_shows_the_addon_missing_and_does_not_load() {
+        use crate::stdlib::careers::{Career, CareerAddon, mark_missing_modes, mode_owners};
+        let career = |id: &str, why: &str, addon: &str| Career {
+            career: id.into(),
+            profile: Some("other".into()),
+            label: String::new(),
+            key: None,
+            addons: vec![CareerAddon {
+                id: addon.into(),
+                version: None,
+                need: None,
+                why: Some(why.into()),
+            }],
+            extra: Default::default(),
+        };
+        let index = vec![
+            career(
+                "driver_career_progressive:5eb854e628b2449a",
+                "career content f1_career_progressive",
+                "swofty.progressive",
+            ),
+            career(
+                "driver_career_1990:68af7d0c5b7b3262",
+                "career content f1_career_1990",
+                "swofty.f1-1990",
+            ),
+            career("driver_career_own:00000000000000ff", "its career mode", "a.own"),
+            career(
+                "driver_career_26:0000000000000001",
+                "career content f1_career_2026",
+                "swofty.core",
+            ),
+        ];
+        let owners = mode_owners(&index);
+        assert_eq!(
+            owners.get("progressive").map(String::as_str),
+            Some("swofty.progressive")
+        );
+        assert_eq!(owners.get("1990").map(String::as_str), Some("swofty.f1-1990"));
+        assert_eq!(owners.get("own").map(String::as_str), Some("a.own"));
+        assert!(!owners.contains_key("2026"));
+        let list = vec![
+            saved(
+                "driver_career_progressive",
+                slot(5, "0x6507954a314cde85", 478, 9, 0, 0, 1_793_205_412),
+            ),
+            saved(
+                "driver_career_1990",
+                slot(7, "0x68af7d0c5b7b3262", 645, 61, 0, 0, 1_793_688_849),
+            ),
+        ];
+        let keyed: Vec<(String, String)> = list.iter().map(|c| (key_of(&c.slot), c.mode.clone())).collect();
+        let mut needs = Vec::new();
+        mark_missing_modes(
+            &mut needs,
+            &keyed,
+            &owners,
+            &["swofty.f1-1990".into()],
+            &BTreeMap::new(),
+        );
+        assert_eq!(needs.len(), 1);
+        let names = Names::from_db(db(), Some(&english()));
+        let rows = resume_rows(&list, &Created::default(), &needs, &names);
+        let progressive = rows.iter().find(|r| r.key == "6507954a314cde85").unwrap();
+        assert_eq!(progressive.status, "Missing: swofty.progressive");
+        assert_eq!(progressive.severity, MISSING);
+        assert!(!progressive.ready && !progressive.loadable);
+        let mansell = rows.iter().find(|r| r.key == "68af7d0c5b7b3262").unwrap();
+        assert!(mansell.ready && mansell.loadable);
+        let mut on = Vec::new();
+        mark_missing_modes(
+            &mut on,
+            &keyed,
+            &owners,
+            &["swofty.progressive".into(), "swofty.f1-1990".into()],
+            &BTreeMap::new(),
+        );
+        assert!(on.is_empty());
+    }
+
+    #[test]
+    fn a_plain_store_lists_the_careers_of_a_slot_container_the_game_kept_unregistered() {
+        use crate::saves::plain::fixture::{Gen, current, fnv, write};
+        let root = std::env::temp_dir().join(format!("swofty-resume-kept-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let p = Plain::at(crate::saves::plain::root_of_profile(&root, "p"));
+        let slot_name = "driver_career_progressive_SaveSlotGameModeComponent";
+        write(
+            &p,
+            &Gen {
+                n: 1,
+                event: "load",
+                session: Some("s"),
+                containers: vec![
+                    ("gm_driver_career_progressive", "kept", vec![]),
+                    (slot_name, "kept", vec![]),
+                ],
+            },
+        );
+        current(&p, 1);
+        assert!(save_careers(&p).0.is_empty());
+        use crate::saves::bag::{List, Value};
+        let mut l = List::new();
+        l.items = vec![slot_bag(
+            (5, 0x6507954a314cde85),
+            (478, 9),
+            (0, 0),
+            1_793_205_412,
+            0,
+        )];
+        let mut data = Bag::new();
+        data.push("slots", Value::List(l));
+        let mut component = Bag::new();
+        component.push("data", Value::Bag(data));
+        let encoded = crate::saves::bag::encode(&component).unwrap();
+        std::fs::write(
+            p.generation_dir(1)
+                .join("containers")
+                .join(format!("{}.bag", fnv(slot_name))),
+            &encoded,
+        )
+        .unwrap();
+        let manifest_path = p.generation_dir(1).join("manifest.json");
+        let mut manifest: serde_json::Value =
+            serde_json::from_slice(&std::fs::read(&manifest_path).unwrap()).unwrap();
+        for c in manifest["containers"].as_array_mut().unwrap() {
+            if c["name"] == slot_name {
+                c["bytes"] = encoded.len().into();
+            }
+        }
+        std::fs::write(&manifest_path, manifest.to_string()).unwrap();
+        let (careers, _) = save_careers(&p);
+        assert_eq!(careers.len(), 1);
+        assert_eq!(careers[0].mode, "driver_career_progressive");
+        assert_eq!(key_of(&careers[0].slot), "6507954a314cde85");
+        std::fs::remove_dir_all(&root).ok();
     }
 
     #[test]

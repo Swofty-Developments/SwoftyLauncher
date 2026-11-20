@@ -76,6 +76,10 @@ pub struct CareerNeeds {
     pub addons: Vec<ResumeNeed>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub missing_rows: Option<MissingRows>,
+    /// The name of the addon that gives the career's mode when that addon is off or not installed: the game has
+    /// no such mode to load the career into.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub missing_mode: Option<String>,
 }
 
 const STOCK_MODES: [&str; 3] = ["", "driver_career", "my_team"];
@@ -97,6 +101,71 @@ fn mode_owner(c: &Career) -> Option<&super::CareerAddon> {
         .filter(|a| !is_guess(a))
         .find(owns)
         .or_else(|| c.addons.iter().find(|a| !is_guess(a)))
+}
+
+/// The mode suffix an addon's career content gives (`progressive` for `driver_career_progressive` and
+/// `my_team_career_progressive`), by the addon that owns it, from the careers of every profile in the index.
+pub fn mode_owners(list: &[Career]) -> BTreeMap<String, String> {
+    let mut out = BTreeMap::new();
+    for c in list {
+        let Some(owner) = mode_owner(c).filter(|a| a.why.is_some()) else {
+            continue;
+        };
+        let why = owner.why.as_deref().unwrap_or("");
+        let suffix = match why.strip_prefix("career content f1_career_") {
+            Some(group) => Some(group.to_owned()),
+            None if why.starts_with("its career mode") => c
+                .career
+                .split(':')
+                .next()
+                .and_then(mode_suffix)
+                .map(str::to_owned),
+            None => None,
+        };
+        if let Some(suffix) = suffix.filter(|s| !s.is_empty() && !is_stock_suffix(s)) {
+            out.entry(suffix).or_insert_with(|| owner.id.clone());
+        }
+    }
+    out
+}
+
+/// What follows `driver_career_` or `my_team_career_` in a career mode's name.
+pub fn mode_suffix(mode: &str) -> Option<&str> {
+    mode.strip_prefix("driver_career_")
+        .or_else(|| mode.strip_prefix("my_team_career_"))
+}
+
+fn is_stock_suffix(s: &str) -> bool {
+    matches!(s, "25" | "26" | "2025" | "2026")
+}
+
+/// Marks each career of `saved` (by save slot key and mode) whose mode an addon of `owners` gives while that addon is
+/// not in the load order `on`, adding an entry to `needs` for a career the index has none for.
+pub fn mark_missing_modes(
+    needs: &mut Vec<CareerNeeds>,
+    saved: &[(String, String)],
+    owners: &BTreeMap<String, String>,
+    on: &[String],
+    installed: &BTreeMap<String, AddonManifest>,
+) {
+    for (key, mode) in saved {
+        let Some(owner) = mode_suffix(mode).and_then(|s| owners.get(s)) else {
+            continue;
+        };
+        if on.contains(owner) {
+            continue;
+        }
+        let name = addon_name(owner, installed);
+        match needs.iter_mut().find(|n| &n.key == key) {
+            Some(n) => n.missing_mode = Some(name),
+            None => needs.push(CareerNeeds {
+                key: key.clone(),
+                mode_label: name.clone(),
+                missing_mode: Some(name),
+                ..CareerNeeds::default()
+            }),
+        }
+    }
 }
 
 /// Whether the career is one of an addon's own modes: its mode names one, or it carries addon content.
@@ -198,6 +267,7 @@ pub fn resume_needs(
                 mode_label: mode_label(c, installed),
                 addons,
                 missing_rows: missing_rows(c, rows, installed),
+                missing_mode: None,
             })
         })
         .collect()
