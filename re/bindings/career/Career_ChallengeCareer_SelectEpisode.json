@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_ChallengeCareer_SelectEpisode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141fb9610",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:log-channel-CHALLENGE_CAREER",
+  "notes": "named from its log messages (channel CHALLENGE_CAREER): 'Select Episode: %d'"
+ },
+ "signature": {
+  "id": "career.challenge_career_select_episode",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 68 48 8B 02 48 85 C0 0F 84 ?? ?? ?? ?? 48 89 CE 8B 00 3D 79 35 B0 02",
+  "match": "0x141fb9610",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141fb9610",
+  "kind": "func_start",
+  "names": [
+   "Career_ChallengeCareer_SelectEpisode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141fb9610",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141fb9610.c",
+   "notes": "V5241 name/cxx or log string and body match; body size consistent with name (vtable/indirect)"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x141fb9610",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141fb9610.c;str:\"Select Episode: %d\";str:\"CHALLENGE_CAREER\"",
+   "notes": "V9203 Logs Select Episode on the CHALLENGE_CAREER channel and fires open_episode_screen."
+  }
+ ],
+ "proofs": []
+}

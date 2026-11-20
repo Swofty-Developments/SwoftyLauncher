@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_DriverMarket_CheckBudgetFor",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140dcbde0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "uint64_t Career_DriverMarket_CheckBudgetFor(void *market, uint32_t *driver_key, char *out_ok)",
+  "evidence": "decomp:re/decomp/140dcbde0.c;xref:0x140d7ef7b;xref:0x140d986fa;xref:0x140dcd74a",
+  "notes": "myteam-g2: Looks up the driver in the team table at (market+0x4d8)+0xe8, checks the finances through the global game state (_DAT_14604c2c8+0x140) and Ne_Make_RandomIdBlock; sets out_ok. Used by DriverMarket_CheckAffordable, CheckEligibility and CheckTeamRequirements. Read only."
+ },
+ "signature": {
+  "id": "career.driver_market_check_budget_for",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 48 8B 81 D8 04 00 00",
+  "match": "0x140dcbde0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140dcbde0",
+  "kind": "func_start",
+  "names": [
+   "Career_DriverMarket_CheckBudgetFor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140dcbde0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140dcbde0.c",
+   "notes": "V9556 param_3 is read as a team key (compared with +0x58/+0x5a), not an out_ok pointer; roster lookup at (market+0x4d8)+0xe8 and global state checks match, returns bool."
+  }
+ ],
+ "proofs": []
+}

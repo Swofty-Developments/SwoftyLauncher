@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Gfx2Renderer_Initialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b5eb60",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b5eb60.c;xref:0x144476b6a",
+  "notes": "Renderer init (~10.7k lines, caller 0x144476b6a): creates planar reflection / gbuffer_export / DDGI / cloud / cubemap / IBL resources, crowd (Crowd.enabled -> Ne_CrowdZoneInstance_Initialise), texture streaming worker sets, and reads Renderer.* settings: TextureStreaming.enabled/enabledPreloadOnly/forceLoadAll/meshDensityThreshold/autoPurge/textureCullScale, streamingCacheSize (default 0x12c00000 = 300 MiB, *_ext keys used when platform id g 0x14618c0fc is 2/5/10), streamingMemoryReserve, ACES, SSAO (assao.*), PathTracer, enableIblOnRtt. Addon: settings keys to raise the texture streaming cache for big custom tracks. d5-verify: streamingCacheSize default 0x12c00000; _ext key variants when platform id is 2, 5 or 10 (mask 0x424)"
+ },
+ "signature": {
+  "id": "core.gfx2_renderer_initialise",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 38 12 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 78 29 BC 24 20 12",
+  "match": "0x143b5eb60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b5eb60",
+  "kind": "func_start",
+  "names": [
+   "Ne_Gfx2Renderer_Initialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d5-verify",
+   "kind": "func",
+   "item": "Ne_Gfx2Renderer_Initialise",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b5eb60.c;xref:0x144476b6a",
+   "notes": "V2546 streamingCacheSize default 0x12c00000; _ext key for platforms 2,5,10 (mask 0x424); streamingMemoryReserve_ext; enableIblOnRtt confirmed"
+  }
+ ],
+ "proofs": []
+}

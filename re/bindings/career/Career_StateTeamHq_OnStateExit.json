@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_StateTeamHq_OnStateExit",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143704280",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143704280.c;xref:0x14585f620",
+  "notes": "Slot 10 of the TeamHQ flow state vt 0x14585f5d0 (slot 8 = Career_StateTeamHq_OnStateEnter): logs FADE_REQUESTS 'TeamHQ requested a fade out', unload_team_hq, VideoWall default, track_transition, Game_GameModeChampionship_SetWhereToNext, Game_Network_Leave, Game_Analytics_Flushing, Game_Flow_StateDeactivatingSubTask; clears ThumbnailSystem reason 2 (+0x140 and 0xfb). Reason 2 = TeamHQ. | #587: L2 by lead-authorised promotion for lane owner career-re (independent agree V3245)"
+ },
+ "signature": {
+  "id": "career.state_team_hq_on_state_exit",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 60 48 89 CE C6 81",
+  "match": "0x143704280",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143704280",
+  "kind": "func_start",
+  "names": [
+   "Career_StateTeamHq_OnStateExit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d14-verify",
+   "kind": "func",
+   "item": "Career_StateTeamHq_OnStateExit",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/43704280.c;xref:None",
+   "notes": "V3245 offsets, vtable slot/callers, strings and calls checked in decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

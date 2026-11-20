@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1WLoadout_Initialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14026cf80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14026cf80.c;xref:0x14560a9d0",
+  "notes": "F1 World loadout screen scene initialise (vt slot 0x14560a9d0): f1_w_loadout, bg_scene, loadout_characters, ~racecrewclothes; subscribes F1WLoadoutCardChangeMessage and MessageMainSceneCameraSwitch (camera switch per card). INIT pattern: setLocation(loc,0x140241330) -> spawnScene(0x14023f920/0x14023ef30) -> script+0x53c start offset=0 -> advanceStartTimeOffset(0x1402405c0) per scene -> bind actors(+0x58..+0x60) to scenes(+0x78..+0x80) under crit sec +0x118, anim scene mgr +0x50 -> post 0x140236880. Params flags: +0x190 params name, +0x1de useHQChars, +0x1df castNightShadows, +0x1e0 skipFrustumCulling, +0x1e1 preWarmTextures, +0x1e8 mirrored. Addon: hook slot to skip/replace this cutscene (or patch scene names), set +0x53c to shift timing, clear +0x1de/+0x1e1 to save memory. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3144)"
+ },
+ "signature": {
+  "id": "game.f1_w_loadout_initialise",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 68 02 00 00 48 89 CE C6",
+  "match": "0x14026cf80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14026cf80",
+  "kind": "func_start",
+  "names": [
+   "Game_F1WLoadout_Initialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d13-verify",
+   "kind": "func",
+   "item": "Game_F1WLoadout_Initialise",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14026cf80.c;xref:0x14560a9d0",
+   "notes": "V3144 role/offsets/strings confirmed in decomp (INIT pattern calls thunks 140240410/140240700 -> alt copy 147562600 of advanceStartTimeOffset)"
+  }
+ ],
+ "proofs": []
+}

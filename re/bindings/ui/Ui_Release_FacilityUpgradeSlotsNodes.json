@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Release_FacilityUpgradeSlotsNodes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1424cc270",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Release(void *slots)",
+  "evidence": "decomp:re/decomp/1424cc270.c;xref:0x1423dfa8d;xref:0x1423e38fe;xref:0x1424d3f6e",
+  "notes": "myteam-g2: Releases ~10 VM node handles (offsets 0xd..0x1e) of facility upgrade slots (Vm_Release_Node) and calls FUN_1423bb310; cleanup for Build_FacilityUpgradeList/Slots."
+ },
+ "signature": {
+  "id": "ui.release_facility_upgrade_slots_nodes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 C5 F8 29 74 24 20 48 89 CE 4C 8D 3D ?? ?? ?? ?? 4C 89 B9 E0 00 00 00",
+  "match": "0x1424cc270",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424cc270",
+  "kind": "func_start",
+  "names": [
+   "Ui_Release_FacilityUpgradeSlotsNodes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1424cc270",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1424cc270.c",
+   "notes": "V10212 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

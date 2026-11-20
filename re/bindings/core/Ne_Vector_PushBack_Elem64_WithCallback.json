@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Vector_PushBack_Elem64_WithCallback",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1409ebef0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_Vector_PushBack_Elem64_WithCallback(void **vec, void *elem)",
+  "evidence": "decomp:re/decomp/1409ebef0.c;xref:0x140c9ade8;xref:0x140f8793c;xref:0x141238a88",
+  "notes": "myteam-g2: std::vector push_back for 0x40-byte elements holding a type-erased callback (small-buffer move, vtable+0x20 destroy). Used by UpgradesRegulationChangesComponent_Create and the bank valid-transaction subscription, i.e. it registers a listener callback."
+ },
+ "signature": {
+  "id": "core.vector_push_back_elem64_with_callback",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 48 89 CE 48 8B 79 10 48 89 F8 48 2B 41 08 49 89 D6",
+  "match": "0x1409ebef0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1409ebef0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Vector_PushBack_Elem64_WithCallback"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x1409ebef0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1409ebef0.c",
+   "notes": "V9481 Vector push_back of 0x40-byte elements with small-buffer type-erased callback move/destroy (vtable +0x20/+8)."
+  }
+ ],
+ "proofs": []
+}

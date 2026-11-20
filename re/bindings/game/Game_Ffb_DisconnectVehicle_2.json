@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Ffb_DisconnectVehicle_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446fa740",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-FFB_DEBUG",
+  "notes": "named from its log messages (channel FFB_DEBUG): 'Disconnected vehicle %d from device %s %d.'"
+ },
+ "signature": {
+  "id": "game.ffb_disconnect_vehicle_2",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 4C 8B 71 50",
+  "match": "0x1446fa740",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446fa740",
+  "kind": "func_start",
+  "names": [
+   "Game_Ffb_DisconnectVehicle_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446fa740",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446fa740.c;xref:0x142884c67",
+   "notes": "V6861 Disconnected vehicle log confirmed (second class copy)."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Condition_FacilityUpgradeType_Ctor",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140e3eaa0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *self, void *a, void *b, void *props)",
+  "evidence": "decomp:re/decomp/140e3eaa0.c;xref:0x140eddff5;xref:0x140ededc9",
+  "notes": "myteam-g1: Constructor of an event/condition node parsed from properties (facility, upgrade_type); upgrade_type is hash-matched case-insensitively (FNV-1a) to a small enum stored in the node."
+ },
+ "signature": {
+  "id": "career.condition_facility_upgrade_type_ctor",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 4C 89 CF 4C 89 C3 49 89 D6",
+  "match": "0x140e3eaa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140e3eaa0",
+  "kind": "func_start",
+  "names": [
+   "Career_Condition_FacilityUpgradeType_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140e3eaa0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140e3eaa0.c;xref:0x140eddff5;str:\"upgrade_type\"",
+   "notes": "V9569 Reads facility and upgrade_type props, FNV-1a lowercased hash of upgrade_type mapped to byte 0/1/2 at +0x80 via base ctor 140e3ec40."
+  }
+ ],
+ "proofs": []
+}

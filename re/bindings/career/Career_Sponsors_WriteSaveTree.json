@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Sponsors_WriteSaveTree",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1410fe980",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *sponsors, void *save_node",
+  "evidence": "decomp:re/decomp/1410fe980.c;xref:0x1456be4a0",
+  "notes": "myteam-g1: Writes the sponsors component to the save/network tree: per-sponsor list at +0x298..+0x2a0 via Career_Sponsors_WriteSaveData, plus current_contract_negotiation_attempts, expiredSponsorSlotId, expiredSponsorStatId, leadPlayerExpiredSponsors, numTimesSponsorUsed, resultsSponsors."
+ },
+ "signature": {
+  "id": "career.sponsors_write_save_tree",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 49 89 D7 48 89 CB 48 8B 32",
+  "match": "0x1410fe980",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1410fe980",
+  "kind": "func_start",
+  "names": [
+   "Career_Sponsors_WriteSaveTree"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x1410fe980",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1410fe980.c;xref:0x1456be4a0;str:\"current_contract_negotiation_attempts\"",
+   "notes": "V9654 Writes numTimesSponsorUsed, expiredSponsorSlotId/StatId, leadPlayerExpiredSponsors, resultsSponsors, current_contract_negotiation_attempts and more."
+  }
+ ],
+ "proofs": []
+}

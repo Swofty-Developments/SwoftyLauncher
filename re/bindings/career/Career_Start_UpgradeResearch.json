@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Career_Start_UpgradeResearch",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435168d0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Start_UpgradeResearch(void *upgrades, uint32_t owner, void *inst, uint32_t start_day, uint16_t end_day, uint8_t option, uint8_t roll_failure, void *rng, uint8_t store_duration)",
+  "evidence": "decomp:re/decomp/1435168d0.c;xref:0x141243799,0x141244934,0x14352f14f;doc:addons/career-editor/protocol/rnd.md#rnd-complete",
+  "notes": "U-level research start (rcx Upgrades, edx owner entrant key, r8 instance, r9d start day, [rsp+0x20] u16 end day, +0x28 option, +0x30 roll failure, +0x38 rng (mt19937, read only when roll and inst+0x7c==0xff), +0x40 store duration). Pushes InProgress (2), +0x7e/+0x80 start/end day, +0x88 fail flag (+0x8a delay, +0x8c midpoint in upgrades+8==2 mode); in mode 2 mirrors the start onto the same-id instances of the other owners; end==start clears the fail flag and runs 0x143523a40: Completed (3) when DAT_1460fc310<2, PendingDevelopment (6) when ==2, never Failed. Then fitted-ratio post (fitted=1) only if the latest state is Completed (0x14352fc10 if PendingDevelopment), availability refresh when upgrades+8 is 1 or 2 (mode 0 sets +0x1aa8=0x3fff0000), upgrades-changed bus message. No RP here; callers 0x1412431a0 (after RP debit), 0x14105f800, 0x1412447b0, Car_Fit_UpgradesToRating 0x143514670, 0x14352f060 (wording: ce-verify-1 V0237)"
+ },
+ "signature": {
+  "id": "career.start_upgrade_research",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 0C 00 00 C5 78 29 84 24 B0 0C 00 00 C5 F8 29 BC 24 A0 0C 00 00 C5 F8 29 B4 24 90 0C 00 00 4D 85 C0",
+  "match": "0x1435168d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435168d0",
+  "kind": "func_start",
+  "names": [
+   "Career_Start_UpgradeResearch"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-rnd",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/rnd.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-1",
+   "kind": "func",
+   "item": "Career_Start_UpgradeResearch",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1435168d0.c;decomp:re/decomp/143523a40.c;decomp:re/decomp/1435230e0.c;decomp:re/decomp/1412431a0.c;xref:0x141243799,0x14105fb61,0x141244934,0x143514fb0,0x14352f14f",
+   "notes": "V0237 9-arg proto and stack slots confirmed (rsp+0xd30..0xd50); rng read only when roll and inst+0x7c==0xff; RP debited by 0x1412431a0 first. Wrong: on end==start it clears +0x88 (and +0x8a=0, +0x8c=0xffff) before 0x143523a40, so the instant branch never gives Failed; fitted-ratio post is conditional. Corrected: U-level research start (rcx Upgrades, edx owner entrant key, r8 instance, r9d start day, [rsp+0x20] u16 end day, +0x28 option, +0x30 roll failure, +0x38 rng (mt19937, read only when roll and inst+0x7c==0xff), +0x40 store duration). Pushes InProgress (2), +0x7e/+0x80 start/end day, +0x88 fail flag (+0x8a delay, +0x8c midpoint in upgrades+8==2 mode); in mode 2 mirrors the start onto the same-id instances of the other owners; end==start clears the fail flag and runs 0x143523a40: Completed (3) when DAT_1460fc310<2, PendingDevelopment (6) when ==2, never Failed. Then fitted-ratio post (fitted=1) only if the latest state is Completed (0x14352fc10 if PendingDevelopment), availability refresh when upgrades+8 is 1 or 2 (mode 0 sets +0x1aa8=0x3fff0000), upgrades-changed bus message. No RP here; callers 0x1412431a0 (after RP debit), 0x14105f800, 0x1412447b0, Car_Fit_UpgradesToRating 0x143514670, 0x14352f060"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-3",
+   "kind": "func",
+   "item": "Career_Start_UpgradeResearch",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435168d0.c;decomp:re/decomp/143523a40.c;xref:0x14105fb61,0x141243799,0x141244934,0x143514fb0,0x14352f14f",
+   "notes": "V0306 Independent: frame 8 pushes+0xcc8 so [rsp+0xd30..0xd50] = end u16, option u8, roll u8, rng, store u8; rng read only with roll and inst+0x7c==0xff (mode 2: delay roll -> +0x8a/+0x8c midpoint, fail stays 0; else fail roll unless latest is Failed); Push(2), +0x7e/+0x80/+0x88; end==start clears +0x88, +0x8a=0, +0x8c=0xffff then 0x143523a40 (3 if <2, 6 if ==2, nothing if >2); mode-2 mirror over same-id +0x110/+0xd50 instances for other owners; fitted post on 3, 0x14352fc10 on 6; refresh modes 1,2, mode 0 +0x1aa8=0x3fff0000; bus msg 0x14584e360. Callers exactly the five listed."
+  }
+ ],
+ "proofs": []
+}

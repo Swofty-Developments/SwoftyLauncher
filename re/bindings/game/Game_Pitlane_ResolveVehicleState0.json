@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_Pitlane_ResolveVehicleState0",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434c0600",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1434c0600.c;xref:0x1434b8028",
+  "notes": "Handler for reset/pit state 0 in the switch of Game_Pitlane_ApplyVehicleResetState (cases 0-5 call 0x1434c0600/0x1434c0fb0/0x1434c1c00/0x1434c2870/0x1434c3520/0x1434c1780). Computes the vehicle placement transform with Sess_VehiclePlacement_ResolveTransform for slot index param_4 (special slot 0xc via ctx+0x738, <0x20 via ctx+0x838+8*slot) and memcpys the result. 2470 bytes. Also called by Game_PitLane_HandleEnterPitBox (0x1434b8028). Hypothesis on the meaning of state 0. | engine-re 2026-11-17 track round C2 (static): per-car pit SPLINE builder, not a placement resolver: writes knots into the spline passed as arg 2 (car record +0x118 from Game_PitLane_HandleEnterPitBox 0x1434b8028) and finalises it with Ne_Spline_ComputeLengths (0x1434c0f36). Box ENTRY 'pull in through the preceding box' (logs ePullThroughPrecedingPit / handleEnterPitBoxPullInThroughPrecedingBox): car pose -> neighbour box (box + (mgr+0xc2a ? -1 : +1)) -> own box point (box record mgr+0x40+box*0x90, +0x30), offsets via 0x1434c6e00 scaled by box_entry_normal_interpolatation_first/second/third (mgr+0x8c8/+0x8d0/+0x8d8)."
+ },
+ "signature": {
+  "id": "game.pitlane_resolve_vehicle_state0",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 41 C7 84 24 D4 00 00 00 00 00 00",
+  "match": "0x1434b8028",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1434c0600",
+  "kind": "func_start",
+  "names": [
+   "Game_Pitlane_ResolveVehicleState0"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x1434c0600",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434c0600.c;xref:0x1434b8028",
+   "notes": "V8228 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

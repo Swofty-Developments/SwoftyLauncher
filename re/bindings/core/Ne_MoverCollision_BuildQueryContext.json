@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ne_MoverCollision_BuildQueryContext",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144453090",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144453090.c;xref:0x144453e9f,0x14445aac9",
+  "notes": "Called by Ne_MoverCollision_CreateResource only when the JPAK has >= 9755 (0x261b) entries (0x144453e92), also reached by jmp 0x14445aac9. Runs once per resource (+0x50 done flag) and only while global 0x146ca0108 is 0: creates a static collision group on world [[res+0x10]+0x20] (0x1440c6210), adds every created tile object (0x1440be570), unions their AABBs (0x1440be200) and sets that box as world bounds on both physics worlds (+0x20 and +0x28, 0x1440e49b0); stores the group in 0x146ca0108 and returns 0. Group creation failure: error code 0xc. 2026-11-17 engine-re (static; was 'Hypothesis', xref corrected from 0x14444308b)."
+ },
+ "signature": {
+  "id": "core.mover_collision_build_query_context",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC C0 01 00 00 C5 F8",
+  "match": "0x144453090",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144453090",
+  "kind": "func_start",
+  "names": [
+   "Ne_MoverCollision_BuildQueryContext"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x144453090",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144453090.c;xref:0x14444308b",
+   "notes": "V7677 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "trkrt-verify",
+   "kind": "func",
+   "item": "Ne_MoverCollision_BuildQueryContext",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144453090.c",
+   "notes": "V10779 group create 0x1440c6210, add 0x1440be570, AABB union, bounds on both worlds; detail: global already set -> error 1 / returns 1"
+  }
+ ],
+ "proofs": []
+}

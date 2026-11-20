@@ -1,0 +1,60 @@
+{
+ "schema": 1,
+ "name": "Game_CareerWizard_SetDataGroup",
+ "table": "functions",
+ "author": "swofty",
+ "row": {
+  "addr": "0x14387d100",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_CareerWizard_SetDataGroup(void *wizard, const char *group)",
+  "evidence": "decomp:re/decomp/14387d100.c;xref:0x141725bd4,0x141725e6c",
+  "notes": "writes the career wizard state's data group string (+0x118 buffer, cap +0x120, chars +0x128) from a C string and repoints +0xd0 at that group's entry in the +0x78 map, resetting item widgets when it moved; FeTile_Route_CareerItem calls it with the pressed tile's data group on every continue and new career path, then fills the suffix buffer +0x140 the same way"
+ },
+ "signature": {
+  "id": "game.career_wizard_set_data_group",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D7 48 89 CE 48 85 D2 74 0D 48 89 F9 E8 ?? ?? ?? ?? 48 FF C0 EB 05 B8 01 00 00 00 48 8B 8E 20 01 00 00",
+  "match": "0x14387d100",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14387d100",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerWizard_SetDataGroup"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-20",
+    "by": "swofty",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "swofty",
+   "date": "2026-11-20",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14387d100",
+    "target": "0x14387d100"
+   },
+   "sigcheck": "passed",
+   "digest": "49c3bfb9a3e122e75f9fbbf81bd165b82e9fa3c353fa56c48a2b5f3ed84823c0"
+  }
+ ]
+}

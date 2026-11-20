@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Car_Tuning_SetChassisZCom",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144676d40",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144676d40.c;xref:0x145bf9cb8;kb:subsystems/car.md#chassis",
+  "notes": "Chassis system vtable 0x145bf9ca0 slot +0x18 = OnReset(sys, flags) (CarComponentBase layout); the name is historical. Flag 0x8 gate; 0x2000: live COM z sys+0x158 = lerp(F1Tuning COM-Z range [vt+0x40]->+0x10/+0x14, slider tuning+0x210 clamped 0..1), logs F1_TUNING 'Setting chassis z-com to %f.'; 0x200: sets body COM (COMY, com_z) via 0x144676a80, mass sys+0x150 = sqrt_mass^2, inv mass +0x154, MOI +0x160..+0x168 from the CarObfFloat data, clears velocity accumulators +0x2e0..+0x328. Raw Chassis edits need this slot (flag 0x200) to reach the body. Callers: census steam 0x4676d40."
+ },
+ "signature": {
+  "id": "car.tuning_set_chassis_z_com",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 58 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 89 D7 40 F6 C7 08",
+  "match": "0x144676d40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144676d40",
+  "kind": "func_start",
+  "names": [
+   "Car_Tuning_SetChassisZCom"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v4",
+   "kind": "func",
+   "item": "Car_Tuning_SetChassisZCom",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144676d40.c;xref:0x145bf9cb8",
+   "notes": "V1231 Chassis vt 0x145bf9ca0 +0x18. Everything is under test dil,8 (0x144676d57). 0x2000: [CarLive+0x558]+0x158 = lerp(range +0x10/+0x14, slider F1Tuning+0x210 clamped 0..1), logged. 0x200: 0x144676a80(sys, {COMY,+0x158}); +0x150 = sqrt_mass^2, +0x154 = 1/mass, +0x160..+0x168 MOI from obfuscated pairs; zeroes +0x2e0..+0x32b. Matches the claim."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "kbverify-cars1",
+   "kind": "func",
+   "item": "Car_Tuning_SetChassisZCom",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144676d40.c;xref:0x145bf9cb8",
+   "notes": "V3862 Re-derived. Everything in the slot is under (flags & 8); inside it flag 0x200 sets mass +0x150 = sqrt_mass([+0x98]^[+0xa0])^2, inv mass +0x154, MOI +0x160..+0x168, clears +0x2e0..+0x328. So the call must pass 0x208 (0x200 alone does nothing); the sqrt_mass is what it reads, not mass +0x28. The sets mass without fuel until the fuel writer next runs."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x144676d40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144676d40.c",
+   "notes": "V6740 name and log/strings match; body checked, no broader behaviour (vtable/indirect; no direct call site)"
+  }
+ ],
+ "proofs": []
+}

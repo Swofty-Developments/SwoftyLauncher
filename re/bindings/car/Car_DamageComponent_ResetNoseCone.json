@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_DamageComponent_ResetNoseCone",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f146b0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "pat:log-channel-CARBON_DAMAGE",
+  "notes": "Log channel CARBON_DAMAGE: 'VehicleDamageComponent::resetNoseCone for vehicle %d' | 'VehicleDamageComponent::resetNoseCone m_car is nullptr'"
+ },
+ "signature": {
+  "id": "car.damage_component_reset_nose_cone",
+  "section": ".xtls",
+  "pattern": "55 41 57 41 56 41 54 56 57 53 48 81 EC 90 00 00 00",
+  "match": "0x142f146b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f146b0",
+  "kind": "func_start",
+  "names": [
+   "Car_DamageComponent_ResetNoseCone"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f146b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f146b0.c;xref:0x142bf047d",
+   "notes": "V5585 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

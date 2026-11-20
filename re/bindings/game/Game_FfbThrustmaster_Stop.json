@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FfbThrustmaster_Stop",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446f4aa0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-TM_FFB",
+  "notes": "named from its log messages (channel TM_FFB): 'RacingFFBEffectThrustmasterWin::stop, m_device = %p, handle = %d'"
+ },
+ "signature": {
+  "id": "game.ffb_thrustmaster_stop",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 89 CE C7 81 B0 01 00 00 00 00 00 00 48 8D 4C 24 20",
+  "match": "0x1446f4aa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446f4aa0",
+  "kind": "func_start",
+  "names": [
+   "Game_FfbThrustmaster_Stop"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446f4aa0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446f4aa0.c",
+   "notes": "V6848 Stop log confirmed; calls ConfigureEffects. (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

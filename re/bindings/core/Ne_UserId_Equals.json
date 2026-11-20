@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Ne_UserId_Equals",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144121bc0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144121bc0.c;xref:0x1406a6783",
+  "notes": "Equality of two user-id records, bool(a, b) in al; it writes neither. With equal type bytes (+0): type 0 is never equal, not even to another type 0 (0x144121bdf); type 3 compares the +0x38 bytes when either is non-zero and otherwise the XOR-folded ids [+8]^[+0x10] (0x144121bfa); every other type, 7 included, needs equal folded ids and equal +0x39 bytes (0x144121f15..0x144121f35). With different type bytes (0x144121c18) the two are equal only when each equals a zero record of its own type, which it builds on the stack with fresh XOR pairs and checks by calling itself (0x144121d91, 0x144121f0a). Callers: census steam 0x4121bc0, among them the ReplicationManagers and the ElasticSearch serialiser 0x1407622c0."
+ },
+ "signature": {
+  "id": "core.user_id_equals",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC A0 00 00 00 48 89 D6",
+  "match": "0x144121bc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144121bc0",
+  "kind": "func_start",
+  "names": [
+   "Ne_UserId_Equals"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x144121bc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144121bc0.c;xref:0x1406a6783",
+   "notes": "V7635 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Ne_UserId_Equals",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x144121bc0-0x144122655,0x143929b90-0x143929cc1,0x144135be0-0x144135c87,0x140815bc0-0x140815f40,0x14feb1977-0x14feb19d4,1.0.145 0x144124190-0x144124c25;xref:0x144121bdf,0x144121be5,0x144121bfa,0x144121c18,0x144121d91,0x144121f0a,0x144121f2b,0x144135bf8,0x1406a6783,0x158903f9f,0x14feb19cf",
+   "notes": "V100046 Blind: partial. Body 0x144121bc0-0x144122655 is bool(a*,b*), equality only. Same type: type 0 returns 0 always (0x144121bdf); type 3 compares byte +0x38 when either is set, else the XOR-folded qword [8]^[0x10] (0x144121bfa); other types need the qword AND byte +0x39 equal (0x144121f15-f35). Type 7 is never tested here; callers inline it (0x144135bf8). Types differ (0x144121c18): equal when both equal a zero value of their own type, built from 12 MT draws and 2 self-calls (0x144121d91, 0x144121f0a). Census row 386/253/.data1:12,.xtls:374/1 thunk/5 jumps matches own scan. 1.0.145 twin 0x144124190, 529/529 equal."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Ne_UserId_Equals",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x144121bc0-0x144122655,0x143929b90-0x143929cc1,0x144135be0-0x144135c92,0x14fd44d50-0x14fd44e4f,0x14feb1940-0x14feb19cf,1.0.145 0x144124190-0x144124c25;xref:0x144121bdf,0x144121bfa,0x144121f15,0x144121f35,0x144121c18,0x144121d91,0x144121f0a,0x1406a6783",
+   "notes": "V100047 Blind: agree. Own disasm 0x144121bc0..0x144122655 (.pdata, no chain): bool(a,b) in al; reads +0 type, q[+8]^q[+0x10], +0x38, +0x39 of both, writes neither. Same type: 0 -> false (0x144121bdf); 3 -> (a38|b38) ? a38==b38 : folded ids (0x144121bfa); other, 7 incl. -> folded ids && +0x39 (0x144121f15..f35). Types differ (0x144121c18): f(a,zero(a.type)) && f(b,zero(b.type)) via self-calls 0x144121d91/0x144121f0a; zero temps masked by MT19937 0x143929b90 (12 calls). Census 386/253 (.xtls 374, .data1 12), 1 thunk 0 calls, 5 jumps, 0 lea/ptr = stored row. Many callers inline type-7/both-3 checks first. 1.0.145 twin 0x144124190, 529/529 equal."
+  }
+ ],
+ "proofs": []
+}

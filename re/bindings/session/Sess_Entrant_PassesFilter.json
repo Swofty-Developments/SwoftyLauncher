@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Entrant_PassesFilter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1424a0a90",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1424a0a90.c;xref:0x14245a398,0x14245aec4",
+  "notes": "Entrant candidate filter: checks entrant ids (param_2 +0x80/+0x84/+0x88, lookup 0x14243fd10) against filter list param_4 and flag +0x4b bit 0x10. Callers: Sess_Build_CandidatePool, Sess_Select_Entrants."
+ },
+ "signature": {
+  "id": "session.entrant_passes_filter",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 F6 41 4B 10",
+  "match": "0x1424a0a90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424a0a90",
+  "kind": "func_start",
+  "names": [
+   "Sess_Entrant_PassesFilter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x1424a0a90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1424a0a90.c;xref:0x14245fd84,0x1424a377e",
+   "notes": "V3391 flag +0x4b bit 0x10 -> 0; param_2 +0x80/+0x84/+0x88 ids, lookup 0x14243fd10, filter list param_4+8 ->+0x10..+0x18 stride 0x88; callers Sess_Build_CandidatePool and Sess_Select_Entrants"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamContract_OnStopTalksPressed",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142341a70",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_MyTeamContract_OnStopTalksPressed(void *screen, void **event)",
+  "evidence": "decomp:re/decomp/142341a70.c;xref:0x14234178d",
+  "notes": "myteam-g1: Button handler (event 0xd371fdb3) for my_team_driver_contracts_stop_talks: finds the selected driver slot in the DriverContractsMyTeamComponent (screen+0x8c8, slot 0x68 bytes, key at +0x4dc), posts message UNK_145782a80 (driver key, was-state-4 flag), resets slot state with FUN_140db65c0 and refreshes the list (14233eee0)."
+ },
+ "signature": {
+  "id": "career.my_team_contract_on_stop_talks_pressed",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 48 8B 02 48 85 C0 0F 84 ?? ?? ?? ?? 81 38 B3 FD 71 D3",
+  "match": "0x142341a70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142341a70",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamContract_OnStopTalksPressed"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x142341a70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142341a70.c",
+   "notes": "V10150 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

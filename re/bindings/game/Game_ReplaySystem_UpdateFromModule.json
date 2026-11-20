@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ReplaySystem_UpdateFromModule",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1445d6040",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name updateFromModule (class from the log channel); log channel REPLAY_VERBOSE: 'updateFromModule m_requestCalcRewindForInstantReplayTargetTime'"
+ },
+ "signature": {
+  "id": "game.replay_system_update_from_module",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 C5 78 29 AC 24 C0 00 00 00 C5 78 29 A4 24 B0 00 00 00",
+  "match": "0x1445d6040",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445d6040",
+  "kind": "func_start",
+  "names": [
+   "Game_ReplaySystem_UpdateFromModule"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x1445d6040",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445d6040.c;xref:0x1402a37eb",
+   "notes": "V6695 name and log/strings match; body checked, no broader behaviour"
+  }
+ ],
+ "proofs": []
+}

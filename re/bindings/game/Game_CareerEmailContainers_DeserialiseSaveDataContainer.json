@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerEmailContainers_DeserialiseSaveDataContainer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140dd5f10",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "str:s_Championship_CareerEmailContainers_DeserialiseSaveDataContainer;xref:0x140dd62a8,0x140dd720b,0x140dd763b",
+  "notes": "cxx=game::championship::CareerEmailContainers::deserialiseSaveDataContainer; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "game.career_email_containers_deserialise_save_data_container",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 01 00 00 C5 F8 29 B4 24 40 01 00 00 4C 89 C7 48",
+  "match": "0x140dd5f10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140dd5f10",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerEmailContainers_DeserialiseSaveDataContainer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140dd5f10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140dd5f10.c",
+   "notes": "V4770 log/pretty strings and body checked in decomp; vtable/indirect callers"
+  }
+ ],
+ "proofs": []
+}

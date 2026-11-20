@@ -11,12 +11,12 @@
 using namespace swofty;
 
 static int failures = 0;
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d: %s\n", __FILE__, __LINE__, #c);                                                    \
-            ++failures;                                                                                                \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d: %s\n", __FILE__, __LINE__, #c);                                                             \
+            ++failures;                                                                                                          \
+        }                                                                                                                        \
     } while (0)
 
 static std::string g_driver, g_look;
@@ -32,10 +32,10 @@ static int set_look(const char *driver, const char *look)
     return SWOFTY_ASSET_OK;
 }
 
-static const SwoftyCareerOps kOps5 = {5,       available, nullptr, nullptr, nullptr, nullptr, nullptr,
-                                      nullptr, nullptr,   nullptr, nullptr, nullptr, nullptr, set_look, nullptr, nullptr, nullptr};
-static const SwoftyCareerOps kOps6 = {6,       available, nullptr, nullptr, nullptr, nullptr, nullptr,
-                                      nullptr, nullptr,   nullptr, nullptr, nullptr, nullptr, set_look, nullptr, nullptr, nullptr};
+static const SwoftyCareerOps kOps5 = {5,       available, nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr,
+                                      nullptr, nullptr,   nullptr, nullptr, set_look, nullptr, nullptr, nullptr, nullptr};
+static const SwoftyCareerOps kOps6 = {6,       available, nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr,
+                                      nullptr, nullptr,   nullptr, nullptr, set_look, nullptr, nullptr, nullptr, nullptr};
 
 int main()
 {

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "fits.hpp"
-#include "per_package.hpp"
+#include "core/apply/tracks/fits.hpp"
+#include "core/apply/tracks/per_package.hpp"
 
 #include <swofty/json.hpp>
 

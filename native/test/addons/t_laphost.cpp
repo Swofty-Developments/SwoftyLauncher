@@ -44,23 +44,37 @@ int notice_wanted()
     return 0;
 }
 
-const SwoftyLapClient client = {sizeof(SwoftyLapClient), 1, offer, settle, tick, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, notice_wanted};
+const SwoftyLapClient client = {sizeof(SwoftyLapClient),
+                                1,
+                                offer,
+                                settle,
+                                tick,
+                                nullptr,
+                                nullptr,
+                                nullptr,
+                                nullptr,
+                                nullptr,
+                                nullptr,
+                                nullptr,
+                                nullptr,
+                                notice_wanted};
 
 }
 
 SWOFTY_ON_LOAD
 {
     HMODULE core = GetModuleHandleW(L"swofty_core.dll");
-    auto get = core ? reinterpret_cast<SwoftyCoreLapHostFn>(reinterpret_cast<void *>(GetProcAddress(core, "SwoftyCoreLapHost"))) : nullptr;
+    auto get = core ? reinterpret_cast<SwoftyCoreLapHostFn>(reinterpret_cast<void *>(GetProcAddress(core, "SwoftyCoreLapHost")))
+                    : nullptr;
     host = get ? get() : nullptr;
     if (!host) {
         swofty::log("[t_laphost] no lap host table");
         return;
     }
     std::string swofty_root = host->swofty_root(), files_root = host->files_root();
-    swofty::log("[t_laphost] lap host version %u, size %s, swofty root %s, files root %s, build bits %u, attach %d", host->version,
-                host->size >= sizeof(SwoftyLapHost) ? "ok" : "short", swofty_root.empty() ? "empty" : "set", files_root.empty() ? "empty" : "set",
-                host->build(), host->attach(&client));
+    swofty::log("[t_laphost] lap host version %u, size %s, swofty root %s, files root %s, build bits %u, attach %d",
+                host->version, host->size >= sizeof(SwoftyLapHost) ? "ok" : "short", swofty_root.empty() ? "empty" : "set",
+                files_root.empty() ? "empty" : "set", host->build(), host->attach(&client));
     host->notice("");
 }
 

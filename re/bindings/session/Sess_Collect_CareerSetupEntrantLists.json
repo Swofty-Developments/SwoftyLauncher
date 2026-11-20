@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Collect_CareerSetupEntrantLists",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1413e3f60",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1413e3f60.c;xref:0x1413e826b,0x1413e8755",
+  "notes": "(ctx{manager*, ByteVec* set}*, row_path): walks <row>.ComCareerSetup_N.entrant_list, stat id via Sess_Get_EntrantListStatId_Thunk, inserts into the set only if the active content set's whitelist [cs+0x270,+0x278) is empty or contains it (else errno-trace). Used for game_modes.ModeChampionship rows and their championships.Championship rows | Looks up gdb table entrant_list by name param_2 and appends all its entrants to the content list (0x1413e3d20). Callers: Sess_Apply_ContentAvailability. | #589 proposed the name Sess_ContentList_AddEntrantList"
+ },
+ "signature": {
+  "id": "session.content_list_add_entrant_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 04 00 00 49 89 CE 48 8D",
+  "match": "0x1413e3f60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1413e3f60",
+  "kind": "func_start",
+  "names": [
+   "Sess_Collect_CareerSetupEntrantLists"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x1413e3f60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1413e3f60.c;xref:0x1413e826b,0x1413e8755",
+   "notes": "V3367 string entrant_list; builds table path from param_2, calls 0x1413e3d20 per entrant; caller Sess_Apply_ContentAvailability"
+  }
+ ],
+ "proofs": []
+}

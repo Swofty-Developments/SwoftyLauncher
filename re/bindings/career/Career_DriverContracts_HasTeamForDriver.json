@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_DriverContracts_HasTeamForDriver",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140dca800",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "bool Has(void *comp, void *driver_rec)",
+  "evidence": "decomp:re/decomp/140dca800.c;xref:0x140c580cd;xref:0x140d8ddba;xref:0x140d97f1f",
+  "notes": "myteam-g2: Searches team vector (comp[0x97], stride 0x30) for the driver's team key at driver_rec+0x50 (byte kind + ushort id @+0x52), then iterates the driver-roster hash (comp[0x9b]+0xe8, swiss-table 0x80 groups) comparing keys at +0xca. Read-only membership test used before contract negotiations."
+ },
+ "signature": {
+  "id": "career.driver_contracts_has_team_for_driver",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D6 48 89 CF 48 8B 81 B8 04 00 00",
+  "match": "0x140dca800",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140dca800",
+  "kind": "func_start",
+  "names": [
+   "Career_DriverContracts_HasTeamForDriver"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140dca800",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140dca800.c",
+   "notes": "V9555 Looks up team vector (comp[0x97], 0x30 stride) and walks the roster hash comparing keys at +0xca."
+  }
+ ],
+ "proofs": []
+}

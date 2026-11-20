@@ -53,8 +53,8 @@ static int alog_format_line(char *out, const char *body, unsigned int n, const F
     SYSTEMTIME t;
     if (!FileTimeToLocalFileTime(utc, &local) || !FileTimeToSystemTime(&local, &t))
         memset(&t, 0, sizeof t);
-    int k = snprintf(out, ALOG_LINE, "%04u-%02u-%02u %02u:%02u:%02u.%03u [%5lu] ", t.wYear, t.wMonth, t.wDay, t.wHour,
-                     t.wMinute, t.wSecond, t.wMilliseconds, tid);
+    int k = snprintf(out, ALOG_LINE, "%04u-%02u-%02u %02u:%02u:%02u.%03u [%5lu] ", t.wYear, t.wMonth, t.wDay, t.wHour, t.wMinute,
+                     t.wSecond, t.wMilliseconds, tid);
     if (k < 0)
         k = 0;
     if (n > ALOG_LINE - (unsigned int)k - 3)

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GarageCrew_SetMonitorStand",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140381f40",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140381f40.c;xref:0x14027a847",
+  "notes": "Logs \"GarageCrewInstance::setMonitorStand %s\" on channel GARAGECREWINSTANCE and attaches the monitor stand model. 19 callers (garage cutscene Initialise functions)."
+ },
+ "signature": {
+  "id": "game.garage_crew_set_monitor_stand",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 44 89 C3 48 89 D7 48 89 CE 80 3D",
+  "match": "0x140381f40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140381f40",
+  "kind": "func_start",
+  "names": [
+   "Game_GarageCrew_SetMonitorStand"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x140381f40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140381f40.c;xref:0x14027a847",
+   "notes": "V7995 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_SequenceInstance_Construct",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143660b60",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143660b60.c;xref:0x14366d3c0",
+  "notes": "NeSequenceInstance constructor: creates NeSequenceClipInstance per clip and NeSequencePacketInstance per packet, WARN 'Unable to create NeSequenceClipInstance/PacketInstance [%s] [%u]'. Caller Game_SequenceSpawn_CreateInstance."
+ },
+ "signature": {
+  "id": "core.sequence_instance_construct",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 01 00 00 C5 F8 29 B4 24 60 01 00 00 48 89 D3 48 89 CD 48 8D",
+  "match": "0x143660b60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143660b60",
+  "kind": "func_start",
+  "names": [
+   "Ne_SequenceInstance_Construct"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d9-verify",
+   "kind": "func",
+   "item": "Ne_SequenceInstance_Construct",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143660b60.c;xref:0x143660b60",
+   "notes": "V2844 strings/calls/offsets checked in decomp+disasm; role and name hold"
+  }
+ ],
+ "proofs": []
+}

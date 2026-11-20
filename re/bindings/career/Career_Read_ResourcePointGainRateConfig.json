@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Read_ResourcePointGainRateConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141225c70",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *cfg)",
+  "evidence": "decomp:re/decomp/141225c70.c;xref:0x1456cc0c0",
+  "notes": "myteam-g1: Reads resource_points.settings.resource_gain_rate (ResourceRateModifier entries) into cfg+0x628..+0x63c. Defines how fast RP are gained."
+ },
+ "signature": {
+  "id": "career.read_resource_point_gain_rate_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 08 00 00 C5 78 29 8C 24 30 08 00 00",
+  "match": "0x141225c70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141225c70",
+  "kind": "func_start",
+  "names": [
+   "Career_Read_ResourcePointGainRateConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x141225c70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141225c70.c;xref:0x1456cc0c0;str:\"AiResourceRateModifiers\"",
+   "notes": "V9679 Builds path resource_points.settings.resource_gain_rate and reads AiResourceRateModifiers/PlayerResourceRateModifiers into +0x628..+0x63c."
+  }
+ ],
+ "proofs": []
+}

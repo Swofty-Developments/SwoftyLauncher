@@ -1,4 +1,4 @@
-// Test for the core's shared page table behind swofty::mem::readable (src/core/mem_pages.cpp, built with
+// Test for the core's shared page table behind swofty::mem::readable (src/core/runtime/mem_pages.cpp, built with
 // SWOFTY_MEM_SHARED as native/build.sh builds the core). Runs natively on Windows and under Wine: answers for good,
 // freed, reserved, no-access, guard and never-touched pages; no exception is ever raised and guard pages stay
 // armed; 8 threads agree; and the cost of a cached check, a working set miss and a VirtualQuery on a large

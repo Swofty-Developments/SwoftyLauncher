@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_FatalStub_ParticleResourcePack",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b46850",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b46850.c;xref:0x143b1557c,0x143b46e3e",
+  "notes": "Noreturn stub (10 bytes: call 0x145351784 then int3) used as invalid-parameter abort by the particle resource pack hash map. Named callers: Asset_Load_ParticleResourcePack."
+ },
+ "signature": {
+  "id": "core.hash_map_fatal_stub_particle_resource_pack",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? CC CC CC CC CC CC CC CC CC CC 56 57 48 83 EC 28 4C 89",
+  "match": "0x143b1557c",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143b46850",
+  "kind": "func_start",
+  "names": [
+   "Ne_HashMap_FatalStub_ParticleResourcePack"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x143b46850",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b46850.c;xref:0x143b1557c",
+   "notes": "V8135 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

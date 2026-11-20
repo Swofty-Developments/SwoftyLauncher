@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDPerfDeptName",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1418946d4",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/1418914f0.c;xref:0x1418946c7;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v070--the-five-sector-development-potential-pie-folded-in",
+  "notes": "team performance publisher, department_performance loop: lea rcx,[rsp+0x40] before Ne_Format_String(lng_rnd_dept_%s); r8 = department name (name table 0x14571bcc0 or error_department), perf/potential floats at [rsp+0x158]/[rsp+0x154], xmm0 = 0x143518f50 result (field-wide best per-code potential), rbp = POINTER to the current code byte in the list at [rsp+0xa0] (code = byte [rbp]), [rsp+0x160] = team Upgrades"
+ },
+ "signature": {
+  "id": "career.rnd_perf_dept_name",
+  "section": ".xtls",
+  "pattern": "48 8D 4C 24 40 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 0F BE 4D 00",
+  "match": "0x1418946d4",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1418946d4",
+  "kind": "mid",
+  "expect": "48 8D 4C 24 40",
+  "names": [
+   "site_Career_RnDPerfDeptName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-c",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_fifth_pie.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-2",
+   "kind": "global",
+   "item": "site_Career_RnDPerfDeptName",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1418914f0.c;xref:0x14189465e,0x141894674,0x14189467d,0x1418946b5,0x1418946be,0x1418946c7,0x1418946d0,0x1418946d4,0x1418946e0,0x141894a3e,0x141894b29",
+   "notes": "V0093 lea rcx,[rsp+0x40] (5B) before Ne_Format_String(lng_rnd_dept_%s), ja @0x1418946c7 to window start, r8 = name, [rsp+0x158]=perf_fraction, [rsp+0x154]=potential_perf_fraction, xmm0 = 0x143518f50 = max over teams of per-code (0-5) potential, [rsp+0x160] = team Upgrades: all right; but rbp is the POINTER to the current code byte (movsx rax,byte [rbp]), not the code"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-5",
+   "kind": "global",
+   "item": "site_Career_RnDPerfDeptName",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1418914f0.c;decomp:re/decomp/143518f50.c;xref:0x1418945c1,0x1418945e4,0x1418945f0,0x14189465e,0x141894674,0x1418946b5,0x1418946c5,0x1418946d0,0x1418946d4,0x1418946e0",
+   "notes": "V0197 sigcheck OK; 5-byte lea rcx window clean (ja 0x1418946d4 lands on its start); r8 = 0x14571bcc0[code] for code<=3 else error_department; [rsp+0x158]=perf_fraction, [rsp+0x154]=potential_perf_fraction; xmm0 = 0x143518f50(&[rsp+0x188]) = max over all teams and codes 0..5 of summed +0x10 potential; rbp walks the inline code bytes at [rsp+0xa0] (count [rsp+0xa8]); [rsp+0x160] = team Upgrades (vector +0x1a38); parent node hash 0x9278580a = department_performance"
+  }
+ ],
+ "proofs": []
+}

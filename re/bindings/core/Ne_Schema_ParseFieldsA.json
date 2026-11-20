@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Schema_ParseFieldsA",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1402534f0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1402534f0.c;xref:0x140251898,0x14066d247",
+  "notes": "(schema, reader, outMask) -> NEerrno: reads key/value pairs, matches schema fields by name (strcmp, bitmask), converts by type (int, '%I64d', float, ...), errors when required mask +0x78 is incomplete. Callers: Game_DataDrivenCutSceneScript_CreateComponents (21 sites)."
+ },
+ "signature": {
+  "id": "core.schema_parse_fields_a",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 4C 89 44 24 38 48 89 D3 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 44 24 20 48 89 44 24 28 48 8B 02 48 8D 54 24 20 48 89 D9 FF 50 58 45 31 FF 85 C0 0F 84 ?? ?? ?? ?? 48 8B 44 24 38 48 85 C0 74 03 44 89 38 41 F7 D7 BF 57 00 00 00 31 C0 44 85 7E 78",
+  "match": "0x1402534f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1402534f0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Schema_ParseFieldsA"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x1402534f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1402534f0.c;xref:0x140251898",
+   "notes": "V3516 schema field parser: matches by name, bitmask of seen fields, type switch incl. float/'%I64d' (0x145612754), required mask +0x78 check; 21 callers match, Game_DataDrivenCutSceneScript_CreateComponents seen"
+  }
+ ],
+ "proofs": []
+}

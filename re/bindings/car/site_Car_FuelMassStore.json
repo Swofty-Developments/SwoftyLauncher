@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "site_Car_FuelMassStore",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14468f05d",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "car",
+  "evidence": "decomp:re/decomp/14468edb0.c;xref:0x14468f04d",
+  "notes": "vmovss [rsi+0x100],xmm0 in Car_FuelTank_StepBurn: xmm0 = new fuel_mass kg (old - flow x dt), only when CarLive+0x132 bit 2. Trace point for live fuel mass. Duplicated notes/evidence and the stale no-signature remark removed per V1252"
+ },
+ "signature": {
+  "id": "car.fuel_mass_store",
+  "section": ".xtls",
+  "pattern": "C5 F2 5C C0 C5 FA 11 86 00 01 00 00",
+  "match": "0x14468f059",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14468f05d",
+  "kind": "mid",
+  "expect": "C5 FA 11 86 00 01 00 00",
+  "names": [
+   "site_Car_FuelMassStore"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "car-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v4",
+   "kind": "global",
+   "item": "site_Car_FuelMassStore",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14468edb0.c;xref:0x14468f04d;sig:car.fuel_mass_store",
+   "notes": "V1252 0x14468f05d vmovss [rsi+0x100],xmm0 = [rsi+0x100] - flow*dt, only past test [rbx+0x132],4/je. The stored value can then be replaced by 0.05 or 0.1 when it falls below those floors (the CarLive+0x124 mode decides which). sigcheck passes."
+  }
+ ],
+ "proofs": []
+}

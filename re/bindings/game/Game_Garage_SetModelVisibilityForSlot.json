@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Garage_SetModelVisibilityForSlot",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403b8280",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1403b8280.c;xref:0x1403b7df5",
+  "notes": "Per-slot (<0x1a) setter: iterates sub-models of the slot and calls vcall +0x98 with value param_4 (tyre/wing pit-stop parts). Caller Car_PitStop_ApplyTyreAndWingVisuals. Hypothesis."
+ },
+ "signature": {
+  "id": "game.garage_set_model_visibility_for_slot",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 38 C5 F8 29 74 24 20 83 FA",
+  "match": "0x1403b8280",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403b8280",
+  "kind": "func_start",
+  "names": [
+   "Game_Garage_SetModelVisibilityForSlot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x1403b8280",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1403b8280.c;xref:0x1403b7df5",
+   "notes": "V7998 Game_Garage_SetModelVisibilityForSlot: slot check is <=0x1a (27 slots); also manages +0x398 table entries and +0x390 flags"
+  }
+ ],
+ "proofs": []
+}

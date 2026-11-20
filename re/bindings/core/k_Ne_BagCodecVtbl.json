@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "k_Ne_BagCodecVtbl",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14568e060",
+  "type": "vtable[4]",
+  "level": "L3",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/1429ce380.c;xref:0x1429ce715,0x14364c3bb,0x14364c54b;trace:T010/run2:86288;trace:T010/run4:86249;trace:T010/run3",
+  "notes": "Bag stream codec {vtable, stream at +8}: +0x8 Game_SaveData_WriteBag 0x1439340c0, +0x10 the reader 0x143934620, +0x18 returns the header value 1 (0x140ce2680). The slot save 0x1429ce380 and the save read 0x14364bb50 build it on the stack."
+ },
+ "signature": {
+  "id": "core.bag_codec_vtbl",
+  "section": ".xtls",
+  "pattern": "48 C7 84 24 A0 01 00 00 00 00 00 00 4C 8D 2D",
+  "match": "0x1429ce709",
+  "anchor": "0xf",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0xc",
+   "len": 7
+  },
+  "target": "0x14568e060",
+  "kind": "data",
+  "names": [
+   "k_Ne_BagCodecVtbl"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-27",
+    "by": "splicesaves",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/career/save_splice.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-27",
+   "verifier": "splice-verify",
+   "kind": "global",
+   "item": "k_Ne_BagCodecVtbl",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1429ce380.c;decomp:re/decomp/14364bb50.c;decomp:re/decomp/143651030.c;decomp:re/decomp/1439340c0.c;xref:0x140c264af,0x140c29e6b,0x140c904e0,0x140c91313,0x140fcf8a5,0x140fd09ec,0x140fd1ba4,0x140fe62f4,0x140fe9880,0x142586796,0x1425899e1,0x14258ae80,0x1429ce718,0x1429d1527,0x142a6bf96,0x142a6eddd,0x142c1427b,0x142c47245,0x142c4c8f0,0x143148f57,0x1432c6c8f,0x1432c71ad,0x14364c3be,0x14364c54e,0x143651720",
+   "notes": "V1118 Slots read from the image: +0 0x140ce25d0 (destructor-like, edx flag), +0x8 0x1439340c0, +0x10 0x143934620, +0x18 0x140ce2680 (mov eax,1; ret); +0x20 is string bytes, so there are 4 slots. Object {vtable, stream}: 0x1429ce380 builds it on the stack twice (rsp+0xa0={r13=vtbl @0x1429ce71c, &CountingStream @0x1429ce72c}; rsp+0x90={vtbl, &wrapper stream} @0x1429ce862/0x1429ce872); 0x14364bb50 builds it twice ({vtbl @0x14364c3c2, rbx stream @0x14364c3ca} and @0x14364c552/0x14364c55f) and calls the reader 0x143934620 directly. 0x143651030 also builds one at rsp+0x48/0x50 (0x143651724/0x143651731). WriteBag reads vt [rcx] @0x1439340d9 and the stream [rdi+8] @0x1439340e4. 25 lea refs in 22 functions."
+  }
+ ],
+ "proofs": []
+}

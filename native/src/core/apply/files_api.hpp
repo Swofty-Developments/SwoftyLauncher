@@ -1,6 +1,6 @@
 #pragma once
 
-#include "files.hpp"
+#include "core/apply/files.hpp"
 
 #include <string>
 #include <vector>
@@ -10,8 +10,8 @@
 
 namespace swofty_core::apply::files {
 
-Outcome redirect(const std::string &game_path, const std::string &addon, const std::string &file,
-                 const std::string &registry, const std::string &id, const std::string &scope);
+Outcome redirect(const std::string &game_path, const std::string &addon, const std::string &file, const std::string &registry,
+                 const std::string &id, const std::string &scope);
 std::vector<std::string> put_back(const std::string &scope);
 std::vector<std::string> withdraw(const std::string &addon, const std::string &registry, const std::string &id);
 std::string winner(const std::string &game_path);

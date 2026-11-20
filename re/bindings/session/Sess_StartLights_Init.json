@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_StartLights_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142cd4a50",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-START_LIGHTS;decomp:re/decomp/142cd4a50.c;xref:0x14215094b,0x1457d85e8",
+  "notes": "Log channel START_LIGHTS: 'Start lights disabled in config'"
+ },
+ "signature": {
+  "id": "session.start_lights_init",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 CE 48 8B 81 F8 0B 00 00",
+  "match": "0x142cd4a50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142cd4a50",
+  "kind": "func_start",
+  "names": [
+   "Sess_StartLights_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb2-verify-a",
+   "kind": "func",
+   "item": "Sess_StartLights_Init",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142cd4a50.c;xref:0x14215094b",
+   "notes": "V1888 START_LIGHTS 'Start lights disabled in config'; also 'Less than 2 lights' warn"
+  }
+ ],
+ "proofs": []
+}

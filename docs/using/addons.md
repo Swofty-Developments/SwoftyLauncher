@@ -110,7 +110,7 @@ A row whose addon asks to remove records the game's database ships with shows a 
 
 ## Check an addon
 
-Select a row to open its panel: description, author, version, source, whether it works with your game version, what it changes (database values, game assets, text, files, tracks), its settings and its conflicts. **Game version** says **Works with this game version**, or names the game build the addon was made for next to yours. **Advanced** shows the addon's id.
+Select a row to open its panel: description, author, version, source, whether it works with your game version, what it changes (database values, game assets, text, files, tracks), its settings and its conflicts. **Game version** says **Works with this game version**, or names the game build the addon was made for next to yours. **Advanced** shows the addon's id. **Back**, pinned at the top of the panel, closes it; in a narrow window the panel opens under its row, and **Back** appears over the list once that row scrolls out of view and returns the list to where it was. **Escape**, **Alt+Left** and the mouse's back button also close the panel.
 
 **Conflicts** lists the addons this one overrides and the ones that override it, with what they both change. The list comes from the profile's last build. **Check conflicts**, at the top of the page and in the panel, builds the profile again without starting the game and refreshes the list. The list says it is out of date after an addon is turned on, turned off or moved, or after the addon itself changes. Play waits while a check runs.
 

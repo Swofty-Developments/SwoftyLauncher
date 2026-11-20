@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Game_CareerActivities_AddActivity",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141267cf0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_CareerActivities_AddActivity(void *calendar, const void *activity, uint32_t day)",
+  "evidence": "decomp:re/decomp/141267cf0.c;decomp:re/decomp/14126a1a0.c;decomp:re/decomp/141269180.c;xref:0x14126bf46,0x14126bf73,0x141267a19,0x14126a349,0x141289818",
+  "notes": "Adds a career calendar activity to one calendar (a driver's, 0xc8-byte objects in a season record's +0x40..+0x48, or a team's, 0xd8-byte objects in +0x60..+0x68): when the activity definition's mode mask (+0x60) allows the game mode (bit 1 Driver Career, bit 2 My Team, through Career_Is_MyTeamGameMode_Thunk on calendar +0x10), it creates the instance through the calendar's vtable +0x8 (calendar, out, activity, day) and +0x10 (calendar, activity id +0x08, day), then inserts it into the calendar's activity list (+0x48 allocator, +0x50..+0x58 16-byte slots {allocator, instance}) before the first instance whose day (+0x0a) is not earlier (0x1412c8320), or appends it (0x141289d50), and re-sorts (0x1412c70c0). The activity definition's type byte +0x10 indexes the names at 0x145731eb0 (0x0f NCSContractRenewal, the Driver Career contract event the Team HQ advance card shows as Team Select or Contract Negotiations; 0x10 NSCSSM the secret meeting). The daily tick 0x14126a1a0 adds the NCSContractRenewal definition (found by type 0x0f in the definitions map at +0x378..+0x388 of the activities component) to every driver and team calendar of the current season (0x14126bf46, 0x14126bf73); 24 call sites in all, e.g. the season populate 0x1412678d0 and the notification scheduler 0x141289690. Raised by laneS (Progressive Career follow mode: no contract event)."
+ },
+ "signature": {
+  "id": "game.career_activities_add_activity",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 50 44 89 C7 48 89 D3",
+  "match": "0x141267cf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141267cf0",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerActivities_AddActivity"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-27",
+    "by": "laneS",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/progressive/native/src/ui/follow.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-27",
+   "verifier": "laneS-verify3",
+   "kind": "func",
+   "item": "Game_CareerActivities_AddActivity",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141267cf0.c;decomp:re/decomp/14126a1a0.c;decomp:re/decomp/14126c120.c;xref:0x14126bf46,0x14126bf73,0x14126ca19,0x141267a19,0x141289818,0x1412692bf",
+   "notes": "V1089 Re-decompiled and disassembled: rcx=calendar, rdx=definition, r8d=day (compared as a word against instance +0x0a, cmp word [r9+0xa],di at 0x141267d69); Career_Is_MyTeamGameMode_Thunk(calendar+0x10), then test [def+0x60], al+1 (0x141267d0e) gates; calendar vtable +0x8 (cal,&out,def,day) creates the {allocator,instance} pair and +0x10 (cal, def+0x08 u16, day) follows; inserts before the first slot of +0x50..+0x58 (16-byte) whose instance day >= day via 0x1412c8320 on +0x48, else appends via 0x141289d50, then 0x1412c70c0 over the range; returns nothing (callers ignore rax). 24 direct sites: 19 calls + 5 tail jmps (0x14126829d,0x1412692bf,0x14126940f,0x141269560,0x1412696af). 0x14126bf46/0x14126bf73 are in 0x14126a1a0 (ScheduleComponent vtable 0x1456cdc80 slot 77): current season = [r13+0x410] + ([r13+0x428]<<7), driver calendars +0x40..+0x48 step 0xc8, team calendars +0x60..+0x68 step 0xd8, def from the +0x378 map selected by cmp byte [def+0x10],0xf (0x14126b810). Also used on a stack-built driver calendar in the season build 0x14126c120. Day is effectively u16; uint32_t in the proto is fine. The bit meaning of al+1 rests on the L1 thunk. sigcheck game.career_activities_add_activity hits=1 at 0x141267cf0."
+  }
+ ],
+ "proofs": []
+}

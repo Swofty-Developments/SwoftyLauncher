@@ -1,10 +1,10 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
-use swofty_core::baseline::{Identity, sha256_bytes};
+use swofty_core::game_folder::baseline::{Identity, sha256_bytes};
+use swofty_core::game_folder::journal::{Journal, Op, State};
+use swofty_core::game_folder::recovery;
 use swofty_core::install::{Drift, Game, Installer, OVERRIDE_HEADER, Plan};
-use swofty_core::journal::{Journal, Op, State};
-use swofty_core::recovery;
 
 const GVDB: &str = "game_package/gamedatabases/gamedatabases.2025.bin";
 const UI: &str = "2025_asset_groups/ui_package/flow_frontend.erp";
@@ -22,8 +22,8 @@ const REG: &str = "WINE REGISTRY Version 2\n;; All keys relative to \\\\User\n\n
 
 #[test]
 fn sweep_rechecks_changed_cached_files_and_preserves_user_edits() {
-    use swofty_core::baseline::Hashes;
-    use swofty_core::placed::Placed;
+    use swofty_core::game_folder::baseline::Hashes;
+    use swofty_core::game_folder::placed::Placed;
     let f = Fixture::new("sweep-cache-edits");
     let mut placed = Placed::default();
     let mut hashes = Hashes::load(&f.data);
@@ -44,8 +44,8 @@ fn sweep_rechecks_changed_cached_files_and_preserves_user_edits() {
 #[test]
 #[ignore = "manual large-profile sweep benchmark"]
 fn benchmark_large_profile_sweep_hash_cache() {
-    use swofty_core::baseline::Hashes;
-    use swofty_core::placed::Placed;
+    use swofty_core::game_folder::baseline::Hashes;
+    use swofty_core::game_folder::placed::Placed;
     for warm in [false, true] {
         let f = Fixture::new(if warm { "bench-warm" } else { "bench-cold" });
         let bytes = vec![42u8; 256 * 1024];
@@ -305,7 +305,7 @@ fn the_live_shader_config_comes_out_whatever_the_session_rewrote_it_to() {
     let original = f.snapshot();
     let game = f.game("1");
     let inst = Installer::new(&f.data, &game);
-    let live = swofty_core::shaders::LIVE_FILE;
+    let live = swofty_core::content::shaders::LIVE_FILE;
     write(&f.src.join("active"), "{\"serial\": 1}");
     let mut plan = f.plan("a");
     plan.loader.insert(live.into(), f.src.join("active"));
@@ -464,6 +464,52 @@ fn a_game_update_in_between_never_restores_old_originals() {
 }
 
 #[test]
+fn a_game_update_puts_back_the_originals_of_files_it_did_not_touch() {
+    let f = Fixture::new("update-untouched");
+    let game1 = f.game("1");
+    Installer::new(&f.data, &game1).apply(&f.maps_plan()).unwrap();
+    assert_eq!(f.read(UI), "ui-B");
+
+    for (rel, body) in [("F1_25.exe", "exe-v2"), (GVDB, "db-v2")] {
+        write(&f.game.join(rel), body);
+    }
+    let game2 = f.game("2");
+    let inst = Installer::new(&f.data, &game2);
+    let report = inst.recover().unwrap();
+    assert!(report.contains(&Drift::LeftInPlace(GVDB.into())), "{report:?}");
+    assert!(!report.contains(&Drift::LeftInPlace(UI.into())), "{report:?}");
+    assert_eq!(f.read(GVDB), "db-v2");
+    assert_eq!(f.read(UI), "ui-v1");
+
+    inst.apply(&f.maps_plan()).unwrap();
+    assert_eq!(inst.baseline().unwrap().files[UI].sha256, sha256_bytes(b"ui-v1"));
+    inst.apply(&Plan::vanilla()).unwrap();
+    assert_eq!(f.read(UI), "ui-v1");
+}
+
+#[test]
+fn a_leftover_the_placed_record_proves_gets_the_original_of_the_earlier_game_build() {
+    use swofty_core::game_folder::placed::Placed;
+    let f = Fixture::new("sweep-older-build");
+    let game1 = f.game("1");
+    Installer::new(&f.data, &game1).apply(&f.maps_plan()).unwrap();
+    let placed = Placed::load(&f.data).unwrap();
+    for j in Journal::open(&f.data).unwrap() {
+        std::fs::remove_file(&j.file).unwrap();
+    }
+    placed.save(&f.data).unwrap();
+    write(&f.game.join("F1_25.exe"), "exe-v2");
+    let game2 = f.game("2");
+    let notes = Installer::new(&f.data, &game2).sweep().unwrap();
+    assert!(
+        notes.contains(&format!("put the original {UI} back")),
+        "{notes:?}"
+    );
+    assert_eq!(f.read(UI), "ui-v1");
+    assert_eq!(f.read(GVDB), "db-v1");
+}
+
+#[test]
 fn an_empty_loader_folder_is_not_drift() {
     let f = Fixture::new("empty-loader");
     let game = f.game("1");
@@ -603,8 +649,8 @@ fn a_restore_removes_the_proxy_swofty_ships_without_setting_it_aside() {
     let f = Fixture::new("shipped-proxy");
     let loader = f.root.join("loader");
     write(&loader.join("version.dll"), "proxy");
-    write(&loader.join(swofty_core::builtin::CORE_DLL), "core");
-    let _pin = swofty_core::builtin::LoaderPin::to(loader);
+    write(&loader.join(swofty_core::addons::builtin::CORE_DLL), "core");
+    let _pin = swofty_core::addons::builtin::LoaderPin::to(loader);
     let original = f.snapshot();
     let game = f.game("1");
     let inst = Installer::new(&f.data, &game);
@@ -864,20 +910,20 @@ fn a_build_output_on_another_volume_than_the_game_is_copied() {
     assert_eq!(std::fs::read_to_string(&plan.data[GVDB]).unwrap(), "db-B");
 }
 
-fn two_drives(p: &Path) -> Option<swofty_core::disk::Volume> {
+fn two_drives(p: &Path) -> Option<swofty_core::platform::disk::Volume> {
     let id = if p.components().any(|c| c.as_os_str() == "overlay") {
         "data"
     } else {
         "game"
     };
-    Some(swofty_core::disk::Volume {
+    Some(swofty_core::platform::disk::Volume {
         id: id.into(),
         name: id.into(),
     })
 }
 
 #[cfg(unix)]
-fn one_drive(_: &Path) -> Option<swofty_core::disk::Volume> {
+fn one_drive(_: &Path) -> Option<swofty_core::platform::disk::Volume> {
     two_drives(Path::new("elsewhere"))
 }
 
@@ -915,11 +961,13 @@ fn another_drive_links_the_game_folder_to_a_cache_that_survives_a_restore() {
     assert_eq!(std::fs::read_to_string(&cached).unwrap(), "db-B");
     assert_eq!(inst.verify().unwrap(), []);
 
+    // The core's state file is written again for each install with the same bytes, so its cached copy
+    // is kept.
     inst.apply(&plan).unwrap();
     assert_eq!(f.read(GVDB), "db-B");
     assert!(
         lines.borrow().iter().any(
-            |l| l == "installing: 6 linked (6 from the link cache: 1 copied into it, 5 reused), 0 copied"
+            |l| l == "installing: 6 linked (6 from the link cache: 0 copied into it, 6 reused), 0 copied"
         ),
         "{:?}",
         lines.borrow()
@@ -990,7 +1038,7 @@ fn loose_addon_files_go_through_the_cache_on_one_drive_and_a_second_play_reuses_
     );
     assert!(
         lines.iter().any(
-            |l| l == "installing: 6 linked (4 from the link cache: 1 copied into it, 3 reused), 0 copied"
+            |l| l == "installing: 6 linked (4 from the link cache: 0 copied into it, 4 reused), 0 copied"
         ),
         "{lines:?}"
     );

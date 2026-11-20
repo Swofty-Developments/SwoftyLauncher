@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_MathErrorHandlerF",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145370600",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/145370600.c;xref:0x145351b3c,0x14535229c",
+  "notes": "Float math error handler (_handle_errorf-like): builds a FP environment (0x145372560(0x1f80, 0xffc0)), classifies the operation (op code param_5, type param_9), substitutes the result (inf/nan/1.0) and calls the user matherr hook if installed. Callers Ne_Crt_Acosf, Ne_Crt_AsinfImpl, Ne_Crt_Fmodf, Ne_Crt_Sqrtf and other float intrinsics."
+ },
+ "signature": {
+  "id": "core.crt_math_error_handler_f",
+  "section": ".xtls",
+  "pattern": "48 8B C4 55 53 56 57 41 56 48 8D 68 C9 48 81 EC",
+  "match": "0x145370600",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x145370600",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_MathErrorHandlerF"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x145370600",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/145370600.c;xref:0x145351b3c",
+   "notes": "V8196 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

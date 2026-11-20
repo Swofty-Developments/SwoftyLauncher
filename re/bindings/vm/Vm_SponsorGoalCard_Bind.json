@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_SponsorGoalCard_Bind",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14185e6b0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void (void *vm)",
+  "evidence": "decomp:re/decomp/14185e6b0.c;xref:0x141862420;xref:0x141863b38",
+  "notes": "myteam-g1: Binds a sponsor goal card: description, goal_achieved, effect_state (positive/negative), current_progress, goal_income_recieved, texture, NUM/POS tokens."
+ },
+ "signature": {
+  "id": "vm.sponsor_goal_card_bind",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 04 00 00 C5 F8 29 B4 24 90 04 00 00 4C 89 8C 24 E8 00 00 00",
+  "match": "0x14185e6b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14185e6b0",
+  "kind": "func_start",
+  "names": [
+   "Vm_SponsorGoalCard_Bind"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x14185e6b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14185e6b0.c;xref:0x141862420",
+   "notes": "V9817 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

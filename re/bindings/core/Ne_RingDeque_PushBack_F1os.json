@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_RingDeque_PushBack_F1os",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1433301b0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1433301b0.c;xref:0x140829ba4,0x140829d99",
+  "notes": "Ring deque push_back (block deque with capacity doubling via 0x143330280). Callers Game_F1os_OnResult_UpdateSession etc."
+ },
+ "signature": {
+  "id": "core.ring_deque_push_back_f1os",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 D7 48 89 CE 48 8B 49 20 48 8B 46 28 8D 14 08 F6 C2 01 75 22 48",
+  "match": "0x1433301b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1433301b0",
+  "kind": "func_start",
+  "names": [
+   "Ne_RingDeque_PushBack_F1os"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x1433301b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1433301b0.c;xref:0x140829ba4",
+   "notes": "V7584 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

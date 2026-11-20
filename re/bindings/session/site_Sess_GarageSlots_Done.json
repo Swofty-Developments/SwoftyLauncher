@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "site_Sess_GarageSlots_Done",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1424a8565",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/1424a8080.c;xref:0x1424a8565,0x1424a80a3,0x1424a8116,0x1424a8130,0x1424a8560",
+  "notes": "Shared epilogue of Sess_Assign_GarageSlotsByPreference: add rsp,0xb8, pop rbx..r15, ret. The function's own early exits (no entrants) jump here and the loop falls through to it; rsp is the same at every point of the body (no pushes after the prologue), so a jump from the entrant loop is stack balanced and writes nothing further to out_assignments."
+ },
+ "signature": {
+  "id": "session.garage_slots_done",
+  "section": ".xtls",
+  "pattern": "75 C0 E9 ?? ?? ?? ?? 48 81 C4 B8 00 00 00",
+  "match": "0x1424a855e",
+  "anchor": "0x7",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424a8565",
+  "kind": "mid",
+  "expect": "48 81 C4 B8",
+  "names": [
+   "site_Sess_GarageSlots_Done"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "garageslots",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/garage/garage_slots.cpp"
+  ],
+  "func_start": "0x1424a8080"
+ },
+ "verify": [
+  {
+   "date": "2026-11-01",
+   "verifier": "garageslots-verify",
+   "kind": "global",
+   "item": "site_Sess_GarageSlots_Done",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1424a8080.c;xref:0x1424a8220;sig:session.garage_slots_done",
+   "notes": "V8621 Disassembled 0x1424a8080..0x1424a8578 on the Steam exe: r12 = garages (mov r12,r9 at 0x1424a80a9, restored from [rsp+0x48] after the push_back), index at [rsp+0x58] from r8d (0x1424a8093, 0x1424a813a); load mov r14,[rax+rcx*8] at 0x1424a822a; epilogue 0x1424a8565 add rsp,0xb8 and pops, rsp unchanged across the loop; crash +0x471 is the return of call 0x142a399d0 at 0x1424a84ec. Sigcheck OK, unique."
+  }
+ ],
+ "proofs": []
+}

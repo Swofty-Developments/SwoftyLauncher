@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Ne_ModelNodeBinding_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a36160",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a36160.c;xref:0x1401f2e8b,0x1401fcb74",
+  "notes": "(binding, model, owner): stores model/owner (+0x30/+0x28) and resizes the node pointer vector (+0x10..+0x20) to model node count (+8), zero-filling. Caller: Car_Model_BindCockpitNodes."
+ },
+ "signature": {
+  "id": "core.model_node_binding_init",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 CE 48 89 51 30",
+  "match": "0x143a36160",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a36160",
+  "kind": "func_start",
+  "names": [
+   "Ne_ModelNodeBinding_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x143a36160",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143a36160.c;xref:0x1401f2e8b",
+   "notes": "V3615 body matches; also called by Game_Actor_CreateAnimationBinding (claim lists only Car_Model_BindCockpitNodes)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x143a36160",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143a36160.c;xref:0x1401f2e8b",
+   "notes": "V4007 body matches; also called by Game_Actor_CreateAnimationBinding (claim lists only Car_Model_BindCockpitNodes)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x143a36160",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a36160.c;xref:0x1401f2e8b,0x1401fcb74",
+   "notes": "V4069 caller Car_Model_BindCockpitNodes confirmed (also others)"
+  }
+ ],
+ "proofs": []
+}

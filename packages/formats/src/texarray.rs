@@ -53,6 +53,16 @@ impl Array {
         self.fits(stock) && self.count == stock.count
     }
 
+    /// How many slices `res` holds when [`Array::read_slices`] reads it, found from its header and the
+    /// size of its data without unpacking them.
+    pub fn slice_count(res: &Resource) -> Option<usize> {
+        let (f0, f1) = (res.fragments.first()?, res.fragments.get(1)?);
+        let head = f0.data().ok()?;
+        let count = u32::from_le_bytes(head.get(COUNT..COUNT + 4)?.try_into().ok()?) as usize;
+        let len = usize::try_from(f1.size).ok()?;
+        (count != 0 && len != 0 && len % count == 0).then_some(count)
+    }
+
     /// An array of one slice or more: a source for `append`.
     pub fn read_slices(res: &Resource) -> Option<Array> {
         let (f0, f1) = (res.fragments.first()?, res.fragments.get(1)?);
@@ -109,15 +119,7 @@ mod tests {
     use crate::erp::Fragment;
 
     fn fragment(data: Vec<u8>) -> Fragment {
-        Fragment {
-            name: *b"temp",
-            offset: 0,
-            size: data.len() as u64,
-            flags: 0x10,
-            compression: crate::erp::STORED,
-            packed: data.len() as u64,
-            raw: data,
-        }
+        Fragment::new(*b"temp", data.len() as u64, 0x10, crate::erp::STORED, data)
     }
 
     fn surface(width: u32, slices: &[[u8; 4]]) -> Resource {
@@ -160,6 +162,13 @@ mod tests {
         let wide = Array::read(&surface(4, &[[0; 4], [1; 4], [2; 4], [3; 4]])).unwrap();
         assert!(!wide.fits(&stock));
         assert!(Array::read(&surface(2, &[[0; 4]])).is_none());
+        for slices in [1usize, 2, 4] {
+            let whole = surface(2, &vec![[7; 4]; slices]);
+            assert_eq!(
+                Array::slice_count(&whole),
+                Array::read_slices(&whole).map(|a| a.count)
+            );
+        }
         let one = Array::read_slices(&surface(2, &[[5; 4]])).unwrap();
         assert!(Array::read(&surface(2, &[[5; 4]])).is_none() && one.fits(&stock));
         let mut grown = stock.clone();

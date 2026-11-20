@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_Resolve_IconNodeByPath",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1414c65b0",
+  "level": "L1",
+  "subsystem": "vm",
+  "proto": "void *ResolveIcon(void *owner, void *path)",
+  "evidence": "decomp:re/decomp/1414c65b0.c;xref:0x1414c6475;xref:0x1414c64a4;xref:0x14150b8c6",
+  "notes": "myteam-g2: Looks up an entry in the UI registry (_DAT_146ca54f8) by path and sets a cached S64 property if changed (Ne_Property_SetUIDBRefIfChanged); returns the node handle. Used by every icon binder (department events, resource points, popups)."
+ },
+ "signature": {
+  "id": "vm.resolve_icon_node_by_path",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 CE C5 F8 57 C0 C5 F8 29 44 24 20 48 C7 44 24 30 00 00 00 00 48 8B 0D ?? ?? ?? ?? 4C 8D 05",
+  "match": "0x1414c65b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1414c65b0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Resolve_IconNodeByPath"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x1414c65b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1414c65b0.c;xref:0x1414c6475;xref:0x1414c64a4",
+   "notes": "V9718 Generic path lookup in UI registry (FUN_1442b1b60) plus refcounted link and conditional set via FUN_140977b20; nothing icon-specific in the code, icon only by usage."
+  }
+ ],
+ "proofs": []
+}

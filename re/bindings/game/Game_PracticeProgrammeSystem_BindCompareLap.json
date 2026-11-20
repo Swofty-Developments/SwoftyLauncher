@@ -1,0 +1,60 @@
+{
+ "schema": 1,
+ "name": "Game_PracticeProgrammeSystem_BindCompareLap",
+ "table": "functions",
+ "author": "load-game",
+ "row": {
+  "addr": "0x1429410f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_PracticeProgrammeSystem_BindCompareLap(void *system, uint8_t car, uint8_t old_car, void *lap, uint32_t arg5)",
+  "evidence": "decomp:own disasm 0x1429410f0-0x14294143a;xref:0x142940958,0x142940d6f,0x14d598be3",
+  "notes": "Practice programme system method (rcx system: +0x280 lap times, +0x290, +0x298 car list +0x28..+0x30, +0x2a8; dl car, 0xff returns; r8b the previous car; r9 a telemetry lap). Binds the telemetry lap to the car (lap+0x130 and +0xd0 = the car's +0x58 object, +0xc4 = 0x3f, +0xc8 from its +0xe0 component) and calls each listener in lap+0x170..+0x178 (vcall +8 with lap+0xc0), calls 0x1434bc540([system+0x290], car, 1), then copies bit 0 (not clean) of the lap's summary flags +0x2c0 (0x14294127b) into the car's current lap record: set makes it invalid (+0xd8 = ((+0xe0 & 1) == 0), 0x14294131b), clear makes it valid (+0xd8 = +0xe0 & 1, 0x1429412be), and reports either through Sess_LapTimes_ReportLapInvalidation_Thunk at 0x142941328 (valid 0 or 1). It then posts a message (vtable 0x1457b7470, payload car << 32 | the 5th argument) and, when the previous car is another valid car, releases it (0x142f1be60 with 0x28, 0x142a3f330 on [system+0x2a8]). Callers Game_PracticeProgrammeSystem_OnCompareVehicleChanged at 0x142940958 (telemetry lap slot 4, 5th argument 1) and Game_PracticeProgrammeSystem_OnCompareVehicleChanged_2 at 0x142940d6f, and the .data1 body at 0x14d598be3. Steam 1.0.145 0x1429434b0 and EA 1.0.145 0x14293c830 (restored dump): 203 of 203 instructions the same, +0x2c0/+0xd8/+0xe0/+0x9c80/+0x280 used at the same places."
+ },
+ "signature": {
+  "id": "game.practice_programme_system_bind_compare_lap",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 44 89 C3 89 D7 48 89 CE 80 FA FF 0F 84",
+  "match": "0x1429410f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1429410f0",
+  "kind": "func_start",
+  "names": [
+   "Game_PracticeProgrammeSystem_BindCompareLap"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-18",
+    "by": "load-game",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "load-game",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1429410f0",
+    "target": "0x1429410f0"
+   },
+   "sigcheck": "passed",
+   "digest": "64ee32f19265d302dc5cf19e2c2754fe0db6e50fca5fcfd3e7db2eba280eb7f6"
+  }
+ ]
+}

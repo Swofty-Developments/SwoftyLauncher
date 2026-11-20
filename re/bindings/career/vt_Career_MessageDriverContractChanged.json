@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "vt_Career_MessageDriverContractChanged",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145696e60",
+  "type": "vtable[2]",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/140d9de30.c;decomp:re/decomp/140d766b0.c;decomp:re/decomp/141143e80.c;xref:0x140d9de68,0x140d77c30,0x140d7b479,0x140d8bba4,0x140d90da4,0x140e04ce0;doc:addons/career-editor/protocol/drivers.md#op-driversswap",
+  "notes": "vtable of MessageDriverContractChanged: slot 0 0x140e04c30 deleting dtor, slot 1 0x140e04ce0 returns the name 'MessageDriverContractChanged' 0x14565e28c (Ne_Post_BusMessage keys the synchronous dispatch on slot 1). Message 0x78 bytes (DriverContractChangedMessage): +0 vtable, +8 0, +0x10 driver key, +0x14 the contract record before (0x30: record + active byte), +0x44 the record after (0x2c), +0x70 u8 kind. Posted by Career_Set_DriverContractState (0x140d9de68, an empty record after and the new state at +0x70), the Driver Career signing 0x140d766b0 after it copies an offer into the incoming driver's DriverContract (0x140d77c30, +0x70 = offer +0xe), Career_Sign_DriverToTeam (0x140d90da4, +0x70 = offer flag), 0x140d79ff0 (0x140d7b479, +0x70 = 0) and 0x140d8b770 (0x140d8bba4, +0x70 = 0), all with the same layout (V1015). Listeners: DriverStatisticsComponent (0x1411415f0 subscribes 0x141143e80, which acts only when +0x70 < 2), emails (0x140dd3470 -> 0x140dd7c90), analytics (0x1406d8470 -> 0x140720b20) and 0x143720bc0 -> 0x143748360. Raised by ce-numbers (the lead authorised --force, as for ce-drivers)"
+ },
+ "signature": {
+  "id": "career.message_driver_contract_changed",
+  "section": ".xtls",
+  "pattern": "8B 41 50 48 8B 0D ?? ?? ?? ?? 48 C7 44 24 28 00 00 00 00 48 8D 15 ?? ?? ?? ?? 48 89 54 24 20",
+  "match": "0x140d9de55",
+  "anchor": "0x16",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x13",
+   "len": 7
+  },
+  "target": "0x145696e60",
+  "kind": "data",
+  "names": [
+   "vt_Career_MessageDriverContractChanged"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-25",
+    "by": "ce-numbers",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/drivers.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-25",
+   "verifier": "ce-verify-contract",
+   "kind": "global",
+   "item": "vt_Career_MessageDriverContractChanged",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140d9de30.c;decomp:re/decomp/140d766b0.c;decomp:re/decomp/140e04ce0.c;decomp:re/decomp/140d79ff0.c;decomp:re/decomp/140d8b770.c;decomp:re/decomp/140d8fcb0.c;decomp:re/decomp/1411415f0.c;xref:0x140d9de68,0x140d77c30,0x140d7b479,0x140d8bba4,0x140d90da4,0x140e04ce0,0x141141679,0x140db6d9f;sig:career.message_driver_contract_changed",
+   "notes": "V1015 Role right, type and poster list wrong. Slots read from the image: +0 0x140e04c30 (deleting dtor: test edx, frees through the allocator vt+0x38, returns this), +8 0x140e04ce0 (lea rax,0x14565e28c MessageDriverContractChanged; ret). The third qword 0x140e05020 is slot 0 of the next 2-slot vtable 0x145696e70 (slot 1 0x140e050d0 returns ESDriverComsSlotFilled 0x14565a8a9; that vtable is stored on its own as a stack message at 0x140db6d9f and 0x142308198), and the qword before, 0x140e04c20, is slot 1 of 0x145696e50. So the type is vtable[2], not vtable[3], the same shape as vt_Career_RenownAwardedMessage. Ne_Post_BusMessage 0x1439876c0 keys the dispatch on slot 1 (call [rax+8]) and runs the handlers synchronously on the pointer, no copy. Posters: rip-relative refs come from five functions, not two: 0x140d9de68 Career_Set_DriverContractState (msg rsp+0x20), 0x140d77c30 the signing 0x140d766b0 (msg rsp+0x70, posted 0x140d77cbb with rdx=rbp, Ghidra resolves it to the same slot), plus 0x140d7b479 Career_Sign_DriverContract 0x140d79ff0 (msg rsp+0xd8, +0x70 = 0), 0x140d8bba4 in 0x140d8b770 (msg rsp+0x98, +0x70 = 0), 0x140d90da4 Career_Sign_DriverToTeam 0x140d8fcb0 (msg rsp+0x70, +0x70 = cl). All five use the same layout. Subscribers on the name key: DriverStatisticsComponent 0x1411415f0 binds 0x141143e80 (0x141141666) with key 0x14565e28c (0x141141679) via 0x143987810; emails 0x140dd3470 binds 0x140dd7c90; analytics 0x1406d8470 binds 0x140720b20; 0x143720bc0 binds 0x143748360. sigcheck --only career.message_driver_contract_changed: 1/1 pass, match 0x140d9de55, target 0x145696e60 (lea rdx at 0x140d9de68). Corrections: type vtable[2]; name all five posters."
+  },
+  {
+   "date": "2026-10-25",
+   "verifier": "ce-verify-contract",
+   "kind": "global",
+   "item": "vt_Career_MessageDriverContractChanged",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d9de30.c;decomp:re/decomp/140d766b0.c;decomp:re/decomp/140d8fcb0.c;decomp:re/decomp/140d79ff0.c;decomp:re/decomp/140d8b770.c;decomp:re/decomp/140e04ce0.c;xref:0x140d9de68,0x140d77c30,0x140d7b479,0x140d8bba4,0x140d90da4,0x140e04ce0,0x140d90d00,0x140d90e2f;sig:career.message_driver_contract_changed",
+   "notes": "V1032 Re-check of the corrected row after V1015. Type vtable[2] matches the image (slot 0 0x140e04c30 deleting dtor, slot 1 0x140e04ce0 name getter; 0x145696e70 starts the next vtable). The five evidence xrefs are the lea sites of all five posters, and each is followed by the store to its message base. The subscriber list matches what I found (0x1411415f0 -> 0x141143e80, 0x140dd3470 -> 0x140dd7c90, 0x1406d8470 -> 0x140720b20, 0x143720bc0 -> 0x143748360). sigcheck passed earlier this session (match 0x140d9de55, target 0x145696e60). One wording nit, not wrong: for Career_Sign_DriverToTeam the +0x70 byte is offer +0xe (movzx ecx,[r12+0xe] at 0x140d90d00, stored at 0x140d90e2f), so it is the same added-reason byte as in the signing, not a separate flag. 0x140d79ff0 is Career_Sign_DriverContract in functions.tsv and could be named."
+  }
+ ],
+ "proofs": []
+}

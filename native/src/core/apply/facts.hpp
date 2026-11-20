@@ -24,16 +24,11 @@ namespace swofty_core::apply::facts {
 inline std::string mode_of(std::string_view game_mode)
 {
     static const std::pair<std::string_view, std::string_view> exact[] = {
-        {"time_trial", "time_trial"},
-        {"solo_testing", "time_trial"},
-        {"grand_prix_23", "grand_prix"},
-        {"grand_prix_splitscreen", "split_screen"},
-        {"story_mode", "story"},
-        {"story_mode_zenith", "story"},
-        {"event_mode", "f1_world"},
-        {"championships", "f1_world"},
-        {"rewind_event_mode", "f1_world"},
-        {"F1CG_solo_battles", "f1_world"},
+        {"time_trial", "time_trial"},      {"solo_testing", "time_trial"},
+        {"grand_prix_23", "grand_prix"},   {"grand_prix_splitscreen", "split_screen"},
+        {"story_mode", "story"},           {"story_mode_zenith", "story"},
+        {"event_mode", "f1_world"},        {"championships", "f1_world"},
+        {"rewind_event_mode", "f1_world"}, {"F1CG_solo_battles", "f1_world"},
     };
     for (auto &[label, mode] : exact)
         if (game_mode == label)
@@ -70,7 +65,10 @@ inline ModeKind mode_kind(bool context, bool holder, std::string_view mode)
 
 inline const char *mode_kind_name(ModeKind k)
 {
-    return k == ModeKind::time_trial ? "Time Trial" : k == ModeKind::career ? "career" : k == ModeKind::other ? "another game mode" : "unknown";
+    return k == ModeKind::time_trial ? "Time Trial"
+           : k == ModeKind::career   ? "career"
+           : k == ModeKind::other    ? "another game mode"
+                                     : "unknown";
 }
 
 struct Session {
@@ -140,8 +138,7 @@ inline std::string track_of(int stat_id, const std::string &label, const std::ve
     return label.empty() ? std::string() : "game/" + label;
 }
 
-inline std::string line(const std::string &mode, const std::string &type, const std::string &session,
-                        const std::string &track)
+inline std::string line(const std::string &mode, const std::string &type, const std::string &session, const std::string &track)
 {
     std::string s = "[apply] facts: mode " + (mode.empty() ? std::string("unknown") : mode) + ", session " +
                     (type.empty() ? std::string("none") : type);

@@ -9,15 +9,18 @@
   --scan          ignore match hints, as SWOFTY_RESOLVE=scan does
   --json          print the per-binding results as JSON
   --compare EXE   also flag bindings whose match surroundings or callee differ from the Steam exe's
+  --restore LOG   put the core's patches back into a dump from the live run's scan log first (sigverify --restore)
+  --write-hints   with --build: write the match of every binding the scan resolves with exactly one hit into
+                  re/db/builds/<build>.json as a hint, then resolve the set again and check each hint resolves there
 
 The image is a PE file or a flat dump whose file offset is the RVA (a file starting with MZ whose length is its
 SizeOfImage). Both are read with the PE header found in the image itself, as the core reads its own module.
-The order mirrors resolve_binding in native/src/core/manager.cpp: the byte-checked match hint, then the section
+The order mirrors resolve_binding in native/src/core/runtime/manager.cpp: the byte-checked match hint, then the section
 scan (exactly one hit), then the string anchor; apply_match checks the resolve step, expect and the target section.
 A packed set also applies attempt(): pages that read encrypted defer the binding.
 Exit status 0 only when every binding that is not marked unresolvable resolves.
 """
-import argparse, json, math, mmap, os, struct, sys
+import argparse, json, math, mmap, os, re, struct, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -320,6 +323,21 @@ def num(v, default):
         return 0
 
 
+LIVE_BIND = re.compile(r'\[bind\] id=(\S+) .*? result=resolved .*? match=0x([0-9a-f]+) verified=yes')
+
+
+def live_verified(log_lines):
+    """{binding id: match} for each binding the live run resolved with its expect checked on the clean exe, before the
+    core patched it. A dump taken with the core running holds the core's hook over the expect bytes of a hooked site, so
+    the dump cannot repeat that check; the log's verdict for the same match stands in for it."""
+    out = {}
+    for line in log_lines:
+        m = LIVE_BIND.search(line)
+        if m:
+            out[m.group(1)] = int(m.group(2), 16)
+    return out
+
+
 class Binding:
     def __init__(self, j):
         res = j.get('resolve') or {}
@@ -337,8 +355,9 @@ class Binding:
 
 
 class Resolver:
-    def __init__(self, img, doc, exe_size=None, kb_first=True):
+    def __init__(self, img, doc, exe_size=None, kb_first=True, live_verified=None):
         self.img = img
+        self.live_verified = live_verified or {}
         b = doc['build']
         self.same_build = num(b.get('pe_timestamp'), 0) == img.stamp
         set_size = num(b.get('size'), -1)
@@ -370,7 +389,9 @@ class Resolver:
             target = i + b.len + img.i32(at)
         elif b.rkind != 'addr':
             return None, 'unknown resolve kind'
-        if b.expect and (not img.readable(at, len(b.expect)) or list(img.mem[at:at + len(b.expect)]) != b.expect):
+        proven_live = self.live_verified.get(b.id) == match
+        if (b.expect and not proven_live
+                and (not img.readable(at, len(b.expect)) or list(img.mem[at:at + len(b.expect)]) != b.expect)):
             return None, 'expect bytes differ'
         code = b.kind in CODE_KINDS
         own = img.section_of(target)
@@ -508,10 +529,22 @@ def similarity(a, b):
     return sum(x == y for x, y in zip(a, b)) / max(min(len(a), len(b)), 1) if a and b else 0.0
 
 
+def relocated_body(img, rva):
+    """The body a protector thunk at rva jumps to outside its own section, or None."""
+    s = img.section_of(rva)
+    if s is None or not img.readable(rva, 5) or img.mem[rva] != 0xE9:
+        return None
+    body = follow_jumps(img, rva)
+    return body if body != rva and not s.has(body) and img.readable(body, 16) else None
+
+
 def compare(ref_img, ref_doc, ref_results, img, doc, results, context=0.4, callee=0.5):
     """Flag bindings that resolve on both builds but probably not to the same place. A pattern made of protector
     filler can match once elsewhere, so the bytes around the match (outside the pattern) and, for a call, the
-    callee's first bytes must look like the reference build's."""
+    callee's first bytes must look like the reference build's. Around a protector thunk the filler differs per
+    build, so there the relocated bodies the two thunks jump to must look alike instead. An override pattern can sit
+    somewhere else than the reference pattern, at a caller for instance, so for a code target with an override the
+    first bytes of the code at the two targets may stand in for the bytes around the match."""
     ref = {b['id']: (b, r) for b, r in zip(ref_doc['bindings'], ref_results)}
     out = []
     for b, r in zip(doc['bindings'], results):
@@ -522,12 +555,22 @@ def compare(ref_img, ref_doc, ref_results, img, doc, results, context=0.4, calle
             continue
         m, rm = r['match'] if r['match'] is not None else r['target'], rr['match'] if rr['match'] is not None else rr['target']
         n, rn = len(b['pattern'].split()), len(rb['pattern'].split())
-        around = max(similarity(img.read(m - 16, 16), ref_img.read(rm - 16, 16)),
-                     similarity(img.read(m + n, 16), ref_img.read(rm + rn, 16)))
-        why = []
-        if around < context:
-            why.append(f'bytes around the match look {around:.2f} alike')
         t, rt = r['target'], rr['target']
+        body, rbody = relocated_body(img, t), relocated_body(ref_img, rt)
+        why = []
+        if body is not None and rbody is not None:
+            sim = similarity(img.read(body, 16), ref_img.read(rbody, 16))
+            if sim < context:
+                why.append(f'the thunk body {body:#x} looks {sim:.2f} like the reference body {rbody:#x}')
+        else:
+            around = max(similarity(img.read(m - 16, 16), ref_img.read(rm - 16, 16)),
+                         similarity(img.read(m + n, 16), ref_img.read(rm + rn, 16)))
+            if around < context and b['pattern'] != rb['pattern'] and b['kind'] in ('func', 'site'):
+                code = similarity(img.read(follow_jumps(img, t), 16), ref_img.read(follow_jumps(ref_img, rt), 16))
+                if code < context:
+                    why.append(f'bytes around the match look {around:.2f} alike and the code at the target {code:.2f}')
+            elif around < context:
+                why.append(f'bytes around the match look {around:.2f} alike')
         if ref_img.readable(rt, 5) and ref_img.mem[rt] == 0xE8:
             if not (img.readable(t, 5) and img.mem[t] == 0xE8):
                 why.append('the reference site is a call and this one is not')
@@ -576,8 +619,114 @@ def verify(image, doc, exe_size=None):
     return Resolver(img, doc, exe_size).run()
 
 
+def anchors(port, build):
+    """[(port RVA, KB RVA, binding id, port section)] for every binding that resolves on the port image, sorted."""
+    kb_rva = {b['id']: int(b['rva'], 16) for b in gen_set(kb_name())['bindings']}
+    doc = gen_set(build)
+    out = []
+    for b, r in zip(doc['bindings'], verify(port, doc)):
+        if r['target'] is not None and b['id'] in kb_rva and port.section_of(r['target']) is not None:
+            out.append((r['target'], kb_rva[b['id']], b['id'], port.section_of(r['target']).name))
+    return sorted(out)
+
+
+def kb_name():
+    import bindgen, kb
+    return bindgen.load_overlays(kb.load_signatures()['build'])[0]
+
+
+def kb_twin(port, build, rva, marks=None):
+    """(KB RVA, evidence) for a port RVA from the shift of the bindings on either side of it, or (None, why)."""
+    marks = anchors(port, build) if marks is None else marks
+    sec = port.section_of(rva)
+    if sec is None:
+        return None, f'{rva:#x} is in no section of the port image'
+    same = [m for m in marks if m[3] == sec.name]
+    at = next((m for m in same if m[0] == rva), None)
+    if at:
+        return at[1], {'how': 'binding', 'text': f'{at[2]} is bound here on both builds'}
+    below = [m for m in same if m[0] < rva]
+    above = [m for m in same if m[0] > rva]
+    if not below or not above:
+        return None, f'no binding {"below" if not below else "above"} {rva:#x} in {sec.name} to take the shift from'
+    lo, hi = below[-1], above[0]
+    dl, dh = lo[0] - lo[1], hi[0] - hi[1]
+    if dl != dh:
+        return None, (f'the bindings around {rva:#x} moved by different amounts ({lo[2]} by {dl:#x}, {hi[2]} by '
+                      f'{dh:#x}), so code changed between them')
+    return rva - dl, {'how': 'neighbours', 'shift': dl, 'below': lo[2], 'above': hi[2],
+                      'text': f'{lo[2]} ({lo[0]:#x}) and {hi[2]} ({hi[0]:#x}) on either side both sit {dl:#x} '
+                              f'{"above" if dl >= 0 else "below"} their KB addresses'}
+
+
 def rx(v):
     return '-' if v is None else f'{v:#x}'
+
+
+def pick_hints(results, live, existing):
+    """The match of each binding the scan resolved with exactly one hit, as a hint. A binding the live run resolved to
+    another target is left out, and so is one whose hint names another match: a hint is never moved."""
+    hints, skipped = {}, {}
+    for r in results:
+        if r['result'] != 'resolved' or r['method'] != 'scan' or r.get('matches') != 1 or r.get('match') is None:
+            continue
+        i = r['id']
+        if i in live and live[i] != r['target']:
+            skipped[i] = f'the live run resolved it to {live[i]:#x}, the image to {r["target"]:#x}'
+            continue
+        old = (existing.get(i) or {}).get('match')
+        if old is not None and int(old, 16) != r['match']:
+            skipped[i] = f'its hint names {old}, the image matches at {r["match"]:#x}'
+            continue
+        hints[i] = {'match': f'{r["match"]:#x}'}
+    return hints, skipped
+
+
+def live_targets(log):
+    """The target of each binding the run in `log` resolved and verified, and the run's exe identity."""
+    import capture
+    runs = capture.load_inputs([log])
+    out, ident = {}, {}
+    for run in runs:
+        ident.update(run.identity())
+        per = {}
+        for rec in run.records:
+            per.setdefault(rec['id'], []).append(rec)
+        for i, recs in per.items():
+            best = capture.pick(recs)
+            if best['result'] == 'resolved' and best['verified'] and best['rva'] is not None:
+                out[i] = best['rva']
+    return out, ident
+
+
+def write_hints(build, img, results, log):
+    import capture
+    path = os.path.join(os.path.dirname(HERE), 'db', 'builds', f'{build}.json')
+    with open(path, encoding='utf-8') as f:
+        before = f.read()
+    overlay = json.loads(before)
+    if overlay['build'].get('pe_timestamp') != img.stamp:
+        raise SystemExit(f'bindverify: the image has PE timestamp {img.stamp}, {path} {overlay["build"].get("pe_timestamp")}')
+    live, ident = live_targets(log) if log else ({}, {})
+    err = capture.check_identity(ident, overlay['build']) if ident else None
+    if err:
+        raise SystemExit(f'bindverify: refusing to write {path}: {err}')
+    hints, skipped = pick_hints(results, live, overlay.get('hints') or {})
+    report = capture.write_hints(path, {'identity': ident or {'pe_timestamp': img.stamp}, 'hints': hints})
+    doc = gen_set(build)
+    again = {r['id']: r for r in Resolver(img, doc, int(doc['build']['size']), kb_first=True).run()}
+    want = {r['id']: r['target'] for r in results}
+    bad = [i for i in hints if again[i]['method'] != 'hint' or again[i]['target'] != want[i]]
+    if bad:
+        with open(path, 'w', encoding='utf-8') as f:
+            f.write(before)
+        raise SystemExit(f'bindverify: {len(bad)} hint(s) did not resolve at their match on the image, '
+                         f'{path} left as it was: {", ".join(sorted(bad)[:10])}')
+    print(f'hints: {len(hints)} binding(s) checked at their match on the image ({len(report["added"])} added, '
+          f'{report["unchanged"]} already there), {len(skipped)} left out, '
+          f'{sum(r["method"] == "hint" for r in again.values())} of {len(again)} now resolve by hint')
+    for i, why in sorted(skipped.items()):
+        print(f'  left out {i}: {why}')
 
 
 def main(argv=None):
@@ -591,14 +740,28 @@ def main(argv=None):
     ap.add_argument('--all', action='store_true', help='also list resolved bindings')
     ap.add_argument('--compare', metavar='STEAM_EXE', help='also check that each binding lands on the same code as on the KB '
                                                            'build (Steam set, hints used)')
+    ap.add_argument('--restore', metavar='LOG', help="put the core's patches back from the live run's scan log")
+    ap.add_argument('--write-hints', action='store_true', help='write each single scan hit into the overlay as a hint')
     a = ap.parse_args(argv)
     if bool(a.build) == bool(a.set):
         ap.error('pass exactly one of --build and --set')
+    if a.write_hints and not a.build:
+        ap.error('--write-hints needs --build')
     doc = json.load(open(a.set)) if a.set else gen_set(a.build)
     img = Image(a.image)
+    proven = {}
+    if a.restore:
+        import sigverify
+        with open(a.restore, errors='replace') as f:
+            sites, nbytes = sigverify.restore(img, f)
+        print(f'restore: {sites} patched site(s), {nbytes} byte(s) put back from {a.restore}')
+        with open(a.restore, errors='replace') as f:
+            proven = live_verified(f)
+    if a.write_hints:
+        a.scan = True
     if a.exe_size is None and not img.flat:
         a.exe_size = os.path.getsize(a.image)
-    res = Resolver(img, doc, a.exe_size, kb_first=not a.scan)
+    res = Resolver(img, doc, a.exe_size, kb_first=not a.scan, live_verified=proven)
     results = res.run()
     cov = coverage(results)
     if a.json:
@@ -618,6 +781,8 @@ def main(argv=None):
                       f'{r["reason"]}')
         print('coverage: ' + ', '.join(f'{k} {v}' for k, v in cov.items()))
     bad = sum(r['result'] not in ('resolved', 'unresolvable') for r in results)
+    if a.write_hints:
+        write_hints(a.build, img, results, a.restore)
     if a.compare:
         ref_img, ref_doc = Image(a.compare), gen_set('steam')
         odd = compare(ref_img, ref_doc, Resolver(ref_img, ref_doc).run(), img, doc, results)

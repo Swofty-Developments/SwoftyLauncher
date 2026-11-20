@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_GameVersionNumberConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1437d4130",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: GameVersionNumber.display_cl, GameVersionNumber.display_revision, GameVersionNumber.major, GameVersionNumber.minor, GameVersionNumber.revision, HudCustomisation.disableLegacyScript, UI.UseKeyboardOnlyIconFont, ui_menu_data.game_version_str'"
+ },
+ "signature": {
+  "id": "game.read_game_version_number_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 01 00 00 C5 F8 29 B4 24 80 01 00 00 48 89 CE C6 41 08 00",
+  "match": "0x1437d4130",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1437d4130",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_GameVersionNumberConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x1437d4130",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1437d4130.c",
+   "notes": "V6253 0x5ae9-byte UI-module init: registers UI behaviours/route names, hud customisation; game-version keys are only part. Better Game_UIModule_RegisterBehavioursAndVersion; vtable/indirect"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x1437d4130",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1437d4130.c",
+   "notes": "V7111 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "lower.hpp"
+#include "core/apply/tracks/lower.hpp"
 
-#include "../ids.hpp"
+#include "core/apply/ids.hpp"
 
 #include <map>
 #include <set>
@@ -21,7 +21,7 @@ struct VenueSeed {
     const char *key, *name, *country, *stock;
 };
 
-#include "venues.inc"
+#include "core/apply/tracks/venues.inc"
 
 inline constexpr const char *DORMANT[] = {"paul_ricard", "portimao",    "sochi",           "hanoi",    "texas_nat",
                                           "suzuka_east", "bahrain_pad", "silverstone_int", "bahrain24"};
@@ -272,8 +272,8 @@ inline std::vector<Seed> venue_bases()
 {
     std::vector<Seed> out;
     for (const VenueSeed &v : VENUE_SEEDS)
-        out.push_back({"track.venue", v.key,
-                       Value::object({{"name", Value(v.name)}, {"country", Value(v.country)}, {"track", Value()}})});
+        out.push_back(
+            {"track.venue", v.key, Value::object({{"name", Value(v.name)}, {"country", Value(v.country)}, {"track", Value()}})});
     return out;
 }
 
@@ -292,8 +292,8 @@ inline Seeds seeds(const Scan &s, const std::vector<Older> &older)
         const VenueSeed *v = stock_venue(r.code);
         if (v)
             provides.push_back(std::string("venue/") + v->key);
-        out.base.push_back({"track", r.code,
-                            track_value(r.code, v ? v->name : r.code, "", "", provides, !is_dormant(r.code), r.stat_id)});
+        out.base.push_back(
+            {"track", r.code, track_value(r.code, v ? v->name : r.code, "", "", provides, !is_dormant(r.code), r.stat_id)});
     }
     for (auto &b : s.blocks)
         if (!older_codes.count(b.code) || is_dormant(b.code))
@@ -302,8 +302,10 @@ inline Seeds seeds(const Scan &s, const std::vector<Older> &older)
         std::vector<std::string> provides;
         if (!o.venue.empty())
             provides.push_back(o.venue);
-        out.older.push_back({o.addon, {"track", o.code, track_value(o.code, o.name.empty() ? o.code : o.name, o.base, o.slot,
-                                                                    provides, false, o.stat_id)}});
+        out.older.push_back(
+            {o.addon,
+             {"track", o.code,
+              track_value(o.code, o.name.empty() ? o.code : o.name, o.base, o.slot, provides, false, o.stat_id)}});
     }
     return out;
 }
@@ -315,8 +317,8 @@ inline Seeds venue_providers()
     Seeds out;
     for (const VenueSeed &v : VENUE_SEEDS)
         if (*v.stock)
-            out.base.push_back({"track", v.stock,
-                                track_value(v.stock, v.name, "", "", {std::string("venue/") + v.key}, true, -1)});
+            out.base.push_back(
+                {"track", v.stock, track_value(v.stock, v.name, "", "", {std::string("venue/") + v.key}, true, -1)});
     return out;
 }
 

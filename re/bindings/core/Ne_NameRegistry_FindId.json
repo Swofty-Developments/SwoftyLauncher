@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NameRegistry_FindId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a3df70",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a3df70.c;xref:0x140184cb0,0x1401a4810",
+  "notes": "(uint hash, const char *name): global name registry g 0x14618ce00 (robin-hood map keyed by 32-bit hash, buckets list of entries {next +0, id +8, name +0xc}); strcmp-confirms name and returns id or -1. Callers: Car_Model_BindCockpitNodes, Game_Scene_FindByName, camera clip sync, cutscene part options."
+ },
+ "signature": {
+  "id": "core.name_registry_find_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 89 C8 4C 8B",
+  "match": "0x143a3df70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a3df70",
+  "kind": "func_start",
+  "names": [
+   "Ne_NameRegistry_FindId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x143a3df70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a3df70.c;xref:0x140186503",
+   "notes": "V3617 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

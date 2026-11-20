@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Inventory_RemoveWallet",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a7fb20",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-INVENTORY",
+  "notes": "named from its log messages (channel INVENTORY): 'Removing wallet [%s] | Removed wallet [%s] | Wallet [%s] not found.'"
+ },
+ "signature": {
+  "id": "game.inventory_remove_wallet",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC B8 00 00 00 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? B8 2E 01 00 00 48 8D 0D ?? ?? ?? ?? 66 90 8B 14 81 85 D2 0F 84 ?? ?? ?? ?? 81 FA 4F AE 40 03 74 30 83 C0 14 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D 2E 01 00 00 75 BF EB 54 48 8D 44 24 38 48 C7 44 24 28 80 00 00 00 48 89 44 24 30 C6 44 24 38 00 48 8D 05 ?? ?? ?? ?? 48 89 44 24 20 4C 8B 4E 18 44 8B 06 48 8D 15 ?? ?? ?? ?? 48 8D 4C 24 20 E8 ?? ?? ?? ?? 4C 8B 44 24 30 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 44 8B 06 4C 89 C0 48 0F AF 87 98 00 00 00",
+  "match": "0x142a7fb20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a7fb20",
+  "kind": "func_start",
+  "names": [
+   "Game_Inventory_RemoveWallet"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142a7fb20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a7fb20.c;xref:0x1425b0834",
+   "notes": "V4983 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_SplineCursor_Ctor",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14060bf40",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14060bf40.c;xref:0x1405ff24c,0x1405ff4a1,0x14060ae43,0x1406174dd,0x1406545e4,0x142d13ca3,0x142d13dc5,0x142d16e90,0x142d16faf,0x142d21042,0x142d21f99,0x142d3c879",
+  "notes": "(SplineCursor *c, splineSet, int idx): zeroes header, magic 0x7e967699 at +0xa0, takes spline idx from set+0x78 (+0x78 of entry -> c+0x40), memset 0x3f0 bytes at c+0x50 (9 node records). Callers: Game_TrackSpline_ResolveRouteEnds, Ai_BehaviourTestRetire_Update, Sess_AverageSpeedRuleset_PlaceVehiclesAndGates, Sess_FormationLapLogic_Reset. L2 2026-11-14 (engine-re round 2): decomp read; 15 reference(s) (0x1405ff24c, 0x1405ff4a1, 0x14060ae43, 0x1406174dd, 0x1406545e4, 0x142d13ca3, ...). raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.spline_cursor_ctor",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE C5 F8 57 C0 C5 F8 29 41 60 C5 F8 29",
+  "match": "0x14060bf40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14060bf40",
+  "kind": "func_start",
+  "names": [
+   "Ai_SplineCursor_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14060bf40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14060bf40.c;xref:0x1405ff24c,0x1406545e4",
+   "notes": "V3540 magic 0x7e967699 written at 9 node records (stride 0x70) incl. +0xa0 header slot, zeroing; callers ResolveRouteEnds, TestRetire_Update, AverageSpeed PlaceVehiclesAndGates, FormationLapLogic_Reset seen"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x14060bf40",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14060bf40-0x14060c317;xref:0x1405ff24c,0x1405ff4a1,0x14060ae43,0x1406174dd,0x1406545e4,0x142d13ca3,0x142d13dc5,0x142d16e90,0x142d16faf,0x142d21042,0x142d21f99,0x142d3c879",
+   "notes": "V10465 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Same 15 refs (12 listed + 0x142d3cc8d, 0x142f5bf23, 0x1436163c2). 3 args. Writes 0x7e967699 at +0xa0 (and every +0x70 up to +0x420), idx -> +0x464, entry = set.vec[+0x78..+0x80][idx]; copies the 9 line pointers entry+0x38..+0x78 into c+0x00..+0x40 (not only +0x78 -> c+0x40), then memset c+0x50 size 0x3f0 (0x145378b60), which also clears the magics."
+  }
+ ],
+ "proofs": []
+}

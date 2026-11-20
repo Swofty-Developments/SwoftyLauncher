@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "Sess_Build_GroupResult",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140afa220",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_Build_GroupResult(void *weekend, uint8_t group, void *result)",
+  "evidence": "decomp:re/decomp/140afa220.c;xref:0x140af8463,0x140af9057;decomp:re/decomp/140af83a0.c;decomp:re/decomp/140af8f90.c",
+  "notes": "builds a weekend group classification (group 1 Qualifying, 2 SprintShootout; others return) into result = &map node value at Weekend+0x488 (std::map<u8 group, GroupResult>): clears the 0x60-byte rows (result+0x08..+0x10), adds one row per Weekend+0x288 participant not flagged 0x20 at +0x4b (position +0x50 = 0x1c), then walks the group's sessions last to first and copies each Session+0x70 result row (pos, fastest-lap rank, status) the cut allows onto the matching row. Callers: 0x140af83a0 (last session of a group done) and the rebuild-all 0x140af8f90 (load)"
+ },
+ "signature": {
+  "id": "session.build_group_result",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 89 D3 8D 43 FF",
+  "match": "0x140afa220",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140afa220",
+  "kind": "func_start",
+  "names": [
+   "Sess_Build_GroupResult"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/grid_best_of.cpp",
+   "native/src/core/boxes/box_grid.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-b",
+   "kind": "func",
+   "item": "Sess_Build_GroupResult",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140afa220.c;decomp:re/decomp/140af83a0.c;decomp:re/decomp/140af8f90.c;decomp:re/decomp/140afaf50.c;xref:0x140af8463,0x140af9057;sig:session.build_group_result",
+   "notes": "V0964 3 args (rcx weekend, dl group tested as (group-1) <= 1 at 0x140afa235, r8 result). Clears the rows (result+0x10 = result+0x08), appends one 0x60 row per Weekend+0x288 participant without bit 0x20 at +0x4b (identity +0x08..+0x48 copied, +0x50 = 0x1c/0x1c, +0x58 = 3), collects the Weekend+0x258 sessions whose byte +0x0c is the group and walks them last to first; for each it finds the Weekend+0x220 entry (stride 0xa0) with the same id and copies its +0x70 rows (stride 0x60) whose status lacks 0x20000000 and whose first int is above the entry's cut +0x60 (or cut == 0x1c) onto the row matched by 0x1431146d0. One detail not in the notes: when no row matches, the session row is appended. Only two callers: 0x140af83a0 (current session type in mask 0x7380 = Q3/short Q/OSQ/SQ3/short SQ/OSSQ, lower_bound on the Weekend+0x488 map, value at node+0x28) and 0x140af8f90 (every map node whose group has such a session in state 2, after clearing node+0x38 = node+0x30). The Weekend serialiser 0x140afaf50 writes map key 1 as qualifying_times_* and key 2 as shootout_times_*, matching the group names. sigcheck: 1 hit"
+  }
+ ],
+ "proofs": []
+}

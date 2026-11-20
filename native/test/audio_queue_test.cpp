@@ -1,9 +1,9 @@
-// Host-native unit test for the core's audio job queue fix (native/src/core/audio_queue_logic.hpp): the queue
+// Host-native unit test for the core's audio job queue fix (native/src/core/guards/engine/audio_queue_logic.hpp): the queue
 // layout, moving stranded requests from slots 12-23 into free slots 0-11, a model of the stock workers' drain
 // that strands a request and of the fixed drain that runs every one, and the worker thunk registry.
-// Built and run by native/test/run_audio_queue_test.sh.
+// Built and run by native/test/run_tests.sh audio_queue.
 
-#include "audio_queue_logic.hpp"
+#include "core/guards/engine/audio_queue_logic.hpp"
 
 #include <cstdio>
 #include <cstdlib>
@@ -14,12 +14,12 @@ namespace aq = runtime::audio_queue;
 
 static int g_fail;
 
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                    \
-            g_fail++;                                                                                                  \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                              \
+            g_fail++;                                                                                                            \
+        }                                                                                                                        \
     } while (0)
 
 struct Queue {
@@ -72,10 +72,7 @@ struct Queue {
     }
 };
 
-static void *tag(uintptr_t v)
-{
-    return reinterpret_cast<void *>(v);
-}
+static void *tag(uintptr_t v) { return reinterpret_cast<void *>(v); }
 
 static size_t run(Queue &q, bool fix, std::vector<uint32_t> &ran)
 {

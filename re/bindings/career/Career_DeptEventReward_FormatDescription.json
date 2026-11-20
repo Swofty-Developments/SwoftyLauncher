@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_DeptEventReward_FormatDescription",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fc7940",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void FUN(void *self, void *out_text)",
+  "evidence": "decomp:re/decomp/140fc7940.c;xref:0x1456b1dc0",
+  "notes": "myteam-g1: Formats \"Rewards a discount of %i percent to a random available %s upgrade (department ...)\" from percent (+0x58), type string table and the department bit mask (+0x60, 6 bits)."
+ },
+ "signature": {
+  "id": "career.dept_event_reward_format_description",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 58 48 89 D0 C5 F8 57 C0",
+  "match": "0x140fc7940",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fc7940",
+  "kind": "func_start",
+  "names": [
+   "Career_DeptEventReward_FormatDescription"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140fc7940",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fc7940.c;xref:0x1456b1dc0;str:\"Rewards a discount of %ipercent\"",
+   "notes": "V9618 Format \"Rewards a discount of %ipercent to a random available %s upgrade\", percent +0x58, name table by byte +0x5c, mask +0x60 (6 bits)."
+  }
+ ],
+ "proofs": []
+}

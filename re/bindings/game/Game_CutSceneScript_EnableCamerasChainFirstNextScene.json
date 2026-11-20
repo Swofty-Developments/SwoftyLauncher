@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Game_CutSceneScript_EnableCamerasChainFirstNextScene",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1402676d0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1402676d0.c;xref:0x1402fd4ef,0x1402fe00f",
+  "notes": "Shared helper (6 call sites 0x1402fd4ef..): enables 'Camera' actors (CAMERA_ACTOR_ENABLE), releases previous scene script[0x109], takes scene from vslot 0x310 (first) or 0x318 (next): stores length at +0x860, end time +0x864 = length + start offset +0x53c, sets the next scene window (+0x58/+0x5c start, +0x64 offset, +0x68 end, +0x74|=4). Addon: change camera / scene chaining timing. d13-verify: +0x860 is the scene start (scene+0x58), not the length; +0x864 = start + the +0x53c offset"
+ },
+ "signature": {
+  "id": "game.cut_scene_script_enable_camera_and_chain_scene",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 CE 0F B6 42 10 83",
+  "match": "0x1402676d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1402676d0",
+  "kind": "func_start",
+  "names": [
+   "Game_CutSceneScript_EnableCamerasChainFirstNextScene"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

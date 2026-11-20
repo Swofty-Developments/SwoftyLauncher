@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Audio_GearboxFaultEvents",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140a01c30",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140a01c30.c",
+  "notes": "Registers the gearbox fault audio events fault_gb_access, fault_gb_jam, fault_gb_speed."
+ },
+ "signature": {
+  "id": "game.audio_gearbox_fault_events",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 50 C5 F8 29 74 24 40 4C 89 CB 4D 89 C6",
+  "match": "0x140a01c30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140a01c30",
+  "kind": "func_start",
+  "names": [
+   "Game_Audio_GearboxFaultEvents"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140a01c30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140a01c30.c",
+   "notes": "V4391 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

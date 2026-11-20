@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_Read_AudioConfig_4",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1443f0aa0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--;decomp:re/decomp/1443f0aa0.c;xref:0x145a8a848",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: audio.emitter.%02I64u, audio.event.%02I64u, audio.param.%02I64u, audio.podium.emitter.%02I64u, audio.resetp.%02I64u'  | 2026-11-17 engine-re (decomp read, corrected per V11305): AudioMultiEmitter key registration/init (vt slot 0x145a8a848), not the property reader itself: precomputes djb2 hashes of the key names into globals (0x146ca6140, 0x146ca61e0..) and inserts handlers via 0x143fa5890. Key set: audio.event.01..10, audio.param.01, audio.resetp.01, audio.emitter.01..40 (loop 1..0x28; each is the woid of an AudioSpeaker instance, e.g. the stock _tannoy speakers in layer audio_env) and audio.podium.emitter.01..05. The formatted emitter strings get no stored hash here; the 40-speaker bound is the loop count only."
+ },
+ "signature": {
+  "id": "game.read_audio_config_4",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 48 89 CE 48 8B 49 10 48 8B 01",
+  "match": "0x1443f0aa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1443f0aa0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_AudioConfig_4"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x1443f0aa0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1443f0aa0.c;xref:0x148f994ac",
+   "notes": "V6599 better name Game_Audio_ResolveEmitterEventKeys: no Ne_Get_Setting: resolves audio.event/param/resetp/emitter/podium.emitter keys to Wwise ids"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x1443f0aa0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1443f0aa0.c;xref:0x148f994ac",
+   "notes": "V7210 name fits, facts hold"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "trkd-verify",
+   "kind": "func",
+   "item": "0x1443f0aa0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1443f0aa0.c + own disasm 0x1443f14d0-0x1443f1561;xref:0x143fa5890",
+   "notes": "V11305 Strings/counts right (audio.event 1..10, audio.emitter 1..0x28=40, audio.podium.emitter 1..5, plus audio.param.01, audio.resetp.01) but this is not a property reader: component-system registration/init (allocs 0x58 system, precomputes djb2 of key names into globals 0x146ca6140/0x146ca61e0, inserts handlers into registry map via 0x143fa5890). emitter/podium sprintf results are discarded (no hash stored)."
+  }
+ ],
+ "proofs": []
+}

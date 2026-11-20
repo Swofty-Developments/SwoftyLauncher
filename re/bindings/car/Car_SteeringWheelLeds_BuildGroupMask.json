@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_SteeringWheelLeds_BuildGroupMask",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f41480",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f41480.c;xref:0x142f3fd9a,0x142f3fdbb",
+  "notes": "Builds the 5-bit LED mask of one rev-light group: param_1 = lit count in this group, param_2 = LED config flags (bit1/bit2 modes, bits 10-14 force single LEDs), param_3/param_4 = blink/limiter modes. Car_SteeringWheelLeds_Update calls it 3x (counts n, n-5, n-10) and packs g3<<10 | g2<<5 | g1. Callers: Car_SteeringWheelLeds_Update."
+ },
+ "signature": {
+  "id": "car.steering_wheel_leds_build_group_mask",
+  "section": ".xtls",
+  "pattern": "56 57 53 41 89 D2 41 83 E2 04 41 C1 EA 02 31 C0",
+  "match": "0x142f41480",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f41480",
+  "kind": "func_start",
+  "names": [
+   "Car_SteeringWheelLeds_BuildGroupMask"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x142f41480",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f41480.c;xref:0x142f3fdbb,0x142f3fd9a",
+   "notes": "V3728 5-bit LED group mask from lit count, flag bits 1/2, bits 10-14 (param_4 mode) force single LEDs; Update (0x142f3fc20) calls it with n, n-5, n-10 (decomp lines 365/370/374)."
+  }
+ ],
+ "proofs": []
+}

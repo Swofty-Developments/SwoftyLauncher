@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_RigidBody_DestroyAndUnlink",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1441011a0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1441011a0.c;xref:0x143168d8c,0x1440c5ad7",
+  "notes": "Rigid-body destruction: under the world critical section (body+0x368 -> +0x60) unlinks the body from the world list (flag 0x471 bit0, links +0x2f0/+0x2f8), deletes its child chains (+0x360 constraints, +0x350, +0x358 via vcall 0) and walks the contact list (+0x460) removing contacts referencing it. Callers Ne_PhysWorld_InitFromConfig cleanup path and 0x1440c6990. Hypothesis on exact scope."
+ },
+ "signature": {
+  "id": "car.rigid_body_destroy_and_unlink",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 8B B9 68 03 00 00 48 8B 4F",
+  "match": "0x1441011a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1441011a0",
+  "kind": "func_start",
+  "names": [
+   "Car_RigidBody_DestroyAndUnlink"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x1441011a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1441011a0.c;xref:0x143168d8c",
+   "notes": "V8379 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

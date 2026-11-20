@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Asset_Unk_14379dd00",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14379dd00",
+  "level": "L2",
+  "subsystem": "assets",
+  "proto": "-",
+  "evidence": "decomp:work/exe/decomp/14379dd00_fom_car.c;xref:0x140c24e66;pat:strings-fom_car-SteamWorkshopCar;decomp:re/decomp/14379dd00.c",
+  "notes": "fom_car / SteamWorkshopCar thumbnail generation"
+ },
+ "signature": {
+  "id": "assets.unk_14379dd00",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 28 6A 00",
+  "match": "0x14379dd00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14379dd00",
+  "kind": "func_start",
+  "names": [
+   "Asset_Unk_14379dd00"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "m1-verify",
+   "kind": "func",
+   "item": "Asset_Unk_14379dd00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14379dd00.c;xref:0x14022adf0",
+   "notes": "V2265 strings fom_car, SteamWorkshopCar, steam_workshop overlays, THUMBNAIL_SYSTEM thumbnail generation request"
+  }
+ ],
+ "proofs": []
+}

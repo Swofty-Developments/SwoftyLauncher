@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DriverContractsMyTeamComponent_OpenContractWindow",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140dade70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_DriverContractsMyTeamComponent_OpenContractWindow(void *comp)",
+  "evidence": "decomp:re/decomp/140dade70.c;xref:0x145692418",
+  "notes": "myteam-g1: Starts the My Team driver contract window: finds slots with state 2/3 in the 0x68-byte slot array (comp+0x4dc, state byte +0x4e4, count +0x6f0), calls FUN_140db65c0/FUN_140db66b0 to switch slot state, asks the calendar (comp+0x298) for the meeting day (event 0x22) and stores the new meeting date at comp+0x468. Raises my_team_contract_window_opened."
+ },
+ "signature": {
+  "id": "game.driver_contracts_my_team_component_open_contract_window",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 0A 00 00 C5 F8 29 B4 24 30 0A 00 00",
+  "match": "0x140dade70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140dade70",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverContractsMyTeamComponent_OpenContractWindow"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-b",
+   "kind": "func",
+   "item": "0x140dade70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140dade70.c;xref:0x145692418;str:\"my_team_contract_window_opened\"",
+   "notes": "V8994 Scans slots with state byte +0x4e4 == 2/3, calls FUN_140db65c0/db66b0, uses calendar comp+0x298 with event 0x22, stores the new meeting object (day+short) at comp+0x468. Matches the note."
+  }
+ ],
+ "proofs": []
+}

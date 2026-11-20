@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkLeagues_GameDataSyncEventID",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14315a280",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-LEAGUES",
+  "notes": "named from its log messages (channel NETWORK-LEAGUES): 'GameDataSync() to Event ID %llu'"
+ },
+ "signature": {
+  "id": "game.network_leagues_game_data_sync_event_id",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D6 48 89 CF 48 8B 41 28",
+  "match": "0x14315a280",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14315a280",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkLeagues_GameDataSyncEventID"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x14315a280",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14315a280.c",
+   "notes": "V5995 Body matches the logged text/signature; vtable/indirect, no direct call site"
+  }
+ ],
+ "proofs": []
+}

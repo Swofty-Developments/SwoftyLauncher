@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "site_Sess_ControllerSystem_ApplyRecordCall",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14389a217",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/14389a120.c;xref:0x14389a217",
+  "notes": "call to Sess_ControllerSystem_ApplyRecord in the per-car loop of ApplyInputs (the fallback site of ai.controller.update, config ai_controller_site=apply); at the call rcx=controller system, edx=vehicle, r8=car physics record, rax=[rsp+0x20]=input record, xmm3=dt. The spectator-list loop calls it again at 0x14389a275."
+ },
+ "signature": {
+  "id": "session.controller_system_apply_record_call",
+  "section": ".xtls",
+  "pattern": "C5 F8 28 DE E8 ?? ?? ?? ?? 48 8B 96 90 00 00 00",
+  "match": "0x14389a213",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14389a217",
+  "kind": "mid",
+  "expect": "E8 94 00 00 00",
+  "names": [
+   "site_Sess_ControllerSystem_ApplyRecordCall"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "w25",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/hooks/session_points.cpp"
+  ],
+  "func_start": "0x14389a120"
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "ai-v1",
+   "kind": "global",
+   "item": "0x14389a217",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14389a120.c;xref:0x14389a217",
+   "notes": "V1530 Disassembled: per-car loop calls [vt+0x10] (slot 2 getter) then 'vmovaps xmm3,xmm6; call 0x14389a2b0' at 0x14389a217 with rcx=system, edx=vehicle index, r8=car record [mgr+0xb0+i*8], xmm3=dt, [rsp+0x20]=rax=input record. 5-byte E8 window, not a branch target in the loop. The spectator-list loop has its own call at 0x14389a275. The active controller is human OR AI by mode, so a handler here must test the mode."
+  }
+ ],
+ "proofs": []
+}

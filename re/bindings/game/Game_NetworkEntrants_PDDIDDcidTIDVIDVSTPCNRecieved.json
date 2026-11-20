@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkEntrants_PDDIDDcidTIDVIDVSTPCNRecieved",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143115710",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-ENTRANTS",
+  "notes": "named from its log messages (channel NETWORK-ENTRANTS): 'PD: %s DID : %s DCID : %s TID : %s VID : %s VS : %s TP : %u CN : %u - Recieved Entrant -'"
+ },
+ "signature": {
+  "id": "game.network_entrants_pddid_dcid_tidvidvstpcn_recieved",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 02 00 00 83 79 08 02",
+  "match": "0x143115710",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143115710",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkEntrants_PDDIDDcidTIDVIDVSTPCNRecieved"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143115710",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143115710.c;xref:0x1430d8cc3",
+   "notes": "V5792 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

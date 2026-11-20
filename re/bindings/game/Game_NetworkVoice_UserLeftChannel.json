@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkVoice_UserLeftChannel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14403eee0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name userLeftChannel (class from the log channel); log channel NETWORK-VOICE: '%s: user %llu left channel #%u'"
+ },
+ "signature": {
+  "id": "game.network_voice_user_left_channel",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? B8 F9 00 00 00",
+  "match": "0x14403eee0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14403eee0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkVoice_UserLeftChannel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x14403eee0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14403eee0.c",
+   "notes": "V6433 name and logged strings match body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

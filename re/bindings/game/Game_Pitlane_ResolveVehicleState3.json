@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_Pitlane_ResolveVehicleState3",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434c2870",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1434c2870.c;xref:0x1434bf6d9",
+  "notes": "State 3 handler (returns char result): placement transform + Ne_Crt_Fmodf + memcpy. 3241 bytes. Callers Game_Pitlane_ApplyVehicleResetState (0x1434c0476), 0x1434bf6d9. Hypothesis. | engine-re 2026-11-17 track round C2 (static): per-car box EXIT spline, pull-through (also the safety car, box 12), into car record +0x128 (Game_PitLane_BuildBoxExitSpline 0x1434bf6d9, record +0xd4 = 3); reads box_exit_max_box_id_that_can_pull_through [mgr+0x920] (0x1434c28e4); finalised at 0x1434c34a6."
+ },
+ "signature": {
+  "id": "game.pitlane_resolve_vehicle_state3",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 84 C0 0F 84 ?? ?? ?? ?? C7 83 D4 00 00 00 03",
+  "match": "0x1434bf6d9",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1434c2870",
+  "kind": "func_start",
+  "names": [
+   "Game_Pitlane_ResolveVehicleState3"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x1434c2870",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434c2870.c;xref:0x1434bf6d9",
+   "notes": "V8230 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MatchingContext_OnStartRematch",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14315b270",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14315b270.c;xref:0x14581d770",
+  "notes": "onStartRematch: rematch state byte +0x82 eNone/eShouldRematch/eStartRematch (table 0x145824c78) -> eStartRematch. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2621)"
+ },
+ "signature": {
+  "id": "game.matching_context_on_start_rematch",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 89 CE 0F B6 81 82 00 00 00 0F",
+  "match": "0x14315b270",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14315b270",
+  "kind": "func_start",
+  "names": [
+   "Game_MatchingContext_OnStartRematch"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d6-verify",
+   "kind": "func",
+   "item": "Game_MatchingContext_OnStartRematch",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14315b270.c;xref:0x14315b270",
+   "notes": "V2621 role/offsets/log strings match decomp"
+  }
+ ],
+ "proofs": []
+}

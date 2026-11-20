@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_PoolList_Resize_B",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ed20f0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143ed20f0.c;xref:0x143b5f792,0x143b5f7ef",
+  "notes": "Same node-pool list resize as 0x143ed2ce0 but with trivial node dtor. Called from Ne_Gfx2Renderer_Initialise and 0x143b778f0. Generic container helper."
+ },
+ "signature": {
+  "id": "core.pool_list_resize_b",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 8D 8E 10 2C 00 00 41 8B 96 BC",
+  "match": "0x143b5f792",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143ed20f0",
+  "kind": "func_start",
+  "names": [
+   "Ne_PoolList_Resize_B"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x143ed20f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ed20f0.c;xref:0x141ed9da3",
+   "notes": "V8157 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

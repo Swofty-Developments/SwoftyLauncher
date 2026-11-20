@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_Create_VehicleController",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140604280",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_Create_VehicleController(void *ai_manager, uint32_t car_idx)",
+  "evidence": "decomp:re/decomp/140604280.c;xref:0x1405ff8c6,0x1405ff908",
+  "notes": "Allocates (allocator mgr+0x20, vcall +0x18) one 0x50-byte per-car controller root: [0]=allocator, [1]=car idx byte, [2]=0x80 block whose +0x30 points to a 0x108-byte array (capacity 0x21 = 33 slots at +0x40), [3]=8-byte holder of the car entity component (entity = [[[mgr+0x28]+0xc0]+0x28][idx], entity+0x10 through Ne_Entity_FindComponent type 0x14607c118; null when idx==0xff or idx >= vector count), [4]=0x20 block (mgr+0x28 back-pointer, +8 = 0x01010101), [5]=0x30 block (+8 = -1.0f, 1.5/1.0/1.0/1.0 floats), [6]=1 byte idx, [7]=0x1a8 block (many 1.0f defaults, idx at +0x11c/+0x184), [8]=0x60 block built by 0x1406685c0(blk, allocator, idx), [9]=0xc0 block (idx at +0, -1.0f at +0x20). Then Ai_Build_BehaviourSystem(root) (0x1405f11b0), pushes root into vector mgr+0x50..+0x60 (grows x1.5), allocates a 0x180 block (defaults incl. -1.0f +0xc0, 3/4 at +0xf0, -1 at +0xf8) and pushes it into vector mgr+0x70..+0x80. Caller Sess_Build_AiSystem loops car idx over the entity vector [[mgr+0x28]+0xc0]+0x28..+0x30 (call 0x1405ff8c6), then a second loop (0x1405ff908) for extra entries from list [[mgr+0x28]+0xd8]+0x30..+0x38. L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.create_vehicle_controller",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 38 C5 F8 29 74 24 20 89 D3 48 89 CE",
+  "match": "0x140604280",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140604280",
+  "kind": "func_start",
+  "names": [
+   "Ai_Create_VehicleController"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x140604280",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140604280.c;xref:0x1405ff8c6",
+   "notes": "V3532 allocs 0x50, 0x80, 0x108 blocks with 33 (0x21) slot arrays, calls Ne_Entity_FindComponent (FUN_143f9b3c0) and Ai_Build_SpeedModifiers (FUN_1405f11b0); Sess_Build_AiSystem caller seen"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x140604280",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x140604280-0x140604a5e;xref:0x1405ff8c6,0x1405ff908",
+   "notes": "V10612 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Callers 2 calls in 0x1405ff750 (loop over car idx; riprel hit 0x1515ef9b6 not an instruction). 2 args (rcx mgr, edx idx). Allocation sizes 0x50 root, 0x80, 0x108, 0x20, 0x30, 0x1a8, 0x60 (-> 0x1406685c0), 0xc0 confirmed, idx 0xff check, component type 0x14607c118, then calls Ai_Build_BehaviourSystem 0x1405f11b0."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_WinnerSequence_IsCarExcluded",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142dabbe0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142dabbe0.c;xref:0x142daa33f,0x142daa507",
+  "notes": "Winner-sequence filter for car index param_2: reads session vehicle list [this+0xcb0]+0x148 (stride 8), checks session-type objects via RTTI chain (0x14607ee80/0x14607eea0), vehicle +0x18/+0x19 state (codes 3/7, mask 0x98), then [this+0xde0]+0x30 car entity flags +0x508/+0x518/+0x520. Returns 1 when the car must be skipped in the winner/podium shots. Callers: Sess_WinnerSequence_Enter."
+ },
+ "signature": {
+  "id": "session.winner_sequence_is_car_excluded",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 CE 48 8B 81 B0 0C 00",
+  "match": "0x142dabbe0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142dabbe0",
+  "kind": "func_start",
+  "names": [
+   "Sess_WinnerSequence_IsCarExcluded"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142dabbe0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142dabbe0.c;xref:0x142daa33f",
+   "notes": "V3729 list [this+0xcb0]+0x148 stride 8, RTTI-chain checks 0x14607ee80/0x14607eea0, state codes mask 0x98, [this+0xde0]+0x30 entity flags +0x508/+0x518/+0x520; caller Sess_WinnerSequence_Enter"
+  }
+ ],
+ "proofs": []
+}

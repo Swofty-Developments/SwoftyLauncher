@@ -1,50 +1,78 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
-#include "../src/core/badge_archive.hpp"
+#include "core/render/badges/badge_archive.hpp"
 #include <cassert>
 #include <cstdio>
 
 using namespace badge_images;
 namespace uidb = swofty_core::apply::content::uidb;
-static uidb::Node object() { uidb::Node n; n.kind = uidb::Node::object; return n; }
-static uidb::Node text(const std::string &s) { uidb::Node n; n.val.type = "stri"; n.val.value = s; return n; }
+static uidb::Node object()
+{
+    uidb::Node n;
+    n.kind = uidb::Node::object;
+    return n;
+}
+static uidb::Node text(const std::string &s)
+{
+    uidb::Node n;
+    n.val.type = "stri";
+    n.val.value = s;
+    return n;
+}
 static void put(uidb::Node &node, const std::string &key, uidb::Node value)
 {
-    uidb::Val k; k.type = "stri"; k.value = key;
+    uidb::Val k;
+    k.type = "stri";
+    k.value = key;
     node.items.emplace_back(std::move(k), std::move(value));
 }
 static uidb::Node catalogue(const std::vector<std::string> &names, const std::string &uri)
 {
     auto node = object();
     put(node, "TextureArrayName", text(uri));
-    uidb::Node rows; rows.kind = uidb::Node::array;
+    uidb::Node rows;
+    rows.kind = uidb::Node::array;
     for (const auto &name : names) {
-        auto row = object(); put(row, "Name", text(name)); rows.list.push_back(std::move(row));
+        auto row = object();
+        put(row, "Name", text(name));
+        rows.list.push_back(std::move(row));
     }
     put(node, "Contents", std::move(rows));
-    auto contents = object(); put(contents, "key_icons", std::move(node));
-    auto allocation = object(); put(allocation, "Contents", std::move(contents));
-    contents = object(); put(contents, "tyre_allocation", std::move(allocation));
-    auto overrides = object(); put(overrides, "Contents", std::move(contents));
-    auto root = object(); put(root, "overrides", std::move(overrides));
+    auto contents = object();
+    put(contents, "key_icons", std::move(node));
+    auto allocation = object();
+    put(allocation, "Contents", std::move(contents));
+    contents = object();
+    put(contents, "tyre_allocation", std::move(allocation));
+    auto overrides = object();
+    put(overrides, "Contents", std::move(contents));
+    auto root = object();
+    put(root, "overrides", std::move(overrides));
     return root;
 }
 static void slices()
 {
     const auto &descriptor = live_image_reference::TYRES[0];
     std::vector<std::string> fragments(2);
-    fragments[0].resize(40); fragments[1].resize(32);
+    fragments[0].resize(40);
+    fragments[1].resize(32);
     for (auto [at, v] : {std::pair{8, 55u}, {12, 4u}, {16, 4u}, {24, 1u}, {28, 2u}})
         std::memcpy(fragments[0].data() + at, &v, 4);
     // Transparent red then opaque green BC3 slices.
-    fragments[1][9] = char(-8); fragments[1][11] = char(-8);
-    fragments[1][16] = char(-1); fragments[1][17] = char(-1);
-    fragments[1][24] = char(-32); fragments[1][25] = 7;
-    fragments[1][26] = char(-32); fragments[1][27] = 7;
+    fragments[1][9] = char(-8);
+    fragments[1][11] = char(-8);
+    fragments[1][16] = char(-1);
+    fragments[1][17] = char(-1);
+    fragments[1][24] = char(-32);
+    fragments[1][25] = 7;
+    fragments[1][26] = char(-32);
+    fragments[1][27] = 7;
     std::string read_uri;
     auto read = [&](const std::string &uri, std::vector<std::string> &out) {
-        read_uri = uri; out = fragments; return true;
+        read_uri = uri;
+        out = fragments;
+        return true;
     };
     const std::string custom = "ui_package/art/texture_arrays/modded/tyres.texarray";
     archive::Catalogue c(descriptor);
@@ -76,7 +104,8 @@ static void slices()
 
 static void installed(const char *game)
 {
-    archive::Env env; env.root = game;
+    archive::Env env;
+    env.root = game;
     archive::Resources resources(env);
     assert(resources.available());
     for (const auto &descriptor : live_image_reference::TYRES) {
@@ -97,5 +126,6 @@ static void installed(const char *game)
 int main(int argc, char **argv)
 {
     slices();
-    if (argc == 2) installed(argv[1]);
+    if (argc == 2)
+        installed(argv[1]);
 }

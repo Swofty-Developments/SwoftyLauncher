@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TelemetryUdp_Send2026",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1447377d0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1447377d0.c",
+  "notes": "Sends the 2026-format packets built by Game_TelemetryOutputUDPUpdateable_PreparePackets 0x144736210 (packetFormat 2026, 24 cars: lap data 1399 bytes, motion 54 bytes per car, extra 'Car telemetry packet 2' 269 bytes, Lap Positions 1231). UDP telemetry, format index [[this+0xe0]+0xc] (0 = 2024, 1 = 2025, 2 = 2026) chosen in Game_TelemetryOutputUDPUpdateable_Update 0x1447311a0 and 0x144738050."
+ },
+ "signature": {
+  "id": "game.telemetry_udp_send2026",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 48 89 CE 48 81 C1 40 70 01 00 E8 ?? ?? ?? ?? 84 C0 74 48 48 8D 96 F3 34 01 00",
+  "match": "0x1447377d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1447377d0",
+  "kind": "func_start",
+  "names": [
+   "Game_TelemetryUdp_Send2026"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb24-verify",
+   "kind": "func",
+   "item": "0x1447377d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1447377d0.c;xref:0x14473139e",
+   "notes": "V6623 24-car (0x18) clamp, sizes 0x4cf=1231, 0x577=1399, 0x10d=269 match claim; rate-gated 2026 send"
+  }
+ ],
+ "proofs": []
+}

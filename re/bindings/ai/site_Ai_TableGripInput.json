@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Ai_TableGripInput",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14063ebf3",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "ai",
+  "evidence": "decomp:re/decomp/14063e370.c;xref:0x14063ebee,0x14063ece3;sig:ai.table_grip_input",
+  "notes": "In 0x14063e370 (per-car AI table update, car index r12, AI state rax = [[r15+0x88]+r12*8]): 0x14063ebee loads the state's grip (+0x24) into xmm1 once, next to state +0xc0 (xmm0), +0x74 mass (xmm2), +0x84 and the wet tyre flag; xmm1 goes into the input structs of every per-car table coordinate builder: acpd veh+0x58 -> 0x140686a40 (coords veh+0x88), brpd veh+0x60 -> 0x14068ab50 (+0xf8), copd veh+0x68 -> 0x14068fb80 (+0x158, its only caller), crpd veh+0x70 -> 0x1406925d0 (+0x190), veh+0x78 -> 0x140695330 (+0x1c8), veh+0x80 -> 0x140697940 (+0x208) (veh = [r15+0xa8] + r12*0x508). The builders bracket each input on the table axes (as 0x140699b70 does) and 0x14068fd10 interpolates the rows inside those brackets, so the grip must be changed here, before the brackets. The temporary brpd lookups in Ai_Update_VehicleDriver (0x140615f12, 0x140616031, 0x140616120, 0x1406176c1, 0x140617700) copy the veh+0xf8 block, so they follow. After the site, six stores (0x14063ec1d..0x14063ecb2) copy xmm1 into the builders' inputs and it is dead after 0x14063ecb2; the grip at +0x24 is not loaded again. Site at 0x14063ebf3 (vmovss xmm2,[rax+0x74], 5 bytes; then mov eax,[rax+0x84]): xmm1 = grip, scaling xmm1.f32[0] scales the grip coordinate of all six tables for that car; the state value itself stays. Live at the site: xmm0, xmm1, ecx, edx, r8, r13 (the per-car block offset r12*0x508, set at 0x14063eba7 and read at 0x14063eccb), r14, r15, rsi and rax (flags are dead; r12 is not read again), so a hook must preserve them. ecx (cl) holds the wet tyre flag ([[r15+0x108]+r12*8]+0x14, loaded at 0x14063ebe2, written at 0x14063eaf5 as 1 when the fitted tyre class is above 2): it selects the wet rows of four tables (acpd, brpd, copd, crpd; not veh+0x78/+0x80), and 0 is dry (the table loaders compare the hash of each row's weather_tyre attribute with fnv1a64(wet)). Used by f1_1990_aiquali.dll (dry grip x 0.87 outside 1990 qualifying)."
+ },
+ "signature": {
+  "id": "ai.table_grip_input",
+  "section": ".xtls",
+  "pattern": "C5 FA 10 48 24 C5 FA 10 50 74 8B 80 84 00 00 00",
+  "match": "0x14063ebee",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14063ebf3",
+  "kind": "mid",
+  "expect": "C5 FA 10 50 74",
+  "names": [
+   "site_Ai_TableGripInput"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "kbport-aigrip",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/hooks/car_live.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "kbverify-cars1",
+   "kind": "global",
+   "item": "site_Ai_TableGripInput",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14063e370.c;xref:0x14063ebee,0x14063ece3",
+   "notes": "V3867 Ai_Job_UpdateCarsParallel loads float state+0x24 (state = [[lVar24+0x88]+idx*8]) once into one local and fans it out to the six table-input structs; no other read of +0x24 from that state base in the function. Signature ai.table_grip_input unique (sigcheck OK), target 0x14063ebf3 is vmovss xmm2,[rax+0x74], so xmm1 holds the grip when the mid-hook runs. Ported from feat/f1-1990 (agree rows V1950 there)."
+  }
+ ],
+ "proofs": []
+}

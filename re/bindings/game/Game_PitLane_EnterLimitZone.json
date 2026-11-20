@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_PitLane_EnterLimitZone",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434d0340",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1434d0340.c;xref:0x142a413c4,0x142f727e9,0x142f7346c,0x1434d1ed4,0x1504309b4",
+  "notes": "Log channel PITLANE: 'PitLaneSystem::vehicleEnterPitLaneLimitZoneInternal(%d:%s)' | 'PitLaneSystem::vehicleEnterPitLaneLimitZoneInternal(%d) - driving-through due to penalty or rule.' | 'PitLaneSystem::vehicleEnterPitLaneLimitZoneInternal(%d) - prep garage crew to perform a box stop.' L2 2026-11-14 (engine-re round 2): decomp read; 5 reference(s) (0x142a413c4, 0x142f727e9, 0x142f7346c, 0x1434d1ed4, 0x1504309b4); the body itself references 'PITLANE' / 'PitLaneSystem::vehicleEnterPitLaneLimitZoneInternal(%d:%s)' / 'PitLaneSystem::vehicleEnterPitLaneLimitZoneInternal(%d) - driving-through due to penalty or rule' / 'PitLaneSystem::vehicleEnterPitLaneLimitZoneInternal(%d) - prep garage crew to perform a box stop'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.pit_lane_enter_limit_zone",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 50 89 D3 48 89 CF 80 3D ?? ?? ?? ?? 01",
+  "match": "0x1434d0340",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434d0340",
+  "kind": "func_start",
+  "names": [
+   "Game_PitLane_EnterLimitZone"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1434d0340",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434d0340.c;xref:0x142a413c5",
+   "notes": "V6030 name and description match body; log string/pretty name present"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x1434d0340",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1434d0340-0x1434d07a6;xref:0x142a413c4,0x142f727e9,0x142f7346c,0x1434d1ed4,0x1504309b4",
+   "notes": "V10512 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Same 5 refs (3 calls, 2 jmps). vehicleEnterPitLaneLimitZoneInternal logs (drive-through due to penalty, prep garage crew)."
+  }
+ ],
+ "proofs": []
+}

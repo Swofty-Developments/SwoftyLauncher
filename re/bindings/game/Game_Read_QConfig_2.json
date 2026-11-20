@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_Read_QConfig_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1444fa1e0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--;xref:0x1445006cc,0x1445007a4",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: loc.chgrqst, loc.cstate, q.world.create, q.world.delete, q.world.list, q.world.select'  | 2026-11-17 engine-re: the body is mainly the engine static init that fills about 230 type descriptors {name pointer, djb2 at +8}: resources WOInstances 0x146cb7990, WOTypes 0x146cb7a30, World 0x146cb7a50, WorldLayerModule 0x146cb7968, NeEditorWorldResource/LayerResource; components AudioEmitter, AudioMultiEmitter, AudioRoom, AudioPortal, AudioSpeaker, AudioZone, AudioCameraListener, Trigger, StaticPhysics, CrowdPlacement, CrowdZone, Camera, CameraBehaviour, CameraModifier and others. The q.world.* DB key name comes from the bulk pattern and covers only a small part."
+ },
+ "signature": {
+  "id": "game.read_q_config_2",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 C5 F8 29 B4 24 80 00 00 00 C4 E2 79 18 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C4 E2 79 18 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C5 FA 10 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C5 F8 28 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C4 E2 79 18 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C5 FB 12 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C5 F8 28 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C5 F8 28 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C5 F8 28 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C5 F8 28 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C5 F9 6F 05 79 E8 0D 01",
+  "match": "0x1444fa1e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1444fa1e0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_QConfig_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x1444fa1e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1444fa1e0.c",
+   "notes": "V6672 0x6600 body registers ~247 type/module/camera/audio names (NeAchievementsXmlResource, AnimClip, Wwise strings...) plus loc.*/q.world.* command names; not a settings reader. Better: Game_StaticInit_EngineTypeNameRegistry (vtable/indirect; no direct call site)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x1444fa1e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1444fa1e0.c",
+   "notes": "V7225 name fits, facts hold; vtable/indirect"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "trkd-verify",
+   "kind": "func",
+   "item": "0x1444fa1e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1444fa1e0.c lines 2533-2550 + strings 0x145a942ba WOInstances 0x145a945b0 World;xref:0x146cb7990",
+   "notes": "V11307 Confirmed {str ptr, djb2 at +8} pairs (vtable 0x145890940 at -8, ptr at +0x10); WOInstances 0xe30cdcf3 @0x146cb7990/98, World 0x0e64254d @0x146cb7a50/58. Also registers atexit dtors and Wwise ids."
+  }
+ ],
+ "proofs": []
+}

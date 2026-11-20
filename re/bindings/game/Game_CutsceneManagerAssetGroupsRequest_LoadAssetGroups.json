@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CutsceneManagerAssetGroupsRequest_LoadAssetGroups",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140229750",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name loadAssetGroups (class from the log channel); log channel CUTSCENE_MANAGER_ASSET_GROUPS_REQUEST: 'loadAssetGroups - adding a new batch, incrementing ref [1] caller - [%s]'"
+ },
+ "signature": {
+  "id": "game.cutscene_manager_asset_groups_request_load_asset_groups",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 01 00 00 4C 89 C5",
+  "match": "0x140229750",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140229750",
+  "kind": "func_start",
+  "names": [
+   "Game_CutsceneManagerAssetGroupsRequest_LoadAssetGroups"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x140229750",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140229750.c",
+   "notes": "V4417 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

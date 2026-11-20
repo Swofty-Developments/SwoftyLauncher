@@ -110,3 +110,45 @@ When your addon loads several items, such as the mods in a library, `items` name
 - An op file's own `fields` takes precedence for the tables it lists.
 - An `add-row` whose table is in neither fails with `field names unknown`.
 - A launcher before 1.0.12 ignores `fields`: set `"compat": { "launcher": ">=1.0.12" }` when you return `add-row` ops.
+
+### reads
+
+*Launcher 1.10.* The files and folders this build read. A launcher whose `hello` lists the `build.reads` capability keeps the reply and answers the next build with it, without starting your plugin, while nothing the reply depends on has changed:
+
+```json
+{
+  "ops": [ { "op": "file.put", "source": { "root": "cache", "path": "grid-editor/build/grid-editor.json" },
+             "target": "swofty/addons/teamsimplified.mods/grid-editor.json" } ],
+  "lines": ["Grid Editor: 1 change(s), 0 name(s)"],
+  "reads": [
+    "C:/Users/me/AppData/Roaming/swofty/baseline/objects/2d/2db2c235…",
+    "C:/Users/me/AppData/Roaming/swofty/addons/kizi.ai-driver-behaviour/db/racecraft.json",
+    "C:/Users/me/AppData/Roaming/swofty/addons/swofty.swofty-seasons-2013-real/registry",
+    "C:/Program Files (x86)/Steam/steamapps/common/F1 25/2025_asset_groups/ui_package/flow_race.erp"
+  ]
+}
+```
+
+```text
+launcher  {"id":4,"method":"build","params":{"options":{…},"features":{…}}}
+plugin    {"id":0,"method":"addons","params":null}
+launcher  {"id":0,"result":[…]}
+plugin    {"id":4,"result":{"ops":[…],"lines":[…],"reads":[…]}}
+          … the next Play, with nothing changed: no session, no build call; the launcher applies the kept reply
+```
+
+The launcher reuses the kept reply when all of these are unchanged since the build that sent it:
+
+- every path in `reads`: a file's size, modified time and change time; a folder's whole tree, every name in it and each file's size, modified time and change time; a path that did not exist still does not;
+- the answer to every host call the plugin sent during that build, asked again with the same params;
+- your addon's folder and its `data_dir`, file by file, as for a folder in `reads`;
+- the `build` params, the `hello` the session started with, and the launcher's version.
+
+Anything else runs `build` as usual: a changed or unreadable path, a reply without `reads`, a path changed less than 2 seconds before the build, or a build that sent `set_state`, `install_addon`, `set_addon_enabled`, `remove_addon` or `move_addon`. The kept reply is applied exactly as a fresh one: its ops, `items`, `lines`, `warnings` and `fields`, and the sources its ops name are read again.
+
+- List absolute paths, each file and folder the build opened or listed, including a path it looked for and did not find. A path in `game_dir`, `data_dir`, `cache_dir`, another addon's folder or a `game_original` result counts the same.
+- `progress`, `tasks` and `invalidate` notifications have no effect on reuse.
+- A build that sends `reads` writes nothing outside `cache_dir`: on a reused build it does not run.
+- Leave `reads` out and the launcher calls `build` on every Play. A launcher without `build.reads` ignores `reads`, so send it whatever `capabilities` lists.
+- Each Play logs what the launcher did, and Send Logs carries the line: `[play] hook <addon> reused: <why>` when the kept reply answered the build, `[play] hook <addon> ran: <why>` when `build` ran, such as `ran: C:/…/racecraft.json changed` or `ran: its last reply listed no reads`.
+- A Rust helper on `run_helper` sets `reads: Some(paths)` in the `AssetBatch` its `build` returns.

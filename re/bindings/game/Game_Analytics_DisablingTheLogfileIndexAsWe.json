@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_DisablingTheLogfileIndexAsWe",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140761e20",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-TELEMETRY",
+  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: Disabling the logfile index as we have detected a low bandwidth environment.'"
+ },
+ "signature": {
+  "id": "game.analytics_disabling_the_logfile_index_as_we",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 8B B9 68 0A 02 00",
+  "match": "0x140761e20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140761e20",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_DisablingTheLogfileIndexAsWe"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb02-verify",
+   "kind": "func",
+   "item": "0x140761e20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140761e20.c",
+   "notes": "V4277 log string and record name match; \"EA analytics event:\" prefix not in exe strings (added elsewhere/unverified), message text matches"
+  }
+ ],
+ "proofs": []
+}

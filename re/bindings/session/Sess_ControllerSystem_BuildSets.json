@@ -1,0 +1,81 @@
+{
+ "schema": 1,
+ "name": "Sess_ControllerSystem_BuildSets",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14389bc50",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void(ControllerSystem*)",
+  "evidence": "decomp:re/decomp/14389bc50.c;xref:0x1458824f8,0x14389be41,0x14389c003",
+  "notes": "vt_Sess_ControllerSystem slot 11 (+0x58): builds every ControllerSet. Sets byte [sys+0x366]=1 on entry; when [[sys+0x50]+0xe8] is set creates one 0x60-byte ControllerSet per vehicle-manager entry (Game_ControllerSet_Create at 0x14389be41; human controller when the slot is player-controlled) and one AI-only set per spectator-list entry (0x14389c003), appends each to [sys+0x30..+0x38) and sets byte [sys+0x365]=1; then zeroes every set's flags (0x14389c2a2) and rewrites each mode pair with fresh random keys (mode 1 AI when the human controller is null, else 0 HUMAN), logging 'ControllerSet(%d / %s) : cleared flags.' per set. Only caller of Game_ControllerSet_Create. Renamed from Game_ControllerSet_ClearFlags (V1505, V1533). The paired destroy is Sess_ControllerSystem_DestroySets. Callers: census steam 0x389bc50."
+ },
+ "signature": {
+  "id": "session.controller_system_build_sets",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 48 89 CE C6 81 66 03 00 00 01",
+  "match": "0x14389bc50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14389bc50",
+  "kind": "func_start",
+  "names": [
+   "Sess_ControllerSystem_BuildSets"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "re-ai",
+   "kind": "func",
+   "item": "0x14389bc50",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14389bc50.c;xref:0x1458824f8",
+   "notes": "V1505 Not a per-set ClearFlags. It is vt_Sess_ControllerSystem slot 11 (+0x58): builds one ControllerSet per car (Game_ControllerSet_Create at 0x14389be42 for vehicles, 0x14389c004 for the spectator list; human controller when the car's slot is player-controlled, mode = HUMAN else AI), sets [sys+0x365], then runs a second loop over [sys+0x30..+0x38) that zeroes flags [set+0x30] and re-randomises mode (HUMAN when a human controller exists, else AI), logging 'cleared flags'. The only callers of Game_ControllerSet_Create. Name is wrong (should be Sess_ControllerSystem_BuildSets)."
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "ai-v1",
+   "kind": "func",
+   "item": "0x14389bc50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14389bc50.c;xref:0x1458824f8",
+   "notes": "V1533 Claim checked: this is the system's build-all (vt_Sess_ControllerSystem slot 11 = +0x58, raw read 0x14389bc50), not a per-set ClearFlags. It sets byte [sys+0x366]=1 on entry; when [[sys+0x50]+0xe8] is set it creates one 0x60-byte ControllerSet per vehicle-manager entry (human controller when the slot is player-controlled; args vehicle, hasHuman, !hasHuman) then one AI-only set per spectator-list entry, appends each to [sys+0x30..+0x38) and sets byte [sys+0x365]=1 (only inside that branch). It then sets flags [set+0x30]=0 for every set and rewrites the mode pair (+0x10 ^ +0x18 = 1 when the human controller [set+0x20] is null, else 0) with fresh random keys, logging 'cleared flags.' per set. Only callers of Game_ControllerSet_Create (0x1438968e0) are 0x14389be41 and 0x14389c003 inside it; the only reference to the function is the vtable slot. The KB name Game_ControllerSet_ClearFlags is wrong; role is Sess_ControllerSystem_BuildSets."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x14389bc50",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14389bc50.c",
+   "notes": "V6377 0xc94 body also sends MessageActivateController; log is one part. Better Game_ControllerSet_ClearFlagsAndActivate; vtable/indirect"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x14389bc50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14389bc50.c",
+   "notes": "V7134 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

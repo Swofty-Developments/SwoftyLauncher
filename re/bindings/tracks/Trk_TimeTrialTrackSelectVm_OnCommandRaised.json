@@ -1,0 +1,73 @@
+{
+ "schema": 1,
+ "name": "Trk_TimeTrialTrackSelectVm_OnCommandRaised",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f28410",
+  "level": "L2",
+  "subsystem": "tracks",
+  "proto": "uint64_t Trk_TimeTrialTrackSelectVm_OnCommandRaised(void *vm, uint32_t **cmd)",
+  "evidence": "decomp:re/decomp/141f28410.c;xref:0x14575cec0;kb:subsystems/tracks.md#select",
+  "notes": "cxx=TrackSelectViewModel::onCommandRaised (slot 10 of vt_Trk_TimeTrialTrackSelectVm). djb2 switch on **cmd: select_pressed 0x2b0357a confirms (returns unless [vm+0x2c0]+0x130 and +0x134 are 0 or 2 and vm+0x301 is set; vm+0x308 = route t_next_time_trial, posts bus message 0x145753b20, [vm+0x278]+0x4d0 = 1, fade out, fires fade_off_screen); selected_track_changed 0xdcd54bcb sets vm+0x300 = 1; fade_off_complete 0x2dea0627 fires the vm+0x308 route; back_pressed 0x493fe92b; 0xd58b16ab hides the carousel and fires t_leaderboard. Time Trial guard site (R1). Callers: census steam 0x1f28410."
+ },
+ "signature": {
+  "id": "tracks.time_trial_track_select_vm_on_command_raised",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 8B 02 48 85 C0 0F 84 ?? ?? ?? ?? 48 89 CE 8B 00 3D 79 35 B0 02",
+  "match": "0x141f28410",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f28410",
+  "kind": "func_start",
+  "names": [
+   "Trk_TimeTrialTrackSelectVm_OnCommandRaised"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "trk-t5",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/tracks/track_select.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "trk-v1",
+   "kind": "func",
+   "item": "Trk_TimeTrialTrackSelectVm_OnCommandRaised",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f28410.c;xref:0x14575cec0",
+   "notes": "V1626 Re-derived from a fresh read-only decompile (car-c): djb2(select_pressed) = 0x2b0357a; gate (([vm+0x2c0]+0x130) & ~2) == 0, (+0x134 & ~2) == 0 and vm+0x301 != 0, all reads; first store after the gate is Ne_Make_StrFromCStr(vm+0x308, t_next_time_trial), then bus message 0x145753b20, then (unless vm+0x303 is already set) [[vm+0x278]+0x4c8]+0x30 = 0, [vm+0x278]+0x4d0 = 1, the fade request on [vm+0x288]+0x7b8.., vm+0x303 = 1 and fade_off_screen (0x14575cf51). selected_track_changed 0xdcd54bcb only sets vm+0x300; fade_off_complete 0x2dea0627 fires the vm+0x308 route. Nothing before the select_pressed compare writes memory, so refusing it in a wrapper leaves no state. Only route: the function is referenced only by vtable slot 0x14575cec0 (no direct call, no adjustor thunk). Return is junk ([vm+0x2c0] on the gate-fail path), so void in practice."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "trk-v1",
+   "kind": "sig",
+   "item": "tracks.time_trial_track_select_vm_on_command_raised",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "sig:tracks.time_trial_track_select_vm_on_command_raised;decomp:re/decomp/141f28410.c",
+   "notes": "V1635 sigcheck.py --exe on build d873a1c8: hits=1 match=target=0x141f28410. Independent regex search of the 29-byte prologue pattern over .xtls: 1 hit, 0x141f28410, the .pdata start of the TT onCommandRaised. used_by names native/src/core/guards/tracks/track_select.cpp, which does not exist yet on trk/t5."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "d7-verify",
+   "kind": "func",
+   "item": "Trk_TimeTrialTrackSelectVm_OnCommandRaised",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f28410.c;xref:0x141f28410",
+   "notes": "V2681 fade/hide bit ids, offsets, states and curves checked against decomp; role as claimed"
+  }
+ ],
+ "proofs": []
+}

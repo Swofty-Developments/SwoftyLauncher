@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Vr_ExecuteTransition",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1438ac4f0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-VR",
+  "notes": "named from its log messages (channel VR): '%hs shouldUseFade=%d, onExecuteTransitionCallback=%hs, exclusivityToken=%hs'"
+ },
+ "signature": {
+  "id": "game.vr_execute_transition",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC E8 01 00 00 4D 89 CF 4C 89 C6",
+  "match": "0x1438ac4f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1438ac4f0",
+  "kind": "func_start",
+  "names": [
+   "Game_Vr_ExecuteTransition"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x1438ac4f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1438ac4f0.c;xref:0x1406b4c7d",
+   "notes": "V6382 body holds pretty string requestEnableVirtualMonitor (sibling of RequestDisable at 0x1438acea0). Better Game_VrVirtualMonitorSystem_RequestEnableVirtualMonitor"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x1438ac4f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1438ac4f0.c;xref:0x1406b4c7d",
+   "notes": "V7038 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

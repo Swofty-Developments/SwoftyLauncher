@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use swofty_core::settings::SessionSettings;
+use swofty_core::addons::settings::SessionSettings;
 use swofty_formats::erp::Erp;
 
 fn dirs() -> Option<(PathBuf, PathBuf)> {
@@ -49,7 +49,7 @@ fn resource_report(ours: &Path, theirs: &Path, skip: &[&str]) -> String {
             continue;
         }
         for (i, (fx, fy)) in x.fragments.iter().zip(&y.fragments).enumerate() {
-            if fx.raw != fy.raw {
+            if fx.raw() != fy.raw() {
                 let (dx, dy) = (fx.data().unwrap(), fy.data().unwrap());
                 let what = if dx == dy {
                     "same data, different compression".to_owned()
@@ -75,7 +75,15 @@ fn menus_match_the_prototype_byte_for_byte() {
     let Some((game, oracle)) = dirs() else { return };
     let out = std::env::temp_dir().join(format!("swofty-menus-{}", std::process::id()));
     std::fs::remove_dir_all(&out).ok();
-    let built = swofty_core::ui::build(&session(), &|rel| game.join(rel), &|_, _| None, &out, true).unwrap();
+    let built = swofty_core::ui::build(
+        &session(),
+        &|rel| game.join(rel),
+        &|_, _| None,
+        &out,
+        true,
+        &swofty_core::ui::ArchiveWriter::new(&swofty_formats::erp::Packer::default()),
+    )
+    .unwrap();
     let mut bad = Vec::new();
     for (rel, path) in &built.erps {
         if swofty_core::ui::era::ARCHIVES.iter().any(|a| rel.ends_with(a)) {
@@ -135,7 +143,7 @@ fn menus_and_a_map_patch_one_databases_erp() {
     use swofty_core::activation::place::track_group;
     use swofty_core::activation::ui::{MapUi, build_ui};
     use swofty_core::build::{Built, build_menus};
-    use swofty_core::map::TrackPackage;
+    use swofty_core::content::track_package::TrackPackage;
     use swofty_formats::pkg::Pkg;
 
     let Some(game) = std::env::var_os("F1_25_DIR").map(PathBuf::from) else {
@@ -159,7 +167,13 @@ fn menus_and_a_map_patch_one_databases_erp() {
         dir: &dir,
         asset_group: track_group("bahrain24", "bahrain24"),
     }];
-    let map_ui = build_ui(&maps, &resolve, &out.join("cache")).unwrap();
+    let map_ui = build_ui(
+        &maps,
+        &resolve,
+        &out.join("cache"),
+        &swofty_formats::erp::Packer::default(),
+    )
+    .unwrap();
     let rel = "2025_asset_groups/ui_package/databases.erp";
     assert!(map_ui.replaced.contains_key(rel));
     let mut built = Built {
@@ -168,7 +182,15 @@ fn menus_and_a_map_patch_one_databases_erp() {
     };
     built.plan.data.extend(map_ui.replaced.clone());
     let mut session = session();
-    build_menus(&mut built, &mut session, &resolve, &|_, _| None, true).unwrap();
+    build_menus(
+        &mut built,
+        &mut session,
+        &resolve,
+        &|_, _| None,
+        true,
+        &swofty_core::ui::ArchiveWriter::new(&swofty_formats::erp::Packer::default()),
+    )
+    .unwrap();
     assert_eq!(built.plan.data[rel], out.join("overlay").join(rel));
     for (r, src) in &map_ui.replaced {
         if !swofty_core::ui::ERPS.iter().any(|e| r.ends_with(e)) {
@@ -247,7 +269,15 @@ fn stock_dialogs_keep_their_text() {
     };
     let out = std::env::temp_dir().join(format!("swofty-menus-dialogs-{}", std::process::id()));
     std::fs::remove_dir_all(&out).ok();
-    let built = swofty_core::ui::build(&session(), &|rel| game.join(rel), &|_, _| None, &out, true).unwrap();
+    let built = swofty_core::ui::build(
+        &session(),
+        &|rel| game.join(rel),
+        &|_, _| None,
+        &out,
+        true,
+        &swofty_core::ui::ArchiveWriter::new(&swofty_formats::erp::Packer::default()),
+    )
+    .unwrap();
     let rel = "2025_asset_groups/ui_package/flow_persistent.erp";
     let report = resource_report(&built.erps[rel], &game.join(rel), &POPUP);
     assert!(report.is_empty(), "{rel} changed outside the popup:\n{report}");
@@ -315,7 +345,7 @@ fn stock(game: &Path, rel: &str) -> PathBuf {
     let listed: serde_json::Value =
         serde_json::from_slice(&std::fs::read(base.join("baseline.json")).unwrap()).unwrap();
     match listed["files"][rel]["sha256"].as_str() {
-        Some(sha) if swofty_core::baseline::sha256_file(&path).unwrap() != sha => {
+        Some(sha) if swofty_core::game_folder::baseline::sha256_file(&path).unwrap() != sha => {
             base.parent().unwrap().join("objects").join(&sha[..2]).join(sha)
         }
         _ => path,
@@ -372,8 +402,15 @@ fn the_core_build_adds_the_era_rows() {
     };
     let out = std::env::temp_dir().join(format!("swofty-menus-era-{}", std::process::id()));
     std::fs::remove_dir_all(&out).ok();
-    let built =
-        swofty_core::ui::build(&session(), &|rel| stock(&game, rel), &|_, _| None, &out, true).unwrap();
+    let built = swofty_core::ui::build(
+        &session(),
+        &|rel| stock(&game, rel),
+        &|_, _| None,
+        &out,
+        true,
+        &swofty_core::ui::ArchiveWriter::new(&swofty_formats::erp::Packer::default()),
+    )
+    .unwrap();
     assert!(
         built
             .lines
@@ -641,7 +678,15 @@ fn the_core_build_adds_the_era_rows() {
         true => built.erps[rel].clone(),
         false => stock(&game, rel),
     };
-    let twice = swofty_core::ui::build(&session(), &input, &|_, _| None, &again, true).unwrap();
+    let twice = swofty_core::ui::build(
+        &session(),
+        &input,
+        &|_, _| None,
+        &again,
+        true,
+        &swofty_core::ui::ArchiveWriter::new(&swofty_formats::erp::Packer::default()),
+    )
+    .unwrap();
     for rel in era::ARCHIVES {
         assert!(
             !twice.erps.contains_key(&format!("{}/{rel}", swofty_core::ui::UI)),
@@ -695,7 +740,15 @@ fn the_era_rows_keep_what_an_addon_put_in_the_same_archive() {
     };
     built.plan.data.insert(rel.clone(), addon.clone());
     let mut session = session();
-    build_menus(&mut built, &mut session, &|r| stock(&game, r), &|_, _| None, true).unwrap();
+    build_menus(
+        &mut built,
+        &mut session,
+        &|r| stock(&game, r),
+        &|_, _| None,
+        true,
+        &swofty_core::ui::ArchiveWriter::new(&swofty_formats::erp::Packer::default()),
+    )
+    .unwrap();
     assert_eq!(built.plan.data[&rel], addon);
     let names: Vec<String> = Erp::parse(&std::fs::read(&addon).unwrap())
         .unwrap()
@@ -754,7 +807,15 @@ fn an_addon_era_picker_swofty_cannot_edit_is_left_as_it_is() {
     };
     built.plan.data.insert(odd_rel.clone(), addon.clone());
     let writer = |erp: &str, res: &str| (res == era::UI).then(|| format!("Season mod ({erp})"));
-    build_menus(&mut built, &mut session(), &|r| stock(&game, r), &writer, true).unwrap();
+    build_menus(
+        &mut built,
+        &mut session(),
+        &|r| stock(&game, r),
+        &writer,
+        true,
+        &swofty_core::ui::ArchiveWriter::new(&swofty_formats::erp::Packer::default()),
+    )
+    .unwrap();
     assert_eq!(built.plan.data[&odd_rel], addon);
     assert_eq!(ui_of(&addon), odd);
     assert_eq!(built.plan.data[&other], overlay.join(&other));
@@ -793,6 +854,7 @@ fn an_addon_era_picker_swofty_cannot_edit_is_left_as_it_is() {
         &|r| stock(&game, r),
         &|_, _| None,
         true,
+        &swofty_core::ui::ArchiveWriter::new(&swofty_formats::erp::Packer::default()),
     );
     std::fs::remove_dir_all(&out).ok();
     assert!(e.unwrap_err().to_string().contains("does not round-trip"));
@@ -846,7 +908,15 @@ fn addon_settings_scrolls_sideways_and_shows_details_on_the_focused_tile() {
     let settings: SessionSettings = serde_json::from_value(v).unwrap();
     let out = std::env::temp_dir().join(format!("swofty-scroll-{}", std::process::id()));
     std::fs::remove_dir_all(&out).ok();
-    let built = swofty_core::ui::build(&settings, &|rel| game.join(rel), &|_, _| None, &out, false).unwrap();
+    let built = swofty_core::ui::build(
+        &settings,
+        &|rel| game.join(rel),
+        &|_, _| None,
+        &out,
+        false,
+        &swofty_core::ui::ArchiveWriter::new(&swofty_formats::erp::Packer::default()),
+    )
+    .unwrap();
     let pkg = swofty_formats::pkg::Pkg::parse(
         &std::fs::read(
             built
@@ -960,7 +1030,15 @@ fn a_long_addon_page_scrolls_to_keep_the_focused_row_on_screen() {
     let settings: SessionSettings = serde_json::from_value(v).unwrap();
     let out = std::env::temp_dir().join(format!("swofty-page-scroll-{}", std::process::id()));
     std::fs::remove_dir_all(&out).ok();
-    let built = swofty_core::ui::build(&settings, &|rel| game.join(rel), &|_, _| None, &out, false).unwrap();
+    let built = swofty_core::ui::build(
+        &settings,
+        &|rel| game.join(rel),
+        &|_, _| None,
+        &out,
+        false,
+        &swofty_core::ui::ArchiveWriter::new(&swofty_formats::erp::Packer::default()),
+    )
+    .unwrap();
     let pages: Vec<_> = built
         .screens
         .iter()
@@ -1079,7 +1157,15 @@ fn addon_settings_pages_its_home_so_each_home_screen_stays_small() {
     assert!(tiles >= 72, "{tiles} tiles");
     let out = std::env::temp_dir().join(format!("swofty-home-pages-{}", std::process::id()));
     std::fs::remove_dir_all(&out).ok();
-    let built = swofty_core::ui::build(&settings, &|rel| game.join(rel), &|_, _| None, &out, false).unwrap();
+    let built = swofty_core::ui::build(
+        &settings,
+        &|rel| game.join(rel),
+        &|_, _| None,
+        &out,
+        false,
+        &swofty_core::ui::ArchiveWriter::new(&swofty_formats::erp::Packer::default()),
+    )
+    .unwrap();
     let homes: Vec<String> = (0..tiles.div_ceil(HOME_PAGE_TILES))
         .map(swofty_core::ui::pages::home_screen)
         .collect();
@@ -1256,9 +1342,9 @@ fn addon_settings_pages_its_home_so_each_home_screen_stays_small() {
 fn the_mfd_page_and_a_map_patch_share_flow_race_and_persistent() {
     use swofty_core::activation::place::track_group;
     use swofty_core::activation::ui::{MapUi, build_ui};
+    use swofty_core::addons::settings::SessionAddon;
     use swofty_core::build::{Built, build_menus};
-    use swofty_core::map::TrackPackage;
-    use swofty_core::settings::SessionAddon;
+    use swofty_core::content::track_package::TrackPackage;
     use swofty_core::ui::mfd;
 
     let Some(game) = std::env::var_os("F1_25_DIR").map(PathBuf::from) else {
@@ -1282,7 +1368,13 @@ fn the_mfd_page_and_a_map_patch_share_flow_race_and_persistent() {
         dir: &dir,
         asset_group: track_group("bahrain24", "bahrain24"),
     }];
-    let map_ui = build_ui(&maps, &resolve, &out.join("cache")).unwrap();
+    let map_ui = build_ui(
+        &maps,
+        &resolve,
+        &out.join("cache"),
+        &swofty_formats::erp::Packer::default(),
+    )
+    .unwrap();
     let race = format!("{}/flow_race.erp", swofty_core::ui::UI);
     let persistent = format!("{}/persistent.erp", swofty_core::ui::UI);
     assert!(map_ui.replaced.contains_key(&race) && map_ui.replaced.contains_key(&persistent));
@@ -1302,7 +1394,15 @@ fn the_mfd_page_and_a_map_patch_share_flow_race_and_persistent() {
     }))
     .unwrap();
     session.addons.push(addon);
-    build_menus(&mut built, &mut session, &resolve, &|_, _| None, true).unwrap();
+    build_menus(
+        &mut built,
+        &mut session,
+        &resolve,
+        &|_, _| None,
+        true,
+        &swofty_core::ui::ArchiveWriter::new(&swofty_formats::erp::Packer::default()),
+    )
+    .unwrap();
     assert!(
         built
             .lines

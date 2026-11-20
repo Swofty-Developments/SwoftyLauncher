@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_RenderGraph_ResolveHandleB",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14029cd40",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14029cd40.c;xref:0x14013d5ab,0x14013d5e1,0x14013d64b",
+  "notes": "Hypothesis: Variant of 0x14029c660 with a different switch; 55 callers. Named callers: Render_SceneView_SubmitCamera."
+ },
+ "signature": {
+  "id": "core.render_graph_resolve_handle_b",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 88 00 00 00 48 89 D6 48 89 CB C7 02 FF FF FF FF 8B 01 B9 FF FF FF FF 48 39 C8 0F 84 ?? ?? ?? ?? 4C 89 C7 49 8B 48 30 48 8D 04 40 48 C1 E0 07 4C 8D 34 01 49 81 C6 A0 00 00 00 0F B6 8C 01 D0 00 00 00 45 84 C9 74 61 E8",
+  "match": "0x14029cd40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14029cd40",
+  "kind": "func_start",
+  "names": [
+   "Ne_RenderGraph_ResolveHandleB"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x14029cd40",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14029cd40.c;xref:0x14013d5ab",
+   "notes": "V7988 Ne_RenderGraph_ResolveHandleB: body supports handle->0x180-stride entry hypothesis but named-caller claim wrong: callers in 0x14013d2c0/0x1401403a0/0x143bab0a0/0x143bafd80/0x143bb5ac0, none SubmitCamera"
+  }
+ ],
+ "proofs": []
+}

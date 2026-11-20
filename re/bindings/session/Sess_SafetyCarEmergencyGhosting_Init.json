@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_SafetyCarEmergencyGhosting_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435c27d0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1435c27d0.c;xref:0x14584dbd8",
+  "notes": "SafetyCarEmergencyGhosting (vtable 0x14584dbd8) init; stores the AheadOfLead result name at +0x98."
+ },
+ "signature": {
+  "id": "session.safety_car_emergency_ghosting_init",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 48 4C 89 C7 48 89 CE 48 8D 05",
+  "match": "0x1435c27d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435c27d0",
+  "kind": "func_start",
+  "names": [
+   "Sess_SafetyCarEmergencyGhosting_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb4-verify",
+   "kind": "func",
+   "item": "Sess_SafetyCarEmergencyGhosting_Init",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435c27d0.c;xref:0x14584dbd8",
+   "notes": "V1935 vtable slot0; stores matched entry [2] at +0x98 (key global 0x145f96c98)"
+  }
+ ],
+ "proofs": []
+}

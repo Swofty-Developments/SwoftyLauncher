@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_SceneView_UpdateVrEyeParams",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439eb550",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439eb550.c;xref:0x1439ea642,0x143be0492",
+  "notes": "Fills per-eye VR view data when VR is active (+0x164 == 0): calls the HMD interface (+0x3f0) vcall +0x10 for each eye (eye 0/1 -> +0x2870/+0x2878/+0x2880/+0x2888 and +0x2874..) then vcall +8 for the head pose into +0x2890... Callers Game_Vr_RefreshDevice and Render_SceneView_BuildViewParams. Hypothesis (projection tangents/pose per eye)."
+ },
+ "signature": {
+  "id": "render.scene_view_update_vr_eye_params",
+  "section": ".xtls",
+  "pattern": "56 48 81 EC 10 01 00 00 C5 78 29 BC 24 00 01 00",
+  "match": "0x1439eb550",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439eb550",
+  "kind": "func_start",
+  "names": [
+   "Render_SceneView_UpdateVrEyeParams"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x1439eb550",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439eb550.c;xref:0x1439ea642",
+   "notes": "V8506 VR active check +0x164, HMD interface +0x3f0 vcall +0x10 per eye into +0x2870.., vcall +8 head pose +0x2890"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Podium2019CutSceneScript_FireEvent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140362fe0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=Podium2019CutSceneScript::fireEvent; log channel CUTSCENE_PODIUM: 'Podium2019CutSceneScript::fireEvent'"
+ },
+ "signature": {
+  "id": "game.podium2019_cut_scene_script_fire_event",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 40 01 00 00 C5 F8 29 B4 24 30 01 00 00 C5 F8 28 F3",
+  "match": "0x140362fe0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140362fe0",
+  "kind": "func_start",
+  "names": [
+   "Game_Podium2019CutSceneScript_FireEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x140362fe0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140362fe0.c;xref:0x3689a0",
+   "notes": "V4547 string/behaviour in decomp matches name"
+  }
+ ],
+ "proofs": []
+}

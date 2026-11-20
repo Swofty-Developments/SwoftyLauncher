@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Heap_DeallocateNonSmall",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143963f80",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_Heap_DeallocateNonSmall(void *heap, uint8_t *ptr)",
+  "evidence": "decomp:re/decomp/143963f80.c;xref:0x143963f5a;doc:research/grid24-cap.md#b26h-heap",
+  "notes": "ne_memory_heap.cpp deallocateNonSmall. Errors: 0xe line 0x4a1 address outside heap; 0x16 line 0x4a4 'Failed to find address %p in the allocated list' (block header size mismatch); 0x50 lines 0x4ad/0x4af start/end bounding-check buffer corrupt. B26h race-load abort = 0x16. Callers: Ne_Heap_Free 0x143963f5a (heap lock held) and 0x14396b295. Block header 0x10 bytes at ptr - guard - 0x10, guard = heap+0x108 (u64; 0 when the heap has no bounding checks): +0x00 int32 link to the next older allocated block and +0x04 int32 link to the next newer one (in 16-byte units from the header, 0 = none; heap+0x100 is the newest), +0x08 u32 block size = align16(requested) + 2*guard + 0x10, +0x0c u32 requested size. The address range is heap+0x98 (start) and heap+0xa0 (size). It unlinks the block (older.+0x04 = newer, newer.+0x00 = older, both re-relative; heap+0x100 = older when it was the newest) and inserts it into the free tree with 0x143962f10, which writes +0x00/+0x04 as tree links and +0x08 = size/16. A header whose +0x00 does not point at a block whose +0x04 points back makes that unlink write 4 bytes elsewhere and leave the true older neighbour linked to a free block; its later free then loops 0x143962f10 (seen at 22:13, session 20261030-111101)."
+ },
+ "signature": {
+  "id": "core.heap_deallocate_non_small",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 68 49 89 D6",
+  "match": "0x143963f80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143963f80",
+  "kind": "func_start",
+  "names": [
+   "Ne_Heap_DeallocateNonSmall"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "crash2",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "kbverify-heap",
+   "kind": "func",
+   "item": "0x143963f80",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143963f80.c;decomp:re/decomp/143963e80.c;decomp:re/decomp/14396b160.c;decomp:re/decomp/143963630.c;decomp:re/decomp/143962100.c;decomp:re/decomp/143962f10.c;decomp:re/decomp/1439643c0.c;decomp:re/decomp/1439657d0.c;xref:0x143963f5a,0x14396b295;str:0x145895bea,0x145895a0f,0x145895b59;sig:core.heap_deallocate_non_small",
+   "notes": "V2189 Blind re-derivation from the binary; every claim in the row holds. The .pdata body is 0x143963f80-0x143964238. It passes 'deallocateNonSmall' (0x145895bea) and ne_memory_heap.cpp (0x145895a0f) to vt+0x118 with three error codes: 0xe at line 0x4a1 ('Invalid address 0x%p for this heap'), 0x16 at line 0x4a4 ('Failed to find address %p in the allocated list', raised when hdr+0x08 != align16(hdr+0x0c) + 2*guard + 0x10) and 0x50 at lines 0x4ad/0x4af (start/end bounding check, only when guard != 0). Proto: rcx is the heap (kept in rsi) and rdx the ptr (r14). It returns 0 (xor eax,eax) or the code vt+0x118 hands back; the reporter 0x1439657d0 returns it with mov eax,esi, so rax is zero-extended. Ne_Heap_Free reads only eax, so an int return would also fit, but uint64_t is safe. Callers: the only call sites are 0x143963f5a in Ne_Heap_Free, after EnterCriticalSection([heap+0xa8]) on every path, and 0x14396b295 in 0x14396b160, the small-block page free, which passes [this+0x88] and page-0x3fd0. There are no vtable or pointer refs; the .data1 byte hit at 0x14d64faf9 is not a call. Header: hdr = ptr - [heap+0x108] - 0x10. Both allocators, 0x143963630 (allocateAlignedFromTail) and 0x143962100, set new.+0x00 = (old newest - new)/16, old.+0x04 = (new - old)/16, new.+0x04 = 0, heap+0x100 = new, +0x08 = align16(size) + 2*guard + 0x10 and +0x0c = size. The lazy init 0x1439643c0 (vt+0x130) walks the list from heap+0x100 through +0x00. So +0x00 is older, +0x04 is newer and heap+0x100 is the newest block, as stated. heap+0x98/+0xa0 are base and size: the constructor stores them at 0x143970a0e/0x143970a15 and the init derives the aligned region from them. The unlink and the heap+0x100 update match 0x14396413c-0x1439641cf. 0x143962f10 is an address-ordered AVL insert. It zeroes +0x00/+0x04, sets +0x08 = size/16, puts the subtree max size/16 in the low 28 bits of +0x0c and keeps balance in bits 60-62 of the +0x08 qword. The row leaves out that it also merges the new block with free blocks directly before and after it (removing them through 0x143962540). Two additions. First, the lazy init zeroes heap+0x100 and heap+0x108 (vmovups at 0x14396475b), so the guard is 0 unless something sets it after init. Second, with a bad +0x00 the unlink also points newer.+0x00 at the wrong block. The loop mechanism checks out: when the stale older neighbour O is freed later while H is still in the tree, its unlink writes O.older.+0x04 = H and H.+0x00 = O.older. That is a two-node cycle, which the descent in 0x143962f10 follows for any address between O.older and H when O.older < H. The 22:13 sighting itself was not checked, under the blind rule. sigcheck passes with 1 hit, in .xtls and in the whole file, at 0x143963f80, which is the .pdata start."
+  }
+ ],
+ "proofs": []
+}

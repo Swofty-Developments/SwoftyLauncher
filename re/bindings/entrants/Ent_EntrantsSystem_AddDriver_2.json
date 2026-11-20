@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ent_EntrantsSystem_AddDriver_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14246f280",
+  "level": "L1",
+  "subsystem": "entrants",
+  "proto": "-",
+  "evidence": "pat:log-channel-ENTRANTS_SYSTEM",
+  "notes": "named from its log messages (channel ENTRANTS_SYSTEM): 'Driver added with stat id %s | Couldn't find array to add driver with type %s | Failed to add driver with stat id %s'"
+ },
+ "signature": {
+  "id": "entrants.entrants_system_add_driver_2",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC F0 05 00 00 4C 89 C7 4C 8B B1 88 02 00 00",
+  "match": "0x14246f280",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14246f280",
+  "kind": "func_start",
+  "names": [
+   "Ent_EntrantsSystem_AddDriver_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x14246f280",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14246f280.c;xref:0x14245f445",
+   "notes": "V5281 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

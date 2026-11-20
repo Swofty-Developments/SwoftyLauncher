@@ -1,13 +1,13 @@
 use std::collections::BTreeMap;
 use std::path::PathBuf;
 
-use swofty_core::heads;
-use swofty_core::livery_kits;
+use swofty_core::addons::settings::{OnAddons, render_ops};
+use swofty_core::game_db::heads;
+use swofty_core::game_db::livery_kits;
+use swofty_core::game_db::owned;
 use swofty_core::manifest::AddonManifest;
 use swofty_core::ops::{DbOps, apply_db_ops};
-use swofty_core::owned;
 use swofty_core::profile::Profile;
-use swofty_core::settings::{OnAddons, render_ops};
 use swofty_formats::gvdb::Gvdb;
 
 #[test]
@@ -236,10 +236,10 @@ fn nested_selectors_resolve_against_the_real_database() {
 
 #[test]
 fn core_db_ops_add_the_swofty_f1_modes_to_the_real_database() {
+    use swofty_core::addons::builtin::{CORE_MODE, core_db_ops};
     use swofty_core::asset::AssetOp;
-    use swofty_core::builtin::{CORE_MODE, core_db_ops};
+    use swofty_core::game_db::row_keys::{Names, RowKeys};
     use swofty_core::ops::{DbReport, apply_db_ops_report};
-    use swofty_core::rowkeys::{Names, RowKeys};
 
     let Some(dir) = std::env::var_os("F1_25_DIR").map(PathBuf::from) else {
         eprintln!("F1_25_DIR is not set; skipping");

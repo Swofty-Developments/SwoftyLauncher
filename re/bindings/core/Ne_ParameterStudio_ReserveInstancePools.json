@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_ParameterStudio_ReserveInstancePools",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1445aa000",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-channel-PARAMETER_STUDIO;decomp:re/decomp/1445aa000.c;xref:0x140173da3",
+  "notes": "named from its log messages (channel PARAMETER_STUDIO): 'There are now %I64u vehicle data instances. | There are now %I64u tyre data instances. | There are now %I64u vehicle model data instances.' cb4-verify-b: grows the vehicle, tyre and vehicle-model data pools to the requested count, logs the new size"
+ },
+ "signature": {
+  "id": "core.parameter_studio_count_instances",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 C5 78 29 84 24 D0 00 00 00 C5 F8 29 BC 24 C0 00 00 00 C5 F8 29 B4 24 B0 00 00 00 48 8B 41 58",
+  "match": "0x1445aa000",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445aa000",
+  "kind": "func_start",
+  "names": [
+   "Ne_ParameterStudio_ReserveInstancePools"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x1445aa000",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445aa000.c",
+   "notes": "V4127 vehicle/tyre/vehicle model data instances strings confirmed (vtable/indirect or no direct callsite checked)"
+  }
+ ],
+ "proofs": []
+}

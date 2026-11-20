@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "g_Game_Root",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14601db08",
+  "type": "void *",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/1402669f0.c;xref:0x140266af0,0x140183185,0x140183f08",
+  "notes": "game root object pointer (182 .xtls refs). FePopup_Dispatch_FeatureCmd reaches the UI feature system through it: ctx = *(root+0xa0), module = *(ctx+0x28), feature system = (module+0x10)->vt[0xf0](module+0x10) (0x140266af0..0x140266b0a), then Ne_Play_FullscreenVideo-style playback on (feature system+0x108)."
+ },
+ "signature": {
+  "id": "game.root",
+  "section": ".xtls",
+  "pattern": "48 89 F1 E8 ?? ?? ?? ?? 85 C0 0F 85 ?? ?? ?? ?? 48 8B 05",
+  "match": "0x140266ae0",
+  "anchor": "0x13",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x10",
+   "len": 7
+  },
+  "target": "0x14601db08",
+  "kind": "data",
+  "names": [
+   "g_Game_Root"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "intro-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/intro_video.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-d",
+   "kind": "global",
+   "item": "g_Game_Root",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1402669f0.c;decomp:re/decomp/147715910.c;xref:0x140266af0,0x140266af7,0x140266afe,0x140266b0a,0x1477159ed,0x14029f0c0;sig:game.root",
+   "notes": "V0979 182 .xtls riprel refs (181 decode as qword loads into rax/rcx/rdx, one at 0x1401fbba3 outside .pdata) plus 18 in .data1; the only store is 0x1477159ed in .data1 0x147715910 (reached by jmp 0x14029f0c0), which allocates a 0x128-byte object through the passed allocator's vt+0x18, sets vtable 0x1455dfe70 and refcount 1, and publishes it here, so this holds a pointer to a singleton hub object (loads mostly read +0x58..+0xb8 member pointers). FePopup path confirmed byte for byte: 0x140266af0 mov rax,[g_Game_Root]; +0xa0; [+0x28]; rcx = that +0x10; call [vt+0xf0] at 0x140266b0a; the result's +0x108 player then gets the same inline playFullscreenVideo sequence (layer 4). sigcheck: 1 hit at 0x140266ae0, riprel target 0x14601db08"
+  }
+ ],
+ "proofs": []
+}

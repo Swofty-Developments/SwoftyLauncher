@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_GameConfig_5",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f3a5d0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: Game.VehicleSpawning.EnableMemorySnapshots, Game.VehicleSpawning.MaxConcurrentSpawns, Game.VehicleSpawning.VehicleTimeout'"
+ },
+ "signature": {
+  "id": "game.read_game_config_5",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 4C 89 C7 48 89 D3 48 89 CE 48 8B 02 48 8D 15 ?? ?? ?? ?? 48 89 D9 FF 50 28 48 89 86 B8 00 00 00",
+  "match": "0x142f3a5d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f3a5d0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_GameConfig_5"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f3a5d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f3a5d0.c",
+   "notes": "V5616 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

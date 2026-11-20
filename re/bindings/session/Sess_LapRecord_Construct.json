@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Sess_LapRecord_Construct",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140984f20",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140984f20.c;xref:0x140987694,0x1409879a9",
+  "notes": "Default constructor of a lap/result record: car id 0xff, zeroed fields, lazily initialises the QPC frequency (ms divisor g 0x146044948) and many XOR-protected time fields. Callers: Sess_Unk_140b6ebb0, Game_F1AMPRuleset_FinaliseResults, Game_F1CGRuleset_FinaliseResults, Sess_RaceRuleset_FinaliseResultsInternal."
+ },
+ "signature": {
+  "id": "session.lap_record_construct",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 30 48 89 CE C6 01 FF",
+  "match": "0x140984f20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140984f20",
+  "kind": "func_start",
+  "names": [
+   "Sess_LapRecord_Construct"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x140984f20",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140984f20.c;xref:0x142d371c5,0x142d28415",
+   "notes": "V3804 sets car id 0xff, zeroes fields, lazily QueryPerformanceFrequency -> g 0x146044948 = freq/1000 seen, callers seen; but no XOR operations appear anywhere in the decomp, so 'many XOR-protected time fields' is unconfirmed"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x140984f20",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140984f20.c;xref:0x142d371c5,0x142d28415",
+   "notes": "V4028 sets car id 0xff, zeroes fields, lazily QueryPerformanceFrequency -> g 0x146044948 = freq/1000 seen, callers seen; but no XOR operations appear anywhere in the decomp, so 'many XOR-protected time fields' is unconfirmed"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la0-verify",
+   "kind": "func",
+   "item": "0x140984f20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140984f20.c;xref:0x140b6f1ca,0x142d28415",
+   "notes": "V4098 car id 0xff, QueryPerformanceFrequency /1000 ms divisor, 4 named callers confirmed"
+  }
+ ],
+ "proofs": []
+}

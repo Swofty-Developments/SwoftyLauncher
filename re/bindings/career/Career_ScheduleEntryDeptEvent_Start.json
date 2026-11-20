@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_ScheduleEntryDeptEvent_Start",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1412cf690",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1412cf690.c;xref:0x1456d1228,0x1412cf819",
+  "notes": "ScheduleEntryDepartmentEventBase vtable 0x1456d1210 slot +0x18: needs dept event (+0x14 flag, +0x18 ptr, name at +0x20) and instance data (+0x20); state +0xc = 1 'Started department event %s on day %u', else 3 with failure reason; day u16 +0xa. Addon: inject or veto department events on the calendar. | #587: L2 by lead-authorised promotion for lane owner career-re (independent agree V3050)"
+ },
+ "signature": {
+  "id": "career.schedule_entry_dept_event_start",
+  "section": ".xtls",
+  "pattern": "56 53 48 83 EC 28 48 89 CE 0F B6 41 14 80 3D",
+  "match": "0x1412cf690",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1412cf690",
+  "kind": "func_start",
+  "names": [
+   "Career_ScheduleEntryDeptEvent_Start"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d12-verify",
+   "kind": "func",
+   "item": "Career_ScheduleEntryDeptEvent_Start",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1412cf690.c;xref:0x1456d1228",
+   "notes": "V3050 strings/offsets/calls match claim"
+  }
+ ],
+ "proofs": []
+}

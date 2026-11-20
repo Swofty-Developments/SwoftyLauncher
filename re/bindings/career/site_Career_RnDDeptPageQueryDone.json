@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDDeptPageQueryDone",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c7d8d4",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141c7b880.c;xref:0x141c7d8d4;doc:addons/rnd-tyres-thermal/native/HOOKS.md#diagnostic-flag-diag_tyres_instances-default-on-read-only",
+  "notes": "movzx ecx,byte [rsi+0x6d8] after the query: rsi = card, query results at rsp+0xdf0 (count +0xc00), team at rsp+0x8c"
+ },
+ "signature": {
+  "id": "career.rn_d_dept_page_query_done",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 0F B6 8E D8 06 00 00",
+  "match": "0x141c7d8cf",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c7d8d4",
+  "kind": "mid",
+  "expect": "0F B6 8E D8 06 00 00",
+  "names": [
+   "site_Career_RnDDeptPageQueryDone"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-3",
+   "kind": "global",
+   "item": "site_Career_RnDDeptPageQueryDone",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c7b880.c;xref:0x141c7d8cf,0x141c7d8d4,0x141c7d8e7,0x141c7d919,0x141c7d921",
+   "notes": "V0137 movzx ecx,byte [rsi+0x6d8] (card dept) right after the query; results at rsp+0xdf0, count at rsp+0x19f0 (=+0xc00), filter loop compares [inst+0x72] to cl; 7B window clean"
+  }
+ ],
+ "proofs": []
+}

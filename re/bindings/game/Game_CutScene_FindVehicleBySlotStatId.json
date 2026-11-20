@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_CutScene_FindVehicleBySlotStatId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14024c580",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14024c580.c;xref:0x14024c6a5",
+  "notes": "Formats '%s %u' and the category ENTRANTS_SYSTEM with 'Vehicle with stat id %s not found' via Ne_StrBuf_Printf. 1 caller Game_CutScene_SpawnCarForSlot (0x14024c6a5). Diagnostic. vq2-verify partial"
+ },
+ "signature": {
+  "id": "game.cut_scene_log_vehicle_stat_id_not_found",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 89 C4 44 89 EA E8",
+  "match": "0x14024c6a5",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14024c580",
+  "kind": "func_start",
+  "names": [
+   "Game_CutScene_FindVehicleBySlotStatId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x14024c580",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14024c580.c;xref:0x14024c6a5",
+   "notes": "V8204 Game_CutScene_FindVehicleBySlotStatId - returns looked-up pointer; log only on miss path"
+  }
+ ],
+ "proofs": []
+}

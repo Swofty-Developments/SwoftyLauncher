@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Game_PracticeTrackAcclimatisation_RefreshState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14299e3a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_PracticeTrackAcclimatisation_RefreshState(void *self)",
+  "evidence": "decomp:re/decomp/14299e3a0.c;decomp:re/decomp/1429a06b0.c;decomp:re/decomp/142952fb0.c;xref:0x14299e27e,0x1429a0617,0x1429a5ec0",
+  "notes": "Track Acclimatisation practice programme (vtable vt_Game_PracticeTrackAcclimatisation, object name 'track_acclim' at +0x58): recomputes the current target from the targets vector self+0x350..+0x358 (0x370-byte entries, up to 4 corner gates of 0xd0 at +0x10, gate count at +4, flags at +0xc4/+0x194/+0x264/+0x334) and the indices +0x328/+0x7e0/+0x7e4, writes the per-gate states +0x7c0..+0x7dc and, when +0x830 is set, notifies the listeners under self+0x1d0/+0x508 and clears +0x830/+0x7fc. The entry count is never tested for zero: it reads entry [+0x7e0] at 0x14299e59b on every path, and entry [min(+0x328 - r12, count - 1)] at 0x14299e53b when +0x336 is set (r12 = 1 only with +0x334 set, +0x330 == 0 and +0x7e4 below the limit). With an empty vector (+0x350 == +0x358 == 0) it faults at 0x14299e59b (ACCESS_VIOLATION reading 0x4, community tracks in Driver Career practice as the car leaves the garage). Callers: the +0xf0 slot thunk 0x1429a0610 (tail jmp 0x1429a0617; the drive-out subscriber Game_PracticeProgramme_HandleDriveOut calls it for every programme), Game_PracticeTrackAcclimatisation_Update 0x14299e27e, and the secondary-base slot 0x1429a5bb0 (this-8) at 0x1429a5ec0; no caller reads rax. Game_PracticeTrackAcclimatisation_Start and the slot thunks 0x1429a5b70/0x1429a5b90 return when +0x358 == +0x350; this function lacks that check. .pdata 0x14299e3a0-0x14299e8a6, push r15..rbx / sub rsp,0x20 prologue (14 bytes, nothing branches into 0x14299e3a1..0x14299e3ad). EA build 0x142997720, same 0x506 bytes. Core's track acclimatisation guard returns from it when the vector is empty."
+ },
+ "signature": {
+  "id": "game.practice_track_acclimatisation_refresh_state",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 20 48 89 CE 48 8B 81 68 03 00 00",
+  "match": "0x14299e3a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14299e3a0",
+  "kind": "func_start",
+  "names": [
+   "Game_PracticeTrackAcclimatisation_RefreshState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "acclimguard",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/tracks/track_acclim.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-acclim",
+   "kind": "func",
+   "item": "Game_PracticeTrackAcclimatisation_RefreshState",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14299e3a0.c;decomp:re/decomp/1429a06b0.c;decomp:re/decomp/14299ccf0.c;decomp:re/decomp/1429a5bb0.c;decomp:re/decomp/142952fb0.c;xref:0x14299e27f,0x1429a0618,0x1429a5ec1;xref:0x1457b41b0,0x1457b4178,0x1457b4180;sig:game.practice_track_acclimatisation_refresh_state",
+   "notes": "V1186 Re-derived: vtable 0x1457b40c0 follows the string 'PracticeTrackAcclimatisation' and is installed by 0x14295f370/0x142a078a0; slot +0xf0 (0x1457b41b0) = thunk 0x1429a0610 (mov byte [rcx+0x830],1; jmp 0x14299e3a0 at 0x1429a0617). Count = ((+0x358 - +0x350)>>4)*0x586fb587 (1/55, i.e. /0x370), never tested for zero. Every path reaches 0x14299e59b mov r9d,[rax+rcx+4] with rax=+0x350, rcx=+0x7e0*0x370 (0x1429a02d0, called before it, bounds-checks its own reads), so begin==end==0 faults there, at address 0x4 when +0x7e0==0. Second unchecked read 0x14299e53b when +0x336 set, +0x7e8 != +0x330 and (+0x7e4 == limit or the r12 branch). CORRECTION: that index is min(+0x328 - r12, count-1) with r12 in {0,1} (r12=1 only when +0x334 set, +0x330==0, +0x7e4 < limit-1); the dec at 0x14299e540 applies to the loaded gate count, not the index, so '[+0x328-1]' is only the r12=1 case. Callers (only rel32 refs, no abs refs to the body): call 0x14299e27e in 0x14299ccf0, jmp 0x1429a0617, call 0x1429a5ec0 in 0x1429a5bb0 with self = param_1-8 (decomp line 31). .pdata 0x14299e3a0-0x14299e8a6, prologue push r15,r14,r12,rsi,rdi,rbp,rbx; sub rsp,0x20 (14 bytes, 0x14299e3a0-0x14299e3ad, instruction boundaries at 3a2/3a4/3a6/3a7/3a8/3a9/3aa/3ae). Hook window: no rel32/rel8 branch, no qword or RVA-dword ref targets 0x14299e3a1..0x14299e3ad (two rel32 hits 0x140a1605f/0x142982385 are mid-instruction bytes; only .pdata holds the RVA 0x299e3a0); no other .pdata entry starts in the body. Early return safe: only rcx is an input (rdx/r8/r9/xmm0/xmm1 written before read), single ret at 0x14299e872 with no meaningful rax, callers ignore rax (0x14299e283 mov rcx,rsi; 0x1429a5ec5 cmp [rsi+0x78]; HandleDriveOut returns 0 after the vt+0xf0 call); skipped effects are only self-state (+0x800, +0x7c0..+0x7e8, +0x834, listener notify, clear of +0x830/+0x7fc; the +0x830 set by the thunk stays pending). Guard support: Start 0x1429a06b0 returns on +0xa0==0, +0x88==0 or +0x358==+0x350 before setting +0x38; thunks 0x1429a5b70/0x1429a5b90 (vt +0xb8/+0xc0) cmp +0x358,+0x350; je ret, else tail-jmp vt+0xa8/+0xb0. EA dump 0x142997720: 0x506 bytes identical to Steam 0x14299e3a0. Note: slot +0x40 0x14299cc40 empties the vector (end=begin at 0x14299cc54), so empty can also follow a reset."
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-acclim",
+   "kind": "sig",
+   "item": "game.practice_track_acclimatisation_refresh_state",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "sig:game.practice_track_acclimatisation_refresh_state;decomp:re/decomp/14299e3a0.c;xref:0x14299e27f,0x1429a0618,0x1429a5ec1",
+   "notes": "V1188 sigcheck.py --only on build d873a1c8: OK hits=1 match=0x14299e3a0 target=0x14299e3a0 (func_start, .pdata start of Game_PracticeTrackAcclimatisation_RefreshState). Pattern 41 57 41 56 41 54 56 57 55 53 48 83 EC 20 48 89 CE 48 8B 81 68 03 00 00 = the push r15..rbx; sub rsp,0x20; mov rsi,rcx; mov rax,[rcx+0x368] prologue. Steam file: 1 hit (0x14299e3a0). EA dump F1_25.1789128892.110548.mem (0x155dc000 bytes, offset = RVA): exactly 1 hit at 0x142997720, and the 0x506-byte body there is byte-identical to Steam 0x14299e3a0..0x14299e8a5 (both followed by cc padding)."
+  }
+ ],
+ "proofs": []
+}

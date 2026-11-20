@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "Sess_TyreClass_FromName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e97cb0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void *Sess_TyreClass_FromName(void *classes, const void *name, uint8_t check_weekend_format)",
+  "evidence": "decomp:re/decomp/142e97cb0.c;decomp:re/decomp/142ea08f0.c;decomp:re/decomp/142e9a7d0.c;decomp:re/decomp/142e839a0.c;xref:0x142ea0fe4",
+  "notes": "5-byte jmp thunk into .data1 body 0x14f44ad60, bound through its only call at 0x142ea0fe4 (TyreComponent init 0x142ea08f0). Looks up tyres.compound_classes by the label in name (the car's 'compound class' entity attribute, read by 0x142a90fe0; '<name>_sprint' when check_weekend_format is set and the session flag +0x244 is 1) and returns *(classes+0xf0) + stat_id*0x1f0. The caller stores the class at the tyre component's +0x9bc0 and then builds three tyre models (0x142e839a0, visual compound at model+0x60) per entry of the class's visual list +0x170 ({visual compound, physical mask}, 0x10 apart), so the class must be chosen here, before the models exist."
+ },
+ "signature": {
+  "id": "session.tyre_class_from_name",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 89 86 C0 9B 00 00 4C 8B B0 70",
+  "match": "0x142ea0fe4",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x142e97cb0",
+  "kind": "call",
+  "names": [
+   "Sess_TyreClass_FromName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/tyre_class.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-e",
+   "kind": "func",
+   "item": "Sess_TyreClass_FromName",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e97cb0.c;decomp:re/decomp/14f44ad60.c;decomp:re/decomp/142ea08f0.c;decomp:re/decomp/142a90fe0.c;decomp:re/decomp/142e839a0.c;decomp:re/decomp/142e9a7d0.c;xref:0x142ea0fe4,0x142e97cb0,0x1413e4dd5;sig:session.tyre_class_from_name",
+   "notes": "V1001 0x142e97cb0 is jmp 0x14f44ad60 (body 0x14f44ad60-0x14f44afe2). A rel32 scan of .xtls/.data1 finds one call of the thunk (0x142ea0fe4 in 0x142ea08f0) and one ref to the body (the thunk); the only other .data1 hit, jns at 0x14a03ee5c, sits behind an opaque predicate (and ecx,edi gives 0x9494c92d, SF=1, so cmovns never selects it). Body: label lookup in tyres.compound_classes / CompoundClass via Gdb_Find_RowByLabel, stat_id via Gdb_Get_FieldInt read as a byte (movzx [val+8]), returns stat_id*0x1f0 + *(rcx+0xf0). With r8b set it formats '%s_%s' (0x1456708d0) with name and 'sprint' (0x1457ef8f0) into a 256-byte buffer and looks that label up instead. Caller 0x142ea08f0 reads the bool attribute 'check weekend format' into +0x9bb8 and the 16-byte 'compound class' attribute through 0x142a90fe0, passes rcx=[0x146080790], rdx=&value, r8d=movzx +0x9bb8, stores rax at +0x9bc0, then walks +0x170..+0x178 (stride 0x10) calling 0x142e839a0 at +0x30+n*0xde0 +0/+0x4a0/+0x940 with entry qword 0; 0x142e839a0 (jmp 0x14f3c25a0) stores it at model+0x60. Builder 0x142e9a7d0 (called with obj+0xe8, so begin = obj+0xf0) pushes {visual compound ptr (idx*0x58 + visual array), physical bitmask} into class+0x170. Proto arity and types match (name is used as a char* by %s and the FNV label). Details the notes leave out: the sprint path also requires *(*(classes+0x78)+0x88) and its +0x260 entity to be non-null and that entity not to be (or derive from) type 0x146129ca0 (the shared bail-out idiom, also in 0x1400fb8e0); the +0x244 byte is on the object returned by vcall +0x90 on entity+0x1030; a missing row or field gives index 0, so the result is never NULL and a missing '<name>_sprint' row does not fall back to the plain label. Naming nit: PROTOCOL 3 wants _Thunk on .data1 thunks (KB is mixed). sigcheck (--exe f1-modding/work/exe/F1_25.exe): one hit, match 0x142ea0fe4, target 0x142e97cb0"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Collect_TeamEntriesByKey",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142456400",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void Career_Collect_TeamEntriesByKey(void *out, void *src, uint32_t team_key, void *alloc)",
+  "evidence": "decomp:re/decomp/142456400.c;xref:0x140a9b5fa;xref:0x140cbc0da;xref:0x1414d2f7e",
+  "notes": "myteam-g2: Collects pointers to the 0x58-byte records at src+8..+0x10 whose team key (u8@+0x58, u16@+0x5a) equals team_key into a vector. Used by Career_DeptEvent_Start and Career_GameValue_GetNetWeeklyIncome (team income entries)."
+ },
+ "signature": {
+  "id": "career.collect_team_entries_by_key",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 4C 89 4C 24 28 48 89 4C 24 30 4C 8B 6A 08",
+  "match": "0x142456400",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142456400",
+  "kind": "func_start",
+  "names": [
+   "Career_Collect_TeamEntriesByKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x142456400",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142456400.c",
+   "notes": "V10210 Collects pointers to records matching u8@+0x58/u16@+0x5a, but the source array stride is 0x88 bytes (not 0x58); 0x58 is the key offset."
+  }
+ ],
+ "proofs": []
+}

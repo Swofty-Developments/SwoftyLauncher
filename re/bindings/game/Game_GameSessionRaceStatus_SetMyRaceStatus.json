@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionRaceStatus_SetMyRaceStatus",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143092b20",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=GameSessionRaceStatus::setMyRaceStatus; log channel NETWORK-SESSION: 'void network::GameSessionRaceStatus::setMyRaceStatus(ERaceStatus) | %s: status: %s'"
+ },
+ "signature": {
+  "id": "game.game_session_race_status_set_my_race_status",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 38 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x143092b20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143092b20",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionRaceStatus_SetMyRaceStatus"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x143092b20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143092b20.c;xref:0x142d527b5",
+   "notes": "V5298 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

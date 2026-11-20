@@ -1,0 +1,43 @@
+{
+ "schema": 1,
+ "name": "site_Game_DecalMenu_SwapReservedCheck",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141ff80b0",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/141ff79b0.c;doc:re/research/sponsors.md#decal-editor",
+  "notes": "cmp ebx,2; setne al: mode test for the Swap guard; ecx = slot index, r12d = area reserved count, [rsp+0x80] = slot element (+0x250 node). Raising r12d past the index greys Swap with lng_decal_editor_reserved_swap. [static L2 evidence in the doc; added at L1 for the lane owner to raise]"
+ },
+ "signature": {
+  "id": "game.decal_menu_swap_reserved_check",
+  "section": ".xtls",
+  "pattern": "74 04 44 8B 60 08 83 FB 02 0F 95 C0",
+  "match": "0x141ff80aa",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141ff80b0",
+  "kind": "mid",
+  "expect": "83 FB 02 0F 95 C0",
+  "names": [
+   "site_Game_DecalMenu_SwapReservedCheck"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-05",
+    "by": "sponsor-studio",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "jonniedesigns.sponsor-base"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

@@ -1,7 +1,7 @@
 // Test for swofty::mem in an addon (no SWOFTY_MEM_SHARED): readable() and invalidate() use the core's table
 // through the SwoftyCoreMem export of swofty_core.dll when it is loaded, and the header's own per-thread caches
 // when it is not. run_mem_pages_test.sh runs it once per mode:
-//   core    loads core/swofty_core.dll (mem_addon_core.cpp with src/core/mem_pages.cpp): every new page is
+//   core    loads core/swofty_core.dll (mem_addon_core.cpp with src/core/runtime/mem_pages.cpp): every new page is
 //           answered by the core's table, a cached page is not looked up again, and invalidate() reaches it.
 //   absent  loads nothing: the header's own checks answer.
 //   v0      loads fake/swofty_core.dll with a version 0 table, nullfn with a version 1 table of null functions:
@@ -129,8 +129,8 @@ int main(int argc, char **argv)
             return 1;
         auto calls = export_of<uint64_t (*)()>(fake, "mem_fake_calls");
         common();
-        expect(calls && calls() == 0, !strcmp(mode, "v0") ? "a version 0 table is never called"
-                                                          : "a table with null functions is never called");
+        expect(calls && calls() == 0,
+               !strcmp(mode, "v0") ? "a version 0 table is never called" : "a table with null functions is never called");
     } else {
         printf("usage: mem_addon_test core|absent|v0|nullfn\n");
         return 2;

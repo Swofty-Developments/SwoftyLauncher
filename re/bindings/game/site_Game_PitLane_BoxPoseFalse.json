@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "site_Game_PitLane_BoxPoseFalse",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434c4202",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/1434c3520.c;xref:0x1434c4202",
+  "notes": "Shared epilogue of Game_PitLane_ProjectBoxPose (LAB_1434c4202): cmp edi,2; setne al; restores xmm6-xmm15 saved in the prologue, add rsp,0x198, pops, ret. The normal failure path (FUN_1434c5c90 returned 2 in edi) jumps here; with edi = 2 the function returns false and has written nothing. Needs L2 promotion by the game owner."
+ },
+ "signature": {
+  "id": "game.pit_lane_box_pose_false",
+  "section": ".xtls",
+  "pattern": "4C 89 66 20 EB 0A C4 C1 78 29 36 48 83 46 18 10 C6 06 00 48 89 F1 E8 ?? ?? ?? ?? 83 FF 02 0F 95 C0",
+  "match": "0x1434c41e7",
+  "anchor": "0x1b",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434c4202",
+  "kind": "mid",
+  "expect": "83 FF 02 0F 95 C0",
+  "names": [
+   "site_Game_PitLane_BoxPoseFalse"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "pitlane",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/garage/pit_box.cpp"
+  ],
+  "func_start": "0x1434c3520"
+ },
+ "verify": [
+  {
+   "date": "2026-11-01",
+   "verifier": "kbverify-pitbox",
+   "kind": "global",
+   "item": "site_Game_PitLane_BoxPoseFalse",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434c3520.c;xref:0x1434c36f2;sig:game.pit_lane_box_pose_false",
+   "notes": "V8551 sigcheck OK unique match 0x1434c41e7 target 0x1434c4202; cmp edi,2 / setne al then xmm6-15 reloads from rsp+0xf0..0x180, add rsp 0x198, pops rbx..r15, ret; the normal failure is je 0x1434c4202 at 0x1434c36f2 after cmp eax,2 with edi=eax. Jump from 0x1434c3653 is safe: rsp identical (no push/sub since prologue), saved regs restored from stack, out untouched, earlier call 0x1434c01a0 only fills a stack POD and is bounded (box<0x20)"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "global",
+   "item": "site_Game_PitLane_BoxPoseFalse",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1434c3520-0x1434c4276,0x1434c5c90-0x1434c68fe,0x1445041c0-0x1445047b1,0x1503fecf0-0x1503fedfa,0x1434be460-0x1434be744,0x1434c03c0-0x1434c05f9,1.0.145 0x1434c5aa0-0x1434c67f6;xref:0x1434c36f2,0x1434c36ed,0x1434c358d,0x1434c41fd,0x1434c4202,0x1434c4205,0x1434c4262,0x1434c36a6,0x1434c3879,0x1434be69e,0x1434c0493",
+   "notes": "V100032 Blind: agree. 0x1434c4202 = 83 FF 02 cmp edi,2, then setne al (0x1434c4205), in Game_PitLane_ProjectBoxPose 0x1434c3520..0x1434c4276; then restores xmm6-15 from [rsp+0xf0..0x180], add rsp,0x198, 8 pops, ret. Two entries: je 0x1434c36f2 when 0x1434c5c90 returned 2 (edi set only at 0x1434c358d/0x1434c36ed), and fall-through after call 0x1445041c0 at 0x1434c41fd (edi in {0,1,3,4,5}, al=1, 11-point spline written to rdx and built). With edi=2 the output object is untouched (first write 0x1434c3879); the only write is the lazy cache [this+idx*8+0x7f8] at 0x1434c36a6. 1.0.145 twin site 0x1434c6782, same code."
+  }
+ ],
+ "proofs": []
+}

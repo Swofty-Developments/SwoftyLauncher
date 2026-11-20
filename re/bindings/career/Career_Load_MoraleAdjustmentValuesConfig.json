@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Load_MoraleAdjustmentValuesConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14127b2e0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Load_MoraleAdjustmentValuesConfig(void *cfg, void *xml_doc, char flag)",
+  "evidence": "decomp:re/decomp/14127b2e0.c;xref:0x142c70e2f",
+  "notes": "myteam-g1: XML config loader for the upgrade/morale definitions: iterates nodes, reads names and values, collects the morale_adjustment_values table and builds upgrade definitions (sorted vector via 412c2790, children via 41275120/412c3510). Hook for tuning morale adjustment per upgrade."
+ },
+ "signature": {
+  "id": "career.load_morale_adjustment_values_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 06 00 00 C5 78 29 8C 24 20 06 00 00",
+  "match": "0x14127b2e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14127b2e0",
+  "kind": "func_start",
+  "names": [
+   "Career_Load_MoraleAdjustmentValuesConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x14127b2e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14127b2e0.c;xref:0x142c70e2f",
+   "notes": "V9703 Gdb table loader for activity definitions (stat_id, type, activity_tracks, duration, outcome, language_string, notification_priority) that also reads morale_adjustment_values; not an upgrade-definition/XML loader."
+  }
+ ],
+ "proofs": []
+}

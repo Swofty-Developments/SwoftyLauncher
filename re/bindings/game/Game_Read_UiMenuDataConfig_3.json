@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_UiMenuDataConfig_3",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d9bf60",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: ui_menu_data.in_replay, ui_menu_data.replay_control_mode, ui_menu_data.show_event_mode_info'"
+ },
+ "signature": {
+  "id": "game.read_ui_menu_data_config_3",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 50 C5 F8 29 74 24 40 48 89 CE E8",
+  "match": "0x142d9bf60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d9bf60",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_UiMenuDataConfig_3"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142d9bf60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d9bf60.c;xref:0x142dcabb0",
+   "notes": "V5437 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

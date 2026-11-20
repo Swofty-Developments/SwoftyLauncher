@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Gfx2Renderer_ConstructDevice",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439910f0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439910f0.c;xref:0x14396b835,0x14399103b,0x143b5f0c6",
+  "notes": "Hypothesis: large constructor (11 params) called from Ne_Gfx2Renderer_Initialise; sets *param_1=param_2, zeroes counters, vtable setup. Named callers: Ne_Gfx2Renderer_Initialise."
+ },
+ "signature": {
+  "id": "core.gfx2_renderer_construct_device",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 4C 89 44 24 28 48 89 D7 48 89 CE 48 89 11",
+  "match": "0x1439910f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439910f0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Gfx2Renderer_ConstructDevice"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x1439910f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439910f0.c;xref:0x14396b835",
+   "notes": "V7651 strings/offsets/constants and callers match decomp; hypothesis supported"
+  }
+ ],
+ "proofs": []
+}

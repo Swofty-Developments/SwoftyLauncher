@@ -1,0 +1,66 @@
+{
+ "schema": 1,
+ "name": "g_Sess_ClockOwner",
+ "table": "globals",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x146081700",
+  "type": "void *",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:own disasm 0x142f26d30-0x142f26e84 (Sess_Flags_GetSecondsSinceEvent);xref:0x142f26d40",
+  "notes": "Session clock owner object, read by Sess_Flags_GetSecondsSinceEvent ([g+0x1a8] then +0x98 flag). Read only. Used by vmknolle session-watch."
+ },
+ "signature": {
+  "id": "session.clock_owner",
+  "section": ".xtls",
+  "pattern": "48 89 CE 48 8B 05 ?? ?? ?? ?? 48 8B B8 A8 01 00 00",
+  "match": "0x142f247ad",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x3",
+   "len": 7
+  },
+  "target": "0x146081700",
+  "kind": "data",
+  "names": [
+   "g_Sess_ClockOwner"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-20",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142f26d3d",
+  "made_on_target": "0x146083700",
+  "twin": "made on steam-26566308; the target 0x146083700 is KB 0x146081700: k_Live_TyreSystemKey (0x6082d28) and g_Game_VehicleStateRoot (0x6083788) on either side both sit 0x2000 above their KB addresses; the match 0x142f26d3d is KB 0x142f247ad: Sess_Flags_GetSecondsSinceEvent (0x2f26d30) and Sess_Get_CarDriverName (0x2f2b1a0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-20",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142f26d3d",
+    "target": "0x146083700"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f36f7220136852586dbe53f8839a68e30888115ef96bad4c5b1de04e2dbee8f1"
+  }
+ ]
+}

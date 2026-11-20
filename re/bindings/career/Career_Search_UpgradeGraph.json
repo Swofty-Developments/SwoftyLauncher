@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Search_UpgradeGraph",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435288f0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:cmp-byte-rax+0x72-4-je@0x143528a05;xref:0x14352e91e,0x14352f67e,0x14352f76a,0x14352f8ba;kb:subsystems/rnd_ui.md#instances",
+  "notes": "Upgrade availability graph search. Treats every department-4 node as the tree hub (cmp byte [rax+0x72],4 ; je @0x143528a05): the stock fake hub central_fake_upgrade (label default) terminates the search there, and any other dept-4 row would act as a hub and unlock out of order. CORRECTION(V9236): Dept-4 node check at 0x143528a05 is real, but the search only returns at the hub when param_6==1 (and only collects it when param_5==1); otherwise it continues, so it is flag-controlled not unconditional termination."
+ },
+ "signature": {
+  "id": "career.search_upgrade_graph",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 08 00 00 48",
+  "match": "0x1435288f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435288f0",
+  "kind": "func_start",
+  "names": [
+   "Career_Search_UpgradeGraph"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1435288f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435288f0.c;xref:0x14352e91e",
+   "notes": "V6077 dept-4 node test at 0x143528a05 verified; collects when param_5==1 and returns when param_6==1; sole caller 0x14352e91e passes 1,1"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x1435288f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1435288f0.c;xref:0x143528a05",
+   "notes": "V9236 Dept-4 node check at 0x143528a05 is real, but the search only returns at the hub when param_6==1 (and only collects it when param_5==1); otherwise it continues, so it is flag-controlled not unconditional termination."
+  }
+ ],
+ "proofs": []
+}

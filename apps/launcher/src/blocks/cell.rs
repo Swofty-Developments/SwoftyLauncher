@@ -1,5 +1,5 @@
-use crate::notices::{Notification, Notify};
-use crate::scale::{Hit, px};
+use crate::shell::notices::{Notification, Notify};
+use crate::ui::scale::{Hit, px};
 use gpui_kit::component::input::{Input, InputEvent, InputState};
 use gpui_kit::component::switch::Switch;
 use gpui_kit::component::{Disableable, h_flex};
@@ -12,9 +12,9 @@ use swofty_i18n::trf;
 use super::state::*;
 use super::widgets::*;
 use super::*;
-use crate::sections::tone;
+use crate::features::sections::tone;
 use crate::shell::Shell;
-use crate::theme::Palette;
+use crate::ui::theme::Palette;
 
 #[derive(Clone, Copy)]
 pub(super) struct CellCtx<'a> {
@@ -157,7 +157,7 @@ impl Shell {
                 .pending_cells
                 .get(&key)
                 .map_or(tf.value, |v| v == "true");
-            let busy = self.busy.contains(&key);
+            let busy = self.addon_views.busy.contains(&key);
             let (addon, section, table, row, column, control) = (
                 at.addon.to_owned(),
                 at.section.to_owned(),
@@ -212,7 +212,7 @@ impl Shell {
                 .colour_shown(&key, cx)
                 .or_else(|| parse_colour(&shown).filter(|_| pending))
                 .or_else(|| original.as_str().and_then(parse_colour));
-            let (busy, disabled) = (self.busy.contains(&key), cf.disabled);
+            let (busy, disabled) = (self.addon_views.busy.contains(&key), cf.disabled);
             let start = rgb.unwrap_or([0xFF, 0xFF, 0xFF]);
             let open_key = key.clone();
             return content
@@ -228,7 +228,7 @@ impl Shell {
                 .when(!busy && !disabled, |d| d.hover(move |s| s.bg(p.hover)))
                 .on_click(cx.listener(move |this, _, window, cx| {
                     cx.stop_propagation();
-                    if disabled || this.busy.contains(&open_key) {
+                    if disabled || this.addon_views.busy.contains(&open_key) {
                         return;
                     }
                     let target = ColourTarget::Cell {
@@ -277,7 +277,7 @@ impl Shell {
             },
             v => v,
         };
-        let busy = self.busy.contains(&key);
+        let busy = self.addon_views.busy.contains(&key);
         content
             .id(SharedString::from(format!("cell-{key}")))
             .px(px(6.))
@@ -289,7 +289,7 @@ impl Shell {
             .on_click(cx.listener(move |this, _, window, cx| {
                 // Editing the cell doesn't also open the row.
                 cx.stop_propagation();
-                if this.busy.contains(&key) {
+                if this.addon_views.busy.contains(&key) {
                     return;
                 }
                 this.edit_cell(

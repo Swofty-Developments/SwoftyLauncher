@@ -1,7 +1,7 @@
 #pragma once
 
-#include "liveries.hpp"
-#include "lower.hpp"
+#include "core/apply/content/liveries.hpp"
+#include "core/apply/content/lower.hpp"
 
 #include <cstdio>
 #include <cstring>
@@ -36,11 +36,11 @@ inline constexpr SideTable SIDE_TABLES[] = {
     {"bank.initial_team_cash", nullptr, nullptr, "InitialTeamCash", false},
     {"showroom.teams_history", nullptr, nullptr, "team_history", false},
     {"facilities.facilities", "Facilities", "team_developments", "TeamDevelopment", false},
-    {"driver_market.driver_market", "DataGroup", "team_driver_rating_range_requirements",
-     "TeamDriverRatingRangeRequirement", false},
+    {"driver_market.driver_market", "DataGroup", "team_driver_rating_range_requirements", "TeamDriverRatingRangeRequirement",
+     false},
     {"recognition", "RecognitionDataGroup", "team_modifiers", "TeamModifier", false},
-    {"career.my_team_renown_and_form", "MyTeamRenownAndFormDataGroup", "initial_renown_and_form",
-     "InitialTeamRenownAndForm", false},
+    {"career.my_team_renown_and_form", "MyTeamRenownAndFormDataGroup", "initial_renown_and_form", "InitialTeamRenownAndForm",
+     false},
     {"career.my_team_sponsors", "MyTeamSponsorsDataGroup", "team_primary_sponsors", "team_primary_sponsor", false},
 };
 
@@ -204,10 +204,7 @@ inline std::string colour_text(const std::string &signed_text)
     return buf;
 }
 
-inline std::string team_at(const std::string &label)
-{
-    return std::string(TEAM_ROW) + "[_metadata_=" + label + "]";
-}
+inline std::string team_at(const std::string &label) { return std::string(TEAM_ROW) + "[_metadata_=" + label + "]"; }
 
 inline int64_t rows_of(const Read &read, const std::string &path)
 {
@@ -254,8 +251,10 @@ inline std::vector<StockTeam> stock_teams(const Read &read)
         }
         rec["names"] = std::move(names);
         Value colours = Value::object();
-        for (auto [key, f] : {std::pair{"menu", "ui_team_colour"}, {"primary", "primary_colour"},
-                              {"secondary", "secondary_colour"}, {"tertiary", "tertiary_colour"}})
+        for (auto [key, f] : {std::pair{"menu", "ui_team_colour"},
+                              {"primary", "primary_colour"},
+                              {"secondary", "secondary_colour"},
+                              {"tertiary", "tertiary_colour"}})
             if (auto v = field(f))
                 if (std::string t = colour_text(*v); !t.empty())
                     colours[key] = Value(t);
@@ -296,8 +295,8 @@ inline std::vector<SideRow> side_rows(const SideTable &s, const Read &read, cons
     std::vector<SideRow> out;
     int64_t groups = s.group_row ? rows_of(read, std::string(s.group) + "._" + s.group_row + "_instancecount_") : 1;
     for (int64_t g = 0; g < groups; g++) {
-        std::string table = s.group_row ? std::string(s.group) + "." + s.group_row + "_" + std::to_string(g) + "." + s.sub
-                                        : std::string(s.group);
+        std::string table =
+            s.group_row ? std::string(s.group) + "." + s.group_row + "_" + std::to_string(g) + "." + s.sub : std::string(s.group);
         int64_t rows = rows_of(read, table + "._" + s.row + "_instancecount_");
         SideRow hit{table, {}, false};
         for (int64_t i = 0; i < rows; i++) {
@@ -313,8 +312,7 @@ inline std::vector<SideRow> side_rows(const SideTable &s, const Read &read, cons
     return out;
 }
 
-inline std::size_t copy_side(Plan &plan, const SideTable &s, const Read &read, const std::string &from,
-                             const std::string &to)
+inline std::size_t copy_side(Plan &plan, const SideTable &s, const Read &read, const std::string &from, const std::string &to)
 {
     std::size_t copied = 0;
     auto exists = side_rows(s, read, to);
@@ -322,8 +320,7 @@ inline std::size_t copy_side(Plan &plan, const SideTable &s, const Read &read, c
     for (std::size_t g = 0; g < sources.size(); g++) {
         if (!sources[g].found || (g < exists.size() && exists[g].found))
             continue;
-        push_row(plan, sources[g].table, sources[g].path,
-                 Value::object({{"_metadata_", to}, {"team", to}}));
+        push_row(plan, sources[g].table, sources[g].path, Value::object({{"_metadata_", to}, {"team", to}}));
         copied++;
     }
     return copied;
@@ -349,10 +346,7 @@ inline std::vector<LogoArray> logo_arrays(const std::string &context)
             {"broadcast_ui_generic.grid_team_logos", false}};
 }
 
-inline bool has_file(const Value &logo, const char *context)
-{
-    return logo["images"][context].is_string();
-}
+inline bool has_file(const Value &logo, const char *context) { return logo["images"][context].is_string(); }
 
 inline bool has_any_file(const Value *logo)
 {
@@ -384,8 +378,8 @@ inline std::string stock_key(const Value &logo, const char *context)
     return v.is_object() && v["stock"].is_string() ? std::string(v["stock"].as_string()) : std::string();
 }
 
-inline void lower_logo_images(const std::string &team, const std::string &donor, const std::string &logo_id,
-                              const Value *logo, const std::string &tower_key, Plan &plan)
+inline void lower_logo_images(const std::string &team, const std::string &donor, const std::string &logo_id, const Value *logo,
+                              const std::string &tower_key, Plan &plan)
 {
     std::string addon = addon_of(logo_id);
     std::set<std::string> taken;
@@ -447,8 +441,8 @@ inline TowerBadge tower_badge(const Value *logo, const std::string &label)
     return b;
 }
 
-inline void lower_team(const std::string &id, const Value &rec, const Lookup &lookup, const Read &read,
-                       const TeamRefs &refs, Plan &plan, const StatIds &stat = {})
+inline void lower_team(const std::string &id, const Value &rec, const Lookup &lookup, const Read &read, const TeamRefs &refs,
+                       Plan &plan, const StatIds &stat = {})
 {
     plan.owner = addon_of(id);
     std::string label = key_of(id);
@@ -507,10 +501,10 @@ inline void lower_team(const std::string &id, const Value &rec, const Lookup &lo
     put_colour("team_wear_tertiary_colour", w["tertiary"]);
     auto sid = stat_of(stat, TEAM_IDS, id, pin_of(rec));
     if ((!sid && stat) || (sid && *sid > TEAM_STAT_MAX)) {
-        plan.lines.push_back("team.identity " + id + ": " +
-                             (sid ? "stat id " + std::to_string(*sid) : std::string("no stat id")) + " is outside 0-" +
-                             std::to_string(TEAM_STAT_MAX) +
-                             ", which is all the game keeps for a team; the team is left out, and so is every entrant list that uses it");
+        plan.lines.push_back(
+            "team.identity " + id + ": " + (sid ? "stat id " + std::to_string(*sid) : std::string("no stat id")) +
+            " is outside 0-" + std::to_string(TEAM_STAT_MAX) +
+            ", which is all the game keeps for a team; the team is left out, and so is every entrant list that uses it");
         plan.refused++;
         return;
     }
@@ -541,8 +535,10 @@ inline void lower_team(const std::string &id, const Value &rec, const Lookup &lo
                              DEFAULT_NATIONALITY + " used");
     plan.lines.push_back("team.identity " + id + ": row " + label + " from " + donor +
                          (sid ? ", stat id " + std::to_string(*sid) : std::string()) + ", " + std::to_string(sides) +
-                         " side row(s)" + (tower_image ? std::string(", own timing tower badge key")
-                          : tower_stock.empty() ? std::string() : ", timing tower badge " + tower_stock));
+                         " side row(s)" +
+                         (tower_image           ? std::string(", own timing tower badge key")
+                          : tower_stock.empty() ? std::string()
+                                                : ", timing tower badge " + tower_stock));
 }
 
 inline void lower_vehicle_team(const Value &rec, const Read &read, Plan &plan, const std::string &identity = {},
@@ -577,12 +573,11 @@ inline void lower_vehicle_team(const Value &rec, const Read &read, Plan &plan, c
             plan.logos.push_back(std::move(img));
         }
     plan.lines.push_back("vehicle team " + label + ": row copied from " + from + " with " + std::to_string(sides) +
-                         " side row(s)" +
-                         (tower ? ", timing tower badge " + tower_key + " from " + identity : std::string()));
+                         " side row(s)" + (tower ? ", timing tower badge " + tower_key + " from " + identity : std::string()));
 }
 
-inline void lower_pit_times(const std::string &id, const Value &rec, const Lookup &lookup, const Read &read,
-                            const TeamRefs &refs, Plan &plan)
+inline void lower_pit_times(const std::string &id, const Value &rec, const Lookup &lookup, const Read &read, const TeamRefs &refs,
+                            Plan &plan)
 {
     plan.owner = addon_of(id);
     std::string team = team_label(rec["team"], refs);
@@ -600,7 +595,7 @@ inline void lower_pit_times(const std::string &id, const Value &rec, const Looku
             from = team_label((*ident)["donor"], refs);
     }
     static constexpr const char *FIELDS[] = {"min_pit_time", "max_pit_time", "min_pit_time_fully_upgraded",
-                                              "max_pit_time_fully_upgraded"};
+                                             "max_pit_time_fully_upgraded"};
     SideTable table = SIDE_TABLES[0];
     auto have = side_rows(table, read, team);
     Value set = Value::object({{"_metadata_", team}, {"team", team}});
@@ -618,8 +613,8 @@ inline void lower_pit_times(const std::string &id, const Value &rec, const Looku
         return;
     }
     if (from.empty() || !side_rows(table, read, from)[0].found) {
-        plan.lines.push_back("team.pit_times " + id + ": no pit times row of " + (from.empty() ? std::string("(no source)") : from) +
-                             " to copy; nothing applied");
+        plan.lines.push_back("team.pit_times " + id + ": no pit times row of " +
+                             (from.empty() ? std::string("(no source)") : from) + " to copy; nothing applied");
         plan.refused++;
         return;
     }
@@ -659,8 +654,8 @@ inline Dress dress_of(const Value &rec)
 }
 
 namespace team_record {
-inline constexpr std::size_t DISPLAY_NAME = 0x0b0, CODE = 0x148, SHORT = 0x1e0, SUPER_SHORT = 0x278,
-                             TEAM_BASE = 0x3a8, TEAM_BOSS = 0x581, PRIMARY = 0x564, SECONDARY = 0x568, TERTIARY = 0x56c, WEAR_PRIMARY = 0x570,
+inline constexpr std::size_t DISPLAY_NAME = 0x0b0, CODE = 0x148, SHORT = 0x1e0, SUPER_SHORT = 0x278, TEAM_BASE = 0x3a8,
+                             TEAM_BOSS = 0x581, PRIMARY = 0x564, SECONDARY = 0x568, TERTIARY = 0x56c, WEAR_PRIMARY = 0x570,
                              WEAR_SECONDARY = 0x574, WEAR_TERTIARY = 0x578, MENU = 0x57c, HOLDER_CAPACITY = 0x80;
 }
 
@@ -783,8 +778,8 @@ inline bool dress_slot(const char *group, int slot, const char *row, const char 
         if (l.log)
             l.log(line);
     };
-    std::string where = std::string("dress ") + (group ? group : "") + " slot " + std::to_string(slot) + ": " +
-                        (row ? row : "") + " as " + (team ? team : "");
+    std::string where = std::string("dress ") + (group ? group : "") + " slot " + std::to_string(slot) + ": " + (row ? row : "") +
+                        " as " + (team ? team : "");
     if (!row || !team || !l.identity || !l.stat_of) {
         say(where + ": the team applier is not set up");
         return false;
@@ -822,8 +817,9 @@ inline bool dress_slot(const char *group, int slot, const char *row, const char 
         put_back(record, k->second);
         l.kept.erase(k);
     }
-    say(where + (again ? ": already worn; names and colours written again to the loaded record of stat id "
-                       : ": names and colours written to the loaded record of stat id ") +
+    say(where +
+        (again ? ": already worn; names and colours written again to the loaded record of stat id "
+               : ": names and colours written to the loaded record of stat id ") +
         std::to_string(stat) + note);
     return true;
 }

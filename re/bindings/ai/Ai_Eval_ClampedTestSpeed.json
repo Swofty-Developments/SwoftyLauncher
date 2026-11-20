@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Ai_Eval_ClampedTestSpeed",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1406068a0",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "float Ai_CarTable58_EvalAtClampedSpeed(void *table, float x, float speed, void *cursor)",
+  "evidence": "decomp:re/decomp/1406068a0.c;xref:0x1405f658d,0x1405f66b5",
+  "notes": "Does not read the 5 settings: the inlined static-init of g_Ai_GeneralSettings (guard 0x146046c78) resolves all 5 handles, but the only value read is max_test_speed ([0x146046c68]+8, 0x1406068e1/0x1406068f0). It clamps speed (xmm2) to [-max_test_speed, +max_test_speed] (vxorps sign, vmaxss, vcmpltss, vblendvps 0x1406068fb..0x14060690c) and tail-calls Ai_Table_InterpolateC 0x140686e50(table, x (xmm1, unclamped), clamped speed, getter 0x14063b150, cursor) (0x140606925). Caller 0x1405f5dd0 passes table = [AiCarRecord+0x58], speed = [rec+0x38]+0x3c (car speed), cursor = rec+0x88; at 0x1405f66b5 it uses the result as an end speed: dist = x*(v_end+v0)*0.5. (corrected 2026-11-14: was 'reads ai.general_ai_settings 5 keys with DB values'; DB values cannot be checked statically). (renamed 2026-11-14 to the name signatures.json already listed; from Ai_Read_GeneralSettings: the code contradicts the old name) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.read_general_settings",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 58 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 4C 89 CE C5 F8 28 FA C5 F8 28 F1 48 89 CF 8B 05 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? 65 48 8B 14 25 58 00 00 00 48 8B 0C CA 3B 81 04 00 00 00 7F 5C",
+  "match": "0x1406068a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1406068a0",
+  "kind": "func_start",
+  "names": [
+   "Ai_Eval_ClampedTestSpeed"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1406068a0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1406068a0.c;xref:0x5f658d",
+   "notes": "V4691 uses only max_test_speed (+8) to clamp +-value then calls FUN_140686e50; the DB default values listed are not in code; better Ai_Eval_ClampedTestSpeed"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x1406068a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1406068a0.c;xref:0x1405f658d",
+   "notes": "V7137 name fits; finding facts hold; 2 direct calls"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x1406068a0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1406068a0-0x1406069c2;xref:0x1405f658d,0x1405f66b5",
+   "notes": "V10577 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Callers 0x1405f658d/0x1405f66b5 (Ai_Update_DriverTick). 4 args (rcx table, xmm1, xmm2 speed, r9 cursor). Only max_test_speed [0x146046c68] read; xmm2 clamped 0x1406068fb..0x14060690c, then Ai_Table_InterpolateC with getter 0x14063b150. Minor: it is a normal call at 0x140606925 (xmm6/xmm7 restored after), not a tail call. Rename from Ai_Read_GeneralSettings justified."
+  }
+ ],
+ "proofs": []
+}

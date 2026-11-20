@@ -19,8 +19,8 @@ routes, screen loader), `fe_flow` (flow state machine, container tab builders), 
 cross-references).
 
 Primary sources this reference is distilled from: the launcher's own UI generator
-(`/mnt/work/VSC/F1ModManager/packages/core/src/ui/{node,pages,patch,check,mod}.rs`), the binary
+(`/mnt/work/VSC/F1ModManager/packages/core/src/games/f1_25/ui/{node,pages,patch,check,mod}.rs`), the binary
 format crates (`packages/formats/src/{pkg,erp}.rs`), and the native runtime loader/binder
-(`native/src/core/{ui,ui_vm}.cpp`).
+(`native/src/core/frontend/{ui,ui_vm}.cpp`).
 
 ## Inbox

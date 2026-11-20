@@ -51,6 +51,14 @@ pub(crate) fn line_at(text: &str, offset: usize) -> Range<usize> {
     start..end
 }
 
+/// The first offset at or after `i` that is not a space or a tab.
+pub(crate) fn skip_ws(s: &str, mut i: usize) -> usize {
+    while s[i..].starts_with([' ', '\t']) {
+        i += 1;
+    }
+    i
+}
+
 fn distance(a: &str, b: &str) -> usize {
     let a: Vec<char> = a.chars().collect();
     let b: Vec<char> = b.chars().collect();

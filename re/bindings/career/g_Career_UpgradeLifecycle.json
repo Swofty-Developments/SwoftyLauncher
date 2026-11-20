@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "g_Career_UpgradeLifecycle",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1460fc310",
+  "type": "uint8_t",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/143523a40.c;decomp:re/decomp/141234b40.c;xref:0x143523a58,0x1412368f5,0x143516d13,0x143517610,0x14352340c;doc:addons/career-editor/protocol/rnd.md",
+  "notes": "R&D lifecycle byte. Static initializer 0x1435f4b60 sets it to 1 (mov word [0x1460fc310],1 at 0x1435f545b; 0x1460fc312=0); UpgradesComponent init 0x141234b40 (vtable slot 0x1456cc8f0) then overwrites it with the component's +0x3e0 (0x1412368f5 stores the word +0x3e0/+0x3e1 over 0x1460fc310/0x1460fc311, +0x3e2 to 0x1460fc312). 2 = research -> PendingDevelopment -> develop -> PendingFitting -> fit (Completed); 0/1 = research ends in Completed/Failed, no development. 1 also forces every state entry's owner to the none owner (Career_Push_UpgradeState). (wording: ce-verify-3 V0300)"
+ },
+ "signature": {
+  "id": "career.upgrade_lifecycle",
+  "section": ".xtls",
+  "pattern": "0F B6 05 ?? ?? ?? ?? 83 F8 02 73 2A",
+  "match": "0x143523a58",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x1460fc310",
+  "kind": "data",
+  "names": [
+   "g_Career_UpgradeLifecycle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-rnd",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/rnd.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-3",
+   "kind": "global",
+   "item": "g_Career_UpgradeLifecycle",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143523a40.c;decomp:re/decomp/141234b40.c;decomp:re/decomp/1435f4b60.c;decomp:re/decomp/1435230e0.c;xref:0x1412368f5,0x1435f545b,0x143523a58,0x14352340a,0x143516d12,0x14351763f",
+   "notes": "V0300 Read logic checks (0x143523a40: <2 -> Completed/Failed by +0x88, ==2 -> PendingDevelopment, >2 no push; Push_UpgradeState forces owner 0x1460fc2b0 when value is neither 0 nor 2). Missing writer: static initializer 0x1435f4b60 sets the default at 0x1435f545b (mov word [0x1460fc310],1; byte 0x1460fc312=0), so before UpgradesComponent init the byte reads 1. Corrected: R&D lifecycle byte. Static initializer 0x1435f4b60 sets it to 1 (mov word [0x1460fc310],1 at 0x1435f545b; 0x1460fc312=0); UpgradesComponent init 0x141234b40 (vtable slot 0x1456cc8f0) then overwrites it with the component's +0x3e0 (0x1412368f5 stores the word +0x3e0/+0x3e1 over 0x1460fc310/0x1460fc311, +0x3e2 to 0x1460fc312). 2 = research -> PendingDevelopment -> develop -> PendingFitting -> fit (Completed); 0/1 = research ends in Completed/Failed, no development. 1 also forces every state entry's owner to the none owner (Career_Push_UpgradeState)."
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-8",
+   "kind": "global",
+   "item": "g_Career_UpgradeLifecycle",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143523a40.c;decomp:re/decomp/141234b40.c;decomp:re/decomp/1435f4b60.c;decomp:re/decomp/1435230e0.c;decomp:re/decomp/1435173e0.c;xref:0x1435f545b,0x1435f5464,0x1412368f5,0x141236903,0x143523a58,0x143523409,0x14351760f;sig:career.upgrade_lifecycle",
+   "notes": "V0873 sigcheck OK. Only two writers in .xtls: the static init (mov word 0x1460fc310,1 at 0x1435f545b; byte 0x1460fc312 = 0 at 0x1435f5464) and 0x141234b40 (vtable entry 0x1456cc8f0) copying word +0x3e0 and byte +0x3e2 (0x1412368f5, 0x141236903); every other ref is a read. 0x143523a40: < 2 pushes Completed(3)/Failed(4) by +0x88, == 2 pushes PendingDevelopment(6), > 2 nothing; Career_Push_UpgradeState forces owner 0x1460fc2b0 when the value is neither 0 nor 2; Career_Start_UpgradeDevelopment checks == 2 for the owner pick and Failed restarts"
+  }
+ ],
+ "proofs": []
+}

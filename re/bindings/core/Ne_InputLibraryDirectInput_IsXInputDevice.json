@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_InputLibraryDirectInput_IsXInputDevice",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143aa47c0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/143aa47c0.c;xref:0x143aa4265",
+  "notes": "cxx=NeInputLibraryDirectInput::isXInputDevice; log channel INPUT: 'NeInputLibraryDirectInput::isXInputDevice - deviceName=\"%s\" isXInput=%d'"
+ },
+ "signature": {
+  "id": "core.input_library_direct_input_is_x_input_device",
+  "section": ".xtls",
+  "pattern": "55 41 57 41 56 41 55 41 54 56 57 53 48 81 EC 38 02 00 00",
+  "match": "0x143aa47c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143aa47c0",
+  "kind": "func_start",
+  "names": [
+   "Ne_InputLibraryDirectInput_IsXInputDevice"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb2-verify-a",
+   "kind": "func",
+   "item": "Ne_InputLibraryDirectInput_IsXInputDevice",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143aa47c0.c;xref:0x143aa4265",
+   "notes": "V2044 GetRawInputDeviceList/InfoW; matches vid|pid param, logs device name (RIDI_DEVICENAME) and isXInput; INPUT channel ok"
+  }
+ ],
+ "proofs": []
+}

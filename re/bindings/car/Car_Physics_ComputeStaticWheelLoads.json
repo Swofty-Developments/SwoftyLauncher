@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Physics_ComputeStaticWheelLoads",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446b5f60",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446b5f60.c;xref:0x142f34659,0x144632815",
+  "notes": "(susp, float *front, float *rear) Static axle load: mass (vehicle +0x558 +0x98 ^ +0xa0 obfuscated) * 9.81 split by CoG distance (+0x158, axle positions [+0x580]+0x90/+0x98 +0x1598) into per-wheel front/rear loads (x0.5); iterates the 4 wheels (+0x90 + i*8) setting preload / spring static deflection. Callers Sess_VehiclePlacement_PlaceOnSlot, Car_Physics_ComputeGroundedPose (2x)."
+ },
+ "signature": {
+  "id": "car.physics_compute_static_wheel_loads",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC C8 00 00 00 C5 78 29 BC 24",
+  "match": "0x1446b5f60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446b5f60",
+  "kind": "func_start",
+  "names": [
+   "Car_Physics_ComputeStaticWheelLoads"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x1446b5f60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446b5f60.c;xref:0x142f34659",
+   "notes": "V3707 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Loader_UnloadSession",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d48040",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d48040.c;xref:0x142d48011,0x1436f8bcb,0x1436f9336,0x143709bfb",
+  "notes": "Session loader unload (jmp from Sess_Loader_RequestSessionUnload; called by Game_StateSession_OnStateExit and 0x143709970): reads setting Game.ForceTrackReload (Ne_Get_SettingBool) to decide track reload, steps loader states (0x142d47de0 steps 1/2/3/5/0xf/0x1b, this+0x10/+0x14/+0x1c=5), releases thumbnail sets via 0x142e39a50/ce0, clears ThumbnailSystem reasons 3 and 0. Addon: Game.ForceTrackReload forces a track asset reload between sessions."
+ },
+ "signature": {
+  "id": "session.loader_unload_session",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 0E 00 00 48",
+  "match": "0x142d48040",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d48040",
+  "kind": "func_start",
+  "names": [
+   "Sess_Loader_UnloadSession"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d14-verify",
+   "kind": "func",
+   "item": "Sess_Loader_UnloadSession",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/42d48040.c;xref:None",
+   "notes": "V3238 offsets, vtable slot/callers, strings and calls checked in decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

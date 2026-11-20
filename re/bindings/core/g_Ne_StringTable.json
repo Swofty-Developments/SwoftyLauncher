@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "g_Ne_StringTable",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x146129740",
+  "type": "void *",
+  "level": "L3",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/14364f3a0.c;xref:0x14364ff82,0x14393419f;trace:T010/run2:86288;trace:T010/run4:86249;trace:T010/run3",
+  "notes": "Hash-to-string table pointer, created lazily (0x143929cd0) under the guard 0x146129748; Ne_StringTable_Lookup's first argument."
+ },
+ "signature": {
+  "id": "core.string_table",
+  "section": ".xtls",
+  "pattern": "48 8B 0D ?? ?? ?? ?? 48 89 DA E8 ?? ?? ?? ?? 48 89 C3",
+  "match": "0x14364ff82",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x146129740",
+  "kind": "data",
+  "names": [
+   "g_Ne_StringTable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-27",
+    "by": "splicesaves",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/career/save_splice.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-27",
+   "verifier": "splice-verify",
+   "kind": "global",
+   "item": "g_Ne_StringTable",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439340c0.c;decomp:re/decomp/143932a40.c;decomp:re/decomp/14392a8b0.c;xref:0x14393419f,0x1439343e2,0x1439343f4;xref:0x14364ff82,0x1430a3f90,0x1439308ed,0x143933b71,0x14393639c,0x143a5b6d4",
+   "notes": "V1121 Every call to 0x14392a8b0 (9 calls and 1 tail jmp) passes rcx=[0x146129740]. It is created lazily: WriteBag 0x1439343d6..0x143934402 runs a once-guard at 0x146129748 (0x1449e05fc/0x1449e06b0), calls 0x143929cd0 (a thunk to .data1 0x151d3f7d0 that builds the pool) and stores the result at 0x146129740. 0x143932a40 does the same before registering through 0x14392a0c0. About 2940 RIP-relative refs."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_RedFlagRaceStrategy_Enter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142dfbf80",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "uint64_t Sess_RedFlagRaceStrategy_Enter(void *state)",
+  "evidence": "decomp:re/decomp/142dfbf80.c;xref:0x1457e9220",
+  "notes": "SessionStateRedFlagRaceStrategy onEnter. Sets st+0xdb0, then decides whether to SKIP the strategy screen: st+0xdb1 = 1 and return 1 when (a) any entry of the human players list ([st+0xcb8]+0x100 +0x58..+0x60) has +100 set, +0x5b bit 0x10, +0x66 == 0 and (+0x65 == 0 or +0x91 == 2) - a player not yet back in the pits/ready - or (b) for any local player (g 0x146044988 +0x20 -> +0x140 +0x198/+0x1a0) the per-car race record ([st+0xcb0]+0x148)[Sess_Get_PlayerVehicleIndex] byte +0x18 != 2 (car not in the garage state). Otherwise st+0xdb1 = 0, builds the screen context (0x142a13860 with session [[st+0xca0]+0x88]+0x260 and st+0xdc0) and starts the fullscreen intro video on the UI feature system ([[st+0xc88]+0x28]+0x10 vcall +0xf0 -> +0x108: 0x14416df60, on_end = 0x142dfccc0, 0x14421c500 / 0x14421c620(4) / 0x14421c750); the screen content appears after the video's on_end. Practical rule for addons: the player's car record must be in state 2 when this state is entered, or the game skips the strategy screen in the same frame. (used by vmknolle red-flag-pit)"
+ },
+ "signature": {
+  "id": "session.red_flag_race_strategy_enter",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 CE C6 81 B2 0D 00 00 01 80 B9",
+  "match": "0x142dfbf80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142dfbf80",
+  "kind": "func_start",
+  "names": [
+   "Sess_RedFlagRaceStrategy_Enter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-c",
+   "kind": "func",
+   "item": "0x142dfbf80",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_c/decomp/142dfbf80.c;xref:0x1457e9220",
+   "notes": "V1043 sets state+0xdb2, once (guard +0xdb0) registers listeners for 'RedFlagRaceStrategyScreenClosed' and 'car_monitor_exit_fullScreen', scans vehicles, opens the screen with callback 0x142dfccc0, returns 1; vtable-only state entry, one ptr arg"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,43 @@
+{
+ "schema": 1,
+ "name": "Game_Get_UnlockableOwnedState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ec37d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint32_t Game_Get_UnlockableOwnedState(void *item)",
+  "evidence": "decomp:re/decomp/142ec37d0.c;xref:0x1457f2970,0x14196b85f;decomp:re/decomp/14196a7c0.c;decomp:re/decomp/142ef6330.c;decomp:re/decomp/142ead3f0.c",
+  "notes": "only slot +0x40 of vt_Game_SELiveryUnlockItem (single ref 0x1457f2970, so SE livery items only). key = *(u32*)(vt[1](item)+0xa0) (vt[1] = Game_UnlockableItem_GetKey, item+0x18); robin-hood lookup in item[1] (owner map: +0x88 mult, +0x90 slots, +0x98 info, +0xa8 mask, +0xb8 inc, +0xbc shift); returns entry state (owner+0x50 array, 0x40 stride, +0x10) or 3 when absent. Picker Game_Build_SpecialLiveryList calls it via vt+0x40 at 0x14196b85f and lists the item only when it returns 1. Hooked by native/src/core/assets/items.cpp (returns 1 for settings.json owned_items keys, original for every other key)"
+ },
+ "signature": {
+  "id": "game.unlockable_owned_state",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 20 48 8B 01 48 8B 71 08 FF 50 08 8B 90 A0 00 00 00",
+  "match": "0x142ec37d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ec37d0",
+  "kind": "func_start",
+  "expect": "41 56 56 57",
+  "names": [
+   "Game_Get_UnlockableOwnedState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-17",
+    "by": "mod-items",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/assets/items.cpp"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

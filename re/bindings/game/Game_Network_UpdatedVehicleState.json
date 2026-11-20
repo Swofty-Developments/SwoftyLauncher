@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_UpdatedVehicleState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143259920",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK",
+  "notes": "named from its log messages (channel NETWORK): '[FORMATION_LAP] updated vehicle [%02d] state(%s).'"
+ },
+ "signature": {
+  "id": "game.network_updated_vehicle_state",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 38 48 89 D6 48 89 CF 48 8D 59 78",
+  "match": "0x143259920",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143259920",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_UpdatedVehicleState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x143259920",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143259920.c",
+   "notes": "V5784 Better name Game_Network_FormationLapSetVehicleState: hash-map lookup/insert of per-vehicle state (parked_on_grid/on_track) with created and updated formation-lap logs; name covers only the update log"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x143259920",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143259920.c",
+   "notes": "V7028 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

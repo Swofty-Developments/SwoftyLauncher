@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_PurchaseItem_ResolveTypeName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1419e4210",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "uint64_t (void *vm)",
+  "evidence": "decomp:re/decomp/1419e4210.c;xref:0x1419de13f;xref:0x1419e0430;xref:0x1419e36b3",
+  "notes": "myteam-g1: Maps purchase_message item_ID to item category strings (eBadge, eDecalSet, ePersonalSticker, eDecalGroup, HaloStickerLeave, VehicleLeave, DriverNumber)."
+ },
+ "signature": {
+  "id": "ui.purchase_item_resolve_type_name",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 50 48 89 CE 80 B9 10 0A 00 00 00",
+  "match": "0x1419e4210",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419e4210",
+  "kind": "func_start",
+  "names": [
+   "Ui_PurchaseItem_ResolveTypeName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x1419e4210",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1419e4210.c;xref:0x1419de13f;xref:0x1419e0430",
+   "notes": "V9914 Reads purchase_message item_ID and switch/compares against eBadge, eDecalSet, ePersonalSticker, eDecalGroup, HaloStickerLeave, VehicleLeave, DriverNumber; role matches."
+  }
+ ],
+ "proofs": []
+}

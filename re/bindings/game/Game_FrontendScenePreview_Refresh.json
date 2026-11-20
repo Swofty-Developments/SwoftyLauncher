@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendScenePreview_Refresh",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1417e2f90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1417e2f90.c;xref:0x1419e118a,0x1419fbb40",
+  "notes": "Same preview controller as 0x1417e2cd0 (no entry arg): when current entry +0x70 is null hides car (0x1428eb830) and both drivers (0x1428e0f40); otherwise re-applies car livery/decals/sticker/number and light rigs for the current entry. Many callers (menu screens). Addon: force a re-apply after changing livery data. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2925)"
+ },
+ "signature": {
+  "id": "game.frontend_scene_preview_refresh",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 98 CD 00",
+  "match": "0x1417e2f90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1417e2f90",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendScenePreview_Refresh"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d11-verify",
+   "kind": "func",
+   "item": "Game_FrontendScenePreview_Refresh",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1417e2f90.c;xref:0x1417e2cd0",
+   "notes": "V2925 Decomp strings, offsets and callees match the claim; name fits."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_CareerOnlineManager_ReconcilingNewListMembers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fdd630",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-CAREER_ONLINE_MANAGER",
+  "notes": "named from its log messages (channel CAREER_ONLINE_MANAGER): '%s - reconciling with new list of members.'"
+ },
+ "signature": {
+  "id": "game.career_online_manager_reconciling_new_list_members",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 48 CA 00 00",
+  "match": "0x140fdd630",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fdd630",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerOnlineManager_ReconcilingNewListMembers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140fdd630",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140fdd630.c;xref:0x140fdd59f",
+   "notes": "V4834 better name Game_CareerOnlineManagerComponent_UpdateCurrentCareerEntrantsWithSubstitutes: 134 KB function containing the pretty-function string updateCurrentCareerEntrantsWithSubstitutes and member/substitute reconcile logs"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x140fdd630",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fdd630.c;xref:0x140fdd59f",
+   "notes": "V7177 name fits; finding facts hold; 1 direct calls"
+  }
+ ],
+ "proofs": []
+}

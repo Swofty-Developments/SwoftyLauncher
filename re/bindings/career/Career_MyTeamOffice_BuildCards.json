@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamOffice_BuildCards",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14197da20",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *vm, void *data",
+  "evidence": "decomp:re/decomp/14197da20.c;xref:0x14571ec10",
+  "notes": "myteam-g1: Builds My Team office/training cards (lng_my_team_career_office_description, lng_my_team_office_title/subtitle, lng_my_team_career_training, lng_rf_renown)."
+ },
+ "signature": {
+  "id": "career.my_team_office_build_cards",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 50 48 89 D7 48 89 CE E8",
+  "match": "0x14197da20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14197da20",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamOffice_BuildCards"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x14197da20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14197da20.c;xref:0x14571ec10",
+   "notes": "V9859 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

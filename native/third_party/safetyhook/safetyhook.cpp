@@ -1411,13 +1411,29 @@ void find_me() {
 
 static std::mutex virtual_protect_mutex;
 
+// Swofty: only the allocation bases of find_me and from are compared below. VirtualQuery walks the page table to the
+// end of the region it lands in, which in the game's code section takes a millisecond and more on Windows for every hook
+// installed; an address inside a loaded module has that module's base as its allocation base, which the loader's
+// module list answers without the walk. Memory outside every module still asks VirtualQuery.
+static void* allocation_base(const void* p, MEMORY_BASIC_INFORMATION& mbi) {
+    HMODULE module = nullptr;
+    if (GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+            reinterpret_cast<LPCWSTR>(p), &module) &&
+        module != nullptr) {
+        mbi.AllocationBase = module;
+        return module;
+    }
+    VirtualQuery(p, &mbi, sizeof(mbi));
+    return mbi.AllocationBase;
+}
+
 void trap_threads(uint8_t* from, uint8_t* to, size_t len, const std::function<void()>& run_fn) {
     MEMORY_BASIC_INFORMATION find_me_mbi{};
     MEMORY_BASIC_INFORMATION from_mbi{};
     MEMORY_BASIC_INFORMATION to_mbi{};
 
-    VirtualQuery(reinterpret_cast<void*>(find_me), &find_me_mbi, sizeof(find_me_mbi));
-    VirtualQuery(from, &from_mbi, sizeof(from_mbi));
+    allocation_base(reinterpret_cast<void*>(find_me), find_me_mbi);
+    allocation_base(from, from_mbi);
     VirtualQuery(to, &to_mbi, sizeof(to_mbi));
 
     if (to_mbi.State != MEM_COMMIT) {

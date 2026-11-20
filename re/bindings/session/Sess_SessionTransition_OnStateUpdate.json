@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_SessionTransition_OnStateUpdate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436f9890",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "uint32_t *Sess_SessionTransition_OnStateUpdate(void *state, uint32_t *out_link)",
+  "evidence": "str:s_cfg_GameIgnoreMinimumLoadingTime;decomp:re/decomp/1436f9890.c;xref:0x1436f98f0,0x1436f98f1,0x14585ea18",
+  "notes": "cxx=StateSessionTransition::onStateUpdate (vt_Sess_SessionTransition 0x14585e9d0 slot 9, pointer at 0x14585ea18). Elapsed seconds = ((state+0xda0, or QueryPerformanceCounter + g 0x1461089f8 when zero) - state+0xd98) / state+0xda8. Setting Game.IgnoreMinimumLoadingTime -> Ne_Get_SettingBool 0x143a43b90 on node *(0x146ca5e28)+0x18, default 0, into a stack byte: the minimum wait is 3.0 s when the setting is off and 0.0 s when it is on. While below the minimum it writes g_Game_FlowLinkStay (0x146cb2280) to *out_link. Otherwise Game_VmBoolBinding_SetOrClear 0x1442627a0(state+0xc80, 0), sets VM node ui_menu_data.loading_complete (lea 0x1436f993a, Vm_Resolve_RegistryNode 0x1442b1b60, type check against g_Vm_BoolTypeDesc, Vm_NodeSet_Bool 0x140973e20) to true, Vm_SyncPoint_Reset 0x144262a80(state+0xc80, 1) and writes the link at 0x146cb2288 (g_FeFlow_IntroLinkFrontend) to *out_link. Returns out_link. Existing L1 name Game_Read_GameIgnoreMinimumLoadingTimeSetting describes only the read; lea of the setting string is 0x1436f98f0 (KB evidence 0x1436f98f3 is the disp32 position). hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile. Callers: census steam 0x36f9890."
+ },
+ "signature": {
+  "id": "session.session_transition_on_state_update",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 D6 48 89 CF 48 8B 81 A0 0D 00 00",
+  "match": "0x1436f9890",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436f9890",
+  "kind": "func_start",
+  "names": [
+   "Sess_SessionTransition_OnStateUpdate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-2",
+   "kind": "func",
+   "item": "0x1436f9890",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436f9890.c;xref:0x14585ea18;str:0x1457417b8",
+   "notes": "V9348 Vtable slot of 'StateSessionTransition' (neighbour FeFlow_State_OnStateUpdate_Wrapper): computes elapsed seconds since state start, reads bool 'Game.IgnoreMinimumLoadingTime' (default false); while < 3 s (or <0 when ignored) writes g_Game_FlowLinkStay to *out_link, else clears a VM bool binding, sets a resolved VM bool node and writes another link; returns out_link. 2 args match."
+  }
+ ],
+ "proofs": []
+}

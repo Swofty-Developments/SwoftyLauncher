@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Compute_InstalledUpgradePerformance",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143518350",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint32_t (void *team_ref, uint64_t day_mask)",
+  "evidence": "decomp:re/decomp/143518350.c;xref:0x1407c4b15;xref:0x140aab687;xref:0x140ab4176",
+  "notes": "myteam-g2: Gets enabled upgrades (Career_Query_EnabledUpgrades), keeps those whose latest state (<= day mask) is 3 (installed) and drops type +0x72 == 2, then sums per department: (department stat range max-min from team+0x1a38) / (sum of upgrade weights in the department) * upgrade weight (+0x64), returned as the total gain. Read-only; the performance number shown in R&D / department UI."
+ },
+ "signature": {
+  "id": "career.compute_installed_upgrade_performance",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 B8 88 30 00 00",
+  "match": "0x143518350",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143518350",
+  "kind": "func_start",
+  "names": [
+   "Career_Compute_InstalledUpgradePerformance"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-d",
+   "kind": "func",
+   "item": "0x143518350",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143518350.c;xref:0x1407c4b15",
+   "notes": "V9029 Calls Career_Query_EnabledUpgrades (1435188d0), keeps entries whose latest record with day <= mask has state 3, drops type byte +0x72 == 2, then per department (+0x70) adds (statMax-statMin from team+0x1a38, floats +0x10/+0xc) / sum of weights (+0x64) * own weight and returns the (uint) total."
+  }
+ ],
+ "proofs": []
+}

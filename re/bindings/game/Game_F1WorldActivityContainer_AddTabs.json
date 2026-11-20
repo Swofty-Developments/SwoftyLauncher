@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Game_F1WorldActivityContainer_AddTabs",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a76130",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void(void *container_vm)",
+  "evidence": "decomp:re/decomp/141a76130.c;xref:0x141a762e7,0x141a7644a,0x141a7659a;kb:subsystems/vm.md#tabs",
+  "notes": "F1WorldActivityContainerViewModel builds its 7 tab VMs (ctor 0x1414bdac0 with the template name and the lng title) into the vector at vm+0x2c8, in this order: f1_world_activity (lng_f1_world_play), f1_world_activity_offline (lng_f1_world_play_offline), dynamic_era_select (lng_solo_grand_prix), public_gp_select (lng_public_grand_prix), dynamic_era_select (lng_time_trial), dynamic_era_select (lng_screen_era_select), session_create_dlc_select_tab (lng_create_session_dlc_select; template registered by f1_world_container.ui). No tab instantiates time_trial_select, which f1_world_activity_container.ui also registers (correction 2026-10-23: an earlier note listed it in place of session_create_dlc_select_tab). The UITC instantiates each tab template by name (Vm_UiTabs_OnMessage). Runtime-observed 2026-10-23 with re/tools/ui_trace (gdb, breaking and fixed era builds; logs not filed as a T### run, so not L3): the content loop built exactly these seven templates in this order. docs/reference/ui/engine.md"
+ },
+ "signature": {
+  "id": "game.f1_world_container_add_tabs",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 C5 F8 29 B4 24 E0 00 00 00 49 89 CF B1",
+  "match": "0x141a76130",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a76130",
+  "kind": "func_start",
+  "names": [
+   "Game_F1WorldActivityContainer_AddTabs"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "room-headless",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

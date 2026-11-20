@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamContract_OnSendContractPressed",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14234a580",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_MyTeamContract_OnSendContractPressed(void *screen, void **event)",
+  "evidence": "decomp:re/decomp/14234a580.c;xref:0x14234a26e;xref:0x14534a576",
+  "notes": "myteam-g1: Button handler (event 0xd371fdb3) for my_team_driver_contracts_sent: calls FUN_140dbb690(comp, driver, out offer) to validate the offer, if valid FUN_140dbc230(comp, driver, offer) submits it, plays the sent sound (UNK_145781199) and refreshes the card via 14234a850/142348430."
+ },
+ "signature": {
+  "id": "career.my_team_contract_on_send_contract_pressed",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 10 01 00 00 C5 F8 29 B4 24 00 01 00 00 48 8B 02",
+  "match": "0x14234a580",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14234a580",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamContract_OnSendContractPressed"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x14234a580",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14234a580.c",
+   "notes": "V10156 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

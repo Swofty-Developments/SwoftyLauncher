@@ -1,0 +1,111 @@
+{
+ "schema": 1,
+ "name": "Ne_MoverCollision_BuildMoverShapes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440caa60",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1440caa60.c;xref:0x144453b6b",
+  "notes": "Creates one VCQTC collision tile object per entry of a JPAK or BIGF container and returns its embedded sub-object (obj+0x1ef)&~0xf (sole caller Ne_MoverCollision_CreateResource 0x144453b6b). 2026-11-17 engine-re decode (static): takes an object from the world pool [world+0x40] (capacity +0x18 vs used +0x1c, compare at 0x1440caaea; the pool is sized from PhysicsWorldConfig maxLargeGeoms, see Ne_PhysWorld_InitFromConfig), else error 0xc and returns 0. Tile header: +0 version (vanilla 0x20004; <= 0x20001 = fatal trap Ne_FatalFormat_Trap, jle at 0x1440cad08 -> 0x1440cc1e2), +4..+0x1c AABB (x and z read), +0x1c tri count (not read here), +0x20 vert count, +0x24 material count, +0x28/+0x30/+0x38/+0x40 offsets of vertices (16-byte x,y,z,w)/nodes/triangles/leaves, relocated to pointers in place; +0x2c/+0x34 floats copied to obj+0x1a0/+0x1a4 (v > 0x20002, cmp at 0x1440cacdc; the legacy path overwrites them with the min/max Y of the non-tall triangles). Material ids (u32 at +0x50) are replaced IN PLACE by 8-byte material pointers (loop from the last id down), so the header must reserve 8 bytes per material before the vertex block (vanilla: 8 materials, vertices at 0x90); an unknown non-zero id logs error 2 and falls back to the first material (id 0 not found: first material, no log). Bit i of obj+0x1d0 = material i flag (+0x38). Legacy branch (version < 0x20003: cmp at 0x1440cad95, jg at 0x1440cad9b, and only with a vertex count > 0) converts old node trees and writes the leaf word itself: u32 = tallWallCount<<26 | ((trunc(50*maxY_all) - trunc(50*maxY_nonTall)) & 0x7ff)<<15 | (0x4001 + trunc(50*maxY_all)) & 0x7fff (0x1440cbabd..0x1440cbae7; the dY field is zeroed by cmove when all tris are tall walls), then u8 total tris, u8 ground tris, u16 tri indices (ground first, then walls, then tall walls), a u16 0xffff pad when the triangle count is even (0x1440cb5c8..0x1440cb5d4), then one dword per triangle of four quantised XZ box bytes. Ground = normal.y >= 0.25 or max dy <= 0.335 m; tall wall = |normal.y| < 0.05 and max dy > 4 m. Triangle = 4 bytes: v0 = ((b0 & 3) << 8) | b1, v1 = v0 + b2, v2 = v0 + b3. Tiles of version > 0x20002 keep the file's leaf words (no recompute). | engine-re 2026-11-17 track round C (surface): tile material ids. Header count piVar30[9], ids as a packed u32 array at header+0x50 (read [rsi+r15*4+0x50]), resolved backwards in place to 8-byte pointers ([rsi+r15*8+0x50]) into the physics material library [[ctx+0xe8]+0x28] (active byte +0x20, entries +8, count +0x10, stride +0x18; entry +0 = 4-char code, the MATERIALS records of Ne_Phys_ParseMaterials): linear search by code (store 0x1440caee2, library 0x1440caefa); an id 0 with no entry of code 0 (silently) or a nonzero code not in the library (NEerrno 2, written to the trace ring 0x146107830 when ring recording is on for the thread) -> the FIRST library entry; null only when the library byte +0x20 is 0 or its entries pointer [lib+8] is null (0x1440caf30; a count of 0 skips the search and stores the entries pointer [lib+8] itself) (V11210). So a tile with an unknown ground code drives like library entry 0, not like tarmac. | re-bindings 2026-11-18: corrected the fatal and legacy branch addresses, the null fallback and the caller's containers from the blind partial V20011. | re-bindings 2026-11-18: the pool compare address, the id 0 and empty-library cases from the blind partial. | re-bindings 2026-11-18: the leaf pad from the blind partial."
+ },
+ "signature": {
+  "id": "core.mover_collision_build_mover_shapes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 C8 4D 03",
+  "match": "0x1440caa60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440caa60",
+  "kind": "func_start",
+  "names": [
+   "Ne_MoverCollision_BuildMoverShapes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x1440caa60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440caa60.c;xref:0x144453b6b",
+   "notes": "V7613 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "trkrt-verify",
+   "kind": "func",
+   "item": "Ne_MoverCollision_BuildMoverShapes",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1440caa60.c;xref:0x1440caae7,0x1440cbaa4,0x1440cbaef",
+   "notes": "V10776 pool +0x18/+0x1c, fatal < 0x20002, legacy leaf word formula and in-place material pointers confirmed; additions: dY field zeroed by cmove when all tris are tall, id 0 falls back without log (applied)"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "trkps-verify",
+   "kind": "func",
+   "item": "Ne_MoverCollision_BuildMoverShapes",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1440caa60.c;xref:0x1440caf20",
+   "notes": "V11210 Linear search over lib entries (base [lib+8], count +0x10, stride +0x18, code at +0); not found / id 0 -> first entry. CORRECTION: ids are packed u32 (read [rsi+r15*4+0x50]) converted backwards in place to 8-byte pointer slots ([rsi+r15*8+0x50]); trace (code 2) only for nonzero unknown ids; result null if lib byte +0x20==0 or entry base null."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Ne_MoverCollision_BuildMoverShapes",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1440caa60-0x1440cc1e8, 0x1440cfc90-0x1440cfdd0, 0x1444537a0-0x144453f98;xref:0x144453b6b,0x1440caaea,0x1440cb0e0,0x1440cacdc,0x1440cad08,0x1440cc1e2,0x1440cad95,0x1440cad9b,0x1440caf04,0x1440caee2,0x1440caefa,0x1440caf30,0x1440cb04e,0x1440cc0dc,0x1440cbae3",
+   "notes": "V20011 Blind: own capstone disasm 0x1440caa60-0x1440cc1e8 (+ctor 0x1440cfc90, caller 0x1444537a0), derived before reading the notes. Confirmed sole caller 0x144453b6b, pool [+0x40] cap +0x18/used +0x1c, err 0xc -> 0, hdr +0x20/+0x24, reloc +0x28/30/38/40, +0x2c/+0x34 -> obj+0x1a0/1a4, backward u32 -> u64 material widening, lib +0x20/+8/+0x10/+0x18, err 2 fallback, obj+0x1d0 bits, packed leaf word, 0.25/0.335/0.05/4.0, tri decode. Imprecise: fatal is jle 0x1440cad08 -> 0x1440cc1e2, not 0x1440cad13; legacy rebuild gated by jg at 0x1440cad9b, 0x1440cacdc only gates the float copy; null tests the lib+8 pointer, not the count; the caller also takes BIGF; +0x1c never read."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Ne_MoverCollision_BuildMoverShapes",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1440caa60-0x1440cc1e8, 0x1444537a0-0x144453f98, 0x1440cfc90-0x1440cfe40, 0x143918230-0x143918240, 0x14391ade0-0x14391ae10;xref:0x144453b6b,0x1440caaea,0x1440cb0e0,0x1440cacdc,0x1440cad08,0x1440cad95,0x1440cad9b,0x1440caf04,0x1440caee2,0x1440caefa,0x1440caf30,0x1440caf37,0x1440cb04e,0x1440cbaef,0x1440cc0dc,0x1440cc0f5",
+   "notes": "V20015 Blind: own capstone read of 0x1440caa60-0x1440cc1e8 and its only caller 0x1444537a0 (call 0x144453b6b; JPAK kind 2, BIGF kind 1). Confirmed pool [this+0x40] cap +0x18/used +0x1c, err 0xc -> NULL, return (obj+0x1ef)&~0xf, gates 0x1440cacdc/0x1440cad08/0x1440cad95+9b, relocation +28/30/38/40, backwards material resolve via [[obj+0xe8]+0x28] (+20/+8/+10/+18; unknown id -> first entry + err 2), obj+0x1d0 bits from mat+0x38, legacy packed word, 0.25/0.335/0.05/4.0, tri decode, ground/wall/tall order. Imprecise: compare is 0x1440caaea not 0x1440caae7 (mov of used); count-0 case yields [lib+8] not lib+8; id 0 returns a matching code-0 entry if present."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Ne_MoverCollision_BuildMoverShapes",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1440caa60-0x1440cc1e8, 0x1440cfc90-0x1440d0113, 0x1444537a0-0x144453f98;xref:0x1440caaea,0x1440cad08,0x1440cacdc,0x1440cad95,0x1440cad9b,0x1440caee2,0x1440caefa,0x1440caf30,0x1440caf37,0x1440cb04e,0x1440cbabd,0x1440cb5c8,0x1440cbb99,0x1440cc0dc,0x144453b6b",
+   "notes": "V20020 Blind: own disasm 0x1440caa60-0x1440cc1e8 + sole caller 0x144453b6b (JPAK kind 2, BIGF kind 1), derived before reading the notes. Confirmed: pool cmp 0x1440caaea (err 0xC, ret 0); fatal jle 0x1440cad08; +0x2c/+0x34 copy for >=0x20003 (0x1440cacdc); +0x28/30/38/40 relocated; ids at +0x50 widened backwards to ptrs via lib [[obj+0xe8]+0x28] (+0x20/+8/+0x10/+0x18); id 0 or err 2 -> first entry; null only for flag 0 or [lib+8] null; +0x1d0 mask from +0x38; legacy cmp 0x1440cad95/jg 0x1440cad9b with verts>0; packed word, 0.25/0.335/0.05/4.0 tests, tri decode. Imprecise: leaf layout leaves out the u16 0xFFFF pad written after the indices when the count is even (0x1440cb5c8-0x1440cb5d4), before the per-tri dwords."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Ne_MoverCollision_BuildMoverShapes",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1440caa60-0x1440cc1e8,0x1440cfc90-0x1440d0113,0x1444537a0-0x144453f98;xref:0x144453b6b,0x1440caaea,0x1440cacdc,0x1440cad08,0x1440cc1e2,0x1440cad95,0x1440cad9b,0x1440caefa,0x1440caee2,0x1440caf30,0x1440caf70,0x1440cb017,0x1440cb0e0,0x1440cb5c8,0x1440cba94,0x1440cc0dc,0x1440cc0ed",
+   "notes": "V20022 Blind: agree, derived before reading the notes. Own disasm 0x1440caa60-0x1440cc1e8 (+base ctor 0x1440cfc90, caller 0x1444537a0). Pool [W+0x40] used +0x1c vs cap +0x18 at 0x1440caaea (jae; empty free list too) -> err 0xc, ret 0. v<=0x20001: jle 0x1440cad08 -> trap 0x1440cc1e2; +0x2c/+0x34 -> obj+0x1a0/+0x1a4 if v>=0x20003 (0x1440cacdc). u32 ids at +0x50 -> u64 ptrs, last first; lib [[obj+0xe8]+0x28]; unknown nonzero id -> err 2 + entry 0; id 0 -> entry 0 silently; null iff lib+0x20==0 or lib+8 null (0x1440caf30). Legacy only v==0x20002, verts>0: word bits, ground/wall/tall order, even-count 0xffff pad, per-tri XZ bytes, 0.25/0.335/0.05/4.0 match. Word range sits inside 0x1440cba94-0x1440cbaef. Sole caller 0x144453b6b (JPAK/BIGF)."
+  }
+ ],
+ "proofs": []
+}

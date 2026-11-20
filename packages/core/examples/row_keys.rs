@@ -467,8 +467,8 @@ fn main() {
     let args: Vec<String> = std::env::args().collect();
     let game = arg(&args, "--game").expect("--game <F1 25 folder>");
     let tools = arg(&args, "--tools").unwrap_or_else(|| PathBuf::from("tools/gamedb"));
-    let out =
-        arg(&args, "--out").unwrap_or_else(|| PathBuf::from("packages/core/src/activation/row_keys.txt.gz"));
+    let out = arg(&args, "--out")
+        .unwrap_or_else(|| PathBuf::from("packages/core/src/games/f1_25/activation/row_keys.txt.gz"));
     let threads = std::thread::available_parallelism().map_or(4, |n| n.get());
     let db_path = game.join("game_package/gamedatabases/gamedatabases.2025.bin");
     let db = Gvdb::parse(&std::fs::read(&db_path).expect("read the database")).expect("parse the database");

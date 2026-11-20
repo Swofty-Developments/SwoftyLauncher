@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_Parse_BrakeLineSettings",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14066c2d0",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void *Ai_Parse_BrakeLineSettings(void *res_type, void **owner, void *unused, void *doc[2])",
+  "evidence": "decomp:re/decomp/14066c2d0.c;xref:0x145638e00",
+  "notes": "Slot 0 of vtable 0x145638e00 (resource loader, no direct callers). Allocates the 0xc0-byte settings object (vt 0x145638d30) with two robin-hood maps (mult 0xc4ceb9fe1a85ec53) at +0x08 (brake_line_tyre_sets_slicks 0x145638d64) and +0x60 (brake_line_tyre_sets_wets 0x145638d80), owner at +0xb8; reads the binary document (root 'brake_line_settings' 0x145638d50, 'info' skipped). Every 'brake_line' (0x145639080) element: int id = key (hash id*mul >>0x21 xor); new entry gets max_speed FLT_MAX at +0x48 and flag 1 at +0x4c, then 'curvature_gate' (+0x4c) and 'max_speed' (+0x48) attributes, 'braking_modifiers' and 'curvature_modifiers' each a list of 'data' {grip, modifier, mass_bias} 12-byte points, sorted by 0x140675900; counts at +0x50/+0x54. Returns the object (0 on alloc failure). The track-line readers 0x14066e4e0/0x14066e830 null-check per-car pointers (line+0x18 -> +0x60/+0x70+car*8). How a line id with no entry is resolved at runtime is still not decoded. L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)  | engine-re track RE round B2 2026-11-17 (static): the 'AIBrakeSettings' handler is a 0x100-byte object at AI manager +0xb8 built in Game_AiManager_Initialise (tag copied from 0x14562f1d0 at 0x1405feb8f, vtables 0x145638da0 / 0x145638e10); this parser is its slot 12 (create) = 0x145638da0 + 0x60. Handler +8 = AI manager +0x10 = the AI_SYSTEM heap (GameModule init 0x1407e5b55 / 0x1407ee608), so the brake settings live in AI_SYSTEM (memory_map.xml redirect 15M of GAME_DEFAULT). Keys are brake_line id + curvature_gate, not lap distance."
+ },
+ "signature": {
+  "id": "ai.parse_brake_line_settings",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 02 00 00 C5 78 29 8C 24",
+  "match": "0x14066c2d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14066c2d0",
+  "kind": "func_start",
+  "names": [
+   "Ai_Parse_BrakeLineSettings"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la0-verify",
+   "kind": "func",
+   "item": "0x14066c2d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14066c2d0.c",
+   "notes": "V4087 brake_line_tyre_sets_slicks/wets + brake_line strings, hash id*mul>>0x21, FLT_MAX at +0x48 and flag +0x4c=1 confirmed; no direct callers (vtable/indirect)"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x14066c2d0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14066c2d0-0x14066dc1e;xref:0x145638e00",
+   "notes": "V10552 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only ref abs64 0x145638e00 (no code refs to the table). 4 args (rdx owner, r9 doc). Alloc 0xc0, vt 0x145638d30, hash mult 0xc4ceb9fe1a85ec53, owner +0xb8, new entry +0x48 = FLT_MAX and +0x4c = 1 (0x14066cb65), strings brake_line_settings / brake_line / tyre_sets_slicks / wets / curvature_gate / max_speed / braking_modifiers / curvature_modifiers / grip / modifier / mass_bias."
+  }
+ ],
+ "proofs": []
+}

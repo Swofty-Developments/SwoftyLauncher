@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_TeamHqMyTeam_FocusItemById",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14199fde0",
+  "level": "L1",
+  "subsystem": "vm",
+  "proto": "void Vm_TeamHqMyTeam_FocusItemById(void *vm, int16_t id)",
+  "evidence": "decomp:re/decomp/14199fde0.c;xref:0x142329e3b;xref:0x142330da8",
+  "notes": "myteam-g2: Looks up the item with ushort id (item+0x170) in the vector vm+0x80..+0x88 (stride 0x10), reads its value (vtable +0x28) and if valid calls FUN_142e689c0(vm+0x40, value, 0, 1) to select/scroll to it."
+ },
+ "signature": {
+  "id": "vm.team_hq_my_team_focus_item_by_id",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 66 83 FA FF 74 63 48 89 CE",
+  "match": "0x14199fde0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14199fde0",
+  "kind": "func_start",
+  "names": [
+   "Vm_TeamHqMyTeam_FocusItemById"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x14199fde0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14199fde0.c;xref:0x142329e3b",
+   "notes": "V9885 finds item with short id (item+0x170) in vector vm+0x80..0x88, reads its value and calls FUN_142e689c0(vm+0x40,...), which KB names Game_MaskedTutorial_AddToQueue, so select/scroll is unproven"
+  }
+ ],
+ "proofs": []
+}

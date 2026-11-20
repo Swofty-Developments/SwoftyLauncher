@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Sess_SpectatorDirector_SetUiFlag_Thunk",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e18d10",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void(SpectatorDirector*, bool on)",
+  "evidence": "decomp:re/decomp/142e18d10.c;xref:0x142e1881b,0x142e1885a,0x142e18c83",
+  "notes": "jmp stub into .data1 (0x14f2f41c0). Sets the view-model bool of the director's screen node ([dir+0xa8]) when the node is live, stores [dir+0xd0] = on, and posts MessageSpectatorStateChanged (message vtable 0x1457f1210, byte +0x10 = on). Called by SetActive with 0 first and 1 last. [dir+0xd0] is the UI flag session.spectator_mode.active."
+ },
+ "signature": {
+  "id": "session.spectator_director_set_ui_flag_thunk",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 44 D0 D4 E9 ?? ?? ?? ?? 5B E9",
+  "match": "0x142e18d10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e18d10",
+  "kind": "func_start",
+  "names": [
+   "Sess_SpectatorDirector_SetUiFlag_Thunk"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "re-ai",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

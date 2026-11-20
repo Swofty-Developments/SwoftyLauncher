@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_MyTeamCareer_LookupSaveSlotEntry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1437d1ce0",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "uint64_t Ui_MyTeamCareer_LookupSaveSlotEntry(void *self, void *slot_obj, uint64_t flag)",
+  "evidence": "decomp:re/decomp/1437d1ce0.c;xref:0x14173387c;xref:0x141733d68;xref:0x141734568",
+  "notes": "myteam-g2: Hashes the int at slot_obj+0x55*8 into the map at self+0x68 and resolves the career slot entry; used when entering My Team career and initialising the homescreen. Level 1."
+ },
+ "signature": {
+  "id": "ui.my_team_career_lookup_save_slot_entry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 4D 89 C5",
+  "match": "0x1437d1ce0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1437d1ce0",
+  "kind": "func_start",
+  "names": [
+   "Ui_MyTeamCareer_LookupSaveSlotEntry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x1437d1ce0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1437d1ce0.c;xref:0x14173387c",
+   "notes": "V10320 Hashes int at slot_obj+0x55*8 into map at +0x68, then evaluates availability conditions and returns a bool-like flag rather than returning the entry."
+  }
+ ],
+ "proofs": []
+}

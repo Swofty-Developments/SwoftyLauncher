@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2_QueueDeferredRelease",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439fdd40",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439fdd40.c;xref:0x1439d732a,0x1439e0e2e",
+  "notes": "Bumps global frame counter (0x14618c160) into the command context (+0x528 -> +0x140) and queues the resource tuple (param_2[0..4]) for deferred destruction; param_3 forces immediate path. Callers 0x14397a450, 0x1439d7240, 0x143a0e340 (resource destroy paths). Hypothesis."
+ },
+ "signature": {
+  "id": "render.gfx2_queue_deferred_release",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 48 48 8B 7A",
+  "match": "0x1439fdd40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439fdd40",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2_QueueDeferredRelease"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x1439fdd40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439fdd40.c;xref:0x14397b5b7",
+   "notes": "V7794 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

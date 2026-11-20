@@ -74,6 +74,8 @@ Play starts when one of the game's DLLs is not Steam's copy, as with an FSR 4 bu
 
 An EA app copy is not checked against a list of its files. When the launcher finds files in its folder that it didn't put there, the same modal shows the EA app's repair steps instead.
 
+When a game file still holds the launcher's changes from an earlier session (`an entry with Name=... already exists`), Play puts back the file's original backed up for an earlier game build and builds again; when no original is on record, the refusal ends with the repair steps above.
+
 ## A game folder only administrators can change
 
 The EA app installs F1 25 in `C:\Program Files\EA Games\F1 25` by default, a folder Windows lets only administrators change. Swofty can't add your mods there while Swofty Launcher runs normally. **Play** then stops before it changes anything and shows **F1 25 needs administrator rights**, naming the folder:

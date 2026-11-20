@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_ViewModel_Teardown",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14431d0c0",
+  "level": "L1",
+  "subsystem": "vm",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14431d0c0.c;xref:0x145738a78,0x1457391b8",
+  "notes": "VM vtable slot 3: if flags&0x10 call slot15, if flags&4 call slot7"
+ },
+ "signature": {
+  "id": "vm.view_model_teardown",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 0F 84 ?? ?? ?? ?? 3A 35",
+  "match": "0x14431d0c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14431d0c0",
+  "kind": "func_start",
+  "names": [
+   "Vm_ViewModel_Teardown"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x14431d0c0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14431d0c0.c;xref:0x14431d0b4",
+   "notes": "V6584 better name Vm_ViewModel_Teardown: only a jmp thunk to .data1 0x153c4cd00 (vtable/indirect refs); body claim (flags&0x10/&4) is black box, unverifiable; name unchanged pending proof"
+  }
+ ],
+ "proofs": []
+}

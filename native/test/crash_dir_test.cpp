@@ -1,5 +1,5 @@
-// Host unit test for the crash report location logic (crash_dir.hpp). run_events_test.sh builds and runs it.
-#include "../src/core/crash_dir.hpp"
+// Host unit test for the crash report location logic (crash_dir.hpp). native/test/run_tests.sh crash_dir builds and runs it.
+#include "core/diagnostics/crash/crash_dir.hpp"
 
 #include <cstdio>
 #include <string>
@@ -23,7 +23,8 @@ int main()
            "perf.log's fallback is perf-fallback.log in that state folder");
     expect(crash_dir::perf_fallback(L"").empty(), "no data folder, no perf.log fallback");
     const std::string game = "C:\\Program Files\\EA Games\\F1 25\\swofty\\";
-    expect(crash_dir::logged(game, game, "crash-1.txt") == "swofty\\crash-1.txt", "a report in the game folder is named swofty\\<name>");
+    expect(crash_dir::logged(game, game, "crash-1.txt") == "swofty\\crash-1.txt",
+           "a report in the game folder is named swofty\\<name>");
     expect(crash_dir::logged("C:\\D\\state\\", game, "crash-1.txt") == "C:\\D\\state\\crash-1.txt",
            "a report in the data folder is named by its full path");
     return fails ? 1 : 0;

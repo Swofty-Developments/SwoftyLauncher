@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Libpng_WriteChunkPcal",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1447a44a0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1447a44a0.c;xref:0x143914997",
+  "notes": "png_write_pCAL: 'Unrecognized equation type for pCAL chunk', 'pCAL: invalid keyword'. Caller Ne_Libpng_WriteInfo (0x143914997)."
+ },
+ "signature": {
+  "id": "core.libpng_write_chunk_pcal",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 44 89 4C 24 50",
+  "match": "0x1447a44a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1447a44a0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Libpng_WriteChunkPcal"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x1447a44a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1447a44a0.c;xref:0x143914997",
+   "notes": "V8419 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

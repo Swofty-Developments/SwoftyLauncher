@@ -1,6 +1,6 @@
-#include "../../src/core/registry/declare_all.hpp"
-#include "../../src/core/registry/older.hpp"
-#include "../../src/core/registry/table.hpp"
+#include "core/registry/declare_all.hpp"
+#include "core/registry/older.hpp"
+#include "core/registry/table.hpp"
 
 #include <cstdio>
 #include <cstdlib>
@@ -15,13 +15,13 @@ using namespace swofty_core::registry;
 namespace fs = std::filesystem;
 
 static int failures = 0;
-#define CHECK(c, ...)                                  \
-    do {                                               \
-        if (!(c)) {                                    \
-            std::printf("FAIL: " __VA_ARGS__);         \
-            std::printf("\n");                         \
-            failures++;                                \
-        }                                              \
+#define CHECK(c, ...)                                                                                                            \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL: " __VA_ARGS__);                                                                                   \
+            std::printf("\n");                                                                                                   \
+            failures++;                                                                                                          \
+        }                                                                                                                        \
     } while (0)
 
 static std::string slurp(const fs::path &p)
@@ -43,8 +43,9 @@ int main()
     const char *tmp = std::getenv("TMPDIR");
     fs::path dir = fs::path(tmp ? tmp : "/tmp") / "swofty-declare-all-test";
     fs::remove_all(dir);
-    write(dir / "registry/index.json",
-          R"({"version":1,"profile":"default","order":["b.data"],"data":{"b.data":["registry/b.data/records.json"]},"registry":{},"addons":{}})");
+    write(
+        dir / "registry/index.json",
+        R"({"version":1,"profile":"default","order":["b.data"],"data":{"b.data":["registry/b.data/records.json"]},"registry":{},"addons":{}})");
     write(dir / "registry/b.data/records.json", R"({
   "vehicle": {"car": {"label": "ig_car"}},
   "vehicle.package": {"pkg": {"label": "ig_pkg"}},
@@ -55,8 +56,9 @@ int main()
   "driver.identity": {"driver": {"names": {"first": {"literal": "Ida"}, "last": {"literal": "Gamer"}, "full": {"literal": "Ida Gamer"}, "code": "IGA"}, "look": "b.data/look"}}
 })");
     std::vector<std::pair<std::string, std::string>> keys = {
-        {"vehicle", "b.data/car"}, {"vehicle.package", "b.data/pkg"}, {"team.identity", "b.data/team"}, {"team.logo", "b.data/logo"},
-        {"suit", "b.data/suit"},   {"driver.look", "b.data/look"},    {"driver.identity", "b.data/driver"}};
+        {"vehicle", "b.data/car"},           {"vehicle.package", "b.data/pkg"}, {"team.identity", "b.data/team"},
+        {"team.logo", "b.data/logo"},        {"suit", "b.data/suit"},           {"driver.look", "b.data/look"},
+        {"driver.identity", "b.data/driver"}};
 
     IndexResult ix = load_index(dir.string());
     CHECK(ix.found && ix.files == 1, "the data-only addon's index.json loads (found %d, %zu file(s))", ix.found, ix.files);
@@ -104,10 +106,13 @@ int main()
                 shipped.insert(e.path().filename().string());
         CHECK(!shipped.empty(), "the registry directories are found at %s", root.string().c_str());
         for (auto &name : shipped)
-            CHECK(core.count(name), "packages/sdk/std/registries/%s is declared by the core (declare_all.hpp or older.hpp)", name.c_str());
+            CHECK(core.count(name), "packages/sdk/std/registries/%s is declared by the core (declare_all.hpp or older.hpp)",
+                  name.c_str());
         for (auto &name : core)
-            CHECK(shipped.count(name), "%s is declared by the core but has no directory in packages/sdk/std/registries", name.c_str());
-        CHECK(core.size() == shipped.size(), "the core declares %zu registries, the directories hold %zu", core.size(), shipped.size());
+            CHECK(shipped.count(name), "%s is declared by the core but has no directory in packages/sdk/std/registries",
+                  name.c_str());
+        CHECK(core.size() == shipped.size(), "the core declares %zu registries, the directories hold %zu", core.size(),
+              shipped.size());
     }
 
     std::size_t before = store().registries().size();
@@ -118,7 +123,8 @@ int main()
     for (auto &[name, schema] : declared) {
         auto def = store().def(name);
         Def want = parse_schema(name, swofty::json::parse(schema));
-        CHECK(def && def->applies == want.applies && def->minor == want.minor, "%s is unchanged by the second declaration", name.c_str());
+        CHECK(def && def->applies == want.applies && def->minor == want.minor, "%s is unchanged by the second declaration",
+              name.c_str());
     }
 
     store().end_register();

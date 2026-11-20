@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_RedFlagSystem_OnStartLightsBegin",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435869b0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "uint64_t(RedFlagSystem*)",
+  "evidence": "decomp:ghidra-headless-2026-10-25;decomp:re/decomp/1435869b0.c;xref:0x143585de6,0x14358653b",
+  "notes": "MessageStartLightsBegin subscriber: while a red flag is active (+0x40) hands every player car back (setController(sys+0x148, car, 0, 0xb), the reverse of the AI/SAFETY_CAR handover in Deploy), restores vehicle +0x9ea8 bit 0x2000 from +0x9eb0 when +0x140; +0x134 = 0, +0x131 = 1 (post-restart timer)."
+ },
+ "signature": {
+  "id": "session.red_flag_system_on_start_lights_begin",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? BC 3B D5 37 CD E9 ?? ?? ?? ?? AE",
+  "match": "0x1435869b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435869b0",
+  "kind": "func_start",
+  "names": [
+   "Sess_RedFlagSystem_OnStartLightsBegin"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb-verify-a",
+   "kind": "func",
+   "item": "Sess_RedFlagSystem_OnStartLightsBegin",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435869b0.c;xref:0x143585de6",
+   "notes": "V1852 thunk; setController(+0x148,car,0,0xb) for players, +0x9ea8 bit 0x2000 from +0x9eb0 when +0x140, +0x134=0, +0x131=1"
+  }
+ ],
+ "proofs": []
+}

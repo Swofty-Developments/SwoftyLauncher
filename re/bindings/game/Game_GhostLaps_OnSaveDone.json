@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GhostLaps_OnSaveDone",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f8bbc0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-GHOSTLAPS",
+  "notes": "named from its log messages (channel GHOSTLAPS): '%s() : Save operation for file '%s' completed with result code: %i | %s() : Save operation canceled'"
+ },
+ "signature": {
+  "id": "game.ghost_laps_on_save_done",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 C5 F8 29 74 24 30 44 89 C3",
+  "match": "0x142f8bbc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f8bbc0",
+  "kind": "func_start",
+  "names": [
+   "Game_GhostLaps_OnSaveDone"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f8bbc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f8bbc0.c;xref:0x142f97fca",
+   "notes": "V5692 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

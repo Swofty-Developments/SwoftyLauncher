@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Rules_GetBlackFlagSecondsLeft",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143575560",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143575560.c;xref:0x14356b045",
+  "notes": "(rm, carIdx) Session time = clock ([[rm+0x1c30]+0x1a8]: +0x60 or interpolated +0x70 + (now-+0x78)*rate +0x88) and returns clamp(round(deadline rm+0x1d10+car*4 - time), 0, deadline). Called from Sess_Rules_ApplyBlackFlag."
+ },
+ "signature": {
+  "id": "session.rules_get_black_flag_seconds_left",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 C5 F9 29 74 24 30 89",
+  "match": "0x143575560",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143575560",
+  "kind": "func_start",
+  "names": [
+   "Sess_Rules_GetBlackFlagSecondsLeft"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x143575560",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143575560.c;xref:0x14356b045",
+   "notes": "V3784 Session clock via [rm+0x1c30]+0x1a8 (+0x60 or interpolated +0x70, rate +0x88), result clamp(ceil(deadline[rm+0x1d10+car*4]-time),0,deadline) (vroundss mode ceil, claim says round)."
+  }
+ ],
+ "proofs": []
+}

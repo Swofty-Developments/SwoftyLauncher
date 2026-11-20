@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Write_SuspensionSystem",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446a8870",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446a8870.c",
+  "notes": "Vehicle physics section for SuspensionSystem: brake types (handbrake, temperature, damage brake loss), tyre types (mass, dimensions, grip) and punctures: PunctureWearMin/Max, Puncture Spring/Damping/Radius/Grip/Resistance multipliers, DebrisPunctureMin/MaxSpeed, DebrisPunctureProbabilityAtMin/MaxSpeed, DebrisPunctureInvulnerabilityPeriod, DebrisNextGenPunctureProbabilityMultiplier, PunctureSpeedTyreDamageRateSpline. Correction: this is the serialiser (component data vtable slot 3): it writes the section back as XML through the writer object's vtable (+0x28 begin element, +0x68 attribute, +0x78 end, +0x98 comment); the field list above is what it writes. The reader is slot 2 (Game_Read_VtfFloat by name, values stored XOR-obfuscated)."
+ },
+ "signature": {
+  "id": "car.parse_suspension_system",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 48 89 D6 48 89 CF 48 8B 02",
+  "match": "0x1446a8870",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446a8870",
+  "kind": "func_start",
+  "names": [
+   "Car_Write_SuspensionSystem"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446a8870",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446a8870.c",
+   "notes": "V6813 Serialiser: writer vcalls, no reader calls, brake/tyre/puncture/debris strings confirmed. (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

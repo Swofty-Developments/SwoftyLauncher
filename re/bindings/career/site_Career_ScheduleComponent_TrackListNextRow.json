@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_ScheduleComponent_TrackListNextRow",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141272d20",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/1412722e0.c;xref:0x141272d31,0x141272d3e",
+  "notes": "In Career_ScheduleComponent_Load: add rbx,0x28; cmp rbx,rbp; je 0x141272c60, the next row of the event list walk. Both a row with another id (jne at 0x141272d31) and the return from the push (jmp at 0x141272d3e) land here with the same rsp; it reads rbx, rbp and r13 only (rcx and rdx are dead: the push call clobbers them). The rip target of core's career calendar track list guard; never hooked."
+ },
+ "signature": {
+  "id": "career.schedule_track_list_next_row",
+  "section": ".xtls",
+  "pattern": "48 83 C3 28 48 39 EB 0F 84 ?? ?? ?? ?? 44 38 6B 08 75 ED",
+  "match": "0x141272d20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141272d20",
+  "kind": "mid",
+  "expect": "48 83 C3 28 48",
+  "names": [
+   "site_Career_ScheduleComponent_TrackListNextRow"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "tracklist",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/tracks/track_list_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "tracklist-verify",
+   "kind": "global",
+   "item": "0x141272d20",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1412722e0.c;xref:0x141272d31,0x141272d3e;sig:career.schedule_track_list_next_row",
+   "notes": "V9259 Static: d20 is the target of jne 0x141272d31 (id mismatch) and jmp 0x141272d3e (after the push); it uses rbx, rbp and r13b only, so continuing here instead of the push leaves nothing the loop needs. EA 0x14126cf70."
+  }
+ ],
+ "proofs": []
+}

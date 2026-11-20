@@ -1,0 +1,120 @@
+{
+ "schema": 1,
+ "name": "Game_PitLane_UpdateMovement",
+ "table": "functions",
+ "author": "re-bindings",
+ "row": {
+  "addr": "0x1434b83e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_PitLane_UpdateMovement(void *mgr, float dt)",
+  "evidence": "decomp:re/decomp/1434b83e0.c;decomp:own disasm 1.0.145 0x1434ba960 the same 3386/3386;xref:0x1434cd3a5,0x1434cd450;doc:re/db/subsystems/game.md",
+  "notes": "dt is the 2nd argument in xmm1 (vmovaps xmm6,xmm1 at 0x1434b844d; both tail callers 0x1434cd3a5 / 0x1434cd450 pass it through, per V10500). Pit status via 0x1434bc540 (agent pitstop, sp-verify claim 6): 4 InPitBox -> 5 CrewCompleted (0x1434ba702) -> 6 PerformedRelease (0x1434bb6e4) -> 7 LeavingPitBox -> 14 LeavingPitLane (0x1434bacfc, counts the stop). rec+0xe4 += dt in states 3/4; in-box timer rec+0xf0 vs [mgr+0xbb8] (5.0 s) or random between [mgr+0xbc0]/[mgr+0xbc8] (0x1434bb666); release blocked per other car by 0x1434c4510 while mgr+0xba0 L2 2026-11-14 (engine-re round 2): decomp read; 2 reference(s) (0x1434cd3a5, 0x1434cd450); the body itself references 'PITLANE' / 'PittingVehicle::setCrewReady %d false' / 'MessageTriggerGarageCrewEvent::ERequest_SendCarToTrack_LaneClear %d' / 'PittingVehicle::setCrewReady %d true'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested) | engine-re 2026-11-17 track round C: builds the 13 inline box records (mgr+0x40 + box*0x90, loop 0x1434bc073..0x1434bc100, cmp r14,0xd): box 12 = safety-car request [placement+0x738] (0x1434bc117), box 0..11 = PitBoxN request [placement+0x838+box*8] (0x1434bc133), missing request -> box skipped; record +0x80 = spline distance (-1 none). PitBox13+ markers are never read by the pit lane; garage 24/25 share box 12 with the safety car, garage >= 26 reads past the 13 records. raised by engine-re with --force 2026-11-17 at user request (lane owner review requested) | re-bindings 2026-11-18: Steam 1.0.145 (sigport --witness): 0x1434ba960, 3386/3386 equal, with +0x80, +0x738, +0x838 and +0xc24 at the same instructions and the same 13-box bound (cmp r14, 0xd at 0x1434be67c, box 12 test at 0x1434be691)."
+ },
+ "signature": {
+  "id": "game.pit_lane_update_movement",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 04 00 00 C5 78 29 BC 24 30 04 00 00",
+  "match": "0x1434b83e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434b83e0",
+  "kind": "func_start",
+  "names": [
+   "Game_PitLane_UpdateMovement"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-18",
+    "by": "re-bindings",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "sp-verify",
+   "kind": "func",
+   "item": "Game_PitLane_UpdateMovement",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1434b83e0.c;xref:0x1434bb61b",
+   "notes": "V1708 claim 6: rec+0xe4 in states 3/4; box timer rec+0xf0; random release time branch"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x1434b83e0",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1434b83e0-0x1434bc53b;xref:0x1434cd3a5,0x1434cd450",
+   "notes": "V10500 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Refs: tail jmps 0x1434cd3a5 (in 0x1434cc6b0) and 0x1434cd450 (0x1434cd3b0, rcx=[rcx+0x48]); other hits not instructions. Agrees: Game_Pitlane_SetVehicleStatus 0x1434bc540 with 5 at 0x1434ba702, 6 at 0x1434bb6e4, 0xe at 0x1434bacfc; rec+0xe4 += dt (0x1434b8da6, 0x1434ba096); rec+0xf0 += dt (0x1434bb5ad) vs setting node [mgr+0xbb8] value at +8, else [mgr+0xbc0]/[mgr+0xbc8] (0x1434bb61b-0x1434bb666); 0x1434c4510 behind byte mgr+0xba0. DIFFERENCE proto: there is a 2nd argument, float dt in xmm1 (vmovaps xmm6,xmm1 at 0x1434b844d before any write; both tail-callers pass xmm1 through). Proto should be void(void *mgr, float dt)."
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "trkps-verify",
+   "kind": "func",
+   "item": "Game_PitLane_UpdateMovement",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434b83e0.c;xref:0x1434bc0fc",
+   "notes": "V11209 Loop r14 0..12, cmp r14,0xd at 0x1434bc0fc, r13 += 0x90 from mgr+0xb0, records at mgr+0x40+i*0x90 (+0x80 written); i==12 -> [[mgr+8]+0x738] (null exits loop, last anyway), else [[mgr+8]+0x838+i*8], null -> next (0x1434bc0f2)."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "era-refuel-verify",
+   "kind": "func",
+   "item": "0x1434b83e0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1434b9fbe-0x1434ba0d0,0x1434b89be-0x1434b89d3;decomp:SwoftyLauncher 1434b83e0.c case 4 lines 1496-1815;imm:0x145f9677c=5.0",
+   "notes": "V11605 case 4 confirmed: 0x1434ba096 adds dt to +0xe4, 0x1434ba0bb compares vs [r14+0xe8]+penalty, penalty=5.0 if 0x142f29600 true else 0; on exceed or no matching entry ([[self+0xaf0]+0x28]+0x20 list, +0x60==(+0xe0>>1 or 12)) calls 0x1434bdd60 then 0x1434b89be -> 0x1434bc540(...,5). Only when flag bit 0x400000000 clear; other branch compares against +0xf8"
+  }
+ ],
+ "proofs": [
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1434b83e0",
+    "target": "0x1434b83e0"
+   },
+   "sigcheck": "passed",
+   "digest": "a9af09a6096670d08406b6fa58edeb2b80c513679ffa24bda04e9d2164d92720"
+  },
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1434ba960",
+    "target": "0x1434ba960"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c0e37e5789401c207eeade560428ac000c0431f18a8ff02e58e667af23760b2d"
+  }
+ ]
+}

@@ -11,7 +11,7 @@ fe_home	FeHome	-	open	front-end home screen: FEHomeViewModel, home tile adders, 
 fe_input	FeInput	ui-re	open	input-to-UI: player input providers, input-device tooltips, UI toggle input modes, device connection status
 fe_popup	FePopup	ui-re	open	transient front-end overlays: full-screen busy spinner, notifications, popup messages, full-screen video, tutorial mask elements
 fe_tiles	FeTile	-	open	generic tile-menu builder, Tile/Item base classes, item vector
-game	Game	re-career-teams	open	game:: functions named in bulk from pretty-function strings, not yet sorted into a feature lane
+game	Game	saves	open	game:: functions named in bulk from pretty-function strings, not yet sorted into a feature lane
 gamedb	Gdb	-	open	GVDB game value database: load, key lookup, table cursors, row counts
 hud	Hud	ui-re	open	in-race HUD: HUD screen VM, dynamic HUD component view-models (tyre/timing/MFD/minimap/...), HUD element base; logic/VM side (render lane owns the draw path)
 live	Live	osd-l1	open	in-process live game state for the std lib osd work: the component registry and its system keys, the per-car runtime inputs, results, gap, pit, penalty, marshal, tyre and controller layouts Halo reads natively

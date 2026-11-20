@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Career_Needs_DriverContract",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d83090",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "bool Career_Needs_DriverContract(void *contracts)",
+  "evidence": "decomp:re/decomp/140d83090.c;xref:0x142d57e61,0x1436c2a9e",
+  "notes": "true when the local player's entrant has no contract record in contracts+0x350 ->+0x298..+0x2a0 (16-byte entries, record ptr +8, key +0x50) or the record's signed byte +0x2c is 0. Raised by native-1990 with --force in the career lane (owner career-re), approved by the developer on 2026-10-21 for the private F1 1990 build (doc:/mnt/work/.f1-1990/addon/native-requests.md#N1)"
+ },
+ "signature": {
+  "id": "career.needs_driver_contract",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC D8 00 00 00 48 89 CE 48 8B 89 78 02 00 00",
+  "match": "0x140d83090",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d83090",
+  "kind": "func_start",
+  "names": [
+   "Career_Needs_DriverContract"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/contract_skip.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-a",
+   "kind": "func",
+   "item": "Career_Needs_DriverContract",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d83090.c;xref:0x142d57e61,0x1436c2a9e;sig:career.needs_driver_contract",
+   "notes": "V0985 Two rel32 callers (Decide 0x142d57e61, Intro onEnter 0x1436c2a9e). One arg (rcx -> rsi; rdx is a local). Gets the entrant list from [c+0x278]+0x1030 vfunc +0x1c8, picks the entrant that matches the local player id (PTR 0x14604c2c8 ->+0x140->+0x198->+0x1c0 vfunc +0x38, predicate thunk 0x14feb1940), then walks [c+0x350]+0x298..+0x2a0 (16-byte entries, record ptr at +8) matching key +0x50 (u16 high half and low byte). True when no record matches or the record's +0x2c byte (signed flag, which Sign sets to 1) is 0. Not in the notes: returns false when no local entrant is found. sigcheck: 1 hit"
+  }
+ ],
+ "proofs": []
+}

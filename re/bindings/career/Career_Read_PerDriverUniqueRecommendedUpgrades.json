@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Read_PerDriverUniqueRecommendedUpgrades",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143520ec0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int Career_Read_PerDriverUniqueRecommendedUpgrades(void * self,uint64_t a2,uint64_t a3)",
+  "evidence": "decomp:re/decomp/143520ec0.c;xref:0x143520ab9",
+  "notes": "myteam-g1: Reads per_driver_unique_recommended_upgrades."
+ },
+ "signature": {
+  "id": "career.read_per_driver_unique_recommended_upgrades",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 31 DB 49 83 F8 05",
+  "match": "0x143520ec0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143520ec0",
+  "kind": "func_start",
+  "names": [
+   "Career_Read_PerDriverUniqueRecommendedUpgrades"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x143520ec0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143520ec0.c;xref:0x143520ab9",
+   "notes": "V10285 Strings per_driver_unique_recommended_upgrades, packed_driver_stat_id; uses 1435e9640 and 14351a420."
+  }
+ ],
+ "proofs": []
+}

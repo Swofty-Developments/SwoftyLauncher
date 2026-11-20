@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendScenePreview_SelectEntry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1417e2cd0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1417e2cd0.c;xref:0x1419dd6bc,0x1419fbf73",
+  "notes": "Menu preview controller (param_1[0]=FrontendSceneManager, +8 car comp id, +0xa/+0xc driver comp ids, param_1[0xe] = current entry, [0x16] optional listener vcall +0xa0). On a new entry (param_2) hides previous car (0x1428eb830) and drivers (Manager_SetDriverVisible 0x1428e0f40), then applies livery/decals/decal node/personal sticker/number_set_%s via Manager_SetCustomCar* and light rigs (VehicleLight/CharacterLight/HelmetLight/GloveLight/VideoWall). param_3!=0 = keep visible. Addon: hook to swap which livery/driver a menu preview shows. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2924)"
+ },
+ "signature": {
+  "id": "game.frontend_scene_preview_select_entry",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 44 89 C3 49 89 D6 48",
+  "match": "0x1417e2cd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1417e2cd0",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendScenePreview_SelectEntry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d11-verify",
+   "kind": "func",
+   "item": "Game_FrontendScenePreview_SelectEntry",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1417e2cd0.c;xref:0x1428eb830",
+   "notes": "V2924 Decomp strings, offsets and callees match the claim; name fits."
+  }
+ ],
+ "proofs": []
+}

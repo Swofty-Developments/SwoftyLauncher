@@ -1,0 +1,75 @@
+{
+ "schema": 1,
+ "name": "k_Live_VehicleHelperSystemKey",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x146096ac8",
+  "type": "uint8_t",
+  "level": "L2",
+  "subsystem": "live",
+  "evidence": "decomp:re/decomp/142fe6060.c;decomp:re/decomp/144500dc0.c;decomp:re/decomp/1435676a0.c;xref:0x1457f6250,0x143032ed1,0x1402074a2,0x140213453,0x1403c5899,0x1403d59e8,0x1405fcb6e,0x1406ad0bb,0x1406c0b2e,0x140803d88;pat:type-name-VehicleHelperSystem;xref:0x14020749f",
+  "notes": "registry key (address of the static type record; its +8 holds the name \"VehicleHelperSystem\", stored at 0x143032ed1); class vtable 0x1457f6250 slot 0 = 0x142fe6060 returns it; rule manager +0x1c30 participants; drive-through +0x568 / stop-go +0x578 objects"
+ },
+ "signature": {
+  "id": "live.vehicle_helper_system_key",
+  "section": ".xtls",
+  "pattern": "48 89 46 70 48 85 C0 0F 84 ?? ?? ?? ?? 48 8D 05 ?? ?? ?? ?? 48 89 44 24 48",
+  "match": "0x140207492",
+  "anchor": "0x10",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0xd",
+   "len": 7
+  },
+  "target": "0x146096ac8",
+  "kind": "data",
+  "names": [
+   "k_Live_VehicleHelperSystemKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "osd-l1",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/live/live_state.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "osd-vb",
+   "kind": "global",
+   "item": "k_Live_VehicleHelperSystemKey",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142cf5c00.c;xref:0x143032ed3",
+   "notes": "V8779 own check (disx + type record scan): static init at 0x143032ed3 loads a string address and stores it at key+8; the string bytes are \"VehicleHelperSystem\". 142cf5c00 stores registry[key] at state+0xd1b8 (0x142cf5d71) and reads +0x568/+0x578 from it. Slot-0 getter and registry-hash insert not re-derived"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "osd-va",
+   "kind": "global",
+   "item": "k_Live_VehicleHelperSystemKey",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144500dc0.c;decomp:re/decomp/142cf5c00.c;decomp:re/decomp/1435676a0.c;xref:0x142cf60a1,0x1435676a0",
+   "notes": "V8742 own disx: type record +8 name string = 'VehicleHelperSystem' (static init store at 0x143032ed4); slot-0 0x142fe6060 = lea rax,[k_Live_VehicleHelperSystemKey] ret and qword at vtable 0x1457f6250 == 0x142fe6060; consumer (direct): UDP state init does FindIndex(registry,key) into state+0xd1b8 then reads [that+0x578] and [that+0x568] into state+0xd2d8/0xd2e0 (stop_go/drive_through); Sess_RuleManager_Initialise stores registry[key] at rules+0x1c30 and reads +0x428..+0x608"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "osd-vd",
+   "kind": "sig",
+   "item": "live.vehicle_helper_system_key",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "sig:live.vehicle_helper_system_key",
+   "notes": "V8904 sigcheck hits=1, anchor disassembled and resolve re-computed by hand to the claimed target; target is the first field of a static type record whose +8 name pointer (set at the init stores) points at the type-name string, e.g. vehicle_helper_system_key; the name strings were read from the exe for all 13 keys and match the k_Live_* names; consumers pass the key address to FindIndex (0x14030ffd0)"
+  }
+ ],
+ "proofs": []
+}

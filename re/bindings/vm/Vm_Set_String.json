@@ -1,0 +1,60 @@
+{
+ "schema": 1,
+ "name": "Vm_Set_String",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140846270",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void *Vm_Set_String(void *registry, void *parent, const char *name, NeStr **value, int overwrite)",
+  "evidence": "decomp:work/exe/decomp/140846270_vm_str_getset.c;xref:0x1407bbe9d,0x1407bc1eb,0x1407bc61b,0x1407bd40a,0x1407cb610,0x1407cc7fa,0x1407cc90d,0x1407cca20+3216;doc:research/exe.md#3.4",
+  "notes": "overwrite=1 -> Vm_NodeSet_String(node, v, 0, 1); runtime: called by the core mod without fault (T000 line 57), visible label not logged"
+ },
+ "signature": {
+  "id": "vm.set_string",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 44 89 44",
+  "match": "0x141697b90",
+  "anchor": "0x6a",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x69"
+  },
+  "target": "0x140846270",
+  "kind": "call",
+  "names": [
+   "Vm_Set_String"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-17",
+    "by": "exe-agent",
+    "how": "static"
+   },
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-17",
+    "by": "T000/run1",
+    "how": "runtime scan, 1 hit"
+   }
+  ],
+  "used_by": [
+   "native/src/core/frontend/swofty_core.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-17",
+   "verifier": "mixin-verify",
+   "kind": "func",
+   "item": "Vm_Set_String",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140846270.c;decomp:re/decomp/140828440.c;decomp:re/decomp/140846570.c;xref:0x1407bbe9c,0x1407cb60f,0x1407cc7f9+3221",
+   "notes": "V0005 3224 rel32 sites, all calls; sampled callers pass rcx=g_Vm_Registry 0x146ca54f8 (direct or via r13 at 0x1407bbe5a), r8=lea name literal (3176 sites, e.g. unique_name), r9=&local NeStr* built by 0x1441974e0, dword [rsp+0x20]=1 (3165) or 0 (59). Body rejects # . [ ] in name, finds child by djb2(name) under *parent; if found, holder type is string (vt 0x145660370 slot+8 -> 0x146ca5508), overwrite==1 (dword [rsp+0xa0]) and not read-only (+0x26 bit0) it calls Vm_NodeSet_String(node,value,0,1) at 0x140846427; if absent it allocs 0x68 via (*registry)->vt+0x18, ctor 0x140846570 takes *value (refcount word +4) and attaches to parent; returns the handle ptr or sentinel 0x146048da0. Arity and all five types match."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_RndLaptop_SetDevSlotState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14165d9c0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void FUN(void *view, void *ctx)",
+  "evidence": "decomp:re/decomp/14165d9c0.c;xref:0x1456fbed8",
+  "notes": "myteam-g1: UI binding code; upgrade_dev_slot_available, upgrade_dual_develop_selected, upgrade_hash_name/uid: binds dev slot availability and selected dual development. Static, string-key driven."
+ },
+ "signature": {
+  "id": "ui.rnd_laptop_set_dev_slot_state",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 50 48 89 CF C7 44 24 2C 00 00 00 00",
+  "match": "0x14165d9c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14165d9c0",
+  "kind": "func_start",
+  "names": [
+   "Ui_RndLaptop_SetDevSlotState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x14165d9c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14165d9c0.c;xref:0x1456fbed8",
+   "notes": "V9734 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

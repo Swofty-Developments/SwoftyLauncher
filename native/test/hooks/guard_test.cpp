@@ -19,7 +19,7 @@
 #include <swofty/hooks.hpp>
 #include <swofty/services.hpp>
 
-#include "../../src/core/hooks/guard.hpp"
+#include "core/hooks/guard.hpp"
 
 using namespace swofty_core::hooks::guard;
 
@@ -29,10 +29,7 @@ static void say(bool ok, const char *what)
     fflush(stdout);
 }
 
-static int fine(void *, SwoftyHookCall *)
-{
-    return 5;
-}
+static int fine(void *, SwoftyHookCall *) { return 5; }
 
 static int av_plain(void *, SwoftyHookCall *)
 {
@@ -55,10 +52,7 @@ static int av_locals(void *, SwoftyHookCall *)
     return 7;
 }
 
-static int throw_plain(void *, SwoftyHookCall *)
-{
-    throw 42;
-}
+static int throw_plain(void *, SwoftyHookCall *) { throw 42; }
 
 static int throw_locals(void *, SwoftyHookCall *)
 {
@@ -180,8 +174,7 @@ int main(int argc, char **argv)
         say(ok, "sdk_throw: an SDK after handler (hooks::after) that throws is isolated and its what() reaches the core");
     } else if (!strcmp(k, "sdk_service_throw")) {
         static const ServiceTable table{sizeof(ServiceTable)};
-        auto *fn =
-            new std::function<void(const ServiceTable &)>([](const ServiceTable &) { throw std::out_of_range("at"); });
+        auto *fn = new std::function<void(const ServiceTable &)>([](const ServiceTable &) { throw std::out_of_range("at"); });
         Seen s{0, 0, {}};
         bool done = isolated_service(&swofty::services::detail::when_entry<ServiceTable>, fn, &table, sizeof table, 1, &s);
         printf("      returned %d, seen code 0x%08lx, what '%s'\n", done, s.code, s.what);

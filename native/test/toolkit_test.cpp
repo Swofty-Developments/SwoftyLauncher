@@ -13,14 +13,14 @@ namespace ui = swofty::overlay::ui;
 
 static int failures;
 
-#define CHECK(cond, msg)                                                                                                \
-    do {                                                                                                                \
-        if (cond) {                                                                                                     \
-            printf("ok  : %s\n", msg);                                                                                  \
-        } else {                                                                                                        \
-            printf("FAIL: %s\n", msg);                                                                                  \
-            failures++;                                                                                                 \
-        }                                                                                                               \
+#define CHECK(cond, msg)                                                                                                         \
+    do {                                                                                                                         \
+        if (cond) {                                                                                                              \
+            printf("ok  : %s\n", msg);                                                                                           \
+        } else {                                                                                                                 \
+            printf("FAIL: %s\n", msg);                                                                                           \
+            failures++;                                                                                                          \
+        }                                                                                                                        \
     } while (0)
 
 static SwoftyInput next_in;
@@ -46,9 +46,7 @@ static SwoftyOverlay make_table()
         if (h)
             *h = size;
     };
-    t.rect_rounded = [](SwoftyPaint *, float x, float y, float w, float h, float, uint32_t) {
-        panels.push_back({x, y, w, h});
-    };
+    t.rect_rounded = [](SwoftyPaint *, float x, float y, float w, float h, float, uint32_t) { panels.push_back({x, y, w, h}); };
     t.rect_rounded_outline = [](SwoftyPaint *, float, float, float, float, float, float, uint32_t) {};
     t.rect_gradient = [](SwoftyPaint *, float, float, float, float, float, uint32_t, uint32_t, uint32_t) {};
     t.circle = [](SwoftyPaint *, float, float, float, uint32_t) {};
@@ -93,10 +91,7 @@ static SwoftyOverlay table = make_table();
 static SwoftyApi api_table;
 static SwoftyPaint *const paint = reinterpret_cast<SwoftyPaint *>(&api_table);
 
-static void bit(uint8_t *bits, uint32_t vk)
-{
-    bits[vk >> 3] |= uint8_t(1u << (vk & 7));
-}
+static void bit(uint8_t *bits, uint32_t vk) { bits[vk >> 3] |= uint8_t(1u << (vk & 7)); }
 
 struct In {
     SwoftyInput s{};

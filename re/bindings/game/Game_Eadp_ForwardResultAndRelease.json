@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Eadp_ForwardResultAndRelease",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1449b7530",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1449b7530.c;xref:0x143fd2d75,0x143fd48fb",
+  "notes": "EADP SDK adapter: calls the holder's result accessor (vcall +8 then +0x40), forwards the value to 0x1449b7640 and releases the shared_ptr control block (atomic dec, vcall 0 destroy). Callers Game_EadpSDK_OnSignInStateChanged, Ne_PresenceEadp_ProcessPlayerCardList and ~30 other EADP callbacks."
+ },
+ "signature": {
+  "id": "game.eadp_forward_result_and_release",
+  "section": ".xtls",
+  "pattern": "48 89 5C 24 10 56 48 83 EC 20 48 8B F1 48 8B DA 48 8B 0A 48",
+  "match": "0x1449b7530",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1449b7530",
+  "kind": "func_start",
+  "names": [
+   "Game_Eadp_ForwardResultAndRelease"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x1449b7530",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1449b7530.c;xref:0x143fd2d75",
+   "notes": "V8421 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Weather_GetQualiSegmentStartOffset",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1438c4f40",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1438c4f40.c;xref:0x1414b9996,0x1438b969a",
+  "notes": "(sessionType) -> seconds offset of a qualifying segment inside the session time of day: reads two durations (minutes*60) from map [g 0x146cc4278] keys 0x68f944abbee799a7 / 0x87cbdfd32e6ee650; type 6/0xb (Q2/SQ2) -> d1 + 300, 7/0xc (Q3/SQ3) -> d1 + d2 + 600; else 0. Addon: 5 min break between quali segments. (2 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "session.weather_get_quali_segment_start_offset",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 89 C8 48 BB A7 99",
+  "match": "0x1438c4f40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1438c4f40",
+  "kind": "func_start",
+  "names": [
+   "Sess_Weather_GetQualiSegmentStartOffset"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1438c4f40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1438c4f40.c;xref:0x1438b969a",
+   "notes": "V6779 Keys 0x68f944abbee799a7 / 0x87cbdfd32e6ee650, *60, +300 each, types 6/b and 7/c confirmed."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Pitlane_Multiplayer_resetToTrack",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434bff40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1434bff40.c;xref:0x143254733,0x1434bd08c,0x1434d16d8",
+  "notes": "logged method name multiplayer_resetToTrack (class from the log channel); log channel PITLANE: '%s(%d) : %s -> %s.' L2 2026-11-14 (engine-re round 2): decomp read; 3 reference(s) (0x143254733, 0x1434bd08c, 0x1434d16d8); the body itself references 'PITLANE' / '%s(%d) : %s -> %s.' / 'multiplayer_resetToTrack'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.pitlane_multiplayer_reset_to_track",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 70 89 D3",
+  "match": "0x1434bff40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434bff40",
+  "kind": "func_start",
+  "names": [
+   "Game_Pitlane_Multiplayer_resetToTrack"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1434bff40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434bff40.c;xref:0x143254734",
+   "notes": "V6021 name and description match body; log string/pretty name present"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x1434bff40",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1434bff40-0x1434c019a;xref:0x143254733,0x1434bd08c,0x1434d16d8",
+   "notes": "V10506 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Same 3 callers 0x143254733 / 0x1434bd08c / 0x1434d16d8. multiplayer_resetToTrack, %s(%d) : %s -> %s."
+  }
+ ],
+ "proofs": []
+}

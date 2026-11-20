@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_FrontWing_ResolvePartNodeId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e83fe0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e83fe0.c;xref:0x142e94d20",
+  "notes": "(wing, int part (<12), model): cached (+0x128+part*4, 0xfffffffe = unresolved) node id of a front-wing damage part by name table 0x145f946e0: frontspoiler_fm, frontfin_fr/fl, frontwing_fr_01/02, frontflap_fr, frontwing_fl_01/02, frontflap_fl, frontwingmoving_fl/fr, nosecone (djb2 hash into name registry 0x14618ce18). Called from 0x142e94d20. Addon: part ids for detach/damage mods."
+ },
+ "signature": {
+  "id": "car.front_wing_resolve_part_node_id",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 38 01 00 00 4C 63 F2 42",
+  "match": "0x142e83fe0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e83fe0",
+  "kind": "func_start",
+  "names": [
+   "Car_FrontWing_ResolvePartNodeId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x142e83fe0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e83fe0.c;xref:0x142e95658,0x142e964d8",
+   "notes": "V3669 Cache +0x128+part*4 (0xfffffffe unresolved), djb2 hash into registry 0x14618ce18; name table 0x145f946e0 verified = 12 names as claimed. Callers also SetWingVisibilityOnCar, ActivateCompounds, CacheWingDamage (claim lists only ApplySetToCar)."
+  }
+ ],
+ "proofs": []
+}

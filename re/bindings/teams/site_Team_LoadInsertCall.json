@@ -1,0 +1,94 @@
+{
+ "schema": 1,
+ "name": "site_Team_LoadInsertCall",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1424697f4",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "teams",
+  "evidence": "decomp:re/decomp/142469440.c;xref:0x1424697f4",
+  "notes": "Sess_Load_Teams: rcx the set's slot-vector object {alloc, begin +8, end +0x10}, rdx the stack record whose u32 key is stat_id << 16 (no set byte: the low 16 bits are 0 for every set; the set is only known from Sess_Load_Teams' dl, set 1 at 0x142461443, set 0 at 0x142483002)"
+ },
+ "signature": {
+  "id": "teams.load_insert_call",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 8B 7C 24 4C 4C 8D 74 24 68",
+  "match": "0x1424697f4",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424697f4",
+  "kind": "mid",
+  "expect": "E8 47 25 87 FE",
+  "names": [
+   "site_Team_LoadInsertCall"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "w21b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/session/team_slots.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "team-v1",
+   "kind": "global",
+   "item": "site_Team_LoadInsertCall",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142469440.c;decomp:re/decomp/140cdbd40.c;xref:0x1424697f4,0x1424697e9,0x14246c499",
+   "notes": "V1572 Site is right and safe: the 5-byte E8 call at 0x1424697f4 (rcx = r12 = the set's slot-vector object {alloc,begin@+8,end@+0x10}, rdx = lea [rsp+0xfe0], the stack record), no branch in the function lands in 0x1424697f5..0x142469801 (capstone scan of 0x142469440..0x14246cb42), single match (sigcheck hits=1, .xtls, .pdata function). WRONG note: the key does not carry the set. Sess_Load_Teams stores edi = stat_id<<16 (or 0) at 0x14246c499 for every set; its two callers (0x142461443 set 1 in Ent_EntrantsSystem_Construct, 0x142483002 set 0) produce identical keys, so a key-based set==0 filter (team_slots.cpp insert_call) accepts both loads and database_set ends up as whichever set loaded last. Distinguish the set by hooking Sess_Load_Teams' entry (dl) or by comparing rcx to system+0x2c8+set*0x10."
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "team-v1",
+   "kind": "sig",
+   "item": "teams.load_insert_call",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "pat:sigcheck-hits-1;decomp:re/decomp/142469440.c;xref:0x1424697f4",
+   "notes": "V1574 sigcheck on d873a1c8: exactly one match in .xtls at 0x1424697f4, kind mid, expect E8 47 25 87 FE resolves to Team_Insert_RecordByStatId 0x140cdbd40; target on an instruction boundary inside .pdata function 0x142469440."
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "team-v1",
+   "kind": "global",
+   "item": "site_Team_LoadInsertCall",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142469440.c;decomp:re/decomp/140cdbd40.c;xref:0x1424697f4,0x1424697e9,0x14246c499",
+   "notes": "V1596 Re-confirmed after correcting the row note (the key carries no set byte): the hook location and the register roles (rcx slot vector, rdx stack record, key at [rdx]) are right and safe (call rel32, no branch into the window, unique match). Consumers must not filter on the key's set byte; see the teams inbox."
+  },
+  {
+   "date": "2026-10-29",
+   "verifier": "w21c",
+   "kind": "global",
+   "item": "site_Team_LoadInsertCall",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142469440.c;xref:0x1424695af,0x14246ca8c,0x1424697f4",
+   "notes": "V1599 V1596-V1598 say both set loads reach this site; they do not. Sess_Load_Teams (bpl = set, mov ebp,edx at 0x1424694b3) builds the empty slot vector for every set, then at 0x1424695af tests bpl and jumps (0x1424695b2 jne 0x14246ca8c) straight to the message post for any set other than 0, so the entrants.teams walk and Team_Insert_RecordByStatId run for set 0 alone. Set 1's vector stays empty. The key (stat_id<<16, no set byte) therefore needs no set filter; the site fires for the database set only. Disassembly 0x142469440..0x14246cb41."
+  },
+  {
+   "date": "2026-10-29",
+   "verifier": "w21c",
+   "kind": "global",
+   "item": "site_Team_LoadInsertCall",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142469440.c;xref:0x1424695af,0x14246ca8c,0x1424697f4",
+   "notes": "V1601 Site and register roles stand (see the partial row above for the set correction): the walk that reaches this site runs for set 0 only, so the site fires for the database set alone."
+  }
+ ],
+ "proofs": []
+}

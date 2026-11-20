@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_RenderTargetDesc_Construct",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d761d0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143d761d0.c;xref:0x14014e811",
+  "notes": "Zero-initialises a 0x90-byte render-target/buffer description (+0x08 = -1) and fills it from (name, a, b, c, ptr, flag, uint) with names interned via Ne_StringPool_InternByHash. Called from Game_Read_RendererGfxConfig (render pass target definitions). Hypothesis on field meaning."
+ },
+ "signature": {
+  "id": "render.render_target_desc_construct",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC A0 00 00 00 48 89 D7 48 89 CE 8B 84 24 F8",
+  "match": "0x143d761d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d761d0",
+  "kind": "func_start",
+  "names": [
+   "Render_RenderTargetDesc_Construct"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143d761d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d761d0.c;xref:0x14014e811",
+   "notes": "V7924 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

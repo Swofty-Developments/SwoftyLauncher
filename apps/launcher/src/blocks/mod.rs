@@ -115,8 +115,8 @@ impl Shell {
         let i = self.open_section()?;
         let s = self.library.sections.get(i)?;
         let key = format!("{}/{}", s.addon, s.spec.id);
-        let view = self.views.get(&key)?.as_ref().ok()?.clone();
-        let generation = self.view_gens.get(&key).copied().unwrap_or(0);
+        let view = self.addon_views.views.get(&key)?.as_ref().ok()?.clone();
+        let generation = self.addon_views.generations.get(&key).copied().unwrap_or(0);
         Some((s.addon.clone(), s.spec.id.clone(), view, generation))
     }
 
@@ -128,7 +128,12 @@ impl Shell {
     }
 
     pub(crate) fn find_form(&self, addon: &str, section: &str, id: &str) -> Option<Form> {
-        let view = self.views.get(&format!("{addon}/{section}"))?.as_ref().ok()?;
+        let view = self
+            .addon_views
+            .views
+            .get(&format!("{addon}/{section}"))?
+            .as_ref()
+            .ok()?;
         view_blocks(view).into_iter().find_map(|b| match b {
             Block::Form(f) if f.id == id => Some(f.clone()),
             _ => None,

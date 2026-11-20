@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Ne_StringTable_Lookup",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14392a8b0",
+  "level": "L3",
+  "subsystem": "core",
+  "proto": "const char *Ne_StringTable_Lookup(void *table, uint64_t hash)",
+  "evidence": "decomp:re/decomp/14392a8b0.c;xref:0x14364ff8c,0x1439341a9;trace:T010/run2:86288;trace:T010/run4:86249;trace:T010/run3",
+  "notes": "Locked lookup in the hash-to-string table (g_Ne_StringTable): returns the registered string for an FNV-1a64 key hash, or null. Bag add-by-name 0x143932a40 registers every key it adds (0x14392a0c0), including every key the stream reader 0x143934620 reads from a save."
+ },
+ "signature": {
+  "id": "core.string_table_lookup",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 48 85 D2 0F 84 ?? ?? ?? ?? 48 89 D7",
+  "match": "0x14392a8b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14392a8b0",
+  "kind": "func_start",
+  "names": [
+   "Ne_StringTable_Lookup"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-27",
+    "by": "splicesaves",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/career/save_splice.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-27",
+   "verifier": "splice-verify",
+   "kind": "func",
+   "item": "Ne_StringTable_Lookup",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14392a8b0.c;decomp:re/decomp/143932a40.c;xref:0x1430a3f9a,0x1430a3ff6,0x1430a40d2,0x14364ff8c,0x1439308f7,0x1439315ea,0x143933b7b,0x1439341a9,0x1439363a6,0x143a5b6e6",
+   "notes": "V1117 Proto const char*(void *table, uint64 hash) matches: hash==0 returns null without locking. Otherwise it takes the lock at table+8 (0x1449e2298/0x1449e22bc), probes the robin-hood map (mult table+0x20, buckets table+0x28, ctrl table+0x30, mask table+0x40) of 16-byte {u64 hash, char*} entries, and returns entry+8 on a hit or null at end. The 9 call sites and the one tail jmp (0x143a5b6e6) all load rcx=[0x146129740]. The map is filled by 0x14392a0c0 (lookup, then insert a heap copy of the string), called with FNV-1a64(name) from bag add-by-name 0x143932a40 and from the deserialiser 0x14364fe4e. So it returns the string registered for that hash in this process, or null."
+  }
+ ],
+ "proofs": []
+}

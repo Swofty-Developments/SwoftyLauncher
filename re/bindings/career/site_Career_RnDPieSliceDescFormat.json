@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDPieSliceDescFormat",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f485ab",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141f48030.c;xref:0x141f485ab;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v070--the-five-sector-development-potential-pie-folded-in",
+  "notes": "Career_Populate_RnDPieSlices colour-switch default case: call Ne_Format_String for lng_rnd_dept_%s_overview_description; r8 = the error_department literal, r14d = code"
+ },
+ "signature": {
+  "id": "career.rnd_pie_slice_desc_format",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? B8 FF FF FF FF 48 8D B4 24 B0 01 00 00",
+  "match": "0x141f485ab",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f485ab",
+  "kind": "mid",
+  "expect": "E8 40 AB 21 02",
+  "names": [
+   "site_Career_RnDPieSliceDescFormat"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-c",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_fifth_pie.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-2",
+   "kind": "global",
+   "item": "site_Career_RnDPieSliceDescFormat",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f48030.c;xref:0x141f48559,0x141f4855d,0x141f48574,0x141f48598,0x141f4859d,0x141f485a4,0x141f485ab",
+   "notes": "V0111 call Ne_Format_String (E8, 5B) in the r14d>3 default of the colour switch: rcx=&[rsp+0x38], rdx=lng_rnd_dept_%s_overview_description, r8=error_department literal, r14d = code; window is a rel32 call (relocated by the hook); default reachable only past the DeptGuard at 0x141f4821c"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_JobSystem_CreateJobGroup",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ac3620",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143ac3620.c;xref:0x14018c001,0x14038d629,0x1405fecd1",
+  "notes": "Creates a 0x1a0 job group object (vtable 0x1458a8740 -> 0x1458a8560) with 2 critical sections and 3 queues, worker count = min(requested, pool workers +0x48..+0x50, affinity popcount +0xe8); error 1 when pool not started (+0xec), 0x16 on bad args. 33 callers: Actor/Garage/AI/VFX managers Initialise, Sess_RaceStrategy_Initialise. Hypothesis on exact type. (33 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "core.job_system_create_job_group",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 48 C5 F8 29 74 24 30 80 B9 EC 00 00",
+  "match": "0x143ac3620",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143ac3620",
+  "kind": "func_start",
+  "names": [
+   "Ne_JobSystem_CreateJobGroup"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x143ac3620",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ac3620.c;xref:0x14018c001",
+   "notes": "V6783 0x1a0 object, vtables, critical sections, popcount, error 1 and 0x16 confirmed."
+  }
+ ],
+ "proofs": []
+}

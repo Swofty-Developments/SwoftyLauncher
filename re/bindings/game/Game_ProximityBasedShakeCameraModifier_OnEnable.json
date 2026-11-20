@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ProximityBasedShakeCameraModifier_OnEnable",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144569100",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144569100.c;xref:0x145beb9a0",
+  "notes": "ProximityBasedShakeCameraModifier: clears +0x40/+0xb0, Car -> +0xc0, VehicleDataComponent -> +0xc8, then rebuilds array +0xd8..+0xe8 (allocator +0xd0) of other cars from the global vehicle list [0x146cc3ab0]+0x38 (entries +0x28..+0x30 stride 0x10: {vehicle, entity}), filtered by vehicle+0x58 -> +0xe8 byte. Camera component onEnable (slot next to the class-name string): binds target entity components via Ne_Entity_FindComponent(target+0x200, type); logs CAMERA warning Problem enabling camera component and returns 0x57 when missing, else 0. Type ids: 0x146ce6690 VehicleProgressComponent, 0x146ce8b40 VehicleDataComponent, 0x146ce8b00 VehicleComponent (its +0x58 = Car). Addon: global vehicle list path to enumerate cars. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2349)"
+ },
+ "signature": {
+  "id": "game.proximity_based_shake_camera_modifier_on_enable",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 D7 48 89 CE C7 41",
+  "match": "0x144569100",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144569100",
+  "kind": "func_start",
+  "names": [
+   "Game_ProximityBasedShakeCameraModifier_OnEnable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d2-verify",
+   "kind": "func",
+   "item": "Game_ProximityBasedShakeCameraModifier_OnEnable",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144569100.c;xref:0x144569100",
+   "notes": "V2349 +0x40/+0xb0 cleared, Car +0xc0, VDC +0xc8, array +0xd8/+0xe0/+0xe8 alloc +0xd0 stride 0x10, global list [146cc3ab0]+0x38"
+  }
+ ],
+ "proofs": []
+}

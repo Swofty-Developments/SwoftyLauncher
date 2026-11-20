@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Build_ShowAcclaim",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14169f330",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *out, void *src",
+  "evidence": "decomp:re/decomp/14169f330.c;xref:0x14167c3e6;xref:0x14b612768",
+  "notes": "myteam-g1: Builds show_acclaim property block for a UI element."
+ },
+ "signature": {
+  "id": "ui.build_show_acclaim",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 48 89 CE 48 8B 42 08 48 8D 50 08 48 85 C0 4C 8D 3D ?? ?? ?? ?? 49 0F 44 D7 C5 C8 57 F6 C5 F8 11 71 08 48 C7 41 18 00 00 00 00 48 8D 05 ?? ?? ?? ?? 48 89 01 E8 ?? ?? ?? ?? C6 44 24 30 00",
+  "match": "0x14169f330",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14169f330",
+  "kind": "func_start",
+  "names": [
+   "Ui_Build_ShowAcclaim"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x14169f330",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14169f330.c;xref:0x14167c3e6;xref:0x14b612768",
+   "notes": "V9752 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetStartLights_HandleTimeOffset",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432733d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432733d0.c;xref:0x14ffe12c0",
+  "notes": "StartLights::fromNetwork(offset): float msg+0x10 -> this+0x40 and [this+0x28]+0x58 (double). Addon: lights-out timing offset from the host. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2772)"
+ },
+ "signature": {
+  "id": "game.net_start_lights_handle_time_offset",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 C5 F8 29 74 24 20 C5 FA 10 42 10",
+  "match": "0x1432733d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432733d0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetStartLights_HandleTimeOffset"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d8-verify",
+   "kind": "func",
+   "item": "Game_NetStartLights_HandleTimeOffset",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432733d0.c;xref:0x1432733d0",
+   "notes": "V2772 float msg+0x10 -> this+0x40 and [this+0x28]+0x58 as double confirmed"
+  }
+ ],
+ "proofs": []
+}

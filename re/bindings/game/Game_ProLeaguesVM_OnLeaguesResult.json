@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ProLeaguesVM_OnLeaguesResult",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141d476f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141d476f0.c;xref:0x141d42ef0,0x141d44982,0x141d4553f,0x141d47352",
+  "notes": "Pro Leagues VM request-result handler (lea-registered at 4 sites): if spinner pending (this+0x6f0) stops busy spinner type 0x10; by error code [this+0x700]+0x40 shows UI message 'pro_leagues_network_error' (1), 'pro_leagues_racenet_maintenance_error' (2/4), 'pro_leagues_generic_error' (3), nothing for 5-9, else 0x141d45d00; message callback 0x141d47370. Then fires 'disable_spawner_input', 'refresh_lists', 'detach_spawner' and rebuilds the league lists (0x141d470e0 when empty, else 0x141d46eb0). Addon: league fetch error codes + list refresh hook. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3264)"
+ },
+ "signature": {
+  "id": "game.pro_leagues_v_m_on_leagues_result",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC E8 00 00 00 48 89 CE C6",
+  "match": "0x141d476f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141d476f0",
+  "kind": "func_start",
+  "names": [
+   "Game_ProLeaguesVM_OnLeaguesResult"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_ProLeaguesVM_OnLeaguesResult",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141d476f0.c;xref:0x141d476f0",
+   "notes": "V3264 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

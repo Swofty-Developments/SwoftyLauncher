@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Game_CareerWizardConfirm_NextRoute",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a23c91",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/141a23810.c;xref:0x141a23c91,0x141a23c9f,0x141a23cb1",
+  "notes": "join point in the career wizard confirm step's continue (0x141a23810, CareerWizardConfirmViewModel vtable 0x145727320): rdx = the route name C string every branch picked (driver_career_driver_type_select, driver_career_driver_select, driver_career_team_select, driver_career_confirm_selections, customisation_my_team_overview/_corporate), rsi = the view model (+0x270 the wizard state, whose +0x128 is the content data group); lea rdi,[rsp+0x20] (5 bytes), then Ne_Make_StrFromCStr(rdi, rdx) and Vm_Fire_Route. driver_career_driver_select (taken with option 0x1e) opens Choose Driver without the driver type step. Raised by wizard-1990 for the F1 1990 career wizard"
+ },
+ "signature": {
+  "id": "game.career_wizard_confirm_next_route",
+  "section": ".xtls",
+  "pattern": "74 12 48 C7 44 24 20 00 00 00 00 48 8D 15 ?? ?? ?? ?? EB 10 48 C7 44 24 20 00 00 00 00 48 8D 15 ?? ?? ?? ?? 48 8D 7C 24 20 48 89 F9",
+  "match": "0x141a23c6d",
+  "anchor": "0x24",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a23c91",
+  "kind": "mid",
+  "expect": "48 8D 7C 24 20",
+  "names": [
+   "site_Game_CareerWizardConfirm_NextRoute"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "wizard-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/career_wizard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-21",
+   "verifier": "std-ui-verify",
+   "kind": "global",
+   "item": "site_Game_CareerWizardConfirm_NextRoute",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a23810.c;xref:0x141a239be,0x141a23bc9,0x141a23bde,0x141a23c7f,0x141a23fa9,0x141a23c9f,0x141a23cb1;sig:game.career_wizard_confirm_next_route",
+   "notes": "V0919 linear disasm of 0x141a23810 (.pdata 0x141a23810-0x141a241bc): 0x141a23c91 is lea rdi,[rsp+0x20] (5 bytes) on an instruction boundary; no branch targets 0x141a23c92..0x141a23c95. Reached by jmps from 0x141a239be (driver_career_driver_type_select), 0x141a23bc9 (customisation_my_team_overview), 0x141a23bde (customisation_my_team_corporate), 0x141a23c7f (driver_career_team_select), 0x141a23fa9 (driver_career_driver_select) and by fallthrough from 0x141a23c8a (driver_career_confirm_selections); each path loads rdx with that C string. rsi = rcx (this) from 0x141a23819, unchanged until 0x141a23d07; the paths read [rsi+0x270]+0x182/+0x1e2. Followed by Ne_Make_StrFromCStr(rdi, rdx, 0, 0) at 0x141a23c9f and Vm_Fire_Route([rsi+0x28], rsi, rdi, 0) at 0x141a23cb1. sigcheck: one hit (match 0x141a23c6d, anchor 0x24, target 0x141a23c91). Vtable 0x145727320 not checked"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_ContractRenewal_Deserialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d848f0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *renewal, void *save_node",
+  "evidence": "decomp:re/decomp/140d848f0.c;xref:0x145690a48",
+  "notes": "myteam-g1: Reads the contract renewal state from save data (incl. leadPlayerForcedOntoLowestRenownTeam flag, events list); large generated reader."
+ },
+ "signature": {
+  "id": "career.contract_renewal_deserialise",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 C5 F8 29 B4 24 80 00 00 00 48 89 D7 49 89 CC",
+  "match": "0x140d848f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d848f0",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractRenewal_Deserialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140d848f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d848f0.c;str:\"leadPlayerForcedOntoLowestRenownTeam\"",
+   "notes": "V9536 Reads contract renewal state (transferWindowActive, teamApproachManagers, renewalManagers, leadPlayerForcedOntoLowestRenownTeam, driverMoveData, driverAffordData)."
+  }
+ ],
+ "proofs": []
+}

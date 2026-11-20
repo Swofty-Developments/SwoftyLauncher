@@ -28,7 +28,7 @@ Rules:
 | Record it in the KB | any level |
 | Name it in Ghidra (via the KB) | L1+ (L0 goes in `notes` only, the name stays `<Prefix>_Unk_<addr>`) |
 | **Trace-only hook** (reads registers/memory, logs, changes nothing) | target L1+, signature passes `sigcheck.py`, target in `.xtls` (never `.data1`), target is an instruction boundary, no branch lands inside the 5-byte patch window. One site carries one hook: core loads first, so a trace hook on a site core already patched is refused (`already_patched`); trace such a site in a session without core, or trace a neighbouring signature |
-| **Behaviour hook** (writes registers/memory, calls game code, swaps vtables) | every function it calls or hooks, every field it reads or writes: **L2**, plus one `agree` row in `verify.tsv` from a different agent (§5) |
+| **Behaviour hook** (writes registers/memory, calls game code, swaps vtables) | every function it calls or hooks, every field it reads or writes: **L2**, plus an `agree` row in `verify.tsv` from a different agent (§5), made at the item's current level or above, that is still the newest verify row over the item's name and address (a later `partial` or `disagree` ends it; a raise needs a new `agree` at the new level; `re/db/export_exceptions.json` lists the reviewed exceptions bindgen exports anyway, and `re/db/level_baseline.json` the bindings that exported on a lower-level `agree` before 2026-11-18, which only shrinks; `re/db/export_drops.json`, approved by the repository owner alone, deprecates or drops a binding whose newest row is a `partial` or `disagree`) |
 | **Ship** (enabled by default in the launcher) | every item above **L3** on the shipping build, and the hook's own T### test passed |
 
 `.data1` bodies are black boxes: they may be called (L2 on the thunk) but never hooked or patched, with one exception. A behaviour site inside a `.data1` body is allowed when the code it relies on has no `.xtls` route: the body is decompiled and read on the Steam build (where `.data1` is plaintext), and its signature declares `"section": ".data1"`, a `data1_reason` naming why no `.xtls` site works and, where `.pdata` does not cover the body, a `func_start` for the boundary check. Core binds such a site only from a `.data1` signature. The EA build's `.data1` is packed, so these sites never resolve there.
@@ -86,6 +86,8 @@ Cell rules: tabs and newlines are forbidden in cells; `-` means empty; addresses
 | `trace:T###/<run>[:<line>]` | runtime log under `re/traces/T###/<run>/` |
 | `sig:<id>` | (functions/globals carry it in the `sig` column instead) |
 
+**Caller counts** come from the census, never from a count made by hand. `python3 re/tools/census.py show <build> <addr> [--sites]` prints an address's direct calls and the functions they sit in, its thunks and the calls through them, the jumps, the lea loads and the 8-byte pointers to it, from every executable section of the build (.data1 included). A note cites the stored row as `callers: census <build> <rva>` and gives no count of its own. `python3 re/tools/census.py update <build>` writes a row for every citation to `re/db/census/<build>.tsv`, and kb_lint fails a citation without a row. Once the KB build has a census, kb_lint warns about notes that count callers by hand (`census.py hand` lists them), and the bindings check fails a pull request whose record notes add such a count.
+
 **Structs** (`structs/<Name>.h`), one struct per file, offsets explicit, one field per line:
 
 ```c
@@ -111,7 +113,16 @@ A **verifier** is any agent other than the one who raised the item to its curren
 - **signatures:** `sigcheck.py` passes, and the target is the claimed function or instruction.
 - **db keys:** recompute `fnv1a64(path)` and find the immediate at a listed site.
 
-The verifier appends one `verify.tsv` row via `kb.py verify`: verdict `agree`, `disagree` or `partial`, with its own evidence tokens. On `disagree` the item is demoted to the highest level both sides accept, and the disagreement is written into the item's `notes` as `DISPUTE(Vnnn)` until the subsystem owner resolves it with new evidence (a new `verify` row). Nobody deletes `verify.tsv` rows.
+The verifier appends one `verify.tsv` row via `kb.py verify`: verdict `agree`, `disagree` or `partial`, with its own evidence tokens. On `disagree` the item is demoted to the highest level both sides accept, and the disagreement is written into the item's `notes` as `DISPUTE(Vnnn)` until the subsystem owner resolves it with new evidence (a new `verify` row). Nobody deletes `verify.tsv` rows. When the item a row is about is renamed to a different claim, retargeted or was never added, its `item` becomes `retired:<item>`, so the old verdict can never back a new item that reuses the name or address. `binding.py rename OLD NEW` renames a record this way: the file, its name, the build overlays' entries and `function_names.tsv` follow, the rows about the old name stay in the record as `retired:OLD`, and the rows about the address carry over. A `deprecated` entry for `OLD` in `re/db/export_drops.json` that covers the newest retired row and names `NEW` as its `replacement` keeps `OLD` exporting for one release as a deprecated alias of `NEW`, while `NEW` exports on its own agree. `binding.py check` fails on a build overlay entry still keyed by a retired name, which binds nothing: a branch that adds one after the rename moves it to the new name by hand.
+
+Every row `kb.py verify` writes starts with its id `Vnnn`. From V100000 the ids come from ranges in `db/verify_ranges.tsv` (`first`, `last`, `owner`, `granted`, `notes`):
+
+- A range belongs to one owner: a lane name such as `re-bindings`. It covers the verifier of that name and every verifier whose name starts with it and a `-`, such as `re-bindings-blind`. The longest matching owner wins.
+- `kb.py verify` takes the next free id in the verifier's ranges, above every id that `verify.tsv` or a record already holds in that range whoever wrote it, or refuses when the verifier has none or they are used up. Each lane records under its own owner name (`std-libs`, `native-guards`, `port-live`, `load-game`, or a name that starts with it and a `-`), never under another lane's, even for a blind row another lane relays.
+- A lead grants ranges on the trunk only, with `kb.py --agent LEAD grant-range OWNER [--size 10000]`, and lanes merge the trunk before writing rows. A lane that works on two branches at once takes a range per branch, for example `re-bindings` and `re-bindings-w2`.
+- `kb_lint.py` fails on overlapping ranges, on an id from V100000 up that lies outside every range of its verifier's owner, and on an id above V10540 that two rows carry. Ids below V100000 keep the numbers they were given.
+
+The row's `claimed` column is the item's level when the row is written: `kb.py verify` reads it from the item's row, and for a struct field or a struct size from its struct file. bindgen counts an `agree` only when its `claimed` level is the item's current level or above, so an item raised after its `agree` needs a new `agree` at the new level.
 
 ## 6. Concurrency
 
@@ -140,7 +151,7 @@ The verifier appends one `verify.tsv` row via `kb.py verify`: verdict `agree`, `
 | `names` | the `functions.tsv`/`globals.tsv` name(s) the target is |
 | `kind` | `func_start`, `mid` (MidHook site), `call` or `data` |
 | `verified` | list of `{build, date, by}`; `build` is the first 16 hex chars of the exe sha256 |
-| `used_by` | files that consume it (`native/src/core/swofty_core.cpp`) |
+| `used_by` | files that consume it (`native/src/core/frontend/swofty_core.cpp`) |
 
 Rules: a pattern must match **exactly once** in its section on every build listed in `verified`; it must not start or end on a wildcard; it is at least 12 bytes; a `mid` target must sit on an instruction boundary inside a `.pdata` function in `.xtls`; `.data1` bodies get signatures only for the §2 exception (`section` `.data1`, `data1_reason`, `func_start` when `.pdata` lacks the body). `re/tools/sitereg.py` makes, checks and records a site, data or function signature together with its KB row. `sigcheck.py --make <va> --kind mid|func_start` prints a candidate object; `sigcheck.py --sigs <file>` checks candidates before they go in; plain `sigcheck.py` is the gate.
 
@@ -202,3 +213,13 @@ Rules:
 - `bindverify.py --compare <KB exe>` flags bindings whose match surroundings or callee differ from the KB build's, which catches a pattern that matches once on the wrong code.
 - `native/build.sh` runs bindverify on the emitted sets when `SWOFTY_STEAM_EXE` or `SWOFTY_EA_DUMP` is set.
 - `re/tools/py re/tools/bindgen.py --exe <KB exe>` runs sigcheck on every exported binding and drops any that fails.
+
+## 11. Binding records
+
+A binding can live in one file instead of the shared tables: `re/bindings/<subsystem>/<Name>.json` holds its `functions.tsv` or `globals.tsv` row, its signature, the verify rows about it and the local proofs contributors ran on their own exe. `kb.py` merges records into every table it reads, so the levels, gates and lint rules above apply unchanged. `kb.py set` and `kb.py verify` on a record's item write into the record. Tools that read the tables without `kb.py` (the Ghidra scripts) read `kb.py export <dir>`; never read `re/db/functions.tsv`, `globals.tsv` or `signatures.json` directly.
+
+- `re/tools/binding.py new|verify|agree|check|status` is the contributor command; the page for addon authors is `docs/reference/addons/bindings.md`.
+- A record's `author` and every proof's and verify row's `by`/`verifier` is a GitHub login. The author never verifies their own record (§5).
+- A proof is `binding.py verify`'s result on one exe: the exe's sha256, size and timestamp, the resolution result with core's rules, the sigcheck result, and a digest over the signature fields that decide where the binding lands plus the exe hash. CI cannot rerun it; it checks the build is known, the digest matches and a KB-build proof found the recorded `match` and `target`.
+- `.github/workflows/bindings.yml` merges a pull request by itself when it only adds L1/L2 records with a proof by their author, or only adds one agree row plus proof by a second account; everything else gets review.
+- `binding.py unfold <Name>...` moves bindings from the shared tables into records; bindgen's output does not change (`re/tools/tests/test_binding_check.py`).

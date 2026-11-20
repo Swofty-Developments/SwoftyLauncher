@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Ai_Calc_FollowSpeedForGap",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1405fbfd0",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "float Ai_Calc_FollowSpeedForGap(void *car, void *car_ahead, float gap, float a4, float extra_buffer_per_speed)",
+  "evidence": "decomp:re/decomp/1405fbfd0.c;xref:0x1406450a0,0x1406450e0,0x14064525c,0x1406452e5,0x140669f1a",
+  "notes": "(carA, carB, gap, a4, k) -> float in [0, ai.general_ai_settings.max_test_speed]. Follow buffer from carA handling config [carA+0x230]: clamp((vA - vB) * buffer_space_settings.follow_buffer_speed_percentage (+0xb8) * [carA+0x20]+0xd4, follow_buffer_min_distance (+0xb0), follow_buffer_max_distance (+0xa8)), v = [car+0x38]+0x3c; if vB < 5 and vA > 20 and carB state ([[[[carB+0x18]+0x10]+0x30]+0x70]+0x50 &~1) != 2 -> max distance; + max(vA,vB)*k when k > 0; max with [carA+0x38]+0x2c when either car flag +0x500 is set. Then gap -= buffer and the result runs through the cars' +0x60 tables (cursor update 0x14068ab50, Ai_TestGraph_EvalTimeSpeed 0x14063c130, Ai_TestGraph_EvalDistanceSpeedA 0x140621620) and is clamped to max_test_speed (0x146046c68). The five general_ai_settings keys are only the lazy tunable init (guard 0x146046c78). Callers: Ai_Unk_1406427e0 (4 sites, gap = slot distance, results stored per slot) and 0x140669c20. (corrected 2026-11-14: was named from the key strings only) (renamed 2026-11-14 from Ai_Read_GeneralSettings_5: the code contradicts the old name) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.read_general_settings_5",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 68 01 00 00 C5 78 29 8C 24 50 01 00 00",
+  "match": "0x1405fbfd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1405fbfd0",
+  "kind": "func_start",
+  "names": [
+   "Ai_Calc_FollowSpeedForGap"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1405fbfd0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1405fbfd0.c;xref:0x6450a0",
+   "notes": "V4686 lazy-inits the 5 nodes but is a gap/spacing calc (float math on two cars, 0xa8/0xb0/0xb8 cfg values); not a settings reader; better Ai_Calc_FollowGap"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x1405fbfd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1405fbfd0.c;xref:0x1406450a0",
+   "notes": "V7133 name fits; finding facts hold; 5 direct calls"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x1405fbfd0",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1405fbfd0-0x1405fc483;xref:0x1406450a0,0x1406450e0,0x14064525c,0x1406452e5,0x140669f1a",
+   "notes": "V10595 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Role and new name agree: handling [car+0x230] +0xb8/+0xa8/+0xb0 follow-buffer values, scale [car+0x20]+0xd4, flags +0x500, table calls 0x14068ab50/0x14063c130/0x140621620, max_test_speed clamp; callers 4x in 0x1406427e0 + 0x140669f1a. Correction: arg4 is a float in xmm3 (vmovaps xmm6,xmm3 at 0x1405fc000, passed on as xmm1 to the table evals; callers set xmm3), not uint64_t; proto should be (void *car, void *car_ahead, float gap, float a4, float extra_buffer_per_speed)."
+  }
+ ],
+ "proofs": []
+}

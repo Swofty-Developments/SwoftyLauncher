@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_VehiclePlacementSystem_HandleEncodedGridMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f61e70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f61e70.c;xref:0x142f6190d",
+  "notes": "cxx=VehiclePlacementSystem::handleEncodedGridMessage; log channel GRID: 'VehiclePlacementSystem::handleEncodedGridMessage()' L2 2026-11-14 (engine-re round 2): decomp read; 1 reference(s) (0x142f6190d); the body itself references 'GRID' / 'VehiclePlacementSystem::handleEncodedGridMessage()'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vehicle_placement_system_handle_encoded_grid_message",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 44 89 C3 48 89 D7 48 89 CE 48 8B 81 40 09 00 00",
+  "match": "0x142f61e70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f61e70",
+  "kind": "func_start",
+  "names": [
+   "Game_VehiclePlacementSystem_HandleEncodedGridMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f61e70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f61e70.c;xref:0x142f6190f",
+   "notes": "V5648 name/log strings and body scale match"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x142f61e70",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142f61e70-0x142f61f3b;xref:0x142f6190d",
+   "notes": "V10482 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only lea 0x142f6190d in Game_VehiclePlacementSystem_Connect. GRID VehiclePlacementSystem::handleEncodedGridMessage(). 3 args."
+  }
+ ],
+ "proofs": []
+}

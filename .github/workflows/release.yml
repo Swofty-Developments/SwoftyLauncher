@@ -3,6 +3,8 @@ name: Release
 on:
   push:
     tags: ['v*']
+  # Run by hand from the tag itself (gh workflow run release.yml --ref <tag> -f tag=<tag>): the jobs use the
+  # composite actions in the tag's checkout, which a tag older than this workflow does not have.
   workflow_dispatch:
     inputs:
       tag:
@@ -30,19 +32,6 @@ jobs:
         with:
           ref: ${{ env.TAG }}
 
-      # The native scripts pin their compilers to the maintainer's healthy cores (taskset -c 2-7,...),
-      # which leaves two of a hosted runner's four. This shim drops the pin and runs the command as is.
-      - name: Use every runner core
-        run: |
-          mkdir -p "$RUNNER_TEMP/bin"
-          cat > "$RUNNER_TEMP/bin/taskset" <<'EOF'
-          #!/bin/sh
-          [ "$1" = -c ] && shift 2
-          exec "$@"
-          EOF
-          chmod +x "$RUNNER_TEMP/bin/taskset"
-          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
-
       # A fixed install path, so the objects in CI's Zig cache match (see ci.yml).
       - uses: mlugg/setup-zig@v2
         with:
@@ -60,8 +49,11 @@ jobs:
         with:
           path: |
             native/build/zig-cache
-          key: zig-${{ runner.os }}-0.16.0-${{ steps.zig-period.outputs.month }}-${{ hashFiles('native/**', 'addons/*/native/**', 'packages/sdk/include/**') }}
+          key: zig-${{ runner.os }}-0.16.0-${{ steps.zig-period.outputs.month }}-${{ hashFiles('native/**', 'addons/*/native/**', 'templates/**/native/**', 'packages/sdk/include/**') }}
           restore-keys: zig-${{ runner.os }}-0.16.0-${{ steps.zig-period.outputs.month }}-
+
+      - name: Ninja
+        uses: ./.github/actions/ninja
 
       - name: Build
         run: native/build.sh
@@ -71,6 +63,11 @@ jobs:
           name: native
           path: |
             native/dist/
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: core-patches
+          path: native/release/
 
   # The binaries come from main's CI run for the tagged commit (release-binaries.yml, called by ci.yml), which
   # the maintainer waits for before tagging: this job waits for that run while it is still going and takes its
@@ -270,7 +267,7 @@ jobs:
 
   publish:
     name: Publish the release
-    needs: [linux, windows, gate]
+    needs: [native, linux, windows, gate]
     if: ${{ !cancelled() && !inputs.dry-run && needs.linux.result == 'success' && needs.windows.result == 'success' && needs.gate.result == 'success' }}
     runs-on: ubuntu-latest
     steps:
@@ -291,6 +288,11 @@ jobs:
           name: windows
           path: artefacts
 
+      - uses: actions/download-artifact@v8
+        with:
+          name: core-patches
+          path: artefacts
+
       - name: Checksums
         working-directory: artefacts
         run: sha256sum swofty-launcher-* > SHA256SUMS
@@ -300,6 +302,7 @@ jobs:
           tag_name: ${{ env.TAG }}
           files: |
             artefacts/swofty-launcher-*
+            artefacts/swofty-core-*-patches.json
             artefacts/SHA256SUMS
 
       # The launcher and the installer download from cdn.swofty.net and fall back to GitHub, so a GitHub outage

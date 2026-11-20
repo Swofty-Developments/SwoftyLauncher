@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GamePlayerManager_AnyKeyCallbackForLeadPlayerControllerReco",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434df050",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=GamePlayerManager::anyKeyCallbackForLeadPlayerControllerReconnection; log channel INPUT: 'GamePlayerManager::anyKeyCallbackForLeadPlayerControllerReconnection - calling forceRefresh()'"
+ },
+ "signature": {
+  "id": "game.game_player_manager_any_key_callback_for_lead_player_controller_reco",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 4C 89 C0 48 89 D7",
+  "match": "0x1434df050",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434df050",
+  "kind": "func_start",
+  "names": [
+   "Game_GamePlayerManager_AnyKeyCallbackForLeadPlayerControllerReco"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1434df050",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434df050.c",
+   "notes": "V6065 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

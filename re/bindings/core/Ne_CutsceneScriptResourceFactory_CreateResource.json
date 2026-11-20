@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_CutsceneScriptResourceFactory_CreateResource",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14024e750",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-method;decomp:re/decomp/14024e750.c;xref:0x1455ecde0",
+  "notes": "logged method name createResource (class from the log channel); log channel NeCutsceneScriptResource: 'createResource \"%s\"' cb1-verify: factory createResource (log channel NeCutsceneScriptResourceFactory), allocates a 0x40-byte NeCutsceneScriptResource"
+ },
+ "signature": {
+  "id": "core.cutscene_script_resource_create_resource",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 4C 89 CF 48 89 D3 49 89 CE",
+  "match": "0x14024e750",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14024e750",
+  "kind": "func_start",
+  "names": [
+   "Ne_CutsceneScriptResourceFactory_CreateResource"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la0-verify",
+   "kind": "func",
+   "item": "0x14024e750",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14024e750.c",
+   "notes": "V4056 createResource strings and 0x40 alloc confirmed; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

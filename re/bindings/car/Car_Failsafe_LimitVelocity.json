@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Failsafe_LimitVelocity",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144677780",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "pat:log-channel-VEHICLE_FAILSAFES",
+  "notes": "Log channel VEHICLE_FAILSAFES: 'Angular velocity component %d of vehicle %d limited. Old: %f New: %f' | 'Linear velocity y component of vehicle %d limited. Old: %f New: %f' | 'Linear velocity up component of vehicle %d limited. Old: %f New: %f'"
+ },
+ "signature": {
+  "id": "car.failsafe_limit_velocity",
+  "section": ".xtls",
+  "pattern": "56 48 81 EC A0 00 00 00 C5 78 29 94 24 90 00 00 00",
+  "match": "0x144677780",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144677780",
+  "kind": "func_start",
+  "names": [
+   "Car_Failsafe_LimitVelocity"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x144677780",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144677780.c;xref:0x14467773e",
+   "notes": "V6741 name and log/strings match; body checked, no broader behaviour"
+  }
+ ],
+ "proofs": []
+}

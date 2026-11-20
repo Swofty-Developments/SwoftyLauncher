@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "vt_Sess_ScTriggerVsc",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1458544b0",
+  "type": "vtable[10]",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/1435f81a0.c;xref:0x1435fd30c",
+  "notes": "SC condition class 'Trigger VSC' (name string directly before the vtable; the type descriptor 0x145f96ba0 at object+0x28 points to it). Constructed in the SC condition factory 0x1435f81a0 (store at 0x1435fd30c); slots 3/4 (0x14361bbb0/0x14361bbc0) are the shared condition base.  (used by vmknolle red-flag-pit)"
+ },
+ "signature": {
+  "id": "session.sc_trigger_vsc_vtable",
+  "section": ".xtls",
+  "pattern": "48 8D 0D ?? ?? ?? ?? 48 89 08 48 C7 80 80 00 00 00 00 00 00 00",
+  "match": "0x1435fd30c",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x1458544b0",
+  "kind": "data",
+  "names": [
+   "vt_Sess_ScTriggerVsc"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-29",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-e",
+   "kind": "global",
+   "item": "0x1458544b0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_e/decomp/1435f81a0.c;xref:0x1435fd30c",
+   "notes": "V1089 factory allocs 0x88, type key 0x145f96ba0 -> 'Trigger VSC' (string 0x1458544a0 before vt); 10 code slots"
+  }
+ ],
+ "proofs": []
+}

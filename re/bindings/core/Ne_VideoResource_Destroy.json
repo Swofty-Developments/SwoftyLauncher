@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_VideoResource_Destroy",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143f93b40",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/143f93b40.c;xref:0x143f958eb,0x143f959a2",
+  "notes": "cxx=NeVideoResource::~NeVideoResource; log channel NeVideoResource: 'NeVideoResource::~NeVideoResource %s'"
+ },
+ "signature": {
+  "id": "core.video_resource_destroy",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 48 8D 05 ?? ?? ?? ?? 48 89 41 08 80 3D ?? ?? ?? ?? 01",
+  "match": "0x143f93b40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143f93b40",
+  "kind": "func_start",
+  "names": [
+   "Ne_VideoResource_Destroy"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb2-verify-a",
+   "kind": "func",
+   "item": "Ne_VideoResource_Destroy",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143f93b40.c;xref:0x143f958eb",
+   "notes": "V2064 destructor log with name"
+  }
+ ],
+ "proofs": []
+}

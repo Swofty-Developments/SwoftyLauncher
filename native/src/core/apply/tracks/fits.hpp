@@ -1,7 +1,8 @@
 #pragma once
 
-#include "base.hpp"
-#include "facts_file.hpp"
+#include "core/apply/content/box_world.hpp"
+#include "core/apply/tracks/base.hpp"
+#include "core/apply/tracks/facts_file.hpp"
 
 #include <swofty/json.hpp>
 
@@ -30,10 +31,7 @@ namespace swofty_core::apply::tracks {
 
 enum class Mode { grand_prix, time_trial };
 
-inline const char *mode_name(Mode m)
-{
-    return m == Mode::time_trial ? "time_trial" : "grand_prix";
-}
+inline const char *mode_name(Mode m) { return m == Mode::time_trial ? "time_trial" : "grand_prix"; }
 
 struct Car {
     std::string team, folder, asset;
@@ -47,9 +45,11 @@ struct BoxInfo {
     bool derived = false;
     std::string unread;
     std::vector<Car> ai;
+    // The stock layer row the box's own world copies (content/box_world.hpp); empty when the box has none.
+    std::string layer;
 };
 
-enum class Rule { none, time_trial, world, grid, ai, difficulties, offered };
+enum class Rule { none, time_trial, world, grid, ai, difficulties, offered, garages };
 
 struct Fit {
     bool ok = true;
@@ -64,9 +64,18 @@ inline bool facts_has(const std::vector<std::string> &v, std::string_view s)
     return std::find(v.begin(), v.end(), s) != v.end();
 }
 
-// The worlds the box's setup mode loads, in layer order, without repeats.
+// The worlds the box's setup mode loads, in layer order, without repeats. A box with a world of its own loads that
+// one alone: its season is on no other layer row.
 inline std::vector<std::string> worlds_for(const Facts &facts, const BoxInfo &box)
 {
+    if (!box.layer.empty()) {
+        for (auto &l : facts.layers)
+            if (l.label == box.layer && !l.world.empty())
+                return {l.world};
+        for (auto &w : content::box_world::STOCK)
+            if (box.layer == w.layer)
+                return {w.world};
+    }
     std::vector<const Layer *> modes;
     for (auto &l : facts.layers)
         if (facts_has(l.setup_modes, box.setup_mode))
@@ -153,6 +162,19 @@ inline Fit fits(const BoxInfo &box, const BaseTrack &track, Mode mode, const Fac
         return fail(f, Rule::grid, grid, cars, {},
                     "its " + box.setup_mode + " world has " + std::to_string(grid) + " grid slots; the box runs " +
                         std::to_string(cars) + " cars");
+    if (!box.layer.empty() && box.teams > 0)
+        for (auto &w : worlds) {
+            auto it = tf->worlds.find(w);
+            if (it == tf->worlds.end())
+                continue;
+            int room = it->second.garages;
+            if (it->second.pit_boxes >= 0 && (room < 0 || it->second.pit_boxes < room))
+                room = it->second.pit_boxes;
+            if (room >= 0 && room < box.teams)
+                return fail(f, Rule::garages, room, box.teams, w,
+                            "its " + w + " world has " + std::to_string(room) + " garages; the box runs " +
+                                std::to_string(box.teams) + " teams");
+        }
     for (auto &car : box.ai) {
         if (car.folder.empty() || car.asset.empty()) {
             f.no_facts.push_back("the AI folder of " + car.team);
@@ -178,9 +200,10 @@ struct Decision {
 inline Decision decide(const BaseTrack *track, const BoxInfo &box, Mode mode, const Fit &fit, std::string_view track_label)
 {
     Decision d;
-    std::string name = !track_label.empty() ? std::string(track_label) : track && !track->name.empty() ? track->name
-                                                                            : track ? track->code
-                                                                                    : std::string("this track");
+    std::string name = !track_label.empty()            ? std::string(track_label)
+                       : track && !track->name.empty() ? track->name
+                       : track                         ? track->code
+                                                       : std::string("this track");
     std::string boxname = box.title.empty() ? box.package : box.title;
     std::string where = "[tracks] guard: " + (track ? track->id : name) + " in " + box.package + " (" + mode_name(mode) + ")";
     if (!track) {
@@ -211,6 +234,10 @@ inline Decision decide(const BaseTrack *track, const BoxInfo &box, Mode mode, co
         break;
     case Rule::offered:
         d.body = boxname + " doesn't offer it.";
+        break;
+    case Rule::garages:
+        d.body =
+            "Its pit lane holds " + std::to_string(fit.have) + " teams. " + boxname + " runs " + std::to_string(fit.need) + ".";
         break;
     case Rule::none:
         d.body = fit.reason;
@@ -303,6 +330,25 @@ inline Car car_of(const std::string &team, const Value &t, const Lookup &lookup,
     return car;
 }
 
+// The stock layer row a box's own world copies (content/box_world.hpp): the one whose worldEri the box's layer row
+// carries. Empty for a list whose season is not a box's own.
+inline std::string own_layer(const TextRead &read, const std::string &season)
+{
+    namespace bw = content::box_world;
+    if (!read || season.rfind("swofty_box_", 0) != 0)
+        return {};
+    auto row = [](const std::string &label) {
+        return std::string(bw::LAYERS) + "." + bw::LAYER_ROW + "[_metadata_=" + label + "].worldEri";
+    };
+    std::string eri = db_text(read, row(season + "_world"));
+    if (eri.empty())
+        return {};
+    for (auto &w : bw::STOCK)
+        if (db_text(read, row(w.layer)) == eri)
+            return w.layer;
+    return {};
+}
+
 // A box from its effective content.package record. A team with no seats listed runs two cars.
 inline BoxInfo box_from_package(const std::string &id, const Value &pkg, const Lookup &lookup, const TextRead &read)
 {
@@ -315,6 +361,7 @@ inline BoxInfo box_from_package(const std::string &id, const Value &pkg, const L
     if (pkg["setup_mode"].is_string())
         b.setup_mode = std::string(pkg["setup_mode"].as_string());
     b.season = db_text(read, std::string(DB_LISTS) + "[_metadata_=" + b.entrant_list + "].season");
+    b.layer = own_layer(read, b.season);
     auto teams = pkg["teams"].if_array();
     if (!teams)
         return b;
@@ -420,9 +467,9 @@ inline std::string list_setup_mode(const ListDb &db, const std::string &list, st
             continue;
         for (auto &mode : db_names(db_text(db.text, row + ".entrant_setup_modes"))) {
             auto j = db.row(DB_ENTRANT_MODES, mode);
-            if (!j || !facts_has(db_names(db_text(db.text, db_row_path(DB_ENTRANT_MODES, "entrant_setup_mode", *j) +
-                                                                ".entrant_lists")),
-                                 list))
+            if (!j ||
+                !facts_has(db_names(db_text(db.text, db_row_path(DB_ENTRANT_MODES, "entrant_setup_mode", *j) + ".entrant_lists")),
+                           list))
                 continue;
             if (mode != host)
                 return label;

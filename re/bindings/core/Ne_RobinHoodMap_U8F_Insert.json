@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_U8F_Insert",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1412a0f10",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "xref:0x142e909ee;decomp:re/decomp/1412a0f10.c",
+  "notes": "robin_hood flat map<u8,float> insert used by Sess_Veh_UpdateWheelMap; grows through 0x1412a1200 (thunk 0x14a727270, first allocation) / rehash 0x1412a14e0 cs-verify: find-or-reserve: returns index + status, the caller writes the entry"
+ },
+ "signature": {
+  "id": "core.robin_hood_map_u8_f_insert",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 8B 44 24 30 85 C0 74 0E 83 F8 03",
+  "match": "0x1411e5cc5",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1412a0f10",
+  "kind": "func_start",
+  "names": [
+   "Ne_RobinHoodMap_U8F_Insert"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cs-verify",
+   "kind": "func",
+   "item": "Ne_RobinHoodMap_U8F_Insert",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1412a0f10.c;xref:0x142e909ee",
+   "notes": "V2269 find-or-reserve slot returning (idx,status 0 found/1 full/2,3 inserted); 8-byte entries key u8@0 float@4 (caller 142e90560 writes them); grow via func_0x1412a1200"
+  }
+ ],
+ "proofs": []
+}

@@ -1,23 +1,13 @@
 use super::Pill;
-use crate::library::{AddonIcon, ProfileItem};
-use crate::notices::{Notification, Notify};
-use crate::scale::px;
-use crate::shell::{Page, Prompt, Shell, SliderSlot};
-use crate::theme::{Palette, ScrollArea, palette};
+use crate::services::library::AddonIcon;
+use crate::ui::scale::px;
+use crate::ui::theme::Palette;
 use gpui_kit::assets::IconName;
-use gpui_kit::component::button::{Button, ButtonVariant, ButtonVariants};
-use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
-use gpui_kit::component::scroll::Scrollable;
-use gpui_kit::component::slider::{Slider, SliderEvent, SliderState};
-use gpui_kit::component::{Disableable, Icon, Sizable, WindowExt, h_flex, v_flex};
-use gpui_kit::prelude::FluentBuilder;
+use gpui_kit::component::{Icon, h_flex, v_flex};
 use gpui_kit::*;
-use std::rc::Rc;
 use std::sync::{Arc, LazyLock};
-use swofty_core::manifest::{AddonManifest, AddonOption, Binds, OptionType};
 use swofty_core::profile::VANILLA;
-use swofty_core::store::ProfileDeletion;
-use swofty_i18n::{tr, trf, trn};
+use swofty_i18n::{tr, trf};
 
 pub(crate) fn tag(label: impl Into<SharedString>, _: Palette) -> Pill {
     Pill::new(label)

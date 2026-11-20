@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkNTP_UpdateReSynchronising",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143293140",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-NTP",
+  "notes": "named from its log messages (channel NETWORK-NTP): 'Update: re-synchronising.'"
+ },
+ "signature": {
+  "id": "game.network_ntp_update_re_synchronising",
+  "section": ".xtls",
+  "pattern": "56 53 48 83 EC 28 48 89 CE 0F B6 59 05",
+  "match": "0x143293140",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143293140",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkNTP_UpdateReSynchronising"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x143293140",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143293140.c;xref:0x1430e0705",
+   "notes": "V5861 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

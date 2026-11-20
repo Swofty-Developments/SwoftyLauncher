@@ -1,0 +1,110 @@
+{
+ "schema": 1,
+ "name": "Game_TrackSurface_UpdateWheelRecords",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1437cc9c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_TrackSurface_UpdateWheelRecords(void *track_surface_sys)",
+  "evidence": "decomp:re/decomp/1437cc9c0.c;doc:re/db/subsystems/game.md;decomp:re/decomp/1437cc9c0.c;xref:0x1458756f8",
+  "notes": "Per frame: TIS+0x3f0a78 = clamp(session time/length) (track evolution); +0x3f0a64 dry-line strength (0x1437cda00); +0x3f0a4c drying factor; +0x3f0a50 puddle offset; per car/wheel TrackSpace lap/lateral fraction (XOR pairs in [sys+0xe28+car*8]) -> Game_TrackInfo_SampleWheelSurface 0x144792f50 -> record sys+car*0x70+wheel*0x1c+0x24 (wx-drive, static) | findings from PR #471 by vogtmarcel07-cloud  | engine-re 2026-11-14: vtable slot pointer 0x1458756f8. Writes ws+0x3f0a78 (0x1437ccc20), dry-line strength ws+0x3f0a64 = 0x1437cda00 output (0x1437cd039), drying factor ws+0x3f0a4c (0x1437cd0db, from ws+0x3f0a38), puddle offset ws+0x3f0a50 (0x1437cd10c); sys = the VehicleEnvironment provider object (sys+0xf48 = ws). 0x1437cda00 evaluates wet_delta of the active dataset at (now - lookback*60) and bands it at 0.33 / 0.66 to build up / wash out the dry line (rates sys+0xfc4 / +0xfc8 or parameter handles 0x146102c68..0x146102c78).  raised by engine-re with --force 2026-11-14 at user request (lane owner review requested) | re-bindings 2026-11-18: Steam 1.0.145 (sigport --witness): 0x1437cef50, 728/728 equal, with +0x3f0a38, +0x3f0a4c, +0x3f0a50, +0x3f0a64, +0x3f0a78, +0x70 and +0x24 at the same instructions, the car stride imul rax, r14, 0x70 at 0x1437cf944 and the wheel record store [rsi-0x1c] at 0x1437cfd1d."
+ },
+ "signature": {
+  "id": "game.track_surface_update_wheel_records",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 C5 78 29 BC 24 D0 00 00 00 C5 78 29 B4 24 C0 00 00 00 C5 78 29 AC 24 B0 00 00 00 C5 78 29 A4 24 A0 00 00 00 C5 78 29 9C 24 90 00 00 00 C5 78 29 94 24 80 00 00 00 C5 78 29 4C 24 70 C5 79 29 44 24",
+  "match": "0x1437cc9c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1437cc9c0",
+  "kind": "func_start",
+  "names": [
+   "Game_TrackSurface_UpdateWheelRecords"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x1437cc9c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1437cc9c0.c",
+   "notes": "V4057 offsets not individually re-read; structure plausible (per-wheel record loop); low-confidence agree (vtable/indirect or no direct callsite checked)"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "wx-verify",
+   "kind": "func",
+   "item": "0x1437cc9c0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1437cc9c0;xref:0x1458756f8",
+   "notes": "V9441 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans). Only ref = abs64 0x1458756f8. ws = [sys+0xf48]. Writes ws+0x3f0a78 = clamp01(time/length) (0x1437ccc20), calls 0x1437cda00 and stores ws+0x3f0a64/+0x3f0a68 (0x1437cd039/0x1437cd04e), drying ws+0x3f0a4c from clamp01(ws+0x3f0a38) (0x1437cd0db), ws+0x3f0a50 = [0x146102c88]+8 * 60 or 0 (0x1437cd10c). Record ptr = sys + car*0x70 + wheel*0x1c + 0x24 (rdx = r13*28 at 0x1437cd3bb..0x1437cd3d1) passed as 5th arg to 0x144792f50 at 0x1437cd3e6. 0x1437cda00: EvalAt(ws+0xd48+d*0x30, clock_now - [0x146102c78]+8 * 60) (0x1437cdab0-0x1437cdaca), bands 0.33 / 0.66 (0x1455275bc, 0x1455d8574), rates sys+0xfc4/+0xfc8 or handles 0x146102c68/0x146102c70."
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x1437cc9c0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1437cc9c0-0x1437cd816;xref:0x1458756f8",
+   "notes": "V10526 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only abs64 0x1458756f8. TIS +0x3f0a78 (0x1437ccc20), +0x3f0a64 from 0x1437cda00 (0x1437cd027/0x1437cd039), +0x3f0a4c, +0x3f0a50, [sys+0xe28+car*8] (0x1437cd215), 0x144792f50 (0x1437cd3e6), car*0x70 records. 1 arg."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1437cc9c0",
+    "target": "0x1437cc9c0"
+   },
+   "sigcheck": "passed",
+   "digest": "e5d48816ac46cd9d2ff9d89fb1e3e84dbfaa13652b056c63c33986ba285d8d51"
+  },
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1437cef50",
+    "target": "0x1437cef50"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "14436ba1a3604cb5f0606d2a73906915d7fbb5de4b2a448db00b6cfc48a84d22"
+  }
+ ]
+}

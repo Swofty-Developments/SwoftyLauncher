@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PitStops_SetupCrew",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403ad360",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-PITSTOPS",
+  "notes": "named from its log messages (channel PITSTOPS): 'Crew %d m_team %s | Contact John Smedley : failed to find pitlight scene for %s '"
+ },
+ "signature": {
+  "id": "game.pit_stops_setup_crew",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 04 00 00 C5 78 29 BC 24 00 04 00 00 C5 78 29 B4 24 F0 03 00 00 C5 78 29 AC 24 E0 03 00 00 C5 78 29 A4 24 D0 03 00 00 C5 78 29 9C 24 C0 03 00 00 C5 78 29 94 24 B0 03 00 00 C5 78 29 8C 24 A0 03 00 00 C5 78 29 84 24 90 03 00 00 C5 F8 29 BC 24 80 03 00 00 C5 F8 29 B4 24 70 03 00 00 44 89 CD",
+  "match": "0x1403ad360",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403ad360",
+  "kind": "func_start",
+  "names": [
+   "Game_PitStops_SetupCrew"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1403ad360",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403ad360.c;xref:0x3c7876",
+   "notes": "V4617 string/behaviour in decomp matches name"
+  }
+ ],
+ "proofs": []
+}

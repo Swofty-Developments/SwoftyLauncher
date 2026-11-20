@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_InputMapper_IsActionReleased",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1441165b0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1441165b0.c;xref:0x14039cac6,0x14039d30b",
+  "notes": "Twin of Ne_InputMapper_IsActionPressed testing the other edge byte (+0xd4) via 0x143aa0f80 (released/held). Callers: Car_Visual_UpdateRenderState. | engine-re E1 2026-11-18 (static): used as the held/down state, not only a release edge: Game_TelemetryUdp_UpdateButtons 0x142cf8850 builds the BUTN mask of currently held buttons from it (sent only when the mask changes), and Sess_HumanController_Update uses it for Handbrake (bit6) and the Overtake bit22. Owner review of the name requested."
+ },
+ "signature": {
+  "id": "core.input_mapper_is_action_released",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4C 8B 5C 24 40 84 C0 74 08 41 C6",
+  "match": "0x14039cac6",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1441165b0",
+  "kind": "func_start",
+  "names": [
+   "Ne_InputMapper_IsActionReleased"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x1441165b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1441165b0.c;xref:0x14039cac6",
+   "notes": "V3481 twin of 0x1441162f0: edge byte +0xd4 via 0x143aa0f80; caller Car_Visual_UpdateRenderState confirmed"
+  }
+ ],
+ "proofs": []
+}

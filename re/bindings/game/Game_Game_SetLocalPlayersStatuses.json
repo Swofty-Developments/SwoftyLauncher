@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Game_SetLocalPlayersStatuses",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142cea230",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name setLocalPlayersStatuses (class from the log channel); log channel GAME: '%s: sending MessageVehicleStatusRequest: vehicle instance Id: %d'"
+ },
+ "signature": {
+  "id": "game.game_set_local_players_statuses",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 44 89 CF",
+  "match": "0x142cea230",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142cea230",
+  "kind": "func_start",
+  "names": [
+   "Game_Game_SetLocalPlayersStatuses"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142cea230",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142cea230.c;xref:0x142cea220",
+   "notes": "V5069 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Sess_VehiclePlacement_PlaceOnSlot",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f343d0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-VEHICLE_PLACEMENT;decomp:re/decomp/142f343d0.c;xref:0x142a3c7b2,0x142a3f2e3,0x142d14e20,0x142d17447",
+  "notes": "named from its log messages (channel VEHICLE_PLACEMENT): 'Placing vehicle %-12s %2d on slot %2d at pos (%+f, %+f, %+f) with type %s' Callers: census steam 0x2f343d0."
+ },
+ "signature": {
+  "id": "session.vehicle_placement_place_on_slot",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 B4 24 90 00 00 00 44 89 CD 44 89 C6",
+  "match": "0x142f343d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f343d0",
+  "kind": "func_start",
+  "names": [
+   "Sess_VehiclePlacement_PlaceOnSlot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb3-verify-a",
+   "kind": "func",
+   "item": "Sess_VehiclePlacement_PlaceOnSlot",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f343d0.c;xref:0x142f343d0",
+   "notes": "V1906 log strings confirmed by disassembly lea refs inside function"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Sess_VehiclePlacement_PlaceOnSlot",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142f343d0-0x142f34970,0x142f62580-0x142f629e0,0x144632350-0x1446323b6,0x14f446da0-0x14f446dcc,0x14fa24f80-0x14fa25290,0x150ae8240-0x150ae82d2,0x14f791fe0-0x14f79210f,1.0.145 0x142f36960-0x142f36f00;xref:0x142f34777,0x142f3477e,0x142f34443,0x142f3444e,0x142f34624,0x142a3c7b2,0x142a3f2e3,0x142d14e20,0x142d17447,0x142d1ca07,0x142d22887,0x142d3c6e2,0x142d3d275,0x142d59dcf,0x1435845df,0x14e92440f,0x14f79206c,0x14fa2504f,0x14fa25216,0x150ae82bf",
+   "notes": "V100044 Blind: agree. Proto '-' (no claim). Channel VEHICLE_PLACEMENT (0x142f34777) and the full 'Placing vehicle %-12s %2d on slot %2d...' format (0x142f3477e) match; the 4 cited xrefs are E8 calls; census 15 calls/14 funcs (.xtls 10, .data1 5, no thunks/jumps/lea/ptrs) matches own scan. Code: void(this, u8 id, u8 type, u32 slot, float keepDist); slot unsigned <=31 else static identity pose; type unchecked, indexes [9][32] slot table at this+0x38 (type>=9 reads past it); pose from slot+0x20 (y+3.0) -> comp+0xac0 -> veh+0x558+0x190 via 0x144632350; keeps current pose if within keepDist. 1.0.145 twin 0x142f36960 identical (288 insns)."
+  }
+ ],
+ "proofs": []
+}

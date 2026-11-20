@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Collect_UpgradeEventsForDay",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fd0720",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_Collect_UpgradeEventsForDay(void *upgrades_comp, void *out)",
+  "evidence": "decomp:re/decomp/140fd0720.c;xref:0x1400fcf3e;xref:0x140ff7778;xref:0x140ff7a95",
+  "notes": "myteam-g2: Finds in the day-keyed tree at comp+0x330 the entry for day comp+0x340 and iterates its event list (entry+0x120), building output records with FUN_143282d40 and random id blocks. Backing for the online-sync check and Is_RnDPlayerControlled."
+ },
+ "signature": {
+  "id": "career.collect_upgrade_events_for_day",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 48 89 D6 48 8B 91 30 03 00 00",
+  "match": "0x140fd0720",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fd0720",
+  "kind": "func_start",
+  "names": [
+   "Career_Collect_UpgradeEventsForDay"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140fd0720",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fd0720.c;xref:0x1400fcf3e",
+   "notes": "V9623 Finds tree node whose day key == comp+0x340 in tree at comp+0x330, iterates its event list (entry+0x120, stride 0xc0) and returns first record passing predicate."
+  }
+ ],
+ "proofs": []
+}

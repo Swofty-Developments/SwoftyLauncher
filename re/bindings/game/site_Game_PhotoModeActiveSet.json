@@ -1,0 +1,43 @@
+{
+ "schema": 1,
+ "name": "site_Game_PhotoModeActiveSet",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142bdba77",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/142bdbd10.c;decomp:re/decomp/142bda710.c;xref:0x142bdba77",
+  "notes": "mov byte [rbp+0x394],1 in Game_PhotoModeMotion_Enable (0x142bdaa20, the 'Photo mode enabled: Replay time' log): rbp = PhotoModeSystem, +0x394 = photo mode active (cleared at site_Game_PhotoModeActiveClear), +0x395 = change pending (set by 0x142bda710 SetPhotoMode(sys, on), cleared at the end of enable and by 0x142bdbcf0). Used to raise the PHOTO view flag. Static only."
+ },
+ "signature": {
+  "id": "game.photo_mode_active_set",
+  "section": ".xtls",
+  "pattern": "C5 F8 29 85 80 03 00 00 C6 85 94 03 00 00 01",
+  "match": "0x142bdba6f",
+  "anchor": "0x8",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142bdba77",
+  "kind": "mid",
+  "expect": "C6 85 94 03 00 00 01",
+  "names": [
+   "site_Game_PhotoModeActiveSet"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "view-re",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/frontend/view_state.cpp"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

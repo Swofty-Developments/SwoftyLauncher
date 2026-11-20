@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneScreen_Destructor",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14179ff30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14179ff30.c;xref:0x145705b90",
+  "notes": "Scalar deleting dtor of a menu screen base class (vtable 0x145705b90; derived dtors at 0x1417a0140.. chain into it): releases its custom car (0x1428dbb80(mgr=this[0x2b], id this+0x148)), Manager stopCutscene (CutsceneManager +0x518 StopActiveCutscene + clears mgr+0x7178 callback), unlinks UI node, frees when param_2. Addon: shows cleanup contract for screens that own scene comps. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2922)"
+ },
+ "signature": {
+  "id": "game.frontend_scene_screen_destructor",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 89 D7 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 48 8B 89 58 01 00",
+  "match": "0x14179ff30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14179ff30",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneScreen_Destructor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d11-verify",
+   "kind": "func",
+   "item": "Game_FrontendSceneScreen_Destructor",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14179ff30.c;xref:0x145705b90",
+   "notes": "V2922 Decomp strings, offsets and callees match the claim; name fits."
+  }
+ ],
+ "proofs": []
+}

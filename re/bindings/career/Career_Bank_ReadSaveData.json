@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Bank_ReadSaveData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c5d990",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int (void *bank, void *json, void *flags)",
+  "evidence": "decomp:re/decomp/140c5d990.c;xref:0x145683018",
+  "notes": "myteam-g1: Bank component save reader: bankUniqueAccountId (-> bank+0x320 next account id), bankTeamData[] (teamStatId + driverAccounts[]), bankDriverData[] (driverStatId + driverAccounts[]); each account read with Career_Bank_ReadAccount (140c6d3d0). Team entries vector at bank+0x298, driver entries at +0x2b8."
+ },
+ "signature": {
+  "id": "career.bank_read_save_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 02 00 00 C5 F8 29 B4 24 20 02 00 00 4C 89 C7 48 89 D3",
+  "match": "0x140c5d990",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c5d990",
+  "kind": "func_start",
+  "names": [
+   "Career_Bank_ReadSaveData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-a",
+   "kind": "func",
+   "item": "0x140c5d990",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c5d990.c;str:\"bankUniqueAccountId\";str:\"bankTeamData\";str:\"bankDriverData\"",
+   "notes": "V8969 bankUniqueAccountId goes to bank+0x320 (param_1+800); team vector at +0x298, driver vector at +0x2b8, entries keyed by teamStatId/driverStatId with driverAccounts[] each read by 140c6d3d0; account stride 0x1b0 seen."
+  }
+ ],
+ "proofs": []
+}

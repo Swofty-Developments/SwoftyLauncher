@@ -1,16 +1,16 @@
 // Host test for per_package.hpp and the box fuel plan of data_session.cpp (fuel_plan.hpp): entry targets by track,
 // venue or the id's last code, a variant package inheriting its base's entries with its own winning, and the
-// writes and put-back order of the fuel plan over a fake data set. run_track_lists_test.sh builds and runs it.
+// writes and put-back order of the fuel plan over a fake data set. native/test/run_tests.sh track_lists builds and runs it.
 #include "fixture.hpp"
 
-#include "../../src/core/apply/tracks/fuel_plan.hpp"
+#include "core/apply/tracks/fuel_plan.hpp"
 
 int main()
 {
     trk::Base base = cs_base();
     std::vector<std::pair<std::string, Value>> recs = {
-        {"cs/f1_2016/hockenheim", Value::object({{"venue", Value("venue/albert_park")},
-                                                {"fuel", Value::object({{"burn_per_lap", Value(1.9)}})}})},
+        {"cs/f1_2016/hockenheim",
+         Value::object({{"venue", Value("venue/albert_park")}, {"fuel", Value::object({{"burn_per_lap", Value(1.9)}})}})},
         {"cs/f1_2016/monaco", Value::object({{"offered", Value(false)}})},
         {"cs/f1_2016/sochi", Value::object({{"venue", Value("venue/sochi?")}})},
         {"cs/f1_2016/okay", Value::object({{"track", Value("mod.okayama/okayama")}, {"order", Value(2)}})},
@@ -18,21 +18,24 @@ int main()
         {"cs/f1_2016_v10/monaco", Value::object({{"offered", Value(true)}, {"fuel", Value()}})}};
     trk::Entries e = trk::resolve_entries(base, recs);
     expect(e.by_track.size() == 3, "three targets: Melbourne, Monaco and Okayama");
-    expect(e.of("game/melbourne") && e.of("game/melbourne")->id == "cs/f1_2016_v10/melbourne" &&
-               e.of("game/melbourne")->burn && *e.of("game/melbourne")->burn > 2.09f,
+    expect(e.of("game/melbourne") && e.of("game/melbourne")->id == "cs/f1_2016_v10/melbourne" && e.of("game/melbourne")->burn &&
+               *e.of("game/melbourne")->burn > 2.09f,
            "the variant's own entry for a target wins over its base's (venue/albert_park resolves to Melbourne)");
     expect(e.of("game/monaco") && e.of("game/monaco")->offered && !e.of("game/monaco")->burn,
            "the variant offers Monaco again; a null fuel writes nothing");
     expect(e.of("mod.okayama/okayama") && e.of("mod.okayama/okayama")->order == 2, "an entry by track id keeps its order");
-    expect(e.lines.size() == 1 && e.lines[0] == "[tracks] cs/f1_2016/sochi: no track for venue/sochi? (optional); nothing applied",
+    expect(e.lines.size() == 1 &&
+               e.lines[0] == "[tracks] cs/f1_2016/sochi: no track for venue/sochi? (optional); nothing applied",
            "an entry whose venue has no track is skipped with a line");
-    expect(trk::entry_of_package("cs/f1_2016/monaco", "cs/f1_2016") && !trk::entry_of_package("cs/f1_2016_v10/monaco", "cs/f1_2016") &&
+    expect(trk::entry_of_package("cs/f1_2016/monaco", "cs/f1_2016") &&
+               !trk::entry_of_package("cs/f1_2016_v10/monaco", "cs/f1_2016") &&
                !trk::entry_of_package("cs/f1_2016", "cs/f1_2016") && !trk::entry_of_package("cs/f1_2016/a/b", "cs/f1_2016"),
            "a package's entries are the ids one level under it");
 
     std::vector<std::pair<std::string, Value>> all = {
         {"cs/f1_2016/bahrain", Value::object({{"package", Value("cs/f1_2016")}, {"order", Value(1)}})},
-        {"ig9.checks/monaco", Value::object({{"package", Value("cs/f1_2017")}, {"fuel", Value::object({{"burn_per_lap", Value(2.5)}})}})},
+        {"ig9.checks/monaco",
+         Value::object({{"package", Value("cs/f1_2017")}, {"fuel", Value::object({{"burn_per_lap", Value(2.5)}})}})},
         {"ig9.checks/melbourne", Value::object({{"package", Value("cs/f1_2016")}, {"offered", Value(false)}})},
         {"cs/f1_2016_v10/melbourne", Value::object({{"package", Value("cs/f1_2016_v10")}, {"offered", Value(true)}})}};
     std::vector<std::pair<std::string, Value>> got = trk::chain_records(all, {"cs/f1_2017"});
@@ -86,8 +89,7 @@ int main()
         trk::plan_burn(data_plan, set, "melbourne", 1.62f, "game/melbourne/f1_2026");
     expect(data_plan.size() == 1 && data_plan[0].after.burn > 1.61f && data_plan[0].before.burn > 1.73f,
            "a record an addon changed still writes its burn");
-    expect(trk::burn_from_addon({{"", "a"}}) && trk::burn_from_addon({{"/fuel", "a"}}) &&
-               !trk::burn_from_addon({{"/laps", "a"}}),
+    expect(trk::burn_from_addon({{"", "a"}}) && trk::burn_from_addon({{"/fuel", "a"}}) && !trk::burn_from_addon({{"/laps", "a"}}),
            "an origin on the record, its fuel or the burn counts; one on another field does not");
     expect(trk::burn_from_addon({}, "mod.okayama") && !trk::burn_from_addon({}, "game"),
            "an addon's own track.data record counts with no origins; the game's seeded one does not");
@@ -118,15 +120,16 @@ int main()
     expect(trk::plan_box_pit(base, pe, {&set}, "", rd).empty(), "a value that is not a pit speed limit is left alone");
 
     // laps per box: TrackDataTrack +0xe0 -> value slot -> record; the record's int list (begin +0x10, end +0x18)
-    std::vector<std::pair<std::string, Value>> lrecs = {
-        {"cs/f1_1950/melbourne", Value::object({{"laps", Value(90)}})},
-        {"cs/f1_1950/monaco", Value::object({{"laps", Value(0)}})}};
+    std::vector<std::pair<std::string, Value>> lrecs = {{"cs/f1_1950/melbourne", Value::object({{"laps", Value(90)}})},
+                                                        {"cs/f1_1950/monaco", Value::object({{"laps", Value(0)}})}};
     trk::Entries le = trk::resolve_entries(base, lrecs);
     expect(le.of("game/melbourne")->laps == 90 && !le.of("game/monaco")->laps && !trk::laps_of(Value(1000)) &&
                !trk::laps_of(Value("58")) && trk::laps_of(Value(1)) == 1,
            "laps is read per entry; 0, above 999 or not a whole number writes nothing");
-    std::map<uintptr_t, uintptr_t> ptrs = {{0x1000 + trk::kLapsSlot, 0x5000}, {0x5000, 0x6000},
-                                           {0x6000 + trk::kListBegin, 0x7000}, {0x6000 + trk::kListEnd, 0x700c}};
+    std::map<uintptr_t, uintptr_t> ptrs = {{0x1000 + trk::kLapsSlot, 0x5000},
+                                           {0x5000, 0x6000},
+                                           {0x6000 + trk::kListBegin, 0x7000},
+                                           {0x6000 + trk::kListEnd, 0x700c}};
     std::map<uintptr_t, int32_t> ints = {{0x7000, 58}, {0x7004, 58}, {0x7008, 30}};
     auto rp = [&](uintptr_t at, uintptr_t &v) {
         auto it = ptrs.find(at);
@@ -146,8 +149,8 @@ int main()
     dset.formats = dset2.formats = 1u << trk::fuel::kFormatDefault;
     sprint.formats = 1u << trk::fuel::kFormatSprint;
     std::vector<trk::LapsWrite> lplan = trk::plan_box_laps(base, le, {&dset, &dset2, &sprint}, "", rp, ri);
-    expect(lplan.size() == 2 && lplan[0].at == 0x7000 && lplan[1].at == 0x7004 && lplan[0].before == 58 &&
-               lplan[0].after == 90 && lplan[0].track == "melbourne",
+    expect(lplan.size() == 2 && lplan[0].at == 0x7000 && lplan[1].at == 0x7004 && lplan[0].before == 58 && lplan[0].after == 90 &&
+               lplan[0].track == "melbourne",
            "the box's laps go into the race's entries of the list once per address (a shared record is written once); "
            "an entry with another race's laps stays");
     expect(trk::plan_box_laps(base, le, {&sprint}, "", rp, ri).empty(), "a sprint set's list is left alone");

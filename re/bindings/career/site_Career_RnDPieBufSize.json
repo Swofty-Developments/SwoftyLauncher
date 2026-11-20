@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDPieBufSize",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f46f7a",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141f46eb0.c;xref:0x141f46f7a;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v071--the-pie-crash-at-career-load-slot-4-was-never-constructed",
+  "notes": "mov r8d,0x10 right after mov edx,0x900 (the pie object size) in Career_Build_RnDPieOverview; edx is next read by the alloc call [rax+0x18] at 0x141f46f83"
+ },
+ "signature": {
+  "id": "career.rn_d_pie_buf_size",
+  "section": ".xtls",
+  "pattern": "BA 00 09 00 00 41 B8 10 00 00 00 48 89 D9 FF 50 18 49 89 C6",
+  "match": "0x141f46f75",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f46f7a",
+  "kind": "mid",
+  "expect": "41 B8 10 00 00 00",
+  "names": [
+   "site_Career_RnDPieBufSize"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-3",
+   "kind": "global",
+   "item": "site_Career_RnDPieBufSize",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f46eb0.c;xref:0x141f46f6b,0x141f46f75,0x141f46f7a,0x141f46f80,0x141f46f83",
+   "notes": "V0153 mov r8d,0x10 right after mov edx,0x900; edx next read by call [rax+0x18] (rcx=rbx=[rsi+0x270]); sig's 48 89 D9 excludes the class-A copy at 0x141f41e37; 6B window clean"
+  }
+ ],
+ "proofs": []
+}

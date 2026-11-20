@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDInProgressTypeLabel",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f3d185",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141f3bec0.c;xref:0x141f3d0d9,0x141f3d185;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v090--the-tyres-upgrade-types-setting-tyres_upgrade_types-default-on-install-time",
+  "notes": "lea r8,[\"INVALID UPGRADE\"]: default case of the inlined upgrade type switch (cmp rax,0x12 ; ja) in the R&D In Progress list 0x141f3bec0 (label); the join formats lng_rnd_%s (r8) or the <dept>_<type> frame (r9). rnd-tyres sets r8 = its type suffix for 19..22 and jumps to the join"
+ },
+ "signature": {
+  "id": "career.rn_d_in_progress_type_label",
+  "section": ".xtls",
+  "pattern": "4C 8D 05 ?? ?? ?? ?? EB 4B 4C 8D 05",
+  "match": "0x141f3d17c",
+  "anchor": "0x9",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f3d185",
+  "kind": "mid",
+  "expect": "4C 8D 05 13 0E 94 03",
+  "names": [
+   "site_Career_RnDInProgressTypeLabel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-a",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_upgrade_types.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-1",
+   "kind": "global",
+   "item": "site_Career_RnDInProgressTypeLabel",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f3bec0.c;xref:0x141f3d0d0,0x141f3d0d5,0x141f3d0d9,0x141f3d0ed,0x141f3d185",
+   "notes": "V0072 movzx eax,[r13+0x70] ; cmp rax,0x12 ; ja 0x141f3d185 = lea r8 'INVALID UPGRADE' ; jmp 0x141f3d1d0; table 0x14576fb5c; no case lands inside window"
+  }
+ ],
+ "proofs": []
+}

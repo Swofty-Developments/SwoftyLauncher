@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleAntiStallSystem_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f4ba40",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f4ba40.c",
+  "notes": "VehicleAntiStallSystem init: subscribes MessageRaceStarted (0x142f4ec50), MessageVehicleLeftGarage (0x142f4ed60), RollingStartMessage (0x142f4eed0), MessageStartLightOn (0x142f4f040, sets +0x104 = lights) and RedFlagStatusChangedMessage (0x142f4f050 -> .data1 0x14f8e7290). Per-car entries at +0x48..+0x50 (entry+0x18 start state 0..3, +0x30, +0x50 vehicle with +0x9f18). (vmknolle red-flag-pit)"
+ },
+ "signature": {
+  "id": "game.vehicle_anti_stall_system_init",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE E8 ?? ?? ?? ?? F6 40 05 20 74",
+  "match": "0x142f4ba40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f4ba40",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleAntiStallSystem_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f4ba40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f4ba40.c",
+   "notes": "V5639 verified 5 subscriptions and handler addrs, entry layout"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,41 @@
+{
+ "schema": 1,
+ "name": "site_Game_PitBoxTyreComponentPath",
+ "table": "globals",
+ "author": "jonnoAUS",
+ "row": {
+  "addr": "0x1403c8da0",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "game",
+  "evidence": "decomp:own capstone disasm 0x1403c8cf0-0x1403c9bee;xref:0x1403c8da0,0x1403c8da7,0x1403c8dae,0x1403c8db5,0x1403c8dc8,0x1403c8dd3;doc:re/research/weather_strategy_bindings.md#sites",
+  "notes": "mov rax,[rip+g_Game_Manager] starting [[g_Game_Manager]+0x278]+0x110/+0x118: tyre components by vehicle id; the component goes to Car_Tyre_ChangeToNextCompound at 0x1403c8dd3. Proposed L2 (game inbox)."
+ },
+ "signature": {
+  "id": "game.pit_box_tyre_component_path",
+  "section": ".xtls",
+  "pattern": "80 BE 84 06 00 00 00 0F 84 ?? ?? ?? ?? 48 8B 05",
+  "match": "0x1403c8d93",
+  "anchor": "0xd",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403c8da0",
+  "kind": "mid",
+  "expect": "48 8B 05",
+  "names": [
+   "site_Game_PitBoxTyreComponentPath"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-17",
+    "by": "rr-bindings",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

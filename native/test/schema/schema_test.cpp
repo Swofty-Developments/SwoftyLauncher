@@ -1,8 +1,9 @@
 // Host unit test for the core's schema check (native/src/core/registry/schema.{hpp,cpp}): each keyword,
 // patch mode, keyed lists and "$delete", x-ref with a fake resolver, the pattern matcher, data files with
 // "$select", "$protect", keys with "/" and "extends" variants, the error cap, hostile schemas and values,
-// and a timed run over a 1 MB record set. run_schema_test.sh builds and runs it.
-#include "../../src/core/registry/schema.hpp"
+// and a timed run over a 1 MB record set. run_schema_test.sh builds and runs it. The time limits are on the CPU
+// time of the test's thread, which a loaded machine does not stretch the way it stretches the wall clock.
+#include "core/registry/schema.hpp"
 
 #include <chrono>
 #include <cstdio>
@@ -10,6 +11,7 @@
 #include <map>
 #include <random>
 #include <string>
+#include <time.h>
 #include <vector>
 
 using swofty_core::registry::check_data;
@@ -19,6 +21,13 @@ using swofty_core::registry::DataSchemas;
 using swofty_core::registry::Schema;
 using Value = swofty::json::Value;
 using Mode = Schema::Mode;
+
+static double cpu_ms()
+{
+    timespec t;
+    clock_gettime(CLOCK_THREAD_CPUTIME_ID, &t);
+    return t.tv_sec * 1e3 + t.tv_nsec / 1e6;
+}
 
 static int fails, checks;
 
@@ -78,22 +87,17 @@ static void errs(const Schema &s, std::string_view value, std::vector<std::strin
     o.mode = mode;
     auto r = s.validate(P(value), o);
     auto got = pointers(r);
-    std::string what = std::string(value) + (mode == Mode::patch ? " (patch)" : "") + ": want " + join(want) + ", got " + join(got);
+    std::string what =
+        std::string(value) + (mode == Mode::patch ? " (patch)" : "") + ": want " + join(want) + ", got " + join(got);
     if (got != want && !r.errors.empty())
         what += " (first: " + r.errors[0].message + ")";
     expect(got == want, what);
     expect(s.valid(P(value), mode) == want.empty(), std::string(value) + ": valid() agrees with validate()");
 }
 
-static void ok(const Schema &s, std::string_view value, Mode mode = Mode::records)
-{
-    errs(s, value, {}, mode);
-}
+static void ok(const Schema &s, std::string_view value, Mode mode = Mode::records) { errs(s, value, {}, mode); }
 
-static void bad(const Schema &s, std::string_view value, Mode mode = Mode::records)
-{
-    errs(s, value, {"/"}, mode);
-}
+static void bad(const Schema &s, std::string_view value, Mode mode = Mode::records) { errs(s, value, {"/"}, mode); }
 
 static void no_compile(std::string_view schema, std::string_view why)
 {
@@ -224,13 +228,13 @@ static void patterns()
     expect(matches("\\Aab\\Z", "ab"), "\\A and \\Z");
     expect(!matches("ab\\Z", "ab\n"), "\\Z is the very end");
     std::string long_a(100000, 'a');
-    auto t0 = std::chrono::steady_clock::now();
+    double t0 = cpu_ms();
     expect(!matches("^(a*)*b$", long_a + "c"), "nested repeats on a long string");
     expect(!matches("^(a|aa)+$", long_a + "b"), "ambiguous alternation on a long string");
-    double ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
-    expect(ms < 5000, "the matcher is linear (" + std::to_string(ms) + " ms)");
-    for (auto p : {"(?=a)", "(?<=a)b", "(a)\\1", "a**", "*a", "[a", "(a", "a)", "\\q", "a{2,1}", "a{5000}", "^*", "a*+",
-                   "[z-a]", "[\\d-z]", "(?i)a"})
+    double ms = cpu_ms() - t0;
+    expect(ms < 5000, "the matcher is linear (" + std::to_string(ms) + " ms of CPU)");
+    for (auto p : {"(?=a)", "(?<=a)b", "(a)\\1", "a**", "*a", "[a", "(a", "a)", "\\q", "a{2,1}", "a{5000}", "^*", "a*+", "[z-a]",
+                   "[\\d-z]", "(?i)a"})
         no_compile(std::string("{\"pattern\":") + swofty::json::dump(Value(p)) + "}", p);
 }
 
@@ -275,7 +279,8 @@ static void combinators()
     auto two = S(R"({"oneOf":[{"type":"number"},{"type":"integer"}]})");
     bad(two, "1");
     ok(two, "1.5");
-    auto refs = S(R"({"$defs":{"T":{"type":"object","properties":{"n":{"type":"integer"},"kids":{"type":"array","items":{"$ref":"#/$defs/T"}}}}},
+    auto refs = S(
+        R"({"$defs":{"T":{"type":"object","properties":{"n":{"type":"integer"},"kids":{"type":"array","items":{"$ref":"#/$defs/T"}}}}},
                       "allOf":[{"$ref":"#/$defs/T"}]})");
     ok(refs, R"({"n":1,"kids":[{"n":2,"kids":[{"n":3}]}]})");
     errs(refs, R"({"n":1,"kids":[{"n":2,"kids":[{"n":"3"}]}]})", {"/kids/0/kids/0/n"});
@@ -325,8 +330,10 @@ static void keyed()
     errs(s, R"({"year":2017,"teams":[1,{"seats":[]},{"slot":null,"seats":[]},{"slot":1,"seats":[]},{"slot":1.0,"seats":[]}]})",
          {"/teams/0", "/teams/1", "/teams/2", "/teams/4"});
     errs(s, R"({"year":2017,"teams":[{"slot":1,"seats":[],"$delete":true},{"slot":2,"seats":[]}]})", {"/teams/0/$delete"});
-    errs(s, R"({"year":2017,"teams":[{"slot":1,"seats":[]},{"slot":2,"seats":[]}],"changes":[{"round":1,"slot":2,"kind":"swap"},{"round":1,"slot":2,"kind":"swap"},{"round":2,"slot":2,"kind":"swap"}]})",
-         {"/changes/1"});
+    errs(
+        s,
+        R"({"year":2017,"teams":[{"slot":1,"seats":[]},{"slot":2,"seats":[]}],"changes":[{"round":1,"slot":2,"kind":"swap"},{"round":1,"slot":2,"kind":"swap"},{"round":2,"slot":2,"kind":"swap"}]})",
+        {"/changes/1"});
     ok(s, R"({"teams":[{"slot":1,"$delete":true}],"changes":[{"round":1,"slot":2,"$delete":true}]})", Mode::patch);
     errs(s, R"({"teams":[{"slot":1,"$delete":1}]})", {"/teams/0/$delete"}, Mode::patch);
     errs(s, R"({"teams":[{"slot":1,"seats":[],"$delete":true}]})", {"/teams/0"}, Mode::patch);
@@ -337,8 +344,10 @@ static void keyed()
     errs(s, R"({"tags":[{}]})", {"/tags/0/name"}, Mode::patch);
     Schema::Options keyed_paths;
     keyed_paths.keyed_paths = true;
-    errs(s, R"({"year":2017,"teams":[{"slot":1,"seats":[]},{"slot":4,"seats":["a","game/b","game/c"],"drivers":[{"name":"x"},{"name":"x"}]}]})",
-         {"/teams/slot=4/seats", "/teams/slot=4/seats/0", "/teams/slot=4/drivers/1"}, Mode::records, &keyed_paths);
+    errs(
+        s,
+        R"({"year":2017,"teams":[{"slot":1,"seats":[]},{"slot":4,"seats":["a","game/b","game/c"],"drivers":[{"name":"x"},{"name":"x"}]}]})",
+        {"/teams/slot=4/seats", "/teams/slot=4/seats/0", "/teams/slot=4/drivers/1"}, Mode::records, &keyed_paths);
     std::map<std::string, std::string> keys;
     for (auto &[p, f] : s.keyed_lists()) {
         std::string fields;
@@ -346,7 +355,8 @@ static void keyed()
             fields += (fields.empty() ? "" : ",") + x;
         keys[p] = fields;
     }
-    expect(keys == std::map<std::string, std::string>{{"/teams", "slot"}, {"/teams/*/drivers", "name"}, {"/changes", "round,slot"}},
+    expect(keys ==
+               std::map<std::string, std::string>{{"/teams", "slot"}, {"/teams/*/drivers", "name"}, {"/changes", "round,slot"}},
            "keyed lists of the schema");
     expect(s.keys().find("/teams") && s.keys().find("/teams/*/drivers") && !s.keys().find("/tags"), "merge keys");
     expect(s.registry() == "career.season" && s.version().major == 1 && s.version().minor == 2 && s.applies() == "read" &&
@@ -354,7 +364,8 @@ static void keyed()
            "top-level metadata");
     Value target = P(R"({"year":2017,"teams":[{"slot":1,"seats":["game/a"]},{"slot":2,"seats":[]}]})");
     expect(swofty::json::merge_patch(target, P(R"({"teams":[{"slot":2,"seats":["game/b"]}]})"), s.keys()) &&
-               swofty::json::dump(target) == R"({"year":2017,"teams":[{"slot":1,"seats":["game/a"]},{"slot":2,"seats":["game/b"]}]})",
+               swofty::json::dump(target) ==
+                   R"({"year":2017,"teams":[{"slot":1,"seats":["game/a"]},{"slot":2,"seats":["game/b"]}]})",
            "keys() drives a keyed merge");
 }
 
@@ -379,7 +390,8 @@ static void refs()
     expect(asked.size() >= 4 && asked[0] == "team.identity game/gone" && asked[1] == "driver.identity game/known",
            "the resolver gets the registry and the id without modifiers");
     errs(s, base + R"({"slot":1,"team":"game/gone?","seats":["game/b"]}]})", {}, Mode::records, &o);
-    auto lenient = S(R"({"properties":{"e":{"type":"string","x-ref":"engine_sound","x-missing":{"default":"fallback","to":"/donor"}}}})");
+    auto lenient =
+        S(R"({"properties":{"e":{"type":"string","x-ref":"engine_sound","x-missing":{"default":"fallback","to":"/donor"}}}})");
     errs(lenient, R"({"e":"game/gone"})", {}, Mode::records, &o);
     errs(lenient, R"({"e":"game/gone?"})", {"/e"}, Mode::records, &o);
     expect(swofty_core::registry::is_record_id("swofty.progressive/2017") && !swofty_core::registry::is_record_id("2017") &&
@@ -410,7 +422,8 @@ static void limits()
     for (int i = 0; i < 200; ++i)
         deep += "}";
     auto rd = tree.validate(P(deep));
-    expect(!rd.ok() && rd.errors[0].message.find("nested deeper") != std::string::npos, "a deep value under a recursive schema stops");
+    expect(!rd.ok() && rd.errors[0].message.find("nested deeper") != std::string::npos,
+           "a deep value under a recursive schema stops");
     Value built = Value::object();
     Value *at = &built;
     for (int i = 0; i < 5000; ++i)
@@ -429,11 +442,11 @@ static void limits()
     auto f = S(fan);
     Schema::Options small;
     small.max_steps = 100000;
-    auto t0 = std::chrono::steady_clock::now();
+    double t0 = cpu_ms();
     auto rf = f.validate(P("1"), small);
-    double ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
+    double ms = cpu_ms() - t0;
     expect(!rf.ok() && rf.errors.back().message.find("steps") != std::string::npos && ms < 2000,
-           "an exponential schema stops at the step budget (" + std::to_string(ms) + " ms)");
+           "an exponential schema stops at the step budget (" + std::to_string(ms) + " ms of CPU)");
 
     auto pat = S(R"({"type":"string","pattern":"^[a-z_]+$","maxLength":2000000})");
     std::string big(1 << 20, 'a');
@@ -486,19 +499,24 @@ static void data_files()
     check(R"({"career.season":{"x":{"$protect":["teams"],"year":2017,"teams":[)" + team2 + R"(]}}})", false, {});
     check(R"({"career.season":{"x":{"$protect":"teams","year":2017,"teams":[)" + team2 + R"(]}}})", false,
           {"problem /career.season/x/$protect"});
-    check(R"({"Career":{},"vehicle":{},"career.season@2":[]})", false, {"problem /Career", "problem /career.season@2", "missing /vehicle"});
+    check(R"({"Career":{},"vehicle":{},"career.season@2":[]})", false,
+          {"problem /Career", "problem /career.season@2", "missing /vehicle"});
     check(R"([])", false, {"problem /"});
     DataOptions skip;
     skip.skip_unknown = true;
     check(R"({"vehicle":{}})", false, {}, &skip);
-    check(R"({"career.season":{"swofty.progressive/2017":{"year":null,"teams":[{"slot":1,"$delete":true}]},"2017":{},"game/x":[]}})", true,
-          {"problem /career.season/2017", "problem /career.season/game~1x", "1.0 /career.season/swofty.progressive~12017/year"});
-    check(R"({"career.season":{"$select":[{"ids":"*","patch":{"year":"x"}},{"where":{},"bogus":1,"patch":{}},{"in":{}},3]}})", true,
+    check(
+        R"({"career.season":{"swofty.progressive/2017":{"year":null,"teams":[{"slot":1,"$delete":true}]},"2017":{},"game/x":[]}})",
+        true,
+        {"problem /career.season/2017", "problem /career.season/game~1x", "1.0 /career.season/swofty.progressive~12017/year"});
+    check(R"({"career.season":{"$select":[{"ids":"*","patch":{"year":"x"}},{"where":{},"bogus":1,"patch":{}},{"in":{}},3]}})",
+          true,
           {"problem /career.season/$select/1", "problem /career.season/$select/2", "problem /career.season/$select/2/patch",
            "problem /career.season/$select/3", "1.0 /career.season/$select/0/patch/year"});
     check(R"({"career.season":{"$select":[]}})", true, {"problem /career.season/$select"});
 
-    check(R"({"career.season":{"v10":{"extends":"swofty.cs/f1_2017","label":"V10","teams":[{"slot":1,"$delete":true}]}}})", false, {});
+    check(R"({"career.season":{"v10":{"extends":"swofty.cs/f1_2017","label":"V10","teams":[{"slot":1,"$delete":true}]}}})", false,
+          {});
     check(R"({"career.season":{"v10":{"extends":"swofty.cs/f1_2017","year":"x"}}})", false, {"1.0 /career.season/v10/year"});
     Value base_ok = P(R"({"year":2017,"teams":[{"slot":1,"seats":[]},{"slot":2,"seats":[]},{"slot":3,"seats":[]}]})");
     Value base_short = P(R"({"teams":[{"slot":1,"seats":[]},{"slot":2,"seats":[]}]})");
@@ -509,28 +527,36 @@ static void data_files()
     };
     DataOptions with_base;
     with_base.base = &base;
-    check(R"({"career.season":{"v10":{"extends":"swofty.cs/f1_2017","teams":[{"slot":1,"$delete":true}]}}})", false, {}, &with_base);
-    expect(asked.size() == 1 && asked[0] == "career.season swofty.cs/f1_2017", "the base resolver gets the registry and the base id");
-    check(R"({"career.season":{"v10":{"extends":"swofty.cs/f1_2017","teams":[{"slot":1,"$delete":true},{"slot":2,"$delete":true}]}}})",
-          false, {"1.0 /career.season/v10/teams"}, &with_base);
-    check(R"({"career.season":{"v10":{"extends":"swofty.cs/short","label":"x"}}})", false, {"1.0 /career.season/v10/year"}, &with_base);
+    check(R"({"career.season":{"v10":{"extends":"swofty.cs/f1_2017","teams":[{"slot":1,"$delete":true}]}}})", false, {},
+          &with_base);
+    expect(asked.size() == 1 && asked[0] == "career.season swofty.cs/f1_2017",
+           "the base resolver gets the registry and the base id");
+    check(
+        R"({"career.season":{"v10":{"extends":"swofty.cs/f1_2017","teams":[{"slot":1,"$delete":true},{"slot":2,"$delete":true}]}}})",
+        false, {"1.0 /career.season/v10/teams"}, &with_base);
+    check(R"({"career.season":{"v10":{"extends":"swofty.cs/short","label":"x"}}})", false, {"1.0 /career.season/v10/year"},
+          &with_base);
     check(R"({"career.season":{"v10":{"extends":"swofty.cs/unknown","label":"x"}}})", false, {}, &with_base);
     check(R"({"career.season":{"v10":{"extends":"v8","label":"x"},"v9":{"extends":null}}})", false,
           {"problem /career.season/v10/extends", "problem /career.season/v9/extends"}, &with_base);
-    check(R"({"career.season":{"v10":{"extends":"swofty.cs/short","year":"x"}}})", false, {"1.0 /career.season/v10/year"}, &with_base);
+    check(R"({"career.season":{"v10":{"extends":"swofty.cs/short","year":"x"}}})", false, {"1.0 /career.season/v10/year"},
+          &with_base);
 
     Value chain_a = P(R"({"extends":"swofty.cs/b","label":"a"})");
     Value chain_b = P(R"({"extends":"swofty.cs/a","label":"b"})");
     Value chain_c = P(R"({"extends":"swofty.cs/f1_2017","teams":[{"slot":2,"$delete":true}]})");
     swofty_core::registry::BaseResolver chains = [&](std::string_view, std::string_view id) -> const Value * {
-        return id == "swofty.cs/a" ? &chain_a : id == "swofty.cs/b" ? &chain_b : id == "swofty.cs/c" ? &chain_c
-               : id == "swofty.cs/f1_2017" ? &base_ok : nullptr;
+        return id == "swofty.cs/a"         ? &chain_a
+               : id == "swofty.cs/b"       ? &chain_b
+               : id == "swofty.cs/c"       ? &chain_c
+               : id == "swofty.cs/f1_2017" ? &base_ok
+                                           : nullptr;
     };
     DataOptions with_chains;
     with_chains.base = &chains;
     check(R"({"career.season":{"x":{"extends":"swofty.cs/a"}}})", false, {"problem /career.season/x/extends"}, &with_chains);
-    check(R"({"career.season":{"x":{"extends":"swofty.cs/c","teams":[{"slot":3,"$delete":true}]}}})", false, {"1.0 /career.season/x/teams"},
-          &with_chains);
+    check(R"({"career.season":{"x":{"extends":"swofty.cs/c","teams":[{"slot":3,"$delete":true}]}}})", false,
+          {"1.0 /career.season/x/teams"}, &with_chains);
     check(R"({"career.season":{"x":{"extends":"swofty.cs/c","teams":[{"slot":11,"seats":[]}]}}})", false, {}, &with_chains);
 
     auto merge = [&](std::string_view base, std::string_view patch) {
@@ -538,18 +564,21 @@ static void data_files()
         swofty::json::Error e;
         return swofty::json::merge_patch(t, P(patch), s.keys(), &e) ? swofty::json::dump(t) : "error";
     };
-    expect(merge(R"({"year":2017,"label":"a","teams":[{"slot":1,"seats":["game/a"],"team":"game/t"},{"slot":2,"seats":[]}]})",
-                 R"({"label":null,"teams":[{"slot":1,"seats":["game/b"]},{"slot":2,"$delete":true},{"slot":5,"team":null,"seats":[]}]})") ==
-               R"({"year":2017,"teams":[{"slot":1,"seats":["game/b"],"team":"game/t"},{"slot":5,"seats":[]}]})",
-           "keys() merges keyed lists by key, removing $delete elements and nulls");
+    expect(
+        merge(
+            R"({"year":2017,"label":"a","teams":[{"slot":1,"seats":["game/a"],"team":"game/t"},{"slot":2,"seats":[]}]})",
+            R"({"label":null,"teams":[{"slot":1,"seats":["game/b"]},{"slot":2,"$delete":true},{"slot":5,"team":null,"seats":[]}]})") ==
+            R"({"year":2017,"teams":[{"slot":1,"seats":["game/b"],"team":"game/t"},{"slot":5,"seats":[]}]})",
+        "keys() merges keyed lists by key, removing $delete elements and nulls");
     expect(merge(R"({"teams":[{"slot":1,"seats":[]}]})", R"({"teams":[]})") == R"({"teams":[{"slot":1,"seats":[]}]})",
            "an empty keyed list changes nothing");
     expect(merge(R"({"teams":[{"slot":1,"seats":[]}]})", R"({"teams":[{"seats":[]}]})") == "error",
            "an element without its key fields fails the merge");
-    check(R"({"career.season":{"x":{"extends":"swofty.cs/f1_2017","teams":[{"seats":[]}]}}})", false, {"1.0 /career.season/x/teams/0"},
-          &with_base);
+    check(R"({"career.season":{"x":{"extends":"swofty.cs/f1_2017","teams":[{"seats":[]}]}}})", false,
+          {"1.0 /career.season/x/teams/0"}, &with_base);
 
-    auto one = check_record(P(R"({"$protect":["year"],"year":2017,"teams":[)" + team2 + "]}"), "career.season", lookup_of(by_name, "career.season"));
+    auto one = check_record(P(R"({"$protect":["year"],"year":2017,"teams":[)" + team2 + "]}"), "career.season",
+                            lookup_of(by_name, "career.season"));
     expect(one.ok(), "check_record strips $protect");
     auto none = check_record(P("{}"), "career.season", DataSchemas{{}, "no schema"});
     expect(!none.ok() && none.missing.size() == 1, "check_record without schemas");
@@ -589,11 +618,14 @@ static void speed()
     DataOptions o;
     o.resolve = &resolver;
     auto t0 = std::chrono::steady_clock::now();
+    double c0 = cpu_ms();
     auto r = check_data(doc, lookup, o);
+    double cpu = cpu_ms() - c0;
     double ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
     expect(r.ok(), "the 1 MB record set is valid");
-    printf("speed: validated %d records, %zu bytes of JSON, in %.1f ms (%.1f MB/s)\n", n, bytes, ms, bytes / 1048576.0 / (ms / 1000.0));
-    expect(ms < 5000, "1 MB validates in under 5 s");
+    printf("speed: validated %d records, %zu bytes of JSON, in %.1f ms (%.1f MB/s)\n", n, bytes, ms,
+           bytes / 1048576.0 / (ms / 1000.0));
+    expect(cpu < 5000, "1 MB validates in under 5 s of CPU (" + std::to_string(cpu) + " ms)");
 }
 
 static void fuzz(int rounds)
@@ -617,11 +649,25 @@ static void fuzz(int rounds)
         for (int k = 0; k < 4; ++k)
             (void)s->valid(Value(pick("ab()-_ \n{}\xc3\xa9", static_cast<int>(rng() % 20))));
     }
-    const char *kinds[] = {"{}", "true", "false", R"({"type":"integer"})", R"({"x-key":"k","items":{"$ref":"#"}})",
-                           R"({"anyOf":[{"$ref":"#"},{"type":"null"}]})", R"({"additionalProperties":{"$ref":"#"},"required":["k"]})",
-                           R"({"items":{"$ref":"#"},"uniqueItems":true,"maxItems":3})", R"({"x-ref":"r","x-missing":{"allow":["optional"]}})"};
-    const char *values[] = {"null", "1", "1.5", "\"game/a?\"", "[]", "{}", R"([{"k":1},{"k":1.0,"$delete":true}])",
-                            R"({"k":{"k":[null]}})", R"([[[]],[[]]])", R"({"$delete":true,"k":"x|y"})"};
+    const char *kinds[] = {"{}",
+                           "true",
+                           "false",
+                           R"({"type":"integer"})",
+                           R"({"x-key":"k","items":{"$ref":"#"}})",
+                           R"({"anyOf":[{"$ref":"#"},{"type":"null"}]})",
+                           R"({"additionalProperties":{"$ref":"#"},"required":["k"]})",
+                           R"({"items":{"$ref":"#"},"uniqueItems":true,"maxItems":3})",
+                           R"({"x-ref":"r","x-missing":{"allow":["optional"]}})"};
+    const char *values[] = {"null",
+                            "1",
+                            "1.5",
+                            "\"game/a?\"",
+                            "[]",
+                            "{}",
+                            R"([{"k":1},{"k":1.0,"$delete":true}])",
+                            R"({"k":{"k":[null]}})",
+                            R"([[[]],[[]]])",
+                            R"({"$delete":true,"k":"x|y"})"};
     int combos = 0;
     for (auto *k : kinds)
         for (auto *v : values)

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_MarshalZone_CheckFlags",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14357ce30",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-MARSHAL_ZONE;decomp:re/decomp/14357ce30.c;xref:0x14207a9e7,0x14584ab58",
+  "notes": "Log channel MARSHAL_ZONE: 'Can't find a volume - probably no trackspace data on the Main spline' | 'Neighbours are not valid - can't check if they are causing flags'"
+ },
+ "signature": {
+  "id": "session.marshal_zone_check_flags",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 01 00 00 C5 79 29 94 24 00 01 00 00 C5 78 29 8C 24 F0 00 00 00 C5 78 29 84 24 E0 00 00 00",
+  "match": "0x14357ce30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14357ce30",
+  "kind": "func_start",
+  "names": [
+   "Sess_MarshalZone_CheckFlags"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb3-verify-b",
+   "kind": "func",
+   "item": "Sess_MarshalZone_CheckFlags",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14357ce30.c;xref:0x14357ce30",
+   "notes": "V1924 MARSHAL_ZONE strings confirmed (lea at 0x14357d2a4, 0x14357d62f)"
+  }
+ ],
+ "proofs": []
+}

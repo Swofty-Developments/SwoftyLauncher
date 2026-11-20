@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Sess_SafetyCarTether_UpdateTarget",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14360aff0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_SafetyCarTether_UpdateTarget(void *tether_entry, float gap)",
+  "evidence": "decomp:re/decomp/14360d700.c;decomp:re/decomp/14360aff0.c;xref:0x14360b29e,0x14360dccb,0x1507f1053",
+  "notes": "Renamed from Sess_SafetyCarTether_Attach after verify-b disagree (verify-b: no attach logic; callers are tether start 0x14360b230 and the per-frame tether manager 0x14360d700, NETWORK_SAFETY_CAR_TETHER). jmp stub into .data1 (0x1507edef0). Computes the clamped target speed of one tethered car into entry+0x38: skipped when participant flags ([e+0x20]+0x32) bit 7; SC pace step (clamped [g 0x1460fe6c0 +0x30]+0x210 by override +0x128 vcall +0x268) -> speed from [[g 0x1460fe690+0x38]+0x178]+0x10; without tether mode (g 0x1460fe680 +0x1c8 == 0) stores it, else catch-up speed via 0x1429264b0 at distance gap*10 + [0x1460fe680]+0x1b0 on the car's spline record ([0x1460fe6a8]+0x128 stride 0x188), clamped to the step speed, plus offset +0x1cc. (used by vmknolle red-flag-pit: AI speed limit during the hold)"
+ },
+ "signature": {
+  "id": "session.safety_car_tether_attach",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 72 FC 59 E9 ?? ?? ?? ?? 48 0F 86",
+  "match": "0x14360aff0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14360aff0",
+  "kind": "func_start",
+  "names": [
+   "Sess_SafetyCarTether_UpdateTarget"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-b",
+   "kind": "func",
+   "item": "0x14360aff0",
+   "claimed": "L2",
+   "verdict": "disagree",
+   "evidence": "decomp:work/verify_b/decomp/14360aff0.c;xref:0x14360b29e,0x14360dccb,0x1507f1053",
+   "notes": "V1040 jmp thunk to .data1 0x1507edef0 (tether object, float): no attach logic - computes and stores a target/limit value at obj+0x38 = min(per-session table value, AI fn(vehicle, param_2*10 + base)) clamped; called from tether-start 0x14360b230 with 0 and from per-frame tether manager 0x14360d700 (NETWORK_SAFETY_CAR_TETHER) with another vehicle's +0x30; better: Sess_SafetyCarTether_UpdateTarget"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-d",
+   "kind": "func",
+   "item": "0x14360aff0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_d/decomp/14360aff0.c;decomp:work/verify_d/decomp2/14360d700.c;xref:0x14360b29e,0x14360dccb,0x1507f1053",
+   "notes": "V1071 called from the NETWORK_SAFETY_CAR_TETHER update (14360d700) with the leading entry's +0x30 gap (0 from 14360b230); writes entry+0x38 = min(table speed, speed for gap*10+base) clamped -> tether target update; (entry,float) proto matches"
+  }
+ ],
+ "proofs": []
+}

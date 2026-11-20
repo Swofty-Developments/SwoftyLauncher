@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_GameInputModule_ApplyRebindableGameplayActionsToActionMap",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a7b590",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/142a7b590.c;xref:0x142a5e5f7,0x142a5e8e7",
+  "notes": "cxx=GameInputModule::applyRebindableGameplayActionsToActionMap; log channel INPUT: 'GameInputModule::applyRebindableGameplayActionsToActionMap Target device:%s' | engine-re E1 2026-11-18 (static): (module, const vector<{u64 action,...}> *actions (stride 0x18, +8..+0x10), source map, target map, ctx). Called 8x from Game_Input_OnControlSchemeAdded 0x142a5e2d0. Action ids are interned action-name handles (Ne_Input_InternActionName pointer values); the maps are RB-trees keyed by that u64 (node+0x20). For each listed action present in the source map: clears the target binding list (node+0x48 = node+0x40), copies every source binding (0xb8-byte records collected by 0x143a8e290) into the target with 0x143a8e480 / 0x143a9f260 / 0x143a9ff40, creating the target node when missing (0x143a8e5f0). It copies the user's rebinds onto a device action map when a control scheme is added; it is not a per-frame gameplay read. | raised by engine-re with --force 2026-11-18 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_input_module_apply_rebindable_gameplay_actions_to_action_map",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 4C 89 CE 4C 89 C7",
+  "match": "0x142a7b590",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a7b590",
+  "kind": "func_start",
+  "names": [
+   "Game_GameInputModule_ApplyRebindableGameplayActionsToActionMap"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142a7b590",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a7b590.c;xref:0x142a5e5f6",
+   "notes": "V4972 name/strings/body match; log-based claim holds for this function size"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "era-input-verify",
+   "kind": "func",
+   "item": "0x142a7b590",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142a7b590-0x142a7b936;xref:8 calls from 0x142a5e2d0 (0x142a5e5f7..0x142a5e935), none elsewhere in .xtls/.data1, no abs refs;str:GameInputModule::applyRebindableGameplayActionsToActionMap",
+   "notes": "V11508 iterates action id list stride 0x18, RB-tree lookups in source and target maps, inserts/copies bindings (0x143a8e290/0x143a8e5f0/0x143a9f260/0x143a9ff40); rebind-time, not per-frame"
+  }
+ ],
+ "proofs": []
+}

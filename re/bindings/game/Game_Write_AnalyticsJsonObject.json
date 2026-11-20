@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Write_AnalyticsJsonObject",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14077e260",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_Write_AnalyticsJsonObject(void *out, void *ctx, int64_t rec, int64_t writer)",
+  "evidence": "decomp:re/decomp/14077e260.c;xref:0x14084e7de;xref:0x1408501ae;xref:0x140854726",
+  "notes": "myteam-g2: Opens a JSON object (Ai_JsonWriter_BeginObject), formats fields with Ne_StrBuf_Printf and writes them (FUN_1406d5430, FUN_14077b8d0), falling back to unknown. Core of the analytics record writers. Telemetry only."
+ },
+ "signature": {
+  "id": "game.write_analytics_json_object",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 70 02 00 00 4C 89 CF",
+  "match": "0x14077e260",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14077e260",
+  "kind": "func_start",
+  "names": [
+   "Game_Write_AnalyticsJsonObject"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x14077e260",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14077e260.c;str:\"f1_2025.%s-%s\"",
+   "notes": "V9476 Opens JSON object, formats f1_2025.%s-%s and %d.%02d date, writes index/_index/_id fields; generic analytics record writer."
+  }
+ ],
+ "proofs": []
+}

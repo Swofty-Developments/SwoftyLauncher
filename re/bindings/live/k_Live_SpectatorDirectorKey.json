@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "k_Live_SpectatorDirectorKey",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x146080ca8",
+  "type": "uint8_t",
+  "level": "L2",
+  "subsystem": "live",
+  "evidence": "decomp:re/decomp/142ece390.c;decomp:re/decomp/144500dc0.c;xref:0x1457eac40,0x142efcf8e,0x140391d1d,0x1406c0aef,0x14151ae28,0x1415293cf,0x14156bff3,0x141771cbf,0x141c2088d,0x142a5199d;pat:type-name-SpectatorDirector;xref:0x140391d1a",
+  "notes": "registry key (address of the static type record; its +8 holds the name \"SpectatorDirector\", stored at 0x142efcf8e); class vtable 0x1457eac40 slot 0 = 0x142ece390 returns it; spectator director (structs/SpectatorDirector.h); the UDP builder follows [+0xd6] while [+0xd1] is set (0x142cf988b)"
+ },
+ "signature": {
+  "id": "live.spectator_director_key",
+  "section": ".xtls",
+  "pattern": "C7 86 F0 1B 00 00 00 00 00 00 48 8B 05 ?? ?? ?? ?? 48 8B 78 30 48 8D 05",
+  "match": "0x140391d05",
+  "anchor": "0x18",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x15",
+   "len": 7
+  },
+  "target": "0x146080ca8",
+  "kind": "data",
+  "names": [
+   "k_Live_SpectatorDirectorKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "osd-l1",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/live/live_state.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "osd-va",
+   "kind": "global",
+   "item": "k_Live_SpectatorDirectorKey",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144500dc0.c;decomp:re/decomp/142cf9820.c;xref:0x142cf9d8f,0x14ae81550",
+   "notes": "V8737 own disx: type record +8 name string = 'SpectatorDirector' (static init store at 0x142efcf91); slot-0 0x142ece390 = lea rax,[k_Live_SpectatorDirectorKey] ret and qword at vtable 0x1457eac40 == 0x142ece390; consumer: UDP state init stores getter 0x1414893c0 (jmp to 0x14ae81550, plaintext body leas this key, FindIndex, value) into state+0xd1f8; UpdateRace reads [state+0xd1f8]+0xd1 and +0xd6 (spectating flag and car index); also Sess_Registry_GetComponent80ca8 0x142eff3d0 = same lookup"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "osd-vd",
+   "kind": "sig",
+   "item": "live.spectator_director_key",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "sig:live.spectator_director_key",
+   "notes": "V8901 sigcheck hits=1, anchor disassembled and resolve re-computed by hand to the claimed target; target is the first field of a static type record whose +8 name pointer (set at the init stores) points at the type-name string, e.g. spectator_director_key; the name strings were read from the exe for all 13 keys and match the k_Live_* names; consumers pass the key address to FindIndex (0x14030ffd0)"
+  }
+ ],
+ "proofs": []
+}

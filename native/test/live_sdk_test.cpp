@@ -4,12 +4,12 @@
 #include <cstddef>
 
 static int failures;
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                    \
-            failures++;                                                                                                \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                              \
+            failures++;                                                                                                          \
+        }                                                                                                                        \
     } while (0)
 
 namespace live = swofty::live;
@@ -55,10 +55,53 @@ static void tyre_table_versions()
     car.have &= ~SWOFTY_LIVE_HAVE_TYRE;
     CHECK(!live::tyre_icon_texture(0));
     // A real v4 allocation ends at images: the wrapper must not read its tail.
-    struct V4 { uint32_t version; unsigned char tail[offsetof(SwoftyLive, tyre_icon_texture) - sizeof(uint32_t)]; } old{};
+    struct V4 {
+        uint32_t version;
+        unsigned char tail[offsetof(SwoftyLive, tyre_icon_texture) - sizeof(uint32_t)];
+    } old{};
     old.version = 4;
     live::detail::set_table(reinterpret_cast<const SwoftyLive *>(&old));
     CHECK(!live::tyre_icon_texture(0));
+    live::detail::set_table(nullptr);
+}
+
+static void car_detail_versions()
+{
+    swofty::fake::Live fake;
+    auto &car = fake.add_car(3, 1);
+    car.have |= SWOFTY_LIVE_HAVE_GRID | SWOFTY_LIVE_HAVE_LAP_TIMES | SWOFTY_LIVE_HAVE_TYRE_WEAR;
+    auto &d = fake.detail(3);
+    d.grid_position = 7;
+    d.last_lap_ms = 91250;
+    d.best_lap_ms = 90500;
+    d.best_lap_number = 4;
+    d.tyre_wear[2] = 12.5f;
+    fake.install();
+    for (uint32_t version : {1u, 2u, 3u, 4u, 5u}) {
+        fake.set_table_version(version);
+        CHECK(!live::car_detail(3));
+    }
+    fake.set_table_version(6);
+    auto got = live::car_detail(3);
+    CHECK(got && got->vehicle == 3 && got->version == SWOFTY_LIVE_VERSION && got->size == sizeof(SwoftyLiveCarDetail));
+    CHECK(got && live::grid_position(*got) == 7 && live::best_lap_ms(*got) == 90500u && live::last_lap_ms(*got) == 91250u);
+    CHECK(got && got->best_lap_number == 4 && got->tyre_wear[2] == 12.5f && live::has(*got, SWOFTY_LIVE_HAVE_TYRE_WEAR));
+    CHECK(!live::car_detail(4) && !live::car_detail(40));
+    car.have &= ~(SWOFTY_LIVE_HAVE_GRID | SWOFTY_LIVE_HAVE_LAP_TIMES);
+    got = live::car_detail(3);
+    CHECK(got && !live::grid_position(*got) && !live::best_lap_ms(*got) && !live::last_lap_ms(*got));
+    car.have |= SWOFTY_LIVE_HAVE_LAP_TIMES;
+    d.best_lap_ms = 0;
+    got = live::car_detail(3);
+    CHECK(got && !live::best_lap_ms(*got) && live::last_lap_ms(*got) == 91250u);
+    // A real v5 allocation ends at tyre_icon_texture: the wrapper must not read its tail.
+    struct V5 {
+        uint32_t version;
+        unsigned char tail[offsetof(SwoftyLive, car_detail) - sizeof(uint32_t)];
+    } old{};
+    old.version = 5;
+    live::detail::set_table(reinterpret_cast<const SwoftyLive *>(&old));
+    CHECK(!live::car_detail(3));
     live::detail::set_table(nullptr);
 }
 
@@ -78,6 +121,7 @@ int main()
 {
     image_table_versions();
     tyre_table_versions();
+    car_detail_versions();
     CHECK(!live::available() && !live::session() && !live::car(0) && !live::subject() && live::order().ids.empty());
 
     {

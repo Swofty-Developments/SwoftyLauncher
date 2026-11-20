@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqDriverRender_ParseEventConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14199a0d0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14199a0d0.c;xref:0x14199a2bd",
+  "notes": "Parses a config for the HQ driver render: keys current_event, has_event, events, copying the name string and arrays. Caller Career_TeamHqDriverRender_Init."
+ },
+ "signature": {
+  "id": "career.team_hq_driver_render_parse_event_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 60 C5 F8 29 74 24 50 48 89 D7 48 89 CE 48 8B 42 08 48 8D 50 08 48 85 C0 4C 8D 35 ?? ?? ?? ?? 49 0F 44 D6 4C 8D 05 ?? ?? ?? ?? E8 ?? ?? ?? ?? C5 C8 57",
+  "match": "0x14199a0d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14199a0d0",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqDriverRender_ParseEventConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x14199a0d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14199a0d0.c;xref:0x14199a2bd",
+   "notes": "V7519 strings/offsets/constants and callers match decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x14199a0d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14199a0d0.c;str:\"current_event\";str:\"has_event\";str:\"events\";xref:0x14199a2bd",
+   "notes": "V9186 Reads the keys events, current_event and has_event from the config row; the claimed call site at 0x14199a2bd is a real E8 call to it."
+  }
+ ],
+ "proofs": []
+}

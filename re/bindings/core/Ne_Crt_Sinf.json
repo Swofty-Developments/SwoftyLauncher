@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_Sinf",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14535cf70",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "float(float)",
+  "evidence": "decomp:re/decomp/14535cf70.c;xref:0x14020b878,0x14020bab8,0x14020bc7b,0x142bd2f93",
+  "notes": "C runtime sinf (used by Car_Tyre_MagicFormula)."
+ },
+ "signature": {
+  "id": "core.crt_sinf",
+  "section": ".xtls",
+  "pattern": "48 83 EC 68 83 3D ?? ?? ?? ?? 00 0F 85 ?? ?? ?? ?? 66 0F 57 D2 66 0F 7E C2 B8 00 00 80 7F 44 8B D0 44 23 D2 44 3B D0 0F 84 ?? ?? ?? ?? 66 0F 28 D8",
+  "match": "0x14535cf70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14535cf70",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_Sinf"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb4-verify-b",
+   "kind": "func",
+   "item": "Ne_Crt_Sinf",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14535cf70.c;xref:0x14020b878",
+   "notes": "V2222 pi/4 reduction, tiny-x path multiplies x (sin not cos)"
+  }
+ ],
+ "proofs": []
+}

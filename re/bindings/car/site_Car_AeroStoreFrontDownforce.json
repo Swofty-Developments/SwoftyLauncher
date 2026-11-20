@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "site_Car_AeroStoreFrontDownforce",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446ddda4",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "car",
+  "evidence": "decomp:re/decomp/1446dceb0.c;xref:0x1446ddda4;kb:subsystems/car.md#f1aero",
+  "notes": "vmovss [rdi+0x19f0], xmm1 in Car_Physics_StepVehicle: xmm1 = the front body lift COEFFICIENT (CarF1Aero.front_lift_coeff), not a force = FrontCoeffLiftMultiplier (sys+0x1708^0x1710) x ... x lift_scale [+0x19a4] x (1 - FrontCoLByWingDamageMult (sys+0x1828^0x1830) x front_wing_damage [+0x199c]) (0x1446ddd60..0x1446ddda0; the damage term is a factor, corrected per V1296). Live 0.72 parked and 0.79 at speed, front share of front+rear about 0.43 (T115, 2026-10-28 snapshots; this store site was not traced)."
+ },
+ "signature": {
+  "id": "car.aero_store_front_downforce",
+  "section": ".xtls",
+  "pattern": "C5 F2 59 CA C5 FA 11 8F F0 19 00 00",
+  "match": "0x1446ddda0",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446ddda4",
+  "kind": "mid",
+  "expect": "C5 FA 11 8F F0 19 00 00",
+  "names": [
+   "site_Car_AeroStoreFrontDownforce"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "car-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v3",
+   "kind": "global",
+   "item": "site_Car_AeroStoreFrontDownforce",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1446dceb0.c;xref:0x1446ddda4",
+   "notes": "V1296 Site, register and field are right (vmovss [rdi+0x19f0],xmm1, rdi = F1Aero). The damage term is a factor, not a subtraction: xmm1 = FrontCoeffLiftMultiplier (sys+0x1708^0x1710) x ... x lift_scale [+0x19a4] x (1 - FrontCoLByWingDamageMult (sys+0x1828^0x1830) x front_wing_damage [+0x199c]) (0x1446ddd60..0x1446ddda0; xmm11 = 1.0 from 0x145381184)."
+  }
+ ],
+ "proofs": []
+}

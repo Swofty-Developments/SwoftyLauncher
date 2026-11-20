@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkSession_FoundSessionPlayers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14307c2c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-SESSION",
+  "notes": "named from its log messages (channel NETWORK-SESSION): '%s: found a session with %d players, %s'"
+ },
+ "signature": {
+  "id": "game.network_session_found_session_players",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 01 00 00 C5 F8 29 B4 24 80 01 00 00 4D 89 C5 89 D7",
+  "match": "0x14307c2c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14307c2c0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkSession_FoundSessionPlayers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x14307c2c0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14307c2c0.c;xref:0x14307c2a1",
+   "notes": "V5601 879 lines = GameSessionMatchingF1WSocialGP::onSearchSessionComplete (filters devCode/eventId/players/banned, best session join). Better: Game_GameSessionMatchingF1WSocialGP_OnSearchSessionComplete"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x14307c2c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14307c2c0.c;xref:0x14307c2a0",
+   "notes": "V6954 879 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

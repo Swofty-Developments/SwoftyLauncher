@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Sess_ControllerSystem_WriteFlags",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14389ce30",
+  "level": "L1",
+  "subsystem": "session",
+  "proto": "void(ControllerSystem*, Stream*)",
+  "evidence": "decomp:re/decomp/14389ce30.c;xref:0x1458825f0",
+  "notes": "Recordable interface of the sub-object at system+0x20 (this = system+0x20, so [this+0x10..+0x18] is the system's set list). For each set writes dword flags [set+0x30] then one byte ((rec+8 & 7) << 4 | rec+0 & 3) of the active input record; Game_ControllerSet_DeserialiseFlags (0x14389ceb0) reads it back. Flashback and replay frames carry the sets' flags and modes this way; this path does not free or rebuild sets."
+ },
+ "signature": {
+  "id": "session.controller_system_write_flags",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 8B 79 10 48 8B 59 18 48 39 DF 74 5C",
+  "match": "0x14389ce30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14389ce30",
+  "kind": "func_start",
+  "names": [
+   "Sess_ControllerSystem_WriteFlags"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "re-ai",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

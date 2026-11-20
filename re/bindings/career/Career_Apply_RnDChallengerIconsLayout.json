@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Apply_RnDChallengerIconsLayout",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14180a440",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Apply(void *vm, void *data)",
+  "evidence": "decomp:re/decomp/14180a440.c;xref:0x141a63e38;xref:0x141c42741;xref:0x141c86da3",
+  "notes": "myteam-g2: Lays out RnD challenger icons and posts Career_Msg_PostRndChallengeApplied; sets per-department bool nodes (offsets 0x10..0x78) and calls Ui_Rnd_SetChallengerIconsSmall. UI/message only."
+ },
+ "signature": {
+  "id": "career.apply_rn_dchallenger_icons_layout",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 48 89 D7 48 89 CE 48 8D 59 20",
+  "match": "0x14180a440",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14180a440",
+  "kind": "func_start",
+  "names": [
+   "Career_Apply_RnDChallengerIconsLayout"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x14180a440",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14180a440.c;xref:0x141a63e38;xref:0x141c42741",
+   "notes": "V9792 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

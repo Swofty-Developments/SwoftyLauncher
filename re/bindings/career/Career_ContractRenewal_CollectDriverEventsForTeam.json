@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_ContractRenewal_CollectDriverEventsForTeam",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d8c8f0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "uint64_t Career_ContractRenewal_CollectDriverEventsForTeam(void *comp, uint32_t team_key)",
+  "evidence": "decomp:re/decomp/140d8c8f0.c;xref:0x140d8c158;xref:0x140d8c228;xref:0x140d8c32a",
+  "notes": "myteam-g2: Iterates the driver events at (comp+0x278)+0x2e0..0x2e8 (0x58-byte records, team key u8@+0x58 / u16@+0x5a) and builds a growing vector of pointers to those whose team matches team_key, then filters by availability. Returns 1 when none exist. Core of AI contract renewal bookkeeping."
+ },
+ "signature": {
+  "id": "career.contract_renewal_collect_driver_events_for_team",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 C5 79 7F B4 24 D0 00 00 00 C5 79 7F AC 24 C0 00 00 00 C5 79 7F A4 24 B0 00 00 00 C5 79 7F 9C 24 A0 00 00 00 C5 79 7F 94 24 90 00 00 00 C5 79 7F 8C 24 80 00 00 00",
+  "match": "0x140d8c8f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d8c8f0",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractRenewal_CollectDriverEventsForTeam"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140d8c8f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140d8c8f0.c",
+   "notes": "V9539 Matches the collect/filter logic, but the entries are 0x88 bytes apart (team key at +0x58/+0x5a), not 0x58-byte records."
+  }
+ ],
+ "proofs": []
+}

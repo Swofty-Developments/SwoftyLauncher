@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_PitLane_HandleEnterPitBox",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434b7520",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1434b7520.c;xref:0x1434ba589,0x1434ba90a,0x1434bb352",
+  "notes": "Log channel PITLANE: 'PitLaneMovementManager::handleEnterPitBox %d' | 'PitLaneMovementManager::assessBoxEntry pitboxId %d crewReady %s' | 'PitLaneMovementManager::eSplineToMarks %d' | 'PitLaneMovementManager::handleSplineToPitBoxMarks %d' | 'PitLaneMovementManager::assessBoxEntry garageBehindSafeToCross %s' | 'PitLaneMovementMan L2 2026-11-14 (engine-re round 2): decomp read; 3 reference(s) (0x1434ba589, 0x1434ba90a, 0x1434bb352); the body itself references 'PITLANE' / 'PitLaneMovementManager::handleEnterPitBox %d' / 'false' / 'true'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested) | engine-re 2026-11-17 track round C: sets status 3 EnteringPitBox (0x1434b8048, the only call with r8d=3)."
+ },
+ "signature": {
+  "id": "game.pit_lane_handle_enter_pit_box",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 01 00 00 C5 78 29 84 24 F0 00 00 00 C5 F8 29 BC 24 E0 00 00 00 C5 F8 29 B4 24 D0 00 00 00 89 D3",
+  "match": "0x1434b7520",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434b7520",
+  "kind": "func_start",
+  "names": [
+   "Game_PitLane_HandleEnterPitBox"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1434b7520",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434b7520.c;xref:0x1434ba58a",
+   "notes": "V6010 name and description match body; log string/pretty name present"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x1434b7520",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1434b7520-0x1434b812d;xref:0x1434ba589,0x1434ba90a,0x1434bb352",
+   "notes": "V10498 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Same 3 callers in Game_PitLane_UpdateMovement. handleEnterPitBox / assessBoxEntry / eSplineToMarks / ePullThroughPrecedingPit / ePullInToQueue logs; SetVehicleStatus 0x1434bc540. 2 args."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_Write_AdaptiveAiSessionRecord",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403e1a10",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_Write_AdaptiveAiSessionRecord(void *rec, void *json_writer)",
+  "evidence": "decomp:re/decomp/1403e1a10.c;xref:0x140877040",
+  "notes": "JSON writer for the adaptive_ai_session_finished_record. If rec+0x50 (session ctx) != 0 (cmp at 0x1403e1a1d): opens child object \"baseCtx\" (Ne_JsonWriter_BeginObject 0x1406d59b0), writes the header via Game_Analytics_WriteBaseCtx 0x1403dcca0(rec+0x50, child) (r8 = 'adaptive_ai_session_finished_record' is loaded at 0x1403e1a43 but 0x1403dcca0 overwrites r8 before reading it: dead arg), closes with '}' (+ newline at depth 0). Then Ne_JsonWriter_WriteBool \"adaptive_ai_enabled\" = byte rec+0x60 (0x1403e1abf), \"super_slow_mode_enabled\" = byte rec+0x61 (0x1403e1ad3), Ne_JsonWriter_WriteInt64 \"position_finished\" = int rec+0x64 (0x1403e1ae7). Single caller 0x140876ed0 (rcx = [rsi+0x10] at 0x140877037). The AdaptiveAISystem DB tuning values (difficulty_to_lerp_to 0.2 etc.) are NOT read here (corrected 2026-11-14: was listed as if part of this function; DB-sourced, keep in ai.md only). L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.write_adaptive_ai_session_record",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 50 48 89 D6 48 89 CF 48 83 79 50 00 0F 84 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? 48 8D 5C 24 20 48 89 F1 48 89 DA E8 ?? ?? ?? ?? 48 8B 4F 50 4C 8D 05 ?? ?? ?? ?? 48 89 DA E8 ?? ?? ?? ?? 80 7C 24 48 00 74 66 48 8B 44 24 20 80 78 1C 00 74 1A 8B 50 18 48 8B 48 08 48 29 CA 48 03 10 48 83 FA 01 76 11 C6 01 7D 48 FF 40 08 48 83 7C 24 30 00 75 39 EB 0C C6 40 1C 00 48 83 7C 24 30 00 75 2B 48 8B 44 24 20 80 78 1C 00 74 20 8B 50 18 48 8B 48 08 48 29 CA 48 03 10 48 83 FA 01 76 09 C6 01 0A 48 FF 40 08 EB 04 C6 40 1C 00 44 0F B6 47 60 48 8D 15 ?? ?? ?? ?? 48 89 F1 E8 ?? ?? ?? ?? 44 0F B6 47 61 48 8D 15 ?? ?? ?? ?? 48 89 F1 E8 ?? ?? ?? ?? 44 8B 47 64",
+  "match": "0x1403e1a10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403e1a10",
+  "kind": "func_start",
+  "names": [
+   "Ai_Write_AdaptiveAiSessionRecord"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1403e1a10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403e1a10.c;xref:0x877040",
+   "notes": "V4671 record keys +0x60/+0x61/+0x64 confirmed; DB tuning values not checkable in code"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x1403e1a10",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1403e1a10-0x1403e1b03;xref:0x140877040",
+   "notes": "V10557 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). 2 args. [rcx+0x50] test, BeginObject baseCtx 0x1406d59b0, call 0x1403dcca0 with r8 = adaptive_ai_session_finished_record (0x1403e1a43) which 0x1403dcca0 overwrites before use (dead), then bools rec+0x60/+0x61 and int rec+0x64 (0x1403e1abf/0x1403e1ad3/0x1403e1ae7). Only caller 0x140877040."
+  }
+ ],
+ "proofs": []
+}

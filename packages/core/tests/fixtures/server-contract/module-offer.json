@@ -1,0 +1,33 @@
+{
+  "about": "The Time Trial game module listing, asked for when a signed-in session builds.",
+  "answer": {
+    "body": {
+      "modules": [
+        {
+          "abi": 1,
+          "file": "swofty_tt.dll",
+          "name": "tt-game",
+          "platform": "windows-x86_64",
+          "sha256": "dc847b665f00cbfa25a6847aad0374fefa81c75930bb55cebf98ede540d1621b",
+          "signature": "<signature>",
+          "size": 18,
+          "url": "/v1/modules/file?name=tt-game&platform=windows-x86_64&version=2026.11.18.2",
+          "version": "2026.11.18.2"
+        }
+      ],
+      "refused": []
+    },
+    "status": 200
+  },
+  "request": {
+    "body": null,
+    "headers": {
+      "accept": "*/*",
+      "accept-encoding": "identity",
+      "authorization": "Bearer <token>",
+      "user-agent": "swofty-launcher"
+    },
+    "method": "GET",
+    "path": "/v1/modules?platform=windows-x86_64&abi.tt-game=1"
+  }
+}

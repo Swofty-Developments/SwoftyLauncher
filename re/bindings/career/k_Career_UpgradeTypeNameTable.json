@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "k_Career_UpgradeTypeNameTable",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14584f6b8",
+  "type": "char*[19]",
+  "level": "L1",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/143539bc0.c;kb:subsystems/career.md#load-upgrade-rows",
+  "notes": "19 upgrade_type name string pointers; Career_Load_UpgradeRows compares the upgrade_type value against each (via 0x14534d918, indexed by UNK_14566fd16) to resolve the type enum 0..18, unknown->0."
+ },
+ "signature": {
+  "id": "career.upgrade_type_name_table",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 4A 8B 0C F8 4C 89 EA E8",
+  "match": "0x14353a3e5",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x14584f6b8",
+  "kind": "data",
+  "names": [
+   "k_Career_UpgradeTypeNameTable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x14584f6b8",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "xref:0x14353a3e8",
+   "notes": "V7461 19 type strings ok; the 0x14534d918/UNK_14566fd16 compare path and unknown->0 not verified"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GhostLapStorage_OnSyncFinished",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1407e2140",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-GAME",
+  "notes": "named from its log messages (channel GAME): 'm_ghostLapStorageSystem->syncTasksFinished() : DRY | m_ghostLapStorageSystem->syncTasksFinished() : WET'"
+ },
+ "signature": {
+  "id": "game.ghost_lap_storage_on_sync_finished",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 01 00 00 48 89 CE E8",
+  "match": "0x1407e2140",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407e2140",
+  "kind": "func_start",
+  "names": [
+   "Game_GhostLapStorage_OnSyncFinished"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x1407e2140",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1407e2140.c",
+   "notes": "V4314 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

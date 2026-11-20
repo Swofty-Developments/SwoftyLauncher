@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Apply_PresetTrackName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1407e0d00",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Apply_PresetTrackName(void *game_mode, const char *prefix)",
+  "evidence": "str:s_cfg_TrackName;decomp:re/decomp/1407e0d00.c;xref:0x1407e0d4e,0x1407e0d55,0x1407e0d56,0x14173d327",
+  "notes": "Preset applier (caller 0x14173d1a0 at 0x14173d327). Reads '<prefix>.Track.name' (Ne_StrBuf_Printf 0x1401009f0, Ne_Config_GetString 0x143a44700 into a 0x40 inline buffer, config *(*(game_mode+0x1198)+0x210)+0x18, default empty); if non-empty, searches the track registry at game_mode+0xf58 (+0x28..+0x30, 16-byte slots) for the track object whose name pointer at +0x78 matches (Ne_Crt_Strcmp 0x14535d850), resolves the VM node '#game_mode_data.current_game_mode.track_info.current_track' (Vm_Resolve_RegistryNode 0x1442b1b60) and, if that property has the node-reference type, sets it to the track's VM node (track+0x2c0 -> +8) with Ne_Property_SetUIDBRefIfChanged 0x140977b20. Empty or unknown name: no change. hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "game.apply_preset_track_name",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 68 01 00 00 C5 F8 29 B4 24 50 01 00 00 49 89 D0",
+  "match": "0x1407e0d00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407e0d00",
+  "kind": "func_start",
+  "names": [
+   "Game_Apply_PresetTrackName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-3",
+   "kind": "func",
+   "item": "0x1407e0d00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1407e0d00.c;xref:0x14173d327",
+   "notes": "V9351 Formats \"<prefix>.Track.name\" (%s.%s), reads that config string (Ne_Config_GetString, default empty), finds the track whose name (+0x78) matches in the list at self+0xf58 and sets VM property #game_mode_data.current_game_mode.track_info.current_track to it; called in a run of preset appliers (SetupMode, TeamName, TrackName, TimeOfDay) with (rbx, cstr prefix); arity 2 matches."
+  }
+ ],
+ "proofs": []
+}

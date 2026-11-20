@@ -1,0 +1,81 @@
+{
+ "schema": 1,
+ "name": "Ne_Phys_ParseMaterials",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440bee90",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1440bee90.c;doc:re/db/subsystems/core.md;xref:0x154411ce0;pat:runtime log F1-25-Addons/barrier-impact/loader.log",
+  "notes": "MATERIALS/MATERIAL parser (agent collide): entry +0 code, +4 restitution (0), +8 friction (0.4), +0xc cfm (0.01), +0x10 correctionVel 1, +0x14 minBounceVel, +0x18..+0x24 soft K/S min/max, +0x28 speedForMaxSoftness, +0x2c/+0x30 dynamic; extensions incl. MECHANICS 0x14463d0d0. Source not in ERPs (game.dat) - hook here to dump/patch barrier materials | RUNTIME DUMP (barrier-impact addon loader.log, user tests 2026-10-28 18:55/19:48): all car pairs restitution 0, soft K/S 0, speedForMaxSoftness 0, cfm 0.01, correctionVel 1; friction DRUB 0.283, TYRW/DTYR 0.283 (CARB) / 1.0 (CARW), SDT+/SCON/SMET/GRS+/SDTE 0.283, RMBL/RMBO/MKNG 0.173, DDT+ 0.283/1.0, DEFA 1.0, HDG+ 3.162, POLY 0.447 (combined pair values). Tyre wall codes TYRW + DTYR cb3-verify-b: offsets confirmed; +0x34 packed RGBA colour, +0x38 sheet string; +0 code not parsed here; MECHANICS extension 0x14463d0d0 not referenced in this decomp | engine-re 2026-11-17 track round C2 (static): one-shot: parses only when the library latch [lib+0x18] is 0 or the reload byte [lib+0x30] is set (0x1440beeaf/0x1440beeb5), sets the latch at 0x1440bf4e2. The record array is allocated once, sized to the number of MATERIAL children, when the active byte [[[lib+0x28]+8]+0x28]+0x20 is 0 (0x1440bef8b); records are filled in XML order (first MATERIAL = entry 0 = the fallback for unknown tile codes), code = 'name' attribute, exactly 4 chars (0x145612a62); index >= count gives a null record that is then written (0x1440bf018). So a second PhysicsMaterialResource (e.g. shipped in a track ERP) is skipped, and a forced reload with more entries would write through null. Loaded by Ne_PhysicsMaterialResource_Load_Body 0x154411b60."
+ },
+ "signature": {
+  "id": "core.phys_parse_materials",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 7C 24 60 C5 F8 29 74 24 50 48 89 CE 80",
+  "match": "0x1440bee90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440bee90",
+  "kind": "func_start",
+  "names": [
+   "Ne_Phys_ParseMaterials"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-29",
+   "verifier": "pm-verify",
+   "kind": "func",
+   "item": "Ne_Phys_ParseMaterials",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440bee90.c;xref:0x1440bef14",
+   "notes": "V1791 blind re-check of the corrected notes (layout, defaults, extension table, no readable caller)"
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "cb3-verify-b",
+   "kind": "func",
+   "item": "Ne_Phys_ParseMaterials",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1440bee90.c;xref:0x1440bee90",
+   "notes": "V3965 Offsets verified: +4 restitution,+8 friction,+0xc cfm,+0x10 correctionVel,+0x14 minBounceVel,+0x18..+0x24 minSoftK/S maxSoftK/S,+0x28 speedForMaxSoftness,+0x2c dynamicScale,+0x30 dynamicThreshold; also +0x34 packed RGBA colour, +0x38 'sheet' string; +0 code not parsed here. MECHANICS 0x14463d0d0 not referenced in this decomp (unverified)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x1440bee90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440bee90.c",
+   "notes": "V4108 MATERIALS/MATERIAL parser; runtime dump values from addon logs not code-checkable (vtable/indirect or no direct callsite checked)"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "trkps2-verify",
+   "kind": "func",
+   "item": "Ne_Phys_ParseMaterials",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "xref:0x1440beeaf,0x1440bf4e2,0x1440bef8b,0x1440bf018,0x1440bf49e",
+   "notes": "V11225 latch skip, latch set, one-time alloc, null record past count, 4-char name"
+  }
+ ],
+ "proofs": []
+}

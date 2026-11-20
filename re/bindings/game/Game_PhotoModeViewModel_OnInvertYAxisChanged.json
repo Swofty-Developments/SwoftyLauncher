@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PhotoModeViewModel_OnInvertYAxisChanged",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141d08780",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=PhotoModeViewModel::onInvertYAxisChanged; log channel PHOTO-MODE: 'PhotoModeViewModel::onInvertYAxisChanged: Setting = %d'"
+ },
+ "signature": {
+  "id": "game.photo_mode_view_model_on_invert_y_axis_changed",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 30 83 7A 08 0A 0F 85 ?? ?? ?? ?? 48 89 CE 4C 8B 42 10",
+  "match": "0x141d08780",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141d08780",
+  "kind": "func_start",
+  "names": [
+   "Game_PhotoModeViewModel_OnInvertYAxisChanged"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141d08780",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141d08780.c;xref:0x141cefe1f",
+   "notes": "V5190 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

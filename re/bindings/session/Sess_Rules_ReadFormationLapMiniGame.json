@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Rules_ReadFormationLapMiniGame",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143618cf0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143618cf0.c;xref:0x1458517d0",
+  "notes": "rules.formation_lap.mini_game scoring and voice_over per grade Bad/Good/Perfect (formation lap grid-slot mini game)."
+ },
+ "signature": {
+  "id": "session.rules_read_formation_lap_mini_game",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 01 00 00 48 89 4C 24 30",
+  "match": "0x143618cf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143618cf0",
+  "kind": "func_start",
+  "names": [
+   "Sess_Rules_ReadFormationLapMiniGame"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb-verify-b",
+   "kind": "func",
+   "item": "Sess_Rules_ReadFormationLapMiniGame",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143618cf0.c;xref:0x143618cf0",
+   "notes": "V1835 mini_game/scoring.%s/voice_over.%s keys match"
+  }
+ ],
+ "proofs": []
+}

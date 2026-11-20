@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "g_Car_FfbFrictionWetMultiple",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145faa63c",
+  "type": "float",
+  "level": "L2",
+  "subsystem": "car",
+  "evidence": "doc:re/db/subsystems/car.md;xref:0x144700c45,0x14470209d;decomp:re/decomp/1447006f0.c",
+  "notes": "float, default 1.25; tyre_force_real friction (lane1) multiplier on wet/inter tyres; param frictionWetMultiple (14470209d) | findings from PR #472 by vogtmarcel07-cloud  | engine-re 2026-11-14: same compound test as g_Car_FfbForceWetMultiple (0x144700c45).  raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "car.ffb_friction_wet_multiple",
+  "section": ".xtls",
+  "pattern": "C5 FA 10 0D ?? ?? ?? ?? C5 7A 10 8A B0 03 00 00",
+  "match": "0x144700c45",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 8
+  },
+  "target": "0x145faa63c",
+  "kind": "data",
+  "names": [
+   "g_Car_FfbFrictionWetMultiple"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x145faa63c",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "xref:0x144700c49;decomp:re/decomp/1447006f0.c",
+   "notes": "V7511 1.25 default and use in TyreForceReal_Update ok; param string frictionWetMultiple not seen referenced at the store site"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "wx-verify",
+   "kind": "global",
+   "item": "0x145faa63c",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm 0x1447006f0,0x144700e40;xref:0x144700c45,0x14470209d",
+   "notes": "V9452 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans). Initial value 1.25; read at 0x144700c45 under the same flag test; written at 0x14470209d (frictionWetMultiple)."
+  }
+ ],
+ "proofs": []
+}

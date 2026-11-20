@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GhostLapHandler_Ctor",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f94910",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f94910.c;xref:0x14fb15383",
+  "notes": "GhostLapHandler constructor (logs connect/SessionRival). Allocates the 0xa58-byte rival finder (stored +0x508) whose completion callback +0xa8 = onSessionRivalSearchCompleted 0x142f9d860; +0x520 = remote task queue (param_6); +0x58 = handler context (id +0x28, leaderboard name +0x68); clears +0x60/+0x66/+0x9c and rival block. Addon: per-player TT ghost handler layout. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2364)"
+ },
+ "signature": {
+  "id": "game.ghost_lap_handler_ctor",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 C5 F8 29 B4 24 B0 00 00 00 4C 89 CF 4D 89 C6 48 89 D3 48 89 CE",
+  "match": "0x142f94910",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f94910",
+  "kind": "func_start",
+  "names": [
+   "Game_GhostLapHandler_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d3-verify",
+   "kind": "func",
+   "item": "Game_GhostLapHandler_Ctor",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f94910.c;xref:none-vtable(called)",
+   "notes": "V2364 allocs 0xa58 finder -> +0x508, finder +0xa8=142f9d860, +0xb0=handler; +0x520=param_6; +0x58 context; +0x66/+0x9c cleared. Correct."
+  }
+ ],
+ "proofs": []
+}

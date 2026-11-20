@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "vt_Career_Season",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14566b0b0",
+  "type": "vtable[7]",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/140ae4c70.c;decomp:re/decomp/140af1230.c;decomp:re/decomp/140af1980.c;decomp:re/decomp/140ae8880.c;xref:0x140ae4f72,0x140b6eaba;doc:addons/career-editor/protocol/season.md#identifiers",
+  "notes": "game::championship::Season (0x550 bytes) primary vtable, 7 slots: +0x10 serialise 0x140af1230 (name string object +0x210, completion_state u8 +0x538, current_weekend u32 +0x2a0, weekend_names[] from weekend+0x28 of the Weekend* vector +0x288..+0x290), +0x18 deserialise 0x140af1980 (teardown+detach+free of old weekends, then each saved name via 0x140aee2b0 with track 0xff + 0x140ae6160); secondary component-list vtable 0x14566b0f0 at +0x208; F1SeasonStandings embedded at +0x2a8 (applyResultsToStandings 0x140ae8880); built by 0x140ae4c70 (championship secondary slot +0x50), dtor 0x140b6eab0 (V0228)"
+ },
+ "signature": {
+  "id": "career.season",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4C 8D B6 08 02 00 00 48 8D 05",
+  "match": "0x140ae4f66",
+  "anchor": "0xf",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0xc",
+   "len": 7
+  },
+  "target": "0x14566b0b0",
+  "kind": "data",
+  "names": [
+   "vt_Career_Season"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-season",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/season.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-1",
+   "kind": "global",
+   "item": "vt_Career_Season",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140af1230.c;decomp:re/decomp/140af1980.c;decomp:re/decomp/140ae4c70.c;decomp:re/decomp/140b6eab0.c;decomp:re/decomp/140ae8880.c;xref:0x140ae4f75,0x140ae4f7f,0x140b6eabd,0x140b6eac7",
+   "notes": "V0228 type is vtable[7] (0x38 bytes) not [24]: +0x38 is a zero pad, 0x14566b0f0 (= primary+0x40, 11 slots) is the secondary vtable stored at +0x208 and the Season:: strings start at 0x14566b148 after it; 0x140ae4c70 is not a ctor but the championship+0x208 create method that allocs 0x550 and builds the Season inline. Corrected: game::championship::Season (0x550 bytes) primary vtable, 7 slots: +0x10 serialise 0x140af1230 (name string object +0x210, completion_state u8 +0x538, current_weekend u32 +0x2a0, weekend_names[] from weekend+0x28 of the Weekend* vector +0x288..+0x290), +0x18 deserialise 0x140af1980 (teardown+detach+free of old weekends, then each saved name via 0x140aee2b0 with track 0xff + 0x140ae6160); secondary component-list vtable 0x14566b0f0 at +0x208; F1SeasonStandings embedded at +0x2a8 (applyResultsToStandings 0x140ae8880); built by 0x140ae4c70 (championship secondary slot +0x50), dtor 0x140b6eab0"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-3",
+   "kind": "global",
+   "item": "vt_Career_Season",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ae4c70.c;decomp:re/decomp/140af1230.c;decomp:re/decomp/140af1980.c;decomp:re/decomp/140ae8040.c;decomp:re/decomp/140b6eab0.c;xref:0x140ae4f72,0x140b6eaba",
+   "notes": "V0298 Independent: 7 slots then 0 pad then secondary 0x14566b0f0 stored at +0x208 by 0x140ae4c70 (0x550 alloc) and dtor 0x140b6eab0; serialise keys name(+0x210 obj)/completion_state(u8 +0x538)/current_weekend(u32 +0x2a0)/weekend_names(weekend+0x28 of +0x288..+0x290); deserialise tears down/detaches/frees old weekends, then 0x4f0 alloc + 0x140aee2b0(...,0xff) + 0x140ae6160 per name; F1SeasonStandings clear on season+0x2a8 in 0x140ae8040. (.data1 hit 0x149f9e6d2 on 0x14566b0f0 is obfuscation junk, not a store.)"
+  }
+ ],
+ "proofs": []
+}

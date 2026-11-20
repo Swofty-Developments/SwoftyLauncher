@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Ne_Input_IsActionDownAnyDevice",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144116870",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144116870.c;xref:0x142c0924b,0x142d56a44",
+  "notes": "Returns true when input action param_2 (hashed id; special ids 0x27/0x28 via table 0x146ca4aa0) is active on any device in this+0x38..+0x40 (requires +0x1d8): checks mapped bindings (stride 0xd8, flag +0xd6). Callers Sess_InGame_UpdateBase, Game_Read_ReplayConfig, Game_Fade_FullScreenFadeStartFadeOutCurveId."
+ },
+ "signature": {
+  "id": "core.input_is_action_down_any_device",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CF 48 8B 41 38",
+  "match": "0x144116870",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144116870",
+  "kind": "func_start",
+  "names": [
+   "Ne_Input_IsActionDownAnyDevice"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x144116870",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144116870.c;xref:0x142c0924b",
+   "notes": "V3647 body matches; real callers Sess_InGame_UpdateBase, Game_Input_IsMenuAcceptPressed; Game_Read_ReplayConfig is not a caller"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x144116870",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144116870.c;xref:0x142c0924b",
+   "notes": "V4014 body matches; real callers Sess_InGame_UpdateBase, Game_Input_IsMenuAcceptPressed; Game_Read_ReplayConfig is not a caller"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x144116870",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144116870.c;xref:0x142c0924b,0x142d56a44",
+   "notes": "V4114 callers Sess_InGame_UpdateBase, Game_Read_ReplayConfig region, Game_Fade region confirmed"
+  }
+ ],
+ "proofs": []
+}

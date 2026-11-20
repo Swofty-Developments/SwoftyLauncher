@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Career_Refresh_RnDDeptMode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c87620",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Refresh_RnDDeptMode(uintptr_t *holder, uint32_t mode)",
+  "evidence": "xref:0x141c87082,0x141c873d7,0x141c87548,0x141c87564,0x141c87580,0x141c87599;kb:subsystems/rnd_ui.md#back;decomp:re/decomp/141c87620.c;xref:0x141c87620;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v061--the-develop-upgrade-screen-for-the-tyres-upgrades",
+  "notes": "Departments container tab-mode refresh; holder = &container, mode = tab index 0..5 (aero 0, chassis 1, engine 2, maintenance 3, hash 0x396ca87 -> 4, hash 0x10230e0a -> 5). Vm_Set_TabEnabled(container+0x2d8, card+0x268, flag) on card vector [0..3] with mode < 4, [4] with mode == 4, [5] with mode == 5; sets show_shoulders = mode < 4. Called from the open dispatch cases."
+ },
+ "signature": {
+  "id": "career.refresh_rn_d_dept_mode",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 50 89 D7",
+  "match": "0x141c87620",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c87620",
+  "kind": "func_start",
+  "names": [
+   "Career_Refresh_RnDDeptMode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-3",
+   "kind": "func",
+   "item": "Career_Refresh_RnDDeptMode",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141c87620.c;xref:0x141c87082,0x141c873d7,0x141c87548,0x141c87564,0x141c87580,0x141c87599,0x141c87636",
+   "notes": "V0147 proto (holder=&container, uint mode), 6 callers in the open dispatch confirmed, but mode is the tab index 0..5 (aero 0, chassis 1, engine 2, maintenance 3, 0x396ca87 4, 0x10230e0a 5): vector[0..3] enabled and show_shoulders set iff mode<4, [4] iff mode==4, [5] iff mode==5; 'dept cards on, panels off' only holds for mode<4, and no slot beyond [5] is touched"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-5",
+   "kind": "func",
+   "item": "Career_Refresh_RnDDeptMode",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c87620.c;decomp:re/decomp/141c86fc0.c;xref:0x141c87082,0x141c873d7,0x141c87548,0x141c87564,0x141c87580,0x141c87599",
+   "notes": "V0211 sigcheck OK, entry window clean; 6 E8 callers, all in the open case of Career_Dispatch_RnDContainerCommand (aero 0, chassis 1, engine 2, maintenance 3, 0x396ca87 4, perks 0x10230e0a 5); Vm_Set_TabEnabled(container+0x2d8, card+0x268 or 0) for vector [0..3] with mode<4, [4] mode==4, [5] mode==5; show_shoulders = mode<4; proto arity/types match, return unused"
+  }
+ ],
+ "proofs": []
+}

@@ -84,6 +84,9 @@ Value character_record(const CharacterState &s);
 CharacterState character_from(const Value &rec);
 
 int string_layer(Store &st, const std::string &addon, const std::string &key, const Value &text);
+// The same as string_layer for each (key, text) in order, with one lock, one pass over the registry's layers and one
+// change notification. An empty text clears the key's layer.
+int string_layers(Store &st, const std::string &addon, const std::vector<std::pair<std::string, Value>> &texts);
 std::vector<std::pair<std::string, std::string>> string_texts(const Value &rec);
 std::vector<std::string> string_ids(Store &st);
 

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Rules_CornerCuttingTimeGained",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14359e5a0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-RULES;decomp:re/decomp/14359e5a0.c;xref:0x1435a0b40;doc:re/db/subsystems/session.md",
+  "notes": "Log channel RULES: 'Corner Cutting Time Lost: %f,Time Off Track: %f,Delta: %f,(Time Gained / Time Off Track ): %f,Percentage Of Time Off Track: %f,Threshold: %f,Return: %s ' | tl-verify L1 (agent tlimits): per-car 0xc0 record rec = [this+0x50]: grades time gained rec+0xc -> +0x9c, peak-speed % +0x84 -> +0xa0, avg-speed % +0x88 -> +0xa4, each 0..4 against 4 thresholds at 0x145f96218 + set*0xb8 + [rec+0x98]*0x3c + {0x40..0x6c}; speed grades only count when flag word rec+0xac == 0; result = max -> rec+0xa8 (grade 1 raised to 2 in some session states); message type 1 corner_cut / 2 ran_wide"
+ },
+ "signature": {
+  "id": "session.rules_corner_cutting_time_gained",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 C5 F8 29 BC 24 B0 00 00 00 C5 F8 29 B4 24 A0 00 00 00 89 D3 48 89 CE",
+  "match": "0x14359e5a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14359e5a0",
+  "kind": "func_start",
+  "names": [
+   "Sess_Rules_CornerCuttingTimeGained"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-29",
+   "verifier": "tl-verify",
+   "kind": "func",
+   "item": "Sess_Rules_CornerCuttingTimeGained",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "xref:0x1435a0b40",
+   "notes": "V1784 L1; speed grades gated by rec+0xac, record not vehicle"
+  }
+ ],
+ "proofs": []
+}

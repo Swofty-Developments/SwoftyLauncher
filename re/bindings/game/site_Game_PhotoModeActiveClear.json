@@ -1,0 +1,43 @@
+{
+ "schema": 1,
+ "name": "site_Game_PhotoModeActiveClear",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142bdc327",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/142bdbd10.c;xref:0x142bdc327,0x142bdbcf8,0x142da407c",
+  "notes": "mov byte [rsi+0x394],0 in the photo mode disable body 0x142bdbd10 (entered only when +0x394 != 0; callers 0x142bdbcf8 via 0x142bdbcf0 and 0x142da407c): rsi = PhotoModeSystem. Clears the PHOTO view flag. Static only."
+ },
+ "signature": {
+  "id": "game.photo_mode_active_clear",
+  "section": ".xtls",
+  "pattern": "C6 86 25 04 00 00 00 C6 86 94 03 00 00 00",
+  "match": "0x142bdc320",
+  "anchor": "0x7",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142bdc327",
+  "kind": "mid",
+  "expect": "C6 86 94 03 00 00 00",
+  "names": [
+   "site_Game_PhotoModeActiveClear"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "view-re",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/frontend/view_state.cpp"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

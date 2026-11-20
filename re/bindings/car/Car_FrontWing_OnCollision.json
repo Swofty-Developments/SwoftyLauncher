@@ -1,0 +1,77 @@
+{
+ "schema": 1,
+ "name": "Car_FrontWing_OnCollision",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14465fdc0",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14465fdc0.c;xref:0x14465f66c;kb:subsystems/car.md#damage",
+  "notes": "Front wing impact callback (registered by Car_FrontWing_Init at 0x14465f66c, lea of this function). this = CarDamageFrontWing (CarLive+0x5c8). Gate CarLive+0x130 bit 0; skips near-vertical normals and impacts below +0x28/+0x40; damage = surface factor * +0x40 (impact divisor) * impulse * +0x2c (+0x40 factor per V1300) added to left +0x48 or right +0x4c by the lateral side, clamped to +0x38; overflow to F1SuspensionDamage system +0x138/+0x13c (scaled by its XOR pair +0x38/+0x40); chassis damage +0x50 += excess * +0x30; with CarLive+0x130 bit 1 writes clamp((left+right)/+0x38, 0, 1) to F1Aero+0x199c; toggles the wing body's attached bit (+0x170 bit 1) and posts a damage message. structs/CarDamageFrontWing.h Callers: census steam 0x465fdc0. | #529 verifier carlive-verify (2026-10-29, partial on the PR's L1 notes): C6 +0x2c read; class name by adjacency only"
+ },
+ "signature": {
+  "id": "car.front_wing_on_collision",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC 80 00 00 00 C5 78 29 4C 24 70",
+  "match": "0x14465fdc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14465fdc0",
+  "kind": "func_start",
+  "names": [
+   "Car_FrontWing_OnCollision"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   },
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-29",
+    "by": "carlive-verify",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v3",
+   "kind": "func",
+   "item": "Car_FrontWing_OnCollision",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14465fdc0.c;xref:0x14465f66c",
+   "notes": "V1300 Registered by vt 0x145bf90a0 slot 6 (0x14465f620, lea at 0x14465f669). Gate CarLive+0x130 bit 0, |n.up| > 0.8 skip, speed below +0x28/+0x40 skips. Damage = surface x +0x40 x impulse x +0x2c (the +0x40 factor is not in the row) into +0x48/+0x4c by side, min +0x38; overflow / +0x2c x ([CarLive+0x5d0]+0x38^+0x40) into +0x138/+0x13c; +0x50 += excess x +0x30; with +0x130 bit 1 writes clamp((l+r)/+0x38) to [this+0x90]+0x199c (0x14466029a); toggles +0x170 bit 1; posts message."
+  },
+  {
+   "date": "2026-10-29",
+   "verifier": "carlive-verify",
+   "kind": "func",
+   "item": "Car_FrontWing_OnCollision",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "xref:0x144660096",
+   "notes": "V3943 C6 +0x2c read; class name by adjacency only"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x14465fdc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14465fdc0.c;xref:0x14465f66b",
+   "notes": "V6732 fw +0x48/+0x4c/+0x38, car+0x5d0 +0x138/+0x13c, +0x199c, +0x2c read verified"
+  }
+ ],
+ "proofs": []
+}

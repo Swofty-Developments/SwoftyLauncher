@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_HasInstalledAFacilityOfType",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140737da0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-TELEMETRY",
+  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: %s has installed a facility of type %s'"
+ },
+ "signature": {
+  "id": "game.analytics_has_installed_a_facility_of_type",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 74 24 60 48 89 54 24 40",
+  "match": "0x140737da0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140737da0",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_HasInstalledAFacilityOfType"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb02-verify",
+   "kind": "func",
+   "item": "0x140737da0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140737da0.c",
+   "notes": "V4204 log string and record name match; \"EA analytics event:\" prefix not in exe strings (added elsewhere/unverified), message text matches"
+  }
+ ],
+ "proofs": []
+}

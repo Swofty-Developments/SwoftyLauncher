@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleLapTimesSystem_HandleVehicleLapHistoryMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f327a0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=VehicleLapTimesSystem::handleVehicleLapHistoryMessage; log channel LAPTIMES: 'VehicleLapTimesSystem::handleVehicleLapHistoryMessage : Vehicle %d'"
+ },
+ "signature": {
+  "id": "game.vehicle_lap_times_system_handle_vehicle_lap_history_message",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 68 48 89 D7 48 89 CE 0F B6 5A 10",
+  "match": "0x142f327a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f327a0",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleLapTimesSystem_HandleVehicleLapHistoryMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f327a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f327a0.c",
+   "notes": "V5612 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

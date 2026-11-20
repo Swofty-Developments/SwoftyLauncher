@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SessionStatsTracker_OnPlayerDroppedIn",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143756c70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143756c70.c;xref:0x1437569c4,0x14375758d",
+  "notes": "player_dropped_in handler: Game_SessionStatsTracker_ResetForSession and re-registers stats for the dropped-in player (0x14371fe70). Addon: stats continuity after drop-in. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2789)"
+ },
+ "signature": {
+  "id": "game.session_stats_tracker_on_player_dropped_in",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 78 48 89 D7 48 89 CE 80",
+  "match": "0x143756c70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143756c70",
+  "kind": "func_start",
+  "names": [
+   "Game_SessionStatsTracker_OnPlayerDroppedIn"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d8-verify",
+   "kind": "func",
+   "item": "Game_SessionStatsTracker_OnPlayerDroppedIn",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143756c70.c;xref:0x143756c70",
+   "notes": "V2789 msg+0x10!=0xff, loop vector +0x30..+0x38 stride 0x10: reset 143718db0 then re-register 14371fe70 confirmed"
+  }
+ ],
+ "proofs": []
+}

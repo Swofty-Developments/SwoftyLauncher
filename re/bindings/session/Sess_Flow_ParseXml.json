@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Sess_Flow_ParseXml",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144421c60",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "uint64_t Flow_ParseXml(void *machine, void *ctx, struct { const char *data; uint64_t size; } *buf)",
+  "evidence": "pat:flow-xml-parser;decomp:re/decomp/144421c60.c;xref:0x14e702bcc,0x15433f0e0",
+  "notes": "jmp stub into .data1 (0x154341130). Name kept for signatures.json; per verify-a the body parses a buffer into a flow state machine (element names state_machine / target) - the format is not visible here. Wraps the buffer (param_3 = {data,size}) in a reader and calls FUN_144427440(machine, reader); on success runs NeFlowStateMachineSystem::initialise on the registry (lazy static 0x14604e098, application_object) and advances the machine's load stage ([machine+0x10]+0xb8: n -> n+1, 3 -> 0) via FUN_144423180. Returns the parser result (0 = ok). Callers 0x14e702bcc, 0x15433f0e0 (.data1). (used by vmknolle race-start to add flow states/links)"
+ },
+ "signature": {
+  "id": "session.flow_parse_xml",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 87 10 E0 47 D2 E9 35 12 F3 02 75",
+  "match": "0x144421c60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144421c60",
+  "kind": "func_start",
+  "names": [
+   "Sess_Flow_ParseXml"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-24",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-a",
+   "kind": "func",
+   "item": "0x144421c60",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:work/verify_a/decomp/144421c60.c;xref:0x14e702bcc,0x15433f0e0",
+   "notes": "V1025 builds reader ctx over buf{data,size} (caller passes loaded resource ptr + size@+0x58) and runs 0x144427440 (walks elements, names 'state_machine','target'); on 0 it logs 'NeFlowStateMachineSystem::initialise - Incrementing exit blocked ref count', looks up 'application_object' and advances machine state (+0x10+0xb8); returns status int. Differs: it is parse+initialise of a flow state machine; XML format not evidenced in this body (only element/attribute names); proto arity/types ok"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-d",
+   "kind": "func",
+   "item": "0x144421c60",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_d/decomp/144421c60.c;decomp:work/verify_d/decomp2/144427440.c;xref:0x14e702bcc,0x15433f0e0",
+   "notes": "V1066 builds a stream reader over buf{data,size} (param_3 two qwords) and runs 144427440 which reads 'state_machine'/'state'/'start'/'name' elements; failure path logs NeFlowStateMachineSystem::initialise; 3 args match, return is int (proto says uint64_t, harmless); param_2 is an allocator-like obj (vtbl+0x38 free)"
+  }
+ ],
+ "proofs": []
+}

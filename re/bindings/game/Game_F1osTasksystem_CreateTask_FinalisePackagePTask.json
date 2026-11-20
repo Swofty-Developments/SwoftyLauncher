@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_F1osTasksystem_CreateTask_FinalisePackagePTask",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143434750",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143434750.c;xref:0x142b96b22",
+  "notes": "F1OS task-system typed task allocator for FinalisePackagePTask (type name static init 0x143458bd6): allocates a 0x168-byte task (0x1432c1ee0) with sub-objects (vtables 0x14583cf40, 0x14583cf60) and final vtable 0x14583f530, holder vtable 0x14583f810, logs 'Allocated new task %s', adds via 0x1432dd060 and stores param_3+8 into request +0x150 +0x10. Outer task of Game_F1os_CreateTask_FinalisePackageP 0x143434ba0. Addon: hook to see package finalisation. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3351)"
+ },
+ "signature": {
+  "id": "game.f1os_tasksystem_create_task_finalise_package_p_task",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 83 7C 24 20 00 74 47 48 8B 56 38 48 3B 56 40 74 2C C5 F8 57 C0 C5 F8 11 02 48 83 7C 24 28 00 74 15 48 8B 44 24 20 48 89 02 48 8B 44 24 28 48 89 42 08 F0 FF 40 0C 48 83 46 38 10 EB 11 48 83 C6 28 4C 8D 44 24 20 48 89 F1 E8 ?? ?? ?? ?? 48 8B 74 24 28 48 85 F6 74 1D F0 FF",
+  "match": "0x142b96b22",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143434750",
+  "kind": "func_start",
+  "names": [
+   "Game_F1osTasksystem_CreateTask_FinalisePackagePTask"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cs3-verify",
+   "kind": "func",
+   "item": "Game_F1osTasksystem_CreateTask_FinalisePackagePTask",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143434750.c;xref:0x142b96b22",
+   "notes": "V3351 0x168 alloc, vtables, AddTask, +0x150+0x10 store of param_3+8 confirmed"
+  }
+ ],
+ "proofs": []
+}

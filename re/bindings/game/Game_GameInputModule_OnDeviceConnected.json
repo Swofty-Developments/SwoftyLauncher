@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameInputModule_OnDeviceConnected",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a75d80",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=GameInputModule::onDeviceConnected; log channel INPUT: 'GameInputModule::onDeviceConnected - connected=%d, setting m_pendingRefresh=true'"
+ },
+ "signature": {
+  "id": "game.game_input_module_on_device_connected",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 70 01 00 00 4C 89 C7",
+  "match": "0x142a75d80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a75d80",
+  "kind": "func_start",
+  "names": [
+   "Game_GameInputModule_OnDeviceConnected"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142a75d80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a75d80.c;xref:0x142a749d8",
+   "notes": "V4962 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

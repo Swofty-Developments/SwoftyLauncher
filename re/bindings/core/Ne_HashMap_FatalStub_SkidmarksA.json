@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_FatalStub_SkidmarksA",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144775150",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144775150.c;xref:0x144715d55,0x1447757c4",
+  "notes": "Noreturn stub (call 0x145351784, int3). Named callers: Render_Skidmarks_Init."
+ },
+ "signature": {
+  "id": "core.hash_map_fatal_stub_skidmarks_a",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? CC 56 57 48 83 EC 28 4D 85 C0 74 28 4C 89 C6 48 8B 79 08 49 8B 00 4C 89 C1 31 D2 FF 50 08 48 8B 07 48 8B 40 38 48 89 F9 48 89 F2 48 83 C4 28 5F 5E 48 FF E0 90 48 83 C4 28 5F 5E C3 CC CC CC CC CC 4C",
+  "match": "0x144715d55",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x144775150",
+  "kind": "func_start",
+  "names": [
+   "Ne_HashMap_FatalStub_SkidmarksA"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x144775150",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144775150.c;xref:0x144715d55",
+   "notes": "V8182 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

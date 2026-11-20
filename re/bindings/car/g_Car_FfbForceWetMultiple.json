@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "g_Car_FfbForceWetMultiple",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145faa638",
+  "type": "float",
+  "level": "L2",
+  "subsystem": "car",
+  "evidence": "doc:re/db/subsystems/car.md;xref:0x144700c27,0x144701f7f;decomp:re/decomp/1447006f0.c",
+  "notes": "float, default 1.25 (writable section); tyre_force_real torque multiplier on wet/inter tyres; set from plugin param forceWetMultiple (144701e82..f7f). Addon: < 1.0 = lighter wheel in the wet | findings from PR #472 by vogtmarcel07-cloud  | engine-re 2026-11-14: used at 0x144700c27 only when [[tyre+0xc0]]+0xf8 != 0 (wet / inter compound flag), i.e. it follows the fitted compound, not track wetness or rain; default otherwise 1.0 (xmm4).  raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "car.ffb_force_wet_multiple",
+  "section": ".xtls",
+  "pattern": "C5 FA 10 05 ?? ?? ?? ?? C5 BA 59 E9 C5 FA 10 35",
+  "match": "0x144700c27",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 8
+  },
+  "target": "0x145faa638",
+  "kind": "data",
+  "names": [
+   "g_Car_FfbForceWetMultiple"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x145faa638",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x144700c2b;decomp:re/decomp/1447006f0.c",
+   "notes": "V7510 content and refs match"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "wx-verify",
+   "kind": "global",
+   "item": "0x145faa638",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm 0x1447006f0,0x144700e40;xref:0x144700c27,0x144701f7f",
+   "notes": "V9451 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans). Initial value 1.25. Read at 0x144700c27 only when byte [[rdx+0xc0]+0xf8] != 0, else 1.0 (0x144700c0b-0x144700c25); written at 0x144701f7f from the parsed param (forceWetMultiple string in the param table). That the +0xf8 byte means wet/inter compound is inferred from the param name and from [wheel+0xc0] being the compound data (WetnessGrip spline at +0xec0), not proven here."
+  }
+ ],
+ "proofs": []
+}

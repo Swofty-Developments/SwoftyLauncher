@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check packages/core/src/dbedit/modules.json against a game database.
+"""Check packages/core/src/games/f1_25/dbedit/modules.json against a game database.
 
 Resolves every module's scopes, rows and field paths, prints per module the rows found,
 the fields missing per row and a sample row rendered with names. Exits 1 on a schema
@@ -16,7 +16,7 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.normpath(os.path.join(HERE, "..", ".."))
-DEFAULT_MODULES = os.path.join(ROOT, "packages", "core", "src", "dbedit", "modules.json")
+DEFAULT_MODULES = os.path.join(ROOT, "packages", "core", "src", "games", "f1_25", "dbedit", "modules.json")
 
 _spec = importlib.util.spec_from_file_location("gamedb_rw", os.path.join(HERE, "..", "gamedb.py"))
 gamedb = importlib.util.module_from_spec(_spec)

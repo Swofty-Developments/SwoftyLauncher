@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_FinancePeriod_Bind",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14212c310",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "int64_t (void *vm, uint64_t a, void **ctx, uint64_t b)",
+  "evidence": "decomp:re/decomp/14212c310.c;xref:0x141ef688f;xref:0x141ef68b7",
+  "notes": "myteam-g1: Binds one finance period (weekly/season): name, period_date_range, income/income_raw, outgoings/outgoings_raw, net_currency/net_currency_raw, income_graph_data, income_transactions, outgoings_transactions, shows_recurring_transactions."
+ },
+ "signature": {
+  "id": "vm.finance_period_bind",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 4C 89 C7 48 89 CE 4D 89 C8 E8",
+  "match": "0x14212c310",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14212c310",
+  "kind": "func_start",
+  "names": [
+   "Vm_FinancePeriod_Bind"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x14212c310",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14212c310.c;xref:0x141ef688f",
+   "notes": "V10059 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Sess_MarshalZoneMonitor_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14357e780",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14357e780.c;xref:0x14357f5d0,0x14584aae8",
+  "notes": "MarshalZoneMonitor: builds marshal zones from the TrackSpace properties and subscribes to the messages r_part_detached and safety_car_deployment. Zone build (engine-re track RE round B 2026-11-17, static): one zone record per marshal_light_zone item (type 14, markup +0x1c8..+0x1d0, size check 0x1c1) of the main TrackSpace ([[[this+0x38]+0x28]+0x38]), in markup LIST order; record = {item ptr, +0x10 = item ID (+0x18)}. Neighbours are set by list index, cyclic: zone[i]+0x70 = zone[i-2], +0x78 = zone[i-1], +0x80 = zone[i+1], +0x88 = zone[i+2]. No sorting by Start, no ID or overlap check. No markup container -> logs and the monitor stays disabled (this+0x10a0 = 0); enabled = zones > 0 and the session-type flag table 0x1460fc950 bit 0..1."
+ },
+ "signature": {
+  "id": "session.marshal_zone_monitor_init",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 01 00 00 C5 F8 29 B4 24 F0 00 00 00 49 89 CF E8",
+  "match": "0x14357e780",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14357e780",
+  "kind": "func_start",
+  "names": [
+   "Sess_MarshalZoneMonitor_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb3-verify-b",
+   "kind": "func",
+   "item": "Sess_MarshalZoneMonitor_Init",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14357e780.c;xref:0x14357e780",
+   "notes": "V1925 r_part_detached, safety_car_deployment, TrackSpace property manager string confirmed"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "trkb-verify",
+   "kind": "func",
+   "item": "0x14357e780",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 14357e859-14357ed77 + decomp lines 95-300;xref:none",
+   "notes": "V11108 one zone per item of *(markup+8)+0x1c8 list, in list order, zone+0x10=item+0x18; +0x70/+0x78/+0x80/+0x88 = zones i-2,i-1,i+1,i+2 mod n; no sort. Edge: n==1 reads +0x70 from vector_begin-8 (out of bounds), so cyclic only for n>=2"
+  }
+ ],
+ "proofs": []
+}

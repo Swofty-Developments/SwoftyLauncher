@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_GameConfig_6",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14365a8b0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: Game.EnableLoading, Game.EnableSaveGame, Game.EnableSaveSystemInSkipFE, Game.EnableSaving, Save.SaveTitleOverride'"
+ },
+ "signature": {
+  "id": "game.read_game_config_6",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 70 01 00 00 4C 89 C3",
+  "match": "0x14365a8b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14365a8b0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_GameConfig_6"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x14365a8b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14365a8b0.c",
+   "notes": "V6111 Keys listed are read, but function (2696 bytes) is the save-system init: also reads lng_save_* titles and registers 4 save groups via 0x143658620 with sizes 0xa00000/0xe00000/0xc00000/0x1900000. Better: Game_SaveSystem_Init. (no direct call site; vtable/indirect)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x14365a8b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14365a8b0.c",
+   "notes": "V7088 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

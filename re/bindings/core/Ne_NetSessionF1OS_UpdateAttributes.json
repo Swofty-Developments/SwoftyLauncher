@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetSessionF1OS_UpdateAttributes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144089620",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144089620.c;xref:0x145a52f68",
+  "notes": "vtable update session attributes(state): +0x178, Privacy / setSearchable via Game_NetworkAttributes_FillForAdvertise, changeState eState_BusyUpdating (0xb)."
+ },
+ "signature": {
+  "id": "core.net_session_f1_o_s_update_attributes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 09 00 00 C5",
+  "match": "0x144089620",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144089620",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetSessionF1OS_UpdateAttributes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d6-verify",
+   "kind": "func",
+   "item": "Ne_NetSessionF1OS_UpdateAttributes",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144089620.c;xref:0x144089620",
+   "notes": "V2645 role/offsets/log strings match decomp"
+  }
+ ],
+ "proofs": []
+}

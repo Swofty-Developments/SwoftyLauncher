@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_CameraHelicopter_Reset",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14020a460",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_CameraHelicopter_Reset(void *self)",
+  "evidence": "str:s_cfg_GameContextOverrideTrackName;str:s_cfg_GameContextTrackName;decomp:re/decomp/14020a460.c;xref:0x1402080d1,0x14020a642,0x14020a643,0x14020a691,0x14020a692,0x14020a6ca,0x14020c750,0x1455e7e10;decomp:re/decomp/14020a460.c",
+  "notes": "Reset of the helicopter camera instance: the vtable 0x1455e7df0 directly follows the type string 'CameraHelicopterInstance'; this function is reached through the jmp thunk 0x14020c750 stored in its slot +0x20 (pointer 0x1455e7e10) and is called directly at 0x1402080d1 from the unnamed creator 0x140207c80, which stores that vtable first. Picks the focus car: walks the entrant list (session +0x2e0..+0x2e8, 0x88 stride) with Sess_Match_EntrantIdentity_Thunk 0x1431146d0 against the id from Ne_Make_RandomIdBlock 0x1441207d0 and stores the car index byte at this+0x58 (0xff when none). Settings: Game.Context.overrideTrackName (lea 0x14020a642) -> Ne_Get_SettingBool 0x143a43b90 on *(*(0x14601f5c8)+0x18)+0x18, default 0; if set, Game.Context.TrackName (lea 0x14020a691) -> Ne_Config_GetString 0x143a44700 into the function-static NeInlineStr128 0x14601eaa8, default empty; otherwise the live track name at *(*(0x14601f5c8)+0x30)+0xe8 -> +0xa0. Ne_Crt_Strcmp with 'monaco' sets byte this+0xac8 = 1, which adds 100.0 to the height this+0xac4. Placement: car transform via Sess_VehiclePlacement_ResolveTransform 0x142f62580; this+0xa0 = car pos + (0,10,0) (copied to this+0x90), 3x3 identity at this+0x60..+0x88, this+0xac4 = car y (+100 at Monaco), this+0xd4/+0xd8 = y+70, this+0xc8 = 150.0, this+0xd0 = 70.0, this+0xc4 = 5.0, this+0xdc = 150.0. Finally seeds an MT19937 state (624 words from this+0xf4, index this+0xab8 = 0x270) from QueryPerformanceCounter. Class from the type string next to the vtable; the verb Reset is inferred from the data flow. hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile.  | 2026-11-17 engine-re round A2: hard-coded track: strcmp(Game.Context.overrideTrackName or the current track name, 'monaco' 0x1456115ff at 0x14020a6cd) sets +0xac8; with it the helicopter camera height offset +0xac4 gets +100.0. Monaco only. raised by engine-re with --force 2026-11-17 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.camera_helicopter_reset",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC C0 00 00 00 C5 F8 29 B4 24 B0 00 00 00 48 89 CE 48 8B 05",
+  "match": "0x14020a460",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14020a460",
+  "kind": "func_start",
+  "names": [
+   "Game_CameraHelicopter_Reset"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-0",
+   "kind": "func",
+   "item": "0x14020a460",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14020a460.c;xref:0x1402080d1,0x14020c750,0x1455e7e10",
+   "notes": "V9304 Resets helicopter-camera state: picks the focus car index (+0x58), reads Game.Context.overrideTrackName / Game.Context.TrackName (monaco adds +100 height), sets base height/offsets (+70 m etc.), identity matrices and reseeds an RNG; reached via thunk 0x14020c750 in the vtable right after the \"CameraHelicopterInstance\" string (slot 0x20) and a direct call from 0x140207c80; 1 arg, void"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "trkerp-verify2",
+   "kind": "func",
+   "item": "Game_CameraHelicopter_Reset",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm 0x14020a633-0x14020a7e2;imm:[0x145382ac8]=100.0",
+   "notes": "V11017 name from override Game.Context.TrackName or [[g+0x30]+0xe8]+0xa0; strcmp monaco==0 -> byte +0xac8=1 (never cleared here); height +0xac4 computed then +100.0 when +0xac8 set"
+  }
+ ],
+ "proofs": []
+}

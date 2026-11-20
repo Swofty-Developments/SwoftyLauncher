@@ -1,0 +1,73 @@
+{
+ "schema": 1,
+ "name": "Game_CareerWizard_PushNextStep",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14386d890",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_CareerWizard_PushNextStep(void *wizard)",
+  "evidence": "decomp:re/decomp/14386d890.c;decomp:re/decomp/14386d780.c;decomp:re/decomp/141a27240.c;decomp:re/decomp/141a2a0c0.c;decomp:re/decomp/141a2a770.c;xref:0x15196c0cb",
+  "notes": "career wizard step machine, called only by the add-option body (thunk 0x14386d780: push the option byte on wizard +0x100..+0x108, then this, then MessageCareerSetupOptionAdded). From the last option it pushes the next step byte on wizard +0xe0..+0xe8; step views fire route table 0x145736988[step-1] (1 solo type, 2 online type, 3 experience, 4 season length, 5 settings, 6 confirm, 7/8 settings flow, 10 track select, 11 invite friend, 14 classic drivers, 15 my team entry, 16 team icons, 17 classic drivers settings). Options seen: 0 single player, 1 two player, 2 driver, 3 my team, 6 Skip to F1, 7 Start in F2, 9 Full Season (next step 5, settings), 10 (next step 10, track select; its label is not settled: the label switch 0x14386e590 gives lng_full_season to 9 and 0x12 and lng_custom_season to 0x13 and 0x14), 0xb Recommended settings, 0xc Custom settings, 0x1e (no case in the label switch 0x14386e590; with it the confirm step takes driver_career_driver_select, site_Game_CareerWizardConfirm_NextRoute). After 0xb: 0xe when 0x1e and driver/my team, 16 when Game_CareerWizard_StartsInF1 is false (+feature flag) and a type option is set, 0xe when feature flag bit 26 and driver (or my team, two player), else 6. Raised by wizard-1990"
+ },
+ "signature": {
+  "id": "game.career_wizard_push_next_step",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 CE E8 ?? ?? ?? ?? 4C 8B 30 4C 8B 86 28 01 00 00",
+  "match": "0x14386d890",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14386d890",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerWizard_PushNextStep"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "wizard-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/career_wizard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-21",
+   "verifier": "std-ui-verify",
+   "kind": "func",
+   "item": "Game_CareerWizard_PushNextStep",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14386d890.c;decomp:re/decomp/14386d780.c;decomp:re/decomp/14386e590.c;xref:0x15196c0cb,0x141a2499c;sig:game.career_wizard_push_next_step",
+   "notes": "V0918 confirmed: void(wizard), only rcx read. No rel32 caller in .xtls; sole call 0x15196c0cb in the .data1 body of thunk 0x14386d780 (jmp 0x15196c000), which appends the option byte to +0x100..+0x108 (cap +0x110, alloc +0xf8) and then calls it. It reads the last option *(end-1) (movzx edx,[rcx-1] at 0x14386da30, jump table for <= 0x1f) and appends one byte per step to +0xe0..+0xe8 (cap +0xf0, alloc +0xd8), inline or through 0x143874f50(wizard+0xd8). Route table 0x145736988[step-1] (dec al; cmp 0x10 at 0x141a2499c): 4 season_length_select, 5 settings_select, 6 confirm, 14 classic_drivers, 16 team_icons_select, as claimed. Option 9 (also 0x12-0x14) pushes step 5, option 10 pushes step 10 (track_select), 6 pushes 4. Not confirmed: option 10 = Custom Season. The option label switch 0x14386e590 maps 9 and 0x12 to lng_full_season, gives 10 no label and uses lng_custom_season for 0x13/0x14. So 9 = Full Season holds and 10 only leads to track select"
+  },
+  {
+   "date": "2026-10-21",
+   "verifier": "std-ui-verify",
+   "kind": "func",
+   "item": "Game_CareerWizard_PushNextStep",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14386d890.c;decomp:re/decomp/14386d780.c;decomp:re/decomp/14386e590.c;xref:0x15196c0cb,0x141a2499c;sig:game.career_wizard_push_next_step",
+   "notes": "V0923 recheck of the revised row: all of it confirmed except the 0x1e team icon label. Confirmed in addition to V0918: the thunk posts a message whose vtable 0x145884bf0 names MessageCareerSetupOptionAdded (0x1457c9658). Labels from 0x14386e590: 0 lng_soloscreen_career_title, 1 lng_2p_career, 2 lng_driver, 3 lng_homescreen_my_team_career, 6 lng_skip_to_f1, 7 lng_start_in_f2, 9 lng_full_season, 0xb lng_default_settings, 0xc lng_custom_settings. The option 10 wording now matches the code. Steps 1-17 match table 0x145736988. After 0xb, 0x141a177e0 returns 0 when the option is present, so the 0xe / 16 / 0xe / 6 order and conditions (bit 27 flag gated by StartsInF1, bit 26 flag) match. Not checked: option 0x1e = team icon (no case in the label switch). sigcheck: one hit"
+  },
+  {
+   "date": "2026-10-21",
+   "verifier": "std-ui-verify",
+   "kind": "func",
+   "item": "Game_CareerWizard_PushNextStep",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14386d890.c;decomp:re/decomp/14386d780.c;decomp:re/decomp/14386e590.c;decomp:re/decomp/141a23810.c;xref:0x15196c0cb,0x141a2499c,0x141a23e80;sig:game.career_wizard_push_next_step",
+   "notes": "V0925 the revised row now matches the code in full. Everything in V0918/V0923 still holds. The 0x1e wording is right: 0x14386e590 has no case 0x1e (it falls to default), and in 0x141a23810, when wizard+0x182 == 0, the scan of options +0x100..+0x108 for 0x1e (cmp byte [rax],0x1e at 0x141a23e80) jumps to 0x141a23f99, which loads driver_career_driver_select and goes to the site 0x141a23c91; without 0x1e it takes driver_career_driver_type_select. sigcheck: one hit"
+  }
+ ],
+ "proofs": []
+}

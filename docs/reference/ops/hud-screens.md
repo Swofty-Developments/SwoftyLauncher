@@ -131,6 +131,29 @@ transition` and `spectator_mode_2 > session_timer > Scene Root`. Every binding i
 stock template of its screen (a wrong tag crashes the game when the screen opens), and the stock
 nodes are left byte for byte as they were.
 
+### Several records on one screen
+
+Each mask is one `visible` binding on a stock element, and two bindings on one element fight: the
+record composed last wins, so the stock board shows while the other record is on. With two or more
+records on a screen, the first record by prefix keeps the stock chains. Each later record wraps the
+masked element in a null of its own, `<prefix>_w_<element>`, and its masks bind that null:
+
+| screen | mask | the later record's wrapper | in |
+|---|---|---|---|
+| `standings` | `mask` | `<prefix>_w_mask` | `driver_position_table_stacked.idf` |
+| `replay` | `driver_table > Scene Root` | `<prefix>_w_driver_table` | `theatre/replay_highlights.idf` |
+| `replay` | `session_timer > Scene Root` | `<prefix>_w_session_timer` | `theatre/replay_highlights.idf` |
+| `spectator` | `… > transition` | `spectator_mode_2 > driver_position_table > <prefix>_w_transition` | `spectator_mode/spec_driver_position_table.idf` |
+| `spectator` | `… > session_timer > Scene Root` | `spectator_mode_2 > <prefix>_w_session_timer` | `screens/spectator_mode_2.idf` |
+
+A third record's null goes inside the second's, as for `stock_nodes`. Every record's mask hides the
+board while its own `show` leaf is true, and the board shows only while every leaf is false. The
+composer writes these scenes only with two or more records on the screen. A screen spelled out
+names each mask's scene in `mask_scenes`; without it, the wrappers go into the instance scene.
+
+The host instances need nothing of this: each record shows its own `<prefix>_host`, and `o_<other>`
+hides the other records' roots inside it.
+
 ## The three presets
 
 | | `standings` | `replay` | `spectator` |
@@ -140,7 +163,9 @@ nodes are left byte for byte as they were.
 | root follows | — | `#replay_flow.replays_and_highlights.show_drivers_list` | `show_left_side` |
 | stock read from | flow_race.erp | flow_replay.erp | flow_race.erp |
 
-`spectator_mode_2.idf` itself is left stock: another addon replaces it, and the later wins.
+`spectator_mode_2.idf` itself is left stock while one record is on the spectator screen: another
+addon replaces it, and the later wins. With two or more, the composer writes it for the second
+record's `session_timer` wrapper.
 
 ## A screen spelled out
 
@@ -156,6 +181,7 @@ For a screen the core does not know, `screen` takes the same struct the presets 
   "instance": { "in": "eaid://ui_package/art/osd/screens/my_screen.idf", "clone": "some_xref",
                 "under": "elements_null", "at": { "of": "session_timer" }, "scale": 0.78, "retarget": true },
   "masks": [["some_xref", "Scene Root"]],
+  "mask_scenes": ["eaid://ui_package/art/osd/screens/my_screen.idf"],  // the scene of each mask's element
   "root_switch": "show_left_side",
   "erps": { "scene": ["2025_asset_groups/ui_package/flow_frontend.erp"],
             "template": ["2025_asset_groups/ui_package/screens/my_screen.erp"] },
@@ -205,10 +231,20 @@ and `lockup` each have a stock group over them, so a `visible` of ours on them d
 The composer writes the scene again with a new null `<prefix>_w_<element>` in each wrapped
 element's place in its parent's children, the element inside it: every stock name stays, the
 drawing order stays, the lookup grows by the wrappers, and the stock nodes still find their parts
-by name. The group then hides the wrappers (`v_w_<element>`, `visible <- NOT while` like the rest).
-One record wraps a scene; a second record wrapping the same scene is refused. The flag box
+by name. The wrapper is a copy of one of the scene's plain nulls, with no art of its own. The group
+then hides the wrappers (`v_w_<element>`, `visible <- NOT while` like the rest). The flag box
 (`boundless` in `race_condition_flag_message.idf`, under
 `hud_left_notification_dynamic.osd_visibility_option.left_notification.left_message`) needs no wrap.
+
+Several records can hide parts of one scene, such as two season HUDs that each show with their own
+cars. The composer takes the records in the order of their prefixes, and writes each scene once:
+
+- **A scene an earlier record wrapped:** the later record's null goes inside the earlier one,
+  around the element: `s10_tower_w_lap_bg.s11_tower_w_lap_bg.lap_bg`.
+- **A part an earlier record already hides:** it moves to the later record's `wrap`. Two
+  `visible` bindings on one element fight, as they do with a stock node.
+
+Each record's group then shows and hides only its own parts and wrappers.
 
 ## The session clock
 

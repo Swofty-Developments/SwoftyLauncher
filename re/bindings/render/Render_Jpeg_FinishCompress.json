@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Jpeg_FinishCompress",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1449d47a0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1449d47a0.c;xref:0x14379cf94",
+  "notes": "libjpeg jpeg_finish_compress(cinfo): drains remaining passes (loop on master flag +0x19), runs dest term, writes EOI, resets state to 100. Caller Game_ThumbnailSystem_RequestAndWriteScreenshot."
+ },
+ "signature": {
+  "id": "render.jpeg_finish_compress",
+  "section": ".xtls",
+  "pattern": "48 89 5C 24 08 57 48 83 EC 20 48 8B D9 8B 49 24",
+  "match": "0x1449d47a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1449d47a0",
+  "kind": "func_start",
+  "names": [
+   "Render_Jpeg_FinishCompress"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x1449d47a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1449d47a0.c;xref:0x14379cf94",
+   "notes": "V7712 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

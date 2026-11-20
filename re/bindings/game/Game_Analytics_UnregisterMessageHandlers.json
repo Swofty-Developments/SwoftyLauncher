@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_UnregisterMessageHandlers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1406fd6c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void (void *analytics)",
+  "evidence": "decomp:re/decomp/1406fd6c0.c;xref:0x1406fd696",
+  "notes": "myteam-g1: Giant teardown that unsubscribes about 200 message handlers of the analytics system (func 143988350 = dispatcher unsubscribe), including BankEndOfWeekendFundsUpdateMessage -> Game_Analytics_BankEndOfWeekendFundsUpdate, MessageESCostCapBreached/Warning, sponsor messages, MessageCareerSetupMyTeamSetupComplete. Useful as the message-name catalogue of My Team events."
+ },
+ "signature": {
+  "id": "game.analytics_unregister_message_handlers",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 20 02 00 00 48 89 CE",
+  "match": "0x1406fd6c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1406fd6c0",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_UnregisterMessageHandlers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x1406fd6c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1406fd6c0.c;str:\"BankEndOfWeekendFundsUpdateMessage\"",
+   "notes": "V9473 201 calls to func_0x143988350 (bus unsubscribe) on message names incl. BankEndOfWeekendFundsUpdateMessage, MessageESCostCapBreached, MessageCareerSetupMyTeamSetupComplete, sponsor messages."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_RenownIncreasedPopup_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142093fd0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *vm",
+  "evidence": "decomp:re/decomp/142093fd0.c;xref:0x145768328",
+  "notes": "myteam-g1: Init of the \"renown increased\" popup (lng_renown_increased)."
+ },
+ "signature": {
+  "id": "career.renown_increased_popup_init",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 03 00 00 C5 F8 29 B4 24 A0 03 00 00 48 89 CE 4C 8D A1 78 02 00 00",
+  "match": "0x142093fd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142093fd0",
+  "kind": "func_start",
+  "names": [
+   "Career_RenownIncreasedPopup_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x142093fd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142093fd0.c;xref:0x145768328",
+   "notes": "V10044 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

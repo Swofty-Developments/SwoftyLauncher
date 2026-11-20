@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_Write_Turbo",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446b6630",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446b6630.c;xref:0x145bfbdd8",
+  "notes": "VTF Turbo: BoostEfficiencySpline, zeroBarRate, maxBoostRate, MaxBoost, relativeSize, acceleration, Deceleration. Correction: this is the serialiser (component data vtable slot 3): it writes the section back as XML through the writer object's vtable (+0x28 begin element, +0x68 attribute, +0x78 end, +0x98 comment); the field list above is what it writes. The reader is slot 2 (Game_Read_VtfFloat by name, values stored XOR-obfuscated). | car-b: writes BoostEfficiencySpline, zeroBarRate +0x2b8, maxBoostRate +0x2bc, MaxBoost +0x2c0, relativeSize +0x2c4, acceleration +0x2c8, Deceleration +0x2cc (data offsets, plain floats)"
+ },
+ "signature": {
+  "id": "car.parse_turbo",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 C5 F8 29 74 24 20 48 89 D6 48 89 CF 48 8B 02 48 8D 15 ?? ?? ?? ?? 48 89 F1 FF 50 28 48 8B 06 48 8D 15 ?? ?? ?? ?? 48 89 F1 FF 90 98 00 00 00 4C 8D 47 10",
+  "match": "0x1446b6630",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446b6630",
+  "kind": "func_start",
+  "names": [
+   "Car_Write_Turbo"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v4",
+   "kind": "func",
+   "item": "Car_Write_Turbo",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446b6630.c;xref:0x145bfbdd8",
+   "notes": "V1246 Serialiser: begin 'Turbo', BoostEfficiencySpline (data+0x10), then zeroBarRate +0x2b8, maxBoostRate +0x2bc, MaxBoost +0x2c0, relativeSize +0x2c4, acceleration +0x2c8 and Deceleration +0x2cc as plain floats. Only ref: Turbo data vt +0x18."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446b6630",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446b6630.c",
+   "notes": "V6816 Serialiser with Turbo field list confirmed. (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

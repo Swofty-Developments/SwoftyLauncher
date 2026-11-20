@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_CannedEvents_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1409bc6c0",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_CannedEvents_Update(void *self, const uint64_t *time)",
+  "evidence": "decomp:re/decomp/1409bc6c0.c;xref:0x145664f68,0x1409bcd9d,0x1409bd0ed,0x1409bdbe0,0x1409bda93",
+  "notes": "Virtual (only ref = vtable slot ptr 0x145664f68) of the canned-events component; param_2 is an 8-byte time value. Iterates the event list [self+0xf0]+0x198..+0x1a0 and the per-vehicle events: formation-lap faults (Game_Proto_FaultOnFormationLap_Ctor, Game_Telemetry_SendFormationLapFault), failure roll / apply (Ai_CannedEvents_RollFailureChance 0x1409bf2e0, Ai_CannedAccident_ApplyFailure 0x1409b2940, Game_Failure_Apply 0x1409b3190), pressure lock-ups (0x1409bf490, switch cases 2/3), UI message (Game_UiMessage_DisplayMessage, 'DRIVER'), and posts event messages with Ai_CannedEvents_PushQueueMessage 0x140b3fd90 (0x1409bcd9d, 0x1409bd0ed). Accident part: performAccident (log 0x1409bdbe0) sets bit 0x800000 or 0x400000 in [[[veh ctx]+0x40]+0x70][veh]+0x17c; fixAccident (log 0x1409bda93, string 0x145664d8c) clears them. (corrected 2026-11-14: performAccident is one branch of this per-tick update, not the function's role) (renamed 2026-11-14 from Ai_CannedEvents_PerformAccident: the code contradicts the old name) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.canned_events_perform_accident",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 01 00 00 C5 79 29 9C 24 80 01 00 00",
+  "match": "0x1409bc6c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1409bc6c0",
+  "kind": "func_start",
+  "names": [
+   "Ai_CannedEvents_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x1409bc6c0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1409bc6c0.c",
+   "notes": "V4375 only performAccident log present, no fixAccident string; large accident performer (1712 lines); name ok, claim of fixAccident wrong"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x1409bc6c0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1409bc6c0-0x1409bf2d1;xref:0x145664f68",
+   "notes": "V10606 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only ref abs64 vtable slot 0x145664f68. 2 args. Per-tick event update: calls 0x1409bf2e0 (0x1409bedb6), 0x1409bf490 (0x1409bed3b/5b), 0x1409b2940 (0x1409bdd92), 0x1409b3190, 0x140b3fd90 (0x1409bcd9d/0x1409bd0ed); performAccident sets 0x400000/0x800000 in +0x17c (0x1409bdc11), fixAccident clears (0x1409bd7c0). New name Update fits better than PerformAccident."
+  }
+ ],
+ "proofs": []
+}

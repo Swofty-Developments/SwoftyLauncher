@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetSystemClassicMatchmaking_OnJoinSessionComplete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144064040",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "str:s_NeNetSystemClassicMatchmaking_OnJoinSessionComplete;xref:0x144064194,0x1440642f7,0x1440643e2,0x1440644ae;decomp:re/decomp/144064040.c",
+  "notes": "cxx=neon::NeNetSystemClassicMatchmaking::onJoinSessionComplete; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "core.net_system_classic_matchmaking_on_join_session_complete",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC E8 00 00 00 4C",
+  "match": "0x144064040",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144064040",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetSystemClassicMatchmaking_OnJoinSessionComplete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb3-verify-a",
+   "kind": "func",
+   "item": "Ne_NetSystemClassicMatchmaking_OnJoinSessionComplete",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144064040.c;xref:0x144063d0b",
+   "notes": "V2074 own pretty string; joining as host -> setRole Host, setLocalConnectivity; calls leaveSession on failure"
+  }
+ ],
+ "proofs": []
+}

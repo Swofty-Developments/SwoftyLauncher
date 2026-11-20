@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_TeamHqTimeline_AnyDayBoolB",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422b9060",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "bool Vm_TeamHqTimeline_AnyDayBoolB(void *vm, uint32_t key)",
+  "evidence": "decomp:re/decomp/1422b9060.c;xref:0x1422c765c;xref:0x1422cb3f2;xref:0x14232a037",
+  "notes": "myteam-g2: If the bound id matches key&0xffff, scans all day slots (vm+0x108..+0x110, stride 0xc0) and returns true if any slot's bool at +0x68 is set. Used for the timeline-stop decision (a day carrying a blocking event)."
+ },
+ "signature": {
+  "id": "vm.team_hq_timeline_any_day_bool_b",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 89 D7 48 89 CE 48 8B 59 28",
+  "match": "0x1422b9060",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422b9060",
+  "kind": "func_start",
+  "names": [
+   "Vm_TeamHqTimeline_AnyDayBoolB"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1422b9060",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422b9060.c;xref:0x1422c765c",
+   "notes": "V10079 Loops day slots stride 0xc0 from +0x108..+0x110 testing bool at +0x68 when bound id matches; matches."
+  }
+ ],
+ "proofs": []
+}

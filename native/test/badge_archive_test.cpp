@@ -1,7 +1,7 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
-#include "../src/core/badge_archive.hpp"
+#include "core/render/badges/badge_archive.hpp"
 #include <cassert>
 #include <cstdio>
 #include <fstream>
@@ -48,8 +48,8 @@ static void source_selection()
     using namespace badge_images;
     namespace fs = std::filesystem;
     const auto temp = fs::canonical(fs::temp_directory_path());
-    const auto root = temp / ("swofty-live-image-test-" + std::to_string(GetCurrentProcessId()) + "-" +
-                              std::to_string(GetTickCount64()));
+    const auto root =
+        temp / ("swofty-live-image-test-" + std::to_string(GetCurrentProcessId()) + "-" + std::to_string(GetTickCount64()));
     fs::create_directories(root / "2025_asset_groups/ui_package");
     fs::create_directories(root / "swofty");
     write_erp(root / "2025_asset_groups/ui_package/a.erp", "stock");
@@ -57,8 +57,7 @@ static void source_selection()
     write_erp(root / "swofty/overlay.erp", "overlay");
     archive::Env env;
     env.root = root;
-    auto read = [&](const std::string &expected)
-    {
+    auto read = [&](const std::string &expected) {
         archive::Resources resources(env);
         std::vector<std::string> data;
         return resources.read("eaid://ui_package/test.uidb", data) && data == std::vector<std::string>{expected};
@@ -122,13 +121,10 @@ int main(int argc, char **argv)
     assert(!surface.load(fragments));
     assert(!archive::safe("../a.erp") && !archive::safe("C:/a.erp") && !archive::safe("swofty/../../a.erp"));
     std::puts("PASS: native archive slice selection, alpha, malformed dimensions and safe paths");
-    if (argc == 2)
-    {
+    if (argc == 2) {
         archive::Env env;
         env.root = argv[1];
-        for (const auto &entry :
-             std::filesystem::recursive_directory_iterator(env.root / "2025_asset_groups/ui_package"))
-        {
+        for (const auto &entry : std::filesystem::recursive_directory_iterator(env.root / "2025_asset_groups/ui_package")) {
             if (entry.path().extension() != ".erp")
                 continue;
             archive::Open file;
@@ -151,14 +147,12 @@ int main(int argc, char **argv)
                     catalogue.surface.width, catalogue.surface.height, catalogue.surface.layers);
         assert(loaded);
         unsigned count = 0;
-        for (auto &[key, index] : catalogue.indices)
-        {
+        for (auto &[key, index] : catalogue.indices) {
             assert(index >= 0);
             assert(catalogue.decode(std::string(archive::PREFIX) + key, pixels));
             std::printf("decoded %s %ux%u\n", key.c_str(), pixels.width, pixels.height);
             char golden[4]{};
-            if (GetEnvironmentVariableA("SWOFTY_BADGE_GOLDEN",golden,sizeof golden))
-            {
+            if (GetEnvironmentVariableA("SWOFTY_BADGE_GOLDEN", golden, sizeof golden)) {
                 std::printf("RGBA %s %u %u ", key.c_str(), pixels.width, pixels.height);
                 for (auto byte : pixels.rgba)
                     std::printf("%02x", unsigned(byte));

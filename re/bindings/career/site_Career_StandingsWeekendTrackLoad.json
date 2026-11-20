@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_StandingsWeekendTrackLoad",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14181e1a1",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/14181d700.c;xref:0x14181d98b,0x14181d9a0,0x14181e19b,0x14181e1a1",
+  "notes": "mov rax,[rbx+0x2c0] in Career_Standings_BuildWeekendNode, on the path where byte [r12+0x4a] is set (fall-through of je 0x14181e4dc at 0x14181e19b). rbx = the round's TrackDataRecord: the item at weekend+0x278 (track id) of TrackDataSystem +0x28..+0x30 (CareerEntity +0xf58), looked up at 0x14181d973..0x14181d98b, 0 when the track id is past the item vector (0x14181d9a0) or its item is empty. rbp = round index (0-based), [rsp+0xa0] = the round's Weekend (Season +0x288 [rbp]). A round at a community track that is now off gives rbx 0 and faults here (ACCESS_VIOLATION reading 0x2c0 at F1_25.exe+0x181e1a1, Team HQ standings). Patch window is this 7-byte mov; no branch lands inside it. Core's standings guard sends rbx 0 to site_Career_StandingsWeekendTrackDone, as the je at 0x14181e19b does."
+ },
+ "signature": {
+  "id": "career.standings_weekend_track_load",
+  "section": ".xtls",
+  "pattern": "0F 84 ?? ?? ?? ?? 48 8B 83 C0 02 00 00 48 8D 48 08",
+  "match": "0x14181e19b",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14181e1a1",
+  "kind": "mid",
+  "expect": "48 8B 83 C0 02 00 00",
+  "names": [
+   "site_Career_StandingsWeekendTrackLoad"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "standings-guard",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/career/standings_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "verify-standings",
+   "kind": "global",
+   "item": "site_Career_StandingsWeekendTrackLoad",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14181d700.c;xref:0x14181d98b,0x14181e19b,0x14181e1a1;sig:career.standings_weekend_track_load",
+   "notes": "V2194 sigcheck --only career.standings_weekend_track_load: OK hits=1 match=0x14181e19b target=0x14181e1a1 (anchor 6, expect 488B83C0020000). Disasm of the whole .pdata body 0x14181d700..0x14181f7c5 (1831 instructions): 0x14181e195 cmp byte [r12+0x4a],0; je 0x14181e4dc; 0x14181e1a1 mov rax,[rbx+0x2c0] (7 bytes), then lea rcx,[rax+8] and test rax,rax: the record's +0x2c0 is null-checked, the record itself is not. rbx comes only from the lookup at 0x14181d973..0x14181d98b (mov rbx,[items+track*0x10+8], track = movzx byte [weekend+0x278], items = TrackDataSystem +0x28..+0x30 of [[r12+0x20]+0xf58]) or xor ebx,ebx at 0x14181d9a0 when the track id is past the item count; no instruction between 0x14181d9a2 and the site writes rbx, rbp or [rsp+0xa0], and r12 is restored at 0x14181de24. The decompile shows the same unchecked read (lVar14 + 0x2c0 under param_1+0x4a) beside the checked (lVar14 != 0 && param_1+0x49) branch. Branch scan: no in-function branch lands in 0x14181e1a2..0x14181e1a7, and the one .xtls rel32 hit there (0x141531d30) is protector filler outside any .pdata function. EA: the function's 8389 bytes at 0x141817c50 in F1_25.1789128892.110548.mem differ from Steam only in rel32/disp32 fields, and the pattern matches once in that dump's .rdata at 0x1418186eb (target 0x1418186f1)."
+  }
+ ],
+ "proofs": []
+}

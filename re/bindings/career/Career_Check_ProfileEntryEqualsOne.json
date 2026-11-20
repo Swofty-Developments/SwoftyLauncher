@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Check_ProfileEntryEqualsOne",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fd3340",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "bool Career_Check_ProfileEntryEqualsOne(void *self)",
+  "evidence": "decomp:re/decomp/140fd3340.c;xref:0x1419a8465;xref:0x143701af8",
+  "notes": "myteam-g2: Builds a lookup key from self+0x340 and the active profile object (global 0x14604c2c8 -> +0x140 -> +0x198 -> +0x1c0), calls func 140fdb170 for the record and returns record+0x30 == 1. Used on entering the Team HQ state and building advance cards (looks like a tutorial/first-time flag). Level 1, role uncertain."
+ },
+ "signature": {
+  "id": "career.check_profile_entry_equals_one",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC B8 00 00 00 48 89 CE 48 8B B9 40 03 00 00",
+  "match": "0x140fd3340",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fd3340",
+  "kind": "func_start",
+  "names": [
+   "Career_Check_ProfileEntryEqualsOne"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140fd3340",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fd3340.c;xref:0x1419a8465",
+   "notes": "V9624 Builds key from self+0x340 and profile chain (0x14604c2c8 -> +0x140 -> +0x198 -> +0x1c0), calls 140fdb170, returns record+0x30 == 1; role as flag stays uncertain as stated."
+  }
+ ],
+ "proofs": []
+}

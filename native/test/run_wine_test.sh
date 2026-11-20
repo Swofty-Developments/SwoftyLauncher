@@ -1,16 +1,43 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -Eeuo pipefail
+# The Wine test. With no option every case runs in turn in one folder and one Wine prefix. --setup [DIR] builds
+# the fake games, the test addons and the prepared folders into DIR/base and makes a Wine prefix there; --case
+# NAME [DIR] then runs one case in DIR/NAME, a fresh copy of DIR/base with a copy of that prefix of its own, so
+# cases can run side by side. The copy hard-links the prefix's program files (.dll, .exe and the like), which
+# Wine only reads. Without a wineserver of the same Wine build (lib/wineserver.sh), or when making the prefix
+# fails, the setup says so and each case makes its own prefix, as the first Wine start in an empty one does. --list prints the case names. DIR defaults to native/build/wine-test.
+# Every way it fails prints a FAIL line: a check that fails, a game run that exits nonzero (exited), and a command
+# that stops the script under set -e (stopped names it and its line).
+trap 'line=$LINENO' ERR
 SELF=$(readlink -f "$0")
 cd "$(dirname "$SELF")"
-if ! command -v wine >/dev/null || ! command -v xvfb-run >/dev/null || ! command -v zig >/dev/null; then
-    exec nix shell nixpkgs#zig nixpkgs#wineWow64Packages.stable nixpkgs#xvfb-run -c "$SELF" "$@"
+CASES=(modes crash close perf_ro acclim acclim_penalty ers_mode standings weekends teamhq activity setup_vm pairs fe_tiles ai_corner replay_grid garage_crew pit_slots leaderboard myteam_vehicle myteam_keep myteam_heal track_list ntpage int3 stages packed filled register)
+if [[ ${1:-} == --list ]]; then
+    printf '%s\n' "${CASES[@]}"
+    exit 0
 fi
+NEEDS="zig wine xvfb-run"
+. "$(dirname "$SELF")/lib/env.sh"
+MODE=all CASE=
+case ${1:-} in
+--setup) MODE=setup; shift ;;
+--case) MODE=case CASE=${2:?--case needs a case name}; shift 2 ;;
+esac
 . ./game_lock.sh
+LOCK_TRAP=
+lock_trap() { LOCK_TRAP=$3; }
+[ -z "$(trap -p EXIT)" ] || eval "lock_trap $(trap -p EXIT)"
+stopped() {
+    local rc=$1
+    [[ $rc == 0 || -n ${finished-} ]] || echo "FAIL: run_wine_test.sh stopped at line ${line-?}: $BASH_COMMAND exited with status $rc"
+    eval "$LOCK_TRAP"
+}
+trap 'stopped $?' EXIT
 OUT=${1:-$PWD/../build/wine-test}
 ITEMS=
 grep -qa '\[items\] ownership check hooked' ../dist/swofty/addons/core/swofty_core.dll && ITEMS=1
 export ZIG_GLOBAL_CACHE_DIR=$PWD/../build/zig-cache ZIG_LOCAL_CACHE_DIR=$PWD/../build/zig-cache
-PIN=(taskset -c 2-7,10,11,14-31 nice -n 10)
+build() {
 # wine cmd /c reports the game process's own exit code; a bare wine launch can exit 0 when a thread the server kills at termination exits last
 rm -rf "$OUT/game" "$OUT/stages" "$OUT/packed" "$OUT/filled"
 mkdir -p "$OUT/game" "$OUT/stages" "$OUT/packed" "$OUT/filled"
@@ -31,7 +58,7 @@ for m in addons/t_*.cpp; do
     t_ntpage | t_int3hook) dest=$OUT ;;
     *) dest=$OUT/game/swofty/addons ;;
     esac
-    "${PIN[@]}" zig c++ -target x86_64-windows-gnu -std=c++23 -O2 -Wall -Wextra -I../../packages/sdk/include -I../include -shared -s \
+    "${PIN[@]}" zig c++ -target x86_64-windows-gnu -I../src -std=c++23 -O2 -Wall -Wextra -I../../packages/sdk/include -I../include -shared -s \
         -o "$dest/$name.dll" "$m" &
 done
 wait
@@ -90,6 +117,8 @@ for d in "$PK" "$PP"; do
     cp "$OUT"/packed/t_packed*.dll "$d/swofty/addons/"
 done
 python3 packed_game.py make "$OUT/packed/F1_25.exe" "$PK" "$PP"
+}
+environment() {
 export WINEPREFIX="$OUT/prefix" WINEDLLOVERRIDES="version=n,b;mscoree,mshtml=;winemenubuilder.exe,winedbg.exe=d" WINEDEBUG=-all
 status=0
 LOG=$OUT/game/swofty/loader.log
@@ -106,6 +135,52 @@ count() {
     n=$(grep -cE "$3" "$LOG" || true)
     if [[ $n == "$2" ]]; then echo "ok  : $1"; else echo "FAIL: $1 (logged $n times, want $2)"; status=1; fi
 }
+exited() {
+    echo "FAIL: $1 exited with status $2"
+    status=1
+}
+}
+prepare() {
+python3 fake_symbols.py "$OUT/game/F1_25.exe" "$OUT/game/swofty/addons/core/symbols.tsv"
+SW=$OUT/game/swofty
+# A report parser shared by the crash modes: it checks the newest report parses as the expected
+# sections and that the minidump beside it is a real MDMP with streams.
+parse_report() {
+    python3 - "$SW" "$1" "$2" <<'PY'
+import glob, os, struct, sys
+root, want_reason, checks = sys.argv[1], sys.argv[2], sys.argv[3].split(',')
+reports = sorted(glob.glob(os.path.join(root, 'crash-*.txt')), key=os.path.getmtime)
+if not reports:
+    print('FAIL: parse: no crash-*.txt was written'); sys.exit(1)
+path = reports[-1]
+text = open(path, encoding='utf-8', errors='replace').read()
+bad = 0
+def ok(cond, what):
+    global bad
+    print(f'{"ok  " if cond else "FAIL"}: {what}')
+    bad += not cond
+ok(text.startswith('Swofty crash report'), 'parse: report has the header')
+ok(want_reason in text, f'parse: reason mentions {want_reason!r}')
+sections = {l[3:].strip() for l in text.splitlines() if l.startswith('== ')}
+for s in ('Registers', "Stack (unwound with the modules' exception data)", 'Code around rip',
+          'Memory at the registers', 'Game state (from the black box)', 'Black box: last events',
+          'Swofty probes (hook and callback activity)', 'Loaded modules', 'Threads',
+          'loader.log (last 200 lines)', 'Minidump'):
+    ok(any(name == s or name.startswith(s + ' (') for name in sections), f'parse: has the {s!r} section')
+for c in checks:
+    if c:
+        ok(c in text, f'parse: contains {c!r}')
+dump = path[:-4] + '.dmp'
+raw = open(dump, 'rb').read() if os.path.exists(dump) else b''
+ok(raw[:4] == b'MDMP', 'parse: a minidump beside it starts with MDMP')
+ok(len(raw) > 4096, f'parse: the minidump is non-trivial ({len(raw)} bytes)')
+nstreams = struct.unpack_from('<I', raw, 8)[0] if len(raw) >= 12 else 0
+ok(0 < nstreams < 64, f'parse: the minidump has {nstreams} stream(s)')
+sys.exit(bad != 0)
+PY
+}
+}
+case_modes() {
 CACHE=$OUT/game/swofty/cache/scan-cache.tsv
 for mode in trigger fallback vm settings settings_local session state gamelog_off assets assets_ro nearfull nopool cache_ro udp udp_off; do
     echo "==== $mode"
@@ -192,7 +267,7 @@ EOF
     [[ $mode == trigger || $mode == vm ]] && gl_channels=default,verbose
     rm -f "$OUT"/game/swofty/stall-*.txt
     SWOFTY_TEST_LOAD_STALL_REPORT=$([[ $mode == state ]] && echo 1) SWOFTY_UDP_STOCK_IDS=$udp_ids SWOFTY_RESOLVE=$resolve SWOFTY_TEST_ASSETS=$([[ $mode == assets* ]] && echo 1) SWOFTY_GAME_LOG=$gl_level SWOFTY_GAME_LOG_RATE=$gl_rate SWOFTY_GAME_LOG_CHANNELS=$gl_channels SWOFTY_TEST_REQUESTS=${req:+Z:${req//\//\\}} SWOFTY_TEST_ITEMS=$ITEMS \
-        "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" $mode || status=1
+        "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" $mode || exited "$mode: the game" $?
     if [[ $mode == assets_ro ]]; then
         GAME_ADDON=$OUT/game/swofty/addons/example.sample-mod
         ro_files="data log=$(cat "$KEPT/save/log.txt" 2>/dev/null) state=$([[ -e $KEPT/save/state.txt ]] && echo yes || echo no)"
@@ -413,7 +488,7 @@ EOF
         once "leaderboard: the time trial leaderboard guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(time trial leaderboard guard\)': 1 mixin"
         once "leaderboard: the time trial leaderboard guard is armed" '\[leaderboard\] time trial leaderboard guard armed'
         count "leaderboard: each view without a board is skipped and logged" 2 '\[leaderboard\] Time Trial leaderboard view 0x[0-9a-f]+ has no board for this track'
-        once "lap host: an addon finds the table and attaches" '\[t_laphost\] lap host version 1, size ok, swofty root set, files root set, build bits [0-3], attach 1'
+        once "lap host: an addon finds the table and attaches" '\[t_laphost\] lap host version 3, size ok, swofty root set, files root set, build bits [0-3], attach 1'
         once "lap host: the core takes the module's hook set while it collects sets" '\[t_laphost\] offer: add_hooks answered 1'
         once "lap host: the module's hook set is a core mixin set of its own" "core mixin set 't_laphost\.dll \(lap host set\)': 1 mixin"
         once "lap host: the module hears its hook set is in place" '\[t_laphost\] settle: the hook set is active'
@@ -621,44 +696,8 @@ check "crash log armed at attach" '\[crash\] crash log armed'
 check "clean exit logged" '\[crash\] ExitProcess\(0\)'
 check "crash reports armed with a minidump" '\[crash\] crash reports: .*crash-<time>\.txt .*with a stacks-only minidump'
 check "Ne heap error reporting hooked by the pattern" '\[crash\] Ne_ReportMemoryError at base\+0x[0-9a-f]+ hooked'
-python3 fake_symbols.py "$OUT/game/F1_25.exe" "$OUT/game/swofty/addons/core/symbols.tsv"
-SW=$OUT/game/swofty
-# A report parser shared by the crash modes: it checks the newest report parses as the expected
-# sections and that the minidump beside it is a real MDMP with streams.
-parse_report() {
-    python3 - "$SW" "$1" "$2" <<'PY'
-import glob, os, struct, sys
-root, want_reason, checks = sys.argv[1], sys.argv[2], sys.argv[3].split(',')
-reports = sorted(glob.glob(os.path.join(root, 'crash-*.txt')), key=os.path.getmtime)
-if not reports:
-    print('FAIL: parse: no crash-*.txt was written'); sys.exit(1)
-path = reports[-1]
-text = open(path, encoding='utf-8', errors='replace').read()
-bad = 0
-def ok(cond, what):
-    global bad
-    print(f'{"ok  " if cond else "FAIL"}: {what}')
-    bad += not cond
-ok(text.startswith('Swofty crash report'), 'parse: report has the header')
-ok(want_reason in text, f'parse: reason mentions {want_reason!r}')
-sections = {l[3:].strip() for l in text.splitlines() if l.startswith('== ')}
-for s in ('Registers', "Stack (unwound with the modules' exception data)", 'Code around rip',
-          'Memory at the registers', 'Game state (from the black box)', 'Black box: last events',
-          'Swofty probes (hook and callback activity)', 'Loaded modules', 'Threads',
-          'loader.log (last 200 lines)', 'Minidump'):
-    ok(any(name == s or name.startswith(s + ' (') for name in sections), f'parse: has the {s!r} section')
-for c in checks:
-    if c:
-        ok(c in text, f'parse: contains {c!r}')
-dump = path[:-4] + '.dmp'
-raw = open(dump, 'rb').read() if os.path.exists(dump) else b''
-ok(raw[:4] == b'MDMP', 'parse: a minidump beside it starts with MDMP')
-ok(len(raw) > 4096, f'parse: the minidump is non-trivial ({len(raw)} bytes)')
-nstreams = struct.unpack_from('<I', raw, 8)[0] if len(raw) >= 12 else 0
-ok(0 < nstreams < 64, f'parse: the minidump has {nstreams} stream(s)')
-sys.exit(bad != 0)
-PY
 }
+case_crash() {
 for mode in crash exit heap abort; do
     echo "==== $mode"
     code=0
@@ -691,9 +730,55 @@ for mode in crash exit heap abort; do
         [[ $code != 0 && $code != 124 && $code != 137 ]] && echo "ok  : abort: the process aborted ($code)" || { echo "FAIL: abort: the process did not abort on its own (exit $code)"; status=1; }
     fi
 done
+}
+# The fake game ends with TerminateProcess(1), as F1 25 answers WM_CLOSE. close: WM_CLOSE reaches the overlay's input
+# procedure first (SWOFTY_TEST_OVERLAY_INPUT hooks it with no swapchain), so no crash report. close_fatal: an access
+# violation the game handles comes just before, so a report all the same. close_stop: no overlay and no WM_CLOSE, only
+# the launcher's stop request in the data folder, so no crash report.
+case_close() {
+for mode in close close_fatal close_stop; do
+    echo "==== $mode"
+    code=0
+    rm -rf "$SW"/crash-*.txt "$SW"/crash-*.dmp "$WINEPREFIX"/drive_c/users/*/AppData/Local/Swofty/sessions
+    input=1
+    [[ $mode == close_stop ]] && input=
+    SWOFTY_TEST_OVERLAY_INPUT=$input timeout -k 5 120 "${PIN[@]}" xvfb-run -a wine cmd /c "$OUT/game/F1_25.exe" $mode >"$OUT/$mode.out" 2>&1 || code=$?
+    grep -E '\[crash\]|\[overlay\] (input|SWOFTY_TEST)' "$LOG" || true
+    grep -E "^(ok  |FAIL): $mode: " "$OUT/$mode.out" || true
+    if grep -q "^FAIL: $mode: " "$OUT/$mode.out"; then status=1; fi
+    reports=$(find "$SW" -maxdepth 1 -name 'crash-*.txt' | wc -l)
+    [[ $code == 1 ]] && echo "ok  : $mode: the process ended with 1" || { echo "FAIL: $mode: the process ended with $code"; status=1; }
+    if [[ $mode == close_fatal ]]; then
+        once "close_fatal: the overlay subclasses the game's window" '\[overlay\] input: window [0-9A-Fa-fx]+ subclassed'
+        check "close_fatal: the handled access violation is logged first-chance" '\[crash\] #1 first-chance .*ACCESS_VIOLATION'
+        check "close_fatal: its faulting access" '\[crash\]   writing 0x18'
+        once "close_fatal: the overlay notes WM_CLOSE" '\[crash\] the game.s window got WM_CLOSE'
+        count "close_fatal: the close does not excuse an exit right after a fatal exception" 0 'ends a close the game was asked for'
+        check "close_fatal: a report is written for TerminateProcess(1)" '\[crash\] crash report .*crash-.*: TerminateProcess\(1 = 0x1\)'
+        parse_report "TerminateProcess(1 = 0x1)" "" || status=1
+        continue
+    fi
+    if [[ $mode == close ]]; then
+        once "close: the test switch hands the window to the overlay" '\[overlay\] SWOFTY_TEST_OVERLAY_INPUT: the overlay.s input procedure takes window'
+        once "close: the overlay subclasses the game's window" '\[overlay\] input: window [0-9A-Fa-fx]+ subclassed'
+        once "close: the overlay notes WM_CLOSE for the crash log" '\[crash\] the game.s window got WM_CLOSE; an exit within 60 s is that close'
+        once "close: TerminateProcess(1) is logged with its caller's stack" '\[crash\] TerminateProcess\(1\) on thread [0-9]+, .*; caller stack:'
+        once "close: TerminateProcess(1) ends the close" '\[crash\] TerminateProcess\(1\) ends a close the game was asked for \(WM_CLOSE [0-9]+\.[0-9] s earlier\); no crash report'
+    else
+        count "close_stop: the overlay hooks nothing without the test switch" 0 '\[overlay\] input: window .* subclassed'
+        count "close_stop: the window gets no WM_CLOSE" 0 'the game.s window got WM_CLOSE'
+        once "close_stop: TerminateProcess(1) ends the launcher's stop" '\[crash\] TerminateProcess\(1\) ends a close the game was asked for \(the launcher asked the session to stop\); no crash report'
+    fi
+    count "$mode: no crash report is logged" 0 '\[crash\] crash report '
+    [[ $reports == 0 ]] && echo "ok  : $mode: no crash-*.txt is written" || { echo "FAIL: $mode: $reports crash-*.txt written"; status=1; }
+done
+rm -rf "$WINEPREFIX"/drive_c/users/*/AppData/Local/Swofty/sessions
+}
+case_perf_ro() {
 echo "==== perf_ro"
 PERF_FALLBACK=$(winepath -u "$(wine cmd /c 'echo %LOCALAPPDATA%' | tr -d '\r')")/Swofty/state/perf-fallback.log
 rm -f "$SW/perf.log" "$PERF_FALLBACK"
+: >"$LOG"
 chmod a-w "$SW"
 if [[ -w $SW ]]; then
     echo "skip: perf_ro: this user writes in read-only folders (root?), so the refusal cannot be staged"
@@ -701,7 +786,7 @@ if [[ -w $SW ]]; then
 else
     timeout 120 "${PIN[@]}" xvfb-run -a wine cmd /c "$OUT/game/F1_25.exe" perf_ro >"$OUT/perf_ro.out" 2>&1 || true
     chmod u+w "$SW"
-    grep -F '[perf]' "$LOG" | tail -5
+    grep -F '[perf]' "$LOG" | tail -5 || true
     once "perf_ro: a game folder that refuses perf.log moves it to the data folder" \
         '\[perf\] the game can.t create swofty[\]perf\.log \(error 5\); the report goes to .*[\]Swofty[\]state[\]perf-fallback\.log[[:space:]]*$'
     [[ -e $SW/perf.log ]] && { echo "FAIL: perf_ro: perf.log reached the game folder"; status=1; } ||
@@ -710,6 +795,8 @@ else
         echo "ok  : perf_ro: the report is in the data folder's perf-fallback.log" ||
         { echo "FAIL: perf_ro: no report in $PERF_FALLBACK"; status=1; }
 fi
+}
+case_acclim() {
 for guard in on off; do
     echo "==== acclim ($guard)"
     code=0
@@ -731,6 +818,8 @@ for guard in on off; do
         [[ $code != 0 ]] && echo "ok  : acclim off: process ended with $code" || { echo "FAIL: acclim off: process exited 0"; status=1; }
     fi
 done
+}
+case_acclim_penalty() {
 for guard in on off; do
     echo "==== acclim_penalty ($guard)"
     code=0
@@ -754,6 +843,8 @@ for guard in on off; do
         [[ $code != 0 ]] && echo "ok  : acclim_penalty off: process ended with $code" || { echo "FAIL: acclim_penalty off: process exited 0"; status=1; }
     fi
 done
+}
+case_ers_mode() {
 for guard in on off; do
     echo "==== ers_mode ($guard)"
     code=0
@@ -774,6 +865,8 @@ for guard in on off; do
         [[ $code != 0 ]] && echo "ok  : ers_mode off: process ended with $code" || { echo "FAIL: ers_mode off: process exited 0"; status=1; }
     fi
 done
+}
+case_standings() {
 for guard in on off; do
     echo "==== standings ($guard)"
     code=0
@@ -794,6 +887,8 @@ for guard in on off; do
         [[ $code != 0 ]] && echo "ok  : standings off: process ended with $code" || { echo "FAIL: standings off: process exited 0"; status=1; }
     fi
 done
+}
+case_weekends() {
 for guard in on off; do
     echo "==== weekends ($guard)"
     code=0
@@ -811,6 +906,8 @@ for guard in on off; do
         [[ $code != 0 ]] && echo "ok  : weekends off: process ended with $code" || { echo "FAIL: weekends off: process exited 0"; status=1; }
     fi
 done
+}
+case_teamhq() {
 for guard in on off; do
     echo "==== teamhq ($guard)"
     code=0
@@ -834,6 +931,8 @@ for guard in on off; do
         [[ $code != 0 ]] && echo "ok  : teamhq off: process ended with $code" || { echo "FAIL: teamhq off: process exited 0"; status=1; }
     fi
 done
+}
+case_activity() {
 for guard in on off; do
     echo "==== activity ($guard)"
     code=0
@@ -854,6 +953,8 @@ for guard in on off; do
         [[ $code != 0 ]] && echo "ok  : activity off: process ended with $code" || { echo "FAIL: activity off: process exited 0"; status=1; }
     fi
 done
+}
+case_setup_vm() {
 for guard in on off; do
     echo "==== setup_vm ($guard)"
     code=0
@@ -873,6 +974,8 @@ for guard in on off; do
         [[ $code != 0 ]] && echo "ok  : setup_vm off: process ended with $code" || { echo "FAIL: setup_vm off: process exited 0"; status=1; }
     fi
 done
+}
+case_pairs() {
 for guard in on off; do
     echo "==== pairs ($guard)"
     code=0
@@ -892,6 +995,8 @@ for guard in on off; do
         [[ $code != 0 ]] && echo "ok  : pairs off: process ended with $code" || { echo "FAIL: pairs off: process exited 0"; status=1; }
     fi
 done
+}
+case_fe_tiles() {
 for guard in on off; do
     echo "==== fe_tiles ($guard)"
     rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp
@@ -924,6 +1029,8 @@ for guard in on off; do
         done
     fi
 done
+}
+case_ai_corner() {
 for guard in on off; do
     echo "==== ai_corner ($guard)"
     code=0
@@ -943,6 +1050,8 @@ for guard in on off; do
         [[ $code != 0 ]] && echo "ok  : ai corner off: process ended with $code" || { echo "FAIL: ai corner off: process exited 0"; status=1; }
     fi
 done
+}
+case_replay_grid() {
 for guard in on off; do
     echo "==== replay_grid ($guard)"
     code=0
@@ -959,6 +1068,8 @@ for guard in on off; do
         count "replay grid off: nothing is logged about a skipped state" 0 '\[replay\] session has'
     fi
 done
+}
+case_garage_crew() {
 for guard in on off; do
     echo "==== garage_crew ($guard)"
     code=0
@@ -973,6 +1084,8 @@ for guard in on off; do
             { echo "FAIL: garage_crew off: the vector lost the third car"; status=1; }
     fi
 done
+}
+case_pit_slots() {
 for guard in on off; do
     echo "==== pit_slots ($guard)"
     code=0
@@ -991,6 +1104,8 @@ for guard in on off; do
             { echo "FAIL: pit_slots off: the test did not reach its end"; status=1; }
     fi
 done
+}
+case_leaderboard() {
 for guard in on off; do
     echo "==== leaderboard ($guard)"
     code=0
@@ -1012,6 +1127,8 @@ for guard in on off; do
         [[ $code != 0 ]] && echo "ok  : leaderboard off: process ended with $code" || { echo "FAIL: leaderboard off: process exited 0"; status=1; }
     fi
 done
+}
+case_myteam_vehicle() {
 for guard in on off; do
     echo "==== myteam_vehicle ($guard)"
     code=0
@@ -1034,6 +1151,8 @@ for guard in on off; do
         [[ $code != 0 ]] && echo "ok  : myteam_vehicle off: process ended with $code" || { echo "FAIL: myteam_vehicle off: process exited 0"; status=1; }
     fi
 done
+}
+case_myteam_keep() {
 for keep in on off; do
     echo "==== myteam_keep ($keep)"
     code=0
@@ -1062,6 +1181,8 @@ for keep in on off; do
         [[ $code != 0 ]] && echo "ok  : myteam_keep off: process ended with $code" || { echo "FAIL: myteam_keep off: process exited 0"; status=1; }
     fi
 done
+}
+case_myteam_heal() {
 for heal in on off; do
     echo "==== myteam_heal ($heal)"
     code=0
@@ -1086,6 +1207,8 @@ for heal in on off; do
         [[ $code != 0 ]] && echo "ok  : myteam_heal off: process ended with $code" || { echo "FAIL: myteam_heal off: process exited 0"; status=1; }
     fi
 done
+}
+case_track_list() {
 for guard in on off; do
     echo "==== track_list ($guard)"
     code=0
@@ -1112,6 +1235,8 @@ for guard in on off; do
         count "track_list off: each save with a new count is logged" 3 '\[saves\] custom_track_list saved \(schedule component 0x[0-9a-f]+\): (50|500|5000) calendar events[[:space:]]*$'
     fi
 done
+}
+case_ntpage() {
 echo "==== ntpage"
 cp "$OUT/t_ntpage.dll" "$SW/mods/core/ntpage_hook.dll"
 rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp
@@ -1130,6 +1255,8 @@ check "ntpage: hooking a function on that ntdll page finishes the crash init" '\
 check "ntpage: NtTerminateProcess is hooked there" '\[crash\] crash reports: .*NtTerminateProcess hooked'
 check "ntpage: the exit still gets a report" '\[crash\] crash report .*crash-.*: ExitProcess\(255'
 [[ $code == 255 ]] && echo "ok  : ntpage: process ended with 255" || { echo "FAIL: ntpage: process ended with $code"; status=1; }
+}
+case_int3() {
 for skip in 0 1; do
     echo "==== int3$([[ $skip == 1 ]] && echo ', unowned on the writer')"
     cp "$OUT/t_int3hook.dll" "$SW/mods/core/int3_hook.dll"
@@ -1160,9 +1287,11 @@ for skip in 0 1; do
     fi
     [[ $code != 0 ]] && echo "ok  : int3: process ended with $code" || { echo "FAIL: int3: process exited 0"; status=1; }
 done
+}
+case_stages() {
 echo "==== stages"
 LOG=$SG/swofty/loader.log
-SWOFTY_EARLY_STAGE=1 "${PIN[@]}" xvfb-run -a wine "$SG/F1_25.exe" stages || status=1
+SWOFTY_EARLY_STAGE=1 "${PIN[@]}" xvfb-run -a wine "$SG/F1_25.exe" stages || exited "stages: the game" $?
 echo "---- $LOG (stages)"
 grep -v '  section ' "$LOG"
 check "stages: early stage on from the environment" 'early stage: on \(SWOFTY_EARLY_STAGE=1\)'
@@ -1223,17 +1352,19 @@ doc['build']['size'] += 1
 json.dump(doc, open(sys.argv[1], 'w'), indent=1)
 EOF
 rm -rf "$SG/swofty/cache"
-SWOFTY_EARLY_STAGE=1 "${PIN[@]}" xvfb-run -a wine "$SG/F1_25.exe" stages || status=1
+SWOFTY_EARLY_STAGE=1 "${PIN[@]}" xvfb-run -a wine "$SG/F1_25.exe" stages || exited "stages: the game" $?
 once "stages: an exe of another size than the KB build never uses the KB addresses" '\[core\] binding resolution: the exe is [0-9]+ bytes and the KB build [0-9]+; the KB addresses are not used, every pattern is scanned'
 count "stages: with another size, nothing binds at a KB address" 0 'via pattern at the KB address|does not match at the KB address'
 once "stages: with another size, the early site is found by a scan" '\[core\] bind wine-test:site_Stage_Entry -> 0x[0-9a-f]+ \(base\+0x[0-9a-f]+\), site experimental via pattern[[:space:]]*$'
+}
+case_packed() {
 # The packed runs share one game folder, so packed_never starts with the scan cache that packed saved.
 for mode in packed packed_never packed_plain; do
     echo "==== $mode"
     dir=$PK
     [[ $mode == packed_plain ]] && dir=$PP
     LOG=$dir/swofty/loader.log
-    SWOFTY_EARLY_STAGE=1 timeout 120 "${PIN[@]}" xvfb-run -a wine "$dir/F1_25.exe" $mode || status=1
+    SWOFTY_EARLY_STAGE=1 timeout 120 "${PIN[@]}" xvfb-run -a wine "$dir/F1_25.exe" $mode || exited "$mode: the game" $?
     echo "---- $LOG ($mode)"
     grep -E '\[bind\] summary|\[core\] (build|bindings|.* pass:|.* waits:|.*setting it up now|.*fails closed|scan .*refused|addon .*(dropped|runs again|ran again))|\[crash\] Ne_Report|stage: window|trigger: KERNEL32' "$LOG" || true
     python3 packed_game.py check $mode "$LOG" "$dir/F1_25.exe" || status=1
@@ -1298,9 +1429,11 @@ for mode in packed packed_never packed_plain; do
         ;;
     esac
 done
+}
+case_filled() {
 echo "==== filled"
 LOG=$OUT/filled/swofty/loader.log
-SWOFTY_EARLY_STAGE=1 "${PIN[@]}" xvfb-run -a wine "$OUT/filled/F1_25.exe" || status=1
+SWOFTY_EARLY_STAGE=1 "${PIN[@]}" xvfb-run -a wine "$OUT/filled/F1_25.exe" || exited "filled: the game" $?
 echo "---- $LOG (filled)"
 grep -v '  section ' "$LOG"
 check "filled: the exe's import table lacks the early slot" "trigger: game IAT slot KERNEL32!CreateMutexW not found or not writable; the exe's import table is filled at load"
@@ -1320,7 +1453,9 @@ cp -r "$OUT/filled" "$GT"
 rm -f "$GT/swofty/loader.log"
 truncate -s 72M "$GT/F1_25.exe"
 LOG=$GT/swofty/loader.log
-env -u SWOFTY_ALLOW_UNSUPPORTED_BUILD SWOFTY_EARLY_STAGE=1 "${PIN[@]}" xvfb-run -a wine "$GT/F1_25.exe" || :
+echo "      the loader refuses this exe, so the fake game's own checks fail by design and are not counted:"
+env -u SWOFTY_ALLOW_UNSUPPORTED_BUILD SWOFTY_EARLY_STAGE=1 "${PIN[@]}" xvfb-run -a wine "$GT/F1_25.exe" 2>&1 |
+    sed 's/^/      refused exe: /' || :
 echo "---- $LOG (gated)"
 grep -v '  section ' "$LOG"
 once "gated: a large exe the table does not list is refused" 'exe: size [0-9]+, PE timestamp [0-9]+ is not a build this launcher supports; the core and the addons are NOT loaded'
@@ -1328,11 +1463,13 @@ check "gated: the trigger fires and loads nothing" 'addons NOT loaded, this exe 
 count "gated: no addon is loaded" 0 'loading addons now'
 count "gated: the core never attaches" 0 'provides the mixin API'
 rm -f "$LOG"
-SWOFTY_ALLOW_UNSUPPORTED_BUILD=1 SWOFTY_EARLY_STAGE=1 "${PIN[@]}" xvfb-run -a wine "$GT/F1_25.exe" || status=1
+SWOFTY_ALLOW_UNSUPPORTED_BUILD=1 SWOFTY_EARLY_STAGE=1 "${PIN[@]}" xvfb-run -a wine "$GT/F1_25.exe" || exited "gated: the allowed game" $?
 echo "---- $LOG (gated, override)"
 grep -v '  section ' "$LOG"
 count "gated: the override leaves the exe unrefused" 0 'is not a build this launcher supports'
 once "gated: the override loads the addons" "trigger: KERNEL32!CreateMutexW from [0-9A-Fa-f]+ \\(\\.text\\) name 'Codemasters F1 25' on thread .*loading addons now \\(early stage\\)"
+}
+case_register() {
 echo "==== register"
 SR=$OUT/register/game
 rm -rf "$SR"
@@ -1351,7 +1488,7 @@ json.dump({'version': 1, 'profile': 'wine-test', 'order': ['t.register', 'wine.d
 json.dump({'wine.thing': {'extra': {'name': 'extra', 'n': 7}}}, open(root + '/addons/wine.data/registry/records.json', 'w'))
 EOF
 LOG=$SR/swofty/loader.log
-env -u SWOFTY_EARLY_STAGE "${PIN[@]}" xvfb-run -a wine "$SR/F1_25.exe" register || status=1
+env -u SWOFTY_EARLY_STAGE "${PIN[@]}" xvfb-run -a wine "$SR/F1_25.exe" register || exited "register: the game" $?
 echo "---- $LOG (register)"
 grep -v '  section ' "$LOG"
 check "register: a dll that exports SwoftyAddonRegister turns the early stage on" 'early stage: on for 1 addon dll\(s\) that export SwoftyAddonRegister'
@@ -1363,4 +1500,57 @@ awk '/addon t_register\.dll: calling SwoftyAddonRegister/ && !a {a = NR} /\[t_re
      END {exit !(a && b && c && d && a < b && b < c && c < d)}' "$LOG" &&
     echo "ok  : register: the register pass, then the database load, then SwoftyAddonInit" ||
     { echo "FAIL: register: the register pass, then the database load, then SwoftyAddonInit"; status=1; }
+}
+status=0
+case $MODE in
+all)
+    build
+    environment
+    for c in "${CASES[@]}"; do
+        if [[ $c == crash ]]; then
+            prepare
+        fi
+        "case_$c"
+    done
+    ;;
+setup)
+    OUT=$OUT/base
+    build
+    environment
+    rm -rf "$WINEPREFIX"
+    . "$(dirname "$SELF")/lib/wineserver.sh"
+    if ! WINESERVER=$(swofty_wineserver); then
+        echo "run_wine_test.sh: no wineserver of the Wine build $(command -v wine) runs was found; each case makes its own Wine prefix"
+    elif ! timeout 300 "${PIN[@]}" xvfb-run -a wine wineboot -i >/dev/null 2>&1 || ! timeout 60 "$WINESERVER" -w; then
+        echo "run_wine_test.sh: making the shared Wine prefix with $WINESERVER failed; each case makes its own Wine prefix"
+        timeout 30 "$WINESERVER" -k 2>/dev/null || :
+        rm -rf "$WINEPREFIX"
+    else
+        echo "run_wine_test.sh: made the shared Wine prefix; $WINESERVER saved it"
+    fi
+    ;;
+case)
+    [[ " ${CASES[*]} " == *" $CASE "* ]] || { echo "run_wine_test.sh: there is no case $CASE" >&2; exit 2; }
+    BASE=$OUT/base OUT=$OUT/$CASE
+    [ -d "$BASE/game" ] || { echo "run_wine_test.sh: $BASE has no build; run --setup first" >&2; exit 2; }
+    rm -rf "$OUT"
+    mkdir "$OUT"
+    for f in "$BASE"/*; do
+        [[ $f == "$BASE/prefix" ]] || cp -a "$f" "$OUT/"
+    done
+    if [ -d "$BASE/prefix" ]; then
+        cp -a --link "$BASE/prefix" "$OUT/prefix"
+        find "$OUT/prefix" -type f -links +1 ! \( -iname '*.dll' -o -iname '*.exe' -o -iname '*.drv' -o -iname '*.sys' \
+            -o -iname '*.ocx' -o -iname '*.cpl' -o -iname '*.acm' -o -iname '*.ax' -o -iname '*.tlb' -o -iname '*.nls' \) \
+            -exec sh -c 'for f; do cp -p "$f" "$f.copy" && mv -f "$f.copy" "$f"; done' sh {} +
+    fi
+    SG=$OUT/stages/game PK=$OUT/packed/game PP=$OUT/packed/plain
+    environment
+    if [[ $CASE != modes ]]; then
+        prepare
+    fi
+    "case_$CASE"
+    ;;
+esac
+finished=1
 exit $status

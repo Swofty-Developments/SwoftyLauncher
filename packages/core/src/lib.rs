@@ -1,104 +1,27 @@
-pub use swofty_addon::{GAME_ID, asset, builder, launcher, manifest, ops, view};
+pub use swofty_addon::{GAME_ID, asset, builder, game, launcher, manifest, ops, view};
 
-pub mod activation;
-pub mod addon_files;
-pub mod addon_storage;
-pub mod app_control;
-pub mod baseline;
-pub mod build;
-pub mod build_support;
-pub mod builtin;
-pub mod busy;
+pub mod addons;
 pub mod cache;
 pub mod catalog;
-pub mod compat;
-pub mod conflicts;
-pub mod copies;
-pub mod crash;
-pub mod crash_report;
-pub mod data_move;
-pub mod data_usage;
-pub mod dbedit;
-pub mod disk;
-pub mod ea_app;
-pub mod ea_diag;
-pub mod entitlement;
-pub mod entrant_lists;
-pub mod erpbuild;
-pub mod exe_version;
-pub mod fast_fail;
-pub mod folders;
-pub mod heads;
-pub mod helper;
-pub mod home_menu;
-pub mod http;
-pub mod hud;
-pub mod import;
-pub mod imported;
+pub mod data;
+pub mod diagnostics;
+pub mod game_folder;
+pub mod games;
 pub mod install;
-pub mod journal;
-pub mod known_problems;
-pub mod launch;
-pub mod launcher_saves;
-pub mod link_cache;
-pub mod livery_kits;
-pub mod loader_check;
-pub mod managed;
-pub mod map;
-pub mod modules;
-pub mod mpauth;
-pub mod multiplayer;
-pub mod offline;
-pub mod order;
-pub mod overlay_guard;
-pub mod owned;
-pub mod package;
-pub mod paths;
-pub mod pkgedit;
-pub mod placed;
-pub mod planner;
-pub mod postfx;
-pub mod process;
+pub mod online;
+pub mod platform;
 pub mod profile;
-pub mod quarantine;
-pub mod recovery;
-pub mod registry;
-pub mod resolver;
-pub mod rnd_budget;
-pub mod row_ids;
-pub mod rowkeys;
-pub mod runtime;
-pub mod save_backup;
-pub mod save_stall;
-pub mod saves;
-pub mod send_logs;
 pub mod session;
-pub mod settings;
-pub mod setup;
-pub mod shaders;
-pub mod stdlib;
-pub mod steam;
-pub mod steam_client;
-pub mod stock;
 pub mod store;
-pub mod support;
-pub mod testsuite;
-pub mod texcheck;
-pub mod timetrial;
-pub mod tracks;
-pub mod transfer;
-pub mod udp_ids;
-pub mod ui;
-pub mod update;
-pub mod updater;
-pub mod usage;
-pub mod vault;
-pub mod vdf;
-pub mod version;
-pub mod virtual_lists;
+pub mod updates;
+
+pub use games::f1_25::{
+    activation, build, build_support, content, dbedit, erp, game_db, hud, loader_check, offline, planner,
+    row_ids, saves, stdlib, testsuite, tracks, ui,
+};
 
 pub const STEAM_APP_ID: u32 = 3_059_520;
-pub const GAME_EXE: &str = "F1_25.exe";
+pub const GAME_EXE: &str = swofty_addon::game::F1_25.exe();
 pub const IMAGE_BASE: u64 = 0x1_4000_0000;
 
 #[derive(Debug, thiserror::Error)]
@@ -131,26 +54,26 @@ pub enum Error {
     Leftovers(Vec<install::Conflict>),
     #[error(
         "{} {} not the copy Steam installed, usually after a mod was copied into the game folder by hand; nothing in the game folder was changed; verify the game files in Steam to put them back (open {}, or F1 25 > Properties > Installed Files > Verify integrity of game files), then try again",
-        stock::names(.0),
+        game_folder::stock::names(.0),
         if .0.len() == 1 { "is" } else { "are" },
-        stock::STEAM_VERIFY_URL
+        game_folder::stock::STEAM_VERIFY_URL
     )]
     NotStock(Vec<String>),
-    #[error("{}", stock::missing_text(files, version.as_deref()))]
+    #[error("{}", game_folder::stock::missing_text(files, version.as_deref()))]
     MissingStock {
         files: Vec<String>,
         version: Option<String>,
     },
-    #[error("{}", stock::changed_and_missing_text(changed, missing, version.as_deref()))]
+    #[error("{}", game_folder::stock::changed_and_missing_text(changed, missing, version.as_deref()))]
     NotStockAndMissing {
         changed: Vec<String>,
         missing: Vec<String>,
         version: Option<String>,
     },
     #[error("{}", .0.text())]
-    Blocked(app_control::Block),
+    Blocked(platform::app_control::Block),
     #[error("{}", .0.text())]
-    NotEntitled(entitlement::Refusal),
+    NotEntitled(game_folder::entitlement::Refusal),
     #[error("{0}")]
     Requires(catalog::requires::Refusal),
     /// The dependency check of the 1.6 standard library stopped Play.
@@ -158,11 +81,23 @@ pub enum Error {
     Dependencies(String),
     #[error("{}", no_space(drive, *need, *free))]
     NoSpace { drive: String, need: u64, free: u64 },
-    #[error("{}", busy::CANCELLED)]
+    #[error("{}", game_folder::busy::CANCELLED)]
     Cancelled,
     /// A part of the HUD that the composed records and another addon's archive changes both claim.
     #[error("hud: {0}")]
     HudConflict(Box<hud::conflict::Conflict>),
+    /// An entry an addon adds that an earlier addon in the load order added already.
+    #[error("{resource}: {at}: an entry with {entry} already exists; {earlier} adds it too")]
+    DuplicateEntry {
+        resource: String,
+        at: String,
+        entry: String,
+        earlier: String,
+    },
+    /// The game's own copy of the archive `rel` already holds an entry an addon adds: the launcher's output of
+    /// an earlier session left in the game folder in place of the original.
+    #[error("{detail}")]
+    StaleInput { rel: String, detail: String },
     #[error("{0}")]
     Other(String),
 }
@@ -171,8 +106,8 @@ fn no_space(drive: &str, need: u64, free: u64) -> String {
     let colon = if drive.ends_with(':') { "" } else { ":" };
     format!(
         "not enough free space on {drive}{colon} this profile needs about {} GB, {} GB free",
-        disk::gb(need),
-        disk::gb(free)
+        platform::disk::gb(need),
+        platform::disk::gb(free)
     )
 }
 
@@ -212,6 +147,7 @@ pub fn doing() -> String {
 
 pub(crate) fn now_doing(step: impl Into<String>) {
     let step = step.into();
+    diagnostics::phases::step(&step);
     STEPS.with(|s| {
         if let Some(v) = s.borrow_mut().as_mut() {
             v.push((step.clone(), std::time::Instant::now()));

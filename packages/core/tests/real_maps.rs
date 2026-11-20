@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use swofty_core::activation::db::{Registry, Schema, Table, TrackHost, activate, datasets};
 use swofty_core::activation::dbx::{Db, field, row, sub_count, sub_table};
-use swofty_core::map::TrackPackage;
+use swofty_core::content::track_package::TrackPackage;
 use swofty_formats::gvdb::Gvdb;
 
 const GVDB: &str = "game_package/gamedatabases/gamedatabases.2025.bin";
@@ -307,8 +307,16 @@ fn map_worlds_get_room_for_the_grid() {
             continue;
         };
         let file = ErpFile::open(&root.as_ref().unwrap().join(code).join(&pkg.erp)).unwrap();
-        assert_eq!(extend_grid(&file, code, 22).unwrap().map(|e| e.2), None, "{code}");
-        let (i, res, ext) = extend_grid(&file, code, 28).unwrap().unwrap();
+        assert_eq!(
+            extend_grid(&file, code, 22, &swofty_formats::erp::Packer::default())
+                .unwrap()
+                .map(|e| e.2),
+            None,
+            "{code}"
+        );
+        let (i, res, ext) = extend_grid(&file, code, 28, &swofty_formats::erp::Packer::default())
+            .unwrap()
+            .unwrap();
         eprintln!("{code}: {} {:?} -> {:?}", res.name, ext.before, ext.after);
         assert_eq!(res.name, file.erp.resources[i].name);
         assert_eq!(

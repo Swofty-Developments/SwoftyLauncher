@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDPopupColourStore",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1419bf5aa",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/1419be1e0.c;xref:0x1419bf5aa,0x1419bf5a0;doc:addons/rnd-tyres-thermal/native/HOOKS.md#3-tyres-icon-and-colour-in-the-rd-lists-always-on",
+  "notes": "mov [rsp+0x8c],ecx (7 bytes); ecx = rax<=5 ? k_Career_RnDPopupColourTable[rax] : -1 with rax = movsx [r12+0x72]; ja target from 0x1419bf59e (window start); the hook sets ecx = Tyres orange when rax==4 and ecx is white"
+ },
+ "signature": {
+  "id": "career.rnd_popup_colour_store",
+  "section": ".xtls",
+  "pattern": "89 8C 24 8C 00 00 00 48 8B 84 24 80 00 00 00",
+  "match": "0x1419bf5aa",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419bf5aa",
+  "kind": "mid",
+  "expect": "89 8C 24 8C 00 00 00",
+  "names": [
+   "site_Career_RnDPopupColourStore"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-d",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_dept_tags.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-2",
+   "kind": "global",
+   "item": "site_Career_RnDPopupColourStore",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1419be1e0.c;xref:0x1419bf58f,0x1419bf59e,0x1419bf5a7,0x1419bf5aa",
+   "notes": "V0097 mov [rsp+0x8c],ecx (7B); ecx = rax<=5 ? k_Career_RnDPopupColourTable[rax] : -1, rax = movsx [r12+0x72]; ja @0x1419bf59e to window start; table[4] white; team_hq popup function; jump tables 0x1419be855/0x1419bf4a0 clear"
+  }
+ ],
+ "proofs": []
+}

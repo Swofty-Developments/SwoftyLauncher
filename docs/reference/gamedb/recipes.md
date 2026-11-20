@@ -83,7 +83,7 @@ For N cars:
 
 ## Adding a track
 
-The launcher does this when a track is enabled (`packages/core/src/activation/`). Its table list is `packages/core/src/activation/track_tables.json`. For a new track id it:
+The launcher does this when a track is enabled (`packages/core/src/games/f1_25/activation/`). Its table list is `packages/core/src/games/f1_25/activation/track_tables.json`. For a new track id it:
 
 1. Clones the slot track's `tracks.Track_N` row with its full schema and sub-tables, sets a new `statId` (max + 1), and raises `tracks._Track_instancecount_` (43 in the shipping file).
 2. Adds a track resource row `swofty_<code>` to `tracks.track_resource.TrackResource_N` and names it in the track row's `track_resource`.

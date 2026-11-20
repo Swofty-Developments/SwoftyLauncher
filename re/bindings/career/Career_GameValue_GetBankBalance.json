@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_GameValue_GetBankBalance",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140aa0e20",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "float (void *ctx)",
+  "evidence": "decomp:re/decomp/140aa0e20.c;xref:0x140a631de",
+  "notes": "myteam-g1: Game-value getter: if Career_Is_MyTeamGameMode_Thunk is false reads stat bank_balance_driver else bank_balance_team from the career stat table and returns the amount/1000 as float. Shows the two balance stat names used by game values."
+ },
+ "signature": {
+  "id": "career.game_value_get_bank_balance",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC C0 00 00 00 C5 F8 29 B4 24 B0 00 00 00 48 8B 41 08 48 8B 80 88 00 00 00 C5 C8 57 F6 48 85 C0 0F 84 ?? ?? ?? ?? 48 8B B8 60 02 00 00 48 85 FF 0F 84 ?? ?? ?? ?? 48 89 CE 48 8B 07 48 89 F9 FF 50 28 4C 8D 35",
+  "match": "0x140aa0e20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140aa0e20",
+  "kind": "func_start",
+  "names": [
+   "Career_GameValue_GetBankBalance"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-a",
+   "kind": "func",
+   "item": "0x140aa0e20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140aa0e20.c;str:\"bank_balance_driver\";str:\"bank_balance_team\"",
+   "notes": "V8974 Branch on 140778420 (is MyTeam game mode): false uses bank_balance_driver, true uses bank_balance_team; the stat value is divided by 1000 and returned as float."
+  }
+ ],
+ "proofs": []
+}

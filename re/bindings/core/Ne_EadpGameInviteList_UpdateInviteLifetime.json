@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_EadpGameInviteList_UpdateInviteLifetime",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143fdaca0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "str:s_NeEadpGameInviteList_UpdateInviteLifetime;xref:0x143fdaddb;decomp:re/decomp/143fdaca0.c",
+  "notes": "cxx=neon::NeEadpGameInviteList::updateInviteLifetime; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "core.eadp_game_invite_list_update_invite_lifetime",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 31 C9 E8",
+  "match": "0x143fdaca0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143fdaca0",
+  "kind": "func_start",
+  "names": [
+   "Ne_EadpGameInviteList_UpdateInviteLifetime"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb2-verify-b",
+   "kind": "func",
+   "item": "Ne_EadpGameInviteList_UpdateInviteLifetime",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143fdaca0.c;xref:0x143fdaca0",
+   "notes": "V2021 returns bool; finds first invite with +0x58+ttl-0xe10 < now, logs EXPIRED, notifies via FUN_143fda8c0, erases it; 0 if none"
+  }
+ ],
+ "proofs": []
+}

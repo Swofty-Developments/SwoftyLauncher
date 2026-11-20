@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_InputModule_TakeSnapshot",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a56310",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-INPUT;decomp:re/decomp/142a56310.c",
+  "notes": "named from its log messages (channel INPUT): 'GameInputModule taking input snapshot' | engine-re E1 2026-11-18 (static): this snapshot is the controls-settings capture (axis names hashed with djb2 into a map of name -> value, read back by Game_InputModule_ReadAxisSnapshot 'Snapshot good %s is pressed'); it is NOT the per-frame gameplay input path. Gameplay actions are read per frame by Sess_HumanController_Update 0x1438959c0 and Game_GameMfdSystem_Update 0x142a8e070 through Ne_InputMapper_* on interned action handles."
+ },
+ "signature": {
+  "id": "game.input_module_take_snapshot",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 C5 F8 29 BC 24 10 01 00 00 C5 F8 29 B4 24 00 01 00 00 48 89 8C 24 88 00 00 00",
+  "match": "0x142a56310",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a56310",
+  "kind": "func_start",
+  "names": [
+   "Game_InputModule_TakeSnapshot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142a56310",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a56310.c;xref:0x141dbdda9",
+   "notes": "V5174 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

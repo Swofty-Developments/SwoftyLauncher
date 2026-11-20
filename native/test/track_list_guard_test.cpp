@@ -1,10 +1,11 @@
-// Host-native unit test for the core's career calendar track list guard (native/src/core/track_list_guard_logic.hpp):
+// Host-native unit test for the core's career calendar track list guard (native/src/core/guards/tracks/track_list_guard_logic.hpp):
 // the game's custom_track_list load loop is replayed with and without the guard over event rows that share ids, a
 // track twice in one season, duplicate event rows, clean saves over several save and load cycles, a save the game
 // already blew up, a season longer than the default event list, and the race weekends read from the career calendar.
-// Built and run by native/test/run_track_list_guard_test.sh.
+// Built and run by native/test/run_tests.sh track_list_guard.
 
-#include "track_list_guard_logic.hpp"
+#include "core/guards/env.hpp"
+#include "core/guards/tracks/track_list_guard_logic.hpp"
 
 #include <cstdio>
 #include <cstring>
@@ -22,13 +23,10 @@ static void expect(bool ok, const char *what)
         failed++;
 }
 
-static uintptr_t addr(size_t row)
-{
-    return 0x10000 + row * tl::ENTRY;
-}
+static uintptr_t addr(size_t row) { return 0x10000 + row * tl::ENTRY; }
 
-static std::vector<size_t> load(const std::vector<uint8_t> &rows, const std::vector<uint8_t> &stored, tl::Load *guard, size_t season,
-                                tl::Load *done = nullptr, uintptr_t component = 1, size_t weekends = 0)
+static std::vector<size_t> load(const std::vector<uint8_t> &rows, const std::vector<uint8_t> &stored, tl::Load *guard,
+                                size_t season, tl::Load *done = nullptr, uintptr_t component = 1, size_t weekends = 0)
 {
     std::vector<size_t> calendar;
     std::vector<uintptr_t> matches;
@@ -92,7 +90,8 @@ int main()
         auto game = load(stock, ids, nullptr, 4);
         tl::Load done;
         auto cal = load(stock, ids, &guard, 4, &done);
-        expect(game.size() == 4 && cal == game, "a track twice in one season with one event row: 2 stored entries load 2 events, as the game does");
+        expect(game.size() == 4 && cal == game,
+               "a track twice in one season with one event row: 2 stored entries load 2 events, as the game does");
         expect(done.reused == 1 && !done.blown, "the second entry is logged as repeating an event already in the calendar");
         bool flat = true;
         for (int cycle = 0; cycle < 5; cycle++) {
@@ -128,7 +127,8 @@ int main()
         std::vector<uint8_t> ids = season24;
         for (int cycle = 0; cycle < 3; cycle++)
             ids = save(seasons, load(seasons, ids, nullptr, 24));
-        expect(ids.size() == 24 * 1000, "10 seasons sharing ids: the game alone multiplies the calendar 10x per cycle (24 -> 24,000)");
+        expect(ids.size() == 24 * 1000,
+               "10 seasons sharing ids: the game alone multiplies the calendar 10x per cycle (24 -> 24,000)");
         std::vector<uint8_t> blown;
         for (size_t i = 0; i < 24000; i++)
             blown.push_back(ids[i]);
@@ -136,18 +136,22 @@ int main()
             blown.push_back(23);
         tl::Load done;
         auto healed = load(seasons, blown, &guard, 24, &done);
-        expect(healed.size() == 24 && save(seasons, healed) == season24, "a blown-up 65,535-entry save loads back to the season's 24 events, in order");
-        expect(done.blown && done.limit == 24 && done.dropped == 65535 - 24, "the load is logged as blown up, with the entries dropped");
+        expect(healed.size() == 24 && save(seasons, healed) == season24,
+               "a blown-up 65,535-entry save loads back to the season's 24 events, in order");
+        expect(done.blown && done.limit == 24 && done.dropped == 65535 - 24,
+               "the load is logged as blown up, with the entries dropped");
         expect(load(seasons, save(seasons, healed), &guard, 24) == healed, "the healed calendar saves and loads unchanged");
         auto grown = save(seasons, load(seasons, season24, nullptr, 24));
-        expect(save(seasons, load(seasons, grown, &guard, 24)) == season24, "a save the game grew once (240 entries) heals to the 24 stored ids in order");
+        expect(save(seasons, load(seasons, grown, &guard, 24)) == season24,
+               "a save the game grew once (240 entries) heals to the 24 stored ids in order");
         auto no_season = load(seasons, blown, &guard, 0, &done);
         expect(no_season.size() == 24 && done.limit == tl::FALLBACK_LIMIT,
                "without a season event list length the bound is 64 and runs of one id still heal to 24 events");
         std::vector<uint8_t> scattered;
         for (size_t i = 0; i < 1000; i++)
             scattered.push_back(uint8_t(i % 24));
-        expect(load(seasons, scattered, &guard, 24).size() == 24, "a blown-up list that is not in runs is cut at the season's length");
+        expect(load(seasons, scattered, &guard, 24).size() == 24,
+               "a blown-up list that is not in runs is cut at the season's length");
     }
 
     {
@@ -162,7 +166,8 @@ int main()
         tl::Load done;
         auto cal = load(rows, merged, &guard, 24, &done, 1, 32);
         expect(merged.size() == 32 && cal.size() == 32 && save(rows, cal) == merged,
-               "a 32-round season (8 tracks twice) on a 24-event default list loads all 32 rounds in order when the career calendar races 32 weekends");
+               "a 32-round season (8 tracks twice) on a 24-event default list loads all 32 rounds in order when the career "
+               "calendar races 32 weekends");
         expect(!done.blown && done.dropped == 0 && done.limit == 32, "the 32-round season is not read as blown up");
         bool flat = true;
         std::vector<uint8_t> ids = merged;
@@ -174,7 +179,8 @@ int main()
         expect(flat && ids == merged, "the 32-round season keeps its 32 rounds over 5 save and load cycles");
         std::string line = tl::load_line(1, 32, 32, &done);
         expect(line.find("(season event list 24, 32 race weekends on the career calendar)") != std::string::npos &&
-                   line.find("more entries than the season event list, all kept: the career calendar races 32 weekends") != std::string::npos &&
+                   line.find("more entries than the season event list, all kept: the career calendar races 32 weekends") !=
+                       std::string::npos &&
                    line.find("blown up") == std::string::npos,
                "the load line names the race weekends and says the longer list was kept");
         std::vector<uint8_t> scattered;
@@ -184,9 +190,11 @@ int main()
             scattered.push_back(uint8_t(id * 3));
         expect(load(rows, scattered, &guard, 24, nullptr, 1, 32).size() == 32,
                "a 32-round season whose repeated tracks are not side by side also keeps all 32 rounds");
-        expect(load(rows, merged, &guard, 24, nullptr, 1, 0).size() == 24 && load(rows, merged, &guard, 24, nullptr, 1, 24).size() == 24,
+        expect(load(rows, merged, &guard, 24, nullptr, 1, 0).size() == 24 &&
+                   load(rows, merged, &guard, 24, nullptr, 1, 24).size() == 24,
                "without race weekends past 24 the same list is still bounded by the default event list");
-        expect(load(rows, merged, &guard, 0, nullptr, 1, 32).size() == 32, "the race weekends bound the load when the event list length is not set");
+        expect(load(rows, merged, &guard, 0, nullptr, 1, 32).size() == 32,
+               "the race weekends bound the load when the event list length is not set");
     }
 
     {
@@ -200,10 +208,12 @@ int main()
         expect(healed.size() == 22 && save(rows, healed) == season22 && done.blown && done.dropped == 22,
                "the 44 = 22x2 doubled list loads back to its 22 rounds in order when the career calendar races 22 weekends");
         healed = load(rows, doubled, &guard, 24, &done, 1, 0);
-        expect(healed.size() == 22 && save(rows, healed) == season22, "the doubled list also heals to 22 when the race weekends are unreadable");
+        expect(healed.size() == 22 && save(rows, healed) == season22,
+               "the doubled list also heals to 22 when the race weekends are unreadable");
         auto kept = load(rows, doubled, &guard, 24, &done, 1, 44);
-        expect(kept.size() == 44 && !done.blown,
-               "a career that already races the 44 weekends keeps all 44: a shorter calendar would strand the season's last rounds");
+        expect(
+            kept.size() == 44 && !done.blown,
+            "a career that already races the 44 weekends keeps all 44: a shorter calendar would strand the season's last rounds");
         auto blown = doubled;
         for (int cycle = 0; cycle < 3; cycle++)
             blown = save(rows, load(rows, blown, nullptr, 24));
@@ -275,7 +285,8 @@ int main()
         tl::reset(l, 2, 3, 24);
         expect(l.component == 2 && l.kept == 0 && l.entry == UINT64_MAX, "a reset clears the load for the new component");
         tl::Load d = tl::finish(l, 3);
-        expect(d.component == 0 && l.component == 0 && l.rows.empty(), "finishing another component reports nothing and clears the state");
+        expect(d.component == 0 && l.component == 0 && l.rows.empty(),
+               "finishing another component reports nothing and clears the state");
     }
 
     expect(tl::season_events(24) == 24 && tl::season_events(0) == 0 && tl::season_events(0x10000) == 0,
@@ -284,7 +295,8 @@ int main()
     expect(tl::limit_for(24, 32) == 32 && tl::limit_for(24, 16) == 24 && tl::limit_for(0, 32) == 32,
            "the bound is the larger of the event list length and the race weekends");
     expect(tl::last_entry(4, 5) && !tl::last_entry(3, 5), "the last stored entry is index count - 1");
-    expect(tl::entries(0x1000, 0x1000 + 3 * tl::ENTRY) == 3 && tl::entries(0x2000, 0x1000) == 0, "calendar size from begin and end");
+    expect(tl::entries(0x1000, 0x1000 + 3 * tl::ENTRY) == 3 && tl::entries(0x2000, 0x1000) == 0,
+           "calendar size from begin and end");
 
     tl::SaveLog log;
     expect(log.changed(0xa, 24), "the first save of a component is logged");
@@ -298,18 +310,23 @@ int main()
     shown.extra = 216;
     std::string line = tl::load_line(0x1234, 65535, 24, &shown);
     expect(line.find("65535 stored entries -> 24 calendar events (season event list 24)") != std::string::npos &&
-               line.find("216 more matching events") != std::string::npos && line.find("blown up (more than 24 entries)") != std::string::npos &&
+               line.find("216 more matching events") != std::string::npos &&
+               line.find("blown up (more than 24 entries)") != std::string::npos &&
                line.find("65511 stored entries dropped") != std::string::npos,
            "the load line names the counts, the season bound, the skipped matches and the dropped entries");
     tl::Load clean;
     tl::reset(clean, 0x1234, 24, 24);
-    expect(tl::load_line(0x1234, 24, 24, &clean).find("(season event list 24), no repeats") != std::string::npos, "a clean load says no repeats");
+    expect(tl::load_line(0x1234, 24, 24, &clean).find("(season event list 24), no repeats") != std::string::npos,
+           "a clean load says no repeats");
     expect(tl::load_line(0x1234, 5, 50, nullptr).find("5 stored entries -> 50 calendar events") != std::string::npos,
            "the unguarded line names the counts");
     expect(tl::save_line(0x1234, 24).find("24 calendar events") != std::string::npos, "the save line names the count");
 
-    expect(tl::switch_off("0") && tl::switch_off("off"), "SWOFTY_TRACK_LIST_GUARD=0 or off turns it off");
-    expect(!tl::switch_off("1") && !tl::switch_off("") && !tl::switch_off(nullptr), "anything else leaves it on");
+    expect(swofty_core::guards::switch_off("0") && swofty_core::guards::switch_off("off"),
+           "SWOFTY_TRACK_LIST_GUARD=0 or off turns it off");
+    expect(!swofty_core::guards::switch_off("1") && !swofty_core::guards::switch_off("") &&
+               !swofty_core::guards::switch_off(nullptr),
+           "anything else leaves it on");
 
     std::printf("%s\n", failed ? "FAILED" : "all passed");
     return failed ? 1 : 0;

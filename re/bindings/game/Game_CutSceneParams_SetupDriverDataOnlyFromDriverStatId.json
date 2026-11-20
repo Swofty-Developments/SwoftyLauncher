@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CutSceneParams_SetupDriverDataOnlyFromDriverStatId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14022fb70",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=CutSceneParams::setupDriverDataOnlyFromDriverStatId; log channel CUTSCENE_PARAMS: 'CutSceneParams::setupDriverDataOnlyFromDriverStatId failed to find entrant entrantHelpers::findEntrantByDriverStatId(entrants, driverID)'"
+ },
+ "signature": {
+  "id": "game.cut_scene_params_setup_driver_data_only_from_driver_stat_id",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 88 00 00 00 89 D7 48 89 CE",
+  "match": "0x14022fb70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14022fb70",
+  "kind": "func_start",
+  "names": [
+   "Game_CutSceneParams_SetupDriverDataOnlyFromDriverStatId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x14022fb70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14022fb70.c",
+   "notes": "V4429 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

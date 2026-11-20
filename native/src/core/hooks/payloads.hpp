@@ -36,8 +36,8 @@ bool upgrades_fit(Fire &&fire, int32_t car, const char *vehicle, swofty::cars::D
 }
 
 template <class Fire>
-bool vtf_read(Fire &&fire, const swofty::cars::live::Car &car, const char *section, const char *field,
-              const char *upgrade, float &value)
+bool vtf_read(Fire &&fire, const swofty::cars::live::Car &car, const char *section, const char *field, const char *upgrade,
+              float &value)
 {
     swofty::cars::events::VtfRead e{};
     e.car = car;
@@ -80,8 +80,7 @@ template <class Fire> bool reset(Fire &&fire, const swofty::cars::live::Car &car
     return fire(e);
 }
 
-template <class Fire>
-bool parts_register(Fire &&fire, int32_t car, const char *vehicle, void *front_wing, const PartSink &sink)
+template <class Fire> bool parts_register(Fire &&fire, int32_t car, const char *vehicle, void *front_wing, const PartSink &sink)
 {
     swofty::cars::events::PartsRegister e{};
     e.car = car;
@@ -120,6 +119,14 @@ template <class Fire> bool pit_stop(Fire &&fire, uint32_t car, uint32_t stops)
     swofty::sessions::events::PitStop e{};
     e.car = car;
     e.stops = stops;
+    return fire(e);
+}
+
+template <class Fire> bool pit_stop_tyres(Fire &&fire, uint32_t car, bool kept)
+{
+    swofty::sessions::events::PitStopTyres e{};
+    e.car = car;
+    e.kept = kept ? 1 : 0;
     return fire(e);
 }
 

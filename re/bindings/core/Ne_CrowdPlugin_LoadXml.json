@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_CrowdPlugin_LoadXml",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143be2b00",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-method;decomp:re/decomp/143be2b00.c;xref:0x1458c0aa0",
+  "notes": "logged method name loadXml (class from the log channel); log channel NeCrowdPlugin: 'loadXml %s %s'"
+ },
+ "signature": {
+  "id": "core.crowd_plugin_load_xml",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 03 00 00 C5 78 29 A4 24 90 03 00 00",
+  "match": "0x143be2b00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143be2b00",
+  "kind": "func_start",
+  "names": [
+   "Ne_CrowdPlugin_LoadXml"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb2-verify-a",
+   "kind": "func",
+   "item": "Ne_CrowdPlugin_LoadXml",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143be2b00.c;xref:0x1458c0aa0",
+   "notes": "V2047 15KB crowd config XML loader: models/props/umbrella/billboard/palette/anim loader; 'loadXml %s %s' log; vtable slot"
+  }
+ ],
+ "proofs": []
+}

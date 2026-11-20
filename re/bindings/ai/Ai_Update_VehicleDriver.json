@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_Update_VehicleDriver",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140614d70",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_Update_VehicleDriver(uint8_t *ctl, void *ctx)",
+  "evidence": "decomp:re/decomp/140614d70.c;xref:0x1405f5dc2",
+  "notes": "Body 0x43c2 bytes (pdata), reached only by tail-jump jmp 0x1405f5dc2 in Ai_Controller_UpdateStateAndDrive (corrected 2026-11-14: xref was 0x1405f5dc3). Has 5 guarded inits of g_Ai_GeneralSettings (Ai_Resolve_GeneralSettings) but reads only max_test_distance ([0x146046c58], 8 sites) and max_test_speed ([0x146046c68], 26 sites) (corrected: was 'resolves all 5' implying all are used). Callees: Ai_TestGraph_EvalDistanceSpeedB x4, Ai_Calc_SpeedForRadius x5, Ai_Calc_GripLimitBlend x5, Ai_ZoneMap_Find x6, Ai_Table_UpdateKeyCache x5, Ai_Eval_ClampedTestSpeed_2 x4, Ai_SplineCursor_GetFrame x4, Ai_TestGraph_EvalDistanceSpeedC x3, Ai_TestGraph_EvalDistanceSpeedA x2, Ai_SplineCursor_PlaceAtDistance x2, Ai_Table_CalcSpeedChangeDistance, Ai_Get_SegmentSpeedLimit, Ai_Table_InterpolateC, Ai_SplineCursor_Ctor; logs TRACE 'TyreSystem::getCompoundOnVehicle failed' when the tyre list 0x146096570 slot is null (2 sites). Looks like a per-car target-speed/limit planner, not proven. KEPT L1 2026-11-14 (engine-re AI round): 2533-line function not traced end to end; role (speed/limit planning) inferred from callees only. edited by engine-re with --force 2026-11-14 at user request (lane owner review requested) RAISED 2026-11-16 (racing-line parts; the rest of the body is still summarised from callees only): per-car speed planning along the line. It evaluates the car line frame from 0x470-byte cursor records (Ai_SplineCursor_GetFrame at 0x140615acb/0x140615b16 with a lateral offset blended between neighbouring records) and the brake approach records (record - 0x470), takes the signed turn radius at that offset with Ai_Get_SegmentTurnRadius (0x140615b72), scales it, clamps |r| to 500 and converts it to a corner speed with Ai_Calc_SpeedForRadius (decomp line 955; other radius->speed calls at lines 288/351/1618/1780 with grip blends from Ai_Calc_GripLimitBlend), and re-places a cursor at node start distances (Ai_SplineCursor_Ctor + Ai_SplineCursor_PlaceAtDistance, 0x1406174dd/0x140617588). L2 2026-11-16 (engine-re racing-line round 2): decomp read, claims checked against the disassembly, refs from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-16 at user request (lane owner review requested) Verifier detail 2026-11-16: the loop walks the brake approach sample vector [[rdi+8]+0xb8+route*8] backwards (0x470 records); the dab0 result is scaled by k = [[obj+0x20]+0xd0] * Ai_Calc_GripLimitBlend, min(500, |.|), and from the second sample blended with a chord radius from consecutive sample frames before Ai_Calc_SpeedForRadius. edited by engine-re with --force 2026-11-16 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.update_vehicle_driver",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 07 00 00 C5 78 29 BC 24",
+  "match": "0x140614d70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140614d70",
+  "kind": "func_start",
+  "names": [
+   "Ai_Update_VehicleDriver"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x140614d70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140614d70.c;xref:0x5f5dc2",
+   "notes": "V4697 5 Ai_Resolve_GeneralSettings sites, size ~0x43d0 confirmed"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "triage-verify",
+   "kind": "func",
+   "item": "0x140614d70",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own re/tools/decomp read on the KB build;xref:0x1405f5dc2",
+   "notes": "V10735 Racing-line part only, as claimed. Entered only by jmp from 0x1405f5dc2 (scan). Walks the 0x470-byte cursor records, evaluates frames with Ai_SplineCursor_GetFrame using a lateral offset blended between neighbouring records (0x140615acb/0x140615b16), then calls Ai_Get_SegmentSpeedLimit (turn radius) at 0x140615b72 on the result and feeds the scaled, clamped radius to Ai_Calc_SpeedForRadius. The remaining body (2.5k lines) was not read end to end, so the L2 holds for the racing-line section only."
+  }
+ ],
+ "proofs": []
+}

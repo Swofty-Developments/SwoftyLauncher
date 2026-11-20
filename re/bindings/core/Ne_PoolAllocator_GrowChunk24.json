@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_PoolAllocator_GrowChunk24",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14146b5a0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14146b5a0.c;xref:0x141420fb1",
+  "notes": "Pool allocator refill for 0x18-byte nodes of the decals hash map (chunk doubling 4..0x2000, ne_hash_map.h). Caller Game_CustomisationDecals_LoadConfig."
+ },
+ "signature": {
+  "id": "core.pool_allocator_grow_chunk24",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 89 C7 49 8B 07 48 89 07 8B 84",
+  "match": "0x141420fb1",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14146b5a0",
+  "kind": "func_start",
+  "names": [
+   "Ne_PoolAllocator_GrowChunk24"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x14146b5a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14146b5a0.c;xref:0x141420fb1",
+   "notes": "V8081 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

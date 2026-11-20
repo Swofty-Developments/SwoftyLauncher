@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_StoryHub_OnStateEnter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436fb5e0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "bool Sess_StoryHub_OnStateEnter(void *state)",
+  "evidence": "str:s_cfg_GameIgnoreMinimumLoadingTime;decomp:re/decomp/1436fb5e0.c;xref:0x1436fb656,0x1436fb657,0x1436fb873,0x14585ee50",
+  "notes": "cxx=StateStoryHub::onStateEnter (vt_Sess_StoryHub 0x14585ee10 slot 8, pointer 0x14585ee50); polled until it returns true. First call (flag state+0xd40 clear): sets the flag, Game_FlowCoordinator_SetPreloadState(state+0xc80, 6), Game_SaveMgr_RequestProfileSave_Thunk(state+0xd28), resolves the story hub scene object into state+0xd38/+0xd20, starts the load timer state+0xe20 (QPC), queues StoryHubSceneSystemSubTask and a FlowChangeSubTask with event enter_story_hub, Game_Flow_StateActivatingSubTask, then returns 0. Later calls: elapsed = (state+0xe28 or now - state+0xe20)/state+0xe30; setting Game.IgnoreMinimumLoadingTime -> Ne_Get_SettingBool 0x143a43b90 on *(0x146ca5e28)+0x18, default 0: minimum 3.0 s when off, 0.0 s when on (same rule as Sess_SessionTransition_OnStateUpdate 0x1436f9890). When the minimum has passed and the scene reports ready (0x142df54e0) or state+0xd41 is set: Game_Analytics_Flushing(story_hub) once (state+0xd44), Ne_Post_BusMessage, clears fade reasons and requests fade in (FADE_REQUESTS logs, fade object state+0xc88 +0x7b8 mask), writes 'garage' into the object at 0x146c621e0 and returns 1; otherwise 0. Lea of the setting string 0x1436fb656. hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile. Callers: census steam 0x36fb5e0."
+ },
+ "signature": {
+  "id": "session.story_hub_on_state_enter",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC B0 00 00 00 C5 F9 29 B4 24 A0 00 00 00 48 89 CE",
+  "match": "0x1436fb5e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436fb5e0",
+  "kind": "func_start",
+  "names": [
+   "Sess_StoryHub_OnStateEnter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-3",
+   "kind": "func",
+   "item": "0x1436fb5e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436fb5e0.c;xref:0x14585ee50",
+   "notes": "V9363 Vtable of 'SessionStateStoryHub', slot aligned with OnStateEnter of other session states (HFI slot at +0x18); first call (flag +0xd40) sets preload state 6, adds StoryHubSceneSystemSubTask and a FlowChangeSubTask with route enter_story_hub, flushes story_hub analytics; later calls wait for min loading time 3 s unless Game.IgnoreMinimumLoadingTime (default false) and return true when ready; bool return fits."
+  }
+ ],
+ "proofs": []
+}

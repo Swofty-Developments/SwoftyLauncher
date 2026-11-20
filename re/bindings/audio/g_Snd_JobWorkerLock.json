@@ -1,0 +1,95 @@
+{
+ "schema": 1,
+ "name": "g_Snd_JobWorkerLock",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x146c63ba0",
+  "type": "void *",
+  "level": "L2",
+  "subsystem": "audio",
+  "evidence": "decomp:re/decomp/143fbdd00.c;decomp:re/decomp/143fc6500.c;xref:0x143fbdd41,0x143fbde10,0x143fc65bc,0x143fc671d",
+  "notes": "Pointer to the CRITICAL_SECTION guarding the audio job worker mailboxes, g_Snd_JobWorkerOverflow and g_Snd_JobWorkerPending: Snd_Request_JobWorker enters it (0x143fbdd3e) and leaves it at its end (0x143fbde0d); Snd_Run_JobWorkerThread takes it around every pending-count read and overflow scan. The combined static initialiser 0x143fcbc30 stores it at 0x143fcc168 and calls InitializeCriticalSection on it at 0x143fcc16f and registers 0x143fbda40 with atexit (lea at 0x143fcc171), which deletes it (DeleteCriticalSection) at exit; the worker thread creator 0x152d7d570 (.data1) also holds it. A worker reads its own mailbox and clears its busy flag (+0x28) without the lock, so for the mailboxes the lock covers only the side that claims them."
+ },
+ "signature": {
+  "id": "audio.job_worker_lock",
+  "section": ".xtls",
+  "pattern": "FF 15 ?? ?? ?? ?? 89 C5 48 8B 0D ?? ?? ?? ?? FF 15 ?? ?? ?? ?? 83 3D ?? ?? ?? ?? 00 74",
+  "match": "0x143fbdd36",
+  "anchor": "0xb",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x8",
+   "len": 7
+  },
+  "target": "0x146c63ba0",
+  "kind": "data",
+  "names": [
+   "g_Snd_JobWorkerLock"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "crash2",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/engine/audio_queue.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "kbverify-audio",
+   "kind": "sig",
+   "item": "audio.job_worker_lock",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "pat:sigcheck-hits-1;decomp:re/decomp/143fbdd00.c;xref:0x143fbdd41",
+   "notes": "V2182 sigcheck --exe --only on d873a1c8: OK hits=1, match 0x143fbdd36, target 0x146c63ba0, kind data, riprel insn 0x8 len 7 anchor 0xb. An independent byte scan finds 1 hit in .xtls and 0 in .data1. Bytes at the match: call [GetCurrentThreadId] 0x143fbdd36, mov ebp,eax, mov rcx,[rip+0x2ca5e5b] 0x143fbdd3e (disp at 0x143fbdd41, next 0x143fbdd45 + 0x2ca5e5b = 0x146c63ba0), call [EnterCriticalSection], cmp dword [0x146c64290],0, je. 29 bytes, starts and ends on fixed bytes, every rel32/riprel displacement wildcarded. The target is the claimed global."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "kbverify-audio",
+   "kind": "global",
+   "item": "0x146c63ba0",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143fbdd00.c;decomp:re/decomp/143fc6500.c;decomp:re/decomp/143fcbc30.c;decomp:re/decomp/152d7d570.c;xref:0x143fbdd41,0x143fbde10,0x143fc65bc,0x143fc65cc,0x143fc65e3,0x143fc671d,0x143fc672d,0x143fc673d,0x143fc6751,0x143fbda43,0x143fcc16b,0x152d7d5bb,0x152d7d6d9",
+   "notes": "V2183 Blind re-derivation at 177ebc0d. Address, type void *, role and signature hold; the 'Other readers' list is wrong. The static init 0x143fcbc30 stores &CRITICAL_SECTION 0x146c63ba8 here (lea 0x143fcc161, mov 0x143fcc168, disp 0x143fcc16b) and calls InitializeCriticalSection on it through rdi; 0x143fbda40 is the exit stub DeleteCriticalSection(*g) (disp 0x143fbda43). Snd_Request_JobWorker enters it at 0x143fbdd45 (load 0x143fbdd3e) and leaves by tail jmp LeaveCriticalSection at 0x143fbde22 (load 0x143fbde0d); Snd_Run_JobWorkerThread brackets every pending read and slot scan with it (loads 0x143fc65b9, 0x143fc65c9, 0x143fc65e0, 0x143fc671a, 0x143fc672a, 0x143fc673a, 0x143fc674e). Wrong: 0x1413af39c is no reference at all; its four bytes straddle vmovups [r14+0xf0],xmm7 (0x1413af394) and mov rax,[rip+0x4ddc014] (0x1413af39d, target 0x14618b3b8) in 0x1413af060, a disp-scan false positive. 0x143fcc16b is the writer, not a reader. Missing: the .data1 thread creator 0x152d7d570 holds the lock over its thread start loop (load 0x152d7d5b8 before EnterCriticalSection, load 0x152d7d6d6 before LeaveCriticalSection). A decoded scan of .xtls, .xtext and .data1 finds no other references. Fix: replace the 'Other readers' sentence with 'Written by the static init 0x143fcbc30 (0x143fcc168); DeleteCriticalSection stub 0x143fbda40; also held by the thread creator 0x152d7d570'."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "kbverify-audio2",
+   "kind": "global",
+   "item": "0x146c63ba0",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143fbdd00.c;decomp:re/decomp/143fc6500.c;decomp:re/decomp/152d7d570.c;decomp:re/decomp/143fcbc30.c;decomp:re/decomp/143fbda40.c;xref:0x143fbda40,0x143fbdd3e,0x143fbde0d,0x143fc65b9,0x143fc65c9,0x143fc65e0,0x143fc671a,0x143fc672a,0x143fc673a,0x143fc674e,0x143fcc168,0x152d7d5b8,0x152d7d6d6;sig:audio.job_worker_lock",
+   "notes": "V2190 Type void * and sig hold: sigcheck hits=1 at 0x143fbdd36, riprel target 0x146c63ba0 is the mov rcx loaded for EnterCriticalSection at 0x143fbdd45. Full scan of .xtls/.xtext/.data1 finds 13 code refs and no absolute pointers. Snd_Request_JobWorker enters at 0x143fbdd3e and leaves by tail jmp at 0x143fbde0d, with mailbox claims, overflow writes and the pending add inside. Snd_Run_JobWorkerThread (7 refs) holds it for both pending reads (0x143fc65c3, 0x143fc6734), the flag scan, the flag clear and the pending decrement. The static init 0x143fcbc30 stores &0x146c63ba8 at 0x143fcc168 and calls InitializeCriticalSection on it at 0x143fcc16f. The .data1 body 0x152d7d570 (thunk 0x143fc01e0) holds it from 0x152d7d5b8 to 0x152d7d6d6 while it creates the worker threads on Snd_Run_JobWorkerThread. WRONG: 0x143fbda43 does not hold it. 0x143fbda40 (no .pdata entry) is mov rcx,[lock]; jmp [DeleteCriticalSection] (IAT 0x145d3c210), the atexit destructor that the static init registers at 0x143fcc171 (call atexit 0x1449e071c at 0x143fcc178), so it deletes the section at exit. Minor: the worker reads its own mailbox fn and type (0x143fc65b1) and clears busy +0x28 (0x143fc676a, 0x143fc6788) without the lock, so for the mailboxes it guards only the claim side."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "kbverify-audio3",
+   "kind": "global",
+   "item": "0x146c63ba0",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143fbdd00.c;decomp:re/decomp/143fc6500.c;decomp:re/decomp/143fcbc30.c;decomp:re/decomp/152d7d570.c;xref:0x143fbda40,0x143fbdd3e,0x143fbde0d,0x143fc65b9,0x143fc65c9,0x143fc65e0,0x143fc671a,0x143fc672a,0x143fc673a,0x143fc674e,0x143fcc168,0x152d7d5b8,0x152d7d6d6;sig:audio.job_worker_lock",
+   "notes": "V2192 Blind re-derivation. Type void * holds: the initialiser stores &CRITICAL_SECTION (0x146c63ba8, the object right after the pointer) into it and every user loads it with mov rcx,[rip] (48 8B 0D). sigcheck OK; my own scan finds 1 hit in .xtls (0 in .data1) at 0x143fbdd36, riprel insn +0x8 resolves to 0x146c63ba0, the EnterCriticalSection argument load in Snd_Request_JobWorker. 13 refs, no absolute pointers: atexit body 0x143fbda40 (mov rcx,[g]; jmp DeleteCriticalSection); Snd_Request_JobWorker Enter 0x143fbdd3e and Leave 0x143fbde0d (tail jmp 0x143fbde22); Snd_Run_JobWorkerThread 7 loads (r15 = Enter, r12 = Leave) with the pending reads 0x143fc65c3 and 0x143fc6734, the decrement 0x143fc6714 and the overflow scan 0x143fc65ea-0x143fc66f5 all inside; the initialiser store 0x143fcc168; .data1 0x152d7d570 Enter 0x152d7d5b8 and Leave 0x152d7d6d6 around its thread-create loop. The worker reads its mailbox +0x08/+0x24 (0x143fc65b1) and clears +0x28 (0x143fc676a, 0x143fc6788) outside the lock while requesters claim mailboxes under it. Every behavioural claim holds; one locator is wrong: 'static initialiser 0x143fcc16b' names the disp32 of the store mov [g],rcx at 0x143fcc168, which sits inside the combined dynamic initialiser 0x143fcbc30 (.pdata); InitializeCriticalSection is the call rdi at 0x143fcc16f (rdi loaded from the IAT at 0x143fcbff7) and atexit is the wrapper 0x1449e071c. Replace that address with 0x143fcbc30 (store at 0x143fcc168); nothing else needs changing."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "kbverify-audio4",
+   "kind": "global",
+   "item": "0x146c63ba0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143fbdd00.c;decomp:re/decomp/143fc6500.c;decomp:re/decomp/143fcbc30.c;decomp:re/decomp/143fbda40.c;decomp:re/decomp/152d7d570.c;xref:0x143fcc168,0x143fbda40,0x143fbdd3e,0x143fbde0d,0x143fc65b9,0x143fc65c9,0x143fc65e0,0x143fc671a,0x143fc672a,0x143fc673a,0x143fc674e,0x152d7d5b8,0x152d7d6d6;sig:audio.job_worker_lock;pat:atexit-shape-0x1449e071c",
+   "notes": "V2193 kbverify-audio4 blind: own RIP-relative scan of .xtls and .data1 finds exactly 13 refs to 0x146c63ba0 and no absolute refs; every one is in a function the row names. 0x143fcbc30 (pointer in the static-init table at 0x145d32700) does lea rcx,0x146c63ba8 then stores it at 0x143fcc168, call rdi at 0x143fcc16f where rdi is IAT InitializeCriticalSection, lea 0x143fbda40 at 0x143fcc171 into 0x1449e071c (MSVC atexit shape); 0x143fbda40 loads the pointer and tail-jumps to DeleteCriticalSection. Snd_Request_JobWorker loads it for EnterCriticalSection at 0x143fbdd3e (call 0x143fbdd45) and for the LeaveCriticalSection tail jump at 0x143fbde0d, covering the mailbox claim loop (0x146c63bd0 stride 0x30, busy +0x28) and the 24-slot overflow (0x146c63e10, flag +0x28) plus the pending++ at 0x146c64294. Snd_Run_JobWorkerThread: Enter 0x143fc65b9/Leave 0x143fc65c9 around the first pending read, Enter 0x143fc65e0 for the overflow scan, Leave 0x143fc671a after clearing a slot and pending--, Leave 0x143fc674e when no slot is set, Enter 0x143fc672a/Leave 0x143fc673a around the loop pending read. Mailbox reads (+0x8, +0x24 at 0x143fc65b1) and the busy clears (+0x28 at 0x143fc676a, 0x143fc6788) are outside the lock. 0x152d7d570 (.data1) holds it from 0x152d7d5b8 to 0x152d7d6d6 across the worker creation loop that starts 0x143fc6500 per mailbox. sigcheck: one hit at 0x143fbdd36, riprel insn +0x8 len 7, target 0x146c63ba0. Minor only: the row's xref cells (0x143fbdd41, 0x143fbde10, 0x143fc65bc, 0x143fc671d) are disp32 field addresses (insn+3) and cover 4 of the 13 refs; type void * is in fact CRITICAL_SECTION * (points at 0x146c63ba8)."
+  }
+ ],
+ "proofs": []
+}

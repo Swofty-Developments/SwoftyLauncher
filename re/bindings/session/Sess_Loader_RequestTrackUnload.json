@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Loader_RequestTrackUnload",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142da8c80",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-SESSION_LOADER;decomp:re/decomp/142da8c80.c;xref:0x1457e3f50",
+  "notes": "named from its log messages (channel SESSION_LOADER): 'Track unload requested for %s'"
+ },
+ "signature": {
+  "id": "session.loader_request_track_unload",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC E8 00 00 00 48 89 CE 0F B6 89 91 0E 00 00",
+  "match": "0x142da8c80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142da8c80",
+  "kind": "func_start",
+  "names": [
+   "Sess_Loader_RequestTrackUnload"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb2-verify-b",
+   "kind": "func",
+   "item": "Sess_Loader_RequestTrackUnload",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142da8c80.c;xref:0x142da954f",
+   "notes": "V1873 string verified"
+  }
+ ],
+ "proofs": []
+}

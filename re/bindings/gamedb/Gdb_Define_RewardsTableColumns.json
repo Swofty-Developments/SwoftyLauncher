@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Gdb_Define_RewardsTableColumns",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14095f6e0",
+  "level": "L2",
+  "subsystem": "gamedb",
+  "proto": "void Gdb_Define_RewardsTableColumns(void *self, void *schema)",
+  "evidence": "decomp:re/decomp/14095f6e0.c;xref:0x14095f67c;xref:0x1425e5643;xref:0x1425e7efc",
+  "notes": "myteam-g2: Registers the columns of the rewards table: HasRewardsInternal, Currencies, Cards, UniqueCards, CollectableCards, EventUnlocks, CustomisationItems, XPReward, XPBoosterDaysReward, Trophies, PremiumCurrency, FanPoints, CollaborativeEvents, VIPUnlockReward (allocates 0x148-byte descriptor). Used by the upgrade-cost row and UpgradeDiscount table definitions."
+ },
+ "signature": {
+  "id": "gamedb.define_rewards_table_columns",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 D6 48 89 CF 48 8B 1D ?? ?? ?? ?? 48 8B 03 BA 48 01 00 00",
+  "match": "0x14095f6e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14095f6e0",
+  "kind": "func_start",
+  "names": [
+   "Gdb_Define_RewardsTableColumns"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x14095f6e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14095f6e0.c;str:\"HasRewardsInternal\"",
+   "notes": "V9480 Defines the listed rewards columns (HasRewardsInternal ... VIPUnlockReward); allocates 0x148 bytes."
+  }
+ ],
+ "proofs": []
+}

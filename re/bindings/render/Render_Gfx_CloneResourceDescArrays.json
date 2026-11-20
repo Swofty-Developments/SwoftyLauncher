@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_CloneResourceDescArrays",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c208d0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c208d0.c;xref:0x140100cfc",
+  "notes": "Copies three descriptor arrays (param_2 idx 8/9, 0x11/0x12, 0x1a/0x1b) with the owner allocator (vtable +0x18/+0x38) and calls 143c20b40 with a 12-byte-element count. 73 callers from the config object builders."
+ },
+ "signature": {
+  "id": "render.gfx_clone_resource_desc_arrays",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 68 48 89 D3 48 89 CE 4C",
+  "match": "0x143c208d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c208d0",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_CloneResourceDescArrays"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x143c208d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c208d0.c;xref:0x140100cfc",
+   "notes": "V8332 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

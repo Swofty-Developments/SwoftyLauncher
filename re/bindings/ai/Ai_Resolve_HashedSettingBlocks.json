@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_Resolve_HashedSettingBlocks",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140663b80",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_Resolve_HashedSettingBlocks(void **out16)",
+  "evidence": "decomp:re/decomp/140663b80.c;xref:0x14060004e",
+  "notes": "For 16 fixed 64-bit key hashes (first 0x773597005eab975c at 0x140663b8b; full list in db_keys.tsv rows with site 0x140663b80, all still unnamed) does the robin-hood probe of the settings map g 0x146cc4278 (loaded 0x140663b95; seed +0xb8, slots +0xc0, meta +0xc8, mask +0xd8, shift +0xe8/+0xec) and stores slot+8 (value pointer of the 0x10-byte entry) into out16[0..15]. Caller Sess_Build_AiSystem allocates 0x80 bytes (allocator vt+0x18, 0x140600035..0x140600040), calls this, stores the block at [AiSystem+0x188] (0x140600053). (corrected 2026-11-14: 16 keys; stores value-slot pointers, not entry pointers) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.resolve_hashed_setting_blocks",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 89 C8 49 B9 5C 97 AB",
+  "match": "0x140663b80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140663b80",
+  "kind": "func_start",
+  "names": [
+   "Ai_Resolve_HashedSettingBlocks"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x140663b80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140663b80.c;xref:0x14060004e",
+   "notes": "V3568 robin-hood lookup of key 0x773597005eab975c etc. in map behind global 0x146cc4278 storing entry pointers; Sess_Build_AiSystem caller seen"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x140663b80",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x140663b80-0x14066499b;xref:0x14060004e",
+   "notes": "V10584 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only caller 0x14060004e in Sess_Build_AiSystem 0x1405ff750 (0x80-byte alloc via vt+0x18, block stored [rbx+0x188] at 0x140600053). 1 arg (rcx). 16 movabs key hashes (first 0x773597005eab975c at 0x140663b8b), map g 0x146cc4278 (+0xb8 seed, +0xc0/+0xc8/+0xd8/+0xe8/+0xec), 16 stores out[0..0x78] of entry+8 (add rcx,8 before each store). Role agrees."
+  }
+ ],
+ "proofs": []
+}

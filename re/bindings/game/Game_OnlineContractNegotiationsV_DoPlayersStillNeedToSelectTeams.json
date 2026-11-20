@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineContractNegotiationsV_DoPlayersStillNeedToSelectTeams",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ffc7b0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name doPlayersStillNeedToSelectTeams (class from the log channel); log channel ONLINE_CONTRACT_NEGOTIATIONS/V: 'doPlayersStillNeedToSelectTeams() - %s'"
+ },
+ "signature": {
+  "id": "game.online_contract_negotiations_v_do_players_still_need_to_select_teams",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 48 89 CE 48 8B 81 F8 02 00 00",
+  "match": "0x140ffc7b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ffc7b0",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineContractNegotiationsV_DoPlayersStillNeedToSelectTeams"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x140ffc7b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ffc7b0.c;xref:0x140ffe419",
+   "notes": "V4530 name and quoted log strings/pretty-function present in body"
+  }
+ ],
+ "proofs": []
+}

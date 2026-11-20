@@ -2,8 +2,14 @@
 # game lock (/mnt/work/F1/f1-game.lock.d, or $SWOFTY_GAME_LOCK), the script holds it for its whole
 # run, so a real launch never sees a stray F1_25.exe. It takes the lock only while the game queue
 # (f1-game.queue beside the lock, or $SWOFTY_GAME_QUEUE) is empty, so a queued game launch goes
-# first. CI has no lock folder and skips this.
+# first. CI has no lock folder and skips this. A host test (SWOFTY_TEST_KIND=host, which test/lib/run_one.sh sets
+# from native/test/manifest.py) never takes it: sourcing this from one fails.
 game_lock_take() {
+    if [ "${SWOFTY_TEST_KIND:-}" = host ]; then
+        echo "game lock: $(basename "$0") runs as a host test in native/test/manifest.py, and host tests never take" \
+            "the game lock; mark it wine=True there if it starts F1_25.exe under Wine, or stop sourcing game_lock.sh" >&2
+        exit 1
+    fi
     local lock=${SWOFTY_GAME_LOCK:-/mnt/work/F1/f1-game.lock.d}
     [ -n "${SWOFTY_GAME_LOCK_HELD:-}" ] && return 0
     [ -d "$(dirname "$lock")" ] || return 0

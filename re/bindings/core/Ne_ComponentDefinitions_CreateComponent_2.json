@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_ComponentDefinitions_CreateComponent_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143f983d0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143f983d0.c;xref:0x143f985a9,0x143f9891b",
+  "notes": "Second NeComponentDefinitions::createComponent variant (callers 0x143f98560, 0x143f98800); WARN 'Failed to create component [%s] [%s]'."
+ },
+ "signature": {
+  "id": "core.component_definitions_create_component_2",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 D7 48 89 CB 48 8B 49",
+  "match": "0x143f983d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143f983d0",
+  "kind": "func_start",
+  "names": [
+   "Ne_ComponentDefinitions_CreateComponent_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d9-verify",
+   "kind": "func",
+   "item": "Ne_ComponentDefinitions_CreateComponent_2",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143f983d0.c;xref:0x143f983d0",
+   "notes": "V2852 strings/calls/offsets checked in decomp+disasm; role and name hold"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_FacilitiesAuto_CollectCapacityNodes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c67de0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "int64_t Career_FacilitiesAuto_CollectCapacityNodes(void *comp, int64_t unused, uint32_t team_key)",
+  "evidence": "decomp:re/decomp/140c67de0.c;xref:0x140f81782;xref:0x140f8266a",
+  "notes": "myteam-g2: Finds the team entry (0x30-byte records at comp+0x298..0x2a0, key u8@+0x28 / u16@+0x2a) and iterates its facility nodes (FUN_140c66e20, FUN_140ce4740), summing capacity per node. Used by Career_FacilitiesAuto_AdjustCapacity and Tick_FacilityNodes."
+ },
+ "signature": {
+  "id": "career.facilities_auto_collect_capacity_nodes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 01 00 00 C5 F8 29 BC 24 80 01 00 00 C5 F8 29 B4 24 70 01 00 00 48 89 D6",
+  "match": "0x140c67de0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c67de0",
+  "kind": "func_start",
+  "names": [
+   "Career_FacilitiesAuto_CollectCapacityNodes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140c67de0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140c67de0.c",
+   "notes": "V9504 Param 2 is the OUTPUT object (returned), not unused. It finds the team entry, uses bank map at +0x60/+0x1a0 and fills the out via FUN_140ce4740; capacity summing is not visible."
+  }
+ ],
+ "proofs": []
+}

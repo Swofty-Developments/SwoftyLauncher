@@ -2104,8 +2104,8 @@ Fields of the tables modders edit most, generated from the database. `Rows` is h
 | Field | Meaning | Type | Unit | Range | Rows | `exe` | Example |
 |---|---|---|---|---|---|---|---|
 | `_metadata_` | Row label: the name other rows and the game use to find this row, unique in its table *(proven)* | string |  |  | 2/2 | leaf | track\_layer\_override |
-| `override` | Label of a row in entrants.entrant\_lists.entrant\_list\_N *(inferred)* | id |  |  | 2/2 | leaf | classic |
-| `target` | Label of a row in track\_data.game\_setup.TrackDataSet\_N *(inferred)* | id |  |  | 2/2 | leaf | f1 |
+| `override` | Label of the track\_data.track\_layers.TrackLayer\_N row whose world is copied; a label with no layer row reads past the end of the layer table *(proven)* | id |  |  | 2/2 | leaf | classic |
+| `target` | Label of the track\_data.track\_layers.TrackLayer\_N row whose world is replaced; a label with no layer row makes the game write through a null layer *(proven)* | id |  |  | 2/2 | leaf | f1 |
 
 ### `content_sets.content_set_N.tutorial_system_overrides_N`
 

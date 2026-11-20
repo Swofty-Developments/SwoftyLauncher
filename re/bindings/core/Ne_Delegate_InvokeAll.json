@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Ne_Delegate_InvokeAll",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439ef420",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439ef420.c;xref:0x142d8475b,0x1438abc3d",
+  "notes": "(evt, arg, ?, ?) Copies the delegate list [evt[2]]+8..+0x10 (pairs fn,ctx; stride 0x10) into a temp array from allocator evt[0] (vcall +0x18) then calls each fn(ctx, (u32)evt[4]); frees temp (vcall +0x38). Snapshot-then-invoke multicast. Callers Sess_PreRace_OnStateExit, Sess_VirtualPerformance_CalcPace, VR monitor disable."
+ },
+ "signature": {
+  "id": "core.delegate_invoke_all",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 4C 89 CE 44 89 C5 89 D3 48 89 CF 4C 8B 61 10 49",
+  "match": "0x1439ef420",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439ef420",
+  "kind": "func_start",
+  "names": [
+   "Ne_Delegate_InvokeAll"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x1439ef420",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1439ef420.c;xref:0x142d8475b",
+   "notes": "V3612 multicast snapshot matches but fn gets the PREVIOUS evt[4] value, then param_2/param_3 are stored with fade fraction update (1.0-evt[6]); more than invoke-all; VirtualPerformance_CalcPace not a caller"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x1439ef420",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1439ef420.c;xref:0x142d8475b",
+   "notes": "V4006 multicast snapshot matches but fn gets the PREVIOUS evt[4] value, then param_2/param_3 are stored with fade fraction update (1.0-evt[6]); more than invoke-all; VirtualPerformance_CalcPace not a caller"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x1439ef420",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439ef420.c;xref:0x142d8475b,0x1438abc3d",
+   "notes": "V4068 snapshot-then-invoke; callers Sess_PreRace_OnStateExit, Sess_VirtualPerformance_CalcPace region, VR monitor disable confirmed"
+  }
+ ],
+ "proofs": []
+}

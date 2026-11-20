@@ -1,4 +1,4 @@
-use crate::library::Library;
+use crate::services::library::Library;
 use gpui_kit::*;
 use std::time::Instant;
 
@@ -21,7 +21,7 @@ impl Shell {
                 .background_executor()
                 .spawn(async move { Library::read(&store) })
                 .await;
-            crate::app_log::note(&format!(
+            crate::app::app_log::note(&format!(
                 "profile switch: library loaded in {} ms",
                 started.elapsed().as_millis()
             ));
@@ -40,39 +40,39 @@ impl Shell {
     pub(super) fn install_library(&mut self, library: Library, cx: &mut Context<Self>) {
         self.library = library;
         let config = self.store.config();
-        self.developer_mode = config.developer;
-        self.clear_old_session_logs = config.clear_old_session_logs;
-        self.time_trial_boards = config.time_trial_boards;
-        self.use_profiles = config.use_profiles;
-        self.time_trial_ingame = config.time_trial_ingame;
-        self.home_video = config.home_video;
-        self.update_off_addons = config.update_off_addons;
-        self.vr_profiles = config.vr_profiles;
-        self.start_store = config.launch.start_store;
-        self.update_check = config.updates.check;
-        if matches!(self.page, Page::Section(i) if i >= self.library.sections.len()) {
-            self.page = Page::Addons;
+        self.prefs.developer_mode = config.developer;
+        self.prefs.clear_old_session_logs = config.clear_old_session_logs;
+        self.prefs.time_trial_boards = config.time_trial_boards;
+        self.prefs.use_profiles = config.use_profiles;
+        self.prefs.time_trial_ingame = config.time_trial_ingame;
+        self.prefs.home_video = config.home_video;
+        self.prefs.update_off_addons = config.update_off_addons;
+        self.prefs.vr_profiles = config.vr_profiles;
+        self.prefs.start_store = config.launch.start_store;
+        self.prefs.update_check = config.updates.check;
+        if matches!(self.navigation.page, Page::Section(i) if i >= self.library.sections.len()) {
+            self.navigation.page = Page::Addons;
         }
-        if self.page == Page::Careers {
-            self.refresh_saves_in_background(cx);
+        if self.navigation.page == Page::Careers {
+            crate::features::career_saves::SavesPage::refresh(self, cx);
         } else {
-            self.refresh_banner_in_background(cx);
+            crate::features::career_saves::SavesPage::refresh_banner(self, cx);
         }
-        self.refresh_views(cx);
+        crate::features::sections::AddonViews::refresh(self, cx);
         self.db_profile_changed(cx);
-        self.sync_catalog_updates();
+        self.browser.sync_updates(&self.library);
         self.sync_shaders(true, cx);
         cx.notify();
     }
 
     pub(crate) fn sync_shaders(&mut self, refresh: bool, cx: &mut Context<Self>) {
-        let dir = self.install.as_ref().map(|i| i.dir.clone());
+        let dir = self.game.install.as_ref().map(|i| i.dir.clone());
         // Live edits need a session of this data dir whose game started with a shader config on: a game
         // that started with shaders off has no effects loaded.
         let running = dir.as_ref().is_some_and(|d| {
-            self.processes.iter().any(|g| g.is_in(d)) && d.join("swofty/shaders/effects.json").exists()
-        }) && swofty_core::recovery::SessionLock::held_elsewhere(&self.store.root);
-        let info = crate::shaders::Info {
+            self.game.processes.iter().any(|g| g.is_in(d)) && d.join("swofty/shaders/effects.json").exists()
+        }) && swofty_core::game_folder::recovery::SessionLock::held_elsewhere(&self.store.root);
+        let info = crate::features::shaders::Info {
             profile: self.library.profile.name.clone(),
             game_dir: dir,
             running,
@@ -82,20 +82,20 @@ impl Shell {
 
     pub(super) fn shaders_event(
         &mut self,
-        _: Entity<crate::shaders::ShadersView>,
-        event: &crate::shaders::Event,
+        _: Entity<crate::features::shaders::ShadersView>,
+        event: &crate::features::shaders::Event,
         cx: &mut Context<Self>,
     ) {
         match event {
-            crate::shaders::Event::Browse => {
+            crate::features::shaders::Event::Browse => {
                 self.open_page(Page::Browser, cx);
                 self.show_shader_addons(cx);
             }
-            crate::shaders::Event::OpenAddon(id) => {
-                self.highlight = Some((id.clone(), Instant::now()));
+            crate::features::shaders::Event::OpenAddon(id) => {
+                self.navigation.highlight = Some((id.clone(), Instant::now()));
                 self.open_page(Page::Addons, cx);
             }
-            crate::shaders::Event::ActiveChanged => self.reload_in_background(cx),
+            crate::features::shaders::Event::ActiveChanged => self.reload_in_background(cx),
         }
     }
 

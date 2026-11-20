@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "FeTile_Construct_Tile",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1415a92d0",
+  "level": "L2",
+  "subsystem": "fe_tiles",
+  "proto": "void FeTile_Construct_Tile(Tile *self, void *node, NeStr *name, const char *template_name, uint32_t index)",
+  "evidence": "decomp:work/exe/decomp/1415a92d0_tile_base_ctor.c;xref:0x141582a64,0x1415842bd,0x1415a8fa4,0x141685fd8,0x141699582,0x1416a2692,0x1416f8906,0x141716e96+230;doc:research/exe.md#3.2",
+  "notes": "base Tile ctor: vt 0x1456f8678 then 0x145706b78; creates VM props children, context_path=name, type=template, spawnable=true, priority=index"
+ },
+ "signature": {
+  "id": "fe_tiles.tile_base_ctor",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 4C 89 CF 4C 89 C3 48 89 CE 48 8D 05",
+  "match": "0x1415a92d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1415a92d0",
+  "kind": "func_start",
+  "names": [
+   "FeTile_Construct_Tile"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-17",
+    "by": "exe-agent",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

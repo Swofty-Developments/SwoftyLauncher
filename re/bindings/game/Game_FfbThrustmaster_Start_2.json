@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FfbThrustmaster_Start_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446f5250",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-TM_FFB",
+  "notes": "named from its log messages (channel TM_FFB): 'RacingFFBEffectThrustmasterWin::start, m_device = %p, handle = %d'"
+ },
+ "signature": {
+  "id": "game.ffb_thrustmaster_start_2",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 89 CE C7 81 B0 01 00 00 00 00 00 00 48 8D 4C 24 28 FF 15 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 03 44 24 28 48 89 86 C0 01 00 00 48 83 BE C8 01 00 00 00 74 07 48 89 86 C8 01 00 00 48 89 F1 E8 ?? ?? ?? ?? 80 3D ?? ?? ?? ?? 01 75 6E B8 0D 01 00 00 48 8D 0D ?? ?? ?? ?? 66 90 8B 14 81 81 FA 21 6D 06 9D 74 34 85 D2 74 51 83 C0 13 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D 0D 01 00 00 75 C3 EB 21 4C 8B 86 E0 01 00 00 45 8B 88 00 0A 00 00 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 31 C0 48 83 C4 30",
+  "match": "0x1446f5250",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446f5250",
+  "kind": "func_start",
+  "names": [
+   "Game_FfbThrustmaster_Start_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446f5250",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446f5250.c",
+   "notes": "V6851 Same start log as Game_FfbThrustmaster_Start (second class copy). (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

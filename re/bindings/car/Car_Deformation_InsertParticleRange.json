@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Deformation_InsertParticleRange",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144111290",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144111290.c;xref:0x14410b42d",
+  "notes": "std::vector range insert for 0x120-byte elements: 1.5x growth, relocate, copy [first,last). 1713 lines (manual element copies). Caller Car_Deformation_BuildTyreParticles."
+ },
+ "signature": {
+  "id": "car.deformation_insert_particle_range",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 7C 24 60 C5 F8 29 74 24 50 4D 89 CE 4C",
+  "match": "0x144111290",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144111290",
+  "kind": "func_start",
+  "names": [
+   "Car_Deformation_InsertParticleRange"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x144111290",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144111290.c;xref:0x14410b42d",
+   "notes": "V7631 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,81 @@
+{
+ "schema": 1,
+ "name": "Game_TrackData_GetTrack",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e60e00",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_TrackData_GetTrack(void *system, const void *track_ref, const uint8_t *query)",
+  "evidence": "decomp:re/decomp/142e60e00.c;decomp:re/decomp/140b78000.c;decomp:re/decomp/142a0ddb0.c;xref:0x14036fe9c,0x140b780c4,0x1436aea72,0x142f72b02,0x142d1d74c;doc:addons/progressive/native/src/fuel_logic.hpp",
+  "notes": "TRACK_DATA getter (120 calls from 105 functions, 10 of them in .data1). Walks the track data sets at system+0x68..+0x70 (0x30 stride) and takes the first whose +0x20 mode, +0x24 season and +0x28 weekend format masks hold the query bits (query bytes: [0] mode stat_id bit, [1] mode used, [2] season statId bit, [3] season used, [4] format bit <2 (1 = sprint), [5] format used; with its used byte set, a bit index of 32 or more for [0] or [2], or 2 or more for [4], throws std::out_of_range \"invalid bitset position\" (0x142e60f1c, 0x142e60f21) once the set walk reaches that test, so an empty table, or no set passing the earlier fields, returns 0 instead); returns the TrackDataTrack at set+0x08 items[track_ref[1]]+0x08 (16-byte items), else the first non-null track of that same set; 0 when no set matches. track_ref is a TrackDataRecord, of which only the u8 at +1 is read; it comes from system+0x28 at 0x140b78095 and from [[X+0xf40]+0x1a8]+0x30 at 0x14036fe7e and 0x1407a176c. Callers pass, among others, CareerEntity+0xf58 (0x14036fe70) or component+0x278 -> +0xf58 (0x140b78053). L2 from decomp; verified V1153."
+ },
+ "signature": {
+  "id": "game.rule_set_find_for_session_filter",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 20 4C 8B 59 68 48 8B",
+  "match": "0x142e60e00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e60e00",
+  "kind": "func_start",
+  "names": [
+   "Game_TrackData_GetTrack"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-27",
+   "verifier": "fuel-verify",
+   "kind": "func",
+   "item": "0x142e60e00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e60e00.c;decomp:re/decomp/14036fe30.c;decomp:re/decomp/140b78000.c;decomp:re/decomp/142a0ddb0.c;xref:0x142e60e0e,0x142e60e12,0x142e60e60,0x142e60e7b,0x142e60e90,0x142e60ea4,0x142e60eb1,0x142e60ed0,0x142e60ef4;xref:0x14036fe9c,0x140b780c4,0x1436aea72,0x142d1d74c,0x142f72b02",
+   "notes": "V1153 Re-derived from the disassembly and a fresh decomp. rcx = system: sets [rcx+0x68]..[rcx+0x70] (0x142e60e0e/0x142e60e12), stride 0x30 (add r11,0x30 at 0x142e60e60). r8 = query: byte 0 mode bit (>=0x20 traps via 0x1411c04f0), byte 1 mode used, byte 2 season bit (>=0x20 traps), byte 3 season used, byte 4 format bit (>=2 traps via 0x1402bedf0), byte 5 format used; each used mask is a test dword [set+0x20]/[set+0x24]/[set+0x28] against 1<<bit (0x142e60e7b/0x142e60e90/0x142e60ea4) and the first set passing all of them wins. rdx = track record: movzx [rdx+1] (0x142e60eb1) indexes the set items [set+0x08]..[set+0x10], 16 bytes each, pointer at item+8 (0x142e60ed0); a null or out-of-range slot falls back to the first non-null item of the SAME set (loop 0x142e60ef0), never to a later set; 0 when no set matches or the matched set has no item. 110 rel32 calls (all E8) from 95 functions, as claimed. Proto arity and types hold. 0x140b78000 (call 0x140b780c4) passes rcx=[entity+0xf58], rdx=[system+0x28] item+8 picked by a byte index (0x140b78095) and r8 filled by entity vt+0xc8, which ties track_ref to TrackDataRecord. Mask meanings from the set filler 0x142a0ddb0: game_setup_modes rows stat_id -> +0x20, seasons rows statId -> +0x24, weekend_formats -> +0x28 with bit 1 when the lowercase FNV-1a64 of the name is 0x0b4d8c10d825b055 (sprint), else bit 0. Stock DB: f1 stat_id 0, f1_26 13, season_2025 statId 7, season_2026 8."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x142e60e00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e60e00.c;xref:0x1407b7e67,0x1407b8c47",
+   "notes": "V3667 Entries +0x68..+0x70 stride 0x30, masks +0x20/+0x24/+0x28, byte-pair filter, variant vector +8 stride 0x10 seen; 120 call sites (~85 distinct fns) vs claimed 110, named callers present."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_TrackData_GetTrack",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x142e60e00-0x142e60f27,0x1411c04f0-0x1411c0501,0x1402bedf0-0x1402bee01,0x1449e16b4-0x1449e16d7,0x14036fe30-0x14036fea1,0x140b78000-0x140b780c9,0x141f37030-0x141f3726f,0x14154e200-0x14154e360,0x1407a1750-0x1407a1798,0x1407c4520-0x1407c4588,0x149439524-0x149439591,1.0.145 0x142e63390-0x142e634b7;xref:0x142e60e0e,0x142e60e12,0x142e60e71,0x142e60e7b,0x142e60e86,0x142e60e90,0x142e60e9b,0x142e60ea4,0x142e60eb1,0x142e60eca,0x142e60eda,0x142e60ef0,0x140b78095,0x14036fe70,0x140b78053,0x149439575,0x151a358aa",
+   "notes": "V100028 Blind: partial. Code matches the notes: 3 pointer args; walks rcx+0x68..+0x70 (0x30 stride); first set whose u32 masks +0x20/+0x24/+0x28 hold bits q[0]/q[2]/q[4], each tested only if q[1]/q[3]/q[5] != 0; returns qword +8 of item ref[1] (u8) of the set+0x08 vector (16 B) if in range and non-null, else first non-null item, else 0; 0 if no set matches. No writes, no cache. q[0]/q[2] >= 32 or q[4] >= 2 with the flag set throws out_of_range \"invalid bitset position\" (0x142e60f1c/0x142e60f21). Wrong: 120 calls from 105 functions, not 110/95; the 10 .data1 callers (0x149439575..0x151a358aa) are missed. 1.0.145 twin 0x142e63390 byte-identical but throw rel32s."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_TrackData_GetTrack",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142e60e00-0x142e60f27,0x1411c04f0-0x1411c0500,0x1402bedf0-0x1402bee00,0x1449e16b4-0x1449e16d7,0x14036fe30-0x14036fec0,0x140b78000-0x140b780d0,0x1407a1750-0x1407a1865,0x140b7a000-0x140b7a184,0x14154e200-0x14154e360,0x1414b94c0-0x1414b9629,0x1436ae650-0x1436ae6d0,0x1436ae7b0-0x1436aea80,1.0.145 0x142e63390-0x142e634b7,1.0.145 0x1411c0b30-0x1411c0b40;xref:0x142e60e0e,0x142e60e12,0x142e60e60,0x142e60e71,0x142e60e86,0x142e60e9b,0x142e60eb1,0x142e60ec7,0x142e60ed0,0x142e60edd,0x142e60ef4,0x142e60f0b,0x142e60f1c,0x142e60f21,0x14036fe70,0x14036fe7e,0x14036fe9c,0x140b78053,0x140b78095,0x140b780c4,0x1407a176c,0x1436aea72,0x142f72b02,0x142d1d74c",
+   "notes": "V100029 Blind: agree. 0x142e60e00-f27 (92 insns, leaf, no writes) walks rcx+0x68..+0x70 (0x30 stride) and takes the first set whose dword +0x20/+0x24/+0x28 has bit q[0]/q[2]/q[4], each tested only if q[1]/q[3]/q[5]!=0. Unsigned bounds <32/<32/<2 throw \"invalid bitset position\" (f1c/f21) only when the loop reaches that test, so an empty table, or no set passing the earlier fields, returns 0 instead of throwing. Returns [set+8][rdx[1]]+8 if idx<n and non-null, else the set's first non-null item, else 0 (no later set tried); 0 if no set matches. 120 E8 sites in 105 funcs (10 in .data1); 1.0.145 twin 0x142e63390 92/92 same, 121 sites."
+  }
+ ],
+ "proofs": []
+}

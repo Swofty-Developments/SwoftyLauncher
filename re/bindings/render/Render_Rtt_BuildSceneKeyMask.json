@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Rtt_BuildSceneKeyMask",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b5e820",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b5e820.c;xref:0x143b5d745",
+  "notes": "Iterates 16-byte entries (param_2) with non-null name pointers, ORs a 128-bit key from 0x143b81e10(param_3) and FNV-1a hashes each name string (0xcbf29ce484222325, prime 0x100000001b3); builds scene/RTT lookup key. Caller Game_Rtt_CreateScenes (also 0x143b5c740). Hypothesis."
+ },
+ "signature": {
+  "id": "render.rtt_build_scene_key_mask",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F9 7F 74",
+  "match": "0x143b5e820",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b5e820",
+  "kind": "func_start",
+  "names": [
+   "Render_Rtt_BuildSceneKeyMask"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143b5e820",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b5e820.c;xref:0x143b5d745",
+   "notes": "V7772 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

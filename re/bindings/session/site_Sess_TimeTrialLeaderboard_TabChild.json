@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Sess_TimeTrialLeaderboard_TabChild",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142fcbb09",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/142fcba80.c;xref:0x1457ffcb8",
+  "notes": "In Sess_TimeTrialLeaderboard_ActivateTab: mov rax,[rcx] right after mov rcx,[rsi+0x9a0] (rsi = the leaderboard model, +0x9a0 the child list model). rcx is 0 when the child was never created or was already released, and the read faults (F1_25.exe+0x2fcbb09 reading 0, Vm_Dispatch_BindingMessage). Core's time trial leaderboard guard hooks it and, for a null child, continues at site_Sess_TimeTrialLeaderboard_TabDone."
+ },
+ "signature": {
+  "id": "session.time_trial_leaderboard_tab_child",
+  "section": ".xtls",
+  "pattern": "48 8B 01 B2 01 FF 50 30 48 89 F1 E8 ?? ?? ?? ?? 90 48 83 C4 40 5E C3 56",
+  "match": "0x142fcbb09",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142fcbb09",
+  "kind": "mid",
+  "expect": "48 8B 01 B2 01",
+  "names": [
+   "site_Sess_TimeTrialLeaderboard_TabChild"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "ttlbnull",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/frontend/leaderboard_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-01",
+   "verifier": "ttlbnull-verify",
+   "kind": "global",
+   "item": "0x142fcbb09",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142fcba80.c;xref:0x1457ffcb8;sig:session.time_trial_leaderboard_tab_child",
+   "notes": "V8621 Static: mov rax,[rcx] at 0x142fcbb09 follows mov rcx,[rsi+0x9a0]; faults on null. Only branches in the function (je/jne) target 0x142fcbaf3; none lands in 0x142fcbb09..0x142fcbb0e. Only push is rsi at entry; sub rsp,0x40 once."
+  }
+ ],
+ "proofs": []
+}

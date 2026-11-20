@@ -12,7 +12,7 @@
 #include <safetyhook.hpp>
 #include <swofty/mem.hpp>
 
-#include "../src/core/perf.hpp"
+#include "core/diagnostics/perf.hpp"
 #include "../src/loader/alog.h"
 
 std::string settings_addon(const void *, std::string &dll)
@@ -25,28 +25,19 @@ namespace blackbox {
 void note(const char *, const char *, const char *) {}
 }
 
+namespace hud::hardware_settings {
+std::wstring path() { return L""; }
+}
+
 namespace runtime {
 const std::wstring &swofty_root()
 {
     static const std::wstring root = L".\\";
     return root;
 }
-std::wstring hardware_settings_file()
-{
-    return L"";
-}
-std::string read_file(const std::wstring &, size_t)
-{
-    return "";
-}
-uint32_t write_refusal(const std::wstring &)
-{
-    return 0;
-}
-std::string narrow(const std::wstring &)
-{
-    return "";
-}
+std::string read_file(const std::wstring &, size_t) { return ""; }
+uint32_t write_refusal(const std::wstring &) { return 0; }
+std::string narrow(const std::wstring &) { return ""; }
 }
 
 namespace {
@@ -86,11 +77,22 @@ void bench_clocks()
     SYSTEMTIME st;
     FILETIME ft;
     LARGE_INTEGER li;
-    row("GetLocalTime", per_call_ns(200000, [&](int) { GetLocalTime(&st); sink += st.wMilliseconds; }));
-    row("GetSystemTimeAsFileTime", per_call_ns(200000, [&](int) { GetSystemTimeAsFileTime(&ft); sink += ft.dwLowDateTime; }));
-    row("GetSystemTimePreciseAsFileTime",
-        per_call_ns(200000, [&](int) { GetSystemTimePreciseAsFileTime(&ft); sink += ft.dwLowDateTime; }));
-    row("QueryPerformanceCounter", per_call_ns(200000, [&](int) { QueryPerformanceCounter(&li); sink += li.QuadPart; }));
+    row("GetLocalTime", per_call_ns(200000, [&](int) {
+            GetLocalTime(&st);
+            sink += st.wMilliseconds;
+        }));
+    row("GetSystemTimeAsFileTime", per_call_ns(200000, [&](int) {
+            GetSystemTimeAsFileTime(&ft);
+            sink += ft.dwLowDateTime;
+        }));
+    row("GetSystemTimePreciseAsFileTime", per_call_ns(200000, [&](int) {
+            GetSystemTimePreciseAsFileTime(&ft);
+            sink += ft.dwLowDateTime;
+        }));
+    row("QueryPerformanceCounter", per_call_ns(200000, [&](int) {
+            QueryPerformanceCounter(&li);
+            sink += li.QuadPart;
+        }));
     row("GetTickCount64", per_call_ns(200000, [&](int) { sink += GetTickCount64(); }));
     row("GetCurrentThreadId", per_call_ns(200000, [&](int) { sink += GetCurrentThreadId(); }));
 }
@@ -102,8 +104,8 @@ void sync_emit(HANDLE h, const char *body)
     char buf[2048];
     SYSTEMTIME t;
     GetLocalTime(&t);
-    int n = snprintf(buf, sizeof buf, "%04u-%02u-%02u %02u:%02u:%02u.%03u [%5lu] ", t.wYear, t.wMonth, t.wDay, t.wHour,
-                     t.wMinute, t.wSecond, t.wMilliseconds, GetCurrentThreadId());
+    int n = snprintf(buf, sizeof buf, "%04u-%02u-%02u %02u:%02u:%02u.%03u [%5lu] ", t.wYear, t.wMonth, t.wDay, t.wHour, t.wMinute,
+                     t.wSecond, t.wMilliseconds, GetCurrentThreadId());
     int m = (int)strlen(body);
     if (m > (int)sizeof buf - n - 3)
         m = (int)sizeof buf - n - 3;
@@ -134,15 +136,16 @@ void async_emit(HANDLE h, const char *body)
 
 void body_line(char *out, size_t cap, int i)
 {
-    snprintf(out, cap, "[game] UICom: registerViewModelForViewModelBinding: [view_model_data.swofty_addon_%d] node %d "
-                       "bound to element <unknown/ui-node-base>",
+    snprintf(out, cap,
+             "[game] UICom: registerViewModelForViewModelBinding: [view_model_data.swofty_addon_%d] node %d "
+             "bound to element <unknown/ui-node-base>",
              i % 9, i);
 }
 
 HANDLE open_append(const wchar_t *path)
 {
-    return CreateFileW(path, FILE_APPEND_DATA, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CREATE_ALWAYS,
-                       FILE_ATTRIBUTE_NORMAL, NULL);
+    return CreateFileW(path, FILE_APPEND_DATA, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL,
+                       NULL);
 }
 
 uint64_t count_lines(const wchar_t *path)
@@ -205,7 +208,10 @@ void bench_log(const std::wstring &dir)
     std::wstring sp = dir + L"\\sync.log", ap = dir + L"\\async.log";
 
     HANDLE h = open_append(sp.c_str());
-    double sync1 = per_call_ns(N, [&](int i) { body_line(body, sizeof body, i); sync_emit(h, body); });
+    double sync1 = per_call_ns(N, [&](int i) {
+        body_line(body, sizeof body, i);
+        sync_emit(h, body);
+    });
     CloseHandle(h);
     row("log line, current sync emit (1 thread, 100k lines)", sync1);
     printf("  sync.log lines: %llu\n", (unsigned long long)count_lines(sp.c_str()));
@@ -213,7 +219,10 @@ void bench_log(const std::wstring &dir)
     h = open_append(ap.c_str());
     alog_start(h);
     double t0 = now_ns();
-    double async1 = per_call_ns(N, [&](int i) { body_line(body, sizeof body, i); async_emit(h, body); });
+    double async1 = per_call_ns(N, [&](int i) {
+        body_line(body, sizeof body, i);
+        async_emit(h, body);
+    });
     alog_stop();
     double total = now_ns() - t0;
     CloseHandle(h);
@@ -227,8 +236,8 @@ void bench_log(const std::wstring &dir)
             body_line(body, sizeof body, i);
             SYSTEMTIME t;
             GetLocalTime(&t);
-            sink += snprintf(buf, sizeof buf, "%04u-%02u-%02u %02u:%02u:%02u.%03u [%5lu] %s", t.wYear, t.wMonth, t.wDay,
-                             t.wHour, t.wMinute, t.wSecond, t.wMilliseconds, GetCurrentThreadId(), body);
+            sink += snprintf(buf, sizeof buf, "%04u-%02u-%02u %02u:%02u:%02u.%03u [%5lu] %s", t.wYear, t.wMonth, t.wDay, t.wHour,
+                             t.wMinute, t.wSecond, t.wMilliseconds, GetCurrentThreadId(), body);
         }));
 
     const int T = 4, PER = 25000;
@@ -288,9 +297,8 @@ void bench_vq()
     MEMORY_BASIC_INFORMATION m;
     int local = 0;
     row("VirtualQuery, stack", per_call_ns(50000, [&](int) { sink += VirtualQuery(&local, &m, sizeof m); }));
-    row("VirtualQuery, exe image", per_call_ns(50000, [&](int) {
-            sink += VirtualQuery(reinterpret_cast<void *>(&bench_vq), &m, sizeof m);
-        }));
+    row("VirtualQuery, exe image",
+        per_call_ns(50000, [&](int) { sink += VirtualQuery(reinterpret_cast<void *>(&bench_vq), &m, sizeof m); }));
     for (size_t mb : {16, 256, 1024, 4096}) {
         size_t size = mb << 20;
         auto *p = static_cast<uint8_t *>(VirtualAlloc(nullptr, size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE));
@@ -310,9 +318,8 @@ void bench_vq()
         auto *p = static_cast<uint8_t *>(VirtualAlloc(nullptr, size, MEM_RESERVE, PAGE_READWRITE));
         for (size_t o = 0; o < size; o += 128 * 1024)
             VirtualAlloc(p + o, 64 * 1024, MEM_COMMIT, PAGE_READWRITE);
-        row("VirtualQuery, 256 MB reserve with 2048 committed islands", per_call_ns(20000, [&](int i) {
-                sink += VirtualQuery(p + size / 2 + (i & 255) * 128 * 1024, &m, sizeof m);
-            }));
+        row("VirtualQuery, 256 MB reserve with 2048 committed islands",
+            per_call_ns(20000, [&](int i) { sink += VirtualQuery(p + size / 2 + (i & 255) * 128 * 1024, &m, sizeof m); }));
         VirtualFree(p, 0, MEM_RELEASE);
     }
     {
@@ -404,9 +411,9 @@ void bench_profile()
     row("call inside perf::Scope", per_call_ns(N, [&](int i) { sink += probed_fn(i, id); }) - base);
     row("call inside perf::Scope + perf::Pause", per_call_ns(N, [&](int i) { sink += paused_fn(i, id); }) - base);
     row("two nested perf::Scope", per_call_ns(N, [&](int i) {
-            perf::Scope outer(id);
-            sink += probed_fn(i, inner);
-        }) - base);
+                                      perf::Scope outer(id);
+                                      sink += probed_fn(i, inner);
+                                  }) - base);
     for (int threads : {4, 16}) {
         std::vector<std::thread> ts;
         double t0 = now_ns();
@@ -443,9 +450,8 @@ void bench_files(const std::wstring &dir)
             MoveFileExW(tmp.c_str(), path.c_str(), MOVEFILE_REPLACE_EXISTING);
         }));
     WIN32_FILE_ATTRIBUTE_DATA a;
-    row("GetFileAttributesExW (inbox doorbell)", per_call_ns(5000, [&](int) {
-            sink += GetFileAttributesExW(sd.c_str(), GetFileExInfoStandard, &a);
-        }));
+    row("GetFileAttributesExW (inbox doorbell)",
+        per_call_ns(5000, [&](int) { sink += GetFileAttributesExW(sd.c_str(), GetFileExInfoStandard, &a); }));
     row("FindFirstFile/FindNextFile listing of a 2-entry folder", per_call_ns(2000, [&](int) {
             WIN32_FIND_DATAW fd;
             HANDLE h = FindFirstFileW((sd + L"\\*").c_str(), &fd);

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Rivalry_HeadToHeadRace",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1412636e0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-RIVALS",
+  "notes": "Log channel RIVALS: 'Head to head data for %s: FastestLap:%lu FastestSector1:%lu FastestSector2:%lu FastestSector3:%lu RaceStatus:%s RacePosition:%u Penalties:%u' | 'Rival:%s Number of times beaten rival :%d Best Position :%d' | 'Rival:%s Number of times rival beat us :%d Best Position :%d'"
+ },
+ "signature": {
+  "id": "game.rivalry_head_to_head_race",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC B0 00 00 00 48 89 D7 48 89 CE 0F B7 41 7A",
+  "match": "0x1412636e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1412636e0",
+  "kind": "func_start",
+  "names": [
+   "Game_Rivalry_HeadToHeadRace"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x1412636e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1412636e0.c",
+   "notes": "V4720 name and quoted log strings/pretty-function present in body; no direct caller (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

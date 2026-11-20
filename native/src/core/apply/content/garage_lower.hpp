@@ -1,7 +1,7 @@
 #pragma once
 
-#include "liveries.hpp"
-#include "lower.hpp"
+#include "core/apply/content/liveries.hpp"
+#include "core/apply/content/lower.hpp"
 
 // Lowers a team.garage record: the box is a content.package, and the art goes to the asset groups of the cars the
 // package gives the team, so a session of any other box never loads it. A car's group is the one its vehicle package
@@ -11,10 +11,7 @@ namespace swofty_core::apply::content {
 
 inline constexpr const char *GARAGE_FOLDER = "2025_asset_groups/swofty_garage/";
 
-inline bool garage_art_enabled(const char *env)
-{
-    return env && env[0] == '1' && !env[1];
-}
+inline bool garage_art_enabled(const char *env) { return env && env[0] == '1' && !env[1]; }
 
 inline constexpr const char *GARAGE_FENCE_LINE =
     "team.garage: left off; a stock streamed copy of a texture the archive holds crashed the texture stream in 1.7.8 to 1.7.10 "
@@ -59,9 +56,8 @@ inline void lower_garage(const std::string &id, const Value &rec, const Lookup &
     g.game_path = garage_game_path(id);
     const Value &teams = (*pkg)["teams"];
     for (std::size_t t = 0; t < teams.size(); t++)
-        if (teams[t]["vehicle"].is_string() &&
-            (by_team ? teams[t]["team"].is_string() && teams[t]["team"].as_string() == team
-                     : teams[t]["key"].is_string() && teams[t]["key"].as_string() == team))
+        if (teams[t]["vehicle"].is_string() && (by_team ? teams[t]["team"].is_string() && teams[t]["team"].as_string() == team
+                                                        : teams[t]["key"].is_string() && teams[t]["key"].as_string() == team))
             g.vehicles.push_back(std::string(teams[t]["vehicle"].as_string()));
     if (g.vehicles.empty())
         return refuse("package " + package + " has no team entry for " + team);

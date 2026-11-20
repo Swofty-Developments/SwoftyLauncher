@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "site_Ne_HwBool_GodRays",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c8d638",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/142c8d3a0.c;xref:0x142c8d638",
+  "notes": "call Ne_Compare_StringNoCase(attr+0x50 value, \"true\") for the hardware-settings attribute 'godRays' (name loaded at 0x142c8d5ef) inside the god-rays setter 0x142c8d3a0 (void(this, int enable), reached through the .xtext slot 0x1457d48d0): the setter compares (result == 0) with (enable > 0) and, only when they differ, rewrites the attribute to true/false and saves the hardware settings (0x142b80010). It is not a reader and stores nothing, so redirecting it does not pin godRays (V0956); xanpavle F1-25-RE-Optimization 0.2.x pins it (call RVA 0x2c8d638), xanpavle.re-optimization does not. The reader that stores the godRays bool is site_Ne_HwBool_GodRaysPost"
+ },
+ "signature": {
+  "id": "core.hw_bool_god_rays",
+  "section": ".xtls",
+  "pattern": "49 8B 4C 24 50 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 85 C0 0F 94 C0 EB 02 31 C0 85 F6",
+  "match": "0x142c8d62c",
+  "anchor": "0xc",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c8d638",
+  "kind": "mid",
+  "expect": "E8",
+  "names": [
+   "site_Ne_HwBool_GodRays"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "reopt-025",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "reopt-025-verify",
+   "kind": "global",
+   "item": "site_Ne_HwBool_GodRays",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142c8d3a0.c;decomp:re/decomp/142b80010.c;xref:0x142c8d638,0x142c8d5ef,0x142c8d623,0x142c8d64b,0x142c8d65d,0x142c8d755,0x1457d48d0;sig:core.hw_bool_god_rays",
+   "notes": "V0956 Confirmed: the E8 at 0x142c8d638 calls 0x14534d918 (.xtls, .pdata 0x142c8d3a0-0x142c8d75f); rbx = 'godRays' from lea 0x142c8d5ef, the 0x14534da24 match at 0x142c8d623 uses r8d 0x1f, rcx = [attr+0x50] and rdx = \"true\"; sigcheck finds one hit at 0x142c8d638. Differs: 0x142c8d3a0 is a setter, not a reader, and it never stores the result. It is void(this, int enable), reached only through the .xtext slot 0x1457d48d0 (no rel32 callers), and walks the element at [[[this+0x1c8]+0x10]+0x20]+0x43720 itself instead of taking one. For 'bloom' (0x145755145) and then 'godRays' it computes (result == 0) (false when the attribute is absent), compares it with (enable > 0) at 0x142c8d64b and, only when they differ, finds the attribute with 0x1440214f0, rewrites its value to \"true\"/\"false\" (0x145612a6a/0x145612a6f) and calls 0x142b80010 (0x142c8d755), which posts change 0xc for the element and runs Ne_Save_HardwareSettings. So redirecting this compare does not pin godRays. It only decides whether the setter rewrites and saves the attribute: pinned to a match, an enable request becomes a no-op even when the attribute says false, and every disable request rewrites it to false. One reader that does store a godRays bool is 0x142f810a0 (site_Ne_HwBool_GodRaysPost, this+0x22). The row wording (reader, stores (result == 0)) and the redirect rationale need correcting"
+  }
+ ],
+ "proofs": []
+}

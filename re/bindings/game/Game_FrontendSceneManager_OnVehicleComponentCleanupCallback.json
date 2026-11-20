@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneManager_OnVehicleComponentCleanupCallback",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428c8af0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name onVehicleComponentCleanupCallback (class from the log channel); log channel FRONTEND_SCENE_MANAGER/VERBOSE: '%s() - Cleaning up vehicle placement pointers'"
+ },
+ "signature": {
+  "id": "game.frontend_scene_manager_on_vehicle_component_cleanup_callback",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 54 24 28 48 89 CE 80 3D ?? ?? ?? ?? 01 48 8D 1D ?? ?? ?? ?? 75 5B B8 9F 00 00 00 0F 1F 00 8B 0C 83 81 F9 B3 A4 11 9C 74 2E 85 C9 74 44 83 C0 10 48 69 C8 43 43 66 5F 48 C1 E9 20 89 C2 29 CA D1 EA 01 CA C1 EA 08 69 CA 75 01 00 00 29 C8 3D 9F 00 00 00 75 C9 EB 1A 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 46 10 48 89 44 24 20 4C 8B B6 D8 6F 00 00",
+  "match": "0x1428c8af0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428c8af0",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneManager_OnVehicleComponentCleanupCallback"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1428c8af0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428c8af0.c;xref:0x1428c825b",
+   "notes": "V5131 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

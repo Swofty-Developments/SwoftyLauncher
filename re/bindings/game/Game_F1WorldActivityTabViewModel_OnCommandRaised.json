@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1WorldActivityTabViewModel_OnCommandRaised",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a7a6c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "str:s_F1WorldActivityTabViewModel_OnCommandRaised;xref:0x141a7abed",
+  "notes": "cxx=game::F1WorldActivityTabViewModel::onCommandRaised; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "game.f1_world_activity_tab_view_model_on_command_raised",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 60 48 89 D7 48 89 CE 48 8B 02 48 85 C0 74",
+  "match": "0x141a7a6c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a7a6c0",
+  "kind": "func_start",
+  "names": [
+   "Game_F1WorldActivityTabViewModel_OnCommandRaised"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141a7a6c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a7a6c0.c;xref:0x141a7ad27",
+   "notes": "V4933 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

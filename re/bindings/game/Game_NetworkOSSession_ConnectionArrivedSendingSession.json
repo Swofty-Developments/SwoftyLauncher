@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkOSSession_ConnectionArrivedSendingSession",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430fe060",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-OS-SESSION",
+  "notes": "named from its log messages (channel NETWORK-OS-SESSION): '[MESSAGE] Connection %d arrived -> sending session message'"
+ },
+ "signature": {
+  "id": "game.network_os_session_connection_arrived_sending_session",
+  "section": ".xtls",
+  "pattern": "56 53 48 83 EC 28 48 8B 41 10 48 8B 80 C0 03 00 00",
+  "match": "0x1430fe060",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430fe060",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkOSSession_ConnectionArrivedSendingSession"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x1430fe060",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430fe060.c;xref:0x152b6a9a2",
+   "notes": "V5729 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

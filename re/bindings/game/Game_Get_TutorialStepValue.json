@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Get_TutorialStepValue",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e69170",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Get(void *ctx, void **out, void *name, char *flag)",
+  "evidence": "decomp:re/decomp/142e69170.c;xref:0x142e68a1a;xref:0x142e68e83;xref:0x142e6caff",
+  "notes": "myteam-g2: Reads tutorial table rows from the game DB by label ('tutorial_steps', 'Stepped', 'CollectionInvalid' etc.): Gdb_Find_RowByLabel / Gdb_Get_RowByIndex / Gdb_FindMetadata. Used by RnD dev top-level, career wizard and part fitting events."
+ },
+ "signature": {
+  "id": "game.get_tutorial_step_value",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 0C 00 00 C5 F8 29 B4 24 80 0C 00 00 4C 89 CF 4D 89 C6",
+  "match": "0x142e69170",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e69170",
+  "kind": "func_start",
+  "names": [
+   "Game_Get_TutorialStepValue"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x142e69170",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e69170.c",
+   "notes": "V10254 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

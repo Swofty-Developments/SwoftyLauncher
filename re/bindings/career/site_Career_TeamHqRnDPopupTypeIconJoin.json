@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_TeamHqRnDPopupTypeIconJoin",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1419bf563",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/1419be1e0.c;xref:0x1419bf563;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v090--the-tyres-upgrade-types-setting-tyres_upgrade_types-default-on-install-time",
+  "notes": "join of the upgrade type switch in the Team HQ R&D popup 0x1419be1e0 (icon) (r9 = type suffix); target of the default-case redirect"
+ },
+ "signature": {
+  "id": "career.team_hq_rn_d_popup_type_icon_join",
+  "section": ".xtls",
+  "pattern": "4C 8D 0D ?? ?? ?? ?? 3C 03 77 0D 48 8D 0D",
+  "match": "0x1419bf55c",
+  "anchor": "0x7",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419bf563",
+  "kind": "mid",
+  "expect": "3C 03 77 0D 48 8D 0D BA 6F D7 03",
+  "names": [
+   "site_Career_TeamHqRnDPopupTypeIconJoin"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-a",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_upgrade_types.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-1",
+   "kind": "global",
+   "item": "site_Career_TeamHqRnDPopupTypeIconJoin",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1419be1e0.c;xref:0x1419bf563,0x1419bf565,0x1419bf56e,0x1419bf57b",
+   "notes": "V0053 19 cases + default reach 0x1419bf563 cmp al,3 ; ja ; r8=dept name or error_department ; '%s_%s' with r9; al = dept live-in (preserved on default path); rel8 candidates into the 11-byte window are not instruction boundaries"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_ScheduleComponent_TrackListEntryDone",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141272c60",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/1412722e0.c;xref:0x141272d07,0x141272d27",
+  "notes": "In Career_ScheduleComponent_Load: inc r15; movzx eax,word [rdi+0x10]; cmp r15,rax; jae 0x141272d40, the loop step after each stored custom_track_list entry (je from 0x141272d07 for an empty event list and 0x141272d27 at the end of the row walk; the first iteration enters at 0x141272c75). r15 = the finished entry index, rdi = the custom_track_list array (u16 count +0x10), rsi = the schedule component. 7-byte window, no branch lands in 0x141272c61..0x141272c64. Core logs the load's stored count and calendar size here (read-only)."
+ },
+ "signature": {
+  "id": "career.schedule_track_list_entry_done",
+  "section": ".xtls",
+  "pattern": "49 FF C7 0F B7 47 10 49 39 C7 4C 8B 6C 24 38 0F 83",
+  "match": "0x141272c60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141272c60",
+  "kind": "mid",
+  "expect": "49 FF C7 0F B7",
+  "names": [
+   "site_Career_ScheduleComponent_TrackListEntryDone"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "tracklist",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/tracks/track_list_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "tracklist-verify",
+   "kind": "global",
+   "item": "0x141272c60",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1412722e0.c;xref:0x141272d07,0x141272d27;sig:career.schedule_track_list_entry_done",
+   "notes": "V9260 Static: no branch into 0x141272c61..0x141272c66; rdi holds the array from 0x141272c42 through the loop (callee-saved across 0x1402bba60 and 0x140bc9860). EA 0x14126ceb0."
+  }
+ ],
+ "proofs": []
+}

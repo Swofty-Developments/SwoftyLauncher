@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_SpeedLimitPenalty_ReceiveData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435c5070",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-SPEED_LIMIT_PENALTY_MESSAGE;decomp:re/decomp/1435c5070.c;xref:0x1435c4c3e",
+  "notes": "Log channel SPEED_LIMIT_PENALTY_MESSAGE: 'Recieving Data for Vehicle %d Accumulated time %.2f servingTillSessionTime %.2f serving: %s'"
+ },
+ "signature": {
+  "id": "session.speed_limit_penalty_receive_data",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 48 89 CE",
+  "match": "0x1435c5070",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435c5070",
+  "kind": "func_start",
+  "names": [
+   "Sess_SpeedLimitPenalty_ReceiveData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb4-verify",
+   "kind": "func",
+   "item": "Sess_SpeedLimitPenalty_ReceiveData",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435c5070.c;xref:0x14584debd",
+   "notes": "V1936 strings match"
+  }
+ ],
+ "proofs": []
+}

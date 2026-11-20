@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkNTP_UpdateResolvingTimeServerName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143292290",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-NTP",
+  "notes": "named from its log messages (channel NETWORK-NTP): 'Update: resolving time server name %s'"
+ },
+ "signature": {
+  "id": "game.network_ntp_update_resolving_time_server_name",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 CE 80 79 06 00",
+  "match": "0x143292290",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143292290",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkNTP_UpdateResolvingTimeServerName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x143292290",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143292290.c;xref:0x1430e070c",
+   "notes": "V5855 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}
