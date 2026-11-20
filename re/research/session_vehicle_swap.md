@@ -150,6 +150,14 @@ Rules: the vehicle must be a `cars::Vehicle` registered at boot (it gets its sta
 even if no list uses it); `when.session_types` empty = the whole weekend (recommended); two overrides on one seat =
 load-order winner, logged; refused in online modes and Time Trial.
 
+Agreed with the season car builders (2026-11-20, offline only):
+- Vehicle keys follow the season build schema: package and vehicle share the key `f<yy>_<row>`, e.g.
+  `vmknolle.season-1978/f78_<brabham-row>_bt46b`; the vehicle brings its own `ai.asset_filename`, the package its
+  own `resource_path` / `ai_package_folder`. The BT46B needs its own AI/handling data (fan grip, no rear wing).
+- Single-driver swaps (1969 Lotus 63 / McLaren M9A / Matra MS84, 1981 Lotus 88) use `drivers` with exactly one entry.
+- A THIRD car for a team (extra entrant) is out of scope here: the override only changes an existing seat's
+  vehicle. An extra entrant per event needs its own entrant/list route (open RE topic).
+
 ## T-requests
 
 T333 (moment order), T334 (BT46B at Anderstorp, GP), T335 (career save and restore). See `re/tests/`.
