@@ -143,6 +143,20 @@ std::vector<std::string> registered_now;
 bool registered_now_ok = false;
 std::vector<Captured> saved_caps;
 bool saved_caps_ok = false;
+std::vector<plain::Swap> swaps;
+plain::ReadOnce &read_once()
+{
+    static plain::ReadOnce r;
+    return r;
+}
+void *load_root = nullptr;
+// A bag the core made for a mode to read in place of its own: {the game's allocator, then what the bag reader fills}, the layout
+// of the root bag {pool, 0, 0}. Kept until the next root load, past the pool the game frees after the root deserialise.
+struct FreshBag {
+    alignas(16) std::array<uint8_t, 0x40> bag{};
+    std::vector<uint8_t> bytes;
+};
+std::map<std::string, std::unique_ptr<FreshBag>> swap_bags;
 
 // The bag stream and root child table layouts the plain store reads and writes through (the root's child table at +0x160,
 // each node's name at +0x10 and child at +0x58, the bag reader's use of stream slots +0x28/+0x30/+0x38 and bag+0, the save
@@ -322,31 +336,17 @@ void capture_child(void *self, void *bag, uint8_t reset_on_error, uint64_t group
     captured.push_back({name, std::make_shared<const std::vector<uint8_t>>(std::move(bytes))});
 }
 
-void drop_manager(const std::string &name)
-{
-    std::lock_guard<std::mutex> g(hooks.lock);
-    size_t at = 0;
-    for (size_t i = managers.size(); i-- > 0;) {
-        if (managers[i].container != name)
-            continue;
-        for (size_t k = 0; k < i; k++)
-            at += managers[k].count;
-        size_t n = managers[i].count;
-        if (at + n <= slot_reads.size())
-            slot_reads.erase(slot_reads.begin() + long(at), slot_reads.begin() + long(at + n));
-        managers.erase(managers.begin() + long(i));
-        return;
-    }
-}
-
 // A registered mode whose container the file does not hold at all: the game never called the mode to read one. A bag made from
-// our bytes is handed to the registered child, found in the root's child table.
+// our bytes is handed to the registered child, found in the root's child table. An object a read has reached is never read
+// again: its tables would keep what the first read put there and take ours after it.
 bool place_registered(void *root, void *root_bag, const std::string &name, const std::vector<uint8_t> &bytes,
                       uint8_t reset_on_error, uint64_t groups, std::string &why)
 {
     uintptr_t child = career::save_data::registered_child(reinterpret_cast<uintptr_t>(root), name);
     if (!child)
         return why = "no registered mode container of that name", false;
+    if (!read_once().may_read(child))
+        return why = "the game has read " + name + " in this session already", false;
     void *allocator = nullptr;
     if (!mem::read(reinterpret_cast<uintptr_t>(root_bag), allocator) || !career::save_data::game_object(allocator))
         return why = "the root bag's allocator is not readable", false;
@@ -360,27 +360,9 @@ bool place_registered(void *root, void *root_bag, const std::string &name, const
         career_tally[name] = 0;
         current_child = name;
     }
+    read_once().mark(child);
     hooks.deserialise_container(reinterpret_cast<void *>(child), reinterpret_cast<int *>(res.data()), fresh.data(),
                                 reset_on_error, groups);
-    int code = *reinterpret_cast<int *>(res.data());
-    if (code != 0)
-        return why = "the mode failed to read it (code " + std::to_string(code) + ")", false;
-    return true;
-}
-
-// Puts our bytes into the bag the game read a registered container from, and has the mode read it again.
-bool replace_in_place(const std::string &name, const ChildInfo &info, const std::vector<uint8_t> &bytes, std::string &why)
-{
-    if (!read_into_bag(info.bag, bytes, why))
-        return false;
-    {
-        std::lock_guard<std::mutex> g(hooks.lock);
-        career_tally[name] = 0;
-        current_child = name;
-    }
-    drop_manager(name);
-    alignas(16) std::array<uint8_t, 0x80> res{};
-    hooks.deserialise_container(info.self, reinterpret_cast<int *>(res.data()), info.bag, info.reset, info.groups);
     int code = *reinterpret_cast<int *>(res.data());
     if (code != 0)
         return why = "the mode failed to read it (code " + std::to_string(code) + ")", false;
@@ -396,25 +378,202 @@ std::string captured_sha(const std::string &name)
     return {};
 }
 
+bool registered_any(void *root, const std::vector<std::string> &names)
+{
+    for (const std::string &n : names)
+        if (career::save_data::registered_child(reinterpret_cast<uintptr_t>(root), n))
+            return true;
+    return false;
+}
+
+// The first half of a replaced mode the root's loop reaches: its base is checked, and every half of the request's generation
+// is read into a fresh bag with the game's allocator, so the mode's halves are replaced together or not at all.
+std::string prepare_swap(plain::Swap &s, void *bag, const std::string &name)
+{
+    std::string why = plain::swap_refusal(plan.requests, s, name, captured_sha(name));
+    if (!why.empty())
+        return why;
+    auto parts = plain::fetch_group(s.generation, plan.requests[s.requests.front()].container);
+    if (!parts)
+        return "generation " + std::to_string(s.generation) + " has no intact copy of every half of it";
+    void *allocator = nullptr;
+    if (!mem::read(reinterpret_cast<uintptr_t>(bag), allocator) || !career::save_data::game_object(allocator))
+        return "the game's bag of " + name + " has no allocator";
+    for (const plain::Part &part : *parts)
+        if (!career::save_data::registered_child(reinterpret_cast<uintptr_t>(load_root), part.name))
+            return "the game has no registered " + part.name;
+    std::map<std::string, std::unique_ptr<FreshBag>> made;
+    for (plain::Part &part : *parts) {
+        auto fresh = std::make_unique<FreshBag>();
+        *reinterpret_cast<void **>(fresh->bag.data()) = allocator;
+        if (!read_into_bag(fresh->bag.data(), part.bytes, why))
+            return part.name + ": " + why;
+        fresh->bytes = std::move(part.bytes);
+        made[part.name] = std::move(fresh);
+    }
+    for (auto &[n, fresh] : made) {
+        s.halves.push_back(n);
+        swap_bags[n] = std::move(fresh);
+    }
+    return {};
+}
+
+// The bag the root's loop hands a registered child, or ours when a replace request names its mode. The mode reads its container
+// once, from whichever bag it gets here.
+void *swap_child(void *self, void *bag)
+{
+    std::string name;
+    if (swaps.empty() || !career::save_data::container_name(reinterpret_cast<uintptr_t>(self), name))
+        return bag;
+    plain::Swap *s = plain::swap_for(swaps, name);
+    if (!s || s->state == plain::Swap::State::refused)
+        return bag;
+    if (s->state == plain::Swap::State::pending) {
+        std::string why = prepare_swap(*s, bag, name);
+        if (!why.empty()) {
+            s->state = plain::Swap::State::refused;
+            s->why = why;
+            swofty::log("[saves] did not replace %s: %s; the game reads its own containers", s->key.c_str(), why.c_str());
+            return bag;
+        }
+        s->state = plain::Swap::State::applying;
+    } else if (std::string why = plain::swap_refusal(plan.requests, *s, name, captured_sha(name)); !why.empty())
+        swofty::log("[saves] %s: %s; generation %llu's copy is read anyway, so the pair stays from one generation", name.c_str(),
+                    why.c_str(), (unsigned long long)s->generation);
+    auto it = swap_bags.find(name);
+    if (it == swap_bags.end())
+        return bag;
+    s->read.insert(name);
+    set_captured(name, it->second->bytes);
+    swofty::log("[saves] %s: the game reads generation %llu's copy in place of the loaded one", name.c_str(),
+                (unsigned long long)s->generation);
+    return it->second->bag.data();
+}
+
+// A swapped half the mode failed to read: its mode's requests are answered as failed.
+void swap_read_failed(void *self, int code)
+{
+    std::string name;
+    if (!career::save_data::container_name(reinterpret_cast<uintptr_t>(self), name))
+        return;
+    plain::Swap *s = plain::swap_for(swaps, name);
+    if (!s)
+        return;
+    s->state = plain::Swap::State::refused;
+    s->why = name + ": the mode failed to read generation " + std::to_string(s->generation) + "'s copy (code " +
+             std::to_string(code) + ")";
+    swofty::log("[saves] %s", s->why.c_str());
+}
+
+size_t careers_of(const std::string &key)
+{
+    std::lock_guard<std::mutex> g(hooks.lock);
+    size_t now = 0;
+    for (auto &[n, c] : career_tally)
+        if (plain::mode_key(n) == key)
+            now += c;
+    return now;
+}
+
+// After the root load: the halves of a replaced mode the file lacked are read by their registered children, and every request
+// of the mode is answered. A mode whose containers the game does not register is left to plain::at_load (the kept store).
+void finish_swap(plain::Swap &s, void *root, void *root_bag, uint8_t reset_on_error, uint64_t groups)
+{
+    std::vector<std::string> named;
+    for (size_t i : s.requests)
+        named.push_back(plan.requests[i].container);
+    auto answer = [&](bool ok, const std::string &detail) {
+        for (size_t i : s.requests)
+            if (!plan.handled[i])
+                plain::request_done(plan, int(i), ok, detail);
+    };
+    if (s.state == plain::Swap::State::refused) {
+        answer(false, s.why);
+        return;
+    }
+    std::map<std::string, std::vector<uint8_t>> absent_bytes;
+    if (s.state == plain::Swap::State::pending) {
+        if (!registered_any(root, named))
+            return;
+        auto parts = plain::fetch_group(s.generation, named.front());
+        if (!parts) {
+            s.why = "generation " + std::to_string(s.generation) + " has no intact copy of every half of it";
+            swofty::log("[saves] could not put back %s: %s", s.key.c_str(), s.why.c_str());
+            answer(false, s.why);
+            return;
+        }
+        for (plain::Part &part : *parts) {
+            s.halves.push_back(part.name);
+            absent_bytes[part.name] = std::move(part.bytes);
+        }
+    } else
+        for (const std::string &h : plain::swap_absent(s))
+            if (auto it = swap_bags.find(h); it != swap_bags.end())
+                absent_bytes[h] = it->second->bytes;
+    std::string why;
+    std::vector<std::string> absent = plain::swap_absent(s);
+    for (const std::string &h : absent) {
+        uintptr_t child = career::save_data::registered_child(reinterpret_cast<uintptr_t>(root), h);
+        if (!absent_bytes.count(h) || !bs::whole_bag(absent_bytes[h].data(), absent_bytes[h].size()))
+            why = h + " is not one whole bag";
+        else if (!child)
+            why = "the game has no registered " + h;
+        else if (!read_once().may_read(child))
+            why = "the game has read " + h + " in this session already";
+        if (!why.empty())
+            break;
+    }
+    for (const std::string &h : absent) {
+        if (!why.empty())
+            break;
+        if (!place_registered(root, root_bag, h, absent_bytes[h], reset_on_error, groups, why)) {
+            why = h + ": " + why;
+            break;
+        }
+        {
+            std::lock_guard<std::mutex> g(hooks.lock);
+            seen_children.insert(h);
+        }
+        set_captured(h, std::move(absent_bytes[h]));
+        s.read.insert(h);
+    }
+    if (!why.empty()) {
+        if (!s.read.empty())
+            why += "; its pair may now come from different generations";
+        swofty::log("[saves] could not put back %s: %s", s.key.c_str(), why.c_str());
+        answer(false, why);
+        return;
+    }
+    size_t now = careers_of(s.key);
+    for (const std::string &h : s.halves)
+        swofty::log("%s", plain::put_back_line(h, now, s.generation).c_str());
+    answer(true, (absent.size() == s.halves.size() ? "added " : "replaced ") + s.key + " with generation " +
+                     std::to_string(s.generation));
+}
+
 // The put-back for the registered modes, after the root has loaded. A mode is two root containers, gm_<mode> and
-// <mode>_SaveSlotGameModeComponent, and they are replaced or added together from one generation, or not at all. The game's own
-// pair with careers is never touched: ours goes in when the loaded pair holds no careers (it was dropped and made again empty,
-// or it is not there), when it holds careers an absent half can only join when the present half is the one in that generation.
+// <mode>_SaveSlotGameModeComponent, and they are added together from one generation, or not at all. The game's own containers
+// are never read a second time: a replace request was applied as the root's loop reached the mode (swap_child), and a container
+// the file holds is otherwise left as the game read it. From the newest save generation, ours goes in when the loaded tree
+// lacks the mode, or lacks one half and the present half is the one in that generation.
 void fix_registered(void *root, void *root_bag, uint8_t reset_on_error, uint64_t groups)
 {
     if (!env_on("SWOFTY_PLAIN_PUTBACK") || !bag_proven())
         return;
+    std::set<std::string> swapped;
+    for (plain::Swap &s : swaps) {
+        swapped.insert(s.key);
+        finish_swap(s, root, root_bag, reset_on_error, groups);
+    }
     std::map<std::string, std::vector<std::string>> groups_of;
-    auto key_of = [](const std::string &n) {
-        std::string p = plain::pair_of(n);
-        return p.empty() ? n : p;
-    };
     if (plan.newest)
         for (const plain::Entry &e : plan.newest->containers)
-            groups_of[key_of(e.name)].push_back(e.name);
+            groups_of[plain::mode_key(e.name)].push_back(e.name);
     for (const plain::Request &q : plan.requests)
-        groups_of.emplace(key_of(q.container), std::vector<std::string>{q.container});
+        groups_of.emplace(plain::mode_key(q.container), std::vector<std::string>{q.container});
     for (auto &[key, halves] : groups_of) {
+        if (swapped.count(key))
+            continue;
         std::set<std::string> have;
         size_t tree_careers = 0;
         {
@@ -423,13 +582,10 @@ void fix_registered(void *root, void *root_bag, uint8_t reset_on_error, uint64_t
                 if (seen_children.count(h) || child_info.count(h))
                     have.insert(h);
             for (auto &[n, c] : career_tally)
-                if (key_of(n) == key)
+                if (plain::mode_key(n) == key)
                     tree_careers += c;
         }
-        bool registered_any = !have.empty();
-        for (auto &h : halves)
-            registered_any |= career::save_data::registered_child(reinterpret_cast<uintptr_t>(root), h) != 0;
-        if (!registered_any)
+        if (have.empty() && !registered_any(root, halves))
             continue;
         int req = -1;
         for (auto &h : halves)
@@ -439,6 +595,13 @@ void fix_registered(void *root, void *root_bag, uint8_t reset_on_error, uint64_t
         size_t ours = 0;
         std::optional<std::vector<plain::Part>> parts;
         if (req >= 0) {
+            if (!have.empty()) {
+                std::string why = "the loaded save already has " + *have.begin() + " and the request is not a replace";
+                for (auto &h : halves)
+                    for (int more = plain::request_for(plan, h); more >= 0; more = plain::request_for(plan, h))
+                        plain::request_done(plan, more, false, why);
+                continue;
+            }
             generation = plan.requests[size_t(req)].generation;
             parts = plain::fetch_group(generation, plan.requests[size_t(req)].container);
         } else if (plan.newest) {
@@ -448,6 +611,12 @@ void fix_registered(void *root, void *root_bag, uint8_t reset_on_error, uint64_t
                     ours = std::max<size_t>(ours, e->careers);
             bs::Mode mode = bs::registered_decision(!have.empty(), tree_careers, ours);
             bool absent_only = mode == bs::Mode::leave && tree_careers && ours && have.size() < halves.size();
+            if (mode == bs::Mode::replace_empty) {
+                swofty::log("[saves] did not put back %s: the loaded save holds it without careers and the game has read it; a "
+                            "Restore on the Career Saves page puts generation %llu's back at the next Play",
+                            key.c_str(), (unsigned long long)generation);
+                continue;
+            }
             if (mode == bs::Mode::leave && !absent_only)
                 continue;
             parts = plain::fetch_group(generation, halves.front());
@@ -475,21 +644,16 @@ void fix_registered(void *root, void *root_bag, uint8_t reset_on_error, uint64_t
             why = "generation " + std::to_string(generation) + " has no intact copy of every half of it";
         for (size_t i = 0; why.empty() && i < parts->size(); i++) {
             const plain::Part &part = (*parts)[i];
-            bool in_tree = child_info.count(part.name) != 0;
             if (!bs::whole_bag(part.bytes.data(), part.bytes.size()))
                 why = part.name + " is not one whole bag";
-            else if (!in_tree && !career::save_data::registered_child(reinterpret_cast<uintptr_t>(root), part.name))
+            else if (child_info.count(part.name))
+                why = "the game has read " + part.name + " already";
+            else if (!career::save_data::registered_child(reinterpret_cast<uintptr_t>(root), part.name))
                 why = "the game has no registered " + part.name;
         }
         if (why.empty()) {
             for (plain::Part &part : *parts) {
-                bool ok;
-                auto it = child_info.find(part.name);
-                if (it != child_info.end())
-                    ok = replace_in_place(part.name, it->second, part.bytes, why);
-                else
-                    ok = place_registered(root, root_bag, part.name, part.bytes, reset_on_error, groups, why);
-                if (!ok) {
+                if (!place_registered(root, root_bag, part.name, part.bytes, reset_on_error, groups, why)) {
                     why = part.name + ": " + why + "; its pair may now come from different generations";
                     break;
                 }
@@ -506,17 +670,11 @@ void fix_registered(void *root, void *root_bag, uint8_t reset_on_error, uint64_t
                 plain::request_done(plan, req, false, why);
             continue;
         }
-        size_t now = 0;
-        {
-            std::lock_guard<std::mutex> g(hooks.lock);
-            for (auto &[n, c] : career_tally)
-                if (key_of(n) == key)
-                    now += c;
-        }
+        size_t now = careers_of(key);
         for (auto &h : halves)
             swofty::log("%s", plain::put_back_line(h, now ? now : ours, generation).c_str());
         if (req >= 0) {
-            plain::request_done(plan, req, true, "replaced " + key + " with generation " + std::to_string(generation));
+            plain::request_done(plan, req, true, "added " + key + " from generation " + std::to_string(generation));
             for (auto &h : halves)
                 for (int more = plain::request_for(plan, h); more >= 0; more = plain::request_for(plan, h))
                     plan.handled[size_t(more)] = true;
@@ -543,18 +701,30 @@ int *deserialise_entry(void *self, int *result, void *bag, uint8_t reset_on_erro
         slots_clean = true;
         in_root_load = true;
     }
-    if (root)
+    if (root) {
         plan = plain::make_plan();
+        load_root = self;
+        swaps.clear();
+        swap_bags.clear();
+        if (plan.on && env_on("SWOFTY_PLAIN_PUTBACK") && bag_proven())
+            swaps = plain::plan_swaps(plan.requests);
+    }
+    void *read_from = bag;
     if (!root && depth == 2 && !in_fix) {
         bool loading;
         {
             std::lock_guard<std::mutex> g(hooks.lock);
             loading = in_root_load;
         }
-        if (loading)
+        if (loading) {
             capture_child(self, bag, reset_on_error, groups);
+            read_from = swap_child(self, bag);
+            read_once().mark(reinterpret_cast<uintptr_t>(self));
+        }
     }
-    int *r = hooks.deserialise_container(self, result, bag, reset_on_error, groups);
+    int *r = hooks.deserialise_container(self, result, read_from, reset_on_error, groups);
+    if (read_from != bag && (!r || *r != 0))
+        swap_read_failed(self, r ? *r : -1);
     --load_depth;
     if (root) {
         if (r && *r == 0 && plan.on) {

@@ -38,6 +38,7 @@ constexpr const char *MANIFEST = "manifest.json";
 constexpr const char *CONTAINERS = "containers";
 constexpr const char *INJECT = "inject.json";
 constexpr const char *INJECTED = "injected.json";
+constexpr const char *INJECT_APPLYING = "inject.applying.json";
 constexpr size_t MAX_SCAN = 4096;
 
 inline std::string hex16(uint64_t v)
@@ -614,15 +615,132 @@ inline std::string results_json(const std::vector<Result> &rs)
     return t;
 }
 
-// injected.json is written (durably) before inject.json goes, so a request is never lost without an answer.
+// The requests a profile load takes. inject.json is renamed to inject.applying.json before any of them is applied, so a game
+// that stops while it applies them (a crash in the mode's read) does not apply them again at the next load: only a new
+// inject.json is taken, and the launcher answers a leftover inject.applying.json as withdrawn.
+struct Taken {
+    std::vector<Request> requests;
+    bool taken = false;
+    bool left_over = false;
+    std::string why;
+};
+
+inline Taken take_requests(const Root &root)
+{
+    Taken t;
+    std::error_code ec;
+    fs::path inject = root.path() / INJECT, applying = root.path() / INJECT_APPLYING;
+    t.left_over = fs::is_regular_file(applying, ec);
+    if (!fs::is_regular_file(inject, ec))
+        return t;
+    fs::rename(inject, applying, ec);
+    if (ec) {
+        t.why = std::string(INJECT) + " could not be renamed to " + INJECT_APPLYING + " (" + ec.message() + ")";
+        return t;
+    }
+    runtime::durable::sync_dir(root.path());
+    t.taken = true;
+    t.requests = parse_requests(read_text(applying, size_t(1) << 20));
+    return t;
+}
+
+// injected.json is written (durably) before inject.applying.json goes, so a request is never lost without an answer. An
+// inject.json the launcher wrote while the game ran holds newer requests and stays for the next load.
 inline bool answer(const Root &root, const std::vector<Result> &rs)
 {
     if (!runtime::durable::write_file(root.path() / INJECTED, results_json(rs)))
         return false;
     std::error_code ec;
-    fs::remove(root.path() / INJECT, ec);
+    fs::remove(root.path() / INJECT_APPLYING, ec);
     runtime::durable::sync_dir(root.path());
     return true;
 }
+
+// ---- a registered mode's replace ----
+// A registered mode reads its container once, at the root load, into tables it never clears: reading it a second time appends
+// to what the first read left (crash-20261120-172027: a 26-entry table at F1_25.exe+0xbecf60 held 24 entries, the second read
+// wrote its first three entries at 24, 25 and 26, the last over the table's count, and faulted on the fourth). So a replace
+// request hands the mode a bag made from our bytes in place of its own as the root's loop reaches the container, and a
+// container the game has read is never read again.
+
+struct Swap {
+    enum class State { pending, applying, refused };
+    std::string key;
+    std::vector<size_t> requests;
+    uint64_t generation = 0;
+    std::vector<std::string> halves;
+    std::set<std::string> read;
+    State state = State::pending;
+    std::string why;
+};
+
+inline std::string mode_key(const std::string &name)
+{
+    std::string p = pair_of(name);
+    return p.empty() ? name : p;
+}
+
+// The replace requests grouped by mode. A mode's halves come from the generation of its first replace request.
+inline std::vector<Swap> plan_swaps(const std::vector<Request> &requests)
+{
+    std::vector<Swap> out;
+    for (size_t i = 0; i < requests.size(); i++) {
+        const Request &q = requests[i];
+        if (!q.replace || !sp::name_ok(q.container))
+            continue;
+        std::string key = mode_key(q.container);
+        auto it = std::find_if(out.begin(), out.end(), [&](const Swap &s) { return s.key == key; });
+        if (it == out.end()) {
+            out.push_back({key, {i}, q.generation, {}, {}, Swap::State::pending, {}});
+            continue;
+        }
+        it->requests.push_back(i);
+    }
+    return out;
+}
+
+inline Swap *swap_for(std::vector<Swap> &swaps, const std::string &name)
+{
+    std::string key = mode_key(name);
+    for (Swap &s : swaps)
+        if (s.key == key)
+            return &s;
+    return nullptr;
+}
+
+// Why the half `name` must not take our bytes, or empty: a request on it with a base needs the loaded container to hash the
+// same (`loaded_sha256` is empty when the load did not capture it).
+inline std::string swap_refusal(const std::vector<Request> &requests, const Swap &s, const std::string &name,
+                                const std::string &loaded_sha256)
+{
+    for (size_t i : s.requests)
+        if (requests[i].container == name && !base_matches(requests[i], loaded_sha256))
+            return changed_since_detail(requests[i]);
+    return {};
+}
+
+// The halves of a mode the root's loop never reached, so the file lacks them: after the root load the registered child reads
+// each from a fresh bag. A refused mode puts nothing back.
+inline std::vector<std::string> swap_absent(const Swap &s)
+{
+    std::vector<std::string> out;
+    if (s.state == Swap::State::refused)
+        return out;
+    for (const std::string &h : s.halves)
+        if (!s.read.count(h))
+            out.push_back(h);
+    return out;
+}
+
+// The container objects a mode has read in this process. The core reads a registered container only into an object no read
+// has reached.
+class ReadOnce {
+public:
+    void mark(uintptr_t obj) { seen_.insert(obj); }
+    bool may_read(uintptr_t obj) const { return obj && !seen_.count(obj); }
+
+private:
+    std::set<uintptr_t> seen_;
+};
 
 }

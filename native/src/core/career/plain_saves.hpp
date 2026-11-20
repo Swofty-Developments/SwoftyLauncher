@@ -26,8 +26,9 @@ struct Added {
     uint64_t generation = 0;
 };
 
-// What a profile load works from: the newest save generation of a core session and the launcher's requests, read at the start
-// of the load. A request for a container the tree holds as a registered mode's is answered while that mode loads.
+// What a profile load works from: the newest save generation of a core session and the launcher's requests, taken at the start
+// of the load (inject.json renamed to inject.applying.json). A replace of a container the tree holds as a registered mode's is
+// answered when the root's loop hands that mode its bag.
 struct Plan {
     bool on = false;
     std::optional<Manifest> newest;

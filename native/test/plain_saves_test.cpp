@@ -1,8 +1,9 @@
 // Host unit test for the plain save store (plain_saves_logic.hpp): settings, manifests, the generation and CURRENT protocol,
-// the put-back decision, inject requests and the SHA-256 the manifests carry. native/test/run_tests.sh plain_saves builds
-// and runs it.
+// the put-back decision, inject requests taken once, the replace of a registered mode before its only read and the SHA-256
+// the manifests carry. native/test/run_tests.sh plain_saves builds and runs it.
 #include "core/career/plain_saves_logic.hpp"
 
+#include <array>
 #include <cstdio>
 #include <cstring>
 #include <string>
@@ -266,12 +267,160 @@ static void requests(const fs::path &tmp)
 
     fs::create_directories(root.path());
     runtime::durable::write_file(root.path() / ps::INJECT, std::string("{\"schema\":1,\"requests\":[]}"));
+    expect(ps::take_requests(root).taken, "inject: the load takes inject.json");
     expect(ps::answer(root, {{"r1", true, "ok \"quoted\""}, {"r2", false, "no"}}), "inject: answers are written");
-    expect(!fs::exists(root.path() / ps::INJECT), "inject: inject.json is deleted after the answer");
+    expect(!fs::exists(root.path() / ps::INJECT) && !fs::exists(root.path() / ps::INJECT_APPLYING),
+           "inject: the taken requests are gone after the answer");
     json::Value doc;
     expect(json::parse(ps::read_text(root.path() / ps::INJECTED), doc) && doc["results"].a.size() == 2 &&
                doc["results"].a[0]["ok"].b && !doc["results"].a[1]["ok"].b && doc["results"].a[0]["detail"].s == "ok \"quoted\"",
            "inject: injected.json holds each result");
+}
+
+static const char *TWO_HALVES =
+    R"({"schema":1,"requests":[{"id":"r1-gm","generation":3,"container":"gm_my_team_career_26","replace":true},)"
+    R"({"id":"r1-slots","generation":3,"container":"my_team_career_26_SaveSlotGameModeComponent","replace":true}]})";
+
+static void one_shot(const fs::path &tmp)
+{
+    fs::remove_all(tmp);
+    ps::Root root(tmp / "plain");
+    fs::create_directories(root.path());
+    expect(!ps::take_requests(root).taken, "one shot: no inject.json, nothing taken");
+    runtime::durable::write_file(root.path() / ps::INJECT, std::string(TWO_HALVES));
+    ps::Taken t = ps::take_requests(root);
+    expect(t.taken && !t.left_over && t.requests.size() == 2 &&
+               t.requests[1].container == "my_team_career_26_SaveSlotGameModeComponent",
+           "one shot: the load takes both requests");
+    expect(!fs::exists(root.path() / ps::INJECT) && fs::exists(root.path() / ps::INJECT_APPLYING),
+           "one shot: inject.json becomes inject.applying.json before anything is applied");
+
+    t = ps::take_requests(root);
+    expect(!t.taken && t.left_over && t.requests.empty(),
+           "one shot: after a load that stopped before its answer, the next load applies nothing again");
+    expect(fs::exists(root.path() / ps::INJECT_APPLYING), "one shot: the leftover stays for the launcher to answer");
+
+    runtime::durable::write_file(root.path() / ps::INJECT, std::string(TWO_HALVES));
+    t = ps::take_requests(root);
+    expect(t.taken && t.left_over && t.requests.size() == 2, "one shot: a new inject.json is taken over a leftover");
+    runtime::durable::write_file(root.path() / ps::INJECT, std::string("{\"schema\":1,\"requests\":[]}"));
+    expect(ps::answer(root, {{"r1-gm", true, "replaced"}, {"r1-slots", true, "replaced"}}), "one shot: the load answers");
+    expect(!fs::exists(root.path() / ps::INJECT_APPLYING) && fs::exists(root.path() / ps::INJECTED),
+           "one shot: the answer removes inject.applying.json");
+    expect(fs::exists(root.path() / ps::INJECT), "one shot: an inject.json written while the game ran stays for the next load");
+}
+
+static void swaps()
+{
+    auto rs = ps::parse_requests(
+        R"({"schema":1,"requests":[{"id":"a","generation":3,"container":"gm_my_team_career_26","replace":true},)"
+        R"({"id":"b","generation":3,"container":"my_team_career_26_SaveSlotGameModeComponent","replace":true},)"
+        R"({"id":"c","generation":5,"container":"driver_career_progressive","replace":true},)"
+        R"({"id":"d","generation":5,"container":"gm_driver_career_1990","replace":false},)"
+        R"({"id":"e","generation":7,"container":"gm_f1_world","replace":true,"base_sha256":"abc"}]})");
+    auto sw = ps::plan_swaps(rs);
+    expect(sw.size() == 3 && sw[0].key == "my_team_career_26" && sw[0].requests == std::vector<size_t>{0, 1} &&
+               sw[0].generation == 3 && sw[1].key == "driver_career_progressive" && sw[2].key == "f1_world",
+           "swaps: replace requests group by mode; a request that is not a replace is no swap");
+    expect(ps::swap_for(sw, "my_team_career_26_SaveSlotGameModeComponent") == &sw[0] &&
+               ps::swap_for(sw, "gm_my_team_career_26") == &sw[0] && !ps::swap_for(sw, "gm_driver_career_1990"),
+           "swaps: either half finds its mode's swap");
+    expect(ps::swap_refusal(rs, sw[0], "gm_my_team_career_26", "").empty(),
+           "swaps: a restore without a base takes the loaded half");
+    expect(ps::swap_refusal(rs, sw[2], "gm_f1_world", "abd") ==
+                   "the loaded gm_f1_world changed since generation 7; not replaced" &&
+               ps::swap_refusal(rs, sw[2], "gm_f1_world", "").size() && ps::swap_refusal(rs, sw[2], "gm_f1_world", "abc").empty(),
+           "swaps: a based request refuses a loaded half that changed or was not captured");
+    expect(ps::swap_refusal(rs, sw[2], "f1_world_SaveSlotGameModeComponent", "zzz").empty(),
+           "swaps: a half no request names has no base to check");
+
+    ps::Swap s = sw[0];
+    s.halves = {"gm_my_team_career_26", "my_team_career_26_SaveSlotGameModeComponent"};
+    s.state = ps::Swap::State::applying;
+    s.read = {"gm_my_team_career_26", "my_team_career_26_SaveSlotGameModeComponent"};
+    expect(ps::swap_absent(s).empty(), "swaps: halves the game read from our bag are not read again after the load");
+    s.read = {"gm_my_team_career_26"};
+    expect(ps::swap_absent(s) == std::vector<std::string>{"my_team_career_26_SaveSlotGameModeComponent"},
+           "swaps: only a half the file lacked is read after the load");
+    s.state = ps::Swap::State::refused;
+    expect(ps::swap_absent(s).empty(), "swaps: a refused mode puts nothing back");
+
+    ps::ReadOnce once;
+    expect(once.may_read(0x1000) && !once.may_read(0), "read once: an object no read reached may be read");
+    once.mark(0x1000);
+    expect(!once.may_read(0x1000) && once.may_read(0x2000), "read once: an object the game read is not read again");
+}
+
+// The table crash-20261120-172027 faulted in (F1_25.exe+0xbecf60): 26 entries of 28 bytes and a u64 count right after them,
+// appended to without a clear or a bound. The dump held 24 entries and the second read's first three at 24, 25 and 26.
+struct Entry28 {
+    uint32_t key, slot, index;
+    float a, b;
+    uint32_t zero;
+    uint8_t c, d, pad[2];
+};
+static_assert(sizeof(Entry28) == 28);
+constexpr size_t TABLE_COUNT = 0x2d8;
+
+struct ModeTable {
+    std::array<uint8_t, TABLE_COUNT + 0x40> mem{};
+    uint64_t count() const
+    {
+        uint64_t n;
+        memcpy(&n, mem.data() + TABLE_COUNT, 8);
+        return n;
+    }
+    bool read(const std::vector<Entry28> &entries, uint64_t &fault)
+    {
+        for (const Entry28 &e : entries) {
+            uint64_t at = count() * sizeof(Entry28);
+            if (at > mem.size() - sizeof(Entry28))
+                return fault = at, false;
+            memcpy(mem.data() + at, &e, sizeof e);
+            uint64_t n = count() + 1;
+            memcpy(mem.data() + TABLE_COUNT, &n, 8);
+        }
+        return true;
+    }
+};
+
+static std::vector<Entry28> dump_entries()
+{
+    std::vector<Entry28> v = {{0x003b0000, 0xc, 0, 104.556f, 1049.38f, 0, 3, 2, {}},
+                              {0x000f0000, 0x14, 1, 99.95f, 1051.28f, 0, 3, 2, {}},
+                              {0x000e0000, 0x15, 2, 98.28f, 1054.39f, 0, 3, 2, {}},
+                              {0x00000000, 0xb, 0, 105.11f, 1055.4f, 0, 3, 2, {}}};
+    for (uint32_t i = 4; i < 24; i++)
+        v.push_back({i << 16, i, i, 100.f, 1000.f, 0, 3, 2, {}});
+    return v;
+}
+
+static void table_model()
+{
+    std::vector<Entry28> loaded = dump_entries(), ours = dump_entries();
+    uint64_t fault = 0;
+    ModeTable twice;
+    bool first = twice.read(loaded, fault), second = twice.read(ours, fault);
+    expect(first && !second && fault == 0x24c0188001cull,
+           "model: a second read of the loaded mode faults at the dump's offset (count 0x15000e0001 x 28)");
+    Entry28 at24;
+    memcpy(&at24, twice.mem.data() + 24 * sizeof(Entry28), sizeof at24);
+    expect(at24.key == ours[0].key && at24.slot == ours[0].slot,
+           "model: the second read's first entry lands at 24, as in the dump");
+
+    auto rs = ps::parse_requests(TWO_HALVES);
+    auto sw = ps::plan_swaps(rs);
+    ModeTable once;
+    ps::ReadOnce reads;
+    uintptr_t mode = 0x342ec7840;
+    ps::Swap *s = ps::swap_for(sw, "gm_my_team_career_26");
+    s->state = ps::Swap::State::applying;
+    s->halves = {"gm_my_team_career_26", "my_team_career_26_SaveSlotGameModeComponent"};
+    s->read = {"gm_my_team_career_26", "my_team_career_26_SaveSlotGameModeComponent"};
+    bool ok = once.read(ours, fault);
+    reads.mark(mode);
+    expect(ok && once.count() == ours.size() && ps::swap_absent(*s).empty() && !reads.may_read(mode),
+           "model: our bag read in place of the loaded one fills the table once and nothing reads it again");
 }
 
 int main(int argc, char **argv)
@@ -283,6 +432,9 @@ int main(int argc, char **argv)
     putback(tmp / "put");
     pairs(tmp / "pair");
     requests(tmp / "req");
+    one_shot(tmp / "once");
+    swaps();
+    table_model();
     fs::remove_all(tmp);
     printf("%s (%d failure(s))\n", fails ? "SOME FAILED" : "ALL PASSED", fails);
     return fails ? 1 : 0;
