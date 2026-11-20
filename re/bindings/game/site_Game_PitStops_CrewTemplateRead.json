@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Game_PitStops_CrewTemplateRead",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403c6ee1",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "pat:disasm-0x1403c69e0-0x1403c7880;xref:0x1403c6ec7,0x1403c6ee1,0x1403c7876;decomp:re/decomp/1403c69e0.c;decomp:re/decomp/1403ad360.c;xref:0x1403c7868,0x1403c7876,0x1403ae65b;sig:game.pit_stops_crew_template_read;decomp:re/decomp/1403ad360.c;xref:0x1403c6e44,0x1403c6e50,0x1403c6ed3,0x1403c6edf,0x1403c6e67,0x1403c7868,0x1403ae65b",
+  "notes": "In the per-garage loop of fn 0x1403c69e0 (caller of Game_PitStops_SetupCrew, return 0x1403c787b): after the garage's entry vector at [rsp+0xa8..0xb0] is scanned, rdi = the first entry's team crew template [[[session+0x2c8+kind*0x10]+8]+team*0x10+8] (kind = byte [rec+0x58] <3, team = word [rec+0x5a]) or 0 (xor edi,edi at 0x1403c6e44/50/ed3/edf) when the vector is empty or no entry has a table, a row or a template. rdi is stored at [rsp+0x20] as the 5th argument of Game_PitStops_SetupCrew and read as [rdi+0x560] at 0x1403ae65b with no null test (1.7.9 Classic Career 2022 crash, rdx=0). Core sends rdi=0 to site_Game_PitStops_CrewTemplateSkip. Owner review re-career-teams 2026-11-02: own disasm of 0x1403c6e30..0x1403c6ee1 and the call at 0x1403c7876. rdi is written only at 0x1403c6ec7 (template row) or by xor edi,edi at 6e44/6e50/6ed3/6edf; 0x1403c6ee1 is the 5-byte mov rbx,[rsp+0x70], reached by fallthrough and by the je at 0x1403c6e67; no jump or call lands in 0x1403c6ee2..6ee5. rdi is stored to [rsp+0x20] at 0x1403c7868, the 5th stack argument of the call to 0x1403ad360, which reads byte [arg5+0x560] at 0x1403ae65b (decomp param_5+0x560) with no null test: rdx=[rsp+0x480]. Agrees with V8623."
+ },
+ "signature": {
+  "id": "game.pit_stops_crew_template_read",
+  "section": ".xtls",
+  "pattern": "48 8B 5C 24 70 4C 8B 2B 48 8B 73 08",
+  "match": "0x1403c6ee1",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403c6ee1",
+  "kind": "mid",
+  "expect": "48 8B 5C 24 70",
+  "names": [
+   "site_Game_PitStops_CrewTemplateRead"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "crewpit",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/garage/garage_crew.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-01",
+   "verifier": "pit-crew-verifier",
+   "kind": "global",
+   "item": "0x1403c6ee1",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403c69e0.c;xref:0x1403c6ec7,0x1403c6e44,0x1403c6e67,0x1403c6edf,0x1403c7868,0x1403c7876",
+   "notes": "V8623 Static: rdi set only by mov at 6ec7 or xor edi at 6e44/6e50/6ed3/6edf; no rdi/edi write in 6ee1..7876 (only calls are vcalls/rel calls, rdi callee-saved), stored to [rsp+0x20] at 7868 as 5th arg. Only branch into [6ee1,7876] from outside is je at 6e67 (plus fallthrough from 6edf); no jump lands in 6ee2..6ee5; insn is exactly 5 bytes. Caveat: a jump from 6ee1 to 7884 skips the whole 0x660 pit-stop object build and registration (6ee1..77f9), not just SetupCrew."
+  }
+ ],
+ "proofs": []
+}

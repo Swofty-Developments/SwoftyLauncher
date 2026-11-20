@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_Network_CategoryOptionUsing",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14315d880",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Network_CategoryOptionUsing(void *self)",
+  "evidence": "pat:log-channel-NETWORK;decomp:re/decomp/14315d880.c;xref:0x14581ddf0",
+  "notes": "named from its log messages (channel NETWORK): '? no 'category' option: using %s'  setupFromUnranked (vtable slot at 0x14581ddf0): reads the category option from the options store (*(0x146079258)+0x270 map, lookup 0x142b5dfd0 with key category; entries 0x10 apart at store+0x288, option object at entry+8): current index via vtable +0x10, value entries 0x50 bytes at opt[0x10] (name at +0x38); no option -> f1_generic; then locates the scenario by statId. Callers: census steam 0x315d880."
+ },
+ "signature": {
+  "id": "game.network_category_option_using",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 C8 13 00 00 E8 ?? ?? ?? ?? 48 29 C4 49 89 CC",
+  "match": "0x14315d880",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14315d880",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_CategoryOptionUsing"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-27",
+   "verifier": "verify-mp-carcat",
+   "kind": "func",
+   "item": "Game_Network_CategoryOptionUsing",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14315d880.c;xref:0x14581ddf0;sig:game.network_category_option_using",
+   "notes": "V1156 Re-checked: logs setupFromUnranked, then the category option lookup at 0x14315dac8 (key category at 0x145624236) and the value/name/scenario lines. Same-session verify pass."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x14315d880",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14315d880.c",
+   "notes": "V5764 NetworkMatching_SetupFromUnranked: 25KB function parsing the unranked scenario (category option, statId, template, track set name); not just the missing-category log"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x14315d880",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14315d880.c",
+   "notes": "V7001 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_UIVisualNavigation_VeHitOurPreviouslyFocusedNodeLet",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144289cc0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-UI_VISUAL_NAVIGATION",
+  "notes": "named from its log messages (channel UI_VISUAL_NAVIGATION): 'We've hit our previously focused node. Let's continue onwards [%hs] - Grid Pos [%d,%d]'"
+ },
+ "signature": {
+  "id": "game.ui_visual_navigation_ve_hit_our_previously_focused_node_let",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 01 00 00 C5 78 29 BC 24 60 01 00 00 C5 78 29 B4 24 50 01 00 00 C5 78 29 AC 24 40 01 00 00 C5 78 29 A4 24 30 01 00 00 C5 78 29 9C 24 20 01 00 00 C5 78 29 94 24 10 01 00 00 C5 78 29 8C 24 00 01 00 00 C5 78 29 84 24 F0 00 00 00 C5 F8 29 BC 24 E0 00 00 00 C5 F8 29 B4 24 D0 00 00 00 44 88 4C 24 2B",
+  "match": "0x144289cc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144289cc0",
+  "kind": "func_start",
+  "names": [
+   "Game_UIVisualNavigation_VeHitOurPreviouslyFocusedNodeLet"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x144289cc0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144289cc0.c;xref:0x14428a941",
+   "notes": "V6576 better name Game_UIVisualNavigation_FindNextFocusNode: focus search loop: previously focused hit, NEW NODE FOCUSED, failed to find node"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144289cc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144289cc0.c;xref:0x14428a941",
+   "notes": "V7191 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

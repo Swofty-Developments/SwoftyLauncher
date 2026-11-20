@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Ne_NodeTable_FindIndexByHash",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143cfc8f0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143cfc8f0.c;xref:0x140184cb0,0x1401d3140",
+  "notes": "(void *table, const u32 *hash) -> int32: index of a 32-bit node/bone hash in a model node table, or -1 when absent (a leaf; it writes nothing). The table is a struct: u16 count at +0, a u32 * hash array at +8, a pointer to the 0x30-byte entries the result indexes at +0x18 (0x14023a262 in a caller) and a nullable robin_hood node-map pointer at +0x50. A non-null +0x50 selects the map: FNV-1a 64 of the 4 key bytes times the u64 at map+0x20, h ^= h>>33, then the info/slot probe, returning the dword at node+4 (0x143cfca23). A null +0x50 scans the u32 array that +8 points to over the u16 count and returns the first matching index (0x143cfc9db, 0x143cfc9f0). Callers hash bone names such as \"Bip01 Pelvis\" and \"Bip01 Head\": Car_Model_BindCockpitNodes, cutscene driver part options, pelvis height modifier, frontend driver parts. Callers: census steam 0x3cfc8f0."
+ },
+ "signature": {
+  "id": "core.node_table_find_index_by_hash",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 8B 71 50 48 85 F6 0F 84",
+  "match": "0x143cfc8f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143cfc8f0",
+  "kind": "func_start",
+  "names": [
+   "Ne_NodeTable_FindIndexByHash"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x143cfc8f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143cfc8f0.c;xref:0x14018652c",
+   "notes": "V3631 name, offsets and callers match decompile"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Ne_NodeTable_FindIndexByHash",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x143cfc8f0-0x143cfca31,0x1401914f0-0x140191760,0x14023a1a3-0x14023a292,0x1401d31fc-0x1401d3390,0x147c327d9-0x147c32f0c,1.0.145 0x143cfeec0-0x143cff001;xref:0x143cfc8f3,0x143cfc9cd,0x143cfc9db,0x143cfc9f0,0x143cfc93d,0x143cfca23,0x14023a262,0x14018652c,0x1401d3236",
+   "notes": "V100061 Blind: partial. Leaf, 2 args (rcx table, rdx const u32* key), int32 return, -1 when absent or count 0. If qword [t+0x50] (robin_hood node-map ptr) != 0: FNV-1a64 of the 4 key bytes times map+0x20, h^=h>>33, info/keyVals probe, return node+4 value (0x143cfca23). Else scan the u32 array pointed to by qword [t+8] over u16 count [t+0], return first i (0x143cfc9db/9f0). Census row 432/70/.data1:19,.xtls:413/3/3/1/0/0/0 matches census.py and own E8/E9 scan; both xrefs are callers; 1.0.145 twin 0x143cfeec0 byte-identical. Imprecise: ushort *table and table+8 / map at table+0x50 hide that +8 and +0x50 are pointer fields and that a null +0x50 selects the linear scan."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Ne_NodeTable_FindIndexByHash",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x143cfc8f0-0x143cfca31,0x14023a168-0x14023a2b8,0x1401864e4-0x140186531,0x1401bb03f-0x1401bb089,0x1401cd132-0x1401cd1d4,0x147c327f2-0x147c32f20,1.0.145 0x143cfeec0-0x143cff001;xref:0x143cfc8f3,0x143cfc93d,0x143cfc9a4,0x143cfc9db,0x143cfc9f0,0x143cfca23,0x143cfca28,0x14023a25e,0x14023a262,0x14018652c,0x1401bb084,0x1401d3236,0x147c32815",
+   "notes": "V100062 Blind: agree. Own disasm 0x143cfc8f0-0x143cfca31: leaf, writes nothing. rcx=table, rdx=const u32*; r8/r9 unread. Null [+0x50]: scan u16 count at +0 over u32 array at +8, return first i or -1 (0x9cd-0xa13). Non-null: robin_hood find, FNV-1a64 of 4 bytes * [map+0x20], h^=h>>33, tag ((u32)h&0x1f)>>[map+0x54] + [map+0x50], idx (h>>5)&[map+0x40], 2x unrolled probe, unsigned exit 0x9a4; hit returns dword node+4 (0xa23), miss -1 (0xa28). Caller 0x14023a25e-26d indexes 0x30-byte entries at table+0x18. Bip01 Head/Pelvis hashed at 0x1401864fc/0x1401bb04f. Census 432/70 (.xtls 413, .data1 19), 3 thunks/3 calls/1 fn = own scan. 1.0.145 twin 0x143cfeec0 byte-identical."
+  }
+ ],
+ "proofs": []
+}

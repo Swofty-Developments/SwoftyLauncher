@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Loader_PrepareGridThumbnails",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d4c140",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d4c140.c;xref:0x142d4a607",
+  "notes": "Loader step 0x19 (called from Sess_Loader_Update): with loader +0xc0/+0xb8 set, enables ThumbnailSystem reason 0 and resizes the grid entries array (+0x128..+0x130, 0x78-byte entries) into +0x1a8.., resolving each entry's driver customisation (0x141449bd0) for thumbnail generation."
+ },
+ "signature": {
+  "id": "session.loader_prepare_grid_thumbnails",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 01 00 00 C5 F8 29 B4 24 60 01 00 00 48 89 CE B2",
+  "match": "0x142d4c140",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d4c140",
+  "kind": "func_start",
+  "names": [
+   "Sess_Loader_PrepareGridThumbnails"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d14-verify",
+   "kind": "func",
+   "item": "Sess_Loader_PrepareGridThumbnails",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/42d4c140.c;xref:None",
+   "notes": "V3240 offsets, vtable slot/callers, strings and calls checked in decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

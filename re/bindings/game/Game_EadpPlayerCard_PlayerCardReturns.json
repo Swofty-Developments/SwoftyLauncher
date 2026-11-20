@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_EadpPlayerCard_PlayerCardReturns",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ffe070",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-EADP_PLAYER_CARD",
+  "notes": "named from its log messages (channel EADP_PLAYER_CARD): 'Player card error returns - %s'"
+ },
+ "signature": {
+  "id": "game.eadp_player_card_player_card_returns",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 A8 42 00 00",
+  "match": "0x143ffe070",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143ffe070",
+  "kind": "func_start",
+  "names": [
+   "Game_EadpPlayerCard_PlayerCardReturns"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x143ffe070",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143ffe070.c",
+   "notes": "V6351 partial: better name Game_EadpPlayerCard_OnPlayerCardsReceived; 4 KB player-card response handler with STEAM/XBOX platform mapping; error log is one branch"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x143ffe070",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ffe070.c",
+   "notes": "V7076 name fits, facts hold; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

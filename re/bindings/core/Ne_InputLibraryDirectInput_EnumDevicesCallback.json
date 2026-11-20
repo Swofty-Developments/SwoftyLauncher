@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_InputLibraryDirectInput_EnumDevicesCallback",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143aa4240",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/143aa4240.c;xref:0x143aa1605,0x143aa173e,0x143aa17b2,0x143aa17eb",
+  "notes": "cxx=NeInputLibraryDirectInput::enumDevicesCallback; log channel INPUT: 'NeInputLibraryDirectInput::enumDevicesCallback - isXInputDevice returned eUnknown, retrying later...'"
+ },
+ "signature": {
+  "id": "core.input_library_direct_input_enum_devices_callback",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 60 02 00 00 31 ED 48 85 D2",
+  "match": "0x143aa4240",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143aa4240",
+  "kind": "func_start",
+  "names": [
+   "Ne_InputLibraryDirectInput_EnumDevicesCallback"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb1-verify",
+   "kind": "func",
+   "item": "Ne_InputLibraryDirectInput_EnumDevicesCallback",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143aa4240.c;xref:0x143aa1605",
+   "notes": "V2018 log strings and role confirmed in decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CarDecals_BuildList",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141fff870",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141fff870.c;xref:0x145764ae8",
+  "notes": "Car customisation decals list (decals, lng_sponsor_%s, colour_scheme, cstm_equipped/owned icons, can_change_camera), camera rotation disabler. vtable slot 0x145764ae8. Addon: livery/decal menu data. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2940)"
+ },
+ "signature": {
+  "id": "game.car_decals_build_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 02 00 00 C5 F8 29 BC 24 E0 02 00 00 C5 F8 29 B4 24 D0 02 00 00 48 89 CE",
+  "match": "0x141fff870",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141fff870",
+  "kind": "func_start",
+  "names": [
+   "Game_CarDecals_BuildList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d11-verify",
+   "kind": "func",
+   "item": "Game_CarDecals_BuildList",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141fff870.c;xref:0x145764ae8",
+   "notes": "V2940 Decomp strings, offsets and callees match the claim; name fits."
+  }
+ ],
+ "proofs": []
+}

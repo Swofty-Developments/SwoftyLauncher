@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Parse_BoolValue",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439aa290",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439aa290.c;xref:0x1401dcfd5,0x1401dd324",
+  "notes": "(valueRef, out) -> NEerrno: like Ne_Parse_BoolCString but takes a string object (*param_1); 'true'/'false' (+short forms) case-insensitive. 47 call sites incl. Render_RainFile_Load, Car_Read_VtfConvexHulls."
+ },
+ "signature": {
+  "id": "core.parse_bool_value",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 D6 48 89 CA 48 8B 09 48 85 C9 0F",
+  "match": "0x1439aa290",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439aa290",
+  "kind": "func_start",
+  "names": [
+   "Ne_Parse_BoolValue"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x1439aa290",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439aa290.c;xref:0x1401dcfd5",
+   "notes": "V3611 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Sess_SpectatorHud_Hide",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c237e0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void()",
+  "evidence": "decomp:re/decomp/141c237e0.c;xref:0x141c232c5,0x141c24793,0x141c26ba1;xref:0x141c232c4,0x141c26ba0,0x141c24792",
+  "notes": "Adds HUD hide reason 6 (bit 0x40 in the hide-reason words at 0x14604e900 for player 0 and 0x14604e904 for player 1, log HIDE_REASONS) and posts MessageSpectatorHudVisibility (message vtable 0x145751818, byte +0x10 = 0). Callers: census steam 0x1c237e0."
+ },
+ "signature": {
+  "id": "session.spectator_hud_hide",
+  "section": ".xtls",
+  "pattern": "48 83 EC 38 8B 05 ?? ?? ?? ?? 8B 0D",
+  "match": "0x141c237e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c237e0",
+  "kind": "func_start",
+  "names": [
+   "Sess_SpectatorHud_Hide"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "re-ai",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "ai-v1",
+   "kind": "func",
+   "item": "0x141c237e0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c237e0.c;xref:0x141c232c4,0x141c26ba0,0x141c24792",
+   "notes": "V1536 Re-derived: no arguments; sets bit 0x40 (reason 6) in the words at 0x14604e900 (player 0) and 0x14604e904 (player 1) with HIDE_REASONS log lines, calls FUN_142c74200, then posts a message of vtable 0x145751818 with byte +0x10 = 0. Callers by E8/E9 scan: calls at 0x141c232c4 and 0x141c26ba0 and a tail jmp at 0x141c24792 (the KB xrefs are the rel32 operand bytes of the same three). Show is 0x141c247a0 (call 0x141c26c23, jmp 0x141c2457d). Subscriber 0x141a36940 passes byte +0x10 to Sess_Hud_SetVisibilityBit(hud,4,on), so Hide clears HUD mask bit 4. Hide takes no director argument."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "d7-verify",
+   "kind": "func",
+   "item": "Sess_SpectatorHud_Hide",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c237e0.c;xref:0x141c237e0",
+   "notes": "V2671 fade/hide bit ids, offsets, states and curves checked against decomp; role as claimed"
+  },
+  {
+   "date": "2026-11-19",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Sess_SpectatorHud_Hide",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x141c237e0-0x141c23a37,0x14e5c0ea0-0x14e5c1101,0x142c74200-0x142c742eb,0x141e59470-0x141e5950f,0x141e436b0-0x141e43768,0x141c244e0-0x141c24797,0x141c26b30-0x141c26bae,0x141c23244-0x141c232d0,1.0.145 0x141c253e0-0x141c25637;xref:0x141c232c4,0x141c26ba0,0x141c24792,0x141c23896,0x141c23969,0x141c2388b,0x141c2395e,0x141c2398e,0x141c2399a,0x141c239a8",
+   "notes": "V100065 Blind: agree. void(), no args (rcx/rdx first written 0x141c237ea/0x141c237f0). Through an inlined thread-safe static accessor (guard 0x14604e9d0, ctor 0x142c73f00) ORs 0x40 into dword 0x14604e900 (p0, 0x141c23896) and 0x14604e904 (p1, 0x141c23969); logs HIDE_REASONS \"HUD hide reason added: %d, playerIndex: %u\" (6, 0/1) only if the bit was clear and the channel is on; after each, refresh 0x142c74200(S) sets ui_menu_data.hud_visible/secondary_player_hud_visible = (mask==0). Posts msg vtbl 0x145751818 (MessageSpectatorHudVisibility), +8=0, +0x10=0 via 0x141e59470 to [[0x14618b3b8]+8]. Census 2 calls/1 jmp matches own scan. 1.0.145 twin 0x141c253e0, 118/118 equal."
+  }
+ ],
+ "proofs": []
+}

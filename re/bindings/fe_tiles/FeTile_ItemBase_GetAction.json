@@ -1,0 +1,42 @@
+{
+ "schema": 1,
+ "name": "FeTile_ItemBase_GetAction",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141698450",
+  "level": "L2",
+  "subsystem": "fe_tiles",
+  "proto": "Action *FeTile_ItemBase_GetAction(HomeItem *item, Action *out)",
+  "evidence": "decomp:work/exe/decomp/141698450_item_base_getaction.c;xref:0x145705bb8,0x1457063d8,0x145706478,0x14570a578,0x14571e1e8;doc:research/exe.md#3.2",
+  "notes": "vt slot 5 (+0x28) of the base item; returns {0, \"\"}; signature fe_tiles.item_base_get_action added for the F1 1990 Career menu"
+ },
+ "signature": {
+  "id": "fe_tiles.item_base_get_action",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 D6 48 C7 44 24 28 00 00 00 00 48 8D 15 ?? ?? ?? ?? 48 8D 7C 24 28 48 89 F9 45 31 C0 45 31 C9 E8 ?? ?? ?? ?? 48 8D 5E 08 48 C7 46 08 00 00 00 00 C7 06 00 00 00 00",
+  "match": "0x141698450",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141698450",
+  "kind": "func_start",
+  "names": [
+   "FeTile_ItemBase_GetAction"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/career_menu_ui.cpp"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

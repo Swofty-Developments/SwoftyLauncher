@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleAntiStallSystem_IsStartPromptActive",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f4e940",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f4e940.c;xref:0x14152d80f,0x1434bb7f0",
+  "notes": "VehicleAntiStallSystem getter(carIdx): true for session types 15..17 ([[self+0xa8]+0x1a8]+4) when race start released ([0x146095a68]+0x108) and entry+0x30 == 0; else entry+0x18 != 0 and pit state not excluded by mask 0x1fffd; WARN out of bounds. Callers Hud_RaceStartClutchPrompt_Update, Hud_PitStartClutchPrompt_Update, Game_PitLane_UpdateMovement, 0x1435ae540. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2840)"
+ },
+ "signature": {
+  "id": "game.vehicle_anti_stall_system_is_start_prompt_active",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 44 0F B6 C2 48 8B 41 48 48 8B 51 50",
+  "match": "0x142f4e940",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f4e940",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleAntiStallSystem_IsStartPromptActive"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d9-verify",
+   "kind": "func",
+   "item": "Game_VehicleAntiStallSystem_IsStartPromptActive",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f4e940.c;xref:0x142f4e940",
+   "notes": "V2840 strings/calls/offsets checked in decomp+disasm; role and name hold"
+  }
+ ],
+ "proofs": []
+}

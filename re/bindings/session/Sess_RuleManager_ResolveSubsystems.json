@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_RuleManager_ResolveSubsystems",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143568260",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143568260.c;xref:0x143567a37",
+  "notes": "(rm, services, registry) Second stage of Sess_RuleManager_Initialise: queries services (vcall +0x28) for types 0x14604ec98 / 0x146079a88 (trace if missing) and the registry for further components (0x14604ed28, 0x146096ac8, 0x1460965a8, 0x146096aa8, 0x1460fb708, 0x1460fdde0 ...) incl. Sess_Registry_GetComponent80ca8; starts network flag ids (Game_NetworkFlagManager_StartReceivingId). Called from Sess_RuleManager_Initialise."
+ },
+ "signature": {
+  "id": "session.rule_manager_resolve_subsystems",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 50 4C 89 C7 48 89 D3 48 89 CE 48 8B 02 48 8D 15 ?? ?? ?? ?? 48 89 D9 FF 50 28 48 89 46 48",
+  "match": "0x143568260",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143568260",
+  "kind": "func_start",
+  "names": [
+   "Sess_RuleManager_ResolveSubsystems"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x143568260",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143568260.c;xref:0x143567a37,0x14356850a",
+   "notes": "V3777 Queries services (vcall +0x28) for 14604ec98 / 146079a88 (trace code 0x16 if missing), registry keys 1460fdde0, 146044990, 14604ed28, 146096ac8, 1460965a8, 146096aa8, 1460fb708 seen, calls eff3d0 and Game_NetworkFlagManager_StartReceivingId (143580f20)."
+  }
+ ],
+ "proofs": []
+}

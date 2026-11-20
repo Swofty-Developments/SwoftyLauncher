@@ -102,6 +102,26 @@ Current-executable evidence (preferred-image VAs):
 - Mode/badges: mode context +0x88 store `0x1407d08d7`, label pointer +0x278 store `0x1407cbceb`. Existing badge consumer `0x1417617a0` corroborates entrant/table/packed-team-reference chain; custom branch `0x141761a0c` and key load `0x141761a8b`. Existing MyTeam/custom unavailability is preserved.
 - Driver names: current getter `0x142f2b1a0` corroborates participant vector +0x88/+0x90, physics +0x18 -> car +0x58 -> id +0xe8, override flag +0x32 bit7, entrant +0x50, table +0x268 and name +0xc8. Name pointer writer `0x14c80a5f2`. This override is not player identity. Only the current build receives the missing-generated-field proof; mapped/site checks remain required.
 
+## Grid, lap times, tyre wear and tyre age (table v6)
+
+The four groups added with Live table v6 read on this build. `re/tools/layoutcmp.py --steam <KB exe> --other <this exe>
+--build steam-26566308` over every new field finds each KB function by its head pattern on this build and compares the
+instruction streams with relocated operands normalised; every function is identical (ratio 1.00) and every xref keeps
+its displacement:
+
+| field | KB function | this build |
+|---|---|---|
+| `SessionVehicleEntry.grid_position_a/_b` +0x90/+0x98 | `0x142cfd6c0` (UDP lap data) | `0x142cffc50` |
+| `CarWheel.wear` +0x88 | `0x142d00060` (UDP car damage/status) | `0x142d025f0` |
+| `VehicleLapTimesSystem.cars_begin/_end` +0x58/+0x60 | `0x142f0c7f0` (`Sess_LapTimes_GetCarData`) | `0x142f0ed80` |
+| `VehicleLapTimesData.current_lap` +0x9c48, `.laps` +0x8 | `0x142cfd6c0`, `0x142cfe4f0` | `0x142cffc50`, `0x142d00a80` |
+| `LapTimeRecord` +0x0 .. +0xb0 | `0x142cfd6c0`, `0x142cfe4f0`, `0x142f2e520` | `0x142cffc50`, `0x142d00a80`, `0x142f30ab0` |
+| `TyreStint.compound/set_index/end_lap` +0xc/+0x10/+0x74 | `0x142e9eda0` (`Car_TyreSelection_SetCurrentTyres`) | `0x142ea1330` |
+
+`k_Live_VehicleLapTimesSystemKey` resolves once on this build (`binding.py verify`, match RVA `0x5fcb6c`, hinted in the
+overlay). The wheel chain tyre wear reads through is `runtime::car_layout::PUNCTURES`, proven on this build. No runtime
+session has checked the new values yet.
+
 ## Automated checks and runtime follow-up
 
 All 26 existing bindings pass checked overlay hints, unique scans and signature checks. Native live/gate/SDK tests cover all groups, missing dependencies, current and old ERS offsets, compounds and inactive-session names/badges. A synthetic PE regression checks shuffled section names. The complete core builds.

@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Career_Add_TeamModifier",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434f8a00",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Add_TeamModifier(void *list, uint32_t key, float value)",
+  "evidence": "decomp:re/decomp/1434f8a00.c;xref:0x1434f5b22,0x1434f5b33,0x1434f5b44;pat:add-if-absent-then-stable-passes-kind-dept;kb:subsystems/rnd_ui.md#modifiers;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v071--tyres-research-capacity-flag-tyres_research_capacity-default-on-install-time",
+  "notes": "Team modifier add-if-absent: returns when the key exists; otherwise appends {key, value} and runs two stable passes, by byte 0 (kind) then by byte 1 (dept), so the vector ends ordered by dept then kind, and inserts kind/dept/source into the small sets at list+0x20/+0x50/+0x80/+0x90. key = kind | dept<<8 | source<<16 | active<<24 (edx), value in xmm2, r8/r9 unused, return ignored by callers. 313 E8 callers: 232 in Career_Init_TeamModifiers 0x1434f9770, 80 in Career_Init_SharedTeamModifiers 0x1434f58b0, 1 in 0x1434f85e0"
+ },
+ "signature": {
+  "id": "career.add_team_modifier",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 68 10 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 F8 29 BC 24 50 10 00 00",
+  "match": "0x1434f8a00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434f8a00",
+  "kind": "func_start",
+  "names": [
+   "Career_Add_TeamModifier"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-c",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_capacity.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-2",
+   "kind": "func",
+   "item": "Career_Add_TeamModifier",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1434f8a00.c;xref:0x1434f8a2b,0x1434f8a2f,0x1434f8a31,0x1434f8a50,0x1434f8a62,0x1434f8c9d,0x1434f8e23,0x1434f8eff,0x1434f8f02,0x1434f9093,0x1434f9120,0x1434f91fc,0x1434f5b22",
+   "notes": "V0117 proto right (rcx list, edx key, xmm2 float, r8/r9 unused, rax ignored by callers; 313 E8 callers: 232 in 0x1434f9770, 80 in 0x1434f58b0, 1 in 0x1434f85e0, no other refs), add-if-absent and key layout right; but it is not a sort by kind: after appending it runs two stable passes, by byte 0 (kind) then by byte 1 (dept), so the vector ends ordered by dept then kind; it also inserts kind/dept/source into the small sets at list+0x20/0x50/0x80/0x90"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-5",
+   "kind": "func",
+   "item": "Career_Add_TeamModifier",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434f8a00.c;xref:0x1434f8a2b,0x1434f8a2f,0x1434f8a50,0x1434f8a62,0x1434f912f,0x1434f5b19,0x1434f5b22,0x1434f873d,0x1434f873f",
+   "notes": "V0216 sigcheck OK, 6-byte entry window clean; 313 E8 callers (232 in 0x1434f9770, 80 in 0x1434f58b0, 1 in 0x1434f85e0), edx key / xmm2 value, r8/r9 written before any read; returns at once if key present, appends, stable passes byte0 then byte1; sets: kind -> +0x20 when active byte!=0 else +0x50, dept -> +0x80 only when active, source -> +0x90"
+  }
+ ],
+ "proofs": []
+}

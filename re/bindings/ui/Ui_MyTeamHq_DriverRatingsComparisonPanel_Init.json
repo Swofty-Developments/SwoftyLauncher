@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_MyTeamHq_DriverRatingsComparisonPanel_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1415dd520",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *f(void *self)",
+  "evidence": "decomp:re/decomp/1415dd520.c;xref:0x1456f5058",
+  "notes": "myteam-g1: Widget constructor for my_team_driver_ratings_comparison_hq_panel (team HQ driver ratings comparison)."
+ },
+ "signature": {
+  "id": "ui.my_team_hq_driver_ratings_comparison_panel_init",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 4C 89 44 24 30 48 89 D7 48 89 CB 48 8B B1 90 FD FF FF",
+  "match": "0x1415dd520",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1415dd520",
+  "kind": "func_start",
+  "names": [
+   "Ui_MyTeamHq_DriverRatingsComparisonPanel_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x1415dd520",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1415dd520.c;xref:0x1456f5058",
+   "notes": "V9723 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

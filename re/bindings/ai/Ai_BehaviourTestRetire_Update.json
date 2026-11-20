@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ai_BehaviourTestRetire_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140653ec0",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140653ec0.c;xref:0x1456373a0",
+  "notes": "AI behaviour (vtable slot 0x1456373a0) 'BehaviourTestRetire': when timer this+0xf0 <0 draws a random delay this+0xec = min(+0x438) + rand*range(+0x440) from the driver settings and resets +0xf0 from +0x448; car slot this+0x1d (stride 0x508 in [param_3+0xa8]); flags this+0x100 bit1 = car in state 4 without flag 0x1000, bit2 = car is the local player; skips player/retired cars. Debug/test behaviour that makes AI cars retire. Addon: forced AI retirement / DNF injection. | #587: L2 by lead-authorised promotion for lane owner ai-re (independent agree V2866)"
+ },
+ "signature": {
+  "id": "ai.behaviour_test_retire_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 05 00 00 C5 78 29 AC 24",
+  "match": "0x140653ec0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140653ec0",
+  "kind": "func_start",
+  "names": [
+   "Ai_BehaviourTestRetire_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d10-verify",
+   "kind": "func",
+   "item": "Ai_BehaviourTestRetire_Update",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140653ec0.c;xref:0x140653ec0",
+   "notes": "V2866 decomp checked: offsets/calls/strings match claim"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_Update_ContractHubButtonState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422f88f0",
+  "level": "L1",
+  "subsystem": "vm",
+  "proto": "char Vm_Update_ContractHubButtonState(void *vm)",
+  "evidence": "decomp:re/decomp/1422f88f0.c;xref:0x1422f7c03;xref:0x1422f8771;xref:0x1422f9902",
+  "notes": "myteam-g2: Queries the contract state of the My Team driver slot (FUN_140d79a90, value < 2 means free/open), sets a bool node (Vm_NodeSet_Bool) and a caption (Vm_Holder_SetCStr) for the hub button. UI only."
+ },
+ "signature": {
+  "id": "vm.update_contract_hub_button_state",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 30 48 89 CF 48 8B 89 20 07 00 00",
+  "match": "0x1422f88f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422f88f0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Update_ContractHubButtonState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1422f88f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1422f88f0.c;xref:0x1422f7c03",
+   "notes": "V10103 Caption/bool for the review-contract button (lng_contracts_review_contract_subtitle_*), not a generic hub button."
+  }
+ ],
+ "proofs": []
+}

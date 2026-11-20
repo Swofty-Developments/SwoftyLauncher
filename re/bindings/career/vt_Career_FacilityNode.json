@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "vt_Career_FacilityNode",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1456af450",
+  "type": "vtable[11]",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "pat:vtable-slot-0x38-is-0x140f8d8d0;xref:0x1456af488;doc:addons/career-editor/protocol/facilities.md#engine-paths;decomp:re/decomp/140fa5470.c;xref:0x140fa5482,0x140f8a6de,0x140f7df92;decomp:re/decomp/140f8a5f0.c;doc:addons/career-editor/protocol/facilities.md#engine-paths",
+  "notes": "Facility perk-tree node class: +0x20 isComplete 0x140f8e5d0 (days_remaining +0xac == 0 and purchased +0xb0), +0x38 claim rewards 0x140f8d8d0, +0x48 serialise 0x140f8e8d0 / +0x50 deserialise 0x140f8ece0 (keys day_completed purchased days_remaining seen_completed seen_available revoked_due_to_higher_tier unlock_at_start reward_set), +0x10 0x140f8a800 parses the DB node (cost, days_to_complete, ...)."
+ },
+ "signature": {
+  "id": "career.facility_node",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 01 48 8D 99 C0 00 00 00",
+  "match": "0x140fa5482",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x1456af450",
+  "kind": "data",
+  "names": [
+   "vt_Career_FacilityNode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-rnd",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/facilities.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-1",
+   "kind": "global",
+   "item": "vt_Career_FacilityNode",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f8e8d0.c;decomp:re/decomp/140f8ece0.c;decomp:re/decomp/140f8a800.c;decomp:re/decomp/140f8d8d0.c;decomp:re/decomp/140f8e5d0.c;xref:0x140fa5485,0x140f8a6e0,0x140f7df93",
+   "notes": "V0230 11 slots then the days_to_complete string; +0x20 = (u8 +0xb0 != 0 && u32 +0xac == 0); +0x38 posts MessageFacilityUpgradeComplete (msg vt 0x1456b06b8, name getter 0x140fa7720); +0x48 adds 9 keys (also writes claimed), +0x50 reads 8; +0x10 parses cost/days_to_complete/...; writers 0x140f7cfe0, 0x140f8a5f0 (create child, sets child+0x10 = parent), dtor 0x140fa5470"
+  }
+ ],
+ "proofs": []
+}

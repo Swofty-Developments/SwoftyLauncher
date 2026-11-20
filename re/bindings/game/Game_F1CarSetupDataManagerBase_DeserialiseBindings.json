@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1CarSetupDataManagerBase_DeserialiseBindings",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c0c0c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "str:s_F1CarSetupDataManagerBase_DeserialiseBindings;xref:0x140c0c3d5",
+  "notes": "cxx=game::F1CarSetupDataManagerBase::deserialiseBindings; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "game.f1_car_setup_data_manager_base_deserialise_bindings",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 01 00 00 C5 F8 29 B4 24 D0 01 00 00 48 89 D3 48",
+  "match": "0x140c0c0c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c0c0c0",
+  "kind": "func_start",
+  "names": [
+   "Game_F1CarSetupDataManagerBase_DeserialiseBindings"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140c0c0c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c0c0c0.c;xref:0x140cccafd,0x140cccfb2",
+   "notes": "V4558 log/pretty strings and body checked in decomp"
+  }
+ ],
+ "proofs": []
+}

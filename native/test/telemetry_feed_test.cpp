@@ -1,7 +1,7 @@
 // Host unit test for the telemetry feed layout and seqlock. Builds and runs on the CI host
 // (no Wine, no game); the core publishes the live feed with the same telemetry_feed.hpp.
 
-#include "../src/core/telemetry_feed.hpp"
+#include "core/telemetry/telemetry_feed.hpp"
 
 #include <atomic>
 #include <cstdio>
@@ -65,8 +65,7 @@ static void test_seqlock()
     // Past `rounds` the writer keeps writing, yielding between frames, until the reader has completed a read
     // while it writes; a reader thread scheduled only after the writer's burst would otherwise read nothing.
     std::thread writer([&] {
-        for (uint64_t n = 1; n <= rounds || (completed.load(std::memory_order_relaxed) == 0 && n <= 4 * rounds);
-             n++) {
+        for (uint64_t n = 1; n <= rounds || (completed.load(std::memory_order_relaxed) == 0 && n <= 4 * rounds); n++) {
             if (n > rounds)
                 std::this_thread::yield();
             feed_begin(&shared);
@@ -90,13 +89,12 @@ static void test_seqlock()
         reads++;
         completed.store(reads, std::memory_order_relaxed);
         uint32_t tag = uint32_t(out.frame);
-        if (out.session.total_laps != tag || out.cars[0].lap != tag || out.cars[23].lap != tag ||
-            out.participants[23].lap != tag)
+        if (out.session.total_laps != tag || out.cars[0].lap != tag || out.cars[23].lap != tag || out.participants[23].lap != tag)
             torn++;
     }
     writer.join();
-    std::printf("     seqlock: %llu reads, %llu retries, %llu torn\n", (unsigned long long)reads,
-                (unsigned long long)retries, (unsigned long long)torn);
+    std::printf("     seqlock: %llu reads, %llu retries, %llu torn\n", (unsigned long long)reads, (unsigned long long)retries,
+                (unsigned long long)torn);
     check(reads > 0, "seqlock reader completed reads");
     check(torn == 0, "seqlock reader never saw a torn frame");
 }

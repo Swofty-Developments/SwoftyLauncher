@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Find_TeamStatRange",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1412192b0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Find_TeamStatRange(void *out, void *team_stats, uint32_t team_key, void *stat_name)",
+  "evidence": "decomp:re/decomp/1412192b0.c;xref:0x140c9ad9b;xref:0x140db96db;xref:0x140db9773",
+  "notes": "myteam-g2: Finds the stat bucket for team_key in the stat list at team_stats+0x2c8..0x2d0 (0x30-byte entries) then the named stat (FUN_14535d850 compare) and returns its record (refcounted). Reached from the bank valid-transaction subscription and DriverContracts_CalcBaseValues."
+ },
+ "signature": {
+  "id": "career.find_team_stat_range",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 20 48 89 CE 48 85 D2 0F 84 ?? ?? ?? ?? 48 8B 82 C8 02 00 00",
+  "match": "0x1412192b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1412192b0",
+  "kind": "func_start",
+  "names": [
+   "Career_Find_TeamStatRange"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x1412192b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1412192b0.c;xref:0x140c9ad9b",
+   "notes": "V9675 Finds team entry (0x30 stride in +0x2c8..+0x2d0) then the named attribute and returns a refcounted record; returns the attribute, \"range\" is just min/max inside it."
+  }
+ ],
+ "proofs": []
+}

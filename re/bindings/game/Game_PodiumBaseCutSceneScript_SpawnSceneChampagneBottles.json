@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PodiumBaseCutSceneScript_SpawnSceneChampagneBottles",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140359de0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=PodiumBaseCutSceneScript::spawnSceneChampagneBottles; log channel CUTSCENE_PODIUM: 'PodiumBaseCutSceneScript::spawnSceneChampagneBottles'"
+ },
+ "signature": {
+  "id": "game.podium_base_cut_scene_script_spawn_scene_champagne_bottles",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 70 01 00 00 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01",
+  "match": "0x140359de0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140359de0",
+  "kind": "func_start",
+  "names": [
+   "Game_PodiumBaseCutSceneScript_SpawnSceneChampagneBottles"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x140359de0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140359de0.c",
+   "notes": "V4516 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

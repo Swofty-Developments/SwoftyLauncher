@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Visual_UpdateHeatEffects",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14039f630",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14039f630.c;xref:0x14039dd5e,0x1403a6b28",
+  "notes": "(carVisual, dt): smooths visual heat values (+0x1be4 from car+0x2574, +0x1be8 from +0x2548/rpm) and maps temperature (+0x253c K -273.15 -30) into glow ramps for brake/exhaust shaders. Caller: Car_Visual_UpdateRenderState."
+ },
+ "signature": {
+  "id": "car.visual_update_heat_effects",
+  "section": ".xtls",
+  "pattern": "48 83 EC 38 C5 78 29 44 24 20 C5 F8 29 7C 24 10 C5 F8 29 34 24 48 8B 81",
+  "match": "0x14039f630",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14039f630",
+  "kind": "func_start",
+  "names": [
+   "Car_Visual_UpdateHeatEffects"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14039f630",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14039f630.c;xref:0x14039dd5e",
+   "notes": "V3523 smooths +0x1be4 from car+0x2574 and +0x1be8 from +0x2548/rpm, temp +0x253c-273.15-30 into ramps; Car_Visual_UpdateRenderState caller seen"
+  }
+ ],
+ "proofs": []
+}

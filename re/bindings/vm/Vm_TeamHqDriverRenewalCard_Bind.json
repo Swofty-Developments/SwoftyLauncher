@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_TeamHqDriverRenewalCard_Bind",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1419a3320",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void (void *vm, int64_t a, void **ctx)",
+  "evidence": "decomp:re/decomp/1419a3320.c;xref:0x14199da6f",
+  "notes": "myteam-g1: Binds the driver contract renewal card: contract_driver_renewal, show_driver/team_details, lead_player_name, team_income, team_performance_index, team_ref."
+ },
+ "signature": {
+  "id": "vm.team_hq_driver_renewal_card_bind",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 4D 89 CF 4C 89 C6",
+  "match": "0x1419a3320",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419a3320",
+  "kind": "func_start",
+  "names": [
+   "Vm_TeamHqDriverRenewalCard_Bind"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x1419a3320",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1419a3320.c;xref:0x14199da6f",
+   "notes": "V9886 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_AddDropInRequest",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14323f450",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name addDropInRequest (class from the log channel); log channel NETWORK: '%s: player: %s, vehicleIx: %d'"
+ },
+ "signature": {
+  "id": "game.network_add_drop_in_request",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 30 83 79 08 01",
+  "match": "0x14323f450",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14323f450",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_AddDropInRequest"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x14323f450",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14323f450.c;xref:0x14323d601",
+   "notes": "V6053 name and log/cxx claim match body"
+  }
+ ],
+ "proofs": []
+}

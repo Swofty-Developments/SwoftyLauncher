@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MidSession_SaveReplaySnapshot",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14111e910",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14111e910.c;xref:0x142964d41",
+  "notes": "Owner object (not the ReplaySystem): clears data-tree container this+0x4d0 (frees nodes), adds mssVersionNum, reset-if-flagged on ReplaySystem this+0x2a0 + setState(+0x20,1), writes replay/keyframe buffers through MidSessionDataSaveDataContainer this+0x2b0 (0x142fe06e0), sets this+0x4d8=1 (snapshot valid), posts bus message 0x1456c5728 (0x1411ba370). Callers 0x142964be0, 0x142e01d30 (mid-session save). Note: the replay reset runs before the buffers are written (reset body in .data1 not decoded; may be a stream/cursor reset). | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2334)"
+ },
+ "signature": {
+  "id": "game.mid_session_save_replay_snapshot",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 38 48 89 CE C6 81 D8 04",
+  "match": "0x14111e910",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14111e910",
+  "kind": "func_start",
+  "names": [
+   "Game_MidSession_SaveReplaySnapshot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d2-verify",
+   "kind": "func",
+   "item": "Game_MidSession_SaveReplaySnapshot",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14111e910.c;xref:0x142964d41",
+   "notes": "V2334 owner obj; clears tree +0x4d0, mssVersionNum node, ReplaySystem +0x2a0 reset+setState, buffers via 142fe06e0 on +0x2b0, +0x4d8=1 (also set at entry), bus msg 1456c5728; callers 0x142964d41,0x142e01ea5 (call sites)"
+  }
+ ],
+ "proofs": []
+}

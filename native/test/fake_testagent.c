@@ -23,7 +23,9 @@ int main(void)
     DWORD dummy;
     printf("%s version.dll forwarding works\n",
            GetFileVersionInfoSizeW(L"C:\\windows\\system32\\kernel32.dll", &dummy) ? "ok  :" : "FAIL:");
-    WNDCLASSEXW wc = {.cbSize = sizeof wc, .lpfnWndProc = DefWindowProcW, .hInstance = GetModuleHandleW(NULL),
+    WNDCLASSEXW wc = {.cbSize = sizeof wc,
+                      .lpfnWndProc = DefWindowProcW,
+                      .hInstance = GetModuleHandleW(NULL),
                       .lpszClassName = L"EGO_WindowClass"};
     extern void *__imp_RegisterClassExW;
     ATOM(WINAPI * rc)(const WNDCLASSEXW *) = (void *)__imp_RegisterClassExW;

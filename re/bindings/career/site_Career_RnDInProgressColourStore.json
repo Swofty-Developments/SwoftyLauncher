@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDInProgressColourStore",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f3dacf",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141f3bec0.c;xref:0x141f3dacf,0x141f3dac5;doc:addons/rnd-tyres-thermal/native/HOOKS.md#3-tyres-icon-and-colour-in-the-rd-lists-always-on",
+  "notes": "mov [rsp+0x6c],eax (window 12 bytes with mov r15,[rsp+0x1b8]); eax = rcx<=5 ? k_Career_RnDInProgressColourTable[rcx] : -1 with rcx = movsx [r13+0x72]; ja target from 0x141f3dac3 (window start); the hook sets eax = Tyres orange when [r13+0x72]==4 and eax is white (the table is shared with the Driver Career rewards, so the store is hooked)"
+ },
+ "signature": {
+  "id": "career.rnd_in_progress_colour_store",
+  "section": ".xtls",
+  "pattern": "89 44 24 6C 4C 8B BC 24 B8 01 00 00",
+  "match": "0x141f3dacf",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f3dacf",
+  "kind": "mid",
+  "expect": "89 44 24 6C 4C 8B BC 24 B8 01 00 00",
+  "names": [
+   "site_Career_RnDInProgressColourStore"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-d",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_dept_tags.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-2",
+   "kind": "global",
+   "item": "site_Career_RnDInProgressColourStore",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f3bec0.c;xref:0x141f3dab5,0x141f3dac3,0x141f3dacc,0x141f3dacf,0x141f3dad3,0x1420bfa43,0x1420c2abe",
+   "notes": "V0107 window mov [rsp+0x6c],eax + mov r15,[rsp+0x1b8] (12B); eax = rcx<=5 ? k_Career_RnDInProgressColourTable[rcx] : -1, rcx = movsx [r13+0x72]; ja @0x141f3dac3 to window start; table[4] white; table also read by 0x1420bcfb0/0x1420c1bd0 (driver_career_rewards strings)"
+  }
+ ],
+ "proofs": []
+}

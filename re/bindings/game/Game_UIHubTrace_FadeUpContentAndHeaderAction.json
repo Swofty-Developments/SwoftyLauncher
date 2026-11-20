@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UIHubTrace_FadeUpContentAndHeaderAction",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1438057d0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-UIHubTrace",
+  "notes": "named from its log messages (channel UIHubTrace): '[ACTION] FadeUpContentAndHeader Action Triggered'"
+ },
+ "signature": {
+  "id": "game.ui_hub_trace_fade_up_content_and_header_action",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 90 00 00 00 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6A B8 7B 00 00 00",
+  "match": "0x1438057d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1438057d0",
+  "kind": "func_start",
+  "names": [
+   "Game_UIHubTrace_FadeUpContentAndHeaderAction"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x1438057d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1438057d0.c;xref:0x143803504",
+   "notes": "V6276 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

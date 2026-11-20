@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_TeamHqMyTeam_FindBoundIndexA",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141993310",
+  "level": "L1",
+  "subsystem": "vm",
+  "proto": "uint64_t Vm_TeamHqMyTeam_FindBoundIndexA(void *vm)",
+  "evidence": "decomp:re/decomp/141993310.c;xref:0x1419935ce;xref:0x141993884;xref:0x1419938e4",
+  "notes": "myteam-g2: Walks the linked bound-property chain at vm+0x68 (max 0x62 hops) to find a typed index value, resolves it and returns it; used when initialising and handling commands on the My Team VM."
+ },
+ "signature": {
+  "id": "vm.team_hq_my_team_find_bound_index_a",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 48 89 CE 48 8B 41 68",
+  "match": "0x141993310",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141993310",
+  "kind": "func_start",
+  "names": [
+   "Vm_TeamHqMyTeam_FindBoundIndexA"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x141993310",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141993310.c;xref:0x1419935ce",
+   "notes": "V9880 walks bound-property chain at vm+0x68 (max 0x62 hops), then looks the name from vm+0x48 up via FUN_14420b270 and returns field +0xd0 of the matching element in the vm+0x108 vector; not simply a typed index value"
+  }
+ ],
+ "proofs": []
+}

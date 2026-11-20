@@ -1,0 +1,84 @@
+{
+ "schema": 1,
+ "name": "FeTile_Route_CareerItem",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141725620",
+  "level": "L2",
+  "subsystem": "fe_tiles",
+  "proto": "Action *FeTile_Route_CareerItem(HomeItem *item, Action *out)",
+  "evidence": "decomp:re/decomp/141725620.c;xref:0x14172666d",
+  "notes": "career tile router: item [0x2f] +0x178 career kind (djb2 driver_career / my_team_career) picks the save-slot path (predicates 0x1438fb390 / 0x1438fb5d0 on the [0x30] data group); empty -> out = {type 1, route = item id}, which the content tiles use. Raised by native-1990 for the F1 1990 v2 third Career tile (doc:/mnt/work/.f1-1990/v2/third-tile.md)."
+ },
+ "signature": {
+  "id": "fe_tiles.route_career_item",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 48 89 D6 48 89 CF 48 8B 89 78 01 00 00",
+  "match": "0x141725620",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141725620",
+  "kind": "func_start",
+  "names": [
+   "FeTile_Route_CareerItem"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/career/career_content.cpp",
+   "addons/f1-1990/native/src/career_menu_ui.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-21",
+   "verifier": "std-content",
+   "kind": "func",
+   "item": "FeTile_Route_CareerItem",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/exe/std-content/decomp/141725620.c;xref:0x14172666d,0x14172692f,0x1422a561b,0x145703ed8;sig:fe_tiles.route_career_item",
+   "notes": "V0904 Independent: 2 args (item, out). mov rcx,[rcx+0x178] then djb2: 0x73b00842 driver_career builds the functor {vt 0x14588ab80 (lea at 0x1417256bf), &name} with name = item+0x180 (mov rax,[rdi+0x180]) and calls 0x1407d22d0(item+0x158); 0x353c4a02 my_team_career uses vt 0x14588abb0; empty or any other kind -> out = {type 1, item id}. Also vtable 0x145703eb0 slot 5 (+0x28, abs ref 0x145703ed8) and called by 0x1422a53e0 besides the two content GetActions. sigcheck: func_start 1 hit"
+  },
+  {
+   "date": "2026-10-21",
+   "verifier": "std-content",
+   "kind": "func",
+   "item": "FeTile_Route_CareerItem",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/exe/std-content/decomp/141725620.c;xref:0x14172666d,0x14172692f,0x145703ed8;sig:fe_tiles.route_career_item",
+   "notes": "V0912 Supersedes V0904, whose xref 0x1422a561b (caller 0x1422a53e0) was a false positive of the byte-sliding rel32 scan (0x1422a561c sits inside a ja at 0x1422a5618). Callers: the two content presses 0x141726620 (0x14172666d) and 0x1417267e0 (0x14172692f), plus vtable 0x145703eb0 slot 5 (+0x28, 0x145703ed8) = the career item's own GetAction. Rest of V0904 unchanged: [item+0x178] djb2 0x73b00842 driver_career -> functor vt 0x14588ab80 with name item+0x180 into 0x1407d22d0(item+0x158); 0x353c4a02 my_team_career -> vt 0x14588abb0; empty or other -> out = {1, item id}"
+  },
+  {
+   "date": "2026-10-21",
+   "verifier": "std-ui-verify",
+   "kind": "func",
+   "item": "FeTile_Route_CareerItem",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141725620.c;decomp:re/decomp/14387d100.c;xref:0x14172666d,0x14172692f;sig:fe_tiles.route_career_item",
+   "notes": "V0922 proto: rcx item kept in rdi, rdx out in rsi, returns out. item+0x178 NeStr hashed with djb2: 0x73b00842 = driver_career uses functor vtable 0x14588ab80 (slot 2 = 0x1438fb390), 0x353c4a02 = my_team_career uses 0x14588abb0 (slot 2 = 0x1438fb5d0), both capturing the chars of item+0x180 (the data group, also copied to wizard+0x128 by 0x14387d100). Empty or any other kind goes to 0x1417257d3: out+0 = dword 1, out+8 = item+0x10 id NeStr. Driver path ends with career_wizard_driver_career_to_f1 when StartsInF1 is true. The row does not claim one caller: a rel32 scan finds 0x14172666d (in 0x141726620) and 0x14172692f (in 0x1417267e0), and .xtext slot 0x145703ed8 holds the address. Body of 0x1438fb5d0 not read. sigcheck: one hit at 0x141725620"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "ts-v1",
+   "kind": "func",
+   "item": "0x141725620",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141725620.c;xref:0x145703ed8",
+   "notes": "V1490 ts-v1 re-read: slot 5 (+0x28) of the career item vtable 0x145703eb0 (read from the exe: 0x141725620). Kind NeStr at item+0x178 (item[1].button_node.link_next), djb2 0x73b00842 driver_career / 0x353c4a02 my_team_career. With a continuable save returns {type 1, route solo_career_continue_driver|my_team}; else it RESETS the wizard/save-slot state (+0xe8/+0x108/+0x181/+0x1d0, new random id block, SetCurrentGameMode(null)) and routes into the new-career wizard, so probing it on a no-save tile is not read-only. Agrees; the side effect is the caveat."
+  }
+ ],
+ "proofs": []
+}

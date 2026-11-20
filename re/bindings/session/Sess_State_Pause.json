@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_State_Pause",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d77c60",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d77c60.c;xref:0x142d66b82,0x14e9c704a",
+  "notes": "Pause of the session state: 0x14080e110(game st+0xc98, 1, 0), st+0xcf9 = 1, unless [st+0xcc0]+0x5c2 ADDS HUD hide reason 1 (pause) for both players, then marks the pause on the bus. Called by Sess_State_OnPauseRequested. Addon: pause hides the HUD via reason 1."
+ },
+ "signature": {
+  "id": "session.state_pause",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 48 8B 89 98 0C 00 00 B2",
+  "match": "0x142d77c60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d77c60",
+  "kind": "func_start",
+  "names": [
+   "Sess_State_Pause"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d7-verify",
+   "kind": "func",
+   "item": "Sess_State_Pause",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d77c60.c;xref:0x142d669c0",
+   "notes": "V2718 fade/hide bit ids, offsets, states and curves checked against decomp; role as claimed"
+  }
+ ],
+ "proofs": []
+}

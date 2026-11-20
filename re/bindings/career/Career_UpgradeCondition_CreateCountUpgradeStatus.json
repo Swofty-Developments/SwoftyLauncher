@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_UpgradeCondition_CreateCountUpgradeStatus",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f5df00",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *FUN(void *self, void *owner, void *ctx, void *cfg)",
+  "evidence": "decomp:re/decomp/140f5df00.c;xref:0x140ef2337;xref:0x140ef236d",
+  "notes": "myteam-g1: Condition constructor with num_upgrades (int at +0x38) plus upgrade_status enum (byte at +0x3c, values 1..8): \"at least N upgrades in status X\"."
+ },
+ "signature": {
+  "id": "career.upgrade_condition_create_count_upgrade_status",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 4C 89 CF 48 89 CE 4C 89 41 08 48 C7 41 10 00 00 00 00 48 C7 41 20 00 00 00 00 48 89 51 28 48 8D 05 ?? ?? ?? ?? 48 89 01 48 8D 15 ?? ?? ?? ?? 4C 89 C9 E8 ?? ?? ?? ?? 8B 00 89 46 38 48 8D 15",
+  "match": "0x140f5df00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f5df00",
+  "kind": "func_start",
+  "names": [
+   "Career_UpgradeCondition_CreateCountUpgradeStatus"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140f5df00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f5df00.c;xref:0x140ef2337;str:\"num_upgrades\"",
+   "notes": "V9580 num_upgrades int at +0x38 and upgrade_status enum byte at +0x3c (values 1..8); \"at least N\" semantics not provable from ctor."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Sess_Set_SessionDefaultFuelErs",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f43b30",
+  "level": "L1",
+  "subsystem": "session",
+  "proto": "void Sess_Set_SessionDefaultFuelErs(void *sys)",
+  "evidence": "doc:re/db/subsystems/game.md;decomp:re/decomp/142f43b30.c;xref:0x142f41896,0x142f43558",
+  "notes": "For each primary controller (getter [entry+0x20] vfunc +0x18) writes ERS +0x08 and fuel mix +0x00: 3 for session types 5..14 and 18, 1 for races 15..17, nothing for 0..4 / 19 (0x142f43b7b..0x142f43bbb): races start on Standard mix + Medium ERS (agent ai_race, aaa-verify claim 9) sb3-verify-a correction: handles ONE vehicle (low byte of msg+0x10, only when that ushort > 0xff; vehicle from table [0x146096578]+0x30), not a loop; session type [[this+0x78]+0x1a8]+4: types 5..14 and 18 -> 3, 15..17 -> 1, 0..4 and 19 write nothing; writes +8 then +0"
+ },
+ "signature": {
+  "id": "session.set_session_default_fuel_ers",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 0F B7 42 10 48 3D 00 01 00 00",
+  "match": "0x142f43b30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f43b30",
+  "kind": "func_start",
+  "names": [
+   "Sess_Set_SessionDefaultFuelErs"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "aaa-verify",
+   "kind": "func",
+   "item": "Sess_Set_SessionDefaultFuelErs",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "xref:0x142f43b7b,0x142f43bbb",
+   "notes": "V1692 aaa-verify: 3 for 5..14 and 18, 1 for 15..17, none for 0..4/19; 'Controls' object name not provable"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "aaa-verify",
+   "kind": "func",
+   "item": "Sess_Set_SessionDefaultFuelErs",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "xref:0x142f43b7b,0x142f43bbb",
+   "notes": "V1893 aaa-verify: 3 for 5..14 and 18, 1 for 15..17, none for 0..4/19; 'Controls' object name not provable"
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "sb3-verify-a",
+   "kind": "func",
+   "item": "Sess_Set_SessionDefaultFuelErs",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142f43b30.c;xref:0x142f43b30",
+   "notes": "V1913 not a loop: handles one vehicle (byte of msg+0x10, only if ushort>0xff) via table at DAT_146096578+0x30; session type=[[+0x78]+0x1a8]+4; mask 0x7fe0 (5..14)->3, 15..17->1, 18->3 confirmed; writes +8 then +0"
+  }
+ ],
+ "proofs": []
+}

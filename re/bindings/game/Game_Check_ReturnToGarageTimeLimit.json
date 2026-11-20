@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Check_ReturnToGarageTimeLimit",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1424ac650",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "bool Game_Check_ReturnToGarageTimeLimit(void *self)",
+  "evidence": "str:s_cfg_GameReturnToGarageTimeLimit;decomp:re/decomp/1424ac650.c;xref:0x141d572b8,0x141d58784,0x141d59b5b,0x1424ac839,0x1424ac83a",
+  "notes": "Returns 1 by default (no session [[self+0x60]+0x88]+0x260, 0x14077c790 false, or session type [[self+0xf8]]+0x78 != 0x11). Otherwise computes a session time in seconds (double): [s+0x90] if s+0xb8, 0 if s+0xb9, else (when s+0x7d) max(0, [s+0x88] + timer term / -1e6) from the timing block [[s+0x68]+0xd8]+0x4c0..0x4e8. Returns time > limit. Limit: Game.ReturnToGarageTimeLimit via Ne_Config_GetFloatOrDefault 0x143a44090 on [self+0x200], default 10.0 (0x145381188), read once under a thread-safe static and cached as float in 0x14606ea5c. Callers in the in-game menu VM: 0x141d56e60, 0x141d58730 and Game_InGameMenuVM_OnReturnToGarage 0x141d592c0 (all pass [vm+0x370]); the last uses the result to allow the return-to-garage action. hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "game.check_return_to_garage_time_limit",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 C5 F9 29 74 24 30 48 8B 41 60",
+  "match": "0x1424ac650",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424ac650",
+  "kind": "func_start",
+  "names": [
+   "Game_Check_ReturnToGarageTimeLimit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-1",
+   "kind": "func",
+   "item": "0x1424ac650",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1424ac650.c;xref:0x141d572b9,0x141d58785,0x141d59b5c",
+   "notes": "V9328 Reads float Game.ReturnToGarageTimeLimit once (Ne_Config_GetFloatOrDefault, default 10.0) and returns true when the session elapsed time exceeds it (or true when the mode check does not apply); callers include Game_InGameMenuVM_OnReturnToGarage; bool(self) matches."
+  }
+ ],
+ "proofs": []
+}

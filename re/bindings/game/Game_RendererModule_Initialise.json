@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RendererModule_Initialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1445b0b90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "int Game_RendererModule_Initialise(void *module)",
+  "evidence": "str:s_cfg_TestingEnableSmokeTest;decomp:re/decomp/1445b0b90.c;xref:0x1445b0cd3,0x1445b0cd4,0x1445b0d09,0x1445b0d0a,0x145beef70",
+  "notes": "Module vtable 0x145beef50 slot 4 (+0x20, pointer 0x145beef70; 17-slot module vtable like VideoExportModule). Gets service GAME_RENDERER from registry 0x14612a410 into module+0x10 (missing -> 0xe). module+0x30 = *(module+0x20)+0x20. Allocates a 0xf0-byte render-mode manager proxy (vtable 0x145beee70; strings 'Setting render mode: %s', RENDER_MODE and RendererModeManagerProxy sit just before 0x145beef50) into module+0x40. Settings, both Ne_Get_SettingBool 0x143a43b90 into the same byte proxy+0xed: Renderer.showRenderMode on node *(module+0x18)+0x18 default 0, then Testing.EnableSmokeTest on the same node with default = the showRenderMode result, so a present Testing.EnableSmokeTest overrides it. The proxy is registered via (proxy+0x18) vt+8 with key 0x146cc4a60. Allocates containers module+0xa0/+0xa8/+0xb0 and subscribes bus messages (Ne_Subscribe_BusMessage on g_Game_MessageBus+8): ibl_update, ibl_reset, ibl_generate, ibl_saves, MessageRequestTextureCompression, MessageDeleteAllCompressedAssets. Returns 0. Exact module class name not recovered. hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "game.renderer_module_initialise",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 CE 48 8B 0D",
+  "match": "0x1445b0b90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445b0b90",
+  "kind": "func_start",
+  "names": [
+   "Game_RendererModule_Initialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-0",
+   "kind": "func",
+   "item": "0x1445b0b90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445b0b90.c;xref:0x145beef70",
+   "notes": "V9319 Module Initialise slot (vtable after string \"RendererModeManagerProxy\", shares base slots 0x143ad97xx with other modules): gets the GAME_RENDERER allocator (returns 0xe if missing), allocates and registers the renderer-mode manager (reads Renderer.showRenderMode, Testing.EnableSmokeTest), subscribes ibl_update/ibl_reset/ibl_generate/ibl_saves and texture-compression messages; returns 0; 1 arg"
+  }
+ ],
+ "proofs": []
+}

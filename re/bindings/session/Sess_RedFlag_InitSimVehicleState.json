@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_RedFlag_InitSimVehicleState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f6aae0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f6aae0.c;xref:0x142f6585e,0x142f660c2",
+  "notes": "Red-flag unlap simulation: snapshots per-car state (lap progress from XOR-protected lap/distance, fuel and energy sums from car +0x558/+0x540/+0x548, tyre wear rate, track temperature via Game_TodCurveBinding_EvalAt) into this+0xb40..+0xb74 and picks sim mode +0xb74. Callers: Sess_RedFlag_SimulateUnlapLaps."
+ },
+ "signature": {
+  "id": "session.red_flag_init_sim_vehicle_state",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 88 00 00 00 C5 78 29 54",
+  "match": "0x142f6aae0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f6aae0",
+  "kind": "func_start",
+  "names": [
+   "Sess_RedFlag_InitSimVehicleState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x142f6aae0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f6aae0.c;xref:0x142f660c2,0x142f6585e",
+   "notes": "V3747 Snapshots into +0xb40..+0xb6c, car +0x558/+0x540/+0x548 XOR values, tod curve eval 140b12c10, sets mode +0xb74 (0..4)."
+  }
+ ],
+ "proofs": []
+}

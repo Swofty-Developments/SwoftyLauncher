@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_Gfx2Renderer_FrameEntryNameMap_Rehash",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ebf960",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143ebf960.c;xref:0x142e8dd7e,0x143b58d0f",
+  "notes": "swiss-style hash map (ne_hash_map.h assert string) grow/rehash of the frame-entry-name map used by Ne_Gfx2Renderer_ResolveFrameEntryNames (fatal stub 0x143ebf950)."
+ },
+ "signature": {
+  "id": "core.gfx2_renderer_frame_entry_name_map_rehash",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 BC B3 01 00 00 00 01 00 00 8B",
+  "match": "0x143b58d0f",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143ebf960",
+  "kind": "func_start",
+  "names": [
+   "Ne_Gfx2Renderer_FrameEntryNameMap_Rehash"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x143ebf960",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ebf960.c;xref:0x142e8dd7e",
+   "notes": "V8282 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

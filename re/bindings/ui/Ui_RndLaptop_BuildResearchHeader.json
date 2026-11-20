@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_RndLaptop_BuildResearchHeader",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14165ce40",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void FUN(void *view, void *ctx)",
+  "evidence": "decomp:re/decomp/14165ce40.c;xref:0x1456fbf18",
+  "notes": "myteam-g1: UI binding code; laptop_research_upgrades_header: builds the research tab header of the R&D laptop screen. Static, string-key driven."
+ },
+ "signature": {
+  "id": "ui.rnd_laptop_build_research_header",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 4C 89 44 24 40 48 89 D7 48 89 CB E8",
+  "match": "0x14165ce40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14165ce40",
+  "kind": "func_start",
+  "names": [
+   "Ui_RndLaptop_BuildResearchHeader"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x14165ce40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14165ce40.c;xref:0x1456fbf18",
+   "notes": "V9732 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

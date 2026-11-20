@@ -22,22 +22,36 @@ jobs:
     permissions:
       pull-requests: read
     outputs:
-      rust: ${{ github.event_name != 'pull_request' || steps.filter.outputs.rust == 'true' }}
-      installer: ${{ github.event_name != 'pull_request' || steps.filter.outputs.installer == 'true' }}
-      native: ${{ github.event_name != 'pull_request' || steps.filter.outputs.native == 'true' }}
-      swofty-ui: ${{ github.event_name != 'pull_request' || steps.filter.outputs.swofty-ui == 'true' }}
-      docs: ${{ github.event_name != 'pull_request' || steps.filter.outputs.docs == 'true' }}
-      std: ${{ github.event_name != 'pull_request' || steps.filter.outputs.std == 'true' }}
-      compat: ${{ github.event_name != 'pull_request' || steps.filter.outputs.compat == 'true' }}
+      rust: ${{ steps.scope.outputs.all == 'true' || steps.filter.outputs.rust == 'true' }}
+      installer: ${{ steps.scope.outputs.all == 'true' || steps.filter.outputs.installer == 'true' }}
+      native: ${{ steps.scope.outputs.all == 'true' || steps.filter.outputs.native == 'true' }}
+      swofty-ui: ${{ steps.scope.outputs.all == 'true' || steps.filter.outputs.swofty-ui == 'true' }}
+      docs: ${{ steps.scope.outputs.all == 'true' || steps.filter.outputs.docs == 'true' }}
+      std: ${{ steps.scope.outputs.all == 'true' || steps.filter.outputs.std == 'true' }}
+      compat: ${{ steps.scope.outputs.all == 'true' || steps.filter.outputs.compat == 'true' }}
     steps:
+      # GitHub lists at most 3,000 of a pull request's files, in path order, so the filter would miss every area
+      # whose files come after the first 3,000 (a bulk change to re/bindings hides templates/ and tools/). A pull
+      # request that large runs every job, as a push does.
+      - name: Every area or the filter
+        id: scope
+        env:
+          FILES: ${{ github.event.pull_request.changed_files }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" != pull_request ] || [ "$FILES" -ge 3000 ]; then
+            echo "all=true" >> "$GITHUB_OUTPUT"
+            echo "every job runs ($GITHUB_EVENT_NAME, ${FILES:-0} changed files)"
+          fi
+
       - id: filter
-        if: github.event_name == 'pull_request'
+        if: steps.scope.outputs.all != 'true'
         uses: dorny/paths-filter@v4
         with:
           filters: |
-            # Every area: this workflow, and the line-ending rules every checkout applies.
+            # Every area: this workflow, the actions it shares, and the line-ending rules every checkout applies.
             always: &always
               - .github/workflows/ci.yml
+              - .github/actions/**
               - .gitattributes
             # Every crate, plus the files outside them that the crates embed or their tests read.
             rust:
@@ -47,6 +61,8 @@ jobs:
               - Cargo.lock
               - rust-toolchain.toml
               - rustfmt.toml
+              - .config/nextest.toml
+              - .github/runners/apt-install.sh
               - apps/**
               - packages/**
               - installer/**
@@ -54,7 +70,7 @@ jobs:
               - addons/builtins/**
               - tools/native-charts/**
               - addons/swoftymod/**
-              - re/db/functions.tsv
+              - re/db/function_names.tsv
               - tools/gamedb/catalog/**
             # The installer crate, its path dependencies (swofty-core, -addon, -formats, -sdk) and what they embed.
             installer:
@@ -81,6 +97,7 @@ jobs:
               - tools/rtassets.py
               - templates/std/**
               - tools/std/templates.py
+              - .github/runners/apt-install.sh
             # build.py puts tools/ on the module path; the app imports erp, pkg and idf from there.
             swofty-ui:
               - *always
@@ -104,53 +121,44 @@ jobs:
               - *always
               - tools/compat/**
 
-  # A push to main starts its heavy jobs on EC2 spot instances that take one job each and terminate
-  # (.github/runners). Pull requests, and any launch that fails, get the hosted runner labels instead.
-  ec2:
-    name: EC2 runners
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
-    outputs:
-      native: ${{ steps.launch.outputs.native || 'ubuntu-latest' }}
-      rust-linux: ${{ steps.launch.outputs.rust-linux || 'ubuntu-latest' }}
-      rust-windows: ${{ steps.launch.outputs.rust-windows || 'windows-latest' }}
-      release-linux: ${{ steps.launch.outputs.release-linux || 'ubuntu-22.04' }}
-      release-windows: ${{ steps.launch.outputs.release-windows || 'windows-latest' }}
-    steps:
-      - if: github.event_name == 'push'
-        uses: actions/checkout@v7
-        with:
-          sparse-checkout: .github/runners
-
-      - id: aws
-        if: github.event_name == 'push'
-        continue-on-error: true
-        uses: aws-actions/configure-aws-credentials@v6
-        with:
-          role-to-assume: arn:aws:iam::532818875494:role/swofty-launcher-ci-runners
-          aws-region: ap-south-2
-
-      # All five at once. m8a has a whole core per vCPU; Windows pays for its licence per vCPU, so it stops at 16.
-      - id: launch
-        if: steps.aws.outcome == 'success'
-        continue-on-error: true
-        run: |
-          linux=m8a.8xlarge,c8i.8xlarge,c7i.8xlarge,m8a.4xlarge
-          windows=m8a.4xlarge,c8i.4xlarge,c7i.4xlarge
-          .github/runners/launch.sh native linux-2604 "$linux" ubuntu-latest &
-          .github/runners/launch.sh rust-linux linux-2604 "$linux" ubuntu-latest &
-          .github/runners/launch.sh rust-windows windows "$windows" windows-latest &
-          .github/runners/launch.sh release-linux linux-2204 "$linux" ubuntu-22.04 &
-          .github/runners/launch.sh release-windows windows "$windows" windows-latest &
-          wait
-
-  rust:
-    name: Rust (${{ matrix.os }})
-    needs: [changes, ec2]
+  # The first answer on a change: formatting needs only the toolchain, so it reports within a minute.
+  format:
+    name: Rust format
+    needs: changes
     if: needs.changes.outputs.rust == 'true'
-    runs-on: ${{ matrix.os == 'windows-latest' && needs.ec2.outputs.rust-windows || needs.ec2.outputs.rust-linux }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions-rust-lang/setup-rust-toolchain@v2
+        with:
+          cache: false
+
+      - run: cargo fmt --all --check
+
+  # The native C and C++ sources against native/.clang-format, with the clang-format release that formatted them.
+  native-format:
+    name: Native format
+    needs: changes
+    if: needs.changes.outputs.native == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - run: pipx install clang-format==21.1.8
+
+      - run: native/tools/format_check.sh
+
+  # Clippy runs beside the tests rather than before them, on hosted runners even for main and without a Rust
+  # cache: it is never the longest job (four to five minutes from cold).
+  clippy:
+    name: Clippy (${{ matrix.os }})
+    needs: changes
+    if: needs.changes.outputs.rust == 'true'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -158,45 +166,79 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # Installs the toolchain rust-toolchain.toml pins, with rustfmt and clippy.
-      - uses: actions-rust-lang/setup-rust-toolchain@v2
-        with:
-          cache: false
-
-      # Only main saves, so pull requests restore main's caches instead of evicting them with their own.
-      # The environment hash would fold in every installed rustc, and runner images differ in the stable
-      # one they preinstall; the key keeps the lockfile and rust-toolchain.toml hash, which is what matters.
-      - uses: Swatinem/rust-cache@v2
-        with:
-          add-rust-environment-hash-key: false
-          shared-key: workspace-debug
-          save-if: ${{ github.ref == 'refs/heads/main' }}
-
-      - name: GPUI system libraries
-        if: runner.os == 'Linux'
-        run: |
-          .github/runners/apt-install.sh pkg-config libfontconfig-dev libfreetype-dev libwayland-dev \
-            libxkbcommon-dev libxkbcommon-x11-dev libx11-xcb-dev libxcb1-dev libvulkan-dev \
-            libgtk-3-dev libwebkit2gtk-4.1-dev
-
-      - name: Format
-        if: runner.os == 'Linux'
-        run: cargo fmt --all --check
+      - uses: ./.github/actions/setup-rust
 
       # The launcher and the installer are not default members; --workspace reaches them too.
-      - name: Clippy
-        run: cargo clippy --workspace --all-targets -- -D warnings
+      - run: cargo clippy --workspace --all-targets -- -D warnings
 
-      # --workspace takes in the launcher's and the installer's tests too. The real-file round trips skip
-      # without F1_25_DIR; CI has no game files. --no-fail-fast reports every failing test binary in one run.
+      # swofty-core has code only debug builds compile (cfg(debug_assertions)), so it is also checked as it ships.
+      - name: Clippy of swofty-core as released
+        if: runner.os == 'Linux'
+        run: cargo clippy -p swofty-core --release --lib -- -D warnings
+
+  rust:
+    name: Rust tests (${{ matrix.os }})
+    needs: changes
+    if: needs.changes.outputs.rust == 'true'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v7
+
+      # The tests write their fixtures to the temporary folder. On Windows that is on C:, which is several
+      # times slower than the D: volume the job works on.
+      - name: Temporary folder on the work volume
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          echo "TMP=$RUNNER_TEMP" >> "$GITHUB_ENV"
+          echo "TEMP=$RUNNER_TEMP" >> "$GITHUB_ENV"
+
+      - uses: ./.github/actions/setup-rust
+        with:
+          cache: test
+          save: true
+          nextest: true
+
+      # --workspace takes in the launcher's and the installer's tests too. Building as a step of its own shows
+      # the compile and the run apart in the timings.
+      - name: Build the tests
+        run: cargo nextest run --workspace --profile ci --no-run
+
+      # rust-cache saves at the end of a job that succeeded, or of any job once CACHE_ON_FAILURE is true. Set
+      # here, a failing or cancelled test run still saves the finished build; a build that failed or was
+      # cancelled halfway saves nothing, which would otherwise sit under the exact key and never be completed.
+      - name: Keep the build if the tests fail
+        shell: bash
+        run: echo "CACHE_ON_FAILURE=true" >> "$GITHUB_ENV"
+
+      # Every test of every binary in one pool (.config/nextest.toml), with the slow ones listed at the end.
+      # The real-file round trips skip without F1_25_DIR; CI has no game files.
       - name: Test
-        run: cargo test --workspace --no-fail-fast
+        run: cargo nextest run --workspace --profile ci
+
+      - name: Upload the test times
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: nextest-junit-${{ runner.os }}
+          path: target/nextest/ci/junit.xml
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Doc tests
+        run: cargo test --workspace --doc
 
       - uses: actions/setup-python@v7
         with:
           python-version: '3.14'
 
       - name: Native chart helper protocol
+        shell: bash
         run: |
           cargo build -p swofty-addon --example native_charts
           python tools/native-charts/protocol-smoke.py target/debug/examples/native_charts
@@ -250,34 +292,42 @@ jobs:
       - name: Unit tests
         run: python3 -m unittest discover -s tools/compat/tests -t tools/compat
 
-  # The rust job lints the installer on both systems; this job builds the release binary people test.
+  # Clippy lints the installer on both systems; this job builds the release binary people test. On main the
+  # release build makes it instead (release-binaries.yml), and this job runs only on Windows, to save the Rust
+  # cache that pull requests restore there; it skips the build when that cache is already current.
   installer:
     name: Installer (${{ matrix.os }})
     needs: changes
     if: needs.changes.outputs.installer == 'true'
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
         # ubuntu-22.04 is the release build's glibc baseline.
-        os: [ubuntu-22.04, windows-latest]
+        os: ${{ fromJSON(github.event_name == 'pull_request' && '["ubuntu-22.04", "windows-latest"]' || '["windows-latest"]') }}
     steps:
       - uses: actions/checkout@v7
 
-      - uses: actions-rust-lang/setup-rust-toolchain@v2
+      # Windows only: the Linux build is never the longest job, and the cache space is short.
+      - uses: ./.github/actions/setup-rust
+        id: rust
         with:
-          cache: false
+          system-libraries: false
+          cache: ${{ runner.os == 'Windows' && 'installer' || '' }}
+          save: ${{ github.event_name == 'push' }}
 
-      - uses: Swatinem/rust-cache@v2
-        with:
-          add-rust-environment-hash-key: false
-          shared-key: installer-release
-          save-if: ${{ github.ref == 'refs/heads/main' }}
-
+      # The release binaries on every push to main build the installer with the release profile's thin LTO,
+      # which takes a third of the build: 678 s with it and 567 s without on 4 cores, the final link 195 s
+      # and 7 s. A pull request builds it without, so its uploaded executable is not the release build.
       - name: Build
+        if: github.event_name == 'pull_request' || steps.rust.outputs.cache-hit != 'true'
+        env:
+          CARGO_PROFILE_RELEASE_LTO: 'false'
         run: cargo build --release -p swofty-launcher-installer
 
       - name: Upload the executable
+        if: github.event_name == 'pull_request'
         uses: actions/upload-artifact@v7
         with:
           name: installer-${{ runner.os }}
@@ -333,56 +383,89 @@ jobs:
       - name: Template data files
         run: python3 tools/std/templates.py --no-build
 
-  native:
-    name: Native loader and Wine test
-    needs: [changes, ec2]
+  # The binding generator, capture and verifier tests use only the standard library. A job of their own reports
+  # them apart from the native build and tests.
+  re-tools:
+    name: RE tools unit tests
+    needs: changes
     if: needs.changes.outputs.native == 'true'
-    runs-on: ${{ needs.ec2.outputs.native }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - run: python3 -m pip install capstone==5.0.5
+      - run: python3 -m unittest discover -s re/tools/tests
+
+  # Two jobs split the native tests on 4-core hosted runners, one
+  # for the host tests and one for the Wine tests, each with its own CPUs. Both build the loader themselves:
+  # sharing one build through an artifact would start the Wine job's own setup only after the other job's
+  # setup and build.
+  native:
+    name: Native ${{ matrix.part == 'host' && 'loader and host tests' || matrix.part == 'wine' && 'loader and Wine tests' || 'loader and Wine test' }}
+    needs: changes
+    if: needs.changes.outputs.native == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      actions: write
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [host, wine]
     steps:
       - uses: actions/checkout@v7
 
-      # The EC2 runner has a 150 GB root volume; the hosted fallback has about 14 GB free, which the Wine
-      # prefixes of the parallel tests fill, so it drops the preinstalled toolchains it never uses.
-      - name: Free disk space on a hosted runner
+      # Hosted runners of one label differ in speed (the same build took 193 s and 380 s), so the log names the CPU.
+      - name: Runner CPU
         run: |
-          df -h /
-          if [ "$RUNNER_ENVIRONMENT" = github-hosted ]; then
-            sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/.ghcup
-            df -h /
-          fi
+          echo "$(nproc) CPUs:$(grep -m1 'model name' /proc/cpuinfo | cut -d: -f2)"
 
-      # Only the Wine tests need these, so the install runs in the background while the build and unit tests do.
+      # The hosted runners' archive mirror has served the 248 MB of Wine packages at anywhere from 24 MB/s down to
+      # under 1 MB/s (4 min 13 s), so the cache keeps them; apt takes the ones that still match its index and
+      # downloads the rest.
+      - name: Restore the Wine packages
+        id: wine-debs
+        if: matrix.part != 'host' && runner.environment == 'github-hosted'
+        uses: actions/cache/restore@v6
+        with:
+          path: ${{ runner.temp }}/wine-debs
+          key: wine-debs-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: wine-debs-${{ runner.os }}-
+
+      # Wine and Xvfb install in the background while the build runs, and the step before the tests waits for them; each line of the install log starts with its time.
+      # Hosted runners have a 145 GB disk with about 68 GB free; one with under 40 GB free first drops the
+      # preinstalled toolchains the job never uses, which the Wine prefixes of the parallel tests would fill.
+      # The man-db trigger, which rebuilds the manual page index after the install, is turned off.
       - name: Start installing Wine and Xvfb
+        if: matrix.part != 'host'
         run: |
           (
             set +e
-            sudo dpkg --add-architecture i386 &&
-              sudo apt-get update &&
-              sudo apt-get install -y wine64 wine xvfb
-            echo $? > "$RUNNER_TEMP/wine-install.status"
-          ) > "$RUNNER_TEMP/wine-install.log" 2>&1 &
-
-      # The binding generator, capture and verifier tests use only the standard library.
-      - name: RE tools unit tests
-        run: python3 -m unittest discover -s re/tools/tests
-
-      # The native scripts pin their compilers to the maintainer's healthy cores (taskset -c 2-7,...),
-      # which leaves two of a hosted runner's four. This shim drops the pin and runs the command as is.
-      - name: Use every runner core
-        run: |
-          mkdir -p "$RUNNER_TEMP/bin"
-          cat > "$RUNNER_TEMP/bin/taskset" <<'EOF'
-          #!/bin/sh
-          [ "$1" = -c ] && shift 2
-          exec "$@"
-          EOF
-          chmod +x "$RUNNER_TEMP/bin/taskset"
-          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+            {
+              free=$(df --output=avail -BG / | tail -1 | tr -dc 0-9)
+              echo "${free} GB free"
+              if [ "$RUNNER_ENVIRONMENT" = github-hosted ] && [ "$free" -lt 40 ]; then
+                sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/.ghcup
+                echo "removed the unused toolchains"
+              fi
+              sudo rm -f /var/lib/man-db/auto-update
+              echo 'APT::Keep-Downloaded-Packages "true";' | sudo tee /etc/apt/apt.conf.d/99keep-packages > /dev/null
+              if [ -d "$RUNNER_TEMP/wine-debs" ]; then
+                sudo cp "$RUNNER_TEMP"/wine-debs/*.deb /var/cache/apt/archives/ && echo "$(find "$RUNNER_TEMP/wine-debs" -name '*.deb' | wc -l) cached packages"
+              fi
+              sudo dpkg --add-architecture i386 && .github/runners/apt-install.sh wine64 wine xvfb
+            } 2>&1 | while IFS= read -r line; do printf '%(%T)T %s\n' -1 "$line"; done > "$RUNNER_TEMP/wine-install.log"
+            echo "${PIPESTATUS[0]}" > "$RUNNER_TEMP/wine-install.status"
+          ) &
 
       # The native tests run side by side, and the stock xvfb-run -a can give two calls started together the
       # same display. This one takes the next display number from a counter under a lock.
       - name: Give every xvfb-run its own display
+        if: matrix.part != 'host'
         run: |
+          mkdir -p "$RUNNER_TEMP/bin"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
           cat > "$RUNNER_TEMP/bin/xvfb-run" <<'EOF'
           #!/bin/bash
           while [ "${1:-}" = -a ] || [ "${1:-}" = --auto-servernum ]; do shift; done
@@ -412,76 +495,234 @@ jobs:
         id: zig-period
         run: echo "month=$(date -u +%Y-%m)" >> "$GITHUB_OUTPUT"
 
+      # The Zig cache holds Zig's own libc, libc++, MinGW and compiler-rt builds, not the project's objects.
       - name: Restore the Zig cache
         id: zig-cache
         uses: actions/cache/restore@v6
         with:
           path: |
             native/build/zig-cache
-          key: zig-${{ runner.os }}-0.16.0-${{ steps.zig-period.outputs.month }}-${{ hashFiles('native/**', 'addons/*/native/**', 'packages/sdk/include/**') }}
+          key: zig-${{ runner.os }}-0.16.0-${{ steps.zig-period.outputs.month }}-${{ hashFiles('native/**', 'addons/*/native/**', 'templates/**/native/**', 'packages/sdk/include/**') }}
           restore-keys: zig-${{ runner.os }}-0.16.0-${{ steps.zig-period.outputs.month }}-
 
-      - name: Build version.dll and swofty_core.dll
-        run: native/build.sh
+      # The restored cache holds what every main commit this month wrote to it. Its files start out last read in
+      # 2000, and each one the build or the tests read gets a new access time (relatime), so the step before the
+      # save can keep only those.
+      - name: Mark the restored Zig cache unread
+        run: |
+          mkdir -p native/build/zig-cache
+          find native/build/zig-cache -type f -exec touch -a -d 2000-01-01 {} +
+          touch "$RUNNER_TEMP/zig-cache.mark"
+          echo "$(find native/build/zig-cache -type f | wc -l) files, $(du -sm native/build/zig-cache | cut -f1) MB restored"
 
-      - name: Wine and Xvfb
+      # The project's objects come from ccache instead (.github/actions/ccache). Each part keeps a cache of its
+      # own, named after the run that saved it, and starts from the newest of its own or, on a pull request, of
+      # main's; ccache itself checks every compiler's size and date and every input's contents.
+      - name: Ccache
+        uses: ./.github/actions/ccache
+        with:
+          dir: ${{ runner.temp }}/ccache
+
+      - name: Restore ccache
+        id: ccache
+        uses: actions/cache/restore@v6
+        with:
+          path: ${{ runner.temp }}/ccache
+          key: ccache-${{ runner.os }}-zig0.16.0-${{ matrix.part }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            ccache-${{ runner.os }}-zig0.16.0-${{ matrix.part }}-
+            ccache-${{ runner.os }}-zig0.16.0-all-
+
+      - name: Ninja
+        uses: ./.github/actions/ninja
+
+      # Each template's native/build.sh keeps its Zig cache in its own build/zig-cache and builds libc++ and the
+      # MinGW runtime into it again (the templates test took 6 to 12 minutes on a hosted runner). Those folders
+      # link to the native cache instead, so the templates build them once and the native cache keeps them.
+      - name: Share the Zig cache with the templates
+        run: |
+          mkdir -p native/build/zig-cache
+          for dir in templates/*/native templates/std/*/native; do
+            mkdir -p "$dir/build"
+            rm -rf "$dir/build/zig-cache"
+            ln -s "$GITHUB_WORKSPACE/native/build/zig-cache" "$dir/build/zig-cache"
+          done
+
+      - name: Build version.dll and swofty_core.dll
+        run: |
+          touch "$RUNNER_TEMP/ccache.mark"
+          native/build.sh
+
+      # Ubuntu installs wineserver beside Wine's libraries rather than on PATH, where the Wine test looks for it.
+      - name: Disk space, Wine and Xvfb
+        if: matrix.part != 'host'
         timeout-minutes: 10
         run: |
           while [ ! -f "$RUNNER_TEMP/wine-install.status" ]; do sleep 2; done
           cat "$RUNNER_TEMP/wine-install.log"
-          exit "$(cat "$RUNNER_TEMP/wine-install.status")"
+          df -h /
+          status=$(cat "$RUNNER_TEMP/wine-install.status")
+          [ "$status" = 0 ] || exit "$status"
+          if ! command -v wineserver >/dev/null; then
+            for server in /usr/lib/x86_64-linux-gnu/wine/wineserver /usr/lib/wine/wineserver64 /usr/lib/wine/wineserver; do
+              if [ -x "$server" ]; then ln -sf "$server" "$RUNNER_TEMP/bin/wineserver"; break; fi
+            done
+          fi
+          command -v wineserver
 
-      # Every host and Wine test, the templates build and the Any Team Transfers build, side by side; each
-      # test's output is in its own group in the log, and the step fails on any failing test.
+      # The packages this install used replace the cached set when they differ from it.
+      - name: Collect the Wine packages
+        id: wine-debs-new
+        if: steps.wine-debs.outcome == 'success'
+        run: |
+          dir=$RUNNER_TEMP/wine-debs
+          old=$({ find "$dir" -name '*.deb' -printf '%f\n' 2>/dev/null || true; } | sort | sha256sum | cut -c1-16)
+          rm -rf "$dir"
+          mkdir -p "$dir"
+          cp /var/cache/apt/archives/*.deb "$dir/" 2>/dev/null || true
+          count=$(find "$dir" -name '*.deb' | wc -l)
+          new=$(find "$dir" -name '*.deb' -printf '%f\n' | sort | sha256sum | cut -c1-16)
+          echo "$count packages, $(du -sm "$dir" | cut -f1) MB"
+          echo "key=$new" >> "$GITHUB_OUTPUT"
+          if [ "$count" -gt 0 ] && [ "$new" != "$old" ]; then echo "save=true" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Save the Wine packages
+        id: wine-debs-save
+        if: steps.wine-debs-new.outputs.save == 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: ${{ runner.temp }}/wine-debs
+          key: wine-debs-${{ runner.os }}-${{ steps.wine-debs-new.outputs.key }}
+
+      - name: Remove this branch's older Wine package caches
+        if: steps.wine-debs-save.outcome == 'success'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          KEEP: wine-debs-${{ runner.os }}-${{ steps.wine-debs-new.outputs.key }}
+        run: |
+          gh cache list --repo "$GITHUB_REPOSITORY" --ref "$GITHUB_REF" --key "wine-debs-$RUNNER_OS-" --limit 100 \
+            --json id,key --jq '.[] | select(.key != env.KEEP) | .id' | while read -r id; do
+            gh cache delete "$id" --repo "$GITHUB_REPOSITORY" && echo "removed cache $id"
+          done
+
+      # This part's tests run side by side. Each test's output is in its own group in the log, and the step
+      # fails on any failing test. The hosted Wine part has the runner's 4 CPUs to itself and runs 4 Wine tests
+      # at a time, where run_tests.sh would run 2.
       - name: Native tests
+        id: native-tests
+        env:
+          PART: ${{ matrix.part }}
+          NATIVE_WINE_JOBS: ${{ matrix.part == 'wine' && '4' || '' }}
         run: |
           df -h / "$RUNNER_TEMP"
           trap 'df -h / "$RUNNER_TEMP"' EXIT
-          native/test/run_ci_tests.sh
+          if [ "$PART" = all ]; then native/test/run_ci_tests.sh; else native/test/run_ci_tests.sh "$PART"; fi
 
-      # Saved after the tests, which compile their fixtures into the same cache.
+      # Once the tests have run, the objects this run did not use leave the cache, so it holds one build of the
+      # tree and does not grow.
+      - name: Ccache use
+        if: ${{ !cancelled() && steps.ccache.outcome == 'success' }}
+        env:
+          TESTS: ${{ steps.native-tests.outcome }}
+        run: |
+          ccache --show-stats
+          if [ "$TESTS" = success ] || [ "$TESTS" = failure ]; then
+            ccache --evict-older-than "$(( $(date +%s) - $(stat -c %Y "$RUNNER_TEMP/ccache.mark") + 60 ))s"
+          fi
+          du -sh "$CCACHE_DIR"
+
+      # Main's cache serves every pull request; a pull request's own serves its next push. A run a newer push
+      # cancels saves what it compiled too.
+      - name: Save ccache
+        id: ccache-save
+        if: always() && steps.ccache.outcome == 'success'
+        uses: actions/cache/save@v6
+        with:
+          path: ${{ runner.temp }}/ccache
+          key: ${{ steps.ccache.outputs.cache-primary-key }}
+
+      - name: Remove this branch's older ccache caches
+        if: always() && steps.ccache-save.outcome == 'success'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          KEEP: ${{ steps.ccache.outputs.cache-primary-key }}
+          PREFIX: ccache-${{ runner.os }}-zig0.16.0-${{ matrix.part }}-
+        run: |
+          gh cache list --repo "$GITHUB_REPOSITORY" --ref "$GITHUB_REF" --key "$PREFIX" --limit 100 \
+            --json id,key --jq '.[] | select(.key != env.KEEP) | .id' | while read -r id; do
+            gh cache delete "$id" --repo "$GITHUB_REPOSITORY" && echo "removed cache $id"
+          done
+
+      # On main, once every test has run, the files the run neither read nor wrote leave the cache before it
+      # is saved. A file system that does not record reads would lose every restored file, so a test read guards it.
+      - name: Zig cache files this run used
+        if: ${{ !cancelled() }}
+        env:
+          PART: ${{ matrix.part }}
+          TESTS: ${{ steps.native-tests.outcome }}
+        run: |
+          cache=native/build/zig-cache mark=$RUNNER_TEMP/zig-cache.mark
+          [ -f "$mark" ] || exit 0
+          used=$(find "$cache" -type f -anewer "$mark" -printf '%s\n' | awk '{ s += $1 } END { print int(s / 1048576) }')
+          unused=$(find "$cache" -type f ! -anewer "$mark" -printf '%s\n' | awk '{ s += $1 } END { print int(s / 1048576) }')
+          echo "used or written $used MB, unused $unused MB"
+          [ "$GITHUB_REF" = refs/heads/main ] && [ "$PART" = all ] || exit 0
+          [ "$TESTS" = success ] || [ "$TESTS" = failure ] || exit 0
+          probe=$(find "$cache" -type f ! -anewer "$mark" -print -quit)
+          [ -n "$probe" ] || exit 0
+          cat "$probe" > /dev/null
+          if [ -z "$(find "$probe" -anewer "$mark")" ]; then
+            echo "::warning::this file system does not record reads, so the Zig cache keeps every file"
+            exit 0
+          fi
+          find "$cache" -type f ! -anewer "$mark" -delete
+          find "$cache" -mindepth 1 -type d -empty -delete
+          echo "kept $(du -sm "$cache" | cut -f1) MB"
+
+      # Saved after the tests, which compile their fixtures into the same cache. On the hosted split the host
+      # part saves it and the Wine part only reads it.
       - name: Save the Zig cache
-        if: github.ref == 'refs/heads/main' && steps.zig-cache.outputs.cache-hit != 'true'
+        id: zig-save
+        if: github.ref == 'refs/heads/main' && matrix.part != 'wine' && steps.zig-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v6
         with:
           path: |
             native/build/zig-cache
           key: ${{ steps.zig-cache.outputs.cache-primary-key }}
 
+      # Only the newest saved Zig cache is kept; several of them push the Rust caches out of the repository's
+      # cache space. So are no caches under the keys only the workflow before 1.10.0 wrote, which nothing
+      # restores now: its debug build of the workspace, its installer build and its release builds.
+      - name: Remove the older Zig caches and the old workflow's caches
+        if: ${{ !cancelled() && github.ref == 'refs/heads/main' && matrix.part != 'wine' }}
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ZIG_SAVED: ${{ steps.zig-save.outcome }}
+          KEEP: ${{ steps.zig-cache.outputs.cache-primary-key }}
+        run: |
+          if [ "$ZIG_SAVED" = success ]; then
+            gh cache list --repo "$GITHUB_REPOSITORY" --ref refs/heads/main --key "zig-$RUNNER_OS-" --limit 100 \
+              --json id,key --jq '.[] | select(.key != env.KEEP) | .id' | while read -r id; do
+              gh cache delete "$id" --repo "$GITHUB_REPOSITORY" && echo "removed cache $id"
+            done
+          fi
+          for prefix in v0-rust-workspace-debug- v0-rust-installer-release- v0-rust-release-; do
+            gh cache list --repo "$GITHUB_REPOSITORY" --key "$prefix" --limit 100 --json id,key,ref \
+              --jq '.[] | "\(.id) \(.key) \(.ref)"' | while read -r id key ref; do
+              gh cache delete "$id" --repo "$GITHUB_REPOSITORY" && echo "removed cache $key on $ref"
+            done
+          done
+
   # Every push to main also builds the release binaries: the run keeps the release cache warm, and a tag on
   # this commit takes its binaries from here (release.yml) instead of building again.
   release-binaries:
     name: Release binaries
-    needs: ec2
     if: github.event_name == 'push'
     uses: ./.github/workflows/release-binaries.yml
     with:
       ref: ${{ github.sha }}
       retention-days: 7
-      linux-runner: ${{ needs.ec2.outputs.release-linux }}
-      windows-runner: ${{ needs.ec2.outputs.release-windows }}
-
-  # Release tags need this run to pass, so the cleanup never fails it.
-  ec2-cleanup:
-    name: EC2 cleanup
-    needs: [ec2, rust, native, release-binaries]
-    if: always() && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          sparse-checkout: .github/runners
-
-      - id: aws
-        continue-on-error: true
-        uses: aws-actions/configure-aws-credentials@v6
-        with:
-          role-to-assume: arn:aws:iam::532818875494:role/swofty-launcher-ci-runners
-          aws-region: ap-south-2
-
-      - if: steps.aws.outcome == 'success'
-        continue-on-error: true
-        run: .github/runners/cleanup.sh
+      installer: true

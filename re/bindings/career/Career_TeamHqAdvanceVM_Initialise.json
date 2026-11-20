@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqAdvanceVM_Initialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422bc710",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1422bc710.c;xref:0x14577a9f0",
+  "notes": "TeamHQAdvanceViewModel vtable 0x14577a9c0 slot +0x30 (init/bind). Logs 'Setting isOnlineCareer to'; binds open_advance_render_target, department_events, team_hq_overview, lng_advance_timeline_next_grand_prix; subscribes bus messages TeamHQReadyToAdvance, TeamHQAdvanceTime, StartContractNegotiationsFlow, TeamHQStartEndOfSeasonSetup, TeamHQReadyToAdvanceToGridReveal, team_hq_department_event_outcome_chosen_message, team_hq_advance_season_break_message, team_hq_end_season_break_message, team_hq_enable_pause. Addon: catalogue of Team HQ timeline bus messages to post or subscribe. Callers: census steam 0x22bc710. | #587: L2 by lead-authorised promotion for lane owner career-re (independent agree V3083)"
+ },
+ "signature": {
+  "id": "career.team_hq_advance_v_m_initialise",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 01 00 00 C5 F8 29 BC 24 60 01 00 00 C5 F8 29 B4 24 50 01 00 00 49 89 CC",
+  "match": "0x1422bc710",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422bc710",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqAdvanceVM_Initialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d12-verify",
+   "kind": "func",
+   "item": "Career_TeamHqAdvanceVM_Initialise",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422bc710.c;xref:0x14577a9f0",
+   "notes": "V3083 strings/offsets/calls match claim"
+  }
+ ],
+ "proofs": []
+}

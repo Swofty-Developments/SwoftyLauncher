@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_CreateDrawPacket",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439d8970",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439d8970.c;xref:0x142437122",
+  "notes": "Under critical section [ctx+0x2668] allocates a 0xd8-byte packet (vtbl 0x14589e880) via allocator [ctx+0x150] vcall +0x18, copies the 0xb8-byte param block, sizes two per-submesh arrays from the 40-byte element table of mesh [packet+0x20] (+0x678..+0x680), memsets them, computes a key via 0x1439e5970 and registers it in the list at ctx+0x3aa8. 151 callers = generic draw/scene packet factory. Hypothesis on name."
+ },
+ "signature": {
+  "id": "render.gfx_create_draw_packet",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 D3 48 89 CE 48 8B 89 68 26 00 00 FF 15 ?? ?? ?? ?? 48 8B 8E 50 01 00 00 48 8B 01 BA D8",
+  "match": "0x1439d8970",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439d8970",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_CreateDrawPacket"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x1439d8970",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439d8970.c;xref:0x142437122",
+   "notes": "V7767 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

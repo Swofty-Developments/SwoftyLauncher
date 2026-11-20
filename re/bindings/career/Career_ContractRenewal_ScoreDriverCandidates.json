@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_ContractRenewal_ScoreDriverCandidates",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d98850",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "uint64_t Career_ContractRenewal_ScoreDriverCandidates(void *comp, uint8_t *team_key, uint32_t *out_driver)",
+  "evidence": "decomp:re/decomp/140d98850.c;xref:0x140d90582;xref:0x140d980de",
+  "notes": "myteam-g2: Builds a candidate set (FUN_140dc9f20) for a team from comp+0x298 and picks the best driver using a hash-set work buffer (80 percent load, Ne_Crt_Memset); returns 1 and writes out_driver on success. Read only selection logic."
+ },
+ "signature": {
+  "id": "career.contract_renewal_score_driver_candidates",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC B0 00 00 00 4C 89 C3",
+  "match": "0x140d98850",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d98850",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractRenewal_ScoreDriverCandidates"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140d98850",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140d98850.c",
+   "notes": "V9542 No scoring seen: builds candidate set via FUN_140dc9f20, checks the team key in it and looks up param_3 in the list at +0x348; param_3 is read as a driver key, not written as output."
+  }
+ ],
+ "proofs": []
+}

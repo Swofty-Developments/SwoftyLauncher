@@ -67,10 +67,7 @@ inline std::vector<std::string> facts_strings(const swofty::json::Value &v)
     return out;
 }
 
-inline int facts_int(const swofty::json::Value &v)
-{
-    return v.is_number() ? int(v.as_int(-1)) : -1;
-}
+inline int facts_int(const swofty::json::Value &v) { return v.is_number() ? int(v.as_int(-1)) : -1; }
 
 inline Facts parse_facts(std::string_view text, std::string *why = nullptr)
 {

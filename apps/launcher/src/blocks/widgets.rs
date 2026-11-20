@@ -1,4 +1,4 @@
-use crate::scale::px;
+use crate::ui::scale::px;
 use gpui_kit::component::{Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
@@ -6,10 +6,10 @@ use serde_json::Value;
 use swofty_core::view::{Cell, Field, Pill, Table, Tone};
 
 use super::*;
-use crate::colour::hsla_of;
-use crate::pages::label;
-use crate::sections::{icon, tone};
-use crate::theme::Palette;
+use crate::features::sections::{icon, tone};
+use crate::ui::colour_picker::hsla_of;
+use crate::ui::label;
+use crate::ui::theme::Palette;
 
 pub(super) fn swatch(rgb: Option<[u8; 3]>, size: f32, p: Palette) -> Div {
     let dot = div().size(px(size)).flex_shrink_0().rounded_full();

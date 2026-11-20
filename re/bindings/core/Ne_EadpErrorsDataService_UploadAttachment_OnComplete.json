@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_EadpErrorsDataService_UploadAttachment_OnComplete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14400b820",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-method;decomp:re/decomp/14400b820.c;xref:0x145a47360",
+  "notes": "logged method name uploadAttachment (class from the log channel); log channel NeEadpErrorsDataService: 'uploadAttachment: success, reqId:%s' cb2-verify-b: completion callback of an attachment upload: logs error code/reason or 'success, reqId', copies string +0x10 and calls 0x144007bb0"
+ },
+ "signature": {
+  "id": "core.eadp_errors_data_service_upload_attachment",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 68 4C 89 C7 48 89 CE 49 8B 00",
+  "match": "0x14400b820",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14400b820",
+  "kind": "func_start",
+  "names": [
+   "Ne_EadpErrorsDataService_UploadAttachment_OnComplete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x14400b820",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14400b820.c",
+   "notes": "V4100 uploadAttachment string confirmed (vtable/indirect or no direct callsite checked)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SaveUi_BeginNotification",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436608c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-GameSaveSystemUserInterface",
+  "notes": "named from its log messages (channel GameSaveSystemUserInterface): 'Began displaying notification for operation %s'"
+ },
+ "signature": {
+  "id": "game.save_ui_begin_notification",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 80 3D ?? ?? ?? ?? 01 75 6E B8 1C 00 00 00 48 8D 0D ?? ?? ?? ?? 0F 1F 80 00 00 00 00 44 8B 04 81 45 85 C0 74 52 41 81 F8 DB 73 A8 63 74 2F 83 C0 18 4C 69 C0 43 43 66 5F 49 C1 E8 20 41 89 C1 45 29 C1 41 D1 E9 45 01 C1 41 C1 E9 08 45 69 C1 75 01 00 00 44 29 C0 83 F8 1C 75 C1 EB 1A 48 8B 02 4C 8B 40 48 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 90 48 83 C4 28 C3 CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC 48 83 EC 28 80 3D ?? ?? ?? ?? 01 75 63",
+  "match": "0x1436608c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436608c0",
+  "kind": "func_start",
+  "names": [
+   "Game_SaveUi_BeginNotification"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1436608c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436608c0.c",
+   "notes": "V6116 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

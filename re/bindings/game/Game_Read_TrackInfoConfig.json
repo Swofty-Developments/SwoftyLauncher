@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_TrackInfoConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14309e400",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Read_TrackInfoConfig(void *self)",
+  "evidence": "decomp:re/decomp/14309e400.c;xref:0x14309ac8c,0x1430a929f,0x1430aa150;kb:subsystems/tracks.md#list",
+  "notes": "Misnomer kept (signature game.read_track_info_config names it): publishes the season track list to the mode VM, it reads no config. Gets the mode node ([[self+0x420]+0x4f8]+0xef0) child track_info.gm_track_list, walks seasons.current_season.track_list (at most 0x62 levels down per item), compares each item's track_set_name with the current set name (strcmp 0x14535d850) and adds matching items as track_data_ref_%d (0x1439182c0 format, 0x14083c270 add) under gm_track_list (log MOX/SeasonUI: %02d: %s); sets track_data_valid (0x140975db0, flag from [[self+0x420]+0x458]+0x30 - 3 < 0xfffffffe) and track_info.current_track. Suggested name Game_SeasonDocument_PublishTrackListUi. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested) Callers: Game_NetworkUi_PopulateUIData 0x14309ac00 (after its 'populateUIData' log), Game_Network_SetupFromFeaturedEvent 0x1430a8720, 0x1430a9e60."
+ },
+ "signature": {
+  "id": "game.read_track_info_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 01 00 00 C5 F8 29 B4 24 70 01 00 00 49 89 CC 48 8B 81 20 04 00 00",
+  "match": "0x14309e400",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14309e400",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_TrackInfoConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x14309e400",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14309e400.c;xref:0x14309ac8c",
+   "notes": "V5314 name/log strings and body consistent"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x14309e400",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14309e400-0x14309f5ec;xref:0x14309ac8c,0x1430a929f,0x1430aa150",
+   "notes": "V10375 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). 3 rel32 callers by my scan (plus one non-call riprel hit in .data1). [[self+0x420]+0x4f8]+0xef0 (0x14309e452-0x14309e461); strings track_info.gm_track_list, seasons.current_season.track_list, track_set_name, track_data_ref_%d, MOX/SeasonUI:   %02d: %s, track_data_valid, track_info.current_track; depth caps cmp 0x62 (0x14309e5b9/0x14309ea9a); strcmp 0x14535d850 (0x14309eb6a), 0x1439182c0 (0x14309ecb4), 0x14083c270 (0x14309ed2e); flag = ([[self+0x420]+0x458]+0x30 - 3) <u -2 (0x14309e724-0x14309e72d) into 0x140975db0 (0x14309e767). No config read; misnomer note correct."
+  }
+ ],
+ "proofs": []
+}

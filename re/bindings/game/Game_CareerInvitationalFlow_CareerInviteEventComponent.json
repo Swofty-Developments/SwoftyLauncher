@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerInvitationalFlow_CareerInviteEventComponent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140bb2130",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-CAREER_INVITATIONAL_FLOW",
+  "notes": "named from its log messages (channel CAREER_INVITATIONAL_FLOW): 'CareerInviteEventComponent: Switching to InvitationalEvent Game Mode. Target game mode: %hs. Previous game mode: %hs'"
+ },
+ "signature": {
+  "id": "game.career_invitational_flow_career_invite_event_component",
+  "section": ".xtls",
+  "pattern": "48 81 EC 68 01 00 00 48 89 91 28 03 00 00",
+  "match": "0x140bb2130",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140bb2130",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerInvitationalFlow_CareerInviteEventComponent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140bb2130",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140bb2130.c",
+   "notes": "V4454 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "gvdb.hpp"
-#include "lower.hpp"
+#include "core/apply/content/gvdb.hpp"
+#include "core/apply/content/lower.hpp"
 
 #include <cstdio>
 #include <map>
@@ -133,9 +133,9 @@ inline DrsPick drs_pick(const std::string &entrant_list, const std::vector<std::
     }
     p.group = it->second;
     const DrsLaps &l = it->second.laps;
-    p.line = "box " + entrant_list + " (" + p.package + "): swofty_f1 DRS group " + it->second.label + " (rules.drs " +
-             p.rule + ": race start lap " + std::to_string(l.race_start) + ", red flag restart " +
-             std::to_string(l.red_flag_restart) + ", safety car end " + std::to_string(l.safety_car_end) + ")";
+    p.line = "box " + entrant_list + " (" + p.package + "): swofty_f1 DRS group " + it->second.label + " (rules.drs " + p.rule +
+             ": race start lap " + std::to_string(l.race_start) + ", red flag restart " + std::to_string(l.red_flag_restart) +
+             ", safety car end " + std::to_string(l.safety_car_end) + ")";
     return p;
 }
 

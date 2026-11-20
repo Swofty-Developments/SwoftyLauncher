@@ -1,6 +1,6 @@
 #pragma once
 
-#include "bc7.hpp"
+#include "core/apply/content/bc7.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -41,10 +41,7 @@ inline uint32_t le32(const std::string &s, size_t at)
     return v;
 }
 
-inline void put32(std::string &s, size_t at, uint32_t v)
-{
-    std::memcpy(&s[at], &v, 4);
-}
+inline void put32(std::string &s, size_t at, uint32_t v) { std::memcpy(&s[at], &v, 4); }
 
 inline bool shape_of_images(const Stock &stock, Shape &out, std::string &why)
 {
@@ -84,7 +81,8 @@ inline bool shape_of(const Stock &stock, Shape &out, std::string &why)
     if (!shape_of_images(stock, out, why))
         return false;
     if (stock.names.size() != out.count)
-        return why = "the stock array holds " + std::to_string(out.count) + " slice(s) for " + std::to_string(stock.names.size()) + " key(s)",
+        return why = "the stock array holds " + std::to_string(out.count) + " slice(s) for " +
+                     std::to_string(stock.names.size()) + " key(s)",
                false;
     return true;
 }
@@ -107,7 +105,8 @@ inline bool grow(const Stock &stock, const std::vector<Slice> &add, Stock &out, 
         if (!taken.insert(s.key).second)
             return why = "the array already lists " + s.key, false;
         if (s.bc7.size() != shape.slice_bytes())
-            return why = s.key + " slice is " + std::to_string(s.bc7.size()) + " bytes, not " + std::to_string(shape.slice_bytes()),
+            return why =
+                       s.key + " slice is " + std::to_string(s.bc7.size()) + " bytes, not " + std::to_string(shape.slice_bytes()),
                    false;
     }
     out = stock;
@@ -140,10 +139,12 @@ inline std::string fit_rgba(const uint8_t *rgba, uint32_t w, uint32_t h, uint32_
         for (uint32_t x = 0; x < nw; x++) {
             double acc[4] = {0, 0, 0, 0}, c[4];
             if (nw < w || nh < h) {
-                double x0 = double(x) * w / nw, x1 = double(x + 1) * w / nw, y0 = double(y) * h / nh, y1 = double(y + 1) * h / nh, total = 0;
+                double x0 = double(x) * w / nw, x1 = double(x + 1) * w / nw, y0 = double(y) * h / nh, y1 = double(y + 1) * h / nh,
+                       total = 0;
                 for (uint32_t sy = uint32_t(y0); sy < h && sy < y1; sy++)
                     for (uint32_t sx = uint32_t(x0); sx < w && sx < x1; sx++) {
-                        double cover = (std::min(x1, sx + 1.0) - std::max(x0, double(sx))) * (std::min(y1, sy + 1.0) - std::max(y0, double(sy)));
+                        double cover = (std::min(x1, sx + 1.0) - std::max(x0, double(sx))) *
+                                       (std::min(y1, sy + 1.0) - std::max(y0, double(sy)));
                         pre(sx, sy, c);
                         for (int k = 0; k < 4; k++)
                             acc[k] += c[k] * cover;
@@ -152,7 +153,8 @@ inline std::string fit_rgba(const uint8_t *rgba, uint32_t w, uint32_t h, uint32_
                 for (int k = 0; k < 4 && total > 0; k++)
                     acc[k] /= total;
             } else {
-                double fx = std::clamp((x + 0.5) * w / nw - 0.5, 0.0, w - 1.0), fy = std::clamp((y + 0.5) * h / nh - 0.5, 0.0, h - 1.0);
+                double fx = std::clamp((x + 0.5) * w / nw - 0.5, 0.0, w - 1.0),
+                       fy = std::clamp((y + 0.5) * h / nh - 0.5, 0.0, h - 1.0);
                 uint32_t ax = uint32_t(fx), ay = uint32_t(fy), bx = std::min(ax + 1, w - 1), by = std::min(ay + 1, h - 1);
                 double tx = fx - ax, ty = fy - ay;
                 const uint32_t px[4][2] = {{ax, ay}, {bx, ay}, {ax, by}, {bx, by}};

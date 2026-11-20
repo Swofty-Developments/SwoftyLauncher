@@ -1,7 +1,7 @@
-// Host-native unit test for the core's Grand Prix continue F1 World car guard (native/src/core/gp_continue_logic.hpp).
-// Built and run by native/test/run_gp_continue_test.sh.
+// Host-native unit test for the core's Grand Prix continue F1 World car guard (native/src/core/guards/frontend/gp_continue_logic.hpp).
+// Built and run by native/test/run_tests.sh gp_continue.
 
-#include "gp_continue_logic.hpp"
+#include "core/guards/frontend/gp_continue_logic.hpp"
 
 #include <cstdio>
 #include <string>
@@ -39,7 +39,8 @@ int main()
            "the skip line names the check and the setup mode");
     expect(gc::line(gc::Check::car_offline, gc::Verdict::keep, "f1_world").find("is the F1 World car") != std::string::npos,
            "the keep line says the save is on the F1 World car");
-    expect(gc::line(gc::Check::offline_warning, gc::Verdict::skip, "swofty_f1").rfind("continue: F1 World offline warning skipped", 0) == 0,
+    expect(gc::line(gc::Check::offline_warning, gc::Verdict::skip, "swofty_f1")
+                   .rfind("continue: F1 World offline warning skipped", 0) == 0,
            "the warning check has its own name");
     expect(gc::line(gc::Check::car_offline, gc::Verdict::skip, "").find("setup mode ?") != std::string::npos,
            "an unreadable label shows as ?");

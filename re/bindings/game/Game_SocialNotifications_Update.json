@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SocialNotifications_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c34800",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141c34800.c;xref:0x141e05056,0x14573d730",
+  "notes": "Social manager tick: polls GetFriends and friend-request tasks (traces 'GetFriends task returned with an error', 'Get friend requests task returned with an error'), builds notifications in list this+0x1418..+0x1428 with icons #overrides.icons.social_request.friend_request / game_invite and texts lng_wants_to_be_your_friend / lng_wants_to_invite_you_to_play. Addon: custom social toasts. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2871)"
+ },
+ "signature": {
+  "id": "game.social_notifications_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 03 00 00 C5 F8 29 B4 24 B0 03 00 00 48 89 D7 48",
+  "match": "0x141c34800",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c34800",
+  "kind": "func_start",
+  "names": [
+   "Game_SocialNotifications_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d10-verify",
+   "kind": "func",
+   "item": "Game_SocialNotifications_Update",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c34800.c;xref:0x141c34800",
+   "notes": "V2871 decomp checked: offsets/calls/strings match claim"
+  }
+ ],
+ "proofs": []
+}

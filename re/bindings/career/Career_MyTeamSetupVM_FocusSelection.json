@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamSetupVM_FocusSelection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142282c00",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *vm, void **cmd, void *ctx",
+  "evidence": "decomp:re/decomp/142282c00.c;xref:0x145777790",
+  "notes": "myteam-g1: Handles focus_sponsor / select_sponsor and select_power_unit_supplier / select_team_mate commands in the career setup wizard (my_team_career_select_primary_sponsor)."
+ },
+ "signature": {
+  "id": "career.my_team_setup_vm_focus_selection",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC F0 00 00 00 48 8B 02 48 85 C0 0F 84 ?? ?? ?? ?? 48 89 CE 8B 00 3D 42 42 74 68",
+  "match": "0x142282c00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142282c00",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamSetupVM_FocusSelection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x142282c00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142282c00.c;xref:0x145777790",
+   "notes": "V10075 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

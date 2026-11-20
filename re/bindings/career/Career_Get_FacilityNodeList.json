@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Get_FacilityNodeList",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140b537a0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *GetList(void *facilities, void *out_vec)",
+  "evidence": "decomp:re/decomp/140b537a0.c;xref:0x140a8b724;xref:0x140a8bc74;xref:0x140a8c1c4",
+  "notes": "myteam-g2: Builds the vector of facility node pairs (obj, ctrl) (uses FUN_140b53930/140b53a80 and FUN_142ea60b0); the same list Career_Tick_FacilityNodes iterates. Used by Facilities_WriteSaveData, Exit_FacilityUpgrades, Build_FacilityUpgradeList."
+ },
+ "signature": {
+  "id": "career.get_facility_node_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 60 C5 F8 29 74 24 50 48 89 D6 48 8B 41 20",
+  "match": "0x140b537a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140b537a0",
+  "kind": "func_start",
+  "names": [
+   "Career_Get_FacilityNodeList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140b537a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140b537a0.c",
+   "notes": "V9488 Copies header word, iterates 16-byte (ptr, refcount) entries at +8..+0x10 and adds to out via FUN_140b53930/140b53a80 using FUN_142ea60b0."
+  }
+ ],
+ "proofs": []
+}

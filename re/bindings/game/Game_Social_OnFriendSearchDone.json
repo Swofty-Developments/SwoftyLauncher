@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Social_OnFriendSearchDone",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141dfb490",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141dfb490.c;xref:0x141dfb0a4,0x141dfbd27",
+  "notes": "EADP friend search task done: picks UI message social_msg_friend_request_sent_ea_succeed / _failed / _failed_not_found (task +0x48 error, +0x1a0 status) and shows it via Game_UiMessage_DisplayMessage with player_name. Addon: social UI messages. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2873)"
+ },
+ "signature": {
+  "id": "game.social_on_friend_search_done",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC E8 00 00 00 48 89 D6 48 89",
+  "match": "0x141dfb490",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141dfb490",
+  "kind": "func_start",
+  "names": [
+   "Game_Social_OnFriendSearchDone"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d10-verify",
+   "kind": "func",
+   "item": "Game_Social_OnFriendSearchDone",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141dfb490.c;xref:0x141dfb490",
+   "notes": "V2873 decomp checked: offsets/calls/strings match claim"
+  }
+ ],
+ "proofs": []
+}

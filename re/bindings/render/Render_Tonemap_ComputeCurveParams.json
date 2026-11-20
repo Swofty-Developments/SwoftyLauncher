@@ -1,0 +1,62 @@
+{
+ "schema": 1,
+ "name": "Render_Tonemap_ComputeCurveParams",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bca600",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bca600.c;xref:0x143bafb6e",
+  "notes": "2894-byte computation of tonemap/exposure scalars (constants 0.02, 0.784, 4.8, 1e-7 etc) filling a param block at +0x44..+0x136. Callers Render_Tonemap_SetupEyeAdaptation, Render_Tonemap_Execute. Hypothesis on meaning. | engine-re 2026-11-17 render round 4 (static): this IS the CPU fill of cbuffer toneMapSettings (memset 0x410). Source = per-view 0x2e8-byte post settings record (base [this+0x4c0] + view*0x2e8): MaxLum[0x58] = max(1e-8, +0x74), MinLum[0x5c] = max(1e-8, +0x78), MaxSceneLum[0x74] = f(+0x7c) and [0xf0] = 1/it, KeyValue[0x60] = +0x80, Threshold[0x64] = lerp(+0x84, +0x88, +0x94) (x0.5 or x0.5+1.07 in two mode branches), AdaptationSpeedDL/LD[0x68/0x6c] = +0x98/+0x9c x100 (0 when +0xbc set), LumScale[0x70] = +0xa0, TotalNumOfPixels[0x80] = w*h, HistogramLow/High[0x84/0x88] = +0xa8/+0xa4, cameraShutterSpeed 0.01, FStop[0xb8] = +0xac, ISO 100, Tmin/Tmax = 1/+0xb0, 1/+0xb4, lutPCurveLerp/TODLerp[0x50/0x54] = +0xe8/+0xec, [0x40] = +0xe4, colorXFormLUT from tint +0xd0 (packed RGB) / +0xd4 amount / +0xd8 / +0xdc / +0xe0; filmic spline blocks (0x170 bytes) to [0x110] and [0x290]. The record field order equals the postprocess/tonemap ToD key order (max_lum .. camera_tmax); who copies the curves into the record is not traced."
+ },
+ "signature": {
+  "id": "render.tonemap_compute_curve_params",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 8B 43 4C 48 8B 4E 30 48 8D 04 40",
+  "match": "0x143bafb6e",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143bca600",
+  "kind": "func_start",
+  "names": [
+   "Render_Tonemap_ComputeCurveParams"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x143bca600",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143bca600.c;xref:0x143bafb6e",
+   "notes": "V8277 name+concrete claims match decomp"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "rndr-verify4",
+   "kind": "func",
+   "item": "0x143bca600",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x143bbf394",
+   "notes": "V11425 memset(rsi,0,0x410) call 0x145378b60 at 0x143bca71e; rec = [rsi+0x4c0] + idx*0x2e8 (r15 = base+0x20, so claim offsets = r15 offs+0x20): +0x58 = max(1e-8 (0x14550e430), rec+0x74) 0x143bcaac2 (override by [r8+0x168] if non-zero), +0x5c = max(1e-8, rec+0x78), +0x60 = rec+0x80, +0x64 = lerp(rec+0x84, rec+0x88, rec+0x94) 0x143bcab26 (later scaled under globals), +0x68/+0x6c = rec+0x98/+0x9c * 100.0 (0x145382ac8; zero if rec+0xbc flag), +0xb8 = rec+0xac, +0xc0/+0xc4 = 1/rec+0xb0, 1/rec+0xb4, +0x50/+0x54 = rec+0xe8/+0xec (conditional zero)."
+  }
+ ],
+ "proofs": []
+}

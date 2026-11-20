@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Activities_Finish",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14386ac40",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-ACTIVITIES",
+  "notes": "named from its log messages (channel ACTIVITIES): 'Finish activity %s'"
+ },
+ "signature": {
+  "id": "game.activities_finish",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 44 89 C7 49 89 D4",
+  "match": "0x14386ac40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14386ac40",
+  "kind": "func_start",
+  "names": [
+   "Game_Activities_Finish"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x14386ac40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14386ac40.c;xref:0x1438660aa",
+   "notes": "V6354 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

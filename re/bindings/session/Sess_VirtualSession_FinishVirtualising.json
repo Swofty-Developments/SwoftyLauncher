@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_VirtualSession_FinishVirtualising",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f747d0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f747d0.c;xref:0x142dfd55d",
+  "notes": "(sys, arg) For every entrant +0x120..+0x128 (stride 0xba0) not finished (+0xb2c==0) runs 0x142f656f0; then 0x142f6dda0; then Sess_Progress_SyncResultRecord for finished ones; logs VIRTUAL-SESSION 'VirtualSessionSystem: Finished virtualising session.'. Called from Sess_RedFlagStrategyCalc_Update. Addon: red-flag / skip-session simulation end."
+ },
+ "signature": {
+  "id": "session.virtual_session_finish_virtualising",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 48 8B 99 20 01 00 00 4C",
+  "match": "0x142f747d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f747d0",
+  "kind": "func_start",
+  "names": [
+   "Sess_VirtualSession_FinishVirtualising"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x142f747d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f747d0.c;xref:0x142dfd55d",
+   "notes": "V3755 Runs 142f656f0 on unfinished entrants, 142f6dda0, 142f67eb0 on finished ones, same VIRTUAL-SESSION log; caller Sess_RedFlagStrategyCalc_Update verified."
+  }
+ ],
+ "proofs": []
+}

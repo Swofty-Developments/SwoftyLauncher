@@ -1,0 +1,73 @@
+{
+ "schema": 1,
+ "name": "Career_Set_EntrantData_Thunk",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1407b72e0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Set_EntrantData_Thunk(void *entity, const void *entrant_id, const uint32_t *data, uint16_t position, uint8_t flag)",
+  "evidence": "decomp:re/decomp/1407b72e0.c;xref:0x140d90966,0x140d90a90,0x140db3a85,0x140db7400;doc:addons/career-editor/protocol/drivers.md#op-driversswap",
+  "notes": "thunk -> .data1 0x148618ee0: finds the row in entity+0x2e0..+0x2e8 (0x88 stride) matching entrant_id with 0x1431146d0 (human bit +0x48 0x10000000 must agree; AI rows match on the u32 at +0x48), then writes identity +8..+0x4b, +0x50 driver = data[0], +0x54 = data[1], +0x58 team = data[2], +0x5c..+0x68 vehicle = data[3..6], +0x70 obj vt 0x145612ed0 with +0x78 = data[10], +0x80 u16 position, +0x82 = 0xff, +0x83 = flag; brackets with 0x14578d4e8 (begin, sets entity+0x2f8 = 1 when it was 0) / 0x14578d510 (end, entity+0x2d8, clears +0x2f8); never appends. Called by Career_Sign_DriverToTeam (13 sites), its reserve backfill 0x140d8ecd0, the pending-move processor 0x140db18e0 (direct and via 0x140db70a0) and 9 other functions (0x140c00830 x2, 0x140c01280, 0x140c2a870 x3, 0x140d766b0 x6, 0x140d8f600, 0x140d94140 x2, 0x140d958b0, .data1 0x149a51f30). If no row matches, the begin message is posted and entity+0x2f8 stays 1 (no end message) (wording per V0292); drivers.cpp confirms exactly one matching AI row before every call"
+ },
+ "signature": {
+  "id": "career.set_entrant_data_thunk",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 0F 8A ?? ?? ?? ?? 0F 85 ?? ?? ?? ?? E9 ?? ?? ?? ?? 74 A5",
+  "match": "0x1407b72e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407b72e0",
+  "kind": "func_start",
+  "names": [
+   "Career_Set_EntrantData_Thunk"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-drivers",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/drivers.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-2",
+   "kind": "func",
+   "item": "Career_Set_EntrantData_Thunk",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1407b72e0.c;decomp:re/decomp/148618ee0.c;xref:0x140d90967,0x140db7400,0x140db3a86,0x140c00db9,0x140d770cb",
+   "notes": "V0292 proto (rcx,rdx,r8,r9w,[rsp+0x28] byte), row search with 0x1431146d0 over entity+0x2e0..+0x2e8 (0x88 stride), every written field, 0x14578d4e8/0x14578d510 bracket and no append are correct. Wrong caller count: Career_Sign_DriverToTeam has 13 sites, and 10 more functions call it (0x140c00830 x2, 0x140c01280, 0x140c2a870 x3, 0x140d766b0 x6, 0x140d8ecd0, 0x140d8f600, 0x140d94140 x2, 0x140d958b0, 0x140db18e0, 0x140db70a0, .data1 0x149a51f30). Corrected tail: \"Called by Career_Sign_DriverToTeam (13 sites), its reserve backfill 0x140d8ecd0, the pending-move processor 0x140db18e0 (direct and via 0x140db70a0) and 9 other functions. If no row matches, the begin message is posted and entity+0x2f8 stays 1 (no end message)\""
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-5",
+   "kind": "func",
+   "item": "Career_Set_EntrantData_Thunk",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1407b72e0.c;decomp:re/decomp/148618ee0.c;decomp:re/decomp/14feb1940.c;xref:0x1407b72e0,0x148618efc,0x148618fc6,0x148618ffb,0x148619037,0x148619082,0x14861909a,0x1486190d5;sig:career.set_entrant_data_thunk",
+   "notes": "V0693 sigcheck OK; jmp 0x148618ee0. Proto matches (rcx, rdx, r8, r9w, byte [rsp+0x28]). Row search 0x88 step with 0x1431146d0 (thunk to 0x14feb1940: bit 0x10000000 of +0x48 must agree, AI rows compare the whole dword), all written fields, bracket 0x14578d4e8/0x14578d510 with +0x2f8 and +0x2d8, no append, the no-match behaviour, and 33 callers by function all confirmed. Quibbles: it also rewrites +0 with vt 0x145612e20; +0x5c..+0x68 are vehicle_ref, driver_reg_value, vehicle_customisation, badge (not all vehicle); the drivers.cpp clause is addon behaviour and was not checked"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-5",
+   "kind": "func",
+   "item": "Career_Set_EntrantData_Thunk",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1407b72e0.c;decomp:re/decomp/148618ee0.c;decomp:re/decomp/14feb1940.c;xref:0x1407b72e0,0x148618efc,0x148618fc6,0x148618ffb,0x148619037,0x148619082,0x14861909a,0x1486190d5;sig:career.set_entrant_data_thunk",
+   "notes": "V0814 sigcheck OK; jmp 0x148618ee0. Proto matches (rcx, rdx, r8, r9w, byte [rsp+0x28]). Row search 0x88 step with 0x1431146d0 (thunk to 0x14feb1940: bit 0x10000000 of +0x48 must agree, AI rows compare the whole dword), all written fields, bracket 0x14578d4e8/0x14578d510 with +0x2f8 and +0x2d8, no append, the no-match behaviour, and 33 callers by function all confirmed. Quibbles: it also rewrites +0 with vt 0x145612e20; +0x5c..+0x68 are vehicle_ref, driver_reg_value, vehicle_customisation, badge (not all vehicle); the drivers.cpp clause is addon behaviour and was not checked"
+  }
+ ],
+ "proofs": []
+}

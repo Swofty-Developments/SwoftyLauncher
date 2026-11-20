@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_F1World_SetUpgradesResources",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141b1c5b0",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "void FUN(void *view, void *ctx)",
+  "evidence": "decomp:re/decomp/141b1c5b0.c;xref:0x145730688",
+  "notes": "myteam-g1: UI binding code; lng_f1_world_upgrades_resources, upgrades. Static, string-key driven."
+ },
+ "signature": {
+  "id": "ui.f1_world_set_upgrades_resources",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 01 00 00 C5 F8 29 B4 24 F0 00 00 00 48 89 CE 0F B6 81 28 06 00 00 89 C1 80 C9 01 88 8E 28 06 00 00 A8 02 74 08 48 89 F1 E8 ?? ?? ?? ?? C7 44 24 38 04 00 00 00",
+  "match": "0x141b1c5b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141b1c5b0",
+  "kind": "func_start",
+  "names": [
+   "Ui_F1World_SetUpgradesResources"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141b1c5b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141b1c5b0.c;xref:0x145730688",
+   "notes": "V9946 F1 World hub binder: onTabActivated, tech_rating, upgrades resources, licence, objectives, podium_pass, play_button; upgrade resources only one part."
+  }
+ ],
+ "proofs": []
+}

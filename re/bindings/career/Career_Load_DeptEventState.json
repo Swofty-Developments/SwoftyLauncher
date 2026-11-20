@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Load_DeptEventState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14128d6e0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int FUN(void *state, void *reader, void *ctx)",
+  "evidence": "decomp:re/decomp/14128d6e0.c;xref:0x14128f9fa;xref:0x14128fa45;xref:0x14128fdd5",
+  "notes": "myteam-g1: Deserializer for department_event_generation_seed_buffer / id_hash_buffer / has_department_event_buffer."
+ },
+ "signature": {
+  "id": "career.load_dept_event_state",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 4D 89 C5",
+  "match": "0x14128d6e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14128d6e0",
+  "kind": "func_start",
+  "names": [
+   "Career_Load_DeptEventState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x14128d6e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14128d6e0.c;xref:0x14128f9fa;xref:0x14128fa45",
+   "notes": "V9709 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

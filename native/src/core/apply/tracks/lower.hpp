@@ -1,6 +1,6 @@
 #pragma once
 
-#include "keys.hpp"
+#include "core/apply/tracks/keys.hpp"
 
 #include <swofty/json.hpp>
 
@@ -15,7 +15,7 @@
 #include <utility>
 #include <vector>
 
-// A track record lowered to the game database: the launcher's 1.5 track activation (packages/core/src/activation/
+// A track record lowered to the game database: the launcher's 1.5 track activation (packages/core/src/games/f1_25/activation/
 // db.rs activate) ported to the core, over the same table description (track_tables.json, embedded as
 // track_keys.inc). The tracks.Track row is cloned from the slot row or the base row (or a row with the record's code
 // is kept), the track resource is routed to the track's own asset groups, every per-track table gets a row, every
@@ -264,15 +264,15 @@ inline Tables tables_of(const Value &v)
             t.sorted_orders.push_back(spec_of(s));
     if (auto a = v["track_lists"].if_array())
         for (auto &s : *a)
-            t.track_lists.push_back({spec_of(s["table"]), std::string(s["sub_table"].as_string()),
-                                     std::string(s["field"].as_string())});
+            t.track_lists.push_back(
+                {spec_of(s["table"]), std::string(s["sub_table"].as_string()), std::string(s["field"].as_string())});
     if (v["track_resources"].is_object())
         t.track_resources = spec_of(v["track_resources"]);
     t.ok = t.track.path.has_value() && t.track_data.path.has_value();
     return t;
 }
 
-#include "track_keys.inc"
+#include "core/apply/tracks/track_keys.inc"
 
 inline const Tables &builtin_tables()
 {
@@ -415,8 +415,7 @@ inline void fresh_unique(Db &db, const Table &table, const Key &dst, const std::
     }
 }
 
-inline std::optional<Key> add_row_from(Db &db, const TableSpec &spec, const Table &table, const Key &src,
-                                       const std::string &code)
+inline std::optional<Key> add_row_from(Db &db, const TableSpec &spec, const Table &table, const Key &src, const std::string &code)
 {
     auto dst = table.push(db);
     if (!dst)
@@ -427,9 +426,8 @@ inline std::optional<Key> add_row_from(Db &db, const TableSpec &spec, const Tabl
     return dst;
 }
 
-inline constexpr const char *RESOURCE_GROUP_FIELDS[] = {"worldAssetGroup",     "aoBakeAssetGroup",
-                                                        "radianceBakeAssetGroup", "lightListAssetGroup",
-                                                        "ddgiAssetGroup",      "trackMapAssetGroup"};
+inline constexpr const char *RESOURCE_GROUP_FIELDS[] = {"worldAssetGroup",     "aoBakeAssetGroup", "radianceBakeAssetGroup",
+                                                        "lightListAssetGroup", "ddgiAssetGroup",   "trackMapAssetGroup"};
 
 inline std::string natural_group(const std::string &code, std::string_view f)
 {
@@ -490,8 +488,7 @@ inline std::string route_resource(Db &db, const Tables &t, const Key &track_row,
     if (!db.set_text(field(*dst, "iblKey"), "key_2019.assetgroup"))
         return "iblKey: no such key";
     db.set_text(field(track_row, "track_resource"), label);
-    lines.push_back("track resource " + label + " (from " + *current + ") loads " + code + " from " +
-                    natural_group(code, ""));
+    lines.push_back("track resource " + label + " (from " + *current + ") loads " + code + " from " + natural_group(code, ""));
     return {};
 }
 

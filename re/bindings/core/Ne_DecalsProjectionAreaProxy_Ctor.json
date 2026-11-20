@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_DecalsProjectionAreaProxy_Ctor",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c75550",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c75550.c;xref:0x141420fda",
+  "notes": "NeCustomisationDecalsProjectionAreaProxy constructor (logs %p). Called by Game_CustomisationDecals_LoadConfig."
+ },
+ "signature": {
+  "id": "core.decals_projection_area_proxy_ctor",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 48 C7 41 08",
+  "match": "0x143c75550",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c75550",
+  "kind": "func_start",
+  "names": [
+   "Ne_DecalsProjectionAreaProxy_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d12-verify",
+   "kind": "func",
+   "item": "Ne_DecalsProjectionAreaProxy_Ctor",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c75550.c;xref:14141efe0",
+   "notes": "V3104 strings/offsets/calls match claim"
+  }
+ ],
+ "proofs": []
+}

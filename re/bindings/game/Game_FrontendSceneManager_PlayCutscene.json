@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneManager_PlayCutscene",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428db0e0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name playCutscene (class from the log channel); log channel FRONTEND_SCENE_MANAGER: '%s() cutscene %s'"
+ },
+ "signature": {
+  "id": "game.frontend_scene_manager_play_cutscene",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 D6 48 89 CF F7 81 30 01 00 00 FD FF FF FF",
+  "match": "0x1428db0e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428db0e0",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneManager_PlayCutscene"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1428db0e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428db0e0.c;xref:0x1416ca2a2",
+   "notes": "V5138 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

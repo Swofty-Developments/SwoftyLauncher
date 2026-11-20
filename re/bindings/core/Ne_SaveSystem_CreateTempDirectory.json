@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_SaveSystem_CreateTempDirectory",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144143580",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-channel-SAVE;decomp:re/decomp/144143580.c;xref:0x144141d8b,0x144145e41,0x144147198",
+  "notes": "named from its log messages (channel SAVE): 'Create temporary directory requested for '%s' | Create temporary directory result: 0x%x | %s | Temporary directory created at '%s''"
+ },
+ "signature": {
+  "id": "core.save_system_create_temp_directory",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC A0 0A 00 00",
+  "match": "0x144143580",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144143580",
+  "kind": "func_start",
+  "names": [
+   "Ne_SaveSystem_CreateTempDirectory"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb4-verify-a",
+   "kind": "func",
+   "item": "Ne_SaveSystem_CreateTempDirectory",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144143580.c;xref:0x144141c00",
+   "notes": "V2244 GetTempPath + retry create; logs match."
+  }
+ ],
+ "proofs": []
+}

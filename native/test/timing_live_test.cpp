@@ -1,5 +1,5 @@
 // Host-native test for the live to timing adapter: drives swofty::fake::Live through a few laps and checks the
-// tower rows, gaps, arrows and order. Built and run by native/test/run_timing_live_test.sh.
+// tower rows, gaps, arrows and order. Built and run by native/test/run_tests.sh timing_live.
 
 #include <cstdio>
 #include <cstring>
@@ -9,12 +9,12 @@
 
 static int g_fail;
 
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                    \
-            g_fail++;                                                                                                  \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                              \
+            g_fail++;                                                                                                            \
+        }                                                                                                                        \
     } while (0)
 
 namespace timing = swofty::timing;

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_Drafting_Evaluate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140647e60",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "bool Ai_Drafting_Evaluate(void *ai_sys, void **gap_rec, uint8_t *ai_car, uint8_t *car_ahead, bool use_end_time, int *out_reason)",
+  "evidence": "decomp:re/decomp/140647e60.c;xref:0x1406484c1,0x1406485b8",
+  "notes": "set = ai_car+0x230 (handling config) +0x168 drafting.drafting_an_ai, or +0x1b8 drafting_a_human when car_ahead+0x50->+0x18 & 0x3000 == 0x1000. Window = set+0x00 draft_end_time if use_end_time else set+0x10 draft_start_time, compared with (*gap_rec)+0x20 (both cars on route 0); set+0x28 draft_approach_speed_needed (own speed ai_car+0x38->+0x3c > ahead speed + it); set+0x30 draft_potential_speed_gain_needed vs (*gap_rec)+8 - own speed. Also: ahead speed > 22.352 m/s (corrected 2026-11-14: the 50 mph test is on the car AHEAD), ahead |route angle| <= ahead lost_control.angle (config+0x350), ahead route+0x180 >= 3, mask tests, Ai_Drafting_GetTargetValue (reason 0x16). Returns true if it may draft; *out_reason (if non-null) gets 9,10,0xb..0x11,0x13..0x16 (corrected: was 10..15). L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.drafting_evaluate",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 78 29 A4 24 90 00 00 00 C5 78 29 9C 24 80 00 00 00 C5 78 29 54 24 70 C5 78 29 4C 24 60 C5 78 29 44 24 50 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 4C 89 C6",
+  "match": "0x140647e60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140647e60",
+  "kind": "func_start",
+  "names": [
+   "Ai_Drafting_Evaluate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-23",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x140647e60",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140647e60.c;xref:0x6484c1",
+   "notes": "V4700 +0x168 (AI) vs +0x1b8 (human via flags&0x3000==0x1000), 22.352 and gap window confirmed; but returns bool and writes reason codes 0xa..0x16 via param_6 (not just 10..15)"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x140647e60",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x140647e60-0x1406482e3;xref:0x1406484c1,0x1406485b8",
+   "notes": "V10565 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Callers 0x1406484c1/0x1406485b8 (both in 0x1406482f0). 6 args (rcx, rdx gap_rec read at 0x140647f12, r8 ai_car, r9 car_ahead, 2 stack). Settings [ai_car+0x230]+0x1b8 (human ahead, status &0x3000==0x1000) else +0x168 confirmed; the 22.352 test (0x140648121) is on xmm10 = [[car_ahead+0x38]+0x3c] = car ahead speed; lost_control +0x350 read and Ai_Drafting_GetTargetValue call 0x1406480a3 confirmed."
+  }
+ ],
+ "proofs": []
+}

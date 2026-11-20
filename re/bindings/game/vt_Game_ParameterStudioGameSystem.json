@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "vt_Game_ParameterStudioGameSystem",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14583d5f0",
+  "type": "vtable[38]",
+  "level": "L1",
+  "subsystem": "game",
+  "evidence": "pat:flow-state-type-record;decomp:re/decomp/143386e50.c",
+  "notes": "cxx=ParameterStudioGameSystem (type record 0x1460c5d80); slot 0xc8 = per-frame update 0x143386e50: registers the per-tyre VFX parameters tyreValue:kickupWetness / kickupVolumeWetness / kickupDust / skid and spin smoke, and reads the global track wetness weather+0x3f0a38 (> 0.01 = wet, else [[this+0x58]+0x1da8]+0x318 > 0.01). (vmknolle wet-track)"
+ },
+ "signature": {
+  "id": "game.parameter_studio_game_system",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 07 C5 F9 EF C0 C5 FA 7F 47 30 C5 FA 7F 47 20 C5 FA 7F 47 50 C5 FA 7F 47 40 C5 FA 7F 47 70 C5 FA 7F 47 60 48 C7 87 80",
+  "match": "0x1407e7679",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x14583d5f0",
+  "kind": "data",
+  "names": [
+   "vt_Game_ParameterStudioGameSystem"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x14583d5f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x1407e767c",
+   "notes": "V7456 name/class, slots and refs match"
+  }
+ ],
+ "proofs": []
+}

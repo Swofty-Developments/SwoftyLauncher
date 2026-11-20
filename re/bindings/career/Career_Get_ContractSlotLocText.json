@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Get_ContractSlotLocText",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141723220",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *out, uint8_t kind, uint8_t flag, uint8_t state, void *ctx",
+  "evidence": "decomp:re/decomp/141723220.c;xref:0x141722ca4;xref:0x14172300d",
+  "notes": "myteam-g1: Picks localisation keys lng_rnd_head_slot / lng_rnd_head_contract_slot / lng_sponsor_slot / lng_sponsor_contract_slot and formats the slot caption."
+ },
+ "signature": {
+  "id": "career.get_contract_slot_loc_text",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 04 00 00 44 89 CD 44 89 C7",
+  "match": "0x141723220",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141723220",
+  "kind": "func_start",
+  "names": [
+   "Career_Get_ContractSlotLocText"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x141723220",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141723220.c;xref:0x141722ca4;xref:0x14172300d",
+   "notes": "V9777 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

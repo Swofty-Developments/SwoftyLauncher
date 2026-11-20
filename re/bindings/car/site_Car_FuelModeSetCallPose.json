@@ -1,0 +1,43 @@
+{
+ "schema": 1,
+ "name": "site_Car_FuelModeSetCallPose",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14389bbf3",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "car",
+  "evidence": "decomp:re/decomp/1553ff3d0.c;xref:0x14389bbf3",
+  "notes": "call Car_FuelEcu_SetMode_Thunk in 0x14389a2b0 (pose apply of Car_Physics_ResettleVehicles_Body), cold block after the epilogue: rcx = FuelECU system, edx = mode (T123)"
+ },
+ "signature": {
+  "id": "car.fuel_mode_set_call_pose",
+  "section": ".xtls",
+  "pattern": "41 5D 41 5E 41 5F C3 E8 ?? ?? ?? ?? E9",
+  "match": "0x14389bbec",
+  "anchor": "0x7",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14389bbf3",
+  "kind": "mid",
+  "expect": "E8 A8 2A DF 00",
+  "names": [
+   "site_Car_FuelModeSetCallPose"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "car-trace",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "re/tests/T123.trace.json"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

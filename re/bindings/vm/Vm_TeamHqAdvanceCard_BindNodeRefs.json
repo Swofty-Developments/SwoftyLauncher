@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_TeamHqAdvanceCard_BindNodeRefs",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1419c89f0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void (void *vm)",
+  "evidence": "decomp:re/decomp/1419c89f0.c;xref:0x14199f63a;xref:0x14199f7a4;xref:0x1419a2c8a",
+  "notes": "myteam-g2: Binds the node references of the Team HQ advance card (Vm_Set_NodeRef, Ne_IntrusiveNode_Reassign, FUN_141b505f0/141b50180) and releases the old nodes. UI binding for the young driver programme and advance card."
+ },
+ "signature": {
+  "id": "vm.team_hq_advance_card_bind_node_refs",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 48 89 CE 48 8B 39",
+  "match": "0x1419c89f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419c89f0",
+  "kind": "func_start",
+  "names": [
+   "Vm_TeamHqAdvanceCard_BindNodeRefs"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x1419c89f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1419c89f0.c;xref:0x14199f63a",
+   "notes": "V9905 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

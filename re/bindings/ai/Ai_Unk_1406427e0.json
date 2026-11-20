@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ai_Unk_1406427e0",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1406427e0",
+  "level": "L1",
+  "subsystem": "ai",
+  "proto": "void Ai_Unk_1406427e0(uint32_t *job)",
+  "evidence": "decomp:re/decomp/1406427e0.c;xref:0x1405ee5b8",
+  "notes": "Not called directly: lea at 0x1405ee5b7 stores it as a job function in 0x1405ee110 (job data {0, float, rsi, r14}, i.e. a parallel per-car job). Per car it resets/rebuilds a look-ahead record (lists at rec+0x38/+0x58/+0x78, entries 0x28 bytes, flags +0x157/+0x158 from thresholds 0.9/0.95, +0x164 = track-type match against 4 globals 0x14604842c..438) and resolves the participant record (list +0x88, byte +0xe8 == car id). Reads ai.general_ai_settings through the lazy block 0x146046c50 at 4 sites. For each listed car: curves **(cfg+0x6d8) (small_follow_gap) and **(cfg+0x6d0) (large_follow_gap), cfg = [x+0x230], evaluated at car speed +0x3c; only when (AI state & ~1) == 2 and participant +0x35 & 0x10 it blends small->large by clamp(rec+0x10/0.4) and evaluates 0x1405fbfd0 at (pos - gap); else 0x1405fbfd0 is called at pos unless SC type ([[x+0x10]+0xe0]+0x108) != 2 with participant +0x33 bit 1 (site_Ai_ScFollowFlagCmp 0x140642faf). Results go to entry -8/-4. KEPT L1 2026-11-14 (engine-re AI round): Only fragments (SC follow gap, list rebuild) are decoded; the overall role of the 2017-line job is still a guess. edited by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.unk_1406427e0",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 02 00 00 C5 78 29 BC 24 00 02 00 00 C5 78 29 B4 24 F0 01 00 00 C5 78 29 AC 24 E0 01 00 00 C5 78 29 A4 24 D0 01 00 00 C5 78 29 9C 24 C0 01 00 00 C5 78 29 94 24 B0 01 00 00 C5 78 29 8C 24 A0 01 00 00 C5 78 29 84 24 90 01 00 00 C5 F8 29 BC 24 80 01 00 00 C5 F8 29 B4 24 70 01 00 00 48 89 CE B8 01 00 00 00",
+  "match": "0x1406427e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1406427e0",
+  "kind": "func_start",
+  "names": [
+   "Ai_Unk_1406427e0"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la0-verify",
+   "kind": "func",
+   "item": "0x1406427e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1406427e0.c;xref:0x1405ee5b9",
+   "notes": "V4083 offsets +0x6d8/+0x6d0 tables, (state&~1)==2 and +0x35&0x10 check confirmed in decompile"
+  }
+ ],
+ "proofs": []
+}

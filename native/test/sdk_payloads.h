@@ -111,6 +111,39 @@ typedef struct SwoftyEvLap {
     SwoftyEvCar car;
 } SwoftyEvLap;
 
+typedef struct SwoftyEvRaceFlag {
+    uint32_t size, payload_version;
+    uint8_t flag, previous;
+    uint8_t yellow_sectors, previous_yellow_sectors;
+    int32_t lap;
+} SwoftyEvRaceFlag;
+
+typedef struct SwoftyEvSafetyCar {
+    uint32_t size, payload_version;
+    uint8_t deployment, previous;
+    int32_t lap;
+} SwoftyEvSafetyCar;
+
+typedef struct SwoftyEvRedFlag {
+    uint32_t size, payload_version;
+    uint8_t state, previous;
+    int32_t lap;
+} SwoftyEvRedFlag;
+
+typedef struct SwoftyEvSector {
+    uint32_t size, payload_version;
+    uint32_t car;
+    uint8_t sector, previous;
+    int32_t lap;
+} SwoftyEvSector;
+
+typedef struct SwoftyEvCarStatus {
+    uint32_t size, payload_version;
+    uint32_t car;
+    uint8_t status, previous;
+    int32_t lap;
+} SwoftyEvCarStatus;
+
 typedef struct SwoftyEvControllersRebuilt {
     uint32_t size, payload_version;
     SwoftyEvCar car;
@@ -205,135 +238,211 @@ typedef struct SwoftyEvCatalogueBuild {
     void *user;
 } SwoftyEvCatalogueBuild;
 
+typedef struct SwoftyEvWeatherSlot {
+    uint8_t kind;
+    uint8_t reserved[3];
+    float duration_s, transition_s, intensity;
+} SwoftyEvWeatherSlot;
+
+typedef struct SwoftyEvWeatherSetup {
+    uint32_t size, payload_version;
+    uint32_t session_type;
+    uint8_t game_scripted, time_trial, seed_forced, set_seed;
+    uint32_t seed;
+    uint8_t script_mask;
+    uint8_t counts[8];
+    uint8_t reserved[3];
+    SwoftyEvWeatherSlot slots[8][6];
+} SwoftyEvWeatherSetup;
+
+typedef struct SwoftyEvTyreDamage {
+    uint32_t size, payload_version;
+    uint32_t car;
+    uint8_t wheel, state, previous, reserved;
+    float deflation;
+    int32_t lap;
+} SwoftyEvTyreDamage;
+
+typedef struct SwoftyEvPitStopTyres {
+    uint32_t size, payload_version;
+    uint32_t car;
+    uint8_t kept;
+    uint8_t reserved[3];
+} SwoftyEvPitStopTyres;
+
 /* X(C struct, C++ namespace, C++ struct, size) */
-#define SWOFTY_EV_PAYLOADS(X)                                                                                   \
-    X(SwoftyEvShell, career, Created, 8)                                                                       \
-    X(SwoftyEvShell, career, Loaded, 8)                                                                        \
-    X(SwoftyEvShell, career, Unloaded, 8)                                                                      \
-    X(SwoftyEvShell, career, SeasonEnd, 8)                                                                     \
-    X(SwoftyEvShell, career, SeasonBreak, 8)                                                                   \
-    X(SwoftyEvShell, career, Saving, 8)                                                                        \
-    X(SwoftyEvSeasonStart, career, SeasonStart, 16)                                                            \
-    X(SwoftyEvAddActivity, career, AddActivity, 40)                                                            \
-    X(SwoftyEvContractDecide, career, ContractDecide, 24)                                                      \
-    X(SwoftyEvContractSign, career, ContractSign, 40)                                                          \
-    X(SwoftyEvFuelLoad, tracks, FuelLoad, 32)                                                                  \
-    X(SwoftyEvStandingsRebuild, career, StandingsRebuild, 16)                                                  \
-    X(SwoftyEvUpgradesFit, cars, UpgradesFit, 40)                                                              \
-    X(SwoftyEvVtfRead, cars, VtfRead, 56)                                                                      \
-    X(SwoftyEvBuilt, cars, Built, 24)                                                                          \
-    X(SwoftyEvReset, cars, Reset, 32)                                                                          \
-    X(SwoftyEvControllerUpdate, ai, ControllerUpdate, 24)                                                      \
-    X(SwoftyEvPlayerControl, sessions, PlayerControl, 40)                                                      \
-    X(SwoftyEvLap, sessions, Lap, 24)                                                                          \
-    X(SwoftyEvControllersRebuilt, cars, ControllersRebuilt, 32)                                                \
-    X(SwoftyEvHudVisible, spectator, HudVisible, 32)                                                           \
-    X(SwoftyEvLapsRecorded, laps, Recorded, 24)                                                                \
-    X(SwoftyEvLapsSealing, laps, Sealing, 56)                                                                  \
-    X(SwoftyEvPartsRegister, cars, PartsRegister, 48)                                                          \
-    X(SwoftyEvBundleResolve, sounds, BundleResolve, 56)                                                        \
-    X(SwoftyEvLogoResolve, teams, LogoResolve, 56)                                                             \
-    X(SwoftyEvNameResolve, teams, NameResolve, 48)                                                             \
-    X(SwoftyEvRatingsRead, drivers, RatingsRead, 24)                                                           \
-    X(SwoftyEvNumberAssign, drivers, NumberAssign, 24)                                                         \
-    X(SwoftyEvHeadResolve, drivers, HeadResolve, 40)                                                           \
-    X(SwoftyEvCatalogueBuild, wearables, CatalogueBuild, 24)
+#define SWOFTY_EV_PAYLOADS(X)                                                                                                    \
+    X(SwoftyEvShell, career, Created, 8)                                                                                         \
+    X(SwoftyEvShell, career, Loaded, 8)                                                                                          \
+    X(SwoftyEvShell, career, Unloaded, 8)                                                                                        \
+    X(SwoftyEvShell, career, SeasonEnd, 8)                                                                                       \
+    X(SwoftyEvShell, career, SeasonBreak, 8)                                                                                     \
+    X(SwoftyEvShell, career, Saving, 8)                                                                                          \
+    X(SwoftyEvSeasonStart, career, SeasonStart, 16)                                                                              \
+    X(SwoftyEvAddActivity, career, AddActivity, 40)                                                                              \
+    X(SwoftyEvContractDecide, career, ContractDecide, 24)                                                                        \
+    X(SwoftyEvContractSign, career, ContractSign, 40)                                                                            \
+    X(SwoftyEvFuelLoad, tracks, FuelLoad, 32)                                                                                    \
+    X(SwoftyEvStandingsRebuild, career, StandingsRebuild, 16)                                                                    \
+    X(SwoftyEvUpgradesFit, cars, UpgradesFit, 40)                                                                                \
+    X(SwoftyEvVtfRead, cars, VtfRead, 56)                                                                                        \
+    X(SwoftyEvBuilt, cars, Built, 24)                                                                                            \
+    X(SwoftyEvReset, cars, Reset, 32)                                                                                            \
+    X(SwoftyEvControllerUpdate, ai, ControllerUpdate, 24)                                                                        \
+    X(SwoftyEvPlayerControl, sessions, PlayerControl, 40)                                                                        \
+    X(SwoftyEvLap, sessions, Lap, 24)                                                                                            \
+    X(SwoftyEvRaceFlag, race_control, Flag, 16)                                                                                  \
+    X(SwoftyEvSafetyCar, race_control, SafetyCar, 16)                                                                            \
+    X(SwoftyEvRedFlag, race_control, RedFlag, 16)                                                                                \
+    X(SwoftyEvSector, race_control, Sector, 20)                                                                                  \
+    X(SwoftyEvCarStatus, race_control, CarStatus, 20)                                                                            \
+    X(SwoftyEvControllersRebuilt, cars, ControllersRebuilt, 32)                                                                  \
+    X(SwoftyEvHudVisible, spectator, HudVisible, 32)                                                                             \
+    X(SwoftyEvLapsRecorded, laps, Recorded, 24)                                                                                  \
+    X(SwoftyEvLapsSealing, laps, Sealing, 56)                                                                                    \
+    X(SwoftyEvPartsRegister, cars, PartsRegister, 48)                                                                            \
+    X(SwoftyEvBundleResolve, sounds, BundleResolve, 56)                                                                          \
+    X(SwoftyEvLogoResolve, teams, LogoResolve, 56)                                                                               \
+    X(SwoftyEvNameResolve, teams, NameResolve, 48)                                                                               \
+    X(SwoftyEvRatingsRead, drivers, RatingsRead, 24)                                                                             \
+    X(SwoftyEvNumberAssign, drivers, NumberAssign, 24)                                                                           \
+    X(SwoftyEvHeadResolve, drivers, HeadResolve, 40)                                                                             \
+    X(SwoftyEvCatalogueBuild, wearables, CatalogueBuild, 24)                                                                     \
+    X(SwoftyEvWeatherSetup, weather, Setup, 800)                                                                                 \
+    X(SwoftyEvTyreDamage, tyre_damage, Damage, 24)                                                                               \
+    X(SwoftyEvPitStopTyres, sessions, PitStopTyres, 16)
 
 /* X(C struct, C++ namespace, C++ struct, field, offset) */
-#define SWOFTY_EV_FIELDS(X)                                                                                     \
-    X(SwoftyEvSeasonStart, career, SeasonStart, size, 0)                                                       \
-    X(SwoftyEvSeasonStart, career, SeasonStart, payload_version, 4)                                            \
-    X(SwoftyEvSeasonStart, career, SeasonStart, year, 8)                                                       \
-    X(SwoftyEvSeasonStart, career, SeasonStart, season_index, 12)                                              \
-    X(SwoftyEvAddActivity, career, AddActivity, calendar, 8)                                                   \
-    X(SwoftyEvAddActivity, career, AddActivity, activity, 16)                                                  \
-    X(SwoftyEvAddActivity, career, AddActivity, driver, 24)                                                    \
-    X(SwoftyEvAddActivity, career, AddActivity, day, 28)                                                       \
-    X(SwoftyEvAddActivity, career, AddActivity, type, 32)                                                      \
-    X(SwoftyEvAddActivity, career, AddActivity, player, 33)                                                    \
-    X(SwoftyEvContractDecide, career, ContractDecide, state, 8)                                                \
-    X(SwoftyEvContractDecide, career, ContractDecide, link, 16)                                                \
-    X(SwoftyEvContractSign, career, ContractSign, contracts, 8)                                                \
-    X(SwoftyEvContractSign, career, ContractSign, contract, 16)                                                \
-    X(SwoftyEvContractSign, career, ContractSign, driver, 24)                                                  \
-    X(SwoftyEvContractSign, career, ContractSign, replaced, 28)                                                \
-    X(SwoftyEvContractSign, career, ContractSign, team, 32)                                                    \
-    X(SwoftyEvContractSign, career, ContractSign, type, 36)                                                    \
-    X(SwoftyEvContractSign, career, ContractSign, notify, 37)                                                  \
-    X(SwoftyEvFuelLoad, tracks, FuelLoad, track_id, 8)                                                         \
-    X(SwoftyEvFuelLoad, tracks, FuelLoad, session_type, 16)                                                    \
-    X(SwoftyEvFuelLoad, tracks, FuelLoad, kg, 20)                                                              \
-    X(SwoftyEvFuelLoad, tracks, FuelLoad, kind, 24)                                                            \
-    X(SwoftyEvStandingsRebuild, career, StandingsRebuild, championship, 8)                                     \
-    X(SwoftyEvUpgradesFit, cars, UpgradesFit, size, 0)                                                         \
-    X(SwoftyEvUpgradesFit, cars, UpgradesFit, payload_version, 4)                                              \
-    X(SwoftyEvUpgradesFit, cars, UpgradesFit, car, 8)                                                          \
-    X(SwoftyEvUpgradesFit, cars, UpgradesFit, vehicle_id, 16)                                                  \
-    X(SwoftyEvUpgradesFit, cars, UpgradesFit, department, 24)                                                  \
-    X(SwoftyEvUpgradesFit, cars, UpgradesFit, driver_stat, 28)                                                 \
-    X(SwoftyEvUpgradesFit, cars, UpgradesFit, rating, 32)                                                      \
-    X(SwoftyEvVtfRead, cars, VtfRead, car, 8)                                                                  \
-    X(SwoftyEvVtfRead, cars, VtfRead, section_str, 24)                                                         \
-    X(SwoftyEvVtfRead, cars, VtfRead, field_str, 32)                                                           \
-    X(SwoftyEvVtfRead, cars, VtfRead, upgrade_str, 40)                                                         \
-    X(SwoftyEvVtfRead, cars, VtfRead, value, 48)                                                               \
-    X(SwoftyEvBuilt, cars, Built, car, 8)                                                                      \
-    X(SwoftyEvReset, cars, Reset, car, 8)                                                                      \
-    X(SwoftyEvReset, cars, Reset, upgrade, 24)                                                                 \
-    X(SwoftyEvControllerUpdate, ai, ControllerUpdate, vehicle, 8)                                              \
-    X(SwoftyEvControllerUpdate, ai, ControllerUpdate, throttle, 12)                                            \
-    X(SwoftyEvControllerUpdate, ai, ControllerUpdate, brake, 16)                                               \
-    X(SwoftyEvControllerUpdate, ai, ControllerUpdate, steering, 20)                                            \
-    X(SwoftyEvPlayerControl, sessions, PlayerControl, car, 8)                                                  \
-    X(SwoftyEvPlayerControl, sessions, PlayerControl, from, 24)                                                \
-    X(SwoftyEvPlayerControl, sessions, PlayerControl, to, 28)                                                  \
-    X(SwoftyEvPlayerControl, sessions, PlayerControl, reason, 32)                                              \
-    X(SwoftyEvLap, sessions, Lap, car, 8)                                                                      \
-    X(SwoftyEvControllersRebuilt, cars, ControllersRebuilt, car, 8)                                            \
-    X(SwoftyEvControllersRebuilt, cars, ControllersRebuilt, reason, 24)                                        \
-    X(SwoftyEvHudVisible, spectator, HudVisible, following, 8)                                                 \
-    X(SwoftyEvHudVisible, spectator, HudVisible, visible, 24)                                                  \
-    X(SwoftyEvLapsRecorded, laps, Recorded, path_str, 8)                                                       \
-    X(SwoftyEvLapsRecorded, laps, Recorded, time_ms, 16)                                                       \
-    X(SwoftyEvLapsRecorded, laps, Recorded, valid, 20)                                                         \
-    X(SwoftyEvLapsSealing, laps, Sealing, path_str, 8)                                                         \
-    X(SwoftyEvLapsSealing, laps, Sealing, time_ms, 16)                                                         \
-    X(SwoftyEvLapsSealing, laps, Sealing, body, 24)                                                            \
-    X(SwoftyEvLapsSealing, laps, Sealing, body_len, 32)                                                        \
-    X(SwoftyEvLapsSealing, laps, Sealing, add_section_fn, 40)                                                  \
-    X(SwoftyEvLapsSealing, laps, Sealing, user, 48)                                                            \
-    X(SwoftyEvPartsRegister, cars, PartsRegister, car, 8)                                                      \
-    X(SwoftyEvPartsRegister, cars, PartsRegister, vehicle_id, 16)                                              \
-    X(SwoftyEvPartsRegister, cars, PartsRegister, front_wing, 24)                                              \
-    X(SwoftyEvPartsRegister, cars, PartsRegister, add_fn, 32)                                                  \
-    X(SwoftyEvPartsRegister, cars, PartsRegister, user, 40)                                                    \
-    X(SwoftyEvBundleResolve, sounds, BundleResolve, car, 8)                                                    \
-    X(SwoftyEvBundleResolve, sounds, BundleResolve, vehicle_id, 16)                                            \
-    X(SwoftyEvBundleResolve, sounds, BundleResolve, switch_name_str, 24)                                       \
-    X(SwoftyEvBundleResolve, sounds, BundleResolve, engine_sound_id, 32)                                       \
-    X(SwoftyEvBundleResolve, sounds, BundleResolve, set_engine_sound_fn, 40)                                   \
-    X(SwoftyEvBundleResolve, sounds, BundleResolve, user, 48)                                                  \
-    X(SwoftyEvLogoResolve, teams, LogoResolve, context, 8)                                                     \
-    X(SwoftyEvLogoResolve, teams, LogoResolve, team_id, 16)                                                    \
-    X(SwoftyEvLogoResolve, teams, LogoResolve, livery_name_str, 24)                                            \
-    X(SwoftyEvLogoResolve, teams, LogoResolve, key_str, 32)                                                    \
-    X(SwoftyEvLogoResolve, teams, LogoResolve, set_key_fn, 40)                                                 \
-    X(SwoftyEvLogoResolve, teams, LogoResolve, user, 48)                                                       \
-    X(SwoftyEvNameResolve, teams, NameResolve, team_id, 8)                                                     \
-    X(SwoftyEvNameResolve, teams, NameResolve, name_str, 16)                                                   \
-    X(SwoftyEvNameResolve, teams, NameResolve, name_literal, 24)                                               \
-    X(SwoftyEvNameResolve, teams, NameResolve, set_name_fn, 32)                                                \
-    X(SwoftyEvNameResolve, teams, NameResolve, user, 40)                                                       \
-    X(SwoftyEvRatingsRead, drivers, RatingsRead, driver_id, 8)                                                 \
-    X(SwoftyEvRatingsRead, drivers, RatingsRead, stat, 16)                                                     \
-    X(SwoftyEvRatingsRead, drivers, RatingsRead, value, 20)                                                    \
-    X(SwoftyEvNumberAssign, drivers, NumberAssign, driver_id, 8)                                               \
-    X(SwoftyEvNumberAssign, drivers, NumberAssign, number, 16)                                                 \
-    X(SwoftyEvHeadResolve, drivers, HeadResolve, driver_id, 8)                                                 \
-    X(SwoftyEvHeadResolve, drivers, HeadResolve, head_id, 16)                                                  \
-    X(SwoftyEvHeadResolve, drivers, HeadResolve, set_head_fn, 24)                                              \
-    X(SwoftyEvHeadResolve, drivers, HeadResolve, user, 32)                                                     \
-    X(SwoftyEvCatalogueBuild, wearables, CatalogueBuild, add_fn, 8)                                            \
-    X(SwoftyEvCatalogueBuild, wearables, CatalogueBuild, user, 16)
+#define SWOFTY_EV_FIELDS(X)                                                                                                      \
+    X(SwoftyEvSeasonStart, career, SeasonStart, size, 0)                                                                         \
+    X(SwoftyEvSeasonStart, career, SeasonStart, payload_version, 4)                                                              \
+    X(SwoftyEvSeasonStart, career, SeasonStart, year, 8)                                                                         \
+    X(SwoftyEvSeasonStart, career, SeasonStart, season_index, 12)                                                                \
+    X(SwoftyEvAddActivity, career, AddActivity, calendar, 8)                                                                     \
+    X(SwoftyEvAddActivity, career, AddActivity, activity, 16)                                                                    \
+    X(SwoftyEvAddActivity, career, AddActivity, driver, 24)                                                                      \
+    X(SwoftyEvAddActivity, career, AddActivity, day, 28)                                                                         \
+    X(SwoftyEvAddActivity, career, AddActivity, type, 32)                                                                        \
+    X(SwoftyEvAddActivity, career, AddActivity, player, 33)                                                                      \
+    X(SwoftyEvContractDecide, career, ContractDecide, state, 8)                                                                  \
+    X(SwoftyEvContractDecide, career, ContractDecide, link, 16)                                                                  \
+    X(SwoftyEvContractSign, career, ContractSign, contracts, 8)                                                                  \
+    X(SwoftyEvContractSign, career, ContractSign, contract, 16)                                                                  \
+    X(SwoftyEvContractSign, career, ContractSign, driver, 24)                                                                    \
+    X(SwoftyEvContractSign, career, ContractSign, replaced, 28)                                                                  \
+    X(SwoftyEvContractSign, career, ContractSign, team, 32)                                                                      \
+    X(SwoftyEvContractSign, career, ContractSign, type, 36)                                                                      \
+    X(SwoftyEvContractSign, career, ContractSign, notify, 37)                                                                    \
+    X(SwoftyEvFuelLoad, tracks, FuelLoad, track_id, 8)                                                                           \
+    X(SwoftyEvFuelLoad, tracks, FuelLoad, session_type, 16)                                                                      \
+    X(SwoftyEvFuelLoad, tracks, FuelLoad, kg, 20)                                                                                \
+    X(SwoftyEvFuelLoad, tracks, FuelLoad, kind, 24)                                                                              \
+    X(SwoftyEvStandingsRebuild, career, StandingsRebuild, championship, 8)                                                       \
+    X(SwoftyEvUpgradesFit, cars, UpgradesFit, size, 0)                                                                           \
+    X(SwoftyEvUpgradesFit, cars, UpgradesFit, payload_version, 4)                                                                \
+    X(SwoftyEvUpgradesFit, cars, UpgradesFit, car, 8)                                                                            \
+    X(SwoftyEvUpgradesFit, cars, UpgradesFit, vehicle_id, 16)                                                                    \
+    X(SwoftyEvUpgradesFit, cars, UpgradesFit, department, 24)                                                                    \
+    X(SwoftyEvUpgradesFit, cars, UpgradesFit, driver_stat, 28)                                                                   \
+    X(SwoftyEvUpgradesFit, cars, UpgradesFit, rating, 32)                                                                        \
+    X(SwoftyEvVtfRead, cars, VtfRead, car, 8)                                                                                    \
+    X(SwoftyEvVtfRead, cars, VtfRead, section_str, 24)                                                                           \
+    X(SwoftyEvVtfRead, cars, VtfRead, field_str, 32)                                                                             \
+    X(SwoftyEvVtfRead, cars, VtfRead, upgrade_str, 40)                                                                           \
+    X(SwoftyEvVtfRead, cars, VtfRead, value, 48)                                                                                 \
+    X(SwoftyEvBuilt, cars, Built, car, 8)                                                                                        \
+    X(SwoftyEvReset, cars, Reset, car, 8)                                                                                        \
+    X(SwoftyEvReset, cars, Reset, upgrade, 24)                                                                                   \
+    X(SwoftyEvControllerUpdate, ai, ControllerUpdate, vehicle, 8)                                                                \
+    X(SwoftyEvControllerUpdate, ai, ControllerUpdate, throttle, 12)                                                              \
+    X(SwoftyEvControllerUpdate, ai, ControllerUpdate, brake, 16)                                                                 \
+    X(SwoftyEvControllerUpdate, ai, ControllerUpdate, steering, 20)                                                              \
+    X(SwoftyEvPlayerControl, sessions, PlayerControl, car, 8)                                                                    \
+    X(SwoftyEvPlayerControl, sessions, PlayerControl, from, 24)                                                                  \
+    X(SwoftyEvPlayerControl, sessions, PlayerControl, to, 28)                                                                    \
+    X(SwoftyEvPlayerControl, sessions, PlayerControl, reason, 32)                                                                \
+    X(SwoftyEvLap, sessions, Lap, car, 8)                                                                                        \
+    X(SwoftyEvRaceFlag, race_control, Flag, flag, 8)                                                                             \
+    X(SwoftyEvRaceFlag, race_control, Flag, previous, 9)                                                                         \
+    X(SwoftyEvRaceFlag, race_control, Flag, yellow_sectors, 10)                                                                  \
+    X(SwoftyEvRaceFlag, race_control, Flag, previous_yellow_sectors, 11)                                                         \
+    X(SwoftyEvRaceFlag, race_control, Flag, lap, 12)                                                                             \
+    X(SwoftyEvSafetyCar, race_control, SafetyCar, deployment, 8)                                                                 \
+    X(SwoftyEvSafetyCar, race_control, SafetyCar, previous, 9)                                                                   \
+    X(SwoftyEvSafetyCar, race_control, SafetyCar, lap, 12)                                                                       \
+    X(SwoftyEvRedFlag, race_control, RedFlag, state, 8)                                                                          \
+    X(SwoftyEvRedFlag, race_control, RedFlag, previous, 9)                                                                       \
+    X(SwoftyEvRedFlag, race_control, RedFlag, lap, 12)                                                                           \
+    X(SwoftyEvSector, race_control, Sector, car, 8)                                                                              \
+    X(SwoftyEvSector, race_control, Sector, sector, 12)                                                                          \
+    X(SwoftyEvSector, race_control, Sector, previous, 13)                                                                        \
+    X(SwoftyEvSector, race_control, Sector, lap, 16)                                                                             \
+    X(SwoftyEvCarStatus, race_control, CarStatus, car, 8)                                                                        \
+    X(SwoftyEvCarStatus, race_control, CarStatus, status, 12)                                                                    \
+    X(SwoftyEvCarStatus, race_control, CarStatus, previous, 13)                                                                  \
+    X(SwoftyEvCarStatus, race_control, CarStatus, lap, 16)                                                                       \
+    X(SwoftyEvControllersRebuilt, cars, ControllersRebuilt, car, 8)                                                              \
+    X(SwoftyEvControllersRebuilt, cars, ControllersRebuilt, reason, 24)                                                          \
+    X(SwoftyEvHudVisible, spectator, HudVisible, following, 8)                                                                   \
+    X(SwoftyEvHudVisible, spectator, HudVisible, visible, 24)                                                                    \
+    X(SwoftyEvLapsRecorded, laps, Recorded, path_str, 8)                                                                         \
+    X(SwoftyEvLapsRecorded, laps, Recorded, time_ms, 16)                                                                         \
+    X(SwoftyEvLapsRecorded, laps, Recorded, valid, 20)                                                                           \
+    X(SwoftyEvLapsSealing, laps, Sealing, path_str, 8)                                                                           \
+    X(SwoftyEvLapsSealing, laps, Sealing, time_ms, 16)                                                                           \
+    X(SwoftyEvLapsSealing, laps, Sealing, body, 24)                                                                              \
+    X(SwoftyEvLapsSealing, laps, Sealing, body_len, 32)                                                                          \
+    X(SwoftyEvLapsSealing, laps, Sealing, add_section_fn, 40)                                                                    \
+    X(SwoftyEvLapsSealing, laps, Sealing, user, 48)                                                                              \
+    X(SwoftyEvPartsRegister, cars, PartsRegister, car, 8)                                                                        \
+    X(SwoftyEvPartsRegister, cars, PartsRegister, vehicle_id, 16)                                                                \
+    X(SwoftyEvPartsRegister, cars, PartsRegister, front_wing, 24)                                                                \
+    X(SwoftyEvPartsRegister, cars, PartsRegister, add_fn, 32)                                                                    \
+    X(SwoftyEvPartsRegister, cars, PartsRegister, user, 40)                                                                      \
+    X(SwoftyEvBundleResolve, sounds, BundleResolve, car, 8)                                                                      \
+    X(SwoftyEvBundleResolve, sounds, BundleResolve, vehicle_id, 16)                                                              \
+    X(SwoftyEvBundleResolve, sounds, BundleResolve, switch_name_str, 24)                                                         \
+    X(SwoftyEvBundleResolve, sounds, BundleResolve, engine_sound_id, 32)                                                         \
+    X(SwoftyEvBundleResolve, sounds, BundleResolve, set_engine_sound_fn, 40)                                                     \
+    X(SwoftyEvBundleResolve, sounds, BundleResolve, user, 48)                                                                    \
+    X(SwoftyEvLogoResolve, teams, LogoResolve, context, 8)                                                                       \
+    X(SwoftyEvLogoResolve, teams, LogoResolve, team_id, 16)                                                                      \
+    X(SwoftyEvLogoResolve, teams, LogoResolve, livery_name_str, 24)                                                              \
+    X(SwoftyEvLogoResolve, teams, LogoResolve, key_str, 32)                                                                      \
+    X(SwoftyEvLogoResolve, teams, LogoResolve, set_key_fn, 40)                                                                   \
+    X(SwoftyEvLogoResolve, teams, LogoResolve, user, 48)                                                                         \
+    X(SwoftyEvNameResolve, teams, NameResolve, team_id, 8)                                                                       \
+    X(SwoftyEvNameResolve, teams, NameResolve, name_str, 16)                                                                     \
+    X(SwoftyEvNameResolve, teams, NameResolve, name_literal, 24)                                                                 \
+    X(SwoftyEvNameResolve, teams, NameResolve, set_name_fn, 32)                                                                  \
+    X(SwoftyEvNameResolve, teams, NameResolve, user, 40)                                                                         \
+    X(SwoftyEvRatingsRead, drivers, RatingsRead, driver_id, 8)                                                                   \
+    X(SwoftyEvRatingsRead, drivers, RatingsRead, stat, 16)                                                                       \
+    X(SwoftyEvRatingsRead, drivers, RatingsRead, value, 20)                                                                      \
+    X(SwoftyEvNumberAssign, drivers, NumberAssign, driver_id, 8)                                                                 \
+    X(SwoftyEvNumberAssign, drivers, NumberAssign, number, 16)                                                                   \
+    X(SwoftyEvHeadResolve, drivers, HeadResolve, driver_id, 8)                                                                   \
+    X(SwoftyEvHeadResolve, drivers, HeadResolve, head_id, 16)                                                                    \
+    X(SwoftyEvHeadResolve, drivers, HeadResolve, set_head_fn, 24)                                                                \
+    X(SwoftyEvHeadResolve, drivers, HeadResolve, user, 32)                                                                       \
+    X(SwoftyEvCatalogueBuild, wearables, CatalogueBuild, add_fn, 8)                                                              \
+    X(SwoftyEvCatalogueBuild, wearables, CatalogueBuild, user, 16)                                                               \
+    X(SwoftyEvWeatherSetup, weather, Setup, session_type, 8)                                                                     \
+    X(SwoftyEvWeatherSetup, weather, Setup, game_scripted, 12)                                                                   \
+    X(SwoftyEvWeatherSetup, weather, Setup, time_trial, 13)                                                                      \
+    X(SwoftyEvWeatherSetup, weather, Setup, seed_forced, 14)                                                                     \
+    X(SwoftyEvWeatherSetup, weather, Setup, set_seed, 15)                                                                        \
+    X(SwoftyEvWeatherSetup, weather, Setup, seed, 16)                                                                            \
+    X(SwoftyEvWeatherSetup, weather, Setup, script_mask, 20)                                                                     \
+    X(SwoftyEvWeatherSetup, weather, Setup, counts, 21)                                                                          \
+    X(SwoftyEvWeatherSetup, weather, Setup, slots, 32)                                                                           \
+    X(SwoftyEvTyreDamage, tyre_damage, Damage, car, 8)                                                                           \
+    X(SwoftyEvTyreDamage, tyre_damage, Damage, wheel, 12)                                                                        \
+    X(SwoftyEvTyreDamage, tyre_damage, Damage, state, 13)                                                                        \
+    X(SwoftyEvTyreDamage, tyre_damage, Damage, previous, 14)                                                                     \
+    X(SwoftyEvTyreDamage, tyre_damage, Damage, deflation, 16)                                                                    \
+    X(SwoftyEvTyreDamage, tyre_damage, Damage, lap, 20)                                                                          \
+    X(SwoftyEvPitStopTyres, sessions, PitStopTyres, car, 8)                                                                      \
+    X(SwoftyEvPitStopTyres, sessions, PitStopTyres, kept, 12)
 
 #endif

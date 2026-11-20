@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Career_Teardown_Weekend",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140aece00",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Teardown_Weekend(void *weekend)",
+  "evidence": "decomp:re/decomp/140aece00.c;decomp:re/decomp/143099650.c;decomp:re/decomp/140af1980.c;xref:0x140af19c4,0x140ae9e06,0x1407b5eb8;doc:addons/career-editor/protocol/season.md#season-calendar-set-round",
+  "notes": ".xtls jmp thunk to the .data1 body 0x149440b50 (called, never hooked): destroys the weekend's sessions (+0x220 vector, 0xa0 each, vt slot 0) and clears its maps; the first step of every weekend removal (Season deserialise, RebuildNotStartedWeekends in 0x143099650)"
+ },
+ "signature": {
+  "id": "career.teardown_weekend",
+  "section": ".xtls",
+  "pattern": "48 89 D0 48 C7 02 00 00 00 00 C3 CC CC CC CC CC E9",
+  "match": "0x140aecdf0",
+  "anchor": "0x10",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140aece00",
+  "kind": "func_start",
+  "names": [
+   "Career_Teardown_Weekend"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-season",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/season.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-1",
+   "kind": "func",
+   "item": "Career_Teardown_Weekend",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140aece00.c;decomp:re/decomp/149440b50.c;decomp:re/decomp/140af1980.c;decomp:re/decomp/143099650.c;xref:0x140af19c3,0x140ae9e05,0x14309980",
+   "notes": "V0235 jmp 0x149440b50; body runs session vt slot 0 (arg 0) over +0x220..+0x228 stride 0xa0, clears the +0x480 tree, +0x240..+0x270 and +0x288 vector; 14 xtls + 4 .data1 callers; it is also the self-reset at the top of Weekend deserialise 0x140afbef0, not only removals; pattern start 0x10 early (Season vt+0x80 0x140aecdf0 tail) matches once"
+  }
+ ],
+ "proofs": []
+}

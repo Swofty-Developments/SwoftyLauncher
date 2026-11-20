@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_TrackInformation_ParseTrackInfoXml",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14477e240",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14477e240.c;xref:0x145c06f40",
+  "notes": "parses the TRACKINFO BXML (vfx_package/track_info/*.trackinfo): CONFIG ids (tiled_track_info_map_scale, terrain_ray_cast_*, thh_*) and WEATHER_CONFIG; TRACK_SURFACE_WATER_SHEET / MODEL and SPAWN_* are parsed by the helper 0x144780020 it calls at 0x14477fa5e (per V10390); scale per session type into the weather state [self+0x10]: time_trial -> +0x3f09c4; quick_race distance_laps 3 / 5 / 16 / 30 / 100 -> +0x3f09b0 / +0x3f09b4 / +0x3f09b8 / +0x3f09bc / +0x3f09c0 (corrected per V6643: compared in that order, strings 0x14565c354 '3' .. 0x1456f7bd9 '100'). Game_TrackInformationSystem_Update reads ws+0x3f09a4 + 4*i in a loop. No direct caller: vtable entry 0x145c06f40. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.track_information_parse_track_info_xml",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 02 00 00 C5 78 29 8C 24 90 02 00 00 C5 78 29 84 24 80 02 00 00 C5 F8 29 BC 24 70 02 00 00 C5 F8 29 B4 24 60 02 00 00 48",
+  "match": "0x14477e240",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14477e240",
+  "kind": "func_start",
+  "names": [
+   "Game_TrackInformation_ParseTrackInfoXml"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb24-verify",
+   "kind": "func",
+   "item": "0x14477e240",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14477e240.c",
+   "notes": "V6643 parses TRACKINFO XML ok, but claimed distance_laps mapping is reversed: code compares 3,5,16,30,100 in that order -> ws+0x3f09b0/b4/b8/bc/c0 (3 laps->+0x3f09b0, 100 laps->+0x3f09c0), time_trial -> +0x3f09c4 correct; also parses TRACK_SURFACE_WATER_SHEET/MODEL, SPAWN_*, thh_*; name fine; no direct caller (vtable/indirect)"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x14477e240",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14477e240-0x14477fa80;xref:0x145c06f40",
+   "notes": "V10390 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only ref abs64 0x145c06f40. Strings TRACKINFO, version, CONFIG, tiled_track_info_map_scale, terrain_ray_cast_*, thh_*, WEATHER_CONFIG, session_type, time_trial, quick_race, distance_laps, scale. time_trial -> [[self+0x10]+0x3f09c4] (0x14477f98b); quick_race compares 3 (0x14565c354), 5 (0x1456f8a00), 16 (0x14560e0b3), 30 (0x14560e0b6), 100 (0x1456f7bd9) -> +0x3f09b0/+0x3f09b4/+0x3f09b8/+0x3f09bc/+0x3f09c0. TRACK_SURFACE_WATER_SHEET/MODEL and SPAWN_* strings are referenced by the helper 0x144780020 it calls (0x14477fa5e), not by this body. Reader Game_TrackInformationSystem_Update not re-checked."
+  }
+ ],
+ "proofs": []
+}

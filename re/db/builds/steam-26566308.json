@@ -19,6 +19,18 @@
    "pattern": "E9 ?? ?? ?? ?? 33 0F 88 46 73 F5 FB 0F",
    "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
   },
+  "Car_Differential_Reset_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 84 8F CA BB 0F 8C 99 C5",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours (+0x2870, as Car_Write_Differential and Car_Write_FuelTank), its one vtable slot is at the same place relative to the KB build's (+0x21c0) and its jmp target starts with the same prologue as on the KB build."
+  },
+  "Car_FuelEcu_Reset_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 9F 06 66 0F 82 F8 30 90",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours (+0x2870, as Car_Write_Differential and Car_Write_FuelTank), its one vtable slot is at the same place relative to the KB build's (+0x21c0) and its jmp target starts with the same prologue as on the KB build."
+  },
+  "Car_Read_Differential_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 71 EE F5 6E E0 C2 D9 FE",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours (+0x2870, as Car_Write_Differential and Car_Write_FuelTank), its one vtable slot is at the same place relative to the KB build's (+0x21c0) and its jmp target starts with the same prologue as on the KB build."
+  },
   "Car_Register_DetachablePart_Thunk": {
    "pattern": "E9 ?? ?? ?? ?? E2 0F 83 16 25 89 FF 31",
    "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
@@ -26,10 +38,6 @@
   "Car_Systems_Reset_Thunk": {
    "pattern": "E9 ?? ?? ?? ?? E9 4A 56 ?? ?? ?? ?? 84",
    "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
-  },
-  "Career_GameValue_GetUpgradesFailedDuringTimeAdvance": {
-   "pattern": "48 83 EC 28 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 89 C0 C4 E1 FA 2A C0 48 83 C4 28 C3 CC CC CC CC 48 83 EC 28",
-   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
   },
   "Career_Get_CareerLengthDays_Thunk": {
    "pattern": "E9 ?? ?? ?? ?? EA 0F 89 46 26 C8 FD 13 E9",
@@ -75,9 +83,17 @@
    "pattern": "E9 ?? ?? ?? ?? E9 DD 91 5A 00 EA 2A",
    "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
   },
+  "Game_SessionStateTalkingPoints_ParseParams_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 2B 4A E9 BA A6 61 02 75 A7 D0 9F BF A7 69",
+   "note": "The KB pattern is the jmp and the protector filler after it, which differs on 1.0.145, so it matches nothing there. The 1.0.145 thunk is 0x142d973b0, slot 7 of the vtable whose slot 7 pointer is 0x1457e4e38, at the shift 0x2590 of Sess_StoryStartLights_OnStateEnter and Sess_PlayerTerminalDamage_Enter on either side. Its jmp reaches the .trace body 0x14e6cc9b0, which is the KB body 0x14eb3abf0 instruction for instruction (one KB-only and ecx in between): the Game.SkipTalkingPoints and Game.ecaEnabled reads, the +0xea1 store and the releaseCutscenesOnExit param at the same offsets. The pattern is the 1.0.145 jmp and filler, as long as the KB one; it matches once."
+  },
   "Game_Set_VehicleController_Thunk": {
    "pattern": "E9 ?? ?? ?? ?? 0F 8B 25 77 0D 00 E9 3B D8",
    "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "Game_TelemetryLaps_ApplyLapValidity_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 4F 3B 55 D9 B6 6C 0F 8E",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The pattern matches once, at the thunk 0x142926100; Game_TelemetryLaps_OnNewLapRecorded calls it at the same place (0x1437b319c), and its jmp target 0x14d1c5210 is the KB body's twin (same instructions modulo the protector's constants)."
   },
   "Game_TileList_PushChildSelection_Thunk": {
    "pattern": "E9 ?? ?? ?? ?? 0F 88 D2 3B ?? ?? ?? ?? 5C DB 96 00 E9",
@@ -131,10 +147,6 @@
    "pattern": "48 89 5C 24 20 55 56 57 41 56 41 57 48 8D 6C 24 C9 48 81 EC C0 00 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 45 27 66 0F 6F 0D ?? ?? A5 00",
    "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
   },
-  "Ne_Gfx2Renderer_PostEvent_AllocateResource": {
-   "pattern": "E8 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? 48 89 F9 48 89 F2 E8 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? 48 89 F9 48 89 F2 E8 ?? ?? ?? ?? 4C 8D 05",
-   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
-  },
   "Ne_HashMap_FatalStub_GroundCover": {
    "pattern": "E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? CC CC CC CC CC CC CC CC CC CC CC CC CC CC E9 ?? ?? ?? ?? 0F",
    "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
@@ -159,13 +171,18 @@
    "pattern": "56 48 83 EC 20 48 8B 71 08 48 85 F6 74 23 F0 FF 4E 08 75 1D 48 8B 06 48 89 F1 FF 10 F0 FF 4E 0C 75 0F 48 8B 06 48 89 F1 48 83 C4 20 5E 48 FF 60 08 90 48 83 C4 20 5E C3 CC CC CC CC CC CC CC CC E9",
    "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
   },
+  "Ne_StdMap_At_141107280": {
+   "pattern": "48 89 F9 E8 ?? ?? ?? ?? 48 85 C0 74 60 48 8D 5C 24 28",
+   "anchor": 4,
+   "note": "The call site of the KB build was rewritten. This caller of the same lookup function (4 callers there, 3 here) resolves to it through the call.",
+   "resolve": {
+    "kind": "rel32",
+    "insn": 3
+   }
+  },
   "Sess_Flow_ParseXml": {
    "pattern": "E9 ?? ?? ?? ?? E9 FB EE DB 00 C7 B8 26 7C 03 9A",
    "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
-  },
-  "Sess_FormationLapLogic_SubscribeSafetyCarDeployment": {
-   "pattern": "E8 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 8B 48 08 48 8D 05 ?? ?? ?? ?? 48 89 44 24 38 C7 44 24 40 00 00 00 00 4C 8D 44 24 38 48 89 F2 E8 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 8B 48 08 48 8D 05 ?? ?? ?? ?? 48 89 44 24 38 C7 44 24 40 00 00 00 00 4C 8D 44 24 38 48 89 F2 E8",
-   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
   },
   "Sess_GridRundown_Update": {
    "pattern": "E9 ?? ?? ?? ?? 85 D2 E9 ?? ?? ?? ?? F6 E9",
@@ -174,6 +191,10 @@
   "Sess_Invalidate_Lap_Thunk": {
    "pattern": "E9 ?? ?? ?? ?? D0 CC 0F 8E 17 E5 7B",
    "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "Sess_LapTimes_ReportLapInvalidation_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? CC 78 32 15 48 E9 9A 52",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The pattern matches once, at the thunk 0x142f2e330; the rules update and Game_PracticeProgrammeSystem_BindCompareLap call it at the same places (0x14356fe72, 0x1429436e8), and its jmp target 0x14f2ef320 is the KB body's twin (same instructions modulo the protector's constants)."
   },
   "Sess_PreLights_Update": {
    "pattern": "E9 ?? ?? ?? ?? C2 B1 66 D9 0F 8A 4E FE F1 01 7B",
@@ -206,6 +227,10 @@
   "Sess_RedFlagSystem_OnStartLightsBegin": {
    "pattern": "E9 ?? ?? ?? ?? 34 57 67 F9 DF E5 ?? ?? ?? ?? B3",
    "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "Sess_Rules_InvalidateLap_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? FF B9 E9 4A 6F 22 01 E9",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The pattern matches once, at the thunk 0x143577260; the rules update calls it at the same place (0x14356e0f4), and its jmp target 0x15002f460 is the KB body's twin (same instructions modulo the protector's constants)."
   },
   "Sess_SafetyCarTether_UpdateTarget": {
    "pattern": "E9 ?? ?? ?? ?? 1C B2 E9 4A ?? ?? ?? ?? CC CC 2E",
@@ -505,6 +530,11 @@
    "expect": "E8 6F 01 DA FE",
    "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
   },
+  "site_Game_CareerWizard_BackRoute": {
+   "pattern": "48 89 54 24 40 48 8D 15 ?? ?? ?? ?? 48 8D 7C 24 40 48 89 F9 45 31 C0 45 31 C9 E8",
+   "anchor": 12,
+   "note": "The base pattern fails on 1.0.145 because the zeroing store and the call before it changed. The lea of \"back\" and the rest of the sequence are the same."
+  },
   "site_Game_DriverSelectHeader_BuildTabs": {
    "pattern": "E8 ?? ?? ?? ?? C6 86 10 03 00 00 01 48 8B 86 C0 02 00 00",
    "expect": "E8 39 9B 7F 02",
@@ -535,15 +565,15 @@
    "expect": "E8 36 A6 8E 02",
    "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
   },
-  "site_Team_LoadInsertCall": {
-   "pattern": "E8 ?? ?? ?? ?? 8B 7C 24 4C 4C 8D 74 24 68",
-   "expect": "E8 07 14 87 FE",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
-  },
   "site_Ne_HwBool_CrowdInShadows": {
    "pattern": "49 8B 4C 24 50 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8D 0D",
    "anchor": 12,
    "note": "The base pattern fails on 1.0.145 because the junk after the call changed. The pattern keeps the call and the following lea of the same reader (the attribute loop that loads 'crowdInShadows')."
+  },
+  "site_Ne_HwBool_NightShadowCharCast": {
+   "pattern": "49 8B 4C 24 50 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 85 C0 0F 94 96 C1 05",
+   "anchor": 12,
+   "note": "The base pattern fails on 1.0.145 because the code around the call changed. Same call in the 'nightShadowCharacterCast' reader."
   },
   "site_Ne_HwInt_NightShadowMapSize": {
    "pattern": "49 8B 4C 24 50 31 D2 45 31 C0 E8 ?? ?? ?? ?? 32 0D",
@@ -555,29 +585,15 @@
    "anchor": 7,
    "note": "The base pattern fails on 1.0.145 because the junk after the call changed. Same call in the 'sampling' reader."
   },
-  "site_Ne_HwBool_NightShadowCharCast": {
-   "pattern": "49 8B 4C 24 50 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 85 C0 0F 94 96 C1 05",
-   "anchor": 12,
-   "note": "The base pattern fails on 1.0.145 because the code around the call changed. Same call in the 'nightShadowCharacterCast' reader."
-  },
-  "site_Game_CareerWizard_BackRoute": {
-   "pattern": "48 89 54 24 40 48 8D 15 ?? ?? ?? ?? 48 8D 7C 24 40 48 89 F9 45 31 C0 45 31 C9 E8",
-   "anchor": 12,
-   "note": "The base pattern fails on 1.0.145 because the zeroing store and the call before it changed. The lea of \"back\" and the rest of the sequence are the same."
+  "site_Team_LoadInsertCall": {
+   "pattern": "E8 ?? ?? ?? ?? 8B 7C 24 4C 4C 8D 74 24 68",
+   "expect": "E8 07 14 87 FE",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
   },
   "vt_Sess_UnloadRewardSequence": {
    "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 06 66 C7 86 80 0C 00",
    "section": ".trace",
    "note": "The constructor moved from the code section into the packed section on 1.0.145; the pattern is unchanged and the vtable it stores has the same entries."
-  },
-  "Ne_StdMap_At_141107280": {
-   "pattern": "48 89 F9 E8 ?? ?? ?? ?? 48 85 C0 74 60 48 8D 5C 24 28",
-   "anchor": 4,
-   "note": "The call site of the KB build was rewritten. This caller of the same lookup function (4 callers there, 3 here) resolves to it through the call.",
-   "resolve": {
-    "kind": "rel32",
-    "insn": 3
-   }
   }
  },
  "hints": {
@@ -707,6 +723,12 @@
   "Ai_Get_GeneralSettings": {
    "match": "0x6662bd"
   },
+  "Ai_Get_SegmentTurnRadius": {
+   "match": "0x60daf0"
+  },
+  "Ai_Get_TurnRadiusAtDistance": {
+   "match": "0x60d870"
+  },
   "Ai_Handle_PitStateChanged_Thunk": {
    "match": "0x6b3150"
   },
@@ -737,6 +759,9 @@
   "Ai_Lookahead_AdvancePhase": {
    "match": "0x6807f0"
   },
+  "Ai_Overtake_EvaluateGap": {
+   "match": "0x66de90"
+  },
   "Ai_Parse_BlockingConfig": {
    "match": "0x65dca8"
   },
@@ -751,6 +776,9 @@
   },
   "Ai_Parse_RaceStartConfig": {
    "match": "0x65e080"
+  },
+  "Ai_Parse_TrackConfig": {
+   "match": "0x2e606a0"
   },
   "Ai_RaceStart_ReactionTime": {
    "match": "0x652800"
@@ -830,11 +858,23 @@
   "Ai_TestGraph_EvalTimeSpeed": {
    "match": "0x5fc2bd"
   },
+  "Ai_TrackLine_FindCornerEndAndStart": {
+   "match": "0x66dfb0"
+  },
+  "Ai_TrackLine_FindNextSideMarker": {
+   "match": "0x66e520"
+  },
+  "Ai_TrackLine_FindSideMarkerInCorner": {
+   "match": "0x66ef00"
+  },
   "Ai_Update_CompoundPaceCurves": {
    "match": "0x5fb400"
   },
   "Ai_Update_DriverTick": {
    "match": "0x5f5e10"
+  },
+  "Ai_Update_VehicleDriver": {
+   "match": "0x614db0"
   },
   "Ai_Write_AdaptiveAiSessionRecord": {
    "match": "0x3e1a50"
@@ -862,6 +902,9 @@
   },
   "Car_Assets_CreateSystemForPerformanceMode": {
    "match": "0x4745150"
+  },
+  "Car_BrakeEcu_ApplyBias": {
+   "match": "0x4678ac0"
   },
   "Car_Build_VtfComponents": {
    "match": "0x473eca0"
@@ -893,6 +936,9 @@
   "Car_DetachablePart_Update": {
    "match": "0x466af40"
   },
+  "Car_Differential_Reset_Thunk": {
+   "match": "0x4680880"
+  },
   "Car_Engine_ComputeDerived_Thunk": {
    "match": "0x2973e80"
   },
@@ -902,8 +948,14 @@
   "Car_FrontWing_OnCollision": {
    "match": "0x4662630"
   },
+  "Car_FuelEcu_Reset_Thunk": {
+   "match": "0x4690dc0"
+  },
   "Car_FuelEcu_SetMode_Thunk": {
    "match": "0x4710a12"
+  },
+  "Car_FuelTank_StepBurn": {
+   "match": "0x4691620"
   },
   "Car_Load_Vtf": {
    "match": "0x475cc10"
@@ -919,6 +971,9 @@
   },
   "Car_Powertrain_Step": {
    "match": "0x46e4b00"
+  },
+  "Car_Read_Differential_Thunk": {
+   "match": "0x4680660"
   },
   "Car_Read_Engine": {
    "match": "0x4687ef0"
@@ -974,6 +1029,9 @@
   "Car_Tyre_CheckCompoundClassRule": {
    "match": "0x2e8acc0"
   },
+  "Car_Tyre_ComputeGripMultiplier": {
+   "match": "0x46b9c00"
+  },
   "Car_Tyre_GripScale": {
    "match": "0x46b9ab0"
   },
@@ -985,6 +1043,9 @@
   },
   "Car_Tyre_SetWearFactor": {
    "match": "0x2ea4890"
+  },
+  "Car_Tyre_Step": {
+   "match": "0x46b7f90"
   },
   "Car_Tyre_UpdateWear": {
    "match": "0x46ba260"
@@ -1033,6 +1094,9 @@
   },
   "Career_Add_TeamModifier": {
    "match": "0x34faf90"
+  },
+  "Career_Add_TrackSetToSeason": {
+   "match": "0x309bbe0"
   },
   "Career_Adjust_RpDriverWallet": {
    "match": "0x350155a"
@@ -2762,11 +2826,17 @@
   "Game_AudioEngineBundle_Initialise": {
    "match": "0x451ec30"
   },
+  "Game_AutoResetToTrack_FireDeferred": {
+   "match": "0x2f05fc0"
+  },
   "Game_AutoResetToTrack_StartTimer": {
    "match": "0x2f037a0"
   },
   "Game_AutoResetToTrack_Teleport": {
    "match": "0x2f05840"
+  },
+  "Game_BaseGameModeSetupDataContract_UpdateSelectedTrackContextual": {
+   "match": "0x38550d0"
   },
   "Game_BenchmarkGameMode_BuildSessionSettings": {
    "match": "0x7a48a0"
@@ -2782,6 +2852,9 @@
   },
   "Game_BroadcastViewVehicleVM_OnDeactivate": {
    "match": "0x19ff3c0"
+  },
+  "Game_Build_CustomisationCatalogue": {
+   "match": "0x14061a0"
   },
   "Game_Build_PassiveObjectiveKeyName": {
    "match": "0x297e150"
@@ -3149,11 +3222,23 @@
   "Game_CutsceneManager_WaitTextureStreaming": {
    "match": "0x212210"
   },
+  "Game_DRLSystem_OnMessagePlayerDroppedIn": {
+   "match": "0x243d5f0"
+  },
   "Game_DRLSystem_ResolveDependencies": {
    "match": "0x243c440"
   },
+  "Game_DRS_CollectZoneMarkup": {
+   "match": "0x2bf20d0"
+  },
   "Game_DRS_OnSessionLoad": {
    "match": "0x2bee310"
+  },
+  "Game_DRS_UpdateCars": {
+   "match": "0x2bebe60"
+  },
+  "Game_DRS_UpdateZoneTracker": {
+   "match": "0x2be9b20"
   },
   "Game_DataDrivenCutSceneScript_CreateComponents": {
    "match": "0x251190"
@@ -3202,6 +3287,9 @@
   },
   "Game_DeptEventViewModel_Update": {
    "match": "0x22ebdf0"
+  },
+  "Game_DifficultySystem_ApplySettingsToUi": {
+   "match": "0x241b150"
   },
   "Game_DriverCareerTeamSelect_OnMessage": {
    "match": "0x1a6b230"
@@ -3361,6 +3449,12 @@
   },
   "Game_EventDispatcher_SendPositionEvent": {
    "match": "0x2526fa0"
+  },
+  "Game_EventListGridSetupComponent_SetupStartingGrid": {
+   "match": "0xb9cd50"
+  },
+  "Game_EventModifier_SetWheelWetnessGripScale": {
+   "match": "0x13a6970"
   },
   "Game_EventObjectives_OnTargetPositionDone": {
    "match": "0x17fe4c0"
@@ -4622,6 +4716,9 @@
   "Game_PitLaneSystem_Multiplayer_handlePitLaneEventMessage": {
    "match": "0x34d4150"
   },
+  "Game_PitLane_ApplyPitstopTyres": {
+   "match": "0x34c02e0"
+  },
   "Game_PitLane_EnterControlRelease": {
    "match": "0x34ce4c0"
   },
@@ -4651,6 +4748,9 @@
   },
   "Game_PitLane_OnGarageCrewMessage": {
    "match": "0x34d1170"
+  },
+  "Game_PitLane_ProjectBoxPose": {
+   "match": "0x34c0c1e"
   },
   "Game_PitLane_PutVehicleInPitBox": {
    "match": "0x34d37f0"
@@ -5054,6 +5154,9 @@
   "Game_SecretMeetings_Initialise": {
    "match": "0x267e80"
   },
+  "Game_SessionDirectorContainerViewModel_AddTabPitStopsScreen": {
+   "match": "0x22a1668"
+  },
   "Game_SessionHud_OnPlayerDroppedIn": {
    "match": "0x14b1be0"
   },
@@ -5074,6 +5177,9 @@
   },
   "Game_SessionSettings_SetSessionId": {
    "match": "0x2cd4800"
+  },
+  "Game_SessionStateTalkingPoints_ParseParams_Thunk": {
+   "match": "0x2d973b0"
   },
   "Game_SessionState_EnableOnDemandTextureStreaming": {
    "match": "0x2d89950"
@@ -5327,6 +5433,12 @@
   "Game_TitleScreenVM_OnScreenActivated": {
    "match": "0x1e9f230"
   },
+  "Game_TodCurveBinding_EvalAt": {
+   "match": "0xb12c60"
+  },
+  "Game_TodCurveBinding_EvalNow": {
+   "match": "0x29c310"
+  },
   "Game_TodData_FindParam": {
    "match": "0x46114b0"
   },
@@ -5348,6 +5460,12 @@
   "Game_TrackExtraYacht_Initialise": {
    "match": "0x269c10"
   },
+  "Game_TrackInfoSystem_CreateResourceListeners": {
+   "match": "0x4796c60"
+  },
+  "Game_TrackInformation_ParseTrackInfoXml": {
+   "match": "0x4780c00"
+  },
   "Game_TrackModelComponent_Initialise": {
    "match": "0x2aa26f0"
   },
@@ -5360,11 +5478,20 @@
   "Game_TrackSpaceTracker_Reset": {
    "match": "0x2f603f0"
   },
+  "Game_TrackSpace_FindVolume": {
+   "match": "0x45f5ea0"
+  },
   "Game_TrackSpace_GetDistanceAtPos": {
    "match": "0x5fc710"
   },
+  "Game_TrackSpace_LapDistance": {
+   "match": "0x45f6340"
+  },
   "Game_TrackSpace_LoadXml": {
    "match": "0x45ede70"
+  },
+  "Game_TrackSpace_NearestVolume": {
+   "match": "0x45f6020"
   },
   "Game_TrackSpace_RangeOverlaps": {
    "match": "0x45faeb0"
@@ -5374,6 +5501,12 @@
   },
   "Game_TrackSpline_ResolveRouteEnds": {
    "match": "0x5fed50"
+  },
+  "Game_TrackSurface_DryLineStrength": {
+   "match": "0x37cff90"
+  },
+  "Game_TrackSurface_UpdateWheelRecords": {
+   "match": "0x37cef50"
   },
   "Game_TransactionSystem_OnRequestPurchaseComplete_A": {
    "match": "0x2e69950"
@@ -7223,7 +7356,7 @@
   "Ne_Property_SetS32IfChanged": {
    "match": "0x972e30"
   },
-  "Ne_Property_SetS64IfChanged": {
+  "Ne_Property_SetUIDBRefIfChanged": {
    "match": "0x977b70"
   },
   "Ne_PtrList_RemoveLocked": {
@@ -7562,11 +7695,11 @@
   "Ne_Std_ThrowBadFunctionCall": {
    "match": "0x49e4194"
   },
+  "Ne_Std_ThrowBadOptionalAccess": {
+   "match": "0x29b020"
+  },
   "Ne_Std_ThrowDequeTooLong": {
    "match": "0x34f2ecd"
-  },
-  "Ne_Std_ThrowException": {
-   "match": "0x29b020"
   },
   "Ne_Std_ThrowExceptionNoReturn": {
    "match": "0x1b034e"
@@ -8303,8 +8436,14 @@
   "Sess_Get_PlayerVehicleIndex": {
    "match": "0xfa590"
   },
+  "Sess_Get_VehicleTrackFactor": {
+   "match": "0x36b0a00"
+  },
   "Sess_GridRundown_Update": {
    "match": "0x2d63240"
+  },
+  "Sess_HumanController_Update": {
+   "match": "0x3897f50"
   },
   "Sess_InGamePQ_Update": {
    "match": "0x2d6a790"
@@ -8326,6 +8465,9 @@
   },
   "Sess_InGame_UpdateBase": {
    "match": "0x2d58c30"
+  },
+  "Sess_Init_TyreComponentSet": {
+   "match": "0x2e96000"
   },
   "Sess_IntroVideo_CanFinish": {
    "match": "0x2d6f940"
@@ -9254,6 +9396,9 @@
   "Sess_TyreCompoundClasses_SortEntriesB": {
    "match": "0x2e9f368"
   },
+  "Sess_Tyre_ShowFittedSet": {
+   "match": "0x2ea5020"
+  },
   "Sess_Tyres_ClosestAvailableCompound": {
    "match": "0x2a3de0c"
   },
@@ -9361,6 +9506,9 @@
   },
   "Team_Insert_RecordByStatId": {
    "match": "0xbc1a11"
+  },
+  "Team_Load_PitTimes": {
+   "match": "0x34cb170"
   },
   "Trk_CareerWizardTrackSelectVm_OnCommandRaised": {
    "match": "0x1a33dc0"
@@ -10034,6 +10182,12 @@
   "Vm_WizardTitleSlice_DestroyRange": {
    "match": "0x1b6b860"
   },
+  "g_Car_FfbForceWetMultiple": {
+   "match": "0x4703597"
+  },
+  "g_Car_FfbFrictionWetMultiple": {
+   "match": "0x47035b5"
+  },
   "g_Career_FlowLinkContinue": {
    "match": "0x36c5400"
   },
@@ -10303,6 +10457,9 @@
   },
   "k_Live_VehicleHelperSystemKey": {
    "match": "0x207492"
+  },
+  "k_Live_VehicleLapTimesSystemKey": {
+   "match": "0x5fcb6c"
   },
   "k_Ne_BagCodecVtbl": {
    "match": "0x29d0ac9"

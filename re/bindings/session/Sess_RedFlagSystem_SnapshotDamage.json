@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_RedFlagSystem_SnapshotDamage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143583e20",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void(RedFlagSystem*)",
+  "evidence": "decomp:ghidra-headless-2026-10-25;decomp:re/decomp/143583e20.c;xref:0x143583c35,0x14dd4f446",
+  "notes": "per-car bool table +0x100 = damage table (+0x1a0) +0xa4 + car*0x70 > 0 at deploy time. Called by Sess_RedFlagSystem_Deploy."
+ },
+ "signature": {
+  "id": "session.red_flag_system_snapshot_damage",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 CE 4C 8B A1 58",
+  "match": "0x143583e20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143583e20",
+  "kind": "func_start",
+  "names": [
+   "Sess_RedFlagSystem_SnapshotDamage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb-verify-a",
+   "kind": "func",
+   "item": "Sess_RedFlagSystem_SnapshotDamage",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143583e20.c;xref:0x143583c35",
+   "notes": "V1847 bool table +0x100, damage +0x1a0 +0xa4+car*0x70 >0 (bounds vs +0xc20)"
+  }
+ ],
+ "proofs": []
+}

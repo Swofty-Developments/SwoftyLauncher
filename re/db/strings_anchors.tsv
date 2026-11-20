@@ -559,6 +559,7 @@ s_cfg_UITextProcessorAffectsRTLLanguagesOnly	0x145a926f0	ascii	UI.TextProcessorA
 s_cfg_VideoCaptureEnabled	0x14566e140	ascii	VideoCapture.enabled	0x140ad2313,0x14442f3c8,0x1445d57a3	0x140ad22a0,0x14442f0c0,0x1445d54e0	L1	engine setting name (system/config.xml); hidden-modes 2026-11-13
 s_cfg_VideoExportEnabled	0x145a93072	ascii	VideoExport.Enabled	0x1444b1174	0x1444b1130	L1	engine setting name (system/config.xml); hidden-modes 2026-11-13
 s_context_path	0x1456f8dd3	ascii	context_path	0x1415a9393,0x1417ad949,0x1419f89d8,0x141bca870,0x1421e9bd0,0x1421ea176,0x1424133c8,0x1438309bf+3	0x1415a92d0,0x1417ad860,0x1419f8770,0x141bc9980,0x1421e9910,0x1421e9ee0,0x142412050,0x1438308c0+3	L2	Tile VM property
+s_delayLength	0x1457de760	ascii	delayLength	0x142d58629	0x142d58600	L2	flow param name read by Sess_DelayOnLoadingScreen_ParseParams (lea at 0x142d58629); no flow file in game.dat sets it
 s_description_localised	0x14570a495	ascii	description_localised	0x14169804d,0x141b029bf	0x141697b90,0x141b012b0	L2	-
 s_eaid_wep_fmt	0x1456c5798	ascii	eaid://environment_package/tracks/%s/wep/%s_%s.wep	0x14112516c,0x1411251dc	0x141124b30	L2	-
 s_entrant_lists	0x1456e66fc	ascii	entrant_lists	0x1413d50e2,0x1413e7a6e,0x14249f468	0x1413d4e10,0x1413e4cf0,0x14249f190	L2	-

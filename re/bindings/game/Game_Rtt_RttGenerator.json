@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Rtt_RttGenerator",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d84490",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name rttGenerator (class from the log channel); log channel RTT: 'rttGenerator has no instances - nothing will render!'"
+ },
+ "signature": {
+  "id": "game.rtt_rtt_generator",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 0C 00 00 C5 78 29 A4 24 C0 0C 00 00",
+  "match": "0x143d84490",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d84490",
+  "kind": "func_start",
+  "names": [
+   "Game_Rtt_RttGenerator"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x143d84490",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143d84490.c;xref:0x141efec67",
+   "notes": "V6290 partial: better name Game_Rtt_CreateScenes; builds ~20 RTT render scenes (gbuffer export, lighting, forward+, SSS); the log is one error branch"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x143d84490",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d84490.c;xref:0x141efec67",
+   "notes": "V7052 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

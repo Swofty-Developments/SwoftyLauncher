@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Model_ReleaseGpuResources",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143e83df0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143e83df0.c;xref:0x143b13503",
+  "notes": "Releases GPU resources of a mesh model binding (+0x28..+0xa0, flag +0x59) via 0x1403118b0. Callers Game_Particles_BindMeshModel, Game_Renderer_CreateRenderPasses, 0x143b1e0e0. Hypothesis."
+ },
+ "signature": {
+  "id": "render.model_release_gpu_resources",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 48 8B 91 90",
+  "match": "0x143e83df0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143e83df0",
+  "kind": "func_start",
+  "names": [
+   "Render_Model_ReleaseGpuResources"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143e83df0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143e83df0.c;xref:0x143b13503",
+   "notes": "V7935 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

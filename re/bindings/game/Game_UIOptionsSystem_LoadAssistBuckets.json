@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UIOptionsSystem_LoadAssistBuckets",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ad9680",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "str:s_UIOptionsSystem_LoadAssistBuckets;xref:0x142ada140,0x142ada63f",
+  "notes": "cxx=game::UIOptionsSystem::loadAssistBuckets; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "game.u_i_options_system_load_assist_buckets",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 08 00 00 C5 F8 29 BC 24 B0 08 00 00 C5 F8 29 B4 24 A0 08 00 00 48 89 CE",
+  "match": "0x142ad9680",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ad9680",
+  "kind": "func_start",
+  "names": [
+   "Game_UIOptionsSystem_LoadAssistBuckets"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142ad9680",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142ad9680.c;xref:0x142ada6bc",
+   "notes": "V5014 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

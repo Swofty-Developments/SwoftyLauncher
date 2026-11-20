@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_ERPInfo_EError",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a691a0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=ERPInfo::eError; log channel EGO_ERP_LOADER: 'handleError - \"%s\" - setting m_status = ERPInfo::eError'  2026-11-17 engine-re: (loader, code): frees the header/index buffers (+0xa8/+0xe8/+0xf0), stores code in ERPInfo+0xc as the error status, removes the ERP from the pending list (+0x3d0..+0x3d8) and closes the file. Codes from Game_EgoErpLoader_ProcessSection: 0x4f bad magic or version >= 4, 0x54 header shorter than 0x30, 0x56 name length mismatch. An ERP in error does not take its asset group down by itself: the group sub task decides (Ne_AssetGroupSubTask_OnComplete)."
+ },
+ "signature": {
+  "id": "game.erp_info_e_error",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 01 00 00 89 D3",
+  "match": "0x143a691a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a691a0",
+  "kind": "func_start",
+  "names": [
+   "Game_ERPInfo_EError"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143a691a0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143a691a0.c;xref:0x143a65a5f",
+   "notes": "V6428 function is ERP loader handleError (sets m_status=eError, closes file); eError is a state value. Better Game_EgoErpLoader_HandleError"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x143a691a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a691a0.c;xref:0x143a65a5f",
+   "notes": "V7046 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

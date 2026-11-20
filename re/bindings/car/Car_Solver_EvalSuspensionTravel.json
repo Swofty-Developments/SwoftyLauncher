@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Solver_EvalSuspensionTravel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446b9650",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446b9650.c;xref:0x1446dbdaf,0x1446e5075",
+  "notes": "Clamps travel +0x168 into curve range ([+0x140]+0x15b8..+0x15bc +-0.005) and evaluates curve +0xaf0 (0x142e88290) with finite difference. Hypothesis: bump-stop / spring curve. Callers: Car_Solver_PrepareWheel. (2 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "car.solver_eval_suspension_travel",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 78 C5 78 29 54 24 60 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 C5 F8 28 F1",
+  "match": "0x1446b9650",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446b9650",
+  "kind": "func_start",
+  "names": [
+   "Car_Solver_EvalSuspensionTravel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446b9650",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446b9650.c;xref:0x1446dbdaf",
+   "notes": "V6822 Clamp to curve range +/-0.005 and finite difference confirmed; result is slope*velocity term; hypothesis."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDCardArtImage1",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1418154c6",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141814320.c;xref:0x1418154c6;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v090--the-card-art-setting-tyres_card_art-db-default-on",
+  "notes": "lea r9,rnd_part_image before Ne_Format_String(rcx,%s.%s.%s,r8=pkg,r9,[rsp+0x20]=frame)"
+ },
+ "signature": {
+  "id": "career.rn_d_card_art_image1",
+  "section": ".xtls",
+  "pattern": "4C 8D 0D ?? ?? ?? ?? 48 89 E9 E8 ?? ?? ?? ?? 48 8B 44 24 50 48 8D 50 09 48 85 C0 48 0F 44 D7",
+  "match": "0x1418154c6",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1418154c6",
+  "kind": "mid",
+  "expect": "4C 8D 0D D0 B3 EF 03",
+  "names": [
+   "site_Career_RnDCardArtImage1"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-3",
+   "kind": "global",
+   "item": "site_Career_RnDCardArtImage1",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141814320.c;xref:0x1418154b3,0x1418154ba,0x1418154bf,0x1418154c6,0x1418154d0,0x1418153d6",
+   "notes": "V0127 lea r9 rnd_part_image, r8=[r15+0x660] pkg, [rsp+0x20]=rbx frame, rdx=%s.%s.%s; this is the state[-3]==0 path (followed by mask 0x141815585); second copy 0x1418153d6 (state[-3]!=0, frame 'unknown', no mask) is not covered; 7B window clean"
+  }
+ ],
+ "proofs": []
+}

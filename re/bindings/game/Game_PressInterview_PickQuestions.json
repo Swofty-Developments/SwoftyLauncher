@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PressInterview_PickQuestions",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141041640",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-PRESS_INTERVIEWS",
+  "notes": "named from its log messages (channel PRESS_INTERVIEWS): 'Could Not find at least %d questions for driver: %s ?'"
+ },
+ "signature": {
+  "id": "game.press_interview_pick_questions",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 01 00 00 C5 78 29 84 24 70 01 00 00 C5 F8 29 BC 24 60 01 00 00 C5 F8 29 B4 24 50 01 00 00 88 54 24 47",
+  "match": "0x141041640",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141041640",
+  "kind": "func_start",
+  "names": [
+   "Game_PressInterview_PickQuestions"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x141041640",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141041640.c;xref:0x141055992",
+   "notes": "V4577 name and quoted log strings/pretty-function present in body"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "site_Game_AcclimPenalty_Return",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1429a0646",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/1429a0620.c;xref:0x1429a063c",
+  "notes": "The ret of Game_PracticeTrackAcclimatisation_FlagCurrentTarget, target of its je at 0x1429a063c (current target's +0xc4 is 0). The function pushes nothing and writes only rdx/rax/rcx/flags (volatile), and its caller Game_PracticeProgramme_HandlePenaltyIssued ignores rax (0x142953226 xor eax,eax), so continuing here from site_Game_AcclimPenalty_Entry returns to the caller with nothing done. EA 0x1429999c6."
+ },
+ "signature": {
+  "id": "game.acclim_penalty_return",
+  "section": ".xtls",
+  "pattern": "8B 91 28 03 00 00 48 8B 81 50 03 00 00 48 69 CA 70 03 00 00 83 BC 08 C4 00 00 00 00 74 08 C6 84 08 62 03 00 00 01 C3",
+  "match": "0x1429a0620",
+  "anchor": "0x26",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1429a0646",
+  "kind": "mid",
+  "names": [
+   "site_Game_AcclimPenalty_Return"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "acclimpenalty",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/tracks/track_acclim.cpp"
+  ],
+  "expect": "C3",
+  "func_start": "0x1429a0620"
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "verify-acclimpenalty",
+   "kind": "global",
+   "item": "site_Game_AcclimPenalty_Return",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1429a0620.c;xref:0x1429a063c,0x142953226;sig:game.acclim_penalty_return",
+   "notes": "V1606 sigcheck --only game.acclim_penalty_return: OK hits=1 match=0x1429a0620 target=0x1429a0646 (anchor 0x26, expect C3). 0x1429a0646 is the function's single ret, reached in the game's own code by je 0x1429a0646 at 0x1429a063c. Continuing there from site_Game_AcclimPenalty_Entry with rsp unchanged pops the caller's return address 0x142953226, whose next instruction xor eax,eax discards rax; the skipped instructions write only edx/rax/rcx/flags (volatile in the x64 ABI) and the byte entry+0x362. EA: 0x1429999c6, same offset in the identical body."
+  }
+ ],
+ "proofs": []
+}

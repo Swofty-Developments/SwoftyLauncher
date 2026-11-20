@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleCustomisationReplicationManager_HandleVehicleCust_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143145350",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=VehicleCustomisationReplicationManager::handleVehicleCustomisationInfoUpdate; log channel NETWORK-ENTRANTS-MESSAGES: 'void network::VehicleCustomisationReplicationManager::handleVehicleCustomisationInfoUpdate(neon::NeNetMessage &, neon::NeNetConnectionID) | %s : Manager is now applying the decals stored for player '%'"
+ },
+ "signature": {
+  "id": "game.vehicle_customisation_replication_manager_handle_vehicle_cust_2",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 28 4B 00 00 E8 ?? ?? ?? ?? 48 29 C4 48 89 D7 48 89 CE 4C 8D 72 10 0F B7 5A 70 4C 8B A2 90 01 00 00",
+  "match": "0x143145350",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143145350",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleCustomisationReplicationManager_HandleVehicleCust_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143145350",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143145350.c;xref:0x14313f0fa",
+   "notes": "V5943 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

@@ -91,7 +91,7 @@ fn lists_profiles_and_refuses_the_ones_that_must_stay() {
 
 #[test]
 fn deletes_a_profile_only_when_told_to() {
-    if swofty_core::process::game_running() {
+    if swofty_core::platform::process::game_running() {
         eprintln!("skipped: F1 25 is running, and profiles are not deleted while it runs");
         return;
     }

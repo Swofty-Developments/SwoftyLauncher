@@ -1,7 +1,7 @@
-// Host-native unit test for the core's fitted tyre model check (native/src/core/tyre_models_logic.hpp): which
-// models count as never placed, and the log lines built from them. Built and run by native/test/run_tyre_models_test.sh.
+// Host-native unit test for the core's fitted tyre model check (native/src/core/diagnostics/tyre_models_logic.hpp): which
+// models count as never placed, and the log lines built from them. Built and run by native/test/run_tests.sh tyre_models.
 
-#include "tyre_models_logic.hpp"
+#include "core/diagnostics/tyre_models_logic.hpp"
 
 #include <cstdio>
 #include <cstring>
@@ -11,27 +11,21 @@
 
 static int failures;
 
-#define CHECK(cond, msg)                                                                                                \
-    do {                                                                                                                \
-        if (cond) {                                                                                                     \
-            printf("ok  : %s\n", msg);                                                                                  \
-        } else {                                                                                                        \
-            printf("FAIL: %s\n", msg);                                                                                  \
-            failures++;                                                                                                 \
-        }                                                                                                               \
+#define CHECK(cond, msg)                                                                                                         \
+    do {                                                                                                                         \
+        if (cond) {                                                                                                              \
+            printf("ok  : %s\n", msg);                                                                                           \
+        } else {                                                                                                                 \
+            printf("FAIL: %s\n", msg);                                                                                           \
+            failures++;                                                                                                          \
+        }                                                                                                                        \
     } while (0)
 
 namespace tmod = runtime::tyre_models;
 
-static tmod::Model placed()
-{
-    return {true, -2.9f, 0.354f, 0.248f, 2};
-}
+static tmod::Model placed() { return {true, -2.9f, 0.354f, 0.248f, 2}; }
 
-static tmod::Model unplaced()
-{
-    return {true, -1000.0f, 60.0f, 30.0f, 0};
-}
+static tmod::Model unplaced() { return {true, -1000.0f, 60.0f, 30.0f, 0}; }
 
 static tmod::Verdict judge(std::initializer_list<tmod::Model> ms, unsigned *spawned = nullptr, unsigned *bad = nullptr)
 {

@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_Unk1418169f0TypeLabel",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141816def",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/1418169f0.c;xref:0x141816def,0x141816e11;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v090--the-tyres-upgrade-types-setting-tyres_upgrade_types-default-on-install-time",
+  "notes": "cmp rax,0x12 ; ja 0x141816e11: head of the inlined upgrade type switch in the upgrade card binder 0x1418169f0 (rax = type). Placing the hook on the head instead of the default 0x141816e11 (lea r8,[\"INVALID UPGRADE\"]) is a choice: a redirect from the head leaves every register as the default path does (only the jump-table dispatch writes rax/rcx), and the join (lea rdx,[fmt] ; lea rcx,[buf] ; call Ne_Format_String) reads only r8. rnd-tyres sets r8 = its type suffix for 19..22 and jumps to the join; other types fall through"
+ },
+ "signature": {
+  "id": "career.unk1418169f0_type_label",
+  "section": ".xtls",
+  "pattern": "0F B6 45 70 48 83 F8 12 77 1C 48 8D 0D",
+  "match": "0x141816deb",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141816def",
+  "kind": "mid",
+  "expect": "48 83 F8 12 77 1C",
+  "names": [
+   "site_Career_Unk1418169f0TypeLabel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-a",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_upgrade_types.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-1",
+   "kind": "global",
+   "item": "site_Career_Unk1418169f0TypeLabel",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1418169f0.c;xref:0x141816deb,0x141816def,0x141816df3,0x141816e03,0x141816e11",
+   "notes": "V0046 movzx eax,[rbp+0x70] ; cmp rax,0x12 ; ja 0x141816e11 head; default lea r8 'INVALID UPGRADE'; join reads only r8. Note: 'no unique signature' rationale inaccurate (head-to-default pattern is unique), harmless"
+  }
+ ],
+ "proofs": []
+}

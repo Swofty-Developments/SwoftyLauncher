@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Hash_Md5Finalize",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439297a0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439297a0.c;xref:0x1439299aa,0x143929b6a,0x143994c1c",
+  "notes": "MD5 finalisation: pads to 56 mod 64, appends bit length; 18 callers (Md5U64, HashedName_FromString). Named callers: Ne_Hash_Md5U64, Ne_HashedName_FromString, Render_Model_ValidateMaterialParams."
+ },
+ "signature": {
+  "id": "core.hash_md5_finalize",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC A8 00 00 00 48 89 CE 8B",
+  "match": "0x1439297a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439297a0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Hash_Md5Finalize"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x1439297a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439297a0.c;xref:0x1439299aa",
+   "notes": "V7628 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

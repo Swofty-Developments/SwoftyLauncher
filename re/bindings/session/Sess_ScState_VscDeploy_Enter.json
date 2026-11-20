@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_ScState_VscDeploy_Enter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436481d0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void(ScState*, ScEntry*)",
+  "evidence": "decomp:ghidra-headless-2026-10-25;decomp:re/decomp/1436481d0.c;xref:0x145855240",
+  "notes": "posts the SafetyCarDeployment record (vt 0x1457e7840 {entry, vehicle, phase, type}) through Sess_Set_SafetyCarDeploymentType: phase 0 type 2 with the deployment-points kind."
+ },
+ "signature": {
+  "id": "session.sc_state_vsc_deploy_enter",
+  "section": ".xtls",
+  "pattern": "48 83 EC 48 48 8B 41 40 0F B6 80 28 02 00 00 4C",
+  "match": "0x1436481d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436481d0",
+  "kind": "func_start",
+  "names": [
+   "Sess_ScState_VscDeploy_Enter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb5-verify",
+   "kind": "func",
+   "item": "Sess_ScState_VscDeploy_Enter",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436481d0.c;xref:0x145855240",
+   "notes": "V1976 record phase 0 type 2 plus kind byte [[p+0x40]+0x228]"
+  }
+ ],
+ "proofs": []
+}

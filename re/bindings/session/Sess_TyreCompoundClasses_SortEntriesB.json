@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Sess_TyreCompoundClasses_SortEntriesB",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ef0d40",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142ef0d40.c;xref:0x142e9cdd8",
+  "notes": "Second instantiation of the same sort. Caller Sess_Load_TyreCompoundClasses."
+ },
+ "signature": {
+  "id": "session.tyre_compound_classes_sort_entries_b",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 44 24 60 4C 8B 78 10 4C 2B",
+  "match": "0x142e9cdd8",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x142ef0d40",
+  "kind": "func_start",
+  "names": [
+   "Sess_TyreCompoundClasses_SortEntriesB"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x142ef0d40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142ef0d40.c;xref:0x142e9cdd8",
+   "notes": "V8111 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

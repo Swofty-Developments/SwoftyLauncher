@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_PitLane_OnGarageCrewMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434cebe0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1434cebe0.c;xref:0x1434c85e4,0x1434cd4b6",
+  "notes": "Log channel PITLANE: 'PitLaneSystem::onMessageFromGarageCrew(%s for %d:%s)' | 'PitLaneMovementManager::clearCrewReady %d' | 'PittingVehicle::setCrewReady %d false' L2 2026-11-14 (engine-re round 2): decomp read; 2 reference(s) (0x1434c85e4, 0x1434cd4b6); the body itself references 'INVALID' / 'PITLANE' / 'PitLaneSystem::onMessageFromGarageCrew(%s for %d:%s)' / 'hud_spectator_2'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.pit_lane_on_garage_crew_message",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 48 89 D7 48 89 CE 44 0F B6 4A 10",
+  "match": "0x1434cebe0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434cebe0",
+  "kind": "func_start",
+  "names": [
+   "Game_PitLane_OnGarageCrewMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1434cebe0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434cebe0.c;xref:0x1434c85e7",
+   "notes": "V6026 name and description match body; log string/pretty name present"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x1434cebe0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1434cebe0-0x1434cf396;xref:0x1434c85e4,0x1434cd4b6",
+   "notes": "V10509 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Refs lea 0x1434c85e4 / 0x1434cd4b6. onMessageFromGarageCrew, clearCrewReady, setCrewReady false, HUD hide reason logs."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "era-refuel-verify",
+   "kind": "func",
+   "item": "0x1434cebe0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:SwoftyLauncher 1434cebe0.c lines 28-31,62,143-160;str:own rel32 table dump 0x145845b78 entries 0..4",
+   "notes": "V11607 type=[msg+0x14], car=[msg+0x10], status=[[self+0x68+car*16]+4]; type 0 and status 4 -> 0x1434bc540(self,car,5) (type 0 and status 10 -> 0xb); table entries resolve to GarageCrewMsg_SendToTrack/_ZoomedIn/_ZoomedOut/_PushingIntoGarage/_PushedIntoGarage"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Sess_TyreVisSlotLookup",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ea2aec",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/142ea2a90.c;decomp:re/decomp/142e9e6c0.c;decomp:re/decomp/142e9e540.c;xref:0x142ea2adb,0x142ea2ae7,0x142ea2b20,0x142ea2b78",
+  "notes": "In Sess_Tyre_ShowFittedSet 0x142ea2a90, right after the slot-table rebuild (call 0x142e9e6c0 at 0x142ea2ae7; jmp 0x142ea2adb joins here): mov rax,[r14+0x9c48], r14 = tyre component. Next it loads the fitted set's option [[r14+0x9c98]-0x6c] and scans the slot table r14+0x9bd0 (0x18 apart: u32 option, +8 physical, +0x10 visual; count +0x9c48, at most 5 inline) for it, then for the fallback (option>=3 unsigned ? 4 : 1) with no bound (0x142ea2b70 loop), so a table without either runs past +0x9c48 (SetTyreVisibility AV at 0x142e83130+0x268, 2026-10-30). With count 0 the first scan is unbounded too. Patch window 0x142ea2aec..0x142ea2af3 (one mov); only 0x142ea2adb lands, at its start. Core's tyre slot guard adds or fills the slot here, or continues at site_Sess_TyreVisTailCall."
+ },
+ "signature": {
+  "id": "session.tyre_vis_slot_lookup",
+  "section": ".xtls",
+  "pattern": "4C 89 F9 E8 ?? ?? ?? ?? 49 8B 86 48 9C 00 00 49 8B 8E 98 9C 00 00",
+  "match": "0x142ea2ae4",
+  "anchor": "0x8",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ea2aec",
+  "kind": "mid",
+  "expect": "49 8B 86 48 9C 00 00",
+  "names": [
+   "site_Sess_TyreVisSlotLookup"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "fix-sc",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/cars/tyre_slots.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "kbverify-tyre7",
+   "kind": "global",
+   "item": "0x142ea2aec",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "xref:0x142ea2adb,0x142ea2ae7,0x142ea2b20,0x142ea2b78;pat:capstone-disasm",
+   "notes": "V2197 mov rax,[r14+0x9c48] 7 bytes (2aec..2af2, next insn 2af3); r14=rcx at 2aaa; only jmp 0x142ea2adb->0x142ea2aec lands in window; fallthrough from call 0x142e9e6c0 at 2ae7. Table +0x9bd0 stride 0x18 option/+8/+0x10; count +0x9c48 sits right after 5 slots (0x9bd0+0x78)"
+  }
+ ],
+ "proofs": []
+}

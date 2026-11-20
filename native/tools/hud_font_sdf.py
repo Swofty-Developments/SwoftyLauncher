@@ -5,8 +5,8 @@
       --run "python3 native/tools/hud_font_sdf.py [--preview out.png]"
 
 Downloads the font and its licence from google/fonts at a pinned commit (cached in native/build/fonts/),
-checks their sha256, and writes native/src/core/hud_font_data.hpp (metrics and kerning),
-native/src/core/hud_font_atlas.hpp (the atlas as an 8-bit greyscale PNG), native/build/fonts/atlas.png
+checks their sha256, and writes native/src/core/hud/hud_font_data.hpp (metrics and kerning),
+native/src/core/hud/hud_font_atlas.hpp (the atlas as an 8-bit greyscale PNG), native/build/fonts/atlas.png
 and native/third_party/titillium-web/OFL.txt. --preview renders sample text from the atlas at 12-72 px.
 
 Atlas texels hold 0.5 + d / (2 * SPREAD), d the signed distance to the outline in atlas pixels (positive
@@ -350,8 +350,8 @@ def main():
     png = buf.getvalue()
     build = os.path.join(NATIVE, "build", "fonts")
     open(os.path.join(build, "atlas.png"), "wb").write(png)
-    write_data(os.path.join(NATIVE, "src", "core", "hud_font_data.hpp"), metrics, glyphs, kerns, aw, ah)
-    write_atlas(os.path.join(NATIVE, "src", "core", "hud_font_atlas.hpp"), png)
+    write_data(os.path.join(NATIVE, "src", "core", "hud", "hud_font_data.hpp"), metrics, glyphs, kerns, aw, ah)
+    write_atlas(os.path.join(NATIVE, "src", "core", "hud", "hud_font_atlas.hpp"), png)
     if args.preview:
         preview(args.preview, atlas, glyphs, kerns)
     print(f"{NAME}: {len(glyphs)} glyphs, {len(kerns)} kern pairs, atlas {aw}x{ah}, PNG {len(png)} bytes")

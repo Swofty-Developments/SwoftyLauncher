@@ -1,11 +1,11 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
-use swofty_core::baseline::Identity;
 use swofty_core::build::{GVDB, Plugins, plugin_files};
+use swofty_core::game_folder::baseline::Identity;
 use swofty_core::install::{Game, Installer, Plan};
 use swofty_core::profile::Profile;
-use swofty_core::resolver::resolve;
+use swofty_core::profile::resolver::resolve;
 use swofty_core::store::Store;
 
 const CORE: &str = "swofty/addons/core/swofty_core.dll";
@@ -189,7 +189,7 @@ fn rejects_a_missing_plugin_and_a_clashing_name() {
 
 #[test]
 fn the_integrity_module_is_placed_for_a_session_and_rolled_back_with_it() {
-    use swofty_core::timetrial::integrity::{self, Module};
+    use swofty_core::online::server::integrity::{self, Module};
     const DLL: &str = "swofty/addons/swofty.integrity/swofty_integrity.dll";
     let f = Fixture::new("integrity");
     let cached = f.root.join("data/timetrial/integrity/v1/swofty_integrity.dll");
@@ -198,6 +198,8 @@ fn the_integrity_module_is_placed_for_a_session_and_rolled_back_with_it() {
         version: "v1".into(),
         dll: cached,
         sha256: String::new(),
+        fallback: None,
+        source: swofty_core::online::server::integrity::Source::Cache,
     };
     let mut plan = f.plan("on");
     let mut session = f.store.session_settings("on").unwrap();
@@ -221,7 +223,7 @@ fn the_integrity_module_is_placed_for_a_session_and_rolled_back_with_it() {
 
 #[test]
 fn a_server_plugin_is_placed_for_a_session_and_rolled_back_with_it() {
-    use swofty_core::modules::{self, Module, TT_GAME};
+    use swofty_core::online::modules::{self, Module, TT_GAME};
     const DLL: &str = "swofty/addons/swofty.tt/swofty_tt.dll";
     let f = Fixture::new("server-plugin");
     let cached = f
@@ -261,7 +263,7 @@ fn the_integrity_module_is_not_a_user_addon() {
     let ids: Vec<String> = f.store.addons().unwrap().keys().cloned().collect();
     assert!(
         !ids.iter()
-            .any(|id| id == swofty_core::timetrial::integrity::PLUGIN_ID)
+            .any(|id| id == swofty_core::online::server::integrity::PLUGIN_ID)
     );
     for profile in ["on", "off"] {
         let session = f.store.session_settings(profile).unwrap();
@@ -270,7 +272,7 @@ fn the_integrity_module_is_not_a_user_addon() {
             session
                 .addons
                 .iter()
-                .all(|a| a.id != swofty_core::timetrial::integrity::PLUGIN_ID)
+                .all(|a| a.id != swofty_core::online::server::integrity::PLUGIN_ID)
         );
     }
 }

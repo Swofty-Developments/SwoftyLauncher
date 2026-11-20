@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineTaskBase_CreateErrorFromJSON",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143297080",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=OnlineTaskBase::createErrorFromJSON; log channel F1OS: 'NEbool online_services::OnlineTaskBase::createErrorFromJSON(const neon::NeJSONDocument &) | %s: error message %s'"
+ },
+ "signature": {
+  "id": "game.online_task_base_create_error_from_json",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 F8 10 00 00 E8 ?? ?? ?? ?? 48 29 C4 80 B9 D8 04 00 00 00",
+  "match": "0x143297080",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143297080",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineTaskBase_CreateErrorFromJSON"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x143297080",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143297080.c",
+   "notes": "V5877 Better name Game_F1os_HandleHttpRequestResult: 3.7KB HTTP result handler (received result/ERROR, payload log, JSON parse, error creation, StartTask); createErrorFromJSON pretty string is an inlined part"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x143297080",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143297080.c",
+   "notes": "V7047 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

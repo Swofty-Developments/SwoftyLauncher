@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EadpPresence_PresenceUpdateOffline",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143fff8e0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-EADP_PRESENCE",
+  "notes": "named from its log messages (channel EADP_PRESENCE): 'PRESENCE UPDATE: OFFLINE'"
+ },
+ "signature": {
+  "id": "game.eadp_presence_presence_update_offline",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 40 48 8B 1A",
+  "match": "0x143fff8e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143fff8e0",
+  "kind": "func_start",
+  "names": [
+   "Game_EadpPresence_PresenceUpdateOffline"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x143fff8e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143fff8e0.c",
+   "notes": "V6355 name and logged strings match body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

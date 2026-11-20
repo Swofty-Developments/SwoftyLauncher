@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_TimeManagerConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1443d1bc0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: TimeManager.cap, TimeManager.capValue, TimeManager.fixedTimeStep, TimeManager.mode, TimeManager.smoothing'"
+ },
+ "signature": {
+  "id": "game.read_time_manager_config",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 80 00 00 00 C5 F8 29 74 24 70 48 8B 89 B8 00 00 00",
+  "match": "0x1443d1bc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1443d1bc0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_TimeManagerConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x1443d1bc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1443d1bc0.c;xref:0x1443c08ee",
+   "notes": "V6593 size=1728; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

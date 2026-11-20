@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Game_DriverSelectHeader_SetTabState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a59fe0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_DriverSelectHeader_SetTabState(void *header, uint64_t tab, uint8_t content_visible, uint8_t enabled)",
+  "evidence": "decomp:re/decomp/141a59fe0.c;decomp:re/decomp/144251a30.c;xref:0x141a5922c,0x141a59631,0x141a59644,0x141a59657;xref:0x141a597d1,0x141a59a6d,0x141a59d30,0x141a5a0fa",
+  "notes": "sets tab [tab] of the driver select header (vector at header +0x2b8, 0x70 each): content_visible on *(item+0x68)+0x28 and enabled on item+0x48 (names from the tab item builder 0x144251a30). No bounds check. 8 callers: most pass fixed indices (e.g. 0, 1 and 3 off at 0x141a59631..0x141a59657); 0x141a5922c and 0x141a597d1 pass variable ones. Raised by native-1990 for the F1 1990 driver select tabs (doc:/mnt/work/.f1-1990/addon/native-requests.md#N10)"
+ },
+ "signature": {
+  "id": "game.driver_select_header_set_tab_state",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 44 88 4C 24 27",
+  "match": "0x141a59fe0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a59fe0",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverSelectHeader_SetTabState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/driver_select_tabs.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-21",
+   "verifier": "std-ui-verify",
+   "kind": "func",
+   "item": "Game_DriverSelectHeader_SetTabState",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141a59fe0.c;decomp:re/decomp/144251a30.c;xref:0x141a5922c,0x141a59631,0x141a59644,0x141a59657,0x141a597d1,0x141a59a6d,0x141a59d30,0x141a5a0fa;sig:game.driver_select_header_set_tab_state",
+   "notes": "V0921 confirmed: void(header, tab, content_visible, enabled), r8b/r9b stored as bytes. Tab item = [header+0x2b8] + tab*0x70 (imul r14,rdx,0x70) with no bounds check; content_visible goes to the node at *(item+0x68)+0x28, enabled to item+0x48 (0x144251a30 binds enabled at +0x48 and content_visible in the 0x100-byte holder at +0x68), each through Vm_NodeSet_Bool after a bool type check. Differs: the caller list is incomplete. A rel32 scan finds 8 callers: the 4 listed plus 0x141a597d1, 0x141a59a6d, 0x141a59d30 (all in 0x141a58ec0) and 0x141a5a0fa (in 0x141a5a0e0, tab 0 off). 0x141a5922c (rdx = rdi) and 0x141a597d1 (rdx = r14) pass variable indices, so not every caller uses a fixed index. sigcheck: one hit"
+  },
+  {
+   "date": "2026-10-21",
+   "verifier": "std-ui-verify",
+   "kind": "func",
+   "item": "Game_DriverSelectHeader_SetTabState",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a59fe0.c;decomp:re/decomp/144251a30.c;xref:0x141a5922c,0x141a59631,0x141a59644,0x141a59657,0x141a597d1,0x141a59a6d,0x141a59d30,0x141a5a0fa;sig:game.driver_select_header_set_tab_state",
+   "notes": "V0924 revised row matches the code: 4-arg proto, header+0x2b8 vector at 0x70 per tab, no bounds check, content_visible at *(item+0x68)+0x28, enabled at item+0x48. The 8 listed callers are exactly what a rel32 scan finds. 0x141a5922c (rdx = rdi) and 0x141a597d1 (rdx = r14) pass variable indices, the rest are fixed (0x141a59631/44/57 = 0, 1, 3 off; 0x141a59a6d = 1 off; 0x141a59d30 = 1 on; 0x141a5a0fa = 0 off). sigcheck: one hit"
+  }
+ ],
+ "proofs": []
+}

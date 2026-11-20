@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Sess_TyreWearSlotLookup",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ea2356",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/142ea2300.c;decomp:re/decomp/142e9e6c0.c;xref:0x142ea2341,0x142ea2351,0x142ea2380,0x142ea23b0,0x142ea27c1",
+  "notes": "In Car_Tyre_SetWearFactor 0x142ea2300, right after the slot-table rebuild (call 0x142e9e6c0 at 0x142ea2351; jmp 0x142ea2341 joins here): mov r8,[rsi+0x9c48], rsi = tyre component. The scans that follow are bounded by the count, but a table without the fitted option and without the fallback leaves the class entry [rsp+0x38] null, and the per-wheel format reads [[entry]+0x18]+0x10 (ACCESS_VIOLATION reading 0x18 at 0x142ea27c1, rear branch; front 0x142ea26xx), Supercars Time Trial 2026-10-31. Patch window 0x142ea2356..0x142ea235d; only 0x142ea2341 lands, at its start. Core's tyre slot guard adds or fills the slot here, or returns through site_Sess_TyreWearReturn."
+ },
+ "signature": {
+  "id": "session.tyre_wear_slot_lookup",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4C 8B 86 48 9C 00 00",
+  "match": "0x142ea2351",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ea2356",
+  "kind": "mid",
+  "expect": "4C 8B 86 48 9C 00 00",
+  "names": [
+   "site_Sess_TyreWearSlotLookup"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "fix-sc",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/cars/tyre_slots.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "kbverify-tyre7",
+   "kind": "global",
+   "item": "0x142ea2356",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "xref:0x142ea2341,0x142ea2351,0x142ea2380,0x142ea23b0,0x142ea27c1;pat:capstone-disasm",
+   "notes": "V2195 mov r8,[rsi+0x9c48] 7 bytes (window 2356..235c, next insn 235d); rsi=rcx set at 0x142ea2324; only jmp 0x142ea2341->0x142ea2356 lands in window (branch scan), fall-through from call 0x142e9e6c0. Slot+8 stored to [rsp+0x38] at 23cf/23fb; null -> AV at 27c1 (mov rax,[rax+0x18]) confirmed"
+  }
+ ],
+ "proofs": []
+}

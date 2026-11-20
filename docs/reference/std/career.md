@@ -200,6 +200,17 @@ Right after each `career.hub entered` line, the core logs the career's current w
 [career] weekend already started, session never ran: round 4/17, weekend in progress, current session 1 of 7 (practice_1), 0 of 7 sessions complete, track game/silverstone
 ```
 
+After a `weekend already started, session never ran` line the core logs the player's calendar items running that day and the item the game's calendar check picks, as `Team HQ calendar`, in the same form as `hub opened` below:
+
+```text
+[career] weekend already started, session never ran: round 4/17, weekend in progress, current session 1 of 7 (practice_1), 0 of 7 sessions complete, track game/silverstone
+[career] Team HQ calendar: day 2045, season 0, 2 of 58 calendar items running today (driver 0x00020000, calendar 0x2a1f40e10); the calendar check reads: stay in the hub (item 1, RaceWeekend, decides)
+[career]   item 1/2: RaceWeekend (0x0a) days 2045-2048 state 1 id 12 at 0x2a1f6c2a0 vt 0x1456d10d0
+[career]   item 2/2: FreeTime (0x06) days 2030-2059 state 1 id 3 at 0x2a1f6c340 vt 0x1456d10d0
+```
+
+The launcher reads the `weekend already started, session never ran` line to learn [a save stuck in a started race weekend](/reference/saves#a-save-stuck-in-a-started-race-weekend).
+
 A career session enters `SessionStateCareerHub` (`#42843edb`) right after `StateSession` and leaves it in the same frame. As the hub opens, the core logs the player's calendar items running that day and the item the game's calendar check picks. When `StateSession` ends within 2 seconds of entering after the hub opened, the core logs `session ended <N> ms after start`, with the weekend and the calendar items again, before `session.end`:
 
 ```text
@@ -226,7 +237,7 @@ A calendar can start a race weekend inside the season break. The stock 2026 seas
 
 The rest of the break doesn't run. A break with any other item the check weighs ahead of the weekend, or with no started weekend running that day, is left as it is. `SWOFTY_HUB_BREAK_FIX=0` turns the fix off, and the line then ends `left as it is (SWOFTY_HUB_BREAK_FIX=0)`.
 
-All of these come from the flow-state site. Apart from the season break fix, they read the game without writing to it. The weekend reads need `vt_Career_Championship`, `vt_Career_Season` and `vt_Career_Weekend`; the calendar reads need the career components. A build without them logs `the current weekend is not readable` or `the calendar is not readable (<reason>)` in the same lines.
+All of these come from the flow-state site. Apart from the season break fix, they read the game without writing to it. The calendar reads use `ScheduleComponent` (`seasons_begin`, `seasons_end`, `current_season`, `season_over`), `ScheduleSeason`, `DriverCalendar`, `CalendarActivity` (`day`, `state`, `activity`), `ActivityDef` (`id`, `type`, `duration`) and `CareerTimeComponent.current_minutes` from the generated game headers; the core does not compile without one of them. The weekend reads need `vt_Career_Championship`, `vt_Career_Season` and `vt_Career_Weekend`; the calendar reads need the career components. A build without them logs `the current weekend is not readable` or `the calendar is not readable (<reason>)` in the same lines.
 
 ## Components
 

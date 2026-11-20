@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Car_LiveCarBuilt",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144629969",
+  "type": "code",
+  "level": "L3",
+  "subsystem": "car",
+  "evidence": "decomp:re/decomp/144628190.c;decomp:re/decomp/144628190.c;trace:T119/2026-10-28-gp:20;trace:T119/2026-10-28-gp:80",
+  "notes": "Instruction right after Car_Build_VtfComponents(car) in Car_Chassis_Build: rdi = CarLive with all systems created, VTF read and +0x530..+0x5e0 cached; r12 = CarPhysicsRecord. Best trace/hook point for 'a car was spawned' (one hit per car create) Runtime 2026-10-28 (T119 pass): 21 hits at Grand Prix load, one per car, ids 0..20 in create order; ids 0..19 have 23 systems and handling version 8, id 20 (the safety car) 20 systems and handling version 1; no hit during the race."
+ },
+ "signature": {
+  "id": "car.live_car_built",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 89 F9 48 81 C1 30 02 00 00",
+  "match": "0x144629964",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144629969",
+  "kind": "mid",
+  "expect": "48 89 F9 48 81 C1 30 02 00 00",
+  "names": [
+   "site_Car_LiveCarBuilt"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "car-re",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/hooks/car_live.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v1",
+   "kind": "global",
+   "item": "site_Car_LiveCarBuilt",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144628190.c;xref:0x144629964;sig:car.live_car_built",
+   "notes": "V1329 0x144629964 call Car_Build_VtfComponents(rcx=rdi), 0x144629969 mov rcx,rdi is the next instruction; rdi = CarLive (just stored in g_Sess_VehicleTable at 0x144629654), r12 = record with [r12+0x58] = rdi (0x14462968d); neither register written between 0x1446296e5 and the site. sigcheck OK."
+  }
+ ],
+ "proofs": []
+}

@@ -7,7 +7,7 @@ description: The game's lifecycle as events, from boot to the chequered flag, ea
 
 An **event** is a moment in the game's lifecycle: a career's season starts, a session loads, a car makes a pit stop. Your addon subscribes to the moments it cares about, filtered to the content it cares about, and the core calls your handler with a **context**: the mode, the content being played and the addon that provides it, the career, the season and round, the weekend, the session, the player, every participant, and each one's registry records.
 
-For example, F1 1990 caps the rain chance of every race in its own career with one `before` handler on `session.weather.setup`, scoped to its career. In every other career and in Grand Prix, the handler is never called.
+For example, F1 1990 scripts every race of its own career to start dry and end in rain with one `before` handler on `session.weather.setup`, scoped to its career. In every other career and in Grand Prix, the handler is never called.
 
 ## Events in full
 
@@ -41,7 +41,7 @@ SWOFTY_ON_LOAD
 
     // before: change what the game is about to use
     events::on<weather::events::Setup>().in(k1990).when(events::session_type({ events::SessionType::race }))
-        .before([](weather::events::Setup &w, const events::Context &) { w.rain_chance = std::min(w.rain_chance, 30u); });
+        .before([](weather::events::Setup &w, const events::Context &) { weather::script(w, weather::Dataset::race, f1990::late_rain); });
 
     // replace: stand in for the game; return true when handled
     events::on<sessions::events::GroupResult>().in(k1990).replace([](sessions::events::GroupResult &g, const events::Context &ctx) {
@@ -174,6 +174,8 @@ career.standings.rebuild         swofty/systems/career.hpp   career::events::Sta
 session.fuel.load                swofty/systems/tracks.hpp   tracks::events::FuelLoad
 session.player.control           swofty/systems/sessions.hpp sessions::events::PlayerControl
 session.lap                      swofty/systems/sessions.hpp sessions::events::Lap
+session.flag / .safety_car.deploy / .red_flag / .sector / .car.status
+                                 swofty/systems/race_control.hpp race_control::events
 ai.controller.update             swofty/systems/ai.hpp       ai::events::ControllerUpdate
 hud.spectator.visible            swofty/systems/spectator.hpp spectator::events::HudVisible
 car.built / car.reset / car.vtf.read / car.parts.register / car.damage / car.upgrades.fit / car.controllers.rebuilt
@@ -184,9 +186,11 @@ driver.ratings.read / driver.number.assign / driver.head.resolve
 team.logo.resolve / team.name.resolve
                                  swofty/systems/teams.hpp    teams::events
 wearable.catalogue.build         swofty/systems/wearables.hpp wearables::events::CatalogueBuild
+session.weather.setup            swofty/systems/weather.hpp  weather::events::Setup
+car.tyre.damage                  swofty/systems/tyre_damage.hpp tyre_damage::events::Damage
 ```
 
-`ai.controller.update` and `car.controllers.rebuilt` need the in-game checks T145 and T144. `session.lap` fires from the core's ERS new-lap site (see [Sessions](/std/systems/sessions#a-cars-lap)). `car.built` and `car.reset` fire once per built or re-read car on the next frame (see [Car physics](/std/systems/car-physics#changing-a-car-live)); `car.vtf.read` and `car.upgrades.fit` are not fired yet. `car.parts.register`, `car.damage`, `session.pit` and `session.pit_stop` fire from the game ([Car physics](/std/systems/car-physics#events)). `session.end` and `session.unload` fire from the flow hook: `session.end` when the session state exits (or on a restart), `session.unload` when unloading begins (see [Events reference](/reference/std/events)). `game.pause` and `game.resume` fire when the game's pause reason mask goes from 0 to non-zero and back to 0 (see [Events reference](/reference/std/events#pause-and-resume)), and `on_frame` keeps running in the pause menu ([Pausing](/std/systems/failures#pausing)). The other points in the tree (`session.state.enter`, `session.weather.setup`, `session.safety_car.deploy`, `session.results.finalise`, `career.season.process` and the rest of the session group) are the design for later headers; addons made for 1.5 and earlier subscribe to some of these moments by shorter names, which still work: see [Compatibility](/std/compatibility#events).
+`ai.controller.update` and `car.controllers.rebuilt` need the in-game checks T145 and T144. `session.lap` fires from the core's ERS new-lap site (see [Sessions](/std/systems/sessions#a-cars-lap)). `session.flag`, `session.safety_car.deploy`, `session.red_flag`, `session.sector` and `session.car.status` fire from the live state's frame tick while the `telemetry` feature is on (see [Race control](/reference/std/race-control)). `car.tyre.damage` fires from the same tick (see [Tyre damage](/reference/std/tyre-damage)). `car.built` and `car.reset` fire once per built or re-read car on the next frame (see [Car physics](/std/systems/car-physics#changing-a-car-live)); `car.vtf.read` and `car.upgrades.fit` are not fired yet. `car.parts.register`, `car.damage`, `session.pit`, `session.pit_stop` and `session.pit_stop.tyres` fire from the game ([Car physics](/std/systems/car-physics#events)). `session.end` and `session.unload` fire from the flow hook: `session.end` when the session state exits (or on a restart), `session.unload` when unloading begins (see [Events reference](/reference/std/events)). `game.pause` and `game.resume` fire when the game's pause reason mask goes from 0 to non-zero and back to 0 (see [Events reference](/reference/std/events#pause-and-resume)), and `on_frame` keeps running in the pause menu ([Pausing](/std/systems/failures#pausing)). `session.weather.setup` fires from the core's weather setup wrap with `SWOFTY_WEATHER_CHAIN=1` on the KB build and Steam 1.0.145 (see [Weather](/std/systems/weather#the-setup-event)). The other points in the tree (`session.state.enter`, `session.results.finalise`, `career.season.process` and the rest of the session group) are the design for later headers; addons made for 1.5 and earlier subscribe to some of these moments by shorter names, which still work: see [Compatibility](/std/compatibility#events).
 
 **Every start has one end.** The core keeps a lifecycle stack. If the player quits from the pause menu, the core fires the missing ends itself, with `reason = abandoned`:
 
@@ -426,56 +430,51 @@ A plugin subscribes by listing them in its `launcher` block: `"lifecycle": ["bui
 
 ## Adding an event
 
-Adding a core event takes one catalogue entry, a hand-written payload, one fire call and a test. The catalogue is `packages/sdk/std/events/catalogue.json`:
-
-```json
-{
-  "name": "session.pit_stop",
-  "since": "1.6.0",
-  "status": "experimental",
-  "kind": "notify",
-  "thread": "session",
-  "parent": "session",
-  "payload": { "c": "SwoftyEvPitStop", "cpp": "swofty::sessions::events::PitStop", "header": "swofty/systems/sessions.hpp", "version": 1 },
-  "context": { "session": "always", "player": "always", "participants": "always", "career": "in_career" },
-  "source": { "how": "detour", "binding": "Game_Pitlane_SetVehicleStatus" },
-  "doc": "The game counts a pit stop for a car."
-}
-```
+Adding a core event takes a payload in an SDK header, one catalogue row, a fire function, a C mirror of the payload and a test. `session.red_flag` (race control) as the example:
 
 ```cpp
-// swofty/systems/sessions.hpp
-namespace swofty::sessions::events {
-struct PitStop {
-    static constexpr const char *point = "session.pit_stop";
+// packages/sdk/include/swofty/systems/race_control.hpp: the payload
+namespace swofty::race_control::events {
+struct RedFlag {
+    static constexpr const char *point = "session.red_flag";
     static constexpr uint32_t version = 1;
     uint32_t size, payload_version;
-    uint32_t car;            // vehicle index in the session
-    uint32_t stops;          // the car's stop count after it
+    race_control::RedFlag state;
+    race_control::RedFlag previous;
+    int32_t lap;
 };
 }
 ```
 
 ```cpp
-// native/src/core/hooks/car_live.cpp: the one fire call, after the game stores the new pit status
-if (stops_after != stops_before)
-    events::session_pit_stop(vehicle, stops_after);
+// native/src/core/hooks/catalogue.hpp: id, kind, payload type, version, hot, fired, 1.x name
+{"session.red_flag", N, "swofty::race_control::events::RedFlag", 1, false, Fired::yes, nullptr},
 ```
 
-`tools/std/eventcheck.py` checks the rest in CI:
-
-```text
-ok   62 events, every name unique and dotted; released entries unchanged since v1.6.0
-ok   swofty/systems/sessions.hpp: struct sessions::events::PitStop, point == "session.pit_stop", version == 1
-ok   native/src/core: a fire of session.pit_stop (car_live.cpp:154)
-ok   native/test: a test names session.pit_stop
-ok   docs: a section for session.pit_stop
+```cpp
+// native/src/core/hooks/core_events.cpp: the catalogue row must match the payload's point, kind and version
+static_assert(declared<rc::events::RedFlag>(SWOFTY_POINT_NOTIFY));
+bool session_red_flag(rc::events::RedFlag &e) { return fire(e); }
 ```
 
+```cpp
+// native/src/core/live/race_control.cpp: the one fire call
+ev::session_red_flag(e);
+```
+
+```c
+// native/test/sdk_payloads.h: the C mirror, its size and each field's offset
+typedef struct SwoftyEvRedFlag {
+    uint32_t size, payload_version;
+    uint8_t state, previous;
+    int32_t lap;
+} SwoftyEvRedFlag;
+X(SwoftyEvRedFlag, race_control, RedFlag, 16)
+X(SwoftyEvRedFlag, race_control, RedFlag, lap, 12)
+```
+
+- **What checks it.** The `static_assert` stops the core build when the catalogue row and the payload disagree. `native/test/sdk_headers_test.cpp` checks each mirror's size and field offsets against the C++ payload. A unit test in `native/test/manifest.py` covers the moments the event fires on (`race_control_test.cpp`).
+- **Fired.** `Fired::no` keeps the point declared but unfired: `live()` reports it unavailable and an attach logs that the core does not fire it in this version. `Fired::yes` is fired by the core, `Fired::game` by a game hook point the core installs while it has handlers, and `Fired::after_only` runs only after handlers.
+- **The 1.x name.** A row with a 1.x name that the core fires (any `fired` but `no`) gets a shell fire from the 1.x event through `bridge_legacy` (`native/src/core/hooks/hooks.cpp`) unless the point fires its own typed payload, as `session.lap` and `session.flag` do.
 - **The KB first.** An event that changes the game's behaviour (`modify`, `cancel`) needs every binding it uses at L2 with an independent verify. A `notify` event may use a binding at L1: it only reads.
-- **Per-frame moments** use tables the core builds at content and session moments, as game hook points do (see [Hooks](/std/hooks#hook-points-the-game-calls-every-frame)).
-- **Threads:** the core logs the thread of each event's first fire, and checks it against the catalogue:
-
-```text
-[events] first session.pit on thread 0x3a08 (flow thread 0x2f1c): catalogue says session, ok
-```
+- **Per-frame moments** use tables the core builds at content and session moments, as game hook points do (see [Hooks](/std/hooks#hook-points-the-game-calls-every-frame)). A hot event (`hot` true) is logged only at its first fire of a session.

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamActivities_LocalizeText",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142320250",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void f(void *self)",
+  "evidence": "decomp:re/decomp/142320250.c;xref:0x14231bd67;xref:0x142320df2",
+  "notes": "myteam-g1: MY_TEAM_ACTIVITIES text set via localisation helper."
+ },
+ "signature": {
+  "id": "career.my_team_activities_localize_text",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 75 51",
+  "match": "0x142320250",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142320250",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamActivities_LocalizeText"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x142320250",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142320250.c;xref:0x14231bd67",
+   "notes": "V10128 Invokes script function markAllTilesToStay with \"stay\"; not text localisation."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_ThrustmasterLcd_UpdateSectors",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142fd95e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-THRUSTMASTER_LCD_DATA;decomp:re/decomp/142fd95e0.c;xref:0x142fdc294",
+  "notes": "named from its log messages (channel THRUSTMASTER_LCD_DATA): 'Sector %d, fastest vehicle = %d, player vehicle = %d Callers: census steam 0x2fd95e0. | Sector %d - current time = (%s), personal fastest = (%s), overall fastest = (%s) |  - Set Flags state (%d)'  | 1.7.2: looks up each sector entrant's record with FUN_1423dbcf0 at 0x142fdc294 and reads its team name at +0xc8 (0x142fdc596); a null record faults. Sites site_Game_ThrustmasterLcd_EntrantRecord and site_Game_ThrustmasterLcd_SectorTail carry the core guard."
+ },
+ "signature": {
+  "id": "game.thrustmaster_lcd_update_sectors",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 08 00 00 C5 78 29 BC 24 70 08 00 00",
+  "match": "0x142fd95e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142fd95e0",
+  "kind": "func_start",
+  "names": [
+   "Game_ThrustmasterLcd_UpdateSectors"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142fd95e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142fd95e0.c",
+   "notes": "V5720 2568-line LCD display update (K%03d/P%02u, overtake text, flags, sectors); sectors only one part; better Game_ThrustmasterLcd_Update"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142fd95e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142fd95e0.c",
+   "notes": "V6929 2568 decomp lines, strings match current name; vtable/indirect"
+  },
+  {
+   "date": "2026-11-01",
+   "verifier": "kbverify-tmlcd",
+   "kind": "func",
+   "item": "0x142fd95e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142fd95e0.c;xref:0x142fdc294,0x142fdc596",
+   "notes": "V8553 re-decompiled and disassembled: call 0x1423dbcf0 (jmp thunk to 0x14c970d00) at 0x142fdc294 with rcx=[rsi+0x760], rdx=rbx; body returns 0 for kind [rdx]>2, a null table [mgr+kind*0x10+0x268] or index word [rdx+2] >= (end-begin)>>4; rax goes to rbp and 0x142fdc596 does mov rcx,[rbp+0xc8] with no test of rbp. Matches the claim. The function's own inline re-lookup (table at +0x2c8, key at rbx+8/+0xa) is a different table, the null-checked one."
+  }
+ ],
+ "proofs": []
+}

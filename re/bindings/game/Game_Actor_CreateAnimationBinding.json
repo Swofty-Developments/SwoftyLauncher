@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Actor_CreateAnimationBinding",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401f22f0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name createAnimationBinding (class from the log channel); log channel ACTOR_ERROR: 'createAnimationBinding for %s maxJoint_eLOD_ROOTBONE_ONLY_ANIMTARGET is -1 check the joint id for culling'"
+ },
+ "signature": {
+  "id": "game.actor_create_animation_binding",
+  "section": ".xtls",
+  "pattern": "55 41 57 41 56 41 55 41 54 56 57 53 48 83 EC 78 48 8D 6C 24 70 C5 F8 29 75 F0",
+  "match": "0x1401f22f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401f22f0",
+  "kind": "func_start",
+  "names": [
+   "Game_Actor_CreateAnimationBinding"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1401f22f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401f22f0.c",
+   "notes": "V4390 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

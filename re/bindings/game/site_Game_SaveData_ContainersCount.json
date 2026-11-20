@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Game_SaveData_ContainersCount",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143651bbf",
+  "type": "code",
+  "level": "L3",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/143651030.c;xref:0x143651bab,0x143651bd5;trace:T010/run2:86526;trace:T010/run4:86637;trace:T010/run3",
+  "notes": "In Game_SaveData_SerialiseContainer_2 (inline profile save), between storing the 'containers' child count and writing it: [rsp+0x90] = (r15 - [rsp+0x38]) >> 3 (0x143651bab..0x143651bb7), then rcx = [rsp+0x50] the stream and call [vt+0x48](stream, rsp+0x90, 8) at 0x143651bd5. [rsp+0x30] = the container (stored 0x14365106e), r12 = result. Raising [rsp+0x90] here changes the count the reader expects. The children about to be written are the SaveDataContainer pointers from [rsp+0x38] to r15 (the loop at 0x143651bf7 walks them)."
+ },
+ "signature": {
+  "id": "game.save_data_containers_count",
+  "section": ".xtls",
+  "pattern": "48 C1 F8 03 48 89 84 24 90 00 00 00 48 8B 4C 24 50 48 8B 01",
+  "match": "0x143651bb3",
+  "anchor": "0xc",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143651bbf",
+  "kind": "mid",
+  "expect": "48 8B 4C 24 50",
+  "names": [
+   "site_Game_SaveData_ContainersCount"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-27",
+    "by": "splicesaves",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/career/save_splice.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-27",
+   "verifier": "splice-verify",
+   "kind": "global",
+   "item": "site_Game_SaveData_ContainersCount",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143651030.c;decomp:re/decomp/143658130.c;xref:0x143651bab,0x143651bb7,0x143651bc7,0x143651bd5;xref:0x14365106e,0x143651052,0x143651516,0x14365173b;xref:0x14365156b,0x14365166f,0x1436516b0,0x143651684;xref:0x143651724,0x143651731",
+   "notes": "V1113 sigcheck game.save_data_containers_count OK (1 hit, target 0x143651bbf); instruction boundary, no branch to it or into +1..+4 (function and image rel32/rel8 scans). 0x143651bab-0x143651bb7: rax=r15-[rsp+0x38]; sar 3; [rsp+0x90]=rax. Next: rcx=[rsp+0x50]; rax=[rcx]; rdx=rsp+0x90; r8d=8; call [rax+0x48], result to [r12]. Nothing writes [rsp+0x90] between the site and the call, so changing it changes the 8 bytes written. [rsp+0x30] is written once (0x14365106e, rcx unmodified since entry = arg1 container). r12=rdx at 0x143651052, reused as an iterator at 0x14365156b.., but restored from [rsp+0xf0] (stored at 0x143651516 while still arg2) at 0x14365173b and not written after, so r12 = result pointer at the site. [rsp+0x50]=[rsp+0xf8]=arg3 stream (0x143651729/0x143651731), [rsp+0x48]=k_Ne_BagCodecVtbl (codec {vt, stream}). Extra claim also confirmed: [rsp+0x38]..r15 is a heap array of child SaveDataContainer* built at 0x1436515e0-0x1436516f5 from each registered child-set node's +0x58 (filtered by groups [rsp+0x180] & (c+0xd0 ^ c+0xc8 | c+0xd8)); [rsp+0x38] and r15 are not written after 0x143651704; the loop at 0x143651bf7 walks rdi=[rsp+0x38]..r15, one entry per pointer, name from a stack property {0x145892430, child+0x70}, whose st64 writer reads the char* at string+0x10 = child+0x80, so a hook can read every name to be written. Count is (r15-[rsp+0x38])>>3 with sar (signed), i.e. child pointer count."
+  }
+ ],
+ "proofs": []
+}

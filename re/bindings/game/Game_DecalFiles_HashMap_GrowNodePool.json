@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_DecalFiles_HashMap_GrowNodePool",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14146d340",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14146d340.c;xref:0x1414324a4,0x1414324ce",
+  "notes": "Allocates a doubling node pool (4 .. 0x2000 nodes of 0x18 bytes) from ne_hash_map.h (source path string under external/ego/source/base/types/containers/ne_hash_map.h, line 0x34)."
+ },
+ "signature": {
+  "id": "game.decal_files_hash_map_grow_node_pool",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 08 49 89 0E 4B 89 04 FC 40",
+  "match": "0x1414324a4",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14146d340",
+  "kind": "func_start",
+  "names": [
+   "Game_DecalFiles_HashMap_GrowNodePool"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x14146d340",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14146d340.c;xref:0x1414324a4",
+   "notes": "V8085 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

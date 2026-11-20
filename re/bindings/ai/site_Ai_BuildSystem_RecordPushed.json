@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Ai_BuildSystem_RecordPushed",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1406004dd",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "ai",
+  "evidence": "decomp:re/decomp/1405ff750.c;xref:0x1406004d2,0x140602b1a;decomp:re/decomp/14063e370.c;decomp:re/decomp/1405ff750.c;xref:0x140602add,0x1406004e4,0x140686a40,0x14063ece8;kb:subsystems/ai.md#record-pushed",
+  "notes": "inc bpl in Sess_Build_AiSystem (+0xd8d), the join after a per-vehicle AI record (0x508 bytes, vector at [builder+0xa8..+0xb0], builder in rbx) was appended; reached by fallthrough from add [rbx+0xb0],0x508 (0x1406004d2) and by jmp from the regrow path (0x140602b1a). The record's +0x58,+0x60,+0x68,+0x70,+0x78,+0x80 come from six hash maps ([builder+0x30], keys = hash of the car name, mode 0/2/3/4/8/9 of 0x1405ed3a0) and are stored as 0 when the name is in no map. Ai_Job_UpdateCarsParallel passes them to Ai_LineCache_UpdateIfChanged (+0x58) and the table cursor updates (+0x60..+0x80) with no null check: ACCESS_VIOLATION reading 0x178 for a third car in My Team. Core's ai line set guard copies the pointer of the first record that has one into each null slot of the record just pushed. L1: needs the owner's L2 and an independent agree before it exports (the guard stays off until then).  | L2 ai-re 2026-11-03 own read: builder rbx = the 0x1a8 object from 0x1405ff947 (join code itself uses [rbx+8] at 0x1406004e4; regrow path stores [rbx+0xa8..0xb0] at 0x140602b00 then jmp). Both paths finish the whole record (+0x58..+0x80 at write time) before the end pointer moves, so last = [rbx+0xb0]-0x508 is the pushed record. Slots are map values (entry+8), consumers (Ai_LineCache_UpdateIfChanged, 14068ab50, 14068fb80, 1406925d0, 140697940, 140695330) only read the shared object and write the per-record cursor at record+0x88/0xf8/0x158/0x190/0x1c8/0x208; regrow memcpys records and frees only the buffer; same-name cars already share pointers. +0x78 is the only slot 14063e370 null-checks (0x14063ed4c), so the guard fills it only when +0x58 was empty"
+ },
+ "signature": {
+  "id": "ai.build_system_record_pushed",
+  "section": ".xtls",
+  "pattern": "40 FE C5 40 0F B6 C5 39 43 08 0F 86",
+  "match": "0x1406004dd",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1406004dd",
+  "kind": "mid",
+  "expect": "40 FE C5 40",
+  "names": [
+   "site_Ai_BuildSystem_RecordPushed"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-03",
+    "by": "thirdcarai",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/ai/ai_line_set_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-03",
+   "verifier": "verify-ai-lineset",
+   "kind": "global",
+   "item": "site_Ai_BuildSystem_RecordPushed",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1405ff750.c;decomp:re/decomp/140686a40.c;decomp:re/decomp/14063e370.c;xref:0x1406004d2,0x140602b1a,0x140604f70,0x1405ed970",
+   "notes": "V8658 own decomp+disasm: 0x1406004d2 add [rbx+0xb0],0x508 falls into 0x1406004dd inc bpl; regrow path stores [rbx+0xa8]=new buf, [rbx+0xb0]=end then jmp 0x1406004dd (0x140602b1a); both write +0x58..+0x80 before the end pointer moves; rbx = the 0x1a8 builder (puVar16, stored at mgr+0x38). Slots are the mapped value (entry+8) of six hash lookups, 0 when absent. Teardown FUN_140604f70 (mgr+0x38): FUN_1405ed970 frees [builder+0xa8] as one flat buffer with no per-record walk, then the map owner mgr+0x30 (FUN_140685980) is destroyed after; nothing frees or writes record +0x58..+0x80 targets. Ai_LineCache_UpdateIfChanged and the four TableCursor/SetTarget updates write only the per-car cursors in the record (+0x88,+0xf8,+0x158,+0x190,+0x1c8,+0x208) and read the shared object; the only calls into it are vcalls on embedded sub-objects whose output goes to a stack temp. Guard reads only rbx and copies pointers; matches the logic header."
+  }
+ ],
+ "proofs": []
+}

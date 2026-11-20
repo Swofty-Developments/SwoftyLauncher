@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Math_Matrix4x4_Invert",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14395cd70",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14395cd70.c;xref:0x140131467",
+  "notes": "AVX 4x4 float matrix inverse (cofactor expansion with vshufps). Callers 0x140130530, 0x1401390b0, 0x143825be0, 0x143b11930, 0x143b85d10, 0x143c53cb0 (camera/view matrices)."
+ },
+ "signature": {
+  "id": "core.math_matrix4x4_invert",
+  "section": ".xtls",
+  "pattern": "48 81 EC D8 00 00 00 C5 78 29 A4 24 C0 00 00 00 C5 78 29 9C 24 B0 00 00 00 C5 78 29 94 24 A0 00 00 00 C5 78 29 8C 24 90 00 00 00 C5 78 29 84 24 80 00 00 00 C5 F8 29 7C 24 70 C5 F8 29 74 24 60 C5 F8 28 02",
+  "match": "0x14395cd70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14395cd70",
+  "kind": "func_start",
+  "names": [
+   "Ne_Math_Matrix4x4_Invert"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x14395cd70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14395cd70.c;xref:0x140131467",
+   "notes": "V7640 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

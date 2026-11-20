@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_AddUserIntoBanListPresencePlayer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143067220",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK",
+  "notes": "named from its log messages (channel NETWORK): '%s: add user into ban list, presence: %s, player: %s'"
+ },
+ "signature": {
+  "id": "game.network_add_user_into_ban_list_presence_player",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 18 01 00 00 48 89 CE 48 8B 41 08",
+  "match": "0x143067220",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143067220",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_AddUserIntoBanListPresencePlayer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143067220",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143067220.c;xref:0x143067208",
+   "notes": "V5539 real function is GameSessionManager::addToBanList(connectionId) per pretty string. Better: Game_GameSessionManager_AddToBanList"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x143067220",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143067220.c;xref:0x143067207",
+   "notes": "V6944 120 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

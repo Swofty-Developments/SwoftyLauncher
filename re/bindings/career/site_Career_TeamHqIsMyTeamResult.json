@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_TeamHqIsMyTeamResult",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436ffb6d",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/1436ffae0.c;xref:0x1436ffb68,0x1436ffb7e;doc:addons/career-editor/protocol/bridge.md#state-detection",
+  "notes": "trace-only: in Career_StateTeamHq_OnStateEnter right after call Career_Is_MyTeamGameMode_Thunk; al = the game's My Team answer for the career game mode (rdi), rsi = StateTeamHQ. career-editor reads al only; writes nothing"
+ },
+ "signature": {
+  "id": "career.team_hq_is_my_team_result",
+  "section": ".xtls",
+  "pattern": "75 20 48 89 F9 E8 ?? ?? ?? ?? 89 C3 E8",
+  "match": "0x1436ffb63",
+  "anchor": "0xa",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436ffb6d",
+  "kind": "mid",
+  "expect": "89 C3 E8 5C A5 CC FD",
+  "names": [
+   "site_Career_TeamHqIsMyTeamResult"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-bridge",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/career/career.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-3",
+   "kind": "global",
+   "item": "site_Career_TeamHqIsMyTeamResult",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436ffae0.c;xref:0x1436ffb68,0x14585f610",
+   "notes": "V0295 Independent: 0x1436ffb68 call Career_Is_MyTeamGameMode_Thunk (jmp .data1 0x1484f1570, returns bl&1 in eax), rdi=*(*(state+0xca0)+0x88)+0x260 passed in rcx and callee-saved, rsi=state from mov rsi,rcx at 0x1436ffaf3 (vtable slot 0x14585f610 after the StateTeamHQ name); site 0x1436ffb6d mov ebx,eax(2)+call rel32 0x1413ca0d0(5), clean with rel32 fixup; no rel8/rel32 (.xtls/.data1) or table target in 0x1436ffb6e..0x1436ffb73. Note: the call (and so the site) is skipped when the game mode is-a 0x146129ca0 (type check 0x1436ffb22..0x1436ffb63)."
+  }
+ ],
+ "proofs": []
+}

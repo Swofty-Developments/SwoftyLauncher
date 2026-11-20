@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneComponentDriver_UpdateDecals",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428e5050",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1428e5050.c;xref:0x1410f6a0e,0x1410f6a33",
+  "notes": "Driver component updateDriverDecals: if ready and dirty (+0x250) re-applies decals via [comp+0x98]+0x890 (0x1428a2ef0). Many callers. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3011)"
+ },
+ "signature": {
+  "id": "game.frontend_scene_component_driver_update_decals",
+  "section": ".xtls",
+  "pattern": "56 48 81 EC 50 02 00 00 48 89 D6 48 8B 02 48 89",
+  "match": "0x1428e5050",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428e5050",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneComponentDriver_UpdateDecals"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d11-verify",
+   "kind": "func",
+   "item": "Game_FrontendSceneComponentDriver_UpdateDecals",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428e5050.c;xref:0x1428a2ef0",
+   "notes": "V3011 Decomp strings, offsets and callees match the claim; name fits."
+  }
+ ],
+ "proofs": []
+}

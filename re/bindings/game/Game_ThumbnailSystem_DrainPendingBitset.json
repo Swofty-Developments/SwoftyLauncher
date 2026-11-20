@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ThumbnailSystem_DrainPendingBitset",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434f4ee0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1434f4ee0.c;xref:0x142d0ce27,0x142e243ef,0x14f320f30",
+  "notes": "Iterates a bitset (words at [param_1+0x88], base [param_1+0x80], 64 bits/word) and for every set bit processes the slot, then Ne_Crt_Memset-clears the set; early out when [param_1+0x90]==0. Caller Game_ThumbnailSystem_UpdateTasks. Hypothesis: pending RTT thumbnail slots."
+ },
+ "signature": {
+  "id": "game.thumbnail_system_drain_pending_bitset",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 74 24 60 48 83 B9 90 00 00",
+  "match": "0x1434f4ee0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434f4ee0",
+  "kind": "func_start",
+  "names": [
+   "Game_ThumbnailSystem_DrainPendingBitset"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x1434f4ee0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434f4ee0.c;xref:0x142d0ce27",
+   "notes": "V7589 strings/offsets/constants and callers match decomp; hypothesis supported"
+  }
+ ],
+ "proofs": []
+}

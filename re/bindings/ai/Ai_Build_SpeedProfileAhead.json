@@ -1,0 +1,72 @@
+{
+ "schema": 1,
+ "name": "Ai_Build_SpeedProfileAhead",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140650f90",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_Build_SpeedProfileAhead(void *alloc, void *ai_car_record, float lookahead, int vehicle_index, bool flag, void *out_vec_float)",
+  "evidence": "decomp:re/decomp/140650f90.c;xref:0x140650489,0x1406504b1",
+  "notes": "Samples the route ahead every 5 m: n = lookahead/5 + 2 samples starting at the car distance [[R+0x40]+0x108]+0x9e8+idx*0xa70 (wrapped/clamped like 0x14060d830). Per sample: value = Ai_Get_SpeedLimitAtDistance (0x140651335) * zone scale (Ai_Calc_GripLimitBlend at 0x1406517ea, between the route zone objects found by walking marker blocks r+0x4a0/r+0x4a8). Each value is clamped to [0, max_test_radius] (node 0x146046c60) and mapped by Ai_Table_InterpolateD 0x14068fd10 (getter 0x14063b790, fallback getter 0x14063bda0 when result < 1) over R+0x158, then pushed into out (alloc/vec at out+8..+0x18). Then out[0] = current speed [R+0x38]+0x3c and a forward pass caps each next sample with the reachable value from Ai_Table_UpdateKeyCache 0x14068ab50 (0x140651e96) + Ai_Table_InterpolateB/A on table R+0x60 (key from R+0xf8..+0x150); optional 0x140686a40 when flag. Reads general settings via the 0x146046c78 guard (4 sites). (renamed 2026-11-14 from Ai_Unk_140650f90: the code contradicts the old name) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested) Clarified 2026-11-16: the per-sample value is the turn radius (Ai_Get_TurnRadiusAtDistance, renamed from Ai_Get_SpeedLimitAtDistance) and the zone blocks r+0x4a0/r+0x4a8 are the corner_end/corner_start line tables (channels 2/3), r+0x498 the brake lines. edited by engine-re with --force 2026-11-16 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.unk_140650f90",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C5 F8 28 F8 48 8D BC 24 90 00 00",
+  "match": "0x140650489",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x140650f90",
+  "kind": "func_start",
+  "names": [
+   "Ai_Build_SpeedProfileAhead"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x140650f90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140650f90.c;xref:0x140650489",
+   "notes": "V7318 placeholder Unk name honest; 4x Ai_Resolve_GeneralSettings(0x146046c50) sites and Ai_Table_InterpolateA/B calls 14068b710/14068bb70 confirmed; callers 0x140650489 indirect-ish via 0x140650150"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x140650f90",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x140650f90-0x140652017;xref:0x140650489,0x1406504b1",
+   "notes": "V10547 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). 6 args (rcx, rdx R, xmm2 lookahead, r9, stack +0x20 flag, +0x28 out). Step lookahead/5 (const 5.0 at 0x14065104c), calls 0x14060d830 and 0x14060dd70, clamp by max_test_radius node 0x146046c60, Ai_Table_InterpolateD 0x14068fd10 over R+0x158 with getter 0x14063b790 and fallback 0x14063bda0 (0x14065196e/0x1406519d9), current speed [..]+0x3c. Callers 0x140650489/0x1406504b1. Rename from Ai_Unk fits."
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "triage-verify",
+   "kind": "func",
+   "item": "0x140650f90",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own re/tools/decomp read on the KB build;xref:0x140650489,0x1406504b1",
+   "notes": "V10736 Own read. Calls Ai_Get_SpeedLimitAtDistance at 0x140651335 with lateral 0 per sample, scales by the grip blend, clamps to [0, general settings [2]] and maps through Ai_Table_InterpolateD into the output float vector. Callers 0x140650489 and 0x1406504b1 in 0x140650150 (scan)."
+  }
+ ],
+ "proofs": []
+}

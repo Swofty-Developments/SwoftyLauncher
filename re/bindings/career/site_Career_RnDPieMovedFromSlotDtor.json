@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDPieMovedFromSlotDtor",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f46fed",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141f46eb0.c;xref:0x141f46fed;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v071--the-pie-crash-at-career-load-slot-4-was-never-constructed",
+  "notes": "call Career_Destroy_RnDPieSlot(rcx = moved-from object + 0x6e0) in the dead moved-from block of Career_Build_RnDPieOverview"
+ },
+ "signature": {
+  "id": "career.rn_d_pie_moved_from_slot_dtor",
+  "section": ".xtls",
+  "pattern": "4C 8B B4 24 C0 02 00 00 4D 85 F6 0F 84 ?? ?? ?? ?? 4C 8D BB 80 00 00 00 48 8D 8B E0 06 00 00 E8 ?? ?? ?? ?? 48 8D 8B C0 04 00 00",
+  "match": "0x141f46fce",
+  "anchor": "0x1f",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f46fed",
+  "kind": "mid",
+  "expect": "E8 5E E6 FF FF",
+  "names": [
+   "site_Career_RnDPieMovedFromSlotDtor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-4",
+   "kind": "global",
+   "item": "site_Career_RnDPieMovedFromSlotDtor",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f46eb0.c;decomp:re/decomp/142116c80.c;xref:0x141f46fb8,0x141f46fbd,0x141f46fc8,0x141f46fed,0x142116c93,0x142116c97",
+   "notes": "V0158 E8 call 0x141f45650 at 0x141f46fed with rcx=rbx+0x6e0, rbx=[rsp+0x2c8] = moved-from object; MoveAssign zeroes src[1] at 0x142116c97 so je 0x141f46fc8 always skips the block (only intra-block branches land in 0x141f46fbd..0x141f4718a): dead site, never fires; 5-byte window, no branch inside from .xtls/.data1, no jump tables; sig hits this copy only. Callee Career_Destroy_RnDPieSlot is still L1"
+  }
+ ],
+ "proofs": []
+}

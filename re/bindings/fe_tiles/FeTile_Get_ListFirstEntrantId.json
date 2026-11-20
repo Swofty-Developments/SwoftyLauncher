@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "FeTile_Get_ListFirstEntrantId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141738eb0",
+  "level": "L2",
+  "subsystem": "fe_tiles",
+  "proto": "void *FeTile_Get_ListFirstEntrantId(void *item, void *out)",
+  "evidence": "decomp:re/decomp/141738eb0.c;xref:0x1417384ec,0x141739520",
+  "notes": "Entrant-list tile item virtual slot 0x08, called by the item populate 0x1417382b0 at 0x1417384e7: out = {u32 first entrant id, u8 found}; found stays 0 when item+0x1b8 is clear. Scans the slot array of the career entrant lists ([[item+0x1c8]+0x560]..+0x568, 0x10-byte slots whose +8 is the list record, null records skipped) for the list whose name [[record+0x28]+0x10] equals the label item+0x198 (NeStr, chars at +9) and returns [[record+0x10]+0x5c]. No end check: a label that is not in the array walks past its end and faults in Ne_Crt_Strcmp (FeTile_Build_List+0x70df)."
+ },
+ "signature": {
+  "id": "fe_tiles.get_list_first_entrant_id",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 D6 C6 42 04 00",
+  "match": "0x141738eb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141738eb0",
+  "kind": "func_start",
+  "names": [
+   "FeTile_Get_ListFirstEntrantId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "fe-tile-guard",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/frontend/fe_tile_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-02",
+   "verifier": "verify-fe-tile",
+   "kind": "func",
+   "item": "0x141738eb0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/vfe/141738eb0.c;xref:0x1417384e6,0x1417384ec",
+   "notes": "V8623 own decomp+disasm 141738eb0..141738f6c: ret rax=rsi=out; out+4 zeroed at 141738ebc and set to 1 only at 141738f5c after a strcmp match; item+0x1b8 clear -> je 141738f60. Slot walk [[item+0x1c8]+0x560], 0x10-byte slots, record at +8, name [[rec+0x28]+0x10] vs label item+0x198+9 matches. Both the null-skip loop (141738f10) and the compare loop (141738f44..f4f) lack an end check, so a missing label walks past +0x568 into Ne_Crt_Strcmp. Single caller path: populate virtual call [rax+0xa0] at 0x1417384e6 returning to 0x1417384ec."
+  }
+ ],
+ "proofs": []
+}

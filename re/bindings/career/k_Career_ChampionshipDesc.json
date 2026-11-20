@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "k_Career_ChampionshipDesc",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x146053700",
+  "type": "void *",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/140b6ebb0.c;decomp:re/decomp/140aeb970.c;xref:0x140b76baf,0x140b76b97,0x140b0ad31;doc:addons/career-editor/protocol/economy.md#components-helper",
+  "notes": "static ECS type descriptor of the concrete game::championship Championship class (name 'Championship' written at +8 by 0x140b76b97, hash 0x715efd08 at +0x10); vt_Career_Championship slot +0x28 (GetType 0x140b0ad30) returns &desc. Distinct from k_Career_ChampionshipComponentDesc (the ChampionshipComponent base type where the registry add 0x140aeb970 stops its type-chain walk). No game code calls the registry get with this key; components.cpp tries it as one candidate and accepts the result only when its vtable is vt_Career_Championship"
+ },
+ "signature": {
+  "id": "career.championship_desc",
+  "section": ".xtls",
+  "pattern": "C7 05 ?? ?? ?? ?? 08 FD 5E 71 48 89 3D ?? ?? ?? ?? 4C 89 25",
+  "match": "0x140b76b9e",
+  "anchor": "0x14",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x11",
+   "len": 7
+  },
+  "target": "0x146053700",
+  "kind": "data",
+  "names": [
+   "k_Career_ChampionshipDesc"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-econ",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/components.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-4",
+   "kind": "global",
+   "item": "k_Career_ChampionshipDesc",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140b6ebb0.c;decomp:re/decomp/140b0ad30.c;decomp:re/decomp/140aeb970.c;xref:0x140b76b90,0x140b76b97,0x140b76b9e,0x140b76baf,0x140b0ad30",
+   "notes": "V0469 sigcheck OK (unique, target 0x146053700). Registration writes name Championship at +8 (0x140b76b97), hash 0x715efd08 at +0x10, +0 vtbl 0x145890940 (r12); vt_Career_Championship 0x14566aab0 slot +0x28 = 0x140b0ad30 = lea desc; ret; only other ref is that GetType, so no registry get uses it; distinct from ChampionshipComponentDesc. Namespace game::championship is inferred (Session/Weekend live there). The components.cpp sentence is addon code, not checked (verifiers may not read it)"
+  }
+ ],
+ "proofs": []
+}

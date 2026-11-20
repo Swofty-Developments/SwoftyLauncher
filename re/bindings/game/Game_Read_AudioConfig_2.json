@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_Read_AudioConfig_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1443e6db0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--;decomp:re/decomp/1443e6db0.c;xref:0x145a89f58",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: audio.addDoppler, audio.event.%02I64u, audio.param.%02I64u, audio.playImmediately, audio.playOutsideTrackOnly'  | 2026-11-17 engine-re (decomp read): this is the AudioEmitter world-object component property reader (vt slot 0x145a89f58), not a DB config read. It needs the entity's component of type 0x146cb8098 (Ne_Entity_FindComponent), else error 2. audio.event.01..10 (loop of 10): each non-empty string becomes a Wwise id (Game_Get_WwiseIdFromString) at this+0x48+4*i; then audio.param.NN, audio.playImmediately, audio.playOutsideTrackOnly, audio.addDoppler. Every key is looked up in three property sources in turn (+0xf0, +0xe8, +0xe0 of the init block). Track use: layer audio_env (e.g. play_sfx_pit_horn) and audio_occlusion_next_gen (play_amb_garage); the event ids are in metadata.bnk, so per-track audio is placement data in the track ERP only."
+ },
+ "signature": {
+  "id": "game.read_audio_config_2",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 48 89 D7 48 89 4C 24 20",
+  "match": "0x1443e6db0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1443e6db0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_AudioConfig_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x1443e6db0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1443e6db0.c",
+   "notes": "V6597 better name Game_Audio_ResolveEventParamKeys: no Ne_Get_Setting: entity component FindComponent + Wwise id from string for audio.event/param keys (vtable/indirect, no direct call site)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x1443e6db0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1443e6db0.c",
+   "notes": "V7209 name fits, facts hold; vtable/indirect"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "trkd-verify",
+   "kind": "func",
+   "item": "0x1443e6db0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1443e6db0.c + re/decomp/1449087e0.c (AK::GetIDFromString);xref:0x1449087e0",
+   "notes": "V11304 Confirmed: 0x143f9b3c0 type 0x146cb8098 else 2; audio.event.%02I64u 1..10 -> AK::GetIDFromString (FNV-1 32, ASCII lowercased) into this+0x48+4i; lookup param_2[0x1e],[0x1d],[0x1c]. Non-string type -> 0x16 logged, loop continues. Also reads audio.param.01, playImmediately, playOutsideTrackOnly, addDoppler."
+  }
+ ],
+ "proofs": []
+}

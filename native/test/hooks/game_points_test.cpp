@@ -4,8 +4,8 @@
 // priority, replace until one handles it, the game's code, after with the outcome), that before handlers'
 // changes reach the game's code, that a replace handler stands in for it, that a raw wrap installed
 // before the window stage chains below the point, and that a raw overwrite wins: the point yields,
-// reports the conflict and leaves the function to it. run_game_points_test.sh builds and runs it.
-#include "../../src/core/hooks/game_points.hpp"
+// reports the conflict and leaves the function to it. native/test/run_tests.sh game_points builds and runs it.
+#include "core/hooks/game_points.hpp"
 #include "../sdk_payloads.h"
 
 #include <cmath>
@@ -239,13 +239,13 @@ static void test_points()
         trail.push_back(std::string("replace ") + (mine ? "handled" : "passed"));
         return mine;
     }));
-    tokens.push_back(on<ce::AddActivity>(t, "swofty.career-editor", SWOFTY_PHASE_AFTER, 0,
-                                         [&](ce::AddActivity &a, SwoftyHookCall &c) {
-                                             seen = a;
-                                             seen_replaced = c.replaced != 0;
-                                             trail.push_back(std::string("after ") + (c.replaced ? "replaced" : "ran"));
-                                             return false;
-                                         }));
+    tokens.push_back(
+        on<ce::AddActivity>(t, "swofty.career-editor", SWOFTY_PHASE_AFTER, 0, [&](ce::AddActivity &a, SwoftyHookCall &c) {
+            seen = a;
+            seen_replaced = c.replaced != 0;
+            trail.push_back(std::string("after ") + (c.replaced ? "replaced" : "ran"));
+            return false;
+        }));
     expect(pro.all() && t.live(gp::ADD_ACTIVITY.point, nullptr) == SWOFTY_ASSET_LATE,
            "a subscriber before the window stage: nothing patched yet, live() says late");
     t.arm();
@@ -276,12 +276,11 @@ static void test_points()
                joined());
     expect(seen.day == 50 && !seen.player && seen.driver == 9u << 16, "after sees the moved day and the other driver");
 
-    tokens.push_back(on<ce::ContractDecide>(t, "swofty.progressive", SWOFTY_PHASE_AFTER, 0,
-                                            [](ce::ContractDecide &d, SwoftyHookCall &c) {
-                                                trail.push_back("after link " + hex(d.link) +
-                                                                (c.replaced ? " replaced" : ""));
-                                                return false;
-                                            }));
+    tokens.push_back(
+        on<ce::ContractDecide>(t, "swofty.progressive", SWOFTY_PHASE_AFTER, 0, [](ce::ContractDecide &d, SwoftyHookCall &c) {
+            trail.push_back("after link " + hex(d.link) + (c.replaced ? " replaced" : ""));
+            return false;
+        }));
     static bool force_negotiate = false;
     tokens.push_back(on<ce::ContractDecide>(t, "swofty.f1-1990", SWOFTY_PHASE_REPLACE, 0, [](ce::ContractDecide &d, auto &) {
         if (!force_negotiate)
@@ -294,8 +293,7 @@ static void test_points()
     trail.clear();
     uint32_t link = 0;
     uint32_t *r = decide_fn(&decision_state, &link);
-    expect(r == &link && link == ce::ContractDecide::ends_this_season &&
-               joined() == "game decide > after link 0xd2985448",
+    expect(r == &link && link == ce::ContractDecide::ends_this_season && joined() == "game decide > after link 0xd2985448",
            "decide: the game's link comes back to the game and after handlers see it: " + joined());
     force_negotiate = true;
     trail.clear();
@@ -313,12 +311,11 @@ static void test_points()
         trail.push_back("before sign team " + hex(s.team) + " type " + std::to_string(s.type));
         return false;
     }));
-    tokens.push_back(on<ce::ContractSign>(t, "swofty.progressive", SWOFTY_PHASE_AFTER, 0,
-                                          [&](ce::ContractSign &s, auto &) {
-                                              signed_seen = s;
-                                              trail.push_back("after sign");
-                                              return false;
-                                          }));
+    tokens.push_back(on<ce::ContractSign>(t, "swofty.progressive", SWOFTY_PHASE_AFTER, 0, [&](ce::ContractSign &s, auto &) {
+        signed_seen = s;
+        trail.push_back("after sign");
+        return false;
+    }));
     uint32_t team = 0x01dc0000;
     memcpy(contract_buf, &team, 4);
     contract_buf[0x0e] = 0;
@@ -326,8 +323,7 @@ static void test_points()
     sign_fn(&contracts_component, contract_buf, 0xdead000000070000ull, ce::ContractSign::work_out_replaced, 1);
     expect(joined() == "before sign team 0x1dc0000 type 0 > game sign driver 0xdead000000070000 replaced 0x50000 notify 0 "
                        "> after sign",
-           "sign: before handlers' replaced and notify reach the game's code; the driver's upper bits pass through: " +
-               joined());
+           "sign: before handlers' replaced and notify reach the game's code; the driver's upper bits pass through: " + joined());
     expect(signed_seen.contracts == &contracts_component && signed_seen.contract == contract_buf &&
                signed_seen.driver == 0x00070000 && signed_seen.team == team && !signed_seen.notify &&
                signed_seen.size == sizeof(ce::ContractSign),
@@ -355,8 +351,7 @@ static void test_points()
     float kg = fuel_fn(&fuel_setup);
     expect(kg == 105.5f && joined() == "game fuel > after fuel 105.5",
            "fuel: the game's load comes back to the game and after handlers see it: " + joined());
-    expect(fuel_seen.session_type == 15 && fuel_seen.kind == te::FuelLoad::race &&
-               fuel_seen_track == "game/melbourne",
+    expect(fuel_seen.session_type == 15 && fuel_seen.kind == te::FuelLoad::race && fuel_seen_track == "game/melbourne",
            "fuel: the payload names the track and the session's kind");
     replace_fuel = true;
     trail.clear();
@@ -387,7 +382,8 @@ static void test_raw_mixins()
     conflicts.clear();
     Prologues pro;
     pro.take();
-    auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(&sa_add_activity), reinterpret_cast<void *>(&raw_add_activity));
+    auto h =
+        safetyhook::InlineHook::create(reinterpret_cast<void *>(&sa_add_activity), reinterpret_cast<void *>(&raw_add_activity));
     expect(bool(h), "a raw wrap installs on add_activity (the older addon's SWOFTY_WRAP)");
     raw_wrap = std::move(*h);
     unsigned char wrapped[8];
@@ -443,14 +439,15 @@ static void test_raw_mixins()
 static void test_payload_layout()
 {
     using F = te::FuelLoad;
-    expect(swofty_core::hooks::payloads::fuel_kind(1) == F::practice && swofty_core::hooks::payloads::fuel_kind(4) == F::practice &&
+    expect(swofty_core::hooks::payloads::fuel_kind(1) == F::practice &&
+               swofty_core::hooks::payloads::fuel_kind(4) == F::practice &&
                swofty_core::hooks::payloads::fuel_kind(5) == F::qualifying &&
                swofty_core::hooks::payloads::fuel_kind(14) == F::qualifying &&
                swofty_core::hooks::payloads::fuel_kind(15) == F::race && swofty_core::hooks::payloads::fuel_kind(17) == F::race &&
                swofty_core::hooks::payloads::fuel_kind(18) == F::other && swofty_core::hooks::payloads::fuel_kind(0) == F::race,
            "the session kinds follow the game's table (1-4 practice, 5-14 qualifying, 15-17 race, 18 other, the rest race)");
-    expect(sizeof(ce::ContractDecide) == sizeof(SwoftyEvContractDecide) && sizeof(ce::ContractSign) == sizeof(SwoftyEvContractSign) &&
-               sizeof(te::FuelLoad) == sizeof(SwoftyEvFuelLoad),
+    expect(sizeof(ce::ContractDecide) == sizeof(SwoftyEvContractDecide) &&
+               sizeof(ce::ContractSign) == sizeof(SwoftyEvContractSign) && sizeof(te::FuelLoad) == sizeof(SwoftyEvFuelLoad),
            "the payloads match their C mirrors");
     const catalogue::Event *e = catalogue::find("session.fuel.load");
     expect(e && e->fired == catalogue::Fired::game && !strcmp(e->payload, "swofty::tracks::events::FuelLoad"),

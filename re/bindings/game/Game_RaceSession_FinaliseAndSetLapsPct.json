@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RaceSession_FinaliseAndSetLapsPct",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ce8d90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142ce8d90.c;xref:0x142ceb053,0x142d76d89,0x142dfb52b,0x142e09743",
+  "notes": "Session end: finalises ruleset results (ruleset vcall +0x1d8), Game_Network_BroadcastingResultChanges, and if complete (vcall +0x128) and the championship session type is 15..17 (race) sets championship::Session+0x94 = max laps completed among cars / total laps (ruleset +0xdf0 XOR +0xdf8) via setPercentageOfLapsCompleted (logged). Callers include Game_Flow_SessionStatePause and Sess_RedFlagSimulate_Enter. Addon: +0x94 drives reduced-points rules after shortened races. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2477)"
+ },
+ "signature": {
+  "id": "game.race_session_finalise_and_set_laps_pct",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 C5 F8 29 74 24 30 48 83 B9",
+  "match": "0x142ce8d90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ce8d90",
+  "kind": "func_start",
+  "names": [
+   "Game_RaceSession_FinaliseAndSetLapsPct"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-b",
+   "kind": "func",
+   "item": "Game_RaceSession_FinaliseAndSetLapsPct",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142ce8d90.c;xref:0x142ce8d90",
+   "notes": "V2477 vcall +0x1d8 finalise, vcall +0x128 complete, type 15..17, max laps (list +0x108) / (+0xdf0^+0xdf8 of [this+0x48]) stored at Session+0x94, log setPercentageOfLapsCompleted"
+  }
+ ],
+ "proofs": []
+}

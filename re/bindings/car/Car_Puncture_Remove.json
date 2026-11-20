@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Puncture_Remove",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14464e3a0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "pat:log-channel-TYRE_DAMAGE_MONITOR",
+  "notes": "Log channel TYRE_DAMAGE_MONITOR: 'Removed puncture for vehicle %d tyre %p.'"
+ },
+ "signature": {
+  "id": "car.puncture_remove",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 4C 89 C7 89 D3",
+  "match": "0x14464e3a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14464e3a0",
+  "kind": "func_start",
+  "names": [
+   "Car_Puncture_Remove"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x14464e3a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14464e3a0.c;xref:0x142bdcf1e",
+   "notes": "V6721 name and log/strings match; body checked, no broader behaviour"
+  }
+ ],
+ "proofs": []
+}

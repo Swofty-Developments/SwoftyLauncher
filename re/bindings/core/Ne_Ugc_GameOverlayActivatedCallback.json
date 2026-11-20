@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Ugc_GameOverlayActivatedCallback",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144158fa0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-method;decomp:re/decomp/144158fa0.c;xref:0x14977f36a,0x15313d3f2",
+  "notes": "logged method name gameOverlayActivatedCallback (class from the log channel); log channel NeUgc: 'gameOverlayActivatedCallback gameOverlayActivated=%p gameOverlayActivated->m_bActive=%d'"
+ },
+ "signature": {
+  "id": "core.ugc_game_overlay_activated_callback",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 58",
+  "match": "0x144158fa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144158fa0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Ugc_GameOverlayActivatedCallback"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb4-verify-a",
+   "kind": "func",
+   "item": "Ne_Ugc_GameOverlayActivatedCallback",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144158fa0.c;xref:0x15313d0f0",
+   "notes": "V2250 Small (178 B) callback, logs gameOverlayActivated args."
+  }
+ ],
+ "proofs": []
+}

@@ -1,7 +1,9 @@
-// Host-native unit test for the core's My Team vehicle base guard (native/src/core/myteam_vehicle_guard_logic.hpp).
-// Built and run by native/test/run_myteam_vehicle_guard_test.sh.
+// Host-native unit test for the core's My Team vehicle base guard (native/src/core/guards/career/myteam_vehicle_guard_logic.hpp).
+// Built and run by native/test/run_tests.sh myteam_vehicle_guard.
 
-#include "myteam_vehicle_guard_logic.hpp"
+#include "core/guards/career/myteam_vehicle_guard_logic.hpp"
+#include "core/guards/env.hpp"
+#include "core/guards/skips.hpp"
 
 #include <cstdio>
 #include <cstring>
@@ -26,10 +28,7 @@ struct Fake {
     std::map<std::string, mv::Row> rows;
     std::string forced_label;
 
-    bool forced(const std::string &label)
-    {
-        return !forced_label.empty() && label == forced_label;
-    }
+    bool forced(const std::string &label) { return !forced_label.empty() && label == forced_label; }
 
     mv::Row vehicle_row(const std::string &label)
     {
@@ -100,11 +99,14 @@ int main()
     mv::Skip skip;
     Fake missing = frame(0xffffffffu, 0, 0x4000);
     expect(mv::skip_base(missing, RSP, ROW, skip), "4m7rul's frame (row 'Invalid', index -1) skips the base");
-    expect(skip.container == CONTAINER && skip.index == 0, "the skip restores the loop's container and base index from the frame");
-    expect(skip.stat_id == 0 && skip.label == "myteam_mes_porsche_2026", "the skip names the base's stat id and the missing vehicle row");
+    expect(skip.container == CONTAINER && skip.index == 0,
+           "the skip restores the loop's container and base index from the frame");
+    expect(skip.stat_id == 0 && skip.label == "myteam_mes_porsche_2026",
+           "the skip names the base's stat id and the missing vehicle row");
 
     Fake later = frame(0xffffffffu, 3, 0x4007);
-    expect(mv::skip_base(later, RSP, ROW, skip) && skip.index == 3 && skip.stat_id == 7, "a later base keeps its own index and stat id");
+    expect(mv::skip_base(later, RSP, ROW, skip) && skip.index == 3 && skip.stat_id == 7,
+           "a later base keeps its own index and stat id");
 
     Fake found = frame(57, 0, 0x4000);
     expect(!mv::skip_base(found, RSP, ROW, skip), "a base whose vehicle row exists runs the game's code");
@@ -123,11 +125,13 @@ int main()
 
     Fake no_label = frame(0xffffffffu, 2, 0x4000);
     no_label.s.clear();
-    expect(!mv::skip_base(no_label, RSP, ROW, skip) && skip.left && skip.label == "(unreadable)", "an unreadable label is left to the game");
+    expect(!mv::skip_base(no_label, RSP, ROW, skip) && skip.left && skip.label == "(unreadable)",
+           "an unreadable label is left to the game");
 
     Fake empty_label = frame(0xffffffffu, 2, 0x4000);
     empty_label.s[LABEL] = "";
-    expect(!mv::skip_base(empty_label, RSP, ROW, skip) && skip.left && skip.label == "(unreadable)", "an empty file_name is left to the game");
+    expect(!mv::skip_base(empty_label, RSP, ROW, skip) && skip.left && skip.label == "(unreadable)",
+           "an empty file_name is left to the game");
 
     Fake stock = frame(0xffffffffu, 0, 0x4000);
     stock.s[LABEL] = "myteam_mercedes";
@@ -166,16 +170,20 @@ int main()
     expect(!mv::addon_for("myteam_ferrari") && !mv::addon_for("mes_porsche") && !mv::addon_for(""),
            "other vehicles name no addon");
 
-    mv::Labels labels;
-    expect(labels.first("myteam_mes_porsche_2026"), "the first skip of a vehicle is logged");
-    expect(!labels.first("myteam_mes_porsche_2026"), "a second skip of the same vehicle is not");
-    expect(labels.first("myteam_mes_bmw_2026"), "another missing vehicle is logged");
-    for (size_t i = labels.seen.size(); i < mv::LOG_LABELS; i++)
-        labels.first("vehicle_" + std::to_string(i));
-    expect(labels.last(), "the 32nd vehicle is the last logged");
-    expect(!labels.first("vehicle_extra"), "vehicles past 32 are not logged");
+    swofty_core::guards::FirstKeys<std::string, mv::LOG_LABELS> labels{"vehicles"};
+    expect(bool(labels.note("myteam_mes_porsche_2026")), "the first skip of a vehicle is logged");
+    expect(!labels.note("myteam_mes_porsche_2026"), "a second skip of the same vehicle is not");
+    expect(bool(labels.note("myteam_mes_bmw_2026")), "another missing vehicle is logged");
+    swofty_core::guards::Line last{0, nullptr};
+    for (size_t i = labels.size(); i < mv::LOG_LABELS; i++)
+        last = labels.note("vehicle_" + std::to_string(i));
+    expect(last && last.n == 32 && !std::strcmp(last.tail, " (further vehicles are not logged)"),
+           "the 32nd vehicle is the last logged");
+    expect(!labels.note("vehicle_extra"), "vehicles past 32 are not logged");
 
-    expect(mv::switch_off("0") && mv::switch_off("off") && !mv::switch_off("1") && !mv::switch_off(nullptr), "the switch reads 0 or off");
+    expect(swofty_core::guards::switch_off("0") && swofty_core::guards::switch_off("off") &&
+               !swofty_core::guards::switch_off("1") && !swofty_core::guards::switch_off(nullptr),
+           "the switch reads 0 or off");
 
     std::printf("%s\n", failed ? "FAILED" : "all passed");
     return failed ? 1 : 0;

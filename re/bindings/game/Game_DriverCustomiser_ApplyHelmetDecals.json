@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DriverCustomiser_ApplyHelmetDecals",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401aa7c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-DRIVER_ACTOR_CUSTOMISER/DECALS",
+  "notes": "named from its log messages (channel DRIVER_ACTOR_CUSTOMISER/DECALS): 'applyHelmetDecals (%p, %f, %f)'"
+ },
+ "signature": {
+  "id": "game.driver_customiser_apply_helmet_decals",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 01 00 00 C5 F8 29 B4 24 90 01 00 00 48 85 D2 0F 84",
+  "match": "0x1401aa7c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401aa7c0",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverCustomiser_ApplyHelmetDecals"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1401aa7c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401aa7c0.c",
+   "notes": "V4334 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

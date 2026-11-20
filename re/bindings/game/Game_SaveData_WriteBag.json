@@ -1,0 +1,73 @@
+{
+ "schema": 1,
+ "name": "Game_SaveData_WriteBag",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439340c0",
+  "level": "L3",
+  "subsystem": "game",
+  "proto": "int Game_SaveData_WriteBag(NeBagCodec *codec, void *bag)",
+  "evidence": "decomp:re/decomp/1439340c0.c;xref:0x1429ce741,0x1429ce887,0x140c90503;trace:T010/run2:86288;trace:T010/run4:86249;trace:T010/run3",
+  "notes": "Codec vt+0x8 of k_Ne_BagCodecVtbl: writes a property bag to codec->stream (+8): the header codec vt+0x18 (1) as 8 bytes, the entry count (bag +0x10, u16) as 8 bytes, then per entry the key (Ne_StringTable_Lookup of the key hash into a 0x40 buffer, written by the string type 0x146129a58 vt+0x78: stream vt+0x50 length byte and vt+0x48 chars), the type id (u32 via vt+0x48) and the value: a bag recursively through codec vt+0x8, a list through 0x143934410, any other type through its type vt+0x78(type, property, stream). Returns 0 or the first stream error. 0x1429ce380 runs it twice to store a save slot's bag (slot +0x178/+0x180): first into a counting stream (k_Ne_CountingStreamVtbl) for the size, then into a compressing wrapper stream (vtable 0x14568e0a0) over a memory stream (k_Ne_MemWriteStreamVtbl), flushed by 0x140c90ee0. The value writers of the 28 types 0x1439532f0 registers call only stream vt+0x48 and vt+0x50; of the three types 0x14394aa50 adds, uistring and UIDBRef call only vt+0x48 and BlendWeight also calls vt+0x98 and vt+0x8, which in k_Ne_CountingStreamVtbl and k_Ne_MemWriteStreamVtbl are 0x14367a530 (a tail jump to vt+0x48) and 0x14367a320 (returns 0). The reader 0x143934620 (codec vt+0x10) is its inverse."
+ },
+ "signature": {
+  "id": "game.save_data_write_bag",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 48 89 D6 48 89 CF 48 8B 01",
+  "match": "0x1439340c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439340c0",
+  "kind": "func_start",
+  "names": [
+   "Game_SaveData_WriteBag"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-27",
+    "by": "splicesaves",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/career/save_splice.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-27",
+   "verifier": "splice-verify",
+   "kind": "func",
+   "item": "Game_SaveData_WriteBag",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1439340c0.c;decomp:re/decomp/143934410.c;decomp:re/decomp/143934620.c;decomp:re/decomp/1429ce380.c;decomp:re/decomp/1439532f0.c;decomp:re/decomp/1439477a0.c;decomp:re/decomp/143948300.c;decomp:re/decomp/14394a0c0.c;decomp:re/decomp/143941e50.c;xref:0x140c264c6,0x140c90504,0x140c90678,0x140fd0a9b,0x140fd1bd1,0x140fe98a4,0x140fe9a18,0x14258aea4,0x14258b015,0x1429ce742,0x1429ce888,0x142a6bfb6,0x142c47272,0x142c47496,0x1432c6cae,0x1432c6dcf,0x143651a60;xref:0x14568e068;xref:0x1429ce701,0x1429ce72c,0x1429ce7c7,0x1429ce820,0x1429ce872,0x1429ce89e",
+   "notes": "V1116 Function body agrees; only the caller sub-claim is inexact. Proto int(codec rcx, bag rdx) is right; every exit (0x143934106) returns eax = 0 or the first failing call's result. Format: [codec+8]->vt+0x48 8 bytes of codec vt+0x18() (0x140ce2680 returns 1); 8 bytes of zero-extended u16 bag+0x10; then, if bag+8 is non-null and count is non-zero, for each entry pointer: key = [prop + prop.vt8().vt20()], Ne_StringTable_Lookup(g_Ne_StringTable, key) copied into a 64-byte stack string (max 63 chars; null gives an empty name) and written by 0x146129a58 vt+0x78 through a stack property {0x145892430, &str}; then u32 type id via vt+0x48 (4 bytes); value: 'pbag' -> codec->vt+0x8(codec, prop.vt38()) (virtual, so it is WriteBag only for k_Ne_BagCodecVtbl); 'plst' (0x146129cf0) -> direct call 0x143934410(codec, prop.vt38()), the list writer with the same header but no names; otherwise type.vt+0x78(type, prop, stream). The loop stops on the first non-zero result. Reader 0x143934620 (codec vt+0x10, abs ref 0x14568e070; called directly by 0x14364bb50) reads exactly this: u64 version (0x5a if above codec vt+0x18), u64 count, then per entry name via st64 vt+0x80, u32 id looked up in the type list 0x146129950 (0x58 if unknown), bag -> codec vt+0x10, plst -> 0x143935010, else 0x143933320. Inexact caller sub-claim: 0x1429ce380 calls it first with codec {vt, &CountingStream @rsp+0x178}, but the second call goes through a wrapper stream {vt 0x14568e0a0, +8 = &MemWriteStream @rsp+0x68, +0x10 = &ctx @rsp+0x1a8 from 0x143954ac0(..,8,0x10000)}, flushed by 0x140c90ee0, before position bytes are copied out of the memory stream. It does not write the memory stream directly. SAFETY: the 28 vt+0x78 writers of the types registered by 0x1439532f0, 0x143941e50..0x14394a640 (types si08..bffr; bag 0x143930dc0 and plst 0x143939970 are outside the range and WriteBag does not call them), call only stream vt+0x48 and vt+0x50 (plus property vt+0x30 and type vt+0x88), checked by disassembly. That covers the 20 fixed-size writers (tail jump vt+0x48 of type.vt88() bytes), st32/st64/s128 (vt+0x50 len byte then vt+0x48 len&0xff chars), sstr/bffr, and the two .data1 bodies 0x151df0c20 (s256: u16 len + chars) and 0x151df5340 (dstr: u32 len + chars), read as plaintext on this Steam build. In k_Ne_MemWriteStreamVtbl both slots are genuine methods (0x1445da3d0 bounded copy, 0x1445da490 one byte via vt+0x48, whose vt+0x100 is 0x1445da910 cap-pos), so a real MemWriteStream object is safe for every writer here. NOT confirmed: the runtime .data1 contents (static Steam bytes only; EA .data1 is packed); type-list members registered outside 0x1439532f0; and the stream the game hands 0x143651030 (arg3 = SerialiseTimed param_4[0]), which need not be a MemWriteStream."
+  },
+  {
+   "date": "2026-10-27",
+   "verifier": "splice-verify",
+   "kind": "func",
+   "item": "Game_SaveData_WriteBag",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1439340c0.c;decomp:re/decomp/1429ce380.c;decomp:re/decomp/1439532f0.c;xref:0x1429ce801,0x1429ce820,0x1429ce887,0x1429ce89e;xref:0x140d579d0,0x140c90ee0,0x143954ac0;xref:0x14394aa50,0x1436bd55b,0x1443a519f,0x1443a8600;xref:0x143689240,0x14368926c,0x143689282,0x14367a530,0x14367a320",
+   "notes": "V1139 Re-check of the corrected notes. Confirmed: the format, the 0x40 key buffer, the u8 length via vt+0x50 then chars via vt+0x48, the return value, and the reader inverse. Also confirmed: the second pass in 0x1429ce380 goes through a compressing wrapper (vtable 0x14568e0a0). Its vt+0x48 0x140d579d0 feeds input to 0x143954d80(ctx, out, src, len), loops on codes 0x23/0, and forwards each produced chunk to the inner stream [+8] (the MemWriteStream) via vt+0x48. The context comes from 0x143954ac0, which allocates a 0x1478-byte context, clamps the level to [-0x20000, 0x16] (zstd-style min/max level) and takes a 0x10000 output buffer. 0x140c90ee0 flushes with (0,0) until done, then calls inner vt+0x70. Still inexact: 'every value writer it reaches calls only stream vt+0x48 and vt+0x50' holds for the 28 types 0x1439532f0 registers, but 0x14394aa50 adds three more types to the same list 0x146129950 that the reader accepts: BlendWeight 'blwt' (from 0x1436bd320, writer 0x143689240), uistring 'uist' (0x1443a4a90, writer 0x144197310) and UIDBRef 'dbrf' (0x1443a4a90, writer 0x1442bafc0). uistring and UIDBRef use only vt+0x48. BlendWeight calls stream vt+0x98, and vt+0x8 with -1 when that returns 0x24. In both k_Ne_CountingStreamVtbl and k_Ne_MemWriteStreamVtbl, vt+0x98 is 0x14367a530 (a tail jump to vt+0x48) and vt+0x8 is 0x14367a320 (returns 0). The safety conclusion for a real MemWriteStream therefore still holds, but the 'only +0x48/+0x50' sentence should name these three types or be limited to bags without them. Not verified: 'to store a career' (0x1429ce380 stores the result at param_2+0x178/+0x180 and calls Game_InstantRace_FlagSaveSlot; that the bag is a career is not shown)."
+  },
+  {
+   "date": "2026-10-27",
+   "verifier": "splice-verify",
+   "kind": "func",
+   "item": "Game_SaveData_WriteBag",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439340c0.c;decomp:re/decomp/1429ce380.c;decomp:re/decomp/1439532f0.c;decomp:re/decomp/143934620.c;xref:0x1429ce741,0x1429ce887,0x1429ce89e,0x1429ce8d4,0x1429ce8e9;xref:0x14394aba2,0x1436bd55b,0x1443a519f,0x1443a8600;xref:0x143689240,0x144197310,0x1442bafc0,0x14367a530,0x14367a320",
+   "notes": "V1142 Re-check of the notes after V1139: every sentence now holds. 0x1429ce380 copies the memory stream's data/position into a fresh buffer and stores it at param_2+0x178 (pointer) and +0x180 (length) (0x1429ce8e9..). The counting pass sizes that buffer as (count+0x20)*1.01. The writer sentence now matches the code. In .xtls the type list 0x146129950 is written only by 0x1439532f0 (28 non-bag/list types) and 0x14394aa50 (0x14394aba2, rel32-called from 0x1436bd55b, 0x1443a519f, 0x1443a8600; no absolute refs): uistring 0x144197310 and UIDBRef 0x1442bafc0 use only vt+0x48, and BlendWeight 0x143689240 uses vt+0x98 and vt+0x8, which are 0x14367a530 (jmp [vt+0x48]) and 0x14367a320 (xor eax,eax; ret) in both stream vtables. Caveat: .data1 code (packed on EA, only static on Steam) was not scanned for further type registrations."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SaveData_SerialiseContainer_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143651030",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "int *Game_SaveData_SerialiseContainer_2(SaveDataContainer *self, int *result, void *stream, void *a4, uint64_t groups, void *a6)",
+  "evidence": "pat:log-channel-SaveDataMemory;decomp:re/decomp/143651030.c;xref:0x143651c7a,0x14365850c;kb:subsystems/game.md#save-containers",
+  "notes": "named from its log messages (channel SaveDataMemory). Inline-encoding twin of Game_SaveData_SerialiseContainer, and the one the profile save uses (Game_SaveData_SerialiseTimed 0x14365850c when bag == 0: the .data1 profile save 0x150b16391 passes r8 = 0 and a stream in r9). Streams straight to the stream (vt+0x48 write): an entry count, uid, version, the own data, then 'containers': key, bag type id, codec header (0x14568e060 vt+0x18 = 1), the count of registered children in groups, and per child its name, the type id and a recursive call. It never reads retain_unknown (+0x100/+0x108) or the retained map (+0x190, count +0x1c8): no instruction in 0x143651030-0x143651e43 touches those offsets, so retained bags are not written to the profile save. Callers: census steam 0x3651030."
+ },
+ "signature": {
+  "id": "game.save_data_serialise_container_2",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 01 00 00 C5 F8 29 B4 24 00 01 00 00 4D 89 CF 4C 89 C7",
+  "match": "0x143651030",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143651030",
+  "kind": "func_start",
+  "names": [
+   "Game_SaveData_SerialiseContainer_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x143651030",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143651030.c;xref:0x143651c7a",
+   "notes": "V6107 variant with peak memory line; names right"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Log_VirtualHeapBudget_A",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439643c0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t (void *heap)",
+  "evidence": "decomp:re/decomp/1439643c0.c;xref:0x143965a5c;xref:0x1456cfb70;xref:0x14578db70",
+  "notes": "myteam-g1: Engine logger printing Virtual Heap name, budget, limit and over-commit. Only matched the budget keyword; generic memory code."
+ },
+ "signature": {
+  "id": "core.log_virtual_heap_budget_a",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC A8 00 00 00 C5 F8 29 BC 24 90 00 00 00",
+  "match": "0x1439643c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439643c0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Log_VirtualHeapBudget_A"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x1439643c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439643c0.c;xref:0x143965a5c",
+   "notes": "V10337 Prints Virtual Heap budget/limit/over-commit line."
+  }
+ ],
+ "proofs": []
+}

@@ -1,8 +1,8 @@
-// Host-native unit test for the core's DRED crash data (native/src/core/dred_logic.hpp): when DRED is switched
+// Host-native unit test for the core's DRED crash data (native/src/core/diagnostics/crash/dred_logic.hpp): when DRED is switched
 // on, which register values mean a removed GPU, the breadcrumb window and the wording of the report lines.
-// Built and run by native/test/run_dred_test.sh.
+// Built and run by native/test/run_tests.sh dred.
 
-#include "dred_logic.hpp"
+#include "core/diagnostics/crash/dred_logic.hpp"
 
 #include <cstdio>
 #include <string>
@@ -12,12 +12,12 @@ namespace dr = runtime::dred;
 
 static int g_fail;
 
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                    \
-            g_fail++;                                                                                                  \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                              \
+            g_fail++;                                                                                                            \
+        }                                                                                                                        \
     } while (0)
 
 int main()
@@ -75,8 +75,9 @@ int main()
     CHECK(h.find("4 of 10") != std::string::npos && h.find("NOT FINISHED") != std::string::npos);
     CHECK(dr::node_header(0, nullptr, nullptr, 3, 3).find("NOT FINISHED") == std::string::npos);
     CHECK(h.find("(0x") == std::string::npos);
-    CHECK(dr::node_header(1, "NeGfx2::createBLAS", "Graphics", 17, 7, 0x2a40f0ull).find("NeGfx2::createBLAS (0x2a40f0) on queue") !=
-          std::string::npos);
+    CHECK(
+        dr::node_header(1, "NeGfx2::createBLAS", "Graphics", 17, 7, 0x2a40f0ull).find("NeGfx2::createBLAS (0x2a40f0) on queue") !=
+        std::string::npos);
 
     CHECK(dr::allocation_line("heap_a", 0x22, 0).find("RESOURCE") != std::string::npos);
     CHECK(dr::allocation_line("heap_a", 0x22, 0).find(" at ") == std::string::npos);
@@ -142,6 +143,15 @@ int main()
     CHECK(dr::build_stop(ops, 12, 8, 0xa).nth == 0);
     CHECK(dr::build_stop(ops, 12, 12, 0xa).nth == 0);
     CHECK(dr::build_stop<uint32_t>(nullptr, 12, 3, 0xa).nth == 0);
+
+    dr::BuildStops stops;
+    stops.add(dr::build_stop(ops, 12, 9, 0x83e897e0));
+    stops.add(dr::build_stop(ops, 12, 9, 0x83e897e0));
+    stops.add(dr::build_stop(ops, 12, 8, 0xa));
+    stops.add(dr::build_stop(ops, 12, 3, 0xa));
+    CHECK(stops.all().size() == 2 && stops.all()[0].list == 0x83e897e0 && stops.all()[1].nth == 1);
+    stops.clear();
+    CHECK(stops.all().empty());
 
     if (!g_fail)
         std::printf("dred test passed\n");

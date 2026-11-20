@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_TextureStreaming_ComputeDeficitStep",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bfba40",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bfba40.c;xref:0x143bfb9d0",
+  "notes": "Per-texture streaming deficit helper (floats, 1.0 constants, calls 143bfd2e0/143bfd410/143bfe190). Caller Render_TextureStreaming_ComputeDeficits."
+ },
+ "signature": {
+  "id": "render.texture_streaming_compute_deficit_step",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 04 00 00 C5 79 7F BC 24",
+  "match": "0x143bfba40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bfba40",
+  "kind": "func_start",
+  "names": [
+   "Render_TextureStreaming_ComputeDeficitStep"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x143bfba40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143bfba40.c;xref:0x143bfb9d0",
+   "notes": "V8328 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

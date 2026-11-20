@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_ReportedPlayerSDriverComunications",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140744920",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-TELEMETRY",
+  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: Reported Player's driver comunications'"
+ },
+ "signature": {
+  "id": "game.analytics_reported_player_s_driver_comunications",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 B4 24 90 00 00 00 48 89 D3 49 89 CF",
+  "match": "0x140744920",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140744920",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_ReportedPlayerSDriverComunications"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb02-verify",
+   "kind": "func",
+   "item": "0x140744920",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140744920.c",
+   "notes": "V4227 log string and record name match; \"EA analytics event:\" prefix not in exe strings (added elsewhere/unverified), message text matches"
+  }
+ ],
+ "proofs": []
+}

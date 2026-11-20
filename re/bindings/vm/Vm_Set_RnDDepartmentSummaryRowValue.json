@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_Set_RnDDepartmentSummaryRowValue",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c79260",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Set_RnDDepartmentSummaryRowValue(void *vm, int row_id)",
+  "evidence": "decomp:re/decomp/141c79260.c;xref:0x141c73569;xref:0x141c75d7c",
+  "notes": "myteam-g2: Walks the child-node list at vm+0x340 (+0x238..+0x240), finds the row whose int binding equals row_id and writes an S64 property on it via Ne_Property_SetUIDBRefIfChanged. UI only (R&D department summary), no game state."
+ },
+ "signature": {
+  "id": "vm.set_rn_ddepartment_summary_row_value",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 4C 24 20 85 D2 0F 84 ?? ?? ?? ?? 48 8B 44 24 20 48 8B 80 40 03 00 00",
+  "match": "0x141c79260",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c79260",
+  "kind": "func_start",
+  "names": [
+   "Vm_Set_RnDDepartmentSummaryRowValue"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141c79260",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c79260.c;xref:0x141c73569;xref:0x141c75d7c",
+   "notes": "V9990 Walks child list at vm+0x340, matches row int binding to row_id and writes an S64 property (SetS64IfChanged)."
+  }
+ ],
+ "proofs": []
+}

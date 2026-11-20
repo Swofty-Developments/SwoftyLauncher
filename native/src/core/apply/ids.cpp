@@ -1,4 +1,4 @@
-#include "ids.hpp"
+#include "core/apply/ids.hpp"
 
 #include <swofty/json.hpp>
 
@@ -9,15 +9,90 @@ namespace swofty_core::apply::ids {
 using swofty::json::Value;
 
 namespace {
-bool career_holds(const std::string &registry)
-{
-    return registry != "vehicle.package";
+bool career_holds(const std::string &registry) { return registry != "vehicle.package"; }
 }
+
+namespace {
+const std::pair<const char *, const char *> ROW_TABLES[] = {
+    {"entrants.vehicles.vehicle", "vehicle"},
+    {"entrants.vehicles.vehicle_packages.vehicle_package", "vehicle.package"},
+    {"entrants.entrant_lists.entrant_list", "content.package"},
+    {"game_setup.scenarios.scenario", "content.package.scenario"},
+    {"entrants.teams.team", "team.identity"},
+    {"entrants.drivers.driver", "driver.identity"},
+    {"entrants.animation.driver_heads.driver_head", "driver.head"},
+};
+
+std::string registry_of_table(const std::string &table)
+{
+    for (auto &[name, registry] : ROW_TABLES)
+        if (table == name)
+            return registry;
+    if (table.rfind("unlockable_content.unlockable_items.unlockable_item_list_", 0) == 0 && table.size() > 16 &&
+        table.compare(table.size() - 16, 16, ".unlockable_item") == 0)
+        return "livery.unlock";
+    return {};
+}
+
+void reserve_rows(const Value &rows, std::map<std::string, std::set<int64_t>> &out)
+{
+    auto o = rows.if_object();
+    if (!o)
+        return;
+    for (auto &[key, entry] : *o) {
+        size_t a = key.find('/');
+        if (a == std::string::npos)
+            continue;
+        size_t b = key.find('/', a + 1);
+        std::string registry = registry_of_table(key.substr(a + 1, b == std::string::npos ? b : b - a - 1));
+        int64_t id = entry["id"].as_int(-1);
+        if (!registry.empty() && id >= 0)
+            out[registry].insert(id);
+    }
+}
+}
+
+bool Store::reserve_json(const std::string &text, std::string *why)
+{
+    swofty::json::Error e;
+    Value doc = swofty::json::parse(text, &e);
+    if (!e.ok() || !doc.is_object()) {
+        if (why)
+            *why = e.ok() ? "not a JSON object" : e.message;
+        return false;
+    }
+    std::map<std::string, std::set<int64_t>> out;
+    reserve_rows(doc["rows"], out);
+    if (auto profiles = doc["profiles"].if_object())
+        for (auto &[name, profile] : *profiles)
+            reserve_rows(profile["rows"], out);
+    reserve(std::move(out));
+    return true;
+}
+
+void Store::reserve(std::map<std::string, std::set<int64_t>> ids)
+{
+    std::lock_guard g(mu_);
+    generation_++;
+    reserved_ = std::move(ids);
+}
+
+bool Store::reserved(const std::string &registry, int64_t id) const
+{
+    std::lock_guard g(mu_);
+    return reserved_locked(registry, id);
+}
+
+bool Store::reserved_locked(const std::string &registry, int64_t id) const
+{
+    auto it = reserved_.find(registry);
+    return it != reserved_.end() && it->second.count(id);
 }
 
 bool Store::load(const std::string &text, std::string *why)
 {
     std::lock_guard g(mu_);
+    generation_++;
     ids_.clear();
     careers_.clear();
     deduped_ = 0;
@@ -117,11 +192,13 @@ std::string Store::dump() const
 void Store::clear()
 {
     std::lock_guard g(mu_);
+    generation_++;
     ids_.clear();
     careers_.clear();
     pools_.clear();
     live_.clear();
     db_.clear();
+    reserved_.clear();
     dirty_ = false;
     lent_ = false;
 }
@@ -151,6 +228,7 @@ bool Store::lend_json(const std::string &text, std::vector<std::string> *lines, 
 std::vector<std::string> Store::lend(const Lent &lent)
 {
     std::lock_guard g(mu_);
+    generation_++;
     std::vector<std::string> out;
     std::size_t applied = 0;
     for (auto &[reg, recs] : lent) {
@@ -188,8 +266,7 @@ std::vector<std::string> Store::lend(const Lent &lent)
             applied++;
             out.push_back("[registry] stat ids: " + reg + " " + rec + " -> " + std::to_string(id) +
                           " (lent by the host for this session" +
-                          (was >= 0 && was != id ? "; this install keeps " + std::to_string(was) : std::string()) +
-                          ")");
+                          (was >= 0 && was != id ? "; this install keeps " + std::to_string(was) : std::string()) + ")");
         }
         for (auto &rec : displaced) {
             auto it = mine.find(rec);
@@ -218,6 +295,7 @@ bool Store::lent() const
 void Store::define_pool(const std::string &registry, Pool pool)
 {
     std::lock_guard g(mu_);
+    generation_++;
     std::vector<std::pair<int64_t, int64_t>> within;
     for (auto &[lo, hi] : pool.ranges)
         if (lo <= std::min(hi, pool.cap))
@@ -235,12 +313,14 @@ bool Store::has_pool(const std::string &registry) const
 void Store::set_live(const std::string &registry, const std::vector<std::string> &records)
 {
     std::lock_guard g(mu_);
+    generation_++;
     live_[registry] = std::set<std::string>(records.begin(), records.end());
 }
 
 void Store::hold(const std::string &registry, std::map<int64_t, std::string> rows)
 {
     std::lock_guard g(mu_);
+    generation_++;
     db_[registry] = std::move(rows);
 }
 
@@ -288,7 +368,7 @@ int64_t Store::next_free_locked(const std::string &registry, const std::string &
         return -1;
     for (auto &[lo, hi] : it->second.ranges)
         for (int64_t id = lo; id <= hi; id++)
-            if (!taken_locked(registry, id, record))
+            if (!taken_locked(registry, id, record) && !reserved_locked(registry, id))
                 return id;
     return -1;
 }
@@ -296,8 +376,8 @@ int64_t Store::next_free_locked(const std::string &registry, const std::string &
 std::string Store::moved_line(const std::string &registry, const std::string &record, const char *how, int64_t id,
                               const std::string &row, int64_t to) const
 {
-    return "[registry] ids: " + record + " " + how + " " + registry + " stat id " + std::to_string(id) + " is held by " +
-           row + " from the database; " +
+    return "[registry] ids: " + record + " " + how + " " + registry + " stat id " + std::to_string(id) + " is held by " + row +
+           " from the database; " +
            (to >= 0 ? "uses " + std::to_string(to)
                     : "the " + pool_text_locked(registry) + " has no free id, so it keeps " + std::to_string(id));
 }
@@ -354,7 +434,20 @@ std::string Store::pool_text_locked(const std::string &registry) const
     return s;
 }
 
-std::size_t Store::free_count_locked(const std::string &registry) const
+Store::Taken Store::taken_index_locked(const std::string &registry) const
+{
+    Taken t;
+    if (auto it = ids_.find(registry); it != ids_.end())
+        for (auto &[rec, en] : it->second)
+            t.holder.emplace(en.id, rec);
+    for (auto &[career, map] : careers_)
+        if (auto it = map.find(registry); !career.empty() && it != map.end())
+            for (auto &[rec, v] : it->second)
+                t.careers.insert(v);
+    return t;
+}
+
+std::size_t Store::free_count_locked(const std::string &registry, const Taken &taken, int64_t now_held) const
 {
     auto it = pools_.find(registry);
     if (it == pools_.end())
@@ -362,7 +455,7 @@ std::size_t Store::free_count_locked(const std::string &registry) const
     std::size_t n = 0;
     for (auto &[lo, hi] : it->second.ranges)
         for (int64_t id = lo; id <= hi; id++)
-            if (!held_locked(registry, id, nullptr) && !career_uses_locked(registry, id))
+            if (id != now_held && !taken.holder.count(id) && !taken.careers.count(id) && !reserved_locked(registry, id))
                 n++;
     return n;
 }
@@ -398,6 +491,7 @@ Result Store::allocate(const std::string &registry, const std::string &record, c
     if (kept.id >= 0)
         return kept;
     std::lock_guard g(mu_);
+    generation_++;
     Result r;
     auto pit = pools_.find(registry);
     if (pit == pools_.end()) {
@@ -405,20 +499,21 @@ Result Store::allocate(const std::string &registry, const std::string &record, c
         r.line = "[registry] stat ids: " + registry + " " + record + ": no stat-id pool for " + registry + " on this core";
         return r;
     }
+    const Taken taken = taken_index_locked(registry);
     for (auto &[lo, hi] : pit->second.ranges)
         for (int64_t id = lo; id <= hi && r.id < 0; id++)
-            if (!held_locked(registry, id, nullptr) && !career_uses_locked(registry, id) &&
-                !db_locked(registry, id, {}, nullptr))
+            if (!taken.holder.count(id) && !taken.careers.count(id) && !db_locked(registry, id, {}, nullptr) &&
+                !reserved_locked(registry, id))
                 r.id = id, r.how = "allocated";
     std::string reclaimed;
     if (r.id < 0)
         for (auto &[lo, hi] : pit->second.ranges)
             for (int64_t id = lo; id <= hi && r.id < 0; id++) {
-                std::string holder;
-                if (held_locked(registry, id, &holder) && !live_locked(registry, holder) &&
-                    !career_uses_locked(registry, id) && !db_locked(registry, id, {}, nullptr)) {
-                    ids_[registry].erase(holder);
-                    reclaimed = holder;
+                auto h = taken.holder.find(id);
+                if (h != taken.holder.end() && !live_locked(registry, h->second) && !taken.careers.count(id) &&
+                    !db_locked(registry, id, {}, nullptr) && !reserved_locked(registry, id)) {
+                    ids_[registry].erase(h->second);
+                    reclaimed = h->second;
                     r.id = id, r.how = "reclaimed";
                 }
             }
@@ -432,15 +527,16 @@ Result Store::allocate(const std::string &registry, const std::string &record, c
     ids_[registry][record] = Entry{r.id, today};
     dirty_ = true;
     r.line = "[registry] stat ids: " + registry + " " + record + " -> " + std::to_string(r.id) + " (" +
-             pool_text_locked(registry) + ", " + std::to_string(free_count_locked(registry)) + " free after this" +
+             pool_text_locked(registry) + ", " + std::to_string(free_count_locked(registry, taken, r.id)) + " free after this" +
              (reclaimed.empty() ? std::string() : "; reused from " + reclaimed + ", which no record or career uses") + ")";
     return r;
 }
 
 Result Store::pin(const std::string &registry, const std::string &record, int64_t id, const std::string &today,
-                 const std::string &label)
+                  const std::string &label)
 {
     std::lock_guard g(mu_);
+    generation_++;
     Result r;
     r.id = id;
     r.how = "explicit";
@@ -459,8 +555,8 @@ Result Store::pin(const std::string &registry, const std::string &record, int64_
         return r;
     }
     if (!label.empty() && db_locked(registry, id, label, &row)) {
-        int64_t to = was_moved && !taken_locked(registry, e->second.id, record) ? e->second.id
-                                                                                 : next_free_locked(registry, record);
+        int64_t to =
+            was_moved && !taken_locked(registry, e->second.id, record) ? e->second.id : next_free_locked(registry, record);
         r.line = moved_line(registry, record, "pinned", id, row, to);
         if (to >= 0) {
             if (!was_moved || e->second.id != to) {
@@ -487,10 +583,10 @@ Result Store::pin(const std::string &registry, const std::string &record, int64_
     return r;
 }
 
-Result Store::recheck(const std::string &registry, const std::string &record, const std::string &label,
-                      const std::string &today)
+Result Store::recheck(const std::string &registry, const std::string &record, const std::string &label, const std::string &today)
 {
     std::lock_guard g(mu_);
+    generation_++;
     Result r;
     auto it = ids_.find(registry);
     if (it == ids_.end())
@@ -519,6 +615,7 @@ Result Store::recheck(const std::string &registry, const std::string &record, co
 CareerMap Store::map_for_career(const std::string &career)
 {
     std::lock_guard g(mu_);
+    generation_++;
     CareerMap m;
     for (auto &[reg, recs] : ids_)
         for (auto &[rec, en] : recs)
@@ -534,6 +631,7 @@ CareerMap Store::map_for_career(const std::string &career)
 std::vector<Clash> Store::adopt(const std::string &career, const CareerMap &map, const std::string &today)
 {
     std::lock_guard g(mu_);
+    generation_++;
     std::vector<Clash> out;
     for (auto &[reg, recs] : map)
         for (auto &[rec, id] : recs) {
@@ -549,8 +647,8 @@ std::vector<Clash> Store::adopt(const std::string &career, const CareerMap &map,
             std::string who = held ? holder : in_db ? row + " from the database" : std::string();
             if (e != mine.end()) {
                 Clash c{reg, rec, held ? holder : row, id, e->second.id, {}};
-                c.line = career + " needs " + reg + " " + rec + " at stat id " + std::to_string(id) +
-                         "; this install gives it " + std::to_string(e->second.id) +
+                c.line = career + " needs " + reg + " " + rec + " at stat id " + std::to_string(id) + "; this install gives it " +
+                         std::to_string(e->second.id) +
                          (who.empty() ? std::string() : " and " + who + " holds " + std::to_string(id));
                 out.push_back(c);
                 continue;
@@ -577,6 +675,7 @@ std::vector<Clash> Store::adopt(const std::string &career, const CareerMap &map,
 void Store::forget_career(const std::string &career)
 {
     std::lock_guard g(mu_);
+    generation_++;
     dirty_ = careers_.erase(career) || dirty_;
 }
 
@@ -589,6 +688,7 @@ bool Store::dirty() const
 void Store::saved()
 {
     std::lock_guard g(mu_);
+    generation_++;
     dirty_ = false;
 }
 
@@ -617,6 +717,45 @@ std::vector<int64_t> Store::ids_of(const std::string &registry) const
             if (entry.id >= 0)
                 out.push_back(entry.id);
     return out;
+}
+
+Store::Store(const Store &other)
+{
+    std::lock_guard g(other.mu_);
+    ids_ = other.ids_;
+    careers_ = other.careers_;
+    pools_ = other.pools_;
+    live_ = other.live_;
+    db_ = other.db_;
+    reserved_ = other.reserved_;
+    deduped_ = other.deduped_;
+    dirty_ = other.dirty_;
+    lent_ = other.lent_;
+    generation_ = other.generation_;
+}
+
+uint64_t Store::generation() const
+{
+    std::lock_guard g(mu_);
+    return generation_;
+}
+
+bool Store::commit(Store &&ahead, uint64_t since)
+{
+    std::scoped_lock g(mu_, ahead.mu_);
+    if (generation_ != since)
+        return false;
+    ids_ = std::move(ahead.ids_);
+    careers_ = std::move(ahead.careers_);
+    pools_ = std::move(ahead.pools_);
+    live_ = std::move(ahead.live_);
+    db_ = std::move(ahead.db_);
+    reserved_ = std::move(ahead.reserved_);
+    deduped_ = ahead.deduped_;
+    dirty_ = ahead.dirty_;
+    lent_ = ahead.lent_;
+    generation_++;
+    return true;
 }
 
 Store &store()

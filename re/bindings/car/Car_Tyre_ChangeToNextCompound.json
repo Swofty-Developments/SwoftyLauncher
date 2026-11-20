@@ -1,0 +1,142 @@
+{
+ "schema": 1,
+ "name": "Car_Tyre_ChangeToNextCompound",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e94040",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "uint64_t Car_Tyre_ChangeToNextCompound(void *tyre_component, uint8_t pit_stop)",
+  "evidence": "pat:log-channel-PITSTOP_TYRES;decomp:own disasm 0x142e94040-0x142e946cf,0x14f43e230-0x14f43e3f7,0x1434bdd60-0x1434bde44,1.0.145 0x142e965d0 the same 406/406;xref:0x1434bdd9f;xref:0x1403c8dd3;xref:0x142e946bc",
+  "notes": "TyreComponent::changeToNextCompound. Log channel PITSTOP_TYRES: 'TyreComponent::changeToNextCompound %p - PITLANE CHANGEOVER' (0x142e940b4) | 'MOX/Tyres: changeToNextCompound() new type %d is not the same as next type '%s' (from %d)' (0x142e9420d). rcx = the TyreComponent (kept in rsi), dl = pit_stop (kept in ebx, tested at 0x142e941eb and 0x142e94219). Two callers, neither reads the result: Game_PitLane_ApplyPitstopTyres passes 1 (mov dl,1 at 0x1434bdd9d, call at 0x1434bdd9f) and then calls pitstopComplete 0x142e94780 (0x1434bde3f) behind the same m_tyreList[idx] bound and null test (0x1434bdd8b/0x1434bdd9b and 0x1434bde31/0x1434bde3d), so it runs exactly when this call did and both are skipped, with a log line each, for a null entry; Game_PitBoxCarActor_Update passes 0 (xor edx,edx at 0x1403c8dd1, call at 0x1403c8dd3). The body finds the next set by the id at +0x9c70 among the 0x18-byte entries from +0x9bd0 (count +0x9c48), falling back to id 4 when that id is 3 or more (unsigned) and to id 1 otherwise (0x142e9412e..0x142e9415c). When it differs from the fitted set (+0x9938 id, +0x9940, +0x9948) it logs the second line (the fitted id from +0x9938, the found entry's name, the found id) and then, with pit_stop set, calls 0x142e96390 (0x142e941f2) instead of storing the set at +0x9938..+0x9948 itself (0x142e9421d..0x142e94231). It then calls 0x142ea1d30 and, unless +0x9c70 is -1, 0x142e9eda0(component+0x9c60, component+0x9c70, that result) (0x142e9425a), ORs dword +0x208 & 0x1f of every tyre record (records at +0x30, stride 0xde0, count u64 +0x98d0; 0x142e94280..0x142e9428a) into ebp, calls 0x142e83130(record, k, 0, 0) for k = 0..4 on every record (0x142e942cb..0x142e943ce), and picks a record by the id in dword [[+0x9c98]-0x6c] (same fallback) whose entry holds at +0x10 a qword pointer (loaded at 0x142e944ad) to the byte (read at 0x142e944b8) that indexes the byte table [[+0x9bc0]+0x1d8], giving the record +0x30 + that byte * 0xde0 (0x142e94412..0x142e944cd); unless [+0x20] is 0 (0x142e944a7) for k = 0..3 it calls 0x142e83130(that record, k, bit k of the OR when byte +0x9915 is set, 0) and 0x142e87870 with the same value, then 0x142e87870 again for k = 0..3 with the bare bit, and for bit 4 0x142e83130(that record, 4, bit 4, 0) and, when +0x98f8 is set, 0x142e87ab0 (0x142e944d0..0x142e946a8); calls 0x142ea2300(component, 1, 0x101) and returns 0 (xor eax,eax at 0x142e946bc, its one exit). pitstopComplete (a jmp to 0x14f43e230) clears +0x9910 and calls 0x142e83130/0x142e87540 only on the +0x4a0 and +0x940 sub-records of each tyre record, for k = 0..5 (0x142e83130 returns at once for k above 4, 0x142e83262) (log 'MOX/Tyres: pitstopComplete() disabling everything but set %d'). Steam 1.0.145: the same code at 0x142e965d0 (sigport --witness 406/406, with +0x30, +0x98d0, +0x238, +0xde0, +0x9938, +0x9940, +0x9948 and +0x9915 at the same instructions). 0x142e83130 is setTyreVisibility (log 'setTyreVisibility %p m_tyreModelVisibility %x', 0x142e8337c): it sets bit k of dword +0x208 when its third argument is true (lock or at 0x142e83294) and clears it otherwise (0x142e8329f), so +0x208 & 0x1f is the record's tyre model visibility mask, not damage, and the OR is the set of parts shown on any record. | re-bindings 2026-11-18: raised to L2 for the core's race tyre change rule (native/src/core/guards/garage/pit_box.cpp)."
+ },
+ "signature": {
+  "id": "car.tyre_change_to_next_compound",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01 75 65 B8 34 00 00 00",
+  "match": "0x142e94040",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e94040",
+  "kind": "func_start",
+  "names": [
+   "Car_Tyre_ChangeToNextCompound"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/garage/pit_box.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142e94040",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e94040.c;xref:0x1403c8dd3",
+   "notes": "V5528 body, strings and callees match name/description"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Car_Tyre_ChangeToNextCompound",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x142e94040-0x142e946cf,0x14f43e230-0x14f43e3f7,0x142e96390-0x142e96a11,0x142e9e6c0-0x142e9ec5b,0x142e83130-0x142e8338b,0x14f3c6a80-0x14f3c6ad1,0x14f486470-0x14f48655c,0x1403c8cf0-0x1403c8e52,0x1434bdd60-0x1434bdf3e,1.0.145 0x142e965d0-0x142e96c5f 406/406;xref:0x1403c8dd3,0x1434bdd9f,0x1434bde3f,0x142e941f2,0x142e9421d,0x142e9425a,0x142e946bc",
+   "notes": "V100000 Blind: partial, derived before reading the notes. Confirmed: proto (rcx->rsi, bl flag, returns 0 at 0x142e946bc), callers 0x1403c8dd3 edx=0 / 0x1434bdd9f dl=1 (rax unused), both strings, next set by +0x9c70 in 0x18-byte list +0x9bd0/+0x9c48, compare +0x9938/40/48, pit_stop->0x142e96390 else store 0x142e9421d, +0x208&0x1f OR, hide loops k=0..4, 0x142ea2300(c,1,0x101), pitstopComplete +0x4a0/+0x940 k=0..5, 1.0.145 406/406. Imprecise: 'whether or not this ran': pitstopComplete has the same m_tyreList[idx] guard (0x1434bde31/0x1434bde3d), so it runs exactly when the change call ran. Omitted: 0x142e9eda0 and the [[+0x9c98]-0x6c] lookup picking the record. +0x208 is m_tyreModelVisibility (H unlikely)."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Car_Tyre_ChangeToNextCompound",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x142e94040-0x142e946cf,0x142e83130-0x142e83744,0x14f3c6a80-0x14f3c6cd3,0x142e96390-0x142e96a11,0x142e96a20-0x142e96f2d,0x14f43e230-0x14f43e3f7,0x1403c8cf0-0x1403c8e48,0x1434bdd60-0x1434bdf3e,1.0.145 0x142e965d0-0x142e96c5f 406/406;xref:0x1403c8dd3,0x1434bdd9f,0x1434bde3f,0x142e941f2,0x142e9421d,0x142e94280,0x142e944ad,0x142e944b8,0x142e946bc,0x142e83294,0x142e8329f",
+   "notes": "V100003 Blind: partial. Own disasm agrees with the proto, both callers (0x1403c8dd3 edx=0, 0x1434bdd9f dl=1, result unused, pitstopComplete 0x142e94780 under the same m_tyreList bound/null guard), next-set lookup at +0x9c70 with 4/1 fallback, the 0x9938/0x9940/0x9948 compare, 0x142e96390 (activateTyreCompounds) instead of the store when pit_stop is set, the +0x208&0x1f OR, the k=0..4 clears, the bit/+0x9915 call sequence, 0x142ea2300, return 0, pitstopComplete touching only +0x4a0/+0x940, and 1.0.145 0x142e965d0 406/406. Imprecise: the record index is the byte pointed to by the qword at entry+0x10 (0x142e944ad, 0x142e944b8), not a byte at entry+0x10."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Car_Tyre_ChangeToNextCompound",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142e94040-0x142e946cf,0x142e83130-0x142e83993,0x14f43e230-0x14f43e3f7,0x14f3c6a80-0x14f3c6cd3,0x142e96390-0x142e96a12,0x142e96a20-0x142e96f2e,0x142e9e6c0-0x142e9ec5b,0x14f463120-0x14f4632a4,0x142e9eda0-0x142e9fe3f,0x14f486470-0x14f48655c,0x1434bdd60-0x1434bdf3f,0x1403c8cf0-0x1403c8e48,1.0.145 0x142e965d0-0x142e96c5f;xref:0x1434bdd9f,0x1403c8dd3,0x1434bde3f,0x142e941eb,0x142e94176,0x142e9421d,0x142e94280,0x142e944ad,0x142e944b8,0x142e946bc",
+   "notes": "V100008 Blind: agree. Own disasm 0x142e94040-0x142e946cf: rcx this, bl bool (0x142e941eb/0x142e94219), one exit xor eax,eax 0x142e946bc (rax all zero). Next set = id [+0x9c70] in 0x18-byte list +0x9bd0 (count +0x9c48), fallback id>=3?4:1 (0x142e9412e), double miss -> id -1, null ptrs. Compares +0x9938/+0x9940/+0x9948 (not +0x993c); dl=1 -> 0x142e96390, else stores +0x9938..+0x9948. ORs +0x208&0x1f, clears k=0..4, final record via [[+0x9c98]-0x6c] -> entry+0x10 byte -> [[+0x9bc0]+0x1d8]. Callers 0x1434bdd9f (dl=1, pitstopComplete next at 0x1434bde3f) and 0x1403c8dd3 (dl=0), rax unused. 1.0.145 0x142e965d0 406/406. Fallback rescan at 0x142e94490 has no bound."
+  },
+  {
+   "date": "2026-11-19",
+   "verifier": "steam-bindings-verify",
+   "kind": "func",
+   "item": "Car_Tyre_ChangeToNextCompound",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x142e94040-0x142e946cf (.pdata, unwind 0x145eef728, 406 insns);decomp:own capstone disasm steam-26566308 0x142e965d0-0x142e96c5f (406 insns, 0 differences after normalising rip and call targets);xref:0x1403c8dd3,0x1434bdd9f;xref:steam-26566308 0x1403c8e13,0x1434c031f;pat:own disp32 scan of every section incl .data1 and .trace plus abs64 and rva32 scans, only other hit is the .pdata entry;pat:signature 1 hit in KB .xtls at 0x142e94040 (sigcheck OK) and 1 hit in steam .tls$ at 0x142e965d0, none in other sections",
+   "notes": "V11427 Core claim holds on both builds. KB: .pdata 0x142e94040-0x142e946cf, one ret at 0x142e946ce, xor eax,eax at 0x142e946bc (returns 0 with rax fully zero; both callers ignore it, so uint64_t is safe but the true width is unknown). Args: rcx->rsi tyre component, edx->ebx only ever tested as bl (bool); r8/r9 are written before any read, so 2 args. Rebuilds the compound list +0x9bd0 through 0x142e9e6c0 when stale, looks up +0x9c70 (stride 0x18, count +0x9c48; falls back to id 1 or 4, else id -1 and null ptrs), compares with current +0x9938/+0x9940/+0x9948; on a difference bl=1 calls 0x142e96390 and bl=0 stores +0x9938/+0x993c/+0x9940/+0x9948; then 0x142ea1d30, 0x142e9eda0(rsi+0x9c60, rsi+0x9c70, eax) when +0x9c70 != -1, wheel loops from +0x30 stride 0xde0 count +0x98d0, and 0x142ea2300(rsi, dl=1, r8w=0x101). Callers: 0x1403c8dd3 (xor edx,edx) in 0x1403c8cf0 and 0x1434bdd9f (mov dl,1) in 0x1434bdd60, both jmp on without reading eax; no rip-relative, abs64 or table references. Steam 26566308: pattern matches once in .tls$ at 0x142e965d0 = .pdata start (0x142e965d0-0x142e96c5f), code identical after normalisation (callees +0x2590, strings +0x2140 with the same text), callers 0x1403c8e13 (edx 0) and 0x1434c031f (dl 1), nothing else. WRONG in notes: 'when it differs from the current one ... it logs the PITLANE CHANGEOVER line'. PITLANE CHANGEOVER (%p = the component) is logged at entry (0x142e940ad) on every call when the PITSTOP_TYRES channel is enabled, before the lookup; the line logged in the differs branch (0x142e941f9) is 'MOX/Tyres: changeToNextCompound() new type %d is not the same as next type '%s' (from %d)' with r8d = old +0x9938, r9 = name of the found entry, stack arg = found id."
+  },
+  {
+   "date": "2026-11-19",
+   "verifier": "steam-bindings-verify",
+   "kind": "func",
+   "item": "Car_Tyre_ChangeToNextCompound",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142e94040-0x142e946cf (.pdata, 406 insns, log calls at 0x142e940be on entry and 0x142e94214 on the differ path);decomp:own capstone disasm steam-26566308 0x142e965d0-0x142e96c5f (0 differences after normalisation);xref:0x1403c8dd3,0x1434bdd9f;xref:steam-26566308 0x1403c8e13,0x1434c031f;pat:own disp32 scan of every section plus abs64 and rva32 scans, only other hit is the .pdata entry",
+   "notes": "V11430 Re-check of the row as rewritten after V11427. Every statement now matches my own disassembly: PITLANE CHANGEOVER logged on entry (0x142e940ad, channel PITSTOP_TYRES); lookup of +0x9c70 in +0x9bd0 stride 0x18 with the class 1/4 fallback (1 when the queued id < 3, else 4); MOX/Tyres line at 0x142e941f9 only on the differ path; bl=0 stores +0x9938/+0x993c/+0x9940/+0x9948, bl=1 calls 0x142e96390; then 0x142ea1d30, 0x142e9eda0 when +0x9c70 != -1, wheel loops +0x30 stride 0xde0 count +0x98d0, 0x142ea2300(rsi,1,0x101); returns 0 via xor eax,eax 0x142e946bc and one ret. Two arguments (rcx, edx as bl), 2 rel32 callers 0x1403c8dd3 (edx 0) and 0x1434bdd9f (dl 1) that ignore the result, no pointer references. Steam 26566308: sig 1 hit in .tls$ at 0x142e965d0 = .pdata start, 406 identical instructions, callers 0x1403c8e13 and 0x1434c031f. Only caveat, not an error: uint64_t is safe because rax is fully zeroed, but the true return width is not observable."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142e94040",
+    "target": "0x142e94040"
+   },
+   "sigcheck": "passed",
+   "digest": "a93e01e85a73ab6a03dc166012d8684a9bb4c7a491868742397a188a608be1c2"
+  },
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142e965d0",
+    "target": "0x142e965d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9534624eb93765e000a61e20e736a43e277829c21925f48d0363908cb3a079f9"
+  }
+ ]
+}

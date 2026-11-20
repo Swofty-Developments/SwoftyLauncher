@@ -1,0 +1,91 @@
+{
+ "schema": 1,
+ "name": "Sess_Apply_ContentAvailability",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1413e4cf0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_Apply_ContentAvailability(void *self, void *availability)",
+  "evidence": "decomp:re/decomp/1413e4cf0.c;xref:0x1413ed3d5,0x1413e9361,0x1413e945f,0x1413e9fe9,0x1413ea001;kb:subsystems/teams.md#team-available;doc:research/grid24-cap.md#b26f;xref:0x1413e918d,0x142a223f0,0x14d83fadd;decomp:work/exe/b26crash/decomp/1413e4cf0.c;xref:0x1413ed3d5",
+  "notes": "startup availability applier (B26 backtrace frame 0x1413eb579): game_modes via Sess_Set_RowsAvailable, f1_world vendors, then count-bounded passes over entrants.vehicles / drivers / teams / vehicle_packages that set available=True when the row stat_id matches a content list. Raising a table count puts the new rows in these passes sb2-verify-a correction: the entrants.vehicles pass does NOT set available, it collects stat_ids of rows with safety_car_type; available=True is set in the drivers, teams and vehicle_packages passes; vendors = f1_world.vendors.vendor_definitions; also game_setup_modes, entrant_setup_modes, entrant_lists, selection_domains, formula_classes, se_liveries, driver_customisations, theming (unconfirmed: no theming reference in this body or its direct callees) | #544 verifier sb2-verify-a (2026-10-30, partial on the PR's L1 notes): Role/B26 frame 0x1413eb579 hold; but vehicles pass does NOT set available (it collects stat_ids of rows with safety_car_type); available set in drivers/teams/vehicle_packages passes. Function also handles game_setup_modes, entrant_setup_modes, entrant_lists, selection_domains, formula_classes, se_liveries, driver_customisations, theming (unconfirmed: no theming reference in this body or its direct callees); vendors table is f1_world.vendors.vendor_definitions"
+ },
+ "signature": {
+  "id": "session.apply_content_availability",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 88 13 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 78 29 84 24 70 13 00 00 C5 F8 29 BC 24 60 13 00 00 C5 F8 29 B4 24 50 13 00 00 48 89 D6 48",
+  "match": "0x1413e4cf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1413e4cf0",
+  "kind": "func_start",
+  "names": [
+   "Sess_Apply_ContentAvailability"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "team-v1",
+   "kind": "func",
+   "item": "Sess_Apply_ContentAvailability",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1413e4cf0.c;xref:0x1413e9361,0x1413e945f,0x1413e9fe9,0x1413ea001",
+   "notes": "V1582 Team pass re-read in asm: keys are 4-byte {u8 set, u8, u16 stat}; the match is cmp word [rcx+2],ax then cmp byte [rcx],0 (0x1413e9fe9/0x1413e9fef), i.e. only set-0 keys; then Gdb_Get_FieldInt('available') at 0x1413ea001 allocates/sets it. Collection sources at 0x1413e945f (entrant record +0x58 push via 0x140343580) agree."
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "team-v1",
+   "kind": "func",
+   "item": "Sess_Apply_ContentAvailability",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1413e4cf0.c;xref:0x1413e8d52,0x1413eadf9,0x1413eae16",
+   "notes": "V1593 Wearables claim: wearables.md cites the driver-customisation availability pass at 0x1413e8d52, but that is the entrants.selection_domains pass (byte compare of stat_id against a byte vector). The driver_customisations pass is the later one (cursor 'entrants.driver_customisations' folder / preloaded_driver_customisation_properties): stat_id at 0x1413eadc0, vector scan cmp word [rcx+2],ax then cmp byte [rcx],0 at 0x1413eadf9/0x1413eadff over 4-byte keys {u8 set,u8,u16 stat}, then 'available' set at 0x1413eae11. So a look becomes loadable only when an available entrant list names it with set byte 0; the conclusion (entrant rows naming a look are enough) holds, the citation is wrong."
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "team-v1",
+   "kind": "func",
+   "item": "Sess_Apply_ContentAvailability",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1413e4cf0.c;xref:0x1413e9fe9,0x1413eadf9",
+   "notes": "V1598 The function row's own claims (team pass, set-0 key match, availability of entrants.teams rows, single caller) hold; the earlier partial concerned a wrong address cited in wearables.md, not this row."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "std16-tt27v3",
+   "kind": "func",
+   "item": "0x1413e4cf0",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1424a0480.c;decomp:re/decomp/1407cae80.c;xref:0x1413e9159,0x1424a069a",
+   "notes": "V2142 TT27V3 item 3 (era_picker.cpp unload restore, narrowed[16], LIFO; setup mode guard). No double restore: put_back_narrowed writes only when +0x230 equals the entry's kept and the first kept slots equal kept_lists, and after a write the count is the entry's original, so a second pass (era_session_end, then restore_lists at the next build or press) finds a mismatch and skips; LIFO is right for stacked entries on one mode (the later entry restores its snapshot, which is exactly the earlier entry's kept state, then the earlier one restores the original). No write into a freed mode from the guard's side: drop_setup_pointers runs at Sess_Apply_ContentAvailability entry (which rebuilds the entrant lists and modes, Sess_Load_AvailableEntrantLists at 0x1413e9159 and the registration copies) and zeroes narrowed_count before the game frees them, and nothing else frees entrant setup modes or game setup modes after boot that I found (modes live in the registry by stat id, Sess_Register_EntrantSetupMode 0x1424a0480; game setup modes in the entity +0x2b8 vector built at boot). One unsafe edge: in time_trial_budget the record is skipped when narrowed_count == 16 but the list is still removed (the compaction runs outside the if), so a 17th touched mode loses its lists with no record until the next content rebuild or reboot; reaching it needs more than 16 distinct entrant setup modes holding dropped lists (records dedupe per mode through the known check), so rare. Also drop_setup_pointers clears narrowed_count outside held_lock while era_session_end/era_session_load touch narrowed under it (same game thread in practice). Partial."
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "re-bindings",
+   "kind": "func",
+   "item": "Sess_Apply_ContentAvailability",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm of the archived 1.0.141 exe (PE 1789118616) 0x1413e4cf0-0x1413ec19f;xref:0x1413ed3d5,0x1413eb576",
+   "notes": "V20006 Re-verified; the newest partial V2142 judged native era_picker.cpp code, not this row. Single caller (call at 0x1413ed3d5); rcx=self (rbp), rdx=availability (rsi), matching the native hook type void(void*, void*). B26 frame 0x1413eb579 is the return of the system-loop call [rax+0x30] at 0x1413eb576. Sess_Set_RowsAvailable 0x1413e44c0 at 0x1413e61ac/0x1413e6225/0x1413e62a2 (game_modes); strings f1_world.vendors.vendor_definitions, game_setup_modes, entrant_setup_modes, entrant_lists, selection_domain(s), formula_class, se_liveries, driver_customisations; the entrants.vehicles pass reads safety_car_type and stat_id with no available write, available is written in the drivers (0x1413e9d27), teams (0x1413e9ff7/0x1413ea001) and vehicle_packages (0x1413ea813) passes. No theming reference in this body or its direct callees; the notes now mark that item unconfirmed."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SaveDataSystem_LogBuildInfo",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143656980",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-SaveDataSystem",
+  "notes": "named from its log messages (channel SaveDataSystem): 'Save data build info: CL=\"%d\" branch=\"%s\" p4Date=\"%s\" saveDateUTC=\"%s\" platform=\"%s\" buildConfig=\"%s\" gameInfoName=\"%s\" smokeTestInfo=\"%s\"'"
+ },
+ "signature": {
+  "id": "game.save_data_system_log_build_info",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 02 00 00 48 89 D7 48 89 CE C7 84 24 80 00 00 00 FF FF FF FF",
+  "match": "0x143656980",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143656980",
+  "kind": "func_start",
+  "names": [
+   "Game_SaveDataSystem_LogBuildInfo"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x143656980",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143656980.c",
+   "notes": "V6109 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

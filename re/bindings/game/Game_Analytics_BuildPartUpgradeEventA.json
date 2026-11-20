@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_BuildPartUpgradeEventA",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14058d250",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14058d250.c;xref:0x14071e6b0",
+  "notes": "Allocates (0x30 bytes, tag 0x145612763) and fills analytics event payload A used by PlayerFittedUpgradedPartToDriver / PlayerTeamPartsUpgradeHasFailed. Telemetry only."
+ },
+ "signature": {
+  "id": "game.analytics_build_part_upgrade_event_a",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 47 10 48 8B 80 C8 00 00 00",
+  "match": "0x14071e6b0",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14058d250",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_BuildPartUpgradeEventA"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x14058d250",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14058d250.c;xref:0x14071e6b0",
+   "notes": "V8060 ctor of f1.proto.RnDUpgradeFinishedRecord; callers ok"
+  }
+ ],
+ "proofs": []
+}

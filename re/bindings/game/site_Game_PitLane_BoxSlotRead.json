@@ -1,0 +1,75 @@
+{
+ "schema": 1,
+ "name": "site_Game_PitLane_BoxSlotRead",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434c3653",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/1434c3520.c;xref:0x1434be69e,0x1434c3656",
+  "notes": "In Game_PitLane_ProjectBoxPose: mov r14d,edi (edi = box index, the pit lane record +0xe0) then mov r8,[rbx+r14*8+0x7f8], the box's cache slot, which holds a zone key: the 0x1445f32a0 result on [[mgr+0x18]+0x28] at the box position, a pointer to a 0x140-byte zone record or 0, which 0x140679340 only hashes (FNV-1a, 0x14063bc89) into the spline's segment buckets and never dereferences, so a wrong non-null value misses and falls back to the full search 0x140679410; null results are stored too, so a miss repeats; mov r14d,edi zero-extends the index, so it is unsigned 32-bit. Game_PitLane_GenerateSplines 0x1434ca550 zeroes 13 team slots at +0x790 and the 24 box slots at 0x7f8..0x8b7 (0x1434ca71b); 14 tuning handles follow at +0x8b8..+0x920 (0x1434ca85e), +0x928 is never written, and 27 16-byte entries {allocator, record pointer} run from +0x930 to +0xadf (bound at 0x1434b51cc), followed by the allocator at +0xae0 and component pointers. On a miss 0x1434c36a6 stores the lookup result back into [rbx+r14*8+0x7f8] unconditionally. Out of range: 24..37 read tuning handles, 38 the unwritten +0x928, 39 entry 0's allocator at +0x930 (non-null, so it is taken as a hit), 99 the component pointer at +0xb10 (set at 0x1434b5b6a), 0x7fffffff (the record reset value, 0x1434b56bc) mgr+0x4000007f0 and -1 mgr+0x8000007f0, which faults (0x1434c3656). Caller 0x1434be460 passes [rec+0xe0] unchecked; 0x1434c03c0 rejects only boxes above 0x17, signed (0x1434c0405). Core's pit box guard sends a box at or above its slot bound (pit_box_logic.hpp BOX_SLOTS) to site_Game_PitLane_BoxPoseFalse with edi = 2. Needs L2 promotion by the game owner."
+ },
+ "signature": {
+  "id": "game.pit_lane_box_slot_read",
+  "section": ".xtls",
+  "pattern": "41 89 FE 4E 8B 84 F3 F8 07 00 00 4D 85 C0",
+  "match": "0x1434c3653",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434c3653",
+  "kind": "mid",
+  "expect": "41 89 FE 4E 8B 84 F3 F8 07 00 00",
+  "names": [
+   "site_Game_PitLane_BoxSlotRead"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "pitlane",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/garage/pit_box.cpp"
+  ],
+  "func_start": "0x1434c3520"
+ },
+ "verify": [
+  {
+   "date": "2026-11-01",
+   "verifier": "kbverify-pitbox",
+   "kind": "global",
+   "item": "site_Game_PitLane_BoxSlotRead",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434c3520.c;xref:0x1434c3656;sig:game.pit_lane_box_slot_read",
+   "notes": "V8550 sigcheck OK unique match 0x1434c3653 target 0x1434c3653; disasm mov r14d,edi / mov r8,[rbx+r14*8+0x7f8]; edi=r9d box from prologue 0x1434c358d; r14d zero-extends so box -1 reads mgr+0x7f8+0x7fffffff8 and faults at 0x1434c3656"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "global",
+   "item": "site_Game_PitLane_BoxSlotRead",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1434c3520-0x1434c4276,0x1503fecf0-0x1503fedfb,0x1434c72f0-0x1434c835f,0x1434ca550-0x1434cb2fc,0x1434b5110-0x1434b59ab,0x1434b59b0-0x1434b5fa6,0x1434be460-0x1434be744,0x1434c03c0-0x1434c05f9,1.0.145 0x1434c5aa0-0x1434c67f6;xref:0x1434c3653,0x1434c3656,0x1434c36a6,0x1434ca71b,0x1434ca85e,0x1434b51bd,0x1434b51cc,0x1434b5b6a,0x1434be685,0x1434c0405",
+   "notes": "V100039 Blind: partial. Confirmed: 0x1434c3653 mov r14d,edi zero-extends the box index (r9d = [rec+0xe0], 0x1434be685/0x1434c03e2); 0x1434c3656 reads [rbx+r14*8+0x7f8]; the miss path stores back at 0x1434c36a6; 0x1434ca550 zeroes 0x790..0x8b7 (13+24 slots), then handles 0x8b8..0x920; -1 reads mgr+0x8000007f0. Wrong: 99 -> mgr+0xb10 is not in the per-car records (27x16-byte entries 0x930..0xadf, bound at 0x1434b51cc); it is a component pointer set at 0x1434b5b6a. Imprecise: the entries start at 0x930 {allocator, record*}, 0x938 is entry 0's pointer; only 24..37 hit tuning handles, 38 reads the unwritten 0x928, 39 the allocator at 0x930. Core claims not checkable. 1.0.145 twin 0x1434c5aa0 820/820."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "global",
+   "item": "site_Game_PitLane_BoxSlotRead",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1434c3520-0x1434c4276,0x1445f32a0-0x1445f3628,0x1434c5c90-0x1434c6126,0x140679340-0x14067940c,0x14063bc80-0x14063bd98,0x1503fecf0-0x1503fef17,0x1434c72f0-0x1434c835f,0x1434ca550-0x1434ca9e0,0x1434b5110-0x1434b59ab,0x1434be460-0x1434be744,0x1434c03c0-0x1434c05f9,0x1434b87ce-0x1434b88a9,1.0.145 0x1434c5aa0-0x1434c67f6;xref:0x1434c3653,0x1434c3656,0x1434c36a6,0x1434c369e,0x1434c36e8,0x1434c5df9,0x14067936e,0x14063bc89,0x1406793fa,0x1434ca71b,0x1434ca85e,0x1434ca9a3,0x1434b51cc,0x1434b56bc,0x1434b5b6a,0x1434c75cd,0x1434be685,0x1434c0405,0x1434b87ee,0x1434c4202",
+   "notes": "V100040 Blind: agree. 0x1434c3653 41 89 fe mov r14d,edi zero-extends arg4 (box from [rec+0xe0]); 0x1434c3656 reads mgr+0x7f8+idx*8, 24 slots to 0x8b7 in a 0xca0 object (alloc 0x1434c75cd). Slot = 0x1445f32a0 zone ptr (0x140 stride) or 0, stored back unconditionally on miss (0x1434c36a6). 0x140679340 only FNV-1a hashes it (0x14063bc89) and falls back to 0x140679410 when not found. 24..37 tuning handles, 38 unwritten pad, 39 allocator, 99 +0xb10, -1/0x7fffffff far out. Callers: 0x1434be460 unchecked (upstream only !=0x7fffffff, 0x1434b87ee); 0x1434c03c0 signed <=23 (0x1434c0405). -1 fault and core guard not checkable. 1.0.145 twin 0x1434c5aa0 820/820."
+  }
+ ],
+ "proofs": []
+}

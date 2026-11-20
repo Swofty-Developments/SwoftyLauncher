@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamSetupVM_UpdateCostIcon",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142282ab0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void (void *vm)",
+  "evidence": "decomp:re/decomp/142282ab0.c;xref:0x1422824f5;xref:0x142282f65;xref:0x1422834a2",
+  "notes": "myteam-g2: Refreshes the cost/price row of the setup view: FUN_142284ca0 gives an amount, Vm_FinanceTransactionRow_SetIcon(vm+0x678, amount) sets the icon, and a bool node at vm+0x800 is set from affordability (FUN_142284220 and flag at +0x8b8->+0x2c). Display only."
+ },
+ "signature": {
+  "id": "career.my_team_setup_vm_update_cost_icon",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 48 48 89 CE E8 ?? ?? ?? ?? 89 C7",
+  "match": "0x142282ab0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142282ab0",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamSetupVM_UpdateCostIcon"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x142282ab0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142282ab0.c;xref:0x1422824f5",
+   "notes": "V10074 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

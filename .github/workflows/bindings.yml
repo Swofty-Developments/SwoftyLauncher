@@ -1,0 +1,197 @@
+# Binding contributions (re/bindings/<subsystem>/<Name>.json) merge themselves when they pass every check.
+# Threat model and settings: docs/reference/addons/bindings.md.
+#
+# Pull requests come from forks and are untrusted. Nothing here runs code from the pull request:
+# - validate checks out the BASE branch, reads the PR's record files (and its re/db/level_baseline.json, which may
+#   only shrink, and its re/db/export_drops.json) as git blobs into a scratch folder and runs the base branch's
+#   re/tools/binding.py over them as data, including kb_lint's structural rules over the base plus those records.
+#   A change to re/db/export_drops.json fails validate until the repository owner has approved the PR's head commit
+#   (or opened the PR); re-run validate after approving. Its token is read-only and it uses no secrets.
+# - automerge never checks anything out. It lists the PR's files from the API itself, requires every one to be a
+#   record, and enables auto-merge pinned to the head commit that validate checked.
+name: bindings
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review, edited]
+    branches: [main]
+  push:
+    branches: [main]
+    paths: ['re/**']
+
+permissions: {}
+
+concurrency:
+  group: bindings-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    if: github.event_name == 'pull_request_target' && !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      verdict: ${{ steps.check.outputs.verdict }}
+      head_sha: ${{ steps.check.outputs.head_sha }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      PR: ${{ github.event.pull_request.number }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      AUTHOR: ${{ github.event.pull_request.user.login }}
+    steps:
+      - name: Check out the base branch
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          persist-credentials: false
+
+      - name: Fetch the pull request's commit as data
+        run: git fetch --no-tags --depth=1 origin "+refs/pull/${PR}/head:refs/remotes/pr/head"
+
+      - name: List the changed files
+        run: |
+          gh api --paginate "repos/${REPO}/pulls/${PR}/files" --jq '.[] | {filename, status}' \
+            | jq -s . > "$RUNNER_TEMP/files.json"
+          test "$(git rev-parse refs/remotes/pr/head)" = "$HEAD_SHA"
+
+      - name: Copy the records out of the pull request
+        run: |
+          python3 -I - "$RUNNER_TEMP/files.json" "$RUNNER_TEMP/head" "$HEAD_SHA" <<'EOF'
+          import json, os, re, subprocess, sys
+          files, out, sha = sys.argv[1], sys.argv[2], sys.argv[3]
+          path_re = re.compile(r'^re/bindings/[a-z][a-z0-9_]{0,31}/[A-Za-z][A-Za-z0-9_]{1,63}\.json$')
+          for f in json.load(open(files)):
+              p = f['filename']
+              baseline = p in ('re/db/level_baseline.json', 're/db/export_drops.json')
+              if not (path_re.match(p) or baseline) or f['status'] not in ('added', 'modified'):
+                  continue
+              tree = subprocess.run(['git', 'ls-tree', sha, '--', p], capture_output=True, text=True, check=True).stdout.split()
+              if len(tree) < 3 or tree[0] != '100644' or tree[1] != 'blob':
+                  continue
+              size = int(subprocess.run(['git', 'cat-file', '-s', tree[2]], capture_output=True, text=True, check=True).stdout)
+              if size > (4 << 20 if baseline else 64 * 1024):
+                  continue
+              data = subprocess.run(['git', 'cat-file', 'blob', tree[2]], capture_output=True, check=True).stdout
+              os.makedirs(os.path.join(out, os.path.dirname(p)), exist_ok=True)
+              with open(os.path.join(out, p), 'wb') as fh:
+                  fh.write(data)
+          EOF
+
+      - name: Check the records with the base branch's tools
+        id: check
+        run: |
+          set +e
+          python3 -I re/tools/binding.py ci --files "$RUNNER_TEMP/files.json" --head "$RUNNER_TEMP/head" \
+            --author "$AUTHOR" --out "$RUNNER_TEMP/result.json"
+          code=$?
+          set -e
+          verdict=$(jq -r '.verdict' "$RUNNER_TEMP/result.json")
+          case "$verdict" in auto|review|fail) ;; *) verdict=fail ;; esac
+          echo "verdict=$verdict" >> "$GITHUB_OUTPUT"
+          echo "head_sha=$HEAD_SHA" >> "$GITHUB_OUTPUT"
+          owner=$(jq -r 'if .owner_review == true then "true" else "false" end' "$RUNNER_TEMP/result.json")
+          echo "owner_review=$owner" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Binding check: $verdict"
+            jq -r '(.summary // ((.errors | map("error: " + .)) + .notes))[] | if startswith("  fix: ") then "  " + . else "- " + . end' "$RUNNER_TEMP/result.json"
+            echo
+            echo "Run \`python3 re/tools/binding.py doctor\` in your checkout for the same check before you push."
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit $code
+
+      - name: Require the repository owner's approval for a change to the export drops
+        if: steps.check.outputs.owner_review == 'true'
+        env:
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          if [ "$AUTHOR" = "$OWNER" ]; then
+            echo "the repository owner opened this pull request"
+            exit 0
+          fi
+          decisive='.[] | select(.user.login == env.OWNER)
+            | select(.state == "APPROVED" or .state == "CHANGES_REQUESTED" or .state == "DISMISSED")
+            | [.state, .commit_id] | @tsv'
+          last=$(gh api --paginate "repos/${REPO}/pulls/${PR}/reviews" --jq "$decisive" | tail -n 1)
+          if [ "$last" = "$(printf 'APPROVED\t%s' "$HEAD_SHA")" ]; then
+            echo "the repository owner approved ${HEAD_SHA}"
+            exit 0
+          fi
+          echo "re/db/export_drops.json changes the addon API: only ${OWNER} approves it."
+          echo "Approve the head commit ${HEAD_SHA}, then re-run this job."
+          echo "- re/db/export_drops.json: waiting for ${OWNER} to approve ${HEAD_SHA}; re-run validate after that" \
+            >> "$GITHUB_STEP_SUMMARY"
+          exit 1
+
+  automerge:
+    needs: validate
+    if: needs.validate.outputs.verdict == 'auto'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      PR: ${{ github.event.pull_request.number }}
+      HEAD_SHA: ${{ needs.validate.outputs.head_sha }}
+    steps:
+      - name: Re-check the pull request from the API
+        run: |
+          pr=$(gh api "repos/${REPO}/pulls/${PR}")
+          test "$(jq -r .state <<<"$pr")" = open
+          test "$(jq -r .draft <<<"$pr")" = false
+          test "$(jq -r .base.ref <<<"$pr")" = main
+          test "$(jq -r .head.sha <<<"$pr")" = "$HEAD_SHA"
+          gh api --paginate "repos/${REPO}/pulls/${PR}/files" --jq '.[] | [.status, .filename] | @tsv' > files.tsv
+          test -s files.tsv
+          test "$(wc -l < files.tsv)" -le 25
+          if grep -Ev $'^(added|modified)\tre/bindings/[a-z][a-z0-9_]{0,31}/[A-Za-z][A-Za-z0-9_]{1,63}\\.json$' files.tsv; then
+            echo "files outside re/bindings: no auto-merge"
+            exit 1
+          fi
+
+      - name: Label and enable auto-merge on the checked commit
+        run: |
+          gh pr edit "$PR" --repo "$REPO" --add-label "bindings: auto-merge" || echo "label 'bindings: auto-merge' is missing"
+          gh pr merge "$PR" --repo "$REPO" --auto --squash --match-head-commit "$HEAD_SHA"
+
+  withdraw:
+    needs: validate
+    if: always() && github.event_name == 'pull_request_target' && needs.validate.outputs.verdict != 'auto'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      PR: ${{ github.event.pull_request.number }}
+    steps:
+      - name: Withdraw auto-merge from a pull request that no longer qualifies
+        run: |
+          labels=$(gh api "repos/${REPO}/issues/${PR}/labels" --jq '.[].name')
+          if grep -qx "bindings: auto-merge" <<<"$labels"; then
+            gh pr merge "$PR" --repo "$REPO" --disable-auto || true
+            gh pr edit "$PR" --repo "$REPO" --remove-label "bindings: auto-merge"
+          fi
+
+  main:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Every record still passes against the merged knowledge base
+        run: python3 -I re/tools/binding.py check
+      - name: The knowledge base has no structural drift
+        run: python3 -I re/tools/kb_lint.py --structural

@@ -134,16 +134,31 @@ The plugin records laps and runs the in-game boards on Steam F1 25 1.0.141 and 1
 
 ## The integrity module
 
-The launcher loads one more native addon for a session in which Time Trial boards is on and the player is signed in with Discord: `swofty.integrity`, a closed-source DLL that Swofty's server publishes. The launcher fetches it from `GET /v1/tt/integrity`, checks its size and sha256, and checks an Ed25519 signature over `swofty-tt-integrity-v1\0 || version || \0 || sha256` against the public key pinned in the launcher. A copy that passes is kept under `timetrial/integrity/<version>/` in the launcher's data folder, the newest two versions. The session places it as `swofty/addons/swofty.integrity/swofty_integrity.dll` and lists it in `swofty/settings.json` under `plugins`, and the session's rollback removes it with every other placed file.
+The launcher loads one more native addon for a session in which Time Trial boards is on and the player is signed in with Discord: `swofty.integrity`, a closed-source DLL that Swofty's server publishes. The launcher reads the offer from `GET /v1/tt/integrity`, downloads the file from the CDN link in the offer when the offer has one and from `GET /v1/tt/integrity/file` otherwise, checks its size and sha256, and checks an Ed25519 signature over `swofty-tt-integrity-v1\0 || version || \0 || sha256` against the public key pinned in the launcher. A copy that passes is kept under `timetrial/integrity/<version>/` in the launcher's data folder with the offer it came with, the newest two versions. The session places it as `swofty/addons/swofty.integrity/swofty_integrity.dll` and lists it in `swofty/settings.json` under `plugins`, and the session's rollback removes it with every other placed file.
+
+The integrity module and the Time Trial plugin are fetched the same way. When Swofty's server times out, can't be reached, answers `too many requests` or a server error, the launcher uses the newest cached copy whose kept offer and bytes still verify; for the integrity module, only one the server offered in the last 14 days. With no such copy, the launcher asks again after 1 and 2 seconds, within 12 seconds in all.
 
 It is not an addon in any profile, the addon list, the load order or the addon set a lap is uploaded with. It is named in `loader.log` as an addon DLL and in the launcher's session log:
 
 ```
 integrity: swofty_integrity.dll 2026.11.10.1 under swofty/addons/swofty.integrity
+integrity module: asking for the offer failed (couldn't reach https://...); trying again in 1 s (try 2 of 3)
+integrity module: the server's copy could not be had (couldn't reach https://...); using the cached copy 2026.11.10.1, verified offline
 integrity module: not loaded for this session: couldn't reach https://...
 ```
 
-When the offer is missing, unreachable or fails a check, the session starts without the module and the lap is written without an `ATST` section.
+When the offer is missing, unreachable or fails a check and no cached copy can stand in, the session starts without the module and the lap is written without an `ATST` section. The launcher then says so in a dialog at Play: Time Trial laps that session won't be sealed and won't rank.
+
+Each lap's upload meta says what the session did about the module, under `integrity`:
+
+```json
+{"state": "loaded", "version": "2026.11.10.1", "source": "cdn"}
+{"state": "loaded", "version": "2026.11.10.1", "source": "cache", "detail": "couldn't reach https://..."}
+{"state": "loaded", "version": null, "source": "env"}
+{"state": "fetch_failed", "version": null, "source": null, "detail": "couldn't reach https://...: timeout: global"}
+```
+
+`state` is `loaded`, `no_offer` (the server answered 404), `fetch_failed` (no answer and no cached copy), `bad_offer` (the signature, size or sha256 did not verify), `signed_out` (the server did not take the sign-in) or `refused` (any other refusal, in the server's words). `source` says where the bytes came from: `server`, `cdn`, `cache` or `env` (`SWOFTY_TT_INTEGRITY_DLL`). `detail` is at most 200 characters. A launcher that does not know leaves `integrity` out.
 
 At `laps.sealing` the module appends the `ATST` section: a length-prefixed JSON document and a 32-byte HMAC-SHA256 of it.
 
@@ -154,6 +169,46 @@ json = { "v": 1, "module": "2026.11.10.1", "nonce": "...", "body_sha256": "...",
 ```
 
 `body_sha256` is the hash of the lap file before the section, `values` and `db` are the handling values and database rows read for the player's car, and `modules` lists the DLLs loaded from the game folder. The key of the MAC is held by the server.
+
+## Server-timed laps
+
+At each timing line of a lap (the start line, sector 1, sector 2 and the finish) the Time Trial plugin calls the lap host's `mark` with the lap's number, the line and the game's lap clock there. The plugin numbers each lap at its start line: 1 for the first lap and one more for each lap started. A discarded lap keeps its number, so the `lap_index` of the lap files has gaps after a discard. The number is the lap file's `lap_index`. The core stamps the moment and writes one file per mark into `tt/ticks/` of the launcher's data folder (`swofty/tt/ticks/` when it can't write there):
+
+```json
+{"seq": 12, "lap": 3, "mark": "s1", "game_ms": 28411, "at_ms": 1795000123456}
+```
+
+While the game runs, the launcher sends each mark, in the order they were made, to `POST /v1/tt/sessions/{nonce}/ticks` on a thread of its own:
+
+```json
+{"lap": 3, "mark": "s1", "game_ms": 28411, "since_ms": 12, "attempt": 1, "prev": "<the receipt of lap 3's start>"}
+```
+
+`prev` is the receipt of the same lap's previous line mark, and is left out at `start`. A mark goes only once that receipt is in hand. The server answers with a receipt, `{"receipt": "tk1...."}`, which the launcher keeps as it is under `timetrial/ticks/` in its data folder. When a lap is collected into the outbox it takes the receipts of its `lap_index` with it, and its upload meta carries them in mark order:
+
+```json
+"timing": {"lap": 3, "receipts": ["tk1....", "tk1....", "tk1....", "tk1...."]}
+```
+
+A lap's pauses are marked too, up to four: `p1` as the game pauses, chained to the lap's start, and `r1` as it resumes, chained to `p1`, then `p2` and `r2`, up to `p4` and `r4`. `game_ms` is the game's lap clock, which stands still while it is paused. The server leaves the pause out of the lap's real time. A pause mark the server refuses, or one with no receipt of its chain, is dropped alone: that pause stays in the lap's time and the lap's other receipts and timing stay. A core before 1.10.0 refuses the pause marks.
+
+| Answer | The launcher |
+|---|---|
+| no answer, 408 or a server error | sends the mark again after 0.5, 1, 2, 4, 8 and 16 s, then every 30 s, with `attempt` and `since_ms` updated |
+| 429 | sends it again after the server's `Retry-After` |
+| 400, 409 or another refusal | drops that lap's timing |
+| 404 or 401 | stops ticking for the session |
+
+A mark the server can't be reached for is kept for 10 minutes; one the server answered with an error is tried until a minute after its lap's finish. Then that lap's timing is dropped. A lap without receipts uploads without `timing`, as do laps from launchers or plugins without timing marks. The launcher sends at most 12 ticks a minute. A new lap waits up to 5 seconds for marks still being sent. The run log says when a mark couldn't be sent:
+
+```
+timing: lap 3 s1 not sent (couldn't reach https://...); trying again
+timing: lap 3 end not sent within 600 s; that lap is untimed
+```
+
+## Session challenge
+
+The launcher asks for the session nonce with the sha256 of the game's exe, `{"game_build": "<sha256>"}`, when it knows it. When Swofty's server sends a `challenge` with the nonce, the launcher writes it into `swofty/tt.json` as `tt_challenge`, next to `tt_nonce`, for the integrity module. A challenge that is not a JSON object or is larger than 16 KB is left out. Older servers send none, and the key is then absent.
 
 ## In-game boards
 

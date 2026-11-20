@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Compute_InstalledUpgradePerformanceByType",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143518660",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "float (void *team_ref, char type, uint64_t day_mask)",
+  "evidence": "decomp:re/decomp/143518660.c;xref:0x14174d0f4;xref:0x14174e73f;xref:0x1417fefff",
+  "notes": "myteam-g2: Same formula as 143518350 but only for upgrades whose type byte (+0x72) equals type and whose state is 3. Returns the float performance contribution of that part type."
+ },
+ "signature": {
+  "id": "career.compute_installed_upgrade_performance_by_type",
+  "section": ".xtls",
+  "pattern": "56 57 53 B8 70 30 00 00 E8 ?? ?? ?? ?? 48 29 C4",
+  "match": "0x143518660",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143518660",
+  "kind": "func_start",
+  "names": [
+   "Career_Compute_InstalledUpgradePerformanceByType"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x143518660",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143518660.c;xref:0x14174d0f4",
+   "notes": "V10276 Filters upgrades by type byte +0x72, latest queue entry state 3 with day<=mask, sums range*weight share via table at team+0x1a38; matches claim."
+  }
+ ],
+ "proofs": []
+}

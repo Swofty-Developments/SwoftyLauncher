@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ent_EntrantsSystem_AddTeam",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142474a60",
+  "level": "L1",
+  "subsystem": "entrants",
+  "proto": "-",
+  "evidence": "pat:log-channel-ENTRANTS_SYSTEM",
+  "notes": "named from its log messages (channel ENTRANTS_SYSTEM): 'Team added with stat id %s | Couldn't find array to add team with type %s | Failed to add team with stat id %s'"
+ },
+ "signature": {
+  "id": "entrants.entrants_system_add_team",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC 90 07 00 00 4C 89 C7 48 89 CB 48 8B 89 D8 02 00 00",
+  "match": "0x142474a60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142474a60",
+  "kind": "func_start",
+  "names": [
+   "Ent_EntrantsSystem_AddTeam"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142474a60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142474a60.c;xref:0x140c2f025",
+   "notes": "V5066 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

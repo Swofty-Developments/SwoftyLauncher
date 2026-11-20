@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Camera_FindCameraTransformByOwner",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144534230",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144534230.c;xref:0x1406af26d",
+  "notes": "Linear search in pointer vector [this+0x60..0x68] for the entry whose id equals param_3 and returns a 48-byte (3 x 16) copy, zeroed on miss. 19 callers (0x1406af0c0 x2, Game_CinematicPitStop_Start...). Hypothesis on content (camera placement)."
+ },
+ "signature": {
+  "id": "game.camera_find_camera_transform_by_owner",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 D6 48 8B 41 60",
+  "match": "0x144534230",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144534230",
+  "kind": "func_start",
+  "names": [
+   "Game_Camera_FindCameraTransformByOwner"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x144534230",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144534230.c;xref:0x1406af26d",
+   "notes": "V7683 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

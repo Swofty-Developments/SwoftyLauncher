@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_RenderBadge_ResizeTextureList",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141e6eb70",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141e6eb70.c;xref:0x141d71645",
+  "notes": "Insert/resize into the badge texture table (refcounted short at obj+4 ++/--), with growth logic. Callers 0x141d715c0, Game_RenderBadgeViewModel_LoadTexture, itself. Hypothesis. vp5-verify partial/disagree"
+ },
+ "signature": {
+  "id": "game.render_badge_insert_texture_slot",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 96 A0 03 00 00 48 85 D2 74 0C 48 8D 8E",
+  "match": "0x141d71645",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x141e6eb70",
+  "kind": "func_start",
+  "names": [
+   "Game_RenderBadge_ResizeTextureList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x141e6eb70",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141e6eb70.c;xref:0x141d71645",
+   "notes": "V8093 Better name Game_RenderBadge_ResizeTextureList: std::list style resize (counters +0x30/+0x38, same template as Ne_PoolList_Resize) releasing refcounted short at obj+4; resize not insert"
+  }
+ ],
+ "proofs": []
+}

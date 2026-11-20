@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Bind_TeamHqPopupIcons",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422e7650",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *view)",
+  "evidence": "decomp:re/decomp/1422e7650.c;xref:0x1422e7014;xref:0x1422e7122",
+  "notes": "myteam-g1: Maps popup kinds (renown, sponsor_negotiations, workforce_rate_corporate/engineering/personnel) to team_hq popup icon overrides and morale_reward."
+ },
+ "signature": {
+  "id": "career.bind_team_hq_popup_icons",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 05 00 00 C5 78 29 8C 24 70 05 00 00",
+  "match": "0x1422e7650",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422e7650",
+  "kind": "func_start",
+  "names": [
+   "Career_Bind_TeamHqPopupIcons"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1422e7650",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422e7650.c;xref:0x1422e7014",
+   "notes": "V10100 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

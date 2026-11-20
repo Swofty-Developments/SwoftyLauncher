@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Build_RnDDeptPage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c7b880",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:pdata-0x141c7b880-0x141c7f997;imm:0x6d8;xref:0x141c7b6f4;kb:subsystems/rnd_ui.md#page",
+  "notes": "Builds one R&D department tab page (called from 0x141c7b3d0). rsi = the 0x950 dept card: dept = byte [card+0x6d8], team = dword [card+0x6bc], per-team Upgrades model = [card+0x688]. @0x141c7d8cf calls Career_Query_EnabledUpgrades(U, out=rsp+0xdf0, &team=rsp+0x8c, 0xffff) and keeps results whose byte [u+0x72] == the card dept; @0x141c7dcb5 reads Career_Get_TeamModifiers for the research-slot count. Department-4 pages are empty because dept-4 instances are never enabled (rnd_ui.md#instances), not because this builder refuses 4."
+ },
+ "signature": {
+  "id": "career.build_rn_d_dept_page",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 48 3E 00",
+  "match": "0x141c7b880",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c7b880",
+  "kind": "func_start",
+  "names": [
+   "Career_Build_RnDDeptPage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141c7b880",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c7b880.c;xref:0x141c727f5",
+   "notes": "V4948 name/description match decomp: strings and callees consistent"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x141c7b880",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c7b880.c;xref:0x141c7d8cf;xref:0x141c7dcb5;xref:0x141c7b6f4",
+   "notes": "V9190 Disasm confirms [rsi+0x6d8] dept byte, [rsi+0x6bc] team, [rsi+0x688] model, the query call at 0x141c7d8cf (r8=rsp+0x8c, r9w=0xffff) and TeamModifiers call at 0x141c7dcb5."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Build_SuspensionRig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14462d090",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14462d090.c;xref:0x1428ab1c3,0x14462b054",
+  "notes": "per corner (stride 0x164): plain arms suspension..suspension9 (both part and x0_..._fixed needed), spring set suspension_spring{,2,3} (all three), multiarm pairs (1,2),(3,4), steeringarm, fin{,2,3} (part only), driveshaft_boot_in/driveshaft/driveshaft_boot_out else driveshaft{,2,3}; incomplete sets are skipped silently"
+ },
+ "signature": {
+  "id": "game.build_suspension_rig",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 4D 85 C0 0F 84",
+  "match": "0x14462d090",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14462d090",
+  "kind": "func_start",
+  "names": [
+   "Game_Build_SuspensionRig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x14462d090",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14462d090.c;xref:0x1428ab1c2",
+   "notes": "V6712 stride 0x164 and driveshaft names verified"
+  }
+ ],
+ "proofs": []
+}

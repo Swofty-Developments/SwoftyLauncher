@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_Grow_ParticleResourcePack",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b46860",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b46860.c;xref:0x143b14673",
+  "notes": "Hash-map (ne_hash_map.h) grow/rehash instance used by Asset_Load_ParticleResourcePack; on invalid parameter calls noreturn stub 0x143b46850. Named callers: Asset_Load_ParticleResourcePack."
+ },
+ "signature": {
+  "id": "core.hash_map_grow_particle_resource_pack",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 8B 44 24 34 FF C0 3D 00 01 00 00",
+  "match": "0x143b14673",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143b46860",
+  "kind": "func_start",
+  "names": [
+   "Ne_HashMap_Grow_ParticleResourcePack"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x143b46860",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b46860.c;xref:0x143b14673",
+   "notes": "V8136 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

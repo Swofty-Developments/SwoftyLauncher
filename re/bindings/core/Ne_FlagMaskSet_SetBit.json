@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_FlagMaskSet_SetBit",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14144d860",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14144d860.c;xref:0x140824a16,0x140835836",
+  "notes": "(maskSet, group<21, bit<25): under critical section (+0x58) sets bit in u32 word[group]; on change notifies via 0x14144d8b0. Same object type as global 0x14604ed68 (group 12 bit 14 toggled by 0x142df8980). Callers: Sess_PreRaceGridState_OnEnter, Sess_PreRace_Update, Game_F1os_OnStart_UpdateSession."
+ },
+ "signature": {
+  "id": "core.flag_mask_set_set_bit",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 44 89 C7 89 D3 48 89 CE 48 8B 49 58 FF 15 ?? ?? ?? ?? 83 FB 14 77 1E 83 FF 18 77 19 89 D8 8B 14 86 89 D1 0F AB",
+  "match": "0x14144d860",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14144d860",
+  "kind": "func_start",
+  "names": [
+   "Ne_FlagMaskSet_SetBit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x14144d860",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14144d860.c;xref:0x142d82ca6,0x142d83405,0x140824a16",
+   "notes": "V3369 CS +0x58, group<0x15, bit<0x19, ORs bit into word[group], notifies 0x14144d8b0 on change; global 0x14604ed68 word12 bit14 cleared by 0x142df8980 confirmed; callers ok"
+  }
+ ],
+ "proofs": []
+}

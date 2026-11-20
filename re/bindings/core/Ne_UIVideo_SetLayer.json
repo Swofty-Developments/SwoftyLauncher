@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_UIVideo_SetLayer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14421c620",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14421c620.c;xref:0x140266d51,0x140aca0ef",
+  "notes": "Stores layer param_2 at +0x64 (4 = use +0x60) and posts NeUISetLayerMessage (type 0x1f) with layer id from table 0x145a65818 through the UI service. Red flag strategy uses layer 4. Callers: FePopup_Dispatch_FeatureCmd, Game_TalkingPoints_PlayItem, Sess_PreRace_OnStateExit, Sess_RedFlagRaceStrategy_Enter, Sess_RedFlagToRestart_Enter."
+ },
+ "signature": {
+  "id": "core.u_i_video_set_layer",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 CE 89",
+  "match": "0x14421c620",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14421c620",
+  "kind": "func_start",
+  "names": [
+   "Ne_UIVideo_SetLayer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x14421c620",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14421c620.c;xref:0x140266d51",
+   "notes": "V3653 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

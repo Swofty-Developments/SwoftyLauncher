@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_FormationLapLogic_CheckAllParked",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436174e0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1436174e0.c;doc:re/db/subsystems/session.md;xref:0x14260ee14,0x14357b45b,0x145851878",
+  "notes": "warmup-static (agent warmup, unverified): sets +0x42 = 1 once every car record has +0x51 (parked). Other setters of +0x42: Sess_FormationLap_Update 0x142d5d480, 0x143617950, 0x142d56550, Sess_FormationLapLogic_Reset(this, 1)"
+ },
+ "signature": {
+  "id": "session.formation_lap_logic_check_all_parked",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 D7 48 89 CE 83 79 28",
+  "match": "0x1436174e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436174e0",
+  "kind": "func_start",
+  "names": [
+   "Sess_FormationLapLogic_CheckAllParked"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb-verify-b",
+   "kind": "func",
+   "item": "Sess_FormationLapLogic_CheckAllParked",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436174e0.c;xref:0x14260ee14",
+   "notes": "V1833 +0x42 set when all +0x51; only if +0x28<2; other setters 142d5d480, 143617950 (0x143617d3a), 142d56550 confirmed"
+  }
+ ],
+ "proofs": []
+}

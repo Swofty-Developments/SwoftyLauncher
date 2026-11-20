@@ -1,21 +1,21 @@
-// Host-native unit test for the core's registered HUD leaf table (native/src/core/hud_leaves_logic.hpp):
+// Host-native unit test for the core's registered HUD leaf table (native/src/core/hud/hud_leaves_logic.hpp):
 // registration and type rules, change detection, group atomicity under the per-tick cap, deferral without
-// drops, rebuild resend and failed-leaf retry. Built and run by native/test/run_hud_leaves_test.sh.
+// drops, rebuild resend and failed-leaf retry. Built and run by native/test/run_tests.sh hud_leaves.
 
-#include "hud_leaves_logic.hpp"
+#include "core/hud/hud_leaves_logic.hpp"
 
 #include <cstdio>
 
-namespace hl = runtime::hud_leaves;
+namespace hl = hud::leaves;
 
 static int g_fail;
 
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                    \
-            g_fail++;                                                                                                  \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                              \
+            g_fail++;                                                                                                            \
+        }                                                                                                                        \
     } while (0)
 
 struct Rec {

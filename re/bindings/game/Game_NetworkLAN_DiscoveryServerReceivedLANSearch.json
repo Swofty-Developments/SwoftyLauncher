@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkLAN_DiscoveryServerReceivedLANSearch",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14408e6e0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-LAN",
+  "notes": "named from its log messages (channel NETWORK-LAN): 'DiscoveryServer received LAN search request, but failed to find query definition requested, name '%s'.'"
+ },
+ "signature": {
+  "id": "game.network_lan_discovery_server_received_lan_search",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 09 00 00 48 89 CE 8B 81 D0 01 00 00",
+  "match": "0x14408e6e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14408e6e0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkLAN_DiscoveryServerReceivedLANSearch"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x14408e6e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14408e6e0.c",
+   "notes": "V6516 size=3833; strings, callees and callers match claim (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

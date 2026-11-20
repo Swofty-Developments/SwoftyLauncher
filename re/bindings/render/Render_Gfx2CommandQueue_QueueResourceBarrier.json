@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2CommandQueue_QueueResourceBarrier",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a06fc0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a06fc0.c;xref:0x142bcff54,0x14379c535",
+  "notes": "Label NeGfx2CommandQueue::flushResourceBarriers; for the 8x8-format case (param_5/6 == 8) with queue index (param_1+0x20)-1 < 2, issues barrier flush then copy via vcall +0xd0 on queue state +0x150. Callers PhotoMode CaptureFrame, ThumbnailSystem screenshot, Game_Hbcn_SetAdditionalMips. Hypothesis. vp2-verify partial/disagree"
+ },
+ "signature": {
+  "id": "render.gfx2_command_queue_flush_barriers_and_copy",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 30 44 89 C3 48 89 D7",
+  "match": "0x143a06fc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a06fc0",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2CommandQueue_QueueResourceBarrier"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x143a06fc0",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/143a06fc0.c;xref:0x142bcff54",
+   "notes": "V7814 better name Ne_Gfx2CommandQueue_QueueResourceBarrier: appends 0x20-byte barrier records at +0x150[idx] and flushes via vcall +0xd0 when count hits 0xfff; no copy"
+  }
+ ],
+ "proofs": []
+}

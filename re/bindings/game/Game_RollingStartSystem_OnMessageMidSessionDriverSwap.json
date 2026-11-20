@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RollingStartSystem_OnMessageMidSessionDriverSwap",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f11ed0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=RollingStartSystem::onMessageMidSessionDriverSwap; log channel NETWORK: 'RollingStartSystem::onMessageMidSessionDriverSwap()'"
+ },
+ "signature": {
+  "id": "game.rolling_start_system_on_message_mid_session_driver_swap",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6D B8 00 01 00 00",
+  "match": "0x142f11ed0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f11ed0",
+  "kind": "func_start",
+  "names": [
+   "Game_RollingStartSystem_OnMessageMidSessionDriverSwap"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f11ed0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f11ed0.c;xref:0x142f0df36",
+   "notes": "V5577 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

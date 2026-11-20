@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FlowCoordinator_ProcessNextPreload",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143854570",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=FlowCoordinator::processNextPreload; log channel FLOW/V: 'TEMP_LOG: FlowCoordinator::processNextPreload() STATUS:%d PRELOAD_TASKS:%I64u ADDITIONAL_PRELOADS:%d'"
+ },
+ "signature": {
+  "id": "game.flow_coordinator_process_next_preload",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 C5 F8 29 B4 24 B0 00 00 00 44 89 C7 48 89 D3",
+  "match": "0x143854570",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143854570",
+  "kind": "func_start",
+  "names": [
+   "Game_FlowCoordinator_ProcessNextPreload"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143854570",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143854570.c;xref:0x1438544c5",
+   "notes": "V6322 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

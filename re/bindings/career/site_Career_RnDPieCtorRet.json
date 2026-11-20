@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDPieCtorRet",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f46f99",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141f46eb0.c;xref:0x141f46f99;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v071--the-pie-crash-at-career-load-slot-4-was-never-constructed",
+  "notes": "mov [rsp+0x2c0],rbx after call Career_Construct_RnDPieObject (also the je target when the alloc is null): r14 = new pie object or 0"
+ },
+ "signature": {
+  "id": "career.rn_d_pie_ctor_ret",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 89 9C 24 C0 02 00 00",
+  "match": "0x141f46f94",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f46f99",
+  "kind": "mid",
+  "expect": "48 89 9C 24 C0 02 00 00",
+  "names": [
+   "site_Career_RnDPieCtorRet"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-3",
+   "kind": "global",
+   "item": "site_Career_RnDPieCtorRet",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f46eb0.c;xref:0x141f46f86,0x141f46f8c,0x141f46f94,0x141f46f99",
+   "notes": "V0154 je 0x141f46f99 on null alloc and fall-through after call 0x14180c490; r14 = alloc result (callee-saved across the ctor) or 0; 8B window clean"
+  }
+ ],
+ "proofs": []
+}

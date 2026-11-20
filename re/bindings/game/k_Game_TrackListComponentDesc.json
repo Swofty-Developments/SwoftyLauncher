@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "k_Game_TrackListComponentDesc",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14605b368",
+  "type": "void *",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/141a33e90.c;decomp:re/decomp/14386d890.c;xref:0x141a33fda,0x14386dced",
+  "notes": "descriptor of the career's TrackListComponent (cxx=TrackListComponent; static init 0x140d69490 stores the name 0x14567a6a1 at desc+8, djb2 0x8e048f49 at desc+0x10), looked up in the game mode +0x1030 registry with vt[2](reg, desc, 1); the season length step's Full Season and Custom handlers (.data1 0x14bc8c545 and 0x14bc8c57f) apply preset 0 to it with Game_SeasonLength_ApplyPreset before they add option 9 or 10; renamed from k_Game_SeasonLengthComponentDesc after V0994"
+ },
+ "signature": {
+  "id": "game.track_list_component_desc",
+  "section": ".xtls",
+  "pattern": "48 8D 15 ?? ?? ?? ?? 48 89 F9 41 B8 01 00 00 00 FF 50 10 48 89 C1 B2 02",
+  "match": "0x14386dcea",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x14605b368",
+  "kind": "data",
+  "names": [
+   "k_Game_TrackListComponentDesc"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "wizard-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/career_wizard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-c",
+   "kind": "global",
+   "item": "k_Game_TrackListComponentDesc",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14386d890.c;decomp:re/decomp/14bc8c400.c;decomp:re/decomp/141a33e90.c;decomp:re/decomp/140cd2610.c;xref:0x14386dcea,0x141a33fd7,0x14bc8c52b,0x14bc8c565,0x140d6a2d5,0x1412cd4f9;sig:game.track_list_component_desc",
+   "notes": "V0999 Re-checked the renamed row. Static init 0x140d69490 stores the name pointer 0x14567a6a1 'TrackListComponent' at desc+8 (0x140d6a2d5) and 0x8e048f49 = djb2('TrackListComponent') at desc+0x10. 0x14386d890 and 0x141a33e90 lea 0x14605b368 into rdx and call +0x1030 registry vt+0x10 (reg, desc, r8d 1). In .data1 0x14bc8c400, full_season (djb2 0x5bec6ec0) does lea 0x14bc8c52b, vt+0x10, ApplyPreset(...,0) at 0x14bc8c545 and then dl=9. custom_season (0xf9da2148) does lea 0x14bc8c565, ApplyPreset(...,0) at 0x14bc8c57f and then dl=0xa. That matches the row's handler addresses and the order of options 9 and 10. vt_Game_TrackListComponent slot 5 0x140cd2610 returns it. ScheduleComponent (desc 0x146063100) names this desc's node 0x14605b370 as its parent (0x1412cd4f9). I did not check whether the career registry holds a TrackListComponent or a ScheduleComponent under this lookup. sigcheck (--exe f1-modding/work/exe/F1_25.exe): one hit, match 0x14386dcea, target 0x14605b368"
+  }
+ ],
+ "proofs": []
+}

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
-#include "garage_vehicle.hpp"
-#include "garage_rig.hpp"
-#include "garage_central.hpp"
+#include "core/garage/garage_vehicle.hpp"
+#include "core/garage/garage_rig.hpp"
+#include "core/garage/garage_central.hpp"
 
 #include <cassert>
 #include <cstring>
@@ -9,18 +9,20 @@
 #include <string>
 #include <vector>
 
-using namespace runtime::garage_placement;
+using namespace garage;
 
 struct Fixture {
     std::map<Address, std::vector<unsigned char>> saved;
 
-    template<class T> void put(Address address, const T& value) {
-        auto& bytes = saved[address];
+    template <class T> void put(Address address, const T &value)
+    {
+        auto &bytes = saved[address];
         bytes.resize(sizeof(T));
         std::memcpy(bytes.data(), &value, bytes.size());
     }
 
-    template<class T> bool operator()(Address address, T& value) const {
+    template <class T> bool operator()(Address address, T &value) const
+    {
         auto it = saved.find(address);
         if (it == saved.end() || it->second.size() != sizeof(T))
             return false;
@@ -29,9 +31,9 @@ struct Fixture {
     }
 };
 
-Fixture* current_fixture;
+Fixture *current_fixture;
 constexpr Address mb_actor = 0x90000, eb_actor = 0xa0000;
-void fixture_crew_setter(void* object, const float* rows, std::uint32_t enabled)
+void fixture_crew_setter(void *object, const float *rows, std::uint32_t enabled)
 {
     const auto actor = reinterpret_cast<Address>(object);
     assert((actor == mb_actor || actor == eb_actor) && enabled == 1);
@@ -75,19 +77,19 @@ void test_central_crew()
     for (Address member : {mb_actor, eb_actor}) {
         f.put(member, table);
         f.put(member + 0x228, member + 0x100000);
-        std::array<float,12> packed{};
+        std::array<float, 12> packed{};
         packed[0] = packed[5] = packed[10] = 1;
         f.put(member + 0x100010, packed);
     }
     Address setter = reinterpret_cast<Address>(&fixture_crew_setter);
     f.put(table + 0x70, setter);
-    const auto scope = [](const Owner&) { return true; };
-    const std::array<CrewDelta,2> deltas{CrewDelta{.2f,0,0},CrewDelta{-.3f,0,0}};
+    const auto scope = [](const Owner &) { return true; };
+    const std::array<CrewDelta, 2> deltas{CrewDelta{.2f, 0, 0}, CrewDelta{-.3f, 0, 0}};
     CrewPlacement saved{};
     assert(prepare_central_crew(owner, ids, world, deltas, f, scope, saved));
-    auto push = [&](CrewRole role, const Matrix& w) {
-        return push_central_world(owner, saved, role, w, f, [&](Address t) { return t == table; },
-                                  [&](Address fn) { return fn == setter; });
+    auto push = [&](CrewRole role, const Matrix &w) {
+        return push_central_world(
+            owner, saved, role, w, f, [&](Address t) { return t == table; }, [&](Address fn) { return fn == setter; });
     };
     assert(set_central_crew(owner, saved, false, f, scope, push) == CrewResult::applied);
     CrewReadback readback{};
@@ -98,7 +100,7 @@ void test_central_crew()
     assert(saved.members[0].target[12] == .2f); // no double shift
     assert(set_central_crew(owner, saved, true, f, scope, push) == CrewResult::restored);
     bool fail_second = true;
-    auto once = [&](CrewRole role, const Matrix& w) {
+    auto once = [&](CrewRole role, const Matrix &w) {
         if (role == CrewRole::eb1 && fail_second) {
             fail_second = false;
             return false;
@@ -146,11 +148,11 @@ void test_root_transaction()
     }
     const Fixture original = f;
     int writes = 0, refreshes = 0, fail_write = -1, fail_refresh = -1;
-    const auto write = [&](Address address, const auto& value) {
+    const auto write = [&](Address address, const auto &value) {
         f.put(address, value);
         return ++writes != fail_write; // memory may already be touched on failure
     };
-    const auto scope = [&](const Owner& current) { return current.instance == instance; };
+    const auto scope = [&](const Owner &current) { return current.instance == instance; };
     const auto refresh = [&](Address scene) {
         bool ours = false;
         for (Address expected : scenes) {
@@ -189,8 +191,7 @@ void test_root_transaction()
     fail_refresh = -1;
     f = original;
     writes = refreshes = 0;
-    assert(set_garage_root(owner, root, f, write, [](const Owner&) { return false; }, refresh) ==
-           RootResult::unavailable);
+    assert(set_garage_root(owner, root, f, write, [](const Owner &) { return false; }, refresh) == RootResult::unavailable);
     assert(writes == 0 && refreshes == 0);
     f.saved.erase(scenes[4] + 0x20); // no earlier scene is touched when a later read fails
     assert(set_garage_root(owner, root, f, write, scope, refresh) == RootResult::unavailable);
@@ -204,118 +205,175 @@ void test_root_transaction()
     assert(set_garage_root(owner, root, f, write, scope, refresh) == RootResult::unavailable);
     assert(writes == 0 && refreshes == 0);
     f = original;
-    assert(set_garage_root(owner, root, f, [](Address, const auto&) { return false; }, scope, refresh) ==
-           RootResult::rollback_failed);
+    assert(set_garage_root(
+               owner, root, f, [](Address, const auto &) { return false; }, scope, refresh) == RootResult::rollback_failed);
 }
 
 void test_individuals_and_vehicle()
 {
-    namespace sdk=swofty::garage_placement;
-    using Role=sdk::Mechanic;
-    using R=sdk::Result;
-    constexpr Address instance=0x10000, scene=0x20000, car=0x30000, bank=0x40000, module=0x50000;
-    constexpr Address resource=0x60000, list=0x70000, defs=0x80000, eb=0x90000, fl=0xa0000, prop=0xb0000;
-    Owner owner{instance,scene,car,bank,2,0,module};
+    namespace sdk = swofty::garage_placement;
+    using Role = sdk::Mechanic;
+    using R = sdk::Result;
+    constexpr Address instance = 0x10000, scene = 0x20000, car = 0x30000, bank = 0x40000, module = 0x50000;
+    constexpr Address resource = 0x60000, list = 0x70000, defs = 0x80000, eb = 0x90000, fl = 0xa0000, prop = 0xb0000;
+    Owner owner{instance, scene, car, bank, 2, 0, module};
     Fixture f;
     Matrix identity{};
-    identity[0]=identity[5]=identity[10]=identity[15]=1;
-    f.put(module+0x60,bank); f.put(instance+0x11c,owner.garage);
-    f.put(instance+0xc8,scene); f.put(instance+0x1a8,car);
-    f.put(scene+0x20,identity); f.put(scene+0xa0,resource);
-    f.put(resource+0x50,defs); f.put(resource+0x100,uint64_t{3}); f.put(scene+0x78,list);
-    f.put(list,eb); f.put(list+8,fl); f.put(list+16,prop);
-    auto ids=members::names([](const char *name) {
-        static const std::map<std::string,uint32_t> keys{{"EB1",18},{"FL:",21},{"MB:",25},{"MB",26}};
-        auto it=keys.find(name);
-        return it==keys.end() ? CrewIds::missing : it->second;
+    identity[0] = identity[5] = identity[10] = identity[15] = 1;
+    f.put(module + 0x60, bank);
+    f.put(instance + 0x11c, owner.garage);
+    f.put(instance + 0xc8, scene);
+    f.put(instance + 0x1a8, car);
+    f.put(scene + 0x20, identity);
+    f.put(scene + 0xa0, resource);
+    f.put(resource + 0x50, defs);
+    f.put(resource + 0x100, uint64_t{3});
+    f.put(scene + 0x78, list);
+    f.put(list, eb);
+    f.put(list + 8, fl);
+    f.put(list + 16, prop);
+    auto ids = members::names([](const char *name) {
+        static const std::map<std::string, uint32_t> keys{{"EB1", 18}, {"FL:", 21}, {"MB:", 25}, {"MB", 26}};
+        auto it = keys.find(name);
+        return it == keys.end() ? CrewIds::missing : it->second;
     });
-    f.put(eb+0x248,uint32_t{18}); f.put(fl+0x248,uint32_t{21}); f.put(prop+0x248,uint32_t{444});
-    auto set_model=[&](Address actor,const Matrix &world) {
-        const Address model=actor+0x100000;
-        std::array<float,12> rows{};
-        for (unsigned r=0;r<3;++r) for (unsigned c=0;c<4;++c) rows[r*4+c]=world[c*4+r];
-        f.put(actor+0x228,model); f.put(model+0x10,rows);
+    f.put(eb + 0x248, uint32_t{18});
+    f.put(fl + 0x248, uint32_t{21});
+    f.put(prop + 0x248, uint32_t{444});
+    auto set_model = [&](Address actor, const Matrix &world) {
+        const Address model = actor + 0x100000;
+        std::array<float, 12> rows{};
+        for (unsigned r = 0; r < 3; ++r)
+            for (unsigned c = 0; c < 4; ++c)
+                rows[r * 4 + c] = world[c * 4 + r];
+        f.put(actor + 0x228, model);
+        f.put(model + 0x10, rows);
     };
-    for (auto actor:{eb,fl,prop}) {
-        set_model(actor,identity);
-        Address def=actor+0x200000;
-        f.put(actor+0x538,def); f.put(def+0x40,identity);
+    for (auto actor : {eb, fl, prop}) {
+        set_model(actor, identity);
+        Address def = actor + 0x200000;
+        f.put(actor + 0x538, def);
+        f.put(def + 0x40, identity);
     }
-    members::Selection s{}; members::Actor selected{};
-    assert(members::list(owner,ids,f,s) && s.roles.contains(Role::fl) && s.roles.contains(Role::eb1));
-    assert(members::select(owner,ids,Role::mb,f,selected)==R::missing);
-    assert(members::select(owner,ids,Role::eb2,f,selected)==R::missing);
-    assert(sdk::mechanic_from_name("FL")==Role::fl && !sdk::mechanic_from_name("FL:") &&
-           !sdk::mechanic_from_name("FL_BRAKE_PROP") && sdk::mechanic_name(Role::fl)=="FL");
-    f.put(prop+0x248,uint32_t{21});
-    assert(members::list(owner,ids,f,s) && !s.roles.contains(Role::fl) && s.roles.contains(Role::eb1));
-    assert(members::select(owner,ids,Role::fl,f,selected)==R::ambiguous);
-    f.put(prop+0x248,uint32_t{444});
+    members::Selection s{};
+    members::Actor selected{};
+    assert(members::list(owner, ids, f, s) && s.roles.contains(Role::fl) && s.roles.contains(Role::eb1));
+    assert(members::select(owner, ids, Role::mb, f, selected) == R::missing);
+    assert(members::select(owner, ids, Role::eb2, f, selected) == R::missing);
+    assert(sdk::mechanic_from_name("FL") == Role::fl && !sdk::mechanic_from_name("FL:") &&
+           !sdk::mechanic_from_name("FL_BRAKE_PROP") && sdk::mechanic_name(Role::fl) == "FL");
+    f.put(prop + 0x248, uint32_t{21});
+    assert(members::list(owner, ids, f, s) && !s.roles.contains(Role::fl) && s.roles.contains(Role::eb1));
+    assert(members::select(owner, ids, Role::fl, f, selected) == R::ambiguous);
+    f.put(prop + 0x248, uint32_t{444});
 
     members::Edit change{};
-    assert(members::prepare(owner,ids,Role::fl,f,change)==R::ok);
-    change.target[12]=20;
-    auto push=[&](Address actor,const Matrix &world){ assert(actor==fl);set_model(actor,world); return true; };
-    assert(members::apply(owner,ids,change,f,push)==R::ok);
+    assert(members::prepare(owner, ids, Role::fl, f, change) == R::ok);
+    change.target[12] = 20;
+    auto push = [&](Address actor, const Matrix &world) {
+        assert(actor == fl);
+        set_model(actor, world);
+        return true;
+    };
+    assert(members::apply(owner, ids, change, f, push) == R::ok);
     Matrix observed{};
-    assert(crew_detail::model_world(f,eb,observed) && observed==identity);
-    assert(crew_detail::model_world(f,prop,observed) && observed==identity);
-    assert(members::prepare(owner,ids,Role::fl,f,change)==R::ok && change.native==identity && change.before[12]==20);
-    change.target[12]=40;
+    assert(crew_detail::model_world(f, eb, observed) && observed == identity);
+    assert(crew_detail::model_world(f, prop, observed) && observed == identity);
+    assert(members::prepare(owner, ids, Role::fl, f, change) == R::ok && change.native == identity && change.before[12] == 20);
+    change.target[12] = 40;
     unsigned attempts{};
-    auto fail_once=[&](Address actor,const Matrix &m){push(actor,m);return ++attempts!=1;};
-    assert(members::apply(owner,ids,change,f,fail_once)==R::rolled_back);
-    assert(crew_detail::model_world(f,fl,observed) && observed[12]==20);
-    assert(members::apply(owner,ids,change,f,[](Address,const Matrix&){return false;})==R::rollback_failed);
-    change.target=change.native;
-    assert(members::apply(owner,ids,change,f,push)==R::ok);
-    assert(crew_detail::model_world(f,fl,observed) && observed==identity);
-    std::array<std::optional<members::Edit>,members::role_count> active{};
-    active[unsigned(Role::fl)]=change;
-    assert(!members::conflicts_with_member(active) && !members::conflicts_with_pair(Role::fl,true));
-    active[unsigned(Role::mb)]=change;
-    assert(members::conflicts_with_member(active) && members::conflicts_with_pair(Role::eb1,true));
+    auto fail_once = [&](Address actor, const Matrix &m) {
+        push(actor, m);
+        return ++attempts != 1;
+    };
+    assert(members::apply(owner, ids, change, f, fail_once) == R::rolled_back);
+    assert(crew_detail::model_world(f, fl, observed) && observed[12] == 20);
+    assert(members::apply(owner, ids, change, f, [](Address, const Matrix &) { return false; }) == R::rollback_failed);
+    change.target = change.native;
+    assert(members::apply(owner, ids, change, f, push) == R::ok);
+    assert(crew_detail::model_world(f, fl, observed) && observed == identity);
+    std::array<std::optional<members::Edit>, members::role_count> active{};
+    active[unsigned(Role::fl)] = change;
+    assert(!members::conflicts_with_member(active) && !members::conflicts_with_pair(Role::fl, true));
+    active[unsigned(Role::mb)] = change;
+    assert(members::conflicts_with_member(active) && members::conflicts_with_pair(Role::eb1, true));
 
-    constexpr Address vehicle_scene=0xc0000,resource_v=0xd0000,actors_v=0xe0000,defs_v=0xf0000,def=0x11000;
-    f.put(instance+0xd0,vehicle_scene); f.put(instance+0xd8,Address{0x135000}); f.put(instance+0xe0,Address{}); f.put(instance+0xf0,Address{});
-    f.put(vehicle_scene+0xa0,resource_v); f.put(vehicle_scene+0x78,actors_v); f.put(actors_v,car);
-    f.put(resource_v+0x100,uint64_t{1}); f.put(resource_v+0x50,defs_v); f.put(defs_v,def); f.put(def+0x38,uint32_t{34});
-    f.put(vehicle_scene+0x20,identity); f.put(car+0x228,Address{0x130000});
-    f.put(car+0x678,int32_t{3}); f.put(car+0x660,uint8_t{1});
-    auto base_car=identity; base_car[13]=.4f; f.put(car+0x620,base_car);
+    constexpr Address vehicle_scene = 0xc0000, resource_v = 0xd0000, actors_v = 0xe0000, defs_v = 0xf0000, def = 0x11000;
+    f.put(instance + 0xd0, vehicle_scene);
+    f.put(instance + 0xd8, Address{0x135000});
+    f.put(instance + 0xe0, Address{});
+    f.put(instance + 0xf0, Address{});
+    f.put(vehicle_scene + 0xa0, resource_v);
+    f.put(vehicle_scene + 0x78, actors_v);
+    f.put(actors_v, car);
+    f.put(resource_v + 0x100, uint64_t{1});
+    f.put(resource_v + 0x50, defs_v);
+    f.put(defs_v, def);
+    f.put(def + 0x38, uint32_t{34});
+    f.put(vehicle_scene + 0x20, identity);
+    f.put(car + 0x228, Address{0x130000});
+    f.put(car + 0x678, int32_t{3});
+    f.put(car + 0x660, uint8_t{1});
+    auto base_car = identity;
+    base_car[13] = .4f;
+    f.put(car + 0x620, base_car);
     vehicle::Pose prior{};
-    assert(vehicle::capture(owner,34,f,prior) && prior.car_world==base_car);
-    f.put(instance+0xd8,vehicle_scene); assert(!vehicle::capture(owner,34,f,prior)); f.put(instance+0xd8,Address{0x135000});
-    f.put(resource_v+0x100,uint64_t{2}); assert(!vehicle::capture(owner,34,f,prior)); f.put(resource_v+0x100,uint64_t{1});
-    f.put(actors_v,eb); assert(!vehicle::capture(owner,34,f,prior)); f.put(actors_v,car);
-    assert(!vehicle::capture(owner,35,f,prior));
-    Matrix target=base_car, relative{};
-    target[0]=target[10]=0;target[2]=-1;target[8]=1;target[12]=46;target[14]=2;
-    assert(vehicle::relative(prior.car_world,target,relative));
-    assert(members::agrees(rig_detail::world_from_definition(base_car,relative),target));
-    unsigned writes{},refreshes{};
-    auto write=[&](Address p,const Matrix &m){assert(p==vehicle_scene+0x20);++writes;f.put(p,m);return true;};
-    auto refresh=[&](Address s){assert(s==vehicle_scene);++refreshes;return true;};
-    assert(vehicle::assign(owner,34,prior,relative,f,write,refresh)==R::pending && writes==1 && refreshes==1);
-    assert(f(scene+0x20,observed) && observed==identity && crew_detail::model_world(f,fl,observed) && observed==identity);
+    assert(vehicle::capture(owner, 34, f, prior) && prior.car_world == base_car);
+    f.put(instance + 0xd8, vehicle_scene);
+    assert(!vehicle::capture(owner, 34, f, prior));
+    f.put(instance + 0xd8, Address{0x135000});
+    f.put(resource_v + 0x100, uint64_t{2});
+    assert(!vehicle::capture(owner, 34, f, prior));
+    f.put(resource_v + 0x100, uint64_t{1});
+    f.put(actors_v, eb);
+    assert(!vehicle::capture(owner, 34, f, prior));
+    f.put(actors_v, car);
+    assert(!vehicle::capture(owner, 35, f, prior));
+    Matrix target = base_car, relative{};
+    target[0] = target[10] = 0;
+    target[2] = -1;
+    target[8] = 1;
+    target[12] = 46;
+    target[14] = 2;
+    assert(vehicle::relative(prior.car_world, target, relative));
+    assert(members::agrees(rig_detail::world_from_definition(base_car, relative), target));
+    unsigned writes{}, refreshes{};
+    auto write = [&](Address p, const Matrix &m) {
+        assert(p == vehicle_scene + 0x20);
+        ++writes;
+        f.put(p, m);
+        return true;
+    };
+    auto refresh = [&](Address s) {
+        assert(s == vehicle_scene);
+        ++refreshes;
+        return true;
+    };
+    assert(vehicle::assign(owner, 34, prior, relative, f, write, refresh) == R::pending && writes == 1 && refreshes == 1);
+    assert(f(scene + 0x20, observed) && observed == identity && crew_detail::model_world(f, fl, observed) &&
+           observed == identity);
     unsigned refresh_count{};
-    auto fail_refresh=[&](Address){return ++refresh_count!=1;};
-    assert(vehicle::assign(owner,34,prior,relative,f,write,fail_refresh)==R::rolled_back && f(vehicle_scene+0x20,observed) && observed==identity);
-    vehicle::Change change_car{prior,prior,target,vehicle::Step::verify,1000,false,0};
-    assert(vehicle::verify(change_car,&base_car,1010)==vehicle::Verification::wait);
-    assert(vehicle::verify(change_car,&target,1020)==vehicle::Verification::active);
-    change_car.step=vehicle::Step::verify;
-    assert(vehicle::verify(change_car,nullptr,3100)==vehicle::Verification::revert);
-    change_car.step=vehicle::Step::rollback;change_car.expected=base_car;change_car.prior_override=true;
-    assert(vehicle::verify(change_car,&base_car,3150)==vehicle::Verification::previous && change_car.step==vehicle::Step::active);
-    change_car.step=vehicle::Step::restore;
-    assert(vehicle::verify(change_car,&base_car,3160)==vehicle::Verification::restored);
-    assert(vehicle::verify(change_car,&target,8000)==vehicle::Verification::failed);
+    auto fail_refresh = [&](Address) { return ++refresh_count != 1; };
+    assert(vehicle::assign(owner, 34, prior, relative, f, write, fail_refresh) == R::rolled_back &&
+           f(vehicle_scene + 0x20, observed) && observed == identity);
+    vehicle::Change change_car{prior, prior, target, vehicle::Step::verify, 1000, false, 0};
+    assert(vehicle::verify(change_car, &base_car, 1010) == vehicle::Verification::wait);
+    assert(vehicle::verify(change_car, &target, 1020) == vehicle::Verification::active);
+    change_car.step = vehicle::Step::verify;
+    assert(vehicle::verify(change_car, nullptr, 3100) == vehicle::Verification::revert);
+    change_car.step = vehicle::Step::rollback;
+    change_car.expected = base_car;
+    change_car.prior_override = true;
+    assert(vehicle::verify(change_car, &base_car, 3150) == vehicle::Verification::previous &&
+           change_car.step == vehicle::Step::active);
+    change_car.step = vehicle::Step::restore;
+    assert(vehicle::verify(change_car, &base_car, 3160) == vehicle::Verification::restored);
+    assert(vehicle::verify(change_car, &target, 8000) == vehicle::Verification::failed);
 }
 
 void test_build_scope_and_parked_car()
 {
-    namespace b = runtime::garage_placement::steam_26566308;
+    namespace b = garage::steam_26566308;
     constexpr auto sha = "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389";
     assert(b::supported("steam", sha) && !b::supported("ea", sha) && !b::supported("steam", "new-build"));
     swofty::garage_placement::Pit pits[2]{};
@@ -333,7 +391,8 @@ void test_build_scope_and_parked_car()
     for (unsigned i = 0; i < 32; ++i) {
         Address record = (i == 2 || i == 31) ? (0x10000 + 0x100 * i) : 0;
         f.put(owner.pit_bank + 0x838 + sizeof(Address) * i, record);
-        if (record) f.put(record + 0x20, bank.matrices[i]);
+        if (record)
+            f.put(record + 0x20, bank.matrices[i]);
     }
     assert(b::matches(f, owner, bank));
     f.put(owner.pit_bank + 0x838, Address{0xbeef});

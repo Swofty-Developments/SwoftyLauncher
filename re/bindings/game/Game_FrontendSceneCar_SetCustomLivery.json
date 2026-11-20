@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneCar_SetCustomLivery",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428aa040",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1428aa040.c;xref:0x1428b2cdd,0x14d2f43e3",
+  "notes": "Car: 'Setting Custom Livery' when car state +0x94==2 (spawned): writes livery descriptor (param_2+0x10..+0x2c) into car data (+0xa0)+0x6780..+0x67b0 or via render handle +0x7268. Callers 0x1428b2cdd, 0x14d2f43e3. Addon: inject custom livery into menu car. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2976)"
+ },
+ "signature": {
+  "id": "game.frontend_scene_car_set_custom_livery",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 38 80 B9 94 00 00 00 02 0F",
+  "match": "0x1428aa040",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428aa040",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneCar_SetCustomLivery"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d11-verify",
+   "kind": "func",
+   "item": "Game_FrontendSceneCar_SetCustomLivery",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428aa040.c;xref:0x1428b2cdd",
+   "notes": "V2976 Decomp strings, offsets and callees match the claim; name fits."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RttTaskManager_QueueTask",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434f2eb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1434f2eb0.c;xref:0x14f34629e,0x14f3462f9",
+  "notes": "Creates an RTT task (0xa0 bytes: callback, user data, camera matrix param_7, target param_8, texture list param_4), task id from global counter 0x1460fbbc0 written to *param_2, tries Game_RttTaskManager_StartTask else logs 'Couldn't immediately start render task ID %d, putting it in the queue'. Callers 0x14f34629e, 0x14f3462f9. Addon: request a render-to-texture of any camera (thumbnails, livery previews). | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2543)"
+ },
+ "signature": {
+  "id": "game.rtt_task_manager_queue_task",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 BC 24 90 00 00 00 C5 F8 29 B4 24 80 00 00 00 4D 89 CF",
+  "match": "0x1434f2eb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434f2eb0",
+  "kind": "func_start",
+  "names": [
+   "Game_RttTaskManager_QueueTask"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d5-verify",
+   "kind": "func",
+   "item": "Game_RttTaskManager_QueueTask",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434f2eb0.c;xref:0x14f34629e",
+   "notes": "V2543 queue fallback string present"
+  }
+ ],
+ "proofs": []
+}

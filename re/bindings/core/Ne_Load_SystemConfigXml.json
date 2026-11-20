@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Load_SystemConfigXml",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1443c24b0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "int Ne_Load_SystemConfigXml(void *sys)",
+  "evidence": "str:s_SystemConfigXml;str:s_SystemConfigSkuXml;decomp:re/decomp/1443c24b0.c;xref:0x1443c06ab,0x1443c24ca,0x1443c2534,0x1443c2689,0x1443c268c,0x1443c275e,0x1443c2827,0x1443c282a",
+  "notes": "Loads the engine system XML files with 0x1443d5770(path, allocator *sys, out): system/memory_map.xml -> sys+0x108 and system/modules.xml -> sys+0x110 (both required; failure returns the rc and records it in the errno trace). Then allocates a vector {alloc, begin, end, cap} (0x20 bytes) into sys+0x118 and pushes the document of each optional file that loads: system/config.xml, system/config_platform.xml, system/config_sku.xml in that order (grow x1.5). Returns 0. Whether later files override earlier ones in the getters is not checked here. Caller Game_Startup_InitSequence 0x1443c0560 (call 0x1443c06ab). Existing name kept; the existing note misses config_platform.xml, memory_map.xml and modules.xml. hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "core.load_system_config_xml",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 CF 48 8B 19 4C 8D 81 08 01 00 00",
+  "match": "0x1443c24b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1443c24b0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Load_SystemConfigXml"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-1",
+   "kind": "func",
+   "item": "0x1443c24b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1443c24b0.c;xref:0x1443c06ac",
+   "notes": "V9334 Called from Game_Startup_InitSequence; loads system/memory_map.xml, system/modules.xml, then system/config.xml, config_platform.xml, config_sku.xml into a config list (plural, name slightly under-states); returns int error code; arity matches."
+  }
+ ],
+ "proofs": []
+}

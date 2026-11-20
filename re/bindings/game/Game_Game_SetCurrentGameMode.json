@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_Game_SetCurrentGameMode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1407d07a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Game_SetCurrentGameMode(void *mode_context, void *mode)",
+  "evidence": "pat:log-message-method;decomp:re/decomp/1407d07a0.c;xref:0x1407cab26,0x1407d2135,0x140ba53d5,0x141725ddf,0x141726031,0x141726358,0x141726496,0x1417264d8",
+  "notes": "logged method name setCurrentGameMode (class from the log channel); log channel GAME: 'setCurrentGameMode(%s -> %s)', logged only when the GAME channel is on, with *(old+0x278) and *(new+0x278) as the mode names (\"none\" for a null mode). save-v2 (L2): returns at once when the new mode is already [context+0x88]; otherwise it deactivates the old mode, stores the new mode at context+0x88 (0x1407d0897, again at 0x1407d0b10), looks it up by *(new+0x278) in context+0x198 when it is not null, activates it and sends MessageGameModeChanged through 0x1439876c0. mode may be null: 43 of the 104 call sites pass 0 to clear it. It returns 0 on every path (0x1407d0dc2) and no caller reads the result. The same chain shape, g_Game_Manager +0xc0 -> +0x88 -> +0x260, is read at 0x14024974f..0x14024976b; it suggests that the mode name at a session load is [[[g_Game_Manager]+0xc0]+0x88]+0x278, but that rests on field shape only: no code passes [g_Game_Manager]+0xc0 to this function. 1.0.145 twin 0x1407d07e0, 380/380 instructions equal."
+ },
+ "signature": {
+  "id": "game.game_set_current_game_mode",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC 80 00 00 00 48 8B 81 88 00 00 00",
+  "match": "0x1407d07a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407d07a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Game_SetCurrentGameMode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x1407d07a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1407d07a0.c",
+   "notes": "V4306 name/description match strings and code in decomp (log string verified via data read)"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_Game_SetCurrentGameMode",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1407d07a0-0x1407d0dd2,0x14290f950-0x14290fa08,0x14083d640-0x14083d6f8,0x140249730-0x140249775,1.0.145 0x1407d07e0-0x1407d0e12;xref:0x1407d07b4,0x1407d083f,0x1407d084d,0x1407d0897,0x1407d08b1,0x1407d0b10,0x1407d0dc2,0x14024974f,0x14024976b,0x1407cab26,0x140ba53d5",
+   "notes": "V100015 Blind: 2 args confirmed (rcx ctx 0x1407d07c0, rdx mode, nullable). Return is constant 0 on every path (0x1407d0dc2) and unread by all 100 E8 callers, so uint64_t is imprecise (effectively void). Confirmed: GAME log 'setCurrentGameMode(%s -> %s)' with old/new +0x278 or \"none\" (0x1407d083f); store at ctx+0x88 (0x1407d0897, again 0x1407d0b10); +0x198 lookup by new+0x278 (0x1407d08b1); 8 xrefs real. g_Game_Manager+0xc0->+0x88->+0x260 read at 0x14024974f confirmed, but no code links [G]+0xc0 to this ctx, so the name-chain inference is unproven. 1.0.145 twin 0x1407d07e0, 380/380 equal."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_Game_SetCurrentGameMode",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1407d07a0-0x1407d0dd2,0x14290f950-0x14290fa08,0x1476d5a50-0x1476d5cea,0x140249730-0x140249790,1.0.145 0x1407d07e0-0x1407d0e12;xref:0x1407d07b7,0x1407d084d,0x1407d0897,0x1407d0b10,0x1407d08b1,0x1407d0b1f,0x1407d0b78,0x1407d0dc2,0x141dbc46b,0x1430e9fce,0x14024974f,0x1476d5cd4",
+   "notes": "V100016 Blind: agree. 2 args (rcx context, rdx mode, nullable; r8/r9 unread); xor eax,eax at 0x1407d0dc2 is the only return and no caller reads rax (4 E9 and 8 ret-forwarding wrappers are void-style). Early exit when [ctx+0x88]==mode (0x1407d07b7); GAME-gated log old->new, \"none\" for null; deactivate old 0x14290f9b0, store +0x88 at 0x1407d0897/0x1407d0b10, lookup [new+0x278] in ctx+0x198, activate 0x14290f950, MessageGameModeChanged via 0x1439876c0 (also sent on clear). 104 sites: 43 always pass null, 7 on one path. No caller passes [[0x14604c2c8]+0xc0]; 214 readers deref its +0x88; its writer not found (ctor zeroes it). 1.0.145 0x1407d07e0 380/380."
+  }
+ ],
+ "proofs": []
+}

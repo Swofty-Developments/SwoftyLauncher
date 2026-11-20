@@ -1,0 +1,56 @@
+{
+ "schema": 1,
+ "name": "k_Career_CareerComponentDesc",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14605b128",
+  "type": "void *",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/140d69490.c;decomp:re/decomp/1401b0880.c;xref:0x140d6a771,0x1401b0bc3;doc:addons/career-editor/protocol/economy.md#components-helper",
+  "notes": "static ECS type descriptor of CareerComponent: the registration at 0x140d6a771 writes the class-name pointer at +8; the game passes &desc as the key to the entity component registry get (entity+0x1030 vtable slot +0x10), as at 0x1401b0bc3"
+ },
+ "signature": {
+  "id": "career.career_component_desc",
+  "section": ".xtls",
+  "pattern": "48 8D 15 ?? ?? ?? ?? 41 B8 01 00 00 00 FF 50 10 48 85 C0 74 12 48 89 F9 B2 01 E8 ?? ?? ?? ?? 84 C0 0F 84 ?? ?? ?? ?? 89 6C 24 38",
+  "match": "0x1401b0bc3",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x14605b128",
+  "kind": "data",
+  "names": [
+   "k_Career_CareerComponentDesc"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-econ",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/components.cpp",
+   "native/src/core/career/career.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-2",
+   "kind": "global",
+   "item": "k_Career_CareerComponentDesc",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d69490.c;decomp:re/decomp/1401b0880.c;xref:0x140d6a771,0x1401b0bc3",
+   "notes": "V0250 desc is a 0x20-byte static object {+0 vtbl 0x145890940, +8 class-name ptr, +0x10 u32 name hash, +0x18 parent desc+8} filled at static init; registration writes the name at +8; class name unique among the 26; the address is the key passed in rdx with r8d=1 to registry vtbl+0x10 (entity+0x1030 at most sites), result cached/null-checked; GetType vfuncs return &desc. \"void *\" names only the first field"
+  }
+ ],
+ "proofs": []
+}

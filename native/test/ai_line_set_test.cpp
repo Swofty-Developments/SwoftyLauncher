@@ -1,7 +1,7 @@
-// Host-native unit test for the core's AI line set guard (native/src/core/ai_line_set_logic.hpp).
-// Built and run by native/test/run_ai_line_set_test.sh.
+// Host-native unit test for the core's AI line set guard (native/src/core/guards/ai/ai_line_set_logic.hpp).
+// Built and run by native/test/run_tests.sh ai_line_set.
 
-#include "ai_line_set_logic.hpp"
+#include "core/guards/ai/ai_line_set_logic.hpp"
 
 #include <cstdio>
 #include <map>
@@ -45,10 +45,7 @@ static bool write(uint64_t address, const void *in, size_t n, void *user)
 constexpr uint64_t BUILDER = 0x200000;
 constexpr uint64_t RECORDS = 0x300000;
 
-static uint64_t brake_id(unsigned record)
-{
-    return 0x7963c8f708f50000ull + record;
-}
+static uint64_t brake_id(unsigned record) { return 0x7963c8f708f50000ull + record; }
 
 static Memory build(unsigned records)
 {
@@ -63,10 +60,7 @@ static Memory build(unsigned records)
     return m;
 }
 
-static uint64_t slot(Memory &m, unsigned record, uint64_t s)
-{
-    return m.words[RECORDS + record * al::RECORD_SIZE + s];
-}
+static uint64_t slot(Memory &m, unsigned record, uint64_t s) { return m.words[RECORDS + record * al::RECORD_SIZE + s]; }
 
 int main()
 {
@@ -93,19 +87,25 @@ int main()
                 m.words[RECORDS + i * al::RECORD_SIZE + s] = 0;
         m.words[BUILDER + al::RECORDS_END_AT] = RECORDS + 18 * al::RECORD_SIZE;
         al::Repair r = al::repair(read, write, &m, BUILDER);
-        expect(r.index == 17 && r.filled == 6 && r.brake_settings, "an eleventh team's car borrows the tables and the brake line settings");
-        expect(slot(m, 17, al::BRAKE_SETTINGS_ID_AT) == brake_id(0), "its brake settings id is the one of the car whose tables it borrows");
-        expect(slot(m, 16, al::BRAKE_SETTINGS_ID_AT) == brake_id(16) && slot(m, 0, al::BRAKE_SETTINGS_ID_AT) == brake_id(0), "listed cars keep their own brake settings id");
+        expect(r.index == 17 && r.filled == 6 && r.brake_settings,
+               "an eleventh team's car borrows the tables and the brake line settings");
+        expect(slot(m, 17, al::BRAKE_SETTINGS_ID_AT) == brake_id(0),
+               "its brake settings id is the one of the car whose tables it borrows");
+        expect(slot(m, 16, al::BRAKE_SETTINGS_ID_AT) == brake_id(16) && slot(m, 0, al::BRAKE_SETTINGS_ID_AT) == brake_id(0),
+               "listed cars keep their own brake settings id");
         m.words[BUILDER + al::RECORDS_END_AT] = RECORDS + 20 * al::RECORD_SIZE;
         r = al::repair(read, write, &m, BUILDER);
-        expect(r.index == 19 && r.brake_settings && slot(m, 19, al::BRAKE_SETTINGS_ID_AT) == brake_id(0), "its team mate borrows the same brake settings id");
-        expect(slot(m, 17, al::BRAKE_SETTINGS_ID_AT) == brake_id(0) && slot(m, 18, al::BRAKE_SETTINGS_ID_AT) == brake_id(18), "a later push leaves the earlier records as they were");
+        expect(r.index == 19 && r.brake_settings && slot(m, 19, al::BRAKE_SETTINGS_ID_AT) == brake_id(0),
+               "its team mate borrows the same brake settings id");
+        expect(slot(m, 17, al::BRAKE_SETTINGS_ID_AT) == brake_id(0) && slot(m, 18, al::BRAKE_SETTINGS_ID_AT) == brake_id(18),
+               "a later push leaves the earlier records as they were");
     }
     {
         Memory m = build(5);
         m.words[RECORDS + 4 * al::RECORD_SIZE + 0x60] = 0;
         al::Repair r = al::repair(read, write, &m, BUILDER);
-        expect(r.filled == 1 && !r.brake_settings && slot(m, 4, al::BRAKE_SETTINGS_ID_AT) == brake_id(4), "a listed car with one empty table keeps its brake settings id");
+        expect(r.filled == 1 && !r.brake_settings && slot(m, 4, al::BRAKE_SETTINGS_ID_AT) == brake_id(4),
+               "a listed car with one empty table keeps its brake settings id");
     }
     {
         Memory m = build(6);
@@ -113,7 +113,8 @@ int main()
             for (uint64_t s : al::SLOTS)
                 m.words[RECORDS + i * al::RECORD_SIZE + s] = 0;
         al::repair(read, write, &m, BUILDER);
-        expect(slot(m, 0, al::BRAKE_SETTINGS_ID_AT) == brake_id(3) && slot(m, 2, al::BRAKE_SETTINGS_ID_AT) == brake_id(3), "backfilled first cars take the brake settings id of the donor");
+        expect(slot(m, 0, al::BRAKE_SETTINGS_ID_AT) == brake_id(3) && slot(m, 2, al::BRAKE_SETTINGS_ID_AT) == brake_id(3),
+               "backfilled first cars take the brake settings id of the donor");
     }
     {
         Memory m = build(3);
@@ -121,7 +122,8 @@ int main()
             for (uint64_t s : al::SLOTS)
                 m.words[RECORDS + i * al::RECORD_SIZE + s] = 0;
         al::Repair r = al::repair(read, write, &m, BUILDER);
-        expect(!r.brake_settings && slot(m, 2, al::BRAKE_SETTINGS_ID_AT) == brake_id(2), "with no donor the brake settings id is kept");
+        expect(!r.brake_settings && slot(m, 2, al::BRAKE_SETTINGS_ID_AT) == brake_id(2),
+               "with no donor the brake settings id is kept");
     }
     {
         Memory m = build(3);
@@ -129,26 +131,30 @@ int main()
             m.words[RECORDS + 2 * al::RECORD_SIZE + s] = 0;
         m.words[RECORDS + al::BRAKE_SETTINGS_ID_AT] = 0;
         al::Repair r = al::repair(read, write, &m, BUILDER);
-        expect(r.filled == 6 && !r.brake_settings && slot(m, 2, al::BRAKE_SETTINGS_ID_AT) == brake_id(2), "a donor with no brake settings id lends none");
+        expect(r.filled == 6 && !r.brake_settings && slot(m, 2, al::BRAKE_SETTINGS_ID_AT) == brake_id(2),
+               "a donor with no brake settings id lends none");
     }
     {
         Memory m = build(5);
         m.words[RECORDS + 4 * al::RECORD_SIZE + 0x78] = 0;
         al::Repair r = al::repair(read, write, &m, BUILDER);
-        expect(r.filled == 0 && r.missing == 0 && slot(m, 4, 0x78) == 0, "a listed car's empty optional table (+0x78) is left alone");
+        expect(r.filled == 0 && r.missing == 0 && slot(m, 4, 0x78) == 0,
+               "a listed car's empty optional table (+0x78) is left alone");
     }
     {
         Memory m = build(5);
         m.words[RECORDS + 4 * al::RECORD_SIZE + 0x60] = 0;
         m.words[RECORDS + 0 * al::RECORD_SIZE + 0x60] = 0;
         al::Repair r = al::repair(read, write, &m, BUILDER);
-        expect(r.filled == 1 && slot(m, 4, 0x60) == slot(m, 1, 0x60), "only the null pointer is replaced, from the first record that has one");
+        expect(r.filled == 1 && slot(m, 4, 0x60) == slot(m, 1, 0x60),
+               "only the null pointer is replaced, from the first record that has one");
     }
     {
         Memory m = build(1);
         m.words[RECORDS + 0x58] = 0;
         al::Repair r = al::repair(read, write, &m, BUILDER);
-        expect(r.ran && r.filled == 0 && r.missing == 1 && slot(m, 0, 0x58) == 0, "with no donor the slot stays empty and is counted");
+        expect(r.ran && r.filled == 0 && r.missing == 1 && slot(m, 0, 0x58) == 0,
+               "with no donor the slot stays empty and is counted");
     }
     {
         Memory m = build(6);
@@ -156,8 +162,10 @@ int main()
             for (uint64_t s : al::SLOTS)
                 m.words[RECORDS + i * al::RECORD_SIZE + s] = 0;
         al::Repair r = al::repair(read, write, &m, BUILDER);
-        expect(r.filled == 0 && r.backfilled == 3, "first-slot cars with no pointers are backfilled when a later record has them");
-        expect(slot(m, 0, 0x58) == slot(m, 3, 0x58) && slot(m, 2, 0x80) == slot(m, 3, 0x80), "they borrow the first record that has pointers");
+        expect(r.filled == 0 && r.backfilled == 3,
+               "first-slot cars with no pointers are backfilled when a later record has them");
+        expect(slot(m, 0, 0x58) == slot(m, 3, 0x58) && slot(m, 2, 0x80) == slot(m, 3, 0x80),
+               "they borrow the first record that has pointers");
         expect(slot(m, 3, 0x58) == 0x1000000 + 3 * 0x1000 + 0x58, "the donor is untouched");
     }
     {
@@ -180,7 +188,8 @@ int main()
                 m.words[RECORDS + i * al::RECORD_SIZE + s] = 0;
         al::Repair r = al::repair(read, write, &m, BUILDER);
         expect(r.filled == 6 && r.backfilled == 3, "a mixed vector fills the last record and the earlier empty ones");
-        expect(slot(m, 0, 0x60) == slot(m, 2, 0x60) && slot(m, 5, 0x60) == slot(m, 2, 0x60), "both borrow the earliest car that has pointers");
+        expect(slot(m, 0, 0x60) == slot(m, 2, 0x60) && slot(m, 5, 0x60) == slot(m, 2, 0x60),
+               "both borrow the earliest car that has pointers");
     }
     {
         Memory m = build(4);

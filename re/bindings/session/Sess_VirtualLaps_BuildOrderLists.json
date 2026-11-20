@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_VirtualLaps_BuildOrderLists",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d42b90",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d42b90.c;xref:0x142d45032,0x142d42b7f",
+  "notes": "Rebuilds the virtual-laps order lists (+0x368/+0x370 and +0x388/+0x390) from the entrant list [this+0x2e0]+8..+0x10 using hashed table this+0x358 (offset +0x48 when param_2 else +0x90). Callers Sess_VirtualLapsRuleset_FinaliseResults, Sess_SplitPQRuleset_RetireVehicle."
+ },
+ "signature": {
+  "id": "session.virtual_laps_build_order_lists",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 88 54",
+  "match": "0x142d42b90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d42b90",
+  "kind": "func_start",
+  "names": [
+   "Sess_VirtualLaps_BuildOrderLists"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142d42b90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d42b90.c;xref:0x142d45032,0x142d42b7f",
+   "notes": "V3552 resets lists +0x368/+0x370 and +0x388/+0x390, iterates [this+0x2e0]+8..+0x10, hashed table this+0x358 at +0x48 (param_2) else +0x90; callers VirtualLapsRuleset_FinaliseResults and SplitPQRuleset_RetireVehicle"
+  }
+ ],
+ "proofs": []
+}

@@ -30,17 +30,49 @@ struct StockRow {
 // DORMANT (no track archive), every other row counts as live stock the way the track base lists it (34 stock tracks);
 // the nine rows whose label is not a known track code are kept live under a stock_<id> name.
 inline constexpr StockRow STOCK_ROWS[] = {
-    {0, "melbourne", false},    {1, "paul_ricard", true},     {2, "shanghai", false},      {3, "bahrain", false},
-    {4, "catalunya", false},    {5, "monaco", false},         {6, "montreal", false},      {7, "silverstone", false},
-    {8, "hanoi", true},         {9, "hungaroring", false},    {10, "spa_francorchamps", false}, {11, "monza", false},
-    {12, "singapore", false},   {13, "suzuka", false},        {14, "abu_dhabi", false},    {15, "texas", false},
-    {16, "brazil", false},      {17, "austria", false},       {18, "sochi", true},         {19, "mexico", false},
-    {20, "baku", false},        {21, "bahrain_pad", true},    {22, "silverstone_int", true}, {23, "texas_nat", true},
-    {24, "suzuka_east", true},  {25, "stock_25", false},      {26, "zandvoort", false},    {27, "imola", false},
-    {28, "portimao", true},     {29, "jeddah", false},        {30, "miami", false},        {31, "las_vegas", false},
-    {32, "losail", false},      {33, "stock_33", false},      {34, "stock_34", false},     {35, "bahrain24", true},
-    {36, "stock_36", false},    {37, "stock_37", false},      {38, "stock_38", false},     {39, "stock_39", false},
-    {40, "stock_40", false},    {41, "stock_41", false},      {42, "madrid", false},
+    {0, "melbourne", false},
+    {1, "paul_ricard", true},
+    {2, "shanghai", false},
+    {3, "bahrain", false},
+    {4, "catalunya", false},
+    {5, "monaco", false},
+    {6, "montreal", false},
+    {7, "silverstone", false},
+    {8, "hanoi", true},
+    {9, "hungaroring", false},
+    {10, "spa_francorchamps", false},
+    {11, "monza", false},
+    {12, "singapore", false},
+    {13, "suzuka", false},
+    {14, "abu_dhabi", false},
+    {15, "texas", false},
+    {16, "brazil", false},
+    {17, "austria", false},
+    {18, "sochi", true},
+    {19, "mexico", false},
+    {20, "baku", false},
+    {21, "bahrain_pad", true},
+    {22, "silverstone_int", true},
+    {23, "texas_nat", true},
+    {24, "suzuka_east", true},
+    {25, "stock_25", false},
+    {26, "zandvoort", false},
+    {27, "imola", false},
+    {28, "portimao", true},
+    {29, "jeddah", false},
+    {30, "miami", false},
+    {31, "las_vegas", false},
+    {32, "losail", false},
+    {33, "stock_33", false},
+    {34, "stock_34", false},
+    {35, "bahrain24", true},
+    {36, "stock_36", false},
+    {37, "stock_37", false},
+    {38, "stock_38", false},
+    {39, "stock_39", false},
+    {40, "stock_40", false},
+    {41, "stock_41", false},
+    {42, "madrid", false},
 };
 
 struct Source {
@@ -126,17 +158,17 @@ inline Fallback fallback(int weekend_stat_id, const std::vector<Source> &sources
     }
     std::string id = std::to_string(weekend_stat_id);
     std::string code = has_row ? decider->rows.at(weekend_stat_id) : shipping ? shipping->code : std::string();
-    std::string why = dormant ? " is the dormant row " + code +
-                                    " with no track archive (the addon that fills it is off in this profile)"
-                              : " has no tracks row (its track addon is off or not installed)";
+    std::string why =
+        dormant ? " is the dormant row " + code + " with no track archive (the addon that fills it is off in this profile)"
+                : " has no tracks row (its track addon is off or not installed)";
     if (f.stat_id < 0) {
         f.line = "the Grand Prix weekend's track stat id " + id + why + " and no source has a " + stock +
                  " row to race instead; the session load goes on (decided by " + decider->name + ")";
         return f;
     }
     f.replace = true;
-    f.line = "the Grand Prix weekend's track stat id " + id + why + "; the last Grand Prix raced it, this one starts at " + stock +
-             " (stat id " + std::to_string(f.stat_id) + ") instead (decided by " + decider->name + from + ")";
+    f.line = "the Grand Prix weekend's track stat id " + id + why + "; the last Grand Prix raced it, this one starts at " +
+             stock + " (stat id " + std::to_string(f.stat_id) + ") instead (decided by " + decider->name + from + ")";
     return f;
 }
 

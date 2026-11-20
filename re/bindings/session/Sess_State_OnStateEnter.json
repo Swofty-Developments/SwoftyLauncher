@@ -1,0 +1,39 @@
+{
+ "schema": 1,
+ "name": "Sess_State_OnStateEnter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436f6740",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_State_OnStateEnter(void *state)",
+  "evidence": "decomp:re/decomp/1436f6740.c;xref:0x1436f6802;str:s_StateSession_OnStateEnter;imm:0x7c888e37",
+  "notes": "cxx=game::StateSession::onStateEnter. Top-level in-session state FSM enter. One-shot (guard state+0xcd0): logs FLOW (0x7c888e37), sets state flags +0xd78(&0xf8)/+0xd79=1 and publishes via VM (FUN_143a43b90 key UNK_14585e690), kicks the session via func 0x142f635b0, then branches on game-mode RTTI (vtable walk 0x146129ca0/0x14604ec60)."
+ },
+ "signature": {
+  "id": "session.state_enter",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 74 24 60 C5 F8 28 F1",
+  "match": "0x1436f6740",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436f6740",
+  "kind": "func_start",
+  "names": [
+   "Sess_State_OnStateEnter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-19",
+    "by": "session-re"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

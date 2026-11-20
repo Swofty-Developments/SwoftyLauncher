@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_InCarDriverComponent_Spawn",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403a7040",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=InCarDriverComponent::spawn; log channel DRIVER: 'InCarDriverComponent::spawn - game mode is null, skipping (vehicleId=%d)'"
+ },
+ "signature": {
+  "id": "game.in_car_driver_component_spawn",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 04 00 00 48 83 79 20 00",
+  "match": "0x1403a7040",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403a7040",
+  "kind": "func_start",
+  "names": [
+   "Game_InCarDriverComponent_Spawn"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1403a7040",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403a7040.c;xref:0x4a6f36",
+   "notes": "V4614 string/behaviour in decomp matches name"
+  }
+ ],
+ "proofs": []
+}

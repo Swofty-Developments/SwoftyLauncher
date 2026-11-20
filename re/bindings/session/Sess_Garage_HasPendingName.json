@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Garage_HasPendingName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141331450",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141331450.c;xref:0x142a3ab9e,0x142a3feae",
+  "notes": "Returns true when the garage state string [this+0x2b8]+0x2c0 or [this+0x2c0]+0x300 (via 0x141331c70/0x1413265c0) is non-empty (L1 hypothesis: pending setup/selection name). Callers Sess_Rules_IsPracticeQualifying, Game_Garage_FadeOutForExit, Sess_SortAssignGarages_Thunk."
+ },
+ "signature": {
+  "id": "session.garage_has_pending_name",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 50 48 89 CE 48 8B 81 B8 02 00",
+  "match": "0x141331450",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141331450",
+  "kind": "func_start",
+  "names": [
+   "Sess_Garage_HasPendingName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x141331450",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141331450.c;xref:0x142a3ab9e,0x142a3feae,0x142a407ae",
+   "notes": "V3363 string via 0x141331c70([this+0x2b8]+0x2c0) then 0x1413265c0([this+0x2c0]+0x300), true if non-empty; callers Game_Garage_FadeOutForExit, Sess_SortAssignGarages_Thunk, Sess_Rules_IsPracticeQualifying"
+  }
+ ],
+ "proofs": []
+}

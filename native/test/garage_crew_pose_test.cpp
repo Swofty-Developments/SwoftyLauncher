@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
-#include "garage_crew_pose.hpp"
+#include "core/garage/garage_crew_pose.hpp"
 
 #include <cassert>
 #include <cstdio>
@@ -7,7 +7,7 @@
 #include <map>
 #include <vector>
 
-namespace pose = runtime::garage_crew_pose;
+namespace pose = garage::crew_pose;
 namespace {
 using Address = std::uint64_t;
 using Memory = std::map<Address, std::vector<unsigned char>>;
@@ -42,11 +42,10 @@ std::int32_t find(const void *node_table, const std::uint32_t *name_id)
     return *name_id == bip01 ? pelvis_index : -1;
 }
 
-struct Matrix { float rows[3][4]; };
-Matrix translation(float x, float y, float z)
-{
-    return Matrix{{{1, 0, 0, x}, {0, 1, 0, y}, {0, 0, 1, z}}};
-}
+struct Matrix {
+    float rows[3][4];
+};
+Matrix translation(float x, float y, float z) { return Matrix{{{1, 0, 0, x}, {0, 1, 0, y}, {0, 0, 1, z}}}; }
 
 void failed(Memory &memory, std::uint32_t name = bip01)
 {

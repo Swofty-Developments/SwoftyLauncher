@@ -1,13 +1,13 @@
 use std::collections::BTreeMap;
 use std::path::PathBuf;
 
+use swofty_core::addons::settings::{OnAddons, render_ops};
 use swofty_core::asset::{AssetOp, FileKind, OpFile};
 use swofty_core::dbedit::deps::{self, Copy};
+use swofty_core::game_db::row_keys::{Names, RowKeys};
 use swofty_core::manifest::AddonManifest;
 use swofty_core::ops::{CopyMode, DbOp, DbOps, DbReport, apply_db_ops_report};
 use swofty_core::profile::Profile;
-use swofty_core::rowkeys::{Names, RowKeys};
-use swofty_core::settings::{OnAddons, render_ops};
 use swofty_formats::gvdb::Gvdb;
 
 fn arg(args: &[String], name: &str) -> Option<PathBuf> {

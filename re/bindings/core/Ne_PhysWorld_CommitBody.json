@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_PhysWorld_CommitBody",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440e1230",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1440e1230.c;xref:0x14458bc70,0x14458c420",
+  "notes": "(world, body, char force): under critical section +0x10e8, if body dirty (+0x170 bit 4) clears it and rebuilds the body's broadphase/shape entries (+0x108, world+0xf60 lists); returns success. Callers: Game_Breakable_Activate/ActivateCore/ResetPieces, Car_Collision_BuildHullShapes."
+ },
+ "signature": {
+  "id": "core.phys_world_commit_body",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 44 89 C5 48",
+  "match": "0x1440e1230",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440e1230",
+  "kind": "func_start",
+  "names": [
+   "Ne_PhysWorld_CommitBody"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x1440e1230",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440e1230.c;xref:0x142bc68bd",
+   "notes": "V3643 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Podium2019CutSceneScript_Initialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140358460",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=Podium2019CutSceneScript::initialise; log channel CUTSCENE_PARAMS: 'Podium2019CutSceneScript::initialise | PodiumBaseCutSceneScript::prebindToVehicleWithResultInRace | setUseHighQualityCharacters(_useHighQualityCharacters %s) [%s] | setSkipFrustrumCulling(_skipFrustru'"
+ },
+ "signature": {
+  "id": "game.podium2019_cut_scene_script_initialise",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 54 B8 4C 01 00 00",
+  "match": "0x140358460",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140358460",
+  "kind": "func_start",
+  "names": [
+   "Game_Podium2019CutSceneScript_Initialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x140358460",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140358460.c",
+   "notes": "V4511 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

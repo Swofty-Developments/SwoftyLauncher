@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerEventResourceManager_ShutdownExtraWorlds",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c7ce90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140c7ce90.c;xref:0x140c7a657",
+  "notes": "Shuts down every career-event extra world (shutdownExtraWorld %s, m_watingforWorldToShutdown / m_isWorldShuttingdown), releases warmed textures, stops world notifications, crowd invalidate. Caller 0x140c7a657 (career sequencer unload). | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2537)"
+ },
+ "signature": {
+  "id": "game.career_event_resource_manager_shutdown_extra_worlds",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 CE 80 3D ?? ?? ?? ?? 01 75 66 B8 AD 00 00",
+  "match": "0x140c7ce90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c7ce90",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerEventResourceManager_ShutdownExtraWorlds"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d5-verify",
+   "kind": "func",
+   "item": "Game_CareerEventResourceManager_ShutdownExtraWorlds",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c7ce90.c;xref:0x140c7a657",
+   "notes": "V2537 shutdownExtraWorld strings incl m_watingforWorldToShutdown"
+  }
+ ],
+ "proofs": []
+}

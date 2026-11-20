@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CutsceneManager_Loading",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140227510",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=CutsceneManager::Loading; log channel CUTSCENE_MANAGER_ERROR: 'CutsceneManager::Loading a cutscene that is already loaded %s with driver %s - this shouldn't happen and can cause problems | setNextScriptHint %p %s %s | CutsceneManager::preload m_lastpreloadedScrip'"
+ },
+ "signature": {
+  "id": "game.cutscene_manager_loading",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 4D 89 CE 4C 89 C3",
+  "match": "0x140227510",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140227510",
+  "kind": "func_start",
+  "names": [
+   "Game_CutsceneManager_Loading"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x140227510",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140227510.c",
+   "notes": "V4406 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,41 @@
+{
+ "schema": 1,
+ "name": "site_Sess_SelectorLimitLoad",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1424a30a8",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/1424a2350.c;doc:research/grid24-cap.md#3",
+  "notes": "mov eax,[rax]: eax = session entrant limit; [rsp+0x60] = setup mode object; natural MidHook site for a code fallback"
+ },
+ "signature": {
+  "id": "session.selector_limit_load",
+  "section": ".xtls",
+  "pattern": "8B 00 48 89 44 24 40 4C 8D AC 24 30 01 00 00",
+  "match": "0x1424a30a8",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424a30a8",
+  "kind": "mid",
+  "names": [
+   "site_Sess_SelectorLimitLoad"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-17",
+    "by": "re-infra",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "expect": "8B 00 48 89 44"
+ },
+ "verify": [],
+ "proofs": []
+}

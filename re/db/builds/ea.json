@@ -548,6 +548,209 @@
   "Game_TileList_PushChildSelection_Thunk": {
    "pattern": "E9 ?? ?? ?? ?? 0F 85 D5 4D 16 00 D5 0C 41 CF 00 4E C7",
    "note": "the bytes after the 5-byte jmp are not code and differ on EA (thunk 0x1438285d0 to the body 0x14f622850)"
+  },
+  "Car_Differential_Reset_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? B4 B4 E9 00 0D 7B 00 E9",
+   "note": "A protector thunk; the pattern is its earlier EA bytes. It is at the same place relative to its neighbours (-0x9d70, as Car_Write_Differential and Car_Write_FuelTank) and its jmp target starts with the KB build's function body."
+  },
+  "Car_FuelEcu_Reset_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? A2 E9 D6 39 EA 00 68 53",
+   "note": "A protector thunk; the pattern is its earlier EA bytes. It is at the same place relative to its neighbours (-0x9d70, as Car_Write_Differential and Car_Write_FuelTank) and its jmp target starts with the KB build's function body."
+  },
+  "Car_Read_Differential_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? DD E9 0F 85 38 59 C9 03",
+   "note": "A protector thunk; the pattern is its earlier EA bytes. It is at the same place relative to its neighbours (-0x9d70, as Car_Write_Differential and Car_Write_FuelTank) and its jmp target starts with the KB build's function body."
+  },
+  "Ai_Handle_PitStateChanged_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? E9 ?? ?? ?? ?? 9E B9 3E A6 0F 87",
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0x6b3b20 is the target of 1 mapped KB reference (0x6b34ed -> 0x6b3efd); it is a protector thunk whose relocated body's first 0x60 bytes are 0.91 alike the KB body's. The pattern is the EA bytes there, extended until it matches once."
+  },
+  "Career_MyTeamSetupVM_RefreshSelection": {
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 28 13 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 78 29 8C",
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0x2274ba0 is slot 13 of the EA vtable 0x5889420, which the EA twin of the KB constructor installs where the KB one installs 0x5777740 (3 vtable references agree); its first 0x60 bytes are 1.00 alike the KB function's. The pattern is the EA bytes there, extended until it matches once."
+  },
+  "Career_Select_DeluxeUpgradeBundleLabel": {
+   "pattern": "56 57 53 48 81 EC 60 01 00 00 48 8B 02 48 85 C0",
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0x1f46570 is slot 10 of the EA vtable 0x5870170, which the EA twin of the KB constructor installs where the KB one installs 0x575e490 (6 vtable references agree); its first 0x60 bytes are 0.90 alike the KB function's. The pattern is the EA bytes there, extended until it matches once."
+  },
+  "Career_SetupBanks_Write": {
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 48 89 D6 48 8B 3A",
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0xc01e10 is slot 2 of the EA vtable 0x5791780, which the EA twin of the KB constructor installs where the KB one installs 0x567f890 (1 vtable reference agrees); its first 0x60 bytes are 0.94 alike the KB function's. The pattern is the EA bytes there, extended until it matches once."
+  },
+  "FeTile_ItemBase_Slot78_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 0F 84 ?? ?? ?? ?? B9 83 42 F0 12",
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0x1692a10 is slot 15 of the EA vtable 0x5815d30, which the EA twin of the KB constructor installs where the KB one installs 0x5703eb0 (8 vtable references agree); it is a protector thunk whose relocated body's first 0x60 bytes are 0.14 alike the KB body's. The pattern is the EA bytes there, extended until it matches once. Both bodies are mutated protector code that decodes to push rsi, push rdi, sub rsp 0x28 and a read of [rcx+0x100], so the EA dump test waives the byte compare for it."
+  },
+  "Game_HandleUserEntitlementsUpdateTask_OnChildDone": {
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 01 00 00 C5 F8 29 B4 24 20 01 00 00 48 89 D6 48 89 CF 48",
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0x336abf0 is slot 22 of the EA vtable 0x594ea80, which the EA twin of the KB constructor installs where the KB one installs 0x583d000 (2 vtable references agree); its first 0x60 bytes are 0.74 alike the KB function's. The pattern is the EA bytes there, extended until it matches once. Both bodies run the same compares ([rcx+0x138], [rdi+0x118], [rdi+0x128], the 0x2eb8bbab hash and 0xde) and the same calls in the same order; only the prologue and the frame size differ, so the EA dump test waives the byte compare for it."
+  },
+  "Game_Handle_SpecGarageCrewEvent_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? A1 F1 0E 42 E1 DF F2 53 2F 00 6F",
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0x2e0baa0 is the target of 2 mapped KB references (0x2e0e8d7 -> 0x2e02617, 0x2e17134 -> 0x2e0ae74, 0x2e17ea6 -> 0x2e0bbe6); it is a protector thunk whose relocated body's first 0x60 bytes are 0.63 alike the KB body's. The pattern is the EA bytes there, extended until it matches once."
+  },
+  "Ne_Container_AbortNoReturn_1435d82f0": {
+   "pattern": "50 01 EB 8B CC CC CC CC CC CC CC CC CC CC CC CC CC 31 C0 C3 CC CC CC CC CC CC CC CC CC CC CC CC CC 48 83 EC 28 E8",
+   "anchor": 33,
+   "resolve": {
+    "kind": "addr"
+   },
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0x35c84f0 is the target of 1 mapped KB reference (0x34f3a37 -> 0x34e3c37); its first 0x60 bytes are 1.00 alike the KB function's; the whole 0xa-byte function is 1.00 alike. The pattern starts 33 bytes before it and is extended until it matches once."
+  },
+  "Ne_Crt_AbortNoReturn_B": {
+   "pattern": "48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC E9 ?? ?? ?? ?? 8D",
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0x29f7c00 is the target of 1 mapped KB reference (0x290d490 -> 0x2906810); its first 0x60 bytes are 0.71 alike the KB function's; the whole 0xa-byte function is 1.00 alike. The pattern is the EA bytes there, extended until it matches once."
+  },
+  "Ne_Crt_FatalNoReturn": {
+   "pattern": "48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC E9 ?? ?? ?? ?? 93",
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0x129b440 is the target of 5 mapped KB references (0x11e5ce3 -> 0x11dff33, 0x11e5e4a -> 0x11e009a, 0x11ea722 -> 0x11e4972); its first 0x60 bytes are 0.61 alike the KB function's; the whole 0xa-byte function is 1.00 alike. The pattern is the EA bytes there, extended until it matches once."
+  },
+  "Ne_Crt_InvalidParameterAbortStub_140e0fd20": {
+   "pattern": "48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC E9 ?? ?? ?? ?? 28",
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0xe09f70 is the target of 16 mapped KB references (0xda82b0 -> 0xda2500, 0xdae1fa -> 0xda844a, 0xdaf1d3 -> 0xda9423); its first 0x60 bytes are 0.58 alike the KB function's; the whole 0xa-byte function is 1.00 alike. The pattern is the EA bytes there, extended until it matches once."
+  },
+  "Ne_Crt_Memcpy": {
+   "pattern": "48 8B C1 4C 8D 15 ?? ?? ?? ?? 49 83 F8 0F 0F 87 ?? ?? ?? ?? 66 66 66 66 0F 1F 84 00 00 00 00 00 47 8B 8C 82 B0",
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0x547f860 is the target of 24 mapped KB references (0x179f -> 0x179f, 0xafe6 -> 0xafe6, 0xb099 -> 0xb099); its first 0x60 bytes are 0.96 alike the KB function's. The pattern is the EA bytes there, extended until it matches once."
+  },
+  "Ne_Crt_ThrowOverflow_B": {
+   "pattern": "48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC E9 ?? ?? ?? ?? 91",
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0x4376ef0 is the target of 1 mapped KB reference (0x43830b4 -> 0x4376ee4); its first 0x60 bytes are 0.45 alike the KB function's; the whole 0xa-byte function is 1.00 alike. The pattern is the EA bytes there, extended until it matches once."
+  },
+  "Ne_Crt_ThrowOverflow_C": {
+   "pattern": "48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC E9 ?? ?? ?? ?? 4E",
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0x47619e0 is the target of 2 mapped KB references (0x464dbd5 -> 0x4643e65, 0x476b13b -> 0x476138b); its first 0x60 bytes are 0.57 alike the KB function's; the whole 0xa-byte function is 1.00 alike. The pattern is the EA bytes there, extended until it matches once."
+  },
+  "Ne_Format_HresultUnknownFacility": {
+   "pattern": "48 89 5C 24 20 55 56 57 41 56 41 57 48 8D 6C 24 C9 48 81 EC C0 00 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 45 27 66",
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0x49219f0 is the target of 2 mapped KB references (0x493ac06 -> 0x492a5d6, 0x495663d -> 0x494600d); its first 0x60 bytes are 0.96 alike the KB function's. The pattern is the EA bytes there, extended until it matches once."
+  },
+  "Ne_HashMap_FatalStub_GroundCover": {
+   "pattern": "C3 CC CC CC CC CC CC 48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC 41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 D5",
+   "anchor": 7,
+   "resolve": {
+    "kind": "addr"
+   },
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0x3edc510 is the target of 1 mapped KB reference (0x3cdd998 -> 0x3ccab78); its first 0x60 bytes are 1.00 alike the KB function's; the whole 0xa-byte function is 1.00 alike. The pattern starts 7 bytes before it and is extended until it matches once."
+  },
+  "Ne_HashMap_FatalStub_Particles": {
+   "pattern": "48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC E9 ?? ?? ?? ?? 10",
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0x3ed0570 is the target of 2 mapped KB references (0x3df3019 -> 0x3de0899, 0x477d4c5 -> 0x4773715); its first 0x60 bytes are 0.80 alike the KB function's; the whole 0xa-byte function is 1.00 alike. The pattern is the EA bytes there, extended until it matches once."
+  },
+  "Ne_HashMap_ThrowLengthError_Decals2": {
+   "pattern": "C3 CC CC CC CC CC CC 48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC 56 57 53 48 83 EC 30 48 89 CE 48 8D 59 08 BA 04 00 00 00 48 89 D9 66 2E 0F 1F 84 00 00 00 00 00 48 89 D0 48 81 FA 00 20 00 00 77 0C 48 8B 09 48 8D 14 00 48 85 C9 75 E8 48 C1 E0 03 48 8D 3C 40",
+   "anchor": 7,
+   "resolve": {
+    "kind": "addr"
+   },
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0x1465960 is the target of 1 mapped KB reference (0x1423cc1 -> 0x141de71); its first 0x60 bytes are 1.00 alike the KB function's; the whole 0xa-byte function is 1.00 alike. The pattern starts 7 bytes before it and is extended until it matches once."
+  },
+  "Ne_HashMap_ThrowLengthError_MaterialActorId": {
+   "pattern": "8B CC CC CC 48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC 41 56",
+   "anchor": 4,
+   "resolve": {
+    "kind": "addr"
+   },
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0x32d070 is the target of 1 mapped KB reference (0x1edf77 -> 0x1ee707); its first 0x60 bytes are 1.00 alike the KB function's; the whole 0xa-byte function is 1.00 alike. The pattern starts 4 bytes before it and is extended until it matches once."
+  },
+  "Ne_Libpng_WriteITXt": {
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 04 00 00 4D 89 CC",
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0x479a0c0 is the target of 2 mapped KB references (0x3914bde -> 0x3901c6e, 0x3914de8 -> 0x3901e78); its first 0x60 bytes are 1.00 alike the KB function's. The pattern is the EA bytes there, extended until it matches once."
+  },
+  "Ne_Load_SystemConfigXml": {
+   "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 CE 48 8B 39",
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0x43b6550 is the target of 1 mapped KB reference (0x43c06ab -> 0x43b4bcb); its first 0x60 bytes are 0.83 alike the KB function's. The pattern is the EA bytes there, extended until it matches once."
+  },
+  "Ne_Make_RandomIdBlock": {
+   "pattern": "41 56 56 57 55 53 48 83 EC 30 48 89 CE C6 01 06",
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0x410cdd0 is the target of 18 mapped KB references (0xf9949 -> 0xf9949, 0xf9b1e -> 0xf9b1e, 0xfa3b9 -> 0xfa3b9); its first 0x60 bytes are 0.96 alike the KB function's. The pattern is the EA bytes there, extended until it matches once."
+  },
+  "Ne_Map_LowerBoundPairIntInt": {
+   "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 4C 89 C3 48 89 D6 48 89 CF 4C 8B 79 08 4D 8B 4F 08 31 ED 41 80 79 19 00 0F 84 ?? ?? ?? ?? 4D 89 CE 4C 89 F8 80 78 19 00 75 0D",
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0x3441070 is the target of 7 mapped KB references (0x142ed33 -> 0x1429103, 0x1fd6de8 -> 0x1fd0168, 0x1fe87f4 -> 0x1fe1b74); its first 0x60 bytes are 1.00 alike the KB function's. The pattern is the EA bytes there, extended until it matches once."
+  },
+  "Ne_SharedPtr_Release": {
+   "pattern": "56 48 83 EC 20 48 8B 71 08 48 85 F6 74 23 F0 FF 4E 08 75 1D 48 8B 06 48 89 F1 FF 10 F0 FF 4E 0C 75 0F 48 8B 06 48 89 F1 48 83 C4 20 5E 48 FF 60 08 90 48 83 C4 20 5E C3 CC CC CC CC CC CC CC CC E9 ?? ?? ?? ?? BE",
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0x2d41f00 is the target of 2 mapped KB references (0x2d82c38 -> 0x2d76978, 0x2d82c7c -> 0x2d769bc); its first 0x60 bytes are 0.79 alike the KB function's; the whole 0x38-byte function is 1.00 alike. The pattern is the EA bytes there, extended until it matches once."
+  },
+  "Ne_SharedPtr_ReleaseB": {
+   "pattern": "56 48 83 EC 20 48 8B 71 08 48 85 F6 74 23 F0 FF 4E 08 75 1D 48 8B 06 48 89 F1 FF 10 F0 FF 4E 0C 75 0F 48 8B 06 48 89 F1 48 83 C4 20 5E 48 FF 60 08 90 48 83 C4 20 5E C3 CC CC CC CC CC CC CC CC E9 ?? ?? ?? ?? C3",
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0x2d742c0 is the target of 1 mapped KB reference (0x2d801c7 -> 0x2d73f07); its first 0x60 bytes are 0.78 alike the KB function's; the whole 0x38-byte function is 1.00 alike. The pattern is the EA bytes there, extended until it matches once."
+  },
+  "Ne_Std_ThrowBadArrayNewLength": {
+   "pattern": "C3 CC CC CC CC CC CC CC CC CC CC CC CC 48 83 EC 38 48 8D 05 ?? ?? ?? ?? 48 89 44 24 30",
+   "anchor": 13,
+   "resolve": {
+    "kind": "addr"
+   },
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0x2bea60 is the target of 19 mapped KB references (0x1ccb60 -> 0x1cd2f0, 0x1e3052 -> 0x1e37e2, 0x3194f5 -> 0x319c35); its first 0x60 bytes are 1.00 alike the KB function's; the whole 0x27-byte function is 1.00 alike. The pattern starts 13 bytes before it and is extended until it matches once."
+  },
+  "Ne_Std_ThrowVectorTooLongC": {
+   "pattern": "48 83 EC 28 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC 48 83 EC 28 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC E9 ?? ?? ?? ?? 05",
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0x31cb90 is the target of 5 mapped KB references (0x321e37 -> 0x322577, 0x324c6d -> 0x3253ad, 0x329bb1 -> 0x32a2f1); its first 0x60 bytes are 0.96 alike the KB function's; the whole 0x11-byte function is 1.00 alike. The pattern is the EA bytes there, extended until it matches once."
+  },
+  "Sess_GridRundown_Update": {
+   "pattern": "E9 ?? ?? ?? ?? 95 34 0F 86 E7 12 8E 01 9A AA 07",
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0x2d549f0 is slot 9 of the EA vtable 0x58f0ea0, which the EA twin of the KB constructor installs where the KB one installs 0x57df2d0 (1 vtable reference agrees); it is a protector thunk whose relocated body's first 0x60 bytes are 0.92 alike the KB body's. The pattern is the EA bytes there, extended until it matches once."
+  },
+  "Sess_LapTimes_CheckPersonalBestSector": {
+   "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 8B 81 B0 00 00 00 48 8B",
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0x2f226c0 is the target of 1 mapped KB reference (0x2f2d8eb -> 0x2f218cb); its first 0x60 bytes are 1.00 alike the KB function's. The pattern is the EA bytes there, extended until it matches once."
+  },
+  "Sess_PreLights_Update": {
+   "pattern": "E9 ?? ?? ?? ?? C3 B3 00 7C 10 9E 44 94 F8 95 B5",
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0x2d74300 is slot 33 of the EA vtable 0x58f8920, which the EA twin of the KB constructor installs where the KB one installs 0x57e6d50 (1 vtable reference agrees); it is a protector thunk whose relocated body's first 0x60 bytes are 1.00 alike the KB body's. The pattern is the EA bytes there, extended until it matches once."
+  },
+  "Sess_RaceRuleset_OnLapCompleted": {
+   "pattern": "CC CC CC CC E9 ?? ?? ?? ?? 69 6B 42 9C 87 0F 81",
+   "anchor": 4,
+   "resolve": {
+    "kind": "addr"
+   },
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0x2d2ca00 is slot 13 of the EA vtable 0x58ee410, which the EA twin of the KB constructor installs where the KB one installs 0x57dc840 (1 vtable reference agrees); it is a protector thunk whose relocated body's first 0x60 bytes are 1.00 alike the KB body's. The pattern starts 4 bytes before it and is extended until it matches once."
+  },
+  "Sess_RaceRuleset_SetTimeLimit": {
+   "pattern": "E9 ?? ?? ?? ?? 6F 96 E9 ?? ?? ?? ?? CC CC CC CC",
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0x2cc2ca0 is slot 26 of the EA vtable 0x58ebf40, which the EA twin of the KB constructor installs where the KB one installs 0x57da370 (16 vtable references agree); it is a protector thunk whose relocated body's first 0x60 bytes are 0.26 alike the KB body's. The pattern is the EA bytes there, extended until it matches once."
+  },
+  "Sess_RedFlagSystem_OnSessionBeginGameplay": {
+   "pattern": "E9 ?? ?? ?? ?? A0 71 75 B0 C7 0F 84 6D 86 4F 01",
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0x3576a20 is the target of 2 mapped KB references (0x3585b99 -> 0x3575d99, 0x3586502 -> 0x3576702); it is a protector thunk whose relocated body's first 0x60 bytes are 0.95 alike the KB body's. The pattern is the EA bytes there, extended until it matches once."
+  },
+  "Sess_RedFlagSystem_OnStartLightsBegin": {
+   "pattern": "E9 ?? ?? ?? ?? 6E 0F 88 ?? ?? ?? ?? 6E 14 11 6A",
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0x3576bb0 is the target of 2 mapped KB references (0x3585de4 -> 0x3575fe4, 0x3586539 -> 0x3576739); it is a protector thunk whose relocated body's first 0x60 bytes are 1.00 alike the KB body's. The pattern is the EA bytes there, extended until it matches once."
+  },
+  "Game_Store_UnsubscribeMessages": {
+   "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 08 02 00 00 48 89 CE 48 8B 81",
+   "note": "The KB pattern does not match the earlier EA image. The pattern is the EA 1.0.145 match found at 0x2b888b0 in it, with the bytes that differ wildcarded and extended until it matches once. Its first 0x60 bytes are 1.00 alike EA 1.0.145's and 0.91 alike the KB function's."
+  },
+  "Ne_NetTransport_MigrateConnections": {
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC ?? 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01 ?? 8D 2D ?? ?? ?? ?? 75 6C",
+   "note": "The KB pattern does not match the earlier EA image. The pattern is the EA 1.0.145 match found at 0x408f7e0 in it, with the bytes that differ wildcarded and extended until it matches once. Its first 0x60 bytes are 0.82 alike EA 1.0.145's and 0.87 alike the KB function's."
+  },
+  "Ne_SaveSystem_InitDevice": {
+   "pattern": "41 56 56 57 53 48 81 EC 88 00 00 00 80 B9 DC 02 00 00 00 0F 84",
+   "note": "The KB pattern does not match the earlier EA image. The pattern is the EA 1.0.145 match found at 0x413c400 in it, with the bytes that differ wildcarded and extended until it matches once. Its first 0x60 bytes are 1.00 alike EA 1.0.145's and 0.73 alike the KB function's."
+  },
+  "Sess_PreRaceToRace_Update": {
+   "pattern": "E9 ?? ?? ?? ?? 51 CC CC CC CC CC CC CC CC CC CC B0",
+   "note": "The KB pattern does not match the earlier EA image. EA's function at 0x2d7a010 is slot 9 of the EA vtable 0x58f2f20, the one whose type record names SessionStatePreRaceToRace in the dump; its slots 3 to 8 match the KB vtable 0x1457e1350 entry for entry. The pattern is the EA bytes there, extended until it matches once."
+  },
+  "vt_Sess_UnloadRewardSequence": {
+   "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 06 66 C7 86 80 0C 00",
+   "anchor": 3,
+   "resolve": {
+    "kind": "riprel",
+    "insn": 0,
+    "len": 7
+   },
+   "section": ".xcode",
+   "note": "The KB pattern does not match the earlier EA image. EA's vtable is 0x58f5190, the one whose type record names SessionStateUnloadRewardSequence in the dump; its slots 1 and 3 to 7 and 10 match the KB vtable entry for entry. The pattern is the lea at 0xd8ec513 that loads it, in the code the EA protector moved to .xcode, where the KB bytes match once."
+  },
+  "Game_SessionStateTalkingPoints_ParseParams_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 32 E9 75 E5 77 01 0F 80 1B E8 FC FD 31 7A",
+   "note": "The KB pattern is the jmp and the protector filler after it, which differs on EA, so it matches nothing there. The EA thunk is 0x142d88b60, at the shift -0xc2c0 of Sess_StoryStartLights_OnStateEnter and Sess_PlayerTerminalDamage_Enter on either side, and the same slot of the same vtable: the pointer at 0x1458f48c8 is the KB 0x1457e2cf8, its only reference, and the 15 slots around it hold the KB slots at -0xc2c0 or -0xfdc0. Its jmp reaches the .xcode body 0x14d5237b0, which is the KB body 0x14eb3abf0 instruction for instruction (69 of 72; the protector rewrote one lea through a constant, dropped one KB-only junk and and padded one nop), with the +0xea1, +0xeb0 and +0xeb4 stores at the same places. The pattern is the EA jmp and filler, as long as the KB one; it matches once in the image."
   }
  },
  "hints": {
@@ -1932,7 +2135,42 @@
   },
   "Game_TileList_PushChildSelection_Thunk": {
    "match": "0x38285d0"
+  },
+  "Car_Differential_Reset_Thunk": {
+   "match": "0x46742a0"
+  },
+  "Car_FuelEcu_Reset_Thunk": {
+   "match": "0x46847e0"
+  },
+  "Car_Read_Differential_Thunk": {
+   "match": "0x4674080"
+  },
+  "Game_SessionStateTalkingPoints_ParseParams_Thunk": {
+   "match": "0x2d88b60"
   }
  },
- "unresolvable": {}
+ "unresolvable": {
+  "Asset_Unk_14379dd00": "Steam Workshop asset loader: its steam_workshop/ strings are not in the earlier EA image",
+  "Game_RetrieveConsumableEntitlementsTask_RequestSteamPrices": "Steam store price request: its store.steampowered.com string is not in the earlier EA image",
+  "Ne_SaveSystem2Win_WriteInfoXml": "its \"Writing info.xml to\", \"Downloading\" and save_information strings are not in the earlier EA image",
+  "Ne_SteamTransport_FlushPeerBuffers": "Steam API code: its \"Steam API SendP2PPacket\" error string is not in the earlier EA image",
+  "Ne_SteamTransport_QueuePacket": "Steam API code: its \"Steam API SendP2PPacket\" error string is not in the earlier EA image",
+  "Ne_Steam_OnEncryptedAppTicket": "Steam API code: its EncryptedAppTicket error strings are not in the earlier EA image",
+  "Ne_UgcSearcher_SearchCallback": "Steam Workshop code: its NeUgc log strings are not in the earlier EA image",
+  "Ne_UgcSearcher_StartSearch": "Steam Workshop code: its NeUgc log strings are not in the earlier EA image",
+  "Ne_UgcUtil_BrowseWorkshopInSteamOverlay": "Steam Workshop code: its NeUgc log strings are not in the earlier EA image",
+  "Ne_UgcUtil_OpenWorkshopFileInSteamOverlay": "Steam Workshop code: its NeUgc log strings are not in the earlier EA image",
+  "Ne_Ugc_DeleteTemporaryFiles": "Steam Workshop code: its NeUgc log strings are not in the earlier EA image",
+  "Ne_Ugc_GameOverlayActivatedCallback": "Steam Workshop code: its NeUgc log strings are not in the earlier EA image",
+  "Ne_Ugc_ReadInstalledItem": "Steam Workshop code: its NeUgc log strings are not in the earlier EA image",
+  "Ne_Ugc_UpdateItemCallback": "Steam Workshop code: its NeUgc log strings are not in the earlier EA image",
+  "Game_F1osHttpTask_Ctor_Vt14583cd40": "Steam build's online task constructor: no function near its neighbours' place in the earlier EA image matches it (best entry 0.30 alike) and none of its 3 references map",
+  "Game_F1osTasksystem_CreateTask_FinalisePackagePTask": "Steam-only package task type: the best match in the earlier EA image is 0.67 alike, a CreateTask instantiation for another task type, and its one reference does not map",
+  "Game_F1osTasksystem_CreateTask_RequestPackagePTask": "Steam-only package task type: the earlier EA image only holds sibling CreateTask instantiations that match it equally (16 of 24 pattern bytes each) and its one reference does not map",
+  "Game_F1os_CreateTask_RequestPackageP": "Steam-only package task type: two identical CreateTask instantiations in the earlier EA image match it and no reference to it maps to tell them apart",
+  "Ne_CloudUploader_Upload": "Steam cloud upload: no function near its neighbours' place in the earlier EA image matches it (best entry 0.42 alike) and its one reference does not map",
+  "Ne_NetTransportCommon_SetLocalConnectivity": "the the earlier EA image functions that use its setLocalConnectivity string are different implementations (best entry 0.20 alike)",
+  "Ne_SaveError_NotDirectoryFmtSS": "two near-identical functions in the earlier EA image match it (48 and 47 of its 48 pattern bytes) and its one reference does not map",
+  "Ne_SaveError_Win32FmtSSU": "two near-identical functions in the earlier EA image match it (45 of its 48 pattern bytes each) and its references do not map"
+ }
 }

@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "site_Career_LoadUpgradeRows_DeptPath",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143539c84",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/143539bc0.c;decomp:re/decomp/143539bc0.c;xref:0x143539c84;doc:addons/rnd-tyres-thermal/native/HOOKS.md#piece-2--the-upgrade-tree-flag-attach_tyres_tree",
+  "notes": "lea rcx,[rsp+0x698] just before the \"%s.%s\" container-path format in Career_Load_UpgradeRows: r8=team_link cstr, r9=deptname cstr (k_Career_UpgradeDeptNameTable[code]; [4]=\"fake\"), rdi=dept code. rnd-tyres-thermal v0.4.0 attach_tyres_tree read-only hook logs the resolved container path + its FNV-1a-64 hash per code, pinning the per-save <team_link>.fake upgrade container for the Tyres (code-4) tree. Tyres upgrade rows use upgrade_department=Fake (ENUM A=4). lea rcx,[rsp+0x698] before the %s.%s container path: r8 = team_link cstr, r9 = dept name cstr, dil = dept code"
+ },
+ "signature": {
+  "id": "career.load_upgrade_rows_deptpath",
+  "section": ".xtls",
+  "pattern": "48 8D 8C 24 98 06 00 00 48 8D 15 E1 53 12 02",
+  "match": "0x143539c84",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143539c84",
+  "kind": "mid",
+  "expect": "48 8D 8C 24 98 06 00 00",
+  "names": [
+   "site_Career_LoadUpgradeRows_DeptPath"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-19",
+    "by": "rnd-tyres",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/rnd_departments.cpp (swofty.rnd-tyres-thermal)",
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-4",
+   "kind": "global",
+   "item": "site_Career_LoadUpgradeRows_DeptPath",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143539bc0.c;decomp:re/decomp/1435396e0.c;xref:0x143539c58,0x143539c5c,0x143539c6a,0x143539c77,0x143539c80,0x143539c84,0x143539c8c",
+   "notes": "V0186 lea rcx,[rsp+0x698], then lea rdx '%s.%s' (0x14565f074) and call 0x14353c460; r8 = [param2+0x10] (prefix cstr of the Career_Read_TeamLinks out struct), r9 = name table 0x14584f880[code] ([0]aerodynamics..[3]engine, [4]fake, '?' if >4), rdi/dil = movsx code from 0x145735d60 (code 5 skipped); 8-byte window clean"
+  }
+ ],
+ "proofs": []
+}

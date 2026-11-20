@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_IBLCubeProbe_FreeInterpolatedArrays",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d19700",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-method;decomp:re/decomp/143d19700.c;xref:0x143d1a324,0x143d1a7c4,0x152688748",
+  "notes": "logged method name freeInterpolatedArrays (class from the log channel); log channel NeIBLCubeProbe: 'freeInterpolatedArrays m_numMipsForInterpolatedUAVs %u'"
+ },
+ "signature": {
+  "id": "core.ibl_cube_probe_free_interpolated_arrays",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 48 89 CE 80 3D ?? ?? ?? ?? 01 4C 8D 3D",
+  "match": "0x143d19700",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d19700",
+  "kind": "func_start",
+  "names": [
+   "Ne_IBLCubeProbe_FreeInterpolatedArrays"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb2-verify-a",
+   "kind": "func",
+   "item": "Ne_IBLCubeProbe_FreeInterpolatedArrays",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d19700.c;xref:0x143d1a324",
+   "notes": "V2055 three logs: UAV mips count, UAV[i], interpolatedSurface; frees them"
+  }
+ ],
+ "proofs": []
+}

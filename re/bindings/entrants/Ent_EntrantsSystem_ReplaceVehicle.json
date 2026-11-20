@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Ent_EntrantsSystem_ReplaceVehicle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142476770",
+  "level": "L2",
+  "subsystem": "entrants",
+  "proto": "int Ent_EntrantsSystem_ReplaceVehicle(void *entrants, uint32_t handle, const void *vehicle)",
+  "evidence": "pat:log-channel-ENTRANTS_SYSTEM;decomp:re/decomp/142476770.c;decomp:re/decomp/1424f9310.c;decomp:re/decomp/140cdca10.c;decomp:re/decomp/14243fd10.c;xref:0x140c2e04d",
+  "notes": "named from its log messages (channel ENTRANTS_SYSTEM): 'Vehicle replaced with stat id %s | Failed to add vehicle with stat id %s whilst replacing' | myteam-heal 2026-11-13: handle = the packed vehicle handle as Sess_ResolveEntityHandle reads it (kind = handle & 0xff, stat id = handle >> 16). Kind 0 (preloaded) is refused with 5 ('Not allowed to replace preloaded vehicle'); a kind whose table [entrants+0x328+kind*0x10] is null returns 1. Otherwise an existing vehicle equal to the source (0x1424f9bf0 on vehicle+0x10) returns 4; 0x142476580(table, id) runs, 0x1424f9310 builds a record on the stack (record+0 = handle, record+0x10.. = a copy of the source, the file_name string at record+0x58 {vt, cap 0x100, ptr, chars at record+0x70}), Sess_VehicleTable_EmplaceAt (0x140cdca10) stores it at slot id (growing the slot vector to id first), 0 from the store returns 3, else it posts message 0x14578d698 and returns 0 when a vehicle was there before, 2 when it was added. The source is vehicle data in the layout of a stored vehicle from +0x10 (ResolveEntityHandle result + 0x10), as Career_MyTeamSetup_CommitTeamIdentity passes it (call 0x140c2e04d). Used by core's My Team vehicle heal to rebuild a My Team (kind 1) vehicle a 1.9.21/1.9.22 load dropped from a stock My Team vehicle."
+ },
+ "signature": {
+  "id": "entrants.entrants_system_replace_vehicle",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 0D 00 00 89 54 24 28",
+  "match": "0x142476770",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142476770",
+  "kind": "func_start",
+  "names": [
+   "Ent_EntrantsSystem_ReplaceVehicle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/career/myteam_vehicle_heal.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142476770",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142476770.c;xref:0x140c2e04d",
+   "notes": "V5074 Name and logged strings/offsets match body"
+  },
+  {
+   "date": "2026-11-13",
+   "verifier": "myteam-heal-verify",
+   "kind": "func",
+   "item": "0x142476770",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142476770.c;decomp:re/decomp/1424f9310.c;decomp:re/decomp/140cdca10.c;decomp:re/decomp/142476580.c;decomp:re/decomp/1424f9bf0.c;xref:0x140c2e04d,0x140c2d679;sig:entrants.entrants_system_replace_vehicle",
+   "notes": "V9268 Static: 0x142476789 shr esi,0x10 (id), 0x14247678e and eax,0xff (kind); kind 0 -> edi=5 at 0x1424768ea ('Not allowed to replace preloaded vehicle'); 0x1424767a6 r12 = [rcx+kind*0x10+0x328], null -> edi=1 at 0x14247695a. No kind < 3 bound here (0x14243fd10 has one). 0x1424767c4 0x14243fd10(entrants, &handle); nonzero -> 0x1424f9bf0(rax+0x10, src) (field-wise equality, thunk to 0x14cc8be40) true -> edi=4. 0x1424767ef 0x142476580(table, id) -> bl (1 = a vehicle was there and was freed). 0x142476803 0x1424f9310(rsp+0x30, handle, src): rec+0 = handle, src qwords 0..8 -> rec+0x10..0x57, string at rec+0x58 {vt 0x145613538, cap 0x100 at +0x60, ptr at +0x68 -> chars at rec+0x70 copied from src+0x60}; every later field is src+N -> rec+N+0x10 (last rec+0xcee = src+0xcde). 0x14247680e 0x140cdca10(table, &rec): pushes null slots until size >= id, appends when size == id, returns 0 when slot id already holds a pointer -> edi=3 (after the remove, only a null stored pointer gets there). Success re-resolves, posts message 0x14578d698 (lea 0x14247685a) through 0x1439876c0, edi = (bl^1)*2 at 0x142476b47, which every success path reaches -> 0 replaced / 2 added. Proto matches (rcx, edx u32, r8 ptr; int in eax). Only rel32 ref 0x140c2e04d: rcx=[rsi+0x290], edx=[r12+0x5c], r8=rsp+0xa0; rsp+0xa0.. filled from 0x140c2d68a on with [rax+0x10..] of 0x14243fd10 at 0x140c2d679, so the source is a stored record from +0x10. 0x140c2e04d is in pdata function 0x140c2c990, reached only by Career_MyTeamSetup_CommitTeamIdentity's tail jmp at 0x140c2c848 (0x140c2c800 ends at 0x140c2c98e). 0x142476580: id >= slot count returns 0 with no slot read (cmp r10,r9; jbe 0x1424765de at 0x1424765a0). sigcheck OK hits=1 at 0x142476770."
+  }
+ ],
+ "proofs": []
+}

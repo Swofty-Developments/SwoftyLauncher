@@ -108,8 +108,13 @@ def norm_cond(c, func_start):
 
 
 def load_sigs(path):
-    with open(path) as f:
-        db = json.load(f)
+    if os.path.abspath(path) == os.path.abspath(DEFAULT_SIGS):
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import kb
+        db = kb.load_signatures()
+    else:
+        with open(path) as f:
+            db = json.load(f)
     return db, {s['id']: s for s in db.get('signatures', [])}
 
 

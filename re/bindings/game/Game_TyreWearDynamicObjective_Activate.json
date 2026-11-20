@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TyreWearDynamicObjective_Activate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14119c2f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14119c2f0.c;xref:0x1456c54a8",
+  "notes": "Objective activate (vtable slot 0x1456c54a8): after Game_DynamicObjective_Activate sets target tyre wear obj+0x70 = current average wheel wear ([car+0x580]+0x70..+0x88 -> +0x88)/4 + predicted wear for laps left (0x142f6d7f0) * (1 + ctx+0xf0 percent). Vtable follows the 'Created LetTeammatePassDynamicObjective' string (class name unconfirmed). | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2446)"
+ },
+ "signature": {
+  "id": "game.tyre_wear_dynamic_objective_activate",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 70 C5 78 29 54 24 60 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 48 89 CE E8",
+  "match": "0x14119c2f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14119c2f0",
+  "kind": "func_start",
+  "names": [
+   "Game_TyreWearDynamicObjective_Activate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-a",
+   "kind": "func",
+   "item": "Game_TyreWearDynamicObjective_Activate",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14119c2f0.c;xref:0x14119c2f0",
+   "notes": "V2446 Role, offsets and calls checked against decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

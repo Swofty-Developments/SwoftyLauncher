@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_TeleRecordTypeName",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140777eff",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/140777d50.c;xref:0x140777eff;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v090--the-tyres-upgrade-types-setting-tyres_upgrade_types-default-on-install-time",
+  "notes": "lea rdx,[0x14564a0d0] ; mov rdx,[rdx+rax*8]: unbounded camel-case type name read of the upgrade record writer (eax = type, rcx = record). rnd-tyres, type >= 19: rdx = its camel name, rip = the call"
+ },
+ "signature": {
+  "id": "career.tele_record_type_name",
+  "section": ".xtls",
+  "pattern": "0F B6 43 70 48 8D 15 ?? ?? ?? ?? 48 8B 14 C2",
+  "match": "0x140777efb",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140777eff",
+  "kind": "mid",
+  "expect": "48 8D 15 CA 21 ED 04",
+  "names": [
+   "site_Career_TeleRecordTypeName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-a",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_upgrade_types.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-1",
+   "kind": "global",
+   "item": "site_Career_TeleRecordTypeName",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140777d50.c;xref:0x140777ef8,0x140777efb,0x140777eff,0x140777f06,0x140777f0a",
+   "notes": "V0038 lea rdx->0x14564a0d0 then mov rdx,[rdx+rax*8], eax=[rbx+0x70] type, rcx=[rsi] record already loaded at 0x140777ef8; unbounded 19-entry table; no branch into window"
+  }
+ ],
+ "proofs": []
+}

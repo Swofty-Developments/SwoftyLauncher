@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Physics_ApplyGroundedPose",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144632350",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144632350.c;xref:0x142f347f7,0x142f43bf3",
+  "notes": "(rig) After 0x144632590(rig[0xb]): copies the stored pose rig[0x158..0x15f] to the chassis phys body ([[veh+0x558]+0x340]+0x18) via Ne_PhysBody_SetTransform, zeros linear and angular velocity, updates model node matrices (Ne_ModelInstance_SetNodeMatrices) and wheel bodies (0x144631a50). Callers Sess_VehiclePlacement_PlaceOnSlot, Sess_Set_SessionDefaultFuelErs, Car_Physics_ComputeGroundedPose. Addon: teleport car to a resting pose."
+ },
+ "signature": {
+  "id": "car.physics_apply_grounded_pose",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 48 89 CE 48 8B",
+  "match": "0x144632350",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144632350",
+  "kind": "func_start",
+  "names": [
+   "Car_Physics_ApplyGroundedPose"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x144632350",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144632350.c;xref:0x142f347f7",
+   "notes": "V3680 pose copy to +0x190..+0x1c8, SetTransform on [[veh+0x558]+0x340]+0x18, both velocity setters with zero, node matrices and 0x144631a50 seen; caller PlaceOnSlot confirmed"
+  }
+ ],
+ "proofs": []
+}

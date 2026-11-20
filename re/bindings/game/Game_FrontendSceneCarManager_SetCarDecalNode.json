@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneCarManager_SetCarDecalNode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428b2730",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name setCarDecalNode (class from the log channel); log channel FRONTEND_SCENE_CAR_MANAGER: 'setCarDecalNode()'"
+ },
+ "signature": {
+  "id": "game.frontend_scene_car_manager_set_car_decal_node",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 28 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 69 B8 7C 00 00 00",
+  "match": "0x1428b2730",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428b2730",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneCarManager_SetCarDecalNode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1428b2730",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428b2730.c;xref:0x1402496f0",
+   "notes": "V5124 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

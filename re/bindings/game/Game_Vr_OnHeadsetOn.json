@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Vr_OnHeadsetOn",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439ed200",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-VR",
+  "notes": "named from its log messages (channel VR): 'User put on VR headset | Recommended Width and Height = %d x %d'"
+ },
+ "signature": {
+  "id": "game.vr_on_headset_on",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 58 03 00 00 C5 F8 29 B4 24 40 03 00 00 48 89 CE B1 01 80 BE 65 01 00 00 00",
+  "match": "0x1439ed200",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439ed200",
+  "kind": "func_start",
+  "names": [
+   "Game_Vr_OnHeadsetOn"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x1439ed200",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439ed200.c;xref:0x14443273b",
+   "notes": "V6403 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

@@ -24,16 +24,30 @@
 #define FOREIGN_WINDOW_GRACE_MS 30000
 
 static const char *const fwd_names[] = {
-    "GetFileVersionInfoA", "GetFileVersionInfoByHandle", "GetFileVersionInfoExA", "GetFileVersionInfoExW",
-    "GetFileVersionInfoSizeA", "GetFileVersionInfoSizeExA", "GetFileVersionInfoSizeExW", "GetFileVersionInfoSizeW",
-    "GetFileVersionInfoW", "VerFindFileA", "VerFindFileW", "VerInstallFileA", "VerInstallFileW",
-    "VerLanguageNameA", "VerLanguageNameW", "VerQueryValueA", "VerQueryValueW",
+    "GetFileVersionInfoA",
+    "GetFileVersionInfoByHandle",
+    "GetFileVersionInfoExA",
+    "GetFileVersionInfoExW",
+    "GetFileVersionInfoSizeA",
+    "GetFileVersionInfoSizeExA",
+    "GetFileVersionInfoSizeExW",
+    "GetFileVersionInfoSizeW",
+    "GetFileVersionInfoW",
+    "VerFindFileA",
+    "VerFindFileW",
+    "VerInstallFileA",
+    "VerInstallFileW",
+    "VerLanguageNameA",
+    "VerLanguageNameW",
+    "VerQueryValueA",
+    "VerQueryValueW",
 };
 #define NFWD (sizeof fwd_names / sizeof *fwd_names)
 __attribute__((used)) void *swofty_fwd[NFWD];
 
-#define FWD(i, n) __asm__(".text\n.globl fwd_" #n "\n.def fwd_" #n "; .scl 2; .type 32; .endef\n" \
-                          "fwd_" #n ": jmp *swofty_fwd+" #i "*8(%rip)\n");
+#define FWD(i, n)                                                                                                                \
+    __asm__(".text\n.globl fwd_" #n "\n.def fwd_" #n "; .scl 2; .type 32; .endef\n"                                              \
+            "fwd_" #n ": jmp *swofty_fwd+" #i "*8(%rip)\n");
 FWD(0, GetFileVersionInfoA)
 FWD(1, GetFileVersionInfoByHandle)
 FWD(2, GetFileVersionInfoExA)
@@ -144,53 +158,20 @@ static void ediag(const char *fmt, ...)
     alog_flush();
 }
 
-static uintptr_t module_base(void)
-{
-    return image_base;
-}
-
-static int parse_pattern(const char *p, int *out, int max)
-{
-    int n = 0;
-    while (*p) {
-        while (*p == ' ')
-            p++;
-        if (!*p)
-            break;
-        if (n == max)
-            return -1;
-        if (*p == '?') {
-            out[n++] = -1;
-            while (*p == '?')
-                p++;
-        } else {
-            char *end;
-            long v = strtol(p, &end, 16);
-            if (end == p || end - p > 2 || v < 0 || v > 255)
-                return -1;
-            out[n++] = (int)v;
-            p = end;
-        }
-    }
-    return n;
-}
+static uintptr_t module_base(void) { return image_base; }
 
 static int is_readable(const MEMORY_BASIC_INFORMATION *m)
 {
     return m->State == MEM_COMMIT && (m->Protect & 0xEE) && !(m->Protect & (PAGE_GUARD | PAGE_NOACCESS));
 }
 
-static int scan(const char *section, const char *pattern, uintptr_t *out)
+typedef void (*RunFn)(const uint8_t *lo, const uint8_t *hi, void *ctx);
+
+/* Calls fn on each run of readable pages of the named section, or of every executable section, in address
+   order within a section; returns how many sections matched. */
+static int each_readable_run(const char *section, RunFn fn, void *ctx)
 {
-    int pat[256], n = parse_pattern(pattern, pat, 256), a1 = -1, a2 = -1;
-    uintptr_t first = 0;
-    int hits = 0, searched = 0;
-    if (out)
-        *out = 0;
-    if (n <= 0 || !pick_anchors(pat, n, &a1, &a2)) {
-        slog("scan: invalid pattern '%s'", pattern);
-        return 0;
-    }
+    int searched = 0;
     for (int s = 0; s < section_count; s++) {
         const Section *sec = &sections[s];
         if (section ? strcmp(sec->name, section) != 0 : !(sec->flags & IMAGE_SCN_MEM_EXECUTE))
@@ -208,41 +189,121 @@ static int scan(const char *section, const char *pattern, uintptr_t *out)
                 if (!run)
                     run = a;
             } else if (run) {
-                uintptr_t f = 0;
-                int h = scan_range((const uint8_t *)run, (const uint8_t *)a, pat, n, a1, a2, &f);
-                if (h && !hits)
-                    first = f;
-                hits += h;
+                fn((const uint8_t *)run, (const uint8_t *)a, ctx);
                 run = 0;
             }
             a = next;
         }
-        if (run) {
-            uintptr_t f = 0;
-            int h = scan_range((const uint8_t *)run, (const uint8_t *)a, pat, n, a1, a2, &f);
-            if (h && !hits)
-                first = f;
-            hits += h;
-        }
+        if (run)
+            fn((const uint8_t *)run, (const uint8_t *)a, ctx);
     }
+    return searched;
+}
+
+typedef struct {
+    const int *pat;
+    int n, a1, a2, hits;
+    uintptr_t first;
+} OneScan;
+
+static void scan_one_run(const uint8_t *lo, const uint8_t *hi, void *ctx)
+{
+    OneScan *o = (OneScan *)ctx;
+    uintptr_t f = 0;
+    int h = scan_range(lo, hi, o->pat, o->n, o->a1, o->a2, &f);
+    if (h && !o->hits)
+        o->first = f;
+    o->hits += h;
+}
+
+static int scan(const char *section, const char *pattern, uintptr_t *out)
+{
+    int pat[256], n = parse_pattern(pattern, pat, 256), a1 = -1, a2 = -1;
+    if (out)
+        *out = 0;
+    if (n <= 0 || !pick_anchors(pat, n, &a1, &a2)) {
+        slog("scan: invalid pattern '%s'", pattern);
+        return 0;
+    }
+    OneScan o = {pat, n, a1, a2, 0, 0};
+    int searched = each_readable_run(section, scan_one_run, &o);
+    int hits = o.hits;
+    uintptr_t first = o.first;
     if (!searched)
         slog("scan: section '%s' not found", section ? section : "<executable>");
     if (hits == 1) {
-        slog("scan %s [%s] -> 1 hit at 0x%llx (base+0x%llx)", section ? section : "<exec>", pattern,
-             (unsigned long long)first, (unsigned long long)(first - image_base));
+        slog("scan %s [%s] -> 1 hit at 0x%llx (base+0x%llx)", section ? section : "<exec>", pattern, (unsigned long long)first,
+             (unsigned long long)(first - image_base));
         if (out)
             *out = first;
     } else if (hits) {
-        slog("scan %s [%s] -> %d hits (first at 0x%llx), rejected: need exactly 1", section ? section : "<exec>",
-             pattern, hits, (unsigned long long)first);
+        slog("scan %s [%s] -> %d hits (first at 0x%llx), rejected: need exactly 1", section ? section : "<exec>", pattern, hits,
+             (unsigned long long)first);
     } else {
         slog("scan %s [%s] -> 0 hits, rejected: need exactly 1", section ? section : "<exec>", pattern);
     }
     return hits;
 }
 
-static SwoftyApi api = {1, slog, module_base, scan, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
-static SwoftyApi api_v1 = {1, slog, module_base, scan, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+typedef struct {
+    const MultiScan *ms;
+    int *hits;
+    uintptr_t *first;
+} ManyScan;
+
+static void scan_many_run(const uint8_t *lo, const uint8_t *hi, void *ctx)
+{
+    ManyScan *m = (ManyScan *)ctx;
+    multi_scan_range(m->ms, lo, hi, m->hits, m->first);
+}
+
+/* scan() for many patterns of one section in a single pass: hits[i] is what scan(section, patterns[i]) returns
+   and first[i] its first hit, and nothing is logged, so the caller logs each scan's line as it uses it. A
+   pattern that does not parse gets hits[i] = -1. Returns 0, having scanned nothing, when the section is not in
+   the exe or memory runs short. */
+__declspec(dllexport) int SwoftyLoaderScanMany(const char *section, const char *const *patterns, int count, int *hits,
+                                               uintptr_t *first)
+{
+    if (!section || count <= 0)
+        return 0;
+    int found = 0;
+    for (int s = 0; s < section_count && !found; s++)
+        found = !strcmp(sections[s].name, section);
+    if (!found)
+        return 0;
+    int *tokens = (int *)malloc(sizeof(int) * 256 * (size_t)count), *index = (int *)malloc(sizeof(int) * (size_t)count);
+    ScanPattern *pats = (ScanPattern *)malloc(sizeof(ScanPattern) * (size_t)count);
+    int *part_hits = (int *)calloc((size_t)count, sizeof(int));
+    uintptr_t *part_first = (uintptr_t *)calloc((size_t)count, sizeof(uintptr_t));
+    MultiScan ms;
+    int kept = 0, ok = tokens && index && pats && part_hits && part_first;
+    for (int i = 0; ok && i < count; i++) {
+        int *t = tokens + 256 * kept, n = parse_pattern(patterns[i], t, 256), a1, a2;
+        hits[i] = -1, first[i] = 0;
+        if (n <= 0 || !pick_anchors(t, n, &a1, &a2))
+            continue;
+        pats[kept].pat = t, pats[kept].n = n, pats[kept].a1 = a1, pats[kept].a2 = a2;
+        index[kept++] = i;
+    }
+    if (ok && (ok = multi_prepare(&ms, pats, kept))) {
+        ManyScan m = {&ms, part_hits, part_first};
+        each_readable_run(section, scan_many_run, &m);
+        multi_free(&ms);
+        for (int k = 0; k < kept; k++)
+            hits[index[k]] = part_hits[k], first[index[k]] = part_first[k];
+    }
+    free(tokens);
+    free(index);
+    free(pats);
+    free(part_hits);
+    free(part_first);
+    return ok;
+}
+
+static SwoftyApi api = {1,    slog, module_base, scan, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                        NULL, NULL, NULL,        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+static SwoftyApi api_v1 = {1,    slog, module_base, scan, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                           NULL, NULL, NULL,        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 static SwoftyCoreInitFn core_init;
 static SwoftyCoreCommitFn core_commit;
 static SwoftyCoreStageFn core_stage;
@@ -347,13 +408,11 @@ static int list_dlls(int root, const wchar_t *sub, Dll *out, int n)
     int found = 0;
     do {
         size_t len = wcslen(fd.cFileName);
-        if (!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && len > 4 && !_wcsicmp(fd.cFileName + len - 4, L".dll") &&
-            n < 256)
+        if (!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && len > 4 && !_wcsicmp(fd.cFileName + len - 4, L".dll") && n < 256)
             out[n].root = root, out[n++].name = _wcsdup(fd.cFileName), found++;
     } while (FindNextFileW(f, &fd));
     FindClose(f);
-    slog("addons: swofty\\%ls%ls%ls: %d dll(s)%s", ROOTS[root], *sub ? L"\\" : L"", sub, found,
-         root ? " (legacy folder)" : "");
+    slog("addons: swofty\\%ls%ls%ls: %d dll(s)%s", ROOTS[root], *sub ? L"\\" : L"", sub, found, root ? " (legacy folder)" : "");
     return n;
 }
 
@@ -528,7 +587,8 @@ static void register_pass(HMODULE core)
     }
     for (int i = 0; i < n; i++)
         free(dlls[i].name);
-    SwoftyCoreRegisterDoneFn done = core ? (SwoftyCoreRegisterDoneFn)(void *)GetProcAddress(core, "SwoftyCoreRegisterDone") : NULL;
+    SwoftyCoreRegisterDoneFn done =
+        core ? (SwoftyCoreRegisterDoneFn)(void *)GetProcAddress(core, "SwoftyCoreRegisterDone") : NULL;
     if (done)
         done();
     slog("addons: register pass done, %d addon(s) called SwoftyAddonRegister", registered_count);
@@ -616,12 +676,11 @@ static BOOL CALLBACK find_window(HWND h, LPARAM out)
 }
 
 typedef ATOM(WINAPI *RegisterClassExWFn)(const WNDCLASSEXW *);
-typedef HWND(WINAPI *CreateWindowExWFn)(DWORD, LPCWSTR, LPCWSTR, DWORD, int, int, int, int, HWND, HMENU, HINSTANCE,
-                                         LPVOID);
+typedef HWND(WINAPI *CreateWindowExWFn)(DWORD, LPCWSTR, LPCWSTR, DWORD, int, int, int, int, HWND, HMENU, HINSTANCE, LPVOID);
 typedef HANDLE(WINAPI *CreateMutexWFn)(LPSECURITY_ATTRIBUTES, BOOL, LPCWSTR);
 static ATOM WINAPI trigger_RegisterClassExW(const WNDCLASSEXW *wc);
-static HWND WINAPI trigger_CreateWindowExW(DWORD ex, LPCWSTR cls, LPCWSTR name, DWORD style, int x, int y, int w,
-                                           int h, HWND parent, HMENU menu, HINSTANCE inst, LPVOID param);
+static HWND WINAPI trigger_CreateWindowExW(DWORD ex, LPCWSTR cls, LPCWSTR name, DWORD style, int x, int y, int w, int h,
+                                           HWND parent, HMENU menu, HINSTANCE inst, LPVOID param);
 static HANDLE WINAPI trigger_CreateMutexW(LPSECURITY_ATTRIBUTES sa, BOOL owner, LPCWSTR name);
 
 #define STAGE_EARLY 1
@@ -757,8 +816,8 @@ static void hook_iat(void)
         while ((r = pe_imports_next(&it, &e)) != PE_IMPORT_END) {
             if (r == PE_IMPORT_SKIP) {
                 if (!skipped++)
-                    slog("trigger: skipped corrupt import entry: table %d (%s) entry %llu, %s (0x%llx at +0x%llx)",
-                         e.table, e.dll ? e.dll : "?", (unsigned long long)e.index, e.why, (unsigned long long)e.value,
+                    slog("trigger: skipped corrupt import entry: table %d (%s) entry %llu, %s (0x%llx at +0x%llx)", e.table,
+                         e.dll ? e.dll : "?", (unsigned long long)e.index, e.why, (unsigned long long)e.value,
                          (unsigned long long)e.value_rva);
                 continue;
             }
@@ -778,8 +837,8 @@ static void hook_iat(void)
         if (iat[k].stage == STAGE_EARLY && !early_enabled)
             continue;
         if (iat[k].slot && iat[k].orig && set_slot(iat[k].slot, iat[k].hook)) {
-            slog("trigger armed: game IAT slot %s!%s at %p (was %p)%s", iat[k].mod, iat[k].name, (void *)iat[k].slot,
-                 iat[k].orig, iat[k].stage == STAGE_EARLY ? ", early stage" : "");
+            slog("trigger armed: game IAT slot %s!%s at %p (was %p)%s", iat[k].mod, iat[k].name, (void *)iat[k].slot, iat[k].orig,
+                 iat[k].stage == STAGE_EARLY ? ", early stage" : "");
             continue;
         }
         iat[k].slot = NULL;
@@ -831,8 +890,8 @@ static void arm_filled_iat(void)
         iat[k].orig = want[k];
         iat[k].slot = hits[k] == 1 ? at[k] : NULL;
         if (iat[k].slot && set_slot(iat[k].slot, iat[k].hook)) {
-            slog("trigger armed: game IAT slot %s!%s at %p (was %p), in the import table the exe filled at load",
-                 iat[k].mod, iat[k].name, (void *)iat[k].slot, want[k]);
+            slog("trigger armed: game IAT slot %s!%s at %p (was %p), in the import table the exe filled at load", iat[k].mod,
+                 iat[k].name, (void *)iat[k].slot, want[k]);
             continue;
         }
         iat[k].slot = NULL;
@@ -847,8 +906,7 @@ static void unhook_iat(int stage)
     if (stage != STAGE_LATE)
         disarm_entry();
     for (size_t k = 0; k < NIAT; k++)
-        if ((!stage || iat[k].stage == stage) && iat[k].slot && *iat[k].slot == iat[k].hook &&
-            set_slot(iat[k].slot, iat[k].orig))
+        if ((!stage || iat[k].stage == stage) && iat[k].slot && *iat[k].slot == iat[k].hook && set_slot(iat[k].slot, iat[k].orig))
             slog("trigger disarmed: %s!%s slot restored to %p", iat[k].mod, iat[k].name, iat[k].orig);
 }
 
@@ -876,8 +934,8 @@ static void open_diag_log(void)
     swprintf(path, MAX_PATH * 2, L"%ls\\ea-diagnostics.log", dir);
     swprintf(prev, MAX_PATH * 2, L"%ls\\ea-diagnostics.prev.log", dir);
     MoveFileExW(path, prev, MOVEFILE_REPLACE_EXISTING);
-    diag_file = CreateFileW(path, FILE_APPEND_DATA, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL,
-                            OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    diag_file = CreateFileW(path, FILE_APPEND_DATA, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_ALWAYS,
+                            FILE_ATTRIBUTE_NORMAL, NULL);
 }
 
 /* The engine's runtime code section: the first EXECUTE|READ, non-writable section (EA .rdata, Steam
@@ -915,10 +973,7 @@ static double page_entropy(const uint8_t *p, size_t n)
     return h;
 }
 
-static const char *entropy_verdict(double e)
-{
-    return e < 6.5 ? "decrypted/plaintext" : e > 7.5 ? "packed/encrypted" : "mixed";
-}
+static const char *entropy_verdict(double e) { return e < 6.5 ? "decrypted/plaintext" : e > 7.5 ? "packed/encrypted" : "mixed"; }
 
 static void sample_code_entropy(const char *when)
 {
@@ -928,8 +983,8 @@ static void sample_code_entropy(const char *when)
         return;
     }
     const int PAGES = 8;
-    ediag("entropy (%s): section %s base 0x%llx size 0x%llx, %d pages (entropy <6.5 decrypted, ~8.0 still packed)", when,
-          s->name, (unsigned long long)s->start, (unsigned long long)s->size, PAGES);
+    ediag("entropy (%s): section %s base 0x%llx size 0x%llx, %d pages (entropy <6.5 decrypted, ~8.0 still packed)", when, s->name,
+          (unsigned long long)s->start, (unsigned long long)s->size, PAGES);
     double sum = 0, mn = 9, mx = 0;
     int ok = 0;
     for (int k = 0; k < PAGES; k++) {
@@ -938,8 +993,8 @@ static void sample_code_entropy(const char *when)
         uintptr_t a = s->start + off;
         MEMORY_BASIC_INFORMATION m;
         if (!page_live(a, &m)) {
-            ediag("  page +0x%08llx: not readable (protect 0x%lx state 0x%lx)", (unsigned long long)off,
-                  (unsigned long)m.Protect, (unsigned long)m.State);
+            ediag("  page +0x%08llx: not readable (protect 0x%lx state 0x%lx)", (unsigned long long)off, (unsigned long)m.Protect,
+                  (unsigned long)m.State);
             continue;
         }
         double e = page_entropy((const uint8_t *)a, 0x1000);
@@ -954,7 +1009,9 @@ static void sample_code_entropy(const char *when)
     }
     if (ok)
         ediag("entropy (%s): %d page(s), avg %.2f min %.2f max %.2f -> %s", when, ok, sum / ok, mn, mx,
-              (sum / ok) < 6.5 ? "DECRYPTED in bulk" : (sum / ok) > 7.5 ? "STILL PACKED (encrypted)" : "PARTIAL/mixed");
+              (sum / ok) < 6.5   ? "DECRYPTED in bulk"
+              : (sum / ok) > 7.5 ? "STILL PACKED (encrypted)"
+                                 : "PARTIAL/mixed");
 }
 
 /* First match of a masked byte pattern in a loaded module's committed,
@@ -1001,8 +1058,7 @@ static uint8_t *scan_module(HMODULE mod, const uint8_t *pat, const uint8_t *msk,
    and whether offline-play has flipped it. The branch is two bytes into the
    match (after `test al,al` / `test eax,eax`); 0xEB means answered (jmp),
    0x74/0x75 means not yet. */
-static void report_gate(HMODULE m, const char *label, uint8_t *hit, size_t len, const char *when_patched,
-                        const char *when_not)
+static void report_gate(HMODULE m, const char *label, uint8_t *hit, size_t len, const char *when_patched, const char *when_not)
 {
     char dump[64];
     int o = 0;
@@ -1013,8 +1069,8 @@ static void report_gate(HMODULE m, const char *label, uint8_t *hit, size_t len, 
     uintptr_t rva = (uintptr_t)(hit - (uint8_t *)m);
     uint8_t br = hit[2];
     const char *verdict = br == 0xEB ? when_patched : (br == 0x75 || br == 0x74) ? when_not : "UNKNOWN (unexpected branch byte)";
-    ediag("%s: site RVA 0x%llx bytes [%s]; branch RVA 0x%llx byte 0x%02X -> %s", label, (unsigned long long)rva,
-          dump, (unsigned long long)(rva + 2), br, verdict);
+    ediag("%s: site RVA 0x%llx bytes [%s]; branch RVA 0x%llx byte 0x%02X -> %s", label, (unsigned long long)rva, dump,
+          (unsigned long long)(rva + 2), br, verdict);
 }
 
 static void check_activation_gate(void)
@@ -1066,10 +1122,9 @@ static void check_activation_gate(void)
     MEMORY_BASIC_INFORMATION mi;
     if (page_live((uintptr_t)at, &mi)) {
         uint8_t br = at[2];
-        const char *v = br == 0xEB ? "answered (jmp)"
-                       : (br == 0x75 || br == 0x74) ? "NOT answered" : "unexpected byte";
-        ediag("  reference: RVA 0x%llx = 0x%02X (test al,al); verdict branch RVA 0x%llx = 0x%02X -> %s",
-              (unsigned long long)rva, *at, (unsigned long long)(rva + 2), br, v);
+        const char *v = br == 0xEB ? "answered (jmp)" : (br == 0x75 || br == 0x74) ? "NOT answered" : "unexpected byte";
+        ediag("  reference: RVA 0x%llx = 0x%02X (test al,al); verdict branch RVA 0x%llx = 0x%02X -> %s", (unsigned long long)rva,
+              *at, (unsigned long long)(rva + 2), br, v);
     }
 }
 
@@ -1084,16 +1139,26 @@ static void gate3_verdict(const char *when, int reached_window)
 static const char *exc_name(DWORD c)
 {
     switch (c) {
-    case EXCEPTION_ACCESS_VIOLATION: return "ACCESS_VIOLATION";
-    case EXCEPTION_IN_PAGE_ERROR: return "IN_PAGE_ERROR";
-    case EXCEPTION_ILLEGAL_INSTRUCTION: return "ILLEGAL_INSTRUCTION";
-    case EXCEPTION_PRIV_INSTRUCTION: return "PRIV_INSTRUCTION";
-    case EXCEPTION_INT_DIVIDE_BY_ZERO: return "INT_DIVIDE_BY_ZERO";
-    case EXCEPTION_STACK_OVERFLOW: return "STACK_OVERFLOW";
-    case EXCEPTION_NONCONTINUABLE_EXCEPTION: return "NONCONTINUABLE_EXCEPTION";
-    case 0xC0000374: return "HEAP_CORRUPTION";
-    case 0xC0000409: return "STACK_BUFFER_OVERRUN / fail-fast";
-    case 0xE06D7363: return "C++ exception";
+    case EXCEPTION_ACCESS_VIOLATION:
+        return "ACCESS_VIOLATION";
+    case EXCEPTION_IN_PAGE_ERROR:
+        return "IN_PAGE_ERROR";
+    case EXCEPTION_ILLEGAL_INSTRUCTION:
+        return "ILLEGAL_INSTRUCTION";
+    case EXCEPTION_PRIV_INSTRUCTION:
+        return "PRIV_INSTRUCTION";
+    case EXCEPTION_INT_DIVIDE_BY_ZERO:
+        return "INT_DIVIDE_BY_ZERO";
+    case EXCEPTION_STACK_OVERFLOW:
+        return "STACK_OVERFLOW";
+    case EXCEPTION_NONCONTINUABLE_EXCEPTION:
+        return "NONCONTINUABLE_EXCEPTION";
+    case 0xC0000374:
+        return "HEAP_CORRUPTION";
+    case 0xC0000409:
+        return "STACK_BUFFER_OVERRUN / fail-fast";
+    case 0xE06D7363:
+        return "C++ exception";
     }
     return "exception";
 }
@@ -1108,8 +1173,8 @@ static int exc_fatal(DWORD c)
 static void crash_where(uintptr_t a, char *out, size_t cap)
 {
     HMODULE m = NULL;
-    if (GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-                           (LPCWSTR)a, &m) &&
+    if (GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCWSTR)a,
+                           &m) &&
         m) {
         wchar_t wp[MAX_PATH] = L"?";
         GetModuleFileNameW(m, wp, MAX_PATH);
@@ -1118,8 +1183,8 @@ static void crash_where(uintptr_t a, char *out, size_t cap)
         uintptr_t mb = (uintptr_t)m;
         if ((uintptr_t)m == image_base) {
             const Section *s = section_of(a);
-            snprintf(out, cap, "%ls+0x%llx [%s] (base+0x%llx)", bn, (unsigned long long)(a - mb),
-                     s ? s->name : "?", (unsigned long long)(a - mb));
+            snprintf(out, cap, "%ls+0x%llx [%s] (base+0x%llx)", bn, (unsigned long long)(a - mb), s ? s->name : "?",
+                     (unsigned long long)(a - mb));
         } else {
             snprintf(out, cap, "%ls+0x%llx", bn, (unsigned long long)(a - mb));
         }
@@ -1164,7 +1229,11 @@ static void crash_report(const char *when, EXCEPTION_POINTERS *e)
     if ((r->ExceptionCode == EXCEPTION_ACCESS_VIOLATION || r->ExceptionCode == EXCEPTION_IN_PAGE_ERROR) &&
         r->NumberParameters >= 2) {
         ULONG_PTR op = r->ExceptionInformation[0];
-        ediag("  %s 0x%llx", op == 0 ? "reading" : op == 1 ? "writing" : op == 8 ? "executing (DEP)" : "accessing",
+        ediag("  %s 0x%llx",
+              op == 0   ? "reading"
+              : op == 1 ? "writing"
+              : op == 8 ? "executing (DEP)"
+                        : "accessing",
               (unsigned long long)r->ExceptionInformation[1]);
     }
     ediag("  stack (loader unwind, module+RVA):");
@@ -1228,14 +1297,13 @@ static void load_addons_once(const char *why, LPCWSTR detail, int stage)
         return;
     }
     slog("trigger: %s%s%ls%s on thread %lu, %lu ms after attach; loading addons now%s", why,
-         detail ? (loaded_early ? " name '" : " class '") : "", detail ? detail : L"", detail ? "'" : "",
-         GetCurrentThreadId(), GetTickCount() - attach_tick, loaded_early ? " (early stage)" : "");
+         detail ? (loaded_early ? " name '" : " class '") : "", detail ? detail : L"", detail ? "'" : "", GetCurrentThreadId(),
+         GetTickCount() - attach_tick, loaded_early ? " (early stage)" : "");
     if (early_enabled && !loaded_early)
         slog("early stage: the early anchor never fired; early-stage mixins (game database, config and file-system "
              "overlay of files read before the window) missed their first calls");
     SetEnvironmentVariableW(L"SWOFTY_LOAD_STAGE", loaded_early ? L"early" : L"window");
-    ea_stage_probe(loaded_early ? "early-stage trigger (core loading)" : "window-stage trigger (core loading)",
-                   !loaded_early);
+    ea_stage_probe(loaded_early ? "early-stage trigger (core loading)" : "window-stage trigger (core loading)", !loaded_early);
     unhook_iat(loaded_early ? STAGE_EARLY : STAGE_LATE);
     if (loaded_early)
         arm_filled_iat();
@@ -1311,8 +1379,8 @@ static ATOM WINAPI trigger_RegisterClassExW(const WNDCLASSEXW *wc)
     return ((RegisterClassExWFn)iat[IAT_REGISTER].orig)(wc);
 }
 
-static HWND WINAPI trigger_CreateWindowExW(DWORD ex, LPCWSTR cls, LPCWSTR name, DWORD style, int x, int y, int w,
-                                           int h, HWND parent, HMENU menu, HINSTANCE inst, LPVOID param)
+static HWND WINAPI trigger_CreateWindowExW(DWORD ex, LPCWSTR cls, LPCWSTR name, DWORD style, int x, int y, int w, int h,
+                                           HWND parent, HMENU menu, HINSTANCE inst, LPVOID param)
 {
     game_call("CreateWindowExW", __builtin_return_address(0), cls);
     return ((CreateWindowExWFn)iat[IAT_CREATE].orig)(ex, cls, name, style, x, y, w, h, parent, menu, inst, param);
@@ -1483,8 +1551,7 @@ static void read_early_flag(void)
 static DWORD WINAPI worker(LPVOID unused)
 {
     (void)unused;
-    slog("fallback watcher: waiting for a visible main window if no trigger fires (timeout %d s)",
-         WINDOW_TIMEOUT_MS / 1000);
+    slog("fallback watcher: waiting for a visible main window if no trigger fires (timeout %d s)", WINDOW_TIMEOUT_MS / 1000);
     while (!load_state) {
         HWND w = NULL;
         EnumWindows(find_window, (LPARAM)&w);
@@ -1495,8 +1562,7 @@ static DWORD WINAPI worker(LPVOID unused)
             stage_window("main window visible (fallback)");
             return 0;
         }
-        if (GetTickCount() - attach_tick > WINDOW_TIMEOUT_MS &&
-            InterlockedCompareExchange(&load_state, 3, 0) == 0) {
+        if (GetTickCount() - attach_tick > WINDOW_TIMEOUT_MS && InterlockedCompareExchange(&load_state, 3, 0) == 0) {
             unhook_iat(0);
             slog("fallback watcher: no trigger and no window after %d s, addons NOT loaded", WINDOW_TIMEOUT_MS / 1000);
             if (ea_diag) {
@@ -1565,8 +1631,8 @@ static HANDLE open_rotated(const wchar_t *dir, const wchar_t *name, int tries, D
     HANDLE h = INVALID_HANDLE_VALUE;
     /* The hook appends to the same file and briefly holds it during its own startup; retry past that window. */
     while (tries-- > 0) {
-        h = CreateFileW(log_path, FILE_APPEND_DATA, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL,
-                        OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+        h = CreateFileW(log_path, FILE_APPEND_DATA, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_ALWAYS,
+                        FILE_ATTRIBUTE_NORMAL, NULL);
         *error = h == INVALID_HANDLE_VALUE ? GetLastError() : 0;
         if (h != INVALID_HANDLE_VALUE)
             break;
@@ -1607,8 +1673,7 @@ static const char *integrity_name(DWORD rid)
    with next to the launcher's. */
 static void log_refused(void)
 {
-    slog("log: %ls could not be opened (error %lu); this is the fallback log %ls", refused_path, refused_error,
-         log_path);
+    slog("log: %ls could not be opened (error %lu); this is the fallback log %ls", refused_path, refused_error, log_path);
     char level[16] = "unknown", sid[192] = "unknown", name[64] = "(unset)", layers[256] = "(unset)";
     TOKEN_ELEVATION_TYPE type = 0;
     DWORD virt = 0, n;
@@ -1673,8 +1738,8 @@ static void reserve_hook_pool(void)
          !hook_pool && at >= lo && at < image_base && VirtualQuery((void *)at, &m, sizeof m);) {
         if (m.State == MEM_FREE && m.RegionSize >= HOOK_POOL_SIZE && (hook_pool = reserve_at(at)))
             break;
-        uintptr_t next = ((m.State == MEM_FREE ? at + m.RegionSize : (uintptr_t)m.AllocationBase) - HOOK_POOL_SIZE) &
-                         ~(uintptr_t)0xFFFF;
+        uintptr_t next =
+            ((m.State == MEM_FREE ? at + m.RegionSize : (uintptr_t)m.AllocationBase) - HOOK_POOL_SIZE) & ~(uintptr_t)0xFFFF;
         at = next < at ? next : at - 0x10000;
     }
     if (hook_pool)
@@ -1682,7 +1747,8 @@ static void reserve_hook_pool(void)
              (void *)hook_pool, hook_pool >= end ? "above" : "below");
     else
         slog("hook pool: no free %u KB within 1 GB of the image at attach; the core searches for trampoline memory "
-             "itself", HOOK_POOL_SIZE >> 10);
+             "itself",
+             HOOK_POOL_SIZE >> 10);
 }
 
 __declspec(dllexport) int SwoftyLoaderHookPool(uintptr_t *at, size_t *size)
@@ -1714,8 +1780,8 @@ static void log_build(void)
         slog("exe: size %llu, PE timestamp %lu is not a build this launcher supports; the core and the addons are NOT "
              "loaded (SWOFTY_ALLOW_UNSUPPORTED_BUILD=1 overrides)",
              size, stamp);
-    slog("exe: size %llu (analysed %llu), PE timestamp %lu (analysed %lu) -> %s", size, EXPECTED_SIZE, stamp,
-         EXPECTED_STAMP, ok ? "MATCHES the analysed build" : "DIFFERS from the analysed build, signatures may fail");
+    slog("exe: size %llu (analysed %llu), PE timestamp %lu (analysed %lu) -> %s", size, EXPECTED_SIZE, stamp, EXPECTED_STAMP,
+         ok ? "MATCHES the analysed build" : "DIFFERS from the analysed build, signatures may fail");
     slog("exe: image base %p, %d sections", (void *)image_base, section_count);
     for (int i = 0; i < section_count; i++)
         slog("  section %-8s %p size 0x%llx flags 0x%08lx", sections[i].name, (void *)sections[i].start,
@@ -1738,8 +1804,8 @@ static void write_start_marker(void)
     if (!n)
         return;
     wcscpy(path + n, L"\\state\\loader-start.marker");
-    HANDLE h = CreateFileW(path, GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL,
-                           CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    HANDLE h = CreateFileW(path, GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, CREATE_ALWAYS,
+                           FILE_ATTRIBUTE_NORMAL, NULL);
     if (h == INVALID_HANDLE_VALUE)
         return;
     char text[48];
@@ -1808,8 +1874,9 @@ BOOL WINAPI DllMain(HINSTANCE self, DWORD reason, LPVOID reserved)
     slog("swofty loader (version.dll proxy) attached, pid %lu", GetCurrentProcessId());
     if (refused_error)
         log_refused();
-    slog("log: %s", log_async ? "asynchronous writer (batched, crash lines flush at once; SWOFTY_LOG_SYNC=1 writes each line synchronously)"
-                              : "synchronous, one write per line");
+    slog("log: %s",
+         log_async ? "asynchronous writer (batched, crash lines flush at once; SWOFTY_LOG_SYNC=1 writes each line synchronously)"
+                   : "synchronous, one write per line");
     slog("host: %ls", exe_path);
     slog("proxy: %ls", self_path);
     slog("real version.dll: %ls (requested %ls)", real_path, sys);
@@ -1835,9 +1902,9 @@ BOOL WINAPI DllMain(HINSTANCE self, DWORD reason, LPVOID reserved)
             if (GetFileAttributesExW(exe_path, GetFileExInfoStandard, &fa))
                 size = ((unsigned long long)fa.nFileSizeHigh << 32) | fa.nFileSizeLow;
             const Section *cs = code_section();
-            ediag("build: size %llu (analysed Steam %llu), PE timestamp %lu (analysed %lu), image base %p, %d sections",
-                  size, (unsigned long long)EXPECTED_SIZE, (unsigned long)nt->FileHeader.TimeDateStamp,
-                  (unsigned long)EXPECTED_STAMP, (void *)image_base, section_count);
+            ediag("build: size %llu (analysed Steam %llu), PE timestamp %lu (analysed %lu), image base %p, %d sections", size,
+                  (unsigned long long)EXPECTED_SIZE, (unsigned long)nt->FileHeader.TimeDateStamp, (unsigned long)EXPECTED_STAMP,
+                  (void *)image_base, section_count);
             for (int i = 0; i < section_count; i++)
                 ediag("  section %-8s %p size 0x%llx flags 0x%08lx%s", sections[i].name, (void *)sections[i].start,
                       (unsigned long long)sections[i].size, (unsigned long)sections[i].flags,
@@ -1866,7 +1933,8 @@ BOOL WINAPI DllMain(HINSTANCE self, DWORD reason, LPVOID reserved)
         if (registering) {
             early_enabled = 1;
             slog("early stage: on for %d addon dll(s) that export SwoftyAddonRegister; SWOFTY_REGISTER runs before the "
-                 "game loads its database", registering);
+                 "game loads its database",
+                 registering);
         }
     }
     if (ea_diag && !early_enabled) {

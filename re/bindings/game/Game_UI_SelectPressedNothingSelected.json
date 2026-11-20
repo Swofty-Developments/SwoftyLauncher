@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_UI_SelectPressedNothingSelected",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a91170",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-UI",
+  "notes": "named from its log messages (channel UI): 'Select pressed with nothing selected'"
+ },
+ "signature": {
+  "id": "game.ui_select_pressed_nothing_selected",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 80 B9 60 13 00 00 00",
+  "match": "0x141a91170",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a91170",
+  "kind": "func_start",
+  "names": [
+   "Game_UI_SelectPressedNothingSelected"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141a91170",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141a91170.c;xref:0x14080ecdf",
+   "notes": "V4934 61 KB menu select-pressed handler (goto_engineering, nav_anim, weather icons, race_info, collaborative events); nothing-selected log is one branch. Better: Game_UI_OnSelectPressed"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x141a91170",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a91170.c;xref:0x141a94d17",
+   "notes": "V7246 name fits; finding facts hold; 1 direct calls"
+  }
+ ],
+ "proofs": []
+}

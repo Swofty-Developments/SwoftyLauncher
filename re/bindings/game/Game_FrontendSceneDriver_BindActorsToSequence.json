@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneDriver_BindActorsToSequence",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142896e30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142896e30.c;xref:0x14d239df9",
+  "notes": "Driver: bindActorsToSequences - returns/binds the sequence to use, despawns replaced sequence, 'Failed to spawn sequence'. Caller 0x14d239df9. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2968)"
+ },
+ "signature": {
+  "id": "game.frontend_scene_driver_bind_actors_to_sequence",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 48 8B 91 70",
+  "match": "0x142896e30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142896e30",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneDriver_BindActorsToSequence"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d11-verify",
+   "kind": "func",
+   "item": "Game_FrontendSceneDriver_BindActorsToSequence",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142896e30.c;xref:0x14d239df9",
+   "notes": "V2968 Decomp strings, offsets and callees match the claim; name fits."
+  }
+ ],
+ "proofs": []
+}

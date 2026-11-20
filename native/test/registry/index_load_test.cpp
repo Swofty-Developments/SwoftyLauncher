@@ -1,4 +1,4 @@
-#include "../../src/core/registry/table.hpp"
+#include "core/registry/table.hpp"
 
 #include <cstdio>
 #include <cstdlib>
@@ -20,9 +20,8 @@ int main()
     const char *tmp = std::getenv("TMPDIR");
     fs::path dir = fs::path(tmp ? tmp : "/tmp") / "swofty-index-load-test";
     fs::remove_all(dir);
-    write(dir / "registry/index.json",
-          R"({"version":1,"profile":"default","order":["a.code","b.data"],)"
-          R"("data":{"b.data":["registry/b.data/records.json"]},"registry":{},"addons":{}})");
+    write(dir / "registry/index.json", R"({"version":1,"profile":"default","order":["a.code","b.data"],)"
+                                       R"("data":{"b.data":["registry/b.data/records.json"]},"registry":{},"addons":{}})");
     write(dir / "registry/b.data/records.json", R"({"test.thing":{"extra_car":{"name":"extra","n":1}}})");
 
     IndexResult ix = load_index(dir.string());

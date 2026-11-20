@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_DriverContractsMyTeam_RemovePendingByState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140db65c0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void (void *comp, char state)",
+  "evidence": "decomp:re/decomp/140db65c0.c;xref:0x140dad998;xref:0x140dad9a2;xref:0x140daddca",
+  "notes": "myteam-g2: Removes every entry of the 0x68-byte list at comp+0x480 (count comp+0x6f0) whose state byte (+0x64) equals state, destroying its string and shared parts. Called when talks are stopped or a pending driver move is processed."
+ },
+ "signature": {
+  "id": "career.driver_contracts_my_team_remove_pending_by_state",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 48 8B 81 F0 06 00 00",
+  "match": "0x140db65c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140db65c0",
+  "kind": "func_start",
+  "names": [
+   "Career_DriverContractsMyTeam_RemovePendingByState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140db65c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140db65c0.c",
+   "notes": "V9550 Removes entries of 0x68-byte list at comp+0x480 (count +0x6f0) whose state byte +0x64 equals param."
+  }
+ ],
+ "proofs": []
+}

@@ -162,9 +162,8 @@ inline float curve_at(const unsigned char *rec, float x)
 
 inline bool curve_shape(const unsigned char *rec)
 {
-    return finite(float_at(rec + CURVE_SCALE)) && finite(float_at(rec + CURVE_OFFSET)) &&
-           finite(float_at(rec + CURVE_STEP)) && finite(float_at(rec + CURVE_LAST)) &&
-           finite(float_at(rec + CURVE_MIN)) && finite(float_at(rec + CURVE_MAX));
+    return finite(float_at(rec + CURVE_SCALE)) && finite(float_at(rec + CURVE_OFFSET)) && finite(float_at(rec + CURVE_STEP)) &&
+           finite(float_at(rec + CURVE_LAST)) && finite(float_at(rec + CURVE_MIN)) && finite(float_at(rec + CURVE_MAX));
 }
 
 inline void flatten(unsigned char *rec, float v)
@@ -389,9 +388,8 @@ private:
     static bool records(const Mem &m, uintptr_t system, uint32_t &n)
     {
         uint64_t begin = 0, end = 0;
-        if (!user_pointer(system) || !m.read(system + RECORDS_BEGIN, &begin, 8) ||
-            !m.read(system + RECORDS_END, &end, 8) || !user_pointer(begin) || end < begin + STRIDE ||
-            (end - begin) % STRIDE != 0 || (end - begin) / STRIDE > MAX_RECORDS)
+        if (!user_pointer(system) || !m.read(system + RECORDS_BEGIN, &begin, 8) || !m.read(system + RECORDS_END, &end, 8) ||
+            !user_pointer(begin) || end < begin + STRIDE || (end - begin) % STRIDE != 0 || (end - begin) / STRIDE > MAX_RECORDS)
             return false;
         n = uint32_t((end - begin) / STRIDE);
         return true;

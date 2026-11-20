@@ -1,7 +1,7 @@
 // Host unit test for the state folder path logic (state_logic.hpp): the folder the launcher names for the core's
-// state files, as a Windows drive path (a Wine Z: path on Linux), with non-ASCII names. run_events_test.sh builds and
+// state files, as a Windows drive path (a Wine Z: path on Linux), with non-ASCII names. native/test/run_tests.sh state_logic builds and
 // runs it.
-#include "../src/core/state_logic.hpp"
+#include "core/runtime/state_logic.hpp"
 
 #include <cstdio>
 #include <string>

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "vt_Career_MessageDriverMoveConfirmed",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145696d40",
+  "type": "vtable[2]",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/140d8f1f0.c;decomp:re/decomp/140d766b0.c;decomp:re/decomp/14352c260.c;xref:0x140d8f385,0x140d76f65,0x140d773a3,0x14352c29f;doc:addons/career-editor/protocol/drivers.md#op-driversswap",
+  "notes": "vtable of MessageDriverMoveConfirmed (slot 1 0x140e04260 returns the name 'MessageDriverMoveConfirmed' 0x14565dd18). Message 0x28 bytes: +0 vtable, +8 u64 0, +0x10 DriverMoveRecord {driver, old team, new team, u8 reason, u32 weekend, u16 day}. Posted by Career_Record_DriverMove (My Team, after appending driverMoveData) and directly by the Driver Career signing 0x140d766b0 (DriverCareerContractsManagerComponent, no move log) right before each of its four move writes through Career_Set_EntrantData_Thunk (0x140d770ca, 0x140d774ea, 0x140d7769c, 0x140d77a5f; its renumber 0x140d78078 and no-team reset 0x140d78469 writes post nothing). Subscribed by each Upgrades object (0x14352b3f0, called from 0x14123ca40; handler 0x14352e370 -> 0x1435294e0, UPGRADES 'Reassigning upgrades from driver %s to index %d on team %s'; the same handler also takes MessageDriversMovedTeams, MessageDriverMovesFinalised and DriverRetired and ignores the message body; 0x14352c260 unsubscribes) and by telemetry Career_Report_RnDTelemetry 0x1406d8470 (0x1406fd6c0 unsubscribes) (V0872)"
+ },
+ "signature": {
+  "id": "career.message_driver_move_confirmed",
+  "section": ".xtls",
+  "pattern": "C5 F8 29 44 24 50 48 C7 44 24 30 00 00 00 00 48 8D 15",
+  "match": "0x140d8f376",
+  "anchor": "0x12",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0xf",
+   "len": 7
+  },
+  "target": "0x145696d40",
+  "kind": "data",
+  "names": [
+   "vt_Career_MessageDriverMoveConfirmed"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-drivers",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/drivers.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-8",
+   "kind": "global",
+   "item": "vt_Career_MessageDriverMoveConfirmed",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140d8f1f0.c;decomp:re/decomp/140d766b0.c;decomp:re/decomp/14352c260.c;decomp:re/decomp/14352e370.c;decomp:re/decomp/1435294e0.c;xref:0x140d8f385,0x140d76f65,0x140d773a3,0x140d7755e,0x140d777f5,0x14352b435,0x14352b443,0x14352c29f,0x14352c2a8,0x1406e59d2,0x1406e59df,0x1406fec80,0x1406fec8c,0x140d78078,0x140d78469;sig:career.message_driver_move_confirmed",
+   "notes": "V0872 sigcheck OK; vtable[2], slot 1 name, 0x28-byte layout and both posters are right. Wrong twice. (1) 0x140d766b0 posts it before four of its six Career_Set_EntrantData_Thunk calls (posts 0x140d76fa9/0x140d773e2/0x140d7759d/0x140d77838 precede the writes at 0x140d770ca/0x140d774ea/0x140d7769c/0x140d77a5f); the team-position renumber write 0x140d78078 and the no-team reset write 0x140d78469 post nothing. (2) 0x14352c260 and 0x1406fd6c0 call the bus unsubscribe 0x143988350; the subscribes are 0x14352b3f0 (via 0x143987810, called from UpgradesComponent 0x14123ca40 per Upgrades object) and Career_Report_RnDTelemetry 0x1406d8470 (0x1406e59df). Corrected: '... Posted by Career_Record_DriverMove (My Team, after appending driverMoveData) and directly by the Driver Career signing 0x140d766b0 (DriverCareerContractsManagerComponent, no move log) right before each of its four move writes through Career_Set_EntrantData_Thunk (0x140d770ca, 0x140d774ea, 0x140d7769c, 0x140d77a5f; its renumber 0x140d78078 and no-team reset 0x140d78469 writes post nothing). Subscribed by each Upgrades object (0x14352b3f0, called from 0x14123ca40; handler 0x14352e370 -> 0x1435294e0, UPGRADES Reassigning upgrades from driver %s to index %d on team %s; the same handler also takes MessageDriversMovedTeams, MessageDriverMovesFinalised and DriverRetired and ignores the message body; 0x14352c260 unsubscribes) and by telemetry Career_Report_RnDTelemetry 0x1406d8470 (0x1406fd6c0 unsubscribes)'"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-8",
+   "kind": "global",
+   "item": "vt_Career_MessageDriverMoveConfirmed",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d8f1f0.c;decomp:re/decomp/140d766b0.c;decomp:re/decomp/14352c260.c;decomp:re/decomp/1435294e0.c;xref:0x140d8f385,0x140d76f65,0x140d773a3,0x140d7755e,0x140d777f5,0x140d770ca,0x140d774ea,0x140d7769c,0x140d77a5f,0x140d78078,0x140d78469,0x14352b432,0x14352b440,0x14352b44d,0x14352b682,0x14352b8c2,0x14352bb02,0x14352c2a8,0x1406e59df,0x1406fec8c;sig:career.message_driver_move_confirmed",
+   "notes": "V0899 sigcheck OK. Current text re-checked in full: vtable[2], slot 1 name, 0x28 layout, both posters; the four move posts precede the writes 0x140d770ca/0x140d774ea/0x140d7769c/0x140d77a5f and the 0x140d78078/0x140d78469 writes post nothing; 0x14352b3f0 (called from 0x14123ca40) subscribes 0x14352e370 to MessageDriverMoveConfirmed, MessageDriversMovedTeams, MessageDriverMovesFinalised and DriverRetired (0x14352b440/0x14352b682/0x14352b8c2/0x14352bb02), the handler drops the message (0x1435294e0 takes only rcx), 0x14352c260 unsubscribes; telemetry subscribes in 0x1406d8470 (0x1406e59df) and 0x1406fd6c0 unsubscribes (0x1406fec8c). The evidence list still cites the unsubscribe 0x14352c29f, which is harmless"
+  }
+ ],
+ "proofs": []
+}

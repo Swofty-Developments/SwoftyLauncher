@@ -1,0 +1,60 @@
+{
+ "schema": 1,
+ "name": "Sess_DelayOnLoadingScreen_ParseParams",
+ "table": "functions",
+ "author": "load-game",
+ "row": {
+  "addr": "0x142d58600",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "uint64_t(void *state, void *params)",
+  "evidence": "decomp:own Ghidra 0x142d58600-0x142d58690;xref:0x1457de6f8;str:s_delayLength;doc:re/research/loading_pipeline.md#loading-screen-delay",
+  "notes": "SessionStateDelayOnLoadingScreen ParseParams, slot 7 of vtable 0x1457de6c0 (pointer at 0x1457de6f8; slot 9 at 0x1457de708 is Sess_DelayOnLoadingScreen_Update 0x142d586c0). Walks the flow node params (16-byte name/value pairs at params+8..+0x10) for \"delayLength\", parses it with the float parser 0x145343ff4 and stores the seconds at state+0xf94; returns 0. Slot 8 (0x142d586a0, onStateEnter) clears state+0xf90 and bit 0 of state+0xe78; the update adds the frame time into +0xf90 until it reaches +0xf94, then sets ui_menu_data.loading_complete. The delay value lives in the flow data inside game.dat, not in the exe."
+ },
+ "signature": {
+  "id": "session.delay_on_loading_screen_parse_params",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 48 89 D7 48 89 CE E8 ?? ?? ?? ?? 48 8B 47 08 48 39 47 10 74 63",
+  "match": "0x142d58600",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d58600",
+  "kind": "func_start",
+  "names": [
+   "Sess_DelayOnLoadingScreen_ParseParams"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-17",
+    "by": "load-game",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "load-game",
+   "date": "2026-11-17",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142d58600",
+    "target": "0x142d58600"
+   },
+   "sigcheck": "passed",
+   "digest": "f17ff0115ee153822281640d8e5b7246007c0ca1326dcd98de13a8b8c0bb79c3"
+  }
+ ]
+}

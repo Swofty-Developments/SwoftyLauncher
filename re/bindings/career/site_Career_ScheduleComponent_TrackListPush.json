@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_ScheduleComponent_TrackListPush",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141272d33",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/1412722e0.c;xref:0x141272d31,0x141272d27",
+  "notes": "In Career_ScheduleComponent_Load: mov rcx,r14; mov rdx,rbx before call 0x140bc9860 (push_back of a 0x28-byte calendar entry) at 0x141272d39, reached only when the event row's u8 id [rbx+8] equals the stored track_event_id byte r13b (jne 0x141272d20 at 0x141272d31 skips other ids). rsi = the schedule component (calendar begin +0x2b0, end +0x2b8), rbx = the matching row of the career's event list, rbp = that list's end, r15 = the stored entry index, rdi = the custom_track_list array (u16 count +0x10), r14 = self+0x2a8. 6-byte window (two register movs, no rip-relative operand), no branch lands in 0x141272d34..0x141272d38. Core's career calendar track list guard picks one row per stored entry at its first match (the first row with that id this load has not pushed, else the first match again), sets rbx to it and lets the push run; the entry's other matches continue at site_Career_ScheduleComponent_TrackListNextRow. rbx may be moved forward to a later row of the same walk (the walk continues after it). Reads the component's +0x2c8 (season event list length) as the bound for a blown-up stored list."
+ },
+ "signature": {
+  "id": "career.schedule_track_list_push",
+  "section": ".xtls",
+  "pattern": "44 38 6B 08 75 ED 4C 89 F1 48 89 DA E8 ?? ?? ?? ?? EB E0",
+  "match": "0x141272d2d",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141272d33",
+  "kind": "mid",
+  "expect": "4C 89 F1 48 89",
+  "names": [
+   "site_Career_ScheduleComponent_TrackListPush"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "tracklist",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/tracks/track_list_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "tracklist-verify",
+   "kind": "global",
+   "item": "0x141272d33",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1412722e0.c;xref:0x141272d31;sig:career.schedule_track_list_push",
+   "notes": "V9258 Static: linear sweep of 0x1412722e0..0x1412733f9 finds no branch into 0x141272d34..0x141272d38; d33 is only reached by fall-through from the id compare at 0x141272d2d. EA: same bytes at 0x14126cf83 (pattern match 0x14126cf7d, unique in the dump)."
+  }
+ ],
+ "proofs": []
+}

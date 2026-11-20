@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Phys_SolveRowsIterate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440f4de0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1440f4de0.c;xref:0x1440fc710",
+  "notes": "Sequential-impulse / projected Gauss-Seidel iteration over 0xd0-byte rows: lambda from vdpps(vel,J), accumulated impulse clamped (row+0x94/+0x9c), delta*invMass*J added to 8-float velocity slots (32 B per body, array ctx+0xa0); handles 2-body, 1-body tail passes (counts ctx+0x104/0x10c/0x110); param_3 = iteration count, clears velocity array first. Hypothesis (strong): EGO rigid-body solver inner loop. Caller Ne_Phys_BuildContactRows."
+ },
+ "signature": {
+  "id": "core.phys_solve_rows_iterate",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 88 00 00 00 C5 78 29 5C 24 70 C5 78 29 54 24 60 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 44 89 C6 48",
+  "match": "0x1440f4de0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440f4de0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Phys_SolveRowsIterate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x1440f4de0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440f4de0.c;xref:0x1440fc710",
+   "notes": "V7625 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

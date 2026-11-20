@@ -8,8 +8,7 @@
    version.dll either: it loads version.dll and fills its own table by name before it runs. */
 typedef HANDLE(WINAPI *CreateMutexWFn)(LPSECURITY_ATTRIBUTES, BOOL, LPCWSTR);
 typedef ATOM(WINAPI *RegisterClassExWFn)(const WNDCLASSEXW *);
-typedef HWND(WINAPI *CreateWindowExWFn)(DWORD, LPCWSTR, LPCWSTR, DWORD, int, int, int, int, HWND, HMENU, HINSTANCE,
-                                         LPVOID);
+typedef HWND(WINAPI *CreateWindowExWFn)(DWORD, LPCWSTR, LPCWSTR, DWORD, int, int, int, int, HWND, HMENU, HINSTANCE, LPVOID);
 
 static struct {
     CreateMutexWFn create_mutex;
@@ -25,10 +24,7 @@ static void expect(int ok, const char *what)
     fails += !ok;
 }
 
-static LRESULT CALLBACK wndproc(HWND h, UINT m, WPARAM w, LPARAM l)
-{
-    return DefWindowProcW(h, m, w, l);
-}
+static LRESULT CALLBACK wndproc(HWND h, UINT m, WPARAM w, LPARAM l) { return DefWindowProcW(h, m, w, l); }
 
 int main(void)
 {
@@ -54,11 +50,11 @@ int main(void)
     expect((void *)imports.register_class != real_rc && (void *)imports.create_window != real_cw,
            "the window triggers are armed in the filled table");
 
-    WNDCLASSEXW wc = {.cbSize = sizeof wc, .lpfnWndProc = wndproc, .hInstance = GetModuleHandleW(NULL),
-                      .lpszClassName = L"EGO_WindowClass"};
+    WNDCLASSEXW wc = {
+        .cbSize = sizeof wc, .lpfnWndProc = wndproc, .hInstance = GetModuleHandleW(NULL), .lpszClassName = L"EGO_WindowClass"};
     ATOM cls = imports.register_class(&wc);
-    HWND w = imports.create_window(0, L"EGO_WindowClass", L"F1 25", WS_OVERLAPPEDWINDOW, 0, 0, 320, 200, NULL, NULL,
-                                   wc.hInstance, NULL);
+    HWND w = imports.create_window(0, L"EGO_WindowClass", L"F1 25", WS_OVERLAPPEDWINDOW, 0, 0, 320, 200, NULL, NULL, wc.hInstance,
+                                   NULL);
     expect(cls && w, "RegisterClassExW and CreateWindowExW work through the armed slots");
     expect((void *)imports.register_class == real_rc && (void *)imports.create_window == real_cw,
            "the window triggers are restored after the window stage");

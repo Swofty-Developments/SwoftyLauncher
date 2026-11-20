@@ -9,8 +9,8 @@ import time
 from pathlib import Path
 
 from . import report
+from .pin import prefix as pin_prefix
 
-PIN = ["taskset", "-c", "2-7,10,11,14-31", "nice", "-n", "10"]
 DEFAULT_LOCK = "/mnt/work/F1/f1-game.lock.d"
 DEFAULT_QUEUE = "/mnt/work/F1/f1-game.queue"
 WHO = "std16-gate2"
@@ -366,7 +366,7 @@ def wine_env(prefix):
 
 
 def run_wine(game, prefix, mode, timeout, pin=True):
-    cmd = (PIN if pin else []) + ["xvfb-run", "-a", "wine", str(Path(game) / "F1_25.exe"), mode]
+    cmd = (pin_prefix() if pin else []) + ["xvfb-run", "-a", "wine", str(Path(game) / "F1_25.exe"), mode]
     try:
         p = subprocess.run(cmd, cwd=game, env=wine_env(prefix), capture_output=True, text=True, timeout=timeout)
         rc, stdout = p.returncode, p.stdout + p.stderr
@@ -442,7 +442,7 @@ def build_fake_exe(repo, dest, ids=None):
     cache = dest.parent / "zig-cache"
     env = dict(os.environ, ZIG_GLOBAL_CACHE_DIR=str(cache), ZIG_LOCAL_CACHE_DIR=str(cache))
     src = Path(repo) / "native" / "test" / "fake_game.c"
-    cmd = PIN + ["zig", "cc", "-target", "x86_64-windows-gnu", "-O2", "-o", str(dest), str(src)]
+    cmd = pin_prefix() + ["zig", "cc", "-target", "x86_64-windows-gnu", "-O2", "-o", str(dest), str(src)]
     if ids:
         stubs = dest.parent / "gate_stubs.c"
         stubs.write_text(stub_source(ids))

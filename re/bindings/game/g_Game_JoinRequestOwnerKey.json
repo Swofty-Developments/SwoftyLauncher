@@ -1,0 +1,42 @@
+{
+ "schema": 1,
+ "name": "g_Game_JoinRequestOwnerKey",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x146cb8278",
+  "type": "void",
+  "level": "L1",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/14172c5a0.c;decomp:re/decomp/14328bf30.c",
+  "notes": "Key object whose address is passed to the registry lookup (vtable slot +0x28 of the init context's registry): returns the pending join request owner, whose +0xc0 is the request record the join via IP prompt fills and the 0x1443dca90 pump consumes."
+ },
+ "signature": {
+  "id": "game.join_request_owner_key",
+  "section": ".xtls",
+  "pattern": "48 8D 15 ?? ?? ?? ?? 48 89 F9 FF 50 28 48 85 C0 0F 84 ?? ?? ?? ?? 48 8B 48 18",
+  "match": "0x14172c631",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x146cb8278",
+  "kind": "data",
+  "names": [
+   "g_Game_JoinRequestOwnerKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "room-headless",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Ent_Deserialise_EntrantVector",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142458f20",
+  "level": "L2",
+  "subsystem": "entrants",
+  "proto": "int Ent_Deserialise_EntrantVector(void *vector_object, void *bag)",
+  "evidence": "decomp:re/decomp/142458f20.c;decomp:re/decomp/1407a00d0.c;xref:0x1407a0122,0x140af4a9a,0x142588281;decomp:re/decomp/142458f20.c;xref:0x1407a0122,0x140af4a9a,0x142588281;xref:0x142588280",
+  "notes": "loads an entrant vector object {allocator, begin, end, cap} from a property bag: resizes it, then unpacks each saved record's packed keys, team position and racing number (+0x83 = low byte of the packed qword). The CareerEntity loader 0x1407a00d0 passes entity+0x2d8 (the entrant rows), the weekend loader 0x140af4a80 its own list. Records are packed by 0x142458890 (+0x83 in the low byte)  2026-10-31 career-alias (static, decomp:re/decomp/142458f20.c, 142458890.c): the saved record is three u64 per entrant, packed by Ent_Serialise_EntrantRecord. Word 0: bits 0-15 driver key (EntrantRecord +0x50/+0x52), 16-31 team (+0x58/+0x5a), 32-47 vehicle ref (+0x5c/+0x5e), 48-63 registry value (+0x60); word 1: bits 48-63 driver customisation (+0x54), 32-47 vehicle customisation (+0x64), bits 16-23 and 0-7 flag bytes and racing number (+0x83); word 2: bits 0-15 badge (+0x68), 16-31 u16 (+0x7a), 32-39 byte (+0x78). A saved key is (kind << 14) Callers: census steam 0x2458f20. | stat id; the loader rebuilds the u32 as (key & 0x3fff) << 16 | key >> 14. The vector in the result is final (rows at the standard 0x88 layout) when the function returns, before CareerEntity load 0x1407a00d0 posts the entrants-loaded message with entity+0x2d8, so rewriting +0x52, +0x5a and +0x5e of the rows after the return maps every saved entrant id the career and the weekend list hold. Needs a verify agree row for the word layout and the return-time state."
+ },
+ "signature": {
+  "id": "entrants.deserialise_entrant_vector",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 01 00 00 48 89 D3 48 89 CE 48 8B 41 08",
+  "match": "0x142458f20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142458f20",
+  "kind": "func_start",
+  "names": [
+   "Ent_Deserialise_EntrantVector"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "career-alias",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/boxes/era_picker.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "kbverify-calias1",
+   "kind": "func",
+   "item": "0x142458f20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142458f20.c;decomp:re/decomp/1407a00d0.c;decomp:re/decomp/140af4a80.c;decomp:re/decomp/142588280.c;decomp:re/decomp/142458890.c;xref:0x1407a0121,0x140af4a99,0x142588280;pat:sigcheck-4925-of-4925",
+   "notes": "V3855 re-derived from the decompile alone. Prototype int(vector_object, bag) matches (rcx=vector {alloc,begin+8,end+0x10,cap+0x18}, rdx=bag; returns errno, 0 ok). Rows are built on the stack from three u64 per entrant and pushed with Sess_EntrantFilterVec_PushBack at the 0x88 layout; every return (incl. the loop's final return) leaves the vector complete, so a wrap on the return sees all rows. Callers by E8 scan of .xtls: 0x1407a0121 (CareerEntity load 1407a00d0, entity+0x2d8 = param_1+0x5b qwords, entrants-loaded message 14578d510 posted after the return), 0x140af4a99 (weekend list 140af4a80, param_1+0x18) and a third 0x142588280 (FUN_142588280 posts the same 14578d510 message after the return; another entity loader, also covered by the wrap). Packed layout: u32 stack slots at row-0x50..0x68 are rebuilt as (key&0x3fff)<<16|key>>14 from word0 bits 0-15 driver (+0x50, stat id u16 at +0x52), 16-31 team (+0x58, id at +0x5a), 32-47 vehicle (+0x5c, id at +0x5e), 48-63 registry (+0x60); word1 48-63 driver customisation (+0x54), 32-47 vehicle customisation (+0x64); word2 0-15 badge (+0x68); matches the serialiser 142458890 which writes kind<<14|u16 at the same offsets. sigcheck.py entrants.deserialise_entrant_vector hits=1 match=0x142458f20 target=0x142458f20, 4925/4925 pass."
+  }
+ ],
+ "proofs": []
+}

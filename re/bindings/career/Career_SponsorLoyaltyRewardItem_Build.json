@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_SponsorLoyaltyRewardItem_Build",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1416c4510",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void *vm, uint8_t *out",
+  "evidence": "decomp:re/decomp/1416c4510.c;xref:0x141a4a7af;xref:0x142002e55;xref:0x142005914",
+  "notes": "myteam-g1: Builds loyalty reward item entries: lng_sponsor_loyalty_item_title, lng_sponsor_loyalty_unlock_desc, LEVEL n labels."
+ },
+ "signature": {
+  "id": "career.sponsor_loyalty_reward_item_build",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 03 00 00 C5 F8 29 B4 24 F0 02 00 00 49 89 D6 48 89 CE",
+  "match": "0x1416c4510",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416c4510",
+  "kind": "func_start",
+  "names": [
+   "Career_SponsorLoyaltyRewardItem_Build"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x1416c4510",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1416c4510.c;xref:0x141a4a7af;xref:0x142002e55",
+   "notes": "V9758 Generic reward/unlock item text builder (paddock pass, shop, DLC, racenet, unlock goals, sponsor loyalty title/desc); sponsor loyalty is only one branch."
+  }
+ ],
+ "proofs": []
+}

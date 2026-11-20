@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Bank_OnBankAccountTransactionMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c68310",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Bank_OnBankAccountTransactionMessage(void *bank, void *msg)",
+  "evidence": "decomp:re/decomp/140c68310.c;xref:0x140c649e0;xref:0x140c64acc",
+  "notes": "myteam-g2: Handler for BankAccountTransactionMessage (unsubscribed in Career_Bank_UnregisterMessageHandlers). Copies the message into a local transaction (vtable 14568d508; fields msg+8/+0x10/+0x18, date mode byte at msg+0x25, notify flag at msg+0x26), resolves the due date from the clock bank+0x2d0 -> +0x2b0 (+0x5a0 per day: mode 0 = now, 1 = next day, 2 = next race day within 7 days via calendar at clock+0x290/0x298), calls FUN_140c67b10 (process transaction) and, if it returns true, FUN_140c635c0 (commit). Posts a result message (type 1456899c8) when the notify flag is 1. Hook: post this message on the bus (Ne_Post_BusMessage) to change team funds. CORRECTION(V9008): Core role right (copy msg into txn vtbl 14568d508, due date from clock bank+0x2d0->+0x2b0 with +0x5a0/day, FUN_140c67b10 then FUN_140c635c0; result msg 1456899c8 posted when notify==1; 140c64acc unsubscribes this message name). Offsets are off by one: disassembly shows date-mode byte at msg+0x24 (0 now, 1 next day, 2 next race day within 7 days) and notify flag at msg+0x25, not +0x25/+0x26. Result message is posted before the commit, regardless of the process result."
+ },
+ "signature": {
+  "id": "career.bank_on_bank_account_transaction_message",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 80 00 00 00 C5 F8 29 74 24 70 48 89 CE 48 8B 42 08",
+  "match": "0x140c68310",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c68310",
+  "kind": "func_start",
+  "names": [
+   "Career_Bank_OnBankAccountTransactionMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-c",
+   "kind": "func",
+   "item": "0x140c68310",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140c68310.c;xref:0x140c64acc;xref:0x140c649e0;str:\"BankAccountTransactionMessage\"",
+   "notes": "V9008 Core role right (copy msg into txn vtbl 14568d508, due date from clock bank+0x2d0->+0x2b0 with +0x5a0/day, FUN_140c67b10 then FUN_140c635c0; result msg 1456899c8 posted when notify==1; 140c64acc unsubscribes this message name). Offsets are off by one: disassembly shows date-mode byte at msg+0x24 (0 now, 1 next day, 2 next race day within 7 days) and notify flag at msg+0x25, not +0x25/+0x26. Result message is posted before the commit, regardless of the process result."
+  },
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140c68310",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140c68310.c",
+   "notes": "V9505 Core right; date-mode byte is at msg+0x24 and notify at msg+0x25 (not 0x25/0x26); the result message 1456899c8 is posted before the commit regardless of the process result."
+  }
+ ],
+ "proofs": []
+}

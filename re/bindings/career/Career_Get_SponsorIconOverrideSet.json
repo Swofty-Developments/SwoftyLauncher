@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Get_SponsorIconOverrideSet",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14385b500",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *vm",
+  "evidence": "decomp:re/decomp/14385b500.c;xref:0x1415d9b15;xref:0x141860f22",
+  "notes": "myteam-g1: Returns overrides.team_hq.title_sponsor_icons or overrides.team_hq.secondary_sponsor_icons depending on flag +0xd8."
+ },
+ "signature": {
+  "id": "career.get_sponsor_icon_override_set",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 CF E8 ?? ?? ?? ?? 48 8B 35",
+  "match": "0x14385b500",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14385b500",
+  "kind": "func_start",
+  "names": [
+   "Career_Get_SponsorIconOverrideSet"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x14385b500",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14385b500.c;xref:0x1415d9b15",
+   "notes": "V10326 Returns overrides.team_hq.title_sponsor_icons or secondary_sponsor_icons by flag +0xd8."
+  }
+ ],
+ "proofs": []
+}

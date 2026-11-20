@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_SuggestedGear_ComputeForZone",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f5bb50",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_SuggestedGear_ComputeForZone(void *sys, void *ctx, uint8_t *state)",
+  "evidence": "decomp:re/decomp/142f5bb50.c;xref:0x142f5c4bf,0x142f5c5dc,0x14f9d8af7",
+  "notes": "state = {veh byte +0, zone* +8, gear +0x10, out gear +0x18}. Finds the zone in sys+0x48..+0x50 whose delta range [+0x10, +0x14] (wrap-aware) contains ctx+0x44; none -> state+0x18 = 0xb. Same zone as cached -> copy gear. Zone predefined gear +0x18 > 0 -> use it ('Pre-defined Gear' log). Else: maps both deltas to positions on the spline [[[sys+0x30]+0x28]+0x18]+0x10 (+0x30 array, 0xb0 segments), places cursors on the car line AiCarRecord+0x4f8, picks the gate with the smallest |radius| (+0xbc) between them, ai radius mod = Ai_Calc_GripLimitBlend 0x14060dd70, x = clamp(zone curvature mod +0x1c * mod * radius, 0, max_test_radius), speed = Ai_Table_InterpolateD(AiCarRecord+0x68, x, 0x14063bda0, AiCarRecord+0x158) (0x142f5c165), gear = count of gear-speed thresholds [[veh]+0x538]+0x6d8..+0x6f8 below speed, min 2 (no table -> 2, FLT_MAX speed -> 0xb). Logs gate id/radius/mods/speed/gear (gear logged as value-1) or 'No gate found'. (corrected 2026-11-14: works per delta zone, the gate is chosen inside it) (renamed 2026-11-14 from Ai_SuggestedGear_ForGate: the code contradicts the old name) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.suggested_gear_for_gate",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 05 00 00 C5 78 29 8C 24 10 05 00 00",
+  "match": "0x142f5bb50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f5bb50",
+  "kind": "func_start",
+  "names": [
+   "Ai_SuggestedGear_ComputeForZone"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f5bb50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f5bb50.c;xref:0x142f5c4bf",
+   "notes": "V5645 name/log strings and body scale match"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x142f5bb50",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142f5bb50-0x142f5c395;xref:0x142f5c4bf,0x142f5c5dc,0x14f9d8af7",
+   "notes": "V10611 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Refs: call 0x142f5c4bf and tail jmp 0x142f5c5dc in 0x142f5c3a0, call 0x14f9d8af7 (.data1) (riprel hit 0x14f727227 not an instruction). 3 args. Zone vector sys+0x48..+0x50 vs ctx+0x44, no zone -> state+0x18 = 0xb (0x142f5bbe2); Pre-defined Gear log; car line AiCarRecord+0x4f8, gate radius +0xbc, zone +0x1c, calls Ai_Calc_GripLimitBlend 0x14060dd70 and Ai_Table_InterpolateD 0x14068fd10 on AiCarRecord+0x68. Rename from ForGate fits."
+  }
+ ],
+ "proofs": []
+}

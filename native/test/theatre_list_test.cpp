@@ -1,7 +1,8 @@
-// Host-native unit test for the core's theatre list and rows guards (native/src/core/theatre_list_logic.hpp).
-// Built and run by native/test/run_theatre_list_test.sh.
+// Host-native unit test for the core's theatre list and rows guards (native/src/core/guards/frontend/theatre_list_logic.hpp).
+// Built and run by native/test/run_tests.sh theatre_list.
 
-#include "theatre_list_logic.hpp"
+#include "core/guards/frontend/theatre_list_logic.hpp"
+#include "core/guards/skips.hpp"
 
 #include <cstdio>
 #include <cstring>
@@ -79,10 +80,7 @@ static Rows build(const std::vector<bool> &has_slot, uint64_t pad_to, bool guard
     return r;
 }
 
-static bool rows_are(const Rows &r, std::vector<uint64_t> want)
-{
-    return r.past_end == 0 && r.slot_id == want;
-}
+static bool rows_are(const Rows &r, std::vector<uint64_t> want) { return r.past_end == 0 && r.slot_id == want; }
 
 int main()
 {
@@ -123,7 +121,8 @@ int main()
     expect(exit.rax == poison && exit.rip == poison, "a usable entry leaves the exit untouched");
 
     exit = {poison, poison};
-    expect(!tl::entry_step(0x2a00002f33000020ull, no_slot, read, &m, &exit), "the non-canonical entry from the reports is skipped");
+    expect(!tl::entry_step(0x2a00002f33000020ull, no_slot, read, &m, &exit),
+           "the non-canonical entry from the reports is skipped");
     expect(exit.rax == 0, "the skip answers with a null slot record");
     expect(exit.rip == no_slot, "the skip continues at the function's epilogue");
 
@@ -153,13 +152,13 @@ int main()
     noid.dwords.clear();
     expect(!tl::entry_step(entry, no_slot, read, &noid, &exit), "an info whose id does not read is skipped");
 
-    tl::Skips s;
+    swofty_core::guards::LogFirst<tl::LOG_FIRST> s{"skips"};
     int lines = 0, last = 0;
     for (int i = 0; i < 500; i++) {
-        int n = s.note();
-        if (s.logged(n))
+        auto line = s.note();
+        if (line)
             lines++;
-        if (s.last(n))
+        if (line && *line.tail)
             last++;
     }
     expect(lines == tl::LOG_FIRST, "five hundred skips produce exactly the capped number of lines");

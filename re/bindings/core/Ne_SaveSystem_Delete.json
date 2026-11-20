@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_SaveSystem_Delete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144140fb0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-channel-SAVE;decomp:re/decomp/144140fb0.c;xref:0x145a5c688",
+  "notes": "named from its log messages (channel SAVE): 'Delete requested for \"%s\" | Delete result: 0x%x'"
+ },
+ "signature": {
+  "id": "core.save_system_delete",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 88 00 00 00 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01 75 71",
+  "match": "0x144140fb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144140fb0",
+  "kind": "func_start",
+  "names": [
+   "Ne_SaveSystem_Delete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb4-verify-a",
+   "kind": "func",
+   "item": "Ne_SaveSystem_Delete",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144140fb0.c;xref:0x145a5c688",
+   "notes": "V2241 Wrapper, calls SelectAndDelete 1441411a0."
+  }
+ ],
+ "proofs": []
+}

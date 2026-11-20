@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Format_MoraleDepartmentEffectText",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fa03b0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Format_MoraleDepartmentEffectText(void *effect, void *out_text)",
+  "evidence": "decomp:re/decomp/140fa03b0.c;xref:0x1456b0560",
+  "notes": "myteam-g1: Formats the string \"Increases morale by %.2fpercent for %s department\": value = *(float*)(effect+0x58)*100, department name from table UNK_145659668 indexed by byte effect+0x5c. Shows the morale effect is a float fraction per department."
+ },
+ "signature": {
+  "id": "career.format_morale_department_effect_text",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 48 89 D0 0F B6 51 5C 4C 8D 05",
+  "match": "0x140fa03b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fa03b0",
+  "kind": "func_start",
+  "names": [
+   "Career_Format_MoraleDepartmentEffectText"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140fa03b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fa03b0.c;xref:0x1456b0560;str:\"Increases morale by %.2fpercent for %s department\"",
+   "notes": "V9608 Single formatter call with the morale text, float at +0x58 times 100 and name table indexed by byte +0x5c."
+  }
+ ],
+ "proofs": []
+}

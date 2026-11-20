@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqMyTeamVM_Initialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1423278c0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1423278c0.c;xref:0x14577fa20",
+  "notes": "TeamHQMyTeamCareerViewModel vtable 0x14577f9f0 slot +0x30 (My Team variant of Career_TeamHqAdvanceVM_Initialise): engineering top-level enter/exit, my_team_research_project_started, my_team_welcome_to_team_hq tutorial, plus the same Team HQ timeline bus subscriptions. Addon: My Team mode HQ entry point. Callers: census steam 0x23278c0. | #587: L2 by lead-authorised promotion for lane owner career-re (independent agree V3091)"
+ },
+ "signature": {
+  "id": "career.team_hq_my_team_v_m_initialise",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 01 00 00 48 89 CE 48 8B 81 B0 02 00",
+  "match": "0x1423278c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423278c0",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqMyTeamVM_Initialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d12-verify",
+   "kind": "func",
+   "item": "Career_TeamHqMyTeamVM_Initialise",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1423278c0.c;xref:0x14577fa20",
+   "notes": "V3091 strings/offsets/calls match claim"
+  }
+ ],
+ "proofs": []
+}

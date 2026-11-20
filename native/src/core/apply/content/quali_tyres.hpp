@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lower.hpp"
+#include "core/apply/content/lower.hpp"
 
 #include <cstdint>
 #include <string>
@@ -22,12 +22,12 @@
 namespace swofty_core::apply::content {
 
 inline constexpr const char *QUALI_OPTION_NAMES[3] = {"softer", "medium", "harder"};
-inline constexpr uint32_t QUALI_RACE_FIRST = 15, QUALI_RACE_LAST = 17;   // session ids Race, Race2, Race3
-inline constexpr uint32_t QUALI_NO_SLOT = 0xffffffffu;                    // a skipped preference entry
+inline constexpr uint32_t QUALI_RACE_FIRST = 15, QUALI_RACE_LAST = 17; // session ids Race, Race2, Race3
+inline constexpr uint32_t QUALI_NO_SLOT = 0xffffffffu;                 // a skipped preference entry
 
 struct QualiTyresPick {
     std::string package;
-    uint8_t mask = 0;          // bit n = class option n is qualifying only; 0 = no rule
+    uint8_t mask = 0; // bit n = class option n is qualifying only; 0 = no rule
     std::string line;
 };
 
@@ -69,10 +69,7 @@ inline QualiTyresPick quali_tyres_pick(const std::string &entrant_list,
     return p;
 }
 
-inline bool quali_race_session(uint32_t session)
-{
-    return session >= QUALI_RACE_FIRST && session <= QUALI_RACE_LAST;
-}
+inline bool quali_race_session(uint32_t session) { return session >= QUALI_RACE_FIRST && session <= QUALI_RACE_LAST; }
 
 // A set of class option `option` may not be used in `session`: a race, and the option is qualifying only.
 inline bool quali_refused(uint32_t session, uint32_t option, uint8_t mask)

@@ -15,10 +15,10 @@
 #include <swofty/systems/sessions.hpp>
 #include <swofty/systems/spectator.hpp>
 
-#include "dispatch.hpp"
-#include "game_point.hpp"
-#include "payloads.hpp"
-#include "vtable_point.hpp"
+#include "core/hooks/dispatch.hpp"
+#include "core/hooks/game_point.hpp"
+#include "core/hooks/payloads.hpp"
+#include "core/hooks/vtable_point.hpp"
 
 // The core's session hook points and session operations (standard library 1.6.0):
 //   ai.controller.update      slot 1 of vt_Sess_AiController (Sess_AiController_Update), direct dispatch; or, when
@@ -95,22 +95,22 @@ public:
         if (!by.empty()) {
             if (ops_.conflict)
                 ops_.conflict(point_, by);
-            return fail("[hooks] " + point_ + " unavailable: " + by + " overwrites " + binding_ + "; subscribers " +
-                        subscribers + " not run (the launcher lists this as a conflict)");
+            return fail("[hooks] " + point_ + " unavailable: " + by + " overwrites " + binding_ + "; subscribers " + subscribers +
+                        " not run (the launcher lists this as a conflict)");
         }
         if (late) {
             std::string there = ops_.occupied_by ? ops_.occupied_by(at) : std::string();
             if (!there.empty())
-                return fail("[hooks] " + point_ + " unavailable: installed while the game runs, it overlaps " + there +
-                            " on " + binding_ + "; refused; subscribers " + subscribers + " not run");
+                return fail("[hooks] " + point_ + " unavailable: installed while the game runs, it overlaps " + there + " on " +
+                            binding_ + "; refused; subscribers " + subscribers + " not run");
         }
         auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), fn_);
         if (!h)
             return fail("[hooks] " + point_ + " unavailable: the mid-hook on " + binding_ + " failed to install; subscribers " +
                         subscribers + " not run");
         hook_ = std::move(*h);
-        log("[hooks] " + point_ + " live on " + binding_ + (late ? " (installed late)" : " (window stage)") +
-            ": subscribers " + subscribers);
+        log("[hooks] " + point_ + " live on " + binding_ + (late ? " (installed late)" : " (window stage)") + ": subscribers " +
+            subscribers);
         return true;
     }
 
@@ -374,7 +374,6 @@ template <class Tag> struct Set {
         depth--;
     }
 
-
     static void d_destroy(void *sys)
     {
         rebuilding = true;
@@ -409,7 +408,6 @@ template <class Tag> struct Set {
         }
     }
 
-
     static uint32_t director_following()
     {
         uintptr_t d = director.load();
@@ -433,7 +431,6 @@ template <class Tag> struct Set {
                 hide->original<void>();
         });
     }
-
 
     static void d_director_update(void *dir)
     {
@@ -473,8 +470,8 @@ template <class Tag> struct Set {
         }
         uint32_t others = flags & ~bit;
         if (others) {
-            note("[sessions] set_control: car " + std::to_string(car) + " stays with the AI: controller flags 0x" +
-                 hex(others) + " are set (bit 0 is the pit lane)");
+            note("[sessions] set_control: car " + std::to_string(car) + " stays with the AI: controller flags 0x" + hex(others) +
+                 " are set (bit 0 is the pit lane)");
             return SWOFTY_REFUSED;
         }
         if (cur == 0 && !(flags & bit))

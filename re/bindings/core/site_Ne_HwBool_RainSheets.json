@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "site_Ne_HwBool_RainSheets",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x15275b6ab",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/15275b5c0.c;xref:0x15275b6ab",
+  "notes": "call Ne_Compare_StringNoCase(attr+0x50 value, \"true\") for the hardware-settings attribute 'rainSheets' (name loaded at 0x15275b666) in reader 0x15275b5c0; the reader stores (result == 0) as the bool; xanpavle.re-optimization redirects it to pin the value"
+ },
+ "signature": {
+  "id": "core.hw_bool_rain_sheets",
+  "section": ".data1",
+  "pattern": "E8 ?? ?? ?? ?? 85 C0 0F 94 D3 80 3D ?? ?? ?? ?? 01 0F 85",
+  "match": "0x15275b6ab",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x15275b6ab",
+  "kind": "mid",
+  "expect": "E8",
+  "names": [
+   "site_Ne_HwBool_RainSheets"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "reopt-025",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/re-optimization/native/src/re_optimization.cpp (xanpavle.re-optimization)"
+  ],
+  "data1_reason": "redirected: the attribute is read only inside this .data1 body and the only .xtls route is wrapping Ne_Compare_StringNoCase, which has 1553 rel32 callers"
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "reopt-025-verify",
+   "kind": "global",
+   "item": "site_Ne_HwBool_RainSheets",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/15275b5c0.c;xref:0x15275b6ab,0x15275b666,0x15275b696,0x15275b75e;sig:core.hw_bool_rain_sheets",
+   "notes": "V0951 Loop over the element attribute vector (+0x50..+0x58): 0x14534da24(attr+0x18 name, rbx = 'rainSheets' from lea 0x15275b666, r8d 0x1f) at 0x15275b696; on 0 it sets rcx = [attr+0x50], rdx = \"true\" (0x145612a6a) and the E8 at 0x15275b6ab calls 0x14534d918 (.data1, .pdata 0x15275b5c0-0x15275b774 covers the body; data1_reason present; reached through the .xtls jmp thunk 0x143d79940). sete bl keeps (result == 0); after the optional WEATHER log it is stored to this+0x75cbd at 0x15275b75e. sigcheck: one hit, target 0x15275b6ab"
+  }
+ ],
+ "proofs": []
+}

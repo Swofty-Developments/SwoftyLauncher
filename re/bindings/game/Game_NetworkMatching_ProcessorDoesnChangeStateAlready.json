@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkMatching_ProcessorDoesnChangeStateAlready",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143088010",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-MATCHING",
+  "notes": "named from its log messages (channel NETWORK-MATCHING): '? Processor doesn't change state - already %s'"
+ },
+ "signature": {
+  "id": "game.network_matching_processor_doesn_change_state_already",
+  "section": ".xtls",
+  "pattern": "56 53 48 83 EC 28 89 D3 48 89 CE 0F B6 01",
+  "match": "0x143088010",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143088010",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkMatching_ProcessorDoesnChangeStateAlready"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143088010",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143088010.c;xref:0x143087778",
+   "notes": "V5636 MatchingProcessor state setter: logs already-%s or from/to, stores state byte, QPC timestamp (5 callers). Better: Game_MatchingProcessor_SetState"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x143088010",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143088010.c;xref:0x143087777",
+   "notes": "V6960 44 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

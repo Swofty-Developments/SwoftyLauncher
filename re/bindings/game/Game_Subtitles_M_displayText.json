@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Subtitles_M_displayText",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14099b7f0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name m_displayText (class from the log channel); log channel SUBTITLES: 'm_displayText set to: Nothing, from GameSubtitleSystem::update'"
+ },
+ "signature": {
+  "id": "game.subtitles_m_display_text",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 06 00 00 C5 F8 29 B4 24 40 06 00 00 49 89 D5 48 89 CE",
+  "match": "0x14099b7f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14099b7f0",
+  "kind": "func_start",
+  "names": [
+   "Game_Subtitles_M_displayText"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x14099b7f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14099b7f0.c",
+   "notes": "V4359 is GameSubtitleSystem::update/updateValues (strings: m_displayText set to ... from update / updateValues, lng_subtitle_); better name Game_GameSubtitleSystem_Update"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x14099b7f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14099b7f0.c",
+   "notes": "V7157 name fits; finding facts hold; vtable/indirect (no direct call)"
+  }
+ ],
+ "proofs": []
+}

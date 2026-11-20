@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DriverActor_ApplyDriverMaterials",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401a7e40",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1401a7e40.c;xref:0x1401a8974",
+  "notes": "Applies per-driver skin/material to a driver actor: looks up customisation key (actor+0x228 -> +0xf0) through 0x143929a10, compares with cached [this+0x5a0], builds a NeMultiSubMaterialResourceFactory request (sub-materials \"skin,arm\"). Callers 0x1401a8570, Game_DriverCustomiser_ApplySuitDecals, Game_CutSceneScript_SpawnDynamicDriverActor. Addon: driver skin/arm material swap hook. Hypothesis."
+ },
+ "signature": {
+  "id": "game.driver_actor_apply_driver_materials",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 4C 8B B1 28",
+  "match": "0x1401a7e40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401a7e40",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverActor_ApplyDriverMaterials"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x1401a7e40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401a7e40.c;xref:0x1401a97e3",
+   "notes": "V7971 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamActivities_RefreshDetailPanel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14231b410",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void (void *menu)",
+  "evidence": "decomp:re/decomp/14231b410.c;xref:0x142319d83;xref:0x14231a64e;xref:0x14231ae68",
+  "notes": "myteam-g2: Refreshes the selected activity: fetches selected slot (+0x898), then calls BuildActivityPanel (142321f80), UpdateSlotButtons (142323a20) and sets VM nodes at menu+0x5e8/+0x608/+0x700. UI refresh only."
+ },
+ "signature": {
+  "id": "career.my_team_activities_refresh_detail_panel",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 68 48 89 CE 48 8B 81 98 08 00 00",
+  "match": "0x14231b410",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14231b410",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamActivities_RefreshDetailPanel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x14231b410",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14231b410.c;xref:0x142319d83",
+   "notes": "V10119 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

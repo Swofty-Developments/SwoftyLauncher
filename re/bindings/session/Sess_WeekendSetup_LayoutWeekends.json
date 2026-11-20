@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Sess_WeekendSetup_LayoutWeekends",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140bee400",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_WeekendSetup_LayoutWeekends(void *comp)",
+  "evidence": "decomp:re/decomp/140bee400.c;decomp:re/decomp/140b78ee0.c;xref:0x140b7937a,0x149781a9d",
+  "notes": "game::championship::WeekendSetupComponent: lays out the sessions of every weekend of the current season. rcx = component (rsi). season = [comp+0x270] vt+0x88 (0x140bee423), returns when null; for each weekend pointer in season +0x288..+0x290 (r15 stride 8): builds a layout buffer at rsp+0x28 (u32 +0 = 0, u8 +4 = 0, allocator [comp+0x210] at +8 and +0x10, +0x18..+0x38 zeroed), calls comp vt+0x280(comp, &layout) (0x140bee4a3) and 0x140af7680(weekend, [comp+0x278], &layout) (0x140bee4b6, the weekend session setup), then releases the layout's 0x10-byte refcounted entries (+8 ptr) and frees the vector through the allocator vt+0x38. No return value. Callers: both implementations of the component's vtable slot +0x290: the base WeekendSetupComponent vtable 0x14567dc30 (after its name string 0x14567dc0d) has thunk 0x140b79810 -> .data1 body 0x149781a90, which calls it first at 0x149781a9d; CareerWeekendSetupComponent (vtable 0x145672af0 after the name 0x145672ad6, slot at 0x145672d80) overrides it with 0x140b78ee0, which calls it at 0x140b7937a with rcx = its component. Slot +0x268 0x140bed2e0, shared by both vtables, takes the weekend_setup_changed_message type 0x1456895d0 at 0x140bee07c."
+ },
+ "signature": {
+  "id": "session.weekend_setup_layout_weekends",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 74 24 60 48 89 CE 48 8B 89 70 02 00 00 48 8B 01 FF 90 88 00 00 00",
+  "match": "0x140bee400",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140bee400",
+  "kind": "func_start",
+  "names": [
+   "Sess_WeekendSetup_LayoutWeekends"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "weekend-refresh",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/weekend_trace.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "weekend-refresh-verify",
+   "kind": "func",
+   "item": "Sess_WeekendSetup_LayoutWeekends",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x140bee400-0x140bee54d;decomp:own capstone disasm EA 0x140becd70-0x140becebd;xref:0x140b7937a,0x149781a9d,0x140b79810,0x145672d80,0x140bee423,0x140bee4a3,0x140bee4b6;sig:session.weekend_setup_layout_weekends",
+   "notes": "V9265 Re-derived from own capstone disassembly of the .pdata function 0x140bee400-0x140bee54d (88 insns, one ret at 0x140bee54c). Arity: rcx is the only argument register read (0x140bee416 mov rsi,rcx); rdx, r8 and r9 are written before any read. Season = [rsi+0x270] vt+0x88 (0x140bee423), null -> exit; loop r15 over [season+0x288]..[season+0x290] stride 8, rbx = weekend; layout at rsp+0x28: dword 0, byte +4 0, [rsi+0x210] at +8 and +0x10, 0x19 bytes zeroed from rsp+0x40; call [vt+0x280](rsi, rsp+0x28) at 0x140bee4a3, then 0x140af7680(rbx, [rsi+0x278], rsp+0x28) at 0x140bee4b6; then the 0x10-byte entries from [rsp+0x40]..[rsp+0x48] drop their refcount (+8, lock dec) and the buffer is freed through vt+0x38. Callers by full rel32 scan of .xtls and .data1: 0x140b7937a in 0x140b78ee0 (rcx = rsi, the function's own argument; 0x140b78ee0 is slot +0x290 of the vtable at 0x145672af0, pointer at 0x145672d80, after the name 'CareerWeekendSetupComponent') and 0x149781a9d, the first call of .data1 body 0x149781a90 reached from thunk 0x140b79810, slot +0x290 of the base vtable 0x14567dc30 after the name 'WeekendSetupComponent'. Both vtables share slots +0x268 (0x140bed2e0) and +0x280 (0x140b9eef0), so the class is the WeekendSetupComponent family. No return value. EA: the pattern matches once in EA .rdata at rva 0xbecd70; the EA function (pdata 0x140becd70-0x140becebd) has the same 88 mnemonics and lengths and displacements, internal branches shifted by -0x1690, callee 0x140af7680 -> EA 0x140af5ff0. bindverify's Resolver resolves the generated binding by hint and by scan on Steam (0xbee400) and on the EA dump (0xbecd70). sigcheck OK."
+  }
+ ],
+ "proofs": []
+}

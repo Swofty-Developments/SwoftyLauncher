@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Game_GarageCrew_SceneTest",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14038ba27",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "pat:disasm-0x14038b9ce-0x14038baff;xref:0x14038ba27,0x14038baff;decomp:re/decomp/140388cf0.c;sig:game.garage_crew_scene_test;xref:0x14038ba27,0x14038ba2a,0x14038baff,0x14038bb0a,0x14038bb19",
+  "notes": "In Game_GarageCrewModule_SpawnGarageCrew: test rdi,rdi / je 0x14038baff right after the hoisted byte read of [rdi+0xe0]; a null scene handle takes the je to the null path (ebx = eax = 0, stores at [rbp+0x2f0..0x310]). Core lands here with esi = 0 when rdi is null. Owner review re-career-teams 2026-11-02: own disasm: test rdi,rdi / je 0x14038baff; baff zeroes ebx and eax and joins 0x14038bb0a, which stores rax to [rbp+0x2f0] and sil to [rbp+0x308] at bb19, so the hook must set esi=0 (false flag) before landing. Agrees with V8626."
+ },
+ "signature": {
+  "id": "game.garage_crew_scene_test",
+  "section": ".xtls",
+  "pattern": "0F B6 B7 E0 00 00 00 48 85 FF 0F 84",
+  "match": "0x14038ba20",
+  "anchor": "0x7",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14038ba27",
+  "kind": "mid",
+  "expect": "48 85 FF 0F 84 CF 00 00 00",
+  "names": [
+   "site_Game_GarageCrew_SceneTest"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "crewpit",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/garage/garage_crew.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-01",
+   "verifier": "pit-crew-verifier",
+   "kind": "global",
+   "item": "0x14038ba27",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140388cf0.c;xref:0x14038ba2a,0x14038baff,0x14038bb19",
+   "notes": "V8626 test rdi,rdi / je baff at ba27/ba2a; baff zeroes ebx,eax and falls to bb0a without writing esi. Note esi is NOT dead: bb19 stores sil to [rbp+0x308], so esi=0 is required (false flag), and the non-null path loads real byte there; hook setting esi=0 is correct."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,5 @@
+{
+ "schema": 1,
+ "note": "Bindings bindgen exports although the newest verify row over their name and address is not agree. Only a binding native/src names may be listed. kind is func or global, covers is the V-id of that newest row (any newer row ends the exception), reason says why native code needs it shipped and what is still unverified. Every change to this file needs review.",
+ "exceptions": {}
+}

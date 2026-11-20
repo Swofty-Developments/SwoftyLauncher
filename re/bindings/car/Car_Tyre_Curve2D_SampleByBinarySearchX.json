@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Tyre_Curve2D_SampleByBinarySearchX",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e7c800",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e7c800.c;xref:0x142e7c6be",
+  "notes": "Twin of Curve2D_SampleByBinarySearchY comparing the first key (pfVar[0]) and defaulting to 1.0 when the inner list ends early. Callers Car_Tyre_SampleWearCurve2DAlt."
+ },
+ "signature": {
+  "id": "car.tyre_curve2_d_sample_by_binary_search_x",
+  "section": ".xtls",
+  "pattern": "48 83 EC 18 C5 F8 29 34 24 4C 8B 41 08 48 8B 41",
+  "match": "0x142e7c800",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e7c800",
+  "kind": "func_start",
+  "names": [
+   "Car_Tyre_Curve2D_SampleByBinarySearchX"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x142e7c800",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e7c800.c;xref:0x142e7c6be",
+   "notes": "V8468 twin comparing x (key offset + pair x), default 1.0 initial; callers SampleWearCurve2DAlt"
+  }
+ ],
+ "proofs": []
+}

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "lower.hpp"
-#include "teams.hpp"
-#include "wear.hpp"
+#include "core/apply/content/lower.hpp"
+#include "core/apply/content/teams.hpp"
+#include "core/apply/content/wear.hpp"
 
 #include <cstdio>
 #include <map>
@@ -16,16 +16,25 @@
 
 namespace swofty_core::apply::content {
 
-inline constexpr const char *RND_TOKENS[] = {"mercedes", "ferrari",  "redbull",     "williams",    "tororosso",
-                                             "renault",  "haas",     "mclaren",     "sauber",      "force_india",
-                                             "gm_cadillac", "user_defined"};
+inline constexpr const char *RND_TOKENS[] = {"mercedes", "ferrari", "redbull", "williams",    "tororosso",   "renault",
+                                             "haas",     "mclaren", "sauber",  "force_india", "gm_cadillac", "user_defined"};
 inline constexpr const char *RND_GROUPS[] = {"2022", "myteam_2025", "2026", "myteam_om_xm"};
 inline constexpr const char *RND_DEPARTMENTS[] = {"aerodynamics", "chassis", "durability", "engine", "fake"};
-inline constexpr const char *RND_NODE_FIELDS[] = {
-    "_metadata_", "upgrade_name", "upgrade_type", "upgrade_size", "upgrade_department", "cost", "cost_to_develop",
-    "weighting", "unlock_at_facility_level", "supplier_delivery_date_index", "links",
-    "fitting_times.num_days_to_research", "fitting_times.num_days_to_develop", "grid_coordinates.x",
-    "grid_coordinates.y"};
+inline constexpr const char *RND_NODE_FIELDS[] = {"_metadata_",
+                                                  "upgrade_name",
+                                                  "upgrade_type",
+                                                  "upgrade_size",
+                                                  "upgrade_department",
+                                                  "cost",
+                                                  "cost_to_develop",
+                                                  "weighting",
+                                                  "unlock_at_facility_level",
+                                                  "supplier_delivery_date_index",
+                                                  "links",
+                                                  "fitting_times.num_days_to_research",
+                                                  "fitting_times.num_days_to_develop",
+                                                  "grid_coordinates.x",
+                                                  "grid_coordinates.y"};
 inline constexpr const char *MARKET = "driver_market.driver_market";
 inline constexpr const char *MONTHS[] = {"January", "February", "March",     "April",   "May",      "June",
                                          "July",    "August",   "September", "October", "November", "December"};
@@ -104,8 +113,8 @@ struct RndCounts {
     int added = 0, edited = 0, refused = 0;
 };
 
-inline RndCounts lower_rnd_group(const std::string &head, const std::string &group, const std::string &token,
-                                 const Value &rec, const Read &read, Plan &plan)
+inline RndCounts lower_rnd_group(const std::string &head, const std::string &group, const std::string &token, const Value &rec,
+                                 const Read &read, Plan &plan)
 {
     std::map<std::string, std::string> where;
     for (const char *d : RND_DEPARTMENTS) {
@@ -298,8 +307,8 @@ inline int rewrite_schedules(const Read &read, Plan &plan, const std::string &ta
 
 // Each game mode's driver market component names the group its careers read (data_group); a record without one goes
 // to every group the table has.
-inline void lower_market(const std::string &id, const Value &rec, const Lookup &lookup, const Read &read,
-                         const TeamRefs &refs, Plan &plan)
+inline void lower_market(const std::string &id, const Value &rec, const Lookup &lookup, const Read &read, const TeamRefs &refs,
+                         Plan &plan)
 {
     plan.owner = addon_of(id);
     std::string named = rec["data_group"].is_string() ? std::string(rec["data_group"].as_string()) : "";
@@ -363,7 +372,8 @@ inline void lower_market(const std::string &id, const Value &rec, const Lookup &
         for (auto &r : *list) {
             std::string team = team_label(r["team"], refs);
             if (team.empty() || !read("entrants.teams.team[_metadata_=" + team + "]._metadata_")) {
-                plan.lines.push_back(head + "team " + std::string(r["team"].as_string()) + " has no entrants.teams row; left out");
+                plan.lines.push_back(head + "team " + std::string(r["team"].as_string()) +
+                                     " has no entrants.teams row; left out");
                 refused++;
                 continue;
             }
@@ -373,8 +383,8 @@ inline void lower_market(const std::string &id, const Value &rec, const Lookup &
     for (auto &[group, base] : groups) {
         std::vector<std::string> parts;
         if (retirements) {
-            int n = rewrite_schedules(read, plan, base + ".driver_retirements", "DriverRetirementSchedule",
-                                      "DriverRetirement", *retirements, [&plan](const std::string &row, const MarketEntry &e) {
+            int n = rewrite_schedules(read, plan, base + ".driver_retirements", "DriverRetirementSchedule", "DriverRetirement",
+                                      *retirements, [&plan](const std::string &row, const MarketEntry &e) {
                                           set_date(plan, row, "Retirement", *date_of(e.rec["retire"]));
                                           set_date(plan, row, "Announcement", *date_of(e.rec["announce"]));
                                       });
@@ -406,8 +416,8 @@ inline void lower_market(const std::string &id, const Value &rec, const Lookup &
         std::string line;
         for (auto &p : parts)
             line += (line.empty() ? "" : ", ") + p;
-        plan.lines.push_back(head + (line.empty() ? std::string("nothing to change") : line) + " in market group " +
-                             group + (refused ? ", " + std::to_string(refused) + " left out" : std::string()));
+        plan.lines.push_back(head + (line.empty() ? std::string("nothing to change") : line) + " in market group " + group +
+                             (refused ? ", " + std::to_string(refused) + " left out" : std::string()));
     }
     plan.refused += std::size_t(refused);
     if (!retirements && !firings && !ratings)

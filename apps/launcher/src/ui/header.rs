@@ -3,7 +3,7 @@ use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 
 use super::tokens::{space, text};
-use crate::theme::palette;
+use crate::ui::theme::palette;
 
 /// A page's title row: title and subtitle on the left, actions on the right,
 /// and optionally something centred between them.
@@ -58,9 +58,9 @@ impl RenderOnce for PageHeader {
             .gap(space::lg())
             .map(|row| {
                 if centred {
-                    row.py(crate::scale::px(6.)).items_center()
+                    row.py(crate::ui::scale::px(6.)).items_center()
                 } else {
-                    row.pt(crate::scale::px(22.)).pb(space::lg()).items_end()
+                    row.pt(crate::ui::scale::px(22.)).pb(space::lg()).items_end()
                 }
             })
             .flex_shrink_0()
@@ -68,7 +68,7 @@ impl RenderOnce for PageHeader {
                 v_flex()
                     .flex_1()
                     .min_w_0()
-                    .gap(crate::scale::px(3.))
+                    .gap(crate::ui::scale::px(3.))
                     .child(
                         div()
                             .text_size(text::heading())
@@ -90,7 +90,7 @@ impl RenderOnce for PageHeader {
                 h_flex()
                     .when(centred, |side| side.flex_1().justify_end())
                     .gap(space::sm())
-                    .pb(crate::scale::px(2.))
+                    .pb(crate::ui::scale::px(2.))
                     .children(self.actions),
             )
     }

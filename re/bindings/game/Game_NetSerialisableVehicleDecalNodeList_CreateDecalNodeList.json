@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetSerialisableVehicleDecalNodeList_CreateDecalNodeList",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14313dbd0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=NetSerialisableVehicleDecalNodeList::createDecalNodeList; log channel NETWORK-ENTRANTS/V: 'game::VehicleDecalNodeList network::NetSerialisableVehicleDecalNodeList::createDecalNodeList() const | %s: Added net decal node list of size %u to given decal node list of size %zu.'"
+ },
+ "signature": {
+  "id": "game.net_serialisable_vehicle_decal_node_list_create_decal_node_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01 48 8D 1D",
+  "match": "0x14313dbd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14313dbd0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetSerialisableVehicleDecalNodeList_CreateDecalNodeList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x14313dbd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14313dbd0.c;xref:0x143145952",
+   "notes": "V5911 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,113 @@
+{
+ "schema": 1,
+ "name": "k_Live_VehicleLapTimesSystemKey",
+ "table": "globals",
+ "author": "std-libs-live",
+ "row": {
+  "addr": "0x146096ae8",
+  "type": "uint8_t",
+  "level": "L2",
+  "subsystem": "live",
+  "evidence": "decomp:re/decomp/142cf5c00.c;decomp:re/decomp/142f0c7f0.c;xref:0x1405fcb2c,0x147fbf228,0x143032f9e,0x142fe6310;pat:type-name-VehicleLapTimesSystem",
+  "notes": "registry key (address of the static type record; its +8 holds the name \"VehicleLapTimesSystem\", stored at 0x143032f9e); class vtable 0x1457f6650 slot 0 = 0x142fe6310 returns it; the UDP telemetry resolve 0x142cf5c00 stores what the getter 0x140606320 (thunk to 0x147fbf220: FindIndex(key) in the system map) returns at state+0xd298, the system Sess_LapTimes_GetCarData takes; per-car lap records at +0x58"
+ },
+ "signature": {
+  "id": "live.vehicle_lap_times_system_key",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 8D 54 24 28 48 89 F1 E8 ?? ?? ?? ?? 48 C1 E0 04 48 03 46 18 48 3B 46 20 0F 84 ?? ?? ?? ?? 48 8B 40 08 48 89 83 B8 00 00 00",
+  "match": "0x1405fcb2c",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x146096ae8",
+  "kind": "data",
+  "names": [
+   "k_Live_VehicleLapTimesSystemKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-20",
+    "by": "std-libs-live",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/live/live_state.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-20",
+   "verifier": "std-libs-live-blind",
+   "kind": "global",
+   "item": "k_Live_VehicleLapTimesSystemKey",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1405fcb10-0x1405fcb70,0x147fbf220-0x147fbf25a,0x140606320-0x140606325,0x142cf5f20-0x142cf5f68,0x143032330-0x1430330f5,0x142fe6310-0x142fe6318,0x14030ffd0-0x140310030,0x142f0c7f0-0x142f0c8f5;xref:0x1405fcb2c,0x147fbf228,0x142cf5f58,0x142cf5f5d,0x143032f9e,0x143032fb6,0x142fe6310,0x142cfd7c2,0x142cfd7cc;pat:type-name-VehicleLapTimesSystem",
+   "notes": "V110037 Blind: 0x146096ae8 is the VehicleLapTimesSystem type record (no file bytes; filled at start-up): the static initialiser 0x143032330 stores the string 0x14565c040 'VehicleLapTimesSystem' at +8 (0x143032f9e), a dword 0xae0f16a9 at +0x10, and +0x18/+0 (0x143032faf, 0x143032fb6). Vtable 0x1457f6650 slot 0 0x142fe6310 returns it (lea rax at 0x142fe6310). The signature site 0x1405fcb2c is lea rax,[rip+0x5a99fb5] = 0x146096ae8 (anchor +3, 7-byte riprel), followed by the inline system-map lookup: FindIndex 0x14030ffd0 (FNV-1a over the key pointer), shl 4, add [map+0x18], cmp [map+0x20], load [entry+8], store [rbx+0xb8]; the pattern bytes match. The getter 0x140606320 (jmp 0x147fbf220) does the same lookup with the same key (0x147fbf228) and returns 0 when absent; the UDP telemetry resolve calls it (0x142cf5f58) and stores the result at state+0xd298 (0x142cf5f5d); the UDP lap data passes [state+0xd298] as rcx to Sess_LapTimes_GetCarData 0x142f0c7f0 (0x142cfd7c2, 0x142cfd7cc; also 0x142cfe529, 0x142d00cd6, 0x142d04d2b), whose +0x58/+0x60 vector belongs to the vtable-0x1457f6650 class. binding.py verify: ok, scan matches=1 target=0x146096ae8, sigcheck passed."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "std-libs-live",
+   "date": "2026-11-20",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1405fcb2c",
+    "target": "0x146096ae8"
+   },
+   "sigcheck": "passed",
+   "digest": "9694442798539ee4cd8aec7b096e7bce16161dde49e7f91bada76573f9be3326"
+  },
+  {
+   "by": "std-libs-live",
+   "date": "2026-11-20",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1405fcb6c",
+    "target": "0x146098ae8"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b3f0a8d29930f74037947d7077f3425b38474ecf4b3beff9457afaed9cf7fbf3"
+  },
+  {
+   "by": "std-libs-live-blind",
+   "date": "2026-11-20",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1405fcb2c",
+    "target": "0x146096ae8"
+   },
+   "sigcheck": "passed",
+   "digest": "9694442798539ee4cd8aec7b096e7bce16161dde49e7f91bada76573f9be3326"
+  }
+ ]
+}

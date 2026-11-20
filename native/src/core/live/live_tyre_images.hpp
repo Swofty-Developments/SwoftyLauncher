@@ -1,5 +1,5 @@
 #pragma once
-#include "../live_image_reference.hpp"
+#include "core/render/badges/live_image_reference.hpp"
 #include <swofty_api.h>
 #include <cstring>
 #include <string>
@@ -29,8 +29,8 @@ inline int reference(const SwoftyDb *db, uint8_t visual, char *out, uint32_t cap
         return true;
     };
     int64_t count = 0;
-    if (db->int_at("tyres.visual_compounds._VisualCompound_instancecount_", &count) != SWOFTY_ASSET_OK ||
-        count < 1 || count > 256)
+    if (db->int_at("tyres.visual_compounds._VisualCompound_instancecount_", &count) != SWOFTY_ASSET_OK || count < 1 ||
+        count > 256)
         return SWOFTY_ASSET_UNAVAILABLE;
     std::string texture;
     bool found = false;
@@ -48,8 +48,8 @@ inline int reference(const SwoftyDb *db, uint8_t visual, char *out, uint32_t cap
     if (!found)
         return SWOFTY_ASSET_UNAVAILABLE;
     constexpr const char *table = "entrants.ui.asset_templates.tyre_compounds.textures";
-    if (db->int_at((std::string(table) + "._ui_texture_path_instancecount_").c_str(), &count) != SWOFTY_ASSET_OK ||
-        count < 1 || count > 32)
+    if (db->int_at((std::string(table) + "._ui_texture_path_instancecount_").c_str(), &count) != SWOFTY_ASSET_OK || count < 1 ||
+        count > 32)
         return SWOFTY_ASSET_UNAVAILABLE;
     std::string result;
     found = false;

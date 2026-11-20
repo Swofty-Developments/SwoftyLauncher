@@ -1,7 +1,8 @@
-// Host-native unit test for the core's red flag recompute guard (native/src/core/red_flag_recompute_logic.hpp).
-// Built and run by native/test/run_red_flag_recompute_test.sh.
+// Host-native unit test for the core's red flag recompute guard (native/src/core/guards/session/red_flag_recompute_logic.hpp).
+// Built and run by native/test/run_tests.sh red_flag_recompute.
 
-#include "red_flag_recompute_logic.hpp"
+#include "core/guards/session/red_flag_recompute_logic.hpp"
+#include "core/guards/skips.hpp"
 
 #include <cstdio>
 
@@ -22,18 +23,18 @@ int main()
     expect(!rf::record_missing(0x1f4a3c8000), "a vehicle with a race session record runs the game's code");
     expect(!rf::record_missing(1), "any non-null race session record is kept");
 
-    rf::Skips s;
+    swofty_core::guards::LogFirst<rf::LOG_FIRST> s{"skips"};
     int lines = 0, last = 0;
     for (int i = 0; i < 500; i++) {
-        int n = s.note();
-        if (s.logged(n))
+        auto line = s.note();
+        if (line)
             lines++;
-        if (s.last(n))
+        if (line && *line.tail)
             last++;
     }
     expect(lines == rf::LOG_FIRST, "five hundred skips produce exactly the capped number of lines");
     expect(last == 1, "the capped line is marked once");
-    expect(s.count == 500, "every skip is counted");
+    expect(s.count() == 500, "every skip is counted");
 
     std::printf("%s\n", failed ? "FAILED" : "all passed");
     return failed ? 1 : 0;

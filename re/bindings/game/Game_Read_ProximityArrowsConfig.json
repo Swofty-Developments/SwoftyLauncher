@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_ProximityArrowsConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142be35f0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: proximity_arrows.distance_threshold, proximity_arrows.front_fade_angle, proximity_arrows.inner_distance_threshold, proximity_arrows.outer_distance_threshold, proximity_arrows.red_arrow_distance'"
+ },
+ "signature": {
+  "id": "game.read_proximity_arrows_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 03 00 00 C5 F8 29 B4 24 A0 03 00 00 49 89 CD 48 8B 41 20",
+  "match": "0x142be35f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142be35f0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_ProximityArrowsConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142be35f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142be35f0.c",
+   "notes": "V5031 9.9KB proximity arrows update: reads 5 config keys then per-player arrows visible/outerAnimFraction/innerAnimFraction/carID/red_visible; better Game_ProximityArrows_Update (vtable/indirect)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142be35f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142be35f0.c",
+   "notes": "V6883 1420 decomp lines, strings match current name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

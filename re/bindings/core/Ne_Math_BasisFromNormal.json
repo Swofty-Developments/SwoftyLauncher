@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Math_BasisFromNormal",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144706a00",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144706a00.c;xref:0x144705b9f",
+  "notes": "Builds an orthonormal basis from a normal (picks helper axis when |dot| > 0.9, cross products). Caller: Car_CollisionVfx_OnContact. (1 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "core.math_basis_from_normal",
+  "section": ".xtls",
+  "pattern": "48 83 EC 38 C5 78 29 44 24 20 C5 F8 29 7C 24 10 C5 F8 29 34 24 C5 F8 28 02 C5 F8 28",
+  "match": "0x144706a00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144706a00",
+  "kind": "func_start",
+  "names": [
+   "Ne_Math_BasisFromNormal"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x144706a00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144706a00.c;xref:0x144705b9f",
+   "notes": "V6868 Helper axis when dot>0.9 confirmed."
+  }
+ ],
+ "proofs": []
+}

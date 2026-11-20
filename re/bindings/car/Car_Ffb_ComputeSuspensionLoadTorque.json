@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Ffb_ComputeSuspensionLoadTorque",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446b8210",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446b8210.c;xref:0x1446b7cfd,0x1446b7e5b",
+  "notes": "(ffbTyre, wheel, a, b, scale, flag): from suspension compression ratio (wheel+0x3c rest vs +0x248-+0x168) computes load term (acos poly, *2e6 stiffness at +0x650) into +0x70 and a torque contribution (600 and 1.2e6 gains). Caller: Car_Ffb_TyreForceReal_Update."
+ },
+ "signature": {
+  "id": "car.ffb_compute_suspension_load_torque",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 70 C5 78 29 54 24 60 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 C5 F8 28 F3 48",
+  "match": "0x1446b8210",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446b8210",
+  "kind": "func_start",
+  "names": [
+   "Car_Ffb_ComputeSuspensionLoadTorque"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x1446b8210",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1446b8210.c;xref:0x1446b7cfd",
+   "notes": "V3711 compression ratio / acos poly matches; only caller is Car_Tyre_UpdateTemperature (0x1446b7cfd), not Car_Ffb_TyreForceReal_Update"
+  }
+ ],
+ "proofs": []
+}

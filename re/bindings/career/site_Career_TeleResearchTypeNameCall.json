@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "site_Career_TeleResearchTypeNameCall",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14071e708",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/14071e470.c;xref:0x14071e708;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v090--the-tyres-upgrade-types-setting-tyres_upgrade_types-default-on-install-time;xref:0x1406db634,0x1406fdba0",
+  "notes": "call 0x14058eed0 (writer, rdx = type name) of the UpgradeFittingChangedMessage (upgrade fitted) telemetry handler 0x14071e470, not a research-purchased report (the binding name keeps the old wording); target of the type >= 19 redirect"
+ },
+ "signature": {
+  "id": "career.tele_research_type_name_call",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 47 10 0F B6 40 72",
+  "match": "0x14071e708",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14071e708",
+  "kind": "mid",
+  "expect": "E8 C3 07 E7 FF",
+  "names": [
+   "site_Career_TeleResearchTypeNameCall"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-a",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_upgrade_types.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-1",
+   "kind": "global",
+   "item": "site_Career_TeleResearchTypeNameCall",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14071e470.c;xref:0x14071e705,0x14071e708,0x14058eed0,0x1406db634",
+   "notes": "V0035 call 0x14058eed0 with rcx=rbx writer and rdx=type name is right and is the redirect target, but it belongs to the UpgradeFittingChangedMessage (upgrade fitted to driver) report, not a research-purchased report"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-1",
+   "kind": "global",
+   "item": "site_Career_TeleResearchTypeNameCall",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14071e470.c;xref:0x14071e705,0x14071e708,0x14058eed0,0x1406db634,0x1406fdba0",
+   "notes": "V0156 re-verify of the relabel: call 0x14058eed0 (rcx=rbx writer, rdx=type name) in the UpgradeFittingChangedMessage handler 0x14071e470; correct redirect target, no branch into window; supersedes V0035"
+  }
+ ],
+ "proofs": []
+}

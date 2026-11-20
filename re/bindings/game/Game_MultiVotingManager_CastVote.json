@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MultiVotingManager_CastVote",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14308ca70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14308ca70.c;xref:0x142206683",
+  "notes": "GameSessionMultiVotingManager castVote(playerId, ballot): checks connected, local player found, voter is local, ballot value < option count (Param endTime/optionsCount); applies locally via HandleBallot and sends the ballot message (reliable 2). Addon: cast a vote programmatically. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2739)"
+ },
+ "signature": {
+  "id": "game.multi_voting_manager_cast_vote",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 4C 89 C3 48 89 D7 48 89 CE 80 3D",
+  "match": "0x14308ca70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14308ca70",
+  "kind": "func_start",
+  "names": [
+   "Game_MultiVotingManager_CastVote"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d8-verify",
+   "kind": "func",
+   "item": "Game_MultiVotingManager_CastVote",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14308ca70.c;xref:0x14308ca70",
+   "notes": "V2739 ballot < option count (param3+0xc < this+0x70), HandleBallot then send rel 2 when +0x10==1 confirmed"
+  }
+ ],
+ "proofs": []
+}

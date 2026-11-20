@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_Container_AbortNoReturn_142cc4e50",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142cc4e50",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142cc4e50.c;xref:0x142c4e3bc",
+  "notes": "13-line noreturn thunk (0x145351784 + int3), overflow path used with Ne_HashMap_Guid128_Find. Caller Game_TrackCameraShots_StopShot."
+ },
+ "signature": {
+  "id": "core.container_abort_no_return_142cc4e50",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 46 38 48 89 C1 48 2B 4E 30",
+  "match": "0x142c4e3bc",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x142cc4e50",
+  "kind": "func_start",
+  "names": [
+   "Ne_Container_AbortNoReturn_142cc4e50"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x142cc4e50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142cc4e50.c;xref:0x142c4e3bc",
+   "notes": "V8100 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_VirtualSessionEntrantEntrant",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f6b170",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK/VX",
+  "notes": "named from its log messages (channel NETWORK/VX): 'VirtualSessionEntrant: Entrant with vehicle id %d is completing a virtual lap from progress %.3f-%.3f. Mass %.3f-%.3f, Wear %.3f-%.3f, Difficulty %.3f, Tyre %s'"
+ },
+ "signature": {
+  "id": "game.network_virtual_session_entrant_entrant",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 08 00 00 C5 78 29 BC 24 F0 07 00 00",
+  "match": "0x142f6b170",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f6b170",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_VirtualSessionEntrantEntrant"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f6b170",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142f6b170.c;xref:0x142f662cb",
+   "notes": "V5653 839 lines: whole virtual lap completion (mass, wear, speed trap, lap time); better Game_VirtualSessionEntrant_CompleteVirtualLap"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142f6b170",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f6b170.c;xref:0x142f662cb",
+   "notes": "V6921 839 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

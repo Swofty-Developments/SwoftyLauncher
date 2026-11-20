@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "site_Sess_GarageSlots_GarageLoad",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1424a8220",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/1424a8080.c;xref:0x1424a8220",
+  "notes": "In Sess_Assign_GarageSlotsByPreference: mov rax,[r12+8] then mov rcx,[rsp+0x58] then mov r14,[rax+rcx*8] = the team garage [[garages+8]+garage_index*8], loaded once per entrant of the team with no bound. r12 = garages (begin +8, end +0x10, 8-byte entries), [rsp+0x58] = garage_index (r8d on entry, stored at 0x1424a813a). An index at or past the vector length reads a stray pointer, and Sess_Set_GarageSlotEntrant faults on it (+0x471). Core sends such a team to site_Sess_GarageSlots_Done."
+ },
+ "signature": {
+  "id": "session.garage_slots_garage_load",
+  "section": ".xtls",
+  "pattern": "0F 45 D8 49 8B 44 24 08 48 8B 4C 24 58",
+  "match": "0x1424a821d",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424a8220",
+  "kind": "mid",
+  "expect": "49 8B 44 24",
+  "names": [
+   "site_Sess_GarageSlots_GarageLoad"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "garageslots",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/garage/garage_slots.cpp"
+  ],
+  "func_start": "0x1424a8080"
+ },
+ "verify": [
+  {
+   "date": "2026-11-01",
+   "verifier": "garageslots-verify",
+   "kind": "global",
+   "item": "site_Sess_GarageSlots_GarageLoad",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1424a8080.c;xref:0x1424a8220;sig:session.garage_slots_garage_load",
+   "notes": "V8620 Disassembled 0x1424a8080..0x1424a8578 on the Steam exe: r12 = garages (mov r12,r9 at 0x1424a80a9, restored from [rsp+0x48] after the push_back), index at [rsp+0x58] from r8d (0x1424a8093, 0x1424a813a); load mov r14,[rax+rcx*8] at 0x1424a822a; epilogue 0x1424a8565 add rsp,0xb8 and pops, rsp unchanged across the loop; crash +0x471 is the return of call 0x142a399d0 at 0x1424a84ec. Sigcheck OK, unique."
+  }
+ ],
+ "proofs": []
+}

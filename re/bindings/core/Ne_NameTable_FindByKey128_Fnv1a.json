@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NameTable_FindByKey128_Fnv1a",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143998930",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143998930.c;xref:0x14017b68c",
+  "notes": "FNV-1a 64 hash of a C string then probe in open table (fields +0x20..+0x54). 117 callers incl. Game_SceneManager_DestroyScene and Game_CutsceneModule_Shutdown (named object lookup). vq0-verify partial/disagree"
+ },
+ "signature": {
+  "id": "core.name_table_find_by_fnv1a_a",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 0F B6 02 48 B9 25 23 22 84 E4 9C F2 CB 48",
+  "match": "0x143998930",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143998930",
+  "kind": "func_start",
+  "names": [
+   "Ne_NameTable_FindByKey128_Fnv1a"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x143998930",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143998930.c;xref:0x14017b68c",
+   "notes": "V8492 hash is FNV-1a over a 16-byte binary key (param_2[0..15]) seeded by +0x20 and compared as two qwords, not a C string; better name Ne_NameTable_FindByKey128_Fnv1a"
+  }
+ ],
+ "proofs": []
+}

@@ -2,7 +2,7 @@
 // made before the Steam remote storage interface is replaced, and the folder that stands in for Steam
 // remote storage. The profile save's two files are random bytes here, as opaque to the sandbox as the
 // game's encrypted data file and its security index. run_save_sandbox_test.sh builds and runs it.
-#include "../src/core/save_sandbox_logic.hpp"
+#include "core/testing/save_sandbox_logic.hpp"
 
 #include <cstdio>
 #include <filesystem>
@@ -42,8 +42,8 @@ static std::string esc(const char *s)
 
 static void run_token()
 {
-    std::string good = std::string(R"({"schema":1,"run":"20261028-1702","token":")") + TOKEN +
-                       R"(","saves":"saves","exe_sha256":"d873"})";
+    std::string good =
+        std::string(R"({"schema":1,"run":"20261028-1702","token":")") + TOKEN + R"(","saves":"saves","exe_sha256":"d873"})";
     auto r = ss::parse_run(good, TOKEN);
     expect(r.ok && r.saves == "saves" && r.id == "20261028-1702" && r.exe_sha256 == "d873",
            "run.json with the matching token verifies");
@@ -59,16 +59,16 @@ static void run_token()
     }
     expect(!ss::parse_run(R"({"schema":1,"token":"short","saves":"saves"})", "short").ok, "a short token: refused");
     expect(r.sandbox && r.agent_v == 0 && r.dlls.empty(), "saves asks for the sandbox; no agent object, no DLLs");
-    std::string agent = std::string(R"({"schema":1,"run":"r2-b1","token":")") + TOKEN +
-                        R"(","agent":{"v":1,"dlls":["dll/my.addon.dll"]}})";
+    std::string agent =
+        std::string(R"({"schema":1,"run":"r2-b1","token":")") + TOKEN + R"(","agent":{"v":1,"dlls":["dll/my.addon.dll"]}})";
     auto a = ss::parse_run(agent, TOKEN);
     expect(a.ok && !a.sandbox && a.saves.empty() && a.agent_v == 1 && a.dlls.size() == 1 && a.dlls[0] == "dll/my.addon.dll",
            "a run without saves is the agent's only, with its test DLLs");
     expect(ss::run_saves(r) == ss::RunSaves::sandbox && ss::run_saves(a) == ss::RunSaves::launcher,
            "a run with saves plays on its sandbox; a run without plays on the session's launcher saves, not Steam's");
     for (const char *dll : {"../x.dll", "/x.dll", "\\x.dll", "C:x.dll", ""}) {
-        std::string doc = std::string(R"({"schema":1,"run":"r","token":")") + TOKEN + R"(","agent":{"v":1,"dlls":[")" +
-                          esc(dll) + "\"]}}";
+        std::string doc =
+            std::string(R"({"schema":1,"run":"r","token":")") + TOKEN + R"(","agent":{"v":1,"dlls":[")" + esc(dll) + "\"]}}";
         expect(!ss::parse_run(doc, TOKEN).ok, std::string("a test DLL '") + dll + "' outside the agent folder: refused");
     }
     expect(!ss::parse_run(std::string(R"({"schema":1,"run":"../r","token":")") + TOKEN + "\"}", TOKEN).ok,
@@ -164,9 +164,7 @@ static void folder(const fs::path &tmp)
            "FileRead into a short buffer returns its first bytes");
     expect(dir.size("savegame@profile#QKRHMYXE") == 416 && dir.size("missing") == 0, "GetFileSize");
     expect(dir.exists("savegame@profile#QKRHMYXE") && !dir.exists("savegame@profile#X"), "FileExists");
-    int64_t now = std::chrono::duration_cast<std::chrono::seconds>(
-                      std::chrono::system_clock::now().time_since_epoch())
-                      .count();
+    int64_t now = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     int64_t ts = dir.timestamp("savegame@profile#QKRHMYXE");
     expect(ts > now - 120 && ts < now + 120, "GetFileTimestamp is the file's write time in Unix seconds");
     expect(dir.count() == 2, "GetFileCount lists both files");
@@ -197,28 +195,36 @@ static std::string settings_with(const std::string &block)
     return std::string("{\"schema\":1,\"profile\":\"default\",\"addons\":[]") + (block.empty() ? "" : "," + block) + "}";
 }
 
-static const char *GOOD = "{\"launcher_saves\":{\"profile\":\"default\",\"remote\":\"Z:\\\\home\\\\me\\\\.local\\\\share\\\\swofty\\\\saves\\\\default\\\\remote\"}}";
+static const char *GOOD = "{\"launcher_saves\":{\"profile\":\"default\",\"remote\":\"Z:\\\\home\\\\me\\\\."
+                          "local\\\\share\\\\swofty\\\\saves\\\\default\\\\remote\"}}";
 
 static void launcher()
 {
     std::string good = std::string(GOOD).substr(1, std::string(GOOD).size() - 2);
     ss::Launcher l = ss::parse_launcher(settings_with(good));
     expect(l.present && l.ok && l.profile == "default", "launcher saves: a settings block names the profile and its store");
-    expect(l.remote == "Z:\\home\\me\\.local\\share\\swofty\\saves\\default\\remote", "launcher saves: the store path is kept as written");
+    expect(l.remote == "Z:\\home\\me\\.local\\share\\swofty\\saves\\default\\remote",
+           "launcher saves: the store path is kept as written");
     expect(!ss::parse_launcher(settings_with("")).present, "launcher saves: no block, no launcher mode");
-    expect(!ss::parse_launcher("").present && !ss::parse_launcher("not json").present, "launcher saves: no readable settings, no launcher mode");
+    expect(!ss::parse_launcher("").present && !ss::parse_launcher("not json").present,
+           "launcher saves: no readable settings, no launcher mode");
 
     auto bad = [&](const std::string &block, const char *what) {
         ss::Launcher b = ss::parse_launcher(settings_with(block));
         expect(b.present && !b.ok && !b.why.empty(), what);
     };
     bad("\"launcher_saves\":3", "launcher saves: a block that is not an object fails");
-    bad("\"launcher_saves\":{\"remote\":\"Z:\\\\x\\\\saves\\\\default\\\\remote\"}", "launcher saves: a block without a profile fails");
+    bad("\"launcher_saves\":{\"remote\":\"Z:\\\\x\\\\saves\\\\default\\\\remote\"}",
+        "launcher saves: a block without a profile fails");
     bad("\"launcher_saves\":{\"profile\":\"default\"}", "launcher saves: a block without a store fails");
-    bad("\"launcher_saves\":{\"profile\":\"..\",\"remote\":\"Z:\\\\x\\\\saves\\\\..\\\\remote\"}", "launcher saves: a profile that is not a plain name fails");
-    bad("\"launcher_saves\":{\"profile\":\"default\",\"remote\":\"Z:\\\\x\\\\saves\\\\other\\\\remote\"}", "launcher saves: a store of another profile fails");
-    bad("\"launcher_saves\":{\"profile\":\"default\",\"remote\":\"Z:\\\\x\\\\saves\\\\default\\\\remote\\\\..\\\\..\"}", "launcher saves: a store that climbs out fails");
-    bad("\"launcher_saves\":{\"profile\":\"default\",\"remote\":\"Z:\\\\x\\\\default\\\\remote\"}", "launcher saves: a store outside saves/ fails");
+    bad("\"launcher_saves\":{\"profile\":\"..\",\"remote\":\"Z:\\\\x\\\\saves\\\\..\\\\remote\"}",
+        "launcher saves: a profile that is not a plain name fails");
+    bad("\"launcher_saves\":{\"profile\":\"default\",\"remote\":\"Z:\\\\x\\\\saves\\\\other\\\\remote\"}",
+        "launcher saves: a store of another profile fails");
+    bad("\"launcher_saves\":{\"profile\":\"default\",\"remote\":\"Z:\\\\x\\\\saves\\\\default\\\\remote\\\\..\\\\..\"}",
+        "launcher saves: a store that climbs out fails");
+    bad("\"launcher_saves\":{\"profile\":\"default\",\"remote\":\"Z:\\\\x\\\\default\\\\remote\"}",
+        "launcher saves: a store outside saves/ fails");
     bad("\"launcher_saves\":{\"profile\":\"default\",\"remote\":\"\"}", "launcher saves: an empty store path fails");
 
     ss::Launcher on = ss::parse_launcher(settings_with(good));
@@ -226,14 +232,18 @@ static void launcher()
     ss::Launcher broken = ss::parse_launcher(settings_with("\"launcher_saves\":3"));
     using M = ss::Mode;
     expect(ss::select_mode(false, on, false, "steam", false).mode == M::launcher, "mode: launcher saves on a Steam copy");
-    expect(ss::select_mode(false, on, false, "unknown", false).mode == M::launcher, "mode: launcher saves on a build the set does not name");
+    expect(ss::select_mode(false, on, false, "unknown", false).mode == M::launcher,
+           "mode: launcher saves on a build the set does not name");
     expect(ss::select_mode(false, none, false, "steam", false).mode == M::off, "mode: no block is off");
     expect(ss::select_mode(false, on, true, "steam", false).mode == M::off, "mode: the once-on-Steam opt-out is off");
     auto ea = ss::select_mode(false, on, false, "ea", false);
-    expect(ea.mode == M::off && ea.why.find("EA copy") != std::string::npos, "mode: the EA copy keeps its own saves until its backend lands");
-    expect(ss::select_mode(false, on, false, "ea", true).mode == M::launcher, "mode: the EA copy joins once its backend is there");
+    expect(ea.mode == M::off && ea.why.find("EA copy") != std::string::npos,
+           "mode: the EA copy keeps its own saves until its backend lands");
+    expect(ss::select_mode(false, on, false, "ea", true).mode == M::launcher,
+           "mode: the EA copy joins once its backend is there");
     expect(ss::select_mode(false, broken, false, "steam", false).mode == M::fail, "mode: a broken block fails closed");
-    expect(ss::select_mode(false, broken, false, "ea", false).mode == M::off, "mode: a broken block on the EA copy stays off with it");
+    expect(ss::select_mode(false, broken, false, "ea", false).mode == M::off,
+           "mode: a broken block on the EA copy stays off with it");
     expect(ss::select_mode(true, on, false, "steam", false).mode == M::test, "mode: a test run keeps its own sandbox");
     expect(ss::select_mode(true, none, true, "ea", false).mode == M::test, "mode: a test run ignores the launcher's inputs");
     expect(ss::EXIT_LAUNCHER == 93 && ss::EXIT_LAUNCHER != ss::EXIT_TEST, "the launcher saves ending has its own exit code");
@@ -244,12 +254,13 @@ static void launcher_store(const fs::path &tmp)
     fs::path store = tmp / "saves" / "default" / "remote";
     ss::RemoteDir dir(store);
     auto data = noise(70000, 5);
-    expect(dir.write("savegame@profile#NXDSMWW.BWW", data.data(), int32_t(data.size())), "launcher store: a first write creates saves/<profile>/remote");
+    expect(dir.write("savegame@profile#NXDSMWW.BWW", data.data(), int32_t(data.size())),
+           "launcher store: a first write creates saves/<profile>/remote");
     expect(fs::is_regular_file(store / "savegame@profile#NXDSMWW.BWW"), "launcher store: the file lands in the store folder");
-    expect(dir.count() == 1 && dir.exists("savegame@profile#NXDSMWW.BWW"), "launcher store: it lists what the launcher copied in");
+    expect(dir.count() == 1 && dir.exists("savegame@profile#NXDSMWW.BWW"),
+           "launcher store: it lists what the launcher copied in");
     fs::remove_all(tmp / "saves");
 }
-
 
 static void ea_backend(const fs::path &tmp)
 {
@@ -271,7 +282,8 @@ static void ea_backend(const fs::path &tmp)
     bad([](ss::EaDevice &e) { e.vtable = 0x1008; }, "ea device: another vtable fails closed");
     bad([](ss::EaDevice &e) { e.cap = 0x80; }, "ea device: another buffer size fails closed");
     bad([](ss::EaDevice &e) { e.ptr = 0x9000; }, "ea device: a title folder held outside the save system fails closed");
-    bad([](ss::EaDevice &e) { e.title = L"C:\\users\\x\\savegame"; }, "ea device: a title folder that is not savegame\\ea fails closed");
+    bad([](ss::EaDevice &e) { e.title = L"C:\\users\\x\\savegame"; },
+        "ea device: a title folder that is not savegame\\ea fails closed");
     bad([](ss::EaDevice &e) { e.title.clear(); }, "ea device: an unterminated or empty title folder fails closed");
     d.title = L"C:\\USERS\\X\\SAVEGAME\\EA";
     expect(ss::check_ea_device(d, 0x1000).empty(), "ea device: the folder match ignores case");
@@ -280,21 +292,178 @@ static void ea_backend(const fs::path &tmp)
            "ea title: the store's sibling ea folder");
     expect(ss::ea_title_dir("Z:\\home\\u\\saves\\default\\remote\\", "default") == "Z:\\home\\u\\saves\\default\\ea",
            "ea title: a trailing separator is dropped");
-    expect(ss::ea_title_dir("Z:\\home\\u\\saves\\other\\remote", "default").empty(), "ea title: another profile's store is refused");
+    expect(ss::ea_title_dir("Z:\\home\\u\\saves\\other\\remote", "default").empty(),
+           "ea title: another profile's store is refused");
     expect(ss::ea_title_dir("Z:\\home\\u\\..\\saves\\default\\remote", "default").empty(), "ea title: a parent step is refused");
     expect(ss::ea_title_dir("Z:\\" + std::string(300, 'a') + "\\saves\\default\\remote", "default").empty(),
            "ea title: a folder longer than the device's buffer is refused");
-    expect(ss::select_mode(false, ss::parse_launcher("{\"launcher_saves\":{\"profile\":\"default\",\"remote\":\"Z:\\\\h\\\\saves\\\\default\\\\remote\"}}"),
-                           false, "ea", true).mode == ss::Mode::launcher,
+    expect(ss::select_mode(
+               false,
+               ss::parse_launcher(
+                   "{\"launcher_saves\":{\"profile\":\"default\",\"remote\":\"Z:\\\\h\\\\saves\\\\default\\\\remote\"}}"),
+               false, "ea", true)
+                   .mode == ss::Mode::launcher,
            "mode: the EA copy runs launcher saves once its backend is on");
-    expect(ss::select_mode(false, ss::parse_launcher("{\"launcher_saves\":{\"profile\":\"default\",\"remote\":\"Z:\\\\h\\\\saves\\\\default\\\\remote\"}}"),
-                           false, "ea", false).mode == ss::Mode::off,
+    expect(ss::select_mode(
+               false,
+               ss::parse_launcher(
+                   "{\"launcher_saves\":{\"profile\":\"default\",\"remote\":\"Z:\\\\h\\\\saves\\\\default\\\\remote\"}}"),
+               false, "ea", false)
+                   .mode == ss::Mode::off,
            "mode: with the EA backend off the EA copy keeps its own saves");
 
     fs::path title = tmp / "saves" / "default" / "ea";
     fs::create_directories(title / "profile");
     expect(fs::is_directory(title / "profile"), "ea store: the title folder holds profile/ for the device to mount in place");
     fs::remove_all(tmp / "saves");
+}
+
+static void ea_test_run(const fs::path &tmp)
+{
+    expect(ss::run_ea_title_dir("Z:\\h\\test-runs\\r1\\saves") == "Z:\\h\\test-runs\\r1\\saves\\ea",
+           "ea test run: the title folder is the run's saves\\ea");
+    expect(ss::run_ea_title_dir("Z:\\h\\test-runs\\r1\\saves\\") == "Z:\\h\\test-runs\\r1\\saves\\ea",
+           "ea test run: a trailing separator is dropped");
+    expect(ss::run_ea_title_dir("/h/test-runs/r1/saves") == "/h/test-runs/r1/saves/ea",
+           "ea test run: the folder keeps its separator");
+    expect(ss::run_ea_title_dir("Z:\\h\\..\\r1\\saves").empty(), "ea test run: a parent step is refused");
+    expect(ss::run_ea_title_dir("saves").empty(), "ea test run: a bare folder name is refused");
+    expect(ss::run_ea_title_dir("").empty(), "ea test run: no folder is refused");
+    expect(ss::run_ea_title_dir("Z:\\" + std::string(300, 'a') + "\\saves").empty(),
+           "ea test run: a folder longer than the device's buffer is refused");
+
+    fs::path profile = tmp / "ea-run" / "saves" / "ea" / "profile";
+    fs::remove_all(tmp / "ea-run");
+    fs::create_directories(profile);
+    ss::FolderStamp empty = ss::stamp_of(profile);
+    expect(empty.files == 0 && empty.bytes == 0, "ea save: an empty profile folder stamps as empty");
+    expect(ss::stamp_of(tmp / "ea-run" / "missing").files == 0, "ea save: a missing folder stamps as empty without throwing");
+    auto data = noise(4096, 9);
+    FILE *f = fopen((profile / "NXDSMWW.BWW").string().c_str(), "wb");
+    fwrite(data.data(), 1, data.size(), f);
+    fclose(f);
+    ss::FolderStamp one = ss::stamp_of(profile);
+    expect(one.files == 1 && one.bytes == 4096 && !(one == empty), "ea save: a written file changes the stamp");
+    fs::create_directories(profile / "sub");
+    expect(ss::stamp_of(profile) == one, "ea save: a folder inside the profile folder is not a save file");
+    fs::remove_all(tmp / "ea-run");
+
+    ss::SaveSettle w;
+    w.start(empty, 1000);
+    expect(w.observe(empty, 1500) == 0, "ea save: no change, no save");
+    expect(w.observe(one, 2000) == 0, "ea save: a change starts a save but does not end it");
+    ss::FolderStamp grown = one;
+    grown.bytes += 100;
+    expect(w.observe(grown, 2600) == 0, "ea save: a file still growing keeps the save open");
+    expect(w.observe(grown, 3599) == 0, "ea save: under the settle time the save is still open");
+    expect(w.observe(grown, 3600) == 1, "ea save: unchanged for the settle time ends the save");
+    expect(w.observe(grown, 9000) == 1, "ea save: a settled folder counts its save once");
+    ss::FolderStamp later = grown;
+    later.newest += 1;
+    expect(w.observe(later, 9100) == 1 && w.observe(later, 10100) == 2, "ea save: the next save counts again");
+}
+
+static std::vector<uint8_t> read_all(const ss::RemoteDir &d, const std::string &name)
+{
+    std::vector<uint8_t> out(2 << 20);
+    out.resize(size_t(d.read(name, out.data(), int32_t(out.size()))));
+    return out;
+}
+
+static void pair(const fs::path &tmp)
+{
+    const std::string data = "savegame@profile#NXDSMWW.BWW", index = "savegame@profile#QKRHMYXE";
+    fs::remove_all(tmp);
+    auto d1 = noise(5000, 11), i1 = noise(416, 12), d2 = noise(6000, 13), i2 = noise(416, 14);
+    {
+        ss::RemoteDir dir(tmp / "remote");
+        expect(dir.write(data, d1.data(), int32_t(d1.size())) && dir.write(index, i1.data(), 416),
+               "pair: the first pair is written");
+        expect(dir.commit(), "pair: a whole pair commits");
+        expect(!fs::exists(tmp / "remote" / ss::PENDING_NAME) && !fs::exists(tmp / "remote" / (data + ss::PREV_SUFFIX)),
+               "pair: a committed pair leaves no pending record and no previous copy");
+    }
+    {
+        ss::RemoteDir dir(tmp / "remote");
+        expect(dir.write(data, d2.data(), int32_t(d2.size())), "pair: the new data file is written");
+        expect(fs::exists(tmp / "remote" / ss::PENDING_NAME) && fs::exists(tmp / "remote" / (data + ss::PREV_SUFFIX)),
+               "pair: the old data file is kept and a pending record names it");
+        expect(!dir.commit(), "pair: a batch with the data file only does not commit");
+        int32_t n = dir.count();
+        expect(n == 2, "pair: the pending record and the previous copy are not listed as saves");
+    }
+    {
+        ss::RemoteDir after_crash(tmp / "remote");
+        auto r = after_crash.recover(true);
+        expect(r.kind == ss::RemoteDir::Recovery::rolled_back, "pair: a torn pair rolls back at the next mount");
+        expect(read_all(after_crash, data) == d1 && read_all(after_crash, index) == i1,
+               "pair: the old data file and index are back");
+        expect(!fs::exists(tmp / "remote" / ss::PENDING_NAME) && !fs::exists(tmp / "remote" / (data + ss::PREV_SUFFIX)),
+               "pair: recovery clears the record and the previous copies");
+        expect(after_crash.recover(true).kind == ss::RemoteDir::Recovery::none, "pair: nothing is left to recover");
+    }
+    {
+        ss::RemoteDir dir(tmp / "remote");
+        dir.write(index, i2.data(), 416);
+        dir.write(data, d2.data(), int32_t(d2.size()));
+    }
+    {
+        ss::RemoteDir after_crash(tmp / "remote");
+        auto r = after_crash.recover(true);
+        expect(r.kind == ss::RemoteDir::Recovery::rolled_forward, "pair: a whole pair with a record left is kept");
+        expect(read_all(after_crash, data) == d2 && read_all(after_crash, index) == i2,
+               "pair: the new pair stands, index written first or last");
+        expect(!fs::exists(tmp / "remote" / (index + ss::PREV_SUFFIX)), "pair: the previous copies go");
+    }
+    fs::remove_all(tmp);
+    {
+        ss::RemoteDir dir(tmp / "remote");
+        dir.write(data, d1.data(), int32_t(d1.size()));
+    }
+    {
+        ss::RemoteDir after_crash(tmp / "remote");
+        expect(after_crash.recover(true).kind == ss::RemoteDir::Recovery::rolled_back && !after_crash.exists(data),
+               "pair: a first save cut off before its index leaves no file");
+    }
+    {
+        ss::RemoteDir dir(tmp / "remote");
+        dir.write(data, d1.data(), int32_t(d1.size()));
+        dir.write(index, i1.data(), 416);
+        dir.commit();
+        expect(dir.remove(data) && dir.remove(index) && dir.commit(), "pair: a batch of only deletions commits");
+        expect(!dir.exists(data) && !fs::exists(tmp / "remote" / ss::PENDING_NAME), "pair: deleted files stay deleted");
+    }
+    {
+        ss::RemoteDir dir(tmp / "remote");
+        dir.write(data, d1.data(), int32_t(d1.size()));
+        dir.write(index, i1.data(), 416);
+        dir.commit();
+        dir.remove(data);
+    }
+    {
+        ss::RemoteDir after_crash(tmp / "remote");
+        expect(after_crash.recover(true).kind == ss::RemoteDir::Recovery::rolled_back && read_all(after_crash, data) == d1,
+               "pair: a delete cut off with the batch open puts the file back");
+    }
+    {
+        ss::RemoteDir dir(tmp / "remote");
+        dir.write(data, d1.data(), int32_t(d1.size()));
+        dir.write(index, i1.data(), 416);
+        dir.commit();
+        expect(dir.write("backup", d1.data(), 8) && dir.settle_lone() && dir.remove("backup") && dir.settle_lone(),
+               "pair: a write and a delete outside a batch settle at once");
+    }
+    {
+        ss::RemoteDir after(tmp / "remote");
+        expect(!after.exists("backup") && !fs::exists(tmp / "remote" / ss::PENDING_NAME) &&
+                   !fs::exists(tmp / "remote" / ("backup" + std::string(ss::PREV_SUFFIX))) &&
+                   after.recover(true).kind == ss::RemoteDir::Recovery::none && read_all(after, data) == d1,
+               "pair: a delete outside a batch leaves no record and stays deleted at the next mount");
+    }
+    expect(!ss::valid_name("a" + std::string(ss::PREV_SUFFIX)) && !ss::valid_name(ss::PENDING_NAME) &&
+               ss::RemoteDir::is_index(index) && !ss::RemoteDir::is_index(data),
+           "pair: bookkeeping files are not valid remote names; the index is told by its tail");
+    fs::remove_all(tmp);
 }
 
 int main(int argc, char **argv)
@@ -307,7 +476,9 @@ int main(int argc, char **argv)
     folder(tmp);
     launcher();
     launcher_store(tmp);
+    pair(tmp / "pair");
     ea_backend(tmp);
+    ea_test_run(tmp);
     printf("%s (%d failure(s))\n", fails ? "SOME FAILED" : "ALL PASSED", fails);
     return fails ? 1 : 0;
 }

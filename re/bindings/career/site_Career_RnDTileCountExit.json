@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDTileCountExit",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f49f5b",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141f49bc0.c;xref:0x141f49f5b;doc:addons/rnd-tyres-thermal/native/HOOKS.md#2-the-tyres-tile-count-flag-pie_tyres_counts-default-on-install-time",
+  "notes": "vmovaps xmm6,[rsp+0x1850]: the function's epilogue, the index guard's ja target (join target)"
+ },
+ "signature": {
+  "id": "career.rn_d_tile_count_exit",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? C5 F8 28 B4 24 50 18 00 00",
+  "match": "0x141f49f56",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f49f5b",
+  "kind": "mid",
+  "expect": "C5 F8 28 B4 24 50 18 00 00",
+  "names": [
+   "site_Career_RnDTileCountExit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-4",
+   "kind": "global",
+   "item": "site_Career_RnDTileCountExit",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f49bc0.c;xref:0x141f49bea,0x141f49c18,0x141f49c2b,0x141f49f5b",
+   "notes": "V0166 vmovaps xmm6,[rsp+0x1850] epilogue; target of je 0x141f49bea, je 0x141f49c18 and the index-guard ja 0x141f49c2b; 9-byte window, nothing lands inside"
+  }
+ ],
+ "proofs": []
+}

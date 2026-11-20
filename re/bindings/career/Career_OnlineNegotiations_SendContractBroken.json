@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_OnlineNegotiations_SendContractBroken",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141002260",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:log-channel-ONLINE_CONTRACT_NEGOTIATIONS",
+  "notes": "named from its log messages (channel ONLINE_CONTRACT_NEGOTIATIONS): 'Process contract broken sent'"
+ },
+ "signature": {
+  "id": "career.online_negotiations_send_contract_broken",
+  "section": ".xtls",
+  "pattern": "48 83 EC 48 48 B8 12 00 00 00 C9 00 00 00",
+  "match": "0x141002260",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141002260",
+  "kind": "func_start",
+  "names": [
+   "Career_OnlineNegotiations_SendContractBroken"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x141002260",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141002260.c;xref:0x141000106",
+   "notes": "V4543 name and quoted log strings/pretty-function present in body"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-f",
+   "kind": "func",
+   "item": "0x141002260",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141002260.c;str:\"Process contract broken sent\"",
+   "notes": "V9130 Decompile contains the claimed log string and the function is a small logger/wrapper whose name matches it."
+  }
+ ],
+ "proofs": []
+}

@@ -2,17 +2,17 @@
 // HQ answer and the component poll go in, the career events come out of settle(). The clock is a
 // plain millisecond value. The Driver Career sequence is the one a real run logged: components say
 // driver_career before Team HQ opens, then StateTeamHQ -> StateTeamHQUpdate Updating, then the Team
-// HQ answer "not My Team". run_events_test.sh builds and runs it.
-#include "../src/core/career_state.hpp"
+// HQ answer "not My Team". native/test/run_tests.sh career_state builds and runs it.
+#include "core/career/career_state.hpp"
 
 #include <cstdio>
 #include <string>
 
-using runtime::career::Components;
-using runtime::career::djb2;
-using runtime::career::Edges;
-using runtime::career::PollSchedule;
-using runtime::career::Tracker;
+using career::state::Components;
+using career::state::djb2;
+using career::state::Edges;
+using career::state::PollSchedule;
+using career::state::Tracker;
 
 static int fails;
 
@@ -27,10 +27,7 @@ static void go(Tracker &t, const char *state, uint32_t from, uint32_t to, uint64
     t.flow(djb2(state), from, to, state, true, now);
 }
 
-static bool quiet(const Edges &e)
-{
-    return !e.loaded && !e.unloaded && e.hub < 0;
-}
+static bool quiet(const Edges &e) { return !e.loaded && !e.unloaded && e.hub < 0; }
 
 int main()
 {
@@ -63,8 +60,7 @@ int main()
         e = t.settle();
         expect(e.hub == 1 && !e.loaded, "StateTeamHQUpdate Updating: career.hub entered");
         t.team_hq_answer(false);
-        expect(quiet(t.settle()) && t.state().team_hq_mode == SWOFTY_CAREER_DRIVER &&
-                   t.mode() == SWOFTY_CAREER_DRIVER,
+        expect(quiet(t.settle()) && t.state().team_hq_mode == SWOFTY_CAREER_DRIVER && t.mode() == SWOFTY_CAREER_DRIVER,
                "Team HQ answers not My Team: still driver career, no churn");
 
         uint32_t st = 0;
@@ -94,8 +90,8 @@ int main()
     }
 
     {
-        using runtime::career::poll_reads;
-        using runtime::career::Where;
+        using career::state::poll_reads;
+        using career::state::Where;
         expect(poll_reads(Where::career) && poll_reads(Where::unknown) && !poll_reads(Where::elsewhere),
                "the component poll reads the game in a career and in an unknown mode, not elsewhere");
         Tracker t;
@@ -109,7 +105,8 @@ int main()
         expect(t.settle().loaded, "a career loads from a read in career mode");
         t.components(poll_reads(Where::elsewhere) ? dc : Components{}, 200);
         Edges e = t.settle();
-        expect(e.unloaded && !e.loaded && !t.state().loaded, "in Time Trial the poll reports no career without a read: the career unloads");
+        expect(e.unloaded && !e.loaded && !t.state().loaded,
+               "in Time Trial the poll reports no career without a read: the career unloads");
         Tracker fresh;
         fresh.components(Components{}, 100);
         expect(quiet(fresh.settle()) && !fresh.state().loaded && fresh.state().components == SWOFTY_CAREER_COMPONENTS_UNSEEN,
@@ -168,32 +165,29 @@ int main()
         t.team_hq_answer(false);
         t.components(entity_only, 100);
         expect(!t.loaded(), "entity without a CareerComponent: not loaded while within the grace period");
-        t.components(entity_only, 100 + runtime::career::COMPONENT_GRACE_MS + 1);
-        expect(t.loaded() && t.state().components == SWOFTY_CAREER_COMPONENTS_FALLBACK &&
-                   t.mode() == SWOFTY_CAREER_DRIVER,
+        t.components(entity_only, 100 + career::state::COMPONENT_GRACE_MS + 1);
+        expect(t.loaded() && t.state().components == SWOFTY_CAREER_COMPONENTS_FALLBACK && t.mode() == SWOFTY_CAREER_DRIVER,
                "components broken in Team HQ: fall back to the flow states and the Team HQ answer");
     }
 
     {
         Tracker t;
-        for (uint32_t i = 0; i < runtime::career::MAX_STATES + 10; i++) {
+        for (uint32_t i = 0; i < career::state::MAX_STATES + 10; i++) {
             char n[32];
             snprintf(n, sizeof n, "StateX%u", i);
             t.flow(djb2(n), 0, 1, n, true, i);
         }
         uint32_t st;
         uint64_t age;
-        expect(t.status_of(djb2("StateX0"), st, age, 0) && !t.status_of(djb2("StateX300"), st, age, 0),
-               "state table is bounded");
+        expect(t.status_of(djb2("StateX0"), st, age, 0) && !t.status_of(djb2("StateX300"), st, age, 0), "state table is bounded");
         t.flow(djb2("StateTeamHQUpdate"), 0, 2, "StateTeamHQUpdate", true, 0);
-        expect(t.status(runtime::career::TeamHqUpdate) == SWOFTY_FLOW_NONE,
-               "a full table drops new states (documented limit)");
+        expect(t.status(career::state::TeamHqUpdate) == SWOFTY_FLOW_NONE, "a full table drops new states (documented limit)");
     }
 
     {
-        using runtime::career::IDLE_POLL_MS;
-        using runtime::career::POLL_MS;
-        using runtime::career::SETTLE_MS;
+        using career::state::IDLE_POLL_MS;
+        using career::state::POLL_MS;
+        using career::state::SETTLE_MS;
         PollSchedule p;
         const uint64_t t0 = 600000;
         expect(p.due(t0, 0, false), "the first poll runs at once");

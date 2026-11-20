@@ -1,6 +1,6 @@
 # render: D3D12/DXGI present path and the swapchain overlay
 
-Owner: see `subsystems.tsv`. Consumer: `native/src/core/hud.cpp` (the overlay standard library, experimental `overlay` feature gate).
+Owner: see `subsystems.tsv`. Consumer: `native/src/core/hud/overlay.cpp` (the overlay standard library, experimental `overlay` feature gate).
 
 ## Map
 - The game renders with Direct3D 12 (`d3d12core.dll` + `dxgi.dll`); there is no exe-side present call site catalogued yet.

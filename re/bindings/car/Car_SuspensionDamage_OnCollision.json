@@ -1,0 +1,91 @@
+{
+ "schema": 1,
+ "name": "Car_SuspensionDamage_OnCollision",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144654d10",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "void Car_SuspensionDamage_OnCollision(void *susp_damage, void *contact)",
+  "evidence": "decomp:re/decomp/144654d10.c;xref:0x144653bb9;xref:0x14473fd28",
+  "notes": "F1SuspensionDamage impact callback, registered by 0x144653ad0 (lea at 0x144653bb9). param_1 = the F1SuspensionDamage system (CarLive+0x5d0). Ignores impacts below max(SpeedThreshold +0x28^+0x30, ...); scales front-corner impacts by FrontDamageScale (+0x38^+0x40) and rear-corner impacts by RearDamageScale (+0x48^+0x50); sets flag 4 (collider tag CAR_, 0x5f524143) or 8 (any other collider) at +0x20 of the matched SuspensionSystem wheel ([CarLive+0x580]+0x70..+0x88 matched by +0x2b4/+0x2b8), not at system +0x20, with the impact speed at wheel+0x24/+0x2c, gated by CarLive+0x133 bit 1 and +0x130 bit 3 (corrected per V1318). Every value is read on each hit, so a live write applies to the next impact. Cross-checked 2026-10-28 against the private findings of Will (william09leo, Heavier Damage), which agree. See car.md#damage. | 2026-11-13 susp-collision (static, Steam): (susp_damage, contact) from the code: rcx is the system (its +8 is the CarLive), rdx the contact record, and r8/r9 are written before any read. The only ref is lea rsi at 0x144653bb6 in the system's Init 0x144653ad0, which (only when its reset argument dl is 0) hands {fn, this} to the listener remove thunk 0x1446510d0 (body 0x155338ff0) and then Car_Collision_AddListener 0x144651f90 (body 0x155339950) (15 slots of {fn, ctx} at CarLive+0x9db8). Car_Collision_Dispatch calls each slot as fn(ctx, &contact) at 0x14473fd28 under the car's lock [car+0xf0] and ignores the return, so the return is void. Contact: +0 CarLive, +8 the car's own hit body, +0x18 contact point*, +0x20 normal*, +0x30 the other collider (dword tag CAR_ for a car), +0x38 f32 scaled by the front or rear damage scale, +0x40 u8. EA: the same bytes at rva 0x464afa0, only ref lea at 0x144649e46. Wrappable binding for addons (Will, Heavier Damage); V9284 agrees."
+ },
+ "signature": {
+  "id": "car.suspension_damage_on_collision",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 C5 F8 29 74 24 30 48 8B 41 08 F6 80 30 01 00 00 01",
+  "match": "0x144654d10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144654d10",
+  "kind": "func_start",
+  "names": [
+   "Car_SuspensionDamage_OnCollision"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "susp-collision",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v3",
+   "kind": "func",
+   "item": "Car_SuspensionDamage_OnCollision",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144654d10.c;xref:0x144653bb9",
+   "notes": "V1318 Role right: registered by vt 0x145bf8bd0 slot 6 (0x144653ad0, lea 0x144653bb6); gate CarLive+0x130 bit 0; scale = clamp(|v.n|/max(SpeedThreshold +0x28^+0x30, 0.5) - 1, 0, 1); bodies [CarLive+0x5b8]+0x50/0x58/0x70/0x78 x FrontDamageScale +0x38^+0x40 into +0x138/+0x13c, +0x40/0x48/0x60/0x68 x min(1,..) x RearDamageScale +0x48^+0x50 into +0x130/+0x134. Wrong detail: the 4/8 flags are not at system +0x20; they go to the matched SuspensionSystem wheel ([CarLive+0x580]+0x70..+0x88 matched by +0x2b4/+0x2b8) at wheel+0x20, bit 4 when the collider tag is CAR_ (0x5f524143) else 8, with impact speed at wheel+0x24/+0x2c, gated by CarLive+0x133 bit 1 and +0x130 bit 3."
+  },
+  {
+   "date": "2026-10-29",
+   "verifier": "carlive-verify",
+   "kind": "func",
+   "item": "Car_SuspensionDamage_OnCollision",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "xref:0x144654e98",
+   "notes": "V1811 C6 +0x128 read; class name by adjacency only"
+  },
+  {
+   "date": "2026-10-29",
+   "verifier": "carlive-verify",
+   "kind": "func",
+   "item": "Car_SuspensionDamage_OnCollision",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "xref:0x144654e98",
+   "notes": "V3944 C6 +0x128 read; class name by adjacency only"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x144654d10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144654d10.c;xref:0x144653bb8",
+   "notes": "V6725 [susp+0x128] read at 0x144654e98 verified"
+  },
+  {
+   "date": "2026-11-13",
+   "verifier": "susp-collision-verify",
+   "kind": "func",
+   "item": "Car_SuspensionDamage_OnCollision",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x144654d10-0x14465552b,0x144653ad0-0x144654d0a,0x14473f8e0-0x14473fd7a,0x155338ff0-0x1553391ff,0x155339950-0x155339b2d;decomp:own capstone disasm EA 0x14464afa0-0x14464b7bb,0x144649d60-0x14464af9a,0x144735b30-0x144735fca;xref:0x144653bb9;xref:0x14473fd28;xref:EA 0x144649e49;xref:EA 0x144735f78;sig:car.suspension_damage_on_collision;pat:Steam .xtls 1 whole file 1, EA .rdata 1 whole image 1 at 0x464afa0 (bindverify --build ea --scan matches=1)",
+   "notes": "V9284 Blind re-derivation on d873a1c8. Steam: .pdata entry {0x4654d10,0x465552b,unwind 0x5f6288c}, bytes at 0x144654d10 = 56 57 53 48 83 EC 40 C5 F8 29 74 24 30 48 8B 41 08 F6 80 30 01 00 00 01 (75 0e ...), pattern 1 hit in .xtls and 1 in the whole file (file off 0x4654310). Args: reads rcx ([rcx+8] CarLive, +0x28/+0x30,+0x38/+0x40,+0x48/+0x50 xor pairs, +0x128, writes +0x130..+0x13c,+0xa0..+0xd0) and rdx (+0,+8,+0x10,+0x18,+0x20,+0x30,+0x38,+0x40); r9 written at 0x144654d38 and r8 at 0x144654d3c before any read; xmm0-3 written before read. rax on exit is leftover ([rcx+8] on the early ret) or the tail-jmp 0x14391cdd0 result, not meaningful. Refs: only rel32 is lea rsi at 0x144653bb6 (disp 0x144653bb9) in 0x144653ad0, taken only when dl==0; no abs8 pointer anywhere, the only rva32 is the .pdata entry. Init stores {fn, r15=this} on the stack and calls 0x1446510d0 then 0x144651f90 with rcx=[this+8]; both are 5-byte jmp thunks with no .pdata to .data1 bodies 0x155338ff0 (finds the matching {fn,ctx} slot and zeroes it) and 0x155339950 (stores into the first empty slot), 15 slots of 0x10 at CarLive+0x9db8..0x9e98 under lock [CarLive+0xf0]. Dispatcher 0x14473f8e0 builds the contact at rsp+0x50 (+0 CarLive rsi,+8 r15,+0x10 r12,+0x18 rdi+0x20,+0x20 &local,+0x28 r14,+0x30 rbp,+0x38/+0x3c f32,+0x40 u8), locks [rsi+0xf0], loops rbx 0..0xe0, rax=[rsi+rbx+0x9db8], rcx=[rsi+rbx+0x9dc0], rdx=&contact, call rax at 0x14473fd28, r8/r9/xmm not set, then jmp back to the loop, so the return is discarded: 2-arg void holds. EA: pattern 1 hit in .rdata (code) and 1 in the whole image, at 0x464afa0, .pdata {0x464afa0,0x464b7bb}, same length 0x81b, 411 insns, 344 byte-identical, 67 differ only in rip or branch displacement; only ref lea rsi at 0x144649e46 in 0x144649d60, which calls thunks 0x144647360 and 0x144648220 (to 0x1525ae080 remove and 0x1525b10e0 add); EA dispatcher 0x144735b30 has the same loop with call rax at 0x144735f78; bindverify --build ea --scan resolves it, 1 match at 0x464afa0. Imprecise: 0x1446510d0/0x144651f90 are thunks, not the bodies. Not checked: the system sits at CarLive+0x5d0 and what the contact fields mean."
+  }
+ ],
+ "proofs": []
+}

@@ -58,7 +58,15 @@ Each profile plays on its own copy of the profile save, kept in your data folder
 
 ## Restoring a profile save
 
-The launcher keeps copies of your profile save in the [career vault](/reference/saves): at launcher start, before and after every Play, and when F1 25 was started from Steam or the EA app. When the save changed outside the launcher and got smaller, or got smaller in a session without an addon that affects saves, the Addons page offers **Restore**, and the [Saves](/using/career-saves) page lists every copy with the careers in it. `swofty saves list` lists every copy and `swofty saves restore <snapshot>` puts one back.
+The launcher keeps a plain copy of each profile's careers, written by the game as it loads and saves, and copies of your profile save in the [career vault](/reference/saves): at launcher start, before and after every Play, and when F1 25 was started from Steam or the EA app.
+
+A career counts as lost when the last save a launcher session wrote has it and the save the game read since does not. The size of the save file decides nothing. The [Saves](/using/career-saves) page and the Addons page then name the careers with **Restore**, and the next Play puts them back from the plain copy. A career you deleted in the game stays deleted.
+
+The Saves page lists the careers of the newest copy grouped by mode, with where each lives and when you last played it. **Restore** on a career lists earlier versions of it; the game applies the one you pick the next time you press Play, and the page shows the game's answer afterwards.
+
+When a save keeps F1 25 on Loading... after Press any button, the launcher leaves it as it is, keeps a copy, and the Saves page offers **Restore** of the last version that loaded or **Dismiss**.
+
+The Saves page also lists every whole-save copy. `swofty saves list` lists them, `swofty saves restore <snapshot>` puts one back, `swofty saves plain` lists the careers of the plain copy and `swofty saves restore-career <mode>` restores one mode with both its containers.
 
 A restore waits until F1 25 and Steam are closed (the EA app, for the EA app copy). Exit Steam completely (Steam menu > Exit) first, restore, then start Steam, which uploads the restored save. If Steam asks which copy to keep, keep the local files (this computer).
 

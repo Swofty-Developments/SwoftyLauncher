@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Calc_DriverAgeYears",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f74d50",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "float CalcAge(void *comp, void *driver_rec)",
+  "evidence": "decomp:re/decomp/140f74d50.c;xref:0x140c5860f;xref:0x140db9630",
+  "notes": "myteam-g2: Driver age in whole years as float: current calendar date (Career_Calc_CalendarDayIndex on comp+0x290, Ne_Crt_Localtime64) versus birth day/month/year at driver_rec+0x5a8/+0x5ac/+0x5b0; subtracts 1 if birthday not reached yet. Hook value: override to make drivers younger/older for contract logic."
+ },
+ "signature": {
+  "id": "career.calc_driver_age_years",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 30 48 89 CE 8B BA A8 05 00 00",
+  "match": "0x140f74d50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f74d50",
+  "kind": "func_start",
+  "names": [
+   "Career_Calc_DriverAgeYears"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-d",
+   "kind": "func",
+   "item": "0x140f74d50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f74d50.c",
+   "notes": "V9034 Current date from the calendar at comp+0x290 (day index of comp+0x2b0, struct day +0xc, month +0x10, year +0x14) versus birth fields at rec+0x5a8/0x5ac/0x5b0; subtracts 1.0 if the birthday has not passed. Year base comes from a vtable call (+0xf8) on comp+0x278+0x1030; month base off-by-one not examined."
+  }
+ ],
+ "proofs": []
+}

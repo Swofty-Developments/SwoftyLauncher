@@ -1,11 +1,11 @@
-// Host-native unit test for the room launch cover (native/src/core/room_cover_logic.hpp).
-// Built and run by native/test/run_events_test.sh.
+// Host-native unit test for the room launch cover (native/src/core/hud/room_cover_logic.hpp).
+// Built and run by native/test/run_tests.sh room_cover.
 
-#include "room_cover_logic.hpp"
+#include "core/hud/room_cover_logic.hpp"
 
 #include <cstdio>
 
-namespace rc = runtime::room_cover;
+namespace rc = hud::room_cover;
 
 static int failed = 0;
 
@@ -37,10 +37,12 @@ int main()
         expect(c.frame(6000, rc::Signal::shown, &ev) == 1 && ev == rc::Event::none, "shown starts the settle, still opaque");
         expect(c.frame(6000 + rc::SETTLE_MS - 1, rc::Signal::shown, &ev) == 1 && ev == rc::Event::none, "and holds through it");
         float a = c.frame(6000 + rc::SETTLE_MS, rc::Signal::shown, &ev);
-        expect(ev == rc::Event::came_off && c.why() == rc::Why::shown && a == 1, "after the settle it comes off with reason shown");
+        expect(ev == rc::Event::came_off && c.why() == rc::Why::shown && a == 1,
+               "after the settle it comes off with reason shown");
         float mid = c.frame(6000 + rc::SETTLE_MS + rc::FADE_MS / 2, rc::Signal::shown, &ev);
         expect(mid > 0.4f && mid < 0.6f && ev == rc::Event::none, "it fades out over the fade time, half way at half");
-        expect(c.frame(6000 + rc::SETTLE_MS + rc::FADE_MS - 1, rc::Signal::shown, &ev) > 0, "still faintly drawn just before the end");
+        expect(c.frame(6000 + rc::SETTLE_MS + rc::FADE_MS - 1, rc::Signal::shown, &ev) > 0,
+               "still faintly drawn just before the end");
         expect(c.frame(6000 + rc::SETTLE_MS + rc::FADE_MS, rc::Signal::shown, &ev) == 0 && !c.drawing(), "then it is gone");
         expect(c.frame(99999, rc::Signal::waiting, &ev) == 0 && ev == rc::Event::none, "and stays gone");
         c.arm();
@@ -67,9 +69,11 @@ int main()
         rc::Cover c;
         c.arm();
         c.frame(10, rc::Signal::waiting, &ev);
-        expect(c.frame(10 + rc::CAP_MS - 1, rc::Signal::waiting, &ev) == 1 && ev == rc::Event::none, "the cap does not trip early");
+        expect(c.frame(10 + rc::CAP_MS - 1, rc::Signal::waiting, &ev) == 1 && ev == rc::Event::none,
+               "the cap does not trip early");
         float a = c.frame(10 + rc::CAP_MS, rc::Signal::waiting, &ev);
-        expect(ev == rc::Event::came_off && c.why() == rc::Why::timeout && a == 1, "150 s after the first frame it comes off, reason timeout");
+        expect(ev == rc::Event::came_off && c.why() == rc::Why::timeout && a == 1,
+               "150 s after the first frame it comes off, reason timeout");
         expect(c.frame(10 + rc::CAP_MS + rc::FADE_MS, rc::Signal::waiting, &ev) == 0 && !c.drawing(), "after a fade");
     }
     {

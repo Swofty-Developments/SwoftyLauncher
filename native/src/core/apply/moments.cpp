@@ -1,17 +1,18 @@
-#include "moments.hpp"
+#include "core/apply/moments.hpp"
 
-#include "../hooks/hooks.hpp"
-#include "../perf.hpp"
-#include "../registry/table.hpp"
-#include "../runtime.hpp"
-#include "content/appliers.hpp"
-#include "database.hpp"
-#include "facts.hpp"
-#include "files_api.hpp"
-#include "gp_track_logic.hpp"
-#include "scheduler.hpp"
-#include "tracks/base.hpp"
-#include "tracks/seed.hpp"
+#include "core/hooks/hooks.hpp"
+#include "core/diagnostics/perf.hpp"
+#include "core/registry/table.hpp"
+#include "core/runtime/runtime.hpp"
+#include "core/apply/content/appliers.hpp"
+#include "core/apply/database.hpp"
+#include "core/apply/facts.hpp"
+#include "core/apply/files_api.hpp"
+#include "core/apply/gp_track_logic.hpp"
+#include "core/apply/report_queue_logic.hpp"
+#include "core/apply/scheduler.hpp"
+#include "core/apply/tracks/base.hpp"
+#include "core/apply/tracks/seed.hpp"
 
 #include <swofty/game.hpp>
 #include <swofty/mem.hpp>
@@ -50,10 +51,7 @@ std::wstring registry_root()
     return (state.empty() ? runtime::swofty_root() : state) + L"registry";
 }
 
-std::string registry_dir()
-{
-    return runtime::narrow(registry_root());
-}
+std::string registry_dir() { return runtime::narrow(registry_root()); }
 
 void make_registry_dir()
 {
@@ -79,10 +77,7 @@ bool write_file(const std::string &path, const std::string &text)
     return runtime::write_file(runtime::wide(path), text);
 }
 
-std::string read_file(const std::string &path)
-{
-    return runtime::read_file(runtime::wide(path), size_t(256) << 20);
-}
+std::string read_file(const std::string &path) { return runtime::read_file(runtime::wide(path), size_t(256) << 20); }
 
 void migrate_ids()
 {
@@ -208,7 +203,6 @@ void extend(Value &, Value &conflicts)
     conflicts["status"] = st;
 }
 
-
 namespace game {
 
 namespace g = swofty::game;
@@ -232,15 +226,9 @@ void once(const std::string &why)
     swofty::log("[apply] facts: %s (logged once)", why.c_str());
 }
 
-uintptr_t resolve(const char *id)
-{
-    return swofty::api ? swofty::api->resolve(id) : 0;
-}
+uintptr_t resolve(const char *id) { return swofty::api ? swofty::api->resolve(id) : 0; }
 
-template <class T> bool rd(uintptr_t p, T &out)
-{
-    return p && mem::read(p, out);
-}
+template <class T> bool rd(uintptr_t p, T &out) { return p && mem::read(p, out); }
 
 uintptr_t current_context()
 {
@@ -311,20 +299,17 @@ bool weekend(uintptr_t holder, Weekend &out)
         return false;
     }
     if (!rd(holder + offsetof(g::ChampionshipHolder, entity), entity) || !mem::object_like(entity) ||
-        !rd(entity + offsetof(g::CareerEntity, current_championship), champ) ||
-        !vtable_is(champ, "vt_Career_Championship"))
+        !rd(entity + offsetof(g::CareerEntity, current_championship), champ) || !vtable_is(champ, "vt_Career_Championship"))
         return false;
-    if (!rd(champ + offsetof(g::Championship, seasons_begin), sb) ||
-        !rd(champ + offsetof(g::Championship, seasons_end), se) ||
+    if (!rd(champ + offsetof(g::Championship, seasons_begin), sb) || !rd(champ + offsetof(g::Championship, seasons_end), se) ||
         !rd(champ + offsetof(g::Championship, season_index), si) || se < sb ||
-        (se - sb) / sizeof(g::ChampionshipSeasonEntry) > MAX_SEASONS ||
-        si >= (se - sb) / sizeof(g::ChampionshipSeasonEntry) ||
+        (se - sb) / sizeof(g::ChampionshipSeasonEntry) > MAX_SEASONS || si >= (se - sb) / sizeof(g::ChampionshipSeasonEntry) ||
         !rd(sb + si * sizeof(g::ChampionshipSeasonEntry) + offsetof(g::ChampionshipSeasonEntry, season), season) ||
         !vtable_is(season, "vt_Career_Season"))
         return false;
     if (!rd(season + offsetof(g::Season, weekends_begin), wb) || !rd(season + offsetof(g::Season, weekends_end), we) ||
-        !rd(season + offsetof(g::Season, current_weekend), wi) || we < wb || (we - wb) / 8 > MAX_ROUNDS ||
-        wi >= (we - wb) / 8 || !rd(wb + wi * 8, wk) || !vtable_is(wk, "vt_Career_Weekend"))
+        !rd(season + offsetof(g::Season, current_weekend), wi) || we < wb || (we - wb) / 8 > MAX_ROUNDS || wi >= (we - wb) / 8 ||
+        !rd(wb + wi * 8, wk) || !vtable_is(wk, "vt_Career_Weekend"))
         return false;
     out.at = wk;
     out.round = wi + 1;
@@ -375,7 +360,9 @@ void read_track_rows(const char *when)
     int r = !db || !db->available || !db->available() ? SWOFTY_ASSET_UNAVAILABLE : db->open("tracks", &cur);
     if (r != SWOFTY_ASSET_OK) {
         once(std::string("the tracks table is not readable at ") + when + " (" +
-             (r == SWOFTY_ASSET_LATE ? "its row count is 0" : r == SWOFTY_ASSET_INVALID ? "its keys are invalid" : "the database is not loaded") +
+             (r == SWOFTY_ASSET_LATE      ? "its row count is 0"
+              : r == SWOFTY_ASSET_INVALID ? "its keys are invalid"
+                                          : "the database is not loaded") +
              "); the track is left empty");
         return;
     }
@@ -493,7 +480,9 @@ std::string track_id(int stat_id)
         return {};
     std::string id = facts::track_of(stat_id, track_label(stat_id), track_records());
     if (id.empty())
-        once("track stat id " + std::to_string(stat_id) + " has no tracks row or track record; its track addon is off or not installed, and a saved Grand Prix or career that races it crashes at the session load");
+        once("track stat id " + std::to_string(stat_id) +
+             " has no tracks row or track record; its track addon is off or not installed, and a saved Grand Prix or career that "
+             "races it crashes at the session load");
     return id;
 }
 
@@ -567,6 +556,10 @@ void attach()
                         why.c_str());
         else if (!text.empty())
             swofty::log("[registry] stat ids: ids.json holds %zu id(s)", ids::store().size());
+        std::string kept = read_file(registry_dir() + "\\row-ids.json");
+        if (!kept.empty() && !ids::store().reserve_json(kept, &why))
+            swofty::log("[registry] stat ids: row-ids.json unreadable (%s); its ids are not held back from the pools",
+                        why.c_str());
         std::string room = runtime::read_file(runtime::swofty_root() + L"room_stat_ids.json", size_t(4) << 20);
         if (!room.empty() && !room_boot()) {
             swofty::log("[registry] stat ids: swofty\\room_stat_ids.json is left from an earlier shared session and this "
@@ -596,15 +589,23 @@ void attach()
     });
 }
 
-std::size_t boot_plan()
+void start_boot_plan()
 {
     attach();
-    return scheduler().plan_boot();
+    char v[8] = {};
+    DWORD n = GetEnvironmentVariableA("SWOFTY_PLAN_SYNC", v, sizeof v);
+    bool sync = n && n < sizeof v && v[0] == '1';
+    if (sync)
+        swofty::log("[apply] boot plan: SWOFTY_PLAN_SYNC=1, so every boot applier counts on this thread");
+    scheduler().start_plan(!sync);
 }
 
-bool boot_work()
+bool boot_may_work() { return scheduler().boot_may_work(); }
+
+void boot_ahead()
 {
-    return scheduler().boot_work();
+    attach();
+    content::start_boot_ahead();
 }
 
 void status(const std::string &addon, const std::string &line)
@@ -650,8 +651,7 @@ void boot_without_database(room::Report report)
     for (auto &[addon, n] : refused) {
         status(addon, std::to_string(n) + " database record(s) not applied: " +
                           (report.reason.empty() ? std::string("the database was not reachable") : report.reason));
-        swofty::log("[registry] register: %s %zu database record(s) refused (late): %s", addon.c_str(), n,
-                    report.reason.c_str());
+        swofty::log("[registry] register: %s %zu database record(s) refused (late): %s", addon.c_str(), n, report.reason.c_str());
     }
     report.registry_planned = report.registry_asked = scheduler().planned_keys();
     save_ids();
@@ -690,10 +690,7 @@ void career_season(int year)
     scheduler().career_season(year);
 }
 
-void box_picked(const char *entrant_list)
-{
-    box_picked(entrant_list, nullptr);
-}
+void box_picked(const char *entrant_list) { box_picked(entrant_list, nullptr); }
 
 void box_picked(const char *entrant_list, const void *mode_context)
 {
@@ -735,6 +732,27 @@ void mode_watch_main()
 
 }
 
+namespace {
+
+/* The reports a session load writes are for the launcher's last-session view and nothing in the game reads them, so
+   they are written on a thread of their own instead of the flow thread entering StateLoadSession, which they held up
+   for 79 ms at the median and 144 ms at the 90th percentile. reports_mu keeps that writer and the crash writer from
+   writing the files at once. */
+std::mutex reports_mu;
+ReportQueue report_queue;
+std::once_flag report_writer_once;
+
+void report_writer_main()
+{
+    perf::background();
+    for (;;) {
+        std::string when = report_queue.take();
+        write_reports(when.c_str());
+    }
+}
+
+}
+
 void session_load(const char *source)
 {
     attach();
@@ -747,13 +765,11 @@ void session_load(const char *source)
     if (facts::ModeKind k = facts::mode_kind(true, true, f.mode); k != facts::ModeKind::unknown)
         note_mode(k, "the session load");
     scheduler().session_load(f);
-    write_reports(from.c_str());
+    std::call_once(report_writer_once, [] { std::thread(report_writer_main).detach(); });
+    report_queue.want(from);
 }
 
-facts::ModeKind mode_kind()
-{
-    return facts::ModeKind(mode_now.load(std::memory_order_relaxed));
-}
+facts::ModeKind mode_kind() { return facts::ModeKind(mode_now.load(std::memory_order_relaxed)); }
 
 void mode_watch()
 {
@@ -784,15 +800,9 @@ bool career_weekend(CareerWeekend &out)
     return true;
 }
 
-std::string current_mode(const char *where)
-{
-    return game::mode_of(game::current_context(), where);
-}
+std::string current_mode(const char *where) { return game::mode_of(game::current_context(), where); }
 
-std::string cached_track_label(int stat_id)
-{
-    return game::cached_track_label(stat_id);
-}
+std::string cached_track_label(int stat_id) { return game::cached_track_label(stat_id); }
 
 void grand_prix_track_check()
 {
@@ -818,6 +828,7 @@ void window()
 
 int write_reports(const char *when)
 {
+    std::lock_guard g(reports_mu);
     save_ids();
     make_registry_dir();
     int r = reg::write_reports(registry_dir(), extend);

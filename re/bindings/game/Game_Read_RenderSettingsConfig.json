@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_RenderSettingsConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d15520",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: render_settings.colour_alpha, render_settings.cone_object_offset, render_settings.cone_object_string, render_settings.default_gate_size, render_settings.gate_depth, render_settings.gate_height, render_settings.gate_height_modifier, render_settings.gate_width_modifier, re'"
+ },
+ "signature": {
+  "id": "game.read_render_settings_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 0B 00 00 C5 78 29 9C 24 A0 0B 00 00",
+  "match": "0x142d15520",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d15520",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_RenderSettingsConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142d15520",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142d15520.c",
+   "notes": "V5374 reads TimeAttack gate config (num_gates_visible, hit_cone_time_added, laps, gate transform/render_settings), calls TimeAttackGates_BuildGates; better Game_TimeAttack_ReadGateConfig"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142d15520",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d15520.c",
+   "notes": "V6889 788 decomp lines, strings match current name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

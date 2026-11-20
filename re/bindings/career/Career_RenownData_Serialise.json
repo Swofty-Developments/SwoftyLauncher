@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_RenownData_Serialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f7a630",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *renown, void *save_node",
+  "evidence": "decomp:re/decomp/140f7a630.c;xref:0x1456aed20",
+  "notes": "myteam-g1: Writes team renown data fields current_renown, renown_baseline, renown_constant, renown_diff_graph (values at +0x30/+0x38/+0x40/+0x48/+0xd0..+0xd8). CORRECTION(V8987): Real serialiser of a larger renown-weights record (age_weighting +0xd0, max_overall +0x40, renown_constant +0xd4, season_weighting +0xd8, setup_statid +0x48, age_value +0x30, preferred +0x38, difference +0x3c, current_renown +0x34, diff_graph +0xf0, min +0xdc, max +0xe0, renown_baseline +0xe4, age_baseline +0xe8). Role right but offset list in the note is wrong; current_renown is +0x34 not +0xd0."
+ },
+ "signature": {
+  "id": "career.renown_data_serialise",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 48 89 D6 48 89 CF E8",
+  "match": "0x140f7a630",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f7a630",
+  "kind": "func_start",
+  "names": [
+   "Career_RenownData_Serialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-b",
+   "kind": "func",
+   "item": "0x140f7a630",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140f7a630.c;xref:0x1456aed20;str:\"current_renown\";str:\"renown_constant\";str:\"renown_diff_graph\";str:\"renown_baseline\"",
+   "notes": "V8987 Real serialiser of a larger renown-weights record (age_weighting +0xd0, max_overall +0x40, renown_constant +0xd4, season_weighting +0xd8, setup_statid +0x48, age_value +0x30, preferred +0x38, difference +0x3c, current_renown +0x34, diff_graph +0xf0, min +0xdc, max +0xe0, renown_baseline +0xe4, age_baseline +0xe8). Role right but offset list in the note is wrong; current_renown is +0x34 not +0xd0."
+  },
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140f7a630",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f7a630.c;xref:0x1456aed20;str:\"age_weighting\"",
+   "notes": "V9590 Offset list verified: age_weighting +0xd0, max_overall +0x40, renown_constant +0xd4, season_weighting +0xd8, setup_statid +0x48, age_value +0x30, preferred +0x38, difference +0x3c, current_renown +0x34, graph +0xf0/+0x50, min +0xdc, max +0xe0, baseline +0xe4, age_baseline +0xe8; the leading offset list in the note is superseded by the correction."
+  }
+ ],
+ "proofs": []
+}

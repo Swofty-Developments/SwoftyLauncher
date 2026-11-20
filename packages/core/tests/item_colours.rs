@@ -1,11 +1,12 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::PathBuf;
 
+use swofty_core::asset::Features;
 use swofty_core::asset::{FileKind, OpFile, Origin};
+use swofty_core::content::runtime_assets::db_edits;
+use swofty_core::game_db::row_keys::{Names, RowKeys};
 use swofty_core::ops::{DbOps, DbReport, apply_db_ops_report};
-use swofty_core::planner::{Features, Planner};
-use swofty_core::rowkeys::{Names, RowKeys};
-use swofty_core::runtime::db_edits;
+use swofty_core::planner::Planner;
 use swofty_formats::gvdb::{Gvdb, Record};
 
 const ITEMS: [(&str, &str); 8] = [
@@ -47,7 +48,7 @@ fn stock() -> Gvdb {
             records.push(Record::new(&format!("{row}.{c}"), 11, value));
         }
     }
-    Gvdb { records }
+    Gvdb::new(records)
 }
 
 fn copy_op(category: &str, word: &str) -> String {

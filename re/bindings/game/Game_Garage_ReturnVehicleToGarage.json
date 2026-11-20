@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Garage_ReturnVehicleToGarage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a3c0f0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name returnVehicleToGarage (class from the log channel); log channel GARAGE: '%s: vehicleId: %d, virtualiseData: %d, sessionSkipped: %d'"
+ },
+ "signature": {
+  "id": "game.garage_return_vehicle_to_garage",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 C5 F8 29 BC 24 80 00 00 00 C5 F8 29 74 24 70 44 89 C6",
+  "match": "0x142a3c0f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a3c0f0",
+  "kind": "func_start",
+  "names": [
+   "Game_Garage_ReturnVehicleToGarage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142a3c0f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a3c0f0.c;xref:0x142a4096b",
+   "notes": "V5167 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

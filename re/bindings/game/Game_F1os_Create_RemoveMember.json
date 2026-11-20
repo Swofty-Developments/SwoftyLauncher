@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1os_Create_RemoveMember",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1410968e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1410968e0.c;xref:0x1410968c8",
+  "notes": "F1OS ServerMethodOperation 'RemoveMember' factory create (factory vtable slot +0x10 or its thunk): constructs the 0x218-byte op by copying the request template at factory+0x50 (per-class copy helper), then syncs spinner type op+0x1e8 from the factory; if the op is running (+0x30==1, not suspended +0x32) it stops the old spinner type and restarts via 0x14079c940(spinnerCtl,type,-1.0f). Returns {allocator, op}. BusySpinnerController at op+0x108 (per-type counts +0x40+type*4, active flags +0x94+type), spinner type op+0x1e8 (default 6, <0x15); TOP_LEVEL_UI log '%s: (type=%d, count=%d)' with FullScreenBusySpinner start/stopBusySpinner. Addon: hook to change spinner type or request template before RemoveMember is sent. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3257)"
+ },
+ "signature": {
+  "id": "game.f1os_create_remove_member",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 D6 48 89 CF 4C 8D 49 50 48 8D 4C 24 30 4C 89 C2 E8 ?? ?? ?? ?? 48 8B 5C 24 38 44 8B 8B E8 01 00 00 8B 87 A0 00 00 00",
+  "match": "0x1410968e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1410968e0",
+  "kind": "func_start",
+  "names": [
+   "Game_F1os_Create_RemoveMember"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_F1os_Create_RemoveMember",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1410968e0.c;xref:0x1410968e0",
+   "notes": "V3257 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

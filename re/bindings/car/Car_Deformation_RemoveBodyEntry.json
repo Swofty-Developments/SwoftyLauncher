@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Car_Deformation_RemoveBodyEntry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1441082c0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1441082c0.c;xref:0x14349724b,0x1440cc8a4",
+  "notes": "Erases the entry whose body (+8) matches param from vector +8..+0x10 (stride 0x10), shifting and destroying the owned object. Callers: Car_Deformation_DestroyBody. (2 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "car.deformation_remove_body_entry",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 C7 03 00 00 00 00 31 FF 80 3D",
+  "match": "0x1440cc8a4",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1441082c0",
+  "kind": "func_start",
+  "names": [
+   "Car_Deformation_RemoveBodyEntry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x1441082c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1441082c0.c;xref:0x1440cc8a4",
+   "notes": "V7412 name matches log/pretty-function string and body; sibling-consistent"
+  }
+ ],
+ "proofs": []
+}

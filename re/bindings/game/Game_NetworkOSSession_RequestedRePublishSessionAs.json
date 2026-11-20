@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkOSSession_RequestedRePublishSessionAs",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430fd3c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-OS-SESSION",
+  "notes": "named from its log messages (channel NETWORK-OS-SESSION): '[PUBLISH] Requested to re-publish session %s as %s'"
+ },
+ "signature": {
+  "id": "game.network_os_session_requested_re_publish_session_as",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 60 48 89 CE 80 3D ?? ?? ?? ?? 01 75 4E B8 E7 00 00 00",
+  "match": "0x1430fd3c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430fd3c0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkOSSession_RequestedRePublishSessionAs"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430fd3c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430fd3c0.c;xref:0x1430fe050",
+   "notes": "V5432 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

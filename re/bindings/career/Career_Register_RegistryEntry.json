@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Register_RegistryEntry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f37740",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Register_RegistryEntry(void *map, void *key, void *entry)",
+  "evidence": "decomp:re/decomp/140f37740.c;xref:0x140f3d0a9;xref:0x140f3d40f;xref:0x140f3d596",
+  "notes": "myteam-g2: Thread-safe-static-guarded insert of a registry entry (condition type or My Team reward type) into a std::map (FUN_140f378c0, Ne_Std_ThrowMapSetTooLong). Backing for Init_ConditionTypeRegistry and Init_MyTeamRewardTypeRegistry: add new types here."
+ },
+ "signature": {
+  "id": "career.register_registry_entry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 58 4C 89 C3",
+  "match": "0x140f37740",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f37740",
+  "kind": "func_start",
+  "names": [
+   "Career_Register_RegistryEntry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-d",
+   "kind": "func",
+   "item": "0x140f37740",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f37740.c;xref:0x140f3d0a9;xref:0x140fc0c8b",
+   "notes": "V9036 Calls try-emplace FUN_140f378c0; if the key exists returns it, otherwise allocates a 0x140-byte node (255-char name copied from entry+0x18, flag byte from entry+0x118) and inserts via FUN_140f37b20; map-too-long throw at size 0xcccccccccccccc. Callers sit inside the two registry init functions. The thread-safe static guard only protects the allocator singleton, not the insert."
+  }
+ ],
+ "proofs": []
+}

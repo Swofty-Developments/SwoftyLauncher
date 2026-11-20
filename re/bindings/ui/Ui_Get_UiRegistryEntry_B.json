@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Get_UiRegistryEntry_B",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1419ce480",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "uint64_t Get(void *ctx, void **out)",
+  "evidence": "decomp:re/decomp/1419ce480.c;xref:0x141c4605b;xref:0x141c587ab;xref:0x141c5dccb",
+  "notes": "myteam-g2: TLS-cached lookup returning a registry handle from ctx+0x10; used in the same screens as _A (driver details, young driver, sponsor offers)."
+ },
+ "signature": {
+  "id": "ui.get_ui_registry_entry_b",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 D0 48 89 CE 4C 8B 02 48 8D 15 ?? ?? ?? ?? 48 89 C1 41 FF 50 28 48 85 C0 74 1E 48 89 C1",
+  "match": "0x1419ce480",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419ce480",
+  "kind": "func_start",
+  "names": [
+   "Ui_Get_UiRegistryEntry_B"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x1419ce480",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1419ce480.c;xref:0x141c4605b",
+   "notes": "V9908 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

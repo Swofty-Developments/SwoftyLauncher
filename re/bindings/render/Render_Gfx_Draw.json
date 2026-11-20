@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_Draw",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a02aa0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a02aa0.c;xref:0x143a01459,0x143ecf7d9",
+  "notes": "Flushes dirty state (loops the pipeline-state descriptor array at [ctx+0x12d8]+0x620 with the per-root-signature setters 0x143a24520 / 0x143a251f0), clears dirty bits (+0x1288, +0x1290/+0x12a0, +0x1468) and issues context vcall +0x130 with (vertexCount, 1 instance, startVertex). Hypothesis: non-indexed draw."
+ },
+ "signature": {
+  "id": "render.gfx_draw",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 44 89 C7 89 D6 48 89 CB",
+  "match": "0x143a02aa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a02aa0",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_Draw"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x143a02aa0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a02aa0.c;xref:0x143a01459",
+   "notes": "V8517 dirty-state flush, vcall +0x130 draw (+0x188 bundle)"
+  }
+ ],
+ "proofs": []
+}

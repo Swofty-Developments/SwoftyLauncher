@@ -3,9 +3,9 @@ use gpui_kit::component::{h_flex, v_flex};
 use gpui_kit::*;
 
 use super::tokens::{space, text};
-use crate::pages::badge;
-use crate::scale::px;
-use crate::theme::palette;
+use crate::ui::badge;
+use crate::ui::scale::px;
+use crate::ui::theme::palette;
 
 /// An icon tile with a title and a one-line subtitle, heading a section of a page.
 #[derive(IntoElement)]

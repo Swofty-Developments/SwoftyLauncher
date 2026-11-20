@@ -107,6 +107,8 @@ int n = api->scan(".xtls", "48 89 5C 24 ?? 57 48 83 EC 20", &hit); // the hit co
 [core] addon my_plugin.dll dropped: needs Game_NewThing, which bindings.json does not list; none of its mixins install
 ```
 
+To add a binding the Game API lacks, see [Adding a binding](/reference/addons/bindings).
+
 A binding that is listed but has no single match on the running build:
 
 ```text
@@ -146,7 +148,7 @@ A site binding names an address inside a function. `SWOFTY_MIXIN_SITE` runs your
 
 swofty_core adds the ADDON SETTINGS home tile this way at `site_FeHome_AfterCareerCall`, the instruction right after the game adds the Career tile. `r14` holds the `TileList *`, and `r12` and `r15` are the builder's counters, which it moves past the new tile ([Add a home tile](./in-game-ui#add-a-home-tile)):
 
-```cpp [native/src/core/swofty_core.cpp]
+```cpp [native/src/core/frontend/home_tiles.cpp]
 SWOFTY_SITE(site_FeHome_AfterCareerCall, swofty::Context &c)
 {
     auto list = reinterpret_cast<TileList *>(c.r14);   // read a register

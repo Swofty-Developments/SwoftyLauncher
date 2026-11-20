@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Sess_MarshalZone_UpdateZoneVehicles",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14357c2c0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14357c2c0.c;xref:0x14357cee5,0x143580e61",
+  "notes": "(mz) Clears per-zone state (+0x88..+0x90 stride 0x10), then for each participant ([+0x48]+0x88..+0x90) uses its zone entry this+0x10b8+idx*8 to update the zones it occupies (92 lines). Called from Sess_MarshalZone_CheckFlags. Hypothesis. Decoded (engine-re track RE round B 2026-11-17, static): clears zone+0x40 (car bit set) and +0xa8; for each car with a zone entry (this+0x10b8 + car*8) computes the lap fraction (clamp 0..1) and puts the car into the FIRST zone in list order whose item Start <= f <= End (wrapped zone End < Start: f >= Start or f <= End), setting zone+0x50 flag, bit car in zone+0x40.., and +0xa8 when the car's [..]+0x160 is set. Overlapping zones: only the first in list order ever gets the car, later overlapping zones stay empty."
+ },
+ "signature": {
+  "id": "session.marshal_zone_update_zone_vehicles",
+  "section": ".xtls",
+  "pattern": "56 57 48 89 C8 48 8B 89 88 00 00 00 48 8B 90 90",
+  "match": "0x14357c2c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14357c2c0",
+  "kind": "func_start",
+  "names": [
+   "Sess_MarshalZone_UpdateZoneVehicles"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x14357c2c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14357c2c0.c;xref:0x14357cee5",
+   "notes": "V3787 Clears per-zone state (+0x88..+0x90 stride 0x10), iterates participants [[+0x48]+0x88..], zone entry this+0x10b8+idx*8, sets zone/vehicle bits."
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "trkb-verify",
+   "kind": "func",
+   "item": "0x14357c2c0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 14357c2c0-14357c497;xref:none",
+   "notes": "V11109 per car: walks zones +0x88 in order, item=[zone]; Start +0x10 End +0x14 (wrap handled); first match sets bit car in zone+0x40 and flag +0x50, then next car (jmp 14357c360)"
+  }
+ ],
+ "proofs": []
+}

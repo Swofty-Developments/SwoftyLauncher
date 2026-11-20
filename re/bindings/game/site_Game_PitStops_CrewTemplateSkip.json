@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Game_PitStops_CrewTemplateSkip",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403c787b",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "pat:disasm-0x1403c69e0-0x1403c7880;decomp:re/decomp/1403c69e0.c;xref:0x1403c787b,0x1403c787e,0x1403c6bc0,0x1403c6bd0,0x1403c6dba,0x1403c6c62,0x1403c6bb3,0x1403c7745,0x1403c77e0;sig:game.pit_stops_crew_template_skip",
+  "notes": "In fn 0x1403c69e0 (caller of Game_PitStops_SetupCrew, return address): test r12,r12 / je 0x1403c6bc0 directly after the call, ahead of the free of the garage's entry vector through the allocator at [rsp+0xa0] (vcall +0x38) and the jump to 0x1403c6bc0, the loop tail that reloads rdi/rbx from [rsp+0x98]/[rsp+0x90] and advances the garage index r14. Retargeted from 0x1403c7884 (the free itself, which an empty garage with a null vector would reach unguarded) so a null vector takes the game's own je. Landing from site_Game_PitStops_CrewTemplateRead needs r12 = [rsp+0xa8] (the vector begin), r13 = rsp+0xc0 (loop-invariant key address, set at 0x1403c6b92 and 0x1403c7745, clobbered at 0x1403c6e2b/6ee6 and read at 0x1403c6dba/6e04 next garage) and esi = byte [rsp+0x4b] (saved at 0x1403c6bb3, reloaded at 0x1403c77e0, tested as sil at 0x1403c6c62); r14 is untouched and r15/rbx/rdi are reloaded before use. Owner review re-career-teams 2026-11-02 (V8624 partial resolved by the retarget; fresh verify pending)"
+ },
+ "signature": {
+  "id": "game.pit_stops_crew_template_skip",
+  "section": ".xtls",
+  "pattern": "4D 85 E4 0F 84 ?? ?? ?? ?? 48 8B 8C 24 A0 00 00 00",
+  "match": "0x1403c787b",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403c787b",
+  "kind": "mid",
+  "expect": "4D 85 E4",
+  "names": [
+   "site_Game_PitStops_CrewTemplateSkip"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-02",
+    "by": "re-career-teams",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/garage/garage_crew.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-02",
+   "verifier": "verify-pit-skip",
+   "kind": "global",
+   "item": "0x1403c787b",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403c69e0.c;xref:0x1403c6ee1,0x1403c7876,0x1403c787e,0x1403c7884,0x1403c6bc0,0x1403c6b92,0x1403c6bb3,0x1403c6c62,0x1403c6dba,0x1403c6e04,0x1403c7745,0x1403c77e0,0x1403c77f9,0x1403c79e6;sig:game.pit_stops_crew_template_skip",
+   "notes": "V8627 sigcheck 1 hit = test r12,r12 boundary. Normal path at 787b: r12=[rsp+0xa8] (77f9 reload), r13=rsp+0xc0 (7745; loop-invariant set 6b92, only [rsp+0xc0] contents rewritten 6daf), esi=byte [rsp+0x4b] (77e0; sole writer 6bb3, loop-invariant); rbx/rdi reloaded at 6bc0 from [rsp+0x90]/[rsp+0x98] (invariant), r14 untouched (inc at 6bd0), r15 rewritten 6bf2 before use, rbp written 6f02 before use, rsp never changes 6ee1..787b, xmm6/9/11/12 never written in range and xmm7/8/13/14 reloaded 6c3c. Hook sets r12,r13,rsi = full set; misses nothing. Empty vector ([rsp+0xa8]=0) takes je 787e to 6bc0 and never reaches the free; non-null begin frees via [rsp+0xa0] vcall+0x38 as normal. No branch in fn lands in 787c..787f; only fallthrough from call 7876 reaches 787b."
+  }
+ ],
+ "proofs": []
+}

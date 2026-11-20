@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_CompressedSave_OnReadResult",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14364bb50",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-CompressedSaveDataSerialiser decomp:re/decomp/14364bb50.c",
+  "notes": "named from its log messages (channel CompressedSaveDataSerialiser): 'Received file read request, result is not ok '%s' | Received file read request results when we didn't expect them | File read request returned unexpected results'. w4r 2026-10-28 (decomp 0x14364c2de-0x14364c6b3): the whole profile decodes here, not in SAVE_DATA. Parent heap = Game_CompressedSave_GetTempHeaps()[[serialiser+8]+0 != 0 ? 0 : 1] (SAVE_TEMP_ALLOC 75M or SAVE_TEMP_ALLOC_HUGE 200M); its largest free block (heap vt+0x80(heap,1), the 'Largest' of Ne_ReportMemoryError) is allocated (vt+0x18) and made a pool named SAVE_PROPERTY_BAG_TEMP (Ne_Init_TempPool_Thunk); the root bag {pool, 0, 0} is filled by Ne_BagCodec_ReadBag (raw 0x14364c64f or through the decompressing stream 0x14568e190 at 0x14364c49c), handed to 0x14364c6f0 (root deserialise, .data1 0x150b11430), then Ne_Bag_Clear and Game_CompressedSave_FreeTempPool_Thunk free it all. Unclaimed root children are therefore freed with the pool at the end of the load."
+ },
+ "signature": {
+  "id": "game.compressed_save_on_read_result",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 B8 D0 11 00 00 E8",
+  "match": "0x14364bb50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14364bb50",
+  "kind": "func_start",
+  "names": [
+   "Game_CompressedSave_OnReadResult"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "save-v2",
+   "kind": "func",
+   "item": "Game_CompressedSave_OnReadResult",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14364bb50.c;decomp:re/decomp/14395eb80.c;decomp:re/decomp/14395f5c0.c;decomp:re/decomp/14395f6e0.c;xref:0x14364c57c,0x14364c607,0x14395ec13",
+   "notes": "V1479 Load overflow: the pool's allocator Ne_TempPool_Alloc reports error 0xc through Ne_TempPool_ReportError, which is fatal (Ne_FatalAbort) when pool+0x80 bit 0 is set. That bit is serialiser+0x512 (pool name block +0x20 at 0x14364c55x; the init copies it at .data1 0x151e53ac8), and the profile's save jobs set it to 1 (Game_CompressedSave_Construct_Thunk notes). So a profile load that outgrows the largest free block is fatal heap error 0xc; the 25 MB mid-session builder 0x14365a320 passes 0 and only gets 0xc back."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x14364bb50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14364bb50.c",
+   "notes": "V6101 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

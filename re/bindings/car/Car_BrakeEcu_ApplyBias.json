@@ -1,0 +1,81 @@
+{
+ "schema": 1,
+ "name": "Car_BrakeEcu_ApplyBias",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144676250",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144676250.c;xref:0x140619eb9;kb:subsystems/car.md#brakeecu",
+  "notes": "arg = BrakeECU system. b = bias +0x21d8: b <= 0.5 -> w = clamp(2b), front = BrakeFront*w + BrakeFrontBackwards*(1-w), rear = BrakeRear*w + BrakeRearBackwards*(1-w); b > 0.5 -> w = clamp(2(1-b)) with the *Forwards torques. Both x brake pressure +0x21dc, then stored as CarObfFloat into each wheel's max brake torque wheel+0xf8 (key +0x100): rear to SuspensionSystem wheels +0x70/+0x78, front to +0x80/+0x88, skipping wheels whose byte +0x138 is set. radUpgradeBrakes (x1.4 on all six torques) reaches the wheels only when this runs. Caller 0x140619e70."
+ },
+ "signature": {
+  "id": "car.brake_ecu_distribute_torque",
+  "section": ".xtls",
+  "pattern": "48 83 EC 18 C5 F8 29 34 24 8B 81 08 20 00 00 8B",
+  "match": "0x144676250",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144676250",
+  "kind": "func_start",
+  "names": [
+   "Car_BrakeEcu_ApplyBias"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v3",
+   "kind": "func",
+   "item": "Car_BrakeEcu_ApplyBias",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144676250.c;xref:0x140619eb9",
+   "notes": "V1301 b = +0x21d8; b <= 0.5: w = clamp(2b), Front/Rear with Backwards (+0x2008/+0x2018 vs +0x2028/+0x2038); else w = clamp(2(1-b)) with Forwards (+0x2048/+0x2058); x pressure +0x21dc; rear to [[sys+8]+0x580]+0x70/+0x78, front +0x80/+0x88 at wheel+0xf8 ^ wheel+0x100, skipped when byte wheel+0x138 set. Only caller 0x140619eb9 in 0x140619e70."
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "cg-verify",
+   "kind": "func",
+   "item": "Car_BrakeEcu_ApplyBias",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x144676289,0x14467637f",
+   "notes": "V1672 cg-verify: bias vs 0.5, xor eax,[rdx+0x100]; mov [rdx+0xf8],eax per wheel"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "cg-verify",
+   "kind": "func",
+   "item": "Car_BrakeEcu_ApplyBias",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x144676289,0x14467637f",
+   "notes": "V3909 cg-verify: bias vs 0.5, xor eax,[rdx+0x100]; mov [rdx+0xf8],eax per wheel"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x144676250",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144676250.c;xref:0x140619eb9",
+   "notes": "V6739 bias 0x21d8 vs 0.5, pressure 0x21dc, wheel +0xf8 xor +0x100 skip +0x138 verified"
+  }
+ ],
+ "proofs": []
+}

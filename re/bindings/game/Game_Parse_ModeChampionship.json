@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Parse_ModeChampionship",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1407b2c60",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1407b2c60.c",
+  "notes": "reads game_modes.ModeChampionship_N flags: flying_lap_allowed, return_to_garage_allowed, simulation_allowed, terminal_damage_enabled, allowPause, allowReplay, AllowFlashbackFromTerminal, allowSlowMo, allowMidSessionSimulation (false in all 29 modes), allowCheckpoints, allowSingleRaceStandings, allowTutorialNotifications, local_multiplayer_enabled, allowAIAutoReset, allow_player_custom_pose, usesAlternateSafetyRating, show_mode_intro_cutscene, optionRestrictions, usesChampionships, return_to_fe_between_weekends, event_list."
+ },
+ "signature": {
+  "id": "game.parse_mode_championship",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 0A 00 00 C5 F8 29 BC 24 D0 0A 00 00",
+  "match": "0x1407b2c60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407b2c60",
+  "kind": "func_start",
+  "names": [
+   "Game_Parse_ModeChampionship"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb02-verify",
+   "kind": "func",
+   "item": "0x1407b2c60",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1407b2c60.c",
+   "notes": "V4300 all 21 flag strings present, but ModeChampionship_N prefix and 29 modes not visible in this function; flags parser OK"
+  }
+ ],
+ "proofs": []
+}

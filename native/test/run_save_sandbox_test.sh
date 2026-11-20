@@ -7,20 +7,18 @@
 set -euo pipefail
 SELF=$(readlink -f "$0")
 cd "$(dirname "$SELF")"
-if ! command -v wine >/dev/null || ! command -v xvfb-run >/dev/null || ! command -v zig >/dev/null; then
-    exec nix shell nixpkgs#zig nixpkgs#wineWow64Packages.stable nixpkgs#xvfb-run -c "$SELF" "$@"
-fi
+NEEDS="zig wine xvfb-run"
+. "$(dirname "$SELF")/lib/env.sh"
 . ./game_lock.sh
 export ZIG_GLOBAL_CACHE_DIR=$PWD/../build/zig-cache ZIG_LOCAL_CACHE_DIR=$PWD/../build/zig-cache
 OUT=$(realpath -m "${1:-$PWD/../build/save-sandbox-test}")
-PIN=(taskset -c 2-7,10,11,14-31 nice -n 10)
 rm -rf "$OUT/game" "$OUT/runs" "$OUT/steam"
 mkdir -p "$OUT/game" "$OUT/runs" "$OUT/steam"
 status=0
-"${PIN[@]}" zig c++ -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness -I../../packages/sdk/include \
+"${PIN[@]}" zig c++ -I../src -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness -I../../packages/sdk/include \
     -o "$OUT/save_sandbox_test" save_sandbox_test.cpp
 "$OUT/save_sandbox_test" "$OUT/host-folder" || status=1
-"${PIN[@]}" zig c++ -target x86_64-windows-gnu -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness \
+"${PIN[@]}" zig c++ -target x86_64-windows-gnu -I../src -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness \
     -I../../packages/sdk/include -o "$OUT/save_sandbox_test.exe" save_sandbox_test.cpp
 "${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -o "$OUT/game/F1_25.exe" fake_save_sandbox.c -lversion -luser32
 cp -r ../dist/. "$OUT/game/"

@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Game_App_SetPauseReason",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14080e110",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14080e110.c;xref:0x142d6a8e0,0x142d742e0;decomp:re/decomp/14080e110.c;xref:0x142d742e0",
+  "notes": "(app, char set, int bit): sets/clears bit in pause-reason mask app+0x210 (array of u32); on transition to/from 0 walks 'application_object' worker list (app+0x30) and wakes them (Ne_Event_Set). Callers: Sess_State_Pause/Unpause, Sess_GarageState_OnStateExit, Sess_NetJournalMonitorState_OnEnter/OnExit. Addon: why the game is paused. pause-reason bit set/clear (rcx app, dl set, r8d bit; mask dwords at app+0x210); bit 0 is the one SessionStateNetJournalMonitor (0x142d742e0) and 15 other callers set. Hooked at entry by the view state for a diagnostic mask only."
+ },
+ "signature": {
+  "id": "game.app_set_pause_reason",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 89 D3 48 89 CE 84 D2",
+  "match": "0x14080e110",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14080e110",
+  "kind": "func_start",
+  "names": [
+   "Game_App_SetPauseReason"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/frontend/view_state.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14080e110",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14080e110.c;xref:0x142d76068,0x142d77c78",
+   "notes": "V3796 pause-reason mask bit set/clear, 'application_object' worker list walk, Ne_Event_Set; callers Sess_State_Pause/Unpause, GarageState_OnStateExit, NetJournalMonitorState seen"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_Sort_Introsort_Pair16_B",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143f122d0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143f122d0.c;xref:0x143b7cd34,0x143f123e9,0x143f129f8",
+  "notes": "Hypothesis: Twin of 0x143f10c10 (different comparator instantiation). Named callers: Ne_Gfx2Renderer_RenderFrame."
+ },
+ "signature": {
+  "id": "core.sort_introsort_pair16_b",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 85 DB 0F 84 ?? ?? ?? ?? 4C 8D 63 FF 49 83",
+  "match": "0x143b7cd34",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143f122d0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Sort_Introsort_Pair16_B"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x143f122d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143f122d0.c;xref:0x143b7cd34",
+   "notes": "V8166 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

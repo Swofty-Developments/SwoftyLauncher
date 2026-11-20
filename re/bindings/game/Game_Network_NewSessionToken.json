@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_NewSessionToken",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14305af60",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK",
+  "notes": "named from its log messages (channel NETWORK): '%s: new session token: %d'"
+ },
+ "signature": {
+  "id": "game.network_new_session_token",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 02 00 00 C5 F8 29 B4 24 40 02 00 00 89 D3 48 89 CE",
+  "match": "0x14305af60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14305af60",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_NewSessionToken"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x14305af60",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/14305af60.c;xref:0x143056b98",
+   "notes": "V5497 772 lines = GameSessionManager::onHostMigrationComplete (result log, leave(), privacy from attribs, openDocument, hostMigrated); session token log only a sub-step. Better: Game_GameSessionManager_OnHostMigrationComplete"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x14305af60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14305af60.c;xref:0x143056b97",
+   "notes": "V6939 772 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

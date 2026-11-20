@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkContent_SendingAvailabilityAs",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14303c7c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-CONTENT/V",
+  "notes": "named from its log messages (channel NETWORK-CONTENT/V): 'Sending availability for %s as %016llX (to %d)'"
+ },
+ "signature": {
+  "id": "game.network_content_sending_availability_as",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 81 EC B8 00 00 00 44 89 C5",
+  "match": "0x14303c7c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14303c7c0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkContent_SendingAvailabilityAs"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x14303c7c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14303c7c0.c;xref:0x14303b88a",
+   "notes": "V5444 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Player_SetFFBInputDeviceId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434d82d0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/1434d82d0.c;xref:0x1434d9647;doc:re/db/subsystems/core.md",
+  "notes": "cxx=NePlayer::setFFBInputDeviceId; log channel FFB_DEBUG: 'NePlayer::setFFBInputDeviceId -- old: %s -- new:%s' | dcso-verify claim 12 (agent options): this function also applies the user input curves per frame: deadzone x = (r -+ dz)/(1-dz), y = clamp((2*sat+1)*(lin*x^3 + (1-lin)*x), -1, 1) for steer/throttle/brake -> Player +0x4e0 (0x1434d9647) / +0x4d8 (0x1434d9a70) / +0x4dc (0x1434d9bd4); scheme floats +0xe0 rate scale, +0xe4..+0x104 dz/lin/sat; F1Assists+0x23f4 = steering_rate_scale. Name kept (log anchor) - likely a larger InputPlayer_UpdateDrivingAxes"
+ },
+ "signature": {
+  "id": "core.player_set_ffb_input_device_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 02 00 00 C5 78 29 84 24 B0 02 00 00 C5 F8 29 BC 24 A0 02 00 00 C5 F8 29 B4 24 90 02 00 00 48 89 CE",
+  "match": "0x1434d82d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434d82d0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Player_SetFFBInputDeviceId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "dcso-verify",
+   "kind": "func",
+   "item": "Ne_Player_SetFFBInputDeviceId",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434d82d0.c;xref:0x1434d9647",
+   "notes": "V1699 claim 12 curve formula"
+  }
+ ],
+ "proofs": []
+}

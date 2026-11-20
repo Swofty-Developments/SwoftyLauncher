@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_Cosf",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145353af0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/145353af0.c;xref:0x142bd2f86,0x14338ed23,0x14339d41d",
+  "notes": "CRT float cos (pi/2 range reduction 0.6366, sign by (q+1)>>1, large-arg path 0x145372bc0). 73 callers (photo mode, render). Hypothesis sin/cos (sign rule fits cos). (73 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "core.crt_cosf",
+  "section": ".xtls",
+  "pattern": "48 83 EC 68 83 3D ?? ?? ?? ?? 00 0F 85 ?? ?? ?? ?? 66 0F 57 D2 66 0F 7E C2 B8 00 00 80 7F 44 8B D0 44 23 D2 44 3B D0 0F 84 ?? ?? ?? ?? F3 0F 5A",
+  "match": "0x145353af0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x145353af0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_Cosf"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb24-verify",
+   "kind": "func",
+   "item": "0x145353af0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/145353af0.c;xref:0x142bd2f86",
+   "notes": "V6653 even quadrant -> cos poly, odd -> sin poly, sign (q+1)>>1 &1 => cosf; |x|<2^-12 returns 1.0; 0.6366 = 2/pi; caller Game_PhotoModeHelper_Create3dPhoto"
+  }
+ ],
+ "proofs": []
+}

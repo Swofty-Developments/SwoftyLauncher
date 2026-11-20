@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_VmBinding_ClearTargetDirty",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1442bc5b0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1442bc5b0.c;xref:0x140828501",
+  "notes": "Counterpart: when flags &6==6, resolves target and clears flag 4 after the target evaluates; same property-setter callers (Vm_NodeSet_String/Bool, Ne_Property_SetS32/S64IfChanged, Ne_VmNode_SetFloat)."
+ },
+ "signature": {
+  "id": "core.vm_binding_clear_target_dirty",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 48 0F B6 41 60 F6 D0 A8 06 0F 85",
+  "match": "0x1442bc5b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442bc5b0",
+  "kind": "func_start",
+  "names": [
+   "Ne_VmBinding_ClearTargetDirty"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x1442bc5b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1442bc5b0.c;xref:0x140828501",
+   "notes": "V8391 condition inverted: acts when (flags&6)!=6"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ent_EntrantsSystem_AddTeamCustomisation",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142473670",
+  "level": "L1",
+  "subsystem": "entrants",
+  "proto": "-",
+  "evidence": "pat:log-channel-ENTRANTS_SYSTEM",
+  "notes": "named from its log messages (channel ENTRANTS_SYSTEM): 'team customisation added with stat id %s | Couldn't find array to add team customisation with type %s | Failed to add team customisation with stat id %s'"
+ },
+ "signature": {
+  "id": "entrants.entrants_system_add_team_customisation",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 30 01 00 00 4C 89 C7 48 8B 89 08 03 00 00",
+  "match": "0x142473670",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142473670",
+  "kind": "func_start",
+  "names": [
+   "Ent_EntrantsSystem_AddTeamCustomisation"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142473670",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142473670.c;xref:0x141401afa",
+   "notes": "V5060 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

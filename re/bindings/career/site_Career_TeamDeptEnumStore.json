@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "site_Career_TeamDeptEnumStore",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142774258",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/14276fda0.c;kb:subsystems/career.md#team-dept-enum;decomp:re/decomp/14276fda0.c;xref:0x142774258;doc:addons/rnd-tyres-thermal/native/HOOKS.md#the-mixin-1-hook",
+  "notes": "mov byte [rdi+0x340],cl in Ent_Parse_TeamSetupRow, storing the team department enum resolved from the setup-row field boost_category_type. On the non-empty path rax = ci-FNV-1a-64 of the token and cl = the resolved enum (0 default, 1 Powertrain, 2 Chassis, 3 Aero, 4 Tyres; unknown -> 0). On the null/empty paths (via 0x142774256, xor ecx,ecx) cl = 0 and rax is a field-record pointer, not a hash. Single site."
+ },
+ "signature": {
+  "id": "career.team_dept_enum_store",
+  "section": ".xtls",
+  "pattern": "75 06 B1 03 EB 02 31 C9 88 8F 40 03 00 00",
+  "match": "0x142774250",
+  "anchor": "0x8",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142774258",
+  "kind": "mid",
+  "expect": "88 8F 40 03 00 00",
+  "names": [
+   "site_Career_TeamDeptEnumStore"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-19",
+    "by": "career-re",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-4",
+   "kind": "global",
+   "item": "site_Career_TeamDeptEnumStore",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14276fda0.c;xref:0x1427739a5,0x1427741bf,0x1427741cc,0x1427741d5,0x142774232,0x142774245,0x1427743d9,0x1427743e8,0x142774256,0x142774258",
+   "notes": "V0169 Store and mapping right: ci-FNV-1a-64, Powertrain 0xeacc53611edf399c=1, Chassis=2, Aero=3, Tyres 0xac9965efa31b61d0=4, else 0; Aero/Tyres/Powertrain imms unique; 6-byte window clean. Off: rax is the hash only for a non-empty token. The je 0x1427741bf/0x1427741cc (null/empty) paths reach the store through 0x142774256 with cl=0 and rax = field-record pointer. The token is the setup-row field boost_category_type (0x14579f32b), and the function is Ent_Parse_TeamSetupRow"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-5",
+   "kind": "global",
+   "item": "site_Career_TeamDeptEnumStore",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14276fda0.c;xref:0x1427741bf,0x1427741cc,0x1427741f0,0x14277421b,0x142774227,0x142774250,0x142774256,0x142774258,0x1427743d7,0x1427743f9,0x142774400,0x142774407,0x142770b05",
+   "notes": "V0205 sigcheck OK; 6-byte mov byte [rdi+0x340],cl window, all branches land on its start; token from Gdb field boost_category_type, lowercasing FNV-1a-64: powertrain 0xeacc53611edf399c->1, chassis 0x184f58717a1a6a3f->2, aero 0xd0fae783d5a9fb7c->3, tyres 0xac9965efa31b61d0->4, else 0; null/empty via 0x142774256 with rax = field record+0x38. Only store of the parsed value; note the case-7 ctor pre-sets the same byte to 1 at 0x142770b05 before the parse overwrites it"
+  }
+ ],
+ "proofs": []
+}

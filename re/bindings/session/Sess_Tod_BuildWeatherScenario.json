@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Tod_BuildWeatherScenario",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14461bea0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-WEATHER_LOGIC;decomp:re/decomp/14461bea0.c;xref:0x14461b5a1,0x14461ba8e,0x14461bb27,0x14461c056",
+  "notes": "Log channel WEATHER_LOGIC: 'vvvvvvvvvvvvv Initialising weather scenario %s... vvvvvvvvvvvvv' | 'Calculated that weather dataset %s should have %u states' | 'Not enough weather states; Filled weather states with simply 2 '%s'' | 'Session length %.2f not long enough for weather transitions (%.2f < %.2f)' | 'Total extra states coun"
+ },
+ "signature": {
+  "id": "session.weather_init_scenario",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 0B 00 00",
+  "match": "0x14461bea0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14461bea0",
+  "kind": "func_start",
+  "names": [
+   "Sess_Tod_BuildWeatherScenario"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb5-verify",
+   "kind": "func",
+   "item": "Sess_Tod_BuildWeatherScenario",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14461bea0.c;xref:0x14461b5a1,0x14461ba8e,0x14461bb27,0x14461c056",
+   "notes": "V1981 lea xrefs inside body to the init/should-have/not-enough/not-long/total-extra strings (channel WEATHER_LOGIC)"
+  }
+ ],
+ "proofs": []
+}

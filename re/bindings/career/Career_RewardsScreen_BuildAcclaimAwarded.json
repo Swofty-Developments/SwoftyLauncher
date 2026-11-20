@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_RewardsScreen_BuildAcclaimAwarded",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141d29b00",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *vm",
+  "evidence": "decomp:re/decomp/141d29b00.c;xref:0x141d299e9",
+  "notes": "myteam-g1: Large rewards screen builder reacting to acclaim_awarded (driver/team acclaim reward lines)."
+ },
+ "signature": {
+  "id": "career.rewards_screen_build_acclaim_awarded",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 05 00 00 C5 79 7F AC 24 90 05 00 00",
+  "match": "0x141d29b00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141d29b00",
+  "kind": "func_start",
+  "names": [
+   "Career_RewardsScreen_BuildAcclaimAwarded"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141d29b00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141d29b00.c;xref:0x141d299e9",
+   "notes": "V10005 Rewards screen with acclaim_awarded, cash_awarded, medals, breakdown_info."
+  }
+ ],
+ "proofs": []
+}

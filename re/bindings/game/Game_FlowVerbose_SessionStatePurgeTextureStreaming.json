@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FlowVerbose_SessionStatePurgeTextureStreaming",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d86f00",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-FLOW_VERBOSE",
+  "notes": "named from its log messages (channel FLOW_VERBOSE): 'SessionStatePurgeTextureStreaming - pause texture streaming'"
+ },
+ "signature": {
+  "id": "game.flow_verbose_session_state_purge_texture_streaming",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 80 B9 B0 0D 00 00 00",
+  "match": "0x142d86f00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d86f00",
+  "kind": "func_start",
+  "names": [
+   "Game_FlowVerbose_SessionStatePurgeTextureStreaming"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142d86f00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d86f00.c",
+   "notes": "V5415 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

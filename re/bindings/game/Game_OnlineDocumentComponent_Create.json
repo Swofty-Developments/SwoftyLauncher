@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineDocumentComponent_Create",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d03250",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140d03250.c;xref:0x14568a580",
+  "notes": "Component factory create (vtable slot 0x14568a580): Gdb_FindMetadata for the component, decodes its metadata name into a buffer, allocates 0x2b0 bytes and constructs an OnlineDocumentComponent (vtables 0x145678330 and +0x208 0x1456785b0); logs GAME 'OnlineDocumentComponent()'. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2440)"
+ },
+ "signature": {
+  "id": "game.online_document_component_create",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 02 00 00 4C 89 CE 4D 89",
+  "match": "0x140d03250",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d03250",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineDocumentComponent_Create"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-a",
+   "kind": "func",
+   "item": "Game_OnlineDocumentComponent_Create",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d03250.c;xref:0x140d03250",
+   "notes": "V2440 Role, offsets and calls checked against decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

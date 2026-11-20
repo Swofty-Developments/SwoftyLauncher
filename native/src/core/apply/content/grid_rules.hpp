@@ -1,7 +1,7 @@
 #pragma once
 
-#include "lower.hpp"
-#include "../../box_grid_logic.hpp"
+#include "core/apply/content/lower.hpp"
+#include "core/boxes/box_grid_logic.hpp"
 
 #include <optional>
 #include <string>
@@ -58,8 +58,7 @@ inline GridPick grid_pick(const std::string &entrant_list, const std::vector<std
     r.rule_107 = g["rule_107"].is_bool() && g["rule_107"].as_bool();
     p.rule = r;
     p.line = "box " + entrant_list + " (" + p.package + "): grid rule " + bg::describe(r) +
-             (r.reranks() ? "" : " (the game's own order)") +
-             (r.rows.empty() ? "" : "; rows move the race grid's slots");
+             (r.reranks() ? "" : " (the game's own order)") + (r.rows.empty() ? "" : "; rows move the race grid's slots");
     return p;
 }
 

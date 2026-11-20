@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_CareerWizard_ReleaseItemWidgets",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143875010",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_CareerWizard_ReleaseItemWidgets(void *wizard, uint8_t flag)",
+  "evidence": "decomp:re/decomp/143875010.c;xref:0x141725dd1;xref:0x14172606b;xref:0x14173429c",
+  "notes": "myteam-g2: Walks the item list at (wizard+0xd0)+0x50 and releases the pooled widget id (short at node+0x1c) through func 1428eb830 using wizard+0x30; used when the My Team wizard season-length step or Konnersport description refreshes."
+ },
+ "signature": {
+  "id": "ui.career_wizard_release_item_widgets",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 83 B9 D0 00 00 00 00",
+  "match": "0x143875010",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143875010",
+  "kind": "func_start",
+  "names": [
+   "Ui_CareerWizard_ReleaseItemWidgets"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x143875010",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143875010.c;xref:0x141725dd1",
+   "notes": "V10332 Walks list at +0xd0/+0x50, releases ids via 1428eb830 with wizard+0x30."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,41 @@
+{
+ "schema": 1,
+ "name": "site_Render_MainViewParamsCall",
+ "table": "globals",
+ "author": "jonnoAUS",
+ "row": {
+  "addr": "0x1401583d0",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "render",
+  "evidence": "decomp:own capstone disasm 0x140157d90-0x140158a63;xref:0x1401583d0,0x1401583d5,0x143be0360;doc:re/research/weather_strategy_bindings.md#sites",
+  "notes": "The main 3D view's call to Render_SceneView_BuildViewParams (rcx = view params block). Realistic Rain matches a hook's return address (site+5) to keep only the main camera. Proposed L2 (render inbox)."
+ },
+ "signature": {
+  "id": "render.main_view_params_call",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 42 83 BC BE F4 0A 00 00 00",
+  "match": "0x1401583d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401583d0",
+  "kind": "mid",
+  "expect": "E8",
+  "names": [
+   "site_Render_MainViewParamsCall"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-17",
+    "by": "rr-bindings",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

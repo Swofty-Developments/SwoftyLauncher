@@ -1,0 +1,43 @@
+{
+ "schema": 1,
+ "name": "site_Career_TeamHqAdvanceRecordNode",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1419b478d",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/1419b4390.c;xref:0x1419b478d,0x1419b4438",
+  "notes": "mov rax,[rbx+0x2c0] (7 bytes) in Career_TeamHqAdvance_BuildTrackNode, the second read of the track record's node, after the call to 0x140828440. rbx = the TrackDataRecord, 0 when the event's track id is past the TrackDataSystem +0x28..+0x30 item vector (jbe at 0x1419b4426) or its item is empty (je at 0x1419b4438), as for Paul Ricard (stat id 1). The next instructions test rax and use r13 (empty node handle). Core resumes at +7 with rax 0 when rbx is 0. L1: subsystem career is owned by career-re, which has to raise it to L2."
+ },
+ "signature": {
+  "id": "career.team_hq_advance_record_node",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 83 C0 02 00 00",
+  "match": "0x1419b4788",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419b478d",
+  "kind": "mid",
+  "expect": "48 8B 83 C0 02 00 00",
+  "names": [
+   "site_Career_TeamHqAdvanceRecordNode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-02",
+    "by": "teamhq-track",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/career/teamhq_track_guard.cpp"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

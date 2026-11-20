@@ -1,0 +1,73 @@
+{
+ "schema": 1,
+ "name": "FeFlow_StateIntro_OnUpdate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436da4d0",
+  "level": "L1",
+  "subsystem": "fe_flow",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1436da4d0.c;xref:0x14585c038;decomp:re/decomp/1436da4d0.c;xref:0x14585c038",
+  "notes": "StateIntro (title, flow djb2 0xa4d3a4b2) onStateUpdate, slot 9 of vt_Sess_Intro 0x14585bff0. Stays (g_Game_FlowLinkStay) until the title sync point state+0xcd0 reports ready: 0x1442626c0(state+0xcd0) is true when both VM bool nodes at +0xcd0+0x80 and +0xcd0+0xa0 are true (set by the UI on the any-button press). Then once (+0xef3) it sends request 0x14388bbe0([state+0xca8], ..., kind 0x2e, callback FeFlow_StateIntro_OnEngaged); when +0xef4 is set it logs/records press_start_to_front_end (press_start_to_skip_fe with [[state+0xc90]+0x778]+0xa0) and returns the link at 0x146cb2288. Interrupt kind 0xe returns link 0x146cb2294. ts3b. ts-v1 read it independently (V1486, agree) and wrote the signature; the lane owner ui-re can raise it to L2 on that verify"
+ },
+ "signature": {
+  "id": "fe_flow.state_intro_on_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 70 48 89 D6 48 89 CF 48 8B 89 F8 0B 00 00",
+  "match": "0x1436da4d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436da4d0",
+  "kind": "func_start",
+  "names": [
+   "FeFlow_StateIntro_OnUpdate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "ts-v1",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/testing/agent/agent.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "ts-v1",
+   "kind": "func",
+   "item": "0x1436da4d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436da4d0.c;xref:0x14585c038",
+   "notes": "V1486 ts-v1 independent re-read: slot 9 (vt+0x48) of vt_Sess_Intro 0x14585bff0 (the only lea is 0x1437b562e); leaves FlowLinkStay until Vm_SyncPoint_IsComplete(state+0xcd0) and the title view [[state+0xc88]+0x140]+0x198 is non-null; +0xef3 once-flag then the kind 0x2e request with FeFlow_StateIntro_OnEngaged; +0xef4 set returns g_FeFlow_IntroLinkFrontend. Agrees with the row."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "load-game",
+   "date": "2026-11-17",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1436da4d0",
+    "target": "0x1436da4d0"
+   },
+   "sigcheck": "passed",
+   "digest": "73e2381ba72b2a6d11921beeb88fe7f9f37f42430968c0635dc21f3dbbff6010"
+  }
+ ]
+}

@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Career_Complete_PerkTreeNode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ea5fe0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint8_t Career_Complete_PerkTreeNode(void *node)",
+  "evidence": "decomp:re/decomp/142ea5fe0.c;xref:0x140f811c7,0x140f8a24d,0x14100e286,0x141018815;doc:addons/career-editor/protocol/facilities.md#engine-paths;decomp:re/decomp/142ea5fe0.c;xref:0x140f811c7,0x140f8a24d;decomp:re/decomp/140f8a1a0.c;doc:addons/career-editor/protocol/facilities.md#engine-paths",
+  "notes": "Perk-tree node completion (facility upgrades and the other perk trees): if node+0x08 == 1 and vtable+0x20 (isComplete: days_remaining +0xac == 0 and purchased +0xb0) -> node+0x08 = 2, vtable+0x38 (claim rewards; facility nodes: 0x140f8d8d0, posts MessageFacilityUpgradeComplete), then each child in +0x20..+0x28 (16-byte shared_ptrs) with state 0 whose vtable+0x18 passes -> state 1 and vtable+0x30. Returns 1 when it completed. Called by the facility daily tick when days_remaining reaches 0 and by the unlock-at-start pass 0x140f8a1a0."
+ },
+ "signature": {
+  "id": "career.complete_perk_tree_node",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 28 80 79 08 01",
+  "match": "0x142ea5fe0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ea5fe0",
+  "kind": "func_start",
+  "names": [
+   "Career_Complete_PerkTreeNode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-rnd",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/facilities.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-1",
+   "kind": "func",
+   "item": "Career_Complete_PerkTreeNode",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142ea5fe0.c;decomp:re/decomp/140f8e5d0.c;decomp:re/decomp/140f8d8d0.c;xref:0x140f811c7,0x140f8a24d,0x14100e286,0x141018815",
+   "notes": "V0236 1 arg, returns al 0/1; children also need child+0x10 (the parent set by create 0x140f8a5f0) null or state 2, which holds here since the node was just set to 2; daily tick 0x140f80f60 calls it when +0xac is 0 or decrements to 0 (purchased, state != 2); 0x140f8a1a0 sets +0xb0=1 for unlock_at_start (+0xb5) first; other callers 0x14100de50, 0x141018480"
+  }
+ ],
+ "proofs": []
+}

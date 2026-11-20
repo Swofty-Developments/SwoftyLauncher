@@ -1,0 +1,81 @@
+{
+ "schema": 1,
+ "name": "Ai_Table_InterpolateA",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14068b710",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "float Ai_Table_InterpolateA(void *table, float x, float y, float (*cell_get)(void *cell, float x, float y), const float *cursor)",
+  "evidence": "decomp:re/decomp/14068b710.c;xref:0x140606f03,0x14060704a,0x140619364,0x1406216e4,0x14063c1f4,0x1406547f4,0x140680de9,0x140680fff,0x1406814fc,0x1406815dc,0x1434be8b7,0x1434ccaea,0x140651f3f",
+  "notes": "Builds 8 cell indices from cursor brackets (+0x18/+0x20 axis 0, +0x28/+0x30 axis 1, +0x38/+0x40 axis 2, fixed index +0x58) with strides table+0x190, +0x1a0, +0x1a8; calls cell_get([table+0x10][idx], x, y) once per distinct index (memoised). Trilinear blend: axis 2 values table+0xe8 key cursor[2], axis 1 values +0xb8 key cursor[1], axis 0 values +0x58 key cursor[0] only when table+0x190 > 1; equal bracket values skip the lerp. No clamping inside (brackets come from the cursor). 13 references (callers incl. Ai_TestTable_LookupByTimeSpeed, Ai_TestGraph_EvalDistanceSpeedB, Ai_Lookahead_AdvancePhase, Ai_SpeedPlan_EvalAtDistance, Ai_BehaviourTestRetire_Update, Game_PitLane_UpdateLimitZones). (corrected 2026-11-14: was 'clamped'; caller list was 3 of 13.) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.table_interpolate_a",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC C0 00 00 00 C5 78 29 84 24 B0 00 00 00 C5 F8 29 BC 24 A0 00 00 00 C5 F8 29 B4 24 90 00 00 00 4C 89 CF C5 F8 28 F2 48 89 CE 48 8B 9C 24 10 01 00 00 48 8B 53 28 48",
+  "match": "0x14068b710",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14068b710",
+  "kind": "func_start",
+  "names": [
+   "Ai_Table_InterpolateA"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14068b710",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14068b710.c;xref:0x140606f03",
+   "notes": "V3575 table interpolation with getter and key; but decomp uses only strides +0x1a0 and +0x1a8 (2 axes), no +0x190 stride as claimed"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14068b710",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14068b710.c;xref:0x140606f03",
+   "notes": "V4004 table interpolation with getter and key; but decomp uses only strides +0x1a0 and +0x1a8 (2 axes), no +0x190 stride as claimed"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la0-verify",
+   "kind": "func",
+   "item": "0x14068b710",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14068b710.c;xref:0x140606f03,0x14060704a",
+   "notes": "V4096 strides +0x190..+0x1a8 multi-dim lookup, callers BehaviourTestRetire_Update, PitLane_UpdateLimitZones, Calc_TestLimits confirmed"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x14068b710",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14068b710-0x14068bb62;xref:0x140606f03,0x14060704a,0x140619364,0x1406216e4,0x14063c1f4,0x140651f3f,0x1406547f4,0x140680de9,0x140680fff,0x1406814fc,0x1406815dc,0x1434be8b7",
+   "notes": "V10623 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). 13 call sites (also 0x1434ccaea; 0x140651f3f in Ai_Build_SpeedProfileAhead is not in the row evidence list). 5 args (rcx, xmm1, xmm2, r9 getter, stack cursor). Reads cursor +0x18..+0x40, +0x58 and table +0x190/+0x1a0/+0x1a8 strides, +0x10 cells, axes +0x58/+0xb8/+0xe8."
+  }
+ ],
+ "proofs": []
+}

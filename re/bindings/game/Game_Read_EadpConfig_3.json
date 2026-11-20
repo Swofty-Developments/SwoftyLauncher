@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_EadpConfig_3",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1449c070c",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: eadp.director.retry.interval, eadp.director.retry.intervalMultiplier, eadp.director.useHardcodedConfig.interval'"
+ },
+ "signature": {
+  "id": "game.read_eadp_config_3",
+  "section": ".xtls",
+  "pattern": "48 89 9C 24 98 00 00 00 48 8D 55 B0",
+  "match": "0x1449c070c",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1449c070c",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_EadpConfig_3"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb24-verify",
+   "kind": "func",
+   "item": "0x1449c070c",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1449c070c.c",
+   "notes": "V6651 reads eadp.director.retry.interval/intervalMultiplier/useHardcodedConfig.interval; no direct caller (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

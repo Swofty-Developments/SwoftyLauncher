@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Rnd_ShowTabUpgradesInProgress",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c434d0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void FUN(void *view, void *ctx)",
+  "evidence": "decomp:re/decomp/141c434d0.c;xref:0x141c41cd0",
+  "notes": "myteam-g1: UI binding code; tab_content_rnd_upgrades_in_progress. Static, string-key driven."
+ },
+ "signature": {
+  "id": "ui.rnd_show_tab_upgrades_in_progress",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 70 4D 89 CC",
+  "match": "0x141c434d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c434d0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Rnd_ShowTabUpgradesInProgress"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141c434d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c434d0.c;xref:0x141c41cd0",
+   "notes": "V9958 Shows tab_content_rnd_upgrades_in_progress with lng_r_and_d_in_progress, dispatches events."
+  }
+ ],
+ "proofs": []
+}

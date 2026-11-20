@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "g_Gdb_Database",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x146cc4278",
+  "type": "GdbDatabase *",
+  "level": "L2",
+  "subsystem": "gamedb",
+  "evidence": "decomp:re/decomp/1445a0350.c;decomp:re/decomp/1445a22f0.c;xref:0x1445a053e,0x1445a22fe;kb:subsystems/gamedb.md#value-map",
+  "notes": "The game value database. Written once by Gdb_Load_GameDatabase (0x1445a053e, = db before the map is filled); read by every key lookup (590 .xtls + 39 .data1 sites, all inlined Gdb_Lookup_Key probes reading mult/keyvals/info/mask/info_inc/shift; none reads map count, max or the map base, so a larger map needs no other change). Core: gamedb.cpp S_GLOBAL"
+ },
+ "signature": {
+  "id": "gamedb.database",
+  "section": ".xtls",
+  "pattern": "49 B8 25 23 22 84 E4 9C F2 CB 48 8B 15",
+  "match": "0x1445a22f4",
+  "anchor": "0xd",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0xa",
+   "len": 7
+  },
+  "target": "0x146cc4278",
+  "kind": "data",
+  "names": [
+   "g_Gdb_Database"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "w7-sizing",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "w7v",
+   "kind": "global",
+   "item": "g_Gdb_Database",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445a0350.c;decomp:re/decomp/1445a22f0.c;xref:0x1445a053e,0x1445a22fe,0x154e436ce;sig:gamedb.database",
+   "notes": "V1352 0x146cc4278: the only store is 0x1445a053e (mov [rip],r12, db, right after the map init and before the file load); the other 628 refs (.xtls+.data1) are mov reg,[rip] loads, none writes through the pointer. The sig resolves the riprel load at 0x1445a22fe in Gdb_Lookup_Key; the pattern also matches once in .data1 (0x154e436c4, a Lookup_Key copy whose load 0x154e436ce reaches the same global), harmless for the .xtls scan"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "w7v",
+   "kind": "sig",
+   "item": "gamedb.database",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445a0350.c;decomp:re/decomp/1445a12d0.c;decomp:re/decomp/1445a66c0.c",
+   "notes": "V1363 sigcheck OK hits=1 on d873a1c8d2044cef; own wildcard regex over every section: one .xtls hit; riprel at 0x1445a22fe -> 0x146cc4278, 13 bytes; also one .data1 hit (0x154e436c4, same global)"
+  }
+ ],
+ "proofs": []
+}

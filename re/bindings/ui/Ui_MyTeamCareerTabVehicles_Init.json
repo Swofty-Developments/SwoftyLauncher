@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_MyTeamCareerTabVehicles_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14197b820",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void f(void *tab)",
+  "evidence": "decomp:re/decomp/14197b820.c;xref:0x14571e100",
+  "notes": "myteam-g1: Initialises the My Team career HQ tab entry for Vehicles: sets title/description text (lng_my_team_career_vehicles(+_description)) and activates it."
+ },
+ "signature": {
+  "id": "ui.my_team_career_tab_vehicles_init",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 48 89 CE E8 ?? ?? ?? ?? 48 8D 4E 58",
+  "match": "0x14197b820",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14197b820",
+  "kind": "func_start",
+  "names": [
+   "Ui_MyTeamCareerTabVehicles_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x14197b820",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14197b820.c;xref:0x14571e100",
+   "notes": "V9853 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

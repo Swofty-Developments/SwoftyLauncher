@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FfbThrustmaster_ConfigureEffects",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446f4b80",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-TM_FFB",
+  "notes": "named from its log messages (channel TM_FFB): 'Thrustmaster: Unable to configure 'Constant Force' on device (%d) | Thrustmaster: Unable to configure 'Spring Force' on device (%d) | Thrustmaster: Unable to configure 'Friction Force' on device (%d)'"
+ },
+ "signature": {
+  "id": "game.ffb_thrustmaster_configure_effects",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 48 8B 89 E0 01 00 00",
+  "match": "0x1446f4b80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446f4b80",
+  "kind": "func_start",
+  "names": [
+   "Game_FfbThrustmaster_ConfigureEffects"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446f4b80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446f4b80.c;xref:0x1446f4af3",
+   "notes": "V6849 Configure strings for 3 effects confirmed."
+  }
+ ],
+ "proofs": []
+}

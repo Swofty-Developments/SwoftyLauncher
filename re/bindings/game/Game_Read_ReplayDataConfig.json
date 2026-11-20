@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_ReplayDataConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c02c90",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: replay_data.can_flashback, replay_data.controls.camera_view, replay_data.controls.can_cycle_ui, replay_data.controls.change_driver, replay_data.controls.exit, replay_data.controls.fast_forward, replay_data.controls.flashback, replay_data.controls.forward_icon, replay_dat'"
+ },
+ "signature": {
+  "id": "game.read_replay_data_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 CE 48 8B 3D",
+  "match": "0x142c02c90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c02c90",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_ReplayDataConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142c02c90",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142c02c90.c;xref:0x14e46fc34",
+   "notes": "V5039 constructor binding ~30 replay_data.* UI-db properties (vtable set, handle init), not reading settings; better Game_ReplayDataModel_Construct"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142c02c90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c02c90.c",
+   "notes": "V6884 1164 decomp lines, strings match current name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

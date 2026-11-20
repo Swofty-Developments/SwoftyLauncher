@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SessionHud_OnPlayerDroppedIn",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1414b1400",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1414b1400.c;xref:0x1414afa96",
+  "notes": "SessionHud player_dropped_in handler (registered in Game_SessionHud_OnSessionEnter 0x1414a7c50). Finds car msg+0x10 in session player list (+0x2e0 stride 0x88, car idx +0x82), sets VM node car%u: driver ref, difficulty=lng_human, is_human=true when lobby slot [sess+0xf88]+0x100+car*2 or player flag +0x4b&0x10; remaps player%u node for the local player. Addon: HUD shows human vs AI per car after drop-in. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2728)"
+ },
+ "signature": {
+  "id": "game.session_hud_on_player_dropped_in",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 01 00 00 C5 F8 29 B4 24 40 01 00 00 48 89 D7 48 89 CE 80 3D",
+  "match": "0x1414b1400",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1414b1400",
+  "kind": "func_start",
+  "names": [
+   "Game_SessionHud_OnPlayerDroppedIn"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d8-verify",
+   "kind": "func",
+   "item": "Game_SessionHud_OnPlayerDroppedIn",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1414b1400.c;xref:0x1414a7c50",
+   "notes": "V2728 car idx msg+0x10 matched vs player entry +0x82 in list +0x2e0 confirmed; VM node text unchecked"
+  }
+ ],
+ "proofs": []
+}

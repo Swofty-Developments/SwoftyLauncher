@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "site_Career_UpgradeCardDeptIcon",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1417f87af",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/1417f8090.c;xref:0x1417f87af,0x1417f87b9,0x1417f8753,0x1417f8758,0x1417f876a,0x1417f87a3;doc:addons/rnd-tyres-thermal/native/HOOKS.md#3-tyres-icon-and-colour-in-the-rd-lists-always-on",
+  "notes": "lea r9,[rnd_dept_icons_small] (7 bytes) in Career_Bind_UpgradeCard, after mov [rsp+0x20],rbx and before call Ne_Format_String(\"%s.%s.%s\", [param_5+0x660], atlas, frame). The frame rbx comes from the part TYPE t (byte from 0x1429bd5d0(param_2), 3 if absent), not a department byte: 0-2 engine, 3-6 chassis, 7-10 aero, 11-18 maintenance set bpl=1 and rbx = name table 0x14571bcc0[[rsp+0x48]] (0x1417f8758); t>18 sets [rsp+0x48]=5, bpl=0 and rbx = \"error_department\" (0x1417f876a). The Tyres types 19-22 fall into t>18. The hook replaces [rsp+0x20] when it is the string \"error_department\"."
+ },
+ "signature": {
+  "id": "career.upgrade_card_dept_icon",
+  "section": ".xtls",
+  "pattern": "4C 8D 0D ?? ?? ?? ?? 4C 89 F9 E8 ?? ?? ?? ?? 48 8B 44 24 58",
+  "match": "0x1417f87af",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1417f87af",
+  "kind": "mid",
+  "expect": "4C 8D 0D 24 35 F1 03",
+  "names": [
+   "site_Career_UpgradeCardDeptIcon"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-d",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_dept_tags.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-2",
+   "kind": "global",
+   "item": "site_Career_UpgradeCardDeptIcon",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1417f8090.c;xref:0x1417f82e0,0x1417f82ef,0x1417f84ee,0x1417f8506,0x1417f8638,0x1417f8644,0x1417f8655,0x1417f8508,0x1417f8e07,0x1417f8753,0x1417f876a,0x1417f87a3,0x1417f87af,0x1417f87b9",
+   "notes": "V0091 window, store and call are right (lea r9 7B after mov [rsp+0x20],rbx, Ne_Format_String(%s.%s.%s,[param_5+0x660],atlas,frame)) but the frame is not dept<4?name_table[dept]: here rbx = bpl ? table 0x14571bcc0[[rsp+0x48]] : error_department, where part type t (0x1429bd5d0(param_2) byte, 3 if absent) is switched: 0-2 engine(3), 3-6 chassis(1), 7-10 aero(0), 11-18 maintenance(2), t>18 -> [rsp+0x48]=5, bpl=0; no dept code 4 exists at this site, the hook must derive Tyres from the card/part type"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-5",
+   "kind": "global",
+   "item": "site_Career_UpgradeCardDeptIcon",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1417f8090.c;xref:0x1417f82e0,0x1417f82ef,0x1417f84ee,0x1417f8506,0x1417f8644,0x1417f865f,0x1417f8e07,0x1417f8758,0x1417f876a,0x1417f87a3,0x1417f87af,0x1417f87b9",
+   "notes": "V0196 sigcheck OK; 7-byte lea r9 window, no rel8/rel32 from .xtls/.data1 strictly inside, jump tables 0x14571c3a8/0x14571c3f4 clean; t = 0x1429bd5d0 byte (3 if absent); 0-2 engine, 3-6 chassis, 7-10 aero, 11-18 maintenance set bpl=1 and rbx = 0x14571bcc0[[rsp+0x48]]; t>18 (0x1417f8e07) sets [rsp+0x48]=5, bpl=0, rbx=error_department; r8=[[rsp+0x190]=param_5 +0x660], r9=rnd_dept_icons_small, [rsp+0x20]=rbx"
+  }
+ ],
+ "proofs": []
+}

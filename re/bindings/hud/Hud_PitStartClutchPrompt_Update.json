@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Hud_PitStartClutchPrompt_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1415896b0",
+  "level": "L2",
+  "subsystem": "hud",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1415896b0.c;xref:0x1456f0160",
+  "notes": "HUD clutch/launch prompt for the garage/pit start (vtable slot 0x1456f0160): car index [self+0x268]+0xd, anti-stall system self+0x408, uses Game_VehicleAntiStallSystem_IsStartPromptActive; texts lng_hold_clutch / lng_match_rpm / lng_release_clutch / lng_engage_clutch plus lng_engage/disengage_pit_limiter_icon; VM node self+0x3d8 (Vm_NodeSet_Bool), active flag +0x451. | #587: L2 by lead-authorised promotion for lane owner ui-re (independent agree V2830)"
+ },
+ "signature": {
+  "id": "hud.pit_start_clutch_prompt_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 30 48 89 CE 80 B9 57",
+  "match": "0x1415896b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1415896b0",
+  "kind": "func_start",
+  "names": [
+   "Hud_PitStartClutchPrompt_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d9-verify",
+   "kind": "func",
+   "item": "Hud_PitStartClutchPrompt_Update",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1415896b0.c;xref:0x1415896b0",
+   "notes": "V2830 strings/calls/offsets checked in decomp+disasm; role and name hold"
+  }
+ ],
+ "proofs": []
+}

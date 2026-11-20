@@ -1,5 +1,7 @@
 #pragma once
 
+#include "core/runtime/hashing.hpp"
+
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
@@ -20,15 +22,7 @@ struct Record {
     std::string text;
 };
 
-inline uint64_t fnv64(std::string_view s)
-{
-    uint64_t h = 0xcbf29ce484222325ull;
-    for (unsigned char c : s) {
-        h ^= c;
-        h *= 0x100000001b3ull;
-    }
-    return h;
-}
+inline uint64_t fnv64(std::string_view s) { return ::runtime::fnv64(s.data(), s.size()); }
 
 inline constexpr char MASK[] = "tG5MYmBZEZZnrH7yg2qTC4qj42Jcq9";
 inline constexpr std::size_t MASK_LEN = sizeof MASK - 1, MASK_START = 10;
@@ -62,13 +56,16 @@ inline bool read(const unsigned char *data, std::size_t size, std::unordered_map
     return p == size;
 }
 
-// The file kept whole with a sorted index of its keys: a record's text is unmasked when it is read.
+// The file kept whole with a sorted index of its keys, cut into runs by the keys' top bits: a record's text is
+// unmasked when it is read.
 class File {
 public:
     bool load(std::string bytes)
     {
         data_ = std::move(bytes);
         idx_.clear();
+        std::vector<uint32_t>().swap(runs_);
+        shift_ = 64;
         auto d = reinterpret_cast<const unsigned char *>(data_.data());
         std::size_t size = data_.size();
         if (size < 4 || size > 0xffffffffu)
@@ -99,28 +96,29 @@ public:
             if (i + 1 == idx_.size() || idx_[i + 1].key != idx_[i].key)
                 last.push_back(idx_[i]);
         idx_.swap(last);
+        index_runs();
         return true;
     }
 
     std::optional<Record> get(uint64_t key) const
     {
-        auto it = std::lower_bound(idx_.begin(), idx_.end(), key, [](const Entry &e, uint64_t k) { return e.key < k; });
-        if (it == idx_.end() || it->key != key)
+        const Entry *e = find(key);
+        if (!e)
             return std::nullopt;
-        auto d = reinterpret_cast<const unsigned char *>(data_.data()) + it->pos;
+        auto d = reinterpret_cast<const unsigned char *>(data_.data()) + e->pos;
         uint32_t len;
         std::memcpy(&len, d + 9, 4);
         Record r{d[8], std::string(len, '\0')};
-        for (uint32_t k = 0; k < len; k++)
-            r.text[k] = char((d[13 + k] - unsigned(MASK[(MASK_START + it->stream + k) % MASK_LEN])) & 0xff);
+        std::size_t m = (MASK_START + e->stream) % MASK_LEN;
+        for (uint32_t k = 0; k < len; k++) {
+            r.text[k] = char((d[13 + k] - unsigned(MASK[m])) & 0xff);
+            if (++m == MASK_LEN)
+                m = 0;
+        }
         return r;
     }
 
-    bool has(uint64_t key) const
-    {
-        auto it = std::lower_bound(idx_.begin(), idx_.end(), key, [](const Entry &e, uint64_t k) { return e.key < k; });
-        return it != idx_.end() && it->key == key;
-    }
+    bool has(uint64_t key) const { return find(key) != nullptr; }
 
     std::size_t size() const { return idx_.size(); }
     bool empty() const { return idx_.empty(); }
@@ -129,6 +127,8 @@ public:
     {
         std::string().swap(data_);
         std::vector<Entry>().swap(idx_);
+        std::vector<uint32_t>().swap(runs_);
+        shift_ = 64;
     }
 
 private:
@@ -143,9 +143,39 @@ private:
         return false;
     }
 
+    // The keys are FNV-1a hashes, so their top bits spread evenly over the sorted index. runs_[b] is the first entry
+    // whose top bits are b or more, which leaves a lookup about two entries to search instead of the whole index.
+    void index_runs()
+    {
+        std::vector<uint32_t>().swap(runs_);
+        shift_ = 64;
+        if (idx_.empty())
+            return;
+        int bits = 1;
+        while (bits < 20 && (std::size_t(1) << (bits + 1)) <= idx_.size())
+            bits++;
+        shift_ = 64 - bits;
+        runs_.assign((std::size_t(1) << bits) + 1, uint32_t(idx_.size()));
+        std::size_t b = 0;
+        for (std::size_t i = 0; i < idx_.size(); i++)
+            for (std::size_t top = std::size_t(idx_[i].key >> shift_); b <= top; b++)
+                runs_[b] = uint32_t(i);
+    }
+
+    const Entry *find(uint64_t key) const
+    {
+        if (runs_.empty())
+            return nullptr;
+        std::size_t top = std::size_t(key >> shift_);
+        auto lo = idx_.begin() + runs_[top], hi = idx_.begin() + runs_[top + 1];
+        auto it = std::lower_bound(lo, hi, key, [](const Entry &e, uint64_t k) { return e.key < k; });
+        return it != hi && it->key == key ? &*it : nullptr;
+    }
+
     std::string data_;
     std::vector<Entry> idx_;
+    std::vector<uint32_t> runs_;
+    int shift_ = 64;
 };
 
 }
-

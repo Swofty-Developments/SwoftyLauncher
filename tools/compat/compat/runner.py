@@ -9,9 +9,9 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from . import snapshot
+from .pin import prefix as pin_prefix
 
 PROFILE = "compat"
-PIN = ["taskset", "-c", "2-7,10,11,14-31", "nice", "-n", "10"]
 DEAD_URL = "http://127.0.0.1:9"
 FIXED_MTIME_NS = 1_767_225_600 * 1_000_000_000
 GENERATED_DIRS = ("cache/addons", "addon-data")
@@ -189,7 +189,7 @@ def state_changes(before, after, limit=10):
 
 
 def _run(cmd, env, timeout, pin):
-    full = (PIN + cmd) if pin and shutil.which("taskset") else cmd
+    full = (pin_prefix() + cmd) if pin else cmd
     try:
         r = subprocess.run(full, env=env, capture_output=True, text=True, timeout=timeout)
         return {"rc": r.returncode, "stdout": r.stdout, "stderr": r.stderr}

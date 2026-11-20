@@ -1,9 +1,9 @@
-#include "files.hpp"
-#include "files_api.hpp"
+#include "core/apply/files.hpp"
+#include "core/apply/files_api.hpp"
 
-#include "../registry/table.hpp"
-#include "../runtime.hpp"
-#include "../badge_images.hpp"
+#include "core/registry/table.hpp"
+#include "core/runtime/runtime.hpp"
+#include "core/render/badges/badge_images.hpp"
 
 #include <swofty/mixin.hpp>
 
@@ -48,8 +48,8 @@ Router &router()
 
 }
 
-Outcome redirect(const std::string &game_path, const std::string &addon, const std::string &file,
-                 const std::string &registry, const std::string &id, const std::string &scope)
+Outcome redirect(const std::string &game_path, const std::string &addon, const std::string &file, const std::string &registry,
+                 const std::string &id, const std::string &scope)
 {
     std::lock_guard g(mu);
     Router &r = router();

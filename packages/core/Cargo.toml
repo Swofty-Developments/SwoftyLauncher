@@ -8,9 +8,11 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
+aes.workspace = true
 flate2.workspace = true
 libloading = "0.8"
 md-5.workspace = true
+memchr = "2"
 png.workspace = true
 rars.workspace = true
 regex.workspace = true
@@ -24,14 +26,11 @@ sha1.workspace = true
 sha2.workspace = true
 swofty-addon.workspace = true
 swofty-formats.workspace = true
-swofty-sdk.workspace = true
 tar.workspace = true
 thiserror.workspace = true
-tungstenite.workspace = true
 ureq.workspace = true
-webpki-roots.workspace = true
-zeroize.workspace = true
 zip.workspace = true
+zstd.workspace = true
 
 [target.'cfg(target_os = "linux")'.dependencies]
 libc = "0.2"

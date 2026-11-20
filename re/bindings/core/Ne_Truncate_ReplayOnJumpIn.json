@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Truncate_ReplayOnJumpIn",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1445cd2a0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1445cd2a0.c;xref:0x154f6ed24;doc:re/db/subsystems/core.md",
+  "notes": "fb-verify C3 (CORRECTED: no deserialisation here): ReplayStream jump-in = truncate the recording at the jump-in time + notify: drops keyframes after the current time ([+0x160] 32-byte entries, vt+0x18 seek on the stream +0xd0), resets both stream objects +0xc0/+0xd0, then for every 0x688-byte recordable entry calls buffer vt+8, sets buffer+0x48 = 1 and calls the recordable's vt+0x50 (onJumpIn)"
+ },
+ "signature": {
+  "id": "core.replay_truncate_on_jump_in",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 CE 48 8B B9 C0 00 00 00",
+  "match": "0x1445cd2a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445cd2a0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Truncate_ReplayOnJumpIn"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-29",
+    "by": "fb-verify",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-29",
+   "verifier": "fb-verify",
+   "kind": "func",
+   "item": "Ne_Truncate_ReplayOnJumpIn",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "xref:0x154f6ed24",
+   "notes": "V1802 C3 truncate + buffer vt+8 + system vt+0x50, no deserialise"
+  }
+ ],
+ "proofs": []
+}

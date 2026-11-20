@@ -1,0 +1,75 @@
+{
+ "schema": 1,
+ "name": "g_Career_RnDOverviewSelectedDept",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145f93c08",
+  "type": "uint8_t",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "pat:movzx-cmp-al-4-cmovae;xref:0x141f4aa49,0x141f460a9,0x141c86c7e,0x1423380e9;kb:subsystems/rnd_ui.md#tags;decomp:re/decomp/141c85f70.c;xref:0x141c86c7e;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v050--the-5th-department-selection-flag-select_fifth_dept-default-on",
+  "notes": "R&D overview selected department (u8). Five writers: 0x141f4aa49 (class B Performance-page focus), 0x141f460a9 (class A Team HQ research-overview focus), and resets to 5 at 0x141c43d43, 0x1422d6377 and 0x1423383fd. Every reader clamps it < 4 (cmp al,4 ; cmovae eax,0), so 5 reads as aero. Picks the departments screen first tab and the pie highlight; it does not choose which department page is built. A fourth reader, 0x1423380e9 in 0x142337ff0 (command hash 0x55702d31), sets OverrideTargetVariant = k_Career_TeamHqDeptNameTable[clamped] and fires route rnd, so the value also picks the Team HQ target variant. 0x141f4aa49 sits in class-B vtable 0x14575e300 slot 10 (via 0x141f4ac40), 0x141f460a9 in class-A vtable 0x14575e000 slot 10."
+ },
+ "signature": {
+  "id": "career.rn_d_overview_selected_dept",
+  "section": ".xtls",
+  "pattern": "48 8B 54 24 58 E8 ?? ?? ?? ?? 0F B6 05",
+  "match": "0x141c86c74",
+  "anchor": "0xd",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0xa",
+   "len": 7
+  },
+  "target": "0x145f93c08",
+  "kind": "data",
+  "names": [
+   "g_Career_RnDOverviewSelectedDept"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-4",
+   "kind": "global",
+   "item": "g_Career_RnDOverviewSelectedDept",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141c85f70.c;xref:0x141c86c7e,0x141f42f9c,0x141f48465,0x1423380e9,0x141f460a9,0x141f4aa49,0x141c43d43,0x1422d6377,0x1423383fd",
+   "notes": "V0194 uint8_t right, and all 4 readers (0x141c86c7e, 0x141f42f9c, 0x141f48465, 0x1423380e9) clamp with cmp al,4; cmovae 0. Off: there are 5 writers, not 2. Besides 0x141f460a9 and 0x141f4aa49, three 'mov byte [rip],5' resets write it at 0x141c43d43, 0x1422d6377 and 0x1423383fd. The watchpoint claim is runtime and not checked here"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-5",
+   "kind": "global",
+   "item": "g_Career_RnDOverviewSelectedDept",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141f4a9c0.c;decomp:re/decomp/141f45d30.c;decomp:re/decomp/141c85f70.c;decomp:re/decomp/141f48030.c;decomp:re/decomp/141f41d60.c;decomp:re/decomp/142337ff0.c;xref:0x141f4aa49,0x141f460a9,0x141c43d43,0x1422d6377,0x1423383fd,0x141c86c7e,0x141f42f9c,0x141f48465,0x1423380e9",
+   "notes": "V0208 type u8 and the five writers check out (0x141f4aa49 in class-B vtable 0x14575e300 slot 10 via 0x141f4ac40, 0x141f460a9 in class-A vtable 0x14575e000 slot 10, =5 at 0x141c43d43/0x1422d6377/0x1423383fd); all four readers clamp (cmp al,4; cmovae 0). Incomplete: besides the departments first tab (0x141c86c7e) and the two pie highlights (0x141f42f9c, 0x141f48465), the reader at 0x1423380e9 (command hash 0x55702d31 in 0x142337ff0) sets OverrideTargetVariant = k_Career_TeamHqDeptNameTable[clamped] and fires route rnd, so it also picks the Team HQ target variant"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-5",
+   "kind": "global",
+   "item": "g_Career_RnDOverviewSelectedDept",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f4a9c0.c;decomp:re/decomp/141f45d30.c;decomp:re/decomp/141c85f70.c;decomp:re/decomp/141f48030.c;decomp:re/decomp/141f41d60.c;decomp:re/decomp/142337ff0.c;xref:0x141f4aa49,0x141f460a9,0x141c43d43,0x1422d6377,0x1423383fd,0x141c86c7e,0x141f42f9c,0x141f48465,0x1423380e9,0x14575e050,0x14575e350,0x141f4ad54",
+   "notes": "V0222 re-read after correction: five writers, four clamping readers (first tab 0x141c86c7e, pie highlights 0x141f42f9c/0x141f48465, rnd route OverrideTargetVariant 0x1423380e9) and the class-A/B vtable slot-10 placement all match; no reader builds a department page"
+  }
+ ],
+ "proofs": []
+}

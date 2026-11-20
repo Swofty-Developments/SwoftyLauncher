@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_RegisterUavResource",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c00360",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c00360.c;xref:0x140148c38",
+  "notes": "Registers a named UAV resource (string GfxUAVResource) with interned name hash (Ne_StringPool_InternByHash) and a thread-local init guard; 13 callers inside renderer init (0x1401456e0, 0x140149ae0, 0x14014b860...)."
+ },
+ "signature": {
+  "id": "render.gfx_register_uav_resource",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 50 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 4C 89 41 08 C5 F8 57 C0 C5 F8 11 41 20 C5 F8 11 41 10 4C 89 49 58 C5 F8 10",
+  "match": "0x143c00360",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c00360",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_RegisterUavResource"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143c00360",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c00360.c;xref:0x140148c38",
+   "notes": "V7846 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

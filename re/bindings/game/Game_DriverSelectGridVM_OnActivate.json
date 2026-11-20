@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DriverSelectGridVM_OnActivate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f2cc20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141f2cc20.c;xref:0x14575d2b8",
+  "notes": "Slot 13 of VM vt 0x14575d250: sets ThumbnailSystem reason 0 (system at [this+0x648]+0x20), releases old thumbnail handles in this+0x9d0 entries x 0x370 bytes from +0x668, then rebuilds via 0x141949b90 / 0x14187cc60 / 0x14187f0e0 (driver/team thumbnail grid). Class name inferred. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3221)"
+ },
+ "signature": {
+  "id": "game.driver_select_grid_v_m_on_activate",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 40 C5 F8 29 74 24 30 48 89 CE 48 8B 81 48 06",
+  "match": "0x141f2cc20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f2cc20",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverSelectGridVM_OnActivate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d14-verify",
+   "kind": "func",
+   "item": "Game_DriverSelectGridVM_OnActivate",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/41f2cc20.c;xref:None",
+   "notes": "V3221 offsets, vtable slot/callers, strings and calls checked in decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

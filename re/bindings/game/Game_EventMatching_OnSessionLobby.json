@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EventMatching_OnSessionLobby",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143155ef0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=EventMatching::onSessionLobby; log channel NETWORK-MATCHING: 'virtual void network::EventMatching::onSessionLobby() | %s'"
+ },
+ "signature": {
+  "id": "game.event_matching_on_session_lobby",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 CE 80 3D ?? ?? ?? ?? 01 75 66 B8 EF 00 00 00",
+  "match": "0x143155ef0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143155ef0",
+  "kind": "func_start",
+  "names": [
+   "Game_EventMatching_OnSessionLobby"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143155ef0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143155ef0.c",
+   "notes": "V5978 Body matches the logged text/signature; vtable/indirect, no direct call site"
+  }
+ ],
+ "proofs": []
+}
