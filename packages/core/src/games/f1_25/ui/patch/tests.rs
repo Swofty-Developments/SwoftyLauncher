@@ -570,13 +570,18 @@ fn the_main_menu_showroom_route_is_the_hubs_own_showroom_route_from_the_home_scr
             "PlayerCard 0",
             "TransitionScreen out fe_home",
             "CloseScreen fe_home 2",
-            "OpenScreen fe_showroom 3",
+            "OpenScreen fe_showroom 3,10,11",
             "ViewModelCallback fe_showroom 4",
             "InputState 5",
             "TransitionScreen in fe_showroom 5",
             "TriggerSubRoute close theming_overlay_frontend",
+            "TransitionScreen out fe_planes",
+            "CloseScreen fe_planes 9",
+            "FrontendSceneSwitch fe_f1_world",
         ],
-        "fe_home's slices stay open, fe_showroom gets its view model callback before input, and the theming overlay closes on its own"
+        "fe_home's video background closes and the scene is the hub's before fe_showroom opens, as on the way in \
+         through F1 World; the other slices stay open, fe_showroom gets its view model callback before input, and \
+         the theming overlay closes on its own"
     );
     let o = ours.o().unwrap();
     assert_eq!(o.str_at("Dependencies").unwrap(), "6,7,8");
@@ -585,13 +590,19 @@ fn the_main_menu_showroom_route_is_the_hubs_own_showroom_route_from_the_home_scr
     let text = format!("{ours:?}");
     for gone in [
         "theatre_container",
-        F1_WORLD_HUB,
         "slice_bg_content_underlay",
         "CloseSlices",
         "open_no_input",
     ] {
         assert!(!text.contains(gone), "{gone} in {text}");
     }
+    let cmds = ours.o().unwrap().at("Commands").unwrap().a().unwrap();
+    let hub: Vec<_> = cmds
+        .iter()
+        .filter(|c| format!("{c:?}").contains(F1_WORLD_HUB))
+        .filter_map(cmd_type)
+        .collect();
+    assert_eq!(hub, ["FrontendSceneSwitch"], "the hub is never opened or closed");
     assert_eq!(
         steps(route_in(&p, "fe_home", "theatre")),
         [
