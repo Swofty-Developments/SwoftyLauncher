@@ -27,3 +27,9 @@ armed [ai] ers corner guard armed: a car with no corner marker for its next corn
 off [career] calendar track guard off (SWOFTY_CALENDAR_TRACK_GUARD=%s)
 failed [career] calendar track guard: the hook failed: %s
 armed [career] calendar track guard armed: a season round on a track the game has no track data for is left out of the calendar instead of faulting
+
+[tyre_curve]
+off [car] tyre curve guard off (SWOFTY_TYRE_CURVE_GUARD=%s)
+unresolved [car] tyre curve guard off: needs Car_Tyre_CurveMap_FindBracketA and Car_Tyre_CurveMap_FindBracketB, which this build does not resolve
+armed [car] tyre curve guard armed: a tyre curve lookup with a key that is not a number uses the curve's first point instead of faulting
+not_installed [car] tyre curve guard did not install (see the [core] lines)
