@@ -735,6 +735,7 @@ case_perf_ro() {
 echo "==== perf_ro"
 PERF_FALLBACK=$(winepath -u "$(wine cmd /c 'echo %LOCALAPPDATA%' | tr -d '\r')")/Swofty/state/perf-fallback.log
 rm -f "$SW/perf.log" "$PERF_FALLBACK"
+: >"$LOG"
 chmod a-w "$SW"
 if [[ -w $SW ]]; then
     echo "skip: perf_ro: this user writes in read-only folders (root?), so the refusal cannot be staged"
@@ -742,7 +743,7 @@ if [[ -w $SW ]]; then
 else
     timeout 120 "${PIN[@]}" xvfb-run -a wine cmd /c "$OUT/game/F1_25.exe" perf_ro >"$OUT/perf_ro.out" 2>&1 || true
     chmod u+w "$SW"
-    grep -F '[perf]' "$LOG" | tail -5
+    grep -F '[perf]' "$LOG" | tail -5 || true
     once "perf_ro: a game folder that refuses perf.log moves it to the data folder" \
         '\[perf\] the game can.t create swofty[\]perf\.log \(error 5\); the report goes to .*[\]Swofty[\]state[\]perf-fallback\.log[[:space:]]*$'
     [[ -e $SW/perf.log ]] && { echo "FAIL: perf_ro: perf.log reached the game folder"; status=1; } ||
