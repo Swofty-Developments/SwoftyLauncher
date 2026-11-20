@@ -21,6 +21,7 @@ mod slow_init;
 mod stall;
 mod system;
 mod tyres;
+pub mod weekend;
 mod wording;
 
 #[cfg(test)]

@@ -420,7 +420,7 @@ pub(super) fn career_content_off(e: &Evidence) -> Diagnosis {
 /// A session that ended with its career in a race weekend that started with no session run: the core's last Team HQ
 /// weekend line is `weekend already started, session never ran`, with no session load after it.
 pub fn stuck_weekend(e: &Evidence) -> Option<Diagnosis> {
-    let weekend = crate::saves::stuck::stuck_weekend(&e.loader)?;
+    let weekend = super::weekend::stuck_weekend(&e.loader)?;
     Some(Diagnosis {
         id: "stuck_weekend",
         title: "Your career is stuck at the start of a race weekend".to_owned(),
