@@ -12,10 +12,13 @@ use crate::shell::Shell;
 use api::{BoardsApi, HttpBoards};
 use gpui_kit::component::input::InputState;
 use gpui_kit::*;
-use images::{Art, Images};
+use images::{Images, Job};
 use model::*;
+use std::cell::RefCell;
 use std::collections::HashMap;
+use std::rc::Rc;
 use std::sync::Arc;
+use std::time::Instant;
 
 pub(crate) enum Load<T> {
     Idle,
@@ -31,6 +34,13 @@ impl<T> Load<T> {
             Err(e) => Self::Failed(e),
         }
     }
+}
+
+#[derive(Default)]
+pub(crate) struct Seen {
+    urls: Vec<String>,
+    shell: Option<WeakEntity<Shell>>,
+    armed: bool,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -53,6 +63,8 @@ pub(crate) struct Online {
     board_category: Option<Category>,
     more: bool,
     images: Images,
+    seen: Rc<RefCell<Seen>>,
+    wake: Option<Instant>,
     data: std::path::PathBuf,
     recents: Recents,
     filter_tracks: TrackFilter,
@@ -86,7 +98,9 @@ impl Online {
             category: Category::load(data),
             board_category: None,
             more: false,
-            images: Images::new(data),
+            images: Images::new(data, &swofty_core::catalog::base_url()),
+            seen: Rc::new(RefCell::new(Seen::default())),
+            wake: None,
             data: data.to_path_buf(),
             recents: Recents::load(data),
             filter_tracks: TrackFilter::default(),
@@ -112,15 +126,8 @@ fn mock_mode() -> Option<mock::Mode> {
     }
 }
 
-fn art_urls<'a>(
-    drivers: impl IntoIterator<Item = &'a Driver>,
-    extra: impl IntoIterator<Item = Option<&'a String>>,
-) -> Vec<String> {
-    drivers
-        .into_iter()
-        .filter_map(|d| d.avatar.clone())
-        .chain(extra.into_iter().flatten().cloned())
-        .collect()
+fn art_urls<'a>(drivers: impl IntoIterator<Item = &'a Driver>) -> Vec<String> {
+    drivers.into_iter().filter_map(|d| d.avatar.clone()).collect()
 }
 
 impl Shell {
@@ -167,10 +174,6 @@ impl Shell {
                             .iter()
                             .map(|r| &r.driver)
                             .chain(o.seasons.iter().flat_map(|s| &s.top)),
-                        o.seasons
-                            .iter()
-                            .map(|s| s.cover.as_ref())
-                            .chain(o.custom.iter().map(|t| t.layout.as_ref())),
                     );
                     s.online_prefetch(urls, cx);
                 }
@@ -222,23 +225,66 @@ impl Shell {
     }
 
     fn online_prefetch(&mut self, urls: Vec<String>, cx: &mut Context<Self>) {
+        let jobs = self.online.images.prefetch(urls, Instant::now());
+        self.online_run(jobs, cx);
+    }
+
+    pub(crate) fn online_pump(&mut self, cx: &mut Context<Self>) {
+        let visible = {
+            let mut seen = self.online.seen.borrow_mut();
+            seen.armed = false;
+            std::mem::take(&mut seen.urls)
+        };
+        let now = Instant::now();
+        let plan = self.online.images.plan(visible, now);
+        self.online_run(plan.jobs, cx);
+        if let Some(wait) = plan.wake {
+            self.online_wake(now + wait, cx);
+        }
+    }
+
+    fn online_run(&mut self, jobs: Vec<Job>, cx: &mut Context<Self>) {
+        if jobs.is_empty() {
+            return;
+        }
         let dir = self.online.images.dir();
-        for url in self.online.images.wanted(urls) {
-            let dir = dir.clone();
+        let token = self.mp.as_ref().map(|m| m.token.clone());
+        for job in jobs {
+            let (dir, token) = (dir.clone(), token.clone());
             cx.spawn(async move |this, cx| {
-                let u = url.clone();
-                let art: Option<Art> = cx
+                let url = job.url().to_owned();
+                let done = cx
                     .background_executor()
-                    .spawn(async move { images::load(&dir, &u) })
+                    .spawn(async move { job.run(&dir, token.as_deref()) })
                     .await;
                 this.update(cx, |s, cx| {
-                    s.online.images.finish(url, art);
+                    s.online.images.finish(url, done, Instant::now());
                     cx.notify();
                 })
                 .ok();
             })
             .detach();
         }
+    }
+
+    fn online_wake(&mut self, at: Instant, cx: &mut Context<Self>) {
+        if self.online.wake.is_some_and(|w| w <= at) {
+            return;
+        }
+        self.online.wake = Some(at);
+        cx.spawn(async move |this, cx| {
+            cx.background_executor()
+                .timer(at.saturating_duration_since(Instant::now()))
+                .await;
+            this.update(cx, |s, cx| {
+                if s.online.wake == Some(at) {
+                    s.online.wake = None;
+                    cx.notify();
+                }
+            })
+            .ok();
+        })
+        .detach();
     }
 
     pub(crate) fn online_rank_ensure(&mut self, scope: &str, cx: &mut Context<Self>) {
@@ -267,7 +313,7 @@ impl Shell {
                     return;
                 }
                 if let Ok(p) = &page {
-                    let urls = art_urls(p.rows.iter().map(|r| &r.driver), []);
+                    let urls = art_urls(p.rows.iter().map(|r| &r.driver));
                     s.online_prefetch(urls, cx);
                 }
                 let feed = s.online.feeds.entry(key).or_default();
@@ -307,10 +353,6 @@ impl Shell {
                             .map(|r| &r.driver)
                             .chain(p.tracks.iter().flat_map(|t| t.podium.iter().map(|e| &e.driver)))
                             .chain(p.season.top.iter()),
-                        p.tracks
-                            .iter()
-                            .map(|t| t.layout.as_ref())
-                            .chain([p.season.cover.as_ref()]),
                     );
                     s.online_prefetch(urls, cx);
                 }
@@ -354,7 +396,6 @@ impl Shell {
                             .iter()
                             .map(|r| &r.driver)
                             .chain(p.history.iter().map(|h| &h.driver)),
-                        [p.track.layout.as_ref()],
                     );
                     s.online_prefetch(urls, cx);
                 }
@@ -392,7 +433,7 @@ impl Shell {
                     return;
                 }
                 if let Ok(p) = &page {
-                    s.online_prefetch(art_urls([&p.driver], p.bests.iter().map(|_| None)), cx);
+                    s.online_prefetch(art_urls([&p.driver]), cx);
                 }
                 if let Ok(p) = &page
                     && s.account_name().as_deref() == Some(p.driver.name.as_str())
@@ -597,6 +638,11 @@ impl Shell {
         use crate::scale::px;
         use gpui_kit::component::v_flex;
         self.online_enter(cx);
+        self.online
+            .seen
+            .borrow_mut()
+            .shell
+            .get_or_insert_with(|| cx.entity().downgrade());
         if self.online.search.is_none() {
             self.online.search =
                 Some(cx.new(|cx| InputState::new(window, cx).placeholder(swofty_i18n::tr("Search tracks"))));

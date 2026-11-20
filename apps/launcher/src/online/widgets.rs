@@ -69,6 +69,37 @@ impl Shell {
         url.and_then(|u| self.online.images.get(u))
     }
 
+    pub(super) fn online_watch(&self, url: Option<&String>) -> Option<Canvas<()>> {
+        let url = url
+            .filter(|u| self.online.images.wants(u, std::time::Instant::now()))?
+            .clone();
+        let seen = self.online.seen.clone();
+        Some(
+            canvas(
+                move |bounds, window, cx| {
+                    if bounds.intersect(&window.content_mask().bounds).is_empty() {
+                        return;
+                    }
+                    let mut seen = seen.borrow_mut();
+                    seen.urls.push(url);
+                    if !seen.armed
+                        && let Some(shell) = seen.shell.clone()
+                    {
+                        seen.armed = true;
+                        cx.defer(move |cx| {
+                            shell.update(cx, |s, cx| s.online_pump(cx)).ok();
+                        });
+                    }
+                },
+                |_, _, _, _| {},
+            )
+            .absolute()
+            .top_0()
+            .left_0()
+            .size_full(),
+        )
+    }
+
     pub(super) fn tt_face(&self, d: &Driver, size: f32, p: Palette) -> Div {
         let frame = div()
             .size(px(size))
@@ -76,7 +107,8 @@ impl Shell {
             .rounded_full()
             .overflow_hidden()
             .border_1()
-            .border_color(p.surface);
+            .border_color(p.surface)
+            .children(self.online_watch(d.avatar.as_ref()));
         match self.online_art(d.avatar.as_ref()) {
             Some(Art::Raster(image)) => {
                 frame.child(img(image.clone()).size_full().object_fit(ObjectFit::Cover))
@@ -120,7 +152,7 @@ impl Shell {
                 .rounded(px(size * 0.22))
                 .overflow_hidden()
                 .child(img(image.clone()).size_full().object_fit(ObjectFit::Cover)),
-            _ => crate::pages::badge(IconName::Trophy, size, p),
+            _ => crate::pages::badge(IconName::Trophy, size, p).children(self.online_watch(cover)),
         }
     }
 
@@ -345,7 +377,8 @@ impl Shell {
             .bg(p.elevated)
             .flex()
             .items_center()
-            .justify_center();
+            .justify_center()
+            .children(self.online_watch(url));
         match self.online_art(url) {
             Some(Art::Svg(data)) => frame.child(svg().data(data).size(px(size * 0.78)).text_color(color)),
             _ => frame.child(
