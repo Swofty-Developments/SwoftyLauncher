@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_CustomLivery_SetColour",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a99780",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-CUSTOM_LIVERY_MODEL",
+  "notes": "named from its log messages (channel CUSTOM_LIVERY_MODEL): 'Set beta instance colour %d,%d,%d on vehicle index %d | Tried to set a valid customisation with no selected livery in CustomLiveryModelComponent. Setting to default customisation'"
+ },
+ "signature": {
+  "id": "game.custom_livery_set_colour",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 B8 E8 4A 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 79 29 84 24 D0 4A 00 00",
+  "match": "0x142a99780",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a99780",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomLivery_SetColour"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142a99780",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142a99780.c;xref:0x142a99393",
+   "notes": "V4991 looks up livery/customisation by stat id, falls back to default customisation, sets colours; better Game_CustomLiveryModel_ApplyCustomisation"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142a99780",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a99780.c;xref:0x142a99393",
+   "notes": "V6879 363 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

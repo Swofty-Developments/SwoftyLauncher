@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_OnlineCustomItem_GetAction",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14172c840",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_OnlineCustomItem_GetAction(void *item, void *out_action)",
+  "evidence": "str:s_cfg_NetworkLANActive;decomp:re/decomp/14172c840.c;xref:0x14172c957,0x14172c958,0x145704768",
+  "notes": "Vtable slot +0x28 (GetAction, cf. FeTile_ItemBase_GetAction) of item vtable 0x145704740, pointer 0x145704768. If the gate *(0x14604ea28)+0x38 is clear or +0x3c is set: looks up game mode 'online_custom' (inline string) with Game_GameModes_IndexByName 0x1409763b0 on the GameModeSystem item+0x148 and sets it with Game_Game_SetCurrentGameMode 0x1407d07a0; then Network.LAN.active (lea 0x14172c957) -> Ne_Get_SettingBool 0x143a43b90 on *(NetworkSubsystem item+0x150)+0x200, default 0; when true and the subsystem is not in LAN mode yet (+0xd8 -> +0x750 != 1) calls Game_Network_MOXSessionGeneric 0x143083570 and Game_NetworkSubsystem_ChangeMPMode 0x1430ed330(net, &value 1, 1). Writes out_action kind 1 with the route NeStr from item+0x10. If the gate blocks: out_action kind 3 with message 'beta_mp_custom_disabled_msg'. Returns out_action. hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "ui.online_custom_item_get_action",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 60 48 89 D6 48 89 CF 48 8B 05",
+  "match": "0x14172c840",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14172c840",
+  "kind": "func_start",
+  "names": [
+   "Ui_OnlineCustomItem_GetAction"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-1",
+   "kind": "func",
+   "item": "0x14172c840",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14172c840.c;xref:0x145704768",
+   "notes": "V9323 Vtable slot of a FeTile item (neighbour Ui_OnlineCustomItem_Init); if online allowed it opens the \"online_custom\" menu entry, reads Network.LAN.active (default 0) and writes action {type 1, handle} into out; otherwise writes {type 3, \"beta_mp_custom_disabled_msg\"}; returns out; arity matches."
+  }
+ ],
+ "proofs": []
+}

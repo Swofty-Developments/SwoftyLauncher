@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_String_ConstructFromCStr",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140189e60",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140189e60.c;xref:0x140189b20",
+  "notes": "Constructs a small-string-optimised string (16-byte inline, heap via allocator tag \"unknown\") from a C string (length via 14535e010). Callers Game_Actor_LoadModelResources, Game_SceneManager_AddSceneObjects."
+ },
+ "signature": {
+  "id": "core.string_construct_from_c_str",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 48 89 D3 48 89 CE C5 F8 57",
+  "match": "0x140189e60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140189e60",
+  "kind": "func_start",
+  "names": [
+   "Ne_String_ConstructFromCStr"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x140189e60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140189e60.c;xref:0x140189b20",
+   "notes": "V8438 SSO string ctor (16-byte inline, heap tag unknown, strlen 14535e010); callers incl LoadModelResources and AddSceneObjects"
+  }
+ ],
+ "proofs": []
+}

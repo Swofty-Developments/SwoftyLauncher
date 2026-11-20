@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Input_OnControlSchemeAdded",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a5e2d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a5e2d0.c;xref:0x142a5d0b9,0x142a5f38b",
+  "notes": "GameInputModule callback when a control scheme (action map) is added to a player: logs 'onControlSchemeAdded to player %d' (SPLITSCREEN_INPUT path too), applies rebindable gameplay actions (Game_GameInputModule_ApplyRebindableGameplayActionsToActionMap), warns 'Possible problem enabling custom control scheme'. Callers Game_Input_DisableConflictingScheme, Game_Input_EnableCustomScheme. Addon: inject extra actions into a player's action map after a scheme is enabled. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2471)"
+ },
+ "signature": {
+  "id": "game.input_on_control_scheme_added",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 74 24 60 4C 89 C6 48 89 D3",
+  "match": "0x142a5e2d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a5e2d0",
+  "kind": "func_start",
+  "names": [
+   "Game_Input_OnControlSchemeAdded"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-a",
+   "kind": "func",
+   "item": "Game_Input_OnControlSchemeAdded",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a5e2d0.c;xref:0x142a5e2d0",
+   "notes": "V2471 Role, offsets and calls checked against decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

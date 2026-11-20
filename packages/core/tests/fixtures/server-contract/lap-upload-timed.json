@@ -1,0 +1,96 @@
+{
+  "about": "A sealed lap's upload: the module came from the CDN, and lap 1 carries the receipts of its four timing marks.",
+  "answer": {
+    "body": {
+      "best": true,
+      "id": "2949b7d7eaf78422",
+      "rank": 3,
+      "status": "accepted",
+      "total": 40
+    },
+    "status": 200
+  },
+  "request": {
+    "body": {
+      "multipart": [
+        {
+          "content_type": "application/json",
+          "json": {
+            "fingerprint": {
+              "addons": [
+                {
+                  "id": "swofty.core",
+                  "source": "core",
+                  "version": "1.10.0"
+                },
+                {
+                  "id": "swofty.std",
+                  "source": "builtin",
+                  "version": "1.10.0"
+                }
+              ],
+              "digest": "c2b0a649b668c0b17420d1fcf15a73b92e5d55f03c46bd38095d2a3f1d5ec549",
+              "game_build": "46009bd3c0de46009bd3c0de46009bd3c0de46009bd3c0de46009bd3c0de4600",
+              "launcher": "<launcher>"
+            },
+            "gzip": true,
+            "integrity": {
+              "source": "cdn",
+              "state": "loaded",
+              "version": "2026.11.18.1"
+            },
+            "launcher": "<launcher>",
+            "os": "<os>",
+            "session": "5e5510b0c0de5e5510b0c0de5e5510b0",
+            "timing": {
+              "lap": 1,
+              "receipts": [
+                "tk1.c3RhcnQ.bWFj",
+                "tk1.czE.bWFj",
+                "tk1.czI.bWFj",
+                "tk1.ZW5k.bWFj"
+              ]
+            }
+          },
+          "name": "meta"
+        },
+        {
+          "content_type": "application/octet-stream",
+          "file_name": "lap.swlap.gz",
+          "gzip_of_swlap": {
+            "header": {
+              "board": {
+                "content": "game/f1_2025",
+                "track": "bahrain",
+                "weather": "dry"
+              },
+              "core": "1.10.0",
+              "format": 1,
+              "lap": {
+                "lap_index": 1,
+                "sectors_ms": [
+                  28411,
+                  30609,
+                  32214
+                ],
+                "time_ms": 91234,
+                "valid": true
+              },
+              "nonce": "5e5510b0c0de5e5510b0c0de5e5510b0"
+            }
+          },
+          "name": "lap"
+        }
+      ]
+    },
+    "headers": {
+      "accept": "*/*",
+      "accept-encoding": "gzip",
+      "authorization": "Bearer <token>",
+      "content-type": "multipart/form-data; boundary=<boundary>",
+      "user-agent": "swofty-launcher"
+    },
+    "method": "POST",
+    "path": "/v1/tt/laps"
+  }
+}

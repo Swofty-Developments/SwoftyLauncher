@@ -1,0 +1,56 @@
+{
+ "schema": 1,
+ "name": "site_Career_ApplyUpgradeBlockNameJoin",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14fa63166",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/14fa63050.c;xref:0x14fa630ec,0x14fa63166;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v090--the-tyres-upgrade-types-setting-tyres_upgrade_types-default-on-install-time",
+  "notes": "mov r8,[rcx+0x18]: join after the block name is chosen (rdx = name); target of the block-name default redirect"
+ },
+ "signature": {
+  "id": "career.apply_upgrade_block_name_join",
+  "section": ".data1",
+  "pattern": "4C 8B 41 18 B8 A0 04 00 00 49 03 40 58",
+  "match": "0x14fa63166",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14fa63166",
+  "kind": "mid",
+  "expect": "4C 8B 41 18 B8 A0 04 00 00",
+  "names": [
+   "site_Career_ApplyUpgradeBlockNameJoin"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-a",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_upgrade_types.cpp"
+  ],
+  "func_start": "0x14fa63050",
+  "data1_reason": "join of the inline block-name switch in the .data1 body 0x14fa63050"
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-1",
+   "kind": "global",
+   "item": "site_Career_ApplyUpgradeBlockNameJoin",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14fa63050.c;xref:0x14fa630ec,0x14fa6315f,0x14fa63166,0x14fa6316a,0x14fa6317b",
+   "notes": "V0086 join 0x14fa63166 mov r8,[rcx+0x18] ; mov eax,0x4a0 (9 bytes), reached by jmp from 0x14fa630ec and fallthrough from default; rcx = comp unchanged since entry; tail jmp 0x144742c70 with rdx = name; no branch into window"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_UpgradeInitNormal",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143517e4c",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/143517d80.c;xref:0x143517e4c;doc:addons/rnd-tyres-thermal/native/HOOKS.md#the-fix-flag-instantiate_tyres_upgrades-default-on-install-time",
+  "notes": "mov edx,[rip+..]: the normal (non-dept-4) init path, the jne target (join target)"
+ },
+ "signature": {
+  "id": "career.upgrade_init_normal",
+  "section": ".xtls",
+  "pattern": "48 83 86 C8 00 00 00 10 E9 ?? ?? ?? ?? 8B 15",
+  "match": "0x143517e3f",
+  "anchor": "0xd",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143517e4c",
+  "kind": "mid",
+  "expect": "8B 15 5E 44 BE 02",
+  "names": [
+   "site_Career_UpgradeInitNormal"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-4",
+   "kind": "global",
+   "item": "site_Career_UpgradeInitNormal",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143517d80.c;xref:0x143517e10,0x143517e4c,0x143517e71,0x143517e90,0x143517e9d,0x143517eb8",
+   "notes": "V0174 mov edx,[rip+0x2be445e] at 0x143517e4c, sole target of jne 0x143517e10; starts the Push_UpgradeState/SetFitted/SetEnabled/SetFacilityLocked path; 6-byte riprel window, no branch inside"
+  }
+ ],
+ "proofs": []
+}

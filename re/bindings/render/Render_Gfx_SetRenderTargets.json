@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_SetRenderTargets",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439ffae0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439ffae0.c;xref:0x1439ffad1,0x143bcb380",
+  "notes": "Binds a render-target set on the Gfx2 command context (param_1 ctx): resets bind state (Render_Gfx_ResetBindState), stores RTV count (+0x70) / flags (+0x74) and depth view (+0x138/+0x140), copies up to 8 RTV views (+0x78..+0xb0), hashes formats with MD5 (Ne_Hash_Md5Transform/Finalize) into +0x148 (render-target-set key used for PSO lookup), registers resources via Ne_HashMap_FindOrInsert_Float and calls context-impl vcall +0x60. ~20 render-pass callers. Hypothesis on exact name (OMSetRenderTargets equivalent)."
+ },
+ "signature": {
+  "id": "render.gfx_set_render_targets",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 20 01 00 00 4C 89 CF",
+  "match": "0x1439ffae0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439ffae0",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_SetRenderTargets"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x1439ffae0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439ffae0.c;xref:0x1439ffad1",
+   "notes": "V8508 ResetBindState, RTV count +0x70 flags +0x74, views +0x78..., depth +0x138/+0x140, Md5Transform/Finalize hash"
+  }
+ ],
+ "proofs": []
+}

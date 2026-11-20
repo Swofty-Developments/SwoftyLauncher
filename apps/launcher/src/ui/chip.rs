@@ -3,8 +3,8 @@ use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 
 use super::tokens::{radius, text};
-use crate::scale::px;
-use crate::theme::palette;
+use crate::ui::scale::px;
+use crate::ui::theme::palette;
 
 type Click = Box<dyn Fn(&ClickEvent, &mut Window, &mut App) + 'static>;
 

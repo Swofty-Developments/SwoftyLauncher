@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Podium2019CutSceneScript_ChooseCutScenesToPlay",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140356a20",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=Podium2019CutSceneScript::chooseCutScenesToPlay; log channel CUTSCENE_PODIUM: 'Podium2019CutSceneScript::chooseCutScenesToPlay | Podium2019CutSceneScript::getWorldName | Podium2019CutSceneScript::getMonacoBarrierWorldObject | setHidePrimaryWorld %p %s %s'  | 2026-11-17 engine-re round A2: hard-coded tracks: copies the track name (overrideTrackName, else TrackName) into this+0x930 (64 chars) and cuts it at the first digit (so bahrain24 -> bahrain); 'monaco' (dword compare 0x140356d29) sets +0x8f8 and looks up the world object 'Env- Barriers$mon_armco_parcferme_a' into +0x8f0 (hidden by SetMonacoBarrierVisibility); 'monza' (imm 0x7a6e6f6d at 0x140356d3f) sets +0x8f9. Both flags go to Game_PodiumBaseCutSceneScript_SpawnTVScreens (0x140363850 line 757); +0x8f9 also picks a branch in Game_Pod2019FirstScript_Initialise. podium2022_tunnel_walk (+0x8fb) comes from the game mode (+0x2b0 +0x210), not from a name.  | 2026-11-17 engine-re round A2 correction after verify V11014: the cut at the first digit applies only to the name taken from the track record; with Game.Context.overrideTrackName set, Game.Context.TrackName is copied to +0x930 uncut."
+ },
+ "signature": {
+  "id": "game.podium2019_cut_scene_script_choose_cut_scenes_to_play",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 50 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x140356a20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140356a20",
+  "kind": "func_start",
+  "names": [
+   "Game_Podium2019CutSceneScript_ChooseCutScenesToPlay"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x140356a20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140356a20.c",
+   "notes": "V4488 log strings/channel/behaviour found inside function bounds; name matches"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "trkerp-verify2",
+   "kind": "func",
+   "item": "Game_Podium2019CutSceneScript_ChooseCutScenesToPlay",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:own disasm 0x140356aa7-0x140356d68;str:monaco Game.Context.overrideTrackName",
+   "notes": "V11014 monaco->+0x8f8, monza->+0x8f9 (exact 7/6-byte compares) agree; but digit cut only on the track-record path ([[g+0x30]+0xe8]+0xa0); overrideTrackName path copies Game.Context.TrackName to +0x930 without the digit cut"
+  }
+ ],
+ "proofs": []
+}

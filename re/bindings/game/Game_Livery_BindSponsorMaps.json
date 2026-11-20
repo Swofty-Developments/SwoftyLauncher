@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Livery_BindSponsorMaps",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143e85d50",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void *out, void *a, void *b, int c",
+  "evidence": "decomp:re/decomp/143e85d50.c;xref:0x143db23be",
+  "notes": "myteam-g1: Renderer binding: sets shader params me_numSponsors, me_sponsorMap, me_sponsorAlphaMap for car livery sponsor decals."
+ },
+ "signature": {
+  "id": "game.livery_bind_sponsor_maps",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 05 00 00 C5 F8 29 BC 24 40 05 00 00 C5 F8 29 B4 24 30 05 00 00 44 89 CB",
+  "match": "0x143e85d50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143e85d50",
+  "kind": "func_start",
+  "names": [
+   "Game_Livery_BindSponsorMaps"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x143e85d50",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143e85d50.c;xref:0x143db23be",
+   "notes": "V10341 Generic material/shader parameter binding for many me_* params and jumbotron, mirror, monitor SRVs; sponsor maps are only a subset."
+  }
+ ],
+ "proofs": []
+}

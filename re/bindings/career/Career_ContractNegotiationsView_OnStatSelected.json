@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_ContractNegotiationsView_OnStatSelected",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a0c040",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void Career_ContractNegotiationsView_OnStatSelected(void *view, void *event)",
+  "evidence": "decomp:re/decomp/141a0c040.c;xref:0x141a0bee0",
+  "notes": "myteam-g1: UI event handler for the contract negotiations screen; writes #ui_menu_data.contract_negotiations.stat_id (selected stat to compare) and forwards focus via 44320fe0 (view+0x1370..0x13a0, +0x1718 array)."
+ },
+ "signature": {
+  "id": "career.contract_negotiations_view_on_stat_selected",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 48 89 CE 48 8D 42 08 80 BA 88 00 00 00 00 48 8D 0D ?? ?? ?? ?? 48 0F 45 C8 80 39 00 74 1D",
+  "match": "0x141a0c040",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a0c040",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractNegotiationsView_OnStatSelected"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141a0c040",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141a0c040.c;xref:0x141a0bee0",
+   "notes": "V9916 Does write #ui_menu_data.contract_negotiations.stat_id (via 14161f3d0), but 44320fe0 is a named UI event dispatch (start_transition_out, driver_type_select), not focus forwarding; it is a larger input handler."
+  }
+ ],
+ "proofs": []
+}

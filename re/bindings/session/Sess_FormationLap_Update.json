@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_FormationLap_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d5d480",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "uint32_t * Sess_FormationLap_Update(void *state, uint32_t *route, double dt)",
+  "evidence": "decomp:re/decomp/142d5d480.c;xref:0x1457defa8;doc:re/db/subsystems/session.md",
+  "notes": "SessionStateFormationLap onUpdate (vtable slot ptr 0x1457defa8). If st+0xee9 (end sequence running) routes g_Game_FlowLinkStay. Else: when not online-locked or every human is ready (players list [st+0xde0]+0x100 +0x58..+0x60: +100, +0x5b&0x10, !+0x66, (!+0x65 or +0x91==2)) and session +0x1e8 != 16, ticks the formation director [st+0xe90] (0x142cd62a0). Player car (0x1400fa590(st+0xdd8)) with +0x88 > 0 fires the 'formation start' camera event once (st+0x1018). When the leader reaches the grid (st+0xc90 == 0x7c9df43c or [st+0xde8]+0x44 >= threshold 0x1460fe920): if +0x28 < 2 sets +0x41/+0x42 and posts bus msg 0x1457e63c8; hands every car to controller type 10 (Game_Set_VehicleController(g 0x146096578, i, 1, 10)). Once +0x42: starts the grid sequence (0x1436595b0 with callback 0x142d65f10, st+0xee2/+0xee9). Always ends with Sess_InGame_UpdateBase. (used by vmknolle race-start) | warmup-static (agent warmup, unverified): FormationLap enter 0x142d5d3c0 clears only FLL+0x41; +0x42 is tested the same way by Sess_InGame_UpdateBase 0x142d566a0 (FLL = [[st+0xd98]+0x1c0]), RaceRuleset slot 35 0x142d36c10 (FLL = rs+0x348) and VehicleProgress 0x142f0c150 (FLL = +0x78)"
+ },
+ "signature": {
+  "id": "session.formation_lap_update",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 D6 80 B9 E9 0E 00 00 00",
+  "match": "0x142d5d480",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d5d480",
+  "kind": "func_start",
+  "names": [
+   "Sess_FormationLap_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-b",
+   "kind": "func",
+   "item": "0x142d5d480",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_b/decomp/142d5d480.c;xref:0x1457defa8",
+   "notes": "V1028 slot 9 of the vtable preceded by inline name SessionStateFormationLap (slot ptr 0x1457defa8); logs 'Skipping formation lap due to timeout'/'Formation lap completed', sets +0xee2, then tail-calls 0x142d566a0(state,route,dt); writes route hash to *param_2 and returns it; arity (state,route,double dt) matches"
+  }
+ ],
+ "proofs": []
+}

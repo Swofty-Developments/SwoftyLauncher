@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDDeptPagePreQuery",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c7d8ba",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141c7b880.c;xref:0x141c7d8ba;doc:addons/rnd-tyres-thermal/native/HOOKS.md#the-fix-flag-instantiate_tyres_upgrades-default-on-install-time",
+  "notes": "lea rdx,[rsp+0xdf0] building the Career_Query_EnabledUpgrades args: rcx = Upgrades ([card+0x688])"
+ },
+ "signature": {
+  "id": "career.rn_d_dept_page_pre_query",
+  "section": ".xtls",
+  "pattern": "C6 84 24 90 00 00 00 01 48 8D 94 24 F0 0D 00 00",
+  "match": "0x141c7d8b2",
+  "anchor": "0x8",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c7d8ba",
+  "kind": "mid",
+  "expect": "48 8D 94 24 F0 0D 00 00",
+  "names": [
+   "site_Career_RnDDeptPagePreQuery"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-3",
+   "kind": "global",
+   "item": "site_Career_RnDDeptPagePreQuery",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c7b880.c;xref:0x141c7b8b0,0x141c7d89e,0x141c7d8a5,0x141c7d8ab,0x141c7d8b2,0x141c7d8ba,0x141c7d8cf",
+   "notes": "V0136 rsi=card (only write 0x141c7b8b0), rcx=[rsi+0x688], [rsp+0x8c]=[rsi+0x6bc] team, [rsp+0x90]=1, then lea rdx,[rsp+0xdf0] / r8 / r9w=0xffff and call 0x1435188d0 (4-arg query); 8B window clean"
+  }
+ ],
+ "proofs": []
+}

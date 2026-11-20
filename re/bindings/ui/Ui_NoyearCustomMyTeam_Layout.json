@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_NoyearCustomMyTeam_Layout",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143703180",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "void f(void *self)",
+  "evidence": "decomp:re/decomp/143703180.c;xref:0x143700012;xref:0x143701835;xref:0x14370348b",
+  "notes": "myteam-g1: Layout for noyear-custom-myteam."
+ },
+ "signature": {
+  "id": "ui.noyear_custom_my_team_layout",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 8B 81 A0 0C 00 00 48 8B 80 88 00 00 00 48 85 C0 0F 84 ?? ?? ?? ?? 48 8B B8 60 02 00 00 48 85 FF 0F 84",
+  "match": "0x143703180",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143703180",
+  "kind": "func_start",
+  "names": [
+   "Ui_NoyearCustomMyTeam_Layout"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x143703180",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143703180.c;xref:0x143700012",
+   "notes": "V10311 It configures the VideoWall video asset (track_select/team_select/showroom/driver_select/fan_zone paths) of the screen, not a generic layout."
+  }
+ ],
+ "proofs": []
+}

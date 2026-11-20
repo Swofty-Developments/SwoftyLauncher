@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamManagement_Events",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1423ca930",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *self)",
+  "evidence": "decomp:re/decomp/1423ca930.c;xref:0x145785b10",
+  "notes": "myteam-g1: Management menu events: my_team_initial_entry_management, my_team_owner_perk_dialogue_viewed, my_team_training_programme_purchased (buy hook)."
+ },
+ "signature": {
+  "id": "career.my_team_management_events",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 01 00 00 C5 F8 29 B4 24 70 01 00 00 48 8B 02 48 85 C0 0F 84 ?? ?? ?? ?? 48 89 CD 8B 00",
+  "match": "0x1423ca930",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423ca930",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamManagement_Events"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1423ca930",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1423ca930.c",
+   "notes": "V10178 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerWizardAddonDrivers_HandleChoice",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a25dd0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_CareerWizardAddonDrivers_HandleChoice(void *vm, uint32_t cmdHash)",
+  "evidence": "str:s_cfg_UISkipDLCUpsell;decomp:re/decomp/141a25dd0.c;xref:0x141a25e1e,0x141a25e1f",
+  "notes": "Vtable slot 0x80 of unnamed VM vtable 0x1457270c0 (pointer 0x145727140); switch on the djb2 hash in edx. 0xb2adfe87: if Ne_Get_FeatureFlags 0x1413ca0d0 byte0 bit 0x80 is set (add-on drivers owned) enables option add_on_drivers (Game_OptionsStore_FindOption 0x142b5dfd0 on [vm+0x290]+0x270, vt+0x18(1)), sets up the career component and the ai_can_recruit_icon option, pushes wizard step 0x15 (0x14386d780 on [vm+0x270]), posts a bus message (0x1457327f0, code 0) and routes. Else reads UI.skipDLCUpsell via Ne_Get_SettingBool on [vm+0x380]+0x18, default 0: if set, pushes step 0x16 and routes on (skip); if clear, posts the message with code 1 and opens popup career_wizard_addon_drivers_locked (0x142427f30 on [vm+0x298]), i.e. the DLC upsell. 0xa96c1ef4: disables add_on_drivers, step 0x16, message code 2, route. 0x9b1bf96c: if feature byte3 bit 4, step 0x1f, message code 3. The route name comes from table 0x145736988 indexed by the last wizard step (Vm_Fire_Route 0x1442c0e20). hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "game.career_wizard_addon_drivers_handle_choice",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 48 48 89 CE 81 FA 6C F9 1B 9B",
+  "match": "0x141a25dd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a25dd0",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerWizardAddonDrivers_HandleChoice"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-0",
+   "kind": "func",
+   "item": "0x141a25dd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a25dd0.c;xref:0x145727140",
+   "notes": "V9309 Command handler of the career-wizard add-on drivers step: 3 command hashes set option add_on_drivers on/off (and ai_can_recruit_icon=often when feature bit set), post wizard bus messages and fire the next route; if feature locked and UI.skipDLCUpsell (default false) is off it shows career_wizard_addon_drivers_locked; 2 args (vm, hash) match"
+  }
+ ],
+ "proofs": []
+}

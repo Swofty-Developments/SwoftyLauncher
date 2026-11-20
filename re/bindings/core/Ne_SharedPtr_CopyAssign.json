@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_SharedPtr_CopyAssign",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ceabd0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143ceabd0.c;xref:0x143d887f4,0x143d88806",
+  "notes": "Intrusive shared pointer copy-assign (value ptr + control block, strong count at ctl+8 incremented atomically, old block count at ctl+0xC decremented; calls control vcall 0 when it hits 0). Generic helper used by the render pass code (Game_Rtt_CreateScenes)."
+ },
+ "signature": {
+  "id": "core.shared_ptr_copy_assign",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8D 8C 24 E8 09 00 00 48 8B 54",
+  "match": "0x143d887f4",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143ceabd0",
+  "kind": "func_start",
+  "names": [
+   "Ne_SharedPtr_CopyAssign"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x143ceabd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ceabd0.c;xref:0x143d887f4",
+   "notes": "V8151 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

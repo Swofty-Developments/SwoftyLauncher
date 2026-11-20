@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_SaveSystem_DeleteDirectory",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14413ac70",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-channel-SAVE;decomp:re/decomp/14413ac70.c;xref:0x14413ab41,0x1441420ce,0x14414877b,0x1441497fa",
+  "notes": "named from its log messages (channel SAVE): 'Delete directory requested for '%s' | Delete directory result: 0x%x'"
+ },
+ "signature": {
+  "id": "core.save_system_delete_directory",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 38 44 89 C3",
+  "match": "0x14413ac70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14413ac70",
+  "kind": "func_start",
+  "names": [
+   "Ne_SaveSystem_DeleteDirectory"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb4-verify-a",
+   "kind": "func",
+   "item": "Ne_SaveSystem_DeleteDirectory",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14413ac70.c;xref:0x14413a6d0",
+   "notes": "V2232 Logs requested/result strings; RemoveDirectory + SetFileAttributesW error strings."
+  }
+ ],
+ "proofs": []
+}

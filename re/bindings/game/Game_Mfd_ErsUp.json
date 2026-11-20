@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_Mfd_ErsUp",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141534290",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "int Game_Mfd_ErsUp(void *mfd_car_settings_vm)",
+  "evidence": "doc:re/db/subsystems/game.md;decomp:re/decomp/141534290.c;xref:0x142a8ec04",
+  "notes": "Assist int[0x1a] ers_mode clamped (vfunc+0x268 id 0x1a) != 0 -> return (0x1415342dc); next mode by order table 0x1456f9428 {0,1,3,2} with bit in mask [vm+0xa80] -> Controls+0x08; Down = 0x141534490 (fuel-mix ERS round, static; bytes verified) | findings from PR #474 by vogtmarcel07-cloud | engine-re E1 2026-11-18: only caller Game_GameMfdSystem_Update 0x142a8e070 on action 'ERS Mode Up' (handle 0x146078d38); Controls+0x08 is InputRecord+0x08 of the human controller (vfunc +0x18 getter), which Sess_ControllerSystem_ApplyRecord copies to ERS+0x1a68 when EngineModeAvail allows the mode. Returns without change when assist ers_mode (auto) is on or no mode bit is set in [vm+0xa80], so on a car without ERS modes the button press is consumed with no effect. | raised by engine-re with --force 2026-11-18 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.mfd_ers_up",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 8B 85 B8 00 00 00 48 8B 80 A8 01 00 00 8B 40 04 83 C0 F1 B3 01 83 F8 03 72 0B 4C 89 E9 44 89 F2 E8 ?? ?? ?? ?? 48 89 F9 48 8D 15 ?? ?? ?? ?? 41 B0 01 E8 ?? ?? ?? ?? 84 C0 74 1A 4B 8B 8C",
+  "match": "0x142a8ec03",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x141534290",
+  "kind": "func_start",
+  "names": [
+   "Game_Mfd_ErsUp"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x141534290",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141534290.c;xref:0x142a8ec03",
+   "notes": "V7335 assist int[0x1a] clamp via vfunc +0x268 -> return, order table {0,1,3,2,4,5} and mask [vm+0xa80], write to controls+8 confirmed"
+  }
+ ],
+ "proofs": []
+}

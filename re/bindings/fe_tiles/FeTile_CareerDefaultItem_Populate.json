@@ -1,0 +1,113 @@
+{
+ "schema": 1,
+ "name": "FeTile_CareerDefaultItem_Populate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1417264c0",
+  "level": "L2",
+  "subsystem": "fe_tiles",
+  "proto": "void FeTile_CareerDefaultItem_Populate(HomeItem *item, void *node, uint32_t a7)",
+  "evidence": "decomp:re/decomp/1417264c0.c;xref:0x145704010;decomp:re/decomp/14173df80.c",
+  "notes": "Career menu 2025 content tile (career_default_content, vtable 0x145703ff0 slot +0x20, item built in FeTile_Build_List switch case 6 as career_default_content, size 0x1b8, +0x180 \"f1_career_2025\", the vtable stored at 0x14174058f; the parent ctor 0x141725380 leaves +0x190 at 0): FeTile_ItemBase_Populate, then 0x1407d07a0([item+0x158], 0), item+0x148 = the return of vtable slot +0xa0 (0x1417264e9), vtable slot +0x98, then Vm_Set_Bool(g_Vm_Registry, button_node.node+8, or 0x146ca0e90 when the node is null, is_dlc_content, item+0x190, 1) (lea r9,[rsi+0x190] at 0x1417264fb; corrected from item+0x148 by re-bindings 2026-11-18 as V0905 asks, the same code on Steam 1.0.145 at 0x141727c40), title lng_career_default_content and its description. The template fe_tile_button_default binds enabled (bool) on the same node. Raised by native-1990 for the F1 1990 Career menu (doc:/mnt/work/.f1-1990/addon/native-requests.md#N6). Clone of the other content tile populate: the signature starts in the bytes before the function."
+ },
+ "signature": {
+  "id": "fe_tiles.career_default_item_populate",
+  "section": ".xtls",
+  "pattern": "48 89 F1 48 83 C4 20 5E 48 FF A0 98 00 00 00 CC 56 57 53 48 83 EC 50",
+  "match": "0x1417264b0",
+  "anchor": "0x10",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1417264c0",
+  "kind": "func_start",
+  "names": [
+   "FeTile_CareerDefaultItem_Populate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/career/career_content.cpp",
+   "addons/f1-1990/native/src/career_menu_ui.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-21",
+   "verifier": "std-content",
+   "kind": "func",
+   "item": "FeTile_CareerDefaultItem_Populate",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:work/exe/std-content/decomp/1417264c0.c;xref:0x145704010;sig:fe_tiles.career_default_item_populate",
+   "notes": "V0905 Confirmed: vtable 0x145703ff0 slot 4 (+0x20, abs ref 0x145704010), 3 args passed to FeTile_ItemBase_Populate, then 0x1407d07a0(item+0x158,0), Vm_Set_Bool is_dlc_content on button_node.node+8, title/description lng_career_default_content(_description). Differs: the is_dlc_content value pointer is item+0x190 (lea r9,[rsi+0x190] at 0x1417264fb; the ctor byte [0x32], set to 1 for the 2026 tile), not item+0x148; +0x148 receives the return of vtable slot +0xa0 (mov [rsi+0x148],al at 0x1417264e9). Fix the notes and re-verify. sigcheck: func_start 1 hit (pattern starts before the function)"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "FeTile_CareerDefaultItem_Populate",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1417264c0-0x141726614,0x141697b90-0x141698441,0x141726150,0x141726160-0x141726340,0x141725380-0x141725614,0x141726b00-0x141726c06,0x14173e6a2-0x14173e6be,0x14173e986-0x14173ea26,0x141740552-0x141740608,0x141726340-0x141726471,0x141726680-0x1417267df,0x140975db0-0x1409760ab,0x1407d07a0-0x1407d0906,0x1407b10c0-0x1407b118a,1.0.145 0x141727c40-0x141727d94;xref:0x145704010,0x14174058f,0x141740583,0x14570e954,0x1417264e9,0x1417264fb,0x1417265e9,0x1417265fc,0x145706160",
+   "notes": "V100001 Blind: partial, derived before reading the notes. Own disasm confirms the proto (only rcx read; rdx/r8 forwarded to FeTile_ItemBase_Populate 0x141697b90, which reads [rdx+8] and hands r8d to vslot 0x08), vtable 0x145703ff0 slot 0x20 (0x145704010), creation in FeTile_Build_List switch case 6 (table 0x14570e954) as career_default_content with +0x180 f1_career_2025, 0x1407d07a0([+0x158],0), +0x148 = vslot 0xa0 at 0x1417264e9, vslot 0x98 (a bare ret here), Vm_Set_Bool(g_Vm_Registry,[+0x20]+8,is_dlc_content,&+0x190) at 0x1417264fb (ctor leaves +0x190=0), both lng keys, and 1.0.145 0x141727c40 81/81 equal. Imprecise: 0x14174058b is the disp of the lea at 0x141740588 (vptr store 0x14174058f). Template binding not checkable."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "FeTile_CareerDefaultItem_Populate",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1417264c0-0x141726614,0x141697b90-0x141698441,0x14173df80-0x14174527b,0x141725380-0x141725614,0x141726340-0x141726471,0x141726680-0x1417267df,0x140975db0-0x1409760ab,0x141726160-0x141726340,0x141726b00-0x141726c00,1.0.145 0x141727c40-0x141727d94;xref:0x145704010,0x14174058f,0x14173e986,0x141740559,0x141740583,0x1417255e0,0x1417264e9,0x1417264fb,0x145706160,0x141741d08",
+   "notes": "V100006 Blind: agree. Own disasm: 3 args, rdx/r8 untouched into FeTile_ItemBase_Populate 0x141697b90 (reads [node+8], passes a7 to slot +0x8, a bare ret here). Only pointer 0x145704010 = vtable 0x145703ff0 +0x20. Built in FeTile_Build_List table 0x14570e954 case 6 (button_1): size 0x1b8, parent ctor 0x141725380 (+0x190=0 at 0x1417255e0), vtable store 0x14174058f, +0x180 f1_career_2025. Body: 0x1407d07a0([+0x158],0) (setCurrentGameMode), +0x148 = slot +0xa0, slot +0x98 (ret), Vm_Set_Bool(g_Vm_Registry, [item+0x20]+8 or 0x146ca0e90, is_dlc_content, item+0x190, 1), title/description keys via 0x1407b10c0. Steam 0x141727c40: 81/81 insns equal. Template binding not checkable."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1417264b0",
+    "target": "0x1417264c0"
+   },
+   "sigcheck": "passed",
+   "digest": "4f9023a67aaeb2ae91fde697fcb951e4cea67e1dd1054704f9877d0e2877b01c"
+  },
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141727c30",
+    "target": "0x141727c40"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "dcecb226112f2a606c914da686d32d25e769eff0c56db7472f69aa23f77e8ac5"
+  }
+ ]
+}

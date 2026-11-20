@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Map_LowerBoundPairIntInt",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143450a90",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143450a90.c;xref:0x14142ed33",
+  "notes": "std::map style lower-bound on a key pair (int at node+0x1c, int at +0x20 compared lexicographically with param_3[0..1]). 12 callers (Game_GameDecalCustomisationSystem_Update, 0x141fd6d70, 0x141fe8790...). Hypothesis."
+ },
+ "signature": {
+  "id": "core.map_lower_bound_pair_int_int",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 4C 89 C3 48 89 D6 48 89 CF 4C 8B 79 08 4D 8B 4F",
+  "match": "0x143450a90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143450a90",
+  "kind": "func_start",
+  "names": [
+   "Ne_Map_LowerBoundPairIntInt"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x143450a90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143450a90.c;xref:0x14142ed33",
+   "notes": "V7585 strings/offsets/constants and callers match decomp; hypothesis supported"
+  }
+ ],
+ "proofs": []
+}

@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use crate::scale::{Hit, px};
+use crate::ui::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::Icon;
 use gpui_kit::component::input::{Input, InputEvent, InputState};
@@ -10,7 +10,7 @@ use swofty_i18n::tr;
 
 use super::state::*;
 use crate::shell::Shell;
-use crate::theme::Palette;
+use crate::ui::theme::Palette;
 
 impl Shell {
     pub(super) fn sync_search(

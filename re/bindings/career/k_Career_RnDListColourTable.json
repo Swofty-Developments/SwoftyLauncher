@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "k_Career_RnDListColourTable",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14570ddd8",
+  "type": "uint32_t[6]",
+  "level": "L1",
+  "subsystem": "career",
+  "evidence": "pat:single-reader-0x14174e170;kb:subsystems/rnd_ui.md#tags",
+  "notes": "Department colour table of the R&D upgrade lists 0x14174e170; [4] white. Light twin k_Career_RnDListLightColourTable 0x14570ddf0."
+ },
+ "signature": {
+  "id": "career.rn_d_list_colour_table",
+  "section": ".xtls",
+  "pattern": "4C 8D 05 ?? ?? ?? ?? 45 8B 04 90 44 89 44 24 3C",
+  "match": "0x14174e586",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x14570ddd8",
+  "kind": "data",
+  "names": [
+   "k_Career_RnDListColourTable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x14570ddd8",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x14174e589",
+   "notes": "V7426 table content and refs match"
+  }
+ ],
+ "proofs": []
+}

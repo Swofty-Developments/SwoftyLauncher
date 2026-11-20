@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Init_ResourceMessageHandlerConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1443db170",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint32_t (void *cfg)",
+  "evidence": "decomp:re/decomp/1443db170.c;xref:0x145a89248",
+  "notes": "myteam-g1: Reads ResourceMessageHandler.synchronousResourceProcessingTimeBudget and ErpLoader.* settings (readBufferSize 0x200000, readBufferCount 4, forceSequentialReads). Generic engine resource loader config.  2026-11-17 engine-re: also AssetGroupLoader.rollbackOnLoadError (default 0), AssetGroupLoader.retryOnDescriptionLoadError (0), AssetGroupLoader.pathPrefix/pathSuffix (0x40-byte strings at 0x14628f520/0x14628f560), Storage.UserMarkers.decompressErp, ErpLoader.useApr; ends by loading the asset manifest (Ne_AssetManifest_Load 0x143a5a550, call 0x1443dbe67)"
+ },
+ "signature": {
+  "id": "core.init_resource_message_handler_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 C5 F8 29 BC 24 80 00 00 00 C5 F8 29 74 24 70 48 89 CE 48 8B 41 18",
+  "match": "0x1443db170",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1443db170",
+  "kind": "func_start",
+  "names": [
+   "Ne_Init_ResourceMessageHandlerConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x1443db170",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1443db170.c;xref:0x145a89248",
+   "notes": "V10358 Strings ErpLoader.*, ResourceMessageHandler.synchronousResourceProcessingTimeBudget; 0x200000 read buffer."
+  }
+ ],
+ "proofs": []
+}

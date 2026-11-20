@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Sess_TimeTrialLeaderboard_TabDone",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142fcbb19",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/142fcba80.c;xref:0x1457ffcb8",
+  "notes": "In Sess_TimeTrialLeaderboard_ActivateTab: the nop after the call to FUN_142fb6630, directly before add rsp,0x40; pop rsi; ret. Reads rsp only. The rip target of core's time trial leaderboard guard when the child model is null; never hooked."
+ },
+ "signature": {
+  "id": "session.time_trial_leaderboard_tab_done",
+  "section": ".xtls",
+  "pattern": "90 48 83 C4 40 5E C3 56 48 83 EC 40",
+  "match": "0x142fcbb19",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142fcbb19",
+  "kind": "mid",
+  "expect": "90 48 83 C4 40",
+  "names": [
+   "site_Sess_TimeTrialLeaderboard_TabDone"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "ttlbnull",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/frontend/leaderboard_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-01",
+   "verifier": "ttlbnull-verify",
+   "kind": "global",
+   "item": "0x142fcbb19",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142fcba80.c;xref:0x1457ffcb8;sig:session.time_trial_leaderboard_tab_done",
+   "notes": "V8622 Static: nop before add rsp,0x40; pop rsi; ret. No push/sub between 0x142fcbb09 and 0x142fcbb19 (calls balanced), so rsp equals that at 0x142fcbb09."
+  }
+ ],
+ "proofs": []
+}

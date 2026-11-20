@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Car_Aero_RegisterDebugChannel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446c9f00",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446c9f00.c;xref:0x1446c9a9f",
+  "notes": "Registers one aero debug/tweak channel: copies the C-string name (<=0x20 chars into a local buffer) and sets up the channel with 3 qwords + 2 floats + byte flag. 21 callers, all in Game_Aero_RegisterDebugChannels (344 lines due to unrolled strcpy)."
+ },
+ "signature": {
+  "id": "car.aero_register_debug_channel",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8D 05 ?? ?? ?? ?? 48 89 44 24 20 C6 44 24 38 16 C7 44 24 30 00 00 C0 40 C7 44 24 28 00 00 00 00 4C 8D 05 ?? ?? ?? ?? 48 89 F9 48 89 DA 49 89 F1 E8 ?? ?? ?? ?? 48 8D 05 ?? ?? ?? ?? 48 89 44 24 20 C6 44 24 38 16 C7 44 24 30 00 00 C0 40",
+  "match": "0x1446c9a9f",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1446c9f00",
+  "kind": "func_start",
+  "names": [
+   "Car_Aero_RegisterDebugChannel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x1446c9f00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446c9f00.c;xref:0x1446c9a9f",
+   "notes": "V8180 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

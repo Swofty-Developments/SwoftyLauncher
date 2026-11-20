@@ -22,8 +22,8 @@ extern "C" const SwoftyFakeEngine *swofty_registry_engine(void)
 {
     static const SwoftyFakeEngine engine = [] {
         swofty_core::registry::set_caller_resolver([](const void *) { return g_addon; });
-        return SwoftyFakeEngine{sizeof(SwoftyFakeEngine), swofty_core::registry::table(), engine_begin_addon,
-                                engine_end_register, engine_reset};
+        return SwoftyFakeEngine{sizeof(SwoftyFakeEngine), swofty_core::registry::table(), engine_begin_addon, engine_end_register,
+                                engine_reset};
     }();
     return &engine;
 }

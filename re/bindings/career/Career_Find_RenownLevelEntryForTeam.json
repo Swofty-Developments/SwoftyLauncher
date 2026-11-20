@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Find_RenownLevelEntryForTeam",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c3fe50",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_Find_RenownLevelEntryForTeam(void *comp, void *out, uint8_t *team_key)",
+  "evidence": "decomp:re/decomp/140c3fe50.c;xref:0x140a77099;xref:0x140a772a9;xref:0x140a774b9",
+  "notes": "myteam-g2: Scans the refcounted entries at comp+0x368..0x370 for the one whose team key matches team_key and returns it (acquiring a ref). Used by Accolades pages, RenownFormVM_Refresh, BuildRenownText and RenownIncreasedPopup_Init. Read only."
+ },
+ "signature": {
+  "id": "career.find_renown_level_entry_for_team",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 54 24 20 4C 8B B9 68 03 00 00",
+  "match": "0x140c3fe50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c3fe50",
+  "kind": "func_start",
+  "names": [
+   "Career_Find_RenownLevelEntryForTeam"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140c3fe50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c3fe50.c",
+   "notes": "V9498 Scans refcounted 16-byte entries at +0x368..+0x370, key at entry+0x18 vs team_key, returns with refcount increment."
+  }
+ ],
+ "proofs": []
+}

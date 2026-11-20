@@ -1,0 +1,62 @@
+{
+ "schema": 1,
+ "name": "Ai_Parse_TrackConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140680250",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_Parse_TrackConfig(void **slots, void *track_db_node)",
+  "evidence": "decomp:re/decomp/140680250.c;decomp:re/decomp/142e5e010.c;xref:0x142e5e110",
+  "notes": "Binds 24 DB field slots (0x1445a2cf0 per key) into slots[0..0x17]: ai_track_config.crowded_rules (num_of_cars_near/infront/behind, num_of_starting_laps, range_to_count_cars), formation_lap (formation_rev_start_dist_min/max, formation_rev_distance), look_ahead (radius_to_distance_graph, speed_to_distance_graph, merge_rate_step_max/proportion), safety_car (speed_limit_multi / min_speed _for_build_gap_return_to_pits), space_lines (generation_absolute_space_requirement, generation_center/side_space_percentage), recovery (recovered_speed, dist_from_racing_line_to_move_towards/away, recovery_target_distance), yield (no_need_to_slow_down_fraction, too_far_ahead_to_slow_down_fraction, pit_yield_speed). Only caller Game_TrackDataSystem_Init 0x142e5e010 (0x142e5e110) with slots = TrackDataRecord+0x410 (0xc0 bytes, up to +0x4d0). No unique byte signature: the body is identical to sibling section binders apart from rip-relative string offsets. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.parse_track_config",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8D 8F D0 04 00 00 4C 89 F2 E8",
+  "match": "0x142e5e110",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x140680250",
+  "kind": "func_start",
+  "names": [
+   "Ai_Parse_TrackConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x140680250",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140680250.c;xref:0x142e5e110",
+   "notes": "V7322 name matches log/pretty-function string and body; sibling-consistent"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x140680250",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x140680250-0x14068048a;xref:0x142e5e110",
+   "notes": "V10393 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only caller 0x142e5e110 with rcx = record+0x410. 24 calls to 0x1445a2cf0, 24 ai_track_config.* strings (crowded_rules x5, formation_lap x3, look_ahead x4, safety_car x2, space_lines x3, recovery x4, yield x3), stores to [rsi+0..+0xb8] step 8."
+  }
+ ],
+ "proofs": []
+}

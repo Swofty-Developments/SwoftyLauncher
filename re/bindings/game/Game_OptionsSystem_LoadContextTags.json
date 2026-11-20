@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OptionsSystem_LoadContextTags",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ace510",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "str:s_OptionsSystem_LoadContextTags;xref:0x142acfe48",
+  "notes": "cxx=game::OptionsSystem::loadContextTags; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "game.options_system_load_context_tags",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 0A 00 00 C5 78 29 8C 24",
+  "match": "0x142ace510",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ace510",
+  "kind": "func_start",
+  "names": [
+   "Game_OptionsSystem_LoadContextTags"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142ace510",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142ace510.c;xref:0x1413e5267",
+   "notes": "V5010 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

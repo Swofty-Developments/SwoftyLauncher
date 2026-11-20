@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_ControllerSet_Transition",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1438974a0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-CONTROLLER_SET",
+  "notes": "named from its log messages (channel CONTROLLER_SET): 'ControllerSet(%d) : [%s -> %s].'"
+ },
+ "signature": {
+  "id": "game.controller_set_transition",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 38 83 FA 01 76 07",
+  "match": "0x1438974a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1438974a0",
+  "kind": "func_start",
+  "names": [
+   "Game_ControllerSet_Transition"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "re-ai",
+   "kind": "func",
+   "item": "0x1438974a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1438974a0.c;xref:0x1519eb3bc",
+   "notes": "V1507 Game_ControllerSet_Transition(set, ai): new mode = ai==0 ? (flags != 0 || no human controller ? (AI controller present ? 1 : 3) : 0) : (AI controller present ? 1 : (human controller present ? 0 : 3)). When it differs from the current mode, stores [+0x10] = rnd ^ mode and [+0x18] = fresh rnd pair, logs the transition and posts a mode message (vtable 0x145884e78) and a flags message (vtable at the second post). A non-zero flag word therefore keeps a car on AI even when human is requested."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x1438974a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1438974a0.c",
+   "notes": "V6373 name/purpose and quoted strings/cxx confirmed in body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

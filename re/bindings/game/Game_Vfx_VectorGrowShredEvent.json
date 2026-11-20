@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Vfx_VectorGrowShredEvent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b34f10",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b34f10.c;xref:0x1445a8dff",
+  "notes": "vector grow-and-append for 0xf0-byte tyre shred events; caller Game_Vfx_TyreShredImpactEvent."
+ },
+ "signature": {
+  "id": "game.vfx_vector_grow_shred_event",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 D7 48 89 CE 48 8B 41 10 48 89 C2 48 2B 51 08 48 C1 FA 04 48 B9 EF EE",
+  "match": "0x143b34f10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b34f10",
+  "kind": "func_start",
+  "names": [
+   "Game_Vfx_VectorGrowShredEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143b34f10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b34f10.c;xref:0x1445a8dff",
+   "notes": "V7751 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

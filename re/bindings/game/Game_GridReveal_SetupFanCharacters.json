@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_GridReveal_SetupFanCharacters",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140342080",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140342080.c;xref:0x145615b90",
+  "notes": "was Game_GridReveal_PlayFanSequence (renamed 2026-11-14 to the name signature game.grid_reveal_play_fan_sequence lists; the verifier's Game_GridReveal_Initialise is the better description but would break that signature). Role per V10422: the GridReveal cutscene initialise (vt 0x1456159d0 + 0x1c0, abs64 0x145615b90; poll 0x140341d30 sits at +0x1b0): CUTSCENE_PARAMS setters (HQ chars, mirrored, night shadows, frustum, prewarm), grid_lineup_camera, resetStartTimeOffset, fan loop logging fan position %d sequence %s and calling 0x1403437d0 / 0x140343e50. Old text: named from its log messages (channel GRIDREVEAL): 'fan position %d sequence %s' L2 2026-11-14 (engine-re round 2): decomp read; 1 reference(s) (0x145615b90); the body itself references 'GRIDREVEAL' / 'fan position %d sequence %s' / 'CUTSCENE_PARAMS' / 'setUseHighQualityCharacters(_useHighQualityCharacters %s) [%s]'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.grid_reveal_play_fan_sequence",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 05 00 00 C5 F8 29 BC 24 E0 05 00 00 C5 F8 29 B4 24 D0 05 00 00 48 89 CE C7 81 2C 05 00 00 02 00 00 00",
+  "match": "0x140342080",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140342080",
+  "kind": "func_start",
+  "names": [
+   "Game_GridReveal_SetupFanCharacters"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x140342080",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140342080.c",
+   "notes": "V4485 Logs 'fan position %d sequence %s' but is a 5 KB grid-reveal setup (CutsceneParams setters, grid_lineup_camera, start time offset); better Game_GridReveal_SetupFanCharacters"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x140342080",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140342080.c",
+   "notes": "V7116 name fits; finding facts hold; vtable/indirect (no direct call)"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x140342080",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x140342080-0x14034357d;xref:0x145615b90",
+   "notes": "V10422 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only ref abs64 0x145615b90 = vt 0x1456159d0 + 0x1c0, the same initialise slot as the other cutscene scripts (poll 0x140341d30 sits at +0x1b0). Body is the GridReveal initialise: CUTSCENE_PARAMS setters (HQ chars, mirrored, night shadows, frustum, prewarm), grid_lineup_camera, resetStartTimeOffset, fan loop with log fan position %d sequence %s calling 0x1403437d0/0x140343e50. Name PlayFanSequence is too narrow: better Game_GridReveal_Initialise."
+  }
+ ],
+ "proofs": []
+}

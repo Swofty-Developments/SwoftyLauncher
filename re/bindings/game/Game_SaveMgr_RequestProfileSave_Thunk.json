@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Game_SaveMgr_RequestProfileSave_Thunk",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436595b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "bool Game_SaveMgr_RequestProfileSave_Thunk(void *save_mgr, void *callback, uint8_t a3, uint8_t a4)",
+  "evidence": "decomp:re/decomp/1436595b0.c;decomp:re/decomp/1422c6ba0.c;decomp:re/decomp/140ff7cf0.c;xref:0x1422c6dda,0x140ff859b,0x1407df990,0x141bb27f0;decomp:re/decomp/1436595b0.c;xref:0x1422c6dda",
+  "notes": "jmp thunk to .data1 body 0x150bf28c0 (SaveProfile request; body read on Steam). Game_SaveMgr_CreateSaveJob(save_mgr+0x38, 1, 0, 'profile', a3, ...), job+0x11 = a4, copies callback {fn, ctx} (16 bytes) into the request, sends it on g_Game_MessageBus+8 with 0x14302c320 and, when that returns nonzero, starts the job (job vt+0) and queues it on save_mgr+0x60 (vt+0x38). save_mgr = systems map [g_Game_Manager+0x30]: idx = 0x14030ffd0(map, &key) with key = (void*)0x146100ca8, value = [[map+0x18] + idx*0x10 + 8]. Callers pass (mgr, &{0,0}, 1, 0) (Team HQ advance end 0x1422c6dda) or a completion callback {Game_CareerOnlineSynchroniser_OnProfileSaveComplete, this} (career data sync 0x140ff859b). About 40 callers. ts-v1 signature for the test agent (V1494 agree)"
+ },
+ "signature": {
+  "id": "game.save_mgr_request_profile_save_thunk",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? FF AB 62 24 E9 79 90",
+  "match": "0x1436595b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436595b0",
+  "kind": "func_start",
+  "names": [
+   "Game_SaveMgr_RequestProfileSave_Thunk"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "ts-v1",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/testing/agent/agent.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "ts-v1",
+   "kind": "func",
+   "item": "0x1436595b0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436595b0.c;xref:0x1422c6dda",
+   "notes": "V1494 ts-v1 re-read: thunk to the .data1 request body; (save_mgr, {fn,ctx}*, a3, a4) returns true when the bus refused it (iVar4==0), copies the 16-byte callback, null callbacks are what Team HQ's own autosave passes. save_mgr is the value in the game manager's systems map keyed by the address 0x146100ca8 (map find 0x14030ffd0 is a flat hash map: hit returns the slot, miss returns the capacity (ctrl-array minus entries)>>4; entries {key,value} 0x10 bytes from [map+0x18]). Agrees."
+  }
+ ],
+ "proofs": []
+}

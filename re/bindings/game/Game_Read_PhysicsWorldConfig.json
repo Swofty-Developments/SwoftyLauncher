@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_Read_PhysicsWorldConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144457220",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144457220.c;xref:0x145a8f680",
+  "notes": "Builds the two physics worlds from settings keys (reader 0x143a42f10 = int with default, 0x143a44090 = float). World 1 (stored this+0x20, Ne_PhysWorld_InitFromConfig 0x14445798c): maxFixedObjects default 1000 (0x1444576bd), maxRigidBodies 1000, maxLargeGeoms 2000 (0x1444576ef), maxConstraints 1000, maxSmallGeoms 1000, maxBroadPhaseCollisions 10000, maxContacts 10000, maxBodiesInIsland 256, maxConstraintsInIsland 1000; after the reads world 1 is forced to maxRigidBodies 20000, maxSmallGeoms 20000, maxBroadPhaseCollisions 60000 (0x144457925..0x14445793b). World 2 (trigger world) copies the read values and uses maxBroadPhaseCollisionsTrigger (default 1500, 0x1444579b7) as its broad-phase limit. Track modding: the 1500 in this function is the trigger world's broad-phase pair limit, not a collision tile limit; tiles come from the world 1 maxLargeGeoms pool (code default 2000; the key was not found in gamedatabases.2025.bin, so the shipped value is unknown statically). L2 2026-11-17 (engine-re track runtime round): decomp and disassembly read, ref = vtable slot 0x145a8f680. raised by engine-re with --force 2026-11-17 at user request (lane owner review requested) | 2026-11-17 engine-re track runtime round 2, static. Settings source: every PhysicsWorld.* key is read with Ne_Map_FindOrDefaultWithErrorContext 0x143a42f10 (maxLargeGeoms at 0x1444576f5, default 0x7d0 = 2000) from the engine settings store [[cfg+0x48]+0x18] = the same name map other engine settings use (Ne_Get_SettingU32/Bool; the application object 0x146ca5e28 is created at 0x147826f60 with vtable 0x145a89230, settings at +0x18). The key string exists only in the exe; no plain-text game file (game.dat is encrypted) and not gamedatabases.2025.bin holds it, and no static writer for the store was found, so the shipped value needs a runtime read (the getter returns 2 and writes the default when the key is missing). raised by engine-re with --force 2026-11-17 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.read_physics_world_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 02 00 00 C5 78 29 9C 24 90 02 00 00 C5 78 29 94 24 80 02 00 00 C5 78 29 8C 24 70 02 00 00",
+  "match": "0x144457220",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144457220",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_PhysicsWorldConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x144457220",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144457220.c;xref:0x140e57153",
+   "notes": "V6658 name and log/strings match; body checked, no broader behaviour"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "trkrt-verify",
+   "kind": "func",
+   "item": "Game_Read_PhysicsWorldConfig",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144457220.c;xref:0x14445798c",
+   "notes": "V10778 defaults maxFixedObjects 1000, maxLargeGeoms 2000, trigger 1500 into world 2 config, world-1 overrides 20000/20000/60000 before init"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "trkrt2-verify",
+   "kind": "func",
+   "item": "0x144457220",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm of 0x144457220..0x144458c2e and 0x147826f60;xref:0x1444576f5;xref:0x14782706d",
+   "notes": "V10802 0x1444576e5 lea 'PhysicsWorld.maxLargeGeoms' (0x145a8f746), r9d=0x7d0 (2000), rcx=[cfg+0x70] which was set at 0x144457291 from [[cfg+0x48]+0x18], call 0x143a42f10 at 0x1444576f5. 0x147826f60 allocates 0x198 bytes, sets vtable 0x145a89230 (lea at 0x147826f8b) and stores the object to 0x146ca5e28 (0x14782706d). Not checked: that [cfg+0x48] is that same app object at runtime."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Game_EntrantsUi_BuildCharacterRef",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1424f1d70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_EntrantsUi_BuildCharacterRef(void *out, const uint8_t *character, void *node)",
+  "evidence": "decomp:re/decomp/1424f1d70.c;xref:0x1424f2c9f",
+  "notes": "fills one character_list child: stat_id (byte character+0x00), filename (name, *(character+0x08)+0x10), full_name/first_name/last_name/job_role (string objects at +0x10..+0x28) and the textures of entrants.ui.asset_templates.characters.textures (message_avatar, message_avatar_race) with [NAME] = the name, through 0x1424b0e10; out holds the six property refs. Only caller: the list builder 0x1424f2b10, once per 0x38-byte row of the character vector. Entrants UI (ENTRANTS_UI log channel); in the open game lane until entrants-re sorts it. Raised by native-1990 for the F1 1990 per-career agent (doc:/mnt/work/.f1-1990/addon/native-requests.md#N8)"
+ },
+ "signature": {
+  "id": "game.entrants_ui_build_character_ref",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 04 00 00 C5 F8 29 B4 24 60 04 00 00 4C 89 C7 48 89 D3 48 89 CE 0F B6 02",
+  "match": "0x1424f1d70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424f1d70",
+  "kind": "func_start",
+  "names": [
+   "Game_EntrantsUi_BuildCharacterRef"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/agent_character.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-21",
+   "verifier": "std-ui-verify",
+   "kind": "func",
+   "item": "Game_EntrantsUi_BuildCharacterRef",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1424f1d70.c;decomp:re/decomp/1424f2b10.c;xref:0x1424f2c9f;imm:0x38;sig:game.entrants_ui_build_character_ref",
+   "notes": "V0914 fresh decomp + disasm: only rcx/rdx/r8 read before write (r9 set at 0x1424f1dcb) so the 3-arg proto holds, returns out. stat_id (string 0x14562475a) from byte rec+0x00, filename from *(rec+8)+0x10, full_name/first_name/last_name/job_role from *(rec+0x10..+0x28)+0x10, then 0x1424b0e10 with template entrants.ui.asset_templates.characters.textures and NAME = the filename string; out gets six 0x20-byte property refs (+0x00..+0xa0). rel32 scan: sole caller 0x1424f2c9f in 0x1424f2b10, which walks begin/end at +0x08/+0x10 of its 2nd arg with stride 0x38. The texture keys message_avatar/message_avatar_race are template data, not referenced here, so not checked. sigcheck: one hit at 0x1424f1d70"
+  }
+ ],
+ "proofs": []
+}

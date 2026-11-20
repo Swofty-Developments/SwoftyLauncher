@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneDriver_DetermineHeadDataForDriver",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142890400",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name determineHeadDataForDriver (class from the log channel); log channel FRONTEND_SCENE_DRIVER: 'determineHeadDataForDriver [%p]'"
+ },
+ "signature": {
+  "id": "game.frontend_scene_driver_determine_head_data_for_driver",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 09 00 00 49 89 D5",
+  "match": "0x142890400",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142890400",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneDriver_DetermineHeadDataForDriver"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142890400",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142890400.c",
+   "notes": "V5116 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

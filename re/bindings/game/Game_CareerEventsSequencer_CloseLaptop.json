@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerEventsSequencer_CloseLaptop",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c79f40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140c79f40.c;xref:0x140c79b21,0x140c79e9b",
+  "notes": "closeLaptop(forExit): forExit triggers a full fade-out request (onFadedOutForExit), else shows characters and plays career_close_laptop; writes ui_menu_data.can_back_out_of_laptop. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3028)"
+ },
+ "signature": {
+  "id": "game.career_events_sequencer_close_laptop",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 20 89 D3 48 89 CE 80",
+  "match": "0x140c79f40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c79f40",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerEventsSequencer_CloseLaptop"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d12-verify",
+   "kind": "func",
+   "item": "Game_CareerEventsSequencer_CloseLaptop",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c79f40.c;xref:140c79a80",
+   "notes": "V3028 strings/offsets/calls match claim"
+  }
+ ],
+ "proofs": []
+}

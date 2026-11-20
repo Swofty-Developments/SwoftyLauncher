@@ -1,0 +1,39 @@
+{
+ "schema": 1,
+ "name": "Sess_Module_OnSessionUnloaded",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d4ae20",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_Module_OnSessionUnloaded(void *module)",
+  "evidence": "decomp:re/decomp/142d4ae20.c;xref:0x142d4b480;str:s_GameModule_OnSessionUnloaded",
+  "notes": "cxx=game::GameModule::onSessionUnloaded. Session teardown dispatcher: on load-state (+0x1c==5) iterates sub-module list [+0x200..+0x208] calling vtable+0x30 (per-module unload); further transitions keyed on state ints +0x24==2 ([+0x1f0]->vtable+0x30) and a multi-field idle check; sets a teardown step byte. Pairs with Game_GameModule_OnSessionEnter 0x14080c300."
+ },
+ "signature": {
+  "id": "session.session_unloaded",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 88 00 00 00 48 89 CE 83 79 1C 05",
+  "match": "0x142d4ae20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d4ae20",
+  "kind": "func_start",
+  "names": [
+   "Sess_Module_OnSessionUnloaded"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-19",
+    "by": "session-re"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

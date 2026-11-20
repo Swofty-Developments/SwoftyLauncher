@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_RttRenderer_CreateSceneJob",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d84330",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143d84330.c;xref:0x1401528c7,0x143d84253,0x143d8445b",
+  "notes": "Hypothesis: allocates 0x8c8-byte job (0x143d7bcb0) when flag +0x61 is 0; calls Game_Rtt_CreateTextures path; from Ne_RttRenderer_SubmitJob. Named callers: Ne_RttRenderer_SubmitJob."
+ },
+ "signature": {
+  "id": "core.rtt_renderer_create_scene_job",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 80 79 61 00 0F",
+  "match": "0x143d84330",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d84330",
+  "kind": "func_start",
+  "names": [
+   "Ne_RttRenderer_CreateSceneJob"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143d84330",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d84330.c;xref:0x1401528c7",
+   "notes": "V7928 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

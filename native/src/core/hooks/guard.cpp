@@ -1,6 +1,6 @@
 #include <windows.h>
 
-#include "guard.hpp"
+#include "core/hooks/guard.hpp"
 
 #include <cstring>
 

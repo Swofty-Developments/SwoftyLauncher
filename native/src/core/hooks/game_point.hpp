@@ -6,7 +6,7 @@
 
 #include <safetyhook.hpp>
 
-#include "dispatch.hpp"
+#include "core/hooks/dispatch.hpp"
 
 // A game hook point: the core's detour on one game function, installed while the point has
 // subscribers. It yields to a raw overwrite of the same function from any addon (the 1.5 rule: the
@@ -49,15 +49,13 @@ public:
             if (ops_.conflict)
                 ops_.conflict(point_, by);
             return fail(State::yielded, "[hooks] " + point_ + " unavailable: " + by + " overwrites " + binding_ +
-                                            "; subscribers " + subscribers +
-                                            " not run (the launcher lists this as a conflict)");
+                                            "; subscribers " + subscribers + " not run (the launcher lists this as a conflict)");
         }
         if (late) {
             std::string there = ops_.occupied_by ? ops_.occupied_by(at) : std::string();
             if (!there.empty())
                 return fail(State::yielded, "[hooks] " + point_ + " unavailable: installed while the game runs, it overlaps " +
-                                                there + " on " + binding_ + "; refused; subscribers " + subscribers +
-                                                " not run");
+                                                there + " on " + binding_ + "; refused; subscribers " + subscribers + " not run");
         }
         auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), detour_);
         if (!h)
@@ -66,8 +64,8 @@ public:
         hook_ = std::move(*h);
         state_ = State::live;
         installs_++;
-        log("[hooks] " + point_ + " live on " + binding_ + (late ? " (installed late)" : " (window stage)") +
-            ": subscribers " + subscribers);
+        log("[hooks] " + point_ + " live on " + binding_ + (late ? " (installed late)" : " (window stage)") + ": subscribers " +
+            subscribers);
         return true;
     }
 

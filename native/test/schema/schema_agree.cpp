@@ -6,7 +6,7 @@
 //   schema_agree --patterns < cases.json    [[pattern, [text, ...]], ...] -> [[compiled, [matched, ...]], ...]
 //   schema_agree --merge < cases.json       [[schema, base, patch], ...] -> [merged or null when it fails, ...]
 
-#include "../../src/core/registry/schema.hpp"
+#include "core/registry/schema.hpp"
 
 #include <algorithm>
 #include <filesystem>
@@ -72,10 +72,7 @@ bool version_file(const std::string &name, Version &v)
     return dot != std::string_view::npos && number(stem.substr(0, dot), v.first) && number(stem.substr(dot + 1), v.second);
 }
 
-std::string version_name(Version v)
-{
-    return std::to_string(v.first) + "." + std::to_string(v.second);
-}
+std::string version_name(Version v) { return std::to_string(v.first) + "." + std::to_string(v.second); }
 
 struct Pin {
     int major = 0;
@@ -102,7 +99,9 @@ bool is_layers_name(const std::string &name)
     std::string stem = name.substr(0, name.find('@'));
     if (stem.size() >= 5 && stem.substr(stem.size() - 5) == ".json")
         stem.resize(stem.size() - 5);
-    auto ends = [&](std::string_view s) { return stem.size() >= s.size() && stem.compare(stem.size() - s.size(), s.size(), s) == 0; };
+    auto ends = [&](std::string_view s) {
+        return stem.size() >= s.size() && stem.compare(stem.size() - s.size(), s.size(), s) == 0;
+    };
     return stem == "layers" || ends("layer") || ends("layers");
 }
 
@@ -183,10 +182,7 @@ struct Corpus {
     }
 };
 
-std::string quoted(const std::string &s)
-{
-    return "'" + s + "'";
-}
+std::string quoted(const std::string &s) { return "'" + s + "'"; }
 
 DataSchemas pick_versions(const std::string &name, int major, const std::optional<Pin> &pin)
 {
@@ -199,7 +195,8 @@ DataSchemas pick_versions(const std::string &name, int major, const std::optiona
     auto &versions = it->second;
     if (pin) {
         if (pin->major != major && major != 0) {
-            out.missing = "the file name pins major " + std::to_string(pin->major) + " but the data names major " + std::to_string(major);
+            out.missing =
+                "the file name pins major " + std::to_string(pin->major) + " but the data names major " + std::to_string(major);
             return out;
         }
         major = pin->major;

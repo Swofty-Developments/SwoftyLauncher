@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_DataReader_DetectFormat",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14399f7a0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14399f7a0.c;xref:0x14023ba4c,0x140251410",
+  "notes": "(reader) -> NEerrno: reads a 5-byte header from the stream and creates the matching reader (binary vtbl 0x145899a60 or text), errors 0x16/0x25/0x54/0x56. Callers: Game_CutsceneContext_ParseSceneContext, Game_DataDrivenCutSceneScript_CreateComponents, Ne_SequenceResource_CreateResource."
+ },
+ "signature": {
+  "id": "core.data_reader_detect_format",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 83 79 20 00 0F 84",
+  "match": "0x14399f7a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14399f7a0",
+  "kind": "func_start",
+  "names": [
+   "Ne_DataReader_DetectFormat"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x14399f7a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14399f7a0.c;xref:0x14023ba4c",
+   "notes": "V3606 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

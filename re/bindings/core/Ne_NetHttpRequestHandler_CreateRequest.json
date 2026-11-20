@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetHttpRequestHandler_CreateRequest",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14404b9a0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/14404b9a0.c;xref:0x1407649d9,0x143fdbb80,0x1440343d1,0x1440418f4",
+  "notes": "cxx=NeNetHttpRequestHandler::createRequest; log channel HTTP: '[%u] NeNetHttpRequestHandler::createRequest - requestId: %u, verb: %s, uri: %s'"
+ },
+ "signature": {
+  "id": "core.net_http_request_handler_create_request",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 44 89 CD 4C 89 44 24 48",
+  "match": "0x14404b9a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14404b9a0",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetHttpRequestHandler_CreateRequest"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb2-verify-b",
+   "kind": "func",
+   "item": "Ne_NetHttpRequestHandler_CreateRequest",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14404b9a0.c;xref:0x14404b9a0",
+   "notes": "V2029 allocates request object (verb param_2, uri param_3), inits buffers, LoadLibraryA OnDemandConnRouteHelper once, logs HTTP createRequest line, returns requestId"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MatchingContext_SetupRankedGameSession",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14315b6a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14315b6a0.c;xref:0x14581d670",
+  "notes": "setupGameSession (ranked): sets online game mode, AI/player count from settings ([+0x4f8]+0xe10 +0x268, default 20) into the session limit (+0x4a0 vfunc +0x18), ranked index from settings +0xac8, applies ranked settings (+0x620 + idx*0x70). | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2622)"
+ },
+ "signature": {
+  "id": "game.matching_context_setup_ranked_game_session",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 48 8B 41 10 48 8B 88 E8 03 00 00 BA 01 00 00 00 E8 ?? ?? ?? ?? 48 8B 46 10 48 8B 98 18 04 00 00 48 8B 80 F8 04 00 00 BF 14 00 00 00 48 85 C0 74 12 48 8B 80 10 0E 00 00 48 85 C0 74 06 8B B8 68 02 00 00 83 7B 08 01 7F 5F 48 8B 8B A0 04 00 00 48 C7 44 24 28 00",
+  "match": "0x14315b6a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14315b6a0",
+  "kind": "func_start",
+  "names": [
+   "Game_MatchingContext_SetupRankedGameSession"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d6-verify",
+   "kind": "func",
+   "item": "Game_MatchingContext_SetupRankedGameSession",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14315b6a0.c;xref:0x14315b6a0",
+   "notes": "V2622 role/offsets/log strings match decomp"
+  }
+ ],
+ "proofs": []
+}

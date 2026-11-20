@@ -87,7 +87,7 @@ Goal         W3: the registry core, as specified in docs/std/{registry,bases,pro
 Contracts    packages/sdk/include/swofty_api.h, packages/sdk/include/swofty/registry.hpp,
              packages/sdk/std/tests/ (the shared corpus). Do not change them; ask the lead.
 You own      native/src/core/registry/**, native/test/registry/**
-Don't touch  everything else; in particular native/src/core/stage.cpp (lead), the save code (W4)
+Don't touch  everything else; in particular native/src/core/runtime/stage.cpp (lead), the save code (W4)
              and the apply paths (W6)
 Worktree     /mnt/work/VSC/F1ModManager-wt/std16-registry on std16/registry, from feat/std-1.6
 Done when    the shared corpus passes; the randomized precedence test matches tools/std/reference.py for

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Load_DepartmentEventOutcomes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f82dc0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void (void *dept_events)",
+  "evidence": "decomp:re/decomp/140f82dc0.c;xref:0x1456aef30",
+  "notes": "myteam-g1: Loads department event definitions: outcome entries with facility_type, starting_workforce, workforce_capacity, num_upgrades, phase and corporate_income_multiplier (income multiplier applied by corporate facility events). Data loader, hook for tweaking corporate income."
+ },
+ "signature": {
+  "id": "career.load_department_event_outcomes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 08 00 00 C5 78 29 94 24 D0 08 00 00",
+  "match": "0x140f82dc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f82dc0",
+  "kind": "func_start",
+  "names": [
+   "Career_Load_DepartmentEventOutcomes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140f82dc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f82dc0.c;xref:0x1456aef30;str:\"corporate_income_multiplier\"",
+   "notes": "V9592 Strings outcome, facility_type, starting_workforce, workforce_capacity, num_upgrades, phase, corporate_income_multiplier all present; data loader."
+  }
+ ],
+ "proofs": []
+}

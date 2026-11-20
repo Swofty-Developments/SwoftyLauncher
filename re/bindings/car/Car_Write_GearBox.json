@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_Write_GearBox",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446a2610",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446a2610.c;xref:0x145bfa9f8",
+  "notes": "VTF GearBox: final drive, gear ratios R-9, shift speed multiples, clutch, shift timing, damage (DamageRateMidShift, OverrevvingDamageScale) and gearbox faults: JammedGearPermanent/Temporary threshold+chance+time, MissingGear threshold+chance+duration, ShiftTimeFault threshold+chance+scale+duration. Correction: this is the serialiser (component data vtable slot 3): it writes the section back as XML through the writer object's vtable (+0x28 begin element, +0x68 attribute, +0x78 end, +0x98 comment); the field list above is what it writes. The reader is slot 2 (Game_Read_VtfFloat by name, values stored XOR-obfuscated). | car-b: data vtable slot 3 (vtable entry 0x145bfa9f8). Capstone cross-check: it reads the same data offsets the paired Car_Read_ function writes (differences only in vector internals, derived fields and ERS TrackSettings, which are not written back), so the struct offsets in the car-b structs hold for both"
+ },
+ "signature": {
+  "id": "car.parse_gear_box",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 30 C5 F8 29 74 24 20 48 89 D6 48 89 CF 48 8B 02 48 8D 15 ?? ?? ?? ?? 48 89 F1 FF 50 28 48 8B 06",
+  "match": "0x1446a2610",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446a2610",
+  "kind": "func_start",
+  "names": [
+   "Car_Write_GearBox"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v4",
+   "kind": "func",
+   "item": "Car_Write_GearBox",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446a2610.c;xref:0x145bfa9f8",
+   "notes": "V1245 Serialiser: begin 'GearBox'. Writes FinalDriveRatio, GearRatioReverse..9th, the clutch/shift/auto-gearbox constants, the damage constants and all four fault groups as listed. Only ref: GearBox data vt 0x145bfa9e0 +0x18. The .xtls hit 0x1445969cb is data, not a reference."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446a2610",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446a2610.c;xref:0x1445969ca",
+   "notes": "V6807 Serialiser: writer vcalls +0x28/+0x68/+0x78/+0x98, no Game_Read_VtfFloat calls, fault fields confirmed."
+  }
+ ],
+ "proofs": []
+}

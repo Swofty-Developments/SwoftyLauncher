@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_JsonWriter_WriteBool",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1406d52a0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1406d52a0.c;xref:0x1403dcdc2,0x1403e1ace",
+  "notes": "JSON writer: writes true/false (param_3), or '%s':true/false when key param_2 is given; inserts comma separators and clears the ok flag +0x1c when the buffer is full. Callers: Ai_Write_AdaptiveAiSessionRecord."
+ },
+ "signature": {
+  "id": "core.json_writer_write_bool",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC B8 00 00 00 48 89 CE 48 85 D2 74 35",
+  "match": "0x1406d52a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1406d52a0",
+  "kind": "func_start",
+  "names": [
+   "Ne_JsonWriter_WriteBool"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x1406d52a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1406d52a0.c;xref:0x1403dcdc2,0x1403e1ace",
+   "notes": "V3587 formats '\"%s\":true/false' or bare true/false with comma handling; callers Ai_Write_AdaptiveAiSessionRecord seen"
+  }
+ ],
+ "proofs": []
+}

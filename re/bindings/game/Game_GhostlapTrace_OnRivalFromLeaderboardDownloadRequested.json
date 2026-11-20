@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GhostlapTrace_OnRivalFromLeaderboardDownloadRequested",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141482d60",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name onRivalFromLeaderboardDownloadRequested (class from the log channel); log channel GHOSTLAP-TRACE: '%s() Ghost requested from for user: %s, leaderboard: %s'"
+ },
+ "signature": {
+  "id": "game.ghostlap_trace_on_rival_from_leaderboard_download_requested",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 68 01 00 00 48 89 D3 48 89 CE",
+  "match": "0x141482d60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141482d60",
+  "kind": "func_start",
+  "names": [
+   "Game_GhostlapTrace_OnRivalFromLeaderboardDownloadRequested"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141482d60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141482d60.c;xref:0x14147c82a",
+   "notes": "V4870 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

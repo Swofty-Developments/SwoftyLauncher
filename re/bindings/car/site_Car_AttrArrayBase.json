@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "site_Car_AttrArrayBase",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143514c64",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "car",
+  "evidence": "decomp:re/decomp/143514670.c;xref:0x143514c64",
+  "notes": "lea rbx,[r12+0xd10] = CarPerfVehicle attribute-array base; rbp = count*0xc40; each 0xc40 element's fitted-effectdef list count is at element+0xc00, list at element-0xc00..; find thunk Car_Find_Qword(0x1449e2850) searches the list"
+ },
+ "signature": {
+  "id": "car.attr_array_base_site",
+  "section": ".xtls",
+  "pattern": "49 8D 9C 24 10 0D 00 00 0F 1F 40 00",
+  "match": "0x143514c64",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143514c64",
+  "kind": "mid",
+  "expect": "49 8D 9C 24",
+  "names": [
+   "site_Car_AttrArrayBase"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-19",
+    "by": "car-re"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

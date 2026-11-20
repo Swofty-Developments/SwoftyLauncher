@@ -1,0 +1,73 @@
+{
+ "schema": 1,
+ "name": "Career_Eval_Curve",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1445075d0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "float Career_Eval_Curve(void *curve, float x)",
+  "evidence": "decomp:re/decomp/1445075d0.c;xref:0x14a523357,0x141157840,0x1411524ef;doc:addons/career-editor/protocol/drivers.md#how-a-rating-is-made-what-the-editor-writes",
+  "notes": "tension-scaled Catmull-Rom evaluation of a NE curve (vtable 0x145be6460, 0x88 bytes): points {f32 x,f32 y} at curve+0x70..+0x78 (alloc +0x68, cap +0x80); returns 0.0 when x < 0 or x > 1 (vucomiss 0x1445075fb/0x144507605) or when fewer than 4 points; x == 1 returns y of point n-2; otherwise x is capped at 0.99999988 and the segment found by binary search; returns normalised y; pure read (wording per V0288). Used by the stat base getter 0x14a523160 and the curve parser 0x141157100 (lut[65]); drivers.cpp clamps x to 0..1 before every call"
+ },
+ "signature": {
+  "id": "career.eval_curve",
+  "section": ".xtls",
+  "pattern": "48 83 EC 68 C5 78 29 5C 24 50 C5 78 29 54 24 40 C5 78 29 4C 24 30 C5 78 29 44 24 20 C5 F8 29 7C 24 10 C5 F8 29 34 24 C5 F8 57 C0",
+  "match": "0x1445075d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445075d0",
+  "kind": "func_start",
+  "names": [
+   "Career_Eval_Curve"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-drivers",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/drivers.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-2",
+   "kind": "func",
+   "item": "Career_Eval_Curve",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1445075d0.c;xref:0x14a523358,0x141157840,0x1411524ef",
+   "notes": "V0288 proto, points vector +0x70..+0x78, pure read, tension-scaled Catmull-Rom, users 0x14a523160/0x141157100 correct. Wrong: x is not clamped. Corrected: \"... returns 0.0 when x < 0 or x > 1 (vucomiss 0x1445075fb/0x144507605) or when fewer than 4 points; x == 1 returns y of point n-2; otherwise x is capped at 0.99999988 and the segment found by binary search; returns normalised y\""
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-5",
+   "kind": "func",
+   "item": "Career_Eval_Curve",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445075d0.c;decomp:re/decomp/141157100.c;decomp:re/decomp/14a523160.c;xref:0x1445075fb,0x144507605,0x14450761e,0x144507638,0x144507643,0x14450764b,0x14a523357,0x14115783f;sig:career.eval_curve",
+   "notes": "V0697 sigcheck OK. 0 when x<0 or x>1, fewer than 4 points (cmp rcx,0x20), x==1 returns [begin+n*8-0xc] (y of point n-2), else vminss with 0.99999988 and binary search, tension-scaled Catmull-Rom of normalised y; reads only; proto float(void*, float x in xmm1). Note: 61 call sites, the two named users are among them; the drivers.cpp clause is addon behaviour and was not checked"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-5",
+   "kind": "func",
+   "item": "Career_Eval_Curve",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445075d0.c;decomp:re/decomp/141157100.c;decomp:re/decomp/14a523160.c;xref:0x1445075fb,0x144507605,0x14450761e,0x144507638,0x144507643,0x14450764b,0x14a523357,0x14115783f;sig:career.eval_curve",
+   "notes": "V0818 sigcheck OK. 0 when x<0 or x>1, fewer than 4 points (cmp rcx,0x20), x==1 returns [begin+n*8-0xc] (y of point n-2), else vminss with 0.99999988 and binary search, tension-scaled Catmull-Rom of normalised y; reads only; proto float(void*, float x in xmm1). Note: 61 call sites, the two named users are among them; the drivers.cpp clause is addon behaviour and was not checked"
+  }
+ ],
+ "proofs": []
+}

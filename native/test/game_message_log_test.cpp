@@ -1,13 +1,13 @@
-// Host-native unit test for the core's stock game message log (native/src/core/game_message_log_logic.hpp): which ids
+// Host-native unit test for the core's stock game message log (native/src/core/frontend/game_message_log_logic.hpp): which ids
 // count as stock messages, that each id is logged once, and where the id cap stops logging. Built and run by
-// native/test/run_game_message_log_test.sh.
+// native/test/run_tests.sh game_message_log.
 
-#include "game_message_log_logic.hpp"
+#include "core/frontend/game_message_log_logic.hpp"
 
 #include <cstdio>
 #include <string>
 
-namespace gm = runtime::game_message_log;
+namespace gm = frontend::game_message_log;
 
 static int failed = 0;
 

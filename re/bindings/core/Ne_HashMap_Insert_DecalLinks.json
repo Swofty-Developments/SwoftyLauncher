@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_Insert_DecalLinks",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14146cd60",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14146cd60.c;xref:0x141432469",
+  "notes": "ne_hash_map insert (find bucket, allocate 0x70 node, grow when needed) for the decal link map. Callers Game_DecalCustomisation_LinkFileToPlayer, 0x14146cc00."
+ },
+ "signature": {
+  "id": "core.hash_map_insert_decal_links",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 8B 44 24 68 83 F8 02 74 14 83 F8",
+  "match": "0x141432469",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14146cd60",
+  "kind": "func_start",
+  "names": [
+   "Ne_HashMap_Insert_DecalLinks"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x14146cd60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14146cd60.c;xref:0x141432469",
+   "notes": "V8083 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

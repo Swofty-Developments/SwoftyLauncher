@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_PitStopLogic_StateInGarage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403ba320",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1403ba320.c;xref:0x1456233e8",
+  "notes": "Log channel PITSTOP_LOGIC: '#### PitStopLogic::StateInGarage::processEvent ORG veh: %d frontWingChange: %d' L2 2026-11-14 (engine-re round 2): decomp read; 1 reference(s) (0x1456233e8); the body itself references 'ReplaceFrontWing' / 'Replacement_FW_Prop1' / 'Replacement_FW_Prop2' / 'PITSTOP_LOGIC'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.pit_stop_logic_state_in_garage",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 40 48 89 CE 80 BA 48 01 00 00 00",
+  "match": "0x1403ba320",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403ba320",
+  "kind": "func_start",
+  "names": [
+   "Game_PitStopLogic_StateInGarage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1403ba320",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403ba320.c",
+   "notes": "V4629 string/behaviour in decomp matches name; vtable/indirect"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x1403ba320",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1403ba320-0x1403ba9b6;xref:0x1456233e8",
+   "notes": "V10460 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only ref abs64 0x1456233e8. StateInGarage::processEvent ORG veh/frontWingChange log, ReplaceFrontWing, Replacement_FW_Prop1/2, RemoveFrontJack, SwapTyreModel 0x1403b8400. 2 args."
+  }
+ ],
+ "proofs": []
+}

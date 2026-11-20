@@ -7,11 +7,11 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
-use swofty_core::baseline::{Baseline, DAMAGED, Identity, sha256_bytes};
+use swofty_core::game_folder::baseline::{Baseline, DAMAGED, Identity, sha256_bytes};
+use swofty_core::game_folder::journal::Journal;
+use swofty_core::game_folder::placed::Placed;
+use swofty_core::game_folder::recovery::{self, Scope, SessionLock};
 use swofty_core::install::{Drift, Game, Installer, Plan};
-use swofty_core::journal::Journal;
-use swofty_core::placed::Placed;
-use swofty_core::recovery::{self, Scope, SessionLock};
 use swofty_core::store::Store;
 
 const GVDB: &str = "game_package/gamedatabases/gamedatabases.2025.bin";

@@ -1,0 +1,56 @@
+{
+ "schema": 1,
+ "name": "site_Career_ApplyUpgradeBlockNameDefault",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14fa6315f",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/14fa63050.c;xref:0x14fa630d4,0x14fa6315f;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v090--the-tyres-upgrade-types-setting-tyres_upgrade_types-default-on-install-time",
+  "notes": "lea rdx,[\"?\"]: default of the block-name bound cmp dl,0x11 ; ja (type 0..17 named through k_Career_UpgradeBlockNameTable, rdx = block name at the join). rnd-tyres sets rdx = its block name for 19..22 and jumps to the join"
+ },
+ "signature": {
+  "id": "career.apply_upgrade_block_name_default",
+  "section": ".data1",
+  "pattern": "41 80 7A 19 00 74 F3 EB A1 48 8D 15",
+  "match": "0x14fa63156",
+  "anchor": "0x9",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14fa6315f",
+  "kind": "mid",
+  "expect": "48 8D 15 FA F5 BA F5",
+  "names": [
+   "site_Career_ApplyUpgradeBlockNameDefault"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-a",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_upgrade_types.cpp"
+  ],
+  "func_start": "0x14fa63050",
+  "data1_reason": "the block-name bound and its default are inline in the .data1 body 0x14fa63050; no .xtls code names the block"
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-1",
+   "kind": "global",
+   "item": "site_Career_ApplyUpgradeBlockNameDefault",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14fa63050.c;xref:0x14fa630d1,0x14fa630d4,0x14fa630de,0x14fa630ec,0x14fa6315f,0x14fa63166",
+   "notes": "V0085 cmp dl,0x11 ; ja 0x14fa6315f = lea rdx '?' (7 bytes) falling into join 0x14fa63166; 0..17 take rdx = table+table[dl] and jmp join; .xtls continuation 0x144742c70 only sees the name, so naming has no .xtls route"
+  }
+ ],
+ "proofs": []
+}

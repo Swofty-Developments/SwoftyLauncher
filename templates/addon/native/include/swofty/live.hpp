@@ -30,6 +30,7 @@ namespace swofty::live {
 using Car = SwoftyLiveCar;
 using Session = SwoftyLiveSession;
 using Turn = SwoftyLiveTurn;
+using CarDetail = SwoftyLiveCarDetail;
 
 constexpr uint32_t version = SWOFTY_LIVE_VERSION;
 constexpr uint32_t max_cars = SWOFTY_LIVE_MAX_CARS;
@@ -179,6 +180,17 @@ inline std::optional<std::string> tyre_icon_texture(uint32_t vehicle)
     return std::string(path);
 }
 
+// More of the car's state from the same snapshot: starting grid slot, tyre wear, tyre age and stint laps, lap and sector
+// times. Empty on cores older than version 6; each value's have bit says whether it was read.
+inline std::optional<CarDetail> car_detail(uint32_t vehicle)
+{
+    const auto *t = detail::table();
+    CarDetail d{};
+    if (!t || t->version < 6 || !t->car_detail || t->car_detail(vehicle, &d) != SWOFTY_ASSET_OK)
+        return std::nullopt;
+    return d;
+}
+
 // Caller-owned image bytes; no disk files or table presentation policy.
 inline const SwoftyLiveImages *images()
 {
@@ -197,6 +209,7 @@ inline std::optional<uint64_t> frame()
 
 inline bool has(const Car &c, uint64_t bit) { return (c.have & bit) != 0; }
 inline bool has(const Session &s, uint64_t bit) { return (s.have & bit) != 0; }
+inline bool has(const CarDetail &d, uint64_t bit) { return (d.have & bit) != 0; }
 
 inline bool is_player(const Car &c) { return (c.flags & SWOFTY_LIVE_CAR_PLAYER) != 0; }
 inline bool is_watched(const Car &c) { return (c.flags & SWOFTY_LIVE_CAR_WATCHED) != 0; }
@@ -224,6 +237,21 @@ inline std::optional<int32_t> gap_ahead_ms(const Car &c)
 inline std::optional<int32_t> gap_leader_ms(const Car &c)
 {
     return has(c, SWOFTY_LIVE_HAVE_GAP_LEADER) && c.gap_leader_ms != no_gap ? std::optional<int32_t>(c.gap_leader_ms) : std::nullopt;
+}
+
+inline std::optional<uint8_t> grid_position(const CarDetail &d)
+{
+    return has(d, SWOFTY_LIVE_HAVE_GRID) ? std::optional<uint8_t>(d.grid_position) : std::nullopt;
+}
+
+inline std::optional<uint32_t> last_lap_ms(const CarDetail &d)
+{
+    return has(d, SWOFTY_LIVE_HAVE_LAP_TIMES) && d.last_lap_ms ? std::optional<uint32_t>(d.last_lap_ms) : std::nullopt;
+}
+
+inline std::optional<uint32_t> best_lap_ms(const CarDetail &d)
+{
+    return has(d, SWOFTY_LIVE_HAVE_LAP_TIMES) && d.best_lap_ms ? std::optional<uint32_t>(d.best_lap_ms) : std::nullopt;
 }
 
 inline bool in_pit(const Car &c)

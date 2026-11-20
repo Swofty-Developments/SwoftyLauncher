@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Release_RnDDriverUpgradeRowNodes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141e43e90",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Release(void **nodes)",
+  "evidence": "decomp:re/decomp/141e43e90.c;xref:0x141c605df;xref:0x141c605ec",
+  "notes": "myteam-g2: Releases per-row VM node handles (Vm_Release_Node, 40 KB of unrolled releases) for the driver upgrade rows. UI cleanup."
+ },
+ "signature": {
+  "id": "ui.release_rn_ddriver_upgrade_row_nodes",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 8D 3D ?? ?? ?? ?? 48 89 B9 20 08 00 00",
+  "match": "0x141e43e90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141e43e90",
+  "kind": "func_start",
+  "names": [
+   "Ui_Release_RnDDriverUpgradeRowNodes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141e43e90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141e43e90.c;xref:0x141c605df;xref:0x141c605ec",
+   "notes": "V10006 Large unrolled release of VM node handles for driver upgrade rows."
+  }
+ ],
+ "proofs": []
+}

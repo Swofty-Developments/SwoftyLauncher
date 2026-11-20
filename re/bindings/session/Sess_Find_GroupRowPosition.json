@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "Sess_Find_GroupRowPosition",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140af8aa0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "int32_t *Sess_Find_GroupRowPosition(void *weekend, void *result, uint32_t driver_key)",
+  "evidence": "decomp:re/decomp/140af8aa0.c;xref:0x140af87d3,0x140af8858,0x14125074f,0x14125099a;decomp:re/decomp/140af83a0.c",
+  "notes": "finds the Weekend+0x288 participant whose EntrantRecord key (+0x50 u8 kind, +0x52 u16 stat id) equals driver_key (0x3fffxxxx = none), then the row of the group result (rows result+0x08..+0x10, 0x60 each) whose identity matches it (0x1431146d0); returns &row+0x50 (the group position) or null. Allocates and frees a temporary copy of the participant pointers with the Weekend+0x280 allocator. Used by the pole check in 0x140af83a0"
+ },
+ "signature": {
+  "id": "session.find_group_row_position",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 98 00 00 00 C5 F8 29 BC 24 80 00 00 00",
+  "match": "0x140af8aa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140af8aa0",
+  "kind": "func_start",
+  "names": [
+   "Sess_Find_GroupRowPosition"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/grid_best_of.cpp",
+   "native/src/core/boxes/box_grid.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-b",
+   "kind": "func",
+   "item": "Sess_Find_GroupRowPosition",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140af8aa0.c;decomp:re/decomp/140af83a0.c;xref:0x140af87d3,0x140af8858,0x14125074f,0x14125099a,0x140a84e73,0x140f60a3b;sig:session.find_group_row_position",
+   "notes": "V0965 3 args (rcx weekend, rdx result, r8d key). Copies the Weekend+0x288..+0x290 pointers into a buffer from the Weekend+0x280 allocator (count +0x298) and frees it on every exit; a key whose high half is 0x3fff returns null. Matches participant +0x52 u16 == key>>16 and +0x50 u8 == low byte, copies its identity (+0x08..+0x48) and walks the rows result+0x08..+0x10 (stride 0x60) with 0x1431146d0; returns &row+0x50 or null. In 0x140af83a0 both calls work on map key 1 (key < 2) and compare the returned positions (*a < *b) before posting an event, which fits the pole check. The xref scan finds 15 callers in all (also 0x140a84e73, the jmp 0x140ab5dbd, 0x140f60a3b, 0x140fcc380/3e0/440/4a0, 0x14114674f, 0x1413d17dc, .data1 0x14ab050fc and 0x14ab05fa5). sigcheck: 1 hit"
+  }
+ ],
+ "proofs": []
+}

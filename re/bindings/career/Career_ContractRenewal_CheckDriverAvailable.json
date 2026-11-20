@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Career_ContractRenewal_CheckDriverAvailable",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d7da70",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:log-channel-CONTRACT_RENEWAL",
+  "notes": "named from its log messages (channel CONTRACT_RENEWAL): 'AVAILABLE - Driver %s passed all checks | UNAVAILABLE - Driver %s already has a cached contract | UNAVAILABLE - Driver %s retired | AVAILABLE - Driver %s has been replaced from current team | UNAVAILA'"
+ },
+ "signature": {
+  "id": "career.contract_renewal_check_driver_available",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 01 00 00 48 89 D7 49 89 CE",
+  "match": "0x140d7da70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d7da70",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractRenewal_CheckDriverAvailable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140d7da70",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140d7da70.c;xref:0x140d7c46f,0x140d7cadb",
+   "notes": "V4684 better name Career_ContractRenewal_FindAvailableDriver: returns a chosen driver via out param, logs approaching BEST available driver/no appropriate drivers plus AVAILABLE/UNAVAILABLE reasons; not a plain availability check"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x140d7da70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d7da70.c;xref:0x140d7c46f",
+   "notes": "V7171 name fits; finding facts hold; 2 direct calls"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140d7da70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d7da70.c",
+   "notes": "V9071 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

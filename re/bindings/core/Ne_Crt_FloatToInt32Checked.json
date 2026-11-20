@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_FloatToInt32Checked",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145358828",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "int Ne_Crt_FloatToInt32Checked(uint32_t bits)",
+  "evidence": "decomp:re/decomp/145358828.c;xref:0x14077a63a;xref:0x140c9b129;xref:0x140c9b334",
+  "notes": "myteam-g2: CRT-level helper: classifies a float (FUN_145348338), converts with range check +-2.147e9 and returns 0 on NaN/overflow. Used by CalcBaseValues, Pick_RandomUpgrade_A and Sponsors_GainLoyalty."
+ },
+ "signature": {
+  "id": "core.crt_float_to_int32_checked",
+  "section": ".xtls",
+  "pattern": "48 83 EC 38 0F 29 74 24 20 0F 28 F0 E8 ?? ?? ?? ?? 0F BF C8 85 C9 74 38",
+  "match": "0x145358828",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x145358828",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_FloatToInt32Checked"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x145358828",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/145358828.c;xref:0x14077a63a",
+   "notes": "V10368 Classifies float, range-checks +-2.147e9, returns int or 0 with error call."
+  }
+ ],
+ "proofs": []
+}

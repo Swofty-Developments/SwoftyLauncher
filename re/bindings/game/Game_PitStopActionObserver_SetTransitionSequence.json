@@ -1,0 +1,81 @@
+{
+ "schema": 1,
+ "name": "Game_PitStopActionObserver_SetTransitionSequence",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403bc300",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1403bc300.c;xref:0x1403c0cbd",
+  "notes": "cxx=PitStopActionObserver::setTransitionSequence; log channel PITSTOPS: 'PitStopActionObserver::setTransitionSequence Crew %d %d %s' L2 2026-11-14 (engine-re round 2): decomp read; 1 reference(s) (0x1403c0cbd); the body itself references 'JobCompletePFWRToStandardStop10SPUP' / 'StartJobDoStandardStop10SPUP' / 'JobCompletePFWRToFrontWingStop10SP' / 'JobCompleteToStandardStop10SPUP'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.pit_stop_action_observer_set_transition_sequence",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 02 00 00 C5 F8 29 BC 24 B0 02 00 00 C5 F8 29 B4 24 A0 02 00 00 89 D3 49 89 CD",
+  "match": "0x1403bc300",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403bc300",
+  "kind": "func_start",
+  "names": [
+   "Game_PitStopActionObserver_SetTransitionSequence"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1403bc300",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403bc300.c;xref:0x3bc2a3",
+   "notes": "V4635 string/behaviour in decomp matches name"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x1403bc300",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1403bc300-0x1403c02d0;xref:0x1403c0cbd",
+   "notes": "V10463 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only call 0x1403c0cbd (riprel hit 0x1403bc2a3 is not an instruction). Transition-sequence name table (JobComplete*/StartJob* 5SP/10SP). 3 args."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "era-refuel-verify",
+   "kind": "func",
+   "item": "0x1403bc300",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1403bc360-0x1403bc53f,0x1403bd6e1-0x1403bd816,0x1403bda4e-0x1403bda82;imm:0x145615204=2.58 0x145530508=2.1 0x145381184=1.0",
+   "notes": "V11604 out=[rsp+0x188], ret=xmm6; ret<1 -> 2.58 and '2','5','8'; else 2.1 and '2','1'; base/target stored at 0x1403bda82 into [[[obs+0x3c0]+0x98]+0x68+car*16]; [r13+0x18]==0 path -> call 0x1403bc4f4 (r9b=1) and raw store at 0x1403bc53f. Note: if bpl!=0 at 0x1403bd6ec the division is skipped and raw ret is stored at 0x1403bda82"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "era-refuel-verify",
+   "kind": "func",
+   "item": "0x1403bc300",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "str:own regex scan of whole exe (ascii and utf-16, case-insensitive);doc:erp_core ErpFile pitstop_26.erp resource list",
+   "notes": "V11611 claim 12: ERP part confirmed (2200 resources, 223 Sequence, none with fuel in identifier). Exe part WRONG literally: refuel case-insensitive hits twice at file off 0x5658578 / 0x56c392c (VA 0x145659978, 0x1456c4d2c) inside EnsureFuelLoad (race objective names EnsureFuelLoad, Created EnsureFuelLoadDynamicObjective); no fuelling/fueling, no UTF-16 refuel; no real refuel string"
+  }
+ ],
+ "proofs": []
+}

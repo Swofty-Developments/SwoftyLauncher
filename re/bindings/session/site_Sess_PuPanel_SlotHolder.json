@@ -1,0 +1,62 @@
+{
+ "schema": 1,
+ "name": "site_Sess_PuPanel_SlotHolder",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f50ecc",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/141f50910.c;xref:0x141f50ecc",
+  "notes": "power-unit panel view model build (0x141f50910, the garage monitor and laptop power-unit lists): slot loop rbp = slot 0..6 (0 ICE, 1 MGU-K, 2 MGU-H, 3 ES, 4 TC, 5 CE, 6 event gearbox), rax = the slot holder (*(record +0x18 + slot*0x10), record = [rsi+0x698], non-null here) just before mov rcx,[rax+0x10]; sub rcx,[rax+8]; sar rcx,4; cmp [rax+0x30],rcx; jae skip: a slot is listed only when its fitted index +0x30 is below its part count ((end - begin) >> 4). Entries keep their slot index (+0; the fit-component handler 0x141f58a20 fits the part and passes it back to the entry filler 0x141f532b0 to refill the row), so a skipped slot leaves no row. Raised by pu-1990 for the 1990 part allocation"
+ },
+ "signature": {
+  "id": "session.pu_panel_slot_holder",
+  "section": ".xtls",
+  "pattern": "48 85 C0 74 DB 48 8B 48 10 48 2B 48 08",
+  "match": "0x141f50ec7",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f50ecc",
+  "kind": "mid",
+  "expect": "48 8B 48 10 48 2B 48 08",
+  "names": [
+   "site_Sess_PuPanel_SlotHolder"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "pu-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "kbverify-pu",
+   "kind": "global",
+   "item": "site_Sess_PuPanel_SlotHolder",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f50910.c;xref:0x141f50ecc",
+   "notes": "V2153 Re-disassembled 0x141f50e7a..0x141f50ef8: xor ebp,ebp; loop inc rbp / cmp rbp,7; at 0x141f50eb4 rax=[rsi+0x698], rcx=movsxd(ebp)<<4, rax=[rax+rcx+0x18]; test rax,rax / je next; so at 0x141f50ecc rax = the non-null slot holder, rbp = slot 0..6, rsi = the view model. Site is mov rcx,[rax+0x10] (4 bytes), then sub rcx,[rax+8]; sar rcx,4; cmp [rax+0x30],rcx; jae 0x141f50ea7 (the row text leaves out the sar: the count is (end-begin)>>4, 0x10-byte parts). Name table lea @0x141f50eed = 0x14576e7d0 (InternalCombustionEngine, MotorGeneratorUnit_Kinetic, _Heat, EnergyStore, TurboCharger, ControlElectronics, GearBox), so the slot numbering holds. No rel32 or rel8 branch lands in 0x141f50ecc..0x141f50edb (the one rel32 scan hit on 0x141f50ed0 is mid-instruction noise in 0x1404508a0); the first 8 bytes have no RIP-relative operand. Entry +0 = slot confirmed: 0x141f58a20 calls 0x141f532b0 with r8 = [entry] @0x141f5904d. Note 0x141f58a20 is the fit-component handler (KB Car_Component_Fit, logs 'Fit component') that refits then refills the row, called 'the refresh' here. UI surfaces (garage monitor, laptop) not re-derived; the only panel string is view_model_data.power_unit_panel_ref."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "kbverify-pu",
+   "kind": "sig",
+   "item": "session.pu_panel_slot_holder",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "pat:sigcheck-hits-1;decomp:re/decomp/141f50910.c;xref:0x141f50ecc",
+   "notes": "V2154 sigcheck on d873a1c8: exactly one hit, match 0x141f50ec7 (test rax,rax; je 0x141f50ea7), anchor 0x5 -> target 0x141f50ecc, expect 48 8B 48 10 48 2B 48 08 = mov rcx,[rax+0x10]; sub rcx,[rax+8], an instruction boundary inside .pdata function 0x141f50910 (body to 0x141f527aa). kind mid, resolve addr: correct for the holder-check site."
+  }
+ ],
+ "proofs": []
+}

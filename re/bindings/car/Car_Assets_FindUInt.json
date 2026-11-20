@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Assets_FindUInt",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446508d0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "pat:log-channel-VEHICLE_ASSETS",
+  "notes": "named from its log messages (channel VEHICLE_ASSETS): 'UInt \"%s\" NOT found.'"
+ },
+ "signature": {
+  "id": "car.assets_find_u_int",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 88 00 00 00 4C 89 C6",
+  "match": "0x1446508d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446508d0",
+  "kind": "func_start",
+  "names": [
+   "Car_Assets_FindUInt"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x1446508d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446508d0.c;xref:0x1446502a6",
+   "notes": "V6723 name and log/strings match; body checked, no broader behaviour"
+  }
+ ],
+ "proofs": []
+}

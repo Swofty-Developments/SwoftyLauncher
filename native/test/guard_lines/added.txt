@@ -1,0 +1,29 @@
+# The lines of the guards written as SiteGuard or MidHookSpec specs from the start, pinned by hand; guard_lines_test
+# renders each guard's lines from its spec and compares them with these. extract.py writes expected.txt and leaves this
+# file alone.
+#
+# A SiteGuard, under its core set's name:
+#
+#   [ers_mode]
+#   off [ers] mode guard off (SWOFTY_ERS_MODE_GUARD=%s)
+#   unresolved [ers] mode guard off: needs site_Car_ErsGearModifierLoad, which this build does not resolve
+#   armed [ers] mode guard armed: a car whose ERS mode is out of range gets its ERS reset to Medium instead of faulting
+#   not_installed [ers] mode guard did not install (see the [core] lines)
+#
+# with part_unresolved, part_armed and part_not_installed lines for each part, in order. A MidHookSpec guard, under
+# its hook guard's name:
+#
+#   [hook teammate_pairs]
+#   off [strategy] teammate pairs guard off (SWOFTY_TEAMMATE_PAIRS_GUARD=%s)
+#   failed [strategy] teammate pairs guard: the hook failed: %s
+#   armed [strategy] teammate pairs guard armed: a team with more than two cars pairs its first two for strategy instead of throwing
+
+[hook ai_ers]
+off [ai] ers corner guard off (SWOFTY_AI_ERS_GUARD=%s)
+failed [ai] ers corner guard: the hook failed: %s
+armed [ai] ers corner guard armed: a car with no corner marker for its next corner keeps its ERS decision without that corner's bonus
+
+[hook calendar_track]
+off [career] calendar track guard off (SWOFTY_CALENDAR_TRACK_GUARD=%s)
+failed [career] calendar track guard: the hook failed: %s
+armed [career] calendar track guard armed: a season round on a track the game has no track data for is left out of the calendar instead of faulting

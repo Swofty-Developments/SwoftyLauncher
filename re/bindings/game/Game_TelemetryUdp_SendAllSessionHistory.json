@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TelemetryUdp_SendAllSessionHistory",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d02be0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d02be0.c;xref:0x142cf8abd,0x142d02aeb",
+  "notes": "UDP telemetry (state with +0xd2a0 = UDP output): for every car (cap 0x18) refreshes per-car data (0x142cfe4f0), runs Game_TelemetryUdp_UpdateRace, then for up to 22 cars builds and sends a 0x5b4-byte (1460) packet id 0xb = PacketSessionHistoryData via sender vcall +0x68(sender,0xb,1,..,buf,0x5b4) for each UDP target in [+0xd2a0]+0x78..+0x80; per-car history kept at this+0x283a + i*0x5b4. Callers Sess_InGameRace_OnStateExit, Sess_StoryStartLights enter, MP skip-lights. Addon: forces a full session history flush."
+ },
+ "signature": {
+  "id": "game.telemetry_udp_send_all_session_history",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 05 00 00 48 83 B9 A0 D2",
+  "match": "0x142d02be0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d02be0",
+  "kind": "func_start",
+  "names": [
+   "Game_TelemetryUdp_SendAllSessionHistory"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142d02be0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d02be0.c;xref:0x142d5f68a,0x142d946c4,0x142d924b4",
+   "notes": "V3508 cap 0x18 cars, 0x142cfe4f0 per car, UpdateRace 0x142cf9820, packet id 0xb size 0x5b4 via sender vcall +0x68 over targets [+0xd2a0]+0x78..+0x80, history at this+0x283a+i*0x5b4; named callers confirmed"
+  }
+ ],
+ "proofs": []
+}

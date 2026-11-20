@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Vector_GrowEmplace_Elem384",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ecd0c0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143ecd0c0.c;xref:0x142641230,0x143bac083,0x143bac491",
+  "notes": "Hypothesis: std::vector realloc-insert for 0x180-byte elements (max size 2^64/384 pattern); 70 callers in scene view / pass setup. Named callers: Render_SceneView_SubmitCamera."
+ },
+ "signature": {
+  "id": "core.vector_grow_emplace_elem384",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 4D 89 C6 48 89 D7 48 89 CE 48 8B 09 4C 8B 46 08 4C 8B 66 10 4D 29 C4 49 C1 FC 07 49 B9",
+  "match": "0x143ecd0c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143ecd0c0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Vector_GrowEmplace_Elem384"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143ecd0c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ecd0c0.c;xref:0x143bac083",
+   "notes": "V7939 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

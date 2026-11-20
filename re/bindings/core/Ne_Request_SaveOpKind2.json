@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Ne_Request_SaveOpKind2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1441391a0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_Request_SaveOpKind2(void *save_system, void *out_handle, void *user, const char *save_name, uint64_t a5, void *a6)",
+  "evidence": "decomp:re/decomp/1441391a0.c;xref:0x14365c04e;decomp:re/decomp/14365bae0.c",
+  "notes": "same as Ne_Request_SaveOpKind1 with op kind 2 (request item type 1 in the job runner 0x14365bae0). Raised by native-1990 for the F1 1990 save separation (doc:/mnt/work/.f1-1990/addon/native-requests.md#N2). Twin functions: the signature starts in the bytes before the function."
+ },
+ "signature": {
+  "id": "core.request_save_op_kind2",
+  "section": ".xtls",
+  "pattern": "15 DB 37 C0 01 89 05 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? CC CC CC CC CC CC CC CC 41 57 41 56 41 54",
+  "match": "0x144139170",
+  "anchor": "0x30",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1441391a0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Request_SaveOpKind2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

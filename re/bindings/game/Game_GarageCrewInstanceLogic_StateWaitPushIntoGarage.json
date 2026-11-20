@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GarageCrewInstanceLogic_StateWaitPushIntoGarage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140386720",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=GarageCrewInstanceLogic::StateWaitPushIntoGarage; log channel GARAGECREW: 'GarageCrewInstanceLogic::StateWaitPushIntoGarage::processEvent unexpected %d %s'"
+ },
+ "signature": {
+  "id": "game.garage_crew_instance_logic_state_wait_push_into_garage",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 48 89 CF 80 BA 90 00 00 00 00 0F 84 ?? ?? ?? ?? 48 89 D6 48 8B 82 A0 00 00 00",
+  "match": "0x140386720",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140386720",
+  "kind": "func_start",
+  "names": [
+   "Game_GarageCrewInstanceLogic_StateWaitPushIntoGarage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x140386720",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140386720.c",
+   "notes": "V4587 string/behaviour in decomp matches name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

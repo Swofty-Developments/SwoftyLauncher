@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_MyTeamIntro_Enter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436e3980",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void f(void *self)",
+  "evidence": "decomp:re/decomp/1436e3980.c;xref:0x1436e2192;xref:0x1436e21d4",
+  "notes": "myteam-g1: Enters MyTeamIntro scene."
+ },
+ "signature": {
+  "id": "ui.my_team_intro_enter",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 90 00 00 00 48 89 CE C6 81 B9 0C 00 00 01",
+  "match": "0x1436e3980",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436e3980",
+  "kind": "func_start",
+  "names": [
+   "Ui_MyTeamIntro_Enter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x1436e3980",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436e3980.c;xref:0x1436e2192",
+   "notes": "V10309 Strings MyTeamIntro, TeamHQV2, Testing.EnableSmokeTest."
+  }
+ ],
+ "proofs": []
+}

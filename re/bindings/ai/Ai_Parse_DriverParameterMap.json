@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Ai_Parse_DriverParameterMap",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14065aec0",
+  "level": "L1",
+  "subsystem": "ai",
+  "proto": "void Ai_Parse_DriverParameterMap(void *out, int idx, const char *pkg_path)",
+  "evidence": "doc:re/db/subsystems/game.md",
+  "notes": "Called 11x by Ai_Parse_DriverParameterMaps 0x140683ce0 (idx 0..10, name table 0x145639210: alongside_awareness, alongside_space_factor, braking_distance_factor, brake_off_time, corner_curvature_factor, follow_speed_factor, slide_confidence, throttle_confidence, throttle_exit_fallibility, throttle_on_time, wet_weather_ability); each = bilinear map of difficulty x driver characteristic (aggression, control, mistakes, reaction_speed, speed_in, speed_out). Stock wet_weather_ability = 1 everywhere (no effect) (agent ai_race, aaa-verify claim 11)"
+ },
+ "signature": {
+  "id": "ai.parse_driver_parameter_map",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 48 04 00 00 4C",
+  "match": "0x14065aec0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14065aec0",
+  "kind": "func_start",
+  "names": [
+   "Ai_Parse_DriverParameterMap"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "aaa-verify",
+   "kind": "func",
+   "item": "Ai_Parse_DriverParameterMap",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "xref:0x14065af10,0x140683db9",
+   "notes": "V1693 aaa-verify: 10 calls + tail jmp, name table 0x145639210 idx 10 = wet_weather_ability"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "aaa-verify",
+   "kind": "func",
+   "item": "Ai_Parse_DriverParameterMap",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "xref:0x14065af10,0x140683db9",
+   "notes": "V3927 aaa-verify: 10 calls + tail jmp, name table 0x145639210 idx 10 = wet_weather_ability"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x14065aec0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14065aec0.c;xref:0x683cf1",
+   "notes": "V4709 string/behaviour in decomp matches name"
+  }
+ ],
+ "proofs": []
+}

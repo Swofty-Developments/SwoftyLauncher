@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_PenaltyLog_ReceiveAddRecord",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143563c50",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-RULES;decomp:re/decomp/143563c50.c;xref:0x143563794",
+  "notes": "Log channel RULES: 'Receiving Add Penalty Log Record  vehicle: %d infringement: %d penalty: %d lap: %d other vehicle id: %d time: %d places: %d points: %d safety rating points: %d' | 'Receiving Delete Penalty Log Record  vehicle: %d infringement: %d penalty: %d lap: %d other vehicle id: %d time: %d places: %d points: %d safety r"
+ },
+ "signature": {
+  "id": "session.penalty_log_receive_add_record",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 70 48 89 D7 48 89 CE 48 8D 5A 10",
+  "match": "0x143563c50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143563c50",
+  "kind": "func_start",
+  "names": [
+   "Sess_PenaltyLog_ReceiveAddRecord"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb3-verify-a",
+   "kind": "func",
+   "item": "Sess_PenaltyLog_ReceiveAddRecord",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143563c50.c;xref:0x143563c50",
+   "notes": "V1912 log strings confirmed by disassembly lea refs inside function"
+  }
+ ],
+ "proofs": []
+}

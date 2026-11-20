@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_AudioIo_OnReadDone",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143fbc3c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-AUDIO_IO",
+  "notes": "named from its log messages (channel AUDIO_IO): '[thread=0x%08I64x] %s: read op completed opHandle=%d fullFileName=\"%s\" opResult=%s, callback data=0x%x | [thread=0x%08I64x] %s: started next request from saved list (%d request(s) left in list)'"
+ },
+ "signature": {
+  "id": "game.audio_io_on_read_done",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 60 48 89 D6 48 89 CF 45 85 C0",
+  "match": "0x143fbc3c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143fbc3c0",
+  "kind": "func_start",
+  "names": [
+   "Game_AudioIo_OnReadDone"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x143fbc3c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143fbc3c0.c;xref:0x143fbb422",
+   "notes": "V6314 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

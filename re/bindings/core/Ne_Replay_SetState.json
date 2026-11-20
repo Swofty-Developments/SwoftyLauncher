@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Replay_SetState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1445d5c40",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-channel-ReplaySystem;decomp:re/decomp/1445d5c40.c;xref:0x14111eace,0x14111ec15,0x14111ec56,0x142bcc947",
+  "notes": "named from its log messages (channel ReplaySystem): 'setState, %s -> %s'"
+ },
+ "signature": {
+  "id": "core.replay_set_state",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 40 44 89 C3 89 D7 48 89 CE",
+  "match": "0x1445d5c40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445d5c40",
+  "kind": "func_start",
+  "names": [
+   "Ne_Replay_SetState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb4-verify-b",
+   "kind": "func",
+   "item": "Ne_Replay_SetState",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445d5c40.c;xref:0x14111eace",
+   "notes": "V2218 ReplaySystem 'setState, %s -> %s' confirmed; stores +0x20, notifies sub-recordables vcall 0x68"
+  }
+ ],
+ "proofs": []
+}

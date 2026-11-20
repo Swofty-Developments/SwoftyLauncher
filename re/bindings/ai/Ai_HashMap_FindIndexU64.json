@@ -1,0 +1,62 @@
+{
+ "schema": 1,
+ "name": "Ai_HashMap_FindIndexU64",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14063bc80",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "uint64_t Ai_HashMap_FindIndexU64(void *map, const uint64_t *key)",
+  "evidence": "decomp:re/decomp/14063bc80.c;xref:0x14063f0fe,0x140678b80,0x14067936e",
+  "notes": "robin_hood node-map lookup: h = FNV-1a-64 over the 8 key bytes (basis 0xcbf29ce484222325, prime 0x100000001b3) times seed map+0x20, h ^= h>>33; info = ((h&0x1f) >> map+0x54) + map+0x50 (info inc); slot = (h>>5) & mask map+0x40; info bytes map+0x30, entries map+0x28 = node pointers, key compared with the first 8 bytes of *node; probe unrolled by 2. Returns the slot index, or the end index ((info - entries) >> 3; 0 when mask == 0) when absent. Callers: Ai_Job_UpdateCarsParallel, 0x1406781c0, 0x140679340 (corrected 2026-11-14: 'Game_AiRoute_CompileMarkerChannel' is not a KB name for 0x1406781c0). L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.hash_map_find_index_u64",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 C1 E0 03 49 03 47 58 49 3B 47 60 48 8B 83",
+  "match": "0x14063f0fe",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14063bc80",
+  "kind": "func_start",
+  "names": [
+   "Ai_HashMap_FindIndexU64"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x14063bc80",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14063bc80.c;xref:0x14063f0fe",
+   "notes": "V3435 FNV-1a over 8 bytes * seed +0x20, meta +0x30, entries +0x28, mask +0x40: ok; caller Ai_Job_UpdateCarsParallel ok; other callers are 0x1406781c0 (site 0x140678b80) and 0x140679340 (site 0x14067936e), not Game_AiRoute_CompileMarkerChannel (0x140677ae0)"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x14063bc80",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14063bc80-0x14063bd98;xref:0x14063f0fe,0x140678b80,0x14067936e",
+   "notes": "V10564 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Callers 0x14063f0fe (0x14063e370), 0x140678b80 (0x1406781c0), 0x14067936e (0x140679340). 2 args (rcx map, rdx key). FNV-1a basis/prime movabs at 0x14063bc89/0x14063bc96, imul seed map+0x20, shr 0x21, info shift +0x54, inc +0x50, mask +0x40, entries +0x28, info +0x30 confirmed."
+  }
+ ],
+ "proofs": []
+}

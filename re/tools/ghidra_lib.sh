@@ -3,7 +3,15 @@ RE=$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)
 GH=${GH:-/nix/store/ykjg7k1x4zxc8xv7l8mklj3lggr3mfwj-ghidra-12.1.2}
 RE_GHIDRA_POOL=${RE_GHIDRA_POOL:-4}
 RE_GHIDRA_XMX=${RE_GHIDRA_XMX:-8G}
-KB=${RE_KB:-$RE/db}
+# The Ghidra scripts read one folder of tables: kb.py export merges re/db with the binding records in re/bindings.
+if [[ -n ${RE_KB:-} ]]; then
+    KB=$RE_KB
+else
+    KB=$RE/ghidra/kb
+    python3 "$RE/tools/kb.py" export "$KB" >/dev/null
+fi
+# kb.py export swaps a symlink to a new folder; pinning the folder keeps one export for the whole job.
+KB=$(readlink -f "$KB")
 MASTER=$RE/ghidra/master
 SCRIPTS=$RE/ghidra/scripts
 PIN=(taskset -c 2-7,10,11,14-31 nice -n 10)

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_CarbonDamage_PrintSetting",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f19ad0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "pat:log-channel-CARBON_DAMAGE",
+  "notes": "Log channel CARBON_DAMAGE: '%s = %s' | '%s = %f'"
+ },
+ "signature": {
+  "id": "car.carbon_damage_print_setting",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 44 89 CD 4C 89 C3",
+  "match": "0x142f19ad0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f19ad0",
+  "kind": "func_start",
+  "names": [
+   "Car_CarbonDamage_PrintSetting"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f19ad0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f19ad0.c;xref:0x142f1ac74",
+   "notes": "V5591 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

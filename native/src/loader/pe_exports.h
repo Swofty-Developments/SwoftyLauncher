@@ -4,11 +4,13 @@
 #include <stdint.h>
 #include <string.h>
 
-static uint32_t pe_u32(const uint8_t *p) { return (uint32_t)p[0] | (uint32_t)p[1] << 8 | (uint32_t)p[2] << 16 | (uint32_t)p[3] << 24; }
+static uint32_t pe_u32(const uint8_t *p)
+{
+    return (uint32_t)p[0] | (uint32_t)p[1] << 8 | (uint32_t)p[2] << 16 | (uint32_t)p[3] << 24;
+}
 static uint16_t pe_u16(const uint8_t *p) { return (uint16_t)(p[0] | p[1] << 8); }
 
-static int pe_rva_to_offset(const uint8_t *img, size_t size, uint32_t sections, uint16_t count, uint32_t rva,
-                            uint32_t *off)
+static int pe_rva_to_offset(const uint8_t *img, size_t size, uint32_t sections, uint16_t count, uint32_t rva, uint32_t *off)
 {
     for (uint16_t i = 0; i < count; i++) {
         uint32_t h = sections + i * 40u;

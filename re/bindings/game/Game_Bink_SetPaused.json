@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Bink_SetPaused",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143f893b0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-AUDIO_BINK",
+  "notes": "named from its log messages (channel AUDIO_BINK): '*** UNPAUSING BINK '%s' *** | *** PAUSING BINK '%s' ***'"
+ },
+ "signature": {
+  "id": "game.bink_set_paused",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 C5 F8 29 B4 24 10 01 00 00 48 89 CE 48 8D 4C 24 40",
+  "match": "0x143f893b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143f893b0",
+  "kind": "func_start",
+  "names": [
+   "Game_Bink_SetPaused"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x143f893b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143f893b0.c",
+   "notes": "V6301 name and logged strings match body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

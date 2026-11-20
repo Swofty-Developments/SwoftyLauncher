@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneCar_SetCustomDecalNodes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428aa420",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1428aa420.c;xref:0x1428b2899",
+  "notes": "Car: Clear All / Setting Custom Decal Nodes (car +0x7280 decal node set, model decal table [this+0x78]+0x250). Jump from 0x1428b2899. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2977)"
+ },
+ "signature": {
+  "id": "game.frontend_scene_car_set_custom_decal_nodes",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 80 B9 94 00 00 00 02 0F 85",
+  "match": "0x1428aa420",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428aa420",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneCar_SetCustomDecalNodes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d11-verify",
+   "kind": "func",
+   "item": "Game_FrontendSceneCar_SetCustomDecalNodes",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428aa420.c;xref:0x1428b2899",
+   "notes": "V2977 Decomp strings, offsets and callees match the claim; name fits."
+  }
+ ],
+ "proofs": []
+}

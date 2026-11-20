@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_FadeRequests_PlayingAreAnyLocalSpectatorsShould",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436dff80",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-FADE_REQUESTS",
+  "notes": "named from its log messages (channel FADE_REQUESTS): '[makeTyreAllocationExitDecision] is playing %s, areAnyLocalSpectators %s, should show screen %s, showing screen %s'"
+ },
+ "signature": {
+  "id": "game.fade_requests_playing_are_any_local_spectators_should",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 48 89 CE 48 8B 81 A8 0C 00 00",
+  "match": "0x1436dff80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436dff80",
+  "kind": "func_start",
+  "names": [
+   "Game_FadeRequests_PlayingAreAnyLocalSpectatorsShould"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1436dff80",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1436dff80.c",
+   "notes": "V6138 2585-byte loading-screen/transition update (loading_* texts, tyre allocation screen flag, network_quality); logged channel is NETWORK not FADE_REQUESTS; log is makeTyreAllocationExitDecision. Better: Game_LoadingScreen_UpdateTyreAllocationExit. (no direct call site; vtable/indirect)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x1436dff80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436dff80.c",
+   "notes": "V7098 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

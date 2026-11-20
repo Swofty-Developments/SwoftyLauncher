@@ -1,0 +1,256 @@
+# Every line in native/src (core, loader, gamelog) that writes code in the game exe, or forwards to one that does,
+# with what it writes and where. tools/patch_sites.py --check fails when a line that writes code is missing here, and
+# the build writes patches.json from this list, the core's mixin tables and the binding sets.
+#
+# An entry is "<source>: <the line, trimmed> => <write> <targets>".
+#
+# Writes that put sites in patches.json:
+#   inline     an inline hook (safetyhook InlineHook): a jump at the start, over whole instructions
+#   mid        a mid hook (safetyhook MidHook): the same, at a site inside a function
+#   bytes=<n>  n bytes written at the site
+#   call       the rel32 of a call at the site (5 bytes)
+#   vtable     vtable slots (8 bytes each)
+#   import     slots of the exe's import address table, named <dll>!<function>..., either part * for any
+# Writes that do not:
+#   via        a step of an install another entry or a mixin table names (a helper, an overload)
+#   outside    code outside the game exe (a system or graphics DLL); the module follows
+#   none       the line matches but writes no code (a declaration, a method named install, a data write)
+#
+# Targets:
+#   sig <NAME>... | sig <file>:<NAME>      a runtime::Sig or Target declared in the source, its includes or its folder
+#   sigs-in <file>...                      every signature the file declares
+#   binding <id or string constant>...     a binding (re/bindings); <file>:<constant> for a constant in another file
+#   binding-consts <NAME>                  every "<NAME> = "<binding>"" in the source
+#   spec <NAME>...                         the binding of a hook point Spec NAME{"<point>", "<binding>"}
+#   rel32 <SIG> <offset>                   the call whose rel32 sits at offset past the signature's site
+#   prologue <RVA> <PATTERN> [on <STAMP>=<RVA>]...   a function found by its prologue in any code section
+#   tag <word>                             the install's tag; a gated install's tag is read from its line
+#
+# "helper [<file>] <regex>" makes every line the regex matches (in that file only, when one is given) a line that
+# must be listed, for the callers of a helper whose own line is a via.
+
+helper std::make_unique<(?:session_points::)?(?:GamePoint|MidPoint|VtablePoint)>\(
+helper ^\s*make\(\w+, [A-Z][A-Z0-9_]*,
+helper \bguards::MidHookSpec\s+\w+\s*\{
+helper ^\s*hook_fast_fail_path\(\s*"
+helper \bruntime::write_slot\(
+helper \bruntime::import_write\b
+helper core/frontend/hidden_tiles.cpp \boverwrite\(S_
+helper core/assets/overlay.cpp \bhook\(h_
+helper core/events/events.cpp = mid\(S_
+helper core/frontend/ui.cpp ^\s*mid\(m_
+helper core/guards/career/activity_resume_guard.cpp \barm\(h_
+helper core/guards/tracks/gp_weekend_track_guard.cpp \barm\(S_
+helper core/guards/career/sequencer_records_guard.cpp \barm\("
+helper core/guards/career/teamhq_track_guard.cpp \barm\(h_
+helper core/guards/frontend/setup_vm_guard.cpp \barm\(\d, S_
+helper core/guards/session/replay_grid_guard.cpp \barm_read\(h_
+helper core/telemetry/telemetry.cpp ^\s*hook\(h_
+
+core/assets/assets.cpp: if (auto ih = safetyhook::InlineHook::create(reinterpret_cast<void *>(ex), reinterpret_cast<void *>(&expand_hook))) => inline sig T_EXPAND
+core/assets/assets.cpp: safetyhook::InlineHook::create(reinterpret_cast<void *>(rl), reinterpret_cast<void *>(&release_hook))) { => inline sig T_RELEASE
+core/assets/assets.cpp: auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(parse), reinterpret_cast<void *>(&parse_hook)); => inline sig T_PARSE
+core/assets/db_first_read.cpp: auto r = runtime::loader::install(hooks.lookup, lookup, "Gdb_Lookup_Key", reinterpret_cast<void *>(&lookup_hook), => inline sig core/assets/gamedb.cpp:S_LOOKUP
+core/assets/gamedb.cpp: auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), reserve_target); => mid sig S_RESERVE
+core/assets/gamedb.cpp: auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(load), reinterpret_cast<void *>(&load_hook)); => inline sig S_LOAD
+core/assets/items.cpp: auto r = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(&owned_hook)); => inline sig T_OWNED
+core/assets/lang_override.cpp: size_t install(std::vector<Raw> raws, const KeySet *only) => none
+core/assets/lang_override.cpp: void refresh_keys(const KeySet &keys) { install(gather(&keys), &keys); } => none
+core/assets/lang_override.cpp: size_t s = install(gather(nullptr), nullptr); => none
+core/assets/lang_override.cpp: auto r = safetyhook::InlineHook::create(reinterpret_cast<void *>(g_find_at), reinterpret_cast<void *>(&find_hook)); => inline sig S_SET_FIND
+core/assets/lang_override.cpp: auto r = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(&init_hook)); => inline sig S_MODULE_INIT
+core/assets/overlay.cpp: auto r = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(fn)); => via
+core/assets/overlay.cpp: return hook(h_resolve, at, &resolve_hook, "overlay: Fs_Resolve_Mount"); => inline sig S_RESOLVE
+core/assets/overlay.cpp: hook(h_lang, at, &load_lang_hook, "lang: Loc_Load_LanguageFile"); => inline sig S_LOAD_LNG
+core/assets/resources.cpp: auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), site); => mid sig S_SITE
+core/boxes/picker/time_trial.cpp: auto r = runtime::loader::install(entrant_cap.fill_participants, FILL_PARTICIPANTS, entrant_cap_mid); => mid sig SIG_FILL_PARTICIPANTS
+core/career/career_start.cpp: auto r = loader::install(h_run, {S_RUN_ROUTE, "start gate", "career"}, reinterpret_cast<void *>(&run_route_hook)); => inline sig S_RUN_ROUTE
+core/career/hub_tab.cpp: if (laptop && !(install(h_end, end, S_TABS_END.what, tabs_end) && install(h_rnd, gate, S_RND_GATE.what, rnd_gate))) { => mid sig S_TABS_END S_RND_GATE
+core/career/hub_tab.cpp: !(install(h_tq_end, tq_end, S_TQ_END.what, team_hq_end) && install(h_tq_rnd, tq_rnd, S_TQ_RND.what, team_hq_rnd))) { => mid sig S_TQ_END S_TQ_RND
+core/career/hub_tab.cpp: install(h_laptop_registered, laptop_reg, S_LAPTOP_REGISTERED.what, laptop_registered)) => mid sig S_LAPTOP_REGISTERED
+core/career/hub_tab.cpp: install(h_tq_registered, tq_registered, S_TQ_REGISTERED.what, team_hq_registered)) => mid sig S_TQ_REGISTERED
+core/career/hub_tab.cpp: install(h_tq_show_all, tq_show_all, S_TQ_SHOW_ALL.what, team_hq_show_all); => mid sig S_TQ_SHOW_ALL
+core/diagnostics/crash/crash.cpp: auto e = safetyhook::InlineHook::create(reinterpret_cast<void *>(GetProcAddress(k32, "ExitProcess")), hooked_exit); => outside kernel32 ntdll
+core/diagnostics/crash/crash.cpp: auto tp = safetyhook::InlineHook::create(reinterpret_cast<void *>(GetProcAddress(k32, "TerminateProcess")), hooked_terminate); => outside kernel32 ntdll
+core/diagnostics/crash/crash.cpp: auto ntt = safetyhook::InlineHook::create(reinterpret_cast<void *>(GetProcAddress(ntdll, "NtTerminateProcess")), => outside kernel32 ntdll
+core/diagnostics/crash/crash.cpp: auto ff = safetyhook::InlineHook::create(reinterpret_cast<void *>(raise), hooked_raise_fail_fast); => outside kernelbase
+core/diagnostics/crash/dred.cpp: auto h = safetyhook::InlineHook::create(create, reinterpret_cast<void *>(&hooked_create_device)); => outside d3d12
+core/diagnostics/crash/fatal_paths.cpp: auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(game_paths.report_memory_error), => inline prologue RVA_REPORT_MEMORY_ERROR PATTERN_REPORT_MEMORY_ERROR on EA_STAMP=EA_RVA_REPORT_MEMORY_ERROR
+core/diagnostics/crash/fatal_paths.cpp: auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(fn), callback); => via
+core/diagnostics/crash/fatal_paths.cpp: hook_fast_fail_path("__report_gsfailure", RVA_REPORT_GS_FAILURE, PATTERN_REPORT_GS_FAILURE, game_paths.gs_failure_fn, => mid prologue RVA_REPORT_GS_FAILURE PATTERN_REPORT_GS_FAILURE
+core/diagnostics/crash/fatal_paths.cpp: hook_fast_fail_path("the CRT invalid-parameter terminate path", RVA_FAST_FAIL_TERMINATE, PATTERN_FAST_FAIL_TERMINATE, => mid prologue RVA_FAST_FAIL_TERMINATE PATTERN_FAST_FAIL_TERMINATE
+core/diagnostics/crash/fatal_paths.cpp: hook_fast_fail_path("the CRT abort path", RVA_INVALID_PARAMETER_ABORT, PATTERN_INVALID_PARAMETER_ABORT, game_paths.abort_fn, => mid prologue RVA_INVALID_PARAMETER_ABORT PATTERN_INVALID_PARAMETER_ABORT
+core/diagnostics/net_trace.cpp: if (!runtime::write_slot(s.slot, h.detour)) { => import ws2_32.dll!*
+core/diagnostics/net_trace.cpp: auto made = safetyhook::InlineHook::create(h.target, h.detour, safetyhook::InlineHook::StartDisabled); => outside ws2_32
+core/diagnostics/perf/frames.cpp: if (!runtime::write_slot(reinterpret_cast<ULONG_PTR *>(e.slot), repl)) => import sl.interposer.dll!slGetNewFrameToken
+core/diagnostics/perf/vq.cpp: p.write = runtime::import_write; => import *!VirtualQuery *!_beginthreadex
+core/diagnostics/perf/vq.cpp: void install() => none
+core/diagnostics/perf/vq.hpp: void install(); => none
+core/diagnostics/session_job_probe.cpp: if (auto r = runtime::loader::install(hook, at, FUNC, on_entry); !r) { => mid binding FUNC
+core/events/events.cpp: auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), fn); => via
+core/events/events.cpp: h_flow = mid(S_FLOW, flow_mid); => mid sig S_FLOW
+core/events/events.cpp: h_session_enter = mid(S_SESSION_ENTER, session_enter_mid); => mid sig S_SESSION_ENTER
+core/events/events.cpp: h_race_started = mid(S_RACE_STARTED, race_started_mid); => mid sig S_RACE_STARTED
+core/frontend/hidden_tiles.cpp: hidden = VirtualProtect(at, sizeof skip_lan, PAGE_EXECUTE_READWRITE, &old); => bytes=9 sig S_LAN_TILE
+core/frontend/hidden_tiles.cpp: if (!at || !VirtualProtect(at, size, PAGE_EXECUTE_READWRITE, &old)) => via
+core/frontend/hidden_tiles.cpp: bool hidden = overwrite(S_MOVIE_TILE, skip_movie, sizeof skip_movie); => bytes=2 sig S_MOVIE_TILE
+core/frontend/hidden_tiles.cpp: bool hidden = overwrite(S_STORY_TILE, skip_story, sizeof skip_story); => bytes=1 sig S_STORY_TILE
+core/frontend/main_menu/navigation_hooks.cpp: auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(fire_detour)); => inline sig S_FIRE
+core/frontend/main_menu/navigation_hooks.cpp: auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(migrate_detour)); => inline sig S_MIGRATE
+core/frontend/main_menu/navigation_hooks.cpp: auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(addtabs_detour)); => inline sig S_ADDTABS
+core/frontend/main_menu/navigation_hooks.cpp: auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(gohome_detour)); => inline sig S_GOHOME
+core/frontend/main_menu/navigation_hooks.cpp: auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(container_detour)); => inline sig S_CONTAINER
+core/frontend/main_menu/tiles.cpp: if (!VirtualProtect(block.at, sizeof jmp, PAGE_EXECUTE_READWRITE, &old)) { => bytes=5 sig S_BLOCK
+core/frontend/mfd.cpp: auto r = safetyhook::InlineHook::create(reinterpret_cast<void *>(update), reinterpret_cast<void *>(&update_hook)); => inline sig S_UPDATE
+core/frontend/player_name.cpp: auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(&lookup_hook)); => inline sig S_NAME
+core/frontend/player_name/copies.cpp: return WriteProcessMemory(GetCurrentProcess(), reinterpret_cast<void *>(at), data, n, &done) != 0 && done == n; => none
+core/frontend/popup.cpp: auto r = safetyhook::InlineHook::create(reinterpret_cast<void *>(a_construct), reinterpret_cast<void *>(&construct_hook)); => inline rel32 S_MOTD MOTD_CONSTRUCT
+core/frontend/ui.cpp: auto r = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(fn)); => via
+core/frontend/ui.cpp: auto r = safetyhook::MidHook::create(reinterpret_cast<void *>(at + t.anchor), fn); => via
+core/frontend/ui.cpp: install(h_resolve, a_resolve, resolve_hook, "route guard (resolve-target step)"); => inline sig T_RESOLVE
+core/frontend/ui.cpp: install(h_openexec, a_openexec, openexec_hook, "route guard (open-screen step)"); => inline sig T_OPENEXEC
+core/frontend/ui.cpp: install(h_open, a_open, open_hook, "screen open"); => inline sig T_OPEN
+core/frontend/ui.cpp: mid(m_read, T_SITE_READ, read_site, "screen build diagnostics (node read)"); => mid sig T_SITE_READ
+core/frontend/ui.cpp: mid(m_init, T_SITE_INIT, init_site, "screen build diagnostics (node init)"); => mid sig T_SITE_INIT
+core/frontend/ui.cpp: mid(m_factory, T_SITE_FACTORY, factory_site, "screen build diagnostics (node class)"); => mid sig T_SITE_FACTORY
+core/frontend/ui.cpp: mid(m_screen, T_SITE_SCREEN, screen_site, "screen build diagnostics (screen result)"); => mid sig T_SITE_SCREEN
+core/frontend/ui.cpp: install(h_handler, a_handler, handler_hook, "screen loader (UIDF handler)"); => inline sig T_HANDLER
+core/frontend/ui/screen_loader.hpp: template <class F> bool install(safetyhook::InlineHook &h, uintptr_t at, F *fn, const char *what); => none
+core/frontend/view_state.cpp: safetyhook::MidHook install(const runtime::Sig &sig, safetyhook::MidHookFn fn) => via
+core/frontend/view_state.cpp: auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), fn); => via
+core/frontend/view_state.cpp: h_photo_on = install(S_PHOTO_ON, [](safetyhook::Context &) { view_state.photo_on(); }); => mid sig S_PHOTO_ON
+core/frontend/view_state.cpp: h_photo_off = install(S_PHOTO_OFF, [](safetyhook::Context &) { view_state.photo_off(); }); => mid sig S_PHOTO_OFF
+core/frontend/view_state.cpp: h_camera = install(S_CAMERA, [](safetyhook::Context &ctx) { view_state.camera(ctx); }); => mid sig S_CAMERA
+core/frontend/view_state.cpp: h_pause = install(S_PAUSE, [](safetyhook::Context &ctx) { view_state.pause(ctx); }); => mid sig S_PAUSE
+core/guards/ai/ai_curves_guard.cpp: const guards::MidHookSpec spec{ => mid sig S_READ
+core/guards/ai/ai_ers_guard.cpp: const swofty_core::guards::MidHookSpec spec{ => mid sig S_READ
+core/guards/career/activity_resume_guard.cpp: runtime::loader::Installed r = runtime::loader::install(slot, at, s.what, skip); => via
+core/guards/career/activity_resume_guard.cpp: if (arm(h_first, S_FIRST, first) && arm(h_second, S_SECOND, second)) => mid sig S_FIRST S_SECOND
+core/guards/career/calendar_track_guard.cpp: const swofty_core::guards::MidHookSpec spec{ => mid sig S_CALENDAR_FILLED
+core/guards/career/rnd_suppliers_guard.cpp: runtime::loader::Installed l = runtime::loader::install(h_load, load, S_LOAD.what, reinterpret_cast<void *>(&load_hook)); => inline sig S_LOAD
+core/guards/career/rnd_suppliers_guard.cpp: runtime::loader::Installed a = runtime::loader::install(h_add, add, S_ADD.what, reinterpret_cast<void *>(&add_hook)); => inline sig S_ADD
+core/guards/career/sequencer_records_guard.cpp: runtime::loader::Installed r = runtime::loader::install(hook, at, site, fn); => via
+core/guards/career/sequencer_records_guard.cpp: if (arm("events sequencer record guard", SITE_FIRST, SITE_JOIN, first_record, h_first, join_at)) => mid binding SITE_FIRST
+core/guards/career/sequencer_records_guard.cpp: if (arm("events sequencer team mate driver guard", SITE_DRIVER, SITE_DRIVER_JOIN, team_mate_driver, h_driver, driver_join_at)) => mid binding SITE_DRIVER
+core/guards/career/sequencer_records_guard.cpp: if (arm("events sequencer player driver guard", SITE_PLAYER, SITE_PLAYER_JOIN, player_driver, h_player, player_join_at)) => mid binding SITE_PLAYER
+core/guards/career/sequencer_records_guard.cpp: if (arm("recognition record guard", SITE_RECOGNITION, SITE_RECOGNITION_EXIT, recognition_record, h_recognition, => mid binding SITE_RECOGNITION
+core/guards/career/standings_drop.cpp: bool install() override => none
+core/guards/career/standings_drop.cpp: auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(recompute), reinterpret_cast<void *>(&recompute_hook)); => inline sig S_RECOMPUTE
+core/guards/career/teamhq_track_guard.cpp: runtime::loader::Installed r = runtime::loader::install(slot, at, s.what, fn); => via
+core/guards/career/teamhq_track_guard.cpp: uintptr_t track = arm(h_track, S_TRACK_LOAD, track_load, track_next, TRACK_LOAD_LEN), => mid sig S_TRACK_LOAD
+core/guards/career/teamhq_track_guard.cpp: handle = arm(h_handle, S_RECORD_HANDLE, record_handle, handle_next, RECORD_LOAD_LEN), => mid sig S_RECORD_HANDLE
+core/guards/career/teamhq_track_guard.cpp: node = arm(h_node, S_RECORD_NODE, record_node, node_next, RECORD_LOAD_LEN), => mid sig S_RECORD_NODE
+core/guards/career/teamhq_track_guard.cpp: vm = arm(h_vm, S_VM_RECORD_NODE, vm_record_node, vm_next, RECORD_LOAD_LEN), => mid sig S_VM_RECORD_NODE
+core/guards/career/teamhq_track_guard.cpp: myteam = arm(h_myteam, S_MYTEAM_VM_RECORD_NODE, myteam_record_node, myteam_next, RECORD_LOAD_LEN); => mid sig S_MYTEAM_VM_RECORD_NODE
+core/guards/engine/placed_record.cpp: bool install() override => none
+core/guards/engine/placed_record.cpp: auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), on_record); => mid sig S_RECORD
+core/guards/frontend/setup_vm_guard.cpp: runtime::loader::Installed r = runtime::loader::install(hooks[n], at, s.what, fn); => via
+core/guards/frontend/setup_vm_guard.cpp: size_t armed = arm(0, S_INIT, car_load<0>) + arm(1, S_VALUE_SET, car_load<1>) + arm(2, S_CHANGED_A, car_load<2>) + => mid sig S_INIT S_VALUE_SET S_CHANGED_A
+core/guards/frontend/setup_vm_guard.cpp: arm(3, S_CHANGED_B, car_load<3>); => mid sig S_CHANGED_B
+core/guards/garage/pit_garage_state.cpp: runtime::loader::Installed r = runtime::loader::install(hooks[n], at, s.sig.what, STORE_FNS[n]); => mid sigs-in core/guards/garage/pit_garage_state.cpp
+core/guards/guard.cpp: ::runtime::loader::Installed r = ::runtime::loader::install(spec.hook, at, spec.name, spec.destination); => via
+core/guards/on_demand.hpp: std::call_once(once_, [this] { armed_.store(install(), std::memory_order_release); }); => none
+core/guards/on_demand.hpp: virtual bool install() = 0; => none
+core/guards/session/race_retirement_guard.cpp: const guards::MidHookSpec spec{ => mid binding SITE
+core/guards/session/replay_grid_guard.cpp: runtime::loader::Installed r = runtime::loader::install(slot_hook, at, s.what, fn); => via
+core/guards/session/replay_grid_guard.cpp: if (arm_read(h_full, S_FULL, full_at, read_full) && arm_read(h_delta, S_DELTA, delta_at, read_delta)) => mid sig S_FULL S_DELTA
+core/guards/session/teammate_pairs_guard.cpp: const guards::MidHookSpec spec{ => mid sig S_SORT
+core/guards/tracks/gp_weekend_track_guard.cpp: runtime::loader::Installed r = runtime::loader::install(into, at, sig.what, fn); => via
+core/guards/tracks/gp_weekend_track_guard.cpp: bool tyres = arm(S_PRESET_TRACK_READ, h_track, track_read); => mid sig S_PRESET_TRACK_READ
+core/guards/tracks/gp_weekend_track_guard.cpp: bool session = arm(S_SESSION_TRACK_READ, h_session, session_track_read); => mid sig S_SESSION_TRACK_READ
+core/hooks/car_live.cpp: g_built = std::make_unique<session_points::MidPoint>("car.built", "site_Car_LiveCarBuilt", &m_built, game_ops()); => mid binding site_Car_LiveCarBuilt
+core/hooks/car_live.cpp: g_reset = std::make_unique<GamePoint>("car.reset", "Car_Systems_Reset_Thunk", reinterpret_cast<void *>(&d_reset), game_ops()); => inline binding Car_Systems_Reset_Thunk
+core/hooks/car_live.cpp: g_replay = std::make_unique<GamePoint>("car.upgrades.replayed", "Car_Upgrades_ApplyToVehicle", => inline binding Car_Upgrades_ApplyToVehicle
+core/hooks/car_live.cpp: g_wing = std::make_unique<GamePoint>("car.parts.register", "Car_FrontWing_Init", reinterpret_cast<void *>(&d_wing_init), => inline binding Car_FrontWing_Init
+core/hooks/car_live.cpp: std::make_unique<GamePoint>("car.damage", "Car_FrontWing_OnCollision", reinterpret_cast<void *>(&d_wing_hit), game_ops()); => inline binding Car_FrontWing_OnCollision
+core/hooks/car_live.cpp: g_pit = std::make_unique<GamePoint>("session.pit", "Game_Pitlane_SetVehicleStatus", reinterpret_cast<void *>(&d_pit_status), => inline binding Game_Pitlane_SetVehicleStatus
+core/hooks/car_live.cpp: g_pit_tyres = std::make_unique<GamePoint>("session.pit_stop.tyres", "Game_PitLane_ApplyPitstopTyres", => inline binding Game_PitLane_ApplyPitstopTyres
+core/hooks/car_live.cpp: std::make_unique<session_points::MidPoint>("car.setup.applied", "site_Car_SetupTuningApplied", &m_setup, game_ops()); => mid binding site_Car_SetupTuningApplied
+core/hooks/dispatch.hpp: virtual bool install(bool late, const std::string &subscribers) = 0; => none
+core/hooks/game_point.hpp: bool install(bool late, const std::string &subscribers) override => none
+core/hooks/game_point.hpp: auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), detour_); => via
+core/hooks/game_points.hpp: slot = std::make_unique<GamePoint>(s.point, s.binding, detour, ops); => via
+core/hooks/game_points.hpp: make(add, ADD_ACTIVITY, reinterpret_cast<void *>(&d_add_activity), ce::AddActivity::version); => inline spec ADD_ACTIVITY
+core/hooks/game_points.hpp: make(decide, DECIDE, reinterpret_cast<void *>(&d_decide), ce::ContractDecide::version); => inline spec DECIDE
+core/hooks/game_points.hpp: make(sign, SIGN, reinterpret_cast<void *>(&d_sign), ce::ContractSign::version); => inline spec SIGN
+core/hooks/game_points.hpp: make(fuel, FUEL, reinterpret_cast<void *>(&d_fuel), te::FuelLoad::version); => inline spec FUEL
+core/hooks/session_points.cpp: if (!VirtualProtect(slot, sizeof(void *), PAGE_READWRITE, &old)) => via
+core/hooks/session_points.hpp: bool install(bool late, const std::string &subscribers) override => none
+core/hooks/session_points.hpp: auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), fn_); => via
+core/hooks/session_points.hpp: bool install(bool late, const std::string &subscribers) override => none
+core/hooks/session_points.hpp: ai_vtable = std::make_unique<VtablePoint>(AI_VTABLE.point, AI_VTABLE.binding, AI_UPDATE_SLOT, => vtable spec AI_VTABLE
+core/hooks/session_points.hpp: ai_apply = std::make_unique<MidPoint>(AI_APPLY.point, AI_APPLY.binding, &m_apply, vops.game); => mid spec AI_APPLY
+core/hooks/session_points.hpp: slot = std::make_unique<GamePoint>(s.point, s.binding, detour, vops.game); => via
+core/hooks/session_points.hpp: make(control, CONTROL, reinterpret_cast<void *>(&d_control)); => inline spec CONTROL
+core/hooks/session_points.hpp: make(build, BUILD, reinterpret_cast<void *>(&d_build)); => inline spec BUILD
+core/hooks/session_points.hpp: make(destroy, DESTROY, reinterpret_cast<void *>(&d_destroy)); => inline spec DESTROY
+core/hooks/session_points.hpp: make(hide, HIDE, reinterpret_cast<void *>(&d_hide)); => inline spec HIDE
+core/hooks/session_points.hpp: make(rules_init, RULES_INIT, reinterpret_cast<void *>(&d_rules_init)); => inline spec RULES_INIT
+core/hooks/session_points.hpp: make(director_update, DIRECTOR_UPDATE, reinterpret_cast<void *>(&d_director_update)); => inline spec DIRECTOR_UPDATE
+core/hooks/session_points.hpp: make(director_set_active, DIRECTOR_SET_ACTIVE, reinterpret_cast<void *>(&d_director_set_active)); => inline spec DIRECTOR_SET_ACTIVE
+core/hooks/vtable_point.hpp: bool install(bool late, const std::string &subscribers) override => none
+core/loading/game_settings.cpp: list.push_back({Getter<K>::target, SWOFTY_MIXIN_WRAP, 100, (void *)&get<K>, (void **)&orig<K>}); => inline binding-consts target
+core/render/d3d12/arm_gate.cpp: if (!install(*e.hook, targets[i], detours[i], e.name)) => outside d3d12
+core/render/d3d12/device_hooks.cpp: ok = install(hooks.setname, (*reinterpret_cast<void ***>(buffer))[SETNAME_SLOT], => outside d3d12
+core/render/d3d12/device_hooks.cpp: install(hooks.barrier, (*reinterpret_cast<void ***>(list))[BARRIER_SLOT], => outside d3d12
+core/render/d3d12/device_hooks.cpp: install(hooks.exec, (*reinterpret_cast<void ***>(q))[EXEC_SLOT], reinterpret_cast<void *>(&exec_hook), => outside d3d12
+core/render/d3d12/device_hooks.cpp: install(hooks.texture_copy, (*reinterpret_cast<void ***>(list))[TEXTURE_COPY_SLOT], => outside d3d12
+core/render/d3d12/device_hooks.cpp: install(hooks.resource_copy, (*reinterpret_cast<void ***>(list))[RESOURCE_COPY_SLOT], => outside d3d12
+core/render/d3d12/device_hooks.cpp: install(hooks.rtv, (*reinterpret_cast<void ***>(dev))[RTV_SLOT], reinterpret_cast<void *>(&rtv_hook), => outside d3d12
+core/render/d3d12/device_hooks.cpp: !install(hooks.om, (*reinterpret_cast<void ***>(list))[OM_SLOT], reinterpret_cast<void *>(&om_hook), => outside d3d12
+core/render/d3d12/hooking.cpp: bool install(safetyhook::InlineHook &h, void *target, void *detour, const char *what) => none
+core/render/d3d12/hooking.cpp: if (!runtime::loader::install(h, reinterpret_cast<uintptr_t>(target), what, detour, safetyhook::InlineHook::StartDisabled)) { => outside d3d12
+core/render/d3d12/hooking.hpp: bool install(safetyhook::InlineHook &h, void *target, void *detour, const char *what); => none
+core/render/d3d12/list_state.cpp: ok = install(*w.h, (w.slot == PSO1_SLOT ? vt4 : vt)[w.slot], w.detour, "ID3D12GraphicsCommandList state"); => outside d3d12
+core/render/d3d12/rtas_guard.cpp: ok = install(hook, target, reinterpret_cast<void *>(&build_rtas_hook), => outside d3d12
+core/render/d3d12/srv_clamp.cpp: bool ok = vt && VirtualProtect(&vt[SRV_SLOT], sizeof(void *), PAGE_READWRITE, &old); => outside d3d12
+core/render/d3d12/swapchain_hooks.cpp: if (!install(*w.h, target, w.detour, w.what)) { => outside d3d12
+core/render/d3d12/swapchain_hooks.cpp: install(hooks.present, sc_vt[8], reinterpret_cast<void *>(&present_hook), "IDXGISwapChain::Present"); => outside d3d12
+core/render/d3d12/swapchain_hooks.cpp: install(hooks.present1, sc_vt[22], reinterpret_cast<void *>(&present1_hook), "IDXGISwapChain1::Present1"); => outside d3d12
+core/render/d3d12/swapchain_hooks.cpp: install(hooks.resize, sc_vt[13], reinterpret_cast<void *>(&resize_hook), "IDXGISwapChain::ResizeBuffers"); => outside d3d12
+core/render/d3d12/swapchain_hooks.cpp: install(hooks.resize1, sc_vt[39], reinterpret_cast<void *>(&resize1_hook), "IDXGISwapChain3::ResizeBuffers1"); => outside d3d12
+core/render/d3d12/swapchain_hooks.cpp: install(hooks.color_space, sc_vt[38], reinterpret_cast<void *>(&color_space_hook), "IDXGISwapChain3::SetColorSpace1"); => outside d3d12
+core/runtime/imports.hpp: if (!VirtualProtect(slot, sizeof *slot, PAGE_READWRITE, &old)) => via
+core/runtime/loader/hook_install.cpp: Installed install(safetyhook::MidHook &h, uintptr_t at, const char *what, safetyhook::MidHookFn fn) => via
+core/runtime/loader/hook_install.cpp: auto made = safetyhook::MidHook::create(reinterpret_cast<void *>(at), fn); => via
+core/runtime/loader/hook_install.cpp: Installed install(safetyhook::InlineHook &h, uintptr_t at, const char *what, void *detour, safetyhook::InlineHook::Flags flags) => via
+core/runtime/loader/hook_install.cpp: auto made = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), detour, flags); => via
+core/runtime/loader/hook_install.cpp: Installed install(safetyhook::MidHook &h, const HookSite &site, safetyhook::MidHookFn fn) => via
+core/runtime/loader/hook_install.cpp: return install(h, runtime::find(site.sig, site.tag, site.channel), site.sig.what, fn); => via
+core/runtime/loader/hook_install.cpp: Installed install(safetyhook::InlineHook &h, const HookSite &site, void *detour, safetyhook::InlineHook::Flags flags) => via
+core/runtime/loader/hook_install.cpp: return install(h, runtime::find(site.sig, site.tag, site.channel), site.sig.what, detour, flags); => via
+core/runtime/loader/hook_install.hpp: Installed install(safetyhook::MidHook &h, uintptr_t at, const char *what, safetyhook::MidHookFn fn); => none
+core/runtime/loader/hook_install.hpp: Installed install(safetyhook::InlineHook &h, uintptr_t at, const char *what, void *detour, => none
+core/runtime/loader/hook_install.hpp: Installed install(safetyhook::MidHook &h, const HookSite &site, safetyhook::MidHookFn fn); => none
+core/runtime/loader/hook_install.hpp: Installed install(safetyhook::InlineHook &h, const HookSite &site, void *detour, => none
+core/runtime/loader/hook_install.hpp: bool install(HookSet<Lock> &set, Hook &h, const Where &where, Args &&...args) => via
+core/runtime/loader/hook_install.hpp: Installed r = install(h, where, std::forward<Args>(args)...); => via
+core/runtime/loader/mixin_manager.hpp: void install(size_t from, size_t *count); => none
+core/runtime/loader/patch_set.cpp: bool PatchSet::write_bytes(uintptr_t at, const void *data, size_t n) => via
+core/runtime/loader/patch_set.cpp: if (!VirtualProtect(p, n, image().in_exec(at) ? PAGE_EXECUTE_READWRITE : PAGE_READWRITE, &old)) => via
+core/runtime/loader/patch_set.cpp: VirtualProtect(p, w.second.size(), PAGE_EXECUTE_READWRITE, &old); => via
+core/runtime/loader/patch_set.cpp: auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(g.addr), first, safetyhook::InlineHook::StartDisabled); => via
+core/runtime/loader/patch_set.cpp: auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(g.addr), site_thunks[s]); => via
+core/runtime/loader/patch_set.cpp: return write_bytes(g.addr, &first, sizeof first) ? nullptr : "VirtualProtect failed"; => via
+core/runtime/loader/patch_set.cpp: return write_bytes(g.addr + 1, &rel, 4) ? nullptr : "VirtualProtect failed"; => via
+core/runtime/loader/patch_set.cpp: return write_bytes(g.addr, first, g.span) ? nullptr : "VirtualProtect failed"; => via
+core/runtime/loader/patch_set.hpp: const char *install(Group &g); => none
+core/runtime/loader/patch_set.hpp: bool write_bytes(uintptr_t at, const void *data, size_t n); => none
+core/telemetry/telemetry.cpp: auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), fn); => via
+core/telemetry/telemetry.cpp: hook(h_results, S_RESULTS, on_results); => mid sig S_RESULTS
+core/telemetry/udp_ids.cpp: if (!runtime::write_slot(s.slot, reinterpret_cast<void *>(&h_sendto))) { => import ws2_32.dll!*
+core/testing/agent/agent.cpp: auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(loop), populate_mid); => mid sig S_POPULATE_LOOP
+core/testing/agent/agent.cpp: auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(a), reinterpret_cast<void *>(controller_detour)); => inline binding Game_Set_VehicleController_Thunk
+core/testing/agent/agent.cpp: auto h = safetyhook::InlineHook::create(addr_of(ga.continue_handle), reinterpret_cast<void *>(continue_detour)); => inline sig SIG_CONTINUE_HANDLE
+core/testing/agent/agent.cpp: auto h = safetyhook::InlineHook::create(addr_of(ga.hq_update), reinterpret_cast<void *>(hq_detour)); => inline sig SIG_HQ_UPDATE
+core/testing/agent/agent.cpp: auto c = safetyhook::InlineHook::create(addr_of(ga.hq_command), reinterpret_cast<void *>(hq_cmd_detour)); => inline sig SIG_HQ_COMMAND
+core/testing/direct_start.cpp: auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), link_mid); => mid sig SIG_FLOW_LINK
+core/testing/direct_start.cpp: safetyhook::InlineHook::create(reinterpret_cast<void *>(game.set_mode), reinterpret_cast<void *>(set_mode_detour)); => inline sig SIG_SET_MODE
+core/testing/direct_start.cpp: auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(settings_detour)); => inline sig SIG_BUILD_SETTINGS
+core/testing/direct_start.cpp: auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(ftue_exit_detour)); => inline sig SIG_FTUE_EXIT
+core/testing/direct_start_tt.cpp: auto h = safetyhook::InlineHook::create(ptr<void>(game().current_track), reinterpret_cast<void *>(track_detour)); => inline sig SIG_CURRENT_TRACK
+core/testing/title_skip.cpp: auto h = safetyhook::InlineHook::create(addr_of(ga.intro_update), reinterpret_cast<void *>(intro_detour)); => inline sig SIG_INTRO_UPDATE
+core/testing/virtual_pad.cpp: auto g = safetyhook::InlineHook::create(get, reinterpret_cast<void *>(x_get_state)); => outside xinput
+core/testing/virtual_pad.cpp: auto c = safetyhook::InlineHook::create(caps, reinterpret_cast<void *>(x_get_caps)); => outside xinput
+loader/version.c: if (!VirtualProtect(slot, sizeof *slot, PAGE_READWRITE, &old)) => import USER32.dll!RegisterClassExW USER32.dll!CreateWindowExW KERNEL32.dll!CreateMutexW
+loader/version.c: if (!VirtualProtect(at, 1, PAGE_EXECUTE_READWRITE, &old)) => outside kernel32 kernelbase

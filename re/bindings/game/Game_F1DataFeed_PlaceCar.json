@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1DataFeed_PlaceCar",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c209f0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-F1-DATA-FEED-REAL-WORLD",
+  "notes": "Log channel F1-DATA-FEED-REAL-WORLD: '** DATA MISSING FOR CAR - %d, car number = %d **' | '   Set position to (%.2f, %.2f, %.2f)'"
+ },
+ "signature": {
+  "id": "game.f1_data_feed_place_car",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC A0 01 00 00 C5 78 29 AC 24 90 01 00 00",
+  "match": "0x142c209f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c209f0",
+  "kind": "func_start",
+  "names": [
+   "Game_F1DataFeed_PlaceCar"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142c209f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c209f0.c;xref:0x142c1fd6f",
+   "notes": "V5042 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

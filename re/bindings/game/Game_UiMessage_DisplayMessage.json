@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UiMessage_DisplayMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1442d9bf0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name displayMessage (class from the log channel); log channel UI_MESSAGE: '%s(). %s'"
+ },
+ "signature": {
+  "id": "game.ui_message_display_message",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 4D 89 CE 4C 89 C3",
+  "match": "0x1442d9bf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442d9bf0",
+  "kind": "func_start",
+  "names": [
+   "Game_UiMessage_DisplayMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x1442d9bf0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1442d9bf0.c;xref:0x1406a777a",
+   "notes": "V6581 size=1232; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

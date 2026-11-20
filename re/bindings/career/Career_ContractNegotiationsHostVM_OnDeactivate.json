@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_ContractNegotiationsHostVM_OnDeactivate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a69300",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_ContractNegotiationsHostVM_OnDeactivate(void *vm)",
+  "evidence": "decomp:re/decomp/141a69300.c;xref:0x145729e28",
+  "notes": "myteam-g1: Deactivation counterpart: frees contract row entries (0xc48 bytes each), clears flags, unregisters StartContractNegotiationsFlow handler 141a68e80 and releases widgets (vm+0x278/0x288)."
+ },
+ "signature": {
+  "id": "career.contract_negotiations_host_vm_on_deactivate",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 48 8B 81 18 0F 00 00",
+  "match": "0x141a69300",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a69300",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractNegotiationsHostVM_OnDeactivate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141a69300",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a69300.c;xref:0x145729e28",
+   "notes": "V9929 Frees 0xc48-byte rows at vm+0x2d0 (count +0xf18), unregisters the same handlers, releases +0x278/+0x288."
+  }
+ ],
+ "proofs": []
+}

@@ -5,12 +5,12 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
-use swofty_core::baseline::{Identity, sha256_bytes};
-use swofty_core::busy;
+use swofty_core::game_folder::baseline::{Identity, sha256_bytes};
+use swofty_core::game_folder::busy;
+use swofty_core::game_folder::journal::Journal;
+use swofty_core::game_folder::placed::Placed;
+use swofty_core::game_folder::recovery::{self, Blocked, Notice, Scope, SessionLock};
 use swofty_core::install::{Drift, Game, Installer, OVERRIDE_HEADER, Plan};
-use swofty_core::journal::Journal;
-use swofty_core::placed::Placed;
-use swofty_core::recovery::{self, Blocked, Notice, Scope, SessionLock};
 
 const GVDB: &str = "game_package/gamedatabases/gamedatabases.2025.bin";
 const UI: &str = "2025_asset_groups/ui_package/flow_frontend.erp";
@@ -331,8 +331,8 @@ fn a_restore_pressed_while_play_checks_the_game_files_waits_for_it_then_restores
     let data = f.data.clone();
     let play = std::thread::spawn(move || {
         std::thread::sleep(std::time::Duration::from_millis(600));
-        busy::Busy::clear(&data);
         drop(wrapper);
+        busy::Busy::clear(&data);
     });
     let wait = recovery::Wait {
         build: std::time::Duration::from_secs(30),

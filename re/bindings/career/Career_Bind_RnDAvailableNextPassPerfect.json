@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Bind_RnDAvailableNextPassPerfect",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14294f670",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Bind_RnDAvailableNextPassPerfect(void * self,uint64_t *a2,uint64_t a3,void * a4)",
+  "evidence": "decomp:re/decomp/14294f670.c;xref:0x14294f08d;xref:0x142978906;xref:0x142989aaf",
+  "notes": "myteam-g1: Binds rnd_available, rnd_next_pass, rnd_next_perfect text/state entries (low confidence on exact meaning)."
+ },
+ "signature": {
+  "id": "career.bind_rn_davailable_next_pass_perfect",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 C5 F8 29 B4 24 80 00 00 00 4C 89 4C 24 78 4D 89 C5",
+  "match": "0x14294f670",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14294f670",
+  "kind": "func_start",
+  "names": [
+   "Career_Bind_RnDAvailableNextPassPerfect"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x14294f670",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14294f670.c",
+   "notes": "V10235 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

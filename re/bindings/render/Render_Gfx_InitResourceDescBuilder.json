@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_InitResourceDescBuilder",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140100d70",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140100d70.c;xref:0x1400fe1f7",
+  "notes": "Initialises a stack descriptor builder (name \"<unknown-because-not-initialised/resource>\", hash seed 0xc4ceb9fe1a85ec53, inline arrays cap 0x20) and clones arrays via 143c208d0. 68 calls from the config object builders at 0x1400fe..."
+ },
+ "signature": {
+  "id": "render.gfx_init_resource_desc_builder",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 44 24 30 48 C7 44 24 30 00 00 00 00 48 8B 5E 20 48",
+  "match": "0x1400fe59c",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x140100d70",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_InitResourceDescBuilder"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x140100d70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140100d70.c;xref:0x1400fe1f7",
+   "notes": "V8200 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

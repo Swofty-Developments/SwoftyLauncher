@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_LinkResolver_RegisterLinkable",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143992080",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143992080.c;xref:0x14015dfad",
+  "notes": "Takes critical section (+200) and appends param_2 to the linkable vector at +0x160 (1.5x growth), zeroing its +0x40 pair. 56 callers (Ne_CrowdPlugin_LoadXml, Ne_LinkResolver_ResolveLinks)."
+ },
+ "signature": {
+  "id": "core.link_resolver_register_linkable",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 30 48 85 D2 0F 84 ?? ?? ?? ?? 48 89 D6 48",
+  "match": "0x143992080",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143992080",
+  "kind": "func_start",
+  "names": [
+   "Ne_LinkResolver_RegisterLinkable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x143992080",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143992080.c;xref:0x14015dfad",
+   "notes": "V7658 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

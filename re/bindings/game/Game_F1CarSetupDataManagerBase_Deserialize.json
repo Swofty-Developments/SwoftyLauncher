@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1CarSetupDataManagerBase_Deserialize",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c0eb60",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=F1CarSetupDataManagerBase::deserialize; log channel NETWORK: ' F1CarSetupDataManagerBase::deserialize() v%03d'"
+ },
+ "signature": {
+  "id": "game.f1_car_setup_data_manager_base_deserialize",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 4C 89 C6 48 89 CF",
+  "match": "0x140c0eb60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c0eb60",
+  "kind": "func_start",
+  "names": [
+   "Game_F1CarSetupDataManagerBase_Deserialize"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140c0eb60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c0eb60.c",
+   "notes": "V4564 log/pretty strings and body checked in decomp; vtable/indirect callers"
+  }
+ ],
+ "proofs": []
+}

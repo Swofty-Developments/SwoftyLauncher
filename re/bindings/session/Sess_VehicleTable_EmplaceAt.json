@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Sess_VehicleTable_EmplaceAt",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140cdca10",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void *Sess_VehicleTable_EmplaceAt(void *table, const void *record)",
+  "evidence": "decomp:re/decomp/140cdca10.c;xref:0x140bc2393,0x14247680e,0x1425098d5",
+  "notes": "Inserts/replaces a vehicle record at u16 index param_2+2 in a slot vector (16-byte slots), record built by 0x140cdcdf0 (field +0x880). Callers Ent_EntrantsSystem_AddVehicle/ReplaceVehicle, Sess_Startup_VehicleAiLoop, Ent_Pack_VehicleRef. | myteam-keep 2026-11-13: table = {+0 allocator, +8 slots begin, +0x10 end}; id = u16 at record+2. Pushes empty slots until the vector reaches id, then appends when size == id, else stores into slot id only when that slot is empty (returns 0 when it already holds a car). Returns the stored car (*(slot+8), the copy 0x140cdcdf0 built), so in Game_Load_MyTeamVehicleBases rax at 0x1425098da (the call's return, site_Game_MyTeamVehicleBases_NextBase) is the stored base or 0."
+ },
+ "signature": {
+  "id": "session.vehicle_table_emplace_at",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 48 89 D7 48 89 CE 44",
+  "match": "0x140cdca10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140cdca10",
+  "kind": "func_start",
+  "names": [
+   "Sess_VehicleTable_EmplaceAt"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x140cdca10",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140cdca10.c;xref:0x14247680e,0x142476cb7,0x142506904",
+   "notes": "V3355 Slot vector 16-byte, u16 index param_2+2, builder 0x140cdcdf0, +0x880 ok; callers AddVehicle/ReplaceVehicle/Startup_VehicleAiLoop ok but Ent_Pack_VehicleRef is not a caller (tiny label packer at 0x1425069b0; site 0x1425098d5 is in another function)"
+  },
+  {
+   "date": "2026-11-13",
+   "verifier": "myteam-keep-verify",
+   "kind": "func",
+   "item": "0x140cdca10",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140cdca10.c;decomp:re/decomp/140cdcb70.c;decomp:re/decomp/140cdccb0.c;decomp:re/decomp/140cdcdf0.c;xref:0x140bc2393,0x14247680e,0x142476cb7,0x14247991a,0x142506904,0x1425098d5",
+   "notes": "V9278 Static: 0x140cdca1f movzx r14d,word [rdx+2] (id = u16 at record+2). Size = ([rcx+0x10]-[rcx+8]) sar 4 (16-byte slots, begin +8, end +0x10). While size < id it calls 0x140cdcb70(table, &{0}) (0x140cdca40..0x140cdca66), which appends one zeroed 16-byte slot, reallocating through [table+0] vt+0x18 when end == cap [+0x18]. When size == id: 0x140cdcdf0(&pair, [table+0], record) allocates 0xd00 bytes (align 0x10) through the allocator's vt+0x18 and copies the record. The string objects are re-pointed at their own inline buffers (+0x70/+0x188/+0x2a0/+0x3b8/+0x4d0), +0x880 is the count of the 0x30-byte array at +0x7f0, and the last copy is the qword at +0xcee. 0x140cdccb0 then push_backs the pair (moves it and nulls the source car), and the function returns [[table+0x10]-0x10+8], the appended car. When size > id: [slot+8] != 0 -> 0x140cdcacf xor eax,eax, return 0. Otherwise it builds through 0x140cdcdf0, stores the car at slot+8 and the allocator at slot+0, and returns [[table+8]+id*0x10+8] (0x140cdcb51..0x140cdcb5c). The +0x880 = 0 before the vt+0x38 release only runs on the not-taken temp and the old slot. Callers: six direct e8 calls, from 0x140bc2393, 0x14247680e, 0x142476cb7, 0x14247991a, 0x142506904 and 0x1425098d5. The row's evidence lists three."
+  }
+ ],
+ "proofs": []
+}

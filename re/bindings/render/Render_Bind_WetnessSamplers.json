@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Render_Bind_WetnessSamplers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1447192f0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void(...)",
+  "evidence": "decomp:re/decomp/1447192f0.c;xref:0x14471f345,0x14471f47d",
+  "notes": "binds six named texture/sampler pairs of a pass, among them wetnessSamplerTex / wetnessSampler (the wetness map the surface shaders read); keeps a width/height ratio of the first texture in 0x145faa648. | CORRECTION 2026-11-17 engine-re: belongs to the skidmark/track-mark system (callers in 0x14471ed10 next to Render_Skidmarks_Update). Once (obj+0x184 == 0): creates six texture+sampler SRV pairs through Render_Skidmarks_CreateTextureSrv 0x144719970 into obj+0x108..+0x130: albedo, normal, normalIntensity, surface, depth (+surfaceSampler), wetness; sets obj+0x188 = 1 if any was found and stores width/height of the albedo texture in 0x145faa648. So the wetness texture here is the mark layer own wetness channel. raised by engine-re with --force 2026-11-17 at user request (lane owner review requested) | verify V10814 partial: depth is paired with the sampler name surfaceSampler (no depthSampler string); obj+0x188 = 1 only when at least one of the six lookups returns non-null."
+ },
+ "signature": {
+  "id": "render.bind_wetness_samplers",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 83 B9 84 01",
+  "match": "0x1447192f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1447192f0",
+  "kind": "func_start",
+  "names": [
+   "Render_Bind_WetnessSamplers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1447192f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1447192f0.c;xref:0x14471f345",
+   "notes": "V6873 Albedo/normal/normalIntensity/surface/depth/wetness sampler names confirmed."
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "rndr-verify",
+   "kind": "func",
+   "item": "0x1447192f0",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1447192f0.c;xref:14471f345,14471f47d",
+   "notes": "V10814 six 0x144719970 calls into +0x108..+0x130 under obj+0x184==0 confirmed, but depth uses sampler name surfaceSampler (no depthSampler string), obj+0x188=1 only if at least one call returns nonzero, and it also sets global 0x145faa648 = width/height of the albedo result"
+  }
+ ],
+ "proofs": []
+}

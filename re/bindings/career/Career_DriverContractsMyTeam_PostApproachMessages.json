@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_DriverContractsMyTeam_PostApproachMessages",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140db7660",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void (void *comp, void *approach)",
+  "evidence": "decomp:re/decomp/140db7660.c;xref:0x140dafc29;xref:0x140db45ee;xref:0x140db86d2",
+  "notes": "myteam-g2: Posts message class UNK_145697010 (driver key at approach+0x50, team key +0x58, extras +0x60) then, when the approach team is the player team (looked up in comp+0x278+0x2e0), finds the pending entry (key at +0x4dc) and posts message UNK_145697040 with days-to-decision (entry +0x4c4) and flag (+0x4c). Called from Game_DriverContractsMyTeamComponent_ProgressDay when an AI approaches a player driver."
+ },
+ "signature": {
+  "id": "career.driver_contracts_my_team_post_approach_messages",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC B8 00 00 00 48 89 D6 48 89 CF 48 8B 05",
+  "match": "0x140db7660",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140db7660",
+  "kind": "func_start",
+  "names": [
+   "Career_DriverContractsMyTeam_PostApproachMessages"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140db7660",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140db7660.c",
+   "notes": "V9551 Posts UNK_145697010 (key +0x50, team +0x58, +0x60), then for player team finds entry (+0x4dc) and posts UNK_145697040 with +0x4c4 and flag +0x4c."
+  }
+ ],
+ "proofs": []
+}

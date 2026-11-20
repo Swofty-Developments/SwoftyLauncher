@@ -98,7 +98,7 @@ int upload_impl(void *dev, void *op, void *a3)
     (void)dev, (void)op, (void)a3;
     upload_body_ran = 1;
     Iface *global = &steam_iface;
-    ((uint64_t(*)(void *, const char *))global->vtable[7])(global, "corrupt_saves#76561198000000000.zip");
+    ((uint64_t (*)(void *, const char *))global->vtable[7])(global, "corrupt_saves#76561198000000000.zip");
     return 0;
 }
 
@@ -108,10 +108,13 @@ int fake_upload(void *dev, void *op, void *a3);
 
 #define TAG(a) ".byte 0x48,0xB8,0x53,0x57,0x46,0x54," a "\n"
 __asm__(".section .xtls,\"xr\"\n"
-        ".globl fake_start\nfake_start:\n" TAG("0x53,0x56,0x53,0x54") "jmp start_impl\n"
-        ".globl fake_mount\nfake_mount:\n" TAG("0x53,0x56,0x4D,0x54") "jmp mount_impl\n"
-        ".globl fake_upload\nfake_upload:\n" TAG("0x53,0x56,0x55,0x50") "jmp upload_impl\n"
-        ".text\n");
+        ".globl fake_start\nfake_start:\n" TAG(
+            "0x53,0x56,0x53,0x54") "jmp start_impl\n"
+                                   ".globl fake_mount\nfake_mount:\n" TAG(
+                                       "0x53,0x56,0x4D,0x54") "jmp mount_impl\n"
+                                                              ".globl fake_upload\nfake_upload:\n" TAG(
+                                                                  "0x53,0x56,0x55,0x50") "jmp upload_impl\n"
+                                                                                         ".text\n");
 
 typedef int (*Write_t)(void *, const char *, const void *, int32_t);
 typedef int32_t (*Read_t)(void *, const char *, void *, int32_t);
@@ -123,10 +126,7 @@ typedef const char *(*NameAt_t)(void *, int, int32_t *);
 typedef int (*Batch_t)(void *);
 typedef uint64_t (*Share_t)(void *, const char *);
 
-static void *slot(void *iface, int i)
-{
-    return (*(void ***)iface)[i];
-}
+static void *slot(void *iface, int i) { return (*(void ***)iface)[i]; }
 
 static uint8_t data_file[65536], index_file[416];
 
@@ -141,8 +141,7 @@ static void through_the_interface(void)
     expect(((Batch_t)slot(rs, 57))(rs), "BeginFileWriteBatch");
     expect(((Write_t)slot(rs, 0))(rs, "savegame@profile#NXDSMWW.BWW", data_file, sizeof data_file),
            "FileWrite the profile data file");
-    expect(((Write_t)slot(rs, 0))(rs, "savegame@profile#QKRHMYXE", index_file, sizeof index_file),
-           "FileWrite the profile index");
+    expect(((Write_t)slot(rs, 0))(rs, "savegame@profile#QKRHMYXE", index_file, sizeof index_file), "FileWrite the profile index");
     expect(((Write_t)slot(rs, 0))(rs, "savegame@profile_backup#QKRHMYXE", index_file, 16), "FileWrite a backup");
     expect(((Batch_t)slot(rs, 58))(rs), "EndFileWriteBatch");
     expect(!((Write_t)slot(rs, 0))(rs, "..\\escape", index_file, 16), "FileWrite of a name that leaves the folder fails");
@@ -197,13 +196,15 @@ int main(void)
     expect(GetFileVersionInfoSizeW(L"C:\\windows\\system32\\kernel32.dll", &dummy) != 0, "version.dll forwarding works");
     HANDLE early = CreateMutexW(NULL, FALSE, L"Codemasters F1 25");
     expect(early && GetModuleHandleW(L"swofty_core.dll"), "the early trigger loaded the core");
-    WNDCLASSEXW wc = {.cbSize = sizeof wc, .lpfnWndProc = DefWindowProcW, .hInstance = GetModuleHandleW(NULL),
+    WNDCLASSEXW wc = {.cbSize = sizeof wc,
+                      .lpfnWndProc = DefWindowProcW,
+                      .hInstance = GetModuleHandleW(NULL),
                       .lpszClassName = L"EGO_WindowClass"};
     extern void *__imp_RegisterClassExW;
     ATOM(WINAPI * rc)(const WNDCLASSEXW *) = (void *)__imp_RegisterClassExW;
     rc(&wc);
     printf("      starting the save device\n");
-    ((uint64_t(*)(void *))device_vt[1])(device);
+    ((uint64_t (*)(void *))device_vt[1])(device);
     if (getenv("T_EXPECT_NORMAL")) {
         void *rs = *(void **)(helper + 0x108);
         expect(rs == &steam_iface, "no test run: the device keeps Steam's interface");

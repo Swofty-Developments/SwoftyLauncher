@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Std_FatalExceptionTerminate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14029b050",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14029b050.c;xref:0x14029b041",
+  "notes": "Calls the optional global exception hook (0x145fb8718), the exception's virtual +0x10, then fatal int3 trap. 10 callers incl. Ne_Std_ThrowBadOptionalAccess, Ne_Std_ThrowBadArrayNewLength."
+ },
+ "signature": {
+  "id": "core.std_fatal_exception_terminate",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 89 CE 48 8B 05 ?? ?? ?? ?? 48 85 C0 74 05",
+  "match": "0x14029b050",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14029b050",
+  "kind": "func_start",
+  "names": [
+   "Ne_Std_FatalExceptionTerminate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x14029b050",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14029b050.c;xref:0x14029b041",
+   "notes": "V8443 optional hook 145fb8718, exception vcall+0x10, FastFailTerminate + int3; 10 callers incl ThrowException/ThrowBadArrayNewLength"
+  }
+ ],
+ "proofs": []
+}

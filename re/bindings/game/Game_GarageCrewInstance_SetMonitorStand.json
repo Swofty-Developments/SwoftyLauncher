@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GarageCrewInstance_SetMonitorStand",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140384f70",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-GARAGECREWINSTANCE",
+  "notes": "named from its log messages (channel GARAGECREWINSTANCE): 'GarageCrewInstance::setMonitorStand teamName %s - using FOM stand | GarageCrewInstance::setMonitorStand teamName %s | GarageCrewInstance::setMonitorStand standNameClassic %s | GarageCrewInstance::setM'"
+ },
+ "signature": {
+  "id": "game.garage_crew_instance_set_monitor_stand",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 70 48 85 C9",
+  "match": "0x140384f70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140384f70",
+  "kind": "func_start",
+  "names": [
+   "Game_GarageCrewInstance_SetMonitorStand"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x140384f70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140384f70.c;xref:0x28ad2c",
+   "notes": "V4575 string/behaviour in decomp matches name"
+  }
+ ],
+ "proofs": []
+}

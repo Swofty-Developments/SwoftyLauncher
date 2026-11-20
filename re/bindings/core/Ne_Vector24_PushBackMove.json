@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_Vector24_PushBackMove",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d337b0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140d337b0.c;xref:0x140be9a90,0x140be9b15",
+  "notes": "vector push_back for 24-byte elements (moves the pointer at +0x10), growth x1.5 via allocator vcall +0x18. Callers: Sess_WeekendOptions_OnRaceLengthChanged."
+ },
+ "signature": {
+  "id": "core.vector24_push_back_move",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 5E 18 48 8B 7E 20 48 83 C3 18 48 39 FB 72 13 EB 48",
+  "match": "0x140be9a90",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x140d337b0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Vector24_PushBackMove"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x140d337b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d337b0.c;xref:0x140be9a90,0x140be9b15",
+   "notes": "V3454 24-byte element move push_back, growth 1.5x via vcall +0x18, moves pointer at +0x10; caller OnRaceLengthChanged (+0x140d32b10)"
+  }
+ ],
+ "proofs": []
+}

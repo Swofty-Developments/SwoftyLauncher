@@ -1,8 +1,8 @@
 #pragma once
 
-#include "bc7.hpp"
-#include "erp_file.hpp"
-#include "png_straight.hpp"
+#include "core/apply/content/bc7.hpp"
+#include "core/apply/content/erp_file.hpp"
+#include "core/apply/content/png_straight.hpp"
 
 #include <algorithm>
 #include <cctype>
@@ -156,7 +156,8 @@ inline bool read_dds(std::string_view b, Image &out, std::string &why)
         return why = "the size " + std::to_string(out.width) + "x" + std::to_string(out.height) + " is not supported", false;
     size_t want = chain_bytes(out.format, out.width, out.height, out.levels);
     if (b.size() - data < want)
-        return why = "the pixel data is " + std::to_string(b.size() - data) + " bytes, " + std::to_string(want) + " needed", false;
+        return why = "the pixel data is " + std::to_string(b.size() - data) + " bytes, " + std::to_string(want) + " needed",
+               false;
     out.pixels.assign(b.data() + data, want);
     return true;
 }
@@ -203,7 +204,8 @@ inline bool encode_png(std::string_view bytes, bool srgb, Image &out, std::strin
         std::string padded(size_t(pw) * ph * 4, '\0');
         for (uint32_t y = 0; y < ph; y++)
             for (uint32_t x = 0; x < pw; x++)
-                std::memcpy(&padded[(size_t(y) * pw + x) * 4], &level[(size_t(std::min(y, lh - 1)) * lw + std::min(x, lw - 1)) * 4], 4);
+                std::memcpy(&padded[(size_t(y) * pw + x) * 4],
+                            &level[(size_t(std::min(y, lh - 1)) * lw + std::min(x, lw - 1)) * 4], 4);
         out.pixels += bc7::encode_rgba(reinterpret_cast<const uint8_t *>(padded.data()), int(pw), int(ph));
         if (i + 1 == out.levels)
             break;
@@ -374,8 +376,10 @@ inline Built build(const std::vector<Input> &files, const std::string &root, boo
             continue;
         }
         std::string surface = root + stem + ".tif.image", view = root + stem + ".tif";
-        list.push_back(make_res(surface, "GfxSurfaceRes", SURFACE_ARG, descriptor ? std::vector<std::string>{surface_header(img), img.pixels, stream_descriptor(root, stem)}
-                                                                    : std::vector<std::string>{surface_header(img), img.pixels}));
+        list.push_back(make_res(surface, "GfxSurfaceRes", SURFACE_ARG,
+                                descriptor
+                                    ? std::vector<std::string>{surface_header(img), img.pixels, stream_descriptor(root, stem)}
+                                    : std::vector<std::string>{surface_header(img), img.pixels}));
         list.push_back(make_res(view, "GfxSRVResource", SRV_ARG, {srv_data(img, surface)}));
         out.names.push_back(surface);
     }

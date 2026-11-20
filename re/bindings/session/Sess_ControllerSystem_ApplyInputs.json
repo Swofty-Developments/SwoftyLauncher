@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_ControllerSystem_ApplyInputs",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14389a120",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void(ControllerSystem*, double dt)",
+  "evidence": "decomp:re/decomp/14389a120.c;xref:0x1458825a0",
+  "notes": "vt_Sess_ControllerSystem slot 32 (+0x100). While [sys+0x364] and [sys+0x365] (sets built) are set: for each car i the active controller c = [set+0x20+(dword[set+0x10]^dword[set+0x18])*8] gives its input record through c->vtable[2] (a getter returning [c+8]) and Sess_ControllerSystem_ApplyRecord (0x14389a2b0) applies it to the car (physics record [vehicle manager+0xb0+i*8]); then the same for the spectator list. [sys+0x360] is a float countdown set to 0.1 when [[sys+0x70]+0x1ec] is 8. The controllers' own update (vtable slot 1) is not called here; the only direct caller found is the resettle step 0x1519ed8e0 (human cars)."
+ },
+ "signature": {
+  "id": "session.controller_system_apply_inputs",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 48 C5 F8 29 74 24 30 80 B9 64 03 00 00 00",
+  "match": "0x14389a120",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14389a120",
+  "kind": "func_start",
+  "names": [
+   "Sess_ControllerSystem_ApplyInputs"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "re-ai",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "ai-v1",
+   "kind": "func",
+   "item": "0x14389a120",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14389a120.c;xref:0x1458825a0",
+   "notes": "V1531 vtable slot 32 (+0x100) of 0x1458824a0 confirmed by raw read. ApplyInputs calls controller slot 2 (call [rax+0x10], the [ctrl+8] getter) and never slot 1; so ApplyInputs does not run the AI update, slot 1 must run earlier in the frame or the record would be stale."
+  }
+ ],
+ "proofs": []
+}

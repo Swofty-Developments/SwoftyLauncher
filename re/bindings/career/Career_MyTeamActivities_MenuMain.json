@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamActivities_MenuMain",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142319850",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *self)",
+  "evidence": "decomp:re/decomp/142319850.c;xref:0x14577ede0",
+  "notes": "myteam-g1: Main handler of the MY_TEAM_ACTIVITIES menu; handles exit-without-generic/training and calls Game_MyTeamActivities_OnActivityPressed."
+ },
+ "signature": {
+  "id": "career.my_team_activities_menu_main",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 C5 F8 29 B4 24 A0 00 00 00 48 8B 02 48 85 C0 0F 84 ?? ?? ?? ?? 48 89 CB 8B 00",
+  "match": "0x142319850",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142319850",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamActivities_MenuMain"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x142319850",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142319850.c;xref:0x14577ede0",
+   "notes": "V10115 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

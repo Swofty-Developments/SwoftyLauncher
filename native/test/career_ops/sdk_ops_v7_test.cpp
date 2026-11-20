@@ -11,12 +11,12 @@
 using namespace swofty;
 
 static int failures = 0;
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d: %s\n", __FILE__, __LINE__, #c);                                                    \
-            ++failures;                                                                                                \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d: %s\n", __FILE__, __LINE__, #c);                                                             \
+            ++failures;                                                                                                          \
+        }                                                                                                                        \
     } while (0)
 
 static int g_round = 3, g_rounds = 16, g_result = SWOFTY_ASSET_OK;
@@ -59,10 +59,11 @@ static int apply_lineup(SwoftyText request, char *out, size_t cap, size_t *len)
     return SWOFTY_ASSET_OK;
 }
 
-static const SwoftyCareerOps kOps6 = {6,       available, nullptr, set_slots, apply_lineup, nullptr, nullptr, nullptr,
+static const SwoftyCareerOps kOps6 = {6,       available, nullptr, set_slots, apply_lineup, nullptr, nullptr, nullptr, nullptr,
                                       nullptr, nullptr,   nullptr, nullptr,   nullptr,      nullptr, nullptr, nullptr, nullptr};
-static const SwoftyCareerOps kOps7 = {7,       available, nullptr, set_slots, apply_lineup, nullptr, nullptr, nullptr,
-                                      nullptr, nullptr,   nullptr, nullptr,   nullptr,      nullptr, current_round, team_stat, nullptr};
+static const SwoftyCareerOps kOps7 = {7,       available, nullptr,       set_slots, apply_lineup, nullptr,
+                                      nullptr, nullptr,   nullptr,       nullptr,   nullptr,      nullptr,
+                                      nullptr, nullptr,   current_round, team_stat, nullptr,      nullptr};
 
 static Ref<drivers::Identity> D(const char *name) { return Ref<drivers::Identity>(std::string("game/") + name); }
 
@@ -75,12 +76,22 @@ static career::Season season()
     s.teams.push_back({.slot = 2, .team = {}, .seats = {D("warwick"), D("donnelly")}});
     s.teams.push_back({.slot = 3, .team = {}, .seats = {D("brabham"), D("modena")}});
     s.teams.push_back({.slot = 4, .team = {}, .seats = {D("pirro"), D("de_cesaris")}});
-    s.changes.push_back({.round = 15, .slot = 2, .seat = 1, .out = D("donnelly"), .in = D("herbert"),
-                         .kind = career::ChangeKind::stand_in, .until_round = 17});
-    s.changes.push_back({.round = 1, .slot = 3, .seat = 0, .out = D("brabham"), .in = D("foitek"),
-                         .kind = career::ChangeKind::stand_in, .until_round = 3});
-    s.changes.push_back({.round = 1, .slot = 4, .seat = 0, .out = D("pirro"), .in = D("morbidelli"),
-                         .kind = career::ChangeKind::stand_in});
+    s.changes.push_back({.round = 15,
+                         .slot = 2,
+                         .seat = 1,
+                         .out = D("donnelly"),
+                         .in = D("herbert"),
+                         .kind = career::ChangeKind::stand_in,
+                         .until_round = 17});
+    s.changes.push_back({.round = 1,
+                         .slot = 3,
+                         .seat = 0,
+                         .out = D("brabham"),
+                         .in = D("foitek"),
+                         .kind = career::ChangeKind::stand_in,
+                         .until_round = 3});
+    s.changes.push_back(
+        {.round = 1, .slot = 4, .seat = 0, .out = D("pirro"), .in = D("morbidelli"), .kind = career::ChangeKind::stand_in});
     return s;
 }
 
@@ -101,7 +112,7 @@ int main()
     g_result = SWOFTY_ASSET_OK;
 
     CHECK(career::set_slots("f1_career_1990", std::vector<Ref<teams::Identity>>{Ref<teams::Identity>("game/ferrari_1990"),
-                                                                              Ref<teams::Identity>("game/lotus_1990")}) ==
+                                                                                Ref<teams::Identity>("game/lotus_1990")}) ==
           career::Result::ok);
     CHECK(g_group == "f1_career_1990" && g_slots == (std::vector<uint32_t>{11, 12}));
     CHECK(career::set_slots("f1_career_1990", std::vector<Ref<teams::Identity>>{Ref<teams::Identity>("game/nobody")}) ==
@@ -121,18 +132,21 @@ int main()
 
     career::Season rep = season();
     rep.changes.clear();
-    rep.changes.push_back({.round = 5, .slot = 1, .seat = 1, .out = D("mansell"), .in = D("x"), .kind = career::ChangeKind::replace});
+    rep.changes.push_back(
+        {.round = 5, .slot = 1, .seat = 1, .out = D("mansell"), .in = D("x"), .kind = career::ChangeKind::replace});
     CHECK(seat(career::seats_at(rep, 4), 1, 1) == "game/mansell" && seat(career::seats_at(rep, 16), 1, 1) == "game/x");
 
     career::Season sw = season();
     sw.changes.clear();
-    sw.changes.push_back({.round = 2, .slot = 1, .seat = 0, .out = D("prost"), .in = D("warwick"), .kind = career::ChangeKind::swap});
+    sw.changes.push_back(
+        {.round = 2, .slot = 1, .seat = 0, .out = D("prost"), .in = D("warwick"), .kind = career::ChangeKind::swap});
     career::Season swapped = career::seats_at(sw, 2);
     CHECK(seat(swapped, 1, 0) == "game/warwick" && seat(swapped, 2, 0) == "game/prost");
 
     career::Season mv = season();
     mv.changes.clear();
-    mv.changes.push_back({.round = 2, .slot = 1, .seat = 0, .out = D("prost"), .in = D("warwick"), .kind = career::ChangeKind::move});
+    mv.changes.push_back(
+        {.round = 2, .slot = 1, .seat = 0, .out = D("prost"), .in = D("warwick"), .kind = career::ChangeKind::move});
     career::Season moved = career::seats_at(mv, 2);
     CHECK(seat(moved, 1, 0) == "game/warwick" && seat(moved, 2, 0).empty());
 

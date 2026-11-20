@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_F1LifeConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14252f270",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: f1_life.offline_driver_customisations.offline_casual_customisation_tem, f1_life.offline_driver_customisations.offline_favourite_trophies, stom_avatar.eyewDriverAnimation'"
+ },
+ "signature": {
+  "id": "game.read_f1_life_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 58 EF 00 00",
+  "match": "0x14252f270",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14252f270",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_F1LifeConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x14252f270",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14252f270.c",
+   "notes": "V5094 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Build_RnDResearchUpgradesHeader",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c71420",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Build_RnDResearchUpgradesHeader(void * self)",
+  "evidence": "decomp:re/decomp/141c71420.c;xref:0x14573fed8",
+  "notes": "myteam-g1: Builds laptop_research_upgrades_header."
+ },
+ "signature": {
+  "id": "career.build_rn_dresearch_upgrades_header",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 CE 48 8B 99 30 03 00 00",
+  "match": "0x141c71420",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c71420",
+  "kind": "func_start",
+  "names": [
+   "Career_Build_RnDResearchUpgradesHeader"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141c71420",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c71420.c;xref:0x14573fed8",
+   "notes": "V9986 Builds laptop_research_upgrades_header with virtual_help_page_header."
+  }
+ ],
+ "proofs": []
+}

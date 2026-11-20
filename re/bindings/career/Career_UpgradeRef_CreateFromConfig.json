@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_UpgradeRef_CreateFromConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14105c840",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void FUN(void **out, void *allocator, void *unused, void *cfg)",
+  "evidence": "decomp:re/decomp/14105c840.c;xref:0x1456b9d78",
+  "notes": "myteam-g1: Factory for an \"upgrade\" reference object: reads an int and a name list from config (names decoded with the common obfuscation table 0x145890978)."
+ },
+ "signature": {
+  "id": "career.upgrade_ref_create_from_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 4D 89 CE 4C 89 C7 48 89 54 24 20",
+  "match": "0x14105c840",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14105c840",
+  "kind": "func_start",
+  "names": [
+   "Career_UpgradeRef_CreateFromConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x14105c840",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14105c840.c;xref:0x1456b9d78;str:\"upgrade\"",
+   "notes": "V9643 Factory reading positivity and \"upgrade\" attributes, allocates 0x50-byte object; names decoded via 145890978."
+  }
+ ],
+ "proofs": []
+}

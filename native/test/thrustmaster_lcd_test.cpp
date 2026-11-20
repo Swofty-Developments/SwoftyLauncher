@@ -1,7 +1,8 @@
-// Host-native unit test for the core's Thrustmaster LCD guard (native/src/core/thrustmaster_lcd_logic.hpp).
-// Built and run by native/test/run_thrustmaster_lcd_test.sh.
+// Host-native unit test for the core's Thrustmaster LCD guard (native/src/core/guards/session/thrustmaster_lcd_logic.hpp).
+// Built and run by native/test/run_tests.sh thrustmaster_lcd.
 
-#include "thrustmaster_lcd_logic.hpp"
+#include "core/guards/session/thrustmaster_lcd_logic.hpp"
+#include "core/guards/skips.hpp"
 
 #include <cstdio>
 
@@ -22,18 +23,18 @@ int main()
     expect(!tl::record_missing(0x325a308a0), "a found entrant record runs the game's code");
     expect(!tl::record_missing(1), "any non-null record is kept");
 
-    tl::Skips s;
+    swofty_core::guards::LogFirst<tl::LOG_FIRST> s{"skips"};
     int lines = 0, last = 0;
     for (int i = 0; i < 500; i++) {
-        int n = s.note();
-        if (s.logged(n))
+        auto line = s.note();
+        if (line)
             lines++;
-        if (s.last(n))
+        if (line && *line.tail)
             last++;
     }
     expect(lines == tl::LOG_FIRST, "five hundred skips produce exactly the capped number of lines");
     expect(last == 1, "the capped line is marked once");
-    expect(s.count == 500, "every skip is counted");
+    expect(s.count() == 500, "every skip is counted");
 
     std::printf("%s\n", failed ? "FAILED" : "all passed");
     return failed ? 1 : 0;

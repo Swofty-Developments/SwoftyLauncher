@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqAdvanceVM_OnNotificationsAnimOff",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422c94f0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1422c94f0.c;xref:0x1422c415c",
+  "notes": "Command 'animate_off_notification_set' handler: sets canAdvance true and advanceRequested false (logs both), refreshes calendar/notifications. Called from OnCommandRaised. | #587: L2 by lead-authorised promotion for lane owner career-re (independent agree V3089)"
+ },
+ "signature": {
+  "id": "career.team_hq_advance_v_m_on_notifications_anim_off",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC D0 00 00 00 48 89 CE 48 8B 89",
+  "match": "0x1422c94f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422c94f0",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqAdvanceVM_OnNotificationsAnimOff"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d12-verify",
+   "kind": "func",
+   "item": "Career_TeamHqAdvanceVM_OnNotificationsAnimOff",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422c94f0.c;xref:0x1422c94f0",
+   "notes": "V3089 strings/offsets/calls match claim"
+  }
+ ],
+ "proofs": []
+}

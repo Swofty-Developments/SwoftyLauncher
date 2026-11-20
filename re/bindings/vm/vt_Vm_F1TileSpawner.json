@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "vt_Vm_F1TileSpawner",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145884850",
+  "type": "vtable[65]",
+  "level": "L1",
+  "subsystem": "vm",
+  "evidence": "imm:0x53543146;pat:fourcc-getter-slot16",
+  "notes": "F1TS node class vtable (imm: FourCC getter returns the tag; pat: the getter is slot 16 (+0x80) of exactly one vtable). slot 9 init 0x14382cff0; spawns tile templates via 0x1438308c0. docs/reference/ui/engine.md Stays L1 (2026-10-23): no decomp of the factory create that installs this vtable and no xref of its lea site yet."
+ },
+ "signature": {
+  "id": "vm.f1_tile_spawner",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 01 48 8D 05 ?? ?? ?? ?? 48 89 41 48 48 83 B9",
+  "match": "0x1438cf0b2",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x145884850",
+  "kind": "data",
+  "names": [
+   "vt_Vm_F1TileSpawner"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x145884850",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x142d31ef1",
+   "notes": "V7505 name/class, slots and refs match"
+  }
+ ],
+ "proofs": []
+}

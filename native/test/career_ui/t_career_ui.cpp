@@ -17,10 +17,7 @@ constexpr char kGroup[] = "f1_career_1990";
 
 int g_init_bad = -1, g_load_bad = -1;
 
-SWOFTY_WRAP(Game_SpeechSystem_PostLine, void, void *speech, void *line, uint8_t retrigger)
-{
-    orig(speech, line, retrigger);
-}
+SWOFTY_WRAP(Game_SpeechSystem_PostLine, void, void *speech, void *line, uint8_t retrigger) { orig(speech, line, retrigger); }
 
 bool init()
 {

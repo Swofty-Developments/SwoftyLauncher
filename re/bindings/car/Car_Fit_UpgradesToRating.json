@@ -1,0 +1,39 @@
+{
+ "schema": 1,
+ "name": "Car_Fit_UpgradesToRating",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143514670",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "void Car_Fit_UpgradesToRating(Upgrades *upgrades, DepartmentData *dept, uint32_t driverStatId)",
+  "evidence": "decomp:re/decomp/143514670.c;str:s_Upgrades_FitUpgradesUpToRating;imm:0xc40;imm:0x1960;xref:0x143514c50,0x143514da4",
+  "notes": "cxx=game::upgrades::EngineSuppliers::fitUpgradesUpToRating. R&D apply: groups DepartmentData effect-defs (count [dept+0xc00]) by enum bytes [effdef+0x7c]==group,[effdef+0x72]==item; lerps rating from [item+0x10]min/[+0x14]max via sum effect float [effdef+0x64]; per vehicle in owner (*(upgrades+8)) vector [+0x298..+0x2a0] writes into attribute array base [veh+0xd10] count [veh+0x1960] stride 0xc40 via Car_Apply_UpgradeToVehicle. No static callers (indirect/encrypted dispatch); role proven by in-binary pretty-fn + data flow"
+ },
+ "signature": {
+  "id": "car.fit_upgrades_func",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 18 25 00 00",
+  "match": "0x143514670",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143514670",
+  "kind": "func_start",
+  "names": [
+   "Car_Fit_UpgradesToRating"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-19",
+    "by": "car-re"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

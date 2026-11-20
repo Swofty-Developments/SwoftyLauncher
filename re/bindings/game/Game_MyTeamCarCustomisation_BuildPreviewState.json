@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamCarCustomisation_BuildPreviewState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1416c6b50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_MyTeamCarCustomisation_BuildPreviewState(void *self)",
+  "evidence": "decomp:re/decomp/1416c6b50.c;xref:0x141fd8ef6;xref:0x141fdba06;xref:0x14209386a",
+  "notes": "myteam-g2: Big-stack function (about 0x13a58 bytes, uses FUN_144c897d0 stack probe) that builds the livery/car customisation preview state on enter/exit of Game_MyTeamCarCustomisation. Level 1."
+ },
+ "signature": {
+  "id": "game.my_team_car_customisation_build_preview_state",
+  "section": ".xtls",
+  "pattern": "56 57 53 B8 80 3A 01 00 E8 ?? ?? ?? ?? 48 29 C4 48 89 CE 48 8D 94 24 D0 D1 00 00",
+  "match": "0x1416c6b50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416c6b50",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamCarCustomisation_BuildPreviewState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x1416c6b50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1416c6b50.c;xref:0x141fd8ef6;xref:0x141fdba06",
+   "notes": "V9759 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

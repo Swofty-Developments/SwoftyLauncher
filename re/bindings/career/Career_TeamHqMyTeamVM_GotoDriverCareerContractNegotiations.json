@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqMyTeamVM_GotoDriverCareerContractNegotiations",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422c9d10",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_TeamHqMyTeamVM_GotoDriverCareerContractNegotiations(void *vm)",
+  "evidence": "decomp:re/decomp/1422c9d10.c;xref:0x1422c4622;xref:0x1422cbee4",
+  "notes": "myteam-g1: Menu transition to_driver_career_contract_negotiations: if flag vm+0x767 clear, calls FUN_14128b310(team, day=(time>>5)/0x2d, 0xf) to mark the day in the calendar, then fires transition message UNK_14577aec2 on the UI router (vm+0x620)."
+ },
+ "signature": {
+  "id": "career.team_hq_my_team_vm_goto_driver_career_contract_negotiations",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 48 48 89 CE 80 B9 67 07 00 00 00",
+  "match": "0x1422c9d10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422c9d10",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqMyTeamVM_GotoDriverCareerContractNegotiations"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1422c9d10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422c9d10.c;xref:0x1422c4622",
+   "notes": "V10085 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

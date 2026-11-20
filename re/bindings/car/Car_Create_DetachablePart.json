@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_Create_DetachablePart",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144661440",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "void *Car_Create_DetachablePart(void *part_manager, void **cb, uint32_t *name_id, int32_t *params, float k)",
+  "evidence": "decomp:re/decomp/144661440.c;xref:0x15538e50c,0x14465595c;kb:subsystems/car.md#parts",
+  "notes": "creates a detachable part object (0x200 bytes, vtable 0x145bf94d0) in the car part manager car+0x2c8; fails when the model has no node with the id (0x143cfc8f0 = -1). | car-re 2026-10-28 L2: part_manager = CarLive+0x2c8 {+0 allocator (vtable +0x18 alloc 0x200/0x10), +8 car, +0x10 vector allocator, +0x18/+0x20/+0x28 begin/end/cap}; returns 0 (nothing allocated) when the model or the node is missing. Part: +8 allocator, +0x10 car, +0x18/+0x20 cb fn/ctx, +0x30 k (stored unchanged), +0x38 detached = 0, +0x48 name id, +0x4c node index, +0x50 '<name>_shadow' and +0x54 '<name>_water' node indices, +0x60..+0x9f node transform (identity when no node data), +0xa0 shape kind (params int, or 2/6 from the ConvexHull entry of the same name when its +0x70 == 2), +0xa4.. params +4.., +0x130 byte 0, +0x131 byte 100, +0x1f4 byte 0, +0x140 random jitter (+-0.03); the part is appended to the manager's vector. Callers: Car_Add_DetachablePart_Thunk body (0x15538e50c) and 0x144655640 (11 calls from Car_Chassis_Build, a second part source that sets +0x1f4 = 1)."
+ },
+ "signature": {
+  "id": "car.create_detachable_part",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 98 0A 00 00 C5 78 29 94 24 80 0A 00 00",
+  "match": "0x144661440",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144661440",
+  "kind": "func_start",
+  "names": [
+   "Car_Create_DetachablePart"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v3",
+   "kind": "func",
+   "item": "0x144661440",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144661440.c;decomp:re/decomp/15538e460.c;decomp:re/decomp/144655640.c;xref:0x15538e50c,0x14465595b",
+   "notes": "V1453 Callers: 0x15538e50c (Add body) and 0x14465595b in 0x144655640, which Car_Chassis_Build calls 11 times (0x14462b147..0x14462b5b3) and which sets the new part's +0x1f4 = 1. Returns 0 before allocating when [[pm+8]+0xe0]+0x38 is null or 0x143cfc8f0 returns -1. Allocates [pm] vt+0x18(0x200, 0x10); vtable 0x145bf94d0 (0x14466160a); +8 [pm], +0x10 car, +0x18/+0x20 cb, +0x30 k, +0x38 0, +0x48 id, +0x4c node, +0x50 _shadow, +0x54 _water, +0xa0 kind (params, or 2/6 from the hull entry when its +0x70 == 2), +0xa4..+0xdf params +4..+0x3f, +0x130 0 / +0x131 100, +0x140 three jitters in [-0.03, 0.03]; appended to pm+0x18/+0x20 (cap +0x28, allocator pm+0x10). Corrections to the note: the node-miss fallback 0x1446617c3 writes an identity rotation with translation (0, -1000, 0) from 0x145bf6830, not identity (only the null-model fallback is identity, and both sit behind the early returns); an allocation failure still appends a null pointer to the manager vector. 5-arg proto (k on the stack) matches; sigcheck passes car.create_detachable_part."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x144661440",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144661440.c;xref:0x14465595b",
+   "notes": "V6734 0x200 alloc, vtable 0x145bf94d0 verified"
+  }
+ ],
+ "proofs": []
+}

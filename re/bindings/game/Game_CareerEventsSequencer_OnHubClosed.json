@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerEventsSequencer_OnHubClosed",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c78300",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140c78300.c;xref:0x142d52bb6",
+  "notes": "Logs 'onHubClosed', re-enables camera controls. Called by Sess_Loader_RequestCareerHubUnload. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3025)"
+ },
+ "signature": {
+  "id": "game.career_events_sequencer_on_hub_closed",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 5F B8 AD 00 00 00",
+  "match": "0x140c78300",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c78300",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerEventsSequencer_OnHubClosed"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d12-verify",
+   "kind": "func",
+   "item": "Game_CareerEventsSequencer_OnHubClosed",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c78300.c;xref:142d52540",
+   "notes": "V3025 strings/offsets/calls match claim"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_OnlineNegotiations_OnTeamOffer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ff3f20",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:log-channel-ONLINE_CONTRACT_NEGOTIATIONS",
+  "notes": "named from its log messages (channel ONLINE_CONTRACT_NEGOTIATIONS): 'Team made an offer to player'"
+ },
+ "signature": {
+  "id": "career.online_negotiations_on_team_offer",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6D B8 24 01 00 00 48 8D 0D ?? ?? ?? ?? 66 66 66 66 66 66 2E 0F 1F 84 00 00 00 00 00 8B 14 81 85 D2 74 4B 81 FA 48 A7 DF 44 74 30 83 C0 18 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D 24 01 00 00 75 C3 EB 13 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 8B 47 18 8B 4F 14 C1 E1 0E 66 0B 4F 16 8B 57 10 C1 E2 0E 66 0B 57 12 C6 44 24 2C 04",
+  "match": "0x140ff3f20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ff3f20",
+  "kind": "func_start",
+  "names": [
+   "Career_OnlineNegotiations_OnTeamOffer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140ff3f20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ff3f20.c;xref:0x140ff1dc6,0x140ff5667",
+   "notes": "V4845 log/pretty strings and body checked in decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-f",
+   "kind": "func",
+   "item": "0x140ff3f20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ff3f20.c;str:\"Team made an offer to player\"",
+   "notes": "V9117 Decompile contains the claimed log string and the function is a small logger/wrapper whose name matches it."
+  }
+ ],
+ "proofs": []
+}

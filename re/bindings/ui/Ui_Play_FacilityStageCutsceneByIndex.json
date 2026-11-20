@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Play_FacilityStageCutsceneByIndex",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14196efe0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void PlayCutscene(void *owner, uint32_t index)",
+  "evidence": "decomp:re/decomp/14196efe0.c;xref:0x14196ea8c;xref:0x141c473d5;xref:0x141c4f64d",
+  "notes": "myteam-g2: switch(index) over a table of cutscene/stage names (0x145731120, ...), posts a bus message and starts Game_FrontendSceneManager_PlayCutscene. Used by facility stage scene load/despawn and the accolades page."
+ },
+ "signature": {
+  "id": "ui.play_facility_stage_cutscene_by_index",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 83 FA 10 0F 87",
+  "match": "0x14196efe0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14196efe0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Play_FacilityStageCutsceneByIndex"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x14196efe0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14196efe0.c;xref:0x14196ea8c",
+   "notes": "V9841 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

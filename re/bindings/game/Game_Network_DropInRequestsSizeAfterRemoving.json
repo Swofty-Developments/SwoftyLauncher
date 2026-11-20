@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_DropInRequestsSizeAfterRemoving",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14323e5b0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK",
+  "notes": "named from its log messages (channel NETWORK): '%s: m_dropInRequests size: %d, after removing: %s'"
+ },
+ "signature": {
+  "id": "game.network_drop_in_requests_size_after_removing",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 01 00 00 48 8D 41 78",
+  "match": "0x14323e5b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14323e5b0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_DropInRequestsSizeAfterRemoving"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x14323e5b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14323e5b0.c;xref:0x1430e4fc9",
+   "notes": "V6051 VehicleDropInManager_UpdateDropInRequests: updateDropInRequests/tryHostDropIn, confirm/fail broadcast; size log is one line"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x14323e5b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14323e5b0.c;xref:0x1430e4fc9",
+   "notes": "V7024 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

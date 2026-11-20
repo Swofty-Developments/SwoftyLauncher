@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "site_Game_ErsNewLap_VehicleLookup",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1425180f3",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/1425180d0.c;decomp:re/decomp/142518b70.c;xref:0x1425180f3,0x1425180f7",
+  "notes": "In Game_ErsSystem_HandleVehicleNewLap's participant search (a leaf with no .pdata entry, so the signature carries func_start): rax walks the participant pointers self+0x30..+0x38, r9 = the entry ([rax] at 0x1425180f0), this mov loads entry+0x28 (the vehicle component Game_ErsSystem_BindVehicles binds, 0 when the entity has none) and the cmp at 0x1425180f7 compares its +0xe8 vehicle id with dl (message +0x10). A null entry+0x28 faults at 0x1425180f7 (ACCESS_VIOLATION reading 0xe8 at F1_25.exe+0x25180f7, Time Trial at community tracks with a Classic Seasons box); a null entry would fault here. Patch window 0x1425180f3..0x1425180fe (this mov and the cmp); no branch lands inside it (loop head 0x1425180f0, next entry 0x142518100, found 0x14251810c). Core's ERS new-lap guard sends a null entry or entry+0x28 to site_Game_ErsNewLap_NextVehicle."
+ },
+ "signature": {
+  "id": "game.ers_new_lap_vehicle_lookup",
+  "section": ".xtls",
+  "pattern": "48 8B 41 30 4C 8B 41 38 4C 39 C0 74 2C 0F B6 52 10 66 66 66 66 66 66 2E 0F 1F 84 00 00 00 00 00 4C 8B 08 4D 8B 49 28 41 38 91 E8 00 00 00",
+  "match": "0x1425180d0",
+  "anchor": "0x23",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1425180f3",
+  "kind": "mid",
+  "names": [
+   "site_Game_ErsNewLap_VehicleLookup"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "lapguard",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/cars/ers_newlap.cpp"
+  ],
+  "expect": "4D 8B 49 28 41 38 91 E8 00 00 00",
+  "func_start": "0x1425180d0"
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-lapguard",
+   "kind": "global",
+   "item": "site_Game_ErsNewLap_VehicleLookup",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1425180d0.c;decomp:re/decomp/142518b70.c;xref:0x1425180f0,0x1425180f3,0x1425180f7;sig:game.ers_new_lap_vehicle_lookup",
+   "notes": "V1183 sigcheck --only game.ers_new_lap_vehicle_lookup: OK hits=1 match=0x1425180d0 target=0x1425180f3 (anchor 0x23, no wildcards, 46 bytes, expect 4D8B4928 413891E8000000). Disasm: 0x1425180f0 mov r9,[rax] (r9 = current entry), 0x1425180f3 mov r9,[r9+0x28] (4 bytes), 0x1425180f7 cmp [r9+0xe8],dl (7 bytes), 0x1425180fe je 0x14251810c. A 5-byte patch at 0x1425180f3 covers the mov and the first byte of the cmp, so the relocated run is 0x1425180f3..0x1425180fe. Branch targets in the function are 0x142518109, 0x14251810c, 0x1425180f0, 0x142518179, 0x142518193 only; a numpy scan of all .xtls E8/E9/0F8x rel32 and the riprel scan found nothing landing in 0x1425180f1..0x142518100. Leaf with no .pdata, so func_start 0x1425180d0 is needed and correct (body ends at ret 0x14251819d). Skipping to 0x142518100 when r9==0 or [r9+0x28]==0: there only rax (cursor), r8 (end) and flags it sets are used; rdx/dl and rcx are untouched by the skipped pair; r9 is reloaded at 0x1425180f0 each iteration and is volatile at the ret 0x14251810b, so the entry is skipped and every other path runs the original instructions. A null [r9+0x28] does arise: BindVehicles 0x142518b70 writes 0 to entry+0x28 when the entity has no component of type 0x146ce8b00."
+  }
+ ],
+ "proofs": []
+}

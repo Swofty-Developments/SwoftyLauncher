@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1osTask_OnChildFinished_Vt145835c00",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432d5e30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432d5e30.c;xref:0x145835c50,0x1432d7670",
+  "notes": "Vtable 0x145835c00 slot 10 (ref 0x145835c50): child-task finished handler of the composite online task; merges child result lists (0x1432c8ca0 / 0x1432c90a0, entries of 0x40 bytes built by 0x143282d40 from id +0x68, +0x18, +0x58) into +0x138/+0x140/+0x150, then logs 'setting finished on %s : %s' ('OK!' or 'with error') on F1OS-TASKSYSTEM. Calls 0x1432d7670. Addon: hook to read the composite result list. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3305)"
+ },
+ "signature": {
+  "id": "game.f1os_task_on_child_finished_vt145835c00",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 C5 F8 29 B4 24 10 01 00 00 48 89 D6 48 89 CB 48 8B",
+  "match": "0x1432d5e30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432d5e30",
+  "kind": "func_start",
+  "names": [
+   "Game_F1osTask_OnChildFinished_Vt145835c00"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_F1osTask_OnChildFinished_Vt145835c00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432d5e30.c;xref:0x145835c50",
+   "notes": "V3305 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Particles_StoreEmitterColourLinear",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b8fea0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b8fea0.c;xref:0x143b0cd97",
+  "notes": "Locked (CriticalSection param_1[0]) store of three floats from matrix param_3 (+0xc,+0x1c,+0x2c) into the 0x30-stride array param_1[0x10]; when param_4[0x10] != 0 converts colour channels to linear with powf(x, 2.2f) (0x400ccccd) and sqrtf. Callers Game_Particles_UpdateManager, 0x143b0faf0. Addon: particle colours are gamma 2.2 converted here."
+ },
+ "signature": {
+  "id": "render.particles_store_emitter_colour_linear",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 68 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 4C 89 CF 4C 89 C3 49 89 D6 48 89 CE 48 8B 09 FF 15 ?? ?? ?? ?? 48 8B 46 38 48 8B",
+  "match": "0x143b8fea0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b8fea0",
+  "kind": "func_start",
+  "names": [
+   "Render_Particles_StoreEmitterColourLinear"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143b8fea0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b8fea0.c;xref:0x143b0cd97",
+   "notes": "V7790 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkEntrants_ReplicatedDriverCreation",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143130280",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-ENTRANTS",
+  "notes": "named from its log messages (channel NETWORK-ENTRANTS): '%s : Replicated Driver Creation Failed'"
+ },
+ "signature": {
+  "id": "game.network_entrants_replicated_driver_creation",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 28 12 00 00 E8 ?? ?? ?? ?? 48 29 C4 4D 89 CF",
+  "match": "0x143130280",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143130280",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkEntrants_ReplicatedDriverCreation"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143130280",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143130280.c;xref:0x140fe0890",
+   "notes": "V5872 807-line addReplicatedPlayer/createCustomNetworkReplicatedDriver logic; driver creation fail is one log. Better: Game_NetworkEntrants_AddReplicatedPlayerDriver"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x143130280",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143130280.c;xref:0x140fe0890",
+   "notes": "V6993 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

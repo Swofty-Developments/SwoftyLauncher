@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetConnectionQuality_OnBandwidthEvalStartMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144058840",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "str:s_NeNetConnectionQuality_OnBandwidthEvalStartMessage;xref:0x14405895f,0x144058a49;decomp:re/decomp/144058840.c",
+  "notes": "cxx=neon::NeNetConnectionQuality::onBandwidthEvalStartMessage; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "core.net_connection_quality_on_bandwidth_eval_start_message",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 89 D3 48 89 CE 4C 63",
+  "match": "0x144058840",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144058840",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetConnectionQuality_OnBandwidthEvalStartMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb2-verify-b",
+   "kind": "func",
+   "item": "Ne_NetConnectionQuality_OnBandwidthEvalStartMessage",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144058840.c;xref:0x144058840",
+   "notes": "V2039 log strings on NETWORK-CONNECTION-QUALITY match method name (log signature and body consistent)"
+  }
+ ],
+ "proofs": []
+}

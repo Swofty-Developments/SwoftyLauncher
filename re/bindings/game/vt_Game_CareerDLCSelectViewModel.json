@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "vt_Game_CareerDLCSelectViewModel",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145738430",
+  "type": "vtable[19]",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/141649f80.c;decomp:re/decomp/141bad270.c;decomp:re/decomp/141bad190.c;decomp:re/decomp/141a48b10.c;xref:0x14164bc82;imm:0x3b0;imm:0x600",
+  "notes": "vtable of game::FECareerDLCSelectViewModel, the fe_career_dlc_select screen (the 2025 and 2026 career tiles of Driver Career and My Team). The screen factory 0x141649f80 allocates 0x3b0 bytes, calls the tile-screen base constructor 0x141a482f0(vm, ..., \"fe_career_dlc_select\" 0x14573841b, ...), loads the vtable with the lea at 0x14164bc82 (its disp32 at 0x14164bc85 is the only reference to it) and stores it with mov [r15],rax at 0x14164bc89; the next stores set +0x260 = 0x1457384d0, +0x268 = 0x1457384f8 and +0x298 = 0x145738508, and 0x14164bcb6 writes the word 0x0600 at +0x3a8 (+0x3a8 = 0 is the sub kind, +0x3a9 = 6 the menu kind, the career content case of FeTile_Build_List). Slot 10 (0x145738480) = Game_FECareerDLCSelectViewModel_OnCommandRaised 0x141bad270; slot 13 (0x145738498) = 0x141bad190, which calls the tile-screen tile build 0x141a48b10. That build allocates a TileList (0xc8 bytes, vtable 0x145706aa0), stores it at view model+0x2c8 and passes it to FeTile_Build_List (return address 0x141a48cc9, seen at a site_FeTile_CareerContentEnd breakpoint with the list in r14, the view model as the saved rsi and view model+0x358 = 0). [view model+0x10]+8 is the root handle 0x141a48b10 passes to 0x1442bba60."
+ },
+ "signature": {
+  "id": "game.career_dlc_select_view_model",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 49 89 07 48 8D 05 ?? ?? ?? ?? 49 89 87 60 02 00 00 48 8D 05 ?? ?? ?? ?? 49 89 87 68 02 00 00 48 8D 05 ?? ?? ?? ?? 49 89 87 98 02 00 00 66 41 C7 87 A8 03 00 00 00 06",
+  "match": "0x14164bc82",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x145738430",
+  "kind": "data",
+  "names": [
+   "vt_Game_CareerDLCSelectViewModel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-26",
+    "by": "career-row",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/career/career_content.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-26",
+   "verifier": "verify-career-select",
+   "kind": "global",
+   "item": "vt_Game_CareerDLCSelectViewModel",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141649f80.c;decomp:re/decomp/141bad190.c;decomp:re/decomp/141a48b10.c;xref:0x14164bc52,0x14164bc6d,0x14164bc7d,0x14164bc82,0x14164bc85,0x14164bc89,0x14164bcb6;xref:0x145738480,0x145738498,0x141bad194;xref:0x141a48b39,0x141a48b56,0x141a48bfc,0x141a48cad,0x141a48cb2,0x141a48cbe,0x141a48cc4,0x141a48c56;xref:0x14173e39d,0x14173e6a2;imm:0x3b0;imm:0x600;imm:0xc8;str:s_FECareerDLCSelectViewModel_OnCommandRaised;sig:game.career_dlc_select_view_model",
+   "notes": "V1049 Checked from disassembly. In the factory 0x141649f80, mov edx,0x3b0 at 0x14164bc52 and call [allocator+0x18] give r15; lea r9 at 0x14164bc6d is 0x14573841b ('fe_career_dlc_select', the 4th argument) and 0x14164bc7d calls the base ctor 0x141a482f0 with rcx = r15. The lea at 0x14164bc82 loads 0x145738430; its disp32 at 0x14164bc85 is the only reference to the vtable anywhere in the exe, so only this factory installs it. The next stores write +0x260 = 0x1457384d0, +0x268 = 0x1457384f8 and +0x298 = 0x145738508, and 0x14164bcb6 writes the word 0x600 at +0x3a8. The vtable has 19 non-null slots before the null at 0x1457384c8 (0x1457384d0 is the +0x260 secondary table). Slot 10 holds 0x141bad270, whose pretty-function string names game::FECareerDLCSelectViewModel::onCommandRaised. Slot 13 holds 0x141bad190, which is call 0x141a48b10, then mov cl,0x21 and jmp 0x143859690. 0x141a48b10 does mov edx,0xc8 and align 0x10 through [vm+0x2b8], stores vtable 0x145706aa0 (lea at 0x141a48b56) into the new object, stores it at vm+0x2c8 (0x141a48bfc) and passes it as rcx (0x141a48cbe) to FeTile_Build_List at 0x141a48cc4 (return 0x141a48cc9). In the base vtable 0x145734720, slots 10 and 13 are 0x141a499c0 and 0x141a48b10. [vm+0x10]+8 is the handle that 0x141a48b10 passes to 0x1442bba60 (0x141a48c56); the base ctor 0x153c43960 zeroes +0x10. That fits a root handle, but I did not find the write. sigcheck OK, one hit. Two details are wrong. First, 0x14164bc82 is the lea that loads the vtable; the store is mov [r15],rax at 0x14164bc89. Second, the menu and sub kinds are swapped. The word 0x0600 puts 0x00 at +0x3a8 and 0x06 at +0x3a9. 0x141a48b10 passes byte +0x3a9 as FeTile_Build_List arg 5, menu_kind ([rsp+0x20] at 0x141a48cb2), and byte +0x3a8 as arg 6, sub_kind ([rsp+0x28] at 0x141a48cad). FeTile_Build_List loads r12b from arg 5 (0x14173e39d) and runs its outer switch on it (0x14173e6a2). So this screen is menu kind 6, sub kind 0, i.e. outer case 6 (career content). It is not menu kind 0, sub kind 6. The runtime breakpoint observation (vm+0x358 = 0) and the Driver Career / My Team scope were not re-checked."
+  },
+  {
+   "date": "2026-10-26",
+   "verifier": "verify-career-select",
+   "kind": "global",
+   "item": "vt_Game_CareerDLCSelectViewModel",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141649f80.c;decomp:re/decomp/141bad190.c;decomp:re/decomp/141a48b10.c;xref:0x14164bc52,0x14164bc6d,0x14164bc7d,0x14164bc82,0x14164bc85,0x14164bc89,0x14164bcb6;xref:0x145738480,0x145738498,0x141bad194;xref:0x141a48b39,0x141a48b56,0x141a48bfc,0x141a48cad,0x141a48cb2,0x141a48cbe,0x141a48cc4,0x141a48c56;xref:0x14173e39d,0x14173e6a2;imm:0x3b0;imm:0x600;imm:0xc8;sig:game.career_dlc_select_view_model",
+   "notes": "V1051 Re-check of the corrected notes after V1049. The store is now cited as mov [r15],rax at 0x14164bc89, after the lea at 0x14164bc82 whose disp32 at 0x14164bc85 is the only reference to the vtable. The kinds now read +0x3a8 = 0 sub kind and +0x3a9 = 6 menu kind. That matches 0x141a48b10, which passes byte +0x3a9 as FeTile_Build_List arg 5 (0x141a48cb2) and byte +0x3a8 as arg 6 (0x141a48cad), and FeTile_Build_List switches on arg 5 (r12b from 0x14173e39d, cmp at 0x14173e6a2), which makes this outer case 6. The +0x10 note now says only that [vm+0x10]+8 is the handle 0x141a48b10 passes to 0x1442bba60 (0x141a48c56), which is what the code shows. The newly cited stores (+0x260 = 0x1457384d0, +0x268 = 0x1457384f8, +0x298 = 0x145738508, the word at 0x14164bcb6) are as I found them. Everything I accepted in V1049 is unchanged: 0x3b0 allocation, base ctor with 'fe_career_dlc_select' 0x14573841b as the 4th argument, vtable[19], slot 10 = 0x141bad270, slot 13 = 0x141bad190 calling 0x141a48b10, the 0xc8 TileList with vtable 0x145706aa0 at vm+0x2c8 passed as rcx at 0x141a48cc4 (return 0x141a48cc9), and sigcheck OK. The runtime breakpoint observation (vm+0x358 = 0) and the Driver Career / My Team scope are not static claims and were not re-checked."
+  }
+ ],
+ "proofs": []
+}

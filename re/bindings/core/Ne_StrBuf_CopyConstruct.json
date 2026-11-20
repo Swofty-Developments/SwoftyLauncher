@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_StrBuf_CopyConstruct",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1444f28a0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1444f28a0.c;xref:0x14082547b,0x1408257f6",
+  "notes": "Copy-constructs a small-buffer string/buffer object (vtable 0x145612ec0, inline buffer at +0x28, Ne_String_Reserve for larger). Callers Game_F1os_OnStart_*."
+ },
+ "signature": {
+  "id": "core.str_buf_copy_construct",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 D7 48 89 CE 48 8B 02 48 89 01 48 83 C1",
+  "match": "0x1444f28a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1444f28a0",
+  "kind": "func_start",
+  "names": [
+   "Ne_StrBuf_CopyConstruct"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x1444f28a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1444f28a0.c;xref:0x14082547b",
+   "notes": "V7681 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

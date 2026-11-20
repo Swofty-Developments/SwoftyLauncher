@@ -5,7 +5,7 @@ edition = "2024"
 license = "PolyForm-Noncommercial-1.0.0"
 publish = false
 
-# Kept out of the launcher's workspace: only regenerating packages/core/src/ui/icons.bc7 needs resvg.
+# Kept out of the launcher's workspace: only regenerating packages/core/src/games/f1_25/ui/icons.bc7 needs resvg.
 [workspace]
 
 [dependencies]

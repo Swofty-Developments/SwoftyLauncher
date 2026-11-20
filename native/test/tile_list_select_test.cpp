@@ -1,7 +1,7 @@
-// Host-native unit test for the core's tile list select guard (native/src/core/tile_list_select_logic.hpp).
-// Built and run by native/test/run_tile_list_select_test.sh.
+// Host-native unit test for the core's tile list select guard (native/src/core/guards/frontend/tile_list_select_logic.hpp).
+// Built and run by native/test/run_tests.sh tile_list_select.
 
-#include "tile_list_select_logic.hpp"
+#include "core/guards/frontend/tile_list_select_logic.hpp"
 
 #include <cstdio>
 #include <cstring>
@@ -133,7 +133,8 @@ static void walk(bool guard)
         visited++;
     }
     if (guard)
-        expect(faults == 0 && skipped == 2 && visited == 3, "with the guard the walk visits every usable tile and skips the bare ones");
+        expect(faults == 0 && skipped == 2 && visited == 3,
+               "with the guard the walk visits every usable tile and skips the bare ones");
     else
         expect(faults == 1 && visited == 2, "without the guard the walk faults on the first bare tile");
 }

@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Gdb_Init_TableCursor",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1445a25c0",
+  "level": "L2",
+  "subsystem": "gamedb",
+  "proto": "void Gdb_Init_TableCursor(GdbTableCursor *cursor)",
+  "evidence": "decomp:re/decomp/1445a25c0.c;xref:0x14022ae8c,0x14022b28c,0x14022b7c9,0x14022bd49,0x14022c7bd,0x14037c3bd,0x14037c9f5,0x14037cedb+932;doc:research/grid24-cap.md#1",
+  "notes": "if cursor+0x200 < 0: builds \"<container>._<row>_instancecount_\", looks it up (Gdb_Lookup_Key), stores the int at +0x200; missing key -> 0. This is the 22-car cap mechanism"
+ },
+ "signature": {
+  "id": "gamedb.table_cursor_init",
+  "section": ".xtls",
+  "pattern": "56 48 81 EC 20 01 00 00 83 B9 00 02 00 00 00",
+  "match": "0x1445a25c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445a25c0",
+  "kind": "func_start",
+  "names": [
+   "Gdb_Init_TableCursor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-17",
+    "by": "re-infra",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

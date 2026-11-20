@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_ScCond_PitAreaClear_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436373d0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void(ScCondition*, float dt)",
+  "evidence": "decomp:ghidra-headless-2026-10-25;decomp:re/decomp/1436373d0.c;xref:0x145853e80",
+  "notes": "SC logic condition update (slot 2): shifts the 2-byte results per SC entry (prev = cur, cur = 0), then car bitmask +0x40 of cars whose distance +0x74 is inside [g 0x145f96ab0, g 0x145f96ab4]; holds while none.  | engine-re track RE round B2 2026-11-17 (static): the range [g 0x145f96ab0, g 0x145f96ab4] is Start/End of the first safety_car_main markup item (type 13), set by Sess_ScCond_PitAreaClear_Init_Body 0x150979070; without that item both are 0."
+ },
+ "signature": {
+  "id": "session.sc_cond_pit_area_clear_update",
+  "section": ".xtls",
+  "pattern": "56 48 89 C8 48 8B 51 10 48 8B 49 18 48 39 CA 74",
+  "match": "0x1436373d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436373d0",
+  "kind": "func_start",
+  "names": [
+   "Sess_ScCond_PitAreaClear_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb4-verify",
+   "kind": "func",
+   "item": "Sess_ScCond_PitAreaClear_Update",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436373d0.c;xref:0x145853e80",
+   "notes": "V1952 vtable slot2; mask +0x40; holds all entries when no car in range (also filters +0x32<0x40)"
+  }
+ ],
+ "proofs": []
+}

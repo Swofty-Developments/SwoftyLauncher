@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_Advance_BuildCardBindings",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1419a4600",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Advance_BuildCardBindings(void *vm, void *card)",
+  "evidence": "decomp:re/decomp/1419a4600.c;xref:0x14199b95c;xref:0x14199d66e;xref:0x14199d7de",
+  "notes": "myteam-g2: Builds the card bindings timeline, buttons, list, selected_button, textures and icon for advance-time cards and driver renewal cards. UI only."
+ },
+ "signature": {
+  "id": "vm.advance_build_card_bindings",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 4C 89 C3 48 89 D7 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 48 8B 42 08",
+  "match": "0x1419a4600",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419a4600",
+  "kind": "func_start",
+  "names": [
+   "Vm_Advance_BuildCardBindings"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x1419a4600",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1419a4600.c;xref:0x14199b95c",
+   "notes": "V9888 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

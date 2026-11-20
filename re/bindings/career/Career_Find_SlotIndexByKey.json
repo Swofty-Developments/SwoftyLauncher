@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Find_SlotIndexByKey",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141457810",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int (void *iface, uint64_t key)",
+  "evidence": "decomp:re/decomp/141457810.c;xref:0x140aa6963;xref:0x140c6884b;xref:0x1415d83a1",
+  "notes": "myteam-g2: Under the critical section at +0x230 of the object returned by vtbl +400, finds in the last non-empty group of the list at +0x150 (0x20-byte groups of 0x28-byte items) the position of the 3-byte key (short @+2, byte @+0); returns 0x1c if not found. Used by the sponsor goal panel and the sponsor update popup."
+ },
+ "signature": {
+  "id": "career.find_slot_index_by_key",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 89 D7 48 8B 01 FF 90 90 01 00 00 48 85 C0 74 56 48 89 C6 48 8B 88 30 02 00 00 FF 15 ?? ?? ?? ?? 48 8B 86 50 01 00 00",
+  "match": "0x141457810",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141457810",
+  "kind": "func_start",
+  "names": [
+   "Career_Find_SlotIndexByKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x141457810",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141457810.c;xref:0x140aa6963;xref:0x140c6884b",
+   "notes": "V9712 Critical section, 0x20-byte groups, 3-byte key match, returns index or default; matches."
+  }
+ ],
+ "proofs": []
+}

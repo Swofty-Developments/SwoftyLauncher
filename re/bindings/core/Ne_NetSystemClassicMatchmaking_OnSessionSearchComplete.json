@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetSystemClassicMatchmaking_OnSessionSearchComplete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144065560",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "str:s_NeNetSystemClassicMatchmaking_OnSessionSearchComplete;xref:0x144065625;decomp:re/decomp/144065560.c",
+  "notes": "cxx=neon::NeNetSystemClassicMatchmaking::onSessionSearchComplete; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "core.net_system_classic_matchmaking_on_session_search_complete",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 44 89 CB 4C 89 C6 89",
+  "match": "0x144065560",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144065560",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetSystemClassicMatchmaking_OnSessionSearchComplete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb3-verify-a",
+   "kind": "func",
+   "item": "Ne_NetSystemClassicMatchmaking_OnSessionSearchComplete",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144065560.c;xref:0x144065217",
+   "notes": "V2076 own pretty string; invokes result delegates at +0x7b0/+0x7c0"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GhostRivalFinder_Finish",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f84d10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f84d10.c;xref:0x142f87630,0x142f98320",
+  "notes": "GhostLaps rival-finder finish(status) (finish/setStatus). Unless state(+0xa0)==10 already: setState(10 Finished), status at +0xa4 (names 0x1457fc6e0: 0 Unset,1 NoRivals,2 Success,3 Error,4 Retry,5 Unavailable). For status!=Success fires completion callback fn +0xa8/ctx +0xb0 (ctx,status,result,...,[+8]+0x88). Addon: single choke point to see why a TT rival ghost was not found (NoRivals/Error/Unavailable). | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2358)"
+ },
+ "signature": {
+  "id": "game.ghost_rival_finder_finish",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 98 01 00 00 C5 F8 29 B4 24 80 01 00 00 83 B9 A0",
+  "match": "0x142f84d10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f84d10",
+  "kind": "func_start",
+  "names": [
+   "Game_GhostRivalFinder_Finish"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d3-verify",
+   "kind": "func",
+   "item": "Game_GhostRivalFinder_Finish",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f84d10.c;xref:0x142f87630",
+   "notes": "V2358 no-op if state(+0xa0)==10; SetState(10); status +0xa4 table 0x1457fc6e0 verified; callback +0xa8/ctx +0xb0 invoked when status!=2 Success. Correct."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Misconduct_GetDriverState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143593580",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143593580.c;xref:0x142f545d0,0x142f5ff52",
+  "notes": "(mis, outByte, vehIdx): classifies a driver for the misconduct table: 0 normal, 2 flag 0x40@+0x30, 3/4 slow flag (+0x33&2, 4 when speed>30 via 0x14360f4f0), 5 retired/DSQ bits (+0x34/+0x35/+0x37). Caches vehicle in +0xa0[idx]. Caller: Sess_Misconduct_DumpTable."
+ },
+ "signature": {
+  "id": "session.misconduct_get_driver_state",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 D6 41 80 F8 FF 74 63",
+  "match": "0x143593580",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143593580",
+  "kind": "func_start",
+  "names": [
+   "Sess_Misconduct_GetDriverState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x143593580",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143593580.c;xref:0x14359287c,0x14359293c",
+   "notes": "V3795 Out byte: 0 normal, 2 flag 0x40@+0x30, 3/4 slow flag (+0x33&2, 4 when 14360f4f0 > 30), 5 retired/DSQ bits (+0x34/+0x35/+0x37); caches vehicle in +0xa0[idx]."
+  }
+ ],
+ "proofs": []
+}

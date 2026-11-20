@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_MarketplaceOverlayDisplayedProductIdOverlayType",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1407320b0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-TELEMETRY",
+  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: Marketplace Overlay Displayed: productId=%s overlayType=%s'"
+ },
+ "signature": {
+  "id": "game.analytics_marketplace_overlay_displayed_product_id_overlay_type",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 88 00 00 00 48 89 D3 48 89 CE",
+  "match": "0x1407320b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407320b0",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_MarketplaceOverlayDisplayedProductIdOverlayType"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb02-verify",
+   "kind": "func",
+   "item": "0x1407320b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1407320b0.c",
+   "notes": "V4193 log string and record name match; \"EA analytics event:\" prefix not in exe strings (added elsewhere/unverified), message text matches"
+  }
+ ],
+ "proofs": []
+}

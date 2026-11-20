@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Libpng_WriteEnd",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143914cd0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143914cd0.c;xref:0x142bd48f1",
+  "notes": "png_write_end: IDAT flush and tIME chunk (strings 'No IDATs written into file', 'Wrote palette index exceeding num_palette', 'Invalid time specified for tIME chunk'). Callers 0x142bd41a0, Game_ThumbnailSystem_RequestAndWriteScreenshot, Render_Write_PngFile, Render_Screenshot_CaptureAndSave."
+ },
+ "signature": {
+  "id": "core.libpng_write_end",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 48 85 C9 0F 84",
+  "match": "0x143914cd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143914cd0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Libpng_WriteEnd"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x143914cd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143914cd0.c;xref:0x142bd48f1",
+   "notes": "V7612 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

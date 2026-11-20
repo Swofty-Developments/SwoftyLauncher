@@ -1,0 +1,73 @@
+{
+ "schema": 1,
+ "name": "Car_Tuning_SetFinalDrive",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446a4c20",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "pat:log-channel-F1_TUNING;decomp:re/decomp/1446a4c20.c;xref:0x145bfb268",
+  "notes": "Log channel F1_TUNING: 'Setting final drive ratio to %f.' Callers: census steam 0x46a4c20. | car-b: this is the GearBox system Reset (vtable +0x18, flags). test dil,0x20/je at 0x1446a4c40 gates all of it, so the 0x1000 and 0x2000 paths need 0x20 too (corrected per V1233): 0x20|0x200 gear_index = 1 (N) and inv_total_ratio[11] +0x5fc = 1/(ratio x final drive) from the VTF pairs (or setup_ratios +0x628 / setup_final_drive +0x654 when +0x540); 0x20|0x1000 clears faults; 0x20|0x2000 sets setup_final_drive +0x654 from the F1Tuning slider +0x258 and rebuilds the table"
+ },
+ "signature": {
+  "id": "car.tuning_set_final_drive",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 68 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 89 D7",
+  "match": "0x1446a4c20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446a4c20",
+  "kind": "func_start",
+  "names": [
+   "Car_Tuning_SetFinalDrive"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/hooks/car_live.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v4",
+   "kind": "func",
+   "item": "Car_Tuning_SetFinalDrive",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1446a4c20.c;xref:0x145bfb268",
+   "notes": "V1233 Role right (GearBox vt +0x18 Reset): with 0x200, gear_index +0x680 = 1 and +0x684 = 1, and inv_total_ratio[11] +0x5fc..+0x627 = 1/(ratio*FD), from the VTF pairs or from +0x628/+0x654 when +0x540. Flag detail wrong: test dil,0x20/je at 0x1446a4c40 gates all of it, so 0x1000 (fault clear) and 0x2000 (setup_final_drive +0x654 from slider F1Tuning+0x258) need 0x20 too."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "fd3-verify",
+   "kind": "func",
+   "item": "Car_Tuning_SetFinalDrive",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1446a4c20.c;xref:0x145bfb268",
+   "notes": "V2376 All flags, offsets, XOR pairs, calls, vtable xref hold. Only error: 0x1000 does not clear +0x658..+0x67f; byte +0x658 is &=0xe0 (low 5 bits cleared), +0x65c..+0x663 zeroed, +0x664=0xb, +0x668=0 and +0x66c=1.0f (not zero), +0x670..+0x67f zeroed."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "fd4-verify",
+   "kind": "func",
+   "item": "Car_Tuning_SetFinalDrive",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446a4c20.c;xref:0x145bfb268",
+   "notes": "V2377 All flags, offsets, widths, XOR pairs, branches, 11 calls, tail, vtable ptr at 0x145bfb268 verified; log string exists in exe"
+  }
+ ],
+ "proofs": []
+}

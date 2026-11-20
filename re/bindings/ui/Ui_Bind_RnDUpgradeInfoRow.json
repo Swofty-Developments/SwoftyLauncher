@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Bind_RnDUpgradeInfoRow",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1406d45c0",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "void Bind(void *vm, ..., void *info)",
+  "evidence": "decomp:re/decomp/1406d45c0.c;xref:0x1406d2190;xref:0x14148483a;xref:0x141c47f49",
+  "notes": "myteam-g2: Sets string/ref nodes for an upgrade info row (vm+0x378). UI only."
+ },
+ "signature": {
+  "id": "ui.bind_rn_dupgrade_info_row",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 4C 89 C6 48 8B 41 08 31 ED",
+  "match": "0x1406d45c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1406d45c0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Bind_RnDUpgradeInfoRow"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x1406d45c0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1406d45c0.c",
+   "notes": "V9470 Generic UI bind helper: makes a handler object, calls func_0x1442cbe00 with two string refs and an id, then notifies vm+0x378. Nothing specific to upgrade info rows is visible."
+  }
+ ],
+ "proofs": []
+}

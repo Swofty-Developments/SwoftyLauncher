@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_EadpSDK_UnknownEadpServerEnvironment",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143fd16b0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-EadpSDK",
+  "notes": "named from its log messages (channel EadpSDK): 'Unknown EADP server environment: %s. Defaulting to PROD'"
+ },
+ "signature": {
+  "id": "game.eadp_sdk_unknown_eadp_server_environment",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 01 00 00 C5 F8 29 B4 24 B0 01 00 00 48 89 CE 48 8B 89 38 02 00 00",
+  "match": "0x143fd16b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143fd16b0",
+  "kind": "func_start",
+  "names": [
+   "Game_EadpSDK_UnknownEadpServerEnvironment"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x143fd16b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143fd16b0.c",
+   "notes": "V6325 partial: better name Game_EadpSDK_OnSignInStateChanged; 10 KB: server env warn is minor; handles signed in/out, friends cache, presence update"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x143fd16b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143fd16b0.c",
+   "notes": "V7063 name fits, facts hold; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

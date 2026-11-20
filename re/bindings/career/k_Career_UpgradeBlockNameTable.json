@@ -1,0 +1,56 @@
+{
+ "schema": 1,
+ "name": "k_Career_UpgradeBlockNameTable",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145803ce4",
+  "type": "int32_t[18]",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/14fa63050.c;xref:0x14fa630de;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v090--the-tyres-upgrade-types-setting-tyres_upgrade_types-default-on-install-time",
+  "notes": "relative string table of the radUpgrade* VTF block names for types 0..17 (name = table + table[type]); read only by the .data1 apply body"
+ },
+ "signature": {
+  "id": "career.upgrade_block_name_table",
+  "section": ".data1",
+  "pattern": "4C 8D 05 ?? ?? ?? ?? 49 63 14 80 4C 01 C2",
+  "match": "0x14fa630de",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x145803ce4",
+  "kind": "data",
+  "names": [
+   "k_Career_UpgradeBlockNameTable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-a",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_upgrade_types.cpp"
+  ],
+  "data1_reason": "the table is referenced only from the .data1 body 0x14fa63050 (raw rel32 scan)"
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-1",
+   "kind": "global",
+   "item": "k_Career_UpgradeBlockNameTable",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14fa63050.c;xref:0x14fa630d1,0x14fa630de,0x14fa630e5,0x14fa630e9",
+   "notes": "V0081 int32[18] rel offsets at 0x145803ce4: table+e -> radUpgradeEngine..radUpgradeWearTC for 0..17; only reference is .data1 0x14fa630de (no .xtls riprel); indexed via movsx dl after cmp dl,0x11 ; ja"
+  }
+ ],
+ "proofs": []
+}

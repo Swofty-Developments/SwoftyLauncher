@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_ContractCraft_BuildHeaderIcons",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141ad2dc0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void *vm",
+  "evidence": "decomp:re/decomp/141ad2dc0.c;xref:0x14572e550",
+  "notes": "myteam-g1: Sets #overrides.f1_world.craft_header_icons[rnd_head|sponsor] icon overrides and slot captions for the craft/contract header."
+ },
+ "signature": {
+  "id": "career.contract_craft_build_header_icons",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 01 00 00 C5 F8 29 B4 24 40 01 00 00 48 89 CE 48 8D 94 24 88 00 00 00",
+  "match": "0x141ad2dc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141ad2dc0",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractCraft_BuildHeaderIcons"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141ad2dc0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141ad2dc0.c;xref:0x14572e550",
+   "notes": "V9932 Sets craft_header_icons overrides for all slot types (wing, engine, gearbox, brakes, sponsor, principal, rnd_head, strategist) and lng_*_slot captions, plus lng_crafting_inventory_full; not only rnd_head|sponsor."
+  }
+ ],
+ "proofs": []
+}

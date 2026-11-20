@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_EdapPresence_CreatingPresenceCache",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143fea580",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-EDAP_PRESENCE",
+  "notes": "named from its log messages (channel EDAP_PRESENCE): 'NOT Creating presence cache'"
+ },
+ "signature": {
+  "id": "game.edap_presence_creating_presence_cache",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 88 00 00 00 48 89 CE 0F B6 81 38 01 00 00",
+  "match": "0x143fea580",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143fea580",
+  "kind": "func_start",
+  "names": [
+   "Game_EdapPresence_CreatingPresenceCache"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x143fea580",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143fea580.c;xref:0x143fea1ef",
+   "notes": "V6341 partial: better name Game_EadpPresence_RegisterPresenceCallback; conditionally creates presence cache and registers a PresenceCallback"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x143fea580",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143fea580.c;xref:0x143fea1ef",
+   "notes": "V7070 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

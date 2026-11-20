@@ -1,12 +1,13 @@
 #define ZSTD_STATIC_LINKING_ONLY
-#include "../../src/core/apply/content/logo_build.hpp"
-#include "../../src/core/apply/content/png_straight.hpp"
+#include "core/apply/content/logo_build.hpp"
+#include "core/apply/content/png_straight.hpp"
 
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
+#include <map>
 #include <set>
 #include <sstream>
 
@@ -47,10 +48,64 @@ static std::shared_ptr<ef::Source> open_file(const fs::path &path)
     return src;
 }
 
+static lb::SliceCache slices_from_env()
+{
+    const char *dir = std::getenv("LOGO_SLICE_DIR");
+    if (!dir || !*dir)
+        return {};
+    fs::path d = dir;
+    fs::create_directories(d);
+    lb::SliceCache c;
+    c.get = [d](const std::string &name, std::string &bytes) {
+        if (!fs::exists(d / name))
+            return false;
+        bytes = slurp(d / name);
+        return true;
+    };
+    c.put = [d](const std::string &name, const std::string &bytes) { std::ofstream(d / name, std::ios::binary) << bytes; };
+    return c;
+}
+
+static lb::SliceCache disk_slices = slices_from_env();
+static lb::EncodeStats disk_stats;
+
+static bool build_logos(lb::Env env, const std::vector<lb::Want> &wants, lb::Result &res)
+{
+    if (!disk_slices.on() || env.slices.on())
+        return lb::build(env, wants, res);
+    env.slices = disk_slices;
+    std::vector<lb::Want> named = wants;
+    for (auto &w : named)
+        if (w.source.empty() && !w.rgba.empty())
+            w.source = lb::source_of(w.rgba) + "-" + std::to_string(w.width) + "x" + std::to_string(w.height);
+    bool ok = lb::build(env, named, res);
+    disk_stats.cached += res.slices.cached, disk_stats.encoded += res.slices.encoded, disk_stats.decoded += res.slices.decoded;
+    return ok;
+}
+
+static std::shared_ptr<ef::Source> open_bytes(std::shared_ptr<const std::string> bytes)
+{
+    auto src = std::make_shared<ef::Source>();
+    src->size = bytes->size();
+    src->read = [bytes](uint64_t off, size_t n, char *out) {
+        if (off > bytes->size() || n > bytes->size() - off)
+            return false;
+        std::memcpy(out, bytes->data() + off, n);
+        return true;
+    };
+    return src;
+}
+
 static std::string rewrite_to_string(const ef::Source &src, const ef::Archive &arc, const ef::Changes &changes, std::string &why)
 {
     std::string out;
-    ef::rewrite(src, arc, changes, [&](const char *p, size_t n) { out.append(p, n); return true; }, why);
+    ef::rewrite(
+        src, arc, changes,
+        [&](const char *p, size_t n) {
+            out.append(p, n);
+            return true;
+        },
+        why);
     return out;
 }
 
@@ -72,7 +127,8 @@ int main(int argc, char **argv)
         auto src = open_file(game / rel);
         ef::Archive arc;
         bool ok = src && ef::open(*src, arc, why);
-        check(ok && rewrite_to_string(*src, arc, {}, why) == slurp(game / rel), rel + ": rewriting with no change gives the same bytes");
+        check(ok && rewrite_to_string(*src, arc, {}, why) == slurp(game / rel),
+              rel + ": rewriting with no change gives the same bytes");
     }
 
     {
@@ -89,12 +145,15 @@ int main(int argc, char **argv)
             for (int level : {3, ef::ZSTD_LEVEL, 19}) {
                 std::string data = noisy(n), z, back(n, '\0');
                 ZSTD_FrameHeader h{};
-                bool ok = swofty_core::erp_zstd::compress(data.data(), n, level, z) && ZSTD_getFrameHeader(&h, z.data(), z.size()) == 0;
-                size_t buffer = ok ? ZSTD_decodingBufferSize_min(h.windowSize, h.frameContentSize) + std::max<size_t>(h.blockSizeMax, 4) : 0;
+                bool ok =
+                    swofty_core::erp_zstd::compress(data.data(), n, level, z) && ZSTD_getFrameHeader(&h, z.data(), z.size()) == 0;
+                size_t buffer =
+                    ok ? ZSTD_decodingBufferSize_min(h.windowSize, h.frameContentSize) + std::max<size_t>(h.blockSizeMax, 4) : 0;
                 ok = ok && h.frameContentSize == n && h.windowSize <= (1u << 20) && buffer <= 1441856 &&
                      ZSTD_decompress(back.data(), n, z.data(), z.size()) == n && back == data;
-                check(ok, std::to_string(n) + " bytes at level " + std::to_string(level) + ": the frame names its size and a window of " +
-                              std::to_string(h.windowSize) + " bytes, a " + std::to_string(buffer) + "-byte decoder buffer");
+                check(ok, std::to_string(n) + " bytes at level " + std::to_string(level) +
+                              ": the frame names its size and a window of " + std::to_string(h.windowSize) + " bytes, a " +
+                              std::to_string(buffer) + "-byte decoder buffer");
             }
         }
     }
@@ -157,7 +216,8 @@ int main(int argc, char **argv)
             for (uint32_t y = 12; y < 16; y++)
                 bottom_clear &= px_of(fit, 16, x, y)[3] == 0;
         }
-        check(top_clear && middle && bottom_clear, "a non-square image keeps its aspect, is centred and the padding is transparent");
+        check(top_clear && middle && bottom_clear,
+              "a non-square image keeps its aspect, is centred and the padding is transparent");
         std::string half(4 * 4 * 4, '\0');
         for (uint32_t y = 0; y < 4; y++)
             for (uint32_t x = 2; x < 4; x++) {
@@ -166,7 +226,8 @@ int main(int argc, char **argv)
                 half[i + 3] = char(255);
             }
         std::string edge = la::fit_rgba(reinterpret_cast<const uint8_t *>(half.data()), 4, 4, 2, 2);
-        check(px_of(edge, 2, 0, 0)[3] == 0 && px_of(edge, 2, 0, 0)[0] == 0 && px_of(edge, 2, 1, 0)[3] == 255 && px_of(edge, 2, 1, 0)[0] == 255,
+        check(px_of(edge, 2, 0, 0)[3] == 0 && px_of(edge, 2, 0, 0)[0] == 0 && px_of(edge, 2, 1, 0)[3] == 255 &&
+                  px_of(edge, 2, 1, 0)[0] == 255,
               "transparent pixels do not bleed colour into opaque ones (straight alpha)");
     }
 
@@ -179,11 +240,12 @@ int main(int argc, char **argv)
     wants[1].key = "newalias";
     wants[1].donor = "b";
     lb::Result res;
-    check(lb::build(env, wants, res) && res.built == 2 && res.refused == 0, "two slices are built");
-    check(res.changes.size() == 3 && res.changes.count(lb::DATABASES) && res.changes.count(list[1]) && res.changes.count(list[3]) &&
-              !res.changes.count(list[2]),
+    check(build_logos(env, wants, res) && res.built == 2 && res.refused == 0, "two slices are built");
+    check(res.changes.size() == 3 && res.changes.count(lb::DATABASES) && res.changes.count(list[1]) &&
+              res.changes.count(list[3]) && !res.changes.count(list[2]),
           "the two carriers and databases.erp change, the archive without the array does not");
-    check(res.read == std::set<std::string>{lb::DATABASES, list[1], list[3]}, "the build reads databases.erp and the two carriers");
+    check(res.read == std::set<std::string>{lb::DATABASES, list[1], list[3]},
+          "the build reads databases.erp and the two carriers");
 
     fs::path out = argc > 2 ? argv[2] : "../build/bc7/logo_out";
     fs::create_directories(out);
@@ -200,12 +262,130 @@ int main(int argc, char **argv)
     check(true, "archives written to " + out.string() + " for check_logo_build.py");
 
     {
+        namespace lc = content::logo_cache;
+        const std::string OTHER = "eaid://ui_package/databases/other.uidb";
+        auto stock = std::make_shared<const std::string>(slurp(game / lb::DATABASES));
+        auto changed = [&](const std::string &name, const std::string &bytes) {
+            auto src = open_bytes(stock);
+            ef::Archive arc;
+            ef::open(*src, arc, why);
+            return std::make_shared<const std::string>(rewrite_to_string(*src, arc, {{name, {bytes}}}, why));
+        };
+        auto with_db = [&](std::shared_ptr<const std::string> db) {
+            lb::Env e = env;
+            e.open = [&env, db](const std::string &rel) { return rel == lb::DATABASES ? open_bytes(db) : env.open(rel); };
+            return e;
+        };
+        auto key_of = [&](const lb::Env &e, std::shared_ptr<const std::string> db) {
+            auto size_of = [&](const std::string &rel) -> uint64_t {
+                return rel == lb::DATABASES ? db->size() : fs::file_size(game / rel);
+            };
+            lc::Env stamp{
+                [&](const std::string &rel, uint64_t &size) {
+                    size = size_of(rel);
+                    return true;
+                },
+                [&](const std::string &rel, lc::Seen &now) {
+                    now.size = size_of(rel);
+                    now.time = now.changed = now.id = now.links = 1;
+                    return true;
+                },
+                [&](const std::string &rel, uint64_t &hash) {
+                    return lb::input_hash(
+                        e, rel,
+                        [&](const std::string &r, uint64_t &h) {
+                            std::string bytes = r == lb::DATABASES ? *db : slurp(game / r);
+                            lc::Bytes b;
+                            b.add(bytes.data(), bytes.size());
+                            h = b.done();
+                            return true;
+                        },
+                        hash);
+                },
+                [] { return uint64_t(0); },
+            };
+            return lc::key_archives(7, list, res.read, stamp, {}).key;
+        };
+        auto build_with = [&](std::shared_ptr<const std::string> db, std::string &copy) {
+            lb::Result r;
+            bool ok = build_logos(with_db(db), wants, r) && r.changes.count(lb::DATABASES);
+            auto src = open_bytes(db);
+            ef::Archive arc;
+            ok = ok && ef::open(*src, arc, why);
+            copy = ok ? rewrite_to_string(*src, arc, r.changes[lb::DATABASES], why) : std::string();
+            return ok;
+        };
+        auto remade = [&](std::shared_ptr<const std::string> db, const std::string &copy) {
+            std::string out;
+            bool ok = lb::databases_copy(
+                *open_bytes(db), copy,
+                [&](const char *p, size_t n) {
+                    out.append(p, n);
+                    return true;
+                },
+                why);
+            return ok ? out : std::string();
+        };
+        auto entry_of = [&](const std::string &archive, const std::string &name) {
+            auto src = open_bytes(std::make_shared<const std::string>(archive));
+            ef::Archive arc;
+            std::string data, w2;
+            const ef::Entry *e = ef::open(*src, arc, w2) ? arc.find(name) : nullptr;
+            return e && !e->frags.empty() && ef::fragment(*src, arc, e->frags[0], data, w2) ? data : std::string("-");
+        };
+
+        std::string cached;
+        check(build_with(stock, cached), "databases.erp: a build makes its copy");
+        uint64_t stock_hash = 0;
+        check(lb::databases_hash(*open_bytes(stock), stock_hash),
+              "databases.erp: with no texture array it counts by its overrides.uidb alone");
+        uint64_t carrier_hash = 0;
+        check(!lb::databases_hash(*open_file(game / list[1]), carrier_hash),
+              "an archive that carries a texture array counts by all of its bytes");
+
+        auto outside = changed(OTHER, std::string(300, 'o'));
+        uint64_t outside_hash = 0;
+        check(*outside != *stock && outside->size() != stock->size() && lb::databases_hash(*open_bytes(outside), outside_hash) &&
+                  outside_hash == stock_hash,
+              "databases.erp changed outside overrides.uidb (and resized, so overrides.uidb moves) counts the same");
+        check(key_of(with_db(outside), outside) == key_of(with_db(stock), stock),
+              "databases.erp changed outside overrides.uidb keeps the cache key: the cached logos are reused");
+        std::string fresh, again = remade(outside, cached);
+        check(build_with(outside, fresh) && !again.empty() && again == fresh,
+              "the copy made again from the cached one is byte for byte the copy a build of the changed databases.erp writes");
+        check(again != cached && entry_of(again, OTHER) == std::string(300, 'o') &&
+                  entry_of(again, lb::OVERRIDES) == entry_of(cached, lb::OVERRIDES),
+              "the copy made again carries the changed entry and the overrides.uidb the build wrote");
+        check(remade(stock, cached) == cached, "made again from the databases.erp it was built from, the copy is unchanged");
+
+        content::uidb::Pkg grown;
+        std::string add_why;
+        content::uidb::Node *node =
+            grown.read(entry_of(*stock, lb::OVERRIDES)) ? grown.find(lb::list_path("teams.driver_select_team_logos")) : nullptr;
+        check(node && grown.append_entry(*node, "extra", std::string(lb::TEXTURE_PATH) + "extra.tif", add_why),
+              "overrides.uidb takes one more entry");
+        auto inside = changed(lb::OVERRIDES, grown.write());
+        uint64_t inside_hash = 0;
+        check(lb::databases_hash(*open_bytes(inside), inside_hash) && inside_hash != stock_hash &&
+                  key_of(with_db(inside), inside) != key_of(with_db(stock), stock),
+              "databases.erp changed inside overrides.uidb changes the cache key: the logos are built again");
+        std::string rebuilt;
+        check(build_with(inside, rebuilt) && entry_of(rebuilt, lb::OVERRIDES) != entry_of(cached, lb::OVERRIDES),
+              "a build of that databases.erp writes another overrides.uidb, so the cached one would be wrong");
+
+        auto restamped = changed(lb::OVERRIDES, entry_of(*stock, lb::OVERRIDES));
+        uint64_t same_hash = 0;
+        check(lb::databases_hash(*open_bytes(restamped), same_hash) && same_hash == stock_hash,
+              "databases.erp written again with the same overrides.uidb counts the same");
+    }
+
+    {
         fs::path ov = out / "overlay";
         fs::create_directories(ov / "ov");
         std::vector<lb::Want> first(1);
         first[0] = {"teams.driver_select_team_logos", "newteam", "", std::string(px, 64 * 64 * 4), 64, 64};
         lb::Result r1;
-        lb::build(env, first, r1);
+        build_logos(env, first, r1);
         auto count_of = [&](const fs::path &file, const std::string &rel_image) -> uint32_t {
             auto src = open_file(file);
             ef::Archive arc;
@@ -229,7 +409,9 @@ int main(int argc, char **argv)
         uint32_t stock_count = count_of(game / list[1], image);
         lb::Env layered;
         layered.list = [&] { return list; };
-        layered.open = [&](const std::string &rel) { return rel.rfind("ov/", 0) == 0 ? open_file(ov / rel) : open_file(game / rel); };
+        layered.open = [&](const std::string &rel) {
+            return rel.rfind("ov/", 0) == 0 ? open_file(ov / rel) : open_file(game / rel);
+        };
         layered.overlays = [&](const std::string &rel) {
             std::vector<std::string> v;
             if (r1.changes.count(rel))
@@ -241,7 +423,8 @@ int main(int argc, char **argv)
         second[0].key = "second";
         second[0].donor = "b";
         lb::Result r5;
-        check(lb::build(layered, second, r5) && r5.built == 1 && r5.refused == 0, "a slice is added on top of an overlay that already grew the array");
+        check(build_logos(layered, second, r5) && r5.built == 1 && r5.refused == 0,
+              "a slice is added on top of an overlay that already grew the array");
         std::string ovrel = overlay_of(list[1]);
         bool both = r5.changes.count(ovrel) && r5.changes.count(list[1]);
         check(both && r5.read.count(ovrel), "the overlay archive and the stock archive both change and the overlay is read");
@@ -255,15 +438,16 @@ int main(int argc, char **argv)
             }
             uint32_t over = count_of(ov / ("out_" + std::to_string(std::hash<std::string>{}(ovrel)) + ".erp"), image);
             uint32_t stock_out = count_of(ov / ("out_" + std::to_string(std::hash<std::string>{}(list[1])) + ".erp"), image);
-            check(over == stock_count + 2, "the overlay's array keeps the slice it already had and gains the new one (" + std::to_string(over) + " of " + std::to_string(stock_count) + " + 2)");
+            check(over == stock_count + 2, "the overlay's array keeps the slice it already had and gains the new one (" +
+                                               std::to_string(over) + " of " + std::to_string(stock_count) + " + 2)");
             check(stock_out == over, "the stock archive carries the same grown array, so the game gets it from either");
         }
         lb::Result r6, r7;
-        lb::build(env, second, r6);
+        build_logos(env, second, r6);
         lb::Env nolayer = layered;
         nolayer.overlays = nullptr;
         nolayer.open = env.open;
-        lb::build(nolayer, second, r7);
+        build_logos(nolayer, second, r7);
         bool same = r6.changes.size() == r7.changes.size();
         for (auto &[rel, changes] : r6.changes)
             same = same && r7.changes.count(rel) && r7.changes[rel] == changes;
@@ -282,7 +466,7 @@ int main(int argc, char **argv)
             grow_names[i].donor = "b";
         }
         lb::Result names_only;
-        lb::build(env, grow_names, names_only);
+        build_logos(env, grow_names, names_only);
         auto db_src = open_file(game / lb::DATABASES);
         ef::Archive db_arc;
         ef::open(*db_src, db_arc, why);
@@ -290,7 +474,9 @@ int main(int argc, char **argv)
         std::ofstream(ov / "ov/databases.erp", std::ios::binary) << dbtext;
         lb::Env desync;
         desync.list = [&] { return list; };
-        desync.open = [&](const std::string &rel) { return rel.rfind("ov/", 0) == 0 ? open_file(ov / rel) : open_file(game / rel); };
+        desync.open = [&](const std::string &rel) {
+            return rel.rfind("ov/", 0) == 0 ? open_file(ov / rel) : open_file(game / rel);
+        };
         desync.overlays = [&](const std::string &rel) {
             return rel == lb::DATABASES ? std::vector<std::string>{"ov/databases.erp"} : std::vector<std::string>{};
         };
@@ -313,11 +499,12 @@ int main(int argc, char **argv)
         fresh[0].key = "fresh";
         fresh[0].donor = "b";
         lb::Result rd;
-        bool ok = lb::build(desync, fresh, rd);
-        check(ok && rd.built == 1 && rd.refused == 0, "an array shorter than its key list gets the new slice instead of a refusal");
+        bool ok = build_logos(desync, fresh, rd);
+        check(ok && rd.built == 1 && rd.refused == 0,
+              "an array shorter than its key list gets the new slice instead of a refusal");
         bool said = std::any_of(rd.lines.begin(), rd.lines.end(), [](const std::string &l) {
-            return l.find("lists ") != std::string::npos && l.find("another addon replaced the whole array") != std::string::npos &&
-                   l.find("ghost0") != std::string::npos;
+            return l.find("lists ") != std::string::npos &&
+                   l.find("another addon replaced the whole array") != std::string::npos && l.find("ghost0") != std::string::npos;
         });
         check(said, "the padding names the first key that has no image");
         uint32_t count = 0;
@@ -333,8 +520,8 @@ int main(int argc, char **argv)
                 names_after = names_of(*it->second[0]);
         }
         check(count && names_after == count && names_after == stock_names + 3,
-              "the new key sits at its own slice: " + std::to_string(names_after) + " keys, " + std::to_string(count) + " slices, stock " +
-                  std::to_string(stock_names));
+              "the new key sits at its own slice: " + std::to_string(names_after) + " keys, " + std::to_string(count) +
+                  " slices, stock " + std::to_string(stock_names));
 
         lb::Result nope;
         std::vector<lb::Want> gone(3);
@@ -345,18 +532,24 @@ int main(int argc, char **argv)
         gone[0].key = "x0";
         gone[1].key = "x1";
         gone[2].key = "x2";
-        lb::build(env, gone, nope);
-        check(nope.refused == 3 && std::count_if(nope.lines.begin(), nope.lines.end(), [](const std::string &l) {
-                  return l == "team.logo: 3 slot(s) refused: overrides.uidb has no list teams.nothing (first teams.nothing/x0)";
-              }) == 1,
-              "refusals for one reason log one line with the count and the first key");
+        build_logos(env, gone, nope);
+        check(
+            nope.refused == 3 &&
+                std::count_if(
+                    nope.lines.begin(), nope.lines.end(),
+                    [](const std::string &l) {
+                        return l ==
+                               "team.logo: 3 slot(s) refused: overrides.uidb has no list teams.nothing (first teams.nothing/x0)";
+                    }) == 1,
+            "refusals for one reason log one line with the count and the first key");
     }
 
     {
         fs::path ov = out / "viewfix";
         fs::create_directories(ov / "ov");
         std::string array = "teams.driver_select_team_logos";
-        std::string image = std::string(lb::ARRAY_URI) + array + ".texarray.image", view = std::string(lb::ARRAY_URI) + array + ".texarray";
+        std::string image = std::string(lb::ARRAY_URI) + array + ".texarray.image",
+                    view = std::string(lb::ARRAY_URI) + array + ".texarray";
         std::string stock_rel = list[1], over_rel = "ov/flow_a.erp";
         auto frag = [&](const fs::path &file, const std::string &name, size_t n) {
             auto src = open_file(file);
@@ -383,7 +576,9 @@ int main(int argc, char **argv)
         }
         lb::Env skewed;
         skewed.list = [&] { return list; };
-        skewed.open = [&](const std::string &rel) { return rel.rfind("ov/", 0) == 0 ? open_file(ov / rel) : open_file(game / rel); };
+        skewed.open = [&](const std::string &rel) {
+            return rel.rfind("ov/", 0) == 0 ? open_file(ov / rel) : open_file(game / rel);
+        };
         skewed.overlays = [&](const std::string &rel) {
             return rel == stock_rel ? std::vector<std::string>{over_rel} : std::vector<std::string>{};
         };
@@ -410,9 +605,10 @@ int main(int argc, char **argv)
         add[0].key = "viewfixed";
         add[0].donor = "b";
         lb::Result fixed;
-        check(lb::build(skewed, add, fixed) && fixed.built == 1 && fixed.refused == 0,
+        check(build_logos(skewed, add, fixed) && fixed.built == 1 && fixed.refused == 0,
               "an array whose view is ten above its slices is repaired and grown instead of refused");
-        std::string said = "team.logo: " + array + " view said " + std::to_string(slices + 10) + " slices for " + std::to_string(slices) + "; fixed";
+        std::string said = "team.logo: " + array + " view said " + std::to_string(slices + 10) + " slices for " +
+                           std::to_string(slices) + "; fixed";
         check(std::count(fixed.lines.begin(), fixed.lines.end(), said) == 1, "the repair is logged once for the array");
         check(view_count_in(fixed) == std::set<uint32_t>{slices + 1} && head_count_in(fixed) == std::set<uint32_t>{slices + 1},
               "every archive gets the grown image and a view that matches it");
@@ -422,42 +618,42 @@ int main(int argc, char **argv)
         refused[0].key = "nokey";
         refused[0].donor = "no_such_stock_key";
         lb::Result left;
-        lb::build(skewed, refused, left);
+        build_logos(skewed, refused, left);
         check(left.refused == 1 && left.built == 0 && view_count_in(left) == std::set<uint32_t>{slices},
               "a refused slot still leaves the array with a view that matches its image");
 
         lb::Result untouched;
-        lb::build(env, refused, untouched);
-        check(untouched.changes.empty(),
-              "a stock array that is already consistent is never rewritten for its view");
+        build_logos(env, refused, untouched);
+        check(untouched.changes.empty(), "a stock array that is already consistent is never rewritten for its view");
     }
 
     {
         auto bad = wants;
         bad[0].width = 32;
         lb::Result r2;
-        lb::build(env, bad, r2);
+        build_logos(env, bad, r2);
         bool said = false;
         for (auto &l : r2.lines)
             said |= l == "team.logo: newteam scaled 32x64 -> 64x64 for teams.driver_select_team_logos";
         check(r2.refused == 0 && r2.built == 2 && said, "an image of another size is scaled to the slice and logged once");
         lb::Result r2x;
-        lb::build(env, wants, r2x);
-        check(r2x.built == 2 && std::none_of(r2x.lines.begin(), r2x.lines.end(), [](const std::string &l) { return l.find("scaled") != std::string::npos; }),
+        build_logos(env, wants, r2x);
+        check(r2x.built == 2 && std::none_of(r2x.lines.begin(), r2x.lines.end(),
+                                             [](const std::string &l) { return l.find("scaled") != std::string::npos; }),
               "an image of the exact size is not scaled and nothing is logged");
         bad = wants;
         bad[1].donor = "zz";
         lb::Result r3;
-        lb::build(env, bad, r3);
+        build_logos(env, bad, r3);
         check(r3.refused == 1, "a donor key that is not listed is refused");
         bad[1].fallback = true;
         lb::Result r3f;
-        lb::build(env, bad, r3f);
+        build_logos(env, bad, r3f);
         check(r3f.refused == 0, "a donor fallback whose key is not listed is left out without a refusal");
         bad = wants;
         bad[0].array = "teams.nothing";
         lb::Result r4;
-        lb::build(env, bad, r4);
+        build_logos(env, bad, r4);
         check(r4.refused >= 1, "an array that is not in overrides.uidb is refused");
     }
 
@@ -470,7 +666,8 @@ int main(int argc, char **argv)
         const ef::Entry *e = arc.find(lb::OVERRIDES);
         std::string real;
         content::uidb::Pkg p;
-        check(e && ef::fragment(*src, arc, e->frags[0], real, why) && p.read(real) && p.write() == real, "the game's overrides.uidb writes to the same bytes");
+        check(e && ef::fragment(*src, arc, e->frags[0], real, why) && p.read(real) && p.write() == real,
+              "the game's overrides.uidb writes to the same bytes");
         std::vector<std::string> all;
         for (auto &it : fs::recursive_directory_iterator(ui))
             if (it.path().extension() == ".erp")
@@ -480,8 +677,8 @@ int main(int argc, char **argv)
         real_env.list = [&] { return all; };
         real_env.open = [&](const std::string &rel) { return open_file(fs::path(g) / rel); };
         std::vector<lb::Want> real_wants;
-        for (auto *a : {"teams.driver_select_team_logos", "osd.timing_tower.team_badges_hud", "team_logos.driver_career_2024_team_select",
-                        "teams.badges_broadcast"}) {
+        for (auto *a : {"teams.driver_select_team_logos", "osd.timing_tower.team_badges_hud",
+                        "team_logos.driver_career_2024_team_select", "teams.badges_broadcast"}) {
             lb::Want w;
             w.array = a;
             w.key = "w26_probe";
@@ -489,10 +686,11 @@ int main(int argc, char **argv)
             real_wants.push_back(w);
         }
         lb::Result rr;
-        lb::build(real_env, real_wants, rr);
+        build_logos(real_env, real_wants, rr);
         for (auto &l : rr.lines)
             std::printf("      %s\n", l.c_str());
-        check(rr.built == 4 && rr.refused == 0 && rr.changes.count(lb::DATABASES), "the game's own archives build four probe slices");
+        check(rr.built == 4 && rr.refused == 0 && rr.changes.count(lb::DATABASES),
+              "the game's own archives build four probe slices");
     }
     {
         fs::path ov = out / "stacked";
@@ -524,7 +722,8 @@ int main(int argc, char **argv)
         std::string db_stock = frag_of(game / lb::DATABASES, lb::OVERRIDES, 0);
         std::vector<std::string> stock_names = names_in(db_stock);
         size_t slice = stock_data.size() / stock_count;
-        check(stock_names.size() == stock_count && stock_names.size() >= 2, "the stacked fixture starts as a stock array of named slices");
+        check(stock_names.size() == stock_count && stock_names.size() >= 2,
+              "the stacked fixture starts as a stock array of named slices");
 
         std::vector<lb::Want> others(3);
         for (size_t i = 0; i < others.size(); i++) {
@@ -533,7 +732,7 @@ int main(int argc, char **argv)
             others[i].donor = stock_names[1];
         }
         lb::Result appended;
-        lb::build(env, others, appended);
+        build_logos(env, others, appended);
         for (auto &[rel, changes] : appended.changes) {
             if (rel == lb::DATABASES)
                 continue;
@@ -545,7 +744,9 @@ int main(int argc, char **argv)
         }
         lb::Env stacked;
         stacked.list = [&] { return list; };
-        stacked.open = [&](const std::string &rel) { return rel.rfind("ov/", 0) == 0 ? open_file(ov / rel) : open_file(game / rel); };
+        stacked.open = [&](const std::string &rel) {
+            return rel.rfind("ov/", 0) == 0 ? open_file(ov / rel) : open_file(game / rel);
+        };
         stacked.overlays = [&](const std::string &rel) {
             return !appended.changes.count(rel) || rel == lb::DATABASES
                        ? std::vector<std::string>{}
@@ -565,8 +766,9 @@ int main(int argc, char **argv)
         teams[2].donor = stock_names[0];
         teams[2].fallback = true;
         lb::Result res;
-        bool ok = lb::build(stacked, teams, res);
-        check(ok && res.built == 3 && res.refused == 0, "teams with a donor fallback build on an array other addons grew without keys");
+        bool ok = build_logos(stacked, teams, res);
+        check(ok && res.built == 3 && res.refused == 0,
+              "teams with a donor fallback build on an array other addons grew without keys");
         std::vector<std::string> names_out;
         std::string head_out, data_out;
         for (auto &[rel, changes] : res.changes) {
@@ -581,7 +783,8 @@ int main(int argc, char **argv)
         }
         uint32_t count_out = head_out.size() >= 32 ? content::logo_array::le32(head_out, content::logo_array::HEAD_COUNT) : 0;
         check(count_out == stock_count + 3 + 3 && names_out.size() == count_out && data_out.size() == size_t(count_out) * slice,
-              "the grown array has one key for every slice (" + std::to_string(names_out.size()) + " keys, " + std::to_string(count_out) + " slices)");
+              "the grown array has one key for every slice (" + std::to_string(names_out.size()) + " keys, " +
+                  std::to_string(count_out) + " slices)");
         for (auto &t : teams) {
             auto at = std::find(names_out.begin(), names_out.end(), t.key);
             size_t index = size_t(at - names_out.begin());
@@ -591,11 +794,13 @@ int main(int argc, char **argv)
                       data_out.compare(index * slice, slice, stock_data, donor_index * slice, slice) == 0,
                   t.key + " reads its donor's stock slice " + std::to_string(donor_index) + " at slice " + std::to_string(index));
         }
-        check(std::any_of(res.lines.begin(), res.lines.end(), [](const std::string &l) {
-                  return l.find("placeholder key(s)") != std::string::npos;
-              }) && std::any_of(res.lines.begin(), res.lines.end(), [](const std::string &l) {
-                  return l.find("team_a = ") != std::string::npos || l.find("= team_a (copy of") != std::string::npos;
-              }),
+        check(std::any_of(res.lines.begin(), res.lines.end(),
+                          [](const std::string &l) { return l.find("placeholder key(s)") != std::string::npos; }) &&
+                  std::any_of(res.lines.begin(), res.lines.end(),
+                              [](const std::string &l) {
+                                  return l.find("team_a = ") != std::string::npos ||
+                                         l.find("= team_a (copy of") != std::string::npos;
+                              }),
               "the build logs the placeholder keys and the slice every new key lands on");
     }
     {
@@ -603,7 +808,8 @@ int main(int argc, char **argv)
         fs::path dir_out = out / "carriers";
         fs::create_directories(dir_out);
         std::string array = "teams.driver_select_team_logos";
-        std::string image = std::string(lb::ARRAY_URI) + array + ".texarray.image", view = std::string(lb::ARRAY_URI) + array + ".texarray";
+        std::string image = std::string(lb::ARRAY_URI) + array + ".texarray.image",
+                    view = std::string(lb::ARRAY_URI) + array + ".texarray";
         auto frag_of = [&](const fs::path &file, const std::string &name, size_t n) {
             auto src = open_file(file);
             ef::Archive arc;
@@ -624,7 +830,8 @@ int main(int argc, char **argv)
                     names.push_back(content::uidb::Pkg::text_of(e, "Name"));
             return names;
         };
-        std::string head0 = frag_of(game / list[1], image, 0), data0 = frag_of(game / list[1], image, 1), view0 = frag_of(game / list[1], view, 0);
+        std::string head0 = frag_of(game / list[1], image, 0), data0 = frag_of(game / list[1], image, 1),
+                    view0 = frag_of(game / list[1], view, 0);
         uint32_t count0 = la::le32(head0, la::HEAD_COUNT), side = la::le32(head0, la::HEAD_FORMAT + 4);
         size_t slice = size_t(side) * la::le32(head0, la::HEAD_FORMAT + 8);
         std::vector<std::string> names0 = names_in(frag_of(game / lb::DATABASES, lb::OVERRIDES, 0));
@@ -670,7 +877,8 @@ int main(int argc, char **argv)
         };
         auto has_line = [](const lb::Result &r, std::initializer_list<std::string> parts) {
             return std::count_if(r.lines.begin(), r.lines.end(), [&](const std::string &l) {
-                return std::all_of(parts.begin(), parts.end(), [&](const std::string &p) { return l.find(p) != std::string::npos; });
+                return std::all_of(parts.begin(), parts.end(),
+                                   [&](const std::string &p) { return l.find(p) != std::string::npos; });
             });
         };
         std::vector<lb::Want> two(2);
@@ -681,19 +889,23 @@ int main(int argc, char **argv)
         std::string zeros(slice * 4, '\0');
         std::string blank = content::bc7::encode_logo(reinterpret_cast<const uint8_t *>(zeros.data()), int(side), int(side));
 
-        std::string short_data = data0.substr(0, (count0 - 1) * slice), long_data = data0 + std::string(slice, char(0x5a)) + std::string(slice, char(0xa5));
-        auto short_copy = copy_with(count0 - 1, short_data, la::FORMAT_BC7, side), long_copy = copy_with(count0 + 2, long_data, la::FORMAT_BC7, side);
+        std::string short_data = data0.substr(0, (count0 - 1) * slice),
+                    long_data = data0 + std::string(slice, char(0x5a)) + std::string(slice, char(0xa5));
+        auto short_copy = copy_with(count0 - 1, short_data, la::FORMAT_BC7, side),
+             long_copy = copy_with(count0 + 2, long_data, la::FORMAT_BC7, side);
         lb::Env split = env_with({{list[1], write_copy(list[1], "short_flow_a.erp", short_copy)},
                                   {list[3], write_copy(list[3], "long_screens_b.erp", long_copy)}});
         lb::Result rs;
-        check(lb::build(split, two, rs) && rs.built == 2 && rs.refused == 0,
+        check(build_logos(split, two, rs) && rs.built == 2 && rs.refused == 0,
               "two carriers whose copies hold different slice counts both build instead of refusing every slot");
         std::string ha, da, va, hb, db, vb;
         bool both = grown_of(rs, list[1], ha, da, va) && grown_of(rs, list[3], hb, db, vb);
         uint32_t total = count0 + 2 + 2;
-        std::vector<std::string> names_out = rs.changes.count(lb::DATABASES) ? names_in(*rs.changes[lb::DATABASES][lb::OVERRIDES][0]) : std::vector<std::string>{};
-        check(both && la::le32(ha, la::HEAD_COUNT) == total && la::le32(hb, la::HEAD_COUNT) == total && la::le32(va, la::VIEW_COUNT) == total &&
-                  la::le32(vb, la::VIEW_COUNT) == total && da.size() == total * slice && db.size() == total * slice,
+        std::vector<std::string> names_out =
+            rs.changes.count(lb::DATABASES) ? names_in(*rs.changes[lb::DATABASES][lb::OVERRIDES][0]) : std::vector<std::string>{};
+        check(both && la::le32(ha, la::HEAD_COUNT) == total && la::le32(hb, la::HEAD_COUNT) == total &&
+                  la::le32(va, la::VIEW_COUNT) == total && la::le32(vb, la::VIEW_COUNT) == total && da.size() == total * slice &&
+                  db.size() == total * slice,
               "both copies grow to the same " + std::to_string(total) + " slices with views that match");
         check(names_out.size() == total && names_out[count0 + 2] == "carrier_img" && names_out[count0 + 3] == "carrier_copy" &&
                   names_out[count0].rfind("swofty_pad_", 0) == 0 && names_out[count0 + 1].rfind("swofty_pad_", 0) == 0,
@@ -707,28 +919,33 @@ int main(int argc, char **argv)
         check(both && da.compare((count0 + 2) * slice, 2 * slice, db, (count0 + 2) * slice, 2 * slice) == 0 &&
                   db.compare((count0 + 3) * slice, slice, long_data, donor_at * slice, slice) == 0,
               "the new logos sit at the same slice in both copies and the donor copy is slice " + std::to_string(donor_at));
-        check(has_line(rs, {"hold 2 different copies (" + std::to_string(count0 - 1) + ", " + std::to_string(count0 + 2) + " slices)"}) == 1 &&
-                  has_line(rs, {"in 2025_asset_groups/ui_package/flow_a.erp lists ", "another addon replaced the whole array"}) == 1 &&
+        check(has_line(rs, {"hold 2 different copies (" + std::to_string(count0 - 1) + ", " + std::to_string(count0 + 2) +
+                            " slices)"}) == 1 &&
+                  has_line(rs, {"in 2025_asset_groups/ui_package/flow_a.erp lists ", "another addon replaced the whole array"}) ==
+                      1 &&
                   has_line(rs, {"(2 different copies)"}) == 1 && has_line(rs, {"refused"}) == 0,
               "the build logs the differing copies and the padding of the short one, and refuses nothing");
 
         std::string wide_data;
         for (uint32_t i = 0; i < count0; i++)
             wide_data += std::string(slice * 4, char(i + 1));
-        lb::Env sized = env_with({{list[3], write_copy(list[3], "wide_screens_b.erp", copy_with(count0, wide_data, la::FORMAT_BC7, side * 2))}});
+        lb::Env sized = env_with(
+            {{list[3], write_copy(list[3], "wide_screens_b.erp", copy_with(count0, wide_data, la::FORMAT_BC7, side * 2))}});
         lb::Result rw;
-        check(lb::build(sized, two, rw) && rw.built == 2 && rw.refused == 0 && grown_of(rw, list[1], ha, da, va) && grown_of(rw, list[3], hb, db, vb) &&
-                  da.size() == (count0 + 2) * slice && db.size() == (count0 + 2) * slice * 4 &&
+        check(build_logos(sized, two, rw) && rw.built == 2 && rw.refused == 0 && grown_of(rw, list[1], ha, da, va) &&
+                  grown_of(rw, list[3], hb, db, vb) && da.size() == (count0 + 2) * slice &&
+                  db.size() == (count0 + 2) * slice * 4 &&
                   db.compare((count0 + 1) * slice * 4, slice * 4, wide_data, donor_at * slice * 4, slice * 4) == 0 &&
                   has_line(rw, {"carrier_img scaled 64x64 -> " + std::to_string(side * 2)}) == 1,
               "a copy at another slice size gets the logo encoded at its own size and the donor slice from its own image");
 
         lb::Env odd = env_with({{list[1], write_copy(list[1], "bc1_flow_a.erp", copy_with(count0, data0, 71, side))}});
         lb::Result ro;
-        check(lb::build(odd, two, ro) && ro.built == 2 && ro.refused == 0 && !ro.changes.count(list[1]) && grown_of(ro, list[3], hb, db, vb) &&
-                  la::le32(hb, la::HEAD_COUNT) == count0 + 2,
+        check(build_logos(odd, two, ro) && ro.built == 2 && ro.refused == 0 && !ro.changes.count(list[1]) &&
+                  grown_of(ro, list[3], hb, db, vb) && la::le32(hb, la::HEAD_COUNT) == count0 + 2,
               "a carrier in another format is left as it is and the other carrier still builds");
-        check(has_line(ro, {"team.logo: skipped teams.driver_select_team_logos in 2025_asset_groups/ui_package/flow_a.erp: unexpected stock array (format 71",
+        check(has_line(ro, {"team.logo: skipped teams.driver_select_team_logos in 2025_asset_groups/ui_package/flow_a.erp: "
+                            "unexpected stock array (format 71",
                             "left as it is, the other 1 archive(s) build"}) == 1 &&
                   has_line(ro, {"skipped"}) == 1,
               "the skipped carrier is logged in one line");
@@ -736,7 +953,7 @@ int main(int argc, char **argv)
         lb::Env none = env_with({{list[1], write_copy(list[1], "bc1_a.erp", copy_with(count0, data0, 71, side))},
                                  {list[3], write_copy(list[3], "bc1_b.erp", copy_with(count0, data0, 71, side))}});
         lb::Result rn;
-        lb::build(none, two, rn);
+        build_logos(none, two, rn);
         check(rn.built == 0 && rn.refused == 2 && rn.changes.empty() &&
                   has_line(rn, {"2 slot(s) refused: teams.driver_select_team_logos: unexpected stock array (format 71"}) == 1,
               "when no carrier's copy can grow the slots are refused with the reason");
@@ -757,15 +974,16 @@ int main(int argc, char **argv)
         std::string own_data = std::string(slice, char(0x11)) + data0.substr(slice);
         fs::path boot_same = write_copy(list[1], "boot_game_sized.erp", copy_with(count0, own_data, la::FORMAT_BC7, side));
         lb::Result plain, rb;
-        lb::build(env, two, plain);
+        build_logos(env, two, plain);
         check(lb::array_layers(boot_env({}), boot_rel).empty() &&
                   lb::array_layers(boot_env({{boot_rel, boot_same}}), boot_rel) == std::vector<std::string>{boot_rel} &&
-                  lb::array_layers(boot_env({{"ov/boot.erp", boot_same}}, {"ov/boot.erp"}), boot_rel) == std::vector<std::string>{"ov/boot.erp"},
+                  lb::array_layers(boot_env({{"ov/boot.erp", boot_same}}, {"ov/boot.erp"}), boot_rel) ==
+                      std::vector<std::string>{"ov/boot.erp"},
               "the boot archive is named only when it or one of its overlay layers carries a logo array");
         lb::Env absent = boot_env({});
         lb::Result ra;
-        bool unchanged = lb::build(absent, two, ra) && ra.built == plain.built && ra.refused == plain.refused && ra.lines == plain.lines &&
-                         ra.read == plain.read && ra.changes.size() == plain.changes.size();
+        bool unchanged = build_logos(absent, two, ra) && ra.built == plain.built && ra.refused == plain.refused &&
+                         ra.lines == plain.lines && ra.read == plain.read && ra.changes.size() == plain.changes.size();
         for (auto &[rel, changes] : plain.changes) {
             unchanged = unchanged && ra.changes.count(rel) && ra.changes[rel].size() == changes.size();
             for (auto &[name, frags] : changes) {
@@ -776,11 +994,12 @@ int main(int argc, char **argv)
         }
         check(unchanged, "with no boot copy the build writes the same bytes and lines as before");
 
-        check(lb::build(boot_env({{boot_rel, boot_same}}), two, rb) && rb.built == 2 && rb.refused == 0 && grown_of(rb, boot_rel, ha, da, va) &&
-                  grown_of(rb, list[1], hb, db, vb) && rb.read.count(boot_rel),
+        check(build_logos(boot_env({{boot_rel, boot_same}}), two, rb) && rb.built == 2 && rb.refused == 0 &&
+                  grown_of(rb, boot_rel, ha, da, va) && grown_of(rb, list[1], hb, db, vb) && rb.read.count(boot_rel),
               "a game-sized boot copy builds with the ui_package copies");
-        check(la::le32(ha, la::HEAD_COUNT) == count0 + 2 && la::le32(va, la::VIEW_COUNT) == count0 + 2 && da.size() == (count0 + 2) * slice &&
-                  da.compare(0, own_data.size(), own_data) == 0 && da.compare(count0 * slice, 2 * slice, db, count0 * slice, 2 * slice) == 0 &&
+        check(la::le32(ha, la::HEAD_COUNT) == count0 + 2 && la::le32(va, la::VIEW_COUNT) == count0 + 2 &&
+                  da.size() == (count0 + 2) * slice && da.compare(0, own_data.size(), own_data) == 0 &&
+                  da.compare(count0 * slice, 2 * slice, db, count0 * slice, 2 * slice) == 0 &&
                   db.compare(0, data0.size(), data0) == 0,
               "the boot copy keeps its own slices and gets the new logos at the slices the ui_package copy has them");
         names_out = names_in(*rb.changes[lb::DATABASES][lb::OVERRIDES][0]);
@@ -790,10 +1009,12 @@ int main(int argc, char **argv)
 
         fs::path boot_long = write_copy(list[1], "boot_grown.erp", long_copy);
         lb::Result rg;
-        check(lb::build(boot_env({{boot_rel, game / list[2]}, {"ov/boot.erp", boot_long}}, {"ov/boot.erp"}), two, rg) && rg.built == 2 && rg.refused == 0 &&
-                  grown_of(rg, "ov/boot.erp", ha, da, va) && grown_of(rg, list[1], hb, db, vb) && !rg.changes.count(boot_rel) &&
-                  la::le32(ha, la::HEAD_COUNT) == total && la::le32(hb, la::HEAD_COUNT) == total && la::le32(va, la::VIEW_COUNT) == total &&
-                  da.compare(0, long_data.size(), long_data) == 0 && da.compare((count0 + 2) * slice, 2 * slice, db, (count0 + 2) * slice, 2 * slice) == 0,
+        check(build_logos(boot_env({{boot_rel, game / list[2]}, {"ov/boot.erp", boot_long}}, {"ov/boot.erp"}), two, rg) &&
+                  rg.built == 2 && rg.refused == 0 && grown_of(rg, "ov/boot.erp", ha, da, va) &&
+                  grown_of(rg, list[1], hb, db, vb) && !rg.changes.count(boot_rel) && la::le32(ha, la::HEAD_COUNT) == total &&
+                  la::le32(hb, la::HEAD_COUNT) == total && la::le32(va, la::VIEW_COUNT) == total &&
+                  da.compare(0, long_data.size(), long_data) == 0 &&
+                  da.compare((count0 + 2) * slice, 2 * slice, db, (count0 + 2) * slice, 2 * slice) == 0,
               "a boot copy another addon grew in an overlay layer keeps its slices and both copies put the new logos at slice " +
                   std::to_string(count0 + 2));
 
@@ -801,25 +1022,32 @@ int main(int argc, char **argv)
         lb::Env behind = boot_env({{list[1], write_copy(list[1], "ui_long_a.erp", long_copy)},
                                    {list[3], write_copy(list[3], "ui_long_b.erp", long_copy)},
                                    {boot_rel, boot_same}});
-        check(lb::build(behind, two, rf) && rf.built == 2 && rf.refused == 0 && grown_of(rf, boot_rel, ha, da, va) && grown_of(rf, list[1], hb, db, vb) &&
-                  la::le32(ha, la::HEAD_COUNT) == total && la::le32(va, la::VIEW_COUNT) == total && da.size() == total * slice &&
-                  da.compare(0, own_data.size(), own_data) == 0 && da.compare(count0 * slice, 4 * slice, db, count0 * slice, 4 * slice) == 0,
-              "a boot copy shorter than the ui_package copies takes their slices for the keys it lacks and grows to all " + std::to_string(total));
-        check(has_line(rf, {"in " + boot_rel + " holds " + std::to_string(count0) + " slice(s) for " + std::to_string(count0 + 2) + " key(s)",
+        check(build_logos(behind, two, rf) && rf.built == 2 && rf.refused == 0 && grown_of(rf, boot_rel, ha, da, va) &&
+                  grown_of(rf, list[1], hb, db, vb) && la::le32(ha, la::HEAD_COUNT) == total &&
+                  la::le32(va, la::VIEW_COUNT) == total && da.size() == total * slice &&
+                  da.compare(0, own_data.size(), own_data) == 0 &&
+                  da.compare(count0 * slice, 4 * slice, db, count0 * slice, 4 * slice) == 0,
+              "a boot copy shorter than the ui_package copies takes their slices for the keys it lacks and grows to all " +
+                  std::to_string(total));
+        check(has_line(rf, {"in " + boot_rel + " holds " + std::to_string(count0) + " slice(s) for " +
+                                std::to_string(count0 + 2) + " key(s)",
                             "are copied from " + list[1]}) == 1 &&
                   has_line(rf, {"padded with blank"}) == 0,
               "the fill of the short boot copy is logged in one line with the archive and the counts");
 
         std::string viewless = slurp(boot_same), view_name = view + std::string(1, '\0');
         size_t name_at = viewless.find(view_name);
-        check(name_at != std::string::npos && viewless.find(view_name, name_at + 1) == std::string::npos, "the fixture names the view once");
+        check(name_at != std::string::npos && viewless.find(view_name, name_at + 1) == std::string::npos,
+              "the fixture names the view once");
         viewless[name_at + view.size() - 1] = 'x';
         std::ofstream(dir_out / "boot_viewless.erp", std::ios::binary) << viewless;
         lb::Result rv;
-        bool built = lb::build(boot_env({{boot_rel, dir_out / "boot_viewless.erp"}}), two, rv) && rv.built == 2 && rv.refused == 0;
+        bool built =
+            build_logos(boot_env({{boot_rel, dir_out / "boot_viewless.erp"}}), two, rv) && rv.built == 2 && rv.refused == 0;
         auto bc = rv.changes.find(boot_rel);
         check(built && bc != rv.changes.end() && bc->second.count(image) && !bc->second.count(view) &&
-                  la::le32(*bc->second[image][0], la::HEAD_COUNT) == count0 + 2 && bc->second[image][1]->size() == (count0 + 2) * slice &&
+                  la::le32(*bc->second[image][0], la::HEAD_COUNT) == count0 + 2 &&
+                  bc->second[image][1]->size() == (count0 + 2) * slice &&
                   bc->second[image][1]->compare(0, own_data.size(), own_data) == 0 && grown_of(rv, list[1], hb, db, vb) &&
                   la::le32(vb, la::VIEW_COUNT) == count0 + 2,
               "a boot image with no view of its own grows whole to the count of the ui_package view the game reads with it");
@@ -828,10 +1056,123 @@ int main(int argc, char **argv)
               "the borrowed view is logged in one line with the archive and the count");
 
         lb::Result rx;
-        lb::build(boot_env({{boot_rel, write_copy(list[1], "boot_bc1.erp", copy_with(count0, data0, 71, side))}}), two, rx);
+        build_logos(boot_env({{boot_rel, write_copy(list[1], "boot_bc1.erp", copy_with(count0, data0, 71, side))}}), two, rx);
         check(rx.built == 2 && rx.refused == 0 && !rx.changes.count(boot_rel) && grown_of(rx, list[1], hb, db, vb) &&
-                  has_line(rx, {"skipped teams.driver_select_team_logos in " + boot_rel + ": unexpected stock array (format 71"}) == 1,
+                  has_line(
+                      rx, {"skipped teams.driver_select_team_logos in " + boot_rel + ": unexpected stock array (format 71"}) == 1,
               "a boot copy this build cannot grow is left whole and named in one line");
+    }
+    {
+        std::map<std::string, std::string> store;
+        std::map<std::string, int> puts;
+        lb::SliceCache mem;
+        mem.get = [&](const std::string &name, std::string &bytes) {
+            auto it = store.find(name);
+            if (it == store.end())
+                return false;
+            bytes = it->second;
+            return true;
+        };
+        mem.put = [&](const std::string &name, const std::string &bytes) { store[name] = bytes, puts[name]++; };
+        std::string rgba(px, 64 * 64 * 4), other = rgba;
+        for (size_t i = 0; i < other.size(); i += 4)
+            other[i] = char(255 - uint8_t(other[i]));
+        auto image_want = [&](const std::string &key, const std::string &pixels, const std::string &source) {
+            lb::Want w;
+            w.array = "teams.driver_select_team_logos";
+            w.key = key;
+            w.rgba = pixels;
+            w.width = w.height = 64;
+            w.source = source;
+            return w;
+        };
+        auto archives = [&](const lb::Result &r) {
+            std::map<std::string, std::string> out_bytes;
+            for (auto &[rel, changes] : r.changes) {
+                auto src = open_file(game / rel);
+                ef::Archive arc;
+                ef::open(*src, arc, why);
+                out_bytes[rel] = rewrite_to_string(*src, arc, changes, why);
+            }
+            return out_bytes;
+        };
+        std::vector<lb::Want> two = {image_want("newteam", rgba, "png-a"), image_want("otherteam", other, "png-b")};
+        lb::Result plain, cold, warm, changed;
+        build_logos(env, two, plain);
+        lb::Env cached = env;
+        cached.slices = mem;
+        lb::build(cached, two, cold);
+        size_t shapes = cold.slices.encoded / 2;
+        check(shapes > 0 && cold.slices.cached == 0 && cold.slices.encoded == 2 * shapes && store.size() == 2 * shapes,
+              "slice cache: a cold cache encodes every slice and keeps each under its PNG and slice size");
+        lb::build(cached, two, warm);
+        check(warm.slices.cached == 2 * shapes && warm.slices.encoded == 0, "slice cache: a warm cache encodes nothing");
+        check(archives(plain) == archives(cold) && archives(cold) == archives(warm) && plain.lines == warm.lines,
+              "slice cache: cold, warm and no cache build the same archives and lines");
+        std::vector<lb::Want> one_changed = {two[0], image_want("otherteam", rgba, "png-c")};
+        lb::build(cached, one_changed, changed);
+        check(changed.slices.cached == shapes && changed.slices.encoded == shapes,
+              "slice cache: a changed image re-encodes only its own slices");
+        lb::Result fresh_changed;
+        build_logos(env, one_changed, fresh_changed);
+        check(archives(changed) == archives(fresh_changed),
+              "slice cache: the partly cached build matches a build without the cache");
+
+        std::string decoded;
+        lb::PngInfo first = lb::look_at_png(mem, png_bytes, lb::source_of(png_bytes), decoded);
+        std::string again;
+        lb::PngInfo second = lb::look_at_png(mem, png_bytes, lb::source_of(png_bytes), again);
+        check(first.ok && first.width == 64 && !decoded.empty() && second.ok && second.width == 64 && second.height == 64 &&
+                  again.empty(),
+              "slice cache: a PNG decodes once, then its size comes from the cache without decoding");
+        std::string bad = "not a png";
+        std::string none;
+        lb::PngInfo refused1 = lb::look_at_png(mem, bad, lb::source_of(bad), none),
+                    refused2 = lb::look_at_png(mem, bad, lb::source_of(bad), none);
+        check(!refused1.ok && !refused1.why.empty() && !refused2.ok && refused2.why == refused1.why,
+              "slice cache: a PNG that does not decode is refused with the same reason from the cache");
+        check(lb::source_of(png_bytes) != lb::source_of(png_bytes + " ") &&
+                  lb::source_of("") != lb::source_of(std::string(1, '\0')),
+              "slice cache: the PNG name covers every byte and the length");
+
+        lb::Want lazy;
+        lazy.array = "teams.driver_select_team_logos";
+        lazy.key = "newteam";
+        lazy.png = png_bytes;
+        lazy.width = second.width, lazy.height = second.height;
+        lazy.source = lb::source_of(png_bytes);
+        lb::Want eager = lazy;
+        eager.png.clear();
+        eager.rgba = decoded;
+        lb::Result r_eager, r_lazy_cold, r_lazy_warm;
+        build_logos(env, {eager}, r_eager);
+        store.clear();
+        lb::look_at_png(mem, png_bytes, lazy.source, decoded);
+        lb::build(cached, {lazy}, r_lazy_cold);
+        lb::build(cached, {lazy}, r_lazy_warm);
+        check(r_lazy_cold.slices.decoded == 1 && r_lazy_warm.slices.decoded == 0 && r_lazy_warm.slices.encoded == 0 &&
+                  archives(r_eager) == archives(r_lazy_cold) && archives(r_eager) == archives(r_lazy_warm),
+              "slice cache: a want that carries only its PNG decodes it once for its first encode and builds the same archives");
+
+        std::string sealed = lb::sealed("slice bytes"), back;
+        std::string torn = sealed.substr(0, sealed.size() - 1), flipped = sealed;
+        flipped.back() ^= 1;
+        check(lb::unseal(sealed, back) && back == "slice bytes" && !lb::unseal(torn, back) && !lb::unseal(flipped, back) &&
+                  !lb::unseal("", back),
+              "slice cache: a torn or changed entry fails its checksum and counts as a miss");
+        for (auto &[name, bytes] : store)
+            bytes.back() ^= 1;
+        lb::Result r_corrupt;
+        lb::build(cached, {lazy}, r_corrupt);
+        check(r_corrupt.slices.cached == 0 && archives(r_corrupt) == archives(r_eager),
+              "slice cache: corrupt entries are encoded again");
+    }
+    if (disk_slices.on()) {
+        std::printf("      slice cache in LOGO_SLICE_DIR: %zu slice(s) cached, %zu encoded, %zu image(s) decoded\n",
+                    disk_stats.cached, disk_stats.encoded, disk_stats.decoded);
+        if (std::getenv("LOGO_SLICE_WARM"))
+            check(disk_stats.encoded == 0 && disk_stats.cached > 0,
+                  "slice cache: the second run with the same LOGO_SLICE_DIR encodes nothing");
     }
     return failures ? 1 : 0;
 }

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_CutsceneScriptResourceFactory_CreateResourceFinished",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14024e910",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-method;decomp:re/decomp/14024e910.c;xref:0x1455ecd98",
+  "notes": "logged method name createResourceFinished (class from the log channel); log channel NeCutsceneScriptResourceFactory: 'createResourceFinished \"%s\"'"
+ },
+ "signature": {
+  "id": "core.cutscene_script_resource_factory_create_resource_finished",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 4C 89 C6 80 3D ?? ?? ?? ?? 01",
+  "match": "0x14024e910",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14024e910",
+  "kind": "func_start",
+  "names": [
+   "Ne_CutsceneScriptResourceFactory_CreateResourceFinished"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb1-verify",
+   "kind": "func",
+   "item": "Ne_CutsceneScriptResourceFactory_CreateResourceFinished",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14024e910.c;xref:total",
+   "notes": "V1990 log strings and role confirmed in decomp"
+  }
+ ],
+ "proofs": []
+}

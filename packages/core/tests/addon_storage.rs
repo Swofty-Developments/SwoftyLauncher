@@ -7,11 +7,11 @@ use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 use std::time::{Duration, SystemTime};
 
-use swofty_core::addon_storage;
-use swofty_core::baseline::{Identity, sha256_bytes};
+use swofty_core::addons::storage as addon_storage;
+use swofty_core::game_folder::baseline::{Identity, sha256_bytes};
+use swofty_core::game_folder::journal::Journal;
+use swofty_core::game_folder::recovery::{self, Scope, SessionLock};
 use swofty_core::install::{Game, Installer, Plan};
-use swofty_core::journal::Journal;
-use swofty_core::recovery::{self, Scope, SessionLock};
 
 const GVDB: &str = "game_package/gamedatabases/gamedatabases.2025.bin";
 const CORE: &str = "swofty/addons/core/swofty_core.dll";
@@ -184,8 +184,8 @@ fn a_setup_reset_from_another_data_folder_keeps_what_the_addon_wrote() {
     // Another launcher data folder on the same game folder runs the
     // first-play setup, which puts the game folder back to its own record.
     let other = f.root.join("other-data");
-    swofty_core::setup::reset(&other, &f.game(), false).unwrap();
-    swofty_core::setup::finish(&other).unwrap();
+    swofty_core::game_folder::setup::reset(&other, &f.game(), false).unwrap();
+    swofty_core::game_folder::setup::finish(&other).unwrap();
     let lock = f.start(&other, &f.without_addon());
     f.end(&other, lock);
 
@@ -382,8 +382,8 @@ fn the_first_play_setup_keeps_storage_an_older_launcher_left_in_the_game_folder(
     let original = f.snapshot();
     f.put(CAREERS, "from 1.5.12");
     f.put(SLOT, "slot one");
-    swofty_core::setup::reset(&f.data, &f.game(), false).unwrap();
-    swofty_core::setup::finish(&f.data).unwrap();
+    swofty_core::game_folder::setup::reset(&f.data, &f.game(), false).unwrap();
+    swofty_core::game_folder::setup::finish(&f.data).unwrap();
     assert_eq!(f.snapshot(), original);
     f.session(&f.with_addon(), |f| {
         assert_eq!(f.read(CAREERS).as_deref(), Some("from 1.5.12"));

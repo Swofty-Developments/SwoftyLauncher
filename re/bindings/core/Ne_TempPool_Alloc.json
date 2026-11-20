@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Ne_TempPool_Alloc",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14395eb80",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_TempPool_Alloc(void *pool, uint64_t size, uint64_t align)",
+  "evidence": "decomp:re/decomp/14395eb80.c;xref:0x14395ee40,0x14395ee50;xref:0x140178228,0x1401a9516",
+  "notes": "save-v2: slot +0x18 (thunk 0x14395ee40) of the temp pool vtable 0x14568df40 (SAVE_PROPERTY_BAG_TEMP), a slot 19 vtables share (base 0x145894ff0). Slot +0x10 is another thunk, 0x14395ee50, that takes size in r9 and align at [rsp+0x28] and ignores rdx and r8, so it does not have this proto. The locked subclasses 0x1458973d0 and 0x1458974f0 wrap both slots in the critical section at [this+0xc0] (0x143976260, 0x1439762b0). Bump allocator over [pool+0x98, +0xa0 size); past the end it calls vt+0x118 (Ne_TempPool_ReportError) with error 0xc and returns 0 when that handler returns (with bit 0 of +0x80 set the base handler runs the NeMemoryError callback and crashes on purpose). It is not thread-safe: the top pointer is a plain load and store (0x14395ebaf, 0x14395ece0); only the stats are atomic. | (alloc, size, align): bump allocator from ne_memory_alloc_only.cpp; commits 2 MB pages on demand when +0xb9 is set (a failed commit reports through vt+0x118 with line 0x62 and returns 0), logs 'Not enough free memory to allocate %d byes (alignment %d)' via vtbl +0x118. 12 direct call sites (11 in .xtls, one in .data1 at 0x1472cdae0) plus the 2 thunks, and 16 more calls through 0x14395ee40; callers include 0x1401780c0 (0x140178228) and Ai_DriverVariationInRaceSystem_Setup (0x1409b0df1). | #589 proposed the name Ne_MemAllocOnly_AllocateAligned"
+ },
+ "signature": {
+  "id": "core.mem_alloc_only_allocate_aligned",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 58 4D 89 C6 48 89 D7 48",
+  "match": "0x14395eb80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14395eb80",
+  "kind": "func_start",
+  "names": [
+   "Ne_TempPool_Alloc"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x14395eb80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14395eb80.c;xref:0x140178228",
+   "notes": "V3602 allocateAligned bump allocator, 2MB commit, error string present; 15 call sites vs 13 claimed (minor)"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Ne_TempPool_Alloc",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x14395eb80-0x14395ede9,0x14395edf0-0x14395ee5d,0x14395f120-0x14395f1e1,0x14395f5c0-0x14395f6df,0x14395f6e0-0x14395fa65,0x143976260-0x1439762f6,0x1401777e0-0x1401779d9,1.0.145 0x143961110-0x143961379;xref:0x14395ebd4,0x14395ec13,0x14395ec19,0x14395ec2d,0x14395ece0,0x14395ee40,0x14395ee58,0x14568df50,0x14568df58,0x140178228,0x1401a9516,0x1409b0df1,0x1472cdae0,0x143976288",
+   "notes": "V100030 Blind: partial. Proto (rcx pool, rdx size, r8 align -> void*) and core confirmed: bump over [+0x98,+0xa0), (top+a-1)&-a, size unrounded, past end vt+0x118(err 0xc, line 0x3d) then 0 (0x14395ec13/ec19); 2 MiB commit only when +0xb9, via 0x143969c60 (failure: vt+0x118 with commit err, line 0x62, 0). Wrong: 13 call sites = 12 E8 (incl .data1 0x1472cdae0) + 2 E9 thunks, plus 16 via 0x14395ee40; SetInRaceOn 0x1401777e0 has no call (0x140178228 is in 0x1401780c0). Imprecise: vt+0x10 is thunk 0x14395ee50 taking size=r9, align=[rsp+0x28]. Not thread-safe: plain top store 0x14395ece0. 1.0.145 twin 0x143961110, 158/158 equal."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Ne_TempPool_Alloc",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14395eb80-0x14395ede9,0x14395ee40-0x14395ee5d,0x14395f120-0x14395f1e1,0x14395f240-0x14395f2df,0x14395e8b0-0x14395e8e7,0x14395f5c0-0x14395f6df,0x14395f6e0-0x14395fa65,0x1439182a0-0x1439182b4,0x143976260-0x1439762f6,0x1429d13a1-0x1429d1451,1.0.145 0x143961110-0x143961379,1.0.145 0x1439613d0-0x1439613ed;xref:0x14395ebaf,0x14395ebd4,0x14395ec08,0x14395ec13,0x14395ec19,0x14395ec20,0x14395ecbc,0x14395ece0,0x14395ee40,0x14395ee50,0x14568df58,0x145895008,0x1458973e0,0x145897500,0x14395f6ba,0x1439182a4,0x140178228,0x1401a9516,0x1409b0df1,0x1472cdae0",
+   "notes": "V100031 Blind: agree. Body 0x14395eb80..ede9 is void*(pool rcx, size rdx, align r8). aligned=(cur[+0xa8]+a-1)&-a. newEnd>[+0x98]+[+0xa0] calls vt+0x118(this,0xc,file,61,..), returns 0 (ebd4, ec13). Lazy commit (byte +0xb9) rounds newEnd up to 2MiB, clamped; a failed commit calls vt+0x118 with line 0x62, returns 0. Top pointer is a plain load/store (ebaf, ece0); only stats are atomic. Thunks ee40 (pass-through) and ee50 (rdx=r9, r8=[rsp+0x28]) are at +0x18/+0x10 of 19 vtables, incl 0x14568df40 (name SAVE_PROPERTY_BAG_TEMP built at 0x1429d13a1). Locked 0x1458973d0/74f0 use 0x143976260/62b0 under EnterCriticalSection([this+0xc0]). 12 E8 (11 .xtls, 1 .data1) + 16 via ee40. 1.0.145 twin 158/158."
+  }
+ ],
+ "proofs": []
+}

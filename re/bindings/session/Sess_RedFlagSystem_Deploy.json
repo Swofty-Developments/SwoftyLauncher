@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_RedFlagSystem_Deploy",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143583b60",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void(RedFlagSystem*, bool restore)",
+  "evidence": "decomp:re/decomp/143583b60.c;xref:0x143646d6b,0x142e0765e",
+  "notes": "cxx=RedFlagSystem (vt 0x14584b0d0) deploy: once (state +0x40 == 0): setController(sys +0x148, car, AI, SAFETY_CAR 0xb) for every car of the session list (+0x150 -> +0x88 -> +0x260), countdown +0x48 = +0x44 (0 when restore), state +0x40 = 1, posts the red flag status message (vt 0x14584ec98, value 1), resets the per-car status table +0xe0 (0x143583cb0) and +0x100 (0x143583e20). Called by Sess_ScRedFlagDeploy_Update with restore=0 and by 0x142e07270 with 1. The SAFETY_CAR handover is what brakes the AI field to a stop before the suspension fade. (vmknolle red-flag-pit) | cxx=RedFlagSystem (vt 0x14584b0d0) deploy: once (state +0x40 == 0): unless the object at +0x150 -> +0x88 -> +0x260 has the null type NoOtiInfo (0x146129ca0), walks its vcall +0xa0 list (0x88-byte entries, car id byte +0x82) and for every car with a controller entry ([[+0x148]+0x30][id]+0x20 != 0) calls Game_Set_VehicleController_Thunk 0x14389cc90(+0x148, car, AI 1, SAFETY_CAR 0xb); then countdown +0x48 = +0x44 (0 when restore), state +0x40 = 1, posts the red flag status message (vt 0x14584ec98, value 1) on g_Game_MessageBus, resets the per-car status table +0xe0 (0x143583cb0) and +0x100 (0x143583e20). Called by Sess_ScRedFlagDeploy_Update (0x143646d6b, restore=0) and by 0x142e07270 (0x142e0765e, restore=1). The SAFETY_CAR handover is what brakes the AI field to a stop before the suspension fade. (vmknolle red-flag-pit)"
+ },
+ "signature": {
+  "id": "session.red_flag_system_deploy",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 80 79 40 00",
+  "match": "0x143583b60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143583b60",
+  "kind": "func_start",
+  "names": [
+   "Sess_RedFlagSystem_Deploy"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-29",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-29",
+   "verifier": "bind7-verify",
+   "kind": "func",
+   "item": "Sess_RedFlagSystem_Deploy",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143583b60.c;xref:0x143646d6b",
+   "notes": "V1781 blind re-check of corrected notes"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,83 @@
+{
+ "schema": 1,
+ "name": "Sess_Setup_VehicleComponents",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f45960",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_Setup_VehicleComponents(void *module)",
+  "evidence": "decomp:re/decomp/142f45960.c;decomp:re/decomp/14080c300.c;xref:0x14080c546;xref:0x142f460fc",
+  "notes": "Session module slot 0x58 (vtable 0x1457f82e8 holds 0x142f45960; called through call [rax+0x58] at 0x14080c546 in Game_GameModule_OnSessionEnter's module loop). Walks the session's vehicle entities, a pointer vector module+0x28..+0x30 whose count is the byte ((end-begin)>>3)&0xff: copies the config at module+0x190..+0x268 into each entity's component 0x146ce8a00, and stores each entity's component 0x146ce8b00 into a 26-slot table at module+0xb0 with its count at module+0x180 and no bound check, so a 27th vehicle writes the count itself (crash at +0x2e9 writing, +0x305 reading, Send Logs 2026-10-29 sessions 111311/122524, rbp=r14=0x1b). Later loops reuse the vector count (vehicle controllers via 0x146096578, flags +0x132, +0x2580, +0x9f2c..). Reads the mode context at module+0x80: *(*(+0x88)+0x260) is the EntrantsManager, whose +0x2b0 (current game setup mode) it reads. | E3 2026-11-18 (engine-re, static): the last loop copies the session settings S = [module+0x78]+0x1a8 into every car: CarLive+0x9f2c = S+0xe10 ^ S+0xe18 (PU wear scale, read by Car_Engine_UpdateWear and Car_Ers_StepWear_Body), +0x9f30 = S+0xe20 ^ S+0xe28 (gearbox wear scale, Car_GearBox_UpdateShiftTimersAndFaults), +0x9f34 = 1.0, +0x9f38 = S+0xe30 ^ S+0xe38, +0x9f3c = S+0xe40 ^ S+0xe48 (store 0x142f460fc..0x142f46124). Runs at session enter only, so an addon that writes CarLive+0x9f2c / +0x9f30 after that keeps its value for the session (the only other static writer is the car create 0x144628190, which sets +0x9f2c..+0x9f38 to 1.0 at 0x144628df3; .xtls/.xtext/.data1 disp scan)."
+ },
+ "signature": {
+  "id": "session.setup_vehicle_components",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 48 89 CE C6 41 48 01",
+  "match": "0x142f45960",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f45960",
+  "kind": "func_start",
+  "names": [
+   "Sess_Setup_VehicleComponents"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "162-B2",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/boxes/era_picker.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "b2-v1",
+   "kind": "func",
+   "item": "Sess_Setup_VehicleComponents",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f45960.c;decomp:re/decomp/142f420a0.c;decomp:re/decomp/142f44410.c;xref:0x14080c546,0x142f45a09,0x142f4211c,0x142f444ef;sig:session.setup_vehicle_components",
+   "notes": "V1603 b2-v1 re-derived on re-clones/car-a: vtable base 0x1457f8290 (string VehicleSystem just before it; lea refs in 0x1407e5420 and the dtor 0x142fe77f0) holds 0x142f45960 at +0x58 (entry 0x1457f82e8); 0x14080c540..0x14080c550 loops the modules with call [rax+0x58]. Count: rcx=[rsi+0x30]-[rsi+0x28], test ecx,0x7f8, loop bound (bytes>>3)&0xff fixed at entry; every later loop rereads the vector the same way. Table: lea [rsi+0xb0], store at 0x142f45a09 mov [rsi+rcx*8+0xb0] with rcx=[rsi+0x180], no compare against 26, so slot 26 is +0x180 (the count); the second loop 0x142f45c5a..0x142f45cc0 reads table entries up to the count (crash sites 0x142f45c49/0x142f45c65). Clamp check (guard (b) in era_picker.cpp sets [rsi+0x30]=begin+26*8 around the call): memory-safe here, the table gets 26 entries and count 26; the other table readers in the vtable, slot 0x20 0x142f420a0 and slot 0x88 0x142f44410, both bound by [+0x180] not by the vector; vtable methods 0x142f43500 (remove all), 0x142f45590 and the 0x14f8xxxxx thunk bodies at slots 0x40/0xd8/0xe0 only read the vector. Cost of the clamp: vehicles past 26 skip this function's per-vehicle setup (component 0x146ce8a00 config copy, vehicle controller set, +0x132 bit 2, +0x2580, +0x9f2c.., 0x144632590); which vehicle that is depends on the vector's order, not shown statically, so a guarded session is crash-free but its 27th+ vehicle is not set up by this call (runtime check)."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "std16-tt27v",
+   "kind": "func",
+   "item": "0x142f45960",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142f45960.c;decomp:re/decomp/142f43500.c;decomp:re/decomp/142fe77f0.c;decomp:re/decomp/1405ee110.c;decomp:re/decomp/14063e370.c;xref:0x1457f8350,0x1457f8298,0x1405ee51e,0x14063e5dd,0x14063e889",
+   "notes": "V2134 TT27V item 4. Agree on memory ownership: the vehicle system (vtable 0x1457f8290) vector is {allocator +0x20, begin +0x28, end +0x30, cap +0x38} of raw entity pointers; it is freed only by vtable slot 0xc0 = 0x142f43500 (pointer at 0x1457f8350; session exit: unregisters its message handlers, logs 'Removing all vehicle from vehicle system', end=begin, allocator(+0x20)->slot 0x38 free(begin), zeroes begin/end/cap) and by the destructor slot 0x8 = 0x142fe77f0 (same sequence). No per-element destructor runs and the free uses begin, so holding end at 26 or putting it back cannot leak or double-free; if the exit already ran, end is 0 and the guard's end==clamped test skips the write. Disagree that holding the vector at 26 is safe: the AI system's per-frame update 0x1405ee110 fills its per-vehicle cache ai+0x128 (16-byte {vehicle, component 0x146ce8b40}) only for i < the byte count of this vector, then schedules job 0x14063e370 (lea at 0x1405ee51e) over [ai+8] AI vehicles; the job takes i by lock xadd and loads rbx = [[ai+0x128]+i*16+8] (0x14063e5dd), then mov r10,[rbx+0x18] (0x14063e889). With 27 AI vehicles and the vector held at 26, entry 26 stays null: IG10 20261030-061735 faults there 23 ms after the guard line (rsi=0x1a, rdi=0x1a0, rbx=0, reading 0x18). A session with 27 vehicles cannot be made safe by shortening this vector; only keeping the session at 26 vehicles upstream is."
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "re-bindings",
+   "kind": "func",
+   "item": "Sess_Setup_VehicleComponents",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm of the archived 1.0.141 exe (PE 1789118616) 0x142f45960-0x142f46206;xref:0x1457f82e8,0x14080c546",
+   "notes": "V20008 Re-verified; the newest partial V2134 judged the native 26-vehicle clamp in era_picker.cpp (it found the clamp unsafe for the AI job), not this row. Only reference abs 0x1457f82e8 = VehicleSystem vtable 0x1457f8290 +0x58, called by call [rax+0x58] at 0x14080c546; rcx=module only (native hook type void(void*) matches); count = ((end-begin)>>3)&0xff from +0x28/+0x30; +0x180 zeroed then table store mov [rsi+rcx*8+0xb0] at 0x142f45a09 with no bound, so slot 26 is the count; +0x2e9 (0x142f45c49) writes [rdx+0x3e4], +0x305 (0x142f45c65) reads [r10+0xe8]; config lea [rsi+0x190]; component ids 0x146ce8a00/0x146ce8b00; mode context [[+0x88]+0x260]+0x2b0 at 0x142f45d86/0x142f45d91; +0x132, +0x2580, +0x9f2c writes."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "e3-verify",
+   "kind": "func",
+   "item": "0x142f45960",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f45960.c;decomp:own capstone disasm 0x142f46005-0x142f46116, 0x144628dea-0x144628df3, 0x1447486d5-0x1447486dd;imm:0x145381184=1.0,0x1455d8580={1,1,1,0}",
+   "notes": "V11712 Confirmed: S=[[module+0x78]+0x1a8], stores at 0x142f460fc/0x142f46106; also +0x9f34=1.0, +0x9f38=S+0xe30^e38. Car create 0x144628190 broadcasts 1.0 to +0x9f2c..+0x9f38 at 0x144628df3. 0x1447486dd (in 0x1447484f0) writes {1,1,1,0} at rsi+0x25a8."
+  }
+ ],
+ "proofs": []
+}

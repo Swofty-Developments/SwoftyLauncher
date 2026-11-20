@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_CareerContinueMyTeam_Flow",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141649f80",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void f(void *self)",
+  "evidence": "decomp:re/decomp/141649f80.c;xref:0x1456faa98",
+  "notes": "myteam-g1: Large flow handler for career_continue_my_team (Continue Career entry for My Team saves)."
+ },
+ "signature": {
+  "id": "ui.career_continue_my_team_flow",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 C5 F8 29 B4 24 80 00 00 00 4C 89 44 24 50",
+  "match": "0x141649f80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141649f80",
+  "kind": "func_start",
+  "names": [
+   "Ui_CareerContinueMyTeam_Flow"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x141649f80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141649f80.c;xref:0x1456faa98",
+   "notes": "V9730 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

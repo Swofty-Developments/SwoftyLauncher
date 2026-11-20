@@ -13,18 +13,14 @@ constexpr uint32_t PKT_SESSION = 1u << 1, PKT_LAP_DATA = 1u << 2, PKT_PARTICIPAN
                    PKT_CAR_STATUS = 1u << 7;
 constexpr unsigned FEED_CARS = 24;
 
-inline bool has(const SwoftyLiveCar &c, uint64_t bits)
-{
-    return (c.have & bits) != 0;
-}
+inline bool has(const SwoftyLiveCar &c, uint64_t bits) { return (c.have & bits) != 0; }
 
-inline uint32_t fill_feed(SwoftyTelemetryFeed &f, const SwoftyLiveSession &s, const SwoftyLiveCar *cars,
-                          const bool *present)
+inline uint32_t fill_feed(SwoftyTelemetryFeed &f, const SwoftyLiveSession &s, const SwoftyLiveCar *cars, const bool *present)
 {
     uint32_t groups = 0;
     constexpr uint64_t LAP = SWOFTY_LIVE_HAVE_PROGRESS | SWOFTY_LIVE_HAVE_CLASS | SWOFTY_LIVE_HAVE_PIT |
-                             SWOFTY_LIVE_HAVE_PIT_LANE |
-                             SWOFTY_LIVE_HAVE_PENALTIES | SWOFTY_LIVE_HAVE_GAP_LEADER | SWOFTY_LIVE_HAVE_GAP_AHEAD;
+                             SWOFTY_LIVE_HAVE_PIT_LANE | SWOFTY_LIVE_HAVE_PENALTIES | SWOFTY_LIVE_HAVE_GAP_LEADER |
+                             SWOFTY_LIVE_HAVE_GAP_AHEAD;
     constexpr uint64_t TEL = SWOFTY_LIVE_HAVE_SPEED | SWOFTY_LIVE_HAVE_GEAR | SWOFTY_LIVE_HAVE_RPM | SWOFTY_LIVE_HAVE_PEDALS |
                              SWOFTY_LIVE_HAVE_STEER | SWOFTY_LIVE_HAVE_CLUTCH | SWOFTY_LIVE_HAVE_DRS | SWOFTY_LIVE_HAVE_WORLD;
     constexpr uint64_t STATUS = SWOFTY_LIVE_HAVE_ERS_STORE | SWOFTY_LIVE_HAVE_TYRE;

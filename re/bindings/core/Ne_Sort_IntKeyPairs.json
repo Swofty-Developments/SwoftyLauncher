@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Sort_IntKeyPairs",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1424ec1c0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1424ec1c0.c;xref:0x14249f84f",
+  "notes": "std::sort (introsort, insertion sort below 0x108 bytes) of 8-byte {int key, int value} pairs by key. Caller Sess_Parse_EntrantSetupMode (3 sites)."
+ },
+ "signature": {
+  "id": "core.sort_int_key_pairs",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 48 89 D6 49 89 CE 48 29 CA 48 81 FA 08 01 00 00",
+  "match": "0x1424ec1c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424ec1c0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Sort_IntKeyPairs"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x1424ec1c0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1424ec1c0.c;xref:0x14249f84f",
+   "notes": "V3398 introsort w/ insertion sort below 0x108 bytes of 8-byte int-key pairs ok; but Sess_Parse_EntrantSetupMode has only 1 call site (0x14249f84f); the other two are the function's own recursion (0x1424ec349, 0x1424ec8b8)"
+  }
+ ],
+ "proofs": []
+}

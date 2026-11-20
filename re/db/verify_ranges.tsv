@@ -1,0 +1,8 @@
+first	last	owner	granted	notes
+100000	109999	re-bindings	2026-11-18	the re-bindings lane and its blind verifiers (v110/re-bindings)
+110000	119999	std-libs	2026-11-18	the std-libs lane and its blind verifiers (v110/std-libs)
+120000	129999	native-guards	2026-11-18	the native-guards lane and its blind verifiers (v110/native-guards)
+130000	139999	port-live	2026-11-18	the port-live lane and its blind verifiers (v110/port-live)
+140000	149999	load-game	2026-11-18	the load-game lane and its blind verifiers (v110/load-game)
+150000	159999	spare	2026-11-18	unassigned: a lead renames the owner to a lane before any row draws from it
+160000	169999	saves	2026-11-19	the save overhaul lanes and their blind verifiers (v110/saves-*, v110/resume-list)

@@ -97,6 +97,42 @@ static_assert(offsetof(InputRecord, clutch) == 0x10);
 static_assert(offsetof(InputRecord, steering) == 0x14);
 static_assert(offsetof(InputRecord, throttle) == 0x18);
 
+struct LapTimeRecord {
+    uint8_t lap; // L2 experimental
+    uint8_t _pad_0x1[0x7];
+    uint32_t sector1_a; // L2 experimental
+    uint8_t _pad_0xc[0x4];
+    uint32_t sector1_b; // L2 experimental
+    uint8_t _pad_0x14[0x4];
+    uint32_t sector2_a; // L2 experimental
+    uint8_t _pad_0x1c[0x4];
+    uint32_t sector2_b; // L2 experimental
+    uint8_t _pad_0x24[0x4];
+    uint32_t sector3_a; // L2 experimental
+    uint8_t _pad_0x2c[0x4];
+    uint32_t sector3_b; // L2 experimental
+    uint8_t _pad_0x34[0x64];
+    uint8_t valid_a; // L2 experimental
+    uint8_t _pad_0x99[0x7];
+    uint64_t valid_b; // L2 experimental
+    uint32_t time_a; // L2 experimental
+    uint8_t _pad_0xac[0x4];
+    uint32_t time_b; // L2 experimental
+    uint8_t _pad_0xb4[0x14];
+};
+static_assert(offsetof(LapTimeRecord, lap) == 0x0);
+static_assert(offsetof(LapTimeRecord, sector1_a) == 0x8);
+static_assert(offsetof(LapTimeRecord, sector1_b) == 0x10);
+static_assert(offsetof(LapTimeRecord, sector2_a) == 0x18);
+static_assert(offsetof(LapTimeRecord, sector2_b) == 0x20);
+static_assert(offsetof(LapTimeRecord, sector3_a) == 0x28);
+static_assert(offsetof(LapTimeRecord, sector3_b) == 0x30);
+static_assert(offsetof(LapTimeRecord, valid_a) == 0x98);
+static_assert(offsetof(LapTimeRecord, valid_b) == 0xa0);
+static_assert(offsetof(LapTimeRecord, time_a) == 0xa8);
+static_assert(offsetof(LapTimeRecord, time_b) == 0xb0);
+static_assert(sizeof(LapTimeRecord) == 0xc8);
+
 struct RedFlagSystem {
     uint8_t _pad_0x0[0x40];
     uint8_t state; // L2 experimental
@@ -268,6 +304,41 @@ static_assert(offsetof(TimeOfDaySystem, busy) == 0xb432);
 static_assert(offsetof(TimeOfDaySystem, override_active) == 0xb436);
 static_assert(offsetof(TimeOfDaySystem, curve_version) == 0xb438);
 
+struct TyreStint {
+    uint8_t _pad_0x0[0xc];
+    uint32_t compound; // L2 experimental
+    uint8_t set_index; // L2 experimental
+    uint8_t _pad_0x11[0x63];
+    uint16_t end_lap; // L2 experimental
+    uint8_t _pad_0x76[0x2];
+};
+static_assert(offsetof(TyreStint, compound) == 0xc);
+static_assert(offsetof(TyreStint, set_index) == 0x10);
+static_assert(offsetof(TyreStint, end_lap) == 0x74);
+static_assert(sizeof(TyreStint) == 0x78);
+
+struct VehicleLapTimesData {
+    uint8_t _pad_0x0[0x8];
+    LapTimeRecord laps[200]; // L2 experimental
+    uint8_t current_lap; // L2 experimental
+};
+static_assert(offsetof(VehicleLapTimesData, laps) == 0x8);
+static_assert(offsetof(VehicleLapTimesData, current_lap) == 0x9c48);
+
+struct VehicleLapTimesEntry {
+    uint8_t _pad_0x0[0x38];
+    VehicleLapTimesData data; // L2 experimental
+};
+static_assert(offsetof(VehicleLapTimesEntry, data) == 0x38);
+
+struct VehicleLapTimesSystem {
+    uint8_t _pad_0x0[0x58];
+    VehicleLapTimesEntry **cars_begin; // L2 experimental
+    VehicleLapTimesEntry **cars_end; // L2 experimental
+};
+static_assert(offsetof(VehicleLapTimesSystem, cars_begin) == 0x58);
+static_assert(offsetof(VehicleLapTimesSystem, cars_end) == 0x60);
+
 struct WeatherAndTimeOfDayComponent {
     uint8_t _pad_0x0[0x2a0];
     GameWeatherSystem *weather_system; // L2 experimental
@@ -417,8 +488,11 @@ using Sess_Get_CurrentContentSetName_t = NeInlineStr128 *(NeInlineStr128 *out);
 inline constexpr fn<"Sess_Get_CurrentContentSetName", Sess_Get_CurrentContentSetName_t> Sess_Get_CurrentContentSetName{}; // L2 experimental
 using Sess_Get_PlayerVehicleIndex_t = uint8_t(void *ctx, int local_player);
 inline constexpr fn<"Sess_Get_PlayerVehicleIndex", Sess_Get_PlayerVehicleIndex_t> Sess_Get_PlayerVehicleIndex{}; // L2 experimental
+using Sess_Get_VehicleTrackFactor_t = float(void *system, uint8_t vehicle);
+inline constexpr fn<"Sess_Get_VehicleTrackFactor", Sess_Get_VehicleTrackFactor_t> Sess_Get_VehicleTrackFactor{}; // L2 experimental
 using Sess_GridRundown_Update_t = uint32_t *(void *state, uint32_t *route, double dt);
 inline constexpr fn<"Sess_GridRundown_Update", Sess_GridRundown_Update_t> Sess_GridRundown_Update{}; // L2 experimental
+inline constexpr address<"Sess_HumanController_Update"> Sess_HumanController_Update{}; // L2 experimental
 using Sess_InGamePQ_Update_t = uint32_t *(void *state, uint32_t *route, double dt);
 inline constexpr fn<"Sess_InGamePQ_Update", Sess_InGamePQ_Update_t> Sess_InGamePQ_Update{}; // L2 experimental
 inline constexpr address<"Sess_InGameRace_OnStateExit"> Sess_InGameRace_OnStateExit{}; // L2 experimental
@@ -428,6 +502,8 @@ inline constexpr address<"Sess_InGame_SubscribeMessages"> Sess_InGame_SubscribeM
 inline constexpr address<"Sess_InGame_UnsubscribeMessages"> Sess_InGame_UnsubscribeMessages{}; // L2 experimental
 using Sess_InGame_UpdateBase_t = uint32_t *(void *state, uint32_t *route, double dt);
 inline constexpr fn<"Sess_InGame_UpdateBase", Sess_InGame_UpdateBase_t> Sess_InGame_UpdateBase{}; // L2 experimental
+using Sess_Init_TyreComponentSet_t = uint64_t(void *module, void *tyres);
+inline constexpr fn<"Sess_Init_TyreComponentSet", Sess_Init_TyreComponentSet_t> Sess_Init_TyreComponentSet{}; // L2 experimental
 inline constexpr address<"Sess_IntroVideo_CanFinish"> Sess_IntroVideo_CanFinish{}; // L2 experimental
 inline constexpr address<"Sess_IntroVideo_OnStateEnter"> Sess_IntroVideo_OnStateEnter{}; // L2 experimental
 inline constexpr address<"Sess_IntroVideo_OnVideoDoneFadeIn"> Sess_IntroVideo_OnVideoDoneFadeIn{}; // L2 experimental
@@ -770,9 +846,13 @@ using Sess_TyreClass_FromName_t = void *(void *classes, const void *name, uint8_
 inline constexpr fn<"Sess_TyreClass_FromName", Sess_TyreClass_FromName_t> Sess_TyreClass_FromName{}; // L2 experimental
 inline constexpr address<"Sess_TyreCompoundClasses_SortEntries"> Sess_TyreCompoundClasses_SortEntries{}; // L2 experimental
 inline constexpr address<"Sess_TyreCompoundClasses_SortEntriesB"> Sess_TyreCompoundClasses_SortEntriesB{}; // L2 experimental
+using Sess_Tyre_ShowFittedSet_t = void(void *tyre_component, uint8_t apply_set, uint8_t show, uint8_t with_wing, uint16_t force);
+inline constexpr fn<"Sess_Tyre_ShowFittedSet", Sess_Tyre_ShowFittedSet_t> Sess_Tyre_ShowFittedSet{}; // L2 experimental
 using Sess_Tyres_ClosestAvailableCompound_t = uint32_t(void *tyre_rules, uint8_t vehicle, const uint32_t *preference, float wear_scale);
 inline constexpr fn<"Sess_Tyres_ClosestAvailableCompound", Sess_Tyres_ClosestAvailableCompound_t> Sess_Tyres_ClosestAvailableCompound{}; // L2 experimental
 inline constexpr address<"Sess_Veh_UpdateWheelMap"> Sess_Veh_UpdateWheelMap{}; // L2 experimental
+inline constexpr address<"Sess_VehiclePlacementRequest_ParseGroupAndId"> Sess_VehiclePlacementRequest_ParseGroupAndId{}; // L2 experimental
+inline constexpr address<"Sess_VehiclePlacementRequest_Register"> Sess_VehiclePlacementRequest_Register{}; // L2 experimental
 inline constexpr address<"Sess_VehiclePlacement_BroadcastGrid"> Sess_VehiclePlacement_BroadcastGrid{}; // L2 experimental
 inline constexpr address<"Sess_VehiclePlacement_FormatFlags"> Sess_VehiclePlacement_FormatFlags{}; // L2 experimental
 inline constexpr address<"Sess_VehiclePlacement_HandleGridRequest"> Sess_VehiclePlacement_HandleGridRequest{}; // L2 experimental

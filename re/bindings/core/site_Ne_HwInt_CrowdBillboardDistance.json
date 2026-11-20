@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Ne_HwInt_CrowdBillboardDistance",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c60136",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/143c600c0.c;xref:0x143c60136",
+  "notes": "call Ne_Parse_Long(attr+0x50 value, NULL, 0) for the hardware-settings attribute 'billboardDistance' (name matched case-insensitively against the string loaded at 0x143c600f5) in reader 0x143c600c0, a settings listener callback; its return address keys xanpavle.re-optimization's integer enforcement"
+ },
+ "signature": {
+  "id": "core.hw_int_crowd_billboard_distance",
+  "section": ".xtls",
+  "pattern": "45 31 C0 E8 ?? ?? ?? ?? C5 FA 2A C0",
+  "match": "0x143c60133",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c60136",
+  "kind": "mid",
+  "expect": "E8",
+  "names": [
+   "site_Ne_HwInt_CrowdBillboardDistance"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "reopt-025",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/re-optimization/native/src/re_optimization.cpp (xanpavle.re-optimization)"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "reopt-025-verify",
+   "kind": "global",
+   "item": "site_Ne_HwInt_CrowdBillboardDistance",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c600c0.c;xref:0x143c60136,0x143c600f5,0x143c60123,0x143c6013f;sig:core.hw_int_crowd_billboard_distance",
+   "notes": "V0933 Loop over the element attribute vector (+0x50..+0x58): 0x14534da24(attr+0x18 name, rbx = 'billboardDistance' from lea 0x143c600f5, r8d 0x1f) at 0x143c60123; on 0 it sets rcx = [attr+0x50], edx = 0, r8d = 0 and the E8 at 0x143c60136 calls 0x14534dcd8 (.xtls, .pdata 0x143c600c0-0x143c602c9). Result converted to float (vcvtsi2ss at 0x143c6013b) and stored to this+0x380. sigcheck: one hit, target 0x143c60136"
+  }
+ ],
+ "proofs": []
+}

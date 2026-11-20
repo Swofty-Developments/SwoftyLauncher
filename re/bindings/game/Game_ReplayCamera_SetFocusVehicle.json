@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ReplayCamera_SetFocusVehicle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1406ae650",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1406ae650.c;xref:0x1406ae141",
+  "notes": "Sets/clears the replay camera focus vehicle (param_2 index, 0xff = none): stores flag +0x15, updates per-vehicle bitmask entries (20-byte records at [this+0x48]+0x60, bit 1<<[this+0xc]) and preset name \"spectator_default_1\". Callers Game_ReplayCamera_UpdateFocusVehicle, 0x1406ae360, 0x1406aeac0. Addon: replay camera vehicle follow control."
+ },
+ "signature": {
+  "id": "game.replay_camera_set_focus_vehicle",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 70 48 89 CE 44 88",
+  "match": "0x1406ae650",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1406ae650",
+  "kind": "func_start",
+  "names": [
+   "Game_ReplayCamera_SetFocusVehicle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x1406ae650",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1406ae650.c;xref:0x1406ae141",
+   "notes": "V8001 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

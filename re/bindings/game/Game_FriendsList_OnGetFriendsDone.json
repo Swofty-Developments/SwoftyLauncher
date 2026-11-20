@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FriendsList_OnGetFriendsDone",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141df5f70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141df5f70.c;xref:0x145750000",
+  "notes": "Vtable handler (slot 0x145750000) for completion of the GetFriends task: traces the error, otherwise rebuilds the friends list UI data (Ne_Make_StrFromCStr, 0x141df7ca0). Addon: friends list hook. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2872)"
+ },
+ "signature": {
+  "id": "game.friends_list_on_get_friends_done",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 04 00 00 C5 F8 29 B4 24 10 04 00 00 48 89 D7 49",
+  "match": "0x141df5f70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141df5f70",
+  "kind": "func_start",
+  "names": [
+   "Game_FriendsList_OnGetFriendsDone"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d10-verify",
+   "kind": "func",
+   "item": "Game_FriendsList_OnGetFriendsDone",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141df5f70.c;xref:0x141df5f70",
+   "notes": "V2872 decomp checked: offsets/calls/strings match claim"
+  }
+ ],
+ "proofs": []
+}

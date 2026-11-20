@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Sess_Rules_IsPracticeQualifying",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a40710",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "bool Sess_Rules_IsPracticeQualifying(void *owner_with_session_at_0x1b8)",
+  "evidence": "decomp:re/decomp/142a40710.c;xref:0x14080cec1,0x142c0edb9,0x142c1013d,0x142d5357f,0x142d55c0a,0x142d5683d,0x142d5719b,0x142d69597,0x142d9fff9,0x142f340da",
+  "notes": "Name kept for signatures.json; it is 'not a race session' rather than strictly practice/qualifying (verify-a). Early false: if obj=[[0x14604c2c0]+0x88]+0x260 exists, its type (vcall +0x28) does not walk to k_Ne_TypeRoot 0x146129ca0 (parent chain via +0x10, stop at 0x14604ec60), its component registry obj+0x1030 (vcall +0x10, type 0x146063fb0) returns a component and FUN_141331450(component) is true. Else reads the session type int at [[arg+0x1b8]+0x1a8]+4: true for 1..14 and 18, true for 15..17 only when Ne_Get_FeatureFlags (0x1413ca0d0)()+7 bit 3 is set, false otherwise. 14 callers (10 .xtls + 4 .data1) incl. Sess_Start_VehiclesInGarages 0x142d69597 and Sess_InGame_UpdateBase 0x142d5683d."
+ },
+ "signature": {
+  "id": "session.rules_is_practice_qualifying",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 48 8B 05 ?? ?? ?? ?? 48 8B 80 88 00 00 00 48 85 C0 0F 84 ?? ?? ?? ?? 48 8B B8 60 02 00 00 48 85 FF 0F 84",
+  "match": "0x142a40710",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a40710",
+  "kind": "func_start",
+  "names": [
+   "Sess_Rules_IsPracticeQualifying"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-24",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-a",
+   "kind": "func",
+   "item": "0x142a40710",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:work/verify_a/decomp/142a40710.c;xref:0x14080cec1,0x142d5357f,0x142d69597,0x142f340da",
+   "notes": "V1023 returns false if a global mode object (0x14604c2c0+0x88+0x260) passes an rtti/component check (0x141331450); else reads session type at arg+0x1b8->+0x1a8->+4: true for 1..14 and 0x12, and for 15..17 only when flag (0x1413ca0d0()+7)&8. Differs: not strictly practice/qualifying - also true for type 0x12 and conditionally for 15-17; arg is a session-owning object (+0x1b8), not obviously a garage state"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-d",
+   "kind": "func",
+   "item": "0x142a40710",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:work/verify_d/decomp/142a40710.c;decomp:work/verify_d/decomp2/1413ca0d0.c;xref:0x14080cec1,0x142d5683d,0x142d5719b",
+   "notes": "V1064 reads session type *(+0x1b8)->+0x1a8 ->+4: true for 1..14 and 0x12, for 15..17 only if content_sets flag bit 0x3b, early false when a game-mode object matches; with the public UDP enum (15-17 races, 18 TT) the name omits the TT case and the flagged-race case; 1-arg bool proto ok"
+  },
+  {
+   "date": "2026-10-29",
+   "verifier": "bind6-verify",
+   "kind": "func",
+   "item": "Sess_Rules_IsPracticeQualifying",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a40710.c;xref:0x142d5683d",
+   "notes": "V1770 blind re-check of corrected notes"
+  }
+ ],
+ "proofs": []
+}

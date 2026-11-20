@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDResearchFocusNameCmp",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f46046",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141f45d30.c;xref:0x141f45d5c;doc:addons/rnd-tyres-thermal/native/HOOKS.md#4-the-tyres-tile-opens-durability-flag-pie_tyres_open-default-on-install-time",
+  "notes": "class-A focus path (Team HQ research overview): mov rcx,rbx before the first strcmp (aero); rbx = data chars; reached only through 0x141f46029 (je @0x141f45d5c); the compare chain ends in the g_Career_RnDOverviewSelectedDept store @0x141f460a9"
+ },
+ "signature": {
+  "id": "career.rnd_research_focus_name_cmp",
+  "section": ".xtls",
+  "pattern": "49 8B 40 10 48 8D 48 09 48 85 C0 48 8D 1D ?? ?? ?? ?? 48 0F 45 D9 48 8D 3D ?? ?? ?? ?? 48 89 D9 48 89 FA",
+  "match": "0x141f46029",
+  "anchor": "0x1d",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f46046",
+  "kind": "mid",
+  "expect": "48 89 D9 48 89 FA",
+  "names": [
+   "site_Career_RnDResearchFocusNameCmp"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-c",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_fifth_pie.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-2",
+   "kind": "global",
+   "item": "site_Career_RnDResearchFocusNameCmp",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f45d30.c;xref:0x141f45d4c,0x141f45d5c,0x141f46024,0x141f46029,0x141f4603b,0x141f46046,0x141f4604c,0x141f46095,0x141f460a9,0x14575e050",
+   "notes": "V0108 window mov rcx,rbx; mov rdx,rdi (6B) before strcmp(0x14535d850) with aero; rbx = [r8+0x10] chars or empty; block entered only by je @0x141f45d5c (hash 0x3aae34e1 = djb2 department_focused), prior insn is jmp; chain ends in the g_Career_RnDOverviewSelectedDept store @0x141f460a9; vtable slot 0x14575e050 sits after tab_content_research_overview; rel8 hit at 0x141f46049 is from mid-insn"
+  }
+ ],
+ "proofs": []
+}

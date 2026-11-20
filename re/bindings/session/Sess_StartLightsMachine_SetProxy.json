@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_StartLightsMachine_SetProxy",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143238470",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143238470.c;xref:0x14582a8a8",
+  "notes": "StartLightsMachine setProxy(role): +0xa0 = (role==2), i.e. client follows the host's lights; logs old/new."
+ },
+ "signature": {
+  "id": "session.start_lights_machine_set_proxy",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 7F",
+  "match": "0x143238470",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143238470",
+  "kind": "func_start",
+  "names": [
+   "Sess_StartLightsMachine_SetProxy"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d6-verify",
+   "kind": "func",
+   "item": "Sess_StartLightsMachine_SetProxy",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143238470.c;xref:0x143238470",
+   "notes": "V2634 role/offsets/log strings match decomp"
+  }
+ ],
+ "proofs": []
+}

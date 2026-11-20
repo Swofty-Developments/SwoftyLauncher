@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Calc_DriverOverallRating_Cached",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d7f0d0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "uint16_t *Career_Calc_DriverOverallRating_Cached(void *comp, uint16_t *out, uint32_t driver_key)",
+  "evidence": "decomp:re/decomp/140d7f0d0.c;xref:0x140d794b4;xref:0x140d79eee;xref:0x140d7c261",
+  "notes": "myteam-g2: Wraps Career_Get_DriverOverallRating with the contract component helpers FUN_140d82070 / FUN_140d822a0 to return the driver overall rating used for market checks. Read only."
+ },
+ "signature": {
+  "id": "career.calc_driver_overall_rating_cached",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 44 89 C5 48 89 D6 48 89 CF 48 8D 54 24 24",
+  "match": "0x140d7f0d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d7f0d0",
+  "kind": "func_start",
+  "names": [
+   "Career_Calc_DriverOverallRating_Cached"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140d7f0d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140d7f0d0.c",
+   "notes": "V9533 Does call Career_Get_DriverOverallRating (14113d120) but returns a small result (bool | threshold bucket 0x100/0x200 plus validity byte) from comparing the rating, not the rating itself."
+  }
+ ],
+ "proofs": []
+}

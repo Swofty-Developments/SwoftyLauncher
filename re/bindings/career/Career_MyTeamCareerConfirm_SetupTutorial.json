@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamCareerConfirm_SetupTutorial",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142284480",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *self)",
+  "evidence": "decomp:re/decomp/142284480.c;xref:0x142282f5d;xref:0x142283799",
+  "notes": "myteam-g1: Events my_team_career_confirm and my_team_setup_tutorial_shown (end of creation wizard)."
+ },
+ "signature": {
+  "id": "career.my_team_career_confirm_setup_tutorial",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 50 48 89 CE 48 8B 89 78 02 00 00",
+  "match": "0x142284480",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142284480",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamCareerConfirm_SetupTutorial"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x142284480",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142284480.c;xref:0x142282f5d",
+   "notes": "V10076 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

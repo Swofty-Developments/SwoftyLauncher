@@ -1,0 +1,83 @@
+{
+ "schema": 1,
+ "name": "k_Vm_EmptyNodeHandle",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x146ca0e90",
+  "type": "void *",
+  "level": "L2",
+  "subsystem": "vm",
+  "evidence": "xref:0x1406a7458,0x1406a75d2,0x1406a77b4,0x1406d20db,0x14079da0d,0x1407a1afe,0x1407a2645,0x1407a4a82+9086;doc:research/exe.md#1;decomp:re/decomp/1442626c0.c;xref:0x1406a7455;decomp:own capstone disasm 0x1441615c0-0x144161629,0x1406d1db0-0x1406d2202;decomp:own capstone disasm steam-26566308 0x144163b90-0x144163bf9,0x1406d1df0-0x1406d2242;xref:0x144161619,0x1406d20d8,0x141564f35,0x14083d35c",
+  "notes": "empty node-handle sentinel used when a node pointer is null ts-v1: nodes are compared with the value stored here (the default handle) | L2 2026-11-19 (steam-bindings, lead-authorised raise for the 1.0.145 builds; owner ui-re inactive; notes fixed after V11428 and V11429): the node field of a static 24-byte VM node handle {node +0, next +8, prev +0x10}, zero on disk and never written by a constructor. Its only direct store is the teardown 0x1441615c0-0x144161629 (registered with atexit at 0x1443a4c7c): when a node is set it unlinks the handle from the node's handle list (head at node+0x28), calls Vm_Release_Node(g_Vm_Registry, node) and stores 0 (0x144161619); next/prev are referenced only there. 9485 rip-relative code references on the KB exe and on steam-26566308 alike: 8939 lea taking &handle as a default handle pointer, mostly (about 6788) as the cmov fallback for obj ? obj+8 : &handle before reading the node (e.g. 0x1407a4af0, 0x141571f61), some (about 348) passed straight to a call, e.g. as the base handle in r8 of Vm_Resolve_RegistryNode at 0x1406d20d8 with rcx = g_Vm_Registry (it reads [r8] as the base node and returns this address on a miss); 493 cmp (491 cmp reg,[slot], e.g. 0x141564f35, and 2 cmp qword [slot],0 at 0x14240c375 and 0x1442b9b87); 52 loads, e.g. 0x14083d35c; 1 store. The raw address also sits 12 times in KB .data1 (6 in steam-26566308 .trace) in records of u32 fields that are not x86 code (likely protector bytecode). Type void *: the stored value is the empty node pointer. steam-26566308: 0x146ca2e90 (sig match 0x1406d2118, teardown 0x144163b90, store 0x144163be9, atexit 0x1443a724d)."
+ },
+ "signature": {
+  "id": "vm.empty_node_handle",
+  "section": ".xtls",
+  "pattern": "4C 8D 05 ?? ?? ?? ?? 45 31 C9 E8 ?? ?? ?? ?? 48 8B 00 48 85 C0 74 75 48",
+  "match": "0x1406d20d8",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x146ca0e90",
+  "kind": "data",
+  "names": [
+   "k_Vm_EmptyNodeHandle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x146ca0e90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x1406a7458;decomp:re/decomp/1407a1870.c",
+   "notes": "V7512 table content and refs match"
+  },
+  {
+   "date": "2026-11-19",
+   "verifier": "steam-bindings-verify",
+   "kind": "global",
+   "item": "k_Vm_EmptyNodeHandle",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1441615c0-0x144161629 (teardown), 0x1406d1db0-0x1406d2202 (sig site), 0x1442b1b60 head (reads [r8], returns the slot address at 0x1442b1be6), 0x1443a4a90 (static init);decomp:own capstone disasm steam-26566308 0x144163b90-0x144163bf9, 0x1406d1df0-0x1406d2242 (0 differences after normalisation);xref:0x144161619,0x1441615c4,0x1441615fc,0x1406d20d8,0x141564f35,0x14240c375,0x1442b9b87,0x14083d35c,0x1443a4c7c;xref:steam-26566308 0x144163be9,0x1406d2118,0x1443a724d;pat:own per-function linear-sweep classification of all disp32 candidates in every section on both builds, plus abs64 scan",
+   "notes": "V11428 Core claim holds. The slot is the node field of a static 0x18-byte VM handle {node +0, next +8, prev +0x10} in zero-fill (past the raw data of its section, offset 0xd33e90 on both builds). Its destructor 0x1441615c0 is registered with atexit (0x1449e071c) from the static initializer 0x1443a4a90 at 0x1443a4c7c; there is no constructor store. Teardown: if node != 0 it unlinks prev/next, clears next/prev (vmovups), fixes the node+0x28 head, calls Vm_Release_Node(g_Vm_Registry 0x146ca54f8, node) and stores 0 at 0x144161619, the only rip-relative write; +8 and +0x10 are referenced only in the teardown. KB rip-relative refs: 9485 = 8939 lea + 493 qword cmp (491 cmp reg,[slot] and 2 cmp [slot],0 at 0x14240c375 and 0x1442b9b87) + 52 loads + 1 store; 9083 in .xtls (14 of them outside .pdata) and 388 in .data1. Steam has the same count in every class. Signature: 1 hit in .xtls at 0x1406d20d8, lea r8,[rip+0x65cedb1] = 0x146ca0e90 (sigcheck OK). Steam: 1 hit in .tls$ at 0x1406d2118 -> 0x146ca2e90; the enclosing function and the teardown 0x144163b90 are identical after normalisation, store at 0x144163be9, atexit registration at 0x1443a724d. void * fits a reader of the value (a node pointer, NULL in practice). The 8939 lea consumers take the address as a handle pointer, though: Vm_Resolve_RegistryNode reads [r8] as the base node and returns the slot address on a miss. So the object is really a 24-byte handle. WRONG in notes: '477 cmp' should be 493 cmp; 8939+477+52 sums to 9468, not 9485. Not covered by the row: the 8-byte value 0x146ca0e90 also appears 12 times inside non-x86 data in .data1 (0x150b8ac68-0x151108e58, records that look like protector bytecode; neither exe has relocations), and 0x146ca2e90 appears 6 times in Steam .trace. So 'alike on both builds' holds for native rip-relative code only, and 'only store' covers direct native stores; writes through a passed handle pointer cannot be ruled out statically."
+  },
+  {
+   "date": "2026-11-19",
+   "verifier": "steam-bindings-verify",
+   "kind": "global",
+   "item": "k_Vm_EmptyNodeHandle",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1441615c0-0x144161629 (teardown), 0x1443a4a90 (atexit at 0x1443a4c7c), 0x1406d1db0-0x1406d2202, 0x1442b1b60 head, cmov sites 0x1407a4af0,0x141571f61,0x1407bbe47,0x141a2fbe6;decomp:own capstone disasm steam-26566308 0x144163b90-0x144163bf9, 0x1406d1df0-0x1406d2242;xref:0x144161619,0x1406d20d8,0x141564f35,0x14240c375,0x1442b9b87,0x14083d35c,0x1407a4af0,0x141571f61;xref:steam-26566308 0x144163be9,0x1406d2118,0x1443a724d;pat:own use classification of all 8939 lea sites (next 7 insns): 6788 feed a cmov, 348 go straight into rcx/rdx/r8/r9 for a call (321 in r8)",
+   "notes": "V11429 Re-check of the row as rewritten after V11428. These now hold: 24-byte handle {node, next, prev}, zero on disk, no constructor store, only direct store is the teardown 0x1441615c0 (atexit at 0x1443a4c7c) storing 0 at 0x144161619, next/prev referenced only there; 9485 rip-relative refs = 8939 lea + 493 cmp (491 reg + 2 at 0x14240c375 and 0x1442b9b87) + 52 loads + 1 store, same on steam; Vm_Resolve_RegistryNode reads [r8] and returns this address on a miss; 12 raw copies in KB .data1 and 6 in steam .trace; void * for the value; steam 0x146ca2e90, sig 0x1406d2118, teardown 0x144163b90, store 0x144163be9, atexit 0x1443a724d. STILL WRONG: '8939 lea passing &handle (the whole handle) as a parent or base'. Most of them do not pass it anywhere. About 6788 of the 8939 are a null-object fallback, lea reg,[slot] then cmov reg,(obj+8) when obj is non-null (e.g. 0x1407a4af0, 0x141571f61: r15 = obj ? obj+8 : &slot, then mov rcx,[r15]), so the handle pointer is then read for its node. Only about 348 go straight into an argument register for a call (321 in r8, e.g. 0x1406d20d8 as Vm_Resolve_RegistryNode's base); the rest go through callee-saved registers or stack spills. Suggested wording: '8939 lea taking &handle as a default handle pointer, mostly as the cmov fallback for obj ? obj+8 : &handle before reading the node, some passed as the base handle (e.g. r8 of Vm_Resolve_RegistryNode at 0x1406d20d8)'. Minor: 'protector bytecode' for the .data1/.trace copies is a likely reading, not something shown (records of u32 fields with the address as an operand, not x86)."
+  },
+  {
+   "date": "2026-11-19",
+   "verifier": "steam-bindings-verify",
+   "kind": "global",
+   "item": "k_Vm_EmptyNodeHandle",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1441615c0-0x144161629 (teardown), 0x1443a4a90 (atexit at 0x1443a4c7c), 0x1406d1db0-0x1406d2202, 0x1442b1b60 head, cmov sites 0x1407a4af0,0x141571f61;decomp:own capstone disasm steam-26566308 0x144163b90-0x144163bf9, 0x1406d1df0-0x1406d2242 (0 differences after normalisation);xref:0x144161619,0x1406d20d8,0x141564f35,0x14240c375,0x1442b9b87,0x14083d35c,0x1407a4af0,0x141571f61;xref:steam-26566308 0x144163be9,0x1406d2118,0x1443a724d;pat:own per-function linear-sweep classification of all disp32 candidates on both builds (9485 each: 8939 lea, 493 cmp, 52 loads, 1 store) and of the 8939 KB lea uses (6788 cmov, 348 direct call args)",
+   "notes": "V11431 Re-check of the row as rewritten after V11429. Every statement now matches my own work: static 24-byte handle {node, next, prev}, zero on disk, no constructor store; only direct store is the teardown 0x1441615c0 (atexit at 0x1443a4c7c) storing 0 at 0x144161619 after unlinking and Vm_Release_Node(g_Vm_Registry, node), next/prev referenced only there; 9485 rip-relative refs on both builds with identical per-class counts; the lea sentence (about 6788 cmov fallbacks obj ? obj+8 : &handle, about 348 passed straight to a call, e.g. r8 of Vm_Resolve_RegistryNode at 0x1406d20d8, which reads [r8] and returns this address on a miss) matches my KB classification; 493 cmp split 491 + 2 at 0x14240c375 and 0x1442b9b87; 52 loads; 12 raw copies in KB .data1 and 6 in steam .trace in non-x86 u32 records; void * fits a reader of the value; sig vm.empty_node_handle 1 hit at 0x1406d20d8 -> 0x146ca0e90 (sigcheck OK), steam 1 hit in .tls$ at 0x1406d2118 -> 0x146ca2e90, teardown 0x144163b90, store 0x144163be9, atexit 0x1443a724d. Scope note, not an error: the 6788/348 lea-use split was classified on the KB exe only, while the per-class counts were checked on both builds."
+  }
+ ],
+ "proofs": []
+}

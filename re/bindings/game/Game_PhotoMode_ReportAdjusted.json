@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_PhotoMode_ReportAdjusted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14375aa60",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14375aa60.c;xref:0x141d06aa1",
+  "notes": "Collects session/vehicle ids (player list +0x2e0..0x2e8 matched via 0x1431146d0, random id) and calls Game_StatEvent_WritePhotoAdjusted with photo-mode settings. Callers Game_PhotoModeViewModel_OnColourGradeChanged, OnExposureChanged, OnBrightnessChanged, OnSaturationChanged, OnContrastChanged."
+ },
+ "signature": {
+  "id": "game.photo_mode_report_adjusted",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C6 86 78 04 00 00 01 48 83 C4 20",
+  "match": "0x141d06aa1",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14375aa60",
+  "kind": "func_start",
+  "names": [
+   "Game_PhotoMode_ReportAdjusted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x14375aa60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14375aa60.c;xref:0x141d06aa1",
+   "notes": "V8121 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

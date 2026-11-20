@@ -1,26 +1,23 @@
-#include "postfx_logic.hpp"
+#include "core/render/postfx_logic.hpp"
 
 #include <cmath>
 #include <cstdio>
 #include <fstream>
 #include <sstream>
 
-using namespace postfx;
+using namespace render::postfx;
 
 static int failed;
 
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d: %s\n", __FILE__, __LINE__, #c);                                                   \
-            failed++;                                                                                                  \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d: %s\n", __FILE__, __LINE__, #c);                                                             \
+            failed++;                                                                                                            \
+        }                                                                                                                        \
     } while (0)
 
-static bool near(double a, double b, double tol = 1e-4)
-{
-    return std::fabs(a - b) <= tol;
-}
+static bool near(double a, double b, double tol = 1e-4) { return std::fabs(a - b) <= tol; }
 
 static const double FRAME = 10;
 
@@ -63,8 +60,8 @@ struct Rig {
     }
 };
 
-static std::string rule(const std::string &when, const std::string &extra, const std::string &set,
-                        const std::string &name = "r", int priority = 0, int order = 0, bool event = false)
+static std::string rule(const std::string &when, const std::string &extra, const std::string &set, const std::string &name = "r",
+                        int priority = 0, int order = 0, bool event = false)
 {
     return "{\"name\":\"" + name + "\",\"priority\":" + std::to_string(priority) + ",\"order\":" + std::to_string(order) +
            ",\"event\":" + (event ? "true" : "false") + ",\"when\":[" + when + "]," + extra + "\"set\":[" + set + "]}";
@@ -171,8 +168,10 @@ static void own_cases()
         CHECK(r.engine.state(0).on);
         r.run(10);
         CHECK(!r.engine.state(0).on);
-        Rig any("[" + rule("{\"signal\":\"session.lap\",\"op\":\"event\"}", "\"for_ms\":50,\"fade_in_ms\":0,\"fade_out_ms\":0,",
-                           BLEND1, "lap", 0, 0, true) + "]");
+        Rig any("[" +
+                rule("{\"signal\":\"session.lap\",\"op\":\"event\"}", "\"for_ms\":50,\"fade_in_ms\":0,\"fade_out_ms\":0,", BLEND1,
+                     "lap", 0, 0, true) +
+                "]");
         any.sig.add_event(S_SESSION_LAP);
         any.run(10);
         CHECK(any.engine.state(0).on);
@@ -243,7 +242,10 @@ static void own_cases()
         CHECK(!r.engine.state(0).on && r.engine.state(0).w == 0);
     }
     {
-        Rig r("[" + rule("{\"signal\":\"car.surface\",\"op\":\"is\",\"values\":[1]}", "", "{\"instance\":9,\"slot\":0,\"mode\":\"blend\",\"values\":[1]}") + "]");
+        Rig r("[" +
+              rule("{\"signal\":\"car.surface\",\"op\":\"is\",\"values\":[1]}", "",
+                   "{\"instance\":9,\"slot\":0,\"mode\":\"blend\",\"values\":[1]}") +
+              "]");
         int k[4] = {1, 1, 1, 1};
         r.sig.set_surface(k);
         r.run(1000);
@@ -251,10 +253,7 @@ static void own_cases()
     }
 }
 
-static const json::Value &child(const json::Value &v, const char *k)
-{
-    return v[k];
-}
+static const json::Value &child(const json::Value &v, const char *k) { return v[k]; }
 
 static int value_index(int signal, const json::Value &v)
 {
@@ -343,8 +342,8 @@ static void vector_cases(const char *path)
             const json::Value &ex = fr["expect"];
             for (size_t r = 0; r < ex["weights"].a.size() && r < engine.rules(); r++)
                 if (!near(engine.state(r).w, ex["weights"].a[r].n)) {
-                    std::printf("FAIL %s frame %zu: rule %zu weight %f, expected %f\n", name.c_str(), n, r,
-                                engine.state(r).w, ex["weights"].a[r].n);
+                    std::printf("FAIL %s frame %zu: rule %zu weight %f, expected %f\n", name.c_str(), n, r, engine.state(r).w,
+                                ex["weights"].a[r].n);
                     failed++;
                 }
             for (size_t i = 0; i < ex["options"].a.size() && i < plan.instances.size(); i++)

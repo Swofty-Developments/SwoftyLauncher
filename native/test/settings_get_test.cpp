@@ -1,11 +1,11 @@
-// Builds src/core/settings.cpp with the registry store and reads an option the way an addon's hot wrap does.
+// Builds src/core/runtime/settings.cpp with the registry store and reads an option the way an addon's hot wrap does.
 // The stand-in runtime::older_store() counts every trip settings.cpp makes into the registry: reads must take
 // one trip per change, and a read while another thread holds the store's lock must not wait for it.
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-#include "../src/core/registry/older.hpp"
-#include "../src/core/registry/table.hpp"
+#include "core/registry/older.hpp"
+#include "core/registry/table.hpp"
 #include "swofty_api.h"
 
 #include <atomic>
@@ -70,10 +70,7 @@ bool toggle()
 
 std::string seen_in_watcher;
 
-void on_days(const char *, const SwoftySettingValue *v, void *)
-{
-    seen_in_watcher = std::string(v->choice) + "/" + days();
-}
+void on_days(const char *, const SwoftySettingValue *v, void *) { seen_in_watcher = std::string(v->choice) + "/" + days(); }
 
 int many(int n, std::string *last = nullptr)
 {
@@ -145,7 +142,10 @@ reg::Store &older_store()
 }
 }
 
+namespace frontend {
 bool ui_vm_set_path(const std::string &, int, const void *) { return true; }
+}
+
 void hub_option_changed(const std::string &, const std::string &) {}
 
 int main()
@@ -203,8 +203,8 @@ int main()
     for (int i = 0; i < 100000; i++)
         (void)older::effective(st, older::OPTION, "ex.memo/days");
     double registry = std::chrono::duration<double, std::nano>(std::chrono::steady_clock::now() - t0).count() / 1e5;
-    std::printf("  a memo read costs %.1f ns; the registry read the old settings_get made on every call costs %.1f ns\n",
-                hit, registry);
+    std::printf("  a memo read costs %.1f ns; the registry read the old settings_get made on every call costs %.1f ns\n", hit,
+                registry);
 
     before = trips;
     check(settings_command(djb2("memo_days_long")), "settings command: days = long");

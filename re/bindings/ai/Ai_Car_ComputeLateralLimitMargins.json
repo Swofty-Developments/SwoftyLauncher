@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_Car_ComputeLateralLimitMargins",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14060a480",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_Car_ComputeLateralLimitMargins(void *lat_state, void *ai_car_record)",
+  "evidence": "decomp:re/decomp/14060a480.c;xref:0x1405f67a1",
+  "notes": "(latState = [driver+0x48], AiCarRecord). Only when latState+0x28 (dirty, 0x14060a489) is set: own entry E = [[rec+0x40]+0x108] + [[rec+0x40]+0x178]*0xa70; edge buffer = byte-quantised 64-step curve at [[rec+0x230]+0xc0] = handling buffer_space_settings.track_edge_buffer (0x14060a4d9; x = clamp((|[rec+0x40]+0x160| - c+0x14) * c+0x10, 0, 1), samples c+0x2c.., scale c+0x18, base c+0x24, end value c+0x1c); half = [rec+0x38]+0x30 + [rec+0x20]+0xc4 * buffer; margins min(0, half + E+0x950), max(0, E+0x954 - half), min(0, half + E+0x908), max(0, E+0x90c - half), each blended against E+4 (own lateral position), stored to latState+0x2c..+0x3c; clears +0x28. Only caller Ai_Update_DriverTick (ex Ai_Update_DriverTick) 0x1405f67a1; in the else branch the caller resets latState (+0x28 = 1, +0x20 = -1.0f). (corrected 2026-11-14: was 'track width table aiCar+0x230' - +0x230 is the handling config and the curve is track_edge_buffer; which of the +0x950 / +0x908 pairs is track limit vs kerb is not proven here) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.car_compute_lateral_limit_margins",
+  "section": ".xtls",
+  "pattern": "48 83 EC 18 C5 F8 29 34 24 80 79 28 00 0F 84",
+  "match": "0x14060a480",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14060a480",
+  "kind": "func_start",
+  "names": [
+   "Ai_Car_ComputeLateralLimitMargins"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14060a480",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14060a480.c;xref:0x1405f67a1",
+   "notes": "V3534 dirty flag +0x28, 64-entry byte curve at [aiCar+0x230]+0xc0, margins from segment +0x950/+0x954 and +0x908/+0x90c; Ai_Read_GeneralSettings_3 caller seen"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x14060a480",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14060a480-0x14060a5f6;xref:0x1405f67a1",
+   "notes": "V10596 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only caller 0x1405f67a1 in Ai_Update_DriverTick (rcx = r14 lat state, rdx = record). 2 args. Dirty byte +0x28 tested (0x14060a489) and cleared (0x14060a5e8), handling +0xc0 curve at 0x14060a4d9 (byte samples +0x2c), [rec+0x20]+0xc4 scale, results stored +0x2c..+0x3c."
+  }
+ ],
+ "proofs": []
+}

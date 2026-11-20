@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "vt_Sess_ScRaceLapsRemaining",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145853f20",
+  "type": "vtable[10]",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/1435f81a0.c;xref:0x1435fc4b3",
+  "notes": "SC condition class 'Race Laps Remaining' (name string directly before the vtable; the type descriptor 0x145f96ab8 at object+0x28 points to it). Constructed in the SC condition factory 0x1435f81a0 (store at 0x1435fc4b3); slots 3/4 (0x14361bbb0/0x14361bbc0) are the shared condition base.  (used by vmknolle sc-unlapping)"
+ },
+ "signature": {
+  "id": "session.sc_race_laps_remaining",
+  "section": ".xtls",
+  "pattern": "48 8D 0D ?? ?? ?? ?? 48 89 08 C5 F8 11 40 40 48 89 7C 24 20 4C 89 74 24 28 48 89 44 24 30 48 8D 54 24 20 48 89 D9 E8 ?? ?? ?? ?? 4C 8B 74 24 30 4D 85 F6 74 20 4C 8B 7C 24 28 4D 85 FF 74 16 49 8B 06 4C 89 F1 31 D2 FF 10 49 8B 07 4C 89 F9 4C 89 F2 FF 50 38 4C 8B 2D",
+  "match": "0x1435fc4b3",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x145853f20",
+  "kind": "data",
+  "names": [
+   "vt_Sess_ScRaceLapsRemaining"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-24",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-e",
+   "kind": "global",
+   "item": "0x145853f20",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_e/decomp/1435f81a0.c;xref:0x1435fc4b3",
+   "notes": "V1087 factory allocs 0x50, type key 0x145f96ab8 -> 'Race Laps Remaining' (string ends just before vt); 10 code slots"
+  }
+ ],
+ "proofs": []
+}

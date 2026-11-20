@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Game_CareerWizard_StartsInF1",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14078ddd0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "bool Game_CareerWizard_StartsInF1(void *entrants, void *wizard_data, const char *entrant_list)",
+  "evidence": "decomp:re/decomp/14078ddd0.c;decomp:re/decomp/141725620.c;decomp:re/decomp/14386d890.c;decomp:re/decomp/141a5df70.c;xref:0x141725e22,0x141a11002,0x141a5e24f,0x14386d8ba,0x14387c04e",
+  "notes": "career wizard: true means a new driver career starts in F1 with no Skip to F1 / Start in F2 choice. Every caller passes the wizard state's +0x40, +0x70 and +0x128 (the content tile's data group, e.g. f1_career_2026, read as an entrant list label: stat id via 0x1424286e0, list from +0x560). True when an entrant's vehicle has a record (+0xc8 set) in the +0x70 map. On true the router 0x141725620 fires career_wizard_driver_career_to_f1 (season length) instead of career_wizard_driver_career (experience select), the step machine 0x14386d890 drops the team-icons step (16) after option 0xb, and the driver select confirm 0x141a5df70 takes the F1 path as with option 6 (Skip to F1). Raised by wizard-1990 for the F1 1990 career wizard"
+ },
+ "signature": {
+  "id": "game.career_wizard_starts_in_f1",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 85 C9 0F 84 ?? ?? ?? ?? 48 89 D6",
+  "match": "0x14078ddd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14078ddd0",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerWizard_StartsInF1"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "wizard-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/career_wizard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-21",
+   "verifier": "std-ui-verify",
+   "kind": "func",
+   "item": "Game_CareerWizard_StartsInF1",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14078ddd0.c;decomp:re/decomp/14387d100.c;decomp:re/decomp/141725620.c;xref:0x141725e22,0x141a11002,0x141a5e24f,0x14386d8ba,0x14387c04e;sig:game.career_wizard_starts_in_f1",
+   "notes": "V0917 bool, 3 args: rcx entrants (null -> false), rdx wizard_data (+0x88 map, +0xa0..+0xb0 buckets), r8 string -> 0x1424286e0 stat id indexing entrants+0x560 (16-byte entries, list at +8, 0x88-byte rows); true when a found vehicle record has +0xc8 set. rel32 scan gives exactly the 5 listed callers and each loads rcx=[X+0x40], rdx=[X+0x70], r8=[X+0x128] from one object (the wizard arg in 0x14386d890, item+0x150 in the router, [rsi+0x438] in 0x141a5df70, rcx in 0x14387c030). +0x128 is the chars of the wizard string buffer (+0x118, cap +0x120) that 0x14387d100 fills from the career tile item+0x180 NeStr; the group-name reading matches 0x1438fb390, which compares *(group+0x28)+0x10 of the same +0x560 list to the same string. Router branch to career_wizard_driver_career_to_f1 confirmed at 0x141725e2d. sigcheck: one hit"
+  }
+ ],
+ "proofs": []
+}

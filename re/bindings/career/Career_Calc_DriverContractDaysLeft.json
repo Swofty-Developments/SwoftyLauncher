@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Calc_DriverContractDaysLeft",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d817c0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void Career_Calc_DriverContractDaysLeft(void *comp, void *unused, int16_t *days_left, uint64_t *out_date)",
+  "evidence": "decomp:re/decomp/140d817c0.c;xref:0x1422f05b5;xref:0x1422f6f1a",
+  "notes": "myteam-g2: Reads the driver key (comp+0x370 +0x428) and contract info (FUN_14126f540, FUN_141289bc0 field 0xf), subtracts days elapsed (comp+0x358 +0x2b0 /0x2d0) from the contract length, builds the end date via FUN_14111dbc0 and Ne_Crt_Localtime64. Gives remaining days of the My Team driver contract. CORRECTION(V9035): Days left = field 0xf of a record minus elapsed days ((comp+0x358)+0x2b0 minutes >>5 * 0x5b05b06 >>32, i.e. minutes/1440), clamped at 0, with a calendar-based fallback; end date built as claimed. But the record comes from FUN_14126f540 (KB: ActivityRecordByIndex) indexed by (comp+0x370)+0x428, which looks like an activity/calendar index rather than a driver key, so 'My Team driver contract' is unproven."
+ },
+ "signature": {
+  "id": "career.calc_driver_contract_days_left",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 58 4C 89 CE 4C 89 C7 49 89 CE",
+  "match": "0x140d817c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d817c0",
+  "kind": "func_start",
+  "names": [
+   "Career_Calc_DriverContractDaysLeft"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-d",
+   "kind": "func",
+   "item": "0x140d817c0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140d817c0.c",
+   "notes": "V9035 Days left = field 0xf of a record minus elapsed days ((comp+0x358)+0x2b0 minutes >>5 * 0x5b05b06 >>32, i.e. minutes/1440), clamped at 0, with a calendar-based fallback; end date built as claimed. But the record comes from FUN_14126f540 (KB: ActivityRecordByIndex) indexed by (comp+0x370)+0x428, which looks like an activity/calendar index rather than a driver key, so 'My Team driver contract' is unproven."
+  },
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140d817c0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140d817c0.c",
+   "notes": "V9534 Days left = field of a record minus elapsed days (minutes/1440), end date built as claimed, but the record is KB ActivityRecordByIndex indexed by +0x428, so driver-contract meaning is unproven."
+  }
+ ],
+ "proofs": []
+}

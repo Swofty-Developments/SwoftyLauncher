@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "k_Career_UpgradeDeptCodeTable",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145735d60",
+  "type": "uint8_t[6]",
+  "level": "L1",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/143539bc0.c;kb:subsystems/career.md#load-upgrade-rows",
+  "notes": "6-byte department-code iteration table walked by Career_Load_UpgradeRows (codes 0..5, loop breaks at value 5); each code indexes k_Career_UpgradeDeptNameTable to build the per-dept upgrade table path."
+ },
+ "signature": {
+  "id": "career.upgrade_dept_code_table",
+  "section": ".xtls",
+  "pattern": "4C 8D 3D ?? ?? ?? ?? EB 13 49 FF C7 48 8D 05",
+  "match": "0x141979a1f",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x145735d60",
+  "kind": "data",
+  "names": [
+   "k_Career_UpgradeDeptCodeTable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x145735d60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x141979a22;decomp:re/decomp/141f41d60.c",
+   "notes": "V7429 table content and refs match"
+  }
+ ],
+ "proofs": []
+}

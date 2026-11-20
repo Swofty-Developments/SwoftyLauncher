@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamActivities_SetEditMode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14231d060",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void (void *menu, char on)",
+  "evidence": "decomp:re/decomp/14231d060.c;xref:0x142319db0;xref:0x14231a77a;xref:0x14231ae72",
+  "notes": "myteam-g2: Stores the mode flag at menu+0x90f; when turned off it re-selects the first slot (+0x6e8), dispatches UI event UNK_14577f775 and refreshes via RefreshDetailPanel. UI state only."
+ },
+ "signature": {
+  "id": "career.my_team_activities_set_edit_mode",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 CE 88 91 0F 09 00 00",
+  "match": "0x14231d060",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14231d060",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamActivities_SetEditMode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x14231d060",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14231d060.c;xref:0x142319db0",
+   "notes": "V10122 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

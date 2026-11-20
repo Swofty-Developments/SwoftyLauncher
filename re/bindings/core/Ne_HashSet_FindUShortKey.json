@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_HashSet_FindUShortKey",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f77d00",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_HashSet_FindUShortKey(void *set, void *out_it, uint32_t key16)",
+  "evidence": "decomp:re/decomp/140f77d00.c;xref:0x1402586c7;xref:0x140259850;xref:0x140259adf",
+  "notes": "myteam-g2: Open-addressing hash lookup (rotate-by-14, multiply, xor-shift) of a 16-bit key in the swiss-style table at set+0x2b0..0x2e4; Ne_Crt_FatalTrapC on corrupt state. Generic, used with facility / department ids."
+ },
+ "signature": {
+  "id": "core.hash_set_find_ushort_key",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 54 24 20 48 89 C8 44 89 C1 C1 E9 10",
+  "match": "0x140f77d00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f77d00",
+  "kind": "func_start",
+  "names": [
+   "Ne_HashSet_FindUShortKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140f77d00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f77d00.c;xref:0x1402586c7;str:\"key not found\"",
+   "notes": "V9589 Open-addressing lookup with 16-bit key (shift 14 mix, multiply by +0x2b0, 5-bit group probe); not-found path ends in \"key not found\"."
+  }
+ ],
+ "proofs": []
+}

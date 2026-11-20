@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Ne_Play_FullscreenVideo",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14416de50",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Play_FullscreenVideo(void *feature_system, NeStr **path, const void *on_end, const void *frame_callbacks, int32_t layer)",
+  "evidence": "decomp:re/decomp/14416de50.c;decomp:re/decomp/142da2760.c;decomp:re/decomp/142d6d4c0.c;decomp:re/decomp/14416df60.c;decomp:re/decomp/14421c750.c;decomp:re/decomp/14421dbf0.c;xref:0x142da2cfe,0x142da3a34",
+  "notes": "cxx=neon::NeUIGenericFeatureSystem::playFullscreenVideo (logs its pretty name on the UI channel: \"<path> on VideoLayer <n>\"). feature_system = (module+0x10)->vt[0xf0](module+0x10) with module = *(*(g_Game_Root+0xa0)+0x28) (FePopup_Dispatch_FeatureCmd 0x140266af0) or *(*(state+0xc88)+0x28) in session states; returns at once when its player (+0x108, NeUIFullScreenVideo) is null. Copies on_end {void (*fn)(void *ctx); void *ctx} to player+0xd0/+0xd8, shows the player (vt+0xd0(p,1,0)), sets the layer (0x14421c620), then 0x14421c750 posts the open: a path that does not start with \"videos/\" gets that prefix, Bink opens it relative to the game folder (onOpen 0x143f82d40: .bik plays as Bink 1 with the BT.601 limited-range matrix, .bk2 as Bink 2). The player update 0x14421dbf0 calls on_end.fn(ctx) when the video ends or is stopped. Session states use layer 4 (SessionStateIntroVideo 0x142d6d4c0 and the car-reveal feature command inline the same sequence); photo mode 0x142da2760 calls it out of line. frame_callbacks may be null."
+ },
+ "signature": {
+  "id": "core.play_fullscreen_video",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 4C 89 CE 4C 89 C7 49 89 D7",
+  "match": "0x14416de50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14416de50",
+  "kind": "func_start",
+  "names": [
+   "Ne_Play_FullscreenVideo"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "intro-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/intro_video.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-d",
+   "kind": "func",
+   "item": "Ne_Play_FullscreenVideo",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14416de50.c;decomp:re/decomp/142d6d4c0.c;decomp:re/decomp/142da2760.c;decomp:re/decomp/14421c750.c;decomp:re/decomp/14421dbf0.c;decomp:re/decomp/143f82d40.c;xref:0x142da2cfe,0x142da3a34,0x14416df43,0x14421ddc4,0x14421dfa4;str:0x145a6147d;sig:core.play_fullscreen_video",
+   "notes": "V0957 Pretty name at 0x145a6147d: void neon::NeUIGenericFeatureSystem::playFullscreenVideo(const NeUIString &, const FSVideoCallback &, const NeVector<NeVideoFrameCallback> *, const VideoLayer), logged on UI. 5 args match (rcx/rdx/r8/r9, layer = dword [rsp+0x90] at entry+0x28). Returns when [this+0x108] is null, calls 0x14416df60(player, path, 1, ...) then tail-jumps to 0x14416e1c0, which copies on_end {fn,ctx} to player+0xd0/+0xd8, calls vt+0xd0(p,1,0), 0x14421c500, 0x14421c620(p, layer), adds frame_callbacks only when non-null (test rdi), then 0x14421c750(p+0x100, name): strncmp with videos/ (0x145a6cf63, 7) else sprintf videos/%s (0x1456de370), posts the open. Update 0x14421dbf0 (rcx = player+0x48) calls [player+0xd0] with rcx = [player+0xd8] at 0x14421ddc4 (stopped) and 0x14421dfa4 (finished). onOpen 0x143f82d40: .bik sets mode 0 / version 1, .bk2 mode 1 / version 2, other suffix returns 0x16; BinkOpen(%s path); mode 0 colour matrix 1.164/1.596/-0.391/-0.813/2.018 = BT.601 limited. Two rel32 callers only: 0x142da2760 (state that reads ui_menu_data.start_photo_mode, layer 4, on_end 0x142da2dd0) and 0x142da2de0; 0x142d6d4c0 and FePopup 0x140266af0 inline the same sequence with layer 4. sigcheck: 1 hit = 0x14416de50"
+  }
+ ],
+ "proofs": []
+}

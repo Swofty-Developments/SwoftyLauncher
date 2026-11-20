@@ -1,0 +1,43 @@
+{
+ "schema": 1,
+ "name": "site_Car_FuelModeSetCallNet",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14324b7c1",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "car",
+  "evidence": "decomp:re/decomp/1553ff3d0.c;xref:0x14324b7c1",
+  "notes": "call Car_FuelEcu_SetMode_Thunk in Game_NetworkMechanical_VehicleRacingVehicleCar (0x1432495e0): rcx = [[r14+rdi+0x158]+0x548] FuelECU system, edx = byte [r14+rdi+0x215] mode (T123)"
+ },
+ "signature": {
+  "id": "car.fuel_mode_set_call_net",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 80 3D ?? ?? ?? ?? 01 75 7E B8 8E 00 00 00",
+  "match": "0x14324b7c1",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14324b7c1",
+  "kind": "mid",
+  "expect": "E8 DA 2E 44 01",
+  "names": [
+   "site_Car_FuelModeSetCallNet"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "car-trace",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "re/tests/T123.trace.json"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

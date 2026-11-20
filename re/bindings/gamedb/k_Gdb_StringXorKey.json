@@ -1,0 +1,68 @@
+{
+ "schema": 1,
+ "name": "k_Gdb_StringXorKey",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145890978",
+  "type": "uint8_t[4]",
+  "level": "L2",
+  "subsystem": "gamedb",
+  "evidence": "decomp:re/decomp/14114bb60.c;decomp:re/decomp/14020ccd0.c;xref:0x14020cd9a,0x14114be9a,0x14114bed7;doc:addons/career-editor/protocol/drivers.md#snapshot-section-drivers",
+  "notes": "4-byte XOR key of gamedb string records (bytes 17 2d 57 5a): byte i of the plaintext = key[(i-1)&3] ^ enc[i] for i < n-1, byte n-1 = 0, where n = rec+0x10 and enc = *(rec+0x18); the game decodes inline at every string read (7445 refs) into the record's buffer *(rec+0x48) (size rec+0x40, 1 = empty), e.g. driver_statistics_info ui_short_language_string in 0x14114bb60; read-only"
+ },
+ "signature": {
+  "id": "gamedb.string_xor_key",
+  "section": ".xtls",
+  "pattern": "48 8D 3D ?? ?? ?? ?? 48 85 C0 4C 8D 25",
+  "match": "0x14020cd90",
+  "anchor": "0xd",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0xa",
+   "len": 7
+  },
+  "target": "0x145890978",
+  "kind": "data",
+  "names": [
+   "k_Gdb_StringXorKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-drivers",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/assets/dbread.cpp",
+   "native/src/core/career/career.cpp",
+   "native/src/core/boxes/car_category.cpp",
+   "native/src/core/boxes/box_options.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-5",
+   "kind": "global",
+   "item": "k_Gdb_StringXorKey",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14114bb60.c;decomp:re/decomp/14020ccd0.c;xref:0x14020cd9a,0x14114be9a,0x14114bed7,0x14114bf1f;sig:gamedb.string_xor_key",
+   "notes": "V0692 sigcheck OK (riprel lea r12 at 0x14020cd9a). Bytes 17 2d 57 5a; loop: skip when rec+0x40 == 1, enc=[rec+0x18], n=[rec+0x10]; out[i]=key[(i-1)&3]^enc[i] (unrolled odd step uses key[i&2]), out[n-1]=0, into [rec+0x48]; all refs are lea (read-only). Quibble: 7445 is the .xtls ref count; .data1 has 152 more"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-5",
+   "kind": "global",
+   "item": "k_Gdb_StringXorKey",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14114bb60.c;decomp:re/decomp/14020ccd0.c;xref:0x14020cd9a,0x14114be9a,0x14114bed7,0x14114bf1f;sig:gamedb.string_xor_key",
+   "notes": "V0813 sigcheck OK (riprel lea r12 at 0x14020cd9a). Bytes 17 2d 57 5a; loop: skip when rec+0x40 == 1, enc=[rec+0x18], n=[rec+0x10]; out[i]=key[(i-1)&3]^enc[i] (unrolled odd step uses key[i&2]), out[n-1]=0, into [rec+0x48]; all refs are lea (read-only). Quibble: 7445 is the .xtls ref count; .data1 has 152 more"
+  }
+ ],
+ "proofs": []
+}

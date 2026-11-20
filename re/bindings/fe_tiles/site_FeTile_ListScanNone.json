@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_FeTile_ListScanNone",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141738f60",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "fe_tiles",
+  "evidence": "decomp:re/decomp/141738eb0.c;xref:0x141738ec7",
+  "notes": "mov rax,rsi at the epilogue of FeTile_Get_ListFirstEntrantId, the target of the je at 0x141738ec7 taken when item+0x1b8 is clear: out+4 is already 0 (not found), returns out. Restores r14,rdi,rsi,rbx from the frame."
+ },
+ "signature": {
+  "id": "fe_tiles.list_scan_none",
+  "section": ".xtls",
+  "pattern": "89 06 C6 46 04 01 48 89 F0 48 83 C4 28",
+  "match": "0x141738f5a",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141738f60",
+  "kind": "mid",
+  "expect": "48 89 F0 48 83 C4 28",
+  "names": [
+   "site_FeTile_ListScanNone"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "fe-tile-guard",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/frontend/fe_tile_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-02",
+   "verifier": "verify-fe-tile",
+   "kind": "global",
+   "item": "site_FeTile_ListScanNone",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/vfe/141738eb0.c;xref:0x141738ec7",
+   "notes": "V8626 own disasm: 141738f60 mov rax,rsi is the epilogue and the je 141738ec7 target; out+4 was zeroed at ebc and is not written between f1f and f60 (only f5c sets it), pushes r14,rsi,rdi,rbx plus sub rsp,0x28 are all done by eb5 and nothing changes rsp up to f1f (the call at f3b is balanced), so a jump from f1f has the same rsp, rsi=out preserved, and the epilogue restores the callee-saved registers from the frame. Return value out with found=0, same as the item+0x1b8 clear path. No inbound branch lands in the 5-byte window f60..f64 other than at f60."
+  }
+ ],
+ "proofs": []
+}

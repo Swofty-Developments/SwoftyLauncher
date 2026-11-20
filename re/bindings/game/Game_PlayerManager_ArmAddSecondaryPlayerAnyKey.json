@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PlayerManager_ArmAddSecondaryPlayerAnyKey",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434de660",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1434de660.c;xref:0x1434de71d,0x1434decca",
+  "notes": "GamePlayerManager: arms 'press any key' capture for adding a secondary (split-screen) player: resets the input module [this+0x538] snapshot (Game_InputModule_TakeSnapshot), registers Game_GamePlayerManager_AnyKeyCallbackForAddSecondaryPlayer via addNextUnfilteredAxisCallback, subscribes itself to 'message_open' on [this+0x528]+0x68+0x1d0. Re-arms itself. d4-verify-b correction: bus message is message_opened"
+ },
+ "signature": {
+  "id": "game.player_manager_arm_add_secondary_player_any_key",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 98 00 00 00 48 89 CE 48 8D 05",
+  "match": "0x1434de660",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434de660",
+  "kind": "func_start",
+  "names": [
+   "Game_PlayerManager_ArmAddSecondaryPlayerAnyKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-b",
+   "kind": "func",
+   "item": "Game_PlayerManager_ArmAddSecondaryPlayerAnyKey",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1434de660.c;xref:0x1434de660",
+   "notes": "V2498 all as claimed but bus message name is message_opened (bytes message_+open+ed), not message_open; callback 1434de7a0 and self re-arm confirmed"
+  }
+ ],
+ "proofs": []
+}

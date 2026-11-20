@@ -1,34 +1,28 @@
-// career::apply_lineup's season planner (native/src/core/career_ops/lineup_plan.hpp) on the host.
+// career::apply_lineup's season planner (native/src/core/career/ops/lineup_plan.hpp) on the host.
 
 #include <cstdio>
 #include <cstdlib>
 #include <string>
 #include <vector>
 
-#include "../../src/core/career_ops/lineup_plan.hpp"
+#include "core/career/ops/lineup_plan.hpp"
 
-using namespace career_ops::plan;
+using namespace career::ops::plan;
 
 static int failures = 0;
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d: %s\n", __FILE__, __LINE__, #c);                                                    \
-            ++failures;                                                                                                \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d: %s\n", __FILE__, __LINE__, #c);                                                             \
+            ++failures;                                                                                                          \
+        }                                                                                                                        \
     } while (0)
 
 static uint32_t key(uint32_t stat) { return stat << 16; }
 
-static Row race(uint32_t driver, int team, int pos, bool player = false)
-{
-    return {key(driver), team, pos, true, player};
-}
+static Row race(uint32_t driver, int team, int pos, bool player = false) { return {key(driver), team, pos, true, player}; }
 
-static Row free_agent(uint32_t driver)
-{
-    return {key(driver), -1, -1, false, false};
-}
+static Row free_agent(uint32_t driver) { return {key(driver), -1, -1, false, false}; }
 
 // Two teams: 476 (slot 1) holds 10 + 11, 477 (slot 2) holds 20 (the player) + 21; 30 and 31 are free agents.
 static std::vector<Row> grid()
@@ -170,7 +164,8 @@ int main()
         CHECK(p.moves.size() == 2 && p.releases.size() == 2);
         defer_to(p, {{30, 476, 1}, {21, 476, 0}});
         CHECK(p.moves.empty() && p.releases.size() == 2);
-        CHECK(refused_with(p, "driver 30: the request's line-up seats him at team 476 seat 2, not the season record's team 476 seat 1"));
+        CHECK(refused_with(
+            p, "driver 30: the request's line-up seats him at team 476 seat 2, not the season record's team 476 seat 1"));
         CHECK(refused_with(p, "team 476 seat 2: the request's line-up gives it to driver 30, not the season record's driver 31"));
     }
     {

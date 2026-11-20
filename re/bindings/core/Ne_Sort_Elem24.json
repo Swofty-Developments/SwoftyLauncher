@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Sort_Elem24",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142dee310",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142dee310.c;xref:0x142d44b05",
+  "notes": "std::sort introsort for 0x18-byte elements (median pivot, heap fallback). Caller Sess_VirtualLapsRuleset_FinaliseResults."
+ },
+ "signature": {
+  "id": "core.sort_elem24",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 74 24 60 48 89 D6 48 89 CB",
+  "match": "0x142dee310",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142dee310",
+  "kind": "func_start",
+  "names": [
+   "Ne_Sort_Elem24"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142dee310",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142dee310.c;xref:0x142d44b05",
+   "notes": "V3731 introsort on 0x18-byte elements (n/0x18, /0x30 pivot), heap fallback when depth<1; caller Sess_VirtualLapsRuleset_FinaliseResults"
+  }
+ ],
+ "proofs": []
+}

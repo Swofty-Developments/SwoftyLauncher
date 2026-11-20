@@ -2,20 +2,18 @@
 set -euo pipefail
 SELF=$(readlink -f "$0")
 cd "$(dirname "$SELF")"
-if ! command -v wine >/dev/null || ! command -v xvfb-run >/dev/null || ! command -v zig >/dev/null; then
-    exec nix shell nixpkgs#zig nixpkgs#wineWow64Packages.stable nixpkgs#xvfb-run -c "$SELF" "$@"
-fi
+NEEDS="zig wine xvfb-run"
+. "$(dirname "$SELF")/lib/env.sh"
 . ./game_lock.sh
 DIST=${DIST:-dist}
 OUT=${1:-$PWD/../build/wine-career-ui}
 export ZIG_GLOBAL_CACHE_DIR=$PWD/../build/zig-cache ZIG_LOCAL_CACHE_DIR=$PWD/../build/zig-cache
-PIN=(taskset -c 2-7,10,11,14-31 nice -n 10)
 rm -rf "$OUT/game" "$OUT/old" "$OUT/yield"
 mkdir -p "$OUT/game" "$OUT/old" "$OUT/yield"
 "${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -o "$OUT/game/F1_25.exe" fake_career_ui.c -lversion -luser32
 cp -r "../$DIST/." "$OUT/game/"
 for t in t_career_ui t_old_wraps t_yield; do
-    "${PIN[@]}" zig c++ -target x86_64-windows-gnu -std=c++23 -O2 -Wall -Wextra -I../../packages/sdk/include -I../include -shared -s \
+    "${PIN[@]}" zig c++ -target x86_64-windows-gnu -I../src -std=c++23 -O2 -Wall -Wextra -I../../packages/sdk/include -I../include -shared -s \
         -o "$OUT/$t.dll" career_ui/$t.cpp &
 done
 wait

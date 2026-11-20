@@ -166,7 +166,7 @@ Releases include `dxc/`: dxc, dxcompiler and dxil built by `.github/workflows/dx
 
 ## ADDON SETTINGS icons
 
-`packages/core/src/ui/icons/addon.svg`, drawn into `packages/core/src/ui/icons.bc7`, is the `package` icon from Lucide, <https://lucide.dev/>, as gpui-component ships it:
+`packages/core/src/games/f1_25/ui/icons/addon.svg`, drawn into `packages/core/src/games/f1_25/ui/icons.bc7`, is the `package` icon from Lucide, <https://lucide.dev/>, as gpui-component ships it:
 
 ```
 ISC License
@@ -204,7 +204,7 @@ Runtime headers, `packages/sdk/include/swofty/`, mirrored in `templates/addon/na
 
 Formats, `packages/formats/src/`. `surface.rs`, `emb.rs`, `animclip.rs`, `uipre.rs` and the texture link part of `material.rs` follow the file layouts and build steps of Halo's `tools/native/resources.py`, `emb.py` and `halo_native.py`. The code is written for the launcher; the layouts, setter keys and clip packet fields are Halo's measurements of the game.
 
-HUD composer, `packages/core/src/hud/`. `scene.rs`, `template.rs`, `editor.rs`, `textures.rs` and `mod.rs` are ported in parts from `tools/native/halo_native.py`, `build_native.py` and `resources.py`: the element templates, the placement maths and text model, the clip keys, the binding and decision rules, the editor preview and the checks against the stock files. Their file headers carry the notice.
+HUD composer, `packages/core/src/games/f1_25/hud/`. `scene.rs`, `template.rs`, `editor.rs`, `textures.rs` and `mod.rs` are ported in parts from `tools/native/halo_native.py`, `build_native.py` and `resources.py`: the element templates, the placement maths and text model, the clip keys, the binding and decision rules, the editor preview and the checks against the stock files. Their file headers carry the notice.
 
 Live state, `native/src/core/live/`. `live_corners_data.hpp` is the official corner table of Halo (`native/src/halo_corners.hpp`), moved with the namespace changed. `live_turns.hpp` adapts the track-name matching and turn lookup of `native/src/halo_track.cpp`. The object layouts and read rules in the other files follow the in-process readers of `game_state_f1_25.cpp`, `tower_reader.cpp` and `tower_state.hpp`.
 

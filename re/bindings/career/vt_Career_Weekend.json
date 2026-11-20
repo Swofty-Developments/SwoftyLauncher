@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "vt_Career_Weekend",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14566b5d0",
+  "type": "vtable[7]",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/140aee2b0.c;decomp:re/decomp/140af1230.c;xref:0x140aee4d9;doc:addons/career-editor/protocol/season.md#identifiers",
+  "notes": "game::championship::Weekend (0x4f0 bytes) vtable, 7 slots, written by the builder 0x140aee2b0 after its base ctor 0x14364d570 (and by the .data1 dtor 0x14955d260); name char* at +0x28 (Season serialise weekend_names); sessions inline at +0x220..+0x228, 0xa0 each (id u32 +0x08, completion u32 +0x10, 2 = complete); current_session_index i32 +0x238; track_stat_id u8 +0x278 (V0229)"
+ },
+ "signature": {
+  "id": "career.weekend",
+  "section": ".xtls",
+  "pattern": "4C 8B 44 24 60 E8 ?? ?? ?? ?? 48 8D 05",
+  "match": "0x140aee4cf",
+  "anchor": "0xd",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0xa",
+   "len": 7
+  },
+  "target": "0x14566b5d0",
+  "kind": "data",
+  "names": [
+   "vt_Career_Weekend"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-season",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/season.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-1",
+   "kind": "global",
+   "item": "vt_Career_Weekend",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140aee2b0.c;decomp:re/decomp/140afaf50.c;decomp:re/decomp/140af1230.c;decomp:re/decomp/140aecf80.c;xref:0x140aee4dc,0x14955d275,0x140aed2ef,0x140af8a43",
+   "notes": "V0229 type is vtable[7] (0x38 bytes) not [24]: the Weekend::start string begins at 0x14566b608; session completion at +0x10 is read as a dword (cmp dword [rax+0x10],2 at 0x140aed2ef, 0x140af8a43, 0x140af8d6d), not u8. Corrected: game::championship::Weekend (0x4f0 bytes) vtable, 7 slots, written by the builder 0x140aee2b0 after its base ctor 0x14364d570 (and by the .data1 dtor 0x14955d260); name char* at +0x28 (Season serialise weekend_names); sessions inline at +0x220..+0x228, 0xa0 each (id u32 +0x08, completion u32 +0x10, 2 = complete); current_session_index i32 +0x238; track_stat_id u8 +0x278"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-3",
+   "kind": "global",
+   "item": "vt_Career_Weekend",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140aee2b0.c;decomp:re/decomp/140af1230.c;xref:0x140aee4d9,0x14955d272,0x140aed2ef,0x140af8a43,0x140afb227,0x140afc10d",
+   "notes": "V0299 Independent: builder stores vt after base ctor 0x14364d570, param_7 -> +0x278 (byte), deleting dtor .data1 0x14955d260 (vt slot0 thunk 0x140b0ba40) stores it; 7 slots then Weekend:: string at 0x14566b608; sessions vector +0x220/+0x228 stride 0xa0 with id u32 +8, cmp dword [+0x10],2; current_session_index movsxd +0x238; 0x4f0 alloc in Season deserialise."
+  }
+ ],
+ "proofs": []
+}

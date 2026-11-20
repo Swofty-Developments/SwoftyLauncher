@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Check_PlayerHasUnspentWorkforceOrUpgrades",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14197fd70",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Check_PlayerHasUnspentWorkforceOrUpgrades(void *check, char flag)",
+  "evidence": "decomp:re/decomp/14197fd70.c;xref:0x14197fc4c;xref:0x141980a0a;xref:0x141980a58",
+  "notes": "myteam-g2: Resolves the My Team career component (+0x88 -> +0x260 type-checked), looks up the workforce set via Ne_HashSet_FindUShortKey and a department scan (FUN_14197c680) to decide whether the player left facilities / research idle. Feeds the LeftWithoutFacilityUpgrades / LeftWithoutResearch warnings."
+ },
+ "signature": {
+  "id": "career.check_player_has_unspent_workforce_or_upgrades",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 58 48 8B 81 88 00 00 00",
+  "match": "0x14197fd70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14197fd70",
+  "kind": "func_start",
+  "names": [
+   "Career_Check_PlayerHasUnspentWorkforceOrUpgrades"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x14197fd70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14197fd70.c;xref:0x14197fc4c",
+   "notes": "V9863 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

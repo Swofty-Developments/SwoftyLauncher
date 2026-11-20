@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ne_SaveSystem2Win_Start",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14413af70",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_SaveSystem2Win_Start(void *device)",
+  "evidence": "decomp:re/decomp/14413af70.c;xref:0x145a5c648,0x144137c9f;decomp:re/decomp/144137890.c;kb:subsystems/core.md#save-sandbox",
+  "notes": "NeSaveSystem2Win (vt_Ne_SaveSystem2Win 0x145a5c640) slot +0x08, called once, from Ne_SaveSystem_InitDevice 0x144137890 right after it builds the device (save system +0x490) and, with g_Ne_SaveSteamEnabled set, its Steam helper (device +0x30; helper +0x108 = ISteamRemoteStorage v016 from k_Ne_SteamRemoteStorageContext, helper +0x00 = char[0x104] from ISteamUser022 GetUserDataFolder). Start itself never touches the helper: it allocates the 64 KB work buffer (+0x330), the two cipher objects (+0x338 vtable 0x145a5f1f0, +0x340 vtable 0x145a5f230, both keyed from device+0x20), inits the uploader at +0x268 and logs Save system started, save folder is %s from device+0x18 -> +0x70. Remote storage slots the device calls through helper+0x108 (whole-exe scan, core.md#save-sandbox): FileWrite +0x00, FileRead +0x08, FileDelete +0x30, FileExists +0x68, GetFileSize +0x78, GetFileTimestamp +0x80, GetFileCount +0x90, GetFileNameAndSize +0x98, BeginFileWriteBatch +0x1c8, EndFileWriteBatch +0x1d0. Corrected 2026-10-28 (ts3): the earlier note said only +0x90/+0x98. The install point of the swofty test save sandbox. Raised by native-1990 for the F1 1990 save separation (doc:/mnt/work/.f1-1990/addon/native-requests.md#N2). The two cipher objects are AES-256-ECB stream filters (vt 0x145a5f1f0 encrypt via 0x143f77b80 per block, vt 0x145a5f230 decrypt via 0x143f77f40); their +0x30 is the AES context built at Game_Read_GameConfig 0x1407f9f88 (key setter 0x143f427c0, hex-string key) and passed to the save system constructor 0x144137460, which stores it at save system +0x2d0. The key string is 64 digits from an MT19937 (seed 0x178b102d, outputs mod 15). It is a constant, not derived from an account or title id. Used only for the SECUINFO index."
+ },
+ "signature": {
+  "id": "core.save_system2_win_start",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 C5 F8 29 74 24 30 48 89 CE 48 8B 49 08",
+  "match": "0x14413af70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14413af70",
+  "kind": "func_start",
+  "names": [
+   "Ne_SaveSystem2Win_Start"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "save-v3",
+   "kind": "func",
+   "item": "0x14413af70",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14413af70.c;decomp:re/decomp/144137890.c;decomp:re/decomp/1447c5580.c;xref:0x145a5c648,0x144137c9f;pat:whole-exe-scan-helper-0x108",
+   "notes": "V1468 Re-derived: vt_Ne_SaveSystem2Win+0x08 is the only pointer to it (no rel32 callers in .xtls/.data1); InitDevice calls it via vt+0x08 at 0x144137c9f after helper+0x108 (0x144137c5c), helper+0x00 (ISteamUser vt+0x30) and device+0x30 are set. Start does no file or remote-storage I/O; its uploader init 0x1447c5580 only calls ISteamUserStats012 (ctx 0x145f985d0 -> 0x152ec55f0) vt+0xb8 FindLeaderboard(corrupt_saves). Own scan of every [r+0x108] vcall in the save range and of .xtls/.data1 finds exactly slots 0x00,0x08,0x30,0x68,0x78,0x80,0x90,0x98,0x1c8,0x1d0 through helper+0x108, as the notes list."
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "save-v3",
+   "kind": "sig",
+   "item": "core.save_system2_win_start",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "pat:sigcheck-hits-1;decomp:re/decomp/14413af70.c;xref:0x14413af70",
+   "notes": "V1478 sigcheck on d873a1c8: exactly one match in .xtls at 0x14413af70, func_start, target is the decompiled function."
+  }
+ ],
+ "proofs": []
+}

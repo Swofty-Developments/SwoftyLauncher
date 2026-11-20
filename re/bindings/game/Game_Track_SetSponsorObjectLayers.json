@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Track_SetSponsorObjectLayers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142df00a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Track_SetSponsorObjectLayers(void *self)",
+  "evidence": "decomp:re/decomp/142df00a0.c;xref:0x1457e6aa8",
+  "notes": "myteam-g1: returns at once when dword +0xc8 != 0; first applies podium-crowd.layer via 0x1444bcc00, then objects_sponsors_drs.layer / objects_sponsors_xmode.layer via 0x1444bc8b0 unless byte +0xd0 (DRS) / +0xd1 (x-mode) is set (corrected per V10491). L2 2026-11-14 (engine-re round 2): decomp read; 1 reference(s) (0x1457e6aa8); the body itself references 'podium-crowd.layer' / 'objects_sponsors_drs.layer' / 'objects_sponsors_xmode.layer'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested) | V10249 (verify-mt3-6) reads the flag direction the other way (the layer objects are destroyed when the flag is 0); not reconciled."
+ },
+ "signature": {
+  "id": "game.track_set_sponsor_object_layers",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 83 B9 C8 00 00 00 00",
+  "match": "0x142df00a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142df00a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Track_SetSponsorObjectLayers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x142df00a0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142df00a0.c;str:\"objects_sponsors_drs.layer\"",
+   "notes": "V10249 Direction wrong: when flag +0xd0 (DRS)/+0xd1 (xmode) is 0 the objects of that sponsor layer are destroyed (DestroyAllWorldObjectsInLayer); also deactivates podium-crowd.layer when param+200==0."
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x142df00a0",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x142df00a0-0x142df014a;xref:0x1457e6aa8",
+   "notes": "V10491 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only abs64 0x1457e6aa8. Layers objects_sponsors_drs.layer applied via 0x1444bc8b0 unless byte +0xd0, objects_sponsors_xmode.layer unless +0xd1 (agrees). Missing: returns early when dword +0xc8 != 0, and first applies podium-crowd.layer via 0x1444bcc00. Proto column holds void *track_objects, which is not a prototype; should be void Game_Track_SetSponsorObjectLayers(void *self)."
+  }
+ ],
+ "proofs": []
+}

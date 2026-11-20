@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_MarshalLights_UpdateZoneShader",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c786b0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-MARSHAL_LIGHTS;decomp:re/decomp/142c786b0.c;xref:0x142c77686,0x142c777d7,0x142c77a9b",
+  "notes": "Log channel MARSHAL_LIGHTS: 'Updating shader at zone: %u'"
+ },
+ "signature": {
+  "id": "session.marshal_lights_update_zone_shader",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01 75 5B B8 17 01 00 00",
+  "match": "0x142c786b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c786b0",
+  "kind": "func_start",
+  "names": [
+   "Sess_MarshalLights_UpdateZoneShader"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb2-verify-a",
+   "kind": "func",
+   "item": "Sess_MarshalLights_UpdateZoneShader",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c786b0.c;xref:0x142c77686",
+   "notes": "V1885 MARSHAL_LIGHTS 'Updating shader at zone: %u'"
+  }
+ ],
+ "proofs": []
+}

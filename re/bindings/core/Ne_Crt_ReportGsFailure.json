@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_ReportGsFailure",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144d9245c",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144d9245c.c;xref:0x144c93af9",
+  "notes": "CRT __report_gsfailure: IsProcessorFeaturePresent(0x17) then fastfail(2) FAST_FAIL_STACK_COOKIE_CHECK_FAILURE, else fills a context block and raises 0xc0000409. Tail-jumped from Ne_Crt_SecurityCookieFailure (0x144c93af9, the only caller). The crash reporter hooks its entry"
+ },
+ "signature": {
+  "id": "core.crt_report_gs_failure",
+  "section": ".xtls",
+  "pattern": "48 89 4C 24 08 48 83 EC 38 B9 17 00 00 00",
+  "match": "0x144d9245c",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144d9245c",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_ReportGsFailure"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "fast-fail",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/diagnostics/crash/crash.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-01",
+   "verifier": "fast-fail-verify",
+   "kind": "func",
+   "item": "0x144d9245c",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "xref:0x144c93af9",
+   "notes": "V8620 disasm only (capstone on exe): 144d9245c mov [rsp+8],rcx; sub rsp,0x38; IsProcessorFeaturePresent(0x17); je skip; mov ecx,2; int 0x29; else call 0x144d925a0 (context capture), stores to globals, writes 0xc0000409 into exception record. Sole rel32 caller 0x144c93af9 (tail jmp of cookie compare 0x144c93ae0). Entry bytes 48 89 4c 24 08 are exactly one instruction, no inbound branch target in bytes 1..4: safe 5-byte relocating patch"
+  }
+ ],
+ "proofs": []
+}

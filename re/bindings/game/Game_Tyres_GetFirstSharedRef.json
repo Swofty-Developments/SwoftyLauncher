@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_Tyres_GetFirstSharedRef",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140bcff00",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140bcff00.c;xref:0x140bcfba7",
+  "notes": "Calls 0x140afe6a0 (list of shared refs) and returns a copy of the first element (use count +1) plus valid flag at out+0x10; releases temp vector. Caller Game_Tyres_ShouldShowScreenDuringLoading. Hypothesis."
+ },
+ "signature": {
+  "id": "game.tyres_get_first_shared_ref",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 80 7C 24 48 00 0F 84 ?? ?? ?? ?? 48 8B 44 24 38 0F BE 40",
+  "match": "0x140bcfba7",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x140bcff00",
+  "kind": "func_start",
+  "names": [
+   "Game_Tyres_GetFirstSharedRef"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x140bcff00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140bcff00.c;xref:0x140bcfba7",
+   "notes": "V8069 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_TestGraph_EvalDistanceSpeedC",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140619140",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "float Ai_TestGraph_EvalDistanceSpeedC(void *table, float dist, float speed, void *cursor)",
+  "evidence": "decomp:re/decomp/140619140.c;xref:0x140616301,0x140616457,0x1406170d2,0x140621156",
+  "notes": "Lazily resolves the shared ai.general_ai_settings block 0x146046c50..0x146046c70 (guard 0x146046c78; keys awareness_time, max_test_distance, max_test_radius, max_test_speed, max_test_time at 0x145634111..0x1456341ad). Clamps xmm1 (distance) to +-max_test_distance (c58) and xmm2 (speed) to +-max_test_speed (c68), then tail-calls Ai_Table_InterpolateC (0x140686e50) with cell getter 0x14063c6a0 and returns its float. Callers in Ai_Update_VehicleDriver pass table = ctrl+0x58, speed = car+0x3c and cursor = ctrl+0x88; at the third site the distance is the result of Ai_Table_CalcSpeedChangeDistance (0x1406817f0). No car/neighbour query is made. (corrected 2026-11-14: was 'awareness query of nearby cars'.) (renamed 2026-11-14 from Ai_Awareness_QueryNearbyCars: the code contradicts the old name) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.awareness_query_nearby_cars",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 58 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 4C 89 CE C5 F8 28 FA C5 F8 28 F1 48 89 CF 8B 05 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? 65 48 8B 14 25 58 00 00 00 48 8B 0C CA 3B 81 04 00 00 00 0F",
+  "match": "0x140619140",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140619140",
+  "kind": "func_start",
+  "names": [
+   "Ai_TestGraph_EvalDistanceSpeedC"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x140619140",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140619140.c;xref:0x140616301",
+   "notes": "V3553 clamps with max_test_speed/max_test_distance tweaks and calls Ai_Table_InterpolateC (FUN_140686e50) with callback FUN_14063c6a0; Ai_Update_VehicleDriver caller seen"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x140619140",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x140619140-0x140619294;xref:0x140616301,0x140616457,0x1406170d2,0x140621156",
+   "notes": "V10614 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Callers 3 in 0x140614d70 + 1 in 0x140620e50. 4 args (rcx, xmm1, xmm2, r9). Lazy ai.general_ai_settings block guard 0x146046c78, clamps by +-[0x146046c58] (max_test_distance) and +-[0x146046c68] (max_test_speed), calls Ai_Table_InterpolateC 0x140686e50 with getter 0x14063c6a0; no car query, so the rename from Ai_Awareness_QueryNearbyCars is right. Detail: proto name still Ai_TestTable_LookupByDistanceSpeed."
+  }
+ ],
+ "proofs": []
+}

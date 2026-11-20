@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "g_Game_F1WorldEntryPoint",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x146066c74",
+  "type": "uint32_t",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/141a79ee0.c;decomp:re/decomp/1417c37e0.c;xref:0x141a79f3c,0x1417c37e0,0x141abde20,0x141a77340",
+  "notes": "u32 how F1 World was entered: 0 hub/activity (Game_F1WorldActivityContainer_GoHome, Game_F1WorldHub_RouteToActivity), 1 navigation from a sub screen (Game_F1World_NavigateWithEntryPoint1, Game_F1WorldScreen_NavigateEp1*), 3 ranked division search (Game_RankedDivision_*), 4 activity container exit/onboarding (Game_F1WorldActivityContainer_OnExit). .sbss, zero at load. main_menu.cpp clears it when a picker's Back leaves for the main menu; on the EA build the Steam offset lands on a read-only .sbss page (1.9.0 crash at swofty_core.dll+0x110357), so it is only ever reached through this signature."
+ },
+ "signature": {
+  "id": "game.f1_world_entry_point",
+  "section": ".xtls",
+  "pattern": "48 8B 86 90 02 00 00 80 B8 80 00 00 00 00 0F 84 ?? ?? ?? ?? C7 05 ?? ?? ?? ?? 00 00 00 00 80 3D ?? ?? ?? ?? 01 75 6D B8 5F 01 00 00",
+  "match": "0x141a79f28",
+  "anchor": "0x16",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x14",
+   "len": 10
+  },
+  "target": "0x146066c74",
+  "kind": "data",
+  "names": [
+   "g_Game_F1WorldEntryPoint"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "hotfix-191",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/frontend/main_menu/navigation.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "hotfix-191",
+   "kind": "global",
+   "item": "g_Game_F1WorldEntryPoint",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a79ee0.c;xref:0x141a79f3c,0x1417c37e0,0x141abde20,0x141a77340;sig:game.f1_world_entry_point",
+   "notes": "V8963 Static re-read of the Steam exe (objdump): Game_F1WorldActivityContainer_GoHome 0x141a79ee0 stores 0 at 0x141a79f3c (C7 05 2E CD 5E 04 00 00 00 00 -> 0x146066c74) after the +0x290 object's +0x80 byte test; the same u32 is the entry point the KB writers Game_F1World_NavigateWithEntryPoint1 (1), Game_F1WorldHub_RouteToActivity (0), Game_F1WorldActivityContainer_OnExit (4) and Game_RankedDivision_* (3) set. Signature pattern matches once in .xtls; riprel resolves to 0x146066c74. Not checked on the EA dump (not at hand): the EA set scans it at runtime and main_menu.cpp skips the write when it does not resolve."
+  }
+ ],
+ "proofs": []
+}

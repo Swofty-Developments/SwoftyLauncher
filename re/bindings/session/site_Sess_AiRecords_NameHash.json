@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Sess_AiRecords_NameHash",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1438a3c97",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/1438a0e00.c;xref:0x1438a3c8c,0x1438a3c91,0x1438a3c94",
+  "notes": "In Sess_Ai_BuildVehicleRecords: mov rax,[rcx+0x108], the first instruction after the car name hash call (call 0x1405ed3a0 at 0x1438a3c8c; mov rcx,r13 / mov r13,rax at 0x1438a3c91/94). Here r13 = the car name hash, rcx = the manager, [rsp+0x60] = the vehicle index. The group walk that follows compares [node+0x20] with r13 in each group's map ([[group]+8] is the std::map head: +0 left/leftmost, +8 root, node left +0, right +0x10, isnil byte +0x19, key +0x20). Core's guard replaces r13 with the key of group 0's leftmost node when group 0 lacks the hash, so the unmodified code finds a node and builds a full record at the vehicle's slot; the records at [mgr+0x128] are indexed by vehicle slot."
+ },
+ "signature": {
+  "id": "session.ai_records_name_hash",
+  "section": ".xtls",
+  "pattern": "4C 89 E9 49 89 C5 48 8B 81 08 01 00 00",
+  "match": "0x1438a3c91",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1438a3c97",
+  "kind": "mid",
+  "expect": "48 8B 81 08 01 00 00",
+  "names": [
+   "site_Sess_AiRecords_NameHash"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "sessguard",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/session/session_enter.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-01",
+   "verifier": "kbverify-sessenter",
+   "kind": "global",
+   "item": "0x1438a3c97",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1438a0e00.c;xref:0x1438a3c8c,0x1438a3d14,0x1438a3e5c;sig:session.ai_records_name_hash",
+   "notes": "V8616 sigcheck hits=1 match=0x1438a3c91 target=0x1438a3c97 (mov rax,[rcx+0x108]). Disassembled: call 0x1405ed3a0 returns the hash in rax, 0x1438a3c91 mov rcx,r13 (manager, loaded from param at prologue and [rsp+0x30]) and 0x1438a3c94 mov r13,rax, so at the site r13=hash, rcx=manager, [rsp+0x60] is stored later at 0x1438a3c5c before the call so already holds the index. No jump or call targets 0x1438a3c98-0x1438a3c9e (grepped the function disassembly) so the 7-byte window is clean. r13 is consumed only as the hash: lower_bound at 0x1438a3d14 (cmp [node+0x20],r13; cmovae takes left=+0 else right=+0x10), equality check at 0x1438a3d3c and the nested lookup at 0x1438a3e5c/61; r13 is rewritten as a temp afterwards. Replacing it with the group 0 leftmost key makes group 0 hit, so the unmodified code builds a normal record in the vehicle's slot; later groups that lack it just end the walk with one node."
+  }
+ ],
+ "proofs": []
+}

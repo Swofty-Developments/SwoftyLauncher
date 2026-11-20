@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_ScState_Deploy_ReadTunables",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143646320",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void()",
+  "evidence": "decomp:ghidra-headless-2026-10-25;decomp:re/decomp/143646320.c;xref:0x145855060",
+  "notes": "SC Deploy state slot 2: reads the SC tunables from the hashed tuning table 0x146cc4278 (mph -> m/s): 0x145f96bf8, SC speed 0x145f96bfc, 0x1460ff710, 0x145f96c00, ..."
+ },
+ "signature": {
+  "id": "session.sc_state_deploy_read_tunables",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 BF 34 CA 4D 5F",
+  "match": "0x143646320",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143646320",
+  "kind": "func_start",
+  "names": [
+   "Sess_ScState_Deploy_ReadTunables"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb4-verify",
+   "kind": "func",
+   "item": "Sess_ScState_Deploy_ReadTunables",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143646320.c;xref:0x145855060",
+   "notes": "V1956 vtable slot2; table 0x146cc4278; bfc and 1460ff710 mph->m/s"
+  }
+ ],
+ "proofs": []
+}

@@ -19,7 +19,7 @@ def pattern(va, maxlen=96):
         pat += [(x if m else None) for x,m in zip(bs,mask)]
         if len(pat)>=maxlen: break
     return pat
-def to_re(pat): return re.compile(b''.join(re.escape(bytes([x])) if x is not None else b'.' for x in pat), re.S)
+def to_re(pat): return re.compile(b'(?=' + b''.join(re.escape(bytes([x])) if x is not None else b'.' for x in pat) + b')', re.S)
 def find_unique(va, start=16, maxlen=96, offset_into=0):
     pat=pattern(va, maxlen)
     for n in range(start, len(pat)+1, 4):

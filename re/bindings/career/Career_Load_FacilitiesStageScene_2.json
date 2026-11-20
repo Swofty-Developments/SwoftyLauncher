@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Load_FacilitiesStageScene_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142352520",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *scene)",
+  "evidence": "decomp:re/decomp/142352520.c;xref:0x1423517e9;xref:0x1457819e8",
+  "notes": "myteam-g1: Second variant of the FacilitiesStage%d_0%d scene selection/loader."
+ },
+ "signature": {
+  "id": "career.load_facilities_stage_scene_2",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 C5 F8 29 B4 24 C0 00 00 00 83 7A 10 50",
+  "match": "0x142352520",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142352520",
+  "kind": "func_start",
+  "names": [
+   "Career_Load_FacilitiesStageScene_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x142352520",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142352520.c",
+   "notes": "V10166 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

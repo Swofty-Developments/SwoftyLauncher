@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_Table_SolveAxis0ForValue",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14068bfb0",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "float Ai_Table_SolveAxis0ForValue(void *table, float a, float b, float target, int64_t column)",
+  "evidence": "decomp:re/decomp/14068bfb0.c;xref:0x1405f6b02,0x1405f6b22,0x1405f6b44,0x1405f6b61,0x1405f8a3f,0x1405f8a5c,0x1405f8a7e,0x1405f8aa0",
+  "notes": "INVERSE lookup (corrected 2026-11-14: was '1D piecewise-linear lookup'). Axis-0 values at table+0x58..+0x60 (n floats); column = flattened index over the other two axes (sizes (+0xc0-+0xb8)/4 * (+0xf0-+0xe8)/4). f(i) = 0x14063b4b0(cells[i*stride + column], a, b). Returns 1.0 if n == 0; axis[n-1] if f(n-1) > target; axis[0] if f(0) < target; else binary search for the bracket (f decreasing along axis 0) and linear interpolation of the axis value, clamped to the bracket. target is xmm3. Callers: Ai_Update_DriverTick (8 sites in two groups of 4 = the 4 corner columns, interpolated afterwards by the caller). (renamed 2026-11-14 from Ai_Curve_Interpolate1D: the code contradicts the old name) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.curve_interpolate1_d",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 78 C5 78 29 54 24 60 C5",
+  "match": "0x14068bfb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14068bfb0",
+  "kind": "func_start",
+  "names": [
+   "Ai_Table_SolveAxis0ForValue"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14068bfb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14068bfb0.c;xref:0x1405f6b02",
+   "notes": "V3577 1D piecewise lookup using axis +0x58/+0x60, data +0x10, strides from +0xb8/+0xe8; caller block 0x1405f6b02 seen"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x14068bfb0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14068bfb0-0x14068c195;xref:0x1405f6b02,0x1405f6b22,0x1405f6b44,0x1405f6b61,0x1405f8a3f,0x1405f8a5c,0x1405f8a7e,0x1405f8aa0",
+   "notes": "V10571 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). 8 callers all in Ai_Update_DriverTick (0x1405f6b02..0x1405f6b61, 0x1405f8a3f..0x1405f8aa0). 5 args (rcx table, xmm1, xmm2, xmm3 target, stack column [rsp+0xd0]). n = (+0x60 - +0x58)/4, returns 1.0 when n==0 (0x14068c059), f(n-1) > target -> axis[n-1], f(0) < target -> axis[0], getter 0x14063b4b0: inverse lookup confirmed; rename from Ai_Curve_Interpolate1D justified."
+  }
+ ],
+ "proofs": []
+}

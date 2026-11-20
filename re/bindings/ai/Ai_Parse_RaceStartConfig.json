@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_Parse_RaceStartConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14065e040",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_Parse_RaceStartConfig(void **slots, void *driver_row)",
+  "evidence": "decomp:re/decomp/14065e040.c;xref:0x14065de61,0x140652b10,0x140652d41",
+  "notes": "Binds 9 race_start.* slots of ai_driver_config into AiDriverConfig+0x1f0 (caller Ai_Parse_DriverConfig 0x14065de61): +0x1f0 max_reaction_time_lower_bound, +0x1f8 min_reaction_time_lower_bound, +0x200 max_reaction_time_upper_bound, +0x208 min_reaction_time_upper_bound, +0x210 max_bad_start_lower_bound, +0x218 min_bad_start_lower_bound, +0x220 max_bad_start_upper_bound, +0x228 min_bad_start_upper_bound, +0x230 stationary_vehicle_space (stores 0x14065e05e..0x14065e10d; note store order != slot order). Consumer proven: Ai_RaceStart_ReactionTime 0x1406527c0 reads the by-value copy at AiCarRecord+0x428/+0x430/+0x438/+0x440 (0x140652b10..0x140652b63) -> reaction time = random in [lerp(min_upper,min_lower), lerp(max_upper,max_lower)] with factor [rec+0x20]+0x14c * [rec+0x20]+0xb4, stored +0x68; +0x448..+0x460 (0x140652d41..0x140652d9f) the same for bad start with factor ..+0xb0, stored +0x6c. stationary_vehicle_space consumer not found. (corrected 2026-11-14: was 'ai_vehicle_config'-style wording; feed now proven with sites) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.parse_race_start_config",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D7 48 89 CE 48 8D 15 ?? ?? ?? ?? 48 89 F9 45 31 C0 E8 ?? ?? ?? ?? 48 89 06 48 8D 15 ?? ?? ?? ?? 48 89 F9 45 31 C0 E8 ?? ?? ?? ?? 48 89 46 08 48 8D 15 ?? ?? ?? ?? 48 89 F9 45 31 C0 E8 ?? ?? ?? ?? 48 89 46 20",
+  "match": "0x14065e040",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14065e040",
+  "kind": "func_start",
+  "names": [
+   "Ai_Parse_RaceStartConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x14065e040",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14065e040.c;xref:0x65de61",
+   "notes": "V4718 parses 9 race_start.* keys (correct, called only from 0x14065dc50); 'feeds Ai_RaceStart_ReactionTime' not seen: ReactionTime reads cfg +0x4e0/4e8/500/518 not +0x1f0..0x238"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x14065e040",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14065e040-0x14065e118;xref:0x14065de61",
+   "notes": "V10601 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only caller 0x14065de61 with rcx = rdi+0x1f0. 2 args. 9 race_start.* keys; store map checked exactly as noted (max_bad_start_lower_bound -> +0x20, max_reaction_time_upper_bound -> +0x10, stationary_vehicle_space -> +0x40). Consumer reads AiCarRecord+0x428 at 0x140652b10 and +0x448 at 0x140652d41."
+  }
+ ],
+ "proofs": []
+}

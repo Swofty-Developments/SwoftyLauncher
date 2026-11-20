@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Loader_BuildTrackRegionList",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d49050",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d49050.c;xref:0x142d47d99,0x142da7ece",
+  "notes": "Track loader: allocates the region request list and adds region_on_track and other world regions for streaming. Callers: Sess_Loader_StartFrontendAssetLoad, Sess_Loader_RequestTrackLoad.  2026-11-17 engine-re: the track's asset group paths come from its tracks.track_resource row (session +0x1a8 -> +0x30 record, record+8 -> row): row+0x60, +0x18, +0x10, +0x08 template strings are expanded by Game_TrackRecord_ExpandPathTokens (FILENAME/FOLDER/BASETRACK; calls 0x142d491ae..0x142d493a4) into record+0xc68 (queued prio 10), +0xcf8, +0xce8, +0x840; the record's extra worlds vector +0xaf8 (stride 0x98) and +0xac0 x 0x150 regions are queued too, then region_on_track (0x1457dd83f). No slot name is built in code.  | 2026-11-17 engine-re round A2: queue order (static): 1) TrackResource trackMapAssetGroup (+0x60) expanded into record+0xc68, prio 10 (only when set); 2) record+0xaf8..+0xb00 entries (stride 0x98, path +0x10), prio 10; 3) record+0xac0 regions (stride 0x150, +0x50), prio 10; 4) crowdEri (+0x18) -> record+0xcf8 and worldEri (+0x10) -> record+0xce8 are expanded and hashed (resource ids, not queued here); 5) worldAssetGroup (+0x08) -> record+0x840 goes into the world region request, queued prio 10 (lVar21+0x140); 6) region_on_track; 7) the collected extra entries at prio 4. The bake/probe groups (+0x20..+0x58, iblProbes) are expanded elsewhere (0x14370a8a0, Game_TrackRecord_BuildProbeAssetGroupPath). Runtime order: T205."
+ },
+ "signature": {
+  "id": "session.loader_build_track_region_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 0E 00 00 C5 F8 29 BC 24",
+  "match": "0x142d49050",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d49050",
+  "kind": "func_start",
+  "names": [
+   "Sess_Loader_BuildTrackRegionList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142d49050",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d49050.c;xref:0x142d47d99,0x142da7ece",
+   "notes": "V3554 allocs region request list (0x28 node, 0x100 buffer), region_on_track string and other region adds; callers Sess_Loader_StartFrontendAssetLoad and RequestTrackLoad"
+  }
+ ],
+ "proofs": []
+}

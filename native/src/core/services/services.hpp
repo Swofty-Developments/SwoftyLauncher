@@ -43,8 +43,8 @@ public:
                 return SWOFTY_ASSET_INVALID;
             }
             if (e && version < e->version) {
-                log("[services] publish " + name + " v" + std::to_string(version) + " by " + who(addon) +
-                    " refused: v" + std::to_string(e->version) + " is already published");
+                log("[services] publish " + name + " v" + std::to_string(version) + " by " + who(addon) + " refused: v" +
+                    std::to_string(e->version) + " is already published");
                 return SWOFTY_ASSET_INVALID;
             }
             if (!e) {
@@ -53,8 +53,8 @@ public:
             } else {
                 e->version = version, e->table = table, e->size = size;
             }
-            log("[services] publish " + name + " v" + std::to_string(version) + " (" + std::to_string(size) +
-                " bytes) by " + who(addon) + " -> ok");
+            log("[services] publish " + name + " v" + std::to_string(version) + " (" + std::to_string(size) + " bytes) by " +
+                who(addon) + " -> ok");
             calls = due(*e);
         }
         run(calls);
@@ -100,8 +100,8 @@ public:
             if (w.done)
                 continue;
             Entry *e = find(w.name);
-            std::string line = "[services] " + who(w.addon) + " waits for " + w.name + " v" +
-                               std::to_string(w.min_version) + "+: ";
+            std::string line =
+                "[services] " + who(w.addon) + " waits for " + w.name + " v" + std::to_string(w.min_version) + "+: ";
             line += e ? who(e->addon) + " publishes v" + std::to_string(e->version) + " (" + std::to_string(e->size) +
                             " bytes, " + std::to_string(w.min_size) + " needed); its callback never runs"
                       : std::string("nothing publishes it; its callback never runs");
@@ -190,5 +190,10 @@ private:
     std::vector<Entry> entries_;
     std::vector<Waiter> waiters_;
 };
+
+// The core's SwoftyServices table, which the addon API hands to every addon.
+const SwoftyServices *table();
+// Logs Registry::missing() once every addon has loaded.
+void report_missing();
 
 }

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Phys_BuildConvexHullShapeBlob",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440bdd60",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1440bdd60.c;xref:0x14464ce69,0x14464d39c",
+  "notes": "(blob, desc): lays out a convex-hull shape blob: counts (+0/+4), identity transform, section offsets +0x54..+0x64 (verts/planes/edges/faces) and copies vertex/face arrays from desc. Caller: Car_Collision_BuildHullShapes."
+ },
+ "signature": {
+  "id": "core.phys_build_convex_hull_shape_blob",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 18 44 8B 0A 8B",
+  "match": "0x1440bdd60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440bdd60",
+  "kind": "func_start",
+  "names": [
+   "Ne_Phys_BuildConvexHullShapeBlob"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x1440bdd60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440bdd60.c;xref:0x14464ce69",
+   "notes": "V3636 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

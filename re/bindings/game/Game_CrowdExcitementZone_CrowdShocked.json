@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CrowdExcitementZone_CrowdShocked",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1413f2520",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-CROWD_EXCITEMENT",
+  "notes": "Log channel CROWD_EXCITEMENT: 'CrowdExcitementZone::crowdShocked %p %s from %d'"
+ },
+ "signature": {
+  "id": "game.crowd_excitement_zone_crowd_shocked",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 C5 F8 29 74 24 30 C5 F8 28 F2 89 D7 48 89 CB",
+  "match": "0x1413f2520",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1413f2520",
+  "kind": "func_start",
+  "names": [
+   "Game_CrowdExcitementZone_CrowdShocked"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x1413f2520",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1413f2520.c;xref:0x1413f249e",
+   "notes": "V4795 name and quoted log strings/pretty-function present in body"
+  }
+ ],
+ "proofs": []
+}

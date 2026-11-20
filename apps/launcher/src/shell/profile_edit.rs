@@ -1,5 +1,5 @@
-use crate::notices::{Notification, Notify};
-use crate::theme::palette;
+use crate::shell::notices::{Notification, Notify};
+use crate::ui::theme::palette;
 use gpui_kit::component::WindowExt;
 use gpui_kit::component::button::ButtonVariant;
 use gpui_kit::*;
@@ -8,7 +8,7 @@ use swofty_core::saves::SavesWarning;
 use swofty_i18n::{tr, trf};
 
 use super::Shell;
-use super::dialogs::saves_alert;
+use super::launch_alerts::saves_alert;
 
 impl Shell {
     pub(crate) fn saves_warning(&self, id: &str, of: Option<SavesWarning>) -> Option<SavesWarning> {
@@ -80,7 +80,7 @@ impl Shell {
             .library
             .addons
             .iter()
-            .any(|a| a.manifest.id == id && a.source == crate::library::Source::DbEditor);
+            .any(|a| a.manifest.id == id && a.source == crate::services::library::Source::DbEditor);
         let removes = if db_editor { removes_db } else { removes_plain };
         let shell = cx.entity().downgrade();
         let store = self.store.clone();
@@ -124,13 +124,13 @@ impl Shell {
                                     );
                                     shell
                                         .update(cx, |s, cx| {
-                                            s.open_addon = None;
+                                            s.navigation.open_addon = None;
                                             s.reload_in_background(cx);
                                         })
                                         .ok();
                                 }
                                 Err(e) => {
-                                    crate::app_log::action("remove addon").addon(&id).failed(&e);
+                                    crate::app::app_log::action("remove addon").addon(&id).failed(&e);
                                     window.notify(Notification::error(e.to_string()), cx);
                                 }
                             })
@@ -149,19 +149,22 @@ impl Shell {
         f: impl FnOnce(&mut swofty_core::profile::Profile) -> swofty_core::Result<()>,
     ) {
         if let Err(e) = self.store.update_profile(&self.library.profile.name, f) {
-            crate::app_log::action("change the profile").failed(&e);
+            crate::app::app_log::action("change the profile").failed(&e);
             window.notify(Notification::error(e.to_string()), cx);
         }
         self.reload(cx);
     }
 
     pub(crate) fn switch_profile(&mut self, name: &str, window: &mut Window, cx: &mut Context<Self>) {
-        if !self.use_profiles && name != self.library.profile.name && self.library.profile.name != VANILLA {
+        if !self.prefs.use_profiles
+            && name != self.library.profile.name
+            && self.library.profile.name != VANILLA
+        {
             return;
         }
-        self.play_pending.cancel();
+        self.launching.play_pending.cancel();
         if let Err(e) = self.store.set_active_profile(name) {
-            crate::app_log::action("switch profile").failed(&e);
+            crate::app::app_log::action("switch profile").failed(&e);
             window.notify(Notification::error(e.to_string()), cx);
         }
         self.reload_in_background(cx);

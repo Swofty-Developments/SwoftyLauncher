@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Car_SuspensionSystem_ResetRestAndSpring",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446b1460",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446b1460.c;doc:re/db/subsystems/car.md",
+  "notes": "su-verify claim 8: (car+0x580): axle+0x1648 = src+0x15b8, axle+0x165c = src+0x1604 for both axles (src objects container+0x58/+0x60, H stock VTF data), then keys tarr/tarf in map car+0xd8 -> +0x138"
+ },
+ "signature": {
+  "id": "car.suspension_system_reset_rest_and_spring",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 78 48 89 CE 48 8B 59 58",
+  "match": "0x1446b1460",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446b1460",
+  "kind": "func_start",
+  "names": [
+   "Car_SuspensionSystem_ResetRestAndSpring"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "su-verify",
+   "kind": "func",
+   "item": "Car_SuspensionSystem_ResetRestAndSpring",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1446b1460.c",
+   "notes": "V1747 claim 8; VTF stock source unverified"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "su-verify",
+   "kind": "func",
+   "item": "Car_SuspensionSystem_ResetRestAndSpring",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1446b1460.c",
+   "notes": "V3932 claim 8; VTF stock source unverified"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x1446b1460",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446b1460.c",
+   "notes": "V4140 axle+0x1648=src+0x15b8, axle+0x165c=src+0x1604 for both axles from car+0x58/+0x60 confirmed (vtable/indirect or no direct callsite checked)"
+  }
+ ],
+ "proofs": []
+}

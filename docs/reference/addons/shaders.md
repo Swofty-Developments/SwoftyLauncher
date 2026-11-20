@@ -481,7 +481,7 @@ several rules, one option   applied in priority order, each blending over the re
 
 ### Signals
 
-Every signal is for the player's car. The `car.*` signals read the player's own car, also in replays and while spectating. The `car.*` signals and `session.wetness` are read from the Steam copy of F1 25; on the EA app copy they have no value yet.
+Every signal is for the player's car. The `car.*` signals read the player's own car, also in replays and while spectating. They are read on Steam F1 25 1.0.141 and 1.0.145.2472 and on the EA app's 1.0.141 and 1.0.145. `car.surface`, `car.wetness` and `session.wetness` are read on Steam 1.0.141 only; on any other build they have no value.
 
 ```text
 in game now

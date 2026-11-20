@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_MOXLocationDefaultNeonCountry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430d11b0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK",
+  "notes": "named from its log messages (channel NETWORK): 'MOX/Location: Default neon country is %s, region %d'"
+ },
+ "signature": {
+  "id": "game.network_mox_location_default_neon_country",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 C5 F8 29 BC 24 B0 00 00 00 C5 F8 29 B4 24 A0 00 00 00 4C 89 C7",
+  "match": "0x1430d11b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430d11b0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_MOXLocationDefaultNeonCountry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430d11b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1430d11b0.c",
+   "notes": "V5372 better name Game_NetworkSubsystem_Init: 1071-line subsystem setup (config load, calls many init funcs, trace_log, 26 DLC); neon country log is one part"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x1430d11b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430d11b0.c",
+   "notes": "V6971 1071 decomp lines, strings match current name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

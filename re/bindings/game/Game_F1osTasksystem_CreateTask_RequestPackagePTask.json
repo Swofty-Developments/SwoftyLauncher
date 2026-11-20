@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1osTasksystem_CreateTask_RequestPackagePTask",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143432f90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143432f90.c;xref:0x143374971",
+  "notes": "F1OS task-system typed task allocator for RequestPackagePTask (type name static init 0x143458dc4): allocates a 0x168-byte task (0x1432c1ee0) with request sub-objects (vtables 0x14583d1c0, 0x14583d1e0) and final vtable 0x14583f210, holder vtable 0x14583f4f0, logs 'Allocated new task %s', adds via 0x1432dd060 and copies the request argument param_3 into the task's request (+0x150, 0x1432aca50/0x1432acb70). Outer task of Game_F1os_CreateTask_RequestPackageP 0x1434334a0. Addon: hook to see package (store) requests. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3327)"
+ },
+ "signature": {
+  "id": "game.f1os_tasksystem_create_task_request_package_p_task",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 4C 89 CB 4C 89",
+  "match": "0x143432f90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143432f90",
+  "kind": "func_start",
+  "names": [
+   "Game_F1osTasksystem_CreateTask_RequestPackagePTask"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_F1osTasksystem_CreateTask_RequestPackagePTask",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143432f90.c;xref:0x143432f90",
+   "notes": "V3327 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

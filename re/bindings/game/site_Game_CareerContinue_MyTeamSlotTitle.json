@@ -1,0 +1,129 @@
+{
+ "schema": 1,
+ "name": "site_Game_CareerContinue_MyTeamSlotTitle",
+ "table": "globals",
+ "author": "swofty",
+ "row": {
+  "addr": "0x141a0f833",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:own capstone disasm 0x141a0f760-0x141a0f8bf on KB 1.0.141 FillSlot My Team branch (lea rdx at 0x141a0f82c loads lng_homescreen_my_team_career then the call at 0x141a0f833 writes the title);xref:0x141a0f833,0x141a0f82c;imm:0xc000;imm:0x4000;pat:Steam 1.0.145 site 0x141a11013 = KB+0x17e0 found by the same signature",
+  "notes": "resume-career card title (Game_CareerContinue_FillSlot, My Team branch): the call that writes the card's display_title, the twin of site_Game_CareerContinue_DriverSlotTitle; rcx = the holder, rdx = lng_homescreen_my_team_career, rbx = slot_info, rsi = slot index, rdi = the view model. KB 0x141a0f833, Steam 1.0.145 0x141a11013"
+ },
+ "signature": {
+  "id": "game.career_continue_my_team_slot_title",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 0F B7 83 BE 00 00 00",
+  "match": "0x141a0f833",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a0f833",
+  "kind": "mid",
+  "expect": "E8",
+  "names": [
+   "site_Game_CareerContinue_MyTeamSlotTitle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-19",
+    "by": "swofty",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-19",
+   "verifier": "saves-blind",
+   "kind": "global",
+   "item": "site_Game_CareerContinue_MyTeamSlotTitle",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm of FillSlot 0x141a0f760, test byte [rdx+0x171],0x20 jne 0x141a0f82c, lea rdx at 0x141a0f82c = 0x14570ce69 lng_homescreen_my_team_career, E8 call 0x1407b10c0 at 0x141a0f833;xref:0x141a0f833,0x141a0f82c;imm:0x171;imm:0x20;imm:0x540",
+   "notes": "gh:saves-blind call is E8 to 0x1407b10c0 which builds a string from the lng key and sets it on the text holder [rcx+8] (rcx = slot +0x3b8). Non-My-Team branch loads lng_homescreen_driver_career at 0x145709e97 into the same call at 0x141a0f7ac. Steam 145 site 0x141a11013 is a call after the same lea, key lng_homescreen_my_team_career"
+  }
+ ],
+ "proofs": [
+  {
+   "by": "swofty",
+   "date": "2026-11-19",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141a0f833",
+    "target": "0x141a0f833"
+   },
+   "sigcheck": "passed",
+   "digest": "fa9c09396884132738f9004259602d0ce95b02ca66b344dd7302d290371fc0de"
+  },
+  {
+   "by": "swofty",
+   "date": "2026-11-19",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141a11013",
+    "target": "0x141a11013"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "09a63b7ac32ba962a4a064135825063f88f123c1825027008617e8605caaa745"
+  },
+  {
+   "by": "saves-blind",
+   "date": "2026-11-19",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141a11013",
+    "target": "0x141a11013"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "09a63b7ac32ba962a4a064135825063f88f123c1825027008617e8605caaa745"
+  },
+  {
+   "by": "saves-blind",
+   "date": "2026-11-19",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141a0f833",
+    "target": "0x141a0f833"
+   },
+   "sigcheck": "passed",
+   "digest": "fa9c09396884132738f9004259602d0ce95b02ca66b344dd7302d290371fc0de"
+  }
+ ]
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ReplaySystem_ReadDbSettings",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1445d54e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_ReplaySystem_ReadDbSettings(void *sys)",
+  "evidence": "str:s_cfg_VideoCaptureEnabled;decomp:re/decomp/1445d54e0.c;xref:0x1445d57a2,0x1445d57a3,0x1457cf240,0x1457d6bb0",
+  "notes": "Slot 4 (+0x20) of two 39-slot vtables: 0x1457cf220 (preceded by the string GameReplaySystem; pointer 0x1457cf240) and 0x1457d6b90 (pointer 0x1457d6bb0). Looks up three entries in the g_Gdb_Database hash map (seed +0xb8, table +0xc0/+0xc8/+0xd8/+0xe8): key 0xb4ee1099ea7da521 -> its bool at entry+8 into sys+0x52 (0 when missing), key 0x70ce6a6afbd1bfe0 -> address of the entry value slot into sys+0x60, key 0x969eeee991a81dc4 -> into sys+0x68 (key names unknown, db_keys.tsv rows L1). Setting VideoCapture.enabled -> Ne_Get_SettingBool 0x143a43b90 on node *(sys+0xe0)+0x18, default 0; when true it forces sys+0x52 = 0, so video capture disables whatever flag the first DB key enables. hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "game.replay_system_read_db_settings",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 48 89 CE 49 B8 21 A5 7D EA 99 10 EE B4",
+  "match": "0x1445d54e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445d54e0",
+  "kind": "func_start",
+  "names": [
+   "Game_ReplaySystem_ReadDbSettings"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-1",
+   "kind": "func",
+   "item": "0x1445d54e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445d54e0.c;xref:0x1457cf240,0x1457d6bb0",
+   "notes": "V9335 Slot +0x20 in the vtable after \"GameReplaySystem\" (and in a second vtable at 0x1457d6b90); looks up three DB keys by hash in the global DB, stores the flag at +0x52 and value pointers at +0x60/+0x68, and clears +0x52 if VideoCapture.enabled (default 0); arity matches."
+  }
+ ],
+ "proofs": []
+}

@@ -22,13 +22,9 @@ bool on()
     return GetEnvironmentVariableA("SWOFTY_TEST_ASSETS", v, sizeof v) && v[0] == '1';
 }
 
-void on_session(const SwoftyEvent *, void *)
-{
-}
+void on_session(const SwoftyEvent *, void *) {}
 
-void on_tick(double, void *)
-{
-}
+void on_tick(double, void *) {}
 
 }
 
@@ -56,8 +52,7 @@ SWOFTY_ON_LOAD
         swofty::log("[t_assets] result %s", assets::name(x));
 
     swofty::overlay::Result pr = swofty::overlay::on_paint([](SwoftyPaint *, void *) {});
-    swofty::log("[t_assets] overlay available %d on_paint %s", swofty::overlay::available() ? 1 : 0,
-                swofty::overlay::name(pr));
+    swofty::log("[t_assets] overlay available %d on_paint %s", swofty::overlay::available() ? 1 : 0, swofty::overlay::name(pr));
     swofty::log("[t_assets] storage available %d", storage::available());
     storage::Result sw = storage::write("save/state.txt", std::string_view("round-trip-ok"));
     std::string back;
@@ -92,8 +87,7 @@ SWOFTY_ON_LOAD
     std::string seeded;
     storage::Result sseed = storage::read("seeded.txt", seeded);
     storage::Result srmseed = storage::remove("seeded.txt");
-    swofty::log("[t_assets] storage seeded %s '%s' remove %s", storage::name(sseed), seeded.c_str(),
-                storage::name(srmseed));
+    swofty::log("[t_assets] storage seeded %s '%s' remove %s", storage::name(sseed), seeded.c_str(), storage::name(srmseed));
 
     uint32_t etok = 0;
     events::Result esub = events::subscribe(SWOFTY_EVENT_SESSION_START, on_session, nullptr, &etok);
@@ -102,8 +96,8 @@ SWOFTY_ON_LOAD
     events::Result euns = events::unsubscribe(etok);
     events::Result euns2 = events::unsubscribe(etok);
     swofty::log("[t_assets] events available %d", events::available());
-    swofty::log("[t_assets] events subscribe %s on_frame %s unknown %s unsubscribe %s unsubscribe-again %s",
-                events::name(esub), events::name(efrm), events::name(ebad), events::name(euns), events::name(euns2));
+    swofty::log("[t_assets] events subscribe %s on_frame %s unknown %s unsubscribe %s unsubscribe-again %s", events::name(esub),
+                events::name(efrm), events::name(ebad), events::name(euns), events::name(euns2));
 
     SwoftyDbValue dv{};
     db::Result dget = db::get("entrants.teams.team.t_assets", &dv);
@@ -115,8 +109,7 @@ extern "C" __declspec(dllexport) void t_assets_late()
     if (!on())
         return;
     assets::Fragment frags[] = {{"erp/frag.bin"}};
-    swofty::log("[t_assets] late put_resource: %s",
-                assets::name(assets::put_resource("eaid://t_assets/late.tif.image", frags)));
+    swofty::log("[t_assets] late put_resource: %s", assets::name(assets::put_resource("eaid://t_assets/late.tif.image", frags)));
 
     tel::SessionState ss = {};
     tel::CarState cs = {};

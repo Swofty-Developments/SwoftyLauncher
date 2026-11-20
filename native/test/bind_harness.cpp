@@ -6,7 +6,7 @@
 #include <cstring>
 #include <string>
 #include <vector>
-#include "../src/core/json.hpp"
+#include "core/runtime/json.hpp"
 #include "../src/loader/pattern_scan.h"
 #include "swofty_api.h"
 
@@ -34,10 +34,7 @@ static void hlog(const char *fmt, ...)
     LeaveCriticalSection(&log_cs);
 }
 
-static uintptr_t hbase()
-{
-    return reinterpret_cast<uintptr_t>(img);
-}
+static uintptr_t hbase() { return reinterpret_cast<uintptr_t>(img); }
 
 static IMAGE_NT_HEADERS64 *nt()
 {
@@ -93,8 +90,7 @@ static int hscan(const char *section, const char *pattern, uintptr_t *out)
             first = f;
         hits += h;
     }
-    hlog(searched ? "scan %s [%s] -> %d hit(s)" : "scan %s [%s] -> no such section", section ? section : "<exec>",
-         pattern, hits);
+    hlog(searched ? "scan %s [%s] -> %d hit(s)" : "scan %s [%s] -> no such section", section ? section : "<exec>", pattern, hits);
     if (hits == 1 && out)
         *out = first;
     return hits;
@@ -143,8 +139,7 @@ static bool map_exe(const char *path)
     DWORD got = 0;
     ReadFile(f, head, sizeof head, &got, nullptr);
     auto h = reinterpret_cast<IMAGE_NT_HEADERS64 *>(head + reinterpret_cast<IMAGE_DOS_HEADER *>(head)->e_lfanew);
-    img = static_cast<uint8_t *>(
-        VirtualAlloc(nullptr, h->OptionalHeader.SizeOfImage, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE));
+    img = static_cast<uint8_t *>(VirtualAlloc(nullptr, h->OptionalHeader.SizeOfImage, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE));
     if (!img)
         return false;
     memcpy(img, head, std::min<DWORD>(got, h->OptionalHeader.SizeOfHeaders));
@@ -193,8 +188,8 @@ static int steam_mode(const std::string &root, const char *exe, const char *out)
     return 0;
 }
 
-constexpr uint32_t IMG = 0x18000, CODE = 0x1000, CODE_SIZE = 0x10000, XCODE = 0x11000, XCODE_SIZE = 0x4000,
-                   DATA = 0x15000, DATA_SIZE = 0x2000;
+constexpr uint32_t IMG = 0x18000, CODE = 0x1000, CODE_SIZE = 0x10000, XCODE = 0x11000, XCODE_SIZE = 0x4000, DATA = 0x15000,
+                   DATA_SIZE = 0x2000;
 constexpr uint32_t F_HINT = 0x3000, F_SCAN = 0x6000, F_SITE = 0x9000, F_ENC = 0x12000, D_MARK = 0x15100;
 
 static void fill(uint32_t at, uint32_t n, uint32_t seed)
@@ -337,15 +332,9 @@ static int init_c(const SwoftyApi *a)
     return a->register_mixins(m, 1);
 }
 
-static int init_d(const SwoftyApi *a)
-{
-    return a->resolve("pk:Site_Entry") != 0;
-}
+static int init_d(const SwoftyApi *a) { return a->resolve("pk:Site_Entry") != 0; }
 
-static int call(uint32_t at)
-{
-    return reinterpret_cast<int (*)()>(img + at)();
-}
+static int call(uint32_t at) { return reinterpret_cast<int (*)()>(img + at)(); }
 
 static bool logged(const char *needle)
 {
@@ -389,8 +378,7 @@ static int image_mode(const std::string &root, const char *mode)
     commit();
     if (plain) {
         expect(rb == 1 && init_b_calls == 1, "plain: the addon that resolves in its init succeeds on the first call");
-        expect(call(F_HINT) == 107 && call(F_SCAN) == 209 && call(F_ENC) == 304,
-               "plain: every wrap installs at the commit");
+        expect(call(F_HINT) == 107 && call(F_SCAN) == 209 && call(F_ENC) == 304, "plain: every wrap installs at the commit");
         call(F_SITE);
         expect(site_hits == 1 && on_load_ran == 1, "plain: the site runs and the on_load handler ran at the commit");
         expect(!logged("result=deferred"), "plain: nothing is deferred on a build that is not packed");
@@ -409,7 +397,8 @@ static int image_mode(const std::string &root, const char *mode)
            "init: the plain-section binding resolves at init");
     expect(logged("[bind] summary build=ea pass=init resolved=1 deferred=6 unresolved=2 total=9"),
            "init: summary counts 1 resolved, 6 deferred, 2 unresolved");
-    expect(logged(measured ? "(measured at init)" : "(the set says so)"), "init: the packed state comes from the expected source");
+    expect(logged(measured ? "(measured at init)" : "(the set says so)"),
+           "init: the packed state comes from the expected source");
     crypt(CODE, CODE_SIZE, 0xC0DE);
     expect(call(F_HINT) == 7, "decrypted: the target runs unhooked before the window stage");
     expect(core_init(L"t_pk_d.dll", init_d) == 1 && commit() >= 0,

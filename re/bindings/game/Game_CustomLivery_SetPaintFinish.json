@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomLivery_SetPaintFinish",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a9a910",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-CUSTOM_LIVERY_MODEL",
+  "notes": "named from its log messages (channel CUSTOM_LIVERY_MODEL): 'Setting paint finish: Base roughness %f - Metallic %f,%f,%f with metallic amount %f on vehicle index %d'"
+ },
+ "signature": {
+  "id": "game.custom_livery_set_paint_finish",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 48 89 CE",
+  "match": "0x142a9a910",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a9a910",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomLivery_SetPaintFinish"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142a9a910",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a9a910.c;xref:0x14db487f5",
+   "notes": "V4993 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

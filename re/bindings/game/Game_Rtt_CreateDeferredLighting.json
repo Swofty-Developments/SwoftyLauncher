@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Rtt_CreateDeferredLighting",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c89460",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c89460.c;xref:0x143c8e686,0x143d84fe3",
+  "notes": "Creates deferred lighting pass (strings DeferredLightingGenerator.ContextSetup, DeferredLightingCBuffer, deferred_render/ps_deferred_%s%s/%s/p0, DeferredRender, ps_clear_to_nan). Named callers: Game_Rtt_CreateScenes."
+ },
+ "signature": {
+  "id": "game.rtt_create_deferred_lighting",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 04 00 00 C5 F8 29 B4 24 10 04 00 00 44 89 CF 4D",
+  "match": "0x143c89460",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c89460",
+  "kind": "func_start",
+  "names": [
+   "Game_Rtt_CreateDeferredLighting"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143c89460",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c89460.c;xref:0x143c8e686",
+   "notes": "V7892 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

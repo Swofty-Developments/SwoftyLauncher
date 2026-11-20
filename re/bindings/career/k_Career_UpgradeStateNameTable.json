@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "k_Career_UpgradeStateNameTable",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14565cee0",
+  "type": "char*[9]",
+  "level": "L1",
+  "subsystem": "career",
+  "evidence": "pat:state-name-strings;kb:subsystems/rnd_ui.md#instances",
+  "notes": "Upgrade instance state names: 0 Unavailable, 1 Available, 2 InProgress, 3 Completed, 4 Failed, 5 Invalid, 6 PendingDevelopment, 7 InDevelopment, 8 PendingFitting."
+ },
+ "signature": {
+  "id": "career.upgrade_state_name_table",
+  "section": ".xtls",
+  "pattern": "48 8D 0D ?? ?? ?? ?? 48 8B 14 C1 48 89 D9 E8 ?? ?? ?? ?? 48 8B 47 10 0F B6 40 71 48",
+  "match": "0x14071e6c4",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x14565cee0",
+  "kind": "data",
+  "names": [
+   "k_Career_UpgradeStateNameTable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x14565cee0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x14071e6c7;decomp:re/decomp/14071e470.c",
+   "notes": "V7425 table content and refs match"
+  }
+ ],
+ "proofs": []
+}

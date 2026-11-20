@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_SaveError_EncryptionSourceFailed",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14414c780",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14414c780.c;xref:0x14413e8ad,0x1441452a3",
+  "notes": "SAVE error helper with fixed code 0x58 and fixed message 'Failed to set the encryption source, result was 0x%x' (arg = u32 result). Called before reading/writing the security info file (0x14413e8ad, 0x1441452a3) and in ProcessSerialiserActions. Diagnostic only."
+ },
+ "signature": {
+  "id": "core.save_error_encryption_source_failed",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 48 08 00 00 48 8D 44 24 48 48 C7 44 24 38 00 08 00 00 48 89 44 24 40 C6 44 24 48 00 48 8D 05 ?? ?? ?? ?? 48 89 44 24 30 44 8B 01",
+  "match": "0x14414c780",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14414c780",
+  "kind": "func_start",
+  "names": [
+   "Ne_SaveError_EncryptionSourceFailed"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d5-verify",
+   "kind": "func",
+   "item": "Ne_SaveError_EncryptionSourceFailed",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14414c780.c;xref:0x14413e8ad",
+   "notes": "V2568 fixed code 0x58 and fixed message"
+  }
+ ],
+ "proofs": []
+}

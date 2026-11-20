@@ -1,0 +1,111 @@
+{
+ "schema": 1,
+ "name": "Car_Physics_AdvanceCar",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14473fd80",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "void(CarLive *car, float dt)",
+  "evidence": "decomp:re/decomp/14473fd80.c;xref:0x1447765fe,0x1446424b3,0x1446424e8,0x144642593,0x1519eda09",
+  "notes": "Per-car physics advance, run from Car_Physics_PreAdvance (three direct calls 0x1446424b3/0x1446424e8/0x144642593 and the parallelForEach job 0x1447765c0) and from .data1 0x1519eda09 (Car_Physics_ResettleVehicles_Body). Order: phase-0 callbacks car+0x4f8 (count +0x4dc); 0x144741700; phase-1 car+0x500; copies chassis+0x170/+0x180 to +0x2e0/+0x2f0; phase-2 car+0x508 (dt); CarDynamics (car+0x900) vt+8 Car_Dynamics_Update, then a substep loop on dyn+0xa50 < dyn+0xa4c that calls per substep either vt+0x10 Car_Physics_StepVehicle (0x144740b66) or vt+0x18 0x1446e42c0, a reduced step without aero (0x144740b96): vt+0x18 when byte 0x146ce89d8 != 0 or CarLive+0x128 == 1; then vt+0x20 Car_Suspension_PublishWheelState once after the loop (0x144740bb9) (corrected per V1271); phase-3 car+0x510; phase-4 car+0x518. Phase callbacks are the {fn,ctx} pairs each system returns from its vtable +0x28 at create | engine-re E1 2026-11-18 (static, note only): control latch per tick (car+0x120 == 0): +0x1ed = (+0x1b9 & 0x19) | (+0x1ed & 0xe6) (0x1447401db), +0x1ec = (+0x1b8 & 0x7f) | (+0x1ec & 0x80) (0x1447401f4), +0x1e8 = +0x1b4 (gear request); and the legacy KERS button (branch from 0x144740247): Engine [[car+0x180]+0x530]+0x2568 = (+0x1b8 >> 1) & 1 (0x144740353), i.e. the KERS action of Sess_HumanController_Update reaches the engine. Readers of the latched bits: Game_ErsSystem_Update (+0x1ed 0x10/0x08 overtake). | TC (era-tc): after Car_Controls_Update (0x144740498) BrakeECU +0x21e4 = clamp01(car+0x198) (0x1447404d2) and BrakeECU +0x21e0 = clamp01(car+0x19c) (0x1447404f1); Car_Dynamics_Update (0x144740b28, -> Car_Solver_PrepareDrivetrain 0x1446dce1c) and the substeps (Car_Physics_StepVehicle 0x144740b66 -> Car_Powertrain_Step) read them later in the same advance, so a per-car TC override written right after 0x1447404f1 holds for that tick. (engine-re era-tc round 2026-11-18, static, build d873a1c8) raised by engine-re with --force 2026-11-18 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "car.update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC A0 00 00 00 C5 78 29 A4 24 90 00 00 00",
+  "match": "0x14473fd80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14473fd80",
+  "kind": "func_start",
+  "names": [
+   "Car_Physics_AdvanceCar"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-29",
+    "by": "carlive-verify",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v1",
+   "kind": "func",
+   "item": "Car_Physics_AdvanceCar",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14473fd80.c;xref:0x1446424b3,0x1446424e8,0x144642593,0x1447765ff,0x1519eda09",
+   "notes": "V1271 Phase order (0x4f8/0x4dc, 0x144741700, 0x500/0x4e0, chassis +0x170..+0x188 to +0x2e0..+0x2f8, 0x508/0x4e4, dyn vt+8, 0x510/0x4e8, 0x518/0x4ec) confirmed in asm. Wrong detail: the substep loop calls EITHER vt+0x10 StepVehicle (0x144740b66) OR vt+0x18 0x1446e42c0 (0x144740b96): vt+0x18 when byte 0x146ce89d8 != 0 or CarLive+0x128 == 1; vt+0x20 runs once after the loop (0x144740bb9), not per substep. Callers: 3 direct calls in PreAdvance, the job 0x1447765c0, and .data1 0x1519eda09 (ResettleVehicles body)."
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "tr-verify",
+   "kind": "func",
+   "item": "Car_Physics_AdvanceCar",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "xref:0x144740b28,0x144740b3c,0x144740b66,0x144740b96,0x144740bb9",
+   "notes": "V1757 recorded by engine-re from tr-verify (blind capstone): vt+0x10 and vt+0x18 loops are mutually exclusive (chosen by global byte or car+0x128 == 1), vt+0x08 first, vt+0x20 after"
+  },
+  {
+   "date": "2026-10-29",
+   "verifier": "cf-verify",
+   "kind": "func",
+   "item": "Car_Physics_AdvanceCar",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "xref:0x144740170",
+   "notes": "V1764 claim 4; b0/b1 addresses swapped"
+  },
+  {
+   "date": "2026-10-29",
+   "verifier": "bt-verify",
+   "kind": "func",
+   "item": "Car_Physics_AdvanceCar",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14473fd80.c;xref:0x144740efc",
+   "notes": "V1768 claim 6; 6 legal types when 9f28 == 0"
+  },
+  {
+   "date": "2026-10-29",
+   "verifier": "carlive-verify",
+   "kind": "func",
+   "item": "Car_Physics_AdvanceCar",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "xref:0x144740b60;xref:0x144740783",
+   "notes": "V1807 C1 substep loop call confirmed; clamp only on the speed branch (jbe 0x14474053a/0x14474056f skips it); per-frame per-car unproven statically"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "era-input-verify",
+   "kind": "func",
+   "item": "0x14473fd80",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1447401b1-0x144740353",
+   "notes": "V11502 latch formulas confirmed 0x1447401b1-0x1447401f2 (only when [this+0x120]==0 and xmm6 > const); engine write is at 0x144740353 (not 0x144740355) and Engine = [[this+0x180]+0x530], not [car+0x530]; write only on the path from 0x144740247 (ratio<1 and [veh+0x9f18]==0)"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "era-tc-verify",
+   "kind": "func",
+   "item": "0x14473fd80",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14473fd80-0x1447411f0;xref:vtable 0x145bff4d0 slot1=0x1446dc480 (q at 0x145bff4d8)",
+   "notes": "V11802 rsi=rcx (this), never reassigned. 0x1447404d2 stores clamp01([rsi+0x198]) and 0x1447404f1 clamp01([rsi+0x19c]) to [[rsi+0x180]+0x550]+0x21e4/+0x21e0. 0x144740b28 is an indirect vcall [vtbl+8] on rdi=[rsi+0x900]; ctor 0x144628190 stores an object with vtable 0x145bff4d0 (slot1=0x1446dc480) at owner+0x900 (0x144629600), so it resolves to 0x1446dc480. Ctor also sets [car+0x180]=car (0x1446285e5)."
+  }
+ ],
+ "proofs": []
+}

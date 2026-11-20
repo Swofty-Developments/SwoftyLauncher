@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_ContractRenewal_FindFreeDriverSlot",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d8c590",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "uint64_t Career_ContractRenewal_FindFreeDriverSlot(void *comp)",
+  "evidence": "decomp:re/decomp/140d8c590.c;xref:0x140d8c458;xref:0x140d9a3c9;xref:0x140d9d37a",
+  "notes": "myteam-g2: Calls Career_ContractRenewal_CollectDriverEventsForTeam for the active team and copies the resulting records; returns whether a free or expiring slot exists. Read only helper for ProgressDay / RetireDriver."
+ },
+ "signature": {
+  "id": "career.contract_renewal_find_free_driver_slot",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 CF 48 8B 99 48 03 00 00",
+  "match": "0x140d8c590",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d8c590",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractRenewal_FindFreeDriverSlot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140d8c590",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140d8c590.c",
+   "notes": "V9538 Calls CollectDriverEventsForTeam once, but mainly loops lists +0x348/+0x368 and checks counts against comp+0x2f4 and the list at +0x308..; returns a satisfied/no-conflict bool, free-slot meaning unproven."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Entity_GetNameString",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a13860",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a13860.c;xref:0x141fa0ae0,0x142d843e0",
+  "notes": "(out, Entity *e, ?, ?): if e has the component type 0x146063fb0 (e[0x206] vtable +0x10) copies its name (+0x5b8, len +0x5b0) into out via 0x1441974e0; else falls back to id e[0x1c3]+0xb0. Callers: Game_GarageMonitorTvFeedVM_OnActivate, Sess_PreRace_OnStateExit, Sess_ViewInstantReplay_Update, Sess_RedFlagRaceStrategy_Enter, Sess_RedFlagToRestart_Enter, Game_AutoResetToTrack_StartTimer."
+ },
+ "signature": {
+  "id": "game.entity_get_name_string",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 CE 48 85 D2 0F 84",
+  "match": "0x142a13860",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a13860",
+  "kind": "func_start",
+  "names": [
+   "Game_Entity_GetNameString"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142a13860",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a13860.c;xref:0x141fa1b1d,0x142d85168,0x142da2cb1",
+   "notes": "V3409 component type 0x146063fb0 via e[0x206] vtbl+0x10, name +0x5b0/+0x5b8 copied via 0x1441974e0, fallback e[0x1c3]+0xb0; named callers confirmed (incl. RedFlag*, AutoResetToTrack_StartTimer)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,29 @@
+{
+  "about": "The start timing mark of lap 1, sent as it is made, chained to the receipt of the lap's previous mark.",
+  "answer": {
+    "body": {
+      "receipt": "tk1.c3RhcnQ.bWFj"
+    },
+    "status": 200
+  },
+  "request": {
+    "body": {
+      "json": {
+        "attempt": 1,
+        "game_ms": 0,
+        "lap": 1,
+        "mark": "start",
+        "since_ms": 12
+      }
+    },
+    "headers": {
+      "accept": "*/*",
+      "accept-encoding": "gzip",
+      "authorization": "Bearer <token>",
+      "content-type": "application/json",
+      "user-agent": "swofty-launcher"
+    },
+    "method": "POST",
+    "path": "/v1/tt/sessions/5e5510b0c0de5e5510b0c0de5e5510b0/ticks"
+  }
+}

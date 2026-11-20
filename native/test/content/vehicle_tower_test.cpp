@@ -1,4 +1,4 @@
-#include "../../src/core/apply/content/boot.hpp"
+#include "core/apply/content/boot.hpp"
 
 #include <cstdio>
 #include <map>
@@ -15,17 +15,15 @@ static void check(bool ok, const std::string &what)
     failures += !ok;
 }
 
-static Value vehicle()
-{
-    return Value::object({{"label", Value("sw22_sauber")}, {"team_from", Value("cs22_sauber")}});
-}
+static Value vehicle() { return Value::object({{"label", Value("sw22_sauber")}, {"team_from", Value("cs22_sauber")}}); }
 
 static std::string tower_of(const content::Plan &p)
 {
     for (std::size_t i = 0; i < p.ops.size(); i++) {
         const Value &op = p.ops[i];
         if (op.is_object() && op["op"].is_string() && op["op"].as_string() == "add-row" &&
-            op["set"]["_metadata_"].as_string() == std::string("sw22_sauber") && op["set"]["timing_tower_texture_path"].is_string())
+            op["set"]["_metadata_"].as_string() == std::string("sw22_sauber") &&
+            op["set"]["timing_tower_texture_path"].is_string())
             return std::string(op["set"]["timing_tower_texture_path"].as_string());
     }
     return {};
@@ -51,7 +49,8 @@ int main()
         content::Plan p;
         content::lower_vehicle_team(rec, read, p, "sw.addon/swt22_sauber", "swt22_sauber");
         check(tower_of(p) == "swt22_sauber", "an identity with its own badge: the row takes the identity's key");
-        check(!p.lines.empty() && p.lines[0].find("timing tower badge swt22_sauber from sw.addon/swt22_sauber") != std::string::npos,
+        check(!p.lines.empty() &&
+                  p.lines[0].find("timing tower badge swt22_sauber from sw.addon/swt22_sauber") != std::string::npos,
               "and the plan line names the badge and the identity");
     }
     {

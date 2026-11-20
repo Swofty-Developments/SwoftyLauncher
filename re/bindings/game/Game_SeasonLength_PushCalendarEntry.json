@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Game_SeasonLength_PushCalendarEntry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140bc9d80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_SeasonLength_PushCalendarEntry(void *calendar, const void *entry)",
+  "evidence": "decomp:re/decomp/140bc9d80.c;decomp:re/decomp/1498ccd50.c;decomp:re/decomp/140bc8fb0.c;xref:0x140bc9300,0x141282690,0x1498ae8e0,0x1498ccf10",
+  "notes": "jmp thunk to the .data1 body 0x1498b8ca0: push_back of one 0x28-byte calendar entry onto a season length calendar vector {alloc, begin, end, cap} (component +0x2a8), copying the four qwords after the entry vtable 0x14568da60 and growing x1.5 through the allocator (vt+0x18 alloc, +0x38 free); used by Game_SeasonLength_ApplyPreset and the component row init 0x140bc8fb0 EA (re/db/builds/ea.json): the thunk is EA 0x140bc86f0 (jmp to the .xcode body 0x1491369a0, the same code as Steam's .data1 body up to protector junk); all 4 Steam callers (2 .xtls, 2 in .data1 bodies, one at +0x1c0 in the EA ApplyPreset body) mapped to EA call it (.xtls rel32 sites 0x140bc7c71, 0x14127c8e1); the Steam thunk filler differs, so EA takes its own 14-byte pattern."
+ },
+ "signature": {
+  "id": "game.season_length_push_calendar_entry",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 3F 6E 19 C4 96 BE 5A",
+  "match": "0x140bc9d80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140bc9d80",
+  "kind": "func_start",
+  "names": [
+   "Game_SeasonLength_PushCalendarEntry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "wizard-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/career_wizard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-c",
+   "kind": "func",
+   "item": "Game_SeasonLength_PushCalendarEntry",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140bc9d80.c;decomp:re/decomp/1498b8ca0.c;decomp:re/decomp/1498ccd50.c;decomp:re/decomp/140bc8fb0.c;xref:0x140bc9300,0x141282690,0x1498ae8e0,0x1498ccf10;sig:game.season_length_push_calendar_entry",
+   "notes": "V0998 V0993 0x140bc9d80 is jmp 0x1498b8ca0. The body works on the vector {alloc +0, begin +8, end +0x10, capacity count +0x18}. With room, it writes vtable 0x14568da60, copies entry +8..+0x27 and advances end by 0x28. Otherwise it grows to max(n+n/2, n+1) through alloc vt+0x18 (n*0x28, align 8), copies the old entries, appends, destroys the old entries through vt[0](e,0) and frees them through vt+0x38. Both paths return 0. A rel32 scan of .xtls and .data1 finds exactly four call sites: 0x140bc9300 (0x140bc8fb0), 0x141282690 (0x141282150), .data1 0x1498ae8e0 (0x1498ae7d0) and 0x1498ccf10 (the ApplyPreset body). The proto is right. sigcheck: one hit"
+  },
+  {
+   "date": "2026-10-27",
+   "verifier": "easites-verify",
+   "kind": "sig",
+   "item": "game.season_length_push_calendar_entry",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "sig:game.season_length_push_calendar_entry;xref:0x140bc9300,0x141282690,0x1498ae8e0,0x1498ccf10;xref:0x1498b8ca0;pat:E9 ?? ?? ?? ?? 04 C4 5C E9 28 C5 A5 FC 63",
+   "notes": "V1144 EA overlay: the override matches EA .rdata once at 0xbc86f0 (jmp to .xcode 0x1491369a0), and the 4 Steam callers of 0x140bc9d80 correspond to the 4 EA callers of 0x140bc86f0 (0x140bc7c70, 0x14127c8e0, 0x149131840, and 0x14913bc60 at +0x1c0 of the EA ApplyPreset body, as Steam's 0x1498ccf10). The EA body 0x1491369a0 matches Steam's 0x1498b8ca0 except protector junk (a dead r14w load plus global add vs a global word sub, nop length), with the same allocator vtable calls and the same entry vtable (0x14568da60 / 0x14579f8f0)."
+  }
+ ],
+ "proofs": []
+}

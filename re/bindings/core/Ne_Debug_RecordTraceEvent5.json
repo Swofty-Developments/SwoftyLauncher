@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Debug_RecordTraceEvent5",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144d53f00",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144d53f00.c;xref:0x14491cf21",
+  "notes": "Companion of 0x144d54420: builds a 0x38-byte event (QPC, caller address, 5 params) and forwards to 0x144d54190 when a global tracer object exists. 12 callers (0x14491cf21...). Debug/trace helper."
+ },
+ "signature": {
+  "id": "core.debug_record_trace_event5",
+  "section": ".xtls",
+  "pattern": "40 53 55 56 57 48 83 EC 78 48 8B 05",
+  "match": "0x144d53f00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144d53f00",
+  "kind": "func_start",
+  "names": [
+   "Ne_Debug_RecordTraceEvent5"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x144d53f00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144d53f00.c;xref:0x14491cf21",
+   "notes": "V8426 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

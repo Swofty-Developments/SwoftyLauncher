@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_ReserveBuckets_Gfx",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ec1de0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143ec1de0.c;xref:0x143b786cd,0x143b85b93",
+  "notes": "Reserve/rehash for a hash map (log2 bucket count, throws \"invalid hash bucket count\" via Ne_Std_ThrowStdException; limit 0x800000000000000). Used by RenderFrame. Named callers: Ne_Gfx2Renderer_RenderFrame."
+ },
+ "signature": {
+  "id": "core.hash_map_reserve_buckets_gfx",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4D 8B BC 24 70 3F 04 00 4D 89 B4",
+  "match": "0x143b786cd",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143ec1de0",
+  "kind": "func_start",
+  "names": [
+   "Ne_HashMap_ReserveBuckets_Gfx"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x143ec1de0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ec1de0.c;xref:0x143b786cd",
+   "notes": "V8155 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

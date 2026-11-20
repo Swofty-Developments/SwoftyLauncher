@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_WindowWin_WinProc",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439f1d20",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/1439f1d20.c;xref:0x1439efff8",
+  "notes": "cxx=NeWindowWin::winProc; log channel WINDOW: 'NeWindowWin::winProc: WM_SYSKEYUP'"
+ },
+ "signature": {
+  "id": "core.window_win_win_proc",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 4C 89 CF 4C 89 C3",
+  "match": "0x1439f1d20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439f1d20",
+  "kind": "func_start",
+  "names": [
+   "Ne_WindowWin_WinProc"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb1-verify",
+   "kind": "func",
+   "item": "Ne_WindowWin_WinProc",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439f1d20.c;xref:0x1439efff8",
+   "notes": "V2004 log strings and role confirmed in decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetMarshalZones_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143194bf0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143194bf0.c;xref:0x14357e6a3",
+  "notes": "Every 0.5 s (QPC): reads marshal zones (called from Sess_MarshalZone_CheckFlags), builds the zone table (count u16 +0x10, entries +0x18: flag byte +8, bitmask +0xc of cars owned by this machine); on change a client sends MarshalZone message {grp 9,id 0x25} to the host (log CLIENT), the host merges and broadcasts via HostBroadcast. Addon: per-zone flag state for every car online. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2754)"
+ },
+ "signature": {
+  "id": "game.net_marshal_zones_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 48 8B 41 20",
+  "match": "0x143194bf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143194bf0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetMarshalZones_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d8-verify",
+   "kind": "func",
+   "item": "Game_NetMarshalZones_Update",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143194bf0.c;xref:0x143194bf0",
+   "notes": "V2754 0.5 s QPC test, 27-vehicle loop, client sends {9,0x25}, host sets +0x61 confirmed"
+  }
+ ],
+ "proofs": []
+}

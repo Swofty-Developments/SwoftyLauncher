@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_ContractRenewal_AddEvent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d8d620",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:log-channel-CONTRACT_RENEWAL",
+  "notes": "named from its log messages (channel CONTRACT_RENEWAL): 'Adding a renewal event - human driver available | Adding a renewal event'"
+ },
+ "signature": {
+  "id": "career.contract_renewal_add_event",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 48 89 CF 48 8B 81 A0 02 00 00",
+  "match": "0x140d8d620",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d8d620",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractRenewal_AddEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140d8d620",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d8d620.c;xref:0x140d992c7,0x140d9a623",
+   "notes": "V4692 log/pretty strings and body checked in decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140d8d620",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d8d620.c",
+   "notes": "V9074 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

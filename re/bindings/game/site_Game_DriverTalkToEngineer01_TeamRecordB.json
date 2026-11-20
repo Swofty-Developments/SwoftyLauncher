@@ -1,0 +1,152 @@
+{
+ "schema": 1,
+ "name": "site_Game_DriverTalkToEngineer01_TeamRecordB",
+ "table": "globals",
+ "author": "saves",
+ "row": {
+  "addr": "0x14028c41a",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:own disasm 0x14028c3df-0x14028c421;xref:0x14028c3e8,0x14028c41a",
+  "notes": "In Game_DriverTalkToEngineer01_Initialise (0x14028b340): rax = the TeamRecord pointer [[[g+0x290]+set*0x10+0x2c8]+8][id*0x10+8]; mov r,[rax+0x18] reads its label with no null test, so a team with no loaded TeamRecord faults reading 0x18. The sentinel key 0x3fff0000 skips this lookup through the je ahead of it; the core takes that je target when rax is 0."
+ },
+ "signature": {
+  "id": "game.driver_talk_to_engineer01_team_record_b",
+  "section": ".xtls",
+  "pattern": "81 F9 00 00 FF 3F 0F 84 ?? ?? ?? ?? 89 C1 C1 E9 10 48 8B 15 ?? ?? ?? ?? 48 8B 92 90 02 00 00 0F B6 C0 48 C1 E0 04 48 8B 84 02 C8 02 00 00 48 8B 40 08 48 C1 E1 04 48 8B 44 08 08 48 8B 58 18 48 C7 84 24 B0 00 00 00 00 00 00 00 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 89 84 24 A0 00 00 00 48 8D 94 24 A0 00 00 00 4C 8D 84 24 B0 00 00 00 48 89 F9 45 31 C9 E8 ?? ?? ?? ?? 48 8B 8C 24 B0 00 00 00 48 89 DA 45 31 C0 E8 ?? ?? ?? ?? 48 8D 15",
+  "match": "0x14028c3df",
+  "anchor": "0x3b",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14028c41a",
+  "kind": "mid",
+  "names": [
+   "site_Game_DriverTalkToEngineer01_TeamRecordB"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-20",
+    "by": "saves",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "expect": "48 8B 58 18 48 C7 84 24 B0 00 00 00 00 00 00 00",
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14028c3df",
+  "made_on_target": "0x14028c41a",
+  "twin": "made on steam-26566308; the target 0x14028c41a is KB 0x14028c41a: Game_DriverInCarIdle05_Initialise (0x286e90) and Ne_ActorSceneDataResource_DestroyScenes (0x2918b0) on either side both sit 0x0 above their KB addresses"
+ },
+ "verify": [
+  {
+   "date": "2026-11-20",
+   "verifier": "saves-blind",
+   "kind": "global",
+   "item": "site_Game_DriverTalkToEngineer01_TeamRecordB",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:disasm 0x14028c41a mov r,[rax+0x18] after chain [g+0x290] [+set*16+0x2c8] [+8] [+id*16+8] and cmp ecx 0x3fff0000 at 0x14028c3df je 0x14028c46b,xref:vtable cell 0x1455ff000 -> Game_DriverTalkToEngineer01_Initialise 0x14028b340,imm:0x3fff0000 at 0x14028c3df and 0x290 0x2c8 0x18",
+   "notes": "gh:saves-blind Re-derived blind on KB: site 0x14028c41a is mov r,[rax+0x18]; rax from rdx=[[g]+0x290], [rdx+(al<<4)+0x2c8], [+8], [+(ecx>>16<<4)+8]. Sentinel cmp at 0x14028c3df (59 bytes before site) je 0x14028c46b. Join 0x14028c46b: rax rcx rdx reloaded or overwritten before any read, no use of the skipped register after the join. Function Game_DriverTalkToEngineer01_Initialise (0x14028b340) is referenced from vtable cell 0x1455ff000. binding verify: KB sigcheck passed, Steam 145 resolved once. Site loads rbx (not rdx): the guard also skips A and B call blocks that read [rsi+0x31a] (same key); rbx is rewritten (mov rbx,rax or xor ebx,ebx) before any read after the join."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "saves",
+   "date": "2026-11-20",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14028c3df",
+    "target": "0x14028c41a"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7c29b3e3151edc8169d1f33bcc55cac819123a077adb6405c81766f1c4387891"
+  },
+  {
+   "by": "saves",
+   "date": "2026-11-20",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14028c3df",
+    "target": "0x14028c41a"
+   },
+   "sigcheck": "passed",
+   "digest": "ce7d5f7e45ac5be3c8d595d384c074a6072d74cc35ea6a48cd8b2a5afb4ee7b6"
+  },
+  {
+   "by": "saves-blind",
+   "date": "2026-11-20",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14028c3df",
+    "target": "0x14028c41a"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7c29b3e3151edc8169d1f33bcc55cac819123a077adb6405c81766f1c4387891"
+  },
+  {
+   "by": "saves-blind",
+   "date": "2026-11-20",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14028c3df",
+    "target": "0x14028c41a"
+   },
+   "sigcheck": "passed",
+   "digest": "ce7d5f7e45ac5be3c8d595d384c074a6072d74cc35ea6a48cd8b2a5afb4ee7b6"
+  },
+  {
+   "by": "saves-blind",
+   "date": "2026-11-20",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14028c3df",
+    "target": "0x14028c41a"
+   },
+   "sigcheck": "skipped (pefile is not installed; re/tools/py has it)",
+   "digest": "ce7d5f7e45ac5be3c8d595d384c074a6072d74cc35ea6a48cd8b2a5afb4ee7b6"
+  }
+ ]
+}

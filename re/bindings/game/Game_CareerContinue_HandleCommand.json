@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Game_CareerContinue_HandleCommand",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a1db90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_CareerContinue_HandleCommand(void *vm, NeStr **cmd, void *value)",
+  "evidence": "decomp:re/decomp/141a1db90.c;xref:0x1457264f0,0x1457266c0;decomp:re/decomp/141a1db90.c;decomp:re/decomp/141a1eb80.c;xref:0x1457264f0,0x1457266c0",
+  "notes": "cxx guess CareerContinue*ViewModel::onCommandRaised, slot 10 of CareerContinueDriverViewModel (vt 0x1457264a0) and CareerContinueMyTeamViewModel (vt 0x145726670). Args (vm, NeStr **command (djb2 at *(u32*)*cmd), value variant (data byte at +8)). Commands (djb2, names from the career_continue_driver .ui raise_command): slot_focused 0x845abb4f -> vt+0xc8(vm, data); slot_pressed 0x8d43acfc -> vt+0xc0 Game_CareerContinue_PressSlot(vm, data = card index 0..2); back_pressed 0x493fe92b -> pending action vm+0x1368 = 1 + start_transition_out; delete_slot_pressed 0x021a76ce -> vt+0xd0 check, deleting_save; transition_in_finished 0xc22b77ef; transition_out_finished 0xbda0a8b0 -> with vm+0x136a set: delete (vt+0xa0); else on vm+0x1368: 1 back (vt+0xb8), 2 post a bus message (vt 0x145735428, team +0x57c) then vt+0xa8 Game_CareerContinue_LoadSelected, 3 new career (vt+0xb0). Decomp read by ts3b; L2-ready, lane game not claimed. ts-v1 re-read with PressSlot (V1485, V1496 agree): L2, signature for the test agent. proto (vm, NeStr **cmd, void *value) Callers: census steam 0x1a1db90."
+ },
+ "signature": {
+  "id": "game.career_continue_handle_command",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 8B 02 48 85 C0 74 38",
+  "match": "0x141a1db90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a1db90",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerContinue_HandleCommand"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "ts-v1",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/testing/agent/agent.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "ts2b-re",
+   "kind": "func",
+   "item": "0x141a1db90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a1db90.c;xref:0x1457264f0,0x1457266c0",
+   "notes": "V1485 ts2b-re re-read: slot_focused 0x845abb4f -> vt+0xc8(vm, *(u8*)(data+8)); slot_pressed 0x8d43acfc -> ignored while the bool node vm+0x12f0 (not null/default, bool type) is true, else vt+0xc0(vm, *(u8*)(data+8)); transition_out_finished 0xbda0a8b0 on pending vm+0x1368 1/2/3 -> vt+0xb8/vt+0xa8/vt+0xb0; null or empty (0x1505) command returns. Agrees with the row."
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "ts-v1",
+   "kind": "func",
+   "item": "0x141a1db90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a1db90.c;decomp:re/decomp/141a1eb80.c;xref:0x1457264f0,0x1457266c0",
+   "notes": "V1496 ts-v1 re-read with PressSlot (0x141a1eb80, vt+0xc0): slot_focused 0x845abb4f and slot_pressed 0x8d43acfc reproduced from djb2; the value is read as one byte at data+8 (the card index 0..2); slot_pressed is ignored while the bool node vm+0x12f0 is true; PressSlot reads cards at vm+0x328+i*0x540 (has_save byte at +0, slot id at +8), returns early while vm+0x1380 != 0, then selects the slot and sets pending vm+0x1368 = 2. Both resume vtables hold HandleCommand at slot 10 (exe: 0x1457264f0, 0x1457266c0). Agrees."
+  }
+ ],
+ "proofs": []
+}

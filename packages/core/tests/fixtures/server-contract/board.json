@@ -1,0 +1,30 @@
+{
+  "about": "One board, searched for a driver's name.",
+  "answer": {
+    "body": {
+      "rows": [
+        {
+          "driver": {
+            "id": "1",
+            "name": "driver one"
+          },
+          "lap_id": "2949b7d7eaf78422",
+          "rank": 1,
+          "time_ms": 91234
+        }
+      ]
+    },
+    "status": 200
+  },
+  "request": {
+    "body": null,
+    "headers": {
+      "accept": "*/*",
+      "accept-encoding": "identity",
+      "authorization": "Bearer <token>",
+      "user-agent": "swofty-launcher"
+    },
+    "method": "GET",
+    "path": "/v1/tt/boards/game/f1_2025/bahrain?weather=dry&q=driver%20one"
+  }
+}

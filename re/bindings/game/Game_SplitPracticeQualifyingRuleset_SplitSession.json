@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SplitPracticeQualifyingRuleset_SplitSession",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d3ecc0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=SplitPracticeQualifyingRuleset::splitSession; log channel SESSION-RESULT: 'SplitPracticeQualifyingRuleset::splitSession: Disabling simulation for vehicle with id %d. This driver will be in the player's inactive group.'"
+ },
+ "signature": {
+  "id": "game.split_practice_qualifying_ruleset_split_session",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 48 89 CE 48 8B 81 20 03 00 00",
+  "match": "0x142d3ecc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d3ecc0",
+  "kind": "func_start",
+  "names": [
+   "Game_SplitPracticeQualifyingRuleset_SplitSession"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142d3ecc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d3ecc0.c;xref:0x142d3ecb0",
+   "notes": "V5384 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

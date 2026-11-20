@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1os_CreateTask_RefreshSessionToken",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14344ecf0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14344ecf0.c;xref:0x145840858,0x1432c2f70",
+  "notes": "Virtual (slot ref 0x145840858) factory like Game_F1os_CreateOnlineServiceTask 0x14095d500 for the 'RefreshSessionToken' online service task: allocates a 0xc0-byte task (base vtable 0x145832500, logs 'Creating online service task %s' on F1OS, name ptr +0x28 from method-name global 0x1460c49f8 set by init 0x143349850, manager global 0x1460c4c88, game ctx 0x1460c4a30, final vtable 0x1458409c0), wraps it in a ref-counted holder (vtable 0x145840a20) and queues it via 0x1432c2f70. Addon: model/hook for queuing a RefreshSessionToken task. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3331)"
+ },
+ "signature": {
+  "id": "game.f1os_create_task_refresh_session_token",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 80 00 00 00 C5 F8 29 74 24 70 48 89 CE 48 8B 79 08 48 8B 07 BA C0 00 00 00 41",
+  "match": "0x14344ecf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14344ecf0",
+  "kind": "func_start",
+  "names": [
+   "Game_F1os_CreateTask_RefreshSessionToken"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_F1os_CreateTask_RefreshSessionToken",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14344ecf0.c;xref:0x145840858",
+   "notes": "V3331 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

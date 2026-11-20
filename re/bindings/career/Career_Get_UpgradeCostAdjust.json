@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Get_UpgradeCostAdjust",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1416d53f0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void FUN(void *upgrade_ctx)",
+  "evidence": "decomp:re/decomp/1416d53f0.c;xref:0x141c7563d;xref:0x141c7e3cd;xref:0x141c8df5d",
+  "notes": "myteam-g1: Computes upgrade_cost_adjust_value: sums team modifiers of type 3 for the department (ctx+0x20) from the TeamModifiers list at +0xc90, subtracts the type 0x1000003 modifier and rounds to int; sets has_upgrade_cost_adjust_value. CORRECTION(V9000): Function computes three adjusted values (cost, failure, build time) not only cost, and calls the morale updater FUN_1416d57c0 first. Cost part is right: kind-3 modifiers for dept byte +0x20, minus 0x1000003|dept<<8 entry, rounded to int."
+ },
+ "signature": {
+  "id": "career.get_upgrade_cost_adjust",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 90 00 00 00 C5 F8 29 BC 24 80 00 00 00 C5 F8 29 74 24 70 48 89 CE E8",
+  "match": "0x1416d53f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416d53f0",
+  "kind": "func_start",
+  "names": [
+   "Career_Get_UpgradeCostAdjust"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-b",
+   "kind": "func",
+   "item": "0x1416d53f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1416d53f0.c;xref:0x141c7563d;str:\"upgrade_cost_adjust_value\";str:\"failure_adjust_value\";str:\"build_time_adjust_value\"",
+   "notes": "V9000 Function computes three adjusted values (cost, failure, build time) not only cost, and calls the morale updater FUN_1416d57c0 first. Cost part is right: kind-3 modifiers for dept byte +0x20, minus 0x1000003|dept<<8 entry, rounded to int."
+  },
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x1416d53f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1416d53f0.c;xref:0x141c7563d;xref:0x141c7e3cd",
+   "notes": "V9761 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

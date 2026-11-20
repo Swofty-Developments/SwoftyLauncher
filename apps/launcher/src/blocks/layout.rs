@@ -1,4 +1,4 @@
-use crate::scale::px;
+use crate::ui::scale::px;
 use gpui_kit::component::{Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
@@ -6,9 +6,9 @@ use swofty_core::view::{Block, Card, DropZone, Grid, Hero, Tabs};
 
 use super::widgets::*;
 use super::*;
-use crate::sections::{art, icon};
+use crate::features::sections::{art, icon};
 use crate::shell::Shell;
-use crate::theme::Palette;
+use crate::ui::theme::Palette;
 
 impl Shell {
     pub(crate) fn rich_block(
@@ -95,7 +95,7 @@ impl Shell {
         let items = t.items.iter().map(|item| {
             let on = active.as_deref() == Some(item.id.as_str());
             let control = format!("{}/{}/{}:{}", at.addon, at.section, t.id, item.id);
-            let busy = self.busy.contains(&control);
+            let busy = self.addon_views.busy.contains(&control);
             let fg = if item.disabled {
                 p.text_placeholder
             } else if on {

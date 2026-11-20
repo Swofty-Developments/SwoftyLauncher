@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RaceStrategyVm_Populate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141d69300",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_RaceStrategyVm_Populate(void *vm)",
+  "evidence": "decomp:re/decomp/141d69300.c;xref:0x141d69278,0x141d6f81c",
+  "notes": "RaceStrategyViewModel populate (vtable 0x145749740; callers: activate 0x141d69270 via call 0x141d69278, and vtable+0xC0 handler 0x141d6f700 via call 0x141d6f81c). Returns WITHOUT filling the screen when: vm+0x26dd set (ctor writes word 0x100 at +0x26dc, activate clears it after its first populate - so the first call is always empty); player car = Sess_Get_PlayerVehicleIndex(vm+0x638, splitscreen flag vm+0x26d0) == 0xff; session data vm+0x630 has +0x70 == 0, or its per-car lists +0x38..+0x40 / +0x58..+0x60 are empty or shorter than the player index, or either entry is null. Entry type check: vcall [entry]+0 must return RaceSessionData type 0x1461015c8, else the other filler path (0x141d6c161 -> FUN_141d6ceb0). Then fills tyre/strategy rows (0x1436ae650 on vm+0x630 for the player car) and view-model fields. Strategy screen 'frame but empty centre' = one of these early returns on the second call. Placed in game (vm lane owned by ui-re). (used by vmknolle red-flag-pit strategy probe)"
+ },
+ "signature": {
+  "id": "game.race_strategy_vm_populate",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 01 00 00 C5 78 29 84 24 30 01 00 00 C5 F8 29 BC 24 20 01 00 00 C5 F8 29 B4 24 10 01 00 00 80 B9 DD 26 00 00 00 74",
+  "match": "0x141d69300",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141d69300",
+  "kind": "func_start",
+  "names": [
+   "Game_RaceStrategyVm_Populate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-c",
+   "kind": "func",
+   "item": "0x141d69300",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_c/decomp/141d69300.c;decomp:work/verify_c/decomp/141d69270.c;xref:0x141d69278,0x141d6f81c",
+   "notes": "V1044 fills 'view_model_data.intro_race_strategy' keys (high/low_stints, fuel_laps, lng_rs_weather_forecast, red_flag_suspended_race, race_restart_lap_title, enable_strategy_toggle...); single vm ptr param, void"
+  }
+ ],
+ "proofs": []
+}

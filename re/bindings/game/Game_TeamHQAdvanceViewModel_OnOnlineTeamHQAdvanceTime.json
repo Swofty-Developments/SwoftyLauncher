@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TeamHQAdvanceViewModel_OnOnlineTeamHQAdvanceTime",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422cc780",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "str:s_TeamHQAdvanceViewModel_OnOnlineTeamHQAdvanceTime;xref:0x1422ccb04,0x1422ccc15,0x1422ccc68,0x1422ccca6,0x1422ccf4c",
+  "notes": "cxx=game::TeamHQAdvanceViewModel::onOnlineTeamHQAdvanceTime; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "game.team_h_q_advance_view_model_on_online_team_h_q_advance_time",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 81 EC 08 01 00 00 0F B6 42 10 FF",
+  "match": "0x1422cc780",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422cc780",
+  "kind": "func_start",
+  "names": [
+   "Game_TeamHQAdvanceViewModel_OnOnlineTeamHQAdvanceTime"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x1422cc780",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422cc780.c;xref:0x1422bda56",
+   "notes": "V5265 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

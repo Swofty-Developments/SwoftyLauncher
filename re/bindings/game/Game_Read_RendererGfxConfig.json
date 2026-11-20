@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_RendererGfxConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14014d230",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: RearViewMirrors.enabled, RearViewMirrors.ultraMode, RearViewMirrors.updateMode, Renderer.Gfx.CarDamage.enabled, Renderer.Gfx.CarDynamicCubeMap.enabled, Renderer.Gfx.allowLensDistortion, Renderer.Gfx.allowPerfomanceModeOnXboxSeriesS, Renderer.Gfx.enablePlanarReflections, '"
+ },
+ "signature": {
+  "id": "game.read_renderer_gfx_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 03 00 00 C5 78 29 84 24 B0 03 00 00 C5 F8 29 BC 24 A0 03 00 00 C5 F8 29 B4 24 90 03 00 00 48 89 CE",
+  "match": "0x14014d230",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14014d230",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_RendererGfxConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x14014d230",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14014d230.c",
+   "notes": "V4308 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

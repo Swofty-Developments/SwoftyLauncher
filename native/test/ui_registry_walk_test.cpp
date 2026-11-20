@@ -1,20 +1,20 @@
-#include "ui_registry_walk.hpp"
+#include "core/frontend/ui_registry_walk.hpp"
 
 #include <cstdio>
 #include <map>
 
-using namespace runtime::ui_registry;
+using namespace frontend::ui_registry;
 
 namespace {
 
 int failures = 0;
 
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                    \
-            failures++;                                                                                                \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                              \
+            failures++;                                                                                                          \
+        }                                                                                                                        \
     } while (0)
 
 struct Heap {
@@ -30,10 +30,7 @@ struct Heap {
         blocks[at] = std::vector<uint8_t>(n, 0);
         return at;
     }
-    void put(uint64_t at, size_t off, const void *v, size_t n)
-    {
-        std::memcpy(blocks.at(at).data() + off, v, n);
-    }
+    void put(uint64_t at, size_t off, const void *v, size_t n) { std::memcpy(blocks.at(at).data() + off, v, n); }
     void u64(uint64_t at, size_t off, uint64_t v) { put(at, off, &v, 8); }
     void u32(uint64_t at, size_t off, uint32_t v) { put(at, off, &v, 4); }
     bool read(uint64_t at, void *out, size_t n)
@@ -188,7 +185,8 @@ void survives_freed_and_garbage_pointers()
     h.u64(huge, 0, LAY.object_vt);
     h.u64(huge, 0x70, 0x200000008ull);
     h.u64(huge, 0x78, 0x200000008ull + (uint64_t(1) << 40));
-    uint64_t root = object(h, {{"torn", torn}, {"junk", junk_map}, {"huge", huge}, {"gone", 0x400000000ull}, {"low", 0x20}, {"good", good}});
+    uint64_t root =
+        object(h, {{"torn", torn}, {"junk", junk_map}, {"huge", huge}, {"gone", 0x400000000ull}, {"low", 0x20}, {"good", good}});
     std::vector<Hit> hits;
     Stats st;
     CHECK(walk(h, registry(h, root), "Swooftyy", hits, st) == 1);

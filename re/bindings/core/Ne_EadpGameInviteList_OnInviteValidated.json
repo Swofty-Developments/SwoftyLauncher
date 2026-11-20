@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_EadpGameInviteList_OnInviteValidated",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143fda490",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "str:s_NeEadpGameInviteList_OnInviteValidated;xref:0x143fda512;decomp:re/decomp/143fda490.c",
+  "notes": "cxx=neon::NeEadpGameInviteList::onInviteValidated; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "core.eadp_game_invite_list_on_invite_validated",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 76 B8 6E 00",
+  "match": "0x143fda490",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143fda490",
+  "kind": "func_start",
+  "names": [
+   "Ne_EadpGameInviteList_OnInviteValidated"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb2-verify-b",
+   "kind": "func",
+   "item": "Ne_EadpGameInviteList_OnInviteValidated",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143fda490.c;xref:0x143fda490",
+   "notes": "V2019 EADP_INVITES log 'from player id'; erases entries (stride 0x88) with same id at +0x38, adds invite via FUN_143ff3dd0, notifies listener list at +0x38/+0x40"
+  }
+ ],
+ "proofs": []
+}

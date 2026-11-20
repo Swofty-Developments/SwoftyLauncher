@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqMyTeamVM_OnMenuTransition",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422d6d40",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "long *Career_TeamHqMyTeamVM_OnMenuTransition(void *vm, void *event, void *arg)",
+  "evidence": "decomp:re/decomp/1422d6d40.c;xref:0x14577bd30",
+  "notes": "myteam-g1: Hash-switch router for HQ menu transitions (t_contract_negotiations_holding_screen, t_department_event, t_team_career_contract_negotiations): matches event name hashes (0x859aac94, 0xb590c9b6, 0xb9c15f8b, 0xcc3dd6bb, 0xc3912f14) and pushes the matching state/UI change; reads vm+0x7c8 list and +0x2d0 pair."
+ },
+ "signature": {
+  "id": "career.team_hq_my_team_vm_on_menu_transition",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 48 8B 02 48 85 C0 0F 84 ?? ?? ?? ?? 48 89 CE 8B 00 3D 8E 71 0E 07",
+  "match": "0x1422d6d40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422d6d40",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqMyTeamVM_OnMenuTransition"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1422d6d40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422d6d40.c;xref:0x14577bd30",
+   "notes": "V10093 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

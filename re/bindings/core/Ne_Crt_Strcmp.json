@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_Strcmp",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14535d850",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14535d850.c;xref:0x140204fe0,0x14023b9a0",
+  "notes": "MSVC x64 CRT strcmp(s1, s2): compares bytes until s1 is 8-byte aligned, then a qword at a time with unaligned s2 loads, falling back to bytes on a mismatch or when s2 is within 8 bytes of a 4 KiB page end (0x14535d880). Bytes compare unsigned and it returns -1, 0 or 1 in the full rax, not a difference. 5366 direct calls (4867 in .xtls from 2048 functions, 499 in .data1) and 43 jumps (9 in .xtls, 34 in .data1, 33 of them nop+jmp stubs); its address is OpenSSL lhash's default comparator (0x144f15e41). Callers include the cutscene command parser, morph rig parse and asset resolve."
+ },
+ "signature": {
+  "id": "core.crt_strcmp",
+  "section": ".xtls",
+  "pattern": "48 2B D1 F6 C1 07 74 14 0F B6 01 3A 04 0A 75 4F",
+  "match": "0x14535d850",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14535d850",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_Strcmp"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x14535d850",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14535d850.c;xref:0x140152741",
+   "notes": "V3763 name, offsets and callers match decompile"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Ne_Crt_Strcmp",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x14535d850-0x14535d8b7,0x144c8b780-0x144c8b7ad,0x144c8ba80-0x144c8bb2b,0x144f9c2c0-0x144f9c33c,0x144f15e00-0x144f15e70,0x1532c02f0-0x1532c0330,0x1402051c0-0x1402051f0,0x14023ba70-0x14023ba98,1.0.145 0x145360210-0x145360277;xref:0x14535d85b,0x14535d8af,0x14535d880,0x14535d890,0x144f15e41,0x1402051e2,0x14023ba8d,0x1532c032b",
+   "notes": "V100037 Blind: partial. MSVC x64 CRT strcmp(rcx s1, rdx s2): aligns s1 to 8 bytewise, then qword compares with unaligned s2 loads and a (x-0x01..)&~x&0x80.. NUL test; drops to bytes when s2 page offset >0xff8 (0x14535d880) or on qword mismatch. Bytes compared unsigned (cmp al 0x14535d85b, sbb 0x14535d8af); returns -1/0/1 in full rax, not a difference. Leaf, pdata 0x14535d850-0x14535d8b7; 1.0.145 twin 0x145360210 byte-identical. '218+ callers' undercounts: 5366 E8 (.xtls 4867 in 2048 funcs, .data1 499 in 239) + 43 E9 (.xtls 9, .data1 34 = 33 nop+jmp stubs, 18 of them called once each, + 1 tail call) + 1 lea (OpenSSL lhash default cmp 0x144f15e41). xrefs 0x140204fe0, 0x14023b9a0 confirmed."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Ne_Crt_Strcmp",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14535d850-0x14535d8b7,0x144f15da0-0x144f15e91,0x1532c02f0-0x1532c0330,0x144c8b780-0x144c8bb2b,0x144f9c2c0-0x144f9c33c,0x140204fe0-0x1402052a6,0x14023b9a0-0x14023c27d,1.0.145 0x145360210-0x145360277;xref:0x14535d853,0x14535d880,0x14535d88e,0x14535d897,0x14535d8ac,0x14535d8af,0x144f15e41,0x1532c032b,0x1402051e2,0x14023ba8d",
+   "notes": "V100038 Blind: agree. Own disasm of 0x14535d850-0x14535d8b7 is MSVC amd64 strcmp: bytes until s1&7==0 (0x14535d853), qword compare with unaligned s2 (0x14535d890), s2 page offset >0xff8 (0x14535d880-0x14535d88e) or qword mismatch (0x14535d897) drops to bytes; movzx+cmp+sbb is unsigned; rax -1/0/+1 (0x14535d8ac, 0x14535d8af). Census matches: 4867 .xtls E8 in 2048 .pdata ranges (2047 after chained-unwind merge), 499 .data1 E8, 9+34 E9 (33 nop5+jmp stubs, 1 tail call 0x1532c032b), lea 0x144f15e41 in OpenSSL LH_new. 18 more E8 calls go through 18 of the stubs. Evidence callers 0x140204fe0, 0x14023b9a0 confirmed. 1.0.145 twin 0x145360210 byte-identical."
+  }
+ ],
+ "proofs": []
+}

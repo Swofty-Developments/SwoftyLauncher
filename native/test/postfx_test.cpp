@@ -1,4 +1,4 @@
-#include "postfx_logic.hpp"
+#include "core/render/postfx_logic.hpp"
 
 #include <cstdio>
 #include <cstdlib>
@@ -6,16 +6,16 @@
 #include <utility>
 #include <vector>
 
-using namespace postfx;
+using namespace render::postfx;
 
 static int failed;
 
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d: %s\n", __FILE__, __LINE__, #c);                                                   \
-            failed++;                                                                                                  \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d: %s\n", __FILE__, __LINE__, #c);                                                             \
+            failed++;                                                                                                            \
+        }                                                                                                                        \
     } while (0)
 
 // The placement gate the way postfx.cpp runs it, over game frames that rotate through `buffers` back buffers. Each
@@ -118,8 +118,8 @@ static unsigned rnd(unsigned f, unsigned k)
 enum Ran : uint8_t { RAN_SPLIT, RAN_AFTER_PICTURE, RAN_AFTER_CLOSE, RAN_BEFORE_HUD, RAN_PRESENT };
 
 struct SplitFrame {
-    bool closing_recorded_first = false, bound = true, closing = true, direct = true, hud_first = false,
-         reset = false, may_defer = true, hud_seen = true;
+    bool closing_recorded_first = false, bound = true, closing = true, direct = true, hud_first = false, reset = false,
+         may_defer = true, hud_seen = true;
 };
 
 static std::vector<Ran> split_frame(BackPlace &p, unsigned now, const SplitFrame &s)
@@ -410,8 +410,7 @@ int main()
         CHECK(picture_wait(true, false, true).open && !picture_wait(true, false, true).may_defer);
         for (bool step_open : {false, true})
             for (bool game_frames : {false, true})
-                CHECK(picture_wait(step_open, true, game_frames).open &&
-                      picture_wait(step_open, true, game_frames).may_defer);
+                CHECK(picture_wait(step_open, true, game_frames).open && picture_wait(step_open, true, game_frames).may_defer);
     }
     {
         // A race: the HUD reads the picture every frame but skips one now and then (12 times in two minutes of a
@@ -657,8 +656,8 @@ int main()
 
     CHECK(presents_own_frames("libxess_fg.dll") && presents_own_frames("LibXeSS_FG.DLL"));
     CHECK(presents_own_frames("libxess_fg.dll (calls Present)") && presents_own_frames("C:\\game\\libxess_fg.dll"));
-    CHECK(!presents_own_frames("") && !presents_own_frames("amd_fidelityfx_dx12.dll") &&
-          !presents_own_frames("sl.dlss_g.dll") && !presents_own_frames("nvngx_dlssg.dll"));
+    CHECK(!presents_own_frames("") && !presents_own_frames("amd_fidelityfx_dx12.dll") && !presents_own_frames("sl.dlss_g.dll") &&
+          !presents_own_frames("nvngx_dlssg.dll"));
     CHECK(!presents_own_frames("libxess_fg.dll.bak") && !presents_own_frames("a non-direct present queue") &&
           !presents_own_frames("libxess.dll"));
 
@@ -704,12 +703,12 @@ int main()
         fg_on.at = [](unsigned f, unsigned k) { return rnd(f, k) % 6; };
         fg_on.game_clock = false;
         unsigned off = once_per_run(fg_on.run(), skipped, doubled);
-        std::printf("xess fg on, every Present1 closing the frame (1.9.17): %u of %u frames off (%u skipped, %u doubled)\n",
-                    off, fg_on.frames - 8, skipped, doubled);
+        std::printf("xess fg on, every Present1 closing the frame (1.9.17): %u of %u frames off (%u skipped, %u doubled)\n", off,
+                    fg_on.frames - 8, skipped, doubled);
         fg_on.menus = true;
         off = once_per_run(fg_on.run(), skipped, doubled);
-        std::printf("xess fg on in menus (1.9.17): %u of %u frames off (%u skipped, %u doubled)\n", off,
-                    fg_on.frames - 8, skipped, doubled);
+        std::printf("xess fg on in menus (1.9.17): %u of %u frames off (%u skipped, %u doubled)\n", off, fg_on.frames - 8,
+                    skipped, doubled);
         CHECK(off > 0 && doubled > 0);
         for (unsigned buffers : {3u, 4u})
             for (bool menus : {false, true}) {
@@ -757,7 +756,6 @@ int main()
     CHECK(!cramped.find(&many[2], false) && !cramped.full());
     CHECK(!cramped.find(&many[2], true) && cramped.full());
     CHECK(cramped.find(&many[0], false) && cramped.find(&many[1], false));
-
 
     static_assert(OPTIONS_AT == 8 && PARAMS_AT == 36 && CONSTANT_COUNT == 56 && PARAMS_AT + 16 <= CONSTANT_COUNT);
     float packed[SLOTS];
@@ -833,8 +831,7 @@ int main()
           apply.inputs[3] == IN_ORIGINAL && apply.inputs[4] == IN_PREVIOUS && apply.output == IN_NONE);
     CHECK(plan.passes[3].instance == 2 && plan.passes[3].output == 3 && plan.passes[4].inputs[0] == 3);
     CHECK(plan.uses_previous());
-    CHECK(pass_title("Realistic", "ambient_light", "wide", "apply") ==
-          "Realistic \xC2\xB7 ambient_light.wide \xC2\xB7 apply");
+    CHECK(pass_title("Realistic", "ambient_light", "wide", "apply") == "Realistic \xC2\xB7 ambient_light.wide \xC2\xB7 apply");
     CHECK(pass_title("R", "grain", "", "grain") == "R \xC2\xB7 grain \xC2\xB7 grain");
 
     ActiveSpec none;

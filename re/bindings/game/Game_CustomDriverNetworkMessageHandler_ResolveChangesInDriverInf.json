@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomDriverNetworkMessageHandler_ResolveChangesInDriverInf",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143139cc0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=CustomDriverNetworkMessageHandler::resolveChangesInDriverInfo; log channel NETWORK-ENTRANTS: 'void network::CustomDriverNetworkMessageHandler::resolveChangesInDriverInfo(const PlayerDriver &, const game::DriverInfo &, NEbool) | %s : Driver changed successfully'"
+ },
+ "signature": {
+  "id": "game.custom_driver_network_message_handler_resolve_changes_in_driver_inf",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 06 00 00 44 89 CD",
+  "match": "0x143139cc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143139cc0",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomDriverNetworkMessageHandler_ResolveChangesInDriverInf"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143139cc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143139cc0.c;xref:0x143133ba3",
+   "notes": "V5888 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

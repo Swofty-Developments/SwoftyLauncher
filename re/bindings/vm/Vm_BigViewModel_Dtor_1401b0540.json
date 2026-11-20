@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_BigViewModel_Dtor_1401b0540",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401b0540",
+  "level": "L1",
+  "subsystem": "vm",
+  "proto": "void (void *vm)",
+  "evidence": "decomp:re/decomp/1401b0540.c;xref:0x1401aeba7;xref:0x1402bb35b;xref:0x1409a8d72",
+  "notes": "myteam-g2: Destructor body of a very large view model (fields up to roughly +0xC530; resets sub-array vtables at +0x0/+0x4B88/+0xAD20 and destroys the 0x30-byte element arrays). Used by the sponsor toggle refresh and My Team setup fade out. Generic cleanup."
+ },
+ "signature": {
+  "id": "vm.big_view_model_dtor_1401b0540",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 48 8D 05 ?? ?? ?? ?? 48 89 81 A0 4B 00 00",
+  "match": "0x1401b0540",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401b0540",
+  "kind": "func_start",
+  "names": [
+   "Vm_BigViewModel_Dtor_1401b0540"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x1401b0540",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1401b0540.c",
+   "notes": "V9456 Vtable-reset/array-destroy dtor is right, but the second sub-array vtable is at +0x4BA0 (index 0x974*8), not +0x4B88; third at +0xAD20 and size to ~0xC530 match."
+  }
+ ],
+ "proofs": []
+}

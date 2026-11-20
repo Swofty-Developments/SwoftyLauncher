@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_TexStream_UpdateEntryDemand",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bf38d0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bf38d0.c;xref:0x143c60066",
+  "notes": "Updates a texture-streaming entry with a new demand: new = max(p4,0)*entry[8]; if above entry[2] stores priority [1]=max(old,p4+entry[0xc]) and desired size [0]; stamps frame [3]=ctx+0x4dc; if wanted mip (+0x37) > current (+0x38) and ctx flag +0x21c&1, atomically sets bit0 of entry+0x24 and pushes the entry into pending vector ctx+0x148..0x158 under lock ctx+0x590. Caller Render_Draw_ProcessInstanceBatch. Addon: streaming demand/priority hook."
+ },
+ "signature": {
+  "id": "render.tex_stream_update_entry_demand",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 48 85 D2 74 6C",
+  "match": "0x143bf38d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bf38d0",
+  "kind": "func_start",
+  "names": [
+   "Render_TexStream_UpdateEntryDemand"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143bf38d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143bf38d0.c;xref:0x143c60066",
+   "notes": "V7840 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

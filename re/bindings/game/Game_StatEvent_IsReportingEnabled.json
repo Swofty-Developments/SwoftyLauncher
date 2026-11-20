@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_IsReportingEnabled",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1407bea70",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1407bea70.c;xref:0x14372040e",
+  "notes": "Virtual +0x28 type check, then looks up a setting in sub-object +0x1030 and returns !0x14077c790(...) (reporting enable flag). 142 bytes. Caller Game_StatEvent_InitCommon (0x14372040e). Hypothesis."
+ },
+ "signature": {
+  "id": "game.stat_event_is_reporting_enabled",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 48 8B 01 FF 50 28 48 8D",
+  "match": "0x1407bea70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407bea70",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_IsReportingEnabled"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x1407bea70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1407bea70.c;xref:0x141a1e50f",
+   "notes": "V8450 vcall+0x28 type check, vcall on sub-object param_1+0x1030 then returns !14077c790(...); caller StatEvent_InitCommon"
+  }
+ ],
+ "proofs": []
+}

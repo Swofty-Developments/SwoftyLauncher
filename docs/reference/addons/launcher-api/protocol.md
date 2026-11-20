@@ -86,7 +86,7 @@ Every session starts with `hello`. Reply `{"api":1}`: a plugin that answers with
   - From 1.9.29 the list always ends with `"save_dir"` ([Folders](./host-calls#folders)).
   - An older launcher that answers none of these leaves `host_calls` out.
 
-- `capabilities` is an optional list of supported view/protocol features. Treat an absent list as empty and ignore unknown entries. `"view.chart"` permits [native chart blocks](./charts); `"view.cell.image_data"` permits [table pictures supplied in memory](./tables#pictures-supplied-in-memory). Helpers must return a supported fallback when a capability is absent. This is separate from the callable methods in `host_calls`.
+- `capabilities` is an optional list of supported view/protocol features. Treat an absent list as empty and ignore unknown entries. `"view.chart"` permits [native chart blocks](./charts); `"view.cell.image_data"` permits [table pictures supplied in memory](./tables#pictures-supplied-in-memory). Helpers must return a supported fallback when a capability is absent. This is separate from the callable methods in `host_calls`. From 1.10 `"build.reads"` means the launcher may answer a `build` with the reply of an earlier one ([reads](./build-reply#reads)).
 
 ### profile
 

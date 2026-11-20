@@ -1,9 +1,9 @@
-#include "toast_logic.hpp"
+#include "core/hud/toast_logic.hpp"
 
 #include <cstdio>
 #include <string>
 
-namespace t = runtime::toast;
+namespace t = hud::toast;
 
 static int failed = 0;
 static void expect(bool ok, const char *what)
@@ -27,14 +27,18 @@ static t::Message msg(const char *id, int64_t created, int64_t position = 3)
 int main()
 {
     t::Message m;
-    expect(t::parse(R"({"id":"a","board":{"content":"game/f1_2025","track":"bahrain","weather":"dry"},"lap_ms":88117,"position":3,"total":41,"improvement_ms":386,"created":1000})", m) ==
-                   t::Status::ok &&
-               m.id == "a" && m.track == "bahrain" && m.lap_ms == 88117 && m.position == 3 && m.total == 41 && m.improvement_ms == 386 &&
-               !m.record,
-           "a full message parses");
-    expect(t::parse(R"({"id":"a","lap_ms":1,"position":1})", m) == t::Status::ok && m.record && m.total == 0 && m.improvement_ms == 0,
+    expect(
+        t::parse(
+            R"({"id":"a","board":{"content":"game/f1_2025","track":"bahrain","weather":"dry"},"lap_ms":88117,"position":3,"total":41,"improvement_ms":386,"created":1000})",
+            m) == t::Status::ok &&
+            m.id == "a" && m.track == "bahrain" && m.lap_ms == 88117 && m.position == 3 && m.total == 41 &&
+            m.improvement_ms == 386 && !m.record,
+        "a full message parses");
+    expect(t::parse(R"({"id":"a","lap_ms":1,"position":1})", m) == t::Status::ok && m.record && m.total == 0 &&
+               m.improvement_ms == 0,
            "position 1 is a record, total and improvement are optional");
-    expect(t::parse(R"({"id":"a","lap_ms":1,"position":5,"record":true})", m) == t::Status::ok && m.record, "an explicit record flag");
+    expect(t::parse(R"({"id":"a","lap_ms":1,"position":5,"record":true})", m) == t::Status::ok && m.record,
+           "an explicit record flag");
     expect(t::parse("[1]", m) == t::Status::not_object && t::parse("", m) == t::Status::not_object, "non-objects are refused");
     expect(t::parse(R"({"lap_ms":1,"position":1})", m) == t::Status::no_id, "no id is refused");
     expect(t::parse(R"({"id":"a","position":1})", m) == t::Status::no_lap, "no lap time is refused");
@@ -42,7 +46,8 @@ int main()
 
     t::Message f = msg("f", 0);
     f.improvement_ms = 386;
-    expect(t::title_of(f) == "NEW PERSONAL BEST" && t::detail_of(f) == "P3 of 41 - 1:28.117  -0.386", "lines for a personal best");
+    expect(t::title_of(f) == "NEW PERSONAL BEST" && t::detail_of(f) == "P3 of 41 - 1:28.117  -0.386",
+           "lines for a personal best");
     f.record = true;
     f.total = 0;
     f.improvement_ms = 0;

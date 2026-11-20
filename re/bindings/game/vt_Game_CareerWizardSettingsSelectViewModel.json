@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "vt_Game_CareerWizardSettingsSelectViewModel",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145727970",
+  "type": "vtable[19]",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/141a2aa00.c;xref:0x1415e0529",
+  "notes": "CareerWizardSettingsSelectViewModel (career_wizard_settings_select, Recommended / Custom settings; slot 0 0x141b3e420 returns the type info 0x1460680f8, name string 0x145727948, djb2 0xff0965e5), registered by 0x1415df0b0 (lea at 0x1415e0526): slot 10 command handler 0x141a2aa00 (thunk to the .data1 body 0x14bc9b4f0, which first calls the wizard base handler 0x141a21ec0); +0x270 the wizard state; secondary vtable 0x145727a10 at obj+0x260. cxx=CareerWizardSettingsSelectViewModel. Renamed from vt_Game_CareerWizardSettingsViewModel after V0983"
+ },
+ "signature": {
+  "id": "game.career_wizard_settings_select_view_model",
+  "section": ".xtls",
+  "pattern": "C4 C1 78 29 B6 D0 02 00 00 49 C7 86 F0 02 00 00 00 00 00 00 48 8D 05",
+  "match": "0x1415e0512",
+  "anchor": "0x17",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x14",
+   "len": 7
+  },
+  "target": "0x145727970",
+  "kind": "data",
+  "names": [
+   "vt_Game_CareerWizardSettingsSelectViewModel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "wizard-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/career_wizard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-d",
+   "kind": "global",
+   "item": "vt_Game_CareerWizardSettingsSelectViewModel",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1415df0b0.c;decomp:re/decomp/141a2aa00.c;decomp:re/decomp/14bc9b4f0.c;xref:0x1415e0526,0x1415e0530,0x141b3e43e,0x141b3e448,0x1457279c0,0x14bc9b4fc,0x141b3e420,0x141bac6e7,0x141bac6ee;imm:0xff0965e5;imm:0x2f7b27b6;sig:game.career_wizard_settings_select_view_model",
+   "notes": "V0988 Re-check after the rename from vt_Game_CareerWizardSettingsViewModel (V0983). The name is now right: slot 0 0x141b3e420 (lea rax -> 0x1460680f8) returns the type info, whose name pointer (+8, 0x146068100, stored at 0x141bac6ee by 0x141baba80) is the string 0x145727948 CareerWizardSettingsSelectViewModel; djb2 of it = 0xff0965e5 = the hash at +0x10. Factory 0x1415df0b0 sets +0x38 = career_wizard_settings_select (djb2 0x2f7b27b6 at +0x140), lea 0x1415e0526 installs this vtable at obj+0 and 0x1415e0530 installs the secondary vtable 0x145727a10 at obj+0x260 (destructor 0x141b3e430 repeats both). 19 slots: slot 18 = 0x141b3c200, slot 19 is a null qword. Slot 10 = 0x141a2aa00 = jmp 0x14bc9b4f0, whose body calls 0x141a21ec0 first (0x14bc9b4fc); that base handler passes [VM+0x270] to the step-stack pop. sigcheck --exe: 1 hit at 0x1415e0512, riprel target 0x145727970"
+  }
+ ],
+ "proofs": []
+}

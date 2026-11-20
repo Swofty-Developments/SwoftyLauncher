@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Node_DestroyTreeRecursive",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439a9430",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439a9430.c;xref:0x1401dedbe",
+  "notes": "Recursively walks a node tree: vcall +0x28 = first child, +0x30 = next sibling; destroys children first, then vcall +0 (delete). Callers Game_SceneManager_AddSceneObjects, 0x1401de8e0, 0x1402ab1b0."
+ },
+ "signature": {
+  "id": "core.node_destroy_tree_recursive",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 85 D2 74 4E 48 89 D7 48 89 CE",
+  "match": "0x1439a9430",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439a9430",
+  "kind": "func_start",
+  "names": [
+   "Ne_Node_DestroyTreeRecursive"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x1439a9430",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439a9430.c;xref:0x1401dedbe",
+   "notes": "V7736 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

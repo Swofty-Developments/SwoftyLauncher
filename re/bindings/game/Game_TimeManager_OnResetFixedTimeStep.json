@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TimeManager_OnResetFixedTimeStep",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1443da4d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "int Game_TimeManager_OnResetFixedTimeStep(void *ctx, const void *msg)",
+  "evidence": "str:s_cfg_TimeManagerFixedTimeStep;decomp:re/decomp/1443da4d0.c;xref:0x1443d09cd,0x1443da4fc,0x1443da4fd",
+  "notes": "Bus handler for message resetFixedTimeStep: 0x1443ce7b0 builds a closure {this function, ctx} at 0x1443d09cd and registers it with Ne_Subscribe_BusMessage 0x143987810 (call 0x1443d09e8). Both arguments are unused (decompile shows no params; arity taken from the closure ABI). Setting TimeManager.fixedTimeStep -> double getter 0x143a43ea0 with default 60.0 (0x404e000000000000), but the node passed is a function-local static 0x20-byte object at 0x14604e8d8 (zeroed on first use, atexit 0x1444e5220), not the global settings node; whether that object is ever filled is not checked. Result Hz <= 0 -> 1/60 s, else 1/Hz, stored as a double at *(0x146ca5c28)+0x68 (fixed time step). Returns 0. Existing L1 name Game_Read_TimeManagerFixedTimeStepSetting. hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "game.time_manager_on_reset_fixed_time_step",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 8B 05 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? 65 48 8B 14 25 58 00 00 00 48 8B 0C CA 3B 81 04 00 00 00 7F 59",
+  "match": "0x1443da4d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1443da4d0",
+  "kind": "func_start",
+  "names": [
+   "Game_TimeManager_OnResetFixedTimeStep"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-2",
+   "kind": "func",
+   "item": "0x1443da4d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1443da4d0.c;xref:0x1443d09cd;str:0x145a88e94,0x145a95bdc",
+   "notes": "V9350 Registered at 0x1443d09cd (lea into a {fn,this} callback) as handler for message 'resetFixedTimeStep'; reads double 'TimeManager.fixedTimeStep' (default 60.0) and stores 1/value (1/60 if <=0) at time-manager global +0x68; returns 0. Name fits; the (ctx,msg) params are the callback signature and are not read by the body."
+  }
+ ],
+ "proofs": []
+}

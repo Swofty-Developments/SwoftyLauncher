@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_TrackSpace_FindVolume",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1445f3630",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "Volume*(TrackSpaceGrid*, const float pos[4])",
+  "evidence": "decomp:re/decomp/1445f3630.c;xref:0x140172ebd,0x14020948c,0x1403c297d,0x1403d6807,0x1405fc77c,0x14063ef35,0x1406b5c9c,0x140a0d733,0x142c76fd8,0x142f376b2,0x142f5e7d0,0x1434bd3d9,0x14361276a,0x1437ac4d6,0x1438a3695",
+  "notes": "TrackSpace grid lookup (41 call sites, 15 listed): cell = floor((x - grid+0x68) / grid+0x78) + floor((z - grid+0x70) / grid+0x7c) * grid+0x60, clamped to the cell count of the u16 table grid+0x28..+0x30; the cell's 32-byte record in grid+0x48..+0x50 holds a u16 volume index list (+0x08..+0x10); volumes are 0x140-byte records at grid+0x88; returns the first volume whose planes (+0x60 then +0x70.., count [0x145faa5f4]+1, dot(pos,n) - d <= 1.19e-7) all contain pos, else 0. Agreed by V(lb22-verify). raised by engine-re with --force 2026-11-14 at user request (lane owner review requested) | 2026-11-17 engine-re track runtime round 2, static. Plane order (Game_TrackSpaceVolume_BuildPlanes): 0 near gate edge, 1 far gate edge, 2 and 3 the two side edges, 4 top (+3 m), 5 bottom (-2 m); only 0..3 are tested unless use_tb_planes. Volumes come in strips of 3 per XML volume (point4-3, point3-2, point2-1), so a null result means outside point1..point4 (the Car_Vehicle_AutoResetCheck reset case). raised by engine-re with --force 2026-11-17 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.track_space_find_volume",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 C5 F8 28 02 C5 FA 5C 49 68 C5 FA",
+  "match": "0x1445f3630",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445f3630",
+  "kind": "func_start",
+  "names": [
+   "Game_TrackSpace_FindVolume"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x1445f3630",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445f3630.c;xref:0x140172ebd",
+   "notes": "V6698 grid cell math, +0x28 list, +0x48 32-byte records, +0x88 volumes 0x140 verified"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x1445f3630",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1445f3630-0x1445f37a4;xref:0x140172ebd,0x14020948c,0x142f5e7d0,0x1438a3695",
+   "notes": "V10386 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). 41 rel32 call sites by my scan (matches). floor via vroundss imm 9: cell = floor((x-[g+0x68])/[g+0x78]) + floor((z-[g+0x70])/[g+0x7c])*[g+0x60], clamped to u16 table [g+0x28..+0x30] count; cell rec 32 bytes at [g+0x48] (shl 5), u16 list +8..+0x10; volume = [g+0x88] + idx*0x140 (lea *5, shl 6); planes +0x60 then +0x70.. count [0x145faa5f4]+1, reject when dot-d > 1.19209e-07."
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "trkrt-verify",
+   "kind": "func",
+   "item": "Game_TrackSpace_FindVolume",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445f3630.c",
+   "notes": "V10788 [0x145faa5f4]+1 planes from volume+0x60 in 16-byte steps, FLT_EPSILON, 0x140-byte volumes"
+  }
+ ],
+ "proofs": []
+}

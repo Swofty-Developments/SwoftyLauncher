@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_Systems_FindOrCreate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144759eb0",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "void(void *systems, void *section_node, void *section_desc)",
+  "evidence": "decomp:re/decomp/144759eb0.c;xref:0x1447429f3,0x144742ab1",
+  "notes": "systems = CarLive+0x380 container. Looks for an existing system whose type name (system vt+0x38 -> data, data vt+8 -> name) equals section_desc+0x10 (case-insensitive); if none, calls the factory section_desc+0x38(container owner = CarLive), appends it to car+0x3a0[count++] and re-runs Car_Build_VtfComponents to refresh the +0x530..+0x5e0 cache. Then tail-calls system vt+8(system, section_node) = data->Read(node). So a reset on an existing car re-reads the section into the SAME system object (no realloc)"
+ },
+ "signature": {
+  "id": "car.vtf_get_or_create_component",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 4C 89 C3 48 89 D6 48 89 CF",
+  "match": "0x144759eb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144759eb0",
+  "kind": "func_start",
+  "names": [
+   "Car_Systems_FindOrCreate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v1",
+   "kind": "func",
+   "item": "Car_Systems_FindOrCreate",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144759eb0.c;xref:0x1447429f3,0x144742ab1",
+   "notes": "V1269 Re-decompiled: loops systems[0..count) at +0x20/+0x18, name via system vt+0x38 then vt+8, Ne_Compare_StringNoCase with desc+0x10; on miss calls desc+0x38(systems+0x10 owner), appends at +0x20[count++], calls Car_Build_VtfComponents(owner), then tail-jumps system vt+8(system,node). Only callers are the two rel32 calls in Car_Assets_CreateSystemForPerformanceMode."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x144759eb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144759eb0.c;xref:0x1447429f2",
+   "notes": "V3738 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

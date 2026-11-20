@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Apply_PresetWeather",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1407e1470",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Apply_PresetWeather(void *game_mode, const char *prefix)",
+  "evidence": "str:s_cfg_GameWeather;decomp:re/decomp/1407e1470.c;xref:0x1407e1a63,0x1407e1a6a,0x1407e1a6b,0x1407e1bf5,0x14173d33d",
+  "notes": "Preset applier (caller 0x14173d1a0 at 0x14173d33d). First makes sure the VM option '#settings.tt_weather' has a child 'wet' (Vm_GetOrCreate_ChildNode 0x1442b2bf0, hash 0xb88ba95) with value='wet' and display_name='lng_wet' (Vm_Set_String 0x140846270). Then, if game_mode+0xf08 (or a child in +0x238..+0x240) is the session-settings component (type 0x146076520), reads '<prefix>.Game.weather' (Ne_StrBuf_Printf 0x1401009f0, Ne_Config_GetString 0x143a44700, default empty); if non-empty, resolves '#lead_player.settings.tt_weather' (Game_UiBinding_ResolveA 0x14083d100) and points it at '#settings.tt_weather.wet' when the value equals 'wet', else at '#settings.tt_weather.dry' (Vm_Resolve_RegistryNode 0x1442b1b60, Ne_Property_SetUIDBRefIfChanged 0x140977b20). hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "game.apply_preset_weather",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 01 00 00 C5 F8 29 B4 24 60 01 00 00 49 89 D4 48 89 CE",
+  "match": "0x1407e1470",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407e1470",
+  "kind": "func_start",
+  "names": [
+   "Game_Apply_PresetWeather"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-1",
+   "kind": "func",
+   "item": "0x1407e1470",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1407e1470.c;xref:0x14173d33e",
+   "notes": "V9321 Registers the \"#settings.tt_weather\" wet option (display_name lng_wet), then reads \"<prefix>.Game.weather\" (no default, skipped if empty) and sets \"#lead_player.settings.tt_weather\" to #settings.tt_weather.wet/.dry by strcmp with \"wet\"; called from the same preset sequence as setup_mode; arity matches."
+  }
+ ],
+ "proofs": []
+}

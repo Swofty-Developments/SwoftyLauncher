@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SessionStatePreloadRewardSequence_OnStateEnter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d864c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=SessionStatePreloadRewardSequence::onStateEnter; log channel FLOW_VERBOSE: 'SessionStatePreloadRewardSequence::onStateEnter rewardCsMonitor.preloadRewardCustcene'"
+ },
+ "signature": {
+  "id": "game.session_state_preload_reward_sequence_on_state_enter",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 89 CE 48 8D 4C 24 28 FF 15 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 03 44 24 28 48 89 86 C0 0D 00 00",
+  "match": "0x142d864c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d864c0",
+  "kind": "func_start",
+  "names": [
+   "Game_SessionStatePreloadRewardSequence_OnStateEnter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142d864c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d864c0.c;xref:0x140afb630",
+   "notes": "V5410 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

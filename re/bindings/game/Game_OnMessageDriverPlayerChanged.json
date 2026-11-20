@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OnMessageDriverPlayerChanged",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1400f9880",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1400f9880.c;xref:0x1400f92fb",
+  "notes": "Handler for driver-player-changed bus message (log onMessageDriverPlayerChanged). Ignores msg unless msg+0x12 and +0x13 set; resolves local player in session player list ([[this+0x30]+0x88]+0x260 +0x2e0..+0x2e8 stride 0x88, match 0x1431146d0), car index entry+0x82, online only when lobby slot [sess+0xf88]+0x101+idx*2 == local machine id; then calls 0x1434d40a0(obj [[this+0x20]+0x140]+0x198, carIdx, playerSlot via 0x1400fade0). Registered by lea in 0x1400f92c0. Addon: hook to learn when a car changes human driver online. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2726)"
+ },
+ "signature": {
+  "id": "game.on_message_driver_player_changed",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 48 89 D7 48 89 CE 80 3D",
+  "match": "0x1400f9880",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1400f9880",
+  "kind": "func_start",
+  "names": [
+   "Game_OnMessageDriverPlayerChanged"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d8-verify",
+   "kind": "func",
+   "item": "Game_OnMessageDriverPlayerChanged",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1400f9880.c;xref:0x1400f92c0",
+   "notes": "V2726 msg+0x12/+0x13 gate, session player list +0x2e0 stride 0x88, car idx +0x82, lobby slot +0x101+idx*2 vs local machine id, call 1434d40a0 confirmed"
+  }
+ ],
+ "proofs": []
+}

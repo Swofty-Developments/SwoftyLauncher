@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Game_EngineMgmt_ApplySessionWear",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1411d1560",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_EngineMgmt_ApplySessionWear(void *engine_management, uint32_t driver, float amount, uint8_t flag)",
+  "evidence": "decomp:re/decomp/1411d1560.c;decomp:re/decomp/1411cc850.c;xref:0x1436aeeaf,0x14996b6d7",
+  "notes": "EngineManagementComponent (career): finds the driver's 0xa60-byte power-unit record in mgmt+0x2a0..+0x2a8 by driver key (the entrant row's u32 at +0x50: id_lo, id_hi << 16), fits each slot's pending component (holder +0x28 state 2 -> 0x1411cf930, 1 -> 0x1411d00e0), then for amount (whole steps, min(amount,1) each) adds step x random(holder +0x3c, +0x40) to each fitted component's wear (holder +0x08 entries of 0x10, wear +0x04, fitted index +0x30; seven slots at record +0x18, 0x10 apart), clamped to [0, 0.999] (1.0 with flag), and copies the wear into the car (record +0x80 -> +0x58 -> +0x530 +0x254c..+0x2560, +0x538 +0x674). The range comes from 0x1411cc850 (human: config wear_rates.human_min/max x R&D and difficulty factors). Raised by native-1990 for the F1 1990 power-unit rules (doc:/mnt/work/.f1-1990/addon/native-requests.md#pu)"
+ },
+ "signature": {
+  "id": "game.engine_mgmt_apply_session_wear",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC D0 00 00 00 C5 78 29 BC 24 C0 00 00 00 C5 78 29 B4 24 B0 00 00 00 C5 78 29 AC 24 A0 00 00 00 C5 78 29 A4 24 90 00 00 00 C5 78 29 9C 24 80 00 00 00 C5 78 29 54 24 70 C5 78 29 4C 24 60 C5 78 29 44 24 50 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 44 89 CB C5 F8 28 F2",
+  "match": "0x1411d1560",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1411d1560",
+  "kind": "func_start",
+  "names": [
+   "Game_EngineMgmt_ApplySessionWear"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/pu_rules.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-c",
+   "kind": "func",
+   "item": "Game_EngineMgmt_ApplySessionWear",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1411d1560.c;decomp:re/decomp/1411c9040.c;decomp:re/decomp/1411cc850.c;decomp:re/decomp/1436ae7b0.c;decomp:re/decomp/14996b4e0.c;xref:0x1436aeeaf,0x14996b6d7;sig:game.engine_mgmt_apply_session_wear",
+   "notes": "V0994 V0989 Prologue takes rcx mgmt, edx driver key, xmm2 amount and r9b flag, so the proto is right. It returns early when online (+0x308 +0xf0 bit check) or when provider vt+0xa8 type is 2. Records are 0xa60 bytes in +0x2a0..+0x2a8, matched on the key's low byte and high u16. It walks 7 holders at record+0x18, 0x10 apart: state +0x28 2 calls 0x1411cf930(idx +0x20), state 1 calls 0x1411d00e0, then +0x20..+0x2f are cleared. One step the notes leave out: 0x1411c9040(record, amount) adds amount to each fitted entry's +0x08. Wear loop: step = min(amount,1); wear (entry [+0x30] +0x04) += step x (+0x3c + (+0x40 - +0x3c) x rand x 2^-32), clamped to [0, 0.999] (0x3f7fbe77) or 1.0 with flag. Slots 0-5 are copied to car +0x58 -> +0x530 +0x254c/+0x255c/+0x2558/+0x2554/+0x2550/+0x2560 and slot 6 to +0x538 +0x674. 0x1411cc850 writes +0x3c/+0x40 = config +0x28/+0x2c x factors x (1 - 0.5 x upgrade progress of the slot's durability type). Callers: 0x1436aeeaf (driver = entrant u32 +0x50, flag 0) and .data1 0x14996b6d7 (flag 1). Both look the component up with registry desc 0x146063120, whose name string is EngineManagementComponent (djb2 0x378adb4b). sigcheck: one hit"
+  }
+ ],
+ "proofs": []
+}

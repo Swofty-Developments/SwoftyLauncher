@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_TrackInfoSystem_CreateResourceListeners",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1447942a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_TrackInfoSystem_CreateResourceListeners(void *tis)",
+  "evidence": "decomp:re/decomp/1447942a0.c;xref:0x145c067c8;doc:re/db/subsystems/game.md",
+  "notes": "Creates listeners TIS+0xcd8/+0xce0/+0xce8 (vtables 0x145c06e00 TrackInfoTex / 0x145c06e70 / 0x145c06ee0) and registers them via 0x143995650([[TIS+0xcf0]+0x68], listener, 1). Type tags from 0x14479fda0: TrackInfoData 0x146ce8de0, TrackInfoTex 0x146ce8df0, TrackInfoBinary 0x146ce8e00 (wx-drive, static) | findings from PR #471 by vogtmarcel07-cloud L2 2026-11-14 (engine-re round 2): decomp read; 1 reference(s) (0x145c067c8). raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.track_info_system_create_resource_listeners",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 48 89 D7 48 89 CE 48 8B 49 10 48",
+  "match": "0x1447942a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1447942a0",
+  "kind": "func_start",
+  "names": [
+   "Game_TrackInfoSystem_CreateResourceListeners"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x1447942a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1447942a0.c",
+   "notes": "V4152 listener creation; type strings not visible; low-confidence agree (vtable/indirect or no direct callsite checked)"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x1447942a0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1447942a0-0x1447947f8;xref:0x145c067c8",
+   "notes": "V10529 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only abs64 0x145c067c8 (other hit not an instruction). Listeners vt 0x145c06e00 -> +0xcd8, 0x145c06e70 -> +0xce0, 0x145c06ee0 -> +0xce8; registered with 0x143995650 (rcx = [[TIS+0xcf0]+0x68]+0x120, rdx = [[TIS+0xcf0]+0x68], r8 = listener, r9b = 1). 2 args."
+  }
+ ],
+ "proofs": []
+}

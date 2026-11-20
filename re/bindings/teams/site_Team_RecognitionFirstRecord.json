@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Team_RecognitionFirstRecord",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1420bbb4a",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "teams",
+  "evidence": "decomp:re/decomp/1420bb330.c;xref:0x1420bbb23,0x1420bbb3e,0x1420bbb4a",
+  "notes": "mov rax,[rax] (3 bytes) in Team_Build_RecognitionTeamIcon (+0x81a), after the call to Game_CareerEventTable_CollectMatchingRecords at 0x1420bbb23 (rcx = pointer vector at [rsp+0xf0]); rax = [rsp+0xf8] = the vector's begin (loaded at 0x1420bbb3e), read as the first collected record whose +0x50 driver ref is the second argument of 0x1416e17b0 (the notification item's names and team icon, format '#overrides.driver_career_rewards.recognition.team_icons.%s'). Begin is 0 when no record of the career event table matches the player's entrant record, which faults reading 0x0 (crash reports at F1_25.exe+0x20bbb4a from Vm_Dispatch_BindingMessage+0x20b in a Progressive Career with a third-party calendar package, the same sessions in which site_Game_CareerEventsSequencerFirstRecord collects nothing). Core hooks it and, for rax == 0, sets rip to site_Team_RecognitionRecordsExit. A 5-byte jump covers this instruction and mov edx,[rax+0x50] (0x1420bbb4d, 3 bytes); neither is rip-relative. No branch lands at 0x1420bbb4b..0x1420bbb4f (linear sweep of 0x1420bb330..0x1420bc6d2, its jump table at 0x145770340, and a rel8/rel32 scan of 0x1420a0000..0x1420d0000)."
+ },
+ "signature": {
+  "id": "teams.recognition_first_record",
+  "section": ".xtls",
+  "pattern": "44 8B 43 58 48 8B 00 8B 50 50 48 8D 05",
+  "match": "0x1420bbb46",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1420bbb4a",
+  "kind": "mid",
+  "expect": "48 8B 00 8B 50 50",
+  "names": [
+   "site_Team_RecognitionFirstRecord"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-15",
+    "by": "recogguard",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/career/sequencer_records_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-15",
+   "verifier": "recog-verify",
+   "kind": "global",
+   "item": "0x1420bbb4a",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1420bb330-0x1420bc6d2;xref:0x1420bbb23,0x1420bbb3e,0x1420bbb4a,0x1420bbb4d,0x1420bc49b",
+   "notes": "V10539 Bytes 48 8B 00 = mov rax,[rax] at 0x1420bbb4a, on an instruction boundary of the linear disasm from the function start; next is 8B 50 50 mov edx,[rax+0x50] at 0x1420bbb4d, then lea rax,[rip+..] at 0x1420bbb50; neither of the two is rip-relative, so 5 bytes cover exactly both. rax comes from mov rax,[rsp+0xf8] at 0x1420bbb3e; between call 0x1424ceb70 (0x1420bbb23) and 0x1420bbb4a there is only a test on [rsi+0x6b8] feeding a cmovne of rcx, no test of rax or the vector, and the callee stores begin=0 for an empty result, so empty collection reads address 0 here. No direct jmp/jcc/call in the function targets 0x1420bbb4b..4f; the only indirect jmp is 0x1420bc49b, table at 0x145770340 has 4 entries 0x1420bc49d/4a3/4a9/4af; raw rel8/rel32/jcc32 scan of 0x1420a0000..0x1420d0000 gives zero hits into the window; no absolute pointer to 0x1420bbb4a..4f in the image (pe_index.abs_refs)."
+  }
+ ],
+ "proofs": []
+}

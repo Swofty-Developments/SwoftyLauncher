@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_F1os_StoppingOnlineServiceTask",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432c2980",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-F1OS",
+  "notes": "named from its log messages (channel F1OS): 'Stopping online service task %s'"
+ },
+ "signature": {
+  "id": "game.f1os_stopping_online_service_task",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 48 10 00 00 E8 ?? ?? ?? ?? 48 29 C4 4D 89 CE",
+  "match": "0x1432c2980",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432c2980",
+  "kind": "func_start",
+  "names": [
+   "Game_F1os_StoppingOnlineServiceTask"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1432c2980",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1432c2980.c",
+   "notes": "V5917 Better name Game_F1os_OnlineServiceTask_HandleResult: 1.5KB: builds error structs ('Error Code - Message', %s_Exception_%s) per result code and cleans up request; Stopping log is one line"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x1432c2980",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432c2980.c",
+   "notes": "V7050 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

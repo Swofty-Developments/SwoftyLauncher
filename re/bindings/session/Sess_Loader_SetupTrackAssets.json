@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Sess_Loader_SetupTrackAssets",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d48b70",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-SESSION_LOADER;decomp:re/decomp/142d48b70.c;xref:0x142d47291,0x142da7ec6",
+  "notes": "named from its log messages (channel SESSION_LOADER): 'Asset data has been set up to load track \"%s\", statid=%d' Callers: census steam 0x2d48b70."
+ },
+ "signature": {
+  "id": "session.loader_setup_track_assets",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 CE 48 8B 81 30 02 00 00",
+  "match": "0x142d48b70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d48b70",
+  "kind": "func_start",
+  "names": [
+   "Sess_Loader_SetupTrackAssets"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb2-verify-b",
+   "kind": "func",
+   "item": "Sess_Loader_SetupTrackAssets",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d48b70.c;xref:0x142d48c60",
+   "notes": "V1859 string 'Asset data has been set up to load track...' on SESSION_LOADER at 0x142d48c60"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Sess_Loader_SetupTrackAssets",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142d48b70-0x142d4904d,0x142d47210-0x142d47dd9,0x142da7870-0x142da8638,0x140af2ab0-0x140af2d0b,0x14feb1940-0x14feb19f8,0x1518c0c60-0x1518c0e42,1.0.145 0x142d4b100-0x142d4b5dd;xref:0x142d48bf7,0x142d48c59,0x142d48c60,0x142d48c67,0x142d4903a,0x142d47291,0x142d473c3,0x142da7ec6",
+   "notes": "V100043 Blind: agree. Own disasm 0x142d48b70-0x142d4904d: logs on channel SESSION_LOADER (lea 0x142d48c59; gate key 0x2980f735 at 0x142d48bf7) with the exact format 'Asset data has been set up to load track \"%s\", statid=%d' (lea 0x142d48c60, call 0x142d48c67). Callers: own E8/E9/pointer scan finds only E8 0x142d47291 and 0x142da7ec6, matching census row 2/2/.xtls:2/0/0/0/0/0/0. Proto '-' makes no claim; the code is bool(Loader*): al=1 when it rebuilds the 0x88-byte entry vector at this+0x128, 0 when unchanged, upper eax bits undefined; caller 0x142d47291 tests bl. 1.0.145 twin 0x142d4b100, 309/309 insns same."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineSystemGetFriends_ListBlockedUsersFinishedRequestID",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432cbb20",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-OnlineSystemGetFriendsListTask",
+  "notes": "named from its log messages (channel OnlineSystemGetFriendsListTask): 'List blocked users has finished: requestID = %I64u, err = %d, num = %d'"
+ },
+ "signature": {
+  "id": "game.online_system_get_friends_list_blocked_users_finished_request_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 4D 89 CC",
+  "match": "0x1432cbb20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432cbb20",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineSystemGetFriends_ListBlockedUsersFinishedRequestID"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1432cbb20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432cbb20.c;xref:0x1432c8289",
+   "notes": "V5927 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

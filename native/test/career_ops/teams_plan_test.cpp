@@ -1,21 +1,21 @@
-// career::apply_teams' planner (native/src/core/career_ops/teams_plan.hpp) on the host.
+// career::apply_teams' planner (native/src/core/career/ops/teams_plan.hpp) on the host.
 
 #include <cstdio>
 #include <string>
 #include <vector>
 
-#include "../../src/core/career_ops/start_teams.hpp"
-#include "../../src/core/career_ops/teams_plan.hpp"
+#include "core/career/ops/start_teams.hpp"
+#include "core/career/ops/teams_plan.hpp"
 
-using namespace career_ops::teams;
+using namespace career::ops::teams;
 
 static int failures = 0;
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d: %s\n", __FILE__, __LINE__, #c);                                                    \
-            ++failures;                                                                                                \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d: %s\n", __FILE__, __LINE__, #c);                                                             \
+            ++failures;                                                                                                          \
+        }                                                                                                                        \
     } while (0)
 
 static SeasonIn season(int year, int teams, int closed = 0, const char *prefix = "t")
@@ -134,8 +134,11 @@ int main()
         Table t = build_table({season(2012, 3)}, false);
         Plan p = plan_season(t, season(2013, 3, 2));
         std::vector<uint32_t> teams = {100, 101, 102};
-        std::vector<SeatRow> rows = {{1, 100, 0, true, false}, {2, 101, 0, true, false}, {3, 101, 1, true, false},
-                                     {4, 102, 0, true, false}, {5, 101, -1, false, false}};
+        std::vector<SeatRow> rows = {{1, 100, 0, true, false},
+                                     {2, 101, 0, true, false},
+                                     {3, 101, 1, true, false},
+                                     {4, 102, 0, true, false},
+                                     {5, 101, -1, false, false}};
         Closing c = close_slots(p, teams, rows);
         CHECK(c.refusals.empty() && c.releases == (std::vector<uint32_t>{2, 3}));
         rows[1].human = true;
@@ -150,8 +153,8 @@ int main()
         CHECK(!bad.ok());
     }
     {
-        const char *stock[] = {"mercedes_26", "ferrari_26", "redbull_26", "mclaren_26", "forceindia_26", "renault_26",
-                               "williams_26", "tororosso_26", "sauber_26", "haas_26", "gm_cadillac_26"};
+        const char *stock[] = {"mercedes_26", "ferrari_26",   "redbull_26", "mclaren_26", "forceindia_26", "renault_26",
+                               "williams_26", "tororosso_26", "sauber_26",  "haas_26",    "gm_cadillac_26"};
         auto year = [&](int y, const char *slot11) {
             SeasonIn x;
             x.year = y;
@@ -170,9 +173,11 @@ int main()
         anchor_rows(t, physical);
         Plan p = plan_season(t, request);
         CHECK(t.ok() && p.ok() && p.count(Kind::dressed) == 1 && p.count(Kind::open) == 10);
-        CHECK(p.actions[10].kind == Kind::dressed && p.actions[10].row == "gm_cadillac_26" && p.actions[10].team == "ig.teampack/ig_racing");
+        CHECK(p.actions[10].kind == Kind::dressed && p.actions[10].row == "gm_cadillac_26" &&
+              p.actions[10].team == "ig.teampack/ig_racing");
         CHECK(plan_season(t, year(2017, "game/gm_cadillac_26")).count(Kind::open) == 11);
-        CHECK(identity_id("gm_cadillac_26") == "game/gm_cadillac_26" && identity_id("ig.teampack/ig_racing") == "ig.teampack/ig_racing");
+        CHECK(identity_id("gm_cadillac_26") == "game/gm_cadillac_26" &&
+              identity_id("ig.teampack/ig_racing") == "ig.teampack/ig_racing");
 
         SeasonIn added = year(2016, "ig.teampack/ig_racing");
         added.slots[10].seats = {"ig.teampack/ig_driver", "swofty.classic-seasons/rio_haryanto"};
@@ -186,12 +191,14 @@ int main()
               sp.find(2016)->dresses[0].seats[0] == "ig.teampack/ig_driver" &&
               sp.find(2016)->dresses[0].seats[1] == "swofty.classic-seasons/rio_haryanto");
         CHECK(!sp.find(2017) && !sp.find(2026) && !sp.find(2018));
-        CHECK(plan_json(sp) == "{\"data_group\":\"f1_career_progressive\",\"years\":[{\"year\":2016,\"slots\":[{\"slot\":11,"
-                               "\"row\":\"gm_cadillac_26\",\"team\":\"ig.teampack/ig_racing\",\"seats\":[\"ig.teampack/ig_driver\","
-                               "\"swofty.classic-seasons/rio_haryanto\"]}]}]}");
+        CHECK(plan_json(sp) ==
+              "{\"data_group\":\"f1_career_progressive\",\"years\":[{\"year\":2016,\"slots\":[{\"slot\":11,"
+              "\"row\":\"gm_cadillac_26\",\"team\":\"ig.teampack/ig_racing\",\"seats\":[\"ig.teampack/ig_driver\","
+              "\"swofty.classic-seasons/rio_haryanto\"]}]}]}");
         CHECK(mentions(describe(sp), "2016 slot 11: gm_cadillac_26 as ig.teampack/ig_racing (seats ig.teampack/ig_driver, "
                                      "swofty.classic-seasons/rio_haryanto)"));
-        StartPlan none = start_plan("f1_career_progressive", {stock26, chain, year(2016, "gm_cadillac_26"), constructor}, physical);
+        StartPlan none =
+            start_plan("f1_career_progressive", {stock26, chain, year(2016, "gm_cadillac_26"), constructor}, physical);
         CHECK(none.years.empty() && plan_json(none) == "{\"data_group\":\"f1_career_progressive\",\"years\":[]}");
         CHECK(plan_json(none) == plan_json(start_plan("f1_career_progressive", {}, physical)));
 
@@ -201,12 +208,14 @@ int main()
         x12.team = "ig.teampack/ig_racing";
         twelfth.slots.push_back(x12);
         StartPlan sp12 = start_plan("f1_career_progressive", {twelfth}, physical);
-        CHECK(sp12.dresses() == 0 && sp12.years.size() == 1 && mentions(sp12.years[0].notes, "slot 12: ig.teampack/ig_racing has no slot row"));
+        CHECK(sp12.dresses() == 0 && sp12.years.size() == 1 &&
+              mentions(sp12.years[0].notes, "slot 12: ig.teampack/ig_racing has no slot row"));
         CHECK(plan_json(sp12) == plan_json(none));
 
         CHECK(added_team_id("ig.teampack/ig_racing"));
-        CHECK(!added_team_id("") && !added_team_id("constructor/manor") && !added_team_id("game/a|game/b") && !added_team_id("game/a?") &&
-              !added_team_id("game/williams") && !added_team_id("game/cs16_manor") && !added_team_id("gm_cadillac_26"));
+        CHECK(!added_team_id("") && !added_team_id("constructor/manor") && !added_team_id("game/a|game/b") &&
+              !added_team_id("game/a?") && !added_team_id("game/williams") && !added_team_id("game/cs16_manor") &&
+              !added_team_id("gm_cadillac_26"));
         SeasonIn cs = year(2016, "game/cs16_manor");
         cs.slots[0].team = "game/cs16_mercedes";
         CHECK(start_plan("f1_career_progressive", {cs}, physical).years.empty());
@@ -220,6 +229,8 @@ int main()
     }
     if (failures)
         return 1;
-    std::printf("teams_plan_test: slot table (12 slots, first filling season, My Team and 13 refused, shared rows), open, dressed and closed slots, closing releases and the player's seat, the start-season dress plan (an added team on its slot row, no row for a twelfth, the same row and team as the season dress): ok\n");
+    std::printf("teams_plan_test: slot table (12 slots, first filling season, My Team and 13 refused, shared rows), open, "
+                "dressed and closed slots, closing releases and the player's seat, the start-season dress plan (an added team on "
+                "its slot row, no row for a twelfth, the same row and team as the season dress): ok\n");
     return 0;
 }

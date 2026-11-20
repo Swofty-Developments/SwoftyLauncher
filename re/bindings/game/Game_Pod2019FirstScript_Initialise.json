@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Pod2019FirstScript_Initialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140363850",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140363850.c;xref:0x1455f6ee0",
+  "notes": "pod_2019_1st_script::initialise (vtable slot 0x1455f6ee0, ~2900 lines): sets cutscene params (HQ characters, skip frustum culling, prewarm textures, start-time offset), binds the parcferme_geo / podium2022_parcferme_geo world, lead engineer asset group, and builds all podium sequences: runon (runonEdriver_placed_first/second/third, runonEENG, camera, background, podium_screen), tunnel walk (podium2022_tunnelWalk), trophy crowd flyovers (podium2022_celebrate_trophy_crowd_01/02_flyover, podium2022_podium_flyover_cars), crowd wide (podium_podium_crowd_wide), champagne bottles, TV screens, podium_audio, pod_emote, spawns drivers with race result (male/_reverse variants). Addon: list of animation/scene names to swap for custom podium cutscenes. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2532)  | 2026-11-17 engine-re round A2: track-name scene: builds 'crowd_wide_cam_' + this+0x930 (the digit-cut track name, lower-cased) and, when longer than 10 chars and ending in '_reverse' (0x145624725, strcmp at 0x14036847c), cuts the suffix; then Game_CameraActorEnable_SpawnScene. So reverse layouts reuse the forward track's podium crowd camera scene and a new code needs a scene named crowd_wide_cam_<code> (missing-scene behaviour: T203). raised by engine-re with --force 2026-11-17 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.pod2019_first_script_initialise",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 07 00 00 C5",
+  "match": "0x140363850",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140363850",
+  "kind": "func_start",
+  "names": [
+   "Game_Pod2019FirstScript_Initialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d5-verify",
+   "kind": "func",
+   "item": "Game_Pod2019FirstScript_Initialise",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140363850.c;xref:0x1455f6ee0",
+   "notes": "V2532 strings confirm runon/tunnelWalk/flyover/crowd_wide/champagne/podium_audio/pod_emote"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "trkerp-verify2",
+   "kind": "func",
+   "item": "Game_Pod2019FirstScript_Initialise",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm 0x1403683bb-0x1403684f4;str:crowd_wide_cam_ _reverse",
+   "notes": "V11015 buffer 0x64 = 'crowd_wide_cam_'+[this+0x930], whole string lower-cased (non-ASCII skipped), if strlen>=11 and last 8 chars strcmp '_reverse' -> cut, then call 0x14023f920 with it"
+  }
+ ],
+ "proofs": []
+}

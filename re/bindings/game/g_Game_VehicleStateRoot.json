@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "g_Game_VehicleStateRoot",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x146081788",
+  "type": "void *",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/1409e20b0.c;xref:0x1409e230c,0x142438093,0x14243d3e4,0x14243d59d;decomp:re/decomp/142437fe0.c",
+  "notes": "Vehicle state root: [[root+0x38]+0xa8] is the per-vehicle state array, stride 0x508, indexed by the vehicle's slot byte ([veh+0x118]+0x38); entry +0x28 -> physics state (+0xc4 read in 0x1409e20b0), +0x40 -> driver/state block (+0x1c0 name read in 0x142437fe0), +0x2c speed. 53 RIP refs. (used by vmknolle cooldown-lap / red-flag-pit speed reads)"
+ },
+ "signature": {
+  "id": "game.vehicle_state_root",
+  "section": ".xtls",
+  "pattern": "74 3F 48 8B 3D ?? ?? ?? ?? 48 8B 7F 38",
+  "match": "0x14361cc7f",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x3",
+   "len": 6
+  },
+  "target": "0x146081788",
+  "kind": "data",
+  "names": [
+   "g_Game_VehicleStateRoot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-c",
+   "kind": "global",
+   "item": "0x146081788",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_c/decomp/142f21360.c;decomp:work/verify_c/decomp/142437fe0.c;decomp:work/verify_c/decomp/1409e20b0.c;decomp:work/verify_c/decomp/14361cae0.c;xref:0x142f21803,0x1409e230c,0x142438093,0x14243d3e4",
+   "notes": "V1057 system pointer resolved by type key 0x146047ab8 in 0x142f21360; readers go +0x38->+0xa8 -> per-vehicle 0x508-byte blocks indexed by vehicle idx (+0x28..+0x40 state ptrs); void*"
+  }
+ ],
+ "proofs": []
+}

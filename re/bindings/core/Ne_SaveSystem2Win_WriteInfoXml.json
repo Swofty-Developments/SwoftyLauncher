@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Ne_SaveSystem2Win_WriteInfoXml",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144141c00",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "int Ne_SaveSystem2Win_UploadCorruptSave(void *device, void *op, void *a3)",
+  "evidence": "pat:log-channel-NeSaveSystem2Win;decomp:re/decomp/144141c00.c;xref:0x145a5c698;kb:subsystems/core.md#save-sandbox",
+  "notes": "named from its log messages (channel NeSaveSystem2Win): 'Downloading '%s'. Callers: census steam 0x4141c00. | Writing info.xml to \"%s\"' cb4-verify-a (name hypothesis): info.xml write (node save_information) is one step; also creates a temp dir, builds the %s%I64u.zip name, deletes a directory, handles _backup, logs Downloading; save-system vtable slot 0x145a5c698 | #562 proposed the name Ne_SaveSystem2Win_BuildSavePackageAndInfoXml"
+ },
+ "signature": {
+  "id": "core.save_system2_win_write_info_xml",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 0E 00 00",
+  "match": "0x144141c00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144141c00",
+  "kind": "func_start",
+  "names": [
+   "Ne_SaveSystem2Win_WriteInfoXml"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "save-v3",
+   "kind": "func",
+   "item": "0x144141c00",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144141c00.c;decomp:re/decomp/1447c5bc0.c;decomp:re/decomp/1447c5b30.c;xref:0x145a5c698,0x144143531",
+   "notes": "V1470 Device slot +0x58; downloads the save through helper+0x108 (+0x90,+0x98,+0x80,+0x08) and calls Ne_CloudUploader_Upload directly at 0x144143531, its only rel32 caller. Upload is also vt_Ne_CloudUploader +0x10 and is forwarded by +0x18 (0x1447c5b30), but a scan of every [r+0x268] load followed by a +0x10/+0x18 vcall finds none on the device's uploader and nothing in .data1 references those slots, so a no-op at this entry skips every upload path. Proto name says UploadCorruptSave while the row name stays WriteInfoXml."
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "save-v3",
+   "kind": "sig",
+   "item": "core.save_system2_win_write_info_xml",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "pat:sigcheck-hits-1;decomp:re/decomp/144141c00.c;xref:0x144141c00",
+   "notes": "V1480 sigcheck on d873a1c8: exactly one match in .xtls at 0x144141c00, func_start, target is the decompiled function."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x144141c00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144141c00.c",
+   "notes": "V4115 Downloading, info.xml, save_information, _backup strings confirmed (vtable/indirect or no direct callsite checked)"
+  }
+ ],
+ "proofs": []
+}

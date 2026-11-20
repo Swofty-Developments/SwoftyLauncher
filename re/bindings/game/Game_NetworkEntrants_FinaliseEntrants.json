@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkEntrants_FinaliseEntrants",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143109ae0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name finaliseEntrants (class from the log channel); log channel NETWORK-ENTRANTS: '%s().'"
+ },
+ "signature": {
+  "id": "game.network_entrants_finalise_entrants",
+  "section": ".xtls",
+  "pattern": "56 53 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 75 65 B8 63 00 00 00",
+  "match": "0x143109ae0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143109ae0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkEntrants_FinaliseEntrants"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143109ae0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143109ae0.c;xref:0x1436dcceb",
+   "notes": "V5747 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

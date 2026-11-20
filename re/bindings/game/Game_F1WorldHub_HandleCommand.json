@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1WorldHub_HandleCommand",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141abc1b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_F1WorldHub_HandleCommand(void *vm, NeStr **cmd, void *value)",
+  "evidence": "str:s_cfg_UISkipDLCUpsell;decomp:re/decomp/141abc1b0.c;xref:0x141abcc06,0x141abcc07",
+  "notes": "Vtable slot 0x50 (onCommandRaised position) of the F1 World hub VM vtable 0x14572d200 (pointer 0x14572d250; slot 0x68 is Game_F1WorldHub_BuildPlayTiles). Large djb2 switch on *(u32*)*cmd: tab selection (Game_F1WorldHub_SelectTab 0x141abd5d0), Game_F1WorldHub_RestoreLastActivity 0x141abd180, routes settings / open_map / open_vendor / team_select / engineering / teammate_select / fan_zone_choices / championship_standings / tt_leaderboard / we_leaderboard / open_collaborative_events, theming overlay open/close, esports URLs (f1esports.com short links), inputAllow / inputDisallow / fade_out UI events (Ne_UiEvent_DispatchByName 0x144320fe0). Setting: command 0xcd471171 reads UI.skipDLCUpsell via Ne_Get_SettingBool on [vm+0x320]+0x18, default 0; set -> returns without action; clear -> dispatches fade_out and opens popup f1_world_container_goto_upsell (0x142427f30). hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "game.f1_world_hub_handle_command",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 10 01 00 00 48 8B 02 48 85 C0 0F 84 ?? ?? ?? ?? 4C 89 C7",
+  "match": "0x141abc1b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141abc1b0",
+  "kind": "func_start",
+  "names": [
+   "Game_F1WorldHub_HandleCommand"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-3",
+   "kind": "func",
+   "item": "0x141abc1b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141abc1b0.c;xref:0x14572d250",
+   "notes": "V9356 Vtable slot equal to the OnCommandRaised slot of other VMs; switch on the command name hash (*cmd -> u32) handling open_map, open/close_theming_overlay_f1_world, open_collaborative_events, close_all, f1esports.com links, DLC upsell (reads UI.skipDLCUpsell default false, fade_out, f1_world_container_goto_upsell) etc.; 3 args (vm, cmd, value) match."
+  }
+ ],
+ "proofs": []
+}

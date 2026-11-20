@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Update_RnDPurchasePanel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c8d540",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:research-limit-store-0x6d2@0x141c8e76e;xref:0x141c8bb58,0x141c8d513;kb:subsystems/rnd_ui.md#modifiers",
+  "notes": "Purchase panel update (cost, slots, timeline, comparison). @0x141c8e299 reads Career_Get_TeamModifiers; slots = sum of {kind 0, dept == [panel+0x6e8], active} values; [panel+0x6d2] research-limit = gate && slots <= in-use (@0x141c8e766). A department with no modifier entries (dept 4) gets slots 0 and the research-limit flag."
+ },
+ "signature": {
+  "id": "career.update_rn_d_purchase_panel",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 D8 33 00",
+  "match": "0x141c8d540",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c8d540",
+  "kind": "func_start",
+  "names": [
+   "Career_Update_RnDPurchasePanel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141c8d540",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c8d540.c;xref:0x141c8bb58",
+   "notes": "V4960 name/description match decomp: strings and callees consistent"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x141c8d540",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c8d540.c;xref:0x141c8e299;xref:0x141c8e76e;xref:0x141c8bb58",
+   "notes": "V9195 TeamModifiers entries filtered by kind==0, dept==panel dept and active byte, values summed; flag stored at [rsi+0x6d2] from setle at 0x141c8e76e."
+  }
+ ],
+ "proofs": []
+}

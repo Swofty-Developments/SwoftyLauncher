@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_TeamHqMyTeam_UpdateAdvanceEntries",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14232caf0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_TeamHqMyTeam_UpdateAdvanceEntries(void *vm)",
+  "evidence": "decomp:re/decomp/14232caf0.c;xref:0x142329c75;xref:0x142333ab5",
+  "notes": "myteam-g2: Iterates the timeline day slots ((vm+0x400)+0x328..+0x330) and refreshes each bound slot value (bool-typed binding at +0x148). UI only."
+ },
+ "signature": {
+  "id": "vm.team_hq_my_team_update_advance_entries",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 B4 24 90 00 00 00 48 8B 81 00 04 00 00",
+  "match": "0x14232caf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14232caf0",
+  "kind": "func_start",
+  "names": [
+   "Vm_TeamHqMyTeam_UpdateAdvanceEntries"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x14232caf0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14232caf0.c;xref:0x142329c75",
+   "notes": "V10139 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

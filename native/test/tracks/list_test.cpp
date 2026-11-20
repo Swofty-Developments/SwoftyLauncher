@@ -1,6 +1,6 @@
 // Host test for list.hpp: the calendar first by venue (with ? and | venues and dropped rounds), "More tracks" in base
 // order with per_package order and offered, left-out reasons, the [tracks] box line and the catalog JSON.
-// run_track_lists_test.sh builds and runs it.
+// native/test/run_tests.sh track_lists builds and runs it.
 #include "fixture.hpp"
 
 int main()
@@ -31,8 +31,12 @@ int main()
            "a | venue takes the first that resolves; a ? venue with no track is dropped");
 
     l = trk::build_list(base, &facts, box, trk::Mode::grand_prix,
-                        {{1, "venue/bahrain"}, {2, "venue/albert_park"}, {3, "venue/bahrain"}, {4, "venue/sochi"},
-                         {5, "venue/sochi?"}, {6, "venue/albert_park"}},
+                        {{1, "venue/bahrain"},
+                         {2, "venue/albert_park"},
+                         {3, "venue/bahrain"},
+                         {4, "venue/sochi"},
+                         {5, "venue/sochi?"},
+                         {6, "venue/albert_park"}},
                         none);
     expect((l.calendar == std::vector<std::string>{"game/bahrain", "game/melbourne"}) && l.rounds == 3 &&
                l.missing == std::vector<std::string>{"venue/sochi"},
@@ -66,12 +70,15 @@ int main()
     l = trk::build_list(base, &facts, box, trk::Mode::grand_prix, {}, e);
     expect(l.more.back() == "mod.okayama/okayama", "an order past the end puts the track last");
 
-    trk::List f1990 = trk::build_list(base, &facts, [] {
-        trk::BoxInfo b = cs2016(10);
-        for (auto &c : b.ai)
-            c.folder = "f1_1990", c.asset = "f1_1990_car";
-        return b;
-    }(), trk::Mode::grand_prix, {}, none);
+    trk::List f1990 = trk::build_list(
+        base, &facts,
+        [] {
+            trk::BoxInfo b = cs2016(10);
+            for (auto &c : b.ai)
+                c.folder = "f1_1990", c.asset = "f1_1990_car";
+            return b;
+        }(),
+        trk::Mode::grand_prix, {}, none);
     expect((f1990.more == std::vector<std::string>{"game/melbourne", "game/shanghai", "game/melbourne_reverse"}),
            "F1 1990 keeps Melbourne (its AI data) and the tracks with no facts; the rest are left out");
     expect(f1990.left_out.size() == 5, "F1 1990 leaves out the five tracks without its AI folder");
@@ -89,18 +96,22 @@ int main()
 
     Value doc = swofty::json::parse(R"({"tracks": {"game/bdx_s5_2012": {"grand_prix": {"calendar": ["game/monaco"]}},
                                                    "mod.esp/f1_2017_v10": {"grand_prix": {}}}})");
-    trk::put_catalog(doc, "Classic Seasons", "a1", "swofty.classic-seasons-2016/f1_2016", trk::Mode::grand_prix, trk::list_json(l));
+    trk::put_catalog(doc, "Classic Seasons", "a1", "swofty.classic-seasons-2016/f1_2016", trk::Mode::grand_prix,
+                     trk::list_json(l));
     const Value &cat = doc;
     expect(cat["profile"].as_string() == "Classic Seasons" && cat["build"].as_string() == "a1" && cat["tracks"].size() == 1 &&
                cat["tracks"]["swofty.classic-seasons-2016/f1_2016"]["grand_prix"].is_object(),
            "a catalog.json an older core wrote (no profile or build) starts again at the first box press");
-    trk::put_catalog(doc, "Classic Seasons", "a1", "swofty.classic-seasons-2017/f1_2017", trk::Mode::time_trial, trk::list_json(l));
-    trk::put_catalog(doc, "Classic Seasons", "a1", "swofty.classic-seasons-2016/f1_2016", trk::Mode::time_trial, trk::list_json(l));
+    trk::put_catalog(doc, "Classic Seasons", "a1", "swofty.classic-seasons-2017/f1_2017", trk::Mode::time_trial,
+                     trk::list_json(l));
+    trk::put_catalog(doc, "Classic Seasons", "a1", "swofty.classic-seasons-2016/f1_2016", trk::Mode::time_trial,
+                     trk::list_json(l));
     expect(cat["tracks"].size() == 2 && cat["tracks"]["swofty.classic-seasons-2016/f1_2016"].size() == 2 &&
                cat["tracks"]["swofty.classic-seasons-2017/f1_2017"]["time_trial"].is_object(),
            "box presses of one build add boxes and modes");
     trk::put_catalog(doc, "Tails what-if", "a1", "game/f1_2025", trk::Mode::grand_prix, trk::list_json(l));
-    expect(cat["profile"].as_string() == "Tails what-if" && cat["tracks"].size() == 1 && cat["tracks"]["game/f1_2025"].is_object(),
+    expect(cat["profile"].as_string() == "Tails what-if" && cat["tracks"].size() == 1 &&
+               cat["tracks"]["game/f1_2025"].is_object(),
            "a box press under another profile drops the other profile's boxes");
     trk::put_catalog(doc, "Tails what-if", "b2", "game/bdx_s5_2012", trk::Mode::grand_prix, trk::list_json(l));
     expect(cat["build"].as_string() == "b2" && cat["tracks"].size() == 1 && cat["tracks"]["game/bdx_s5_2012"].is_object(),

@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Game_GhostlapTrace_RivalLogDone",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141482fe4",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/141482d60.c;xref:0x141482e6f,0x141482e95,0x141482ed3",
+  "notes": "In Game_GhostlapTrace_OnRivalFromLeaderboardDownloadRequested: mov rax,[rsi+0x10] after the GHOSTLAP-TRACE log call at 0x141482fdf. Every closed-gate path lands here (jne at 0x141482e6f, je at 0x141482e95, jmp at 0x141482ed3) with the same rsp as at site_Game_GhostlapTrace_RivalLogBoard; the log call's result is not read. The rip target of core's time trial reference log guard; never hooked."
+ },
+ "signature": {
+  "id": "game.ghostlap_trace_rival_log_done",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 46 10 48 8B 80 88 02 00 00",
+  "match": "0x141482fdf",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141482fe4",
+  "kind": "mid",
+  "expect": "48 8B 46 10 48",
+  "names": [
+   "site_Game_GhostlapTrace_RivalLogDone"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "ttrefnull",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/frontend/leaderboard_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "ttrefnull-verify",
+   "kind": "global",
+   "item": "0x141482fe4",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141482d60.c;xref:0x141482e6f,0x141482ed3;sig:game.ghostlap_trace_rival_log_done",
+   "notes": "V9255 Static: fe4 reloads rax from [rsi+0x10] and rcx at fef before any read, so skipping the log call at 0x141482fdf leaves nothing it needed."
+  }
+ ],
+ "proofs": []
+}

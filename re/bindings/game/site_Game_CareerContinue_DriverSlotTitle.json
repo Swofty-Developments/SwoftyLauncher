@@ -1,0 +1,103 @@
+{
+ "schema": 1,
+ "name": "site_Game_CareerContinue_DriverSlotTitle",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a0f7ac",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/141a0f760.c;decomp:re/decomp/141a0f720.c;xref:0x141a0f730,0x141a202a5",
+  "notes": "resume-career card title (Game_CareerContinue_FillSlot, driver branch): the call to Vm_Holder_SetCStr that writes the card's display_title; rcx = the holder vm+0x3b8+slot*0x540, rdx = the key C string lng_homescreen_driver_career (lea at 0x141a0f7a5), rbx = slot_info, rdi = the view model, sil = slot index (0-2), r12 = vm+0x328. The holder copies the C string into an NeStr (0x1407b10c0), so rdx may point at any string that lives through the call. Taken only when slot_info+0x171 bit 0x20 is clear (Driver Career saves); the My Team title is the separate call at 0x141a0f833 EA (re/db/builds/ea.json): EA 0x141a09c9c, call Vm_Holder_SetCStr EA 0x1407b01d0 (60 instructions identical to Steam's); Game_CareerContinue_FillSlot EA 0x141a09c50 is instruction-for-instruction Steam's (1115 instructions, same registers, frame and site offset 0x4c), so rcx/rdx/rbx/rdi/sil hold the same values; only the rel32 in expect differs (EA E8 2F 65 DA FE)."
+ },
+ "signature": {
+  "id": "game.career_continue_driver_slot_title",
+  "section": ".xtls",
+  "pattern": "4C 69 EE 40 05 00 00 F6 82 71 01 00 00 20 4A 8D 8C 29 B8 03 00 00 44 88 44 24 37 0F 85 ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? C6 84 24 08 04 00 00 01",
+  "match": "0x141a0f784",
+  "anchor": "0x28",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a0f7ac",
+  "kind": "mid",
+  "names": [
+   "site_Game_CareerContinue_DriverSlotTitle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-26",
+    "by": "resume-card",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/progressive/native/src/ui/resume.cpp"
+  ],
+  "expect": "E8 0F 19 DA FE"
+ },
+ "verify": [
+  {
+   "date": "2026-10-26",
+   "verifier": "verify-resume-card",
+   "kind": "global",
+   "item": "site_Game_CareerContinue_DriverSlotTitle",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a0f760.c;decomp:re/decomp/141a0f720.c;xref:0x141a0f773,0x141a0f776,0x141a0f779,0x141a0f780,0x141a0f784,0x141a0f78b,0x141a0f792,0x141a0f79f,0x141a0f7a5,0x141a0f7ac,0x141a0f82c,0x141a0f833;xref:0x1407b10dd,0x1407b10e2,0x1407b113f,0x144337a2d,0x144337aba;xref:0x141a3a651,0x141a3a66b,0x141a3a685,0x141a0f38b,0x141a3df8f,0x141a3e037;xref:0x141a0f730,0x141a202a5;sig:game.career_continue_driver_slot_title",
+   "notes": "V1054 Checked from disassembly. In 0x141a0f760 (.pdata 0x141a0f760-0x141a10cd1): rbx = rdx (slot_info) at 0x141a0f773, rdi = rcx (vm) at 0x141a0f776, r12 = vm+0x328 at 0x141a0f779, esi = movzx r8b at 0x141a0f780, r13 = rsi*0x540 at 0x141a0f784, test byte [rdx+0x171],0x20 at 0x141a0f78b, rcx = vm+r13+0x3b8 at 0x141a0f792, jne 0x141a0f82c at 0x141a0f79f, lea rdx = 0x145709e97 'lng_homescreen_driver_career' at 0x141a0f7a5, then the 5-byte call 0x1407b10c0 at 0x141a0f7ac. None of these registers changes between its set and the call. The other branch is lea rdx = 0x14570ce69 'lng_homescreen_my_team_career' at 0x141a0f82c and the call at 0x141a0f833. The holder is the card's display_title holder: the entry ctor 0x141a3dcb0 (rdi = rcx) names 'display_title' at 0x141a3df8f and stores that node handle at rdi+0x98 (0x141a3e037), so the holder is entry+0x90 and Vm_Holder_SetCStr reads its node from [holder+8]. 0x141a39fd0 builds the three entries at container+0x40/+0x580/+0xac0 (0x141a3a651/0x141a3a66b/0x141a3a685) and 0x141a0f330 passes container = vm+0x2e8 (0x141a0f38b), so entry i = vm+0x328+i*0x540 and the holder is vm+0x3b8+i*0x540. The copy: 0x1407b10c0 calls Ne_Make_StrFromCStr 0x1441974e0 with rcx = a stack temp and rdx = the C string (0x1407b10dd). That takes strlen (0x14535e010) and builds the NeStr in 0x1443379f0, which allocates through [alloc+0x18] (0x144337a2d) and copies the chars byte by byte to +9 (0x144337aba). 0x1407b10c0 then calls Vm_NodeSet_String 0x140828440 on [holder+8] with the temp (0x1407b113f) and drops its own ref. Nothing reads the original pointer after that, and the caller reloads rdx before its next use, so swapping rdx for any string that lives through the call is safe. Signature: sigcheck OK. My own regex scan of every section finds the pattern only at 0x141a0f784 (.xtls). Anchor 0x28 is 0x141a0f7ac, and expect E8 0F 19 DA FE decodes to call 0x1407b10c0. No branch in the function targets 0x141a0f7a0-0x141a0f7b8. Callers of the containing function: E8 at 0x141a0f730 (inside 0x141a0f720), plus the vtable qwords 0x145726750 and 0x145726c90. 0x141a202a5 is the vt+0xe0 call in 0x141a1fde0 with rcx = vm, rdx = r13 = slot_info and r8d = the card count byte. So sil is the card index 0-2 (cards already filled), not the save slot id, which is what the row means."
+  },
+  {
+   "date": "2026-10-27",
+   "verifier": "easites-verify",
+   "kind": "sig",
+   "item": "game.career_continue_driver_slot_title",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "sig:game.career_continue_driver_slot_title;xref:0x141a0f7ac,0x141a0f760,0x1407b10c0;pat:4C 69 EE 40 05 00 00 F6 82 71 01 00 00 20 .. E8 ?? ?? ?? ?? C6 84 24 08 04 00 00 01",
+   "notes": "V1145 EA overlay: the pattern matches EA .rdata once at 0x1a09c74, and the target 0x141a09c9c holds E8 2F 65 DA FE, a call to 0x1407b01d0 (instruction-identical to Steam Vm_Holder_SetCStr 0x1407b10c0) with rdx = lng_homescreen_driver_career. EA FillSlot 0x141a09c50 is instruction-identical to Steam 0x141a0f760 (1115 insns, site at +0x4c in both: rbx = slot info, rdi = vm, esi = movzx r8b, rcx = vm + 0x3b8 + slot * 0x540), and the vm+0x1370 readers next to it are identical too."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "swofty",
+   "date": "2026-11-19",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141a0f784",
+    "target": "0x141a0f7ac"
+   },
+   "sigcheck": "passed",
+   "digest": "bfd5b40e3fa76bd8e9d4b8321d0f0c35eea139140220a0cd8d40869fef148a6c"
+  },
+  {
+   "by": "swofty",
+   "date": "2026-11-19",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141a10f64",
+    "target": "0x141a10f8c"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4354653810535c5ecaa37025c6e265e806e0d05d6d557ff0772a8cb74b23bf30"
+  }
+ ]
+}

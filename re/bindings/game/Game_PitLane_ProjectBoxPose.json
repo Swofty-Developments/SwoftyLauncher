@@ -1,0 +1,102 @@
+{
+ "schema": 1,
+ "name": "Game_PitLane_ProjectBoxPose",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434c3520",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "bool Game_PitLane_ProjectBoxPose(void *mgr, void *out, void *mtx, uint32_t box, uint32_t flags)",
+  "evidence": "decomp:re/decomp/1434c3520.c;xref:0x1434be69e",
+  "notes": "Two callers. 0x1434be460 (call 0x1434be69e; the state 10/11 hold-in-garage alignment, called from Game_PitLane_UpdateMovement at 0x1434b9199 for state 10 and 0x1434b92c6 for state 11) passes the pit lane record +0xe0 as box unchecked. Game_Pitlane_ApplyVehicleResetState 0x1434c03c0 (call 0x1434c0493, case 4 of jump table 0x145845cc8) passes [entry+0xe0] after a signed <= 0x17 check, so 99 stops there and -1 passes. Reads the cache slot at mgr+0x7f8+box*8 (0x1434c3656), which holds a zone key: the 0x1445f32a0 result on [[mgr+0x18]+0x28] at the box position, a pointer to a 0x140-byte zone record or 0, which 0x140679340 only hashes (FNV-1a, 0x14063bc89) into the spline's segment buckets and never dereferences, so a wrong non-null value misses and falls back to the full search 0x140679410; null results are stored too, so a miss repeats, and stores the lookup result there on every miss (0x1434c36a6), with no bound on box. Game_PitLane_GenerateSplines 0x1434ca550 zeroes 24 slots (0x7f8..0x8b7); 14 tuning handles follow at +0x8b8..+0x920, and 27 16-byte {allocator, record pointer} entries run from +0x930 to +0xadf (bound at 0x1434b51cc), so the first record pointer is at mgr+0x938. -1 (a third car in a garage has no box) faults at 0x1434c3656 (mov r8,[rbx+r14*8+0x7f8], mgr+0x8000007f0). 99 reads mgr+0xb10, a subsystem pointer that 0x1434b59b0 sets at 0x1434b5b6a: a non-null one goes to 0x1434c5c90 as the key, and a null one is overwritten with a zone pointer at 0x1434c36a6. The reset 0x1434b5110 sets +0xe0 to 0x7fffffff for every car (0x1434b56bc), which the unchecked caller passes through. Returns false (cmp edi,2 at 0x1434c4202, setne al at 0x1434c4205) when 0x1434c5c90 returns 2, with out untouched; 0x1434be460 then leaves the car alone and 0x1434c03c0 takes its error path (0x1434c04a0). focus325 and simon_92216 1.6.12 crashes. Needs L2 promotion by the game owner."
+ },
+ "signature": {
+  "id": "game.pitlane_resolve_vehicle_state4",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 84 C0 74 77 C7 87 D4 00 00 00 04",
+  "match": "0x1434be69e",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1434c3520",
+  "kind": "func_start",
+  "names": [
+   "Game_PitLane_ProjectBoxPose"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x1434c3520",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434c3520.c;xref:0x1434be69e",
+   "notes": "V8231 name+concrete claims match decomp"
+  },
+  {
+   "date": "2026-11-01",
+   "verifier": "kbverify-pitbox",
+   "kind": "func",
+   "item": "Game_PitLane_ProjectBoxPose",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434c3520.c;xref:0x1434be69e,0x1434c3656",
+   "notes": "V8552 re-decompiled with car-a: lVar5 = *(mgr + box*8 + 0x7f8) with box a uint and no bound; slot 0 then calls bounded thunk 0x1434c01a0 (param_3<0x20) and creates the handle via FUN_1445f32a0; 40 slots = 0x938-0x7f8; returns iVar4 != 2"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_PitLane_ProjectBoxPose",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1434c3520-0x1434c4276,0x1503fecf0-0x1503fefdb,0x1434c5c90-0x1434c68fe,0x140679dd0-0x14067a031,0x1445041c0-0x1445047b1,0x1434be460-0x1434be744,0x1434c03c0-0x1434c05f9,0x1434ca550-0x1434ca990,0x1434b83e0-0x1434bc53b,1.0.145 0x1434c5aa0-0x1434c67f6,1.0.145 0x14feb9670-0x14feb96a0;xref:0x1434c3653,0x1434c3656,0x1434c36a6,0x1434c36f2,0x1434c4202,0x1434c4205,0x1434be69e,0x1434c0493,0x1434c0405,0x1434b9199,0x1434b92c6,0x1434ca71b,0x1434ca85e,0x1434c2039,0x1503fecfd",
+   "notes": "V100034 Blind: proto bool(mgr,out,mtx,u32 box,u32 flags) confirmed: 4 regs + stack dword (only bits 0,2 used); al = status of 0x1434c5c90 != 2 (cmp 0x1434c4202, setne 0x1434c4205). Cache [mgr+0x7f8+box*8] read 0x1434c3656, filled on miss 0x1434c36a6, unbounded (0x1434c01a0 bounds >31). Wrong: two callers, not one: 0x1434be69e and 0x1434c0493 (case 4 of 0x145845cc8, box signed <=23); not 40 slots: init zeroes 0x7f8..0x8b7 (24), +0x8b8.. hold tuning handles (0x1434ca85e); 99 reads in-object mgr+0xb10, no fault at 0x1434c3656; only -1 (mgr+0x8000007f0) faults there. UpdateMovement calls at 0x1434b9199 (state 10), 0x1434b92c6 (state 11); 0x1434b919e is a return address. 1.0.145 twin 0x1434c5aa0 820/820."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_PitLane_ProjectBoxPose",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1434c3520-0x1434c4276,0x1503fecf0-0x1503fef17,0x1434c5c90-0x1434c68fe,0x1434be460-0x1434be744,0x1434c03c0-0x1434c05f9,0x1434b83e0-0x1434bc53b,0x1434c72f0-0x1434c835f,0x1434ca550-0x1434cb2fc,0x1434b5110-0x1434b59ab,0x1434b59b0-0x1434b6113,0x1445f32a0-0x1445f3628,0x140679340-0x14067940c,0x140679dd0-0x14067a031,0x14063bc80-0x14063bd98,0x1445041c0-0x1445047b1,1.0.145 0x1434c5aa0-0x1434c67f6,1.0.145 0x1434c2940-0x1434c2b30,1.0.145 0x1434c09e0-0x1434c0c30;xref:0x1434be69e,0x1434c0493,0x1434be685,0x1434c0405,0x1434c3656,0x1434c36a6,0x1434c36f2,0x1434c4202,0x1434ca71b,0x1434ca85e,0x1434b51cc,0x1434b5b6a,0x14063bc89,0x1503fecfd",
+   "notes": "V100035 Blind: partial. Proto, both callers (0x1434be69e passes [slot+0xe0] unchecked; 0x1434c0493 mode 4 after signed jg 0x17 at 0x1434c0405), unbounded cache [mgr+box*8+0x7f8] at 0x1434c3656/0x1434c36a6, -1 -> mgr+0x8000007f0, false only when 0x1434c5c90 returns 2 with out untouched, 0x1434ca550 zeroing 0x7f8..0x8b7 and tuning handles from 0x8b8 (0x1434ca85e) all match. Wrong: 0xb10 is not in the per-car records, which are 27 16-byte {allocator, record*} entries at 0x930..0xadf (loop 0x1434b51cc); 0xb10 is a subsystem pointer set at 0x1434b5b6a. Imprecise: the cache holds the 0x1445f32a0 zone pointer, which is only hashed as a key (0x14063bc89), not a spline handle."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_PitLane_ProjectBoxPose",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1434c3520-0x1434c4276,0x1503fecf0-0x1503fef17,0x1434c5c90-0x1434c68fe,0x1445f32a0-0x1445f3628,0x140679340-0x14067940c,0x14063bc80-0x14063bd98,0x1434be460-0x1434be744,0x1434c03c0-0x1434c05f9,0x1434b5110-0x1434b59ab,0x1434c72f0-0x1434c835f,0x1434ca550-0x1434cb2fc,1.0.145 0x1434c5aa0-0x1434c67f6;xref:0x1434be69e,0x1434c0493,0x1434c0405,0x1434c3656,0x1434c36a6,0x1434c4202,0x14063bc89,0x1434b51cc,0x1434b56bc,0x1434b5b6a,0x1434ca71b,0x1434b9199,0x1434b92c6",
+   "notes": "V100036 Blind: agree. Own disasm: bool(mgr,out,mtx,u32 box,u32 flags), flags bits 0/2 only, mtx+0x30 only. Cache [mgr+0x7f8+box*8] read 0x1434c3656, filled on null 0x1434c36a6 (null stored too), no bound. Value = 0x1445f32a0 0x140-B cell at box pos, only FNV-1a hashed (0x14063bc89), never dereferenced. 0x1434ca550 zeroes 0x790..0x8b7, handles 0x8b8..0x920, 27 slots 0x930..0xadf (0x1434b51cc). Callers 0x1434be69e unchecked (states 10/11) and 0x1434c0493 (signed jg 0x17). 99 -> mgr+0xb10, -1 -> mgr+0x8000007f0. False only on proj==2 (0x1434c4202). -1 cause is game meaning; formula gives -1 only for g=0. 1.0.145 twin 0x1434c5aa0 820/820."
+  },
+  {
+   "date": "2026-11-19",
+   "verifier": "std-libs",
+   "kind": "func",
+   "item": "Game_PitLane_ProjectBoxPose",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm re/tools/sigport.py --witness 0x34c3520, Steam 1.0.145 0x1434c5aa0, EA 1.0.145 0x1434b67d0 (difflib aligned)",
+   "notes": "V110008 1.0.145 witness: equal index by index on Steam 1.0.145 (0x34c5aa0, 820/820, +0x7f8 and the matrix +0x30 at the same instructions). On the EA 1.0.145 dump the function is at 0x34b67d0 and 828 of its 830 instructions align equal; the two that differ are the core's own patch at the cache read (KB 0x1434c3653/0x1434c3656, EA 0x1434b6903 jmp into the hook pool)."
+  }
+ ],
+ "proofs": []
+}

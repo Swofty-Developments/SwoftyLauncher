@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StartLights_ApplyLightNodes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142cd5bb0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142cd5bb0.c;xref:0x142c19514",
+  "notes": "Sets light node matrices of the start-lights model (Ne_ModelInstance_SetNodeMatrices) for light index param_2 with on/off flags param_3/param_4 (state +0xbbc..+0xc28). Callers Game_StartLights_Update (several). Addon: start lights visuals."
+ },
+ "signature": {
+  "id": "game.start_lights_apply_light_nodes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 80 B9 BC 0B",
+  "match": "0x142cd5bb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142cd5bb0",
+  "kind": "func_start",
+  "names": [
+   "Game_StartLights_ApplyLightNodes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x142cd5bb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142cd5bb0.c;xref:0x142c19514",
+   "notes": "V7552 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

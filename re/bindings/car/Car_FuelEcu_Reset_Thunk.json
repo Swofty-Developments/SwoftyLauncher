@@ -1,0 +1,81 @@
+{
+ "schema": 1,
+ "name": "Car_FuelEcu_Reset_Thunk",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14468e550",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "void (void *ecu, uint32_t flags)",
+  "evidence": "decomp:re/decomp/14468e550.c;decomp:re/decomp/1553fdf60.c;xref:0x145bfa888",
+  "notes": "FuelECU system vtable +0x18 (Reset). body=Car_FuelEcu_Reset_Body"
+ },
+ "signature": {
+  "id": "car.fuel_ecu_reset",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? F6 64 90 FD D2 94 0F 86 2B 1B A7",
+  "match": "0x14468e550",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14468e550",
+  "kind": "func_start",
+  "names": [
+   "Car_FuelEcu_Reset_Thunk"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v2",
+   "kind": "func",
+   "item": "Car_FuelEcu_Reset_Thunk",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14468e550.c;decomp:re/decomp/1553fdf60.c;xref:0x145bfa888",
+   "notes": "V1208 jmp 0x1553fdf60; abs ptr 0x145bfa888 = vt 0x145bfa870 +0x18."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x14468e550",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14468e550.c",
+   "notes": "V6754 stub jmp to .data1 0x1553fdf60 (black box); it is vtable 0x145bfa870 slot 3, the same slot as Car_Diff_ApplyTuning (slot 3 of 0x145bfa120), so the Reset/Standard-mode claim is unverifiable and slot looks like a generic setup-apply. Better: Car_FuelEcu_ApplySetup (vtable/indirect; no direct call site)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x14468e550",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14468e550.c",
+   "notes": "V7252 stub to .data1 black box; vtable slot only, Fuel ECU specificity unverifiable (indirect)"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "re-bindings",
+   "kind": "func",
+   "item": "Car_FuelEcu_Reset_Thunk",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm of the archived 1.0.141 exe (PE 1789118616) 0x14468e550 and body 0x1553fdf60-0x1553fe0a4;xref:0x145bfa888",
+   "notes": "V20001 Re-verified after V6754/V7252: the .data1 body is plain code in the archived exe, not a black box. Vtable 0x145bfa870 follows the TemperatureScaleLean/Standard/Rich/Max strings (Fuel ECU modes); its slot 3 (+0x18, abs at 0x145bfa888, the only reference) is 0x14468e550 = jmp 0x1553fdf60. The body takes rcx=ecu, edx=flags: copies mode [+0x128] (stride 0x10 from +0x28/+0x68/+0xa8/+0xe8) into the XOR pairs +0x130/+0x140/+0x150/+0x160, calls 0x144689a70 (car+0x530) and 0x1446a5130 (car+0x538), and on flags & 0x2000 repeats with mode 1 (Standard) and stores 1. Slot 3 is the reset slot: the Differential vtable 0x145bfa120 slot 3 (0x14467e010, body 0x1553d6f70) also gates on edx & 0x2000. Row, proto (ecu, flags) and body link hold."
+  }
+ ],
+ "proofs": []
+}

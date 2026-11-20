@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 
-use swofty_core::save_backup;
+use swofty_core::saves::backup as save_backup;
 
 const DATA: &str = "savegame@profile#NXDSMWW.BWW";
 const INDEX: &str = "savegame@profile#QKRHMYXE";

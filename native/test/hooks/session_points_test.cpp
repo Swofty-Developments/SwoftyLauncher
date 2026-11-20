@@ -6,8 +6,8 @@
 // the apply-site fallback handler, session.player.control (payload, a before handler's changes, replace),
 // the destroy/build bracket (operations answer late between them, car.controllers.rebuilt fires per car),
 // set_control (flag handling, the pit-lane refusal, queueing during a rebuild and inside a switch), and the
-// spectator calls and hud.spectator.visible. run_session_points_test.sh builds and runs it.
-#include "../../src/core/hooks/session_points.hpp"
+// spectator calls and hud.spectator.visible. native/test/run_tests.sh session_points builds and runs it.
+#include "core/hooks/session_points.hpp"
 #include "../sdk_payloads.h"
 
 #include <cmath>
@@ -118,7 +118,8 @@ extern "C" __attribute__((noinline)) void sa_control(void *system, uint64_t vehi
     volatile uint32_t pad = ai;
     for (volatile int i = 0; i < 1; i = i + 1)
         pad = pad + 0;
-    trail.push_back("game control car " + std::to_string(vehicle) + " ai " + std::to_string(ai) + " flag " + std::to_string(flag));
+    trail.push_back("game control car " + std::to_string(vehicle) + " ai " + std::to_string(ai) + " flag " +
+                    std::to_string(flag));
     if (ai > 1 || vehicle >= CARS || !system)
         return;
     uint32_t &flags = at<uint32_t>(set_mem[vehicle], 0x30);
@@ -183,7 +184,8 @@ extern "C" __attribute__((noinline)) void sa_dir_set_active(void *dir, bool on)
 static uint8_t rules_mem[0x40];
 extern "C" __attribute__((noinline)) uint32_t sa_rules_init(void *self, void *systems, void *components)
 {
-    volatile uintptr_t pad = reinterpret_cast<uintptr_t>(self) + reinterpret_cast<uintptr_t>(systems) + reinterpret_cast<uintptr_t>(components);
+    volatile uintptr_t pad =
+        reinterpret_cast<uintptr_t>(self) + reinterpret_cast<uintptr_t>(systems) + reinterpret_cast<uintptr_t>(components);
     for (volatile int i = 0; i < 1; i = i + 1)
         pad = pad + 0;
     trail.push_back("game rules init");
@@ -195,7 +197,8 @@ extern "C" __attribute__((noinline)) void sa_disqualify(void *rules, uint32_t ve
     volatile uintptr_t pad = reinterpret_cast<uintptr_t>(rules);
     for (volatile int i = 0; i < 1; i = i + 1)
         pad = pad + 0;
-    trail.push_back("game disqualify rules " + std::string(rules == rules_mem ? "ok" : "wrong") + " car " + std::to_string(vehicle));
+    trail.push_back("game disqualify rules " + std::string(rules == rules_mem ? "ok" : "wrong") + " car " +
+                    std::to_string(vehicle));
     sa_control(sys_mem, vehicle, 1, 2);
 }
 
@@ -357,26 +360,29 @@ static void test_ai()
         }
         return mine;
     });
-    uint32_t after_token = on<aie::ControllerUpdate>(t, "kizi.ai-tweaks", SWOFTY_PHASE_AFTER, 0,
-                                                     [&](aie::ControllerUpdate &u, SwoftyHookCall &c) {
-                                                         seen = u;
-                                                         seen_replaced = c.replaced != 0;
-                                                         u.brake = std::min(u.brake, 0.05f);
-                                                         trail.push_back("after");
-                                                         return false;
-                                                     });
+    uint32_t after_token =
+        on<aie::ControllerUpdate>(t, "kizi.ai-tweaks", SWOFTY_PHASE_AFTER, 0, [&](aie::ControllerUpdate &u, SwoftyHookCall &c) {
+            seen = u;
+            seen_replaced = c.replaced != 0;
+            u.brake = std::min(u.brake, 0.05f);
+            trail.push_back("after");
+            return false;
+        });
     expect(ai_vtable[1] == reinterpret_cast<void *>(&sa_ai_update), "before the window stage nothing is patched");
     sp::Set<T2>::arm();
     t.arm();
     expect(ai_vtable[1] != reinterpret_cast<void *>(&sa_ai_update), "a subscriber puts the dispatcher in the vtable slot");
-    expect(logged("[hooks] ai.controller.update live on slot 1 of vt_Sess_AiController"), "the install line names the table and slot");
+    expect(logged("[hooks] ai.controller.update live on slot 1 of vt_Sess_AiController"),
+           "the install line names the table and slot");
     expect(t.live("ai.controller.update", nullptr) == SWOFTY_ASSET_OK, "live() says ok");
 
     trail.clear();
     call_ai_slot(ai_vtable, 1);
-    expect(joined() == "before 1 > replace passed > game ai 1 > after", "an AI car: before, replace passes, the game, after: " + joined());
+    expect(joined() == "before 1 > replace passed > game ai 1 > after",
+           "an AI car: before, replace passes, the game, after: " + joined());
     expect(seen.size == sizeof(aie::ControllerUpdate) && seen.payload_version == 1 && seen.vehicle == 1 &&
-               std::fabs(seen.throttle - 1.5f) < 1e-6 && std::fabs(seen.brake - 0.1f) < 1e-6 && std::fabs(seen.steering + 0.25f) < 1e-6 && !seen_replaced,
+               std::fabs(seen.throttle - 1.5f) < 1e-6 && std::fabs(seen.brake - 0.1f) < 1e-6 &&
+               std::fabs(seen.steering + 0.25f) < 1e-6 && !seen_replaced,
            "after sees the game's output for the car");
     float brake;
     memcpy(&brake, rec_mem[1] + 0x18, 4);
@@ -533,7 +539,8 @@ static void test_control_and_rebuild()
 
     sa_destroy(sys_mem);
     expect(S::op_control(1, &mode, &flags) == SWOFTY_ASSET_LATE, "between destroy-all and build-all the read answers late");
-    expect(S::op_set_control(0, 1) == SWOFTY_ASSET_OK && mode_of_car(0) == 0, "set_control then queues and does not touch the game");
+    expect(S::op_set_control(0, 1) == SWOFTY_ASSET_OK && mode_of_car(0) == 0,
+           "set_control then queues and does not touch the game");
     trail.clear();
     sa_build(sys_mem);
     expect(mode_of_car(0) == 0, "build-all itself applies nothing");
@@ -541,7 +548,8 @@ static void test_control_and_rebuild()
     expect(mode_of_car(0) == 1 && joined().find("game control car 0 ai 1 flag 6") != std::string::npos,
            "the next frame applies the queued change, with the core's own flag: " + joined());
 
-    expect(S::op_set_control(0, 0) == SWOFTY_ASSET_OK && mode_of_car(0) == 0, "handing the car back clears the core's flag and returns it to its human");
+    expect(S::op_set_control(0, 0) == SWOFTY_ASSET_OK && mode_of_car(0) == 0,
+           "handing the car back clears the core's flag and returns it to its human");
     at<uint32_t>(set_mem[0], 0x30) = 1;
     expect(S::op_set_control(0, 1) == SWOFTY_ASSET_OK && mode_of_car(0) == 1, "to the AI while in the pit lane");
     trail.clear();
@@ -587,7 +595,8 @@ static void test_control_and_rebuild()
     expect(S::pending.empty(), "and applied by the frame drain");
     trail.clear();
     thunk(sys_mem, 1, 7, 0);
-    expect(joined() == "game control car 1 ai 7 flag 0" && seen.size() == 2, "an ai argument the game ignores passes through with no event");
+    expect(joined() == "game control car 1 ai 7 flag 0" && seen.size() == 2,
+           "an ai argument the game ignores passes through with no event");
 }
 
 static void test_spectator()
@@ -617,7 +626,8 @@ static void test_spectator()
     expect(S::op_spectator_follow(3) == SWOFTY_ASSET_LATE && S::op_spectator_set_camera(1) == SWOFTY_ASSET_LATE,
            "follow and set_camera are late while it is off");
     trail.clear();
-    expect(S::op_spectator_set_active(1) == SWOFTY_ASSET_OK && joined() == "game director set_active 1" && director_mem[0xd1] == 1,
+    expect(S::op_spectator_set_active(1) == SWOFTY_ASSET_OK && joined() == "game director set_active 1" &&
+               director_mem[0xd1] == 1,
            "set_active(true) calls the game's SetActive on the director");
     expect(S::op_spectator_follow(2) == SWOFTY_ASSET_OK && director_mem[0xdc] == 2, "follow stores the requested driver");
     expect(S::op_spectator_follow(0xff) == SWOFTY_ASSET_INVALID, "driver 0xff is not a car");
@@ -626,7 +636,8 @@ static void test_spectator()
            "set_camera writes the requested camera, 1 or 2 only");
     director_mem[0xd6] = director_mem[0xdc];
     at<int32_t>(director_mem, 0xd8) = 1;
-    expect(S::op_spectator_current(&car, &camera) == SWOFTY_ASSET_OK && car == 2 && camera == 1, "current() reads the current driver and camera");
+    expect(S::op_spectator_current(&car, &camera) == SWOFTY_ASSET_OK && car == 2 && camera == 1,
+           "current() reads the current driver and camera");
     director_mem[0xd2] = 1;
     expect(S::op_spectator_follow(1) == SWOFTY_ASSET_LATE, "a blocked director refuses follow");
     director_mem[0xd2] = 0;
@@ -643,7 +654,8 @@ static void test_spectator()
     void (*volatile hide)() = &sa_hide;
     hide();
     expect(visible_seen == 0 && following == 2 && joined().empty(),
-           "hud.spectator.visible: the handler sees the car being followed and keeping the HUD up skips the game's hide: " + joined());
+           "hud.spectator.visible: the handler sees the car being followed and keeping the HUD up skips the game's hide: " +
+               joined());
     for (uint32_t tok = 0x80000001u; tok < 0x80000040u; tok++)
         t.detach(tok);
     trail.clear();
@@ -676,10 +688,12 @@ static void test_disqualify()
     expect(init(self, nullptr, nullptr) == 0 && S::rules.load() == reinterpret_cast<uintptr_t>(rules_mem),
            "the rule manager init hook captures the rules object and returns the game's result: " + joined());
     trail.clear();
-    expect(S::op_disqualify(1) == SWOFTY_ASSET_OK && joined() == "game disqualify rules ok car 1 > game control car 1 ai 1 flag 2",
+    expect(S::op_disqualify(1) == SWOFTY_ASSET_OK &&
+               joined() == "game disqualify rules ok car 1 > game control car 1 ai 1 flag 2",
            "disqualify calls the game with the captured rules and the car: " + joined());
     trail.clear();
-    expect(S::op_disqualify(9) == SWOFTY_ASSET_INVALID && trail.empty(), "a car with no controller set is invalid and the game is not called");
+    expect(S::op_disqualify(9) == SWOFTY_ASSET_INVALID && trail.empty(),
+           "a car with no controller set is invalid and the game is not called");
     expect(S::op_disqualify(0xff) == SWOFTY_ASSET_INVALID, "no-car index is invalid");
     flow = false;
     expect(S::op_disqualify(1) == SWOFTY_ASSET_LATE, "off the flow thread: late");
@@ -698,10 +712,13 @@ static void test_disqualify()
 
 static void test_layout()
 {
-    expect(sizeof(aie::ControllerUpdate) == sizeof(SwoftyEvControllerUpdate) && sizeof(sse::PlayerControl) == sizeof(SwoftyEvPlayerControl) &&
-               sizeof(cae::ControllersRebuilt) == sizeof(SwoftyEvControllersRebuilt) && sizeof(spe::HudVisible) == sizeof(SwoftyEvHudVisible),
+    expect(sizeof(aie::ControllerUpdate) == sizeof(SwoftyEvControllerUpdate) &&
+               sizeof(sse::PlayerControl) == sizeof(SwoftyEvPlayerControl) &&
+               sizeof(cae::ControllersRebuilt) == sizeof(SwoftyEvControllersRebuilt) &&
+               sizeof(spe::HudVisible) == sizeof(SwoftyEvHudVisible),
            "the payloads match their C mirrors");
-    for (const char *id : {"ai.controller.update", "session.player.control", "car.controllers.rebuilt", "hud.spectator.visible"}) {
+    for (const char *id :
+         {"ai.controller.update", "session.player.control", "car.controllers.rebuilt", "hud.spectator.visible"}) {
         const catalogue::Event *e = catalogue::find(id);
         expect(e && e->fired == catalogue::Fired::game, std::string("the catalogue names ") + id + " a game point");
     }

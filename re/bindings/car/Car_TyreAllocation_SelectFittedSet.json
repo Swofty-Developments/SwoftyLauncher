@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_TyreAllocation_SelectFittedSet",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e8c960",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e8c960.c;xref:0x140bcca09",
+  "notes": "Selects the fitted tyre set: param_1 allocation (compound groups stride 0x28 at +0x10, count +0xd8; sets vector +0x20..+0x28 of 0x6c-byte sets), param_2 group, param_3 set index; skips sets flagged +0x14/+0x20/+0x2c/+0x38, falls back to best set 0x142e8ab90; writes fitted id +0xe0 (set+4, -1 none), set byte +0xe4, valid +0xe8=1. Caller Sess_TyreAllocation_OnSessionStart."
+ },
+ "signature": {
+  "id": "car.tyre_allocation_select_fitted_set",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 CE 4C 8D 71 10 8B 81",
+  "match": "0x142e8c960",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e8c960",
+  "kind": "func_start",
+  "names": [
+   "Car_TyreAllocation_SelectFittedSet"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x142e8c960",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e8c960.c;xref:0x140bcca09",
+   "notes": "V3679 Groups stride 0x28 at +0x10, count +0xd8, sets vec +0x20..+0x28 stride 0x6c, flag skips +0x14/+0x20/+0x2c/+0x38, fallback 142e8ab90, writes +0xe0/+0xe4/+0xe8=1."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Camera_ResizeCameraArray",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144401ae0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144401ae0.c;xref:0x144400635",
+  "notes": "Resizes the per-viewport camera record array and initialises new records with defaults (1.0, 1000.0 [0x447a0000 far], 0.2 [0x3e4ccccd], 0.5625 [0x3f100000], unit scales, -1.0 at +0x98); null storage returns error 0xe via TLS error slot + backtrace ring. Callers Game_Camera_SetForViewport, 0x1444005b0, 0x1444007a0. Hypothesis on field names; constants look like camera defaults."
+ },
+ "signature": {
+  "id": "game.camera_resize_camera_array",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 48 85 D2 0F 84 ?? ?? ?? ?? 48 89 CE",
+  "match": "0x144401ae0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144401ae0",
+  "kind": "func_start",
+  "names": [
+   "Game_Camera_ResizeCameraArray"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x144401ae0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144401ae0.c;xref:0x144400635",
+   "notes": "V7665 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

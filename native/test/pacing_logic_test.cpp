@@ -2,7 +2,7 @@
 // uneven frames and spikes, the present, GPU, CPU, process and display lines, the verdict and the perf.log pacing rows,
 // and the cost of one frame on the hot path. Built and run by native/test/run_pacing_logic_test.sh.
 
-#include "pacing_logic.hpp"
+#include "core/diagnostics/perf/pacing_logic.hpp"
 
 #include <chrono>
 #include <cstdio>
@@ -12,21 +12,21 @@ namespace pc = perf::pace;
 
 static int g_fail;
 
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                    \
-            g_fail++;                                                                                                  \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                              \
+            g_fail++;                                                                                                            \
+        }                                                                                                                        \
     } while (0)
 
-#define CHECK_EQ(a, b)                                                                                                 \
-    do {                                                                                                               \
-        std::string x_ = (a), y_ = (b);                                                                                \
-        if (x_ != y_) {                                                                                                \
-            std::printf("FAIL %s:%d\n  got:  %s\n  want: %s\n", __FILE__, __LINE__, x_.c_str(), y_.c_str());          \
-            g_fail++;                                                                                                  \
-        }                                                                                                              \
+#define CHECK_EQ(a, b)                                                                                                           \
+    do {                                                                                                                         \
+        std::string x_ = (a), y_ = (b);                                                                                          \
+        if (x_ != y_) {                                                                                                          \
+            std::printf("FAIL %s:%d\n  got:  %s\n  want: %s\n", __FILE__, __LINE__, x_.c_str(), y_.c_str());                     \
+            g_fail++;                                                                                                            \
+        }                                                                                                                        \
     } while (0)
 
 static bool contains(const std::string &s, const std::string &part)
@@ -137,7 +137,8 @@ static void presents_line()
 {
     pc::Presents p;
     CHECK(p.sync_mode() == -1);
-    CHECK_EQ(pc::presents_line(60, p, 100), "[perf] last 60 s: presents: none seen (the present hook is off, or the game drew nothing)");
+    CHECK_EQ(pc::presents_line(60, p, 100),
+             "[perf] last 60 s: presents: none seen (the present hook is off, or the game drew nothing)");
     for (int i = 0; i < 6000; i++)
         p.add(i ? 10.0 : 0, 0.2, 0, true, 0, i * 0.01);
     p.add(10.0, 3.0, 1, false, pc::DXGI_OCCLUDED, 60);
@@ -171,9 +172,10 @@ static void gpu_line()
         s.util = true, s.busy = c > 2500 ? 99 : 96, s.game = 94, s.others = 3, s.other_top = "wallpaper64.exe 3%";
         g.add(s);
     }
-    CHECK_EQ(pc::gpu_line(60, 0, g), "[perf] last 60 s: gpu 0: core 2430-2510 MHz (max 2600), memory 2250 MHz, 63-71 C, power 90%, "
-                                     "fan 1450 RPM; 3D engine busy 96-99% (average 97%), the game 94%, other processes 3% (most "
-                                     "wallpaper64.exe 3%)");
+    CHECK_EQ(pc::gpu_line(60, 0, g),
+             "[perf] last 60 s: gpu 0: core 2430-2510 MHz (max 2600), memory 2250 MHz, 63-71 C, power 90%, "
+             "fan 1450 RPM; 3D engine busy 96-99% (average 97%), the game 94%, other processes 3% (most "
+             "wallpaper64.exe 3%)");
 }
 
 static void cpu_line()
@@ -184,16 +186,17 @@ static void cpu_line()
     c.add({44, 100, 4200, 4200, 3600});
     c.game_thread = 0.97;
     c.game_thread_what = "tid 812";
-    CHECK_EQ(pc::cpu_line(60, c), "[perf] last 60 s: cpu: system load 31-44% (average 38%), busiest core 88-100% (average 94%); "
-                                  "reported clocks 4200 MHz of 4200, limit 3600-4200 MHz; busiest game thread 0.97 cores (tid 812)");
+    CHECK_EQ(pc::cpu_line(60, c),
+             "[perf] last 60 s: cpu: system load 31-44% (average 38%), busiest core 88-100% (average 94%); "
+             "reported clocks 4200 MHz of 4200, limit 3600-4200 MHz; busiest game thread 0.97 cores (tid 812)");
 }
 
 static void others_line()
 {
     CHECK(pc::known_tool("Discord.exe") && pc::known_tool("obs64.exe") && !pc::known_tool("notepad.exe"));
     CHECK(pc::known_module("RTSSHooks64.dll") && !pc::known_module("kernel32.dll"));
-    CHECK_EQ(pc::others_line(60, 1.351, {{"simhub.exe", 0.22}, {"chrome.exe", 0.41}, {"idle.exe", 0.01}}, {"Discord.exe", "obs64.exe"},
-                             {"DiscordHook64.dll"}),
+    CHECK_EQ(pc::others_line(60, 1.351, {{"simhub.exe", 0.22}, {"chrome.exe", 0.41}, {"idle.exe", 0.01}},
+                             {"Discord.exe", "obs64.exe"}, {"DiscordHook64.dll"}),
              "[perf] last 60 s: other processes: 1.35 cores in total; busiest chrome.exe 0.41, simhub.exe 0.22; overlay, capture "
              "and monitoring tools running: Discord.exe, obs64.exe; overlay modules in the game: DiscordHook64.dll");
     CHECK_EQ(pc::others_line(60, -1, {}, {}, {}), "[perf] last 60 s: other processes: CPU use unavailable");
@@ -232,7 +235,8 @@ static void engines()
 static void display_lines()
 {
     pc::Mode m{"\\\\.\\DISPLAY1", "Generic PnP Monitor", 2560, 1440, 144, true};
-    CHECK_EQ(pc::display_boot_line(0, m), "[system] display 0: \\\\.\\DISPLAY1 (Generic PnP Monitor) 2560x1440 at 144 Hz, primary");
+    CHECK_EQ(pc::display_boot_line(0, m),
+             "[system] display 0: \\\\.\\DISPLAY1 (Generic PnP Monitor) 2560x1440 at 144 Hz, primary");
     pc::Window w;
     pc::Chain c;
     CHECK_EQ(pc::display_line(w, c), "[perf] display: the game's window is unknown; swapchain unknown");
@@ -243,8 +247,9 @@ static void display_lines()
                                      "buffers, flip discard, windowed, tearing allowed, frame latency waitable");
     w.covers = false;
     c.windowed = false, c.flags = 0, c.effect = 0;
-    CHECK(contains(pc::display_line(w, c), "smaller than the display (windowed); swapchain 2560x1440 format 24, 3 buffers, discard "
-                                           "(bitblt), exclusive fullscreen"));
+    CHECK(contains(pc::display_line(w, c),
+                   "smaller than the display (windowed); swapchain 2560x1440 format 24, 3 buffers, discard "
+                   "(bitblt), exclusive fullscreen"));
 }
 
 static void system_lines()
@@ -269,7 +274,8 @@ static void system_lines()
                                                  "tearing (variable refresh) presents supported");
     CHECK_EQ(pc::scheduling_line(1, 0, -1, -1), "[system] gpu 1: WDDM unknown, hardware-accelerated GPU scheduling unknown, "
                                                 "tearing (variable refresh) presents not set");
-    CHECK(contains(pc::scheduling_line(0, 2700, 1, 0), "scheduling off (supported), tearing (variable refresh) presents not supported"));
+    CHECK(contains(pc::scheduling_line(0, 2700, 1, 0),
+                   "scheduling off (supported), tearing (variable refresh) presents not supported"));
 }
 
 static void settings_xml()
@@ -304,8 +310,9 @@ static void verdicts()
     f.present_rate = 117, f.sync = 0, f.refresh = 144, f.gpu_busy = 98;
     pc::Verdict v = pc::verdict(f);
     CHECK(v.smooth && v.gpu && v.display && !v.judder && !v.stutter && !v.cpu && !v.background);
-    CHECK_EQ(v.text, "smooth in frame times; GPU bound (3D engine 98% busy); display mismatch (VSync off at 117 presents/s on a 144 "
-                     "Hz display: tearing and uneven motion unless FreeSync or G-Sync is on)");
+    CHECK_EQ(v.text,
+             "smooth in frame times; GPU bound (3D engine 98% busy); display mismatch (VSync off at 117 presents/s on a 144 "
+             "Hz display: tearing and uneven motion unless FreeSync or G-Sync is on)");
     CHECK_EQ(pc::verdict_tags(v), "smooth, GPU bound, display mismatch");
     f.refresh = 120, f.present_rate = 118;
     CHECK(!pc::verdict(f).display);
@@ -327,8 +334,9 @@ static void verdicts()
     pc::Tally t;
     t.add(v);
     t.add(pc::verdict(f));
-    CHECK_EQ(t.text(), "2 minute(s): 0 smooth in frame times, 2 stutter, 1 judder; 0 GPU bound, 1 CPU bound; 0 display mismatch; 1 "
-                       "background load");
+    CHECK_EQ(t.text(),
+             "2 minute(s): 0 smooth in frame times, 2 stutter, 1 judder; 0 GPU bound, 1 CPU bound; 0 display mismatch; 1 "
+             "background load");
     CHECK_EQ(pc::verdict_line(60, v).substr(0, 35), "[perf] last 60 s: verdict: stutter ");
 }
 
@@ -342,10 +350,12 @@ static void rows()
     r.present.p99 = 10.75;
     r.inside_avg = 0.21, r.gpu_core = 2480, r.gpu_temp = 71, r.gpu_busy = 97, r.cpu_busiest = 92;
     std::string h = pc::pacing_header(), row = pc::pacing_row(r);
-    CHECK_EQ(h, "time       fps  p50 ms  p99 ms p99.9 ms  max ms  uneven spikes pres p99  in pres  gpu MHz  gpu C 3D busy cpu max  "
-                "verdict");
-    CHECK_EQ(row, "14:02:00   120    8.30   10.25    14.75    21.4    1.0%      2    10.75     0.21     2480     71     97%     92%  "
-                  "smooth, GPU bound");
+    CHECK_EQ(h,
+             "time       fps  p50 ms  p99 ms p99.9 ms  max ms  uneven spikes pres p99  in pres  gpu MHz  gpu C 3D busy cpu max  "
+             "verdict");
+    CHECK_EQ(row,
+             "14:02:00   120    8.30   10.25    14.75    21.4    1.0%      2    10.75     0.21     2480     71     97%     92%  "
+             "smooth, GPU bound");
     pc::Row none;
     none.when = "14:03:00", none.tags = "-";
     CHECK(contains(pc::pacing_row(none), "       -        -        -      -       -       -  -"));
@@ -363,8 +373,8 @@ static void cost()
         q.add(ms, 0.2, 0, true, 0, i * 0.008);
     }
     double ns = std::chrono::duration<double, std::nano>(std::chrono::steady_clock::now() - t0).count() / N;
-    std::printf("pacing cost: %.1f ns per game frame plus present (%llu spikes kept of %llu)\n", ns,
-                (unsigned long long)p.tops, (unsigned long long)p.spikes);
+    std::printf("pacing cost: %.1f ns per game frame plus present (%llu spikes kept of %llu)\n", ns, (unsigned long long)p.tops,
+                (unsigned long long)p.spikes);
     CHECK(ns < 2000);
 }
 

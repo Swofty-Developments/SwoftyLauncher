@@ -1,8 +1,8 @@
 // Host unit test for car.profile (car_profile.hpp) on fake cars: the F1 1990 race engine and AI quali DLLs as one
 // record, scope (session types, ai_only and player_only, car indices, identity-needing selectors), priority order,
 // extra live field paths, re-evaluation dropping the old layers, and the record parsing.
-// run_car_live_test.sh builds and runs it.
-#include "../../src/core/hooks/car_profile.hpp"
+// native/test/run_tests.sh car_live builds and runs it.
+#include "core/hooks/car_profile.hpp"
 
 #include <cmath>
 #include <cstdio>
@@ -48,8 +48,14 @@ static void world()
         at<float>(aero[i], 0x19a0) = 1.0f;
     }
     cl::Env e;
-    e.read = [](uintptr_t a, void *out, size_t n) { memcpy(out, reinterpret_cast<const void *>(a), n); return true; };
-    e.write = [](uintptr_t a, const void *in, size_t n) { memcpy(reinterpret_cast<void *>(a), in, n); return true; };
+    e.read = [](uintptr_t a, void *out, size_t n) {
+        memcpy(out, reinterpret_cast<const void *>(a), n);
+        return true;
+    };
+    e.write = [](uintptr_t a, const void *in, size_t n) {
+        memcpy(reinterpret_cast<void *>(a), in, n);
+        return true;
+    };
     e.flow_thread = [] { return true; };
     e.enabled = [] { return true; };
     e.table = reinterpret_cast<uintptr_t>(table);
@@ -127,8 +133,8 @@ int main()
     for (uint32_t i = 0; i < 3; i++)
         Applier::evaluate({ai, player}, "race", nullptr, i, i != 0);
     Ops::flush();
-    expect(at<float>(aero[0], 0x19a4) == 1.0f && at<float>(aero[0], 0x19a0) == 0.9f &&
-               at<float>(aero[1], 0x19a4) == 0.5f && at<float>(aero[1], 0x19a0) == 1.0f,
+    expect(at<float>(aero[0], 0x19a4) == 1.0f && at<float>(aero[0], 0x19a0) == 0.9f && at<float>(aero[1], 0x19a4) == 0.5f &&
+               at<float>(aero[1], 0x19a0) == 1.0f,
            "ai_only reaches the AI cars and player_only the human's, written to the aero system");
     auto indices = entry("a/indices", R"({"cars":{"indices":[2]},"power_scale":1.1})");
     for (uint32_t i = 0; i < 3; i++)
@@ -158,7 +164,13 @@ int main()
 
     auto scoped = entry("a/scoped", R"({"power_scale":0.5})");
     int asked = 0;
-    auto none = Applier::evaluate({scoped}, "race", [&](const cp::Entry &) { ++asked; return false; }, 0, false);
+    auto none = Applier::evaluate(
+        {scoped}, "race",
+        [&](const cp::Entry &) {
+            ++asked;
+            return false;
+        },
+        0, false);
     expect(asked == 1 && none.matched == 0, "a profile whose within selector does not match the session is skipped");
     auto bad = swofty::json::parse(R"({"power_scale":"fast"})");
     swofty::cars::Profile p;

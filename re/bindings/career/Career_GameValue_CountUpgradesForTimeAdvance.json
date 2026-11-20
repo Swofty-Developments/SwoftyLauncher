@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_GameValue_CountUpgradesForTimeAdvance",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ab6770",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "uint32_t Career_GameValue_CountUpgradesForTimeAdvance(void *ctx, void *state_name)",
+  "evidence": "decomp:re/decomp/140ab6770.c;xref:0x140a78a6b;xref:0x140a78a8b;xref:0x140a78aab",
+  "notes": "myteam-g2: Resolves the My Team upgrade component (+0x88 -> +0x260 -> +0x1030), looks the state name up (Ne_HashMap_FindByCStr_Elem24) and counts upgrades with that state (completed / failed / researched) in the time-advance results. Read only."
+ },
+ "signature": {
+  "id": "career.game_value_count_upgrades_for_time_advance",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC B8 00 00 00 48 8B 41 08 48 8B 80 88 00 00 00 31 F6",
+  "match": "0x140ab6770",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ab6770",
+  "kind": "func_start",
+  "names": [
+   "Career_GameValue_CountUpgradesForTimeAdvance"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140ab6770",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140ab6770.c",
+   "notes": "V9486 Generic named stat reader: resolves component via +0x1030, looks the name up in the +0x290 hash (0x18 stride, same as net_weekly_income), then reads the stat value for the player entrant via vcall +0xf0. No upgrade-state counting is visible."
+  }
+ ],
+ "proofs": []
+}

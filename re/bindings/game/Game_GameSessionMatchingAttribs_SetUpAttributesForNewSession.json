@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionMatchingAttribs_SetUpAttributesForNewSession",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14306dc50",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=GameSessionMatchingAttribs::setUpAttributesForNewSession; log channel NETWORK-ATTRIBUTES: 'neon::NeNetSessionAttribs *network::GameSessionMatchingAttribs::setUpAttributesForNewSession(const CoreValues &) | %s: cluster id: %08x-%08x'"
+ },
+ "signature": {
+  "id": "game.game_session_matching_attribs_set_up_attributes_for_new_session",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 CB 48 8B 41 18",
+  "match": "0x14306dc50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14306dc50",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionMatchingAttribs_SetUpAttributesForNewSession"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x14306dc50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14306dc50.c;xref:0x1430651bf",
+   "notes": "V5552 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

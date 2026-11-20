@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Gfx2TextureManager_SetInRaceOff",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401775b0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1401775b0.c;xref:0x14023a6e8,0x140c7aecd",
+  "notes": "NeGfx2TextureManager::setInRace(OFF): clears texture manager (g 0x146c621e8)+0x4c8, then sends render messages to connection param_1+8 via 0x146c621e0 vcall +0x20/+0x30: 0x28 = 0x1200e4 (streaming flags), 0x25 = 3, 0x20 = bool (platform==7 or !opt), 0x22 = 0, 0x21 = 0, 0x24. Callers: cutscene world switch 0x14023a6e8, Game_CareerEventResourceManager_DeactivateExtraWorld, ShutdownExtraWorlds. Addon: front-end/cutscene texture streaming mode."
+ },
+ "signature": {
+  "id": "core.gfx2_texture_manager_set_in_race_off",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 8B 3D ?? ?? ?? ?? 80 BF C8",
+  "match": "0x1401775b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401775b0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Gfx2TextureManager_SetInRaceOff"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d5-verify",
+   "kind": "func",
+   "item": "Ne_Gfx2TextureManager_SetInRaceOff",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401775b0.c;xref:0x14023a6e8",
+   "notes": "V2524 clears +0x4c8, msgs 0x28=0x1200e4,0x25=3,0x20 bool; also 0x38,0xc,0x23"
+  }
+ ],
+ "proofs": []
+}

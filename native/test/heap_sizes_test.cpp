@@ -1,8 +1,8 @@
-// Host-native unit test for the core's heap size table (native/src/core/heap_sizes_logic.hpp): which stock heap each
+// Host-native unit test for the core's heap size table (native/src/core/guards/engine/heap_sizes_logic.hpp): which stock heap each
 // factory site recognises, the size it picks from the machine and the heap's env var, the name read from the plain
-// factory's frame and the log lines. Built and run by native/test/run_heap_sizes_test.sh.
+// factory's frame and the log lines. Built and run by native/test/run_tests.sh heap_sizes.
 
-#include "heap_sizes_logic.hpp"
+#include "core/guards/engine/heap_sizes_logic.hpp"
 
 #include <cstdio>
 #include <cstring>
@@ -11,12 +11,12 @@ namespace hs = runtime::heap_sizes;
 
 static int g_fail;
 
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                    \
-            g_fail++;                                                                                                  \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                              \
+            g_fail++;                                                                                                            \
+        }                                                                                                                        \
     } while (0)
 
 constexpr uint64_t GiB = 1024ull * hs::kMiB;
@@ -129,18 +129,22 @@ int main()
         CHECK(hs::apply_line(audio, {0, 0, 2 * M}, "AUDIO_BUNDLE", audio.stock, c) ==
               "[audio] heap 'AUDIO_BUNDLE' (virtual 0, pagesize 2097152): size 45088768 -> 100663296 bytes (96 MiB, default)");
         c = hs::choose(save, nullptr, 32 * GiB);
-        CHECK(hs::apply_line(save, {1, 0, 0}, "", save.stock, c) ==
-              "[saves] temp pool: heap SAVE_TEMP_ALLOC (virtual 1, expand 0%): size 78643200 -> 536870912 bytes (512 MiB, default)");
+        CHECK(hs::apply_line(save, {1, 0, 0}, "", save.stock, c) == "[saves] temp pool: heap SAVE_TEMP_ALLOC (virtual 1, expand "
+                                                                    "0%): size 78643200 -> 536870912 bytes (512 MiB, default)");
         c = hs::choose(game, "600", 32 * GiB);
         CHECK(hs::apply_line(game, {1, 100, 0}, "GAME_DEFAULT", game.stock, c) ==
-              "[heap] heap 'GAME_DEFAULT' (virtual 1, pagesize 0): size 408944640 -> 629145600 bytes (600 MiB, SWOFTY_GAME_HEAP_MB)");
+              "[heap] heap 'GAME_DEFAULT' (virtual 1, pagesize 0): size 408944640 -> 629145600 bytes (600 MiB, "
+              "SWOFTY_GAME_HEAP_MB)");
         CHECK(hs::kept_line(audio, nullptr) == "[audio] AUDIO_BUNDLE heap kept at the game's 43 MiB (SWOFTY_AUDIO_BUNDLE_MB=)");
-        CHECK(hs::kept_line(save, "off") == "[saves] temp pool: SAVE_TEMP_ALLOC kept at the game's 75 MiB (SWOFTY_SAVE_TEMP_MB=off)");
+        CHECK(hs::kept_line(save, "off") ==
+              "[saves] temp pool: SAVE_TEMP_ALLOC kept at the game's 75 MiB (SWOFTY_SAVE_TEMP_MB=off)");
         CHECK(hs::armed_line(game, hs::choose(game, nullptr, 32 * GiB)) ==
               "[heap] GAME_DEFAULT heap armed: 1024 MiB instead of the game's 390 MiB when system/memory_map.xml is read");
-        CHECK(hs::bad_env_line(save) == "[saves] temp pool: SWOFTY_SAVE_TEMP_MB is not a number of MiB, 0 or off; using the default");
+        CHECK(hs::bad_env_line(save) ==
+              "[saves] temp pool: SWOFTY_SAVE_TEMP_MB is not a number of MiB, 0 or off; using the default");
         CHECK(hs::late_line(audio, "window").find("the core loaded at the window stage") != std::string::npos);
-        CHECK(hs::unresolved_line(game, "site_X") == "[heap] GAME_DEFAULT heap not raised: site_X does not resolve on this build");
+        CHECK(hs::unresolved_line(game, "site_X") ==
+              "[heap] GAME_DEFAULT heap not raised: site_X does not resolve on this build");
     }
     {
         uint8_t frame[0x100];

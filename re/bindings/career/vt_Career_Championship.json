@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "vt_Career_Championship",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14566aab0",
+  "type": "vtable[12]",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/140ae22f0.c;decomp:re/decomp/140ae9650.c;decomp:re/decomp/140ae9b10.c;xref:0x140ae2308,0x140ae04b8;doc:addons/career-editor/protocol/season.md#identifiers",
+  "notes": "Championship primary vtable, 12 slots: +0x10 serialise 0x140ae9650 (completion +0x538, season_index via the +0x208 interface vt+0xf8, seasons[] 16-byte entries +0x548..+0x550 with the Season at +8), +0x18 deserialise 0x140ae9b10 (+0x560 = saved season_index if < season count, else 0); secondary component-list vtable 0x14566ab10 at +0x208 whose slot +0x50 0x140ae4c70 creates a Season; written by ctor 0x140ae01d0 and dtor 0x140ae22f0 (V0227)"
+ },
+ "signature": {
+  "id": "career.championship",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 01 48 8D 05 ?? ?? ?? ?? 48 89 81 08 02 00 00 48 8D B9 D0 02 00 00",
+  "match": "0x140ae2308",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x14566aab0",
+  "kind": "data",
+  "names": [
+   "vt_Career_Championship"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-season",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/season.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-1",
+   "kind": "global",
+   "item": "vt_Career_Championship",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140ae22f0.c;decomp:re/decomp/140ae01d0.c;decomp:re/decomp/140ae9650.c;decomp:re/decomp/140ae9b10.c;decomp:re/decomp/140ae4c70.c;xref:0x140ae230b,0x140ae04bb,0x140ae2315,0x140ae04c5,0x14566ab60",
+   "notes": "V0227 type is vtable[12] not [24]: ctor/dtor store 0x14566aab0 at +0 and the secondary vtable 0x14566ab10 (= primary+0x60, 59 slots) at +0x208, so 'slot +0xb0' is really slot +0x50 of 0x14566ab10 and 0x140ae4c70 runs with this=championship+0x208 (allocs 0x550). Corrected: Championship primary vtable, 12 slots: +0x10 serialise 0x140ae9650 (completion +0x538, season_index via the +0x208 interface vt+0xf8, seasons[] 16-byte entries +0x548..+0x550 with the Season at +8), +0x18 deserialise 0x140ae9b10 (+0x560 = saved season_index if < season count, else 0); secondary component-list vtable 0x14566ab10 at +0x208 whose slot +0x50 0x140ae4c70 creates a Season; written by ctor 0x140ae01d0 and dtor 0x140ae22f0"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-3",
+   "kind": "global",
+   "item": "vt_Career_Championship",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ae01d0.c;decomp:re/decomp/140ae22f0.c;decomp:re/decomp/140ae9650.c;decomp:re/decomp/140ae9b10.c;decomp:re/decomp/140ae4c70.c;xref:0x140ae04b8,0x140ae2308,0x14566ab60",
+   "notes": "V0297 Independent: only refs ctor 0x140ae04b8 and dtor 0x140ae2308 (store aab0 at +0, ab10 at +0x208); 12 slots 0x14566aab0..ab08; +0x10 0x140ae9650 writes completion(+0x538 u32), season_index (secondary vt+0xf8 0x140b0af30 = this+0x358 = champ+0x560), seasons from 16-byte entries +0x548..+0x550 with Season* at +8; +0x18 0x140ae9b10 sets +0x560 = index if < count else 0; secondary slot +0x50 = 0x140ae4c70 allocs 0x550 and stores vt_Career_Season."
+  }
+ ],
+ "proofs": []
+}

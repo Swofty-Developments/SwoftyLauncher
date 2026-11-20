@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_AssetLoader_RequestGroupHandles",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1409a7510",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1409a7510.c;xref:0x142d47519",
+  "notes": "Creates a ref-counted load batch (0x28 bytes, allocator 0x14628f510) for a vector of asset-group handles (8-byte entries, 0x50 bytes reserved each), submits each (0x1409a7210) and queues the batch on loader this+0x50 (0x1409a6930). Caller Sess_Loader_StartFrontendAssetLoad."
+ },
+ "signature": {
+  "id": "core.asset_loader_request_group_handles",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 38 48 89 D7 48 89 CE 48 8B 41 50 48 8B 48 20 48 8B 01 FF 50 58 4C 8B 77",
+  "match": "0x1409a7510",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1409a7510",
+  "kind": "func_start",
+  "names": [
+   "Ne_AssetLoader_RequestGroupHandles"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x1409a7510",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1409a7510.c;xref:0x142d47519",
+   "notes": "V3809 allocates 0x28-byte ref-counted batch, reserves 0x50 bytes per 8-byte handle, submits each via FUN_1409a7210, queues on loader this+0x50 via FUN_1409a6930; caller Sess_Loader_StartFrontendAssetLoad seen"
+  }
+ ],
+ "proofs": []
+}

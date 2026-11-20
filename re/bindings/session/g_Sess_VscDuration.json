@@ -1,0 +1,66 @@
+{
+ "schema": 1,
+ "name": "g_Sess_VscDuration",
+ "table": "globals",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x145f96b54",
+  "type": "float",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:own disasm 0x14363ca40-0x14363cb3f (Sess_ScState_Vsc_Enter);xref:0x14363cac4;xref:0x14363d097",
+  "notes": "VSC length (s) rolled or taken from the override in Sess_ScState_Vsc_Enter, read by the VSC states after it. Used by vmknolle red-flag."
+ },
+ "signature": {
+  "id": "session.vsc_duration",
+  "section": ".xtls",
+  "pattern": "C5 FA 10 15 ?? ?? ?? ?? C5 F8 2E C2 0F 92 C2 45 08 CA",
+  "match": "0x14363ab07",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 8
+  },
+  "target": "0x145f96b54",
+  "kind": "data",
+  "names": [
+   "g_Sess_VscDuration"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-20",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14363d097",
+  "made_on_target": "0x145f98b54",
+  "twin": "made on steam-26566308; the target 0x145f98b54 is KB 0x145f96b54: g_Career_RnDOverviewSelectedDept (0x5f95c08) and g_Car_FfbForceWetMultiple (0x5fac638) on either side both sit 0x2000 above their KB addresses; the match 0x14363d097 is KB 0x14363ab07: Sess_ScState_Vsc_Enter (0x363ca40) and Sess_ScCond_TriggerVsc_Update (0x363f2a0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-20",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14363d097",
+    "target": "0x145f98b54"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "966b20af996731fa733058497cb5adbb6d3c3d76c3981122361534935111570d"
+  }
+ ]
+}

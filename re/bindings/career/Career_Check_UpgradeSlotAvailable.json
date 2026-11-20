@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Check_UpgradeSlotAvailable",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141247100",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "bool Check(void *ctx, int *slot)",
+  "evidence": "decomp:re/decomp/141247100.c;xref:0x140aa8d62;xref:0x1412462d5;xref:0x141246d03",
+  "notes": "myteam-g2: Checks a slot index against the upgrade slot arrays at ctx+0x270/0x290 and flag at +0xd70; read-only. Used by RnD dept page, potential pie, develop cards and notifications."
+ },
+ "signature": {
+  "id": "career.check_upgrade_slot_available",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 80 B9 90 02 00 00 00",
+  "match": "0x141247100",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141247100",
+  "kind": "func_start",
+  "names": [
+   "Career_Check_UpgradeSlotAvailable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x141247100",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141247100.c;xref:0x140aa8d62;xref:0x1412462d5",
+   "notes": "V9693 +0x290 is a flag byte and +0xd70 a pointer to another ctx, not a flag; computes a scaled slot count (ratio of array sizes) and compares against param_2[0]/[2]; claim is only roughly right."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ExcitementEventPair_TraceLog",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142520a50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142520a50.c;xref:0x145793868",
+  "notes": "Trace dump of a two-car excitement event: '[%s ; Time %f ; Exc %f ]: %s Instigator %i, Target %i' - u8 +1 instigator, u8 +8 target, u8 +2 excitement, float +4 time. Addon: overtake/incident event payload for commentary/broadcast hooks. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2875)"
+ },
+ "signature": {
+  "id": "game.excitement_event_pair_trace_log",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC C0 00 00 00 C5 F8 29 BC 24 B0 00 00 00 C5 F8 29 B4 24 A0 00 00 00 48 85 D2 0F",
+  "match": "0x142520a50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142520a50",
+  "kind": "func_start",
+  "names": [
+   "Game_ExcitementEventPair_TraceLog"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d10-verify",
+   "kind": "func",
+   "item": "Game_ExcitementEventPair_TraceLog",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142520a50.c;xref:0x142520a50",
+   "notes": "V2875 decomp checked: offsets/calls/strings match claim"
+  }
+ ],
+ "proofs": []
+}

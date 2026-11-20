@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Bank_OnBankAccountValidTransactionMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c684c0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Bank_OnBankAccountValidTransactionMessage(void *bank, void *msg)",
+  "evidence": "decomp:re/decomp/140c684c0.c;xref:0x140c64a0c;xref:0x140c64b03",
+  "notes": "myteam-g2: Handler for BankAccountValidTransactionMessage (only when msg+0x28 == 1). Finds the team entry in the attribute set bank+0x2f8 (list +0x2c8..+0x2d0, stride 0x30, id from msg+0x10), reads Career_Get_BankTeamBalance, sets the matching attribute value to 1.0 when balance >= 0 else 0 (clamped to def min/max), notifies attribute listeners and flags the entry dirty (+0xb4). Does NOT change the balance; it syncs a balance-positive stat after a valid transaction. Hook: the balance itself is changed in Career_Bank_ProcessTransaction."
+ },
+ "signature": {
+  "id": "career.bank_on_bank_account_valid_transaction_message",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 80 7A 28 01",
+  "match": "0x140c684c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c684c0",
+  "kind": "func_start",
+  "names": [
+   "Career_Bank_OnBankAccountValidTransactionMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-c",
+   "kind": "func",
+   "item": "0x140c684c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c684c0.c;xref:0x140c64a0c;xref:0x140c64b03;str:\"BankAccountValidTransactionMessage\"",
+   "notes": "V9009 Checked msg+0x28==1 guard, team entry lookup in bank+0x2f8 list +0x2c8..+0x2d0 stride 0x30 with 14-bit id/2-bit kind from msg+0x10, balance via 0x140bf51c0 (Career_Get_BankTeamBalance), writes 1.0 or 0 clamped into attribute float at +0x78, notifies listeners, sets +0xb4 dirty. No balance write. 140c64b03 region unsubscribes the named message."
+  }
+ ],
+ "proofs": []
+}

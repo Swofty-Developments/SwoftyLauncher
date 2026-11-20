@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Heap_OnCorruptionNotification",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1406cd740",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1406cd740.c;xref:0x1406c5c8c",
+  "notes": "Heap-corruption notification handler (called from 0x1406c5c40): ignores the FIRST notification with a long WARN explaining a known NVidia driver bug (spurious HeapFree during D3D12 PSO creation with shader cache on), later ones are treated as real. Addon: explains one-off heap-corruption log lines; not a mod bug."
+ },
+ "signature": {
+  "id": "core.heap_on_corruption_notification",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 8B 01 8B 00 3D 06 00 01 40 0F",
+  "match": "0x1406cd740",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1406cd740",
+  "kind": "func_start",
+  "names": [
+   "Ne_Heap_OnCorruptionNotification"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d9-verify",
+   "kind": "func",
+   "item": "Ne_Heap_OnCorruptionNotification",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1406cd740.c;xref:0x1406cd740",
+   "notes": "V2824 strings/calls/offsets checked in decomp+disasm; role and name hold"
+  }
+ ],
+ "proofs": []
+}
