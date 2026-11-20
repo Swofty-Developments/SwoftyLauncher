@@ -113,7 +113,7 @@ fn diagnoses_real_bundles() {
             };
             let found = match crashed {
                 true => diagnose(&e),
-                false => stalled(&e),
+                false => stalled(&e).or_else(|| stuck_weekend(&e)),
             };
             if !crashed && found.is_none() {
                 continue;

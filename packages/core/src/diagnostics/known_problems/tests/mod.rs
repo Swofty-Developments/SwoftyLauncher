@@ -10,6 +10,7 @@ mod logos;
 mod memory;
 mod slow_init;
 mod stall;
+mod stuck;
 mod system;
 mod tyres;
 

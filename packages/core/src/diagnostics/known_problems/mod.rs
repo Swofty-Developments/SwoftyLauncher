@@ -34,6 +34,7 @@ use crate::store::Store;
 use broken_addons::{
     aggressive_ai, aggressive_ai_crash, pitlane, pitlane_crash, skip_cutscenes, skip_cutscenes_crash,
 };
+pub use career::stuck_weekend;
 use career::{
     calendar_event_missing, career_content_off, career_driver_missing, career_track_crash,
     entrant_list_crash, imported_calendar_crash, imported_calendar_empty_season, missing_entrant_list,
@@ -92,6 +93,12 @@ pub fn stall(session: &SessionRecord, game: Option<&Path>, store: &Store) -> Opt
     stalled(&evidence(session, game, store))
 }
 
+/// Why the career of `session`, which ended without a crash, can't go on: it
+/// ended in a race weekend that started with no session run.
+pub fn stuck(session: &SessionRecord, game: Option<&Path>, store: &Store) -> Option<Diagnosis> {
+    stuck_weekend(&evidence(session, game, store))
+}
+
 /// Why `session`, which ended without a crash, ran with cars that had no
 /// tyres, when its log names them.
 pub fn tyres(session: &SessionRecord, game: Option<&Path>, store: &Store) -> Option<Diagnosis> {
@@ -147,7 +154,7 @@ type Rule = fn(&Crash) -> Option<Diagnosis>;
 const RULES: &[Rule] = &[
     |c| low_disk(&c.evidence.loader).map(|(drive, free, need)| low_disk_space(&drive, free, need)),
     |c| (c.evidence.code == Some(APP_CONTROL)).then(app_control),
-    |c| quit_fault(c.evidence).then(quit_fault_diagnosis),
+    |c| quit_fault(c.evidence).then(|| stuck_weekend(c.evidence).unwrap_or_else(quit_fault_diagnosis)),
     hooks::crash_in_hook,
     |c| aggressive_ai_crash(c.evidence, &c.fatal).then(|| aggressive_ai(c.evidence)),
     |c| skip_cutscenes_crash(c.evidence, &c.fatal).then(|| skip_cutscenes(c.evidence)),
