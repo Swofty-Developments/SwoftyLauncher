@@ -46,17 +46,18 @@ int main()
         Kind expected;
         const char *name;
     } cuts[] = {
-        {8, OTHER, "s01a_cam"},  {8, OTHER, "s02a_cam"},    {8, OTHER, "s03a_cam"},
-        {8, OTHER, "s04a_cam"},  {4, TCAM, "pod"},          {5, TCAM_OFFSET, "podoffset"},
-        {6, OTHER, "chase"},     {7, OTHER, "chasefar"},    {0, OTHER, "wing"},
-        {1, OTHER, "nose"},      {8, OTHER, "pod_reverse"}, {1, OTHER, "nose"},
-        {2, OTHER, "nose_alt"},  {8, OTHER, "pod_reverse"}, {2, OTHER, "nose_alt"},
-        {3, COCKPIT, "cockpit"}, {8, OTHER, "pod_reverse"}, {3, COCKPIT, "cockpit"},
-        {8, OTHER, "s08a_cam"},  {8, OTHER, "s11a_cam"},    {8, OTHER, "s11b_cam"},
-        {8, OTHER, "s01b_cam"},  {8, OTHER, "s11b_cam"},    {8, OTHER, "s01a_cam"},
+        {8, OTHER, "s01a_cam"},    {8, OTHER, "s02a_cam"},    {8, OTHER, "s03a_cam"},
+        {8, OTHER, "s04a_cam"},    {4, TCAM, "pod"},          {5, TCAM_OFFSET, "podoffset"},
+        {6, OTHER, "chase"},       {7, OTHER, "chasefar"},    {0, OTHER, "wing"},
+        {1, NOSE, "nose"},         {8, OTHER, "pod_reverse"}, {1, NOSE, "nose"},
+        {2, NOSE_ALT, "nose_alt"}, {8, OTHER, "pod_reverse"}, {2, NOSE_ALT, "nose_alt"},
+        {3, COCKPIT, "cockpit"},   {8, OTHER, "pod_reverse"}, {3, COCKPIT, "cockpit"},
+        {8, OTHER, "s08a_cam"},    {8, OTHER, "s11a_cam"},    {8, OTHER, "s11b_cam"},
+        {8, OTHER, "s01b_cam"},    {8, OTHER, "s11b_cam"},    {8, OTHER, "s01a_cam"},
     };
-    const auto onboard =
-        render::postfx::view_bit("cockpit") | render::postfx::view_bit("tcam") | render::postfx::view_bit("tcam_offset");
+    const auto onboard = render::postfx::view_bit("cockpit") | render::postfx::view_bit("tcam") |
+                         render::postfx::view_bit("tcam_offset") | render::postfx::view_bit("nose") |
+                         render::postfx::view_bit("nose_alt");
     for (const auto &cut : cuts) {
         camera.observe(0, cut.type);
         expect(camera.kind() == cut.expected, cut.name);
@@ -84,6 +85,8 @@ int main()
     expect(camera.kind() == TCAM_OFFSET, "first driving frame keeps the assignment from grid setup");
     expect(camera.observe(0, 4) && camera.kind() == TCAM, "a live camera switch takes effect");
     expect(!camera.observe(1, 3) && camera.kind() == TCAM, "secondary viewport cannot change the driving view");
+    expect(camera.observe(0, 1) && camera.kind() == NOSE, "publish the primary nose camera while driving");
+    expect(camera.observe(0, 2) && camera.kind() == NOSE_ALT, "publish the alternate nose camera while driving");
     camera.update_phase(true, true);
     expect(camera.kind() == OTHER, "replay does not inherit the driving camera");
     expect(camera.observe(0, 3) && camera.kind() == COCKPIT, "replay camera updates during the replay");

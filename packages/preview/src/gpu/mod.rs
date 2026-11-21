@@ -180,6 +180,8 @@ impl Preview {
             "other" => 6,
             "trackside" => 7,
             "reverse_pod" => 8,
+            "nose" => 9,
+            "nose_alt" => 10,
             _ => 0,
         };
         self.last_frame = None;

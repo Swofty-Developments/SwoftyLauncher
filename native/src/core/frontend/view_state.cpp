@@ -136,8 +136,9 @@ uint32_t camera_kind(int value)
     case 7:
         return frontend::view::CHASE_FAR;
     case 1:
+        return frontend::view::NOSE;
     case 2:
-        return frontend::view::OTHER;
+        return frontend::view::NOSE_ALT;
     default:
         return frontend::view::UNKNOWN;
     }
@@ -160,8 +161,8 @@ std::string flag_text(uint32_t flags)
 
 const char *kind_text(uint32_t kind)
 {
-    static constexpr const char *NAMES[] = {"unknown",   "cockpit", "tcam",      "tcam_offset", "chase_near",
-                                            "chase_far", "other",   "trackside", "reverse_pod"};
+    static constexpr const char *NAMES[] = {"unknown", "cockpit",   "tcam",        "tcam_offset", "chase_near", "chase_far",
+                                            "other",   "trackside", "reverse_pod", "nose",        "nose_alt"};
     return kind < std::size(NAMES) ? NAMES[kind] : "unknown";
 }
 

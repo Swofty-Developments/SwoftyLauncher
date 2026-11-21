@@ -87,7 +87,8 @@ static void own_cases()
         CHECK(signal_index("session.lap") == S_SESSION_LAP && signal_value_name(S_CAR_SURFACE, 1) == "kerb");
         CHECK(signal_value_name(S_VIEW_CAMERA, 5) == "other");
         CHECK(signal_value_name(S_VIEW_CAMERA, 6) == "trackside");
-        CHECK(signal_value_name(S_VIEW_CAMERA, 7) == "reverse_pod" && signal_value_name(S_VIEW_CAMERA, 8).empty());
+        CHECK(signal_value_name(S_VIEW_CAMERA, 7) == "reverse_pod" && signal_value_name(S_VIEW_CAMERA, 8) == "nose");
+        CHECK(signal_value_name(S_VIEW_CAMERA, 9) == "nose_alt" && signal_value_name(S_VIEW_CAMERA, 10).empty());
         CHECK(SIGNALS[S_CAR_SPEED].in_game && !SIGNALS[S_CAR_IMPACT].in_game && SIGNALS[S_SESSION_LAP].in_game);
     }
     {
