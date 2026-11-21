@@ -554,6 +554,15 @@ static void schemas()
     CHECK(swofty::to_json(garage_rec).find("\"root\":\"eaid://environment_package/core_assets/objects/textures/\"") !=
               std::string::npos &&
           garage_rec.srgb);
+    std::string swap = teams::vehicle_overrides.schema();
+    CHECK(swap.find("\"x-registry\":\"team.vehicle_override\"") != std::string::npos &&
+          swap.find("\"x-applies\":\"session\"") != std::string::npos);
+    CHECK(swap.find("\"x-ref\":\"vehicle\"") != std::string::npos &&
+          swap.find("\"x-ref\":\"driver.identity\"") != std::string::npos &&
+          swap.find("\"x-ref\":\"track\"") != std::string::npos &&
+          teams::vehicle_overrides.at_major() == "team.vehicle_override@1");
+    teams::VehicleOverride swap_rec;
+    CHECK(swap_rec.when.year == 0 && swap_rec.drivers.empty() && swap_rec.when.session_types.empty());
     std::string tree = career::rnd_trees.schema();
     CHECK(tree.find("\"x-applies\":\"boot\"") != std::string::npos && tree.find("\"x-key\":[\"label\"]") != std::string::npos);
     CHECK(tree.find("\"enum\":[\"aerodynamics\",\"chassis\",\"durability\",\"engine\"]") != std::string::npos);

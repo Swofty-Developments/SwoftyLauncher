@@ -60,6 +60,7 @@ type: std::unordered_set
 # runtime/loader/core_sets.cpp, from the unit's own mixin table and commit function. The loader reads the sets in
 # CoreSetId order, whatever order their units initialize in. clang does not report them: CoreSet's destructor is a
 # defaulted virtual one.
+src/core/apply/content/vehicle_override.cpp: static loader::FunctionSet vehicle_override_core_set{loader::CoreSetId::vehicle_override, vehicle_override_mixins,
 src/core/boxes/box_grid.cpp: static loader::FunctionSet box_grid_core_set{loader::CoreSetId::box_grid, box_grid_mixins, box_grid_commit};
 src/core/boxes/car_category.cpp: static loader::FunctionSet car_category_core_set{loader::CoreSetId::car_category, car_category_mixins, car_category_commit};
 src/core/boxes/era_picker.cpp: static loader::FunctionSet career_alias_core_set{loader::CoreSetId::career_alias, career_alias_mixins, career_alias_commit};

@@ -136,6 +136,7 @@ src/core/boxes/picker/time_trial.cpp
 src/core/boxes/car_category.cpp
 src/core/boxes/box_options.cpp
 src/core/boxes/box_grid.cpp
+src/core/apply/content/vehicle_override.cpp
 src/core/career/save_splice.cpp
 src/core/career/save_data.cpp
 src/core/career/career_saves.cpp
