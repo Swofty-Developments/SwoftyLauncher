@@ -162,14 +162,25 @@ int ga_read(const char *uri, uint32_t fragment, void *buf, size_t cap, size_t *l
         return SWOFTY_ASSET_INVALID;
     if (!ga_available())
         return SWOFTY_ASSET_UNAVAILABLE;
-    std::string bytes, why;
-    if (!files().read(uri, fragment, bytes, why))
-        return refuse("read", uri, why);
-    *len = bytes.size();
-    if (!buf || cap < bytes.size())
+    struct Last {
+        std::string uri, bytes;
+        uint32_t fragment = 0;
+    };
+    thread_local Last last;
+    std::string why;
+    if (last.uri != uri || last.fragment != fragment) {
+        last = {};
+        if (!files().read(uri, fragment, last.bytes, why))
+            return refuse("read", uri, why);
+        last.uri = uri;
+        last.fragment = fragment;
+    }
+    *len = last.bytes.size();
+    if (!buf || cap < last.bytes.size())
         return SWOFTY_TOO_SMALL;
-    if (!bytes.empty())
-        std::memcpy(buf, bytes.data(), bytes.size());
+    if (!last.bytes.empty())
+        std::memcpy(buf, last.bytes.data(), last.bytes.size());
+    last = {};
     return SWOFTY_ASSET_OK;
 }
 
