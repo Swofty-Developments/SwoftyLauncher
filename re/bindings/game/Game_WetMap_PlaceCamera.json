@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14478e440",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "void Game_WetMap_PlaceCamera(void *wetmap, uint32_t split_screen_id, void *view_camera_params)",
-  "evidence": "xref:0x140158e99;doc:re/db/subsystems/game.md",
-  "notes": "Per frame from GameRendererModule 0x140157d90: wetness-map camera eye = view camera +0x120 xyz + (0,1,0), look (0,-1,0) (0x1454876f0), up (0,0,1) (0x1453829d0); consts 0x1458bb750 (1,0,0,-1000), 0x145c05980 (1000,75,75,0). Coverage = 75 x 75 m square under the player view. Submit 0x14478eb80 only if ws+0x3f0a7f; refresh while ws+0x3f0a54>0.01 else max 3 frames. Dry vs wet meaning of the map lives in material shaders (not decidable from exe) | findings from PR #471 by vogtmarcel07-cloud"
+  "evidence": "decomp:re/decomp/14478e440.c;doc:re/db/subsystems/game.md;xref:0x140158e99,0x140158ef9",
+  "notes": "Read in full: (wetmap, slot, viewCam, cam2) copies view to slot cam +slot*0x180+0x4f0; eye = viewCam+0x120 xyz + (0,1,0), dir (0,-1,0), up (0,0,1) -> view matrix via 0x143be2070; ortho -1000..1000, 75 x 75 m; if [this+0x38] stores cam pos/FOV/cam2 view-proj for the slot; rotates ring 0x146ce8e30 (0..2) unless slot 2. Callers in 0x140158da0 (submit/refresh logic lives there). (lane owner review requested)"
  },
  "signature": {
   "id": "game.wet_map_place_camera",

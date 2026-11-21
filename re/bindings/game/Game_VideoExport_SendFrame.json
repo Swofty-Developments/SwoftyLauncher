@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1444b6340",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-VIDEO_EXPORT",
-  "notes": "named from its log messages (channel VIDEO_EXPORT): 'Send frame %d | Failed to encode frame %d, err = %d'"
+  "evidence": "decomp:re/decomp/1444b6340.c;pat:log-channel-VIDEO_EXPORT;xref:0x1444b0bc9,0x1444b0c02,0x1444b2c89",
+  "notes": "Read in full: (codec, img, pts, vec*) clears vec; logs 'Send frame %d' when img != NULL; encodes via 0x144c79500(codec,img,pts,1,0,1); on success collects every packet of kind 0 from 0x144c796a0 (iterator) into vec (grow x1.5); else logs 'Failed to encode frame %d, err = %d'; returns packet count. (lane owner review requested)"
  },
  "signature": {
   "id": "game.video_export_send_frame",

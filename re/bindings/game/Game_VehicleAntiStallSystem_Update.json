@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142f4a070.c",
-  "notes": "per-car race start / anti-stall state machine (entry+0x18 0..3), logs '[VEHICLE RACE START] sending Race Start message for vehicle id: %d reaction time: %.3f'; while system+0x100 == 0 it sets bit 2 in the car input block (+0x50 -> +0x1fc) and clears it otherwise; system pointer also at [0x146095a68]. (vmknolle red-flag-pit)"
+  "evidence": "decomp:re/decomp/142f4a070.c;xref:0x1457f8b28",
+  "notes": "Per-car race start / anti-stall state machine (entry+0x18 0..3); logs '[VEHICLE RACE START] sending Race Start message for vehicle id: %d reaction time: %.3f' (NETWORK) and 'Anti Stall System: vehicle id %u is out of bounds'; while system+0x100 == 0 sets bit 2 of the car input block (+0x50 -> +0x1fc). Only ref vtable cell 0x1457f8b28 (neighbours not code)."
  },
  "signature": {
   "id": "game.vehicle_anti_stall_system_update",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e3db20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142e3db20.c;xref:0x142e2d94a,0x142e320bd",
-  "notes": "Constructs a thumbnail task object (vtable 0x1457ec230, 5 params + int* + flags). Called by Game_ThumbnailSystem_AddingPendingDriverThumbnail variants."
+  "notes": "Driver thumbnail task ctor variant A: base task fields (vtable 0x1457ec230), copies 0x60-byte request, min wait +0x1d8, final vtable 0x1457eca60, copies driver data via 0x140c82dc0 into +0x1f0, +0x380=1. Used for request type 2. (lane owner review requested)"
  },
  "signature": {
   "id": "game.thumbnail_system_driver_thumbnail_task_construct_a",

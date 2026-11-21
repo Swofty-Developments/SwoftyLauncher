@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1409a1a10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-SunOverrideComponent",
-  "notes": "named from its log messages (channel SunOverrideComponent): 'activate %p | %p SunOverrideComponent::activate GameWeatherSystem::registerSunOverrideData %s | %p SunOverrideComponent::activate weatherOverride %s'"
+  "evidence": "decomp:re/decomp/1409a1a10.c;pat:log-channel-SunOverrideComponent;xref:0x145663148",
+  "notes": "activate (vt cell 0x145663148): +0xf90=1; registers sun override data 0x1438c6ff0 -> index +0xf68 (<0x40, active check 0x145f96d2c/0x145f96d28, table 0x146106620); +0xf94 from weather data; maps weather preset name +0xf28 (0x14460e6d0) to a sun preset (0-4 ->3, 5->4, 6->5, 7-10 warn), forces weather state 9 and applies via 0x14461bb70. (lane owner review requested)"
  },
  "signature": {
   "id": "game.sun_override_activate",

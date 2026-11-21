@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14465ef40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14465ef40.c;xref:0x14465eee1",
-  "notes": "Finds (list this+0x28, stride 0x38) or creates a tweakable group named \"damage\", then registers an entry via FUN_144727d90 (name 0x1456f8737, default 1.0, flags 0x10). Caller Game_Register_TyreDamageTweakables (4 sites). Addon: tyre-damage tweakable registration point."
+  "evidence": "decomp:re/decomp/14465ef40.c;xref:0x14465eee1,0x14465eefa,0x14465ef13,0x14465ef32",
+  "notes": "(tweakables, name, keyHi, keyLo): looks for the group 'damage' in this+0x28..+0x30 (stride 0x38, name +0x10); missing -> error code 2 trace and adds it via 0x1436823b0(this+0x20, group). Then builds an entry with 0x144727d90(tmp, 'damage', name, {keyLo, keyHi}, 0.0, 1.0, this+0x68, 0x10, this+0x60), appends it with 0x14476c110(this, tmp) and destroys tmp. Callers 0x14465eee1, 0x14465eefa, 0x14465ef13, 0x14465ef32 (in 0x14465eeb0). (lane owner review requested) Better name: Game_Tweakables_AddDamageEntry (bound record keeps its name)."
  },
  "signature": {
   "id": "game.tweakables_find_or_add_damage_group",

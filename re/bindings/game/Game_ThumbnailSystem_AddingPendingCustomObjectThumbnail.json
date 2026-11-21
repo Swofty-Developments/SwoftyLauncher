@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-THUMBNAIL_SYSTEM",
-  "notes": "named from its log messages (channel THUMBNAIL_SYSTEM): 'Adding pending custom object thumbnail generation for set ID %d'"
+  "evidence": "decomp:re/decomp/142e37a00.c;pat:log-channel-THUMBNAIL_SYSTEM;xref:0x14187efc7,0x1419f28a5,0x1421cfc35,0x1421cfde8",
+  "notes": "0xdf2-byte body: custom object thumbnail generation and REgeneration (log strings), uses Game_Thumbnail_HashMap_Insert/FindOrInsert."
  },
  "signature": {
   "id": "game.thumbnail_system_adding_pending_custom_object_thumbnail",

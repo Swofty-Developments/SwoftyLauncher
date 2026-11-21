@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-VEHICLE_SPAWNING_SYSTEM",
-  "notes": "named from its log messages (channel VEHICLE_SPAWNING_SYSTEM): 'Begin spawning for request %d | Spawning world for vehicle %d, worldResouceId=%s, instanceName=%s | Calling world unloadedCB for request %d | Calling forceUnload for request %d | There are %d requests'"
+  "evidence": "decomp:re/decomp/142f3b410.c;pat:log-channel-VEHICLE_SPAWNING_SYSTEM;xref:0x1457f7c68",
+  "notes": "Only ref: absolute vtable cell 0x1457f7c68 (code neighbours). 1609-line decomp; registers callbacks 0x142f3dc90 / ObjectPreCreation 0x142f3e200 / OnWorldStarted 0x142f3e7c0 (lea at 0x142f3c214/0x142f3c22b) and calls SetState 0x142f3d970(..,2/5). Likely the spawning system per-frame update, not only 'begin'."
  },
  "signature": {
   "id": "game.vehicle_spawning_begin",

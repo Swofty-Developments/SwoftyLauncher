@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-UI_latency",
-  "notes": "named from its log messages (channel UI_latency): '***** Frame:%I64u UI Car Marker Context Changed:%hs'"
+  "evidence": "decomp:re/decomp/1437f2110.c;pat:log-channel-UI_latency;xref:0x145876258",
+  "notes": "Large UI car marker body (pdata 0x1a6c bytes; vtable cell 0x145876258): formats '[%u]', reads is_human and overrides.minimap.car_marker_outlines, logs UI_latency 'UI Car Marker Context Changed:%hs'."
  },
  "signature": {
   "id": "game.ui_latency_frame_ui_car_marker_context_changed",

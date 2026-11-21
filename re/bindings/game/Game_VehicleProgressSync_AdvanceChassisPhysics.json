@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VehicleProgressSync::advanceChassisPhysics; log channel NETWORK-PROGRESS/V: 'NEbool network::VehicleProgressSync::advanceChassisPhysics(racing::dynamics::Chassis *, racing::dynamics::NetworkProgress &, NEfloat) | %s: calculated progress: %s'"
+  "evidence": "decomp:re/decomp/143274180.c;pat:log-message-cxx;xref:0x143261fe6",
+  "notes": "Pretty-function string advanceChassisPhysics(racing::dynamics::Chassis *, racing::dynamics::NetworkProgress &, NEfloat) and teleport / 'no ground-height' / 'history too old' logs are in the body. Address taken by lea 0x143261fe6 in 0x143261250."
  },
  "signature": {
   "id": "game.vehicle_progress_sync_advance_chassis_physics",

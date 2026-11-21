@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e917a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name deserialise (class from the log channel); log channel TYRES/V: '%s: compound: %s, index: %d'"
+  "evidence": "decomp:re/decomp/142e917a0.c;pat:log-message-method;xref:0x1457ef280",
+  "notes": "(sys, stream) (vtable cell 0x1457ef280): for each tyre entry in sys+0xf0..+0xf8: +0x9c70/+0x9c78 = 0xffffffffff, 0x142e93820(+0x9c60); reads i8 compound -> +0x9c70, u8 index -> +0x9c74 (logs TYRES/V '%s: compound: %s, index: %d', 'deserialise'); u16 count, per set appends 0x142e9fe40 and reads u32, u8, u8, then 4 x {u32, u8/255.0, u8}, u16. Restores the allocation sets (+0x9c68, 0x6c-byte sets) and copies the read sets in, 0x142e96a20(e); compound changed -> 0x142ea2a90. (lane owner review requested) Better name: Game_TyreSystem_Deserialise (bound record keeps its name)."
  },
  "signature": {
   "id": "game.tyres_deserialise",

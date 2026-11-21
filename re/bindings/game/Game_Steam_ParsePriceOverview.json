@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140796010.c;xref:0x145644fd0",
-  "notes": "Virtual (vtable slot 0x145644fd0) completion handler of an F1OS-TASKSYSTEM Steam store request: matches request id param_1[0x27] with param_2[0], on failure posts 'An error occurred when communicating with Steam.' (0x1432c0280 code 2); else parses Steam appdetails JSON {<appid>:{success,data:{price_overview:{currency,final,final_formatted,initial_formatted}}}} and fills price entries via 0x140968790 into list param_1[0x25]; logs 'setting finished on %s : %s' OK!/with error; sets done byte +0xa1. Addon: read DLC/store prices the game shows; know when store price fetch finished."
+  "notes": "Vt cell 0x145644fd0; Steam appdetails price_overview completion handler."
  },
  "signature": {
   "id": "game.steam_parse_price_overview",

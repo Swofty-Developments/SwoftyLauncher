@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140a23890",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140a23890.c;xref:0x142d95864",
-  "notes": "Picks the talking-points music event by session type ([this+0xd98]+4: practice p1..p3, quali q1..q3, sprint shootout sq1..sq3, sprint s, race r -> 'play_music_talking_points_*') and posts it to the audio object [[this+0xc60]+0xe0] vcall +0x10. Called from Sess_StateTalkingPoints_OnStateEnter."
+  "notes": "By session type at +0xd98->+4 plays audio event play_music_talking_points_p1..p3, q1..q3, sq1..sq3, or for 0xf-0x11 _r / _s (s when race status byte in 6..8 range check) via audio vtable+0x10. Caller Sess_StateTalkingPoints_OnStateEnter. (lane owner review requested)"
  },
  "signature": {
   "id": "game.talking_points_play_music",

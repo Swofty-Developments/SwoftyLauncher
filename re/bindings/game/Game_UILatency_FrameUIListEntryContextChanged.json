@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14423c9a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-UI_latency",
-  "notes": "named from its log messages (channel UI_latency): '***** Frame:%I64u UI List Entry Context Changed:%hs'"
+  "evidence": "decomp:re/decomp/14423c9a0.c;pat:log-channel-UI_latency;xref:0x1535130e3,0x15354a8d8",
+  "notes": "UI list entry update: per child of type 0x146ca39b0 (this+0x30..+0x38) runs 0x144248d70; on index change (+0x54 + +0x50 vs +0x80) or force (+0x5a/+0x5b) formats '[%d]' as entry context (0x14423d2b0), logs UI_latency 'UI List Entry Context Changed:%hs', stores +0x60/+0x80, sends events 0x146ca2640 / 0x146ca2628; posts vt 0x145a73e40 with the summed counts. Callers 0x1535130e3, 0x15354a8d8. (lane owner review requested) Better name: Game_UIListEntry_RefreshContext (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ui_latency_frame_ui_list_entry_context_changed",

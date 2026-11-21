@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1413be170",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-STORY_OBJECTIVES",
-  "notes": "named from its log messages (channel STORY_OBJECTIVES): 'Failing bonus objective %s in onMainObjectiveCompleted because of reason %s'"
+  "evidence": "decomp:re/decomp/1413be170.c;pat:log-channel-STORY_OBJECTIVES;xref:0x1456e0760",
+  "notes": "Bonus objective onMainObjectiveCompleted (vt cell 0x1456e0760): if active, evaluates 0x1413be250(this, [0x14607c8e8]+0x100, &reason, 0); on failure logs the reason (table 0x1456e5548), vcall +0x70(this,reason) and +0x68. (lane owner review requested) Better name: Game_StoryBonusObjective_OnMainObjectiveCompleted (bound record keeps its name)."
  },
  "signature": {
   "id": "game.story_objectives_fail_bonus",

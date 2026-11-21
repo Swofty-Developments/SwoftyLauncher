@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144621370",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name setCameraCallback (class from the log channel); log channel TimeOfDaySystem: 'setCameraCallback %p %p (viewport %d)'"
+  "evidence": "decomp:re/decomp/144621370.c;pat:log-message-method;xref:0x145bf49a8",
+  "notes": "vtable cell 0x145bf49a8 (this-0x28 adjust). Logs setCameraCallback and under CS +0xb418 stores callback +0xb448, clears +0xb450. (lane owner review requested)"
  },
  "signature": {
   "id": "game.time_of_day_system_set_camera_callback",

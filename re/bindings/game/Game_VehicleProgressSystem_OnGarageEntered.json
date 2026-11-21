@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f0c6a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VehicleProgressSystem::onGarageEntered; log channel PROGRESS: 'Partial lap set for vehicle %d from VehicleProgressSystem::onGarageEntered()'"
+  "evidence": "decomp:re/decomp/142f0c6a0.c;pat:log-message-cxx;xref:0x14292a7dc",
+  "notes": "Read in full (this, u8 vehicle): bounds-checks vehicle against list this+0x38..+0x40 (else logs out-of-range warning), logs 'Partial lap set for vehicle %d from VehicleProgressSystem::onGarageEntered()' (PROGRESS), calls 0x1446045a0(entry), sets entry+0x58 (u16) = 0 and entry+0x2aa = 1. Caller 0x14292a560 (call 0x14292a7dc). (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_progress_system_on_garage_entered",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_StateLaunch_DefineSubTasks;xref:0x1436db7d3",
-  "notes": "cxx=game::StateLaunch::defineSubTasks; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1436db620.c;str:s_StateLaunch_DefineSubTasks;xref:0x14585c100",
+  "notes": "StateLaunch::defineSubTasks (vt cell 0x14585c100): logs flow-state changes (online waits for document close, offline closes UI flow); calls 0x1436dc120 and 0x1436dc850."
  },
  "signature": {
   "id": "game.state_launch_define_sub_tasks",

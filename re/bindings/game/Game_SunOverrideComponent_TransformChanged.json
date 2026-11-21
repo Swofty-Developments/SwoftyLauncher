@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1409a2640",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name transformChanged (class from the log channel); log channel SunOverrideComponent: 'transformChanged %p'"
+  "evidence": "decomp:re/decomp/1409a2640.c;pat:log-message-method;xref:0x1456631a0",
+  "notes": "transformChanged (secondary vtable cell 0x1456631a0; component = this-0x18): if apply-azimuth, adjust +0xf18 = -atan2 from the entity transform; inverts matrix [+0xf58]+0x50..+0x8f and multiplies with param_2 into +0xdb8..+0xdf4; if override index +0xf50 is the active one (0x145f96d2c, table 0x146106620) calls 0x1438c7490 and tail-vcalls +0x10. (lane owner review requested)"
  },
  "signature": {
   "id": "game.sun_override_component_transform_changed",

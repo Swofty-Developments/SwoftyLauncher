@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142e33790.c;xref:0x142e3319f",
-  "notes": "Large (373 lines, Ne_Crt_Chkstk frame) car-thumbnail queue step: multiplicative hash lookup of u32 id (+0x70/+0x90/+0xa0), constructs/destroys Game_CustomisationSet (Game_CustomisationSet_Dtor), toggles Vm_NodeSet_Bool, Game_ThumbnailSystem_AddingPendingC.. Callers Game_Thumbnails_BuildCarRequests, 0x142e366d8. Hypothesis."
+  "evidence": "decomp:re/decomp/142e33790.c;xref:0x142e3319f,0x142e366d8",
+  "notes": "0x755-byte body queueing car request (Game_ThumbnailCarRequest_Construct, Game_ThumbnailSystem_RegenerateCarThumbnail)."
  },
  "signature": {
   "id": "game.thumbnails_queue_car_request",

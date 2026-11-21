@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TalkingPoints",
-  "notes": "named from its log messages (channel TalkingPoints): 'Trying to play fillers in a <0.5s duration, skipping to next taking point instead. | [TRACK][LENGTH] New track [%s] duration [%f] | Removing %d fillers after segment [%d] | Removing filler anim [%s] f'  | 2026-11-17 engine-re round A2: broadcast talking points key: 'talking_points.patterns.' + record fileName (session +0x1a8 -> +0x30 record, +0x68 string) + session suffix (_practice/_qualifying/_outro) + '_reverse' (0x145624725, 0x140ac4c72) when the record's baseTrack (+0x128) is non-empty; if that DB node does not exist (0x1445a2090) it uses 'talking_points.patterns.generic'. So a non-empty baseTrack marks a track as a reverse variant here (T206).  | 2026-11-17 engine-re round A2 correction after verify V11016: session suffixes are _practice/_qualifying/_race (and _outro when a flag is set); the fallback key is talking_points.patterns.generic with the same suffixes, not the bare generic key."
+  "evidence": "decomp:re/decomp/140ac15d0.c;pat:log-channel-TalkingPoints;xref:0x140acdca1",
+  "notes": "0x4ada-byte body: TalkingPoints broadcast generator ('Generating Sequence', 'Broadcast Generator sorted talking points', filler removal, _practice/_qualifying/_outro suffixes) and cutscene script hints; registers speech/VO callbacks 0x140ac60b0/0x140ac67e0."
  },
  "signature": {
   "id": "game.talking_points_build_track",

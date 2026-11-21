@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b20b80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143b20b80.c;xref:0x1445aca98",
-  "notes": "If vfx enabled (+0xf0cc8) looks up the wheel record by packed id (index+generation: bits 0..23 / 24..31) in table +0xf0d68 and fills it; caller Game_Vfx_BuildWheelParamRecord."
+  "notes": "Read in full: (vfx, srcVec, handle*) if +0xf0cc8: looks up bucket in vector [this+0xf0d68] (0x28-byte buckets) by handle (id bits 0..23, index bits 24..31; scans by id if index stale; 0xffffffff or miss = append new bucket with id from counter +0xf0d70), updates record count this+0x2d0, resizes bucket via 0x143b20ee0 and copies every 0x140-byte record (0x1453784c0). (lane owner review requested)"
  },
  "signature": {
   "id": "game.vfx_fill_wheel_param_entry",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1403a1790.c;xref:0x14561b780;imm:0x7c97c1e9",
-  "notes": "vtable method (slot ptr at 0x14561b780). Looks up model node 'halo' (djb2 0x7c97c1e9 via FUN_143a3df70 + FUN_143cfc8f0) in the car's model instance; per viewport ANDs camera-settings byte +0x30 (halo_column, see Game_Read_CameraSettings) into a flag; then either copies the node's rest 0x30-byte transform back (visible) or writes a zero 3x4 transform (hidden) and marks node dirty. Byte this+0x1b0c (set by Enable/DisableHaloGeoMod) forces the update. Only the 'halo' node (the halo pillar part) is affected; the ring is safetycell geometry (research/car-erp.md)."
+  "evidence": "decomp:re/decomp/1403a1790.c;imm:0x7c97c1e9;xref:0x14561b780",
+  "notes": "Vtable cell 0x14561b780. Looks up model node 'halo' (djb2 0x7c97c1e9) and copies its rest transform back or writes a zero 3x4 transform per viewport using camera-settings byte +0x30; this+0x1b0c forces the update. The body also references the driver-model nodes (gloves_x, visor_x, helmet_, balaclava_x, harness_x, hans_device_x ...), so it handles more than the halo."
  },
  "signature": {
   "id": "game.update_cockpit_halo_node",

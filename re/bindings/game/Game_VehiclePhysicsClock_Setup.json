@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143255d50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143255d50.c;xref:0x14325d9db",
-  "notes": "Resets the vehicle physics clock: tick rate from +0xfc, period ms = 1000/rate (+0xc), clears counters (+4,+0x10,+0x38,+0x44), QueryPerformanceCounter+offset stored at +0x20/+0x28. Callers Game_VehiclePhysicsClock_Reset, Game_VehicleProgressManager_OnMutableRoleChanged. Addon: chassis physics rate at +0xfc is the fixed-step frequency."
+  "evidence": "decomp:re/decomp/143255d50.c;xref:0x14325d9db,0x14325d9e9,0x1432604b5,0x143266a9d,0x143266aab,0x1432e29a7",
+  "notes": "Read in full (clock): +4/+0x44/+0x38/+0x10 = 0, +0x3c = 1, +0x40 = rate +0xfc, period +0xc = (int)(1000/rate); stamps QPC+[0x1461089f8] into +0x20 (and +0x28 if non-zero); resets the 0x140-byte records +0x160.. (10000 defaults, name buffer +0xa8/+0xb0), the 0xc0-byte records +0x180.. (+0 = 0xffffffff00000000), the 12-byte entries +0x1a0.. (-1), the 0x44-byte entries +0x1c0.. (0) and zeroes +0x1d8..+0x2d8. Callers 0x14325c810, Game_VehiclePhysicsClock_Reset 0x1432602e0, 0x1432669b0, 0x1432e2740. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_physics_clock_setup",

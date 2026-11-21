@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143884e30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TOP_LEVEL_UI",
-  "notes": "named from its log messages (channel TOP_LEVEL_UI): 'Home Screen Info updated'"
+  "evidence": "decomp:re/decomp/143884e30.c;pat:log-channel-TOP_LEVEL_UI;xref:0x143882455,0x143882695",
+  "notes": "Bus handler (lea at 0x143882455,0x143882695). Sets +0x83, stops busy spinner type 6, +0xf0 from info+0x138; collects 0x158-byte news entries from two lists, for each new image URL (+0x78,+0xa0, non-.png check) requests download to eaid://ego_package/news_image_%d (0x14177bf90), then updates connect state via 0x143882d30. (lane owner review requested)"
  },
  "signature": {
   "id": "game.top_level_ui_home_screen_info_updated",

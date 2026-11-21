@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name addTabCEScreen (class from the log channel); log channel UI: 'addTabCEScreen() created CE tab with pill type %s'"
+  "evidence": "decomp:re/decomp/141d8f9f0.c;pat:log-message-method;xref:0x14574bae8",
+  "notes": "Logs 'addTabCEScreen() created CE tab with pill type %s' (UI); strings in the body: MP_CE, session_results_collaborative_event, session_results_persistent, featured_driver, check_tab_header_count, attach_spawned. Only ref the data cell 0x14574bae8 (neighbours not code), code caller found by the rip scan."
  },
  "signature": {
   "id": "game.ui_add_tab_ce_screen",

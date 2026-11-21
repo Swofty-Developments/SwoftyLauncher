@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-UI",
-  "notes": "named from its log messages (channel UI): 'Select pressed with nothing selected'"
+  "evidence": "decomp:re/decomp/141a91170.c;pat:log-channel-UI;xref:0x14572bb50",
+  "notes": "Large UI handler (vtable cell 0x14572bb50; decomp also merges code outside its pdata range): goto_engineering, detach_buttons / rebuild_buttons, inputAllow / inputDisallow, nav_anim_on / off and the 'Select pressed with nothing selected' log."
  },
  "signature": {
   "id": "game.ui_select_pressed_nothing_selected",

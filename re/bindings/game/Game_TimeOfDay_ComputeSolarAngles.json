@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446175d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1446175d0.c;xref:0x1428c2b01,0x1428c2bf9,0x142e15bb4",
-  "notes": "Sun position from date/time/lat/lon: leap year, day of year (table 0x145bf6050), declination ((doy-81)*360/365), equation of time 9.87 sin 2B - 7.53 cos B - 1.5 sin B, hour angle 15 deg/h. Used by Sess_GameWeatherSystem_SetupSession and the frontend scene world. Addon: time-of-day sun direction. (10 xref site(s), fb.py callers.) | engine-re 2026-11-17 (static, decomp re/decomp/1446175d0.c): signature (double *elev_rad, double *azimuth_rad, double *sunrise_h, double *sunset_h, u32 year, int month, int day, int hour, int minute, double lon_deg, double lat_deg). Elevation = asin(sin lat sin d + cos lat cos d cos H), d = asin(0.39795 sin B), B = (doy-81)*360/365, H = 15 deg * (clock + EoT/60 - 12); azimuth = 360 - acos(...) mirrored for H > 0, stored in radians; sunrise/sunset = 12 -/+ acos(-tan lat tan d)/15 - EoT/60. The longitude term is (lon - (lon/15)*15)*4 with no rounding (0x1446176eb..0x1446176f8), i.e. always 0: longitude does not move the sun, only clock time + EoT and latitude do. Session caller Sess_GameWeatherSystem_SetupSession 0x1438b7350 passes lat = track weather config +0x30, lon = +0x34, year = config +0x3c, month/day from the session settings (+0xf4 / [0x1f]); Render_SkyState_UpdateSolarSun 0x142e15970 calls it 5x."
+  "evidence": "decomp:re/decomp/1446175d0.c;xref:0x1428c2b01,0x1428c2bf9,0x142e15bb4,0x142e15c68,0x142e15d1c,0x142e16185,0x142e161e0,0x1438b7954,0x1438b9379",
+  "notes": "NOAA-style solar position: day of year (leap year, table 0x145bf6050), equation of time, declination asin(0.3979*sin), hour angle from time and longitude param_10, latitude param_11; outputs elevation (param_1), azimuth (param_2), sunrise (param_3) and sunset (param_4) hours. (lane owner review requested)"
  },
  "signature": {
   "id": "game.time_of_day_compute_solar_angles",

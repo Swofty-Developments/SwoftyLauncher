@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140d394f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140d394f0.c;xref:0x140c23769,0x141489e04",
-  "notes": "View-model binding helper like Game_VmBinding_ResolveStringNode for another node type (default node 0x146054810). Callers: Sess_Bind_SessionCarsVm, Game_Read_SessionPracticeProgrammesConfig."
+  "evidence": "decomp:re/decomp/140d394f0.c;xref:0x140c23769,0x141489e04,0x141489eb1,0x141efd9d9,0x142308beb,0x142308d30,0x1429448a9,0x142ce530b,0x142ce5530,0x142ce580a,0x142ce59fa,0x142ce5c3a,0x142ce5e20,0x142ce6b30,0x142ce7130,0x142ce7d7a,0x142ced5c5,0x142ced702,0x142f7518c,0x143040987,0x1430c4d91,0x1430c4e3a,0x1436e8af9,0x14379ec61,0x1437a0210,0x143817c68,0x143817eaa,0x14e703c9d",
+  "notes": "Read in full: same template as 0x140971220 for node type 0x146129d40 (setter 0x140972de0, creator 0x140d392d0, default node 0x146054810): returns existing typed node (optionally overwritten with the default) or creates and inserts a 0x68-byte node under the deepest existing parent. (lane owner review requested) Better name: Game_VmBinding_GetOrCreateTypedNode (bound record keeps its name)."
  },
  "signature": {
   "id": "game.vm_binding_resolve_typed_node",

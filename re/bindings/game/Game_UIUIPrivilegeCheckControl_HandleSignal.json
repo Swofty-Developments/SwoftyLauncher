@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143822c00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_UI_UIPrivilegeCheckControl_HandleSignal;xref:0x143822de9,0x14382332e",
-  "notes": "cxx=game::UI::UIPrivilegeCheckControl::handleSignal; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/143822c00.c;str:s_UI_UIPrivilegeCheckControl_HandleSignal;xref:0x145879fb0",
+  "notes": "game::UI::UIPrivilegeCheckControl::handleSignal (vtable cell 0x145879fb0; own string): for signal [0x146103358] reads 'privilegeType' (0..0xb), sends UI event 0xb04bf9fe / 0x8eab392d, logs, +0xa8/+0xa9 = 1, creates the task holder +0x98/+0xa0 and per type chains callbacks (0x143823570, 0x143823720, 0x143823910, 0x143823c00, 0x143823fb0, 0x143824480, 0x143824670, 0x143823b50). Ends in base 0x1441fc940. (lane owner review requested)"
  },
  "signature": {
   "id": "game.u_i_u_i_privilege_check_control_handle_signal",

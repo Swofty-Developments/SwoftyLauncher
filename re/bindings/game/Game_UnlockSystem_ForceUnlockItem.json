@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142eca1e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name forceUnlockItem (class from the log channel); log channel UnlockSystem: 'forceUnlockItem() - Item [%s] is being forced unlocked'"
+  "evidence": "decomp:re/decomp/142eca1e0.c;pat:log-message-method;xref:0x142eca410,0x142eca7f2",
+  "notes": "Read in full (sys, item, callback): logs 'forceUnlockItem() - Item [%s] is being forced unlocked'; finds the item by id +0xa0 in hash set +0x88..+0xbc; entry = sys+0x50 + item+0xa8*0x40; state 0 -> set 1, store callback, handleCompletedTask 0x142eca470 with result 1; states 1/2 -> immediate callback (5 / 0); recurses on child items (vcall +0x50 list). Callers: itself (0x142eca410) and 0x142eca470. (lane owner review requested)"
  },
  "signature": {
   "id": "game.unlock_system_force_unlock_item",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-THUMBNAIL_TASK",
-  "notes": "named from its log messages (channel THUMBNAIL_TASK): '[task=%p] State PreloadingTextures: texture preloads submitted, begin streaming'"
+  "evidence": "decomp:re/decomp/142e24b20.c;pat:log-channel-THUMBNAIL_TASK;xref:0x142e23ef4,0x142e23f26",
+  "notes": "0x2287-byte state machine: SettingUp, AwaitingMultiSubMaterials, PreloadingTextures, Rendering (logs), FRONTEND_SCENE_WORLD Spawn World."
  },
  "signature": {
   "id": "game.thumbnail_task_state_preloading_textures_texture",

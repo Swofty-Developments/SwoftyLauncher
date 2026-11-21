@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1429a25e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1429a25e0.c;xref:0x14299b516,0x14299c4fc",
-  "notes": "Builds time-attack / average-speed gate models (Game_TimeAttackGates_CreateGateModel) and copies the gate records. Callers Sess_AverageSpeedRuleset_PlaceVehiclesAndGates, Sess_PursuitRuleset_Reset_2, Sess_Ruleset_FixupOnFinalLapStatusDefault."
+  "evidence": "decomp:re/decomp/1429a25e0.c;xref:0x14299b516,0x14299c4fc,0x142d168b2,0x142d16e5a,0x142d1eeac,0x142d3c843",
+  "notes": "Resets gates (0x1429abaf0/0x1429abf50), resizes gate vector +0x10 to param_2, creates gate models (Game_TimeAttackGates_CreateGateModel, preset min(param_4,4) of 0x38-byte table 0x145f94290) hidden, plus 3 extra models (0x145f94300) at +0xe0/+0x100/+0x120. (lane owner review requested)"
  },
  "signature": {
   "id": "game.time_attack_gates_build_gates",

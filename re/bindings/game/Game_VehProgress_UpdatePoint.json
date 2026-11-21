@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144604430",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "xref:0x144604120",
-  "notes": "engine-re round 10b (static): (P = VehProgress component, Volume **vols, k, pos): fills the 0x60-byte record P+0xc8+k*0x60 (k 0 body, 1..4 FL/FR/RL/RR): +0x10 lateral L, +0x50 lap, plus in-volume/route fractions. Lateral scale from TSD gate points: p4 = -1, p3 = 0, p2 = 1, p1 = 2 (0..1 = legal lines, outer bands to the reset points; Bahrain: 0 = left legal line in driving direction, H for other tracks); L in [-1, 2]. Per-wheel wetness reader 0x1437cc9c0 clamps to [0, 1]. Addon: FindVolume 0x1445f3630 (NearestVolume 0x1445f37b0 fallback), then this with a zeroed 0x130-byte buffer and k = 0 -> lateral buf+0xd8, lap buf+0x118"
+  "evidence": "decomp:re/decomp/144604430.c;xref:0x14460419e,0x1446041c4,0x1446041eb,0x144604211,0x144604413",
+  "notes": "Read in full (P, vols, k, pos): volume = vols[k]; record P+0xc8+k*0x60 (each value xor-masked with the following u32): +0 = 0x1445fad40(vol,pos) clamped >= 0 (blend with 0x145382510 when >= 1), +0x10 = that + table 0x145bf3548[vol[1]], +0x20 = 0x1445fab20, +0x30 = route fraction via track [0x146ce5498]+0x28, +0x40 = 0x1445f3ad0 clamped to [0, g 0x146ce66b8], +0x50 = it * g 0x146ce666c. All callers in 0x144604120. (lane owner review requested)"
  },
  "signature": {
   "id": "game.veh_progress_update_point",

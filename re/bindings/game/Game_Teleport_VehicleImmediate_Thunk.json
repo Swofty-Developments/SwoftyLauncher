@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14473db90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "void Game_Teleport_VehicleImmediate_Thunk(void *car, const char *tag, void *prev_mtx, float *mtx, float dt, uint32_t flags)",
   "evidence": "decomp:re/decomp/1434be940.c;decomp:re/decomp/14473db90.c;xref:0x1434beef3,0x1437ac9d4",
-  "notes": "jmp-wrapper around FUN_14473dcc0 (vehicle teleport request, log channel VEHICLE_TELEPORT_REQUEST): forwards (car, tag, previous transform, new transform, dt float, flags) unchanged, then if car+0x9f08 != 0 posts a placement message (vtable 0x145c05320, payload car+0xe8) to the bus at [0x14618b3b8]+8. Name kept for signatures.json; per verify-a nothing in the body blends - arg 5 is a time delta. The hash-table loop over 0x14604b4f0 only logs (flags&3, dt > 1/30 s, !(flags&0x40)). Callers: 0x1434beef3 (Game_PitLane_MoveDownSpline) and 0x1437ac9d4. | L1 until an independent verify (no agree row); car-re reading: blended pit lane placement stub (was Game_Place_VehicleBlend_Thunk)."
+  "notes": "jmp thunk to 0x1555b8a20: logs VEHICLE_TELEPORT_REQUEST when flags&3 and dt>1/30, calls Game_Teleport_Vehicle, and if vehicle+0x9f08 posts bus msg 0x145c05320 with vehicle+0xe8. (lane owner review requested)"
  },
  "signature": {
   "id": "game.place_vehicle_blend_thunk",

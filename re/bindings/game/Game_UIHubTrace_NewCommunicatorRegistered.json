@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143805fa0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-UIHubTrace",
-  "notes": "named from its log messages (channel UIHubTrace): '%zu [COMMS] New communicator registered [%s].'"
+  "evidence": "decomp:re/decomp/143805fa0.c;pat:log-channel-UIHubTrace;xref:0x143806341,0x143806f13",
+  "notes": "(hub, comm) non-null: clears the visible flag [old+0x50]+0x90 of the previous hub+0x78, hub+0x78 = comm, hub+0x99 = 0, [comm+0x50]+0x90 = comm+0x49 && (hub+0x70 != 0 || (hub+0x64 != 0 && !(hub+0x68 == 1 && hub+0x6c == 1))), logs '[COMMS] New communicator registered [%s]'. Callers jmp 0x143806341, 0x143806f13. (lane owner review requested) Better name: Game_UIHub_RegisterCommunicator (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ui_hub_trace_new_communicator_registered",

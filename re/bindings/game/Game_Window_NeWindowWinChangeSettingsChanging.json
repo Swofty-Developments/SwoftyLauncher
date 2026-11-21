@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-WINDOW",
-  "notes": "named from its log messages (channel WINDOW): 'NeWindowWin::changeSettings: Changing resolution and display mode at the same time - new resolution = (%dx%d)!!'"
+  "evidence": "decomp:re/decomp/1439f7d80.c;pat:log-channel-WINDOW;xref:0x1439f7d68,0x1439fc0e0,0x1443d9c52",
+  "notes": "Callers 0x1439f7b80, 0x1439fa850, 0x1443d9b80. Logs 'NeWindowWin::changeSettings: Changing resolution and display mode at the same time...'; likely NeWindowWin::changeSettings itself (name kept until read)."
  },
  "signature": {
   "id": "game.window_ne_window_win_change_settings_changing",

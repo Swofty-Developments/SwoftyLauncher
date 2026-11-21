@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142e32670.c;xref:0x14196dec3,0x141dddb8f",
-  "notes": "Builds the grid car thumbnail request list ('textures', 'has_texture' VM nodes, Game_ThumbnailSystem_AddingPendingCarThumbnail). Callers Sess_Loader_PrepareGridThumbnails, Game_Build_SpecialLiveryList."
+  "evidence": "decomp:re/decomp/142e32670.c;xref:0x14196dec3,0x141dddb8f,0x14221173f,0x142d4c4f2",
+  "notes": "0x111c-byte body building car thumbnail requests (has_texture, textures)."
  },
  "signature": {
   "id": "game.thumbnails_build_car_requests",

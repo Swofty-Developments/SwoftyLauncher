@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-UI_VISUAL_NAVIGATION",
-  "notes": "named from its log messages (channel UI_VISUAL_NAVIGATION): 'We've hit our previously focused node. Let's continue onwards [%hs] - Grid Pos [%d,%d]'"
+  "evidence": "decomp:re/decomp/144289cc0.c;pat:log-channel-UI_VISUAL_NAVIGATION;xref:0x14428a941,0x14428aa33,0x14428aa72,0x14428aac0,0x14428aafb,0x153969b81",
+  "notes": "Log channel UI_VISUAL_NAVIGATION with 'We've hit our previously focused node...', 'NEW NODE FOCUSED' and 'Failed to find a node to focus' in the body: a grid focus search. Callers 0x14428a941, 0x14428aa33, 0x14428aa72, 0x14428aac0, 0x14428aafb, 0x153969b81."
  },
  "signature": {
   "id": "game.ui_visual_navigation_ve_hit_our_previously_focused_node_let",

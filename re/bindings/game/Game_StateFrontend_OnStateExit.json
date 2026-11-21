@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=StateFrontend::onStateExit; log channel FLOW/V: 'TEMP_LOG: Calling StateFrontend::onStateExit. INTERRUPT:%d'"
+  "evidence": "decomp:re/decomp/1436d3b00.c;pat:log-message-cxx;xref:0x14585ae00",
+  "notes": "StateFrontend::onStateExit (vt cell 0x14585ae00). Calls unsubscribe 0x143988350 several times and 0x1428d9a90/0x144422f70/0x14416d5b0."
  },
  "signature": {
   "id": "game.state_frontend_on_state_exit",

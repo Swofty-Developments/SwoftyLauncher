@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-VOICE_COMMANDS",
-  "notes": "named from its log messages (channel VOICE_COMMANDS): '%s eGameAction_Pause | %s eGameAction_Resume | %s eGameAction_Repeat | %s eGameAction_Mute | %s eGameAction_Unmute'"
+  "evidence": "decomp:re/decomp/142f7a6b0.c;pat:log-channel-VOICE_COMMANDS;xref:0x142f7993d",
+  "notes": "Only ref: lea at 0x142f7993d in 0x142f79650 (registration, next to onUICommand). Logged method name is 'onGameCommand' (0x1457fbf11) with eGameAction_Pause/Resume/Repeat/Mute/Unmute cases; renamed from OnGameAction to the game's own method name. Better name: Game_VoiceCommands_OnGameCommand (bound record keeps its name)."
  },
  "signature": {
   "id": "game.voice_commands_on_game_action",

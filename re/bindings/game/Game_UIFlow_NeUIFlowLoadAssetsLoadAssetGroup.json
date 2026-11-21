@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-UI_FLOW",
-  "notes": "named from its log messages (channel UI_FLOW): 'NeUIFlow::loadAssets Load AssetGroup=%hs'"
+  "evidence": "decomp:re/decomp/1441db170.c;pat:log-channel-UI_FLOW;xref:0x1444a313e",
+  "notes": "Large UI_ASSETS / UI_FLOW body (pdata 0x38c7 bytes): logs 'NeUIFlow::loadAssets Load AssetGroup=%hs', 'NeUIFlow::unloadAssets Unload AssetGroup=%hs' and 'NeUIFlow::addCallback - callback list ... is full'. Caller 0x1444a313e."
  },
  "signature": {
   "id": "game.ui_flow_ne_ui_flow_load_assets_load_asset_group",

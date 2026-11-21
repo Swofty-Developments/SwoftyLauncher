@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b20ee0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143b20ee0.c;xref:0x143b20e53",
-  "notes": "vector resize/append for 0x140-byte wheel vfx param records; caller Game_Vfx_BuildWheelParamRecord."
+  "evidence": "decomp:re/decomp/143b20ee0.c;xref:0x143b20e53,0x1445ac344",
+  "notes": "Read in full: vector<0x140-byte record>::resize(n): shrinks by moving end, or grows (x1.5 realloc via allocator vcall +0x18 align 0x10, memcpy 0x1453784c0, free +0x38) and default-inits new records (two identity 4x4 matrices +0x00/+0x40, rest zero); returns 0. Callers 0x143b20b80 and 0x1445ac280. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vfx_wheel_param_vector_resize",

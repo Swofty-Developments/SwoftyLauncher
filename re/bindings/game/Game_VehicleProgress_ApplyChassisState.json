@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143255870",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143255870.c;xref:0x1432681b1",
-  "notes": "Copies a vehicle state snapshot (position/orientation/velocity vec4s at param_2+0x10..+0x78, flags param_3, tick param_4) into the progress-sync structure (\"PROGRESS\" channel). Callers Game_VehicleProgressSync_AdvanceChassisPhysics, Game_Network_DeserialiseVehicle. Hypothesis: network/replay chassis state injection."
+  "evidence": "decomp:re/decomp/143255870.c;xref:0x1432681b1,0x14326fb90,0x143274ea2",
+  "notes": "Read in full: if snapshot type param_2+8 < 4, pushes the 0xe0-byte snapshot (vec4s +0x10..+0x50, +0x60..+0x78, timestamp +0xd0) into ring this+car*0x15030+src*0x7010 (128 entries, head/tail +0x7000/+0x7004); drops if timestamp <= last entry; src names table 0x145839c70 = local/remote/prediction; optional CSV log 'PROGRESS' when this+0x2bd920. (lane owner review requested) Better name: Game_VehicleProgress_PushStateSnapshot (bound record keeps its name)."
  },
  "signature": {
   "id": "game.vehicle_progress_apply_chassis_state",

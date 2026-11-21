@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e97670",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=TyreSystem::getCompounds; log channel TRACE: 'WARNING - TyreSystem::getCompounds failed, m_tyreList[%d] is null'"
+  "evidence": "decomp:re/decomp/142e97670.c;pat:log-message-cxx;xref:0x1403b8e6a,0x1403b8ebc",
+  "notes": "TyreSystem::getCompounds(vehIdx, *a, *cur, *next, out u16[8+1]): idx < (this+0x118 - this+0x110)/8, entry null -> TRACE warning. Else cur = *[e+0x9930] or 0xff, next = *[e+0x9948] or 0xff, a = e+0x9910; per tyre set (count e+0x98d0, stride 0xde0) ORs three 5-bit fields (+0x238, +0xb78<<5, +0x6d8<<10) into out[map[set]]. Callers 0x1403b8e6a, 0x1403b8ebc. (lane owner review requested)"
  },
  "signature": {
   "id": "game.tyre_system_get_compounds",

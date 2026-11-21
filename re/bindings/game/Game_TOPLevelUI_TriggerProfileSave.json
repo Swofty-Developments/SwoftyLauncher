@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140ff7cf0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TOP_LEVEL_UI",
-  "notes": "named from its log messages (channel TOP_LEVEL_UI): '%s Trigger Profile Save'"
+  "evidence": "decomp:re/decomp/140ff7cf0.c;pat:log-channel-TOP_LEVEL_UI;xref:0x142d5070b,0x1436b087b",
+  "notes": "CareerOnlineSynchroniser::update state machine on +0x40: 1 setupCurrentPolicy/internalStart (policy objects 0x1456b5450/58e0/5740), 2/4 start client/host sync (Game_Datasync_StartingSyncAs), 3/5 wait sync, 6 'Trigger Profile Save' (Game_SaveMgr_RequestProfileSave_Thunk), 8 Game.Career.Online.EnableSaving -> save to Online Services, 9 wait, 10 resetAfterSynchronisation. Toggles busy spinner 0. (lane owner review requested) Better name: Game_CareerOnlineSynchroniser_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.top_level_ui_trigger_profile_save",

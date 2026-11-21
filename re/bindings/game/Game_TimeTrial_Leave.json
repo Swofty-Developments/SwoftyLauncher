@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-GAME",
-  "notes": "named from its log messages (channel GAME): '[TIME TRIALS] Leaving a time trial game mode.'"
+  "evidence": "decomp:re/decomp/14147c2d0.c;pat:log-channel-GAME;xref:0x1414a1e03,0x1414a39f8",
+  "notes": "0x2469-byte handler (lea refs): '[TIME TRIALS] Leaving a time trial game mode', GHOSTLAP-TRACE, vehicle_newlap."
  },
  "signature": {
   "id": "game.time_trial_leave",

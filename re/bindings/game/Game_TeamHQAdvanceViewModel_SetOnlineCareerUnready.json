@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1422c53e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_TeamHQAdvanceViewModel_SetOnlineCareerUnready;xref:0x1422c5450",
-  "notes": "cxx=game::TeamHQAdvanceViewModel::setOnlineCareerUnready; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1422c53e0.c;str:s_TeamHQAdvanceViewModel_SetOnlineCareerUnready;xref:0x1422c3755,0x1422c4289,0x1422c43b7",
+  "notes": "setOnlineCareerUnready: Game_NetworkReady_ValidPlayerCorrectState(+0x6d8,0), clears bit 0x10 in static ready flags, state=3, posts 0x1457825f8 with 1. (lane owner review requested)"
  },
  "signature": {
   "id": "game.team_h_q_advance_view_model_set_online_career_unready",

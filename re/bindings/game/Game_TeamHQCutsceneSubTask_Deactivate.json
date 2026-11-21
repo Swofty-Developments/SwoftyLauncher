@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143711100",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=TeamHQCutsceneSubTask::deactivate; log channel TEAM_HQ_CUTSCENE_SUB_TASK: 'TeamHQCutsceneSubTask::deactivate()'"
+  "evidence": "decomp:re/decomp/143711100.c;pat:log-message-cxx;xref:0x145860530",
+  "notes": "vtable cell 0x145860530. Logs deactivate and removes this+0x60 from the listener vector (+0x20..+0x28, swap-remove) of each entry in owner+0x70 ->+0xfe8..+0xff0; asserts if not found. (lane owner review requested)"
  },
  "signature": {
   "id": "game.team_hq_cutscene_sub_task_deactivate",

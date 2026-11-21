@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e900e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=TyreSystem::handleTyreSelectionNetMessage; log channel -: 'TyreSystem::handleTyreSelectionNetMessage(connId=%d)'"
+  "evidence": "decomp:re/decomp/142e900e0.c;pat:log-message-cxx;xref:0x14f401b95",
+  "notes": "TyreSystem::handleTyreSelectionNetMessage(this, msg, connId) (handler lea 0x14f401b95): logs; skipped unless this+0xa0 (in session). Vehicle e = m_tyreList[msg+0x18] (+0x110..+0x118): e+0x9c70 = msg+0x1c (also +0x9c78 when != -1), clears e+0x9c88 set vector, per record (count msg+0x3c30, stride 0x78 from msg+0x30) appends via 0x142e9fe40 and fills it from the allocation e+0x9c68 (0x6c-byte set) or the message; then 0x142e96a20(e) and 0x142ea2a90(e, 1, bit1 of [[e+0x28]+0x80]+0x13c, 0, 0). (lane owner review requested)"
  },
  "signature": {
   "id": "game.tyre_system_handle_tyre_selection_net_message",

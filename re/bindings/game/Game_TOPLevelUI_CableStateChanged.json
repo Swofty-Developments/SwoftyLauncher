@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143884d10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TOP_LEVEL_UI",
-  "notes": "named from its log messages (channel TOP_LEVEL_UI): 'Cable State Changed[%d]'"
+  "evidence": "decomp:re/decomp/143884d10.c;pat:log-channel-TOP_LEVEL_UI;xref:0x143881fca",
+  "notes": "Bus handler (lea at 0x143881fca in registrar 0x143881f90): logs 'Cable State Changed[%d]' with msg+0x10 and sets +0x82=1. Returns 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.top_level_ui_cable_state_changed",

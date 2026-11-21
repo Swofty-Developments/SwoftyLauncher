@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1445f3d70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1445f3d70.c;xref:0x1403c64ee,0x1403c6553,0x142437832",
-  "notes": "(zone, point) -> float: signed distance of a point to a zone volume built from plane normals +0x60/+0x70 (d at +0x6c/+0x7c) and segment +0xc0..+0xd0. Hypothesis: pit/zone box distance used by pit-stop show/hide, HUD zone distance remaining and pit release blocking. (10 xref site(s), fb.py callers.)"
+  "evidence": "decomp:re/decomp/1445f3d70.c;xref:0x1403c64ee,0x1403c6553,0x142437832,0x142f5e80e,0x1434bd3f9,0x1434c4ef2,0x1434c53fd,0x1435a9da0,0x143617925,0x1438a36bd",
+  "notes": "Read in full: (zone, point*) n1 = normalize(+0x60), d1 = +0x6c; axis = normalize(+0xd0 - +0xc0). If axis is parallel to n1 returns plane distance -(dot(n1,p)-d1); else same test with n2 (+0x70, d +0x7c); else intersects the axis line through p with both planes and returns the parameter t = dot(p-a, b-a)/|b-a|^2; result clamped to [0,1] and mapped as t*[+0x138] + [+0x134]. So a remapped 0..1 position between two planes, not a raw signed distance. (lane owner review requested)"
  },
  "signature": {
   "id": "game.zone_volume_signed_distance",

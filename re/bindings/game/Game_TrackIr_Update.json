@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-HEADTRACKING",
-  "notes": "named from its log messages (channel HEADTRACKING): 'Rotation : NPPitch = %.1f, NPYaw = %.1f, NPRoll = %.1f Translation : NPX = %.1f, NPY = %.1f, NPZ = %.1f Information NPStatus = %d, Frame = %d | NP_RegisterWindowHandle : Error!! Check the TrackIR app '"
+  "evidence": "decomp:re/decomp/143ab0cb0.c;pat:log-channel-HEADTRACKING;xref:0x1458a7f20",
+  "notes": "TrackIR (HEADTRACKING) per-frame body: logs NP rotation/translation, 'No new data for 30 frames', NP_RegisterWindowHandle results; calls the init 0x143ab0800 at 0x143ab17dc. Vtable cell 0x1458a7f20."
  },
  "signature": {
   "id": "game.track_ir_update",

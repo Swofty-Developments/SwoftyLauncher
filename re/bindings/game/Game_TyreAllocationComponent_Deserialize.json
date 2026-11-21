@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140bd16a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=TyreAllocationComponent::deserialize; log channel TYRES/V: '  TyreAllocationComponent::deserialize() v%03d'"
+  "evidence": "decomp:re/decomp/140bd16a0.c;pat:log-message-cxx;xref:0x14567a9b8",
+  "notes": "TyreAllocationComponent::deserialize(bitstream) (vtable cell 0x14567a9b8): reads an 8-bit version (logs 'deserialize() v%03d'; only 0 continues), then a 16-bit driver key (14-bit id, 2-bit type), logs 'received data for instance %s', finds the allocation in this+0x20..+0x28 and reads it with 0x142e8deb0; none -> logs 'no weekend allocation, ignoring it'. Underflow sets stream+0x28. (lane owner review requested)"
  },
  "signature": {
   "id": "game.tyre_allocation_component_deserialize",

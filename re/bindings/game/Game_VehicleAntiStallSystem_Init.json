@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f4ba40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142f4ba40.c",
-  "notes": "VehicleAntiStallSystem init: subscribes MessageRaceStarted (0x142f4ec50), MessageVehicleLeftGarage (0x142f4ed60), RollingStartMessage (0x142f4eed0), MessageStartLightOn (0x142f4f040, sets +0x104 = lights) and RedFlagStatusChangedMessage (0x142f4f050 -> .data1 0x14f8e7290). Per-car entries at +0x48..+0x50 (entry+0x18 start state 0..3, +0x30, +0x50 vehicle with +0x9f18). (vmknolle red-flag-pit)"
+  "evidence": "decomp:re/decomp/142f4ba40.c;xref:0x1457f8ab8",
+  "notes": "Read in full: in session types 15..17 with feature bit (0x1413ca0d0 +5 bit5) sets +0x10c from table [+0x90]+0x988; subscribes {handler, this} via Ne_Subscribe_BusMessage 0x143987810: MessageRaceStarted 0x142f4ec50, MessageVehicleLeftGarage 0x142f4ed60, RollingStartMessage 0x142f4eed0, MessageStartLightOn 0x142f4f040, RedFlagStatusChangedMessage 0x142f4f050; then +0x104 = 0, +0x100/+0x109 = table 0x145803cd0[session type], +0x114 = 1, resets car entries +0x48..+0x50. Vtable cell 0x1457f8ab8. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_anti_stall_system_init",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142ee2c50.c;xref:0x142e237d3,0x142e24386",
-  "notes": "Walks an RB-tree of pending thumbnail tasks (nodes with 0x19 nil flag) and dispatches/finishes each. Called by Game_ThumbnailSystem_UpdateTasks. Hypothesis. vp5-verify partial/disagree"
+  "evidence": "decomp:re/decomp/142ee2c50.c;xref:0x142e237d3,0x142e24386,0x14f320fd0",
+  "notes": "std red-black tree erase/unlink of node param_2 from tree param_1; callers Game_FrontendSceneWorld_DespawnWorldAssetsIfAble and 0x14f320ed0."
  },
  "signature": {
   "id": "game.thumbnail_system_process_task_tree",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14315f400",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=UnrankedMatching::onIncomingConnection; log channel NETWORK: 'virtual neon::NeNetError network::UnrankedMatching::onIncomingConnection(const neon::NePresenceUserIDList &) | %s: event session is about to start, tell the player session is full'"
+  "evidence": "decomp:re/decomp/14315f400.c;pat:log-message-cxx;xref:0x14581de30",
+  "notes": "Read in full: finds the current event (id from [this+0x10]+1000 +0xadc/+0xae4) in list [this+0x40]+0x70 (0xa0-byte records); returns 0 if none or if enough time is left. If no active phase or phase 2 and the time before start is < [..+0x3c8]+0x580: logs 'event session is about to start, tell the player session is full' and returns 4; other phases log 'event session has started ...' and return 4. Vtable cell 0x14581de30. (lane owner review requested)"
  },
  "signature": {
   "id": "game.unranked_matching_on_incoming_connection",

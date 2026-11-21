@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_UIOptionsSystem_LoadAssistBuckets;xref:0x142ada140,0x142ada63f",
-  "notes": "cxx=game::UIOptionsSystem::loadAssistBuckets; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/142ad9680.c;str:s_UIOptionsSystem_LoadAssistBuckets;xref:0x142ada6ba,0x14dce6928",
+  "notes": "Own pretty string 'void game::UIOptionsSystem::loadAssistBuckets()' (channel OPTIONS) with 'weight' / 'vr_only' properties and the assist weighting warnings. Referenced by lea at 0x142ada6ba, 0x14dce6928."
  },
  "signature": {
   "id": "game.u_i_options_system_load_assist_buckets",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1438ad3b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_VrVirtualMonitorSystem_EnableVirtualMonitor;xref:0x1438ad4e4",
-  "notes": "cxx=game::VrVirtualMonitorSystem::enableVirtualMonitor; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1438ad3b0.c;str:s_VrVirtualMonitorSystem_EnableVirtualMonitor;xref:0x1438aba02,0x1438ad685",
+  "notes": "Read in full; pretty-fn string 0x145882ef6 is its own. If not enabled (+0x48): device+0x2ae8 = 0x101, 0x1439eed10(dev,0/1/2), render cmd 0x2f with byte 1, +0x48/+0x49 = 1, posts bus vt 0x145884f68 {0}, then 0x1439ec000(dev). (lane owner review requested)"
  },
  "signature": {
   "id": "game.vr_virtual_monitor_system_enable_virtual_monitor",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=TyreAllocationComponent::setPresetChoice; log channel TYRES/V: 'TyreAllocationComponent::setPresetChoice() setting presetType %s for driver stat id %s'"
+  "evidence": "decomp:re/decomp/140bcb9a0.c;pat:log-message-cxx;xref:0x140bcb81d,0x140bcb932,0x140bd118f,0x140bd126f",
+  "notes": "TyreAllocationComponent::setPresetChoice(driverStatId, presetType) (own log string): logs, finds the driver allocation in this+0x2b0..+0x2b8 by stat id, resolves the weekend data via [this+0x278], runs 0x140bce940 and walks [this+0x2e8]+0xf0 entries (stride 0x1f0) calling 0x142e8cd70 with compound 0xf/0x10/0x11 from 0x140b03110. Callers 0x140bcb81d, 0x140bcb932, 0x140bd118f, 0x140bd126f."
  },
  "signature": {
   "id": "game.tyre_allocation_component_set_preset_choice",

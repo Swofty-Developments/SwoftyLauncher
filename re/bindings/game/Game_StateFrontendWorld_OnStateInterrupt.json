@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1436d7ca0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=StateFrontendWorld::onStateInterrupt; log channel FLOW: 'TEMP_LOG: StateFrontendWorld::onStateInterrupt CONSUMING: %d'"
+  "evidence": "decomp:re/decomp/1436d7ca0.c;pat:log-message-cxx;xref:0x14585b6f8",
+  "notes": "onStateInterrupt vt cell 0x14585b6f8: type 0xe sets +0xdc0=1; types 8/0xd log CONSUMING and pop the interrupt (0x144426530([+0xbf8])); out = [0x146cb2280]. (lane owner review requested)"
  },
  "signature": {
   "id": "game.state_frontend_world_on_state_interrupt",

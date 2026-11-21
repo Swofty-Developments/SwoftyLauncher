@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-UI",
-  "notes": "named from its log messages (channel UI): 'Sent Tutorial to Behaviour Message: %s'"
+  "evidence": "decomp:re/decomp/142e699f0.c;pat:log-channel-UI;xref:0x142e6915b,0x142e6dcaf",
+  "notes": "Large ONBOARDING body (pdata 0x2fdf bytes): logs 'Sent Tutorial to Behaviour Message: %s', reads skip_key / poi_element_id / voice_over / audio_to_face / component_path. Callers 0x142e6915b, 0x142e6dcaf."
  },
  "signature": {
   "id": "game.ui_sent_tutorial_behaviour_message",

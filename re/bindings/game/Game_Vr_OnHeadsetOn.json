@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439ed200",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-VR",
-  "notes": "named from its log messages (channel VR): 'User put on VR headset | Recommended Width and Height = %d x %d'"
+  "evidence": "decomp:re/decomp/1439ed200.c;pat:log-channel-VR;xref:0x14443273b,0x14443280b",
+  "notes": "Read in full: presence = +0x165 or IVRSystem [this+0x3f0] vcall +0x78(0) in 1..2; when tracked (+0x16d) and changed vs +0x16e logs 'User put on/removed VR headset' (+0x2910=1 on put-on if +0x2912). If no interrupt (+0x168 < 1), state +0x2914 == 3 and pending +0x16f: clamps supersample 0.5..2 (0x1439ee890), reads recommended size into +8/+0xc (vcall +0) or 0x9a4 x 0xab4 when +0x164, logs it and pushes display settings (0x142b897d0). Not only a put-on handler. (lane owner review requested) Better name: Game_Vr_UpdatePresenceAndRenderSize (bound record keeps its name)."
  },
  "signature": {
   "id": "game.vr_on_headset_on",

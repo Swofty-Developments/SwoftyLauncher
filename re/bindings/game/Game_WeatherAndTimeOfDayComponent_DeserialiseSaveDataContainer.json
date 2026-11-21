@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=WeatherAndTimeOfDayComponent::deserialiseSaveDataContainer; log channel WEATHER_SEED_EXTENDED: 'WeatherAndTimeOfDayComponent::deserialiseSaveDataContainer Random seed deserialised %u'"
+  "evidence": "decomp:re/decomp/140be23c0.c;pat:log-message-cxx;xref:0x14567b968",
+  "notes": "Only ref: vtable cell (code neighbours). Name from its cxx log 'WeatherAndTimeOfDayComponent::deserialiseSaveDataContainer Random seed deserialised %u' (WEATHER_SEED_EXTENDED)."
  },
  "signature": {
   "id": "game.weather_and_time_of_day_component_deserialise_save_data_container",

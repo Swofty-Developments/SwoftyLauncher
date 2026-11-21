@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name instancesDestIter (class from the log channel); log channel TOD_STITCHING: 'instancesDestIter 0x%x'"
+  "evidence": "decomp:re/decomp/14460fcd0.c;pat:log-message-method;xref:0x14460f8ea,0x14461630d",
+  "notes": "Large TOD_STITCHING body (pdata 0x608f bytes) with 'instancesDestIter 0x%x', 'beginPlayBackTime=%f, endPlayBackTime=%f', 'LIN i=%d, t=%f', 'INTERP PRE ...' logs. Callers 0x14460f8ea, 0x14461630d."
  },
  "signature": {
   "id": "game.tod_stitching_instances_dest_iter",

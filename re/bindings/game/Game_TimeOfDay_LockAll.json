@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14460e820",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14460e820.c;xref:0x141cf0369,0x141cf0584,0x141cf0794",
-  "notes": "Acquires 8+ SRW locks (0x1449e2290) of the time-of-day/sky state and stores guarded sub-pointers (+0x1ea0, +0x1c18, +0x2128, ...). Hypothesis. Callers: Game_TimeOfDaySystem_FinaliseTimeOfDay and weather code. (12 xref site(s), fb.py callers.)"
+  "evidence": "decomp:re/decomp/14460e820.c;xref:0x141cf0369,0x141cf0584,0x141cf0794,0x141d00877,0x142e107b7,0x1438b1ce0,0x1438bc108,0x1438c33fc,0x1438c42e8,0x14477a08e,0x144792258,0x14479ba08",
+  "notes": "Acquires 15 SRW locks of the tod owner (*param_1 + 0x2108, 0x1e80, 0x2390, 0x2618, 0x530 ... 0x1bf8 via 0x1449e2290) and stores (data, lock) pairs into param_1[1..0x1e] (skipping [5],[6]). (lane owner review requested)"
  },
  "signature": {
   "id": "game.time_of_day_lock_all",

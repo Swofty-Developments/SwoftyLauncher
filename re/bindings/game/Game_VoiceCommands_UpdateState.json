@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-VOICE_COMMANDS",
-  "notes": "named from its log messages (channel VOICE_COMMANDS): '%s %s | %s State::eState_Disabled voiceControlsAllowed | %s State::eState_Disabled isSpeechVOPlaying | %s State::eState_Hold closeVoiceCommandsUI | %s State::eState_Disabled closeVoiceCommandsUI'"
+  "evidence": "decomp:re/decomp/142f7b940.c;pat:log-channel-VOICE_COMMANDS;xref:0x1457fbc88",
+  "notes": "Only ref: vtable cell 0x1457fbc88 (code neighbours). Logs State::eState_Disabled/eState_Hold transitions (voiceControlsAllowed, isSpeechVOPlaying, closeVoiceCommandsUI)."
  },
  "signature": {
   "id": "game.voice_commands_update_state",

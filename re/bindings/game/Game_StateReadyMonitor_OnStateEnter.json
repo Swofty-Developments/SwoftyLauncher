@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1436e9680",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_StateReadyMonitor_OnStateEnter;xref:0x1436e9b79,0x1436e9bc6",
-  "notes": "cxx=game::StateReadyMonitor::onStateEnter; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1436e9680.c;str:s_StateReadyMonitor_OnStateEnter;xref:0x150fe949b,0x14585cf90",
+  "notes": "onStateEnter (vt cell 0x14585cf90; also call 0x150fe949b): first entry resets UI, 0x1436eb4b0/0x1436ec5f0; skips on pending interrupt; waits for clients to reach PreRace or super-clear (NETWORK-READY logs); then 0x143224ba0 and FUN_1436e9ca0 when +0xcb0 clear. Old xrefs were inside the body. (lane owner review requested)"
  },
  "signature": {
   "id": "game.state_ready_monitor_on_state_enter",

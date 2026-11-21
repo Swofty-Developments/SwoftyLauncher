@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name Clearing (class from the log channel); log channel TEXTURE_STREAMING_VERBOSE: '%s reducing quality flag'"
+  "evidence": "decomp:re/decomp/143eb8070.c;pat:log-message-method;xref:0x1459bf918",
+  "notes": "vtable cell 0x1459bf918. Decomp polluted (hundreds of removed blocks, tail into 0x1449e22b4): visible part evicts one texture cache entry under SRW lock (cancels stream commands in 4 lists, 'cache %d adjusted by %d', Render_TextureStreaming_FreeEntry); calls 0x143bfc330 at 0x143eb9512."
  },
  "signature": {
   "id": "game.texture_streaming_verbose_clearing",

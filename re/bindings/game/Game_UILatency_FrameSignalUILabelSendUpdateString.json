@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-UI_latency",
-  "notes": "named from its log messages (channel UI_latency): '***** Frame:%I64u Signal UI Label Send Update string to Element:%hs Node:%hs'"
+  "evidence": "decomp:re/decomp/144235090.c;pat:log-channel-UI_latency;xref:0x14423506b,0x14423b006,0x14423b7b8,0x1534db677,0x1534df897,0x1534df917,0x1534e2fe7",
+  "notes": "UI label update: walks child nodes (type 0x146ca3498), rebuilds the 0x23-entry string parameter table (stride 0x70) and logs UI_latency 'Signal UI Label Send Update string to Element:%hs Node:%hs'. Callers 0x14423506b, 0x14423b006, 0x14423b7b8 and protector jmps 0x1534db677, 0x1534df897, 0x1534df917, 0x1534e2fe7."
  },
  "signature": {
   "id": "game.ui_latency_frame_signal_ui_label_send_update_string",

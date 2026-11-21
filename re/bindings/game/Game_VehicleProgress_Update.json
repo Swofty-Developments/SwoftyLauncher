@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446007c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1446007c0.c",
-  "notes": "lap progress tracker ('Crossed forwards'); lap and distance stored XOR-obfuscated (value ^ key pairs +0x18/+0x20, +0x08/+0x10, +0x68/+0x70)."
+  "evidence": "decomp:re/decomp/1446007c0.c;xref:0x142f6964a,0x142f69b0d,0x14460375e",
+  "notes": "Read in full: logs 'updateLapFromProgress - ...' (0x145bf31b1). (state, dist param_2, sector param_3, flag param_4): lap +0x18^+0x20, progressLap +0x08^+0x10, remoteLap +0x30^+0x38, distance +0x68^+0x70, max +0x78^+0x80 (XOR keys); sector 0 after last sector (0x146ce66bc) = crossed forwards, reverse = backwards; lap length float 0x146ce66b8. (lane owner review requested) Better name: Game_VehicleProgress_UpdateLapFromProgress (bound record keeps its name)."
  },
  "signature": {
   "id": "game.vehicle_progress_update",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VehicleCustomisationReplicationManager::sendVehicleCustomisationSegmentedDecals; log channel NETWORK-ENTRANTS-MESSAGES: 'void network::VehicleCustomisationReplicationManager::sendVehicleCustomisationSegmentedDecals(const neon::NeNetMessageDestination &, const PlayerVehicleKey &, c | %s : Sent VehicleCustomisationSegment'"
+  "evidence": "decomp:re/decomp/143143860.c;pat:log-message-cxx;xref:0x14313fd4a",
+  "notes": "Logs 'Sent VehicleCustomisationSegmentedDecalsAddNetMessage ... %zu vehicle decal nodes.%s' (' LAST' marker) or '... with 0 vehicle decal nodes.'; checks slot flag 5 via Game_VehicleCustomisation_TestSlotFlag 0x1432be130(this+0x38); posts message 0x1458249d0 to *dest via 0x14402e500 in a loop over node chunks. Caller 0x14313f270 (0x14313fd4a)."
  },
  "signature": {
   "id": "game.vehicle_customisation_replication_manager_send_vehicle_custom_2",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1442627a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1442627a0.c;xref:0x142bdabb1,0x142d5664f",
-  "notes": "View-model helper: param_2 == 0 sets VM bool node [this+0xc0] true; otherwise stores the string via Vm_Holder_SetCStr(this+0xd8) and clears the bool. Callers: Game_PhotoModeMotion_Enable, Sess_DelayOnLoadingScreen_Update, Sess_FormationLap_Update, Game_GameSurfacePackSystem_SetAllowConstruction."
+  "evidence": "decomp:re/decomp/1442627a0.c;xref:0x142bdabb1,0x142d5664f,0x142d588a5,0x142d5d8a3,0x142d65a65,0x142d65ab6,0x142d65dcb,0x142d7c093,0x142df5077,0x142df5fb9,0x142fc2726,0x142fc4b26,0x142fcd247,0x1430624e5,0x1430ac6d9,0x1430ace2c,0x1430ad03b,0x1430ad0ac,0x1430ad9df,0x1430adf41,0x1430adff4,0x1430ae0a4,0x1430af252,0x1430af3a8,0x1430b05c2,0x1430b0eee,0x1430b0f0a,0x1436d039b,0x1436d6e8d,0x1436e6cff,0x1436f9929,0x1436ffd06,0x14f1b1680,0x14f24df51,0x150f49d6b,0x150f49d7c,0x150f50fcd,0x150f779a7",
+  "notes": "Read in full: (binding, str) str == 0 -> bool node [this+0xc0] = true; else stores str in holder this+0xd8 (0x1407b10c0) and sets [this+0xc0] = false. Then if 0x1442626c0(this) is false sets bool [this+0x80] = true; else, when [this+0x80] is true, pulses it false then true, and calls callback this+0xf8 (ctx +0x100) if set. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vm_bool_binding_set_or_clear",

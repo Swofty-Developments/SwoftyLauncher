@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1436dc850",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_StateLaunch_FinaliseNetworkDocuments;xref:0x1436dc8d0",
-  "notes": "cxx=game::StateLaunch::finaliseNetworkDocuments; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1436dc850.c;str:s_StateLaunch_FinaliseNetworkDocuments;xref:0x1436dbb0a,0x1436dd33f",
+  "notes": "finaliseNetworkDocuments (host): 0x1430928a0; entrants doc [+0xc90]+0x428: when all entrants ready vcall +0x98 on the session and 0x14256d380; if 0x143109ae0 closes the entrants doc (0x14402e500) and clears remove-departed; season doc +0x765 -> post 0x1458736f8 + 0x14309cdb0; GameState doc 0x14407dbe0/0x14407d140. Callers 0x1436db620, 0x1436dd020. (lane owner review requested)"
  },
  "signature": {
   "id": "game.state_launch_finalise_network_documents",

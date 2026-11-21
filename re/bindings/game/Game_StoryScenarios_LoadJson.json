@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-STORY_SCENARIOS",
-  "notes": "named from its log messages (channel STORY_SCENARIOS): 'Failed to generate Story Scenario Info from JSON'"
+  "evidence": "decomp:re/decomp/1413558e0.c;pat:log-channel-STORY_SCENARIOS;xref:0x141356393,0x149c4ca0a",
+  "notes": "Handler for MessageHomeScreenInfoRetrieved (unsub lea 0x141356393; lea 0x149c4ca0a): parses JSON (0x1427b4a00/0x1427b7c90) into story scenario info, logs on failure, fills a hash map at this+0x2d0."
  },
  "signature": {
   "id": "game.story_scenarios_load_json",

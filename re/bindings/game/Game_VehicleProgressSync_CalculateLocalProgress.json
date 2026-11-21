@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VehicleProgressSync::calculateLocalProgress; log channel NETWORK-PROGRESS/V: 'NEbool network::VehicleProgressSync::calculateLocalProgress(VehicleProgressData &) | %s: progress: %s'"
+  "evidence": "decomp:re/decomp/143260570.c;pat:log-message-cxx;xref:0x143262aa1,0x143268199",
+  "notes": "Pretty-function string NEbool network::VehicleProgressSync::calculateLocalProgress(VehicleProgressData &) and 'progress: %s' (NETWORK-PROGRESS/V) plus CoM logs (NETWORK-PHYSICS/V) are in the body. Callers 0x143262840, 0x143267b90."
  },
  "signature": {
   "id": "game.vehicle_progress_sync_calculate_local_progress",

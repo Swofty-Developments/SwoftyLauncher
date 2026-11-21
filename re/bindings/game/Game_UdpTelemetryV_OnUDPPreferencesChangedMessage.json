@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d04790",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onUDPPreferencesChangedMessage (class from the log channel); log channel UDP-TELEMETRY/V: 'onUDPPreferencesChangedMessage() calls refreshTelemetryPreferences()'"
+  "evidence": "decomp:re/decomp/142d04790.c;pat:log-message-method;xref:0x142d05e24,0x142d0699c",
+  "notes": "Handler (registered by lea at 0x142d05e24, 0x142d0699c): logs channel UDP-TELEMETRY/V 'onUDPPreferencesChangedMessage() calls refreshTelemetryPreferences()' and calls 0x142cf95d0(this) (the refreshTelemetryPreferences step). No other work in the body. (lane owner review requested) Better name: Game_UdpTelemetry_OnUDPPreferencesChangedMessage (bound record keeps its name)."
  },
  "signature": {
   "id": "game.udp_telemetry_v_on_udp_preferences_changed_message",

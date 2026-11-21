@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VehicleMechanicalManager::parseVehicleStateMessage; log channel NETWORK-MECHANICAL: 'void network::VehicleMechanicalManager::parseVehicleStateMessage(const NEbyte *, NEsize_t, NEbyte, NEbool) | %s: vehicle(%s) received new engine damage(%02X).'"
+  "evidence": "decomp:re/decomp/14324c110.c;pat:log-message-cxx;xref:0x143059bd7",
+  "notes": "Pretty-function string parseVehicleStateMessage(const NEbyte *, NEsize_t, NEbyte, NEbool) and 'received ...' logs for engine damage/temp, ERS, wing/suspension/body damage, tyres, fuel, anti stall, engine wear, ghosting, controls, progress, penalties and incidents are in the body. Caller 0x143058640 (0x143059bd7)."
  },
  "signature": {
   "id": "game.vehicle_mechanical_manager_parse_vehicle_state_message",

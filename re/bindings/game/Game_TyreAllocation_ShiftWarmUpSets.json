@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e8d300",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142e8d300.c;xref:0x140bcea48",
-  "notes": "Shifts a 0x28-stride table (copies qword +0x20 to +0x28 per entry, count at +0xd8), then runs a clear helper 0x142e8a900 param_2 times over an inner list. Caller Game_TyreAllocation_ValidateWarmUpSets (0x140bcea48). Hypothesis."
+  "notes": "(preset, setsPerCompound): for count preset+0xd8 compound blocks (stride 0x28 from +0x10) sets vector end = begin (+0x28 = +0x20), then for each of up to 5 blocks calls 0x142e8a900(block, 0, size, 0) setsPerCompound times (re-adds default sets). Caller 0x140bcea48 passes the WarmUpSetsPerCompound tweak in edx. (lane owner review requested) Better name: Game_TyreAllocation_ResetCompoundSets (bound record keeps its name)."
  },
  "signature": {
   "id": "game.tyre_allocation_shift_warm_up_sets",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143273e60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143273e60.c;xref:0x143260341",
-  "notes": "With [0x14618b3b8+8]+0x68==0 sets TLS error context 0x58 and handles the \"vehicle_newlap_recorded\" event for the vehicle clock; sole caller Game_VehiclePhysicsClock_Reset. Hypothesis."
+  "notes": "Read in full (record): if the event bus [0x14618b3b8+8] is not active (+0x68 == 0) sets TLS error code 0x58 (and the ring buffer 0x146107830); else unsubscribes 0x143273bd0 from event 'vehicle_newlap_recorded' (0x143988350). Then clears vehicle+0x558+0x3d0 (16 bytes), and frees the history block record[0xe] (critical section, 0x1d00 bytes of entries reset, delete) and nulls it. Caller Game_VehiclePhysicsClock_Reset (0x143260341). Rename: it is a record teardown, not a logger. (lane owner review requested) Better name: Game_VehicleProgressRecord_Teardown (bound record keeps its name)."
  },
  "signature": {
   "id": "game.vehicle_physics_clock_log_new_lap",

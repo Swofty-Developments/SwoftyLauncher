@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432669b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1432669b0.c;xref:0x14582dbb8",
-  "notes": "onMutableRoleChanged(role): stores role +0x19, resets the VehiclePhysicsClock (NETWORK-PCLOCK) and per-vehicle progress buffers on host/client change. d8-verify correction: +0x19 comes from the machine object's vcall +0x18 (machine id), not from the role; role only drives branching"
+  "notes": "Read in full (this, role): logs 'onMutableRoleChanged(%s).' (role names 0x145f94690); refreshes this+0x18 / +0x19 (machine ids). Role 2 and this+8 == 0: Reset 0x1432602e0, writes both ids to [this+0x48]+0x68/+0x69, clears its table +0x40.., inserts both into map +0x20 (0x143318a90), clock [this+0x40] = {1, +0x18, +0x19}, vcall +0x18(this, id). Role 1: same with one id. Role 0: clock Setup 0x143255d50 twice, state 0, frees the per-vehicle records (0x143273e60) and logs 'VehiclePhysicsClock::reset()'. Vtable cell 0x14582dbb8. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_progress_manager_on_mutable_role_changed",

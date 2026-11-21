@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=StateFrontend::onStateUpdate; log channel FADE_REQUESTS: 'TEMP_LOG: Calling StateFrontend::onStateUpdate. INTERRUPT:%d'"
+  "evidence": "decomp:re/decomp/1436d2120.c;pat:log-message-cxx;xref:0x14585adf8",
+  "notes": "StateFrontend::onStateUpdate (vt cell 0x14585adf8); large body with UI/fade/bus calls."
  },
  "signature": {
   "id": "game.state_frontend_on_state_update",

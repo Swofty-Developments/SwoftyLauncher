@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439f6c40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-WINDOW",
-  "notes": "named from its log messages (channel WINDOW): 'NeWindowWin::resizeBuffersImpl: updating m_settings.width/height %dx%d -> %dx%d'"
+  "evidence": "decomp:re/decomp/1439f6c40.c;pat:log-channel-WINDOW;xref:0x14589c8d8",
+  "notes": "Read in full; ref vt cell. If resize pending (+0x2a1): callback +0x858; if swap chain size (vcall +0x60) != requested +0x288/+0x28c: device idle, ResizeBuffers via 0x1439f9fc0 (fallback 0x1439f9ff0); on change logs 'updating m_settings.width/height...', +0x238/+0x23c, 0x1439c8810, 0x1439f11c0, UpdateAspectRatio 0x1439f14f0, UI size nodes; callback +0x868. (lane owner review requested)"
  },
  "signature": {
   "id": "game.window_ne_window_win_resize_buffers_impl",

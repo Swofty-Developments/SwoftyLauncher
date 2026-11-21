@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14283c3a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14283c3a0.c;xref:0x1427bdb73,0x1427bdb8a,0x1427bde58,0x1427bdfb8",
-  "notes": "JSON helper used by the race-strategy JSON reader 0x1427bc450 (keys strategy/compound/tyreSetIndex/stopWindowLatestLap/expectedLaps): member param_1 of object param_3 must be an array of exactly 4 (logs Wrong number of elements in array %s ... Expected %u, found %u); packs each bool (type 10 = true) into bits 0..3 of *param_2. Addon: strategy JSON format (4 bool flags)."
+  "evidence": "decomp:re/decomp/14283c3a0.c;xref:0x1427bdb72,0x1427bdb89,0x1427bde57,0x1427bdfb7",
+  "notes": "JSON helper (name, out mask, obj): finds member (0x1406d4b80); must be an array (type 4) of exactly 4 elements else logs JSON \"Wrong number of elements\"; each element must be bool (flag 8), true (type 10) sets bit i of *out; missing member logs \"Unable to find value\". Callers in 0x1427bc450. (lane owner review requested)"
  },
  "signature": {
   "id": "game.strategy_read_bool4_array_mask",

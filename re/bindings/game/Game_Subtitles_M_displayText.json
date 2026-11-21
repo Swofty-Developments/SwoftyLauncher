@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name m_displayText (class from the log channel); log channel SUBTITLES: 'm_displayText set to: Nothing, from GameSubtitleSystem::update'"
+  "evidence": "decomp:re/decomp/14099b7f0.c;pat:log-message-method;xref:0x145662e68",
+  "notes": "Vt cell 0x145662e68; logs SUBTITLES m_displayText in a large body."
  },
  "signature": {
   "id": "game.subtitles_m_display_text",

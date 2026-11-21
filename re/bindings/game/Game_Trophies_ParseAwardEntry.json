@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1434e15c0.c;xref:0x143286cdd",
-  "notes": "Reads one award JSON object: optional object data (0x144435180), then definitionId, rank, score (ints into param_1 fields, e.g. +4/+0xc) and awardDate. Called from Game_Trophies_ParseAwardsJson 0x143286ae0. Addon: award/trophy record layout."
+  "evidence": "decomp:re/decomp/1434e15c0.c;xref:0x143286cdc",
+  "notes": "JSON award entry reader: members 'data', 'definitionId', 'rank', 'score', 'awardDate' ('Unable to find value for %s in JSON' on missing ones). Caller 0x143286cdc (0x143286ae0)."
  },
  "signature": {
   "id": "game.trophies_parse_award_entry",

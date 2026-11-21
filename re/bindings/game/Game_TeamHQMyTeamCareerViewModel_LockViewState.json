@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142331b90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_TeamHQMyTeamCareerViewModel_LockViewState;xref:0x14233203b",
-  "notes": "cxx=game::TeamHQMyTeamCareerViewModel::lockViewState; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/142331b90.c;str:s_TeamHQMyTeamCareerViewModel_LockViewState;xref:0x142329c23,0x14232c412,0x14232ca99,0x142330be1,0x142331639,0x142331823,0x142332ccf,0x1423330ba,0x1423331ec,0x142333d80,0x142335c94,0x1423361c7",
+  "notes": "Logs 'populating advance buttons, day', computes canAdvance from activity records (+0x3d8), sets 4 VM bools on +0x400 (+0x68,+0x108,+0x1a8,+0x248) and +0x2c8, logs lockViewState(populating timeline buttons) locked/unlocked, posts 0x1457825f8/0x145782628 and 0x1457825e8 with result. (lane owner review requested) Better name: Game_TeamHQMyTeamCareerViewModel_PopulateAdvanceButtons (bound record keeps its name)."
  },
  "signature": {
   "id": "game.team_h_q_my_team_career_view_model_lock_view_state",

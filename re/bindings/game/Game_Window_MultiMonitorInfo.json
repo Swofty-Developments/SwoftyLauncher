@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439c8810",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name multiMonitorInfo (class from the log channel); log channel WINDOW: 'multiMonitorInfo: enabled=%d ignoreTopology=%d displayGridX=%d displayGridY=%d'"
+  "evidence": "decomp:re/decomp/1439c8810.c;pat:log-message-method;xref:0x142c94424,0x1439c3256,0x1439f7043,0x1439fa389",
+  "notes": "Read in full: resets grid +0xa00 = 1x1 and rect +0xa08..+0xa14; on NVIDIA (vendor 0x10de) queries NvAPI Mosaic topology (0x140002b20/0x140002ce0/0x140002bf0) -> grid from tables 0x1458a0768/0x1458a07a0 and display rect; then display-config entries +0x778 (0x78 stride) override grid/rect and pick the primary (+0x750/+0x754, copy 0x1d8 bytes to +0x578, +0x3997); +0xa19 = aspect <= 16:9; logs both 'multiMonitorInfo: ...' lines. (lane owner review requested) Better name: Game_Window_UpdateMultiMonitorInfo (bound record keeps its name)."
  },
  "signature": {
   "id": "game.window_multi_monitor_info",

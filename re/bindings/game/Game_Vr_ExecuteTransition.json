@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1438ac4f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-VR",
-  "notes": "named from its log messages (channel VR): '%hs shouldUseFade=%d, onExecuteTransitionCallback=%hs, exclusivityToken=%hs'"
+  "evidence": "decomp:re/decomp/1438ac4f0.c;pat:log-channel-VR;xref:0x1406b4c7d,0x1406bfef9,0x1406c1416,0x141bc0bac,0x141bc52ac,0x141bc554e,0x142d56398,0x142d694f0,0x142d8a23b,0x142d9b3ec,0x142d9d665,0x143610d18,0x1436f777d,0x14370a833,0x14bf1b9c5,0x14c5fa5c4,0x14e87f489",
+  "notes": "Read in full; pretty-fn 0x145882d42 'requestEnableVirtualMonitor(NEbool, VirtualMonitorDelegate, ExclusivityToken)' - the old name came from its log format only. No VR: +0x49 = 1 and delegate invoked; else queues request {1, fade, token, delegate} via 0x143905e80(this+0x50), starts it via 0x1438ac870 when first. (lane owner review requested) Better name: Game_VrVirtualMonitorSystem_RequestEnableVirtualMonitor (bound record keeps its name)."
  },
  "signature": {
   "id": "game.vr_execute_transition",

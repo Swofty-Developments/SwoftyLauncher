@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VirtualSessionEntrant::setNumPartialLapsAccordingToProgress; log channel LAPTIMES: 'Partial lap set from VirtualSessionEntrant::setNumPartialLapsAccordingToProgress()'"
+  "evidence": "decomp:re/decomp/142f71790.c;pat:log-message-cxx;xref:0x1457fb5e8",
+  "notes": "Only ref: vtable cell (code neighbours); pdata 0x142f71790-0x142f73e60 is large, so the LAPTIMES log 'Partial lap set from VirtualSessionEntrant::setNumPartialLapsAccordingToProgress()' may come from an inlined callee."
  },
  "signature": {
   "id": "game.virtual_session_entrant_set_num_partial_laps_according_to_progress",

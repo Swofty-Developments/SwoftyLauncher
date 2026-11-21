@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=ThrustmasterAPI::tm_api_update; log channel THRUSTMASTER: 'ThrustmasterAPI::tm_api_update = %d, statusFlags = %d'"
+  "evidence": "decomp:re/decomp/143aaa2e0.c;pat:log-message-cxx;xref:0x1458a7808",
+  "notes": "vtable cell 0x1458a7808. 0x25d6-byte body: tm_api_update, tm_api_get_device_count, tm_api_get_device_info, tm_api_open_device, logs device info (vendor/product id, name, serial, screens)."
  },
  "signature": {
   "id": "game.thrustmaster_api_tm_api_update",

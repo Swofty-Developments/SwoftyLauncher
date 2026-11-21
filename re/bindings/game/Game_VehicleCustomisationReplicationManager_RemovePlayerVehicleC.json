@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1431407d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VehicleCustomisationReplicationManager::removePlayerVehicleCustomisationStatId; log channel NETWORK-ENTRANTS: 'void network::VehicleCustomisationReplicationManager::removePlayerVehicleCustomisationStatId(const PlayerVehicleKey &, const game::VehicleCustomisationStatId::P | %s : Vehicle Customisation removal wa'"
+  "evidence": "decomp:re/decomp/1431407d0.c;pat:log-message-cxx;xref:0x1431407af,0x1431469d6",
+  "notes": "Read in full (this, key, u16 id): finds the key in map this+0x40 (0x143141940); if its id equals 'id': removes the stored customisation (0x1424773f0 on +0x28, id as kind | stat<<16) and on result 0/2/4 posts bus message 0x145824938 (Ne_Post_BusMessage 0x1439876c0), else logs 'Vehicle Customisation removal was unsuccessful!'; erases the key from map +0x40 (0x143211520) and erases the player's equal range from the decal tree +0xa8/+0xb0 (inline red-black erase, 0x143210b20 / 0x143210b70, count +0xb8). Callers 0x1431402a0, 0x143146890. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_customisation_replication_manager_remove_player_vehicle_c",

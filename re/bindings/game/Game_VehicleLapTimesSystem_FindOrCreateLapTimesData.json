@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f32ee0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VehicleLapTimesSystem::findOrCreateLapTimesData; log channel LAPTIMES/V: 'VehicleLapTimesSystem::findOrCreateLapTimesData(%d)'"
+  "evidence": "decomp:re/decomp/142f32ee0.c;pat:log-message-cxx;xref:0x142f31cac,0x142f31dc8,0x142f32521,0x142f3282a",
+  "notes": "Read in full (this, u8 vehicle): if vehicle entry this+0x58[v] exists with +0x18 set: returns cached component this+0x138[v] if any, else entry+0x38; otherwise returns this+0x138[v] or allocates a 0x9cb8-byte component (allocator this+0x10, init 0x140987660) and stores it. Logs the ' - vehicle has ...' / ' - creating ...' lines (LAPTIMES/V). Callers 0x142f31ca0, 0x142f31d10, 0x142f32480, 0x142f327a0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_lap_times_system_find_or_create_lap_times_data",

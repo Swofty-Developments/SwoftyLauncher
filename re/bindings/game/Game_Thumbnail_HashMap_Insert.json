@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142ee49a0.c;xref:0x142e316e3",
-  "notes": "ne_hash_map insert/rehash (assert path string ne_hash_map.h from the fone.2026_qa source tree), refcounted values (Ne_Resource_Release). Callers Game_UIThumbnailSystem_RequestDriverThumbnail, Game_Thumbnails_BuildCarRequests."
+  "evidence": "decomp:re/decomp/142ee49a0.c;xref:0x142e316e3,0x142e32e19,0x142e346a0,0x142e34e52,0x142e37708,0x142e37bd3,0x142e389f3,0x142e38f13,0x142e396d1",
+  "notes": "Open-addressing hash insert (Ne_HashMap_FindSlot_Thumbnail, Ne_HashMap_Grow_Thumbnail) of key param_3 with VM node refs; tail not read."
  },
  "signature": {
   "id": "game.thumbnail_hash_map_insert",

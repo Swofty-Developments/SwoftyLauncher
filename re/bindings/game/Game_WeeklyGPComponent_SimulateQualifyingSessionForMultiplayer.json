@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=WeeklyGPComponent::simulateQualifyingSessionForMultiplayer; log channel NETWORK: 'WeeklyGPComponent::simulateQualifyingSessionForMultiplayer()'"
+  "evidence": "decomp:re/decomp/140bef050.c;pat:log-message-cxx;xref:0x140beed0c,0x140bf0333",
+  "notes": "Refs are lea sites (callback registration) in 0x140beeca0 and 0x140bf02c0. Name from cxx log 'WeeklyGPComponent::simulateQualifyingSessionForMultiplayer()' (NETWORK)."
  },
  "signature": {
   "id": "game.weekly_gp_component_simulate_qualifying_session_for_multiplayer",

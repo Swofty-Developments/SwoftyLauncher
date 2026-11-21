@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1437a65b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-GameSurfacePackSystem",
-  "notes": "named from its log messages (channel GameSurfacePackSystem): 'assignSurfaceResourceSuit %p %s %s | RAN OUT OF SPACE!!! | calculateSlotInstanceIndexSuit %p %u'"
+  "evidence": "decomp:re/decomp/1437a65b0.c;pat:log-channel-GameSurfacePackSystem;xref:0x1401a98ba,0x1428a313c,0x14db2f6eb",
+  "notes": "Under CS +0x18480: finds param_3 in 32-slot table +0x18280 (0x1449e2850), takes free slot (0) else logs 'RAN OUT OF SPACE!!!'; surface id = 0x160+min(param_2,4)+min(slot,31)*5; copies 0x104 path from param_5+0x18, pushes insert record via 0x1437a6b20 into +0x18100 and erases that id from pending-removal vector +0x18148..+0x18150. (lane owner review requested)"
  },
  "signature": {
   "id": "game.surface_pack_system_assign_suit",

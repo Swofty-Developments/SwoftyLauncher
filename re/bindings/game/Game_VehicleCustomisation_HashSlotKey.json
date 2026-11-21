@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432be130",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1432be130.c;xref:0x141436f4b",
-  "notes": "Hashes a customisation slot key (kind byte *param_2; kind 3 with +0x38 -> all ones, kind 7 -> xor of u64 +0x18/+0x20, else +8/+0x10) times this+0x148 with a >>0x21 finaliser and probes a 32-wide bucket group. Callers Game_DecalGeneration_UpdateService, Game_VehicleCustomisationReplicationManager_SendVehicleCustom_2, 0x143188210."
+  "evidence": "decomp:re/decomp/1432be130.c;xref:0x141436f4b,0x143143cac,0x143188394",
+  "notes": "Read in full (map, key, u32 bit): u64 key = all ones (kind 3 with key+0x38), key+0x18^+0x20 (kind 7) or key+8^+0x10; hash = key*map+0x148 (>>0x21 xor), open-address probe over control bytes +0x158 and 16-byte slots +0x150. Not found -> 0; bit 0 -> slot+8 != 0; else bit 'bit' of the bitset at slot+8. Callers 0x141435170, 0x143143860, 0x143188210. Renamed: it is a flag lookup, not a hash function. (lane owner review requested) Better name: Game_VehicleCustomisation_TestSlotFlag (bound record keeps its name)."
  },
  "signature": {
   "id": "game.vehicle_customisation_hash_slot_key",

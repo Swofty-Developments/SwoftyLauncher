@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-VEHICLE_SPAWNING_SYSTEM",
-  "notes": "named from its log messages (channel VEHICLE_SPAWNING_SYSTEM): 'VehicleDespawnRequest for vehicle %d | %s for vehicle %d'"
+  "evidence": "decomp:re/decomp/1428aed30.c;pat:log-channel-VEHICLE_SPAWNING_SYSTEM;xref:0x1457ab030",
+  "notes": "Only ref: absolute vtable cell 0x1457ab030 (code neighbours). Large body (pdata 0x1428aed30-0x1428b1595) also calls VehicleSpawnRequest ctor 0x142f39bf0 at 0x1428b0e5f, so it is more than a despawn handler."
  },
  "signature": {
   "id": "game.vehicle_spawning_despawn",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143141190",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VehicleCustomisationReplicationManager::reconcileVehicleCustomisationInfo; log channel NETWORK-ENTRANTS: 'void network::VehicleCustomisationReplicationManager::reconcileVehicleCustomisationInfo(const game::VehicleCustomisationStatId::PackedStatId, game::VehicleCusto | %s : Vehicle customisation Info updat'"
+  "evidence": "decomp:re/decomp/143141190.c;pat:log-message-cxx;xref:0x14313ff3c,0x143141899,0x143145519",
+  "notes": "Read in full (this, packed id, info): looks up the stored customisation (0x14246dcb0); none -> 'Could not find vehicle customisation for stat id'; if 0x1424f9da0(stored, info) reports a difference -> logs 'VehicleCustomisationChanged changes found', writes via 0x142477900 and logs failure when the result is not in {0,2,4}. Callers 0x14313fd70, 0x143141710, 0x143145350. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_customisation_replication_manager_reconcile_vehicle_cust",

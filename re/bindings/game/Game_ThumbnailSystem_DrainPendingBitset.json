@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1434f4ee0.c;xref:0x142d0ce27,0x142e243ef,0x14f320f30",
-  "notes": "Iterates a bitset (words at [param_1+0x88], base [param_1+0x80], 64 bits/word) and for every set bit processes the slot, then Ne_Crt_Memset-clears the set; early out when [param_1+0x90]==0. Caller Game_ThumbnailSystem_UpdateTasks. Hypothesis: pending RTT thumbnail slots."
+  "evidence": "decomp:re/decomp/1434f4ee0.c;xref:0x142e243ef,0x14f320f30",
+  "notes": "0x8a5-byte body; callers Game_FrontendSceneWorld_DespawnWorldAssetsIfAble and 0x14f320ed0."
  },
  "signature": {
   "id": "game.thumbnail_system_drain_pending_bitset",

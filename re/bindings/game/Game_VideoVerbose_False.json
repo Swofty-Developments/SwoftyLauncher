@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143f92920",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name false (class from the log channel); log channel VIDEO_VERBOSE: '%s %p paused=%s canCheckVisible=%s visible=%s'"
+  "evidence": "decomp:re/decomp/143f92920.c;pat:log-message-method;xref:0x1444b5f48",
+  "notes": "Read in full; old name 'False' was a log fragment. For each video in this+0xa0..+0xa8: finishes pending loads (error -> state 4), decides pause from m_pauseAll +0x17d, visibility +0x17c and mask +0x174 (player+0x111 bits, VIDEO_VERBOSE '%s %p paused=%s canCheckVisible=%s visible=%s'), fires cue callbacks by progress, posts status (0x143f961c0); returns error code. (lane owner review requested) Better name: Game_VideoPlayerManager_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.video_verbose_false",

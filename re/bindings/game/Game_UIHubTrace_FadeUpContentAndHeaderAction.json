@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1438057d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-UIHubTrace",
-  "notes": "named from its log messages (channel UIHubTrace): '[ACTION] FadeUpContentAndHeader Action Triggered'"
+  "evidence": "decomp:re/decomp/1438057d0.c;pat:log-channel-UIHubTrace;xref:0x143803504,0x143804304,0x143804862,0x1516197a2",
+  "notes": "Logs '[ACTION] FadeUpContentAndHeader Action Triggered'. State +0x64 1 or 2: hub+0x74 = state, event 0x1461030b8; header closed (+0x68 == 0): hub+0x70 = 4, posts vt 0x14588bb20 hash 0x6f82260d (alpha 1.0) for +0x54 and logs fading up header; content closed (+0x6c == 0): the same for +0x58; else event 0x1461030b0. Other state logs 'not already in an opened state'. Callers 0x143803504, 0x143804304, 0x143804862, 0x1516197a2. (lane owner review requested) Better name: Game_UIHub_FadeUpContentAndHeader (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ui_hub_trace_fade_up_content_and_header_action",

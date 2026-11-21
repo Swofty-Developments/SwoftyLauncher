@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f714d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VirtualSessionSystem::onMessagePlayerDroppedIn; log channel NETWORK: 'VirtualSessionSystem::onMessagePlayerDroppedIn()'"
+  "evidence": "decomp:re/decomp/142f714d0.c;pat:log-message-cxx;xref:0x14fab4629,0x14fab557b",
+  "notes": "Read in full: logs NETWORK 'VirtualSessionSystem::onMessagePlayerDroppedIn()' and calls this vcall +0x88, returns 0. Static refs are two lea (handler registration) in 0x14fab45f0/0x14fab5560. (lane owner review requested)"
  },
  "signature": {
   "id": "game.virtual_session_system_on_message_player_dropped_in",

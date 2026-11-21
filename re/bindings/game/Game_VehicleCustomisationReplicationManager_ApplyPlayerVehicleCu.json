@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1431448e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VehicleCustomisationReplicationManager::applyPlayerVehicleCustomisationStoredDecals; log channel NETWORK-ENTRANTS-MESSAGES: 'void network::VehicleCustomisationReplicationManager::applyPlayerVehicleCustomisationStoredDecals(const PlayerDescriptionKey &, const game::VehicleDecalNodeList | %s : Manager failed to apply the stor'"
+  "evidence": "decomp:re/decomp/1431448e0.c;pat:log-message-cxx;xref:0x1431458f3,0x1431466c3",
+  "notes": "Read in full (this, player key, list id *): logs 'now applying the stored decals'; finds the player in tree this+0xa8/+0xb0 and the stored 0x38-byte decal list with id *param_3 (+0x20); missing -> 'non-existent stored decal list'; list incomplete (+0x28 == 0) -> 'incomplete stored decal list'; else addPlayerVehicleSegmentedDecalNodeList 0x143142e80(this, key, u16 key+0x60, list) and 'successfully applied the stored %zu decals'. Callers 0x143145350, 0x143146160. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_customisation_replication_manager_apply_player_vehicle_cu",

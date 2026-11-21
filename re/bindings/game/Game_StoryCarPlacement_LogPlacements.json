@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-StoryCarPlacement",
-  "notes": "named from its log messages (channel StoryCarPlacement): '---------------------------------------------Driver Placements---------------------------------------------) | The following driver placements have been created (progress and positions are directly re'"
+  "evidence": "decomp:re/decomp/141322d00.c;pat:log-channel-StoryCarPlacement;xref:0x142e074af,0x14f288a92",
+  "notes": "Logs StoryCarPlacement driver placements. Callers 0x142e07270, 0x14f288a30."
  },
  "signature": {
   "id": "game.story_car_placement_log_placements",

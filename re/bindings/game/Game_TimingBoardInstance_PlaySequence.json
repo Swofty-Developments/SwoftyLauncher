@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1403d6ff0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=TimingBoardInstance::playSequence; log channel TIMINGBOARDS: 'RAW: TimingBoardInstance::playSequence %s'"
+  "evidence": "decomp:re/decomp/1403d6ff0.c;pat:log-message-cxx;xref:0x1403d82ca,0x1403d82d5,0x1403d83a7,0x1403d83be,0x1403d83d6,0x1403d83e5,0x1403d83fe,0x1403d8416,0x1403d8425,0x1403d895d,0x1403d8b15,0x1403da310,0x1403db94d,0x1403db958",
+  "notes": "Under CS +0x2f8 builds '%s%02d' sequence name (index +0x2f0+1), releases old clip, rebinds BASE/OVERLAY node ids, starts sequence (0x143662b90/0x143660a60) into +0x10 and binds clips to models +0x20/+0x28 (Ne_SequenceClipInstance_BindOptional). (lane owner review requested)"
  },
  "signature": {
   "id": "game.timing_board_instance_play_sequence",

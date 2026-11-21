@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f07750",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VehicleProgressSystem::onRequestProgressMessage; log channel NETWORK: 'VehicleProgressSystem::onRequestProgressMessage(connId=%d)'"
+  "evidence": "decomp:re/decomp/142f07750.c;pat:log-message-cxx;xref:0x14f608bd0",
+  "notes": "Read in full (this, msg, conn): logs onRequestProgressMessage(connId); if this+0x11a set, for every locally owned vehicle (owner table check as in HandleProgressMessage) builds message 0x145800ec0 (0xa00000006) with vehicle, lap and progress lap from 0x1446046a0 (xor-masked) and sends it to msg+0x10 (mode 2) via 0x14402e500 on this+0x90, logging 'RequestSessionData(%d) - Sending new lap progress'. lea ref 0x14f608bd0 (.data1). (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_progress_system_on_request_progress_message",

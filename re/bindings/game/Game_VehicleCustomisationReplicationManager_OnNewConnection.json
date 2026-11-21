@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1431c2ae0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VehicleCustomisationReplicationManager::onNewConnection; log channel NETWORK-ENTRANTS: 'void network::VehicleCustomisationReplicationManager::onNewConnection(neon::NeNetConnectionID) | %s : Could not find human for connection id %d'"
+  "evidence": "decomp:re/decomp/1431c2ae0.c;pat:log-message-cxx;xref:0x1458248d8",
+  "notes": "Read in full (this, u8 conn; mgr = this+8): only when [mgr+0x10]+8 < 2 (host); resends every known customisation of list mgr+0x50 to conn (0x143141520 mode 2); finds the human on conn in [mgr+0x18]+0x58..+0x60 (+0x63 == conn, +0x5b bit4) -> none: logs 'Could not find human for connection id %d'; else for each player record of [mgr+0xd0]+0x230.. builds the key (0x141405830), gets the id via findOrGeneratePackedNetStatId 0x14313fd70 and sends VehicleCustomisationIdAllocatedNetMessage 0x145824900 (0x7500000007) to conn, logging it. Vtable cell 0x1458248d8. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_customisation_replication_manager_on_new_connection",

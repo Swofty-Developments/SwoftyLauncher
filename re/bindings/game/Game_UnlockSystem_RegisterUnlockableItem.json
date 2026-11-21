@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name registerUnlockableItem (class from the log channel); log channel UnlockSystem: 'registerUnlockableItem() - Item [%s] has no unlock method, setting unlocked'"
+  "evidence": "decomp:re/decomp/142ec9600.c;pat:log-message-method;xref:0x142eaab8a,0x142eab25f,0x142eab6a1,0x142eac037,0x142eacdbe,0x142eae1f1,0x142eaf080,0x142eafef0,0x142eb0d40,0x142eb1b90,0x142eb29e0,0x142eb3850",
+  "notes": "Seen: appends a 0x40-byte entry to the item vector +0x50..+0x60 (grows 1.5x via allocator +0x48), logs 'registerUnlockableItem() - Item [%s] has no unlock method, setting unlocked' when the item has no method, inserts the item into the hash set +0x68..+0xbc (rehash path, ne_hash_map.h assert) and a second map at +0xd8 (0x142efad90 / 0x142efaee0 / 0x142efb1f0). Xref list truncated."
  },
  "signature": {
   "id": "game.unlock_system_register_unlockable_item",

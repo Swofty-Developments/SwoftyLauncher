@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-UI_latency",
-  "notes": "named from its log messages (channel UI_latency): '***** Frame:%I64u Updating position on elementId:%u ElementName:%hs'"
+  "evidence": "decomp:re/decomp/144303760.c;pat:log-channel-UI_latency;xref:0x1442f8428,0x14431cb68,0x153ba5ae8,0x153beb9d4",
+  "notes": "Logs UI_latency 'Updating position on elementId:%u ElementName:%hs'. Callers 0x1442f8428, 0x14431cb68, 0x153ba5ae8, 0x153beb9d4."
  },
  "signature": {
   "id": "game.ui_latency_frame_updating_position_element_id",

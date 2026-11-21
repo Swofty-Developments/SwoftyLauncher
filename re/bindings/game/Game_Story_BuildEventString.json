@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141328f10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141328f10.c;xref:0x14132950e,0x141329548",
-  "notes": "(story, kind 0..5, index, id) Builds a string for the story/career event (current event Game_Story_GetCurrentEvent, tables +0x550 stride 0x68, +0x5d8) depending on kind; strcmp by name. Callers Sess_RedFlagToRestart_Exit, Sess_StoryRollingStart_OnStateEnter. Hypothesis."
+  "evidence": "decomp:re/decomp/141328f10.c;xref:0x14132950e,0x141329548,0x141ee2d74,0x142e00334,0x142e00f40,0x142e084bd,0x14a7f1208,0x14f23462f,0x14f2ac257",
+  "notes": "(story, kind, index, id) -> entry*: builds a name: kinds 0-2 from items of table +0x550[index] (stride 0x68, items 0x2c0) matching the current event (0x1413301b0) at +0x2b8, fields +0x208/+0x210/+0x218; kinds 3/4 via 0x141331af0 (+0x50/+0x58); kind 5 string +0x5d8. Returns the entry in +0x528..+0x530 (stride 0x20) whose name strcmp-equals it, else 0. (lane owner review requested) Better name: Game_Story_FindEntryForEventKind (bound record keeps its name)."
  },
  "signature": {
   "id": "game.story_build_event_string",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-GAME",
-  "notes": "named from its log messages (channel GAME): '[TIME TRIALS] New reference : track(%d, %s), weather(%s), leaderboard(%s).'"
+  "evidence": "decomp:re/decomp/14147b720.c;pat:log-channel-GAME;xref:0x14147e172,0x1414a7fab,0x14ae2d9d0,0x14ae4e439,0x14e2f284a",
+  "notes": "0x9c7-byte body: '[TIME TRIALS] New reference : track, weather, leaderboard', reads current_track, track_info.track_set_name, tt_weather."
  },
  "signature": {
   "id": "game.time_trial_set_reference",

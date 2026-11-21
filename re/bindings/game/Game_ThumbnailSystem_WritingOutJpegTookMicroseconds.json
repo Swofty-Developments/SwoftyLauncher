@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-THUMBNAIL_SYSTEM",
-  "notes": "named from its log messages (channel THUMBNAIL_SYSTEM): 'Writing out JPEG took %I64d microseconds'"
+  "evidence": "decomp:re/decomp/14379c250.c;pat:log-channel-THUMBNAIL_SYSTEM;xref:0x145872198",
+  "notes": "vtable cell 0x145872198. Strings: SCREENSHOT 'Writing out JPEG/PNG took', THUMBNAIL_SYSTEM 'Requesting Setting Thumbnail Generation' and 'rejected because disabled'; name is a log fragment."
  },
  "signature": {
   "id": "game.thumbnail_system_writing_out_jpeg_took_microseconds",

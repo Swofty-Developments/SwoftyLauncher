@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-WINDOW",
-  "notes": "named from its log messages (channel WINDOW): 'NeWindowWin::setDisplayMode: Adapter %d. name = %S, vendor id = 0x%04X'"
+  "evidence": "decomp:re/decomp/1439fa850.c;pat:log-channel-WINDOW;xref:0x1439f2e38,0x1439f2f86,0x1439f88ea",
+  "notes": "Callers 0x1439f1d20 (two) and 0x1439f7d80. Logs 'NeWindowWin::setDisplayMode: Adapter %d. name = %S, vendor id = 0x%04X'; likely NeWindowWin::setDisplayMode itself."
  },
  "signature": {
   "id": "game.window_ne_window_win_set_display_mode_adapter",

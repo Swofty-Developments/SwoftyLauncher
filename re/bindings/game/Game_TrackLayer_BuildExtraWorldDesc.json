@@ -5,11 +5,11 @@
  "author": "re-bindings",
  "row": {
   "addr": "0x142e57e90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142e57e90.c;decomp:own disasm KB 0x142e57e90-0x142e587e0, 1.0.145 0x142e5a420 the same 530/530;xref:0x1407a13c9",
-  "notes": "Builds the extra-world descriptor of a track layer row: rcx the descriptor, rdx the track (FILENAME token from [rdx+0x78], 0x142e57efb), r8 the TrackLayer row (Game_Read_TrackLayerRow). It expands the row's worldAssetGroup (+0x18) and worldEri (+0x20) values with 0x140234f30, so the world archive of a layer is '[FILENAME]'-templated database data, and names the world extraWorld_track_layer_%u (0x1457ed34d) from the row's u8 statId (movzx at 0x142e585a0), not from its row index: two layer rows with one statId name their worlds alike. Only caller Game_GameMode_AddTrackLayerWorlds 0x1407a13c9, once per matching row each time a session's settings are built, so a layer row change takes effect at the next session's settings build. Steam 1.0.145 (sigport --witness): 0x142e5a420 530/530 with +0xc, +0x18, +0x20 and +0x78 at the same instructions. | re-bindings 2026-11-18: the arguments, the statId width and the 1.0.145 witness."
+  "evidence": "decomp:re/decomp/142e57e90.c;xref:0x1407a13c9",
+  "notes": "(out desc, track, layerRow) (caller 0x1407a13c9): sets token context FILENAME (0x140234d80), de-obfuscates the row strings worldAssetGroup (+0x18) and worldEri (+0x20) (XOR key 0x145890978 into +0x48) and expands each via 0x140234f30; desc+0x18 = expanded asset group (128 chars), desc+0xa8 = name 'extraWorld_track_layer_%u' with row byte +0xc, desc+0x130 = resource id of the expanded ERI (0x143994bc0), +0x140 = 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.track_layer_build_extra_world_desc",

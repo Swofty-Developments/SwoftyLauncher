@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1437a8100",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-GameSurfacePack",
-  "notes": "named from its log messages (channel GameSurfacePack): 'loadSourceAssets | Scheduling surfaces to be inserted into the atlas | Processing(renderSideDirty = %d, m_gameSurfacePack.isDirtyUpdate() = %d, load status = %s)... | Clearing m_surfaceInsertionIDsUpd'"
+  "evidence": "decomp:re/decomp/1437a8100.c;pat:log-channel-GameSurfacePack;xref:0x1408097ab",
+  "notes": "Per-frame under CS +0x18480: source-asset load state +0xb1/+0xb2; pending inserts +0x18108 with +0x180f6 request load (b2=2 then Game_FrontendScene_UpdateTransforms(+0x50)); when b1=b2=2 moves 0x138-byte insert records to +0x18128 and removal ids +0x18148 to +0x18168; sets +0x180f4 renderSideDirty, +0x180ea dirty; unloads (b2=0) when all done. Logs 'Processing(renderSideDirty...)'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.surface_pack_system_load_source_assets",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142ec2c80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name getGVDBUnlockableItemsListFolders (class from the log channel); log channel UnlockSystem: 'getGVDBUnlockableItemsListFolders() - Using unlock list [%s]'"
+  "evidence": "decomp:re/decomp/142ec2c80.c;pat:log-message-method;xref:0x142eab360,0x142eab723,0x142eac65b,0x142ead432,0x142ec02d2,0x142ec0b93,0x142ec1b96",
+  "notes": "Read in full (out): looks up config key 0x50c67ef8f06a41a7 in the map at [0x146cc4278]+0xb8.. (value de-obfuscated with key table 0x145890978, default 'unknown'); combines it with the path 'unlockable_content.unlockable_items' via 0x1445a2bd0, logs 'getGVDBUnlockableItemsListFolders() - Using unlock list [%s]', writes '<part1>.<part2>' to out+0 (max 0xff), 'folder' to out+0x100, +0x200 = -1, +0x204 = 1; returns out. Callers 0x142eab320, 0x142ead3f0 (the mov hit 0x142ec22e8 is not a call). (lane owner review requested)"
  },
  "signature": {
   "id": "game.unlock_system_get_gvdb_unlockable_items_list_folders",

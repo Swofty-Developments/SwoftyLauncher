@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14323d8f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VehicleDropInManager::handleDropInForceCompleteMessage; log channel NETWORK/F: 'VehicleDropInManager::handleDropInForceCompleteMessage()'"
+  "evidence": "decomp:re/decomp/14323d8f0.c;pat:log-message-cxx;xref:0x14323d43a",
+  "notes": "Read in full: logs 'VehicleDropInManager::handleDropInForceCompleteMessage()' (NETWORK/F) and sets byte this+0x4e4 = 0. Registered by lea at 0x14323d43a in 0x14323d040. 0x142d6fad0 also clears +0x4e4 after completing a drop-in. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_drop_in_manager_handle_drop_in_force_complete_message",

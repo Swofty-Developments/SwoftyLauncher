@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f2fee0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VehicleLapTimesSystem::onHostMigrated; log channel LAPTIMES: 'VehicleLapTimesSystem::onHostMigrated() - Re-Sending Last Seen Sector Crossings'"
+  "evidence": "decomp:re/decomp/142f2fee0.c;pat:log-message-cxx;xref:0x1457f6800",
+  "notes": "Read in full: logs 'VehicleLapTimesSystem::onHostMigrated() - Re-Sending Last Seen Sector Crossings' (LAPTIMES), walks the linked list at [this+0xc8] and for each node logs 'Resending LAST SPLIT (%d/%d) for vehicle Ix %d' and re-posts node+0x18 through 0x14402e500 on this+0x68 (mode 1). Vtable cell 0x1457f6800. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_lap_times_system_on_host_migrated",

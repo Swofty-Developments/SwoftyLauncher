@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1418522f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VMSocialHubHelper::onContextMenuAction; log channel SOCIAL HUB: 'VMSocialHubHelper::onContextMenuAction (%s)'"
+  "evidence": "decomp:re/decomp/1418522f0.c;pat:log-message-cxx;xref:0x141851fe4",
+  "notes": "Read in full (helper, u8 action): logs 'onContextMenuAction (%s)' (names 0x145719a98); takes the selected entry (helper[0x18] vcall +0x20) and its user id (entry+0x278 xor +0x270); unless helper[0x21], a switch over actions 0..10 runs platform handlers via 0x141853260 (0x1406d2210, 0x1406d2b10, 0x1406d2d10, 0x1406d2f30, 0x1406d2470, 0x1406d2700), sub view (4), invite join (9); then callback helper[0x33](helper[0x34], action, entry+0x258, name). lea 0x141851fe4 in 0x141851ba0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vm_social_hub_helper_on_context_menu_action",

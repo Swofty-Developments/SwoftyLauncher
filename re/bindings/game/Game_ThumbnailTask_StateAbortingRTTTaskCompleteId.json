@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-THUMBNAIL_TASK",
-  "notes": "named from its log messages (channel THUMBNAIL_TASK): '[task=%p] State %s: Aborting on RTT Task Complete id %d'"
+  "evidence": "decomp:re/decomp/142e3a7f0.c;pat:log-channel-THUMBNAIL_TASK;xref:0x14f346256,0x14f3462c7",
+  "notes": "Handler (lea at 0x14f346256,0x14f3462c7): RTT task complete states (logs 'Aborting on RTT Task Complete', 'Thumbnail Task Complete, cleaning up')."
  },
  "signature": {
   "id": "game.thumbnail_task_state_aborting_rtt_task_complete_id",

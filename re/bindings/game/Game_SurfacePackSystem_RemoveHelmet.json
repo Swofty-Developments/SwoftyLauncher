@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1437a7ac0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-GameSurfacePackSystem",
-  "notes": "named from its log messages (channel GameSurfacePackSystem): 'removeSurfaceResourceHelmet %p | RAN OUT OF SPACE!!! | calculateSlotInstanceIndexHelmet %p %u'"
+  "evidence": "decomp:re/decomp/1437a7ac0.c;pat:log-channel-GameSurfacePackSystem;xref:0x1513c060b,0x1513c061b,0x1513c062b,0x1513c063b,0x1513c064b",
+  "notes": "Helmet twin of RemoveSuit: slot lookup/allocate in table +0x18380 (log calculateSlotInstanceIndexHelmet), id = min(param_2,7) | min(slot,31)<<3 | 0x200; appends id to removal vector +0x18148 unless already present. Callers are an unwound/obfuscated block at 0x1513c0580. (lane owner review requested)"
  },
  "signature": {
   "id": "game.surface_pack_system_remove_helmet",

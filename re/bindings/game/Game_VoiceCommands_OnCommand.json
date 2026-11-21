@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f7eab0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-VOICE_COMMANDS",
-  "notes": "named from its log messages (channel VOICE_COMMANDS): '%s Id:%u | %s | %s Ignored because speech VO playing'"
+  "evidence": "decomp:re/decomp/142f7eab0.c;pat:log-channel-VOICE_COMMANDS;xref:0x142f79f54,0x142f7a249",
+  "notes": "Read in full; logged method setSelectedCommandById (decomp merges the tail-jmp to 0x142f7f3c0). (sys, cmdId): logs '%s Id:%u'; returns early on speech VO ('%s Ignored because speech VO playing') or if bool +0x158 set; for each item of the groups in list +0x100 sets bool 'selected' = (u32 'id' == cmdId), on match group index +0x258 and 0x142f76150(this+0x90,0); then CommandRecognised. (lane owner review requested) Better name: Game_VoiceCommands_SetSelectedCommandById (bound record keeps its name)."
  },
  "signature": {
   "id": "game.voice_commands_on_command",

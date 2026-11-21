@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143251340",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VehicleMechanicalManager::onRequestSessionData; log channel NETWORK-MECHANICAL: 'virtual void network::VehicleMechanicalManager::onRequestSessionData(NEbyte) | %s: onRequestSessionData %02d'"
+  "evidence": "decomp:re/decomp/143251340.c;pat:log-message-cxx;xref:0x14582b9a0",
+  "notes": "Read in full (this, u8 conn): logs 'onRequestSessionData %02d' (NETWORK-MECHANICAL), then for vehicle 0..0x1a with record this+0x160+i*0x108 set and local flag +0x230 builds the state message with buildVehicleStateMessage 0x143242a70(this, i, rec+0x1b0, 0) and, if bit count +0x134 != 0, sends it via callback this+0x140(ctx +0x148, conn, buffer +0xb1, bits, +0x138). Vtable cell 0x14582b9a0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_mechanical_manager_on_request_session_data",

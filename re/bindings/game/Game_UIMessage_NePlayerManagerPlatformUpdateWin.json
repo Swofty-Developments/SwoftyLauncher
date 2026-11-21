@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-UI_MESSAGE",
-  "notes": "named from its log messages (channel UI_MESSAGE): 'NePlayerManager::platformUpdateWin:: m_updateUserControllerPairing = %s'"
+  "evidence": "decomp:re/decomp/144117e00.c;pat:log-channel-UI_MESSAGE;xref:0x1434df18d,0x145a5b298",
+  "notes": "Large UI_MESSAGE body (pdata 0x2445 bytes; vtable cell 0x145a5b298, caller 0x1434df18d): closeAllMessagesInQueue on multipage_popup_queue / default_queue and the log 'NePlayerManager::platformUpdateWin:: m_updateUserControllerPairing = %s'."
  },
  "signature": {
   "id": "game.ui_message_ne_player_manager_platform_update_win",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1445ac280",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "void Game_Vfx_BuildWheelParamRecord(void *car, ...)",
-  "evidence": "doc:re/db/subsystems/game.md",
-  "notes": "Builds one 0x140-byte VFX parameter record per wheel; 0x143b21800 uploads 46 slots via 0x143381a90 (table +0xf05f8): slot 0x29 = record+0x124 = wheel+0x28c (marble_04 input), slot 0x0c = record+0xb0 = wheel+0x3dc (agent marbles, static) | findings from PR #471 by vogtmarcel07-cloud | engine-re 2026-11-17 track round C: compares wheel material codes ASTR BUMP CON* DDT* DDT+ DDTC DEFA DRT+ GRS* HDG+ LATO LATT MDG* METL MKNG PDT+ RDT+ RMBL RMBO SDT+ WALL (VFX class per wheel: dust, grass, gravel, kerb)."
+  "evidence": "decomp:re/decomp/1445ac280.c;doc:re/db/subsystems/game.md;xref:0x14017409b",
+  "notes": "Read in full: wheel = [car+0x580]+0x70+w*8; grows the 0x140-byte record vector (0x143b20ee0); +0x00..+0x70 wheel matrices x car transform; material code [wheel+0x208] vs ASTR DRT+ MDG* HDG+ GRS* PDT+ RMBL RMBO BUMP LATT LATO SDT+ MKNG DDTC METL DEFA DDT+ DDT* RDT+ CON* WALL -> flags +0xec..+0x114; +0xb0 = wheel+0x3dc, +0x118..+0x124 = wheel+0x280..+0x28c; then 0x143b20b80. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vfx_build_wheel_param_record",

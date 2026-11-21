@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1436b0390",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_StateCareerDataSync_OnStateEnter;xref:0x1436b06c3,0x1436b06df",
-  "notes": "cxx=game::StateCareerDataSync::onStateEnter; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1436b0390.c;str:s_StateCareerDataSync_OnStateEnter;xref:0x145859600",
+  "notes": "onStateEnter (own pretty-function, vt cell 0x145859600): +0xca4 = network mode [[+0xc98]+0x3c0]+0x1a8; offline: optional 0x140c8d430 on system 0x14605b068, log, +0xca8=1; not online career: log; else [+0xc88]+0x44 = +0xca0, synchroniser+0x28 = system 0x1460609a8, tail-jump 0x140ff7320 (CareerOnlineSynchroniser::start, inlined in the decomp). (lane owner review requested)"
  },
  "signature": {
   "id": "game.state_career_data_sync_on_state_enter",

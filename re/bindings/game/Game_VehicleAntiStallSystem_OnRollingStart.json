@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "uint64_t(VehicleAntiStallSystem*, Message*)",
-  "evidence": "decomp:ghidra-headless-2026-10-25",
-  "notes": "RollingStartMessage subscriber (emulated): same per-car reset as OnVehicleLeftGarage."
+  "evidence": "decomp:re/decomp/142f4eed0.c;xref:0x142f4bf74,0x142f4ca1d",
+  "notes": "Denuvo body 0x14f8de0f0 (thunk 0x142f4eed0): bounds-check of car msg+0x10 against entries +0x48..+0x50, resets entry +0x18..+0x3c, vehicle +0x9f18 = 0, +0x30 = 1; else WARN 'VehicleRaceStartSystem::onRollingStartBegin failed to find component'. lea refs in 0x142f4ba40 and 0x142f4c990."
  },
  "signature": {
   "id": "game.vehicle_anti_stall_system_on_rolling_start",
