@@ -45,7 +45,37 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/1428d9a90.c;xref:0x140c833b6",
    "notes": "V5137 Name and logged strings/offsets match body"
+  },
+  {
+   "date": "2026-11-21",
+   "verifier": "Moorzii",
+   "kind": "func",
+   "item": "Game_FrontendSceneManager_DespawnMainScene",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm 0x1428dbe50-0x1428dc44c;xref:0x140c93587,0x1436b3e97,0x1436d6393",
+   "notes": "gh:Moorzii found independently by its own pattern in Instant Race; despawns the main menu scene, called on leaving the frontend"
   }
  ],
- "proofs": []
+ "proofs": [
+  {
+   "by": "Moorzii",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1428dbe50",
+    "target": "0x1428dbe50"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a099d9b0223c04dae80b0b28aec9ff6b4a0c7213b87289f3b94379c23b40c878"
+  }
+ ]
 }

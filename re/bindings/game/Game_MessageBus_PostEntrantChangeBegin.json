@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_MessageBus_PostEntrantChangeBegin",
+ "table": "functions",
+ "author": "Moorzii",
+ "row": {
+  "addr": "0x1424e2b90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_MessageBus_PostEntrantChangeBegin(void *bus, void *message)",
+  "evidence": "decomp:own disasm 0x1424e4790 (thunk into protected code) and its callers;xref:0x1407a014f,0x1407b836b",
+  "notes": "posts the message whose vtable is vt_Game_EntrantChangeBeginMsg; callers post it before changing the player's entrant and set byte +0x2f8 of the mode entity around it; a jmp into protected code"
+ },
+ "signature": {
+  "id": "game.message_bus_post_entrant_change_begin",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 05 4A E8 6A B3 0F 84",
+  "match": "0x1424e2b90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424e2b90",
+  "kind": "func_start",
+  "names": [
+   "Game_MessageBus_PostEntrantChangeBegin"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-21",
+    "by": "Moorzii",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1424e4790",
+  "made_on_target": "0x1424e4790",
+  "twin": "made on steam-26566308; the target 0x1424e4790 is KB 0x1424e2b90: Sess_Parse_EntrantTemplateRef (0x24dffe0) and Sess_SortEntrantsByGarageOrder (0x24e9250) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "Moorzii",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1424e4790",
+    "target": "0x1424e4790"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "100938d64faf66af5cf7d4b9ed5870312bf4a190905d710e553138dd6bffb3fd"
+  }
+ ]
+}

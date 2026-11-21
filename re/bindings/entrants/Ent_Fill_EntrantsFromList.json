@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ent_Fill_EntrantsFromList",
+ "table": "functions",
+ "author": "Moorzii",
+ "row": {
+  "addr": "0x142460230",
+  "level": "L2",
+  "subsystem": "entrants",
+  "proto": "void Ent_Fill_EntrantsFromList(void *entrants_system, void *mode_entity, void *params, int flags)",
+  "evidence": "decomp:own disasm 0x142461e30-0x142462042;xref:0x141127c86,0x1424606ce",
+  "notes": "fills the entrants system from the mode entity's entrant list; params is a 0x190 block with +0x180 = 1 at the Grand Prix call"
+ },
+ "signature": {
+  "id": "entrants.fill_entrants_from_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 4D 89 CE 4C 89 C7",
+  "match": "0x142460230",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142460230",
+  "kind": "func_start",
+  "names": [
+   "Ent_Fill_EntrantsFromList"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-21",
+    "by": "Moorzii",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142461e30",
+  "made_on_target": "0x142461e30",
+  "twin": "made on steam-26566308; the target 0x142461e30 is KB 0x142460230: Sess_Collect_GameModeSetupModes (0x245dcf0) and Sess_Load_Teams (0x246b040) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "Moorzii",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142461e30",
+    "target": "0x142461e30"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6e703fe054d2ed9b4d1582a9cab9cac845c25ed821d6576c9c2ba94a0d26ef48"
+  }
+ ]
+}
