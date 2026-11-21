@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1443ab380",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1443ab380.c;xref:0x1401e9895",
-  "notes": "Under critical section scans the slot bitmap (u64 words, 0xc0-byte chunks, 24-byte entries per 8 bits) for the first set bit and returns that entry. Callers Game_SceneManager_BuildMaterialActorForScene, 0x1543345d0. Hypothesis on semantics (free vs used). vp4-verify partial/disagree"
+  "evidence": "decomp:re/decomp/1443ab380.c;xref:0x1401e9895,0x154334717",
+  "notes": "Under EnterCriticalSection([this]) iterates all occupied map slots (bitmap words at [this+0x70], 24-byte entries, value at +0x10), then the lists [this+0xa0..0xa8] and [this+0xc0..0xc8], comparing the 128-bit id param_2 with the second id at [actor+8]+0x98; returns the actor or 0. Old note (returns first set bit) was wrong. Callers 0x1401e9895 (Game_SceneManager_BuildMaterialActorForScene), 0x154334717 (0x1543345d0). (lane owner review requested)"
  },
  "signature": {
   "id": "render.material_actor_pool_acquire_first_free",

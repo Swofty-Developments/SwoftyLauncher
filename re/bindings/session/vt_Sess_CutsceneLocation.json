@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1457e48d0",
-  "type": "vtable[11]",
+  "type": "vtable[20]",
   "level": "L2",
   "subsystem": "session",
-  "evidence": "pat:flow-state-type-record;xref:0x14607dfa0;decomp:re/decomp/142dae3b0.c",
-  "notes": "cxx=SessionStateCutsceneLocation; neon flow state (slot 2 = NeFlowState base 0x1436aef00, slot 0 returns type record 0x14607dfa0 whose +8 names the class); onStateEnter 0x142dae760, onStateUpdate 0x142dae810, onStateExit 0x142dae840 (slots 8/9/10). (vmknolle session-flow map)"
+  "evidence": "decomp:re/decomp/142dbc380.c;pat:flow-state-type-record;decomp:re/decomp/142dae3b0.c;xref:0x142dae3ba,0x142dbc475",
+  "notes": "cxx=SessionStateCutsceneLocation; 20 slots (next vtable at +0xa0, lea 0x142dae3c4). Slot 0 -> type record 0x14607dfa0, +8=name set by static init 0x142df1ca0 at 0x142df43b1. Slot 2 NeFlowState base 0x1436aef00; slots 8/9/10 onStateEnter/Update/Exit 0x142dae760/0x142dae810/0x142dae840. Ctor 0x142dbc380 (lea 0x142dbc475; mov [rsi],rax). Also loaded by 0x142dae3b0 (dtor, [rcx])."
  },
  "signature": {
   "id": "session.cutscene_location",

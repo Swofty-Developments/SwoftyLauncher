@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143256510",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-PROGRESS/V",
-  "notes": "named from its log messages (channel NETWORK-PROGRESS/V): '%s: source progress data: %s'"
+  "evidence": "decomp:re/decomp/143256510.c;pat:log-channel-NETWORK-PROGRESS/V;xref:0x143271a10,0x143272a04",
+  "notes": "cxx=bool network::VehicleProgressData::extrapolate(const VehicleProgressData&, NEdouble, NEdouble): logs 'source progress data' and 'extrapolated progress data'; integrateAngularVelocity inlined (NETWORK-MATHS/V ori/qvel/newOri logs). Callers in 0x143271400. (lane owner review requested) Better name: Game_NetworkProgress_Extrapolate (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_progress_source_progress_data",

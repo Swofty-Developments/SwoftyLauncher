@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14364bb50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-CompressedSaveDataSerialiser decomp:re/decomp/14364bb50.c",
-  "notes": "named from its log messages (channel CompressedSaveDataSerialiser): 'Received file read request, result is not ok '%s' | Received file read request results when we didn't expect them | File read request returned unexpected results'. w4r 2026-10-28 (decomp 0x14364c2de-0x14364c6b3): the whole profile decodes here, not in SAVE_DATA. Parent heap = Game_CompressedSave_GetTempHeaps()[[serialiser+8]+0 != 0 ? 0 : 1] (SAVE_TEMP_ALLOC 75M or SAVE_TEMP_ALLOC_HUGE 200M); its largest free block (heap vt+0x80(heap,1), the 'Largest' of Ne_ReportMemoryError) is allocated (vt+0x18) and made a pool named SAVE_PROPERTY_BAG_TEMP (Ne_Init_TempPool_Thunk); the root bag {pool, 0, 0} is filled by Ne_BagCodec_ReadBag (raw 0x14364c64f or through the decompressing stream 0x14568e190 at 0x14364c49c), handed to 0x14364c6f0 (root deserialise, .data1 0x150b11430), then Ne_Bag_Clear and Game_CompressedSave_FreeTempPool_Thunk free it all. Unclaimed root children are therefore freed with the pool at the end of the load."
+  "evidence": "decomp:re/decomp/14364bb50.c;pat:log-channel-CompressedSaveDataSerialiser decomp:re/decomp/14364bb50.c;xref:0x145855760",
+  "notes": "Vtable cell 0x145855760 (result hashed 'onFilesRead'). Needs result 0, mode +0x254 == 1 and state 2, else logs and error 0x58 / state 4. Checks file name '<+0x4f8>.com' (case-insensitive), header u32[0] <= 5 (else 0x5a, state 5) and u32[2] == 4 (else 0x59); heap from Game_CompressedSave_GetTempHeaps by [+8]+0, SAVE_PROPERTY_BAG_TEMP pool, Ne_BagCodec_ReadBag (raw, then decompressing 0x14568e190), 0x14364c6f0, Ne_Bag_Clear; state 6 on success. (lane owner review requested)"
  },
  "signature": {
   "id": "game.compressed_save_on_read_result",

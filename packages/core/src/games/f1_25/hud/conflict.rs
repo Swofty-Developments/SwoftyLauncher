@@ -78,6 +78,19 @@ pub enum Kind {
         scene: String,
         node: String,
     },
+    /// The screen records' board on `screen` takes the screen's UI tree past the slots the game can
+    /// index (`walk.rs`): `instances` copies of a `host`-slot host scene, about `slots` in the tree.
+    /// No other addon's change is involved; `off` are the addons that bring it inside on their own.
+    Walk {
+        screen: String,
+        host: usize,
+        instances: usize,
+        slots: usize,
+        off: Vec<String>,
+    },
+    /// The anim string table of `scene`, sorted, ends at `last`, past every name a record can add:
+    /// another addon's copy of the scene added anim names of its own.
+    Clips { scene: String, last: String },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -102,7 +115,7 @@ impl Conflict {
     pub fn node(&self) -> Option<&str> {
         match &self.kind {
             Kind::Board { node, .. } | Kind::Shown { node, .. } => Some(node),
-            Kind::Preview { .. } => None,
+            Kind::Preview { .. } | Kind::Walk { .. } | Kind::Clips { .. } => None,
         }
     }
 
@@ -123,6 +136,23 @@ impl Conflict {
                 "{theirs} and {ours} both show and hide {element} of {}",
                 short(scene)
             ),
+            Kind::Walk { screen, slots, .. } => format!(
+                "{ours} {} {} too big for the game: about {slots} of the {} slots one screen can hold, and the game can close as soon as it shows it",
+                if self.addons.len() > 1 {
+                    "together make"
+                } else {
+                    "makes"
+                },
+                screens::board_of(screen),
+                super::walk::SLOT_LIMIT
+            ),
+            Kind::Clips { scene, .. } => format!(
+                "{theirs} and {ours} both animate {}, and {theirs}'s animation names leave none after them for {ours}",
+                match shown_on(&uipre_of(scene)) {
+                    part if part.ends_with(".uipre") => short(scene).to_owned(),
+                    part => part,
+                }
+            ),
         }
     }
 
@@ -134,6 +164,10 @@ impl Conflict {
                 format!("{theirs}'s template node {node} already shows and hides {element}")
             }
             Kind::Shown { node, .. } => format!("{theirs}'s template node {node}"),
+            Kind::Walk { host, instances, .. } => {
+                format!("the board holds the {host}-slot host scene {instances} times")
+            }
+            Kind::Clips { last, .. } => format!("{theirs}'s anim string table ends at {last}"),
         }
     }
 }

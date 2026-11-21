@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d2f120",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
   "proto": "-",
   "evidence": "decomp:re/decomp/142d2f120.c;xref:0x1457dc010",
-  "notes": "Base ruleset (vt 0x1457dbef0) slot +0x120: online lobby leaver -> DNF; requires the progress flag (0x142f0c7f0([rs+0x330], id) +0xa0^+0xa8 bit 0); inactive -> NC 4, DSQ mask [rs+0x340]+0x1d08 -> DSQ 6, else eRetired; tail-jumps into Sess_PQRuleset_RetireVehicle 0x142d2f440 for part of the work. d1-verify-a CORRECTION (no plain else-eRetired): online leavers -> DNF (status 4, reason 1 or 9); inactive car -> NC (6, reason 4); DSQ-mask car -> DSQ (5, reason 6); remaining active car -> eFinished (3, reason 2) if rs+0x2e8 == 0, else DNF via 0x142ccf600 reason 9/10; no tail jump into PQRuleset_RetireVehicle seen"
+  "notes": "Slot +0x120 of OneShotQualifyingRuleset vt 0x1457dbef0 only (not a base ruleset). Online leaver (lobby entry +0x82==id, +0x4b&0x10, info vt+0xa0): +0x8c==0 and status 2 -> eDidNotFinish (4, reason 1); +0x8c==1 -> eDidNotFinish (4, reason 9); commit Sess_Result_ChangeVehicleStatus. Else if Sess_LapTimes_GetCarData([rs+0x330],id) byte +0xa0 == (+0xa8&1) it tail-jumps (0x142d2f1f9) to Sess_PQRuleset_RetireVehicle, otherwise returns 0. The earlier 'no tail jump' note came from a polluted decomp. Better name: Sess_OneShotQualiRuleset_RetireVehicle (bound record keeps its name)."
  },
  "signature": {
   "id": "session.ruleset_retire_vehicle",

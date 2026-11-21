@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144034250",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-VOICE",
-  "notes": "named from its log messages (channel NETWORK-VOICE): '** %s data to connection %d, all = %d, data = %p, reliable = %s, of size %d, mem pool %d/%d'"
+  "evidence": "decomp:re/decomp/144034250.c;pat:log-channel-NETWORK-VOICE;xref:0x14305c5ac",
+  "notes": "Voice manager update: queries communication privileges ('%s: result = %d, communication allowed = %d' as updateCommunicationPrivileges), sends headset/mute status (Game_NetworkVoice_SendHeadsetStatus, _SendMuteStatus), serialises outgoing voice data per connection ('** %s data to connection %d ...') and logs per-second sent/received bytes. Called from Gdb_Unk_14305c1f0. (lane owner review requested) Better name: Game_NetworkVoice_ManagerUpdate (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_voice_data_connection_all_data_reliable_size",

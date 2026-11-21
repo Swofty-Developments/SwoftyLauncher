@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143df3d10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143df3d10.c;xref:0x140108a6b",
-  "notes": "Builds the video-to-target material: shader package eaid://shader_package/video/video.nefx2, material 'video_to_target_material_new'; Ne_HashedName_FromString + Render_Gfx2_BindLayout_Create + Render_Material_FillMeTextureSlots/CountResourceSlots + resource-notify registration. 1 caller in the Render_Gfx config build (0x140108a6b)."
+  "notes": "Builds the video-to-target material: shader package eaid://shader_package/video/video.nefx2, material video_to_target_material_new; Ne_HashedName_FromString, Render_Gfx2_BindLayout_Create, Render_Material_FillMeTextureSlots/CountResourceSlots, Render_Gfx2_RegisterResourceNotify. Caller 0x140108a6b in Render_Gfx_BuildConfigObject (0x140104f70). (lane owner review requested)"
  },
  "signature": {
   "id": "render.video_material_create",

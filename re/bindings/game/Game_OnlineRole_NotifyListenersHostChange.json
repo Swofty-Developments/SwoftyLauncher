@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140998120",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140998120.c;xref:0x145658658,0x154a98ca1",
-  "notes": "OnlineRole listener virtual: logs 'MOX/Role: onSessionHostChange: host status: %d' (param_2) on host migration/assignment. Addon: detect host change. d4-verify-a: if param_2 != 0 logs and calls vslot +0x10 on every listener at +0x30..+0x38"
+  "evidence": "decomp:re/decomp/140998120.c;xref:0x145658658",
+  "notes": "If param_2 != 0 logs 'MOX/Role: %s: host status: %d' (onSessionHostChange) and calls vslot +0x10 on every listener in this+0x30..+0x38. Only reference: vtable cell 0x145658658. (lane owner review requested)"
  },
  "signature": {
   "id": "game.online_role_on_session_host_change",

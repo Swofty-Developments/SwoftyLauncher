@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143227440",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-READY",
-  "notes": "named from its log messages (channel NETWORK-READY): 'valid player in correct state'"
+  "evidence": "decomp:re/decomp/143227440.c;pat:log-channel-NETWORK-READY;xref:0x141c3e556,0x141c3e588,0x141c64def,0x141c969c6",
+  "notes": "Logs 'setLocalPlayersReady %s'; walks the player list [[this+0x60]+0x58..+0x60], for each valid local entry (ix<0x80, [this+0x13c+ix*4]!=0) calls 0x1432242d0(this, ix, ready, 0). 'valid player in correct state' is one of three log lines, not the purpose. (lane owner review requested) Better name: Game_NetworkReady_SetLocalPlayersReady (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_ready_valid_player_correct_state",

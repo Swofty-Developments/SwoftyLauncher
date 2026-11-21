@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14323d550",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name handleDropInRequestMessage (class from the log channel); log channel NETWORK: '%s: player: %s, vehicleIx: %d'"
+  "evidence": "decomp:re/decomp/14323d550.c;pat:log-message-method;xref:0x14323d365",
+  "notes": "Registered by the lea at 0x14323d365 in 0x14323d040. Logs 'handleDropInRequestMessage: player, vehicleIx' and tail-jumps Game_Network_AddDropInRequest 0x14323f450 (0x14323d601). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_handle_drop_in_request_message",

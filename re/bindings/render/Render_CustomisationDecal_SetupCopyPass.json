@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143c744c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143c744c0.c;xref:0x143c7204c",
-  "notes": "Copy pass binding (strings g_scene, copySrc) in the customisation decal bake. Named callers: Ne_CustomisationDecalRenderer_BakePasses."
+  "notes": "Bump-allocates 0x50 bytes from the frame arena (cmpxchg +0x20, align 8, limit +0x10, base +0x18; Ne_FatalAbort on overflow) and fills two binding records g_scene (hash 0x36d5e02f47d618b9) and copySrc (hash 0xb93e2dec3287c932), names interned with Ne_StringPool_InternByHash, value 0xc0, index -1; returns the block. Caller Ne_CustomisationDecalRenderer_BakePasses 0x143c7204c. (lane owner review requested)"
  },
  "signature": {
   "id": "render.customisation_decal_setup_copy_pass",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14072b5b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: My team setup finished'"
+  "evidence": "decomp:re/decomp/14072b5b0.c;pat:log-channel-TELEMETRY;xref:0x1406e1834,0x1406fe5f3",
+  "notes": "Bus handler(this,msg); subscribed 0x1406e1834 (0x1406d8470), unregistered 0x1406fe5f3. 0x88-byte record: u16 msg+0x12, byte msg+0x10, u32 list msg+0x20..+0x28 when msg+0x38 set (decomp has unaff_ registers). Tag 'career_setup_career_entry_status_resolved_record' via 0x14077a240, GUID+seq, 64-entry queue; logs 'My team setup finished' (TELEMETRY). (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_my_team_setup_finished",

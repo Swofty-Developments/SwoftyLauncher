@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143fdf7b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143fdf7b0.c;xref:0x1407638a2,0x14079d14c,0x141967c1e,0x141bb4e9c,0x142f8d295,0x143100243",
-  "notes": "Fills a user-info struct param_3 for local user param_2 from the auth interface this+0x30 (vcall +0x50 logged-in check, +0x38 state must be 6, +0x70 token object -> param_3[0x17],[0x18]); copies id/name strings to param_3 qwords +0,+3,+8,+0xd,+0x12; decodes the JWT in param_3[5] (0x144045490) and reads payload nexus.uif.age -> bool at param_3+0xd1 = age>17 (adult). Callers: analytics, Steam, livery, smoke test, Racenet ghost-lap post, DATASYNC. Addon: get user id/name and the adult flag."
+  "evidence": "decomp:re/decomp/143fdf7b0.c;xref:0x1407638a1,0x14079d14b,0x141967c1d,0x141bb4e9b,0x142f8d294,0x143100242,0x14317ca22,0x143ff4208,0x14be6af7b,0x14c5a4dbd,0x1530d31c5",
+  "notes": "Auth iface this+0x30: vcall +0x50 (logged in) and +0x38 state == 6, else clears param_3 (0x143fdaf00), returns 0. vcall +0x70 token obj -> param_3[0x17]/[0x18]; vcall 0 user strings -> param_3[0..2] (0x14534dfa8) and string fields +3,+8,+0xd,+0x12. Parses the JSON of param_3[5] (0x144045490, JWT payload), reads nexus.uif.age -> byte param_3+0xd1 = age > 17. Returns 1. (lane owner review requested)"
  },
  "signature": {
   "id": "game.account_fill_user_info_from_token",

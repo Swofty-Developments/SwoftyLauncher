@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140183c30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140183c30.c;xref:0x14019a533",
-  "notes": "Returns pointer to a lazily initialised static zeroed 32-byte structure at 0x1460446dc (init guard 0x1460446fc), the fallback/empty camera clip result. 7 callers (Game_CameraActor_SyncCameraClipTarget, 0x1437fad40 x2...)."
+  "evidence": "decomp:re/decomp/140183c30.c;xref:0x14019a533,0x1437fb5f6,0x1437fb600,0x1437fb61d,0x1437fb627,0x1437fb9b4,0x1437fb9be",
+  "notes": "Returns &0x1460446dc: a static 32-byte object zeroed once under the thread-safe init guard 0x1460446fc (0x1449e05fc/0x1449e06b0). Callers use it as an empty default (0x14019a533 in 0x140199cd0, 0x1437fb5f6,0x1437fb600,0x1437fb61d,0x1437fb627,0x1437fb9b4,0x1437fb9be in 0x1437fad40). (lane owner review requested)"
  },
  "signature": {
   "id": "game.camera_clip_get_empty_clip_data",

@@ -42,7 +42,7 @@ mod stock;
 
 use composer::first;
 pub use composer::{archive, clip_resources, compose, compose_with, cover_carriers};
-pub use inputs::{inputs_of, prefix_for};
+pub use inputs::{inputs_of, prefix_for, read, shared_records};
 use sprites::art_bounds;
 pub use stock::{GameStock, Layered, Stock};
 

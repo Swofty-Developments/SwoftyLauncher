@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144136ef0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144136ef0.c;xref:0x144136085",
-  "notes": "Open-addressing hash map grow/rehash helper (ego base/types path string + Ne_Crt_InvalidParameterNoReturn). Caller Ne_PresenceNameResolverFixed_InsertName (2 sites). Generic container code. vq1-verify partial/disagree"
+  "evidence": "decomp:re/decomp/144136ef0.c;xref:0x144136085,0x144136111",
+  "notes": "Node pool grow, not a hash rehash: block size doubles from 4 to 0x2000 nodes by the number of blocks already in chain param_1[1]; allocates n*0xc0+8 via allocator param_1[2] vcall +0x10 (tag ne_hash_map.h path 0x145612f08), links the block into param_1[1], threads the 0xc0-byte nodes into free list *param_1; alloc failure -> 0x1403139f0 + int3. Caller Ne_PresenceNameResolverFixed_InsertName (2 sites)."
  },
  "signature": {
   "id": "core.hash_map_grow_presence_name",

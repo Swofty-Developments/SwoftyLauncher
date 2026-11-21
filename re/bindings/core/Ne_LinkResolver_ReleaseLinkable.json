@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143992590",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143992590.c;xref:0x14399193a",
-  "notes": "330-byte insert used by Ne_LinkResolver_RegisterLinkable (0x143992201) and 0x14399193a. Hypothesis. vq0-verify partial/disagree"
+  "evidence": "decomp:re/decomp/143992590.c;xref:0x14399193a,0x143992201",
+  "notes": "(resolver,u64 *handle): if *handle!=0, under CS +0xf8 finds the node in the unordered map (buckets +0x80, mask +0x98, end +0x68, key node+0x10), decrements refcount node+0x20; at 0 unlinks it, count +0x70 -=1, frees via [+0x60] vt+0x38. When not found or freed calls [+0x140] vt+0x10(obj,handle,{0x143993130,resolver}). Callers 0x1439918e0, Ne_LinkResolver_RegisterLinkable."
  },
  "signature": {
   "id": "core.link_resolver_insert_linkable",

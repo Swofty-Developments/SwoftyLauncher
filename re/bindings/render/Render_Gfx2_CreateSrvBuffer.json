@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b73720",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143b73720.c;xref:0x14014f98f",
-  "notes": "Creates a Render_Gfx2Buffer_Construct buffer used as SRV (string-pool name, registered via 0x143a181d0, VRAM query 0x1439cadd0). Callers Game_Read_RendererGfxConfig, 0x140153140."
+  "evidence": "decomp:re/decomp/143b73720.c;xref:0x14014f98f,0x14014fa5e,0x140153382,0x140153434",
+  "notes": "Interns the name at param_1+0x18, allocates a 600-byte object (device+0x150 allocator), Render_Gfx2Buffer_Construct from the stack desc (param_2..param_7), registers it with Render_Gfx2_PtrFlagSet_Insert (lock device+0x3aa8, set +0x4078), Render_Gfx2Device_QueryVideoMemoryInfo, stores it at param_1+8 and queues the old buffer for deferred release. No SRV-specific step. (lane owner review requested) Better name: Render_Gfx2_RecreateNamedBuffer (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_create_srv_buffer",

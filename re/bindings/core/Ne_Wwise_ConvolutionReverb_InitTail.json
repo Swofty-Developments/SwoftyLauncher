@@ -9,7 +9,7 @@
   "subsystem": "core",
   "proto": "uint64_t (void)",
   "evidence": "decomp:re/decomp/144cada06.c",
-  "notes": "myteam-g1: Tail fragment of the Wwise convolution reverb init split by Ghidra. Third-party audio. No direct code ref (vtable/registry-only)."
+  "notes": "pdata fragment starting at 0x144cada06 (split by Ghidra); third-party Wwise audio code."
  },
  "signature": {
   "id": "core.wwise_convolution_reverb_init_tail",

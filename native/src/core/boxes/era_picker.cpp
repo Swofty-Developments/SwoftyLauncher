@@ -71,6 +71,8 @@
 // qualifying classification; the same put backs clear it (the game's own grid).
 // Qualifying tyres per box: the same narrowing hands the box's rules.qualifying_tyres option mask to the qualifying
 // tyre hooks (quali_tyres_guard.cpp); the same put backs clear it.
+// Career season rules (picker/career_rules.cpp): a Driver Career or My Team session load makes the same swaps in the
+// career's own game setup mode for the box of its season's career.season record; the career's unload puts them back.
 //
 // The three hooks are one core mixin set, offered at the first mixin commit after a box was registered,
 // so a game without registered boxes runs none of them.

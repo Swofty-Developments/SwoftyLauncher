@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143154850",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-MATCHING",
-  "notes": "named from its log messages (channel NETWORK-MATCHING): 'One-And-Done Matching starts the timer to auto-disconnection'"
+  "evidence": "decomp:re/decomp/143154850.c;pat:log-channel-NETWORK-MATCHING;xref:0x143152438,0x143156498,0x14315a70a,0x14581da68",
+  "notes": "One-And-Done matching tick: when armed (+0x41) starts the auto-disconnect timer ('starts the timer to auto-disconnection'); when +0x42 is set and the timeout param_1[0xe] elapsed, quits the client or the host from the game session (Game_Network_Leave 0x1430605c0). Callers 0x143152410, 0x143156490, 0x14315a700; vtable cells 0x14581da68, 0x145824bd8. (lane owner review requested) Better name: Game_NetworkMatching_OneAndDoneUpdate (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_matching_one_done_matching_starts_timer_auto",

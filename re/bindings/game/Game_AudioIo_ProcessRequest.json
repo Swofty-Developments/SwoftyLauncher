@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143fba2d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-AUDIO_IO",
-  "notes": "named from its log messages (channel AUDIO_IO): '[thread=0x%08I64x] %s: opHandle=%d fullFileName=\"%s\" offset=%I64u size=%I64u callback data=0x%x | [thread=0x%08I64x] processCancelRequest opHandle=%d | [thread=0x%08I64x] processCloseRequest opHandle='"
+  "evidence": "decomp:re/decomp/143fba2d0.c;pat:log-channel-AUDIO_IO;xref:0x143fba18d",
+  "notes": "Not a single request handler: AudioIo worker thread loop (called from thread proc 0x143fba180). Waits (0x14391e3b0) on exit/request/op events; pops requests from io+0x560 (CS +0x578): type 0 processReadRequest (op map io+0x438, start/next chunk, save for later), 1 processCloseRequest (remove from map), 2 processCancelRequest; completes ops via 0x143fbc3c0; on taskExit cancels and frees all ops. (lane owner review requested) Better name: Game_AudioIo_WorkerThreadLoop (bound record keeps its name)."
  },
  "signature": {
   "id": "game.audio_io_process_request",

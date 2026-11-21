@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140a01c30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140a01c30.c",
-  "notes": "Registers the gearbox fault audio events fault_gb_access, fault_gb_jam, fault_gb_speed."
+  "evidence": "decomp:re/decomp/140a01c30.c;xref:0x145666e60",
+  "notes": "Not a registration: AudioF1Car vtable slot (cell 0x145666e60), gearbox audio update. Calls base 0x14450fef0; play_mech_gearchange_clunk on gear state 1->2; on rising edges posts radio events fault_gb_access (gear state != 0xb), fault_gb_jam (car+0x658 & 0xc), fault_gb_speed (car+0x66c != 1.0) unless the session id is one of 3 excluded; latches bits 2/3/4 of byte +0xffa. (lane owner review requested) Better name: Game_AudioF1Car_UpdateGearboxAudio (bound record keeps its name)."
  },
  "signature": {
   "id": "game.audio_gearbox_fault_events",

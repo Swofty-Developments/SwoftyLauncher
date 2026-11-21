@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143f3e5e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143f3e5e0.c;xref:0x143bef9ae,0x143fb9141",
-  "notes": "Under critical section +0x480 builds a chain of 0x78-byte request nodes (init 0x143f41f10, first node 0x143f41bc0, set state 2/0xc via 0x143f41ff0) for a texture/file read, links them to the sync object and waits (Ne_Sync_WaitObject) when needed. Callers Render_Texture_CreateFromResourceCore and Ne_AudioIo_OpenFileRequest (shared request builder). Hypothesis."
+  "evidence": "decomp:re/decomp/143f3e5e0.c;xref:0x143bef9ae,0x143fb9141,0x143fb91b8,0x143f3e350,0x1441574a5",
+  "notes": "Shared engine file open (rename: not texture-only, Ne_AudioIo_OpenFileRequest uses it too): under EnterCriticalSection([this+0x480]) finds a device for path param_3 via 0x143f41bc0 (0x104-char buffer), allocates a 0x78-byte refcounted handle from allocator +0x188 (init 0x143f41f10, state 2/0xc via 0x143f41ff0 on failure), device vcall +0x38 resolves, +0x88 opens with param_4..7; waits with 0x14391ca60(-1) and retries. Callers 0x143bef9ae (Render_Texture_CreateFromResourceCore), 0x143fb9141/0x143fb91b8 (Ne_AudioIo_OpenFileRequest). (lane owner review requested) Better name: Render_FileIo_OpenRequest (bound record keeps its name)."
  },
  "signature": {
   "id": "render.texture_queue_load_request",

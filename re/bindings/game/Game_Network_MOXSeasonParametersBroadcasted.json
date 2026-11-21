@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14309ceb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'MOX/Season: Parameters broadcasted.'"
+  "evidence": "decomp:re/decomp/14309ceb0.c;pat:log-channel-NETWORK;xref:0x140bb4d4b,0x140fce2bb,0x143065aa1,0x1430a5262,0x1430e2b38",
+  "notes": "Returns without season data or with role 0. Posts joinedMultiplayerSession once (+0x764); a timer (+0x380/+0x390) sets +0x766 after 0.65; for role < 2 with the document open: resetTrackSet(+0x400) via 0x143099650, broadcasts parameters, sends the +0x767 message; +0x768 path rebuilds; role > 1 incorporates via 0x1430a1740; finally, when [NetSub+0x3c0]+0x1e0 is set, serialises the component list (0x143924390) and sends it via 0x143062020. (lane owner review requested) Better name: Game_GameSessionSeasonDocument_ProcessPending (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_mox_season_parameters_broadcasted",

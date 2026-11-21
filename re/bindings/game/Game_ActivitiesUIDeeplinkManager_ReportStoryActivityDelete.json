@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143868e80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_ActivitiesUIDeeplinkManager_ReportStoryActivityDelete;xref:0x14386923c,0x1438695bc",
-  "notes": "cxx=game::ActivitiesUIDeeplinkManager::reportStoryActivityDelete; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/143868e80.c;str:s_ActivitiesUIDeeplinkManager_ReportStoryActivityDelete;xref:0x143863c44",
+  "notes": "Own pretty string reportStoryActivityDelete. PlayGo/trial gate; finds the story component (RTTI); other story slots left -> storymode_act_1..3 stay available, else logs 'all unavailable' and marks them unavailable (0x14386a5e0). When available submits a resume request (vt 0x14588ac10) for storymode_act_1 / act_1_chapter_0 via 0x144134d70. Caller OnSaveSlotDeleted. (lane owner review requested)"
  },
  "signature": {
   "id": "game.activities_u_i_deeplink_manager_report_story_activity_delete",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143066c60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): '! handleComponentMessage() given a nigh-empty buffer?'"
+  "evidence": "decomp:re/decomp/143066c60.c;pat:log-channel-NETWORK;xref:0x143059aca",
+  "notes": "Caller 0x143058640. (this, msg): unless msg+0x29 selects the 0x143925660 path, reads a 32-bit component id from the bit stream (cursor +0x24, size +0x20); on a short buffer sets msg+0x28=1 and logs '! handleComponentMessage() given a nigh-empty buffer?'; else copies the component list [[this+0x420]+0x4f8]+0x1320..+0x1328, finds the one whose vt+0x258 object id matches, calls its vt+0x28(msg) and logs NETWORK/V 'ComponentMessage for %08X, ok'. (lane owner review requested) Better name: Game_Network_HandleComponentMessage (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_handle_component_message_given_nigh",

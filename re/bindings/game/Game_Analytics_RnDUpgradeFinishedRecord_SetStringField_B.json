@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14058e930",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14058e930.c;xref:0x14071e6d2",
-  "notes": "Analytics event payload B (twin of ...A) for the part-upgrade analytics events. Telemetry only. vp5-verify partial/disagree"
+  "evidence": "decomp:re/decomp/14058e930.c;xref:0x14071e6d2,0x14071e967",
+  "notes": "Assigns C string arg (strlen 0x14535e010, copy 0x1453784c0) into std::string at rec+0x60 of f1.proto.RnDUpgradeFinishedRecord (ctor 0x14058d250); callers pass enum-name table entry UNK_14565cee0[..]. (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_build_part_upgrade_event_b",

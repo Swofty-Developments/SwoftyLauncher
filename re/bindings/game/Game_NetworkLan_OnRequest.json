@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14408f830",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onRequest (class from the log channel); log channel NETWORK-LAN: 'onRequest received'"
+  "evidence": "decomp:re/decomp/14408f830.c;pat:log-message-method;xref:0x145a543f8",
+  "notes": "Body only logs 'onRequest received' (NETWORK-LAN) and returns. Only ref: vtable cell 0x145a543f8. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_lan_on_request",

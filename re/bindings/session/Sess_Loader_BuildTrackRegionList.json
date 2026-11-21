@@ -8,8 +8,8 @@
   "level": "L2",
   "subsystem": "session",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142d49050.c;xref:0x142d47d99,0x142da7ece",
-  "notes": "Track loader: allocates the region request list and adds region_on_track and other world regions for streaming. Callers: Sess_Loader_StartFrontendAssetLoad, Sess_Loader_RequestTrackLoad.  2026-11-17 engine-re: the track's asset group paths come from its tracks.track_resource row (session +0x1a8 -> +0x30 record, record+8 -> row): row+0x60, +0x18, +0x10, +0x08 template strings are expanded by Game_TrackRecord_ExpandPathTokens (FILENAME/FOLDER/BASETRACK; calls 0x142d491ae..0x142d493a4) into record+0xc68 (queued prio 10), +0xcf8, +0xce8, +0x840; the record's extra worlds vector +0xaf8 (stride 0x98) and +0xac0 x 0x150 regions are queued too, then region_on_track (0x1457dd83f). No slot name is built in code.  | 2026-11-17 engine-re round A2: queue order (static): 1) TrackResource trackMapAssetGroup (+0x60) expanded into record+0xc68, prio 10 (only when set); 2) record+0xaf8..+0xb00 entries (stride 0x98, path +0x10), prio 10; 3) record+0xac0 regions (stride 0x150, +0x50), prio 10; 4) crowdEri (+0x18) -> record+0xcf8 and worldEri (+0x10) -> record+0xce8 are expanded and hashed (resource ids, not queued here); 5) worldAssetGroup (+0x08) -> record+0x840 goes into the world region request, queued prio 10 (lVar21+0x140); 6) region_on_track; 7) the collected extra entries at prio 4. The bake/probe groups (+0x20..+0x58, iblProbes) are expanded elsewhere (0x14370a8a0, Game_TrackRecord_BuildProbeAssetGroupPath). Runtime order: T205."
+  "evidence": "decomp:re/decomp/142d49050.c;xref:0x142d47d99,0x142da7ece;decomp:re/decomp/142d4d890.c",
+  "notes": "Track loader: allocates the region request list and adds region_on_track and other world regions for streaming. Callers: Sess_Loader_StartFrontendAssetLoad, Sess_Loader_RequestTrackLoad.  2026-11-17 engine-re: the track's asset group paths come from its tracks.track_resource row (session +0x1a8 -> +0x30 record, record+8 -> row): row+0x60, +0x18, +0x10, +0x08 template strings are expanded by Game_TrackRecord_ExpandPathTokens (FILENAME/FOLDER/BASETRACK; calls 0x142d491ae..0x142d493a4) into record+0xc68 (queued prio 10), +0xcf8, +0xce8, +0x840; the record's extra worlds vector +0xaf8 (stride 0x98) and +0xac0 x 0x150 regions are queued too, then region_on_track (0x1457dd83f). No slot name is built in code.  | 2026-11-17 engine-re round A2: queue order (static): 1) TrackResource trackMapAssetGroup (+0x60) expanded into record+0xc68, prio 10 (only when set); 2) record+0xaf8..+0xb00 entries (stride 0x98, path +0x10), prio 10; 3) record+0xac0 regions (stride 0x150, +0x50), prio 10; 4) crowdEri (+0x18) -> record+0xcf8 and worldEri (+0x10) -> record+0xce8 are expanded and hashed (resource ids, not queued here); 5) worldAssetGroup (+0x08) -> record+0x840 goes into the world region request, queued prio 10 (lVar21+0x140); 6) region_on_track; 7) the collected extra entries at prio 4. The bake/probe groups (+0x20..+0x58, iblProbes) are expanded elsewhere (0x14370a8a0, Game_TrackRecord_BuildProbeAssetGroupPath). Runtime order: T205. | 2026-11-19 engine-re: fills the region request [[loader+0x30]+0x1b0]: +0x18 inline copy of the record fileName (record+0x68 string, char * +0x78), +0xb0 inline copy of the record instanceName (record+0xc0 string, char * +0xd0) with char * at +0xa8, +0x1c8 / +0x1d8 the worldEri / crowdEri resource ids expanded with Game_TrackRecord_ExpandPathTokens. It registers the delegate {Sess_Loader_StartTrackWorldTask 0x142d4d890, loader} (lea 0x142d49fd2), which starts the primary world named by the instanceName."
  },
  "signature": {
   "id": "session.loader_build_track_region_list",
@@ -45,6 +45,16 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/142d49050.c;xref:0x142d47d99,0x142da7ece",
    "notes": "V3554 allocs region request list (0x28 node, 0x100 buffer), region_on_track string and other region adds; callers Sess_Loader_StartFrontendAssetLoad and RequestTrackLoad"
+  },
+  {
+   "date": "2026-11-19",
+   "verifier": "track-flag-verify",
+   "kind": "func",
+   "item": "0x142d49050",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142d49050-0x142d4a057;decomp:re/decomp/142d49050.c",
+   "notes": "V11900 C3 confirmed: r14=[[param_1+0x30]+0x1a8], record r9=[r14+0x30] (same object passed as rcx to 0x142e4be70 at 0x142d49302/49353/493a4); string obj record+0xc0 (char* +0xd0, fallback static 0x14607fbe0 if record null) copied to stack (cap 0x80) then to request r15=[[param_1+0x30]+0x1b0] +0xb0 with char* at +0xa8 (0x142d499af); record+0x68 obj char* +0x78 copied to request +0x18 (char* at +0x10, cap 0x80 at +0x8). Precision: claim says 'string at record+0x78' - it is the char* stored at record+0x78. Also request+0x148 gets a string from the 0x142e4be70 result"
   }
  ],
  "proofs": []

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1422052b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'Ranked Divisions Policy - Has Progression Data: %s, Player Name: %s'"
+  "evidence": "decomp:re/decomp/1422052b0.c;pat:log-channel-NETWORK;xref:0x1457830c8",
+  "notes": "Virtual (vtable cell 0x1457830c8): resolves the player name (param_2+0x28 via 0x144179360), logs 'Ranked Divisions Policy - Has Progression Data: %s, Player Name: %s' with flag param_3+7; without progression data takes a separate path ('lng_dash'). (lane owner review requested) Better name: Game_Network_RankedDivisionsPolicy_OnProgressionData (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_ranked_divisions_policy_progression",

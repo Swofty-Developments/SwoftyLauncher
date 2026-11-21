@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1440b7030",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-PLAYFAB",
-  "notes": "named from its log messages (channel NETWORK-PLAYFAB): '%s : Crossplay initialisation failed [%d] with error: [%s], and msg: [%s]'"
+  "evidence": "decomp:re/decomp/1440b7030.c;pat:log-channel-NETWORK-PLAYFAB;xref:0x145a589f0",
+  "notes": "Lambda operator() in ne_net_playfab_module.cpp: sets the NeNetPlayFabModule state to NE_PLAYFAB_STATE_NOT_CONNECTED (changeState inlined), logs 'Crossplay initialisation failed [%d] with error: [%s], and msg: [%s]' and copies the message into the global buffer 0x146c9fd98. Only ref: cell 0x145a589f0. (lane owner review requested) Better name: Game_NetworkPlayfab_OnCrossplayInitFailed (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_playfab_crossplay_initialisation_msg",

@@ -1,9 +1,10 @@
 #pragma once
 #include <cstdint>
+#include <string_view>
 
 namespace frontend::view {
 
-enum Kind : uint32_t { UNKNOWN = 0, COCKPIT, TCAM, TCAM_OFFSET, CHASE_NEAR, CHASE_FAR, OTHER };
+enum Kind : uint32_t { UNKNOWN = 0, COCKPIT, TCAM, TCAM_OFFSET, CHASE_NEAR, CHASE_FAR, OTHER, TRACKSIDE, REVERSE_POD };
 enum Flag : uint32_t { PAUSED = 1, REPLAY = 2, PHOTO = 4, MENU = 8, CUTSCENE = 16, SPECTATING = 32 };
 
 struct State {
@@ -15,6 +16,7 @@ struct State {
 State current();
 uint32_t pause_reasons();
 void setup();
+void load_trackside_cameras(std::string_view track);
 void flow(uint32_t hash, uint32_t to);
 
 }

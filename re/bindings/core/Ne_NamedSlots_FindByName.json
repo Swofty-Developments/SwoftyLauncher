@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140317790",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140317790.c;xref:0x1401b928c",
-  "notes": "314-byte string comparison wrapper around Ne_Crt_Strcmp with null/empty handling; 82 callers (Ne_String_AssignWithMode, Game_Read_BenchmarkBenchmarkResultsConfig ...). Hypothesis on exact null semantics. vq0-verify partial/disagree"
+  "evidence": "decomp:re/decomp/140317790.c;xref:0x1401b928c,0x1407adf40,0x1407ae08e",
+  "notes": "(slots, const char *name): linear search over 8 fixed slots of 0x70 bytes: used flag int +0, name +0x30; returns the first used slot whose name equals name (Ne_Crt_Strcmp 0x14535d850), else null. call sites."
  },
  "signature": {
   "id": "core.string_equals_c_str_null_safe",

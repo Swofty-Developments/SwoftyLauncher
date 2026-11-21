@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144434840",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144434840.c;xref:0x1414394fb,0x1427bd887",
-  "notes": "JSON helper (rapidjson-like, value flags at +0x1e: 0x10 number, 0x200 double, 0x20 int, 0x40 uint): finds member param_1 in object param_3 (0x1406d4b80) and stores it as double in *param_2; logs Unable to find value for %s in JSON. Addon: reuse to read numbers from game JSON."
+  "evidence": "decomp:re/decomp/144434840.c;xref:0x1414394fa,0x1427bd886,0x1427bd8e3,0x1427bd90c,0x1427bd935",
+  "notes": "(name, double* out, obj*): finds member via 0x1406d4b80; number (flag 0x10 @+0x1e) -> double (0x200), int (0x20), uint (0x40), int64/uint64 -> *out, returns 1; null value (flags 0) returns 1 without writing; missing/non-number logs 'Unable to find value for %s in JSON' (channel JSON), returns 0. Callers Game_Livery_ParseDecalsJson, Sess_Parse_PlayerCarStateJson."
  },
  "signature": {
   "id": "core.json_get_double",

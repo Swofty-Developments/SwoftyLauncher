@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439fffb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439fffb0.c;xref:0x143a009c7,0x1439ffbcc",
-  "notes": "State-cache binder for 64 resource slots (idx+count < 0x40, stage param_5 selects banks at ctx+0x7c0/+0x1088): resolves each resource's GPU view (res+0x48 type 1/7 -> +0x180 slot, else table +0x2a8), registers it through Ne_HashMap_FindOrInsert_Float, compares with the cached binding and sets dirty bits in ctx+0x12a0 (+0x128b |= 0x80). Hypothesis: SRV/UAV table binding."
+  "evidence": "decomp:re/decomp/1439fffb0.c;xref:0x1439ffbcc,0x143a009c7,0x143bcb6af",
+  "notes": "For count param_3 at start param_2 (end < 0x40) and stage param_5: per view resolves the GPU object (view+0x44 type 1/7 -> view+0x48 +0x180+frame*0x40, else +0x2a8+frame*8), residency insert (Ne_HashMap_FindOrInsert_Float); updates cache ctx+0x7c0+stage*0x200 and +0x1088+stage*0x100, sets dirty bit in ctx+0x12a0+stage*8 and 0x80 in +0x128b. Callers Render_Gfx_SetRenderTargets 0x1439ffae0, Render_Gfx_SubmitDraw 0x143a007e0, 0x143bcb630. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx_bind_slot_range64",

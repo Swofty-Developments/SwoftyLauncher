@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143063ef0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name ContentDomainVerifier_TerminateSession (class from the log channel); log channel NETWORK: '%s: error code: %d'"
+  "evidence": "decomp:re/decomp/143063ef0.c;pat:log-message-method;xref:0x14580a660",
+  "notes": "Slot 2 (+0x10) of vtable 0x14580a650; only that cell refers to it. Logs 'ContentDomainVerifier_TerminateSession: error code'; takes the InterruptQueue, calls Game_GameSessionManager_Leave 0x1430605c0(this, 1, 0, 1) (0x143064009); picks network_domain_error_content_not_available / _version_update / _version_nonupdate or network_invite_join_error_generic, fills ui_menu_data.current_host_settings_content_name and opens a popup with callback 0x1430643b0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_content_domain_verifier_terminate_session",

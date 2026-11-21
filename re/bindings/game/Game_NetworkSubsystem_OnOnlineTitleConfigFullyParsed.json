@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430f5810",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=NetworkSubsystem::onOnlineTitleConfigFullyParsed; log channel NETWORK: 'virtual void network::NetworkSubsystem::onOnlineTitleConfigFullyParsed() | %s - retrying enableCrossplay(%s)'"
+  "evidence": "decomp:re/decomp/1430f5810.c;pat:log-message-cxx;xref:0x1458141a8",
+  "notes": "Virtual (last cell of a NetworkSubsystem vtable block) 'onOnlineTitleConfigFullyParsed': logs '%s - retrying enableCrossplay(%s)' and retries crossplay. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_subsystem_on_online_title_config_fully_parsed",

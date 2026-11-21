@@ -8,6 +8,32 @@ use crate::{Error, Result};
 
 use super::OnAddons;
 
+/// Whether a `when` (an object of option values and `addon`) holds for the profile's options and the addons on.
+pub fn when_holds(when: &Value, m: &AddonManifest, profile: &Profile, on: &OnAddons) -> Result<bool> {
+    let fail = |msg: String| Error::Resolve(format!("{}: {msg}", m.id));
+    let Value::Object(when) = when else {
+        return Err(fail("when must be an object of option values and addon".into()));
+    };
+    let mut hit = true;
+    for (id, want) in when {
+        if id == "addon" {
+            let needs = AddonNeed::parse_list(want).map_err(|e| fail(format!("when.addon: {e}")))?;
+            hit &= needs.iter().all(|n| on.has(n));
+            continue;
+        }
+        let o = m
+            .options
+            .iter()
+            .find(|o| o.id == *id)
+            .ok_or_else(|| fail(format!("unknown option {id}")))?;
+        let want = o
+            .normalise(want)
+            .ok_or_else(|| fail(format!("when: {want} is not a value of {id}")))?;
+        hit &= on.value(profile, m, o) == want;
+    }
+    Ok(hit)
+}
+
 pub fn render_ops(doc: &mut Value, m: &AddonManifest, profile: &Profile, on: &OnAddons) -> Result<()> {
     let fail = |msg: String| Error::Resolve(format!("{}: {msg}", m.id));
     let option = |id: &str| {
@@ -16,25 +42,7 @@ pub fn render_ops(doc: &mut Value, m: &AddonManifest, profile: &Profile, on: &On
             .find(|o| o.id == id)
             .ok_or_else(|| fail(format!("unknown option {id}")))
     };
-    let holds = |when: Value| -> Result<bool> {
-        let Value::Object(when) = when else {
-            return Err(fail("when must be an object of option values and addon".into()));
-        };
-        let mut hit = true;
-        for (id, want) in &when {
-            if id == "addon" {
-                let needs = AddonNeed::parse_list(want).map_err(|e| fail(format!("when.addon: {e}")))?;
-                hit &= needs.iter().all(|n| on.has(n));
-                continue;
-            }
-            let o = option(id)?;
-            let want = o
-                .normalise(want)
-                .ok_or_else(|| fail(format!("when: {want} is not a value of {id}")))?;
-            hit &= on.value(profile, m, o) == want;
-        }
-        Ok(hit)
-    };
+    let holds = |when: Value| when_holds(&when, m, profile, on);
     let Some(doc) = doc.as_object_mut() else {
         return Ok(());
     };

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14315a450",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-LEAGUES",
-  "notes": "named from its log messages (channel NETWORK-LEAGUES): 'Migration group size decreased: %d'"
+  "evidence": "decomp:re/decomp/14315a450.c;pat:log-channel-NETWORK-LEAGUES;xref:0x14581d4d8",
+  "notes": "Counts connected peers with flag bit 28 in the player list [[this+0x10]+0x100]+0x58, compares half+1 with the stored group size, restarts the timer this+0x60/+0x68 and logs 'Migration group size increased/decreased: %d'. Only ref: vtable cell 0x14581d4d8. (lane owner review requested) Better name: Game_NetworkLeagues_UpdateMigrationGroupSize (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_leagues_migration_group_size_decreased",

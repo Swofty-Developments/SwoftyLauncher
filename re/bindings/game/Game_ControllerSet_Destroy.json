@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143896ed0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-CONTROLLER_SET",
-  "notes": "named from its log messages (channel CONTROLLER_SET): 'ControllerSet(%d / %s) : destroyed%s%s.'"
+  "evidence": "decomp:re/decomp/143896ed0.c;pat:log-channel-CONTROLLER_SET;xref:0x143899f68,0x1438d2a98,0x1519de918",
+  "notes": "Logs 'destroyed', destroys and frees the HUMAN controller +0x20 and the AI controller +0x28 via heap +0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.controller_set_destroy",

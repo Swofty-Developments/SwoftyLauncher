@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c71b00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name resetState (class from the log channel); log channel CareerEventsSequencer_Verbose: 'resetState'"
+  "evidence": "decomp:re/decomp/140c71b00.c;pat:log-message-method;xref:0x140c740ff,0x140c79496,0x142d52d50,0x149a827ad,0x149a827be,0x149aaf8a6",
+  "notes": "Logs CareerEventsSequencer_Verbose 'resetState' at entry (own string). Clears +0x16b, 0x140c7a210(this,0), vcall +0xa0 of [0x14601db08]+0xb0, [+0x90]+0xc10=0x10000/+0xc14=0; tail chunk 0x140c7a510 (log 'unSpawnEverything') calls Game_Careereventssequencer_UnSpawnScene for slots 0-3, clears +0x168/+0x1a0, vcall +0x10 of +0x88, 0x140c7ce90; on success zeroes +0xa0..+0x167. (lane owner review requested)"
  },
  "signature": {
   "id": "game.careereventssequencer_reset_state",

@@ -276,13 +276,19 @@ namespace swofty::cars {
 struct Profile {
     json::Value within;                         // selector array: content, data_group, setup_mode, vehicle_package, ...
     std::vector<events::SessionType> when;      // empty: every session
-    CarSelect cars;                             // indices; vehicle_package, vehicle and team wait for the car identity
+    CarSelect cars;                             // indices, team, vehicle, vehicle_package, driver
     bool ai_only = false, player_only = false;
     int priority = 0;
     float power_scale = 1, limiter_offset_rpm = 0, lift_scale = 1, drag_scale = 1;
     float grip_scale = 1, ai_grip_scale = 1;
     std::optional<uint32_t> fuel_modes;         // off until the fuel mode call is verified
+    ProfileScope scope = ProfileScope::automatic; // automatic or global, for a profile without within
     json::Value extra;                          // every other key is a live field path
+};
+
+struct CarSelect {                              // every list that is set has to match; one entry of a list is enough
+    std::vector<uint32_t> indices;              // the cars' indices in the session's vehicle table
+    std::vector<std::string> vehicle_package, vehicle, team, driver;
 };
 }
 ```
@@ -303,7 +309,125 @@ Every key the record does not name is a live field path. A number sets it; an ob
 }
 ```
 
-Profiles compose by priority, then by record id. A profile whose `cars` names a vehicle package, vehicle or team is skipped and logged until the car's identity is mapped.
+Profiles compose by priority, then by record id.
+
+A live field takes a number, or an object with `set`, `scale` or `add` and a number. Any other value is refused and logged as `car.profile layer refused`, and the profile's other fields still apply. A key that starts with `$`, such as `$comment`, is ignored.
+
+### Picking cars by team, vehicle and driver
+
+`cars` picks the cars a profile reaches. Each list you set has to match, and one entry of a list is enough:
+
+```json
+{
+  "car.profile": {
+    "mercedes_power_unit": {
+      "within": [{ "content": "swofty.swofty-seasons-2014/sw_2014" }],
+      "cars": { "team": ["mercedes"] },
+      "power_scale": 1.03
+    }
+  }
+}
+```
+
+| Key | Takes |
+|---|---|
+| `cars.team` | a box's team key (`"mercedes"`), a `team.identity` id (`"swofty.swofty-seasons-2014/sw14_mercedes"`), `game/<row label>` (`"game/mercedes"`) or `constructor/<key>` (`"constructor/mercedes"`) |
+| `cars.vehicle` | a `vehicle` id (`"swofty.swofty-seasons-2014/mercedes"`) or `game/<row label>` |
+| `cars.vehicle_package` | a `vehicle.package` id or `game/<row label>` |
+| `cars.driver` | a `driver.identity` id, `game/<row label>` (`"game/lewis_hamilton"`) or `person/<key>` |
+| `cars.indices` | the cars' indices in the session's vehicle table |
+
+The core reads each car's team, vehicle and driver from the car's session entrant, the same entrant the HUD's team badges read, and looks up the game database row of each. A car answers to every name of its row:
+
+1. **A box's team key.** While a box is raced, a car whose team row is one of the box's `teams` entries answers to that entry's `key`. SWOFTY 2012 to 2024 use the same keys in every season: `mercedes`, `ferrari`, `mclaren`, `redbull` and `williams` are those teams in each season, while `force_india`, `lotus`, `toro_rosso`, `sauber` and `haas` are slots that keep their key when the team in them changes its name. `"mercedes"` is the Mercedes works team in each of those boxes and matches nothing outside a box.
+2. **The team.identity id**, `<addon>/<key>`. The key is the team's row label, so `swofty.swofty-seasons-2014/sw14_mercedes` is the row `sw14_mercedes`. In a career, a team slot dressed as another identity answers to the identity it wears, not to the stock row under it.
+3. **`game/<row label>`**, the row itself: `game/mercedes` is the game's own Mercedes.
+4. **`constructor/<key>`**: every team whose `team.identity` sets `constructor` to it or lists it in `provides`, and the team its `team.constructor` record names. The game's own rows of the real teams provide their constructor (`game/mercedes` provides `constructor/mercedes`). A pack's team matches only when its identity says so; the SWOFTY 2012 to 2024 identities don't yet, so in those boxes use the box's team key.
+
+A key with no `/` is always a box's team key; one with a `/` is never one. A customer team is never its engine supplier: `"mercedes"` doesn't match a Williams with a Mercedes engine.
+
+For one season, put the season's box in `within` and its team key in `cars.team`. Without `within`, `"cars": {"team": ["mercedes"]}` reaches the team keyed `mercedes` in whichever box is raced.
+
+A selector written at the top of the record instead of in `cars` refuses the whole profile, so it reaches no car:
+
+```text
+[cars] car.profile mod.mercedes-pu/boost refused: "team" at the top of the record is not a live field, and the profile would reach every car; the cars it picks go in "cars": {"team": [...]}
+```
+
+A `within` that names `team`, `vehicle` or `driver` doesn't compile, and its log line says they go in `cars`.
+
+An entry no box, record or game row has is logged once and matches no car. The profile's other entries still apply:
+
+```text
+[cars] car.profile mod.mercedes-pu/boost: cars.team "mercedez" is no box's team key; a team is a box's team key, a team.identity id (<addon>/<key>), game/<row label> or constructor/<key>; that entry matches no car
+```
+
+Until the car's entrant is read, a profile that names a team, vehicle, package or driver applies to no car, and the core reads the entrant again once a second. Once it has, it logs each car's names, and the cars each profile picked:
+
+```text
+[cars] car 6: team game/sw14_mercedes, swofty.swofty-seasons-2014/sw14_mercedes, mercedes; vehicle game/sw14_mercedes, swofty.swofty-seasons-2014/mercedes; vehicle package game/f1cg_f1_2014_vehicle_package; driver game/lewis_hamilton
+[cars] car 6: picked by its team, vehicle or driver: mod.mercedes-pu-2014/mercedes_power_unit
+```
+
+A My Team car has no team row, so no `cars.team` entry matches it. The safety car has no entrant, so no `cars.team`, `cars.vehicle`, `cars.vehicle_package` or `cars.driver` entry picks it. A car whose entrant can't be read on this game build gets none of these profiles, and the core logs why once.
+
+### A profile's scope
+
+Without `within`, a profile from an addon that owns a box (a `content.package` record) or a career mode (a `career.mode` or `career.content` record with a data group) applies only while one of its own boxes is raced or in its own careers. A SWOFTY season's profile then never reaches another season's cars. An addon that owns neither reaches every session its `when` and `cars` match. An explicit `within` replaces the implicit scope, and `"scope": "global"` turns it off:
+
+```json
+{
+  "car.profile": {
+    "real_mercedes": {
+      "cars": { "team": ["constructor/mercedes"] },
+      "scope": "global",
+      "power_scale": 1.02
+    }
+  }
+}
+```
+
+The core logs the implicit scope once per profile:
+
+```text
+[cars] car.profile swofty.swofty-seasons-2014/tow: no within, so it applies only in swofty.swofty-seasons-2014's own boxes and careers ("scope": "global" applies it everywhere)
+```
+
+### Example: one team's power unit
+
+A data-only addon that gives the Mercedes works team 3% more engine torque in SWOFTY 2014 and nothing else. `swofty.json`:
+
+```json
+{
+  "schema_version": 1,
+  "id": "mod.mercedes-pu-2014",
+  "name": "Mercedes Power Unit 2014",
+  "description": "3% more engine torque for the Mercedes works team in SWOFTY 2014.",
+  "version": "1.0.0",
+  "author": "you",
+  "license": "MIT",
+  "kind": ["files"],
+  "category": "cars",
+  "compat": { "game": "f1_25", "launcher": ">=1.10.14" },
+  "requires": [{ "id": "swofty.swofty-seasons-2014" }]
+}
+```
+
+`registry/profile.json`:
+
+```json
+{
+  "car.profile": {
+    "mercedes_power_unit": {
+      "within": [{ "content": "swofty.swofty-seasons-2014/sw_2014" }],
+      "cars": { "team": ["mercedes"] },
+      "power_scale": 1.03
+    }
+  }
+}
+```
+
+`power_scale` multiplies the engine's drive torque. To reach the works team in every SWOFTY season, drop `within` and the `requires` entry. To reach one driver's car only, add `"driver": ["game/lewis_hamilton"]` to `cars`. Before 1.10.14 the core skipped a profile whose `cars` named a team; from 1.10.14 it applies it to that team's cars.
 
 ## Events
 
@@ -428,7 +552,7 @@ For how the AI drives, see [AI](/std/systems/ai).
 
 ## Readiness
 
-The parts, their fields and how they're stored are mapped from the game's code and checked independently. An in-game trace confirmed that cars are built once at session load and torn down when it ends, that the game rebuilds every car twice while a session loads and rebuilds one car when control of it changes, and the live values of engine speed, fuel, ERS, tyre wear, mass and the aero coefficients. Still to confirm in game: DRS, the fuel-mix and setup controls, career R&D upgrades, and how a car's index matches its participant. The `cars::live` fields are mapped from the game's code and checked on fake cars in the core's host test; none of them is tested in game yet. Their offsets are checked for Steam 1.0.141, Steam 1.0.145.2472 and the EA app's 1.0.145: on any other build, a game patch included, `cars::live` is off.
+The parts, their fields and how they're stored are mapped from the game's code and checked independently. An in-game trace confirmed that cars are built once at session load and torn down when it ends, that the game rebuilds every car twice while a session loads and rebuilds one car when control of it changes, and the live values of engine speed, fuel, ERS, tyre wear, mass and the aero coefficients. Still to confirm in game: DRS, the fuel-mix and setup controls, career R&D upgrades, and how a car's index matches its participant. The `cars` team, vehicle and driver selectors join a car to its session entrant by the vehicle index the HUD's team badges use, on the builds where those badges are on; the driver is read where the HUD's driver names are on (not on the EA app). In a Grand Prix on SWOFTY 2014 (Steam 1.0.145), the core read the team, vehicle, vehicle package and driver of all 22 cars as the box lists them, a box's team key, a `team.identity` id and a `vehicle` id each picked only their team's two cars, and a driver's `game/` row and `driver.identity` id each picked only that driver's car. A career with dressed team slots, My Team, Time Trial, the EA app and grids larger than 22 cars are not tested in game yet. The `cars::live` fields are mapped from the game's code and checked on fake cars in the core's host test; none of them is tested in game yet. Their offsets are checked for Steam 1.0.141, Steam 1.0.145.2472 and the EA app's 1.0.145: on any other build, a game patch included, `cars::live` is off.
 
 These fields are on; each rests on a verified row:
 

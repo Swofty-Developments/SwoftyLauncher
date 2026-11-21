@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14336be50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-F1OS",
-  "notes": "named from its log messages (channel F1OS): 'GEOLOCATION: Externally told country code (%04X), was (%04X)'"
+  "evidence": "decomp:re/decomp/14336be50.c;pat:log-channel-F1OS;xref:0x14583c350",
+  "notes": "Virtual (vtable cell 0x14583c350, next to 0x14336b390 at 0x14583c348). Compares finished child param_2 with child slots this[0x2d]/[0x2f]/[0x31] and advances the login state (+0x1b8), 'Network.ForceMPMode' checks, 'GEOLOCATION: Externally told country code (%04X), was (%04X)' (stores +0xfb0), 'OnlineServerLogInTask : Authorisation denied' -> 0x1432c0280. (lane owner review requested) Better name: Game_OnlineServerLogInTask_OnChildTaskFinished (bound record keeps its name)."
  },
  "signature": {
   "id": "game.f1os_geolocation_externally_told_country",

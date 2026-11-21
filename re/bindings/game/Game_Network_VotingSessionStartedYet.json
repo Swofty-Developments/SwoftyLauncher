@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430c5e70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): '%s(%d, %s, %s, %s) : voting session cannot be started yet.'"
+  "evidence": "decomp:re/decomp/1430c5e70.c;pat:log-channel-NETWORK;xref:0x1430c5439,0x1430c8d92",
+  "notes": "Referenced by the lea at 0x1430c5439 in 0x1430c4610 and called from CastVoteInternal 0x1430c8430. Logs 'handleBallot(%d, %s, %s, %s).' with Player(playerId, connectionId, ballot); rejects unknown player, connection id mismatch, not-yet-startable session, params mismatch (each logged); otherwise records the ballot and sends (0x14402e500). (lane owner review requested) Better name: Game_NetworkVoting_HandleBallot (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_voting_session_started_yet",

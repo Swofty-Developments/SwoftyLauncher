@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143617950",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK_FORMATION_LAP",
-  "notes": "named from its log messages (channel NETWORK_FORMATION_LAP): '[FORMATION_LAP] setFromNetwork(%s, %s) : Host complete the formation lap procedure. Waiting for 'resume race' signal.'"
+  "evidence": "decomp:re/decomp/143617950.c;pat:log-channel-NETWORK_FORMATION_LAP;xref:0x14325aa60,0x1436174fe",
+  "notes": "Logs '[FORMATION_LAP] setFromNetwork(%s, %s)' (on/not_on_formation_lap, completed/not_completed from this+0x51/+0x52). Compares local state (+0x40/+0x42) with the networked one, logs transitions, and when the host completed forces 'WaitResumeRace' / sends the 'ResumeRace' signal. Callers 0x143259e20, 0x1436174e0. (lane owner review requested) Better name: Game_NetworkFormationLap_SetFromNetwork (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_formation_lap_set_from_network_host_complete",

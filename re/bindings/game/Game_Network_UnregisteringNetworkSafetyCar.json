@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430cef70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): '[SAFETY_CAR] unregistering network safety car(%d).'"
+  "evidence": "decomp:re/decomp/1430cef70.c;pat:log-channel-NETWORK;xref:0x14fe062e7",
+  "notes": "Only ref: the lea at 0x14fe062e7 in 0x14fe06200. (this, car): finds the car in the registered list, logs '[SAFETY_CAR] unregistering network safety car(%d).', removes it and decrements the count at +0x58. (lane owner review requested) Better name: Game_Network_UnregisterNetworkSafetyCar (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_unregistering_network_safety_car",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-CUSTOMISATION_DECALS",
-  "notes": "named from its log messages (channel CUSTOMISATION_DECALS): 'vehicle %d: - Bake skipped - Decals disabled by config | Vehicle %d: Create NeCustomisationDecalsSetProxy, baseSurfaceId = %I64x, srvId = %I64x | Vehicle %d:  createSurface(), baseSurfaceId = %I64x, s'"
+  "evidence": "decomp:re/decomp/142a92ba0.c;pat:log-channel-CUSTOMISATION_DECALS;xref:0x14142ef13",
+  "notes": "Logs CUSTOMISATION_DECALS bake messages (decals disabled by config, NeCustomisationDecalsSetProxy, createSurface)."
  },
  "signature": {
   "id": "game.custom_decal_model_bake",

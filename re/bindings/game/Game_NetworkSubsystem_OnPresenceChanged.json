@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430f53f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=NetworkSubsystem::onPresenceChanged; log channel NETWORK-PRESENCE: 'virtual void network::NetworkSubsystem::onPresenceChanged(NEuint8, neon::NePresence *, neon::NePresence::PresenceStatus, neon::NePresence::PresenceStatus) | %s: CurrentPresence signed in.'"
+  "evidence": "decomp:re/decomp/1430f53f0.c;pat:log-message-cxx;xref:0x145814188",
+  "notes": "Virtual (vtable cell) 'NetworkSubsystem::onPresenceChanged(NEuint8, NePresence*, status, status)': logs CurrentPresence signed in / signed out. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_subsystem_on_presence_changed",

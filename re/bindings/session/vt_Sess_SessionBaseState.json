@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1457d31d0",
-  "type": "vtable[11]",
+  "type": "vtable[20]",
   "level": "L2",
   "subsystem": "session",
-  "evidence": "pat:flow-state-type-record;xref:0x14607bf10;decomp:re/decomp/142c75730.c",
-  "notes": "cxx=SessionBaseState; neon flow state (slot 2 = NeFlowState base 0x1436aef00, slot 0 returns type record 0x14607bf10 whose +8 names the class); onStateEnter 0x1436af570, onStateUpdate 0x1436af580, onStateExit 0x1436af590 (slots 8/9/10). (vmknolle session-flow map)"
+  "evidence": "decomp:re/decomp/142d99f10.c;pat:flow-state-type-record;decomp:re/decomp/142c75730.c;xref:0x142c75739,0x142c85d0c,0x142d99f23,0x142d9bf7d,0x142dbc3b4,0x142dbd03a,0x142dbdfd4,0x142dc0894,0x142dc19da,0x142dc27b4,0x142dc4dba,0x142dc56f4,0x142dc69f4,0x142dc9e34,0x142dca69a,0x142dcbae4,0x142dccb1a,0x142df8d53,0x142e03983,0x14e97a763,0x14eac3053",
+  "notes": "cxx=SessionBaseState; 20 slots (next vtable at +0xa0, lea 0x14e5cf70a). Slot 0 -> type record 0x14607bf10, +8=name set by static init 0x142ccaee0 at 0x142cccbd5. Slot 2 NeFlowState base 0x1436aef00; slots 8/9/10 onStateEnter/Update/Exit 0x1436af570/0x1436af580/0x1436af590. Ctor 0x142d99f10 (lea 0x142d99f23; mov [rsi],rax). Also loaded by 0x142c75730,0x142c85d00 (dtor, [rcx]). +90 lea sites in code without pdata (unverified)."
  },
  "signature": {
   "id": "session.session_base_state",

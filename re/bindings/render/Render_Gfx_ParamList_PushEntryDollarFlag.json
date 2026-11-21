@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143c211c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143c211c0.c;xref:0x1400fde19",
-  "notes": "Appends a 12-byte entry {this+0x50, (name[0]==$), this+0x98} to a std::vector-like list at this+0x10/0x18/0x20 (1.5x growth through allocator vtable +0x18). Shader/binding parameter list builder; the $ prefix marks a special/system name. Returns this. Hypothesis on the list purpose."
+  "evidence": "decomp:re/decomp/143c211c0.c;xref:0x1400fde19,0x1400fde2c,0x1400fde3f,0x1400fde52,0x1400fde65,0x1400fde78",
+  "notes": "Appends a 12-byte entry {u32 +0x50, kind = (value[0]=='$'), u32 +0x98} to the vector +0x10/+0x18/+0x20 (1.5x growth, allocator +8), writes key string param_2 + NUL into stream +0x60 (vcall +0x48) and value param_3 without the '$' + NUL into stream +0xa8; returns this. Call sites all in 0x1400fd6d0 (0x1400fde19, 0x1400fde2c ...). (lane owner review requested) Better name: Render_Gfx_KeyValueWriter_AddString (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx_param_list_push_entry_dollar_flag",

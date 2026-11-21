@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144094590",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-TRANSPORT",
-  "notes": "named from its log messages (channel NETWORK-TRANSPORT): 'Start handshaking with the server'"
+  "evidence": "decomp:re/decomp/144094590.c;pat:log-channel-NETWORK-TRANSPORT;xref:0x145a54680",
+  "notes": "Vtable cell: logs 'Start handshaking with the server', InitialiseAsyncSocket 0x144076cd0, Connect 0x144048de0, socket update 0x144047600, then NetTransportCommon_StartHandshaking 0x14407a230. (lane owner review requested) Better name: Game_NetworkTransport_StartHandshaking (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_transport_start_handshaking_server",

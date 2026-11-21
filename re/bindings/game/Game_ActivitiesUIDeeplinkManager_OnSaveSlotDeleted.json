@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1438637b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_ActivitiesUIDeeplinkManager_OnSaveSlotDeleted;xref:0x14386382e",
-  "notes": "cxx=game::ActivitiesUIDeeplinkManager::onSaveSlotDeleted; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1438637b0.c;str:s_ActivitiesUIDeeplinkManager_OnSaveSlotDeleted;xref:0x143860ecf,0x143861ef4",
+  "notes": "Bus handler (bound by lea in 0x143860d80, which subscribes via 0x143987810 and unsubscribes via 0x143988350). Same slot/mode resolution as OnSaveSlotCreated; when the deleted slot msg+0x18 is the mode's current slot ((+0x1e1)+0x280): career -> 0x143869600(this), story -> ReportStoryActivityDelete 0x143868e80. (lane owner review requested)"
  },
  "signature": {
   "id": "game.activities_u_i_deeplink_manager_on_save_slot_deleted",

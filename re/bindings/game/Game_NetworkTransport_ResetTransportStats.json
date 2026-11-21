@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1440772d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name resetTransportStats (class from the log channel); log channel NETWORK-TRANSPORT: '%s'"
+  "evidence": "decomp:re/decomp/1440772d0.c;pat:log-message-method;xref:0x145a52048,0x145a54798",
+  "notes": "Vtable cell (two vtables): logs 'resetTransportStats' and clears the stats array at +0x308. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_transport_reset_transport_stats",

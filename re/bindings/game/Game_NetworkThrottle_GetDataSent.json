@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1440751a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name getDataSent (class from the log channel); log channel NETWORK-THROTTLE: '%s: connectionId: %d, data sent: %d'"
+  "evidence": "decomp:re/decomp/1440751a0.c;pat:log-message-method;xref:0x1430615a1",
+  "notes": "Looks up the connection queue by id p2 and logs '%s: connectionId: %d, data sent: %d' with 'getDataSent', returning the byte count. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_throttle_get_data_sent",

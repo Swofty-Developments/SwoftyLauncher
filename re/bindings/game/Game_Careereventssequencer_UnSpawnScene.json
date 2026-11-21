@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c7c890",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name unSpawnScene (class from the log channel); log channel CareerEventsSequencer_Verbose: 'unSpawnScene'"
+  "evidence": "decomp:re/decomp/140c7c890.c;pat:log-message-method;xref:0x140c7a587,0x140c7a594,0x140c7a5a1,0x140c7a5ae",
+  "notes": "Logs 'unSpawnScene' (own). (this, slot): releases the scene object in global table 0x14605a9e0[slot] (refcount -1, vcall +8, owner vcall +0x38, cell=0), destroys the six global actors 0x14605a9a8..0x14605a9d0 via 0x140190bb0 + 0x14018ef80 on [0x14601db08]+0x68, clears +0x98. Called for slots 0..3 from the resetState chunk. (lane owner review requested)"
  },
  "signature": {
   "id": "game.careereventssequencer_un_spawn_scene",

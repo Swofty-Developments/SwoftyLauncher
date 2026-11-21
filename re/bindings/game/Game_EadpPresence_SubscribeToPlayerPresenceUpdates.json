@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144000130",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-EADP_PRESENCE",
-  "notes": "named from its log messages (channel EADP_PRESENCE): 'subscribeToPlayerPresenceUpdates: The session has been deleted on the server.'"
+  "evidence": "decomp:re/decomp/144000130.c;pat:log-channel-EADP_PRESENCE;xref:0x145a46970,0x143dfdce7",
+  "notes": "Callback (vtable cell 0x145a46970; also stored by mov at 0x143dfdce7): logs 'subscribeToPlayerPresenceUpdates: Disconnected! ', code 0x11177 with matching text -> '... The session has been deleted on the server.'; owner +0x74 = code, +0x78 = 0, state +0x70 = 8 under critical section +0x20. (lane owner review requested) Better name: Game_EadpPresence_OnPlayerPresenceUpdatesDisconnected (bound record keeps its name)."
  },
  "signature": {
   "id": "game.eadp_presence_subscribe_to_player_presence_updates",

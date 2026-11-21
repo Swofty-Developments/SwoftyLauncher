@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=BadgeReplicationManager::handleBadgeIdAllocated; log channel NETWORK-ENTRANTS: 'void network::BadgeReplicationManager::handleBadgeIdAllocated(neon::NeNetMessage &, neon::NeNetConnectionID) | %s : There is no badge assigned to the standard slot.'"
+  "evidence": "decomp:re/decomp/143128e40.c;pat:log-message-cxx",
+  "notes": "handleBadgeIdAllocated: gets the badge for the allocated id, replaces the player badge (0x143128730) and sends a reply (0x14402e500)."
  },
  "signature": {
   "id": "game.badge_replication_manager_handle_badge_id_allocated",

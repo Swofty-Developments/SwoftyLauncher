@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143112950",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name handleEntrantsDocumentMessageResponse (class from the log channel); log channel NETWORK-ENTRANTS: '%s(conn=%d)'"
+  "evidence": "decomp:re/decomp/143112950.c;pat:log-message-method;xref:0x1430d8da8,0x1431115e2",
+  "notes": "Logs handleEntrantsDocumentMessageResponse(conn); result msg+0xa4: 0 with msg+0xa0 set -> unregisters the matching entrant (0x14310ecb0); 2 -> queues bus event 0x1458244a8 and sets its event; else queues event 0x1458244b8 (Ne_Event_Set) and logs \"Entrant %s cannot join team .. errno\". (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_entrants_handle_entrants_document_message_response",

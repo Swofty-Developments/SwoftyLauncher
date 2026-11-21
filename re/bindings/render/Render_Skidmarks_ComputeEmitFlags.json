@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144724920",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144724920.c;xref:0x1447203e1",
-  "notes": "Decides skidmark emission for one wheel: surface-type codes 0x2a435344/0x2b435344/0x2a445344/0x2b445344/0x2a4e5344/0x2b4e5344 (FourCC-like \"DSC*\",\"DSC+\",\"DSD*\"..) gate the config byte surf+0x44; param_6=surf+0x44, param_8 = (slip param_5>0 && surf+0x41), param_7 = surf+0x42 | param_8; suppressed by surf+0x3f/0x40 or wheel+0x450>=1.0; wet case uses Game_TodCurveBinding_EvalNow(ctx+0xf30)>0.01 and wheel+0x280>0.15. Caller Render_Skidmarks_Update. Addon: skidmark emission rules."
+  "evidence": "decomp:re/decomp/144724920.c;xref:0x1447203e1,0x144720831",
+  "notes": "Per wheel: *param_6 = surf+0x44; surf+0x42 counts only for surface ids DSC*/DSC+/DSD*/DSD+/DSN*/DSN+ (0x2a435344..0x2b4e5344) or when [this+0x4206] is set; *param_8 = param_5 > 0 && surf+0x41; *param_7 = gated +0x42 | *param_8; wet case (0x14029c310 on ctx+0xf30 > 0.01 and wheel+0x280 > 0.15) suppresses by surf+0x3f, else by surf+0x40, also when wheel+0x450 >= 1.0; *param_9 = surf+0x43. Callers 0x1447203e1, 0x144720831 in Render_Skidmarks_Update. (lane owner review requested)"
  },
  "signature": {
   "id": "render.skidmarks_compute_emit_flags",

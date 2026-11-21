@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1424237b0.c;doc:re/db/subsystems/game.md",
-  "notes": "cf-verify claim 7: thunk -> 0x14c9fc800; clears car+0x134 b6"
+  "notes": "jmp thunk (no pdata) to body 0x14c9fc800: finds the vehicle index of param_3 in [sys+0xf8]+0x28, resolves component 0x146ce8b00 and clears bit 6 of [comp+0x58]+0x134."
  },
  "signature": {
   "id": "game.assists_clear_tyre_temp_freeze",

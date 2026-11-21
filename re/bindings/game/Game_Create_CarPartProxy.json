@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144636150",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144636150.c;xref:0x144635411",
-  "notes": "builds <model>&<part>?model and ?render resource names and creates a part proxy; failure logs ERROR CreateCarPartProxy failed for %s and returns 0"
+  "evidence": "decomp:re/decomp/144636150.c;xref:0x144635410,0x14463542e,0x144635453,0x144635471,0x144635496,0x1446354b4,0x1446354d9,0x1446354f7,0x1446357ca,0x1446357e9,0x144635808,0x144635cff,0x144635d1e,0x144635d3d,0x144636028",
+  "notes": "(vehicle, resource set, part): model name [+0x38]+0xd8 cut at its last '?', + '&<part>?model' and '?render'; loads via set vt+8; failure logs 'ERROR CreateCarPartProxy failed for %s' and returns 0. Else 0x140-byte instance (Game_ModelInstance_Construct), +0x13c|=8 for the four '.idf&wheel_xx?model' names, node matrices, LOD +0x134=0.5, render masks (default/nightshadows/mirror/cubemap/alwaysLowLODShadows...), tag hash 'loosepart' +0xa8, placement reset (y -100). (lane owner review requested)"
  },
  "signature": {
   "id": "game.create_car_part_proxy",

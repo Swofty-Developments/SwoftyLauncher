@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1440a53f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-PLAYFAB-PARTY/V",
-  "notes": "named from its log messages (channel NETWORK-PLAYFAB-PARTY/V): 'Unhandled state change Id: %d'"
+  "evidence": "decomp:re/decomp/1440a53f0.c;pat:log-channel-NETWORK-PLAYFAB-PARTY/V;xref:0x1430e06c1",
+  "notes": "Starts and finishes PlayFab Party state-change processing ('Failed to start/finish processing state changes!: %hs') and switches over every state change id (CreateNewNetworkCompleted, RemoteDevice*, Endpoint*, ChatControl*, Invitation*, ...), redirecting to the active session; unknown ids log 'Unhandled state change Id: %d'. Caller 0x1430e0560. (lane owner review requested) Better name: Game_NetworkPlayfabParty_ProcessStateChanges (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_playfab_party_unhandled_state_change_id",

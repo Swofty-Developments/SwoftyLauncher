@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140bb4e10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=OnlineDocumentComponent::onFinishSeason; log channel GAME: 'OnlineDocumentComponent::onFinishSeason().'"
+  "evidence": "decomp:re/decomp/140bb4e10.c;pat:log-message-cxx;xref:0x1456784b0",
+  "notes": "Logs GAME 'OnlineDocumentComponent::onFinishSeason().' (short body). Referenced only by vtable cell 0x1456784b0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.online_document_component_on_finish_season",

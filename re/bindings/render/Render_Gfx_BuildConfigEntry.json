@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140129830",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140129830.c;xref:0x1401064f5",
-  "notes": "Config object entry builder (default resource name, seed 0xc4ceb9fe1a85ec53, calls 143dd8700). Callers Render_Gfx_BuildConfigObject (3 sites)."
+  "evidence": "decomp:re/decomp/140129830.c;xref:0x1401064f5,0x1401091da,0x140111ce2",
+  "notes": "Builds a stack resource desc (placeholder name, seed 0xc4ceb9fe1a85ec53, inline arrays cap 0x20, cloned by 0x143c208d0), allocates 0x570 bytes (align 0x10) via allocator *param_1 vcall +0x18, constructs with 0x143dd8700, returns {allocator, object} in param_2, releases desc (0x143c20a30). 0x143dd8700 calls Render_Material_FillMeTextureSlots/CountResourceSlots, Render_Gfx2_RegisterResourceNotify. Callers in Render_Gfx_BuildConfigObject. (lane owner review requested) Better name: Render_Gfx_CreatePassNode_143dd8700 (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx_build_config_entry",

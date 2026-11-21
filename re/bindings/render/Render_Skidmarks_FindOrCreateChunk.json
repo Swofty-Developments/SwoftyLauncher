@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14471d4b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14471d4b0.c;xref:0x14471c89c",
-  "notes": "Scans the chunk table (entries 0x20 at +0x1a0, count +0x4190, max 0x1ff = 511) for key param_2, else allocates a 0x2180-byte chunk from the allocator at +0x188, inits 0xb0-byte slots, AABB at +0x2100 (+/-FLT_MAX). Callers Render_Skidmarks_Update (many), 0x14471c860."
+  "evidence": "decomp:re/decomp/14471d4b0.c;xref:0x14471c89c,0x14472151f,0x144721a25,0x144725c28",
+  "notes": "Rename: scans the chunk table backwards ([this+0x4190] entries of 0x20 bytes, key at +0x198, value at +0x1a0) for key param_2; on miss allocates a 0x2180-byte chunk from allocator [this+0x188], inits 0xb0-byte slots and bounds (+/-FLT_MAX), then copies 0x2100 bytes plus the trailer fields from param_2; *param_3 = created flag. Callers 0x14471c89c (Game_SkidmarksReplay_ApplyCommand), 0x14472151f/0x144721a25 (Render_Skidmarks_Update), 0x144725c28 (Game_SkidmarksReplay_Rewind). (lane owner review requested) Better name: Render_Skidmarks_FindOrCloneChunk (bound record keeps its name)."
  },
  "signature": {
   "id": "render.skidmarks_find_or_create_chunk",

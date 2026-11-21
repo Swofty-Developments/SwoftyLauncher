@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143fbc3c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-AUDIO_IO",
-  "notes": "named from its log messages (channel AUDIO_IO): '[thread=0x%08I64x] %s: read op completed opHandle=%d fullFileName=\"%s\" opResult=%s, callback data=0x%x | [thread=0x%08I64x] %s: started next request from saved list (%d request(s) left in list)'"
+  "evidence": "decomp:re/decomp/143fbc3c0.c;pat:log-channel-AUDIO_IO;xref:0x143fbb422,0x143fbb59e,0x143fbb8f0",
+  "notes": "onReadOperationCompleted(io, op, result): logs, calls device vt+8(op+0x20, op+0x28, ok = result 0 or 0x55), clears op state, drops type-2 (cancel) requests for this handle from list io+0x560 (CS io+0x578); if saved requests remain (op+0x68) starts the next chunk read (0x143f38900) and logs the count. Callers: 3 sites in 0x143fba2d0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.audio_io_on_read_done",

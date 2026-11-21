@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439ad5a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439ad5a0.c;xref:0x1424350b6",
-  "notes": "Cached viewport set: if the six floats (x,y,w,h,minZ,maxZ at ctx+0x1440..0x1454) are unchanged returns 0; otherwise device vcall +0x88 (SetViewports, 1) and, if integer rect (+0x1458..0x1464 = x, x+w, y, y+h) changed, device vcall +0x90 (SetScissorRects). 63 callers. Addon: viewport/scissor control point."
+  "evidence": "decomp:re/decomp/1439ad5a0.c;xref:0x1424350b6,0x142a46cce,0x143b594af",
+  "notes": "If the six floats equal ctx+0x1440..0x1454 returns 0; else device-context vcall +0x88 (1 viewport) and stores them; if the int rect (x, x+w, y, y+h) differs from +0x1458..+0x1464 calls vcall +0x90 (1 scissor rect) and stores it. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx_set_viewport_cached",

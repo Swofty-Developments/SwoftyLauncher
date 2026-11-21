@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14015d050",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14015d050.c;xref:0x140151fd9",
-  "notes": "NeRenderSettingsPlugin init: reads settings Renderer.Gfx.PerformanceMode.width / .height via Ne_Get_SettingU32, default frame rate (log \"NeRenderSettingsPlugin::setDefaultFrameRate %u\"), fills flag bytes at this+0xa99..0xab3 and +0xb54/+0xe54. Callers Game_Read_RendererGfxConfig, 0x140176530. Addon: performance-mode resolution override."
+  "evidence": "decomp:re/decomp/14015d050.c;xref:0x140151fd9,0x140176af9",
+  "notes": "Applies mode (param_2, else 2 on platform id 10) if enabled (+0xab2) and changed (+0xab3): mode 1 caps frame rate at min(refresh [+0x39b0],120) into [+0x98]+0x43820 (log NeRenderSettingsPlugin::setDefaultFrameRate %u), picks 3840x2160/1280x720/2560x1440 by platform, reads Renderer.Gfx.PerformanceMode.width/.height (Ne_Get_SettingU32); floats +0xb54/+0xe54. Callers Game_Read_RendererGfxConfig, tail jmp in 0x140176530. (lane owner review requested) Better name: Render_Settings_ApplyPerformanceMode (bound record keeps its name)."
  },
  "signature": {
   "id": "render.settings_init_performance_mode",

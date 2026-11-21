@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14074af20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: Game booted'"
+  "evidence": "decomp:re/decomp/14074af20.c;pat:log-channel-TELEMETRY;xref:0x1406ed054,0x140707ae3",
+  "notes": "Bus handler(this,msg); subscribed 0x1406ed054 (0x1406d8470), unregistered 0x140707ae3. 0x88-byte record: bytes msg+0x10/+0x11. Tag 'game_booted_record' via 0x14077a240, GUID+seq, 64-entry queue; logs 'Game booted' (TELEMETRY). (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_game_booted",

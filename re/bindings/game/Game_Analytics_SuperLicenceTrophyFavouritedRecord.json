@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140730990",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: SuperLicenceTrophyFavouritedRecord'"
+  "evidence": "decomp:re/decomp/140730990.c;pat:log-channel-TELEMETRY;xref:0x1406e3384,0x1406fe8c8",
+  "notes": "Bus handler: lea 0x1406e3384 in subscribe-all 0x1406d8470 (->0x143987810), lea 0x1406fe8c8 in unsubscribe-all 0x1406fd6c0. Allocs 0xa8 record (ctor 0x1405c1180), copies msg fields, baseCtx by 0x14077a240 'super_licence_trophy_favourited_record', pushed to static queue (guard 0x14604da70) under CS; logs TELEMETRY 'SuperLicenceTrophyFavouritedRecord'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_super_licence_trophy_favourited_record",

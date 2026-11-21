@@ -29,7 +29,7 @@ pub(crate) fn write(p: &Plain, g: &Gen) {
             std::fs::write(gd.join("containers").join(format!("{}.bag", fnv(name))), &bytes).unwrap();
             serde_json::json!({
                 "name": name, "fnv64": fnv(name), "type_id": 12, "bytes": bytes.len(), "sha256": "x",
-                "registered": false, "source": source,
+                "registered": *source == "game", "source": source,
                 "slots": slots.iter().enumerate().map(|(i, (guid, who))| serde_json::json!({
                     "slot": i, "guid": guid, "name": who, "season": 2, "round": 5, "team": 7, "driver": 61, "last_played": 100 + i
                 })).collect::<Vec<_>>()

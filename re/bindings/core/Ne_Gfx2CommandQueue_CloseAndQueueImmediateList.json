@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a07500",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143a07500.c;xref:0x1439d3e7f",
-  "notes": "488-byte helper using memcpy with an 'Immediate' string; caller Ne_Gfx2CommandQueue_FlushResourceBarriers (0x1439d3e7f), 0x143a07245. Hypothesis. vq0-verify partial/disagree"
+  "evidence": "decomp:re/decomp/143a07500.c;xref:0x1439d3e7f,0x143a07245",
+  "notes": "Takes the open list at +0x50 (clears it), calls list vt+0x48 (Close), selects bank by type +0x20 (==2 -> +0x20 offset) and push_backs the list into vector +0x68/+0x70/+0x78 (alloc +0x60, grow 1.5x via vt+0x18, Ne_Crt_Memcpy) and the name pointer \"Immediate\" (0x14589f03f) into vector +0xa8/+0xb0/+0xb8 (alloc +0xa0). Callers Ne_Gfx2CommandQueue_FlushResourceBarriers, 0x143a07120."
  },
  "signature": {
   "id": "core.gfx2_command_queue_submit_barrier_batch",

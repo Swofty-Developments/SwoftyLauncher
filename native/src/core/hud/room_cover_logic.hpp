@@ -40,6 +40,16 @@ inline bool request_is_room(const std::string &env, const std::string &file_text
     return request_kind(env, file_text) == Kind::room;
 }
 
+// The signal for a cover the session plugin answers, from the direct start's (direct_start_cover_signal) and the
+// plugin's: a direct start that failed, or never armed, opens the menu, and the cover comes off whatever the plugin
+// says.
+inline Signal plugin_signal(int direct, int host)
+{
+    if (direct < 0 || host < 0)
+        return Signal::failed;
+    return host > 0 ? Signal::shown : Signal::waiting;
+}
+
 constexpr uint64_t EASE_MS = 260;
 constexpr uint64_t CREEP_MS = 7000;
 constexpr float CREEP_SPAN = 0.10f;

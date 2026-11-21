@@ -51,6 +51,14 @@ From 1.3.1, **Play** on an [EA app copy](/using/game-copies) runs in this order:
 3. It hands the EA app the launch link `origin2://game/launch?offerIds=<ids>&autoDownload=1`, with `&cmdParams=-vr` for **Play in VR**. The IDs are the `<contentID>` values in the game folder's `__Installer/installerdata.xml`. The status line reads **Starting F1 25 through the EA app…**.
 4. It waits for F1 25 to start and close, including a second copy the EA app starts, then rolls the game folder back.
 
+The EA app starts F1 25 with its own environment, not the launcher's. Before step 3 the launcher writes the session's variables to `swofty/session_env.json` in the game folder: the launcher's `SWOFTY_` variables and the `env` entries under `launch` in `$DATA/config.json`. Proton's and Wine's variables (`PROTON_*`, `WINE*`), `LD_*`, `STEAM_*`, `SteamAppId`, `SteamGameId` and `__COMPAT_LAYER` stay out. The file names the session's launch request and holds for an F1 25 process created within 17 minutes of the write. The loader sets the variables when it attaches, before any addon loads, then removes the file. `loader.log` says how many it set, without their values:
+
+```text
+session env: set 6 of 6 variable(s) from swofty\session_env.json (launch request 1f2e3d4c5b); removed the file
+```
+
+In a game folder F1 25 can't change, such as one under `C:\Program Files`, the file stays and the line ends `the file could not be removed (error 5), so the launcher removes it when the session ends`. The launcher removes the file when the session ends, however it ends, and before every session starts. An expired file, or one written after the game started, sets nothing, and the line says `ignored:` and why. A Steam copy gets the environment from the launcher directly and has no such file.
+
 On Windows, the launcher opens a handle on the F1 25 the EA app started as soon as it appears and reads its exit code when it closes. The session log says `[ea app] F1 25 exited (pid <pid>, exit code 0x<code>)`, with the crash's name for a crash code, and `end.json` holds the code. When Windows refuses the handle, the log says `could not open F1 25 (pid <pid>) to read its exit code (<error>)` once and the session goes on without the code. On Linux the launcher can't read it, and the code comes from offline play's session launcher line in `loader.log`; the vanilla profile has no such line.
 
 When F1 25 hasn't started 5 minutes after the link, the launcher opens the EA app and the status line reads **Press Play on F1 25 in the EA app**. Pressing **Play** there starts the modded session. After 10 more minutes without the game, the launch stops and the game folder rolls back. The `[ea app]` line after the link says whether offline play's file is still in place. When the EA app took it out to repair F1 25, the status line reads **The EA app is repairing F1 25** instead, and F1 25 starts without mods after the repair.

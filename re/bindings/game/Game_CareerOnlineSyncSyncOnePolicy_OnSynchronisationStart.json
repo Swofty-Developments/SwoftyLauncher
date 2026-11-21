@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140ff9720",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_Championship_CareerOnlineSynchroniserSyncOnePolicy_OnSynchronisationSt;xref:0x140ff97ae",
-  "notes": "cxx=game::championship::CareerOnlineSynchroniserSyncOnePolicy::onSynchronisationStart; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/140ff9720.c;str:s_Championship_CareerOnlineSynchroniserSyncOnePolicy_OnSynchronisationSt;xref:0x1456b58e8",
+  "notes": "SyncOnePolicy slot +8 (cell 0x1456b58e8): role = [[this[3]+0x3c0]+0x1a8]; logs 'Starting host sync' (role 1) or 'Starting client sync' and tail-calls own slot +0x40 (host) or +0x38 (client). (lane owner review requested)"
  },
  "signature": {
   "id": "game.career_online_sync_sync_one_policy_on_synchronisation_start",

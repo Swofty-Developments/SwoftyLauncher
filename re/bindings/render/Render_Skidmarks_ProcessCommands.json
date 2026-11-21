@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144723850",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144723850.c;xref:0x14471edb3,0x14471f938",
-  "notes": "Large (800 lines) skidmark command processor: iterates mark slots (count +0x4190, slot array +0x1a0, buffers +0x41a8/+0x41b0), handles update mark and update fade mark commands (logs failed to process update mark (%p, %d) command / update fade mark), SKIDMARKS_REPLAY tag for replay stepping. Callers Render_Skidmarks_Update, Game_ReplayFrame_RecordKillers, Game_SkidmarksReplay_StepFrame. Addon: central place where tyre marks get drawn and faded."
+  "evidence": "decomp:re/decomp/144723850.c;xref:0x14471edb3,0x14471f938,0x144720de4,0x144725056,0x144727509",
+  "notes": "Skid-mark command processor: iterates mark slots (count [+0x4190], array +0x1a0, buffers +0x41a8/+0x41b0) handling update-mark and update-fade-mark commands; logs failed to process update mark (%p, %d) command / update fade mark (SKIDMARKS_REPLAY). Callers 0x14471edb3 (0x14471ed10, vtable cell 0x145c02088), 0x14471f938/0x144720de4 (Render_Skidmarks_Update), 0x144725056 jmp (Game_ReplayFrame_RecordMarkKiller), 0x144727509 (Game_SkidmarksReplay_Rewind). (lane owner review requested)"
  },
  "signature": {
   "id": "render.skidmarks_process_commands",

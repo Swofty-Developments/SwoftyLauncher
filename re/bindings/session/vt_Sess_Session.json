@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14585e5d0",
-  "type": "vtable[11]",
+  "type": "vtable[16]",
   "level": "L2",
   "subsystem": "session",
-  "evidence": "pat:flow-state-type-record;xref:0x146102360;decomp:re/decomp/1437b6fb0.c",
-  "notes": "cxx=StateSession; neon flow state (slot 2 = NeFlowState base 0x1436aef00, slot 0 returns type record 0x146102360 whose +8 names the class); onStateEnter 0x1436f6740, onStateUpdate 0x1436f76a0, onStateExit 0x1436f8340 (slots 8/9/10). (vmknolle session-flow map)"
+  "evidence": "decomp:re/decomp/150ffbd70.c;pat:flow-state-type-record;decomp:re/decomp/1437b6fb0.c;xref:0x1437b6fbc,0x150ffbde3",
+  "notes": "cxx=StateSession; 16 slots (next vtable at +0x80, lea 0x1436f67ff). Slot 0 -> type record 0x146102360, +8=name set by static init 0x1437c1990 at 0x1437c297f. Slot 2 NeFlowState base 0x1436aef00; slots 8/9/10 onStateEnter/Update/Exit 0x1436f6740/0x1436f76a0/0x1436f8340. Ctor 0x150ffbd70 (lea 0x150ffbde3; mov [rsi],rax). Also loaded by 0x1437b6fb0 (dtor, [rcx])."
  },
  "signature": {
   "id": "session.session",

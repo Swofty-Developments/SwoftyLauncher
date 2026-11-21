@@ -1,0 +1,20 @@
+{
+  "car.profile": {
+    "mercedes_power_unit": {
+      "$comment": "the Mercedes works team's cars in SWOFTY 2014, by the box's team key",
+      "within": [{ "content": "swofty.swofty-seasons-2014/sw_2014" }],
+      "cars": { "team": ["mercedes"] },
+      "power_scale": 1.03
+    },
+    "real_mercedes": {
+      "$comment": "every team that is or provides constructor/mercedes, in every box and career",
+      "cars": { "team": ["constructor/mercedes"] },
+      "scope": "global",
+      "power_scale": 1.02
+    },
+    "one_driver": {
+      "cars": { "driver": ["game/lewis_hamilton"], "vehicle": ["swofty.swofty-seasons-2014/mercedes"] },
+      "ai_grip_scale": 1.02
+    }
+  }
+}

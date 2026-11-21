@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a301e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143a301e0.c;xref:0x1439e705a",
-  "notes": "Third pool insert variant (calls 1439e6470). Caller Render_GfxMem_Allocate."
+  "evidence": "decomp:re/decomp/143a301e0.c;xref:0x1439e705a,0x1439e7092",
+  "notes": "Creates an allocated block node (free flag 0x20 cleared, alignment log2 of param_4) of size param_3 at offset param_5 (default heap tail), links it after the last block (0x1439e6470) without touching the free tree, and moves param_3 from remaining to used. (lane owner review requested) Better name: Render_GfxMem_AppendAllocatedTailBlock (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx_mem_pool_insert_c",

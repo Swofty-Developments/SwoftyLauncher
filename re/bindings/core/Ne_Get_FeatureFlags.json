@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1413ca0d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:work/exe/decomp/1413ca0d0_home_flags.c;xref:0x140152e46,0x140217e99,0x140217f75,0x140219122,0x140259f6a,0x14029d4fc,0x140388d68,0x14038f3f7+652;doc:research/exe.md#3.1;decomp:re/decomp/1413ca0d0.c",
-  "notes": "returns the feature-flag words the home case tests (rsi); scope beyond fe_home unknown cb1-verify correction: thunk to 0x14aaaef80; lazily loads the feature list for a content set once and returns &0x146064620 (16-byte struct), not flag words"
+  "evidence": "decomp:re/decomp/1413ca0d0.c;doc:research/exe.md#3.1;xref:0x140152e45,0x140217e98,0x140217f74",
+  "notes": "Thunk (jmp) to .data1 body 0x14aaaef80: once (guard 0x146064618) gets the current content set name (Sess_Get_CurrentContentSetName 0x1413e1cd0), finds its row in gamedb table 'content_sets' (Gdb_Find_RowByLabel 0x1445a2bd0) and loads its feature mask (Game_Features_LoadContentSetMask 0x1413ed470) into 0x146064620; returns &0x146064620 (16 bytes). call sites. Better name: Ne_Get_ContentSetFeatureMask (bound record keeps its name)."
  },
  "signature": {
   "id": "core.get_feature_flags",

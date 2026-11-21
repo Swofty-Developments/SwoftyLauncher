@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14303f970",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-CONTENT",
-  "notes": "named from its log messages (channel NETWORK-CONTENT): 'DLC %s detected change in entitlement %s: %s'"
+  "evidence": "decomp:re/decomp/14303f970.c;pat:log-channel-NETWORK-CONTENT;xref:0x145807608",
+  "notes": "If entitlement id param_2 equals this+0x10: logs \"DLC %s detected change in entitlement %s: TRUE/false\" (names from table 0x1460be900) and stores the new state param_3 at this+0x14. (lane owner review requested) Better name: Game_NetworkContent_DLC_OnEntitlementChanged (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_content_dlc_detected_change_entitlement",

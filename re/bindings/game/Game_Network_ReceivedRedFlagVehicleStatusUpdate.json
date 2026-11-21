@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1435861f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK/T",
-  "notes": "named from its log messages (channel NETWORK/T): 'Received a red flag vehicle status update for vehicle %d, status is %s'"
+  "evidence": "decomp:re/decomp/1435861f0.c;pat:log-channel-NETWORK/T;xref:0x143586032",
+  "notes": "Logs red flag vehicle status update (NETWORK/T, status name table 0x14584ed08); raises the stored status byte at this+0xe0[vehicle*2] to msg+0x11 only if higher (monotonic). (lane owner review requested) Better name: Game_Network_OnRedFlagVehicleStatusMessage (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_received_red_flag_vehicle_status_update",

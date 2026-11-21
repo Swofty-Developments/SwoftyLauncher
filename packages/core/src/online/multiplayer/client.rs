@@ -12,7 +12,7 @@ use serde::Serialize;
 use serde_json::{Value, json};
 
 use super::fingerprint::{self, Fingerprint};
-use super::types::{FixStep, GameStatus, RoomSettings, RoomSummary, SessionState};
+use super::types::{FixStep, GameStatus, HostPrint, RoomSettings, RoomSummary, SessionState};
 use crate::catalog::{self, Addon};
 use crate::game_folder::baseline::Identity;
 use crate::online::modules::library::{Hooks, Library};
@@ -477,6 +477,9 @@ pub fn state_of(doc: Value) -> Option<SessionState> {
 struct View {
     state: SessionState,
     fix_plan: Vec<FixStep>,
+    /// The host's addons; `None` before the host's fingerprint arrived, when hosting, or from a module older
+    /// than it.
+    host_print: Option<HostPrint>,
     finished: bool,
 }
 
@@ -490,10 +493,12 @@ impl View {
         state.problem = serde_json::from_value(take("problem")).ok().flatten();
         state.steps = serde_json::from_value(take("steps")).unwrap_or_default();
         let fix_plan = serde_json::from_value(take("fix_plan")).unwrap_or_default();
+        let host_print = serde_json::from_value(take("host_print")).ok().flatten();
         let finished = take("finished").as_bool().unwrap_or(false);
         Some(View {
             state,
             fix_plan,
+            host_print,
             finished,
         })
     }
@@ -546,6 +551,7 @@ impl Session {
             last: Mutex::new(View {
                 state: SessionState::new(op == "session.create"),
                 fix_plan: Vec::new(),
+                host_print: None,
                 finished: false,
             }),
         })
@@ -571,6 +577,11 @@ impl Session {
 
     pub fn fix_plan(&self) -> Vec<FixStep> {
         self.poll().fix_plan.clone()
+    }
+
+    /// The host's addons, once the host's fingerprint arrived; `None` when hosting or from an older module.
+    pub fn host_print(&self) -> Option<HostPrint> {
+        self.poll().host_print.clone()
     }
 
     pub fn is_finished(&self) -> bool {
@@ -713,6 +724,26 @@ mod tests {
             "fix_plan": [],
             "finished": false,
         })
+    }
+
+    #[test]
+    fn the_hosts_addons_read_beside_the_state_and_are_none_from_an_older_module() {
+        assert!(View::read(state_doc()).unwrap().host_print.is_none());
+        let mut doc = state_doc();
+        doc["host_print"] = json!({
+            "digest": "sha256:ab", "launcher": "1.10.14", "exe_sha256": "cd", "dlc": null,
+            "addons": [{"id": "x.a", "name": "A", "version": "1.2.0", "registry": "ef", "order": 0,
+                        "builtin": false, "new_field": 1}],
+            "options": {"x.a": {"laps": 5}},
+        });
+        let host = View::read(doc).unwrap().host_print.unwrap();
+        assert_eq!(host.addons[0].version, semver::Version::new(1, 2, 0));
+        assert_eq!(host.addons[0].order, Some(0));
+        assert_eq!(host.options["x.a"]["laps"], json!(5));
+        let mut odd = state_doc();
+        odd["host_print"] = json!("not a print");
+        let view = View::read(odd).expect("a host print that doesn't read leaves the state readable");
+        assert!(view.host_print.is_none());
     }
 
     #[test]

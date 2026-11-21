@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143bc9370",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143bc9370.c;xref:0x143bc42cf,0x143d85433",
-  "notes": "Tonemap/resolve postfx init (750 lines): creates ToneMap Adaptation buffer and shader permutations: blend_lut_cs, update_lut_cs, cube_update_lut_cs, update_aces_lut_cs, update_aces_sdr_lut_cs, eye_adaptation, eye_adaptation_rtt, tonemap_and_resolve (+_hdr, _aces, _disabled, _export_exr, _depth_enabled, _tint_bloom, rtt_tonemap_and_resolve). Callers Game_PostFx_CreateMotionBloomLensFlare, Game_Rtt_CreateScenes. Addon: full list of tonemap/LUT/exposure shader names."
+  "notes": "Tonemap postfx init: creates the 'ToneMap Adaptation buffer' and looks up permutations blend_lut_cs, update_lut_cs, cube_update_lut_cs, update_aces_lut_cs, update_aces_sdr_lut_cs, eye_adaptation(_rtt), tonemap_and_resolve (+_hdr, rtt_, _disabled, _export_exr, _aces, _depth_enabled, _tint_bloom) via 0x1439b33a0. Callers Game_Read_RendererGfxConfig_2, Game_Rtt_RttGenerator. (lane owner review requested)"
  },
  "signature": {
   "id": "render.post_fx_init_tonemapper",

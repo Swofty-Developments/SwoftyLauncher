@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143c770d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143c770d0.c;xref:0x142a963e6",
-  "notes": "Marks resource state byte +0x38 = 2 (atomic xchg); if it was 0 queues a load task on plRam0000000146c621e0 (vcall +0x68, task vtable 0x143c77060); otherwise builds a refcounted result pair; default name '<unknown-because-not-initialised/resource>' at result[3]. Callers Game_CustomDecalModel_Bake, 0x143c60f41. Hypothesis."
+  "notes": "Sets state +0x38 = 2 (xchg); if it was 0 posts callback 0x143c77060 via 0x146c621e0 vcall +0x68. If param_3 bit0: creates a completion event object (0x38 bytes, CreateEventW) with shared control block. Sets +0x39, resets event +0x28, posts plugin message 6 (0x30 bytes: flags, event, shared param_4, sequence +0x3c) to connection [+8], returns the event pair. Caller Game_CustomDecalModel_Bake 0x142a963e6. (lane owner review requested) Better name: Render_PluginConnection_PostFencedCommand (bound record keeps its name)."
  },
  "signature": {
   "id": "render.resource_request_load_or_wait",

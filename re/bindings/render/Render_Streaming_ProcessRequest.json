@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143abe3f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143abe3f0.c;xref:0x1402071cb",
-  "notes": "436-line routine under CS param_1[6] (state +0x16c, queues at +0x08/+0x80/+0xa8/+0xc8) that walks a request/stream state machine using helpers 0x143abcbd0/0x143acb7d0/0x143aca640, records failures through Ne_Debug_GetCallerAddress and Ne_ErrorTrace_PushRing. Called from many game systems (0x140206d20, 0x14038d9f0, 0x1403d52e0, 0x1405ee110). Hypothesis (async load/stream request processing). vp2-verify partial/disagree"
+  "evidence": "decomp:re/decomp/143abe3f0.c;xref:0x1402071cb,0x14038df6b,0x1403d573b,0x1403d947b",
+  "notes": "Submits job list param_2 (vcall +8 = count, +0x10 = item i) under CS param_1[6]: item type 0 = one job, 1 = array (+0x10 count), 2 = barrier that closes the batch (0x143abf420) and starts dispatch (0x143ac1260). Jobs go into pooled blocks via 0x143aca640. Immediate mode (param_1[3]) runs param_1 vcall +8 / +0x18 instead. Engine job system, not streaming. (lane owner review requested) Better name: Render_JobSystem_SubmitJobList (bound record keeps its name)."
  },
  "signature": {
   "id": "render.streaming_process_request",

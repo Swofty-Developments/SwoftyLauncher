@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14024aa70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name spawnStaticScene (class from the log channel); log channel CAMERA_ACTOR_ENABLE: 'spawnStaticScene Name %p %s %s '"
+  "evidence": "decomp:re/decomp/14024aa70.c;pat:log-message-method;xref:0x14036419c,0x140364a0c",
+  "notes": "spawnStaticScene(actor, name): logs, finds scene (0x1401a4810), instantiates it with the actor transform (0x1401a4b70), enables (0x1401e7aa0), adds to actor+0x50 (0x14018d980), enables camera actors (inlined CameraActor::enable log, 0x140197cd0). Callers: 2 sites in 0x140363850. (lane owner review requested)"
  },
  "signature": {
   "id": "game.camera_actor_enable_spawn_static_scene",
