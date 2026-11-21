@@ -72,6 +72,10 @@ pub(super) const TD_WHEEL_OFF: [&str; 2] = ["] [td-probe] suspension: your car "
 /// How long before the crash that line counts.
 pub(super) const TD_WHEEL_OFF_SECS: f64 = 1.0;
 
+/// How long before a crash in the game's keyframe samplers that line counts: the UI animation player faulted 43 ms and
+/// 4.8 s after it in the two reports that had it.
+pub(super) const TD_WHEEL_OFF_ANIM_SECS: f64 = 10.0;
+
 /// Where the game's tyre curve samplers read through the node their bracket search returns, which is the curve
 /// tree's head when the key is not a number: `Car_Tyre_SampleCurveSet2KeyLerp+0xbc`,
 /// `Car_Tyre_Curve2D_SampleByBinarySearchY+0x54`, where that sampler's keyframe search reads a point of the curve it
@@ -93,9 +97,10 @@ pub(super) const TYRE_CURVE_NAN: [&str; 12] = [
 ];
 
 /// Where the game's keyframe samplers read a track's bucket table at the index a time that is not a number turns
-/// into (0x80000000, 4 GB below the table): the 3-float, 4-float and rotation samplers, on Steam build 26566308
-/// (1.0.145), the KB build, EA 1.0.141 and EA 1.0.145.
-pub(super) const ANIM_CLIP_NAN: [&str; 12] = [
+/// into (0x80000000, 4 GB below the table): the 3-float, 4-float and rotation per-track samplers, then the inline
+/// samplers of the B1, B4 and L1 packets, each on Steam build 26566308 (1.0.145), the KB build, EA 1.0.141 and EA
+/// 1.0.145.
+pub(super) const ANIM_CLIP_NAN: [&str; 24] = [
     "F1_25.exe+0x3a3d54b ",
     "F1_25.exe+0x3a3e1a2 ",
     "F1_25.exe+0x3a3e5ff ",
@@ -108,6 +113,18 @@ pub(super) const ANIM_CLIP_NAN: [&str; 12] = [
     "F1_25.exe+0x3a2a56b ",
     "F1_25.exe+0x3a2b1c2 ",
     "F1_25.exe+0x3a2b61f ",
+    "F1_25.exe+0x3a3bfaa ",
+    "F1_25.exe+0x3a3c5da ",
+    "F1_25.exe+0x3a3cc48 ",
+    "F1_25.exe+0x3a399da ",
+    "F1_25.exe+0x3a3a00a ",
+    "F1_25.exe+0x3a3a678 ",
+    "F1_25.exe+0x3a269fa ",
+    "F1_25.exe+0x3a2702a ",
+    "F1_25.exe+0x3a27698 ",
+    "F1_25.exe+0x3a28fca ",
+    "F1_25.exe+0x3a295fa ",
+    "F1_25.exe+0x3a29c68 ",
 ];
 
 /// Where F1 25 faults matching a track's marshal lights to its marshal light zones at a session enter or restart:
@@ -189,18 +206,28 @@ pub(super) fn marshal_lights_crash(e: &Evidence, f: &Fatal) -> bool {
     game_fault_at(e, f, &MARSHAL_LIGHTS_WALK)
 }
 
-/// Whether F1 25 faulted in its own tyre curve lookup less than [`TD_WHEEL_OFF_SECS`] after Terminal Damage tore a
-/// wheel off the player's car.
-pub(super) fn td_wheel_off_crash(e: &Evidence, f: &Fatal) -> bool {
+/// Whether Terminal Damage tore a wheel off the player's car less than `secs` before the crash.
+fn td_wheel_off_before(e: &Evidence, f: &Fatal, secs: f64) -> bool {
     let Some(end) = crash_time(e, f) else {
         return false;
     };
-    tyre_curve_crash(e, f)
-        && e.loader.lines().any(|l| {
-            l.contains(TD_WHEEL_OFF[0])
-                && l.contains(TD_WHEEL_OFF[1])
-                && stamp(l).is_some_and(|t| t <= end && end - t < TD_WHEEL_OFF_SECS)
-        })
+    e.loader.lines().any(|l| {
+        l.contains(TD_WHEEL_OFF[0])
+            && l.contains(TD_WHEEL_OFF[1])
+            && stamp(l).is_some_and(|t| t <= end && end - t < secs)
+    })
+}
+
+/// Whether F1 25 faulted in its own tyre curve lookup less than [`TD_WHEEL_OFF_SECS`] after Terminal Damage tore a
+/// wheel off the player's car.
+pub(super) fn td_wheel_off_crash(e: &Evidence, f: &Fatal) -> bool {
+    tyre_curve_crash(e, f) && td_wheel_off_before(e, f, TD_WHEEL_OFF_SECS)
+}
+
+/// Whether F1 25 faulted in its own keyframe sampler less than [`TD_WHEEL_OFF_ANIM_SECS`] after Terminal Damage tore
+/// a wheel off the player's car.
+pub(super) fn td_wheel_off_anim_crash(e: &Evidence, f: &Fatal) -> bool {
+    anim_clip_crash(e, f) && td_wheel_off_before(e, f, TD_WHEEL_OFF_ANIM_SECS)
 }
 
 /// Whether F1 25 crashed loading the track files of the Aggressive AI
@@ -393,12 +420,15 @@ pub(super) fn aggressive_ai(e: &Evidence) -> Diagnosis {
     }
 }
 
-pub(super) fn td_wheel_off(e: &Evidence) -> Diagnosis {
-    let addon = e
-        .names
+fn terminal_damage(e: &Evidence) -> String {
+    e.names
         .get(TERMINAL_DAMAGE)
         .cloned()
-        .unwrap_or_else(|| "Terminal Damage".to_owned());
+        .unwrap_or_else(|| "Terminal Damage".to_owned())
+}
+
+pub(super) fn td_wheel_off(e: &Evidence) -> Diagnosis {
+    let addon = terminal_damage(e);
     Diagnosis {
         id: "terminal_damage_wheel_off",
         title: format!("F1 25 crashed right after {addon} tore a wheel off your car"),
@@ -421,6 +451,25 @@ pub(super) fn tyre_curve_nan() -> Diagnosis {
                in the game, and no setting of yours fixes it."
             .to_owned(),
         steps: vec![SEND_LOGS.to_owned()],
+    }
+}
+
+pub(super) fn td_wheel_off_anim(e: &Evidence) -> Diagnosis {
+    let addon = terminal_damage(e);
+    Diagnosis {
+        id: "terminal_damage_wheel_off_anim",
+        title: format!("F1 25 crashed in its own animation code after {addon} tore a wheel off your car"),
+        what: format!(
+            "{addon}'s experimental suspension damage tore a wheel off your car, and shortly after F1 25's own \
+             animation code hit an invalid number and the game crashed. The fault is in the game's code."
+        ),
+        steps: vec![
+            SEND_LOGS.to_owned(),
+            format!(
+                "If it happens again, turn off Suspension damage from hits (experimental) and Suspension damage for \
+                 AI cars (experimental) in {addon}'s options on the Addons page, then press Play."
+            ),
+        ],
     }
 }
 

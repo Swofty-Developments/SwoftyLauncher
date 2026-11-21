@@ -236,3 +236,4 @@ src/core/guards/career/resume_gate_guard.cpp
 src/core/guards/cars/tyre_curve_guard.cpp
 src/core/guards/engine/anim_clip_time_guard.cpp
 src/core/guards/session/marshal_lights_guard.cpp
+src/core/guards/engine/anim_packet_time_guard.cpp

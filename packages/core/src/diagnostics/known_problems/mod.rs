@@ -34,8 +34,9 @@ use crate::store::Store;
 
 use broken_addons::{
     aggressive_ai, aggressive_ai_crash, anim_clip_crash, anim_clip_nan, marshal_lights, marshal_lights_crash,
-    pitlane, pitlane_crash, skip_cutscenes, skip_cutscenes_crash, td_wheel_off, td_wheel_off_crash,
-    tyre_curve_crash, tyre_curve_nan, unloaded_ai_line, unloaded_ai_line_crash,
+    pitlane, pitlane_crash, skip_cutscenes, skip_cutscenes_crash, td_wheel_off, td_wheel_off_anim,
+    td_wheel_off_anim_crash, td_wheel_off_crash, tyre_curve_crash, tyre_curve_nan, unloaded_ai_line,
+    unloaded_ai_line_crash,
 };
 pub use career::stuck_weekend;
 use career::{
@@ -167,6 +168,7 @@ const RULES: &[Rule] = &[
     |c| pitlane_crash(c.evidence, &c.fatal).then(|| pitlane(c.evidence)),
     |c| td_wheel_off_crash(c.evidence, &c.fatal).then(|| td_wheel_off(c.evidence)),
     |c| tyre_curve_crash(c.evidence, &c.fatal).then(tyre_curve_nan),
+    |c| td_wheel_off_anim_crash(c.evidence, &c.fatal).then(|| td_wheel_off_anim(c.evidence)),
     |c| anim_clip_crash(c.evidence, &c.fatal).then(anim_clip_nan),
     |c| unloaded_ai_line_crash(&c.fatal).then(|| unloaded_ai_line(c.evidence, &c.fatal)),
     |c| marshal_lights_crash(c.evidence, &c.fatal).then(|| marshal_lights(c.evidence, &c.fatal)),
