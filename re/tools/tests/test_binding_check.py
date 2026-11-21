@@ -542,6 +542,26 @@ class HandCallerCounts(Base):
 
 
 class CiCommand(Base):
+    def test_ci_accepts_a_file_list_larger_than_one_record(self):
+        tmp = tempfile.mkdtemp()
+        try:
+            head = os.path.join(tmp, 'head')
+            os.makedirs(head)
+            files = [{'filename': 'docs/page_%05d.md' % i, 'status': 'modified'} for i in range(2000)]
+            with open(os.path.join(tmp, 'files.json'), 'w') as f:
+                json.dump(files, f)
+            self.assertGreater(os.path.getsize(os.path.join(tmp, 'files.json')), br.MAX_BYTES)
+            out = os.path.join(tmp, 'out.json')
+            import binding
+            with contextlib.redirect_stdout(io.StringIO()):
+                binding.main(['ci', '--files', os.path.join(tmp, 'files.json'), '--head', head, '--author',
+                              AUTHOR, '--out', out])
+            with open(out) as f:
+                result = json.load(f)
+            self.assertNotIn('the file list is not a GitHub API file list', result['errors'])
+        finally:
+            shutil.rmtree(tmp)
+
     def test_ci_reads_only_record_paths_from_the_head_copy(self):
         tmp = tempfile.mkdtemp()
         try:
