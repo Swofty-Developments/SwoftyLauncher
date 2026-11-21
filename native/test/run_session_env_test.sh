@@ -32,7 +32,7 @@ kept() { if [[ -e $2 ]]; then pass "$1"; else fail "$1"; fi; }
 run() {
     rm -f "$SEEN"
     [[ -w $GAME/swofty ]] && rm -f "$LOG" "${LOG%.log}.prev.log"
-    (cd "$GAME" && timeout 60 "${PIN[@]}" xvfb-run -a wine "$GAME/F1_25.exe" SWOFTY_T_A SWOFTY_T_B SWOFTY_T_C SWOFTY_T_D) ||
+    (cd "$GAME" && timeout 60 "${PIN[@]}" xvfb-run -a wine "$GAME/F1_25.exe" SWOFTY_T_A SWOFTY_T_B SWOFTY_T_C SWOFTY_LAUNCHER_SAVES SWOFTY_T_D) ||
         fail "the fake game did not exit cleanly"
 }
 # write WRITTEN EXPIRES [SCHEMA [ASCII]]: the file, with its window as seconds from now.
@@ -43,7 +43,7 @@ path, written, expires, schema, ascii_only, token = sys.argv[1:]
 now = int(time.time())
 doc = {'schema': int(schema), 'request': '5f3a9c1e', 'written': now + int(written), 'expires': now + int(expires),
        'env': {'SWOFTY_T_A': token, 'SWOFTY_T_B': 'quote " back \\ slash ü ✓ \U0001F600',
-               'SWOFTY_T_C': '{"json":[1,2]}'}}
+               'SWOFTY_T_C': '{"json":[1,2]}', 'SWOFTY_LAUNCHER_SAVES': 'off'}}
 open(path, 'w', encoding='utf-8').write(json.dumps(doc, ensure_ascii=bool(ascii_only)))
 EOF
 }
@@ -53,7 +53,7 @@ import sys
 seen, token, what = sys.argv[1:]
 lines = open(seen, encoding='utf-8').read().splitlines() if __import__('os').path.exists(seen) else []
 want = ['SWOFTY_T_A=' + token, 'SWOFTY_T_B=quote " back \\ slash ü ✓ \U0001F600', 'SWOFTY_T_C={"json":[1,2]}',
-        'SWOFTY_T_D unset']
+        'SWOFTY_LAUNCHER_SAVES=off', 'SWOFTY_T_D unset']
 ok = lines == want
 print(f'{"ok  " if ok else "FAIL"}: {what}')
 if not ok:
@@ -62,7 +62,7 @@ sys.exit(not ok)
 EOF
 }
 want_unset() {
-    if [[ $(cat "$SEEN" 2>/dev/null) == $'SWOFTY_T_A unset\nSWOFTY_T_B unset\nSWOFTY_T_C unset\nSWOFTY_T_D unset' ]]; then
+    if [[ $(cat "$SEEN" 2>/dev/null) == $'SWOFTY_T_A unset\nSWOFTY_T_B unset\nSWOFTY_T_C unset\nSWOFTY_LAUNCHER_SAVES unset\nSWOFTY_T_D unset' ]]; then
         pass "$1"
     else
         fail "$1 (saw: $(tr '\n' ' ' <"$SEEN" 2>/dev/null))"
@@ -80,7 +80,7 @@ write -5 1015
 run
 want_values "the game sees each variable as the file names it" || status=1
 has "the loader names how many it set and the request" "$LOG" \
-    'session env: set 3 of 3 variable\(s\) from swofty\\session_env\.json \(launch request 5f3a9c1e\); removed the file'
+    'session env: set 4 of 4 variable\(s\) from swofty\\session_env\.json \(launch request 5f3a9c1e\); removed the file'
 lacks "the loader never logs a value" "$LOG" "$TOKEN|\"json\":\\[1,2\\]|back \\\\ slash"
 gone "the file is gone after the start" "$FILE"
 run
@@ -131,7 +131,7 @@ else
     chmod u+w "$GAME/swofty"
     want_values "the game sees the variables" || status=1
     has "the loader says the file stays" "$FALLBACK" \
-        'session env: set 3 of 3 variable\(s\) from swofty\\session_env\.json \(launch request 5f3a9c1e\); the file (could not be removed \(error 5\)|is still there after the delete), so the launcher removes it when the session ends'
+        'session env: set 4 of 4 variable\(s\) from swofty\\session_env\.json \(launch request 5f3a9c1e\); the file (could not be removed \(error 5\)|is still there after the delete), so the launcher removes it when the session ends'
     kept "the file is still there" "$FILE"
     lacks "and the fallback log has no value" "$FALLBACK" "$TOKEN"
 fi
