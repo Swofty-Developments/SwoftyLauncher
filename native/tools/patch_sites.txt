@@ -211,6 +211,7 @@ core/render/d3d12/swapchain_hooks.cpp: install(hooks.present1, sc_vt[22], reinte
 core/render/d3d12/swapchain_hooks.cpp: install(hooks.resize, sc_vt[13], reinterpret_cast<void *>(&resize_hook), "IDXGISwapChain::ResizeBuffers"); => outside d3d12
 core/render/d3d12/swapchain_hooks.cpp: install(hooks.resize1, sc_vt[39], reinterpret_cast<void *>(&resize1_hook), "IDXGISwapChain3::ResizeBuffers1"); => outside d3d12
 core/render/d3d12/swapchain_hooks.cpp: install(hooks.color_space, sc_vt[38], reinterpret_cast<void *>(&color_space_hook), "IDXGISwapChain3::SetColorSpace1"); => outside d3d12
+core/runtime/game_mem.cpp: if (!VirtualProtect(p, n, PAGE_READWRITE, &old)) => none
 core/runtime/imports.hpp: if (!VirtualProtect(slot, sizeof *slot, PAGE_READWRITE, &old)) => via
 core/runtime/loader/hook_install.cpp: Installed install(safetyhook::MidHook &h, uintptr_t at, const char *what, safetyhook::MidHookFn fn) => via
 core/runtime/loader/hook_install.cpp: auto made = safetyhook::MidHook::create(reinterpret_cast<void *>(at), fn); => via

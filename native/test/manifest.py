@@ -122,6 +122,7 @@ UNITS = [
     Unit('steps', 'Boot step and slow addon init log line unit test'),
     Unit('report_queue', 'Registry report writer queue unit test'),
     Unit('protection_spans', 'Binding pass protection spans unit test'),
+    Unit('game_mem_logic', 'Data binding write ledger unit test'),
     Unit('game_settings', 'Game setting override table unit test'),
     Unit('db_first_read', 'Database first-read probe unit test'),
     Unit('settings_logic', 'Addon settings model and requests file unit test'),
