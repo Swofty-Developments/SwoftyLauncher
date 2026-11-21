@@ -1,0 +1,11 @@
+{
+  "team.vehicle_override": {
+    "f81_lotus_88_de_angelis_long_beach": {
+      "package": "vmknolle.season-1981/f1_1981",
+      "team": "lotus",
+      "drivers": ["vmknolle.season-1981/de_angelis"],
+      "vehicle": "vmknolle.season-1981/f81_11_lotus88",
+      "when": { "track": "game/long_beach", "year": 1981, "session_types": [] }
+    }
+  }
+}

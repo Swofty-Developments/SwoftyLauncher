@@ -183,6 +183,7 @@ UNITS = [
     Unit('career_content', 'Career content library unit test', 'zig'),
     Unit('era_logic', 'Era picker logic unit test', 'zig'),
     Unit('box_grid', 'Box grid rules unit test', 'zig'),
+    Unit('vehicle_override', 'Vehicle override (team.vehicle_override) unit test'),
     Unit('calendar_track', 'Career calendar track guard unit test'),
     Unit('car_category', 'Car category boxes unit test', 'zig'),
     Unit('save_splice', 'Save splice unit test', 'zig'),

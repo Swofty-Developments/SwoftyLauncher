@@ -12,6 +12,7 @@
 
 #include <swofty/mixin.hpp>
 
+#include "core/apply/content/vehicle_override.hpp"
 #include "core/career/career_saves_logic.hpp"
 #include "core/hooks/core_events.hpp"
 #include "core/hooks/hooks.hpp"
@@ -355,6 +356,7 @@ void career_saves_start() { start(); }
 
 void career_saves_saving()
 {
+    swofty_core::apply::content::vehicle_override_saving();
     hk::events::career_saving();
     std::lock_guard<std::mutex> g(mu);
     if (current_id.empty())
@@ -432,6 +434,7 @@ void career_saves_saved()
             flush_locked();
         }
     }
+    swofty_core::apply::content::vehicle_override_saved();
     hk::events::career_saved();
 }
 
