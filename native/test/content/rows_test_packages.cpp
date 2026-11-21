@@ -407,7 +407,8 @@ void sponsors_tests()
         {std::string(content::VEHICLES) + "[_metadata_=f50_alfa].vehicle_package", "f1_1950_alfa"},
         {std::string(content::VEHICLES) + "[_metadata_=f50_ferrari].vehicle_package", "f1_1950_ferrari"},
         {std::string(content::VEHICLES) + "[_metadata_=renault_2025].vehicle_package", "f1_2025_renault"},
-        {std::string(content::PACKAGES) + "[_metadata_=f1_1950_alfa].resource_path", "f1_1950_vehicle_package/teams/alfa/wep/alfa"},
+        {std::string(content::PACKAGES) + "[_metadata_=f1_1950_alfa].resource_path",
+         "f1_1950_vehicle_package/teams/alfa/wep/alfa"},
         {std::string(content::PACKAGES) + "[_metadata_=f1_1950_ferrari].resource_path",
          "f1_1950_vehicle_package/teams/ferrari/wep/ferrari"},
         {std::string(content::PACKAGES) + "[_metadata_=f1_2025_renault].resource_path",
@@ -476,9 +477,8 @@ void sponsors_tests()
     db.erase(std::string(content::VEHICLES) + "[_metadata_=f50_ferrari].vehicle_package");
     check(lower(R"j({"package":"mod.s/f1_1950","textures":"s"})j").garages.empty(),
           "a box none of whose cars has an asset group is refused");
-    check(!content::box_sponsors_enabled(nullptr) && !content::box_sponsors_enabled("") &&
-              !content::box_sponsors_enabled("0") && !content::box_sponsors_enabled("on") &&
-              !content::box_sponsors_enabled("11") && content::box_sponsors_enabled("1"),
+    check(!content::box_sponsors_enabled(nullptr) && !content::box_sponsors_enabled("") && !content::box_sponsors_enabled("0") &&
+              !content::box_sponsors_enabled("on") && !content::box_sponsors_enabled("11") && content::box_sponsors_enabled("1"),
           "box sponsor boards stay fenced off unless SWOFTY_BOX_SPONSORS is exactly 1");
 }
 
