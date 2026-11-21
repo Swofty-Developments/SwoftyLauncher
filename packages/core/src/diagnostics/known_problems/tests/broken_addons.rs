@@ -380,12 +380,18 @@ const TYRE_CURVE_STEAM: [&str; 3] = [
     "F1_25.exe+0x1187bde .tls$ fn base+0x1187970+0x26e",
 ];
 
-const TYRE_CURVE_FAULTS: [&str; 6] = [
+const TYRE_CURVE_FAULTS: [&str; 12] = [
     "F1_25.exe+0x2e7e5ec .tls$ fn base+0x2e7e530+0xbc",
+    "F1_25.exe+0x2e7e9f4 .tls$ fn base+0x2e7e9a0+0x54",
     "F1_25.exe+0x2e7ec21 .tls$ fn base+0x2e7eb80+0xa1",
     "F1_25.exe+0x2e7c05c .xtls Car_Tyre_SampleCurveSet2KeyLerp+0xbc",
+    "F1_25.exe+0x2e7c464 .xtls Car_Tyre_Curve2D_SampleByBinarySearchY+0x54",
     "F1_25.exe+0x2e7c691 .xtls Car_Tyre_SampleWearCurve2DAlt+0xa1",
+    "F1_25.exe+0x2e6fc5c .rdata fn base+0x2e6fba0+0xbc",
+    "F1_25.exe+0x2e70064 .rdata fn base+0x2e70010+0x54",
+    "F1_25.exe+0x2e70291 .rdata fn base+0x2e701f0+0xa1",
     "F1_25.exe+0x2e721ec .rdata fn base+0x2e72130+0xbc",
+    "F1_25.exe+0x2e725f4 .arch fn base+0x2e725a0+0x54",
     "F1_25.exe+0x2e72821 .rdata fn base+0x2e72780+0xa1",
 ];
 
@@ -495,6 +501,55 @@ fn a_tyre_curve_crash_the_game_closed_on_without_the_top_level_filter_is_named()
         .collect();
     let mut e = ev(&first_chance, &[]);
     e.code = Some(0xc000_0005);
+    assert_eq!(diagnose(&e).map(|d| d.id), Some("tyre_curve_nan"));
+}
+
+const TYRE_CURVE_KEYFRAME: &str = "\
+2026-11-20 19:35:57.273 [ 8952] [crash] #1 first-chance (the game may still handle it) ACCESS_VIOLATION (0xc0000005) on thread 8952, 4114 s after load, at F1_25.exe+0x2e7e9f4 .tls$ fn base+0x2e7e9a0+0x54
+2026-11-20 19:35:57.274 [ 8952] [crash]   reading 0xffffffffffffffff
+2026-11-20 19:35:57.274 [ 8952] [crash]   rax=000000000000000a rbx=000000000000000b rcx=00000001439660e0 rdx=0000000000000014
+2026-11-20 19:35:57.274 [ 8952] [crash]   rsi=0000000145898620 rdi=0000000011f0b340 rbp=0000000000000000 rsp=000000007a09ef40
+2026-11-20 19:35:57.274 [ 8952] [crash]   r8 =00000001439660e0 r9 =0000000000000032 r10=9462e2e900012d75 r11=0000000011f0b640
+2026-11-20 19:35:57.274 [ 8952] [crash]   r12=000000000000000b r13=0000000000000003 r14=0000000335f8eb10 r15=000000007a09f05c
+2026-11-20 19:35:57.275 [ 8952] [crash]   code: C4 C1 78 2E 4A 04 72 E4 48 F7 D0 48 01 D0 4A 8D
+2026-11-20 19:35:57.348 [ 8952] [crash]   stack:
+2026-11-20 19:35:57.349 [ 8952] [crash]   #0  F1_25.exe+0x2e7e9f4 .tls$ fn base+0x2e7e9a0+0x54
+2026-11-20 19:35:57.349 [ 8952] [crash]   #1  F1_25.exe+0x2e7e61e .tls$ fn base+0x2e7e530+0xee
+2026-11-20 19:35:57.349 [ 8952] [crash]   #2  F1_25.exe+0x2f6f119 .tls$ fn base+0x2f6ee70+0x2a9
+2026-11-20 19:35:57.349 [ 8952] [crash]   #3  F1_25.exe+0x2f6ddfb .tls$ fn base+0x2f6d700+0x6fb
+2026-11-20 19:35:57.349 [ 8952] [crash]   #4  F1_25.exe+0x2f69113 .tls$ fn base+0x2f68280+0xe93
+2026-11-20 19:35:57.350 [ 8952] [crash]   #5  F1_25.exe+0x302d369 .tls$ fn base+0x302d300+0x69
+2026-11-20 19:35:57.350 [ 8952] [crash]   #6  F1_25.exe+0x3ac3203 .tls$ fn base+0x3ac2d80+0x483
+2026-11-20 19:35:57.350 [ 8952] [crash]   #7  F1_25.exe+0x3ac7583 .tls$ fn base+0x3ac7020+0x563
+2026-11-20 19:35:57.350 [ 8952] [crash]   #8  F1_25.exe+0x39206fa .tls$ fn base+0x3920480+0x27a
+2026-11-20 19:35:57.368 [ 8952] [crash]   #9  KERNEL32.DLL+0x2dda7
+2026-11-20 19:35:57.369 [ 8952] [crash]   #10 ntdll.dll+0xc9c5c
+2026-11-20 19:35:57.373 [ 8952] [crash] unhandled ACCESS_VIOLATION (0xc0000005) at F1_25.exe+0x2e7e9f4 .tls$ fn base+0x2e7e9a0+0x54 reached the top-level filter; passing it to the game's filter
+";
+
+const TYRE_CURVE_KEYFRAME_REPORT: &str = "\
+reason       unhandled ACCESS_VIOLATION (0xc0000005) reading 0xffffffffffffffff at F1_25.exe+0x2e7e9f4 .tls$ fn base+0x2e7e9a0+0x54
+== Exception
+  ACCESS_VIOLATION (0xc0000005), flags 0x0, at F1_25.exe+0x2e7e9f4 .tls$ fn base+0x2e7e9a0+0x54
+  parameter 0: 0x0
+  parameter 1: 0xffffffffffffffff
+  reading 0xffffffffffffffff: not a valid address
+
+== Stack (unwound with the modules' exception data)
+  #0  0000000142e7e9f4 rsp=000000007a09ef40  F1_25.exe+0x2e7e9f4 .tls$ fn base+0x2e7e9a0+0x54
+  #1  0000000142e7e61e rsp=000000007a09ef70  F1_25.exe+0x2e7e61e .tls$ fn base+0x2e7e530+0xee
+  #2  0000000142f6f119 rsp=000000007a09f030  F1_25.exe+0x2f6f119 .tls$ fn base+0x2f6ee70+0x2a9
+  #3  0000000142f6ddfb rsp=000000007a09f0f0  F1_25.exe+0x2f6ddfb .tls$ fn base+0x2f6d700+0x6fb
+";
+
+#[test]
+fn a_tyre_curve_crash_in_the_keyframe_search_is_named() {
+    assert_eq!(
+        diagnose(&ev(TYRE_CURVE_KEYFRAME, &[])).map(|d| d.id),
+        Some("tyre_curve_nan")
+    );
+    let mut e = ev("", &[]);
+    e.report = Some(TYRE_CURVE_KEYFRAME_REPORT.to_owned());
     assert_eq!(diagnose(&e).map(|d| d.id), Some("tyre_curve_nan"));
 }
 

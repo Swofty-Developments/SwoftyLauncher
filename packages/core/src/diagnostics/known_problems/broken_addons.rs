@@ -73,14 +73,22 @@ pub(super) const TD_WHEEL_OFF: [&str; 2] = ["] [td-probe] suspension: your car "
 pub(super) const TD_WHEEL_OFF_SECS: f64 = 1.0;
 
 /// Where the game's tyre curve samplers read through the node their bracket search returns, which is the curve
-/// tree's head when the key is not a number: `Car_Tyre_SampleCurveSet2KeyLerp+0xbc` and
-/// `Car_Tyre_SampleWearCurve2DAlt+0xa1`, on Steam build 26566308 (1.0.145), the KB build and EA 1.0.145.
-pub(super) const TYRE_CURVE_NAN: [&str; 6] = [
+/// tree's head when the key is not a number: `Car_Tyre_SampleCurveSet2KeyLerp+0xbc`,
+/// `Car_Tyre_Curve2D_SampleByBinarySearchY+0x54`, where that sampler's keyframe search reads a point of the curve it
+/// took from the head, and `Car_Tyre_SampleWearCurve2DAlt+0xa1`, on Steam build 26566308 (1.0.145), the KB build,
+/// EA 1.0.141 and EA 1.0.145.
+pub(super) const TYRE_CURVE_NAN: [&str; 12] = [
     "F1_25.exe+0x2e7e5ec ",
+    "F1_25.exe+0x2e7e9f4 ",
     "F1_25.exe+0x2e7ec21 ",
     "F1_25.exe+0x2e7c05c ",
+    "F1_25.exe+0x2e7c464 ",
     "F1_25.exe+0x2e7c691 ",
+    "F1_25.exe+0x2e6fc5c ",
+    "F1_25.exe+0x2e70064 ",
+    "F1_25.exe+0x2e70291 ",
     "F1_25.exe+0x2e721ec ",
+    "F1_25.exe+0x2e725f4 ",
     "F1_25.exe+0x2e72821 ",
 ];
 
