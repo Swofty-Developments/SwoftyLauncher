@@ -26,6 +26,7 @@ pub(super) struct Gathered {
     /// The Driver Manager drivers each DB Editor package picks, by the package's name.
     pub driver_picks: Vec<(String, Vec<String>)>,
     pub hud_inputs: Vec<crate::hud::Input>,
+    pub hud_slots: Vec<crate::hud::slots::SlotInput>,
     pub head_puts: crate::game_db::heads::Puts,
     /// An addon's operations file is applied by the core from its registry records.
     pub left_to_core: bool,
@@ -304,6 +305,9 @@ impl Gather<'_, '_, '_> {
                     .push(format!("hud: {f} of {} is off by its when", m.name));
                 continue;
             }
+            gathered
+                .hud_slots
+                .extend(crate::hud::slots::inputs_of(id, f, &doc.slots)?);
             gathered
                 .hud_inputs
                 .extend(crate::hud::inputs_of(id, &dir, f, doc)?);
