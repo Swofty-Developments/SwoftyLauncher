@@ -349,14 +349,24 @@ SWOFTY_RECORD(Handling, from, vtf, cls, damage_scale, chassis, f1_aero, core_aer
               tyre_damage, body_damage, tyres, engine, gearbox, fuel_tank, fuel_ecu, brake_ecu, steering, differential,
               suspension, tuning, assists, turbo, ers, plank, rad_upgrades, edits, remove)
 
+// The cars a car.profile applies to. Each list that is set has to match, and one entry of it is enough. team takes
+// a team.identity id (<addon>/<key>), game/<row label>, constructor/<key> or the active box's team key ("mercedes");
+// vehicle a vehicle id or game/<row label>; vehicle_package a vehicle.package id or game/<row label>; driver a
+// driver.identity id, game/<row label> or person/<key>. The core reads each car's team, vehicle and driver from its
+// session entrant.
 struct CarSelect {
     std::vector<uint32_t> indices;
-    std::vector<std::string> vehicle_package, vehicle, team;
+    std::vector<std::string> vehicle_package, vehicle, team, driver;
 };
-SWOFTY_RECORD(CarSelect, indices, vehicle_package, vehicle, team)
+SWOFTY_RECORD(CarSelect, indices, vehicle_package, vehicle, team, driver)
+
+// automatic: a profile without within, from an addon that owns a box or a career mode, applies only while that box
+// is raced or in that addon's careers. global: everywhere its within, when and cars match.
+enum class ProfileScope { automatic, global };
+SWOFTY_ENUM(ProfileScope, automatic, global)
 
 struct Profile {
-    static constexpr Version version{1, 0};
+    static constexpr Version version{1, 1};
     json::Value within;
     std::vector<events::SessionType> when;
     CarSelect cars;
@@ -365,10 +375,11 @@ struct Profile {
     float power_scale = 1, limiter_offset_rpm = 0, lift_scale = 1, drag_scale = 1;
     float grip_scale = 1, ai_grip_scale = 1;
     std::optional<uint32_t> fuel_modes;
+    ProfileScope scope = ProfileScope::automatic;
     json::Value extra;
 };
 SWOFTY_RECORD(Profile, within, when, cars, ai_only, player_only, priority, power_scale, limiter_offset_rpm, lift_scale,
-              drag_scale, grip_scale, ai_grip_scale, fuel_modes)
+              drag_scale, grip_scale, ai_grip_scale, fuel_modes, scope)
 
 struct Part {
     std::string node;

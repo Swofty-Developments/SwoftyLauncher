@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430f0cb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onGameModeSyncReceived (class from the log channel); log channel NETWORK: '%s: gameModeStatId: %d, matchingContext: %d'"
+  "evidence": "decomp:re/decomp/1430f0cb0.c;pat:log-message-method;xref:0x140996f4c",
+  "notes": "Caller 0x140996e20. Logs 'onGameModeSyncReceived: gameModeStatId, matchingContext', calls 0x1407d07a0, then tail-jumps Game_NetworkSubsystem_SetupGameSession 0x143065250 (0x1430f0e1f); the decomp prints that body too. (lane owner review requested) Better name: Game_NetworkSubsystem_OnGameModeSyncReceived (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_on_game_mode_sync_received",

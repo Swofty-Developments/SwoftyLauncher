@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140fcdad0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_Championship_CareerOnlineDocumentComponent_SyncGetDocumentHash;xref:0x140fcdb7a,0x140fcdbeb,0x140fcdc70",
-  "notes": "cxx=game::championship::CareerOnlineDocumentComponent::syncGetDocumentHash; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/140fcdad0.c;str:s_Championship_CareerOnlineDocumentComponent_SyncGetDocumentHash;xref:0x140fcd787",
+  "notes": "DataSynchroniser hash callback (lea at 0x140fcd787): if the hash set +0x2f0 is empty, recalculates via 0x140fd0990(this,keys,0) (logs). Empty key list -> copies the whole hash table (+0x2d8..+0x30c) into result param_2; else per key looks the hash up (missing -> 'key not found' fatal) and inserts {key,hash} (0x1410bcd50/0x1410bd010). (lane owner review requested)"
  },
  "signature": {
   "id": "game.career_online_document_component_sync_get_document_hash",

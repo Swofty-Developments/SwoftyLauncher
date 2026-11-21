@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14303fb80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-BANDWIDTH",
-  "notes": "named from its log messages (channel NETWORK-BANDWIDTH): '* System Request: reduce bandwidth usage immediately.'"
+  "evidence": "decomp:re/decomp/14303fb80.c;pat:log-channel-NETWORK-BANDWIDTH;xref:0x143054e7c,0x143198b4c",
+  "notes": "Bus handler for \"reduce bandwidth usage immediately\": checks the connection, gets the current limit (0x143040120); logs \"duckBandwidth() when not connected?\" / \"but I have no limit!\" / \"Hit the 32kbits hard stop\" / \"DUCK %d to %d of limit\"; lowers the limit and resets the decay timer. (lane owner review requested) Better name: Game_NetworkBandwidth_DuckBandwidth (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_bandwidth_system_request_reduce_bandwidth_usage",

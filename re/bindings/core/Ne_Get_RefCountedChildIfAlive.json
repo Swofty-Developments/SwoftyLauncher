@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140fc5e50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "void *Get(void *obj, void *out)",
-  "evidence": "decomp:re/decomp/140fc5e50.c;xref:0x1410186a4;xref:0x141674820;xref:0x1422e97cf",
-  "notes": "myteam-g2: Atomically increments the refcount of the intrusive pointer at obj+0x10 only if the count is non-zero and writes it to out (weak -> strong promotion). Generic."
+  "evidence": "decomp:re/decomp/140fc5e50.c;xref:0x1410186a4,0x141674820,0x1422e97cf",
+  "notes": "(this, u8 *out): weak_ptr lock on {obj this+8, ctrl this+0x10}: CAS-increments uses ctrl+8 only when non-zero; on success copies byte obj+0x38 to *out and drops the temporary ref (vt+0 dispose, weak ctrl+0xc, vt+8 destroy); expired/null -> *out=0. Returns out. Callers 0x141018480, Career_Bind_FacilityUpgradeNameStrings, Career_Bind_TeamHqPopupIcons. Better name: Ne_WeakPtr_ReadByte38IfAlive (bound record keeps its name)."
  },
  "signature": {
   "id": "core.get_ref_counted_child_if_alive",

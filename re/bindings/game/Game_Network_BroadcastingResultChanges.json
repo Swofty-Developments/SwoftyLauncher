@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142ce9980",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK/T",
-  "notes": "named from its log messages (channel NETWORK/T): 'Broadcasting result changes'"
+  "evidence": "decomp:re/decomp/142ce9980.c;pat:log-channel-NETWORK/T;xref:0x142ce8eed,0x142ceafdc,0x142ceb041",
+  "notes": "Logs 'Broadcasting result changes' (RESULTS/V), per vehicle 'Sending result data for vehicle %d, status is %s' and 'Results for: %s have changes: %s, fastest lap: %.3f'. Callers 0x142ce8d90 (0x142ce8eed), 0x142ceae20 (0x142ceafdc, jmp 0x142ceb041). (lane owner review requested) Better name: Game_Network_BroadcastResultChanges (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_broadcasting_result_changes",

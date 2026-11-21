@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144468330",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144468330.c;xref:0x1400cca77",
-  "notes": "Twin of 0x1444689d0 (same three-level lookup at +0xe0/+0xe8/+0xf0, error ring) for a second asset kind. Callers Render_GroundCover_ReadCascadeConfig, 0x1400cca77. vp5-verify partial/disagree"
+  "evidence": "decomp:re/decomp/144468330.c;xref:0x144467328,0x14446734d,0x1444676df,0x14446771b",
+  "notes": "Rename: typed property get. Looks property param_3 up in the sources [*this]+0xf0, +0xe8, +0xe0 (vcall +8), status 0x57 when absent; compares the value type id (vcall +0x10) with the bool type descriptor 0x146129dc0, copies 1 byte from vcall +0x30 to *param_4 (status 0), else status 0x16 and error trace. Callers in Render_GroundCoverCascade_Load (0x144467200). (lane owner review requested) Better name: Render_GroundCover_GetPropertyBool (bound record keeps its name)."
  },
  "signature": {
   "id": "render.ground_cover_resolve_asset_ref_b",

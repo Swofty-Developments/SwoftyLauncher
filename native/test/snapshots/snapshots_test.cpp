@@ -542,7 +542,8 @@ static void clock_tests()
     expect(!m.fire, "the next Team HQ of the same season fires nothing");
     s.index = 1;
     m = clock.hub(s, stock);
-    expect(!m.fire && said(m, "past the 1 career.season record(s)"), "a season past the records fires nothing");
+    expect(!m.fire && !m.dated && said(m, "past the 1 career.season record(s)"),
+           "a season past the records fires nothing and dates nothing");
     m = clock.hub(s, stock);
     expect(!m.fire && m.lines.empty(), "and says so once");
 
@@ -574,6 +575,7 @@ static void clock_tests()
         expect(!m.fire, "and only once");
         r = fresh.report("swofty.progressive", committed, 2016, pg, m);
         expect(r == sn::Report::ok && !m.fire && said(m, "already started"), "the owner's retry afterwards starts nothing again");
+        expect(m.dated && m.year == 2016 && m.index == 0, "and still dates the career: its year is 2016");
         fresh.rename("f1_career_progressive_save:new1", "f1_career_progressive_save:7");
         sn::Season slot = committed;
         slot.career = "f1_career_progressive_save:7";
@@ -594,9 +596,9 @@ static void clock_tests()
     r = clock.report("swofty.progressive", p, 1900, pg, m);
     expect(r == sn::Report::invalid, "a year out of range is invalid");
     r = clock.report("swofty.progressive", p, 2016, pg, m);
-    expect(r == sn::Report::ok && m.fire && m.year == 2016 && m.index == 0, "the owner's report starts its season");
+    expect(r == sn::Report::ok && m.fire && m.dated && m.year == 2016 && m.index == 0, "the owner's report starts its season");
     m = clock.hub(p, pg);
-    expect(!m.fire && m.lines.empty(), "the Team HQ after the report adds nothing");
+    expect(!m.fire && !m.dated && m.lines.empty(), "the Team HQ after the report adds nothing");
     r = clock.report("swofty.progressive", p, 2016, pg, m);
     expect(r == sn::Report::ok && !m.fire && said(m, "already started"), "once per career and year");
     p.index = 1;
@@ -625,6 +627,9 @@ static void clock_tests()
     sn::YearMap three = sn::year_map(bs, "f1_career_progressive");
     m = next.hub(sn::Season{"dc-7", "f1_career_progressive", "", 0, true, ""}, three);
     expect(!m.fire && said(m, "already started"), "a season the saved entry froze does not start again next session");
+    expect(m.dated && m.year == 2016 && m.index == 0, "but dates the resumed career: its season is 2016");
+    m = next.hub(sn::Season{"dc-7", "f1_career_progressive", "", 0, true, ""}, three);
+    expect(!m.fire && m.dated && m.year == 2016 && m.lines.empty(), "every Team HQ of that season dates it, saying it once");
     m = next.hub(sn::Season{"dc-7", "f1_career_progressive", "", 1, true, ""}, three);
     expect(m.fire && m.year == 2017, "the next season does");
     book.career_created("dc-8", fmt::Freeze::at_creation, career_ctx());

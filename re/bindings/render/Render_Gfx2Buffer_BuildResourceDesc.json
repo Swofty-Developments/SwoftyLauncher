@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439dd050",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439dd050.c;xref:0x1439d59aa",
-  "notes": "Builds a D3D12-style resource description for a buffer: dimension 1 (BUFFER), width = param_3+0x20 * +0x28 (min 1), flag bits mapped from usage flags param_3+0x18, 256-byte size rounding when constant-buffer bits (0x10000004) set. Callers Render_Gfx2Buffer_Construct, 0x143bd9b30."
+  "evidence": "decomp:re/decomp/1439dd050.c;xref:0x1439d59aa,0x143bd9db6",
+  "notes": "Builds a D3D12_RESOURCE_DESC on the stack (dimension 1 BUFFER, width = param_3+0x20 * +0x28 min 1, 1x1x1, layout ROW_MAJOR, flags from usage bits +0x18; 256-byte rounding for flag 4, 4-byte for 0x10000000) and calls ID3D12Device::GetResourceAllocationInfo (vcall +0xc8, mask = node count > 1); returns {size, alignment} in param_2. Callers Render_Gfx2Buffer_Construct 0x1439d5710, 0x143bd9b30. (lane owner review requested) Better name: Render_Gfx2Buffer_GetAllocationInfo (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_buffer_build_resource_desc",

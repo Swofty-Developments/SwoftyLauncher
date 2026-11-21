@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: ElasticSearchReporterModule::report_BenchmarkResults(minMaxDataValid=%d) | Flushing'"
+  "evidence": "decomp:re/decomp/1407a80d0.c;pat:log-channel-TELEMETRY;xref:0x145645e40",
+  "notes": "Virtual (vtable cell 0x145645e40). Strings: 'ElasticSearchReporterModule::report_BenchmarkResults(minMaxDataValid=%d)', 'Flushing', benchmark JSON keys (benchmark, hardware_settings, directx_version, cpu_name, track, weather, cars), 'GameModeBenchmark::onSessionExit'."
  },
  "signature": {
   "id": "game.analytics_elastic_search_reporter_module_report_benchmark_results",

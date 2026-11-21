@@ -930,47 +930,47 @@ inline constexpr site<"site_Sess_VirtualSession_EstimateTail"> site_Sess_Virtual
 inline constexpr site<"site_Sess_VirtualSession_EstimateTyreQuery"> site_Sess_VirtualSession_EstimateTyreQuery{}; // L2 experimental
 inline constexpr site<"site_Sess_WheelMapInsertCall"> site_Sess_WheelMapInsertCall{}; // L2 experimental
 inline constexpr vtable<"vt_Sess_AiController", 4> vt_Sess_AiController{}; // L2 experimental
-inline constexpr vtable<"vt_Sess_CareerHubLocation", 11> vt_Sess_CareerHubLocation{}; // L2 experimental, SessionStateCareerHubLocation
-inline constexpr vtable<"vt_Sess_ContractNegotiations", 11> vt_Sess_ContractNegotiations{}; // L2 experimental, StateContractNegotiations
+inline constexpr vtable<"vt_Sess_CareerHubLocation", 20> vt_Sess_CareerHubLocation{}; // L2 experimental, SessionStateCareerHubLocation
+inline constexpr vtable<"vt_Sess_ContractNegotiations", 16> vt_Sess_ContractNegotiations{}; // L2 experimental, StateContractNegotiations
 inline constexpr vtable<"vt_Sess_ControllerSystem", 54> vt_Sess_ControllerSystem{}; // L2 experimental
-inline constexpr vtable<"vt_Sess_CutsceneLocation", 11> vt_Sess_CutsceneLocation{}; // L2 experimental, SessionStateCutsceneLocation
-inline constexpr vtable<"vt_Sess_CutsceneLocationLoad", 11> vt_Sess_CutsceneLocationLoad{}; // L2 experimental, SessionStateCutsceneLocationLoad
-inline constexpr vtable<"vt_Sess_CutsceneLocationUnload", 11> vt_Sess_CutsceneLocationUnload{}; // L2 experimental, SessionStateCutsceneLocationUnload
-inline constexpr vtable<"vt_Sess_DelayOnLoadingScreen", 11> vt_Sess_DelayOnLoadingScreen{}; // L2 experimental, SessionStateDelayOnLoadingScreen
-inline constexpr vtable<"vt_Sess_DriverCareerContractNegotiations", 11> vt_Sess_DriverCareerContractNegotiations{}; // L2 experimental, StateDriverCareerContractNegotiations
-inline constexpr vtable<"vt_Sess_DriverCareerContractNegotiationsIntro", 11> vt_Sess_DriverCareerContractNegotiationsIntro{}; // L2 experimental, StateDriverCareerContractNegotiationsIntro
-inline constexpr vtable<"vt_Sess_DriverCareerContractNegotiationsOutro", 11> vt_Sess_DriverCareerContractNegotiationsOutro{}; // L2 experimental, StateDriverCareerContractNegotiationsOutro
-inline constexpr vtable<"vt_Sess_DriverCareerContractNegotiationsTeamSelect", 11> vt_Sess_DriverCareerContractNegotiationsTeamSelect{}; // L2 experimental, StateDriverCareerContractNegotiationsTeamSelect
-inline constexpr vtable<"vt_Sess_DriverHQIntro", 11> vt_Sess_DriverHQIntro{}; // L2 experimental, StateDriverHQIntro
-inline constexpr vtable<"vt_Sess_EndOfSeasonCutscene", 11> vt_Sess_EndOfSeasonCutscene{}; // L2 experimental, StateEndOfSeasonCutscene
-inline constexpr vtable<"vt_Sess_F1CGIntro", 11> vt_Sess_F1CGIntro{}; // L2 experimental, StateF1CGIntro
-inline constexpr vtable<"vt_Sess_F1CGOutro", 11> vt_Sess_F1CGOutro{}; // L2 experimental, StateF1CGOutro
-inline constexpr vtable<"vt_Sess_F1CGUpdate", 11> vt_Sess_F1CGUpdate{}; // L2 experimental, StateF1CGUpdate
-inline constexpr vtable<"vt_Sess_Frontend", 11> vt_Sess_Frontend{}; // L2 experimental, StateFrontend
-inline constexpr vtable<"vt_Sess_FrontendWorld", 11> vt_Sess_FrontendWorld{}; // L2 experimental, StateFrontendWorld
-inline constexpr vtable<"vt_Sess_GetEventToken", 11> vt_Sess_GetEventToken{}; // L2 experimental, StateGetEventToken
+inline constexpr vtable<"vt_Sess_CutsceneLocation", 20> vt_Sess_CutsceneLocation{}; // L2 experimental, SessionStateCutsceneLocation
+inline constexpr vtable<"vt_Sess_CutsceneLocationLoad", 23> vt_Sess_CutsceneLocationLoad{}; // L2 experimental, SessionStateCutsceneLocationLoad
+inline constexpr vtable<"vt_Sess_CutsceneLocationUnload", 23> vt_Sess_CutsceneLocationUnload{}; // L2 experimental, SessionStateCutsceneLocationUnload
+inline constexpr vtable<"vt_Sess_DelayOnLoadingScreen", 20> vt_Sess_DelayOnLoadingScreen{}; // L2 experimental, SessionStateDelayOnLoadingScreen
+inline constexpr vtable<"vt_Sess_DriverCareerContractNegotiations", 16> vt_Sess_DriverCareerContractNegotiations{}; // L2 experimental, StateDriverCareerContractNegotiations
+inline constexpr vtable<"vt_Sess_DriverCareerContractNegotiationsIntro", 16> vt_Sess_DriverCareerContractNegotiationsIntro{}; // L2 experimental, StateDriverCareerContractNegotiationsIntro
+inline constexpr vtable<"vt_Sess_DriverCareerContractNegotiationsOutro", 16> vt_Sess_DriverCareerContractNegotiationsOutro{}; // L2 experimental, StateDriverCareerContractNegotiationsOutro
+inline constexpr vtable<"vt_Sess_DriverCareerContractNegotiationsTeamSelect", 16> vt_Sess_DriverCareerContractNegotiationsTeamSelect{}; // L2 experimental, StateDriverCareerContractNegotiationsTeamSelect
+inline constexpr vtable<"vt_Sess_DriverHQIntro", 16> vt_Sess_DriverHQIntro{}; // L2 experimental, StateDriverHQIntro
+inline constexpr vtable<"vt_Sess_EndOfSeasonCutscene", 16> vt_Sess_EndOfSeasonCutscene{}; // L2 experimental, StateEndOfSeasonCutscene
+inline constexpr vtable<"vt_Sess_F1CGIntro", 16> vt_Sess_F1CGIntro{}; // L2 experimental, StateF1CGIntro
+inline constexpr vtable<"vt_Sess_F1CGOutro", 16> vt_Sess_F1CGOutro{}; // L2 experimental, StateF1CGOutro
+inline constexpr vtable<"vt_Sess_F1CGUpdate", 16> vt_Sess_F1CGUpdate{}; // L2 experimental, StateF1CGUpdate
+inline constexpr vtable<"vt_Sess_Frontend", 16> vt_Sess_Frontend{}; // L2 experimental, StateFrontend
+inline constexpr vtable<"vt_Sess_FrontendWorld", 16> vt_Sess_FrontendWorld{}; // L2 experimental, StateFrontendWorld
+inline constexpr vtable<"vt_Sess_GetEventToken", 16> vt_Sess_GetEventToken{}; // L2 experimental, StateGetEventToken
 inline constexpr vtable<"vt_Sess_HumanController", 4> vt_Sess_HumanController{}; // L2 experimental
-inline constexpr vtable<"vt_Sess_InGamePlaying", 11> vt_Sess_InGamePlaying{}; // L2 experimental, SessionStateInGamePlaying
-inline constexpr vtable<"vt_Sess_Intro", 11> vt_Sess_Intro{}; // L2 experimental, StateIntro
-inline constexpr vtable<"vt_Sess_Launch", 11> vt_Sess_Launch{}; // L2 experimental, StateLaunch
-inline constexpr vtable<"vt_Sess_LoadSession", 11> vt_Sess_LoadSession{}; // L2 experimental, StateLoadSession
-inline constexpr vtable<"vt_Sess_LocationLoad", 11> vt_Sess_LocationLoad{}; // L2 experimental, SessionStateLocationLoad
-inline constexpr vtable<"vt_Sess_LocationUnload", 11> vt_Sess_LocationUnload{}; // L2 experimental, SessionStateLocationUnload
-inline constexpr vtable<"vt_Sess_OSQSyncReady", 11> vt_Sess_OSQSyncReady{}; // L2 experimental, StateOSQSyncReady
-inline constexpr vtable<"vt_Sess_OnlineConnect", 11> vt_Sess_OnlineConnect{}; // L2 experimental, StateOnlineConnect
-inline constexpr vtable<"vt_Sess_OnlineFrontend", 11> vt_Sess_OnlineFrontend{}; // L2 experimental, StateOnlineFrontend
-inline constexpr vtable<"vt_Sess_OnlineLobby", 11> vt_Sess_OnlineLobby{}; // L2 experimental, StateOnlineLobby
-inline constexpr vtable<"vt_Sess_Persistent", 11> vt_Sess_Persistent{}; // L2 experimental, StatePersistent
-inline constexpr vtable<"vt_Sess_PlayCutScene", 11> vt_Sess_PlayCutScene{}; // L2 experimental, SessionStatePlayCutScene
-inline constexpr vtable<"vt_Sess_PostLoadDataSync", 11> vt_Sess_PostLoadDataSync{}; // L2 experimental, StatePostLoadDataSync
-inline constexpr vtable<"vt_Sess_PreRace", 11> vt_Sess_PreRace{}; // L2 experimental, SessionStatePreRace
-inline constexpr vtable<"vt_Sess_PressInterview", 11> vt_Sess_PressInterview{}; // L2 experimental, SessionStatePressInterview
-inline constexpr vtable<"vt_Sess_PressInterviewBase", 11> vt_Sess_PressInterviewBase{}; // L2 experimental, SessionStatePressInterviewBase
-inline constexpr vtable<"vt_Sess_QualifyingSyncReady", 11> vt_Sess_QualifyingSyncReady{}; // L2 experimental, StateQualifyingSyncReady
+inline constexpr vtable<"vt_Sess_InGamePlaying", 23> vt_Sess_InGamePlaying{}; // L2 experimental, SessionStateInGamePlaying
+inline constexpr vtable<"vt_Sess_Intro", 16> vt_Sess_Intro{}; // L2 experimental, StateIntro
+inline constexpr vtable<"vt_Sess_Launch", 16> vt_Sess_Launch{}; // L2 experimental, StateLaunch
+inline constexpr vtable<"vt_Sess_LoadSession", 16> vt_Sess_LoadSession{}; // L2 experimental, StateLoadSession
+inline constexpr vtable<"vt_Sess_LocationLoad", 23> vt_Sess_LocationLoad{}; // L2 experimental, SessionStateLocationLoad
+inline constexpr vtable<"vt_Sess_LocationUnload", 23> vt_Sess_LocationUnload{}; // L2 experimental, SessionStateLocationUnload
+inline constexpr vtable<"vt_Sess_OSQSyncReady", 16> vt_Sess_OSQSyncReady{}; // L2 experimental, StateOSQSyncReady
+inline constexpr vtable<"vt_Sess_OnlineConnect", 16> vt_Sess_OnlineConnect{}; // L2 experimental, StateOnlineConnect
+inline constexpr vtable<"vt_Sess_OnlineFrontend", 16> vt_Sess_OnlineFrontend{}; // L2 experimental, StateOnlineFrontend
+inline constexpr vtable<"vt_Sess_OnlineLobby", 16> vt_Sess_OnlineLobby{}; // L2 experimental, StateOnlineLobby
+inline constexpr vtable<"vt_Sess_Persistent", 16> vt_Sess_Persistent{}; // L2 experimental, StatePersistent
+inline constexpr vtable<"vt_Sess_PlayCutScene", 20> vt_Sess_PlayCutScene{}; // L2 experimental, SessionStatePlayCutScene
+inline constexpr vtable<"vt_Sess_PostLoadDataSync", 16> vt_Sess_PostLoadDataSync{}; // L2 experimental, StatePostLoadDataSync
+inline constexpr vtable<"vt_Sess_PreRace", 20> vt_Sess_PreRace{}; // L2 experimental, SessionStatePreRace
+inline constexpr vtable<"vt_Sess_PressInterview", 21> vt_Sess_PressInterview{}; // L2 experimental, SessionStatePressInterview
+inline constexpr vtable<"vt_Sess_PressInterviewBase", 21> vt_Sess_PressInterviewBase{}; // L2 experimental, SessionStatePressInterviewBase
+inline constexpr vtable<"vt_Sess_QualifyingSyncReady", 16> vt_Sess_QualifyingSyncReady{}; // L2 experimental, StateQualifyingSyncReady
 inline constexpr vtable<"vt_Sess_RaceRuleset", 60> vt_Sess_RaceRuleset{}; // L2 experimental
-inline constexpr vtable<"vt_Sess_ReadyMonitor", 11> vt_Sess_ReadyMonitor{}; // L2 experimental, StateReadyMonitor
+inline constexpr vtable<"vt_Sess_ReadyMonitor", 16> vt_Sess_ReadyMonitor{}; // L2 experimental, StateReadyMonitor
 inline constexpr vtable<"vt_Sess_RedFlagSystem", 30> vt_Sess_RedFlagSystem{}; // L2 experimental, RedFlagSystem
-inline constexpr vtable<"vt_Sess_ReplaySessionLoaded", 11> vt_Sess_ReplaySessionLoaded{}; // L2 experimental, SessionStateReplaySessionLoaded
+inline constexpr vtable<"vt_Sess_ReplaySessionLoaded", 20> vt_Sess_ReplaySessionLoaded{}; // L2 experimental, SessionStateReplaySessionLoaded
 inline constexpr vtable<"vt_Sess_ScAheadOfLead", 11> vt_Sess_ScAheadOfLead{}; // L2 experimental
 inline constexpr vtable<"vt_Sess_ScCanReturn", 10> vt_Sess_ScCanReturn{}; // L2 experimental
 inline constexpr vtable<"vt_Sess_ScCarsGrouped", 11> vt_Sess_ScCarsGrouped{}; // L2 experimental
@@ -979,26 +979,26 @@ inline constexpr vtable<"vt_Sess_ScForceReturn", 10> vt_Sess_ScForceReturn{}; //
 inline constexpr vtable<"vt_Sess_ScRaceLapsRemaining", 10> vt_Sess_ScRaceLapsRemaining{}; // L2 experimental
 inline constexpr vtable<"vt_Sess_ScTriggerRedFlag", 10> vt_Sess_ScTriggerRedFlag{}; // L2 experimental
 inline constexpr vtable<"vt_Sess_ScTriggerVsc", 10> vt_Sess_ScTriggerVsc{}; // L2 experimental
-inline constexpr vtable<"vt_Sess_SecretMeeting", 11> vt_Sess_SecretMeeting{}; // L2 experimental, StateSecretMeeting
-inline constexpr vtable<"vt_Sess_SecretMeetingOutro", 11> vt_Sess_SecretMeetingOutro{}; // L2 experimental, StateSecretMeetingOutro
-inline constexpr vtable<"vt_Sess_Session", 11> vt_Sess_Session{}; // L2 experimental, StateSession
-inline constexpr vtable<"vt_Sess_SessionBaseState", 11> vt_Sess_SessionBaseState{}; // L2 experimental, SessionBaseState
-inline constexpr vtable<"vt_Sess_SessionTransition", 11> vt_Sess_SessionTransition{}; // L2 experimental, StateSessionTransition
-inline constexpr vtable<"vt_Sess_SillySeasonCutscene", 11> vt_Sess_SillySeasonCutscene{}; // L2 experimental, StateSillySeasonCutscene
-inline constexpr vtable<"vt_Sess_SmokeTestSkipFEPreLaunchHold", 11> vt_Sess_SmokeTestSkipFEPreLaunchHold{}; // L2 experimental, StateSmokeTestSkipFEPreLaunchHold
-inline constexpr vtable<"vt_Sess_SpectatorReadyMonitor", 11> vt_Sess_SpectatorReadyMonitor{}; // L2 experimental, StateSpectatorReadyMonitor
-inline constexpr vtable<"vt_Sess_StartLoadingFlow", 11> vt_Sess_StartLoadingFlow{}; // L2 experimental, SessionStateStartLoadingFlow
-inline constexpr vtable<"vt_Sess_StoryHub", 11> vt_Sess_StoryHub{}; // L2 experimental, StateStoryHub
-inline constexpr vtable<"vt_Sess_StoryHubDepartmentEvents", 11> vt_Sess_StoryHubDepartmentEvents{}; // L2 experimental, StateStoryHubDepartmentEvents
-inline constexpr vtable<"vt_Sess_StoryHubDepartmentEventsBase", 11> vt_Sess_StoryHubDepartmentEventsBase{}; // L2 experimental, StateStoryHubDepartmentEventsBase
-inline constexpr vtable<"vt_Sess_StoryHubDepartmentEventsIntro", 11> vt_Sess_StoryHubDepartmentEventsIntro{}; // L2 experimental, StateStoryHubDepartmentEventsIntro
-inline constexpr vtable<"vt_Sess_StoryHubDepartmentEventsOutro", 11> vt_Sess_StoryHubDepartmentEventsOutro{}; // L2 experimental, StateStoryHubDepartmentEventsOutro
-inline constexpr vtable<"vt_Sess_SynchroniseCloseDocument", 11> vt_Sess_SynchroniseCloseDocument{}; // L2 experimental, StateSynchroniseCloseDocument
-inline constexpr vtable<"vt_Sess_TeamHQ", 11> vt_Sess_TeamHQ{}; // L2 experimental, StateTeamHQ
-inline constexpr vtable<"vt_Sess_TeamHQToSession", 11> vt_Sess_TeamHQToSession{}; // L2 experimental, StateTeamHQToSession
-inline constexpr vtable<"vt_Sess_TeamHQUpdate", 11> vt_Sess_TeamHQUpdate{}; // L2 experimental, StateTeamHQUpdate
-inline constexpr vtable<"vt_Sess_TyreAllocation", 11> vt_Sess_TyreAllocation{}; // L2 experimental, StateTyreAllocation
-inline constexpr vtable<"vt_Sess_UnloadRewardSequence", 11> vt_Sess_UnloadRewardSequence{}; // L2 experimental, SessionStateUnloadRewardSequence
-inline constexpr vtable<"vt_Sess_Video", 11> vt_Sess_Video{}; // L2 experimental, SessionStateVideo
+inline constexpr vtable<"vt_Sess_SecretMeeting", 16> vt_Sess_SecretMeeting{}; // L2 experimental, StateSecretMeeting
+inline constexpr vtable<"vt_Sess_SecretMeetingOutro", 16> vt_Sess_SecretMeetingOutro{}; // L2 experimental, StateSecretMeetingOutro
+inline constexpr vtable<"vt_Sess_Session", 16> vt_Sess_Session{}; // L2 experimental, StateSession
+inline constexpr vtable<"vt_Sess_SessionBaseState", 20> vt_Sess_SessionBaseState{}; // L2 experimental, SessionBaseState
+inline constexpr vtable<"vt_Sess_SessionTransition", 16> vt_Sess_SessionTransition{}; // L2 experimental, StateSessionTransition
+inline constexpr vtable<"vt_Sess_SillySeasonCutscene", 16> vt_Sess_SillySeasonCutscene{}; // L2 experimental, StateSillySeasonCutscene
+inline constexpr vtable<"vt_Sess_SmokeTestSkipFEPreLaunchHold", 16> vt_Sess_SmokeTestSkipFEPreLaunchHold{}; // L2 experimental, StateSmokeTestSkipFEPreLaunchHold
+inline constexpr vtable<"vt_Sess_SpectatorReadyMonitor", 16> vt_Sess_SpectatorReadyMonitor{}; // L2 experimental, StateSpectatorReadyMonitor
+inline constexpr vtable<"vt_Sess_StartLoadingFlow", 20> vt_Sess_StartLoadingFlow{}; // L2 experimental, SessionStateStartLoadingFlow
+inline constexpr vtable<"vt_Sess_StoryHub", 20> vt_Sess_StoryHub{}; // L2 experimental, StateStoryHub
+inline constexpr vtable<"vt_Sess_StoryHubDepartmentEvents", 21> vt_Sess_StoryHubDepartmentEvents{}; // L2 experimental, StateStoryHubDepartmentEvents
+inline constexpr vtable<"vt_Sess_StoryHubDepartmentEventsBase", 21> vt_Sess_StoryHubDepartmentEventsBase{}; // L2 experimental, StateStoryHubDepartmentEventsBase
+inline constexpr vtable<"vt_Sess_StoryHubDepartmentEventsIntro", 21> vt_Sess_StoryHubDepartmentEventsIntro{}; // L2 experimental, StateStoryHubDepartmentEventsIntro
+inline constexpr vtable<"vt_Sess_StoryHubDepartmentEventsOutro", 21> vt_Sess_StoryHubDepartmentEventsOutro{}; // L2 experimental, StateStoryHubDepartmentEventsOutro
+inline constexpr vtable<"vt_Sess_SynchroniseCloseDocument", 16> vt_Sess_SynchroniseCloseDocument{}; // L2 experimental, StateSynchroniseCloseDocument
+inline constexpr vtable<"vt_Sess_TeamHQ", 20> vt_Sess_TeamHQ{}; // L2 experimental, StateTeamHQ
+inline constexpr vtable<"vt_Sess_TeamHQToSession", 20> vt_Sess_TeamHQToSession{}; // L2 experimental, StateTeamHQToSession
+inline constexpr vtable<"vt_Sess_TeamHQUpdate", 20> vt_Sess_TeamHQUpdate{}; // L2 experimental, StateTeamHQUpdate
+inline constexpr vtable<"vt_Sess_TyreAllocation", 16> vt_Sess_TyreAllocation{}; // L2 experimental, StateTyreAllocation
+inline constexpr vtable<"vt_Sess_UnloadRewardSequence", 16> vt_Sess_UnloadRewardSequence{}; // L2 experimental, SessionStateUnloadRewardSequence
+inline constexpr vtable<"vt_Sess_Video", 21> vt_Sess_Video{}; // L2 experimental, SessionStateVideo
 
 }

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439bb6b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/1439bb6b0.c;xref:0x143b5a914,0x143b7edc5",
-  "notes": "Hypothesis: 3.5 KB helper called from 0x143b5a830 (FrameStart/End) within RenderFrame. Named callers: Ne_Gfx2Renderer_RenderFrame. vp2-verify partial/disagree"
+  "notes": "(dev,queue): under CS +0x618 reads completed fence ([dev+8] vt+0x40); when >= dev+0x10 walks map [dev+0x650] (list +0x10, buckets +0x28): releases entry obj (vt+0x10), frees its block with Render_Gfx2_BlockAllocator_Free(dev+0x6c0) under CS +0x670, erases node (FNV-1a of 8-byte key, count +0x18, free [map+8] vt+0x38). If entries remain calls [queue+0x30] vt+0x78(fence,value). Callers Ne_Gfx2Renderer_FrameStartEnd, RenderFrame."
  },
  "signature": {
   "id": "core.gfx2_renderer_frame_sub_task",

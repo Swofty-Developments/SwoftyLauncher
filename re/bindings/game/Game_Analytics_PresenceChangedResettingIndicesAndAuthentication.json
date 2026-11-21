@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140761f40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: Presence changed. Resetting indices and authentication.'"
+  "evidence": "decomp:re/decomp/140761f40.c;pat:log-channel-TELEMETRY;xref:0x14076251d,0x140762b19",
+  "notes": "Logs TELEMETRY 'Presence changed. Resetting indices and authentication.', resets 4 vectors mgr+0x20150..0x20168 (end=begin), calls vtbl+0x18 of mgr+0x20178, writes 'none' to global+0x17c, sets mgr+0x209a8=0x100, mgr+0x208b8=-1. Callers inside 0x1407622c0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_presence_changed_resetting_indices_and_authentication",

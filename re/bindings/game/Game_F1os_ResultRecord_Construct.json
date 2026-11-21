@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14443c060",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14443c060.c;xref:0x140829514",
-  "notes": "Zero-initialises a ~0x100-byte result record (xmm stores +8..+0xf0) then copies param_5 data with Ne_Crt_Memcpy. 104 call sites (all Game_F1os_OnResult_* handlers). Hypothesis."
+  "evidence": "decomp:re/decomp/14443c060.c;xref:0x140829514,0x140838ec2,0x140b19c6d",
+  "notes": "Ctor of the HTTP response record the OnResult handlers read: zeroes +8..+0x88, vtable 0x145a8e040, +0x90 allocator param_2, +0x98 byte param_3 (no-payload flag), +0x9c u32 param_4 (HTTP status), +0xa0 = new 0x20-byte buffer {data, cap, size, alloc} filled with param_5's bytes. Callers 0x1408294b0 (0x140829514), 0x140838e60, 0x140b19c00 (OnResult_GetCalendar). (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1os_result_record_construct",

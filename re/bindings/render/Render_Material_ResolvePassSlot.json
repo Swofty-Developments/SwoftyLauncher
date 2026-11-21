@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401406e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1401406e0.c;xref:0x14013dfe6",
-  "notes": "Derives a pass/permutation mask from material flags at param_3+0x20 (bits 0x40->8, 0x400->0x400, 0x1000/0x78 -> 0xac3/0x8c0, 0x2->0x42, 0x1->0x41, 0x4->1) unless param_3+0x78 is set, resolves a slot via 0x143bda160 and reads the 0x180-byte entry (stride) of the table at param_2+0x30. Output pair {slot, 0xffffffff on miss}. 13 callers, all in 0x14013d2c0. Hypothesis."
+  "evidence": "decomp:re/decomp/1401406e0.c;xref:0x14013dfe6,0x143bafbc4,0x143bbf160,0x143d8b435",
+  "notes": "Returns uint[3] {handle, view, view2}, all -1 on null param_3. Bind kind from param_3+0x78 or flags param_3+0x20 (0x40->8, 0x400->0x400, 0x1000->0xac3, 2->0x42, 1->0x41, 4->1, (f&0x78)==8 ->0x8c0); Render_Gfx2_HandleMap_FindOrAdd; view via 0x143bdcfb0 (kind 1/2 by entry+0x40 bit 4, table param_2+0x30 stride 0x180); if bit 0x40 second view via 0x143bdccd0. (lane owner review requested) Better name: Render_RenderGraph_ImportResourceWithViews (bound record keeps its name)."
  },
  "signature": {
   "id": "render.material_resolve_pass_slot",

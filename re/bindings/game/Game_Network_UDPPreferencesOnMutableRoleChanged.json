@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143239290",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'UDPPreferences::onMutableRoleChanged() from offline'"
+  "evidence": "decomp:re/decomp/143239290.c;pat:log-channel-NETWORK;xref:0x14582ab48",
+  "notes": "Slot 1 (+0x8) of vtable 0x14582ab40; only that cell. Same shape as Game_EsrPreferences_OnMutableRoleChanged: old role 0 -> rebuilds the 8-byte vector +0x30..+0x40 and logs 'setting my connectionId %d Preference to %d and showPlayerName to %d' (+0x20); newRole == 2 -> logs and sends the preference (NETWORK/F 'UDPPreferences::sendPreference', 0x14402e500). (lane owner review requested) Better name: Game_UdpPreferences_OnMutableRoleChanged (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_udp_preferences_on_mutable_role_changed",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143864fc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_ActivitiesUIDeeplinkManager_StartProLeaguesActivity;xref:0x1438651ec",
-  "notes": "cxx=game::ActivitiesUIDeeplinkManager::startProLeaguesActivity; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/143864fc0.c;str:s_ActivitiesUIDeeplinkManager_StartProLeaguesActivity;xref:0x143862f08",
+  "notes": "PlayGo (+0x63)/trial (0x14078e1a0) gate, then prepares online (0x143083570/0x1430ed330), frontend_transition_state = pro_leagues, presence mp_leagues_match, logs '%s: called'. Caller OnDeepLinkActivityStarted (type 6). (lane owner review requested)"
  },
  "signature": {
   "id": "game.activities_u_i_deeplink_manager_start_pro_leagues_activity",

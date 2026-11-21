@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439ff780",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439ff780.c;xref:0x143b5a7de,0x143b5a6da",
-  "notes": "Starts recording on a Gfx2 context (param_1) with the native command list object param_2: sets active flag +0x58 and list +0x60, copies frame counter +0x16f4 -> +0x16f8, calls list vcall +0x40 (open/reset), clears current PSO (+0x12d8), Render_Gfx_ResetBindState, increments +0x16f4 and TlsSetValue(ctx TLS index 0x14618c688, ctx+0x1700). Pair of Render_Gfx_EndCommandContext. Hypothesis."
+  "evidence": "decomp:re/decomp/1439ff780.c;xref:0x143b5a6da,0x143b5a7de",
+  "notes": "Sets ctx+0x58 = 1 and list param_2 at +0x60 (list+0x48 = device+0xa38), copies +0x16f4 -> +0x16f8, picks the allocator by list type (+0x20: 0/1/2 -> ctx+8/+0x20/+0x38 per frame) and calls list vcall +0x40 with it, clears PSO +0x12d8, Render_Gfx_ResetBindState, ++ +0x16f4, TlsSetValue(index 0x14618c688, ctx+0x1700), resets list +0x28..+0x38, list vcalls +0xb0 (2 heaps device+0xf20/+0x1290), +0x190, +0x198. Callers 0x143b5a680, 0x143b5a770. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx_begin_command_context",

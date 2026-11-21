@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430dc620",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1430dc620.c;xref:0x140fdc4bc",
-  "notes": "Same ctrl-word bucket scan (stride 0x40) over the set at [this+0x80]+0x48. 17 callers (GameSessionManager_OnHostMigrationComplete, MatchingAttribs_SetUpAtt). vp1-verify partial/disagree"
+  "evidence": "decomp:re/decomp/1430dc620.c;xref:0x140fdc4bc,0x14221a197,0x142594e39",
+  "notes": "(this): scans the flat hash set at [this+0x80] (ctrl words +0x50, 8-byte slots +0x48, size +0x58) and keeps the LAST entry e whose e+0x38 passes 0x142a814c0 (shared ref e+0x38/+0x40). If that object has byte +0x39 == 2 it looks it up via 0x141b732f0 (map obj+0x40) and returns u32 found+0x148, else 0. call sites (Game_Network_GameVoiceChatRestrictionListeners, Game_Network_NewSessionToken ...). Better name: Ne_FlatHashSet_LastMatch_ReadU32At148 (bound record keeps its name)."
  },
  "signature": {
   "id": "core.flat_hash_set_first_occupied_b",

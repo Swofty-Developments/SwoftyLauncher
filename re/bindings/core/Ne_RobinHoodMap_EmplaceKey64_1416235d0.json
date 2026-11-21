@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1416235d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "void* (void *map, void *out_iter, uint64_t *key, void *alloc)",
-  "evidence": "decomp:re/decomp/1416235d0.c;xref:0x1415dbcd3;xref:0x141642f6f;xref:0x141647189",
-  "notes": "myteam-g2: Allocates a 0x58-byte map node (key, allocator, FNV-style hash 0xc4ceb9fe1a85ec53, inline buffers) and inserts it into the open-addressed map; fills out_iter {slot ptr, ctrl ptr, inserted flag}. Generic container code used by Career_Register_TeamHqMyTeamScreens."
+  "evidence": "decomp:re/decomp/1416235d0.c;xref:0x1415dbcd3,0x141642f6f,0x141647189",
+  "notes": "(map, out, const u64 *key, alloc): takes a node from the free list map+8 (chunk alloc 0x141623a70): node[0]=key, node[2]=alloc, plus an empty inner robin-hood map (seed 0xc4ceb9fe1a85ec53 at node[3], inline table node+0x38, info inc 0x20). Inserts via 0x141623720: state 1 key exists (node back to free list), 2/3 stored in slot map+0x28, 0 full (0x141623a60). out = {slot ptr, info ptr map+0x30, inserted}. call sites."
  },
  "signature": {
   "id": "core.robin_hood_map_emplace_key64_1416235d0",

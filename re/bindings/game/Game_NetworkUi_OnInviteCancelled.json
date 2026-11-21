@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430ac6e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onInviteCancelled (class from the log channel); log channel NETWORK-UI: '%s().'"
+  "evidence": "decomp:re/decomp/1430ac6e0.c;pat:log-message-method;xref:0x1430aadf2,0x1430df69f",
+  "notes": "UI command handler lea'd in 0x1430aa810: logs 'onInviteCancelled', calls OnLeaveSessionNotification 0x1430ac600 and InviteManager::cancel (cancels matching, Leave, 'user_cancelled'). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_ui_on_invite_cancelled",

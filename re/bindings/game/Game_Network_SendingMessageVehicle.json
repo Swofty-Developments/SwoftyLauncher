@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1435c3630",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): '[SAFETY_CAR_EMERGENCY_GHOSTING] sending Message for vehicle: %d'"
+  "evidence": "decomp:re/decomp/1435c3630.c;pat:log-channel-NETWORK;xref:0x14584dc28",
+  "notes": "Builds a mask of locally owned vehicles (player set via g 0x146044988), then for each 0x14-byte entry in this+0x68..0x70 whose bit is set sends a ghosting message (vtable 0x14584ee60) via 0x14402e500 (transport this+0xa8) and logs \"[SAFETY_CAR_EMERGENCY_GHOSTING] sending Message\". (lane owner review requested) Better name: Game_Network_SafetyCarGhosting_SendMessages (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_sending_message_vehicle",

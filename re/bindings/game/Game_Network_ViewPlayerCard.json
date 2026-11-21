@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14412afb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name viewPlayerCard (class from the log channel); log channel NETWORK: '%s(%llu / '%s')'"
+  "evidence": "decomp:re/decomp/14412afb0.c;pat:log-message-method;xref:0x145824e10",
+  "notes": "If user id type *param_2 == 1 (Steam): logs viewPlayerCard(id, persona name); if the Steam overlay is disabled (ISteamUtils vtable+0x88) shows UI message error_steam_overlay_disabled, else opens the overlay \"steamid\" page (vtable+0xe8). Returns type == 1. (lane owner review requested) Better name: Game_Network_Steam_ViewPlayerCard (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_view_player_card",

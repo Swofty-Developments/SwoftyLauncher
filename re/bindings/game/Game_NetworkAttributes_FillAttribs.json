@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14407ddb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name fillAttribs (class from the log channel); log channel NETWORK-ATTRIBUTES: 'fillAttribs(%d attrib defs)'"
+  "evidence": "decomp:re/decomp/14407ddb0.c;pat:log-message-method;xref:0x145a529c8",
+  "notes": "Logs fillAttribs(count) of the attribute defs param_2+0x30..0x38 (0x30-byte defs); reads packed values from this+0x40 by def type (0/1 short, 2 int, 3 int64, else -1) and stores them through 0x14407da30. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_attributes_fill_attribs",

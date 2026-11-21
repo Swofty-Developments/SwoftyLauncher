@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14325f800",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'updating progress vehicle V%02d :'"
+  "evidence": "decomp:re/decomp/14325f800.c;pat:log-channel-NETWORK;xref:0x14325dcd9,0x1432e27ac",
+  "notes": "Logs onMessageDriverPlayerChanged(isLocal msg+0x12, vehicleId msg+0x10); registers new vehicles / changes authority (logs \"+ new vehicle registration\", \"+ vehicle authority changed\"), calls vtable+0x90 (required to finish), sets the vehicle simulation type (+0x124) from msg+0x12/+0x13. (lane owner review requested) Better name: Game_Network_OnMessageDriverPlayerChanged (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_updating_progress_vehicle",

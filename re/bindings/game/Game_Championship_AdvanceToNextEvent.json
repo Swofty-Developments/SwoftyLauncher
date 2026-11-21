@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1407b56a0.c;xref:0x1407b4fd7,0x142da8e2a",
-  "notes": "(champ, flag) Finds the current event champ[0x20b] in the event list champ[0x20d]..champ[0x20e] and selects the next one (wraps / last) then sets up the next session (Game_GameModeChampionship_Begin). Callers Sess_Loader_RequestTrackUnload, Game_Parse_ModeChampionship."
+  "evidence": "decomp:re/decomp/1407b56a0.c;xref:0x1407b4fd7,0x142da8e2a,0x1485fd3bb",
+  "notes": "Reads event list champ[0x20d..0x20e], current champ[0x20b], per-event state vcalls +0x78/+0x88 of event+0x208, vt+0x168, ends with Game_GameModeChampionship_Begin(champ,0,ok)."
  },
  "signature": {
   "id": "game.championship_advance_to_next_event",

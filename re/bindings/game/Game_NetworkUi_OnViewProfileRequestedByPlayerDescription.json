@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430b0910",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onViewProfileRequestedByPlayerDescription (class from the log channel); log channel NETWORK-UI: '%s(%s).'"
+  "evidence": "decomp:re/decomp/1430b0910.c;pat:log-message-method;xref:0x14220ada1,0x1422175aa,0x14221e456,0x1422a9b1f,0x1430ac846,0x1430acc86",
+  "notes": "Logs NETWORK-UI '%s(%s).' with onViewProfileRequestedByPlayerDescription. If no session or session+0x750 != 1, asks the platform service [ctx+0x390] vslot +0x48 for the privilege; granted and player flag bit 0x10 -> opens the profile via [ctx+0x10f8] vslot +0x20; else closed message 'no_view_profile_privilege'. Tail-jumped from Game_NetworkUi_OnViewProfileRequested(ByDriverStatId). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_ui_on_view_profile_requested_by_player_description",

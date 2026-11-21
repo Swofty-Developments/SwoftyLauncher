@@ -111,7 +111,7 @@ std::string mode_label(uintptr_t ctx)
     return {};
 }
 
-void leave_front_end(uintptr_t ctx)
+void leave_front_end(uintptr_t ctx, bool career_kept)
 {
     std::string label = mode_label(ctx);
     if (label.empty())
@@ -124,9 +124,11 @@ void leave_front_end(uintptr_t ctx)
             selected = n;
     bool box = !selected.empty() && (box_list(selected) || is_ours(selected.c_str()));
     logic::FrontEndLeave leave = logic::leaving_front_end(label, box);
-    if (leave.restore)
+    if (leave.restore && career_kept)
+        restore_lists();
+    else if (leave.restore)
         restore();
-    if (!box)
+    if (!box && !career_kept)
         clear_fuel();
     if (leave.clear_selected)
         ref<uintptr_t>(reinterpret_cast<void *>(setup), SELECTED_LIST) = 0;
@@ -317,10 +319,13 @@ void session_load_held(LoadSeen &seen)
         !ctx)
         return;
     if (!time_trial(reinterpret_cast<void *>(ctx))) {
-        leave_front_end(ctx);
+        CareerSession career = career_session(ctx);
+        leave_front_end(ctx, career.kept);
         seen.ctx = ctx;
         seen.list = grand_prix_load(ctx, seen.what);
         seen.virtual_label = filled.label;
+        if (career.career)
+            apply_career_rules();
         return;
     }
     seen.time_trial = true;
@@ -438,6 +443,8 @@ void drop_setup_pointers()
     runtime::box_options_forget();
     box_rules.box_options_log.forget();
     box_rules.grid_log.forget();
+    box_rules.career_log.forget();
+    forget_career_rules();
     std::string line = logic::availability_drop_line(p);
     if (!line.empty() && !availability_guard.logged_dropped.exchange(true))
         swofty::log("[era] %s", line.c_str());

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140002560",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140002560.c;xref:0x1439c922a",
-  "notes": "Lazy hash-resolved import stub (hash 0x78dba2), same template as 0x1400031c0; counts calls in a global then resolves via 0x145fb8758. Name only. Callers Render_Gfx2Device_ApplyMultiGpuMode (0x1439c922a), 0x1439ca5a4."
+  "evidence": "decomp:re/decomp/140002560.c;xref:0x1439c922a,0x1439ca5a4",
+  "notes": "Lazy import wrapper: bumps in-flight counter 0x145fb8734, gate 0x140002190, resolves target once via resolver 0x145fb8758(hash 0x78dba2) into cache 0x145fb8890, optional pre/post hooks 0x145fb8768/0x145fb8770, forwards 4 args, returns status or 0xfffffffd if unresolved. In 0x1439c8d00 called per GPU handle with an array of 0x30010-versioned records + count; returned ids feed 0x1400027f0. (lane owner review requested) Better name: Render_NvApi_GpuGetConnectedDisplayIds (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_device_import_thunk_140002560",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140128d10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140128d10.c;xref:0x1401053c7",
-  "notes": "Builds a config object with name \"generator\" (seed 0xc4ceb9fe1a85ec53, uses 143c208d0/143c20a30/143edb5f0). Caller Render_Gfx_BuildConfigObject."
+  "evidence": "decomp:re/decomp/140128d10.c;xref:0x1401053c7,0x1401055fa",
+  "notes": "Builds the default resource desc (seed 0xc4ceb9fe1a85ec53), looks up key generator (0x14560f85d) via 0x143edb5f0; for each entry of that key gets a factory from param_1[1] vcall +0x78 and invokes it with the desc and the entry. Callers in Render_Gfx_BuildConfigObject. (lane owner review requested) Better name: Render_Gfx_CreateGeneratorsFromDesc (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx_build_generator_config",

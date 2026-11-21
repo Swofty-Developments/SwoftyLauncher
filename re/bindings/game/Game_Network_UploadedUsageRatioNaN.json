@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): '? Uploaded usageRatio is NaN'"
+  "evidence": "decomp:re/decomp/1431a03d0.c;pat:log-channel-NETWORK;xref:0x145823160",
+  "notes": "Slot 2 (+0x10) of vtable 0x145823150 (MessageContentDomainChanged text precedes). Parses keys usageRatio, backgroundTraffic, bandwidth (0x1453783c0 compares), checks usageRatio for NaN / out of range (logged). Better name: Game_Network_ParseBandwidthUsage (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_uploaded_usage_ratio_na_n",

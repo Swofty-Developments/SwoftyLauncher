@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1442b3e30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1442b3e30.c;xref:0x140c1837a",
-  "notes": "Finds the first non-empty bucket of a swiss-table style set (ctrl words +0x78, bucket stride 0x80) and returns its entry. 21 callers (BroadcastDriverMovesMessageViewModel_AddRowData, NetworkSubsystem_OnGameModeSelected). vp4-verify partial/disagree"
+  "evidence": "decomp:re/decomp/1442b3e30.c;xref:0x140c1837a,0x1419d419d,0x1419d5ecb,0x141cef447,0x141d04fee",
+  "notes": "Clears a robin_hood map of {key, obj*} (slots +0x70 stride 0x10, info +0x78, count +0x80, info_inc +0x98): per entry sends event 8 via Ne_CallbackList_InvokeReverse 0x1442bd4f0, obj vcall +0x40(obj, this+8), detaches obj's handle list [obj+0x28] (guard flag 2 @+0x26) and vcall +0x50, backward-shift erase, count--, Vm_Release_Node on this and obj, event 9. Returns count!=0 before. 23 sites."
  },
  "signature": {
   "id": "core.flat_hash_set_first_occupied",

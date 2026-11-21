@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439b9cc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439b9cc0.c;xref:0x1439c388c",
-  "notes": "D3D12 heap creation: releases old *param_1, queries node count (device vcall +0x38 on [g_gfx+0x508]) and GetResourceAllocationInfo (vcall +0xd0), builds a heap desc and creates the heap; vendor error helper 0x1439b8510 labels 'CreateHeap', 'BufferHeap', 'CreatePlacedResource'. Callers Render_Gfx2Device_Initialise (x2)."
+  "evidence": "decomp:re/decomp/1439b9cc0.c;xref:0x1439c388c,0x1439c5f56",
+  "notes": "Releases the old heap, device vcalls +0x38 (node count) and +0xd0 (heap properties for type param_2), CreateHeap (+0xe0, size param_3, flags 0xc0, label CreateHeap) named BufferHeap, inits block allocator (0x1439e6a50), creates one placed buffer over the heap (+0xe8, label CreatePlacedResource) named param_5, stores GPU VA (+0x58) and FNV-1a + interned name. Callers in Render_Gfx2Device_Initialise. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx2_device_create_buffer_heap",

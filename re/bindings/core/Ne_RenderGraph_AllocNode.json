@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143bddd60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/143bddd60.c;xref:0x143bab7bd,0x143bab824,0x143baf1e3",
-  "notes": "Lock-free bump allocation (cmpxchg on +0x20, 8-byte aligned, +0x80 block) of a render-graph node, falling back to heap; 19 callers in render pass setup. Named callers: Ne_PostProcessXGenerator_Copy_Render. vp3-verify partial/disagree"
+  "notes": "Lock-free bump of 0x80 bytes (cmpxchg on graph+0x20, 8-aligned) in arena graph+0x18 (limit +0x10, overflow -> Ne_FatalAbort); inits node (vt 0x145a39598, 16-byte name from p3, index from +0x70/+0x78, lookup of p3[1] in map +0x130 into node+0x30), pushes it to vector +0x90/+0x98/+0xa0 (heap grow via [+0x88]), stores p4/p5/p6, Ne_RenderGraph_ApplyBindingsByType(graph,p5,0x40); returns node index. call sites."
  },
  "signature": {
   "id": "core.render_graph_alloc_node",

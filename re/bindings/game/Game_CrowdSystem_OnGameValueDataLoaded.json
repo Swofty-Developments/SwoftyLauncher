@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1413ef4b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onGameValueDataLoaded (class from the log channel); log channel CrowdSystem: 'onGameValueDataLoaded'"
+  "evidence": "decomp:re/decomp/1413ef4b0.c;pat:log-message-method;xref:0x1456e2390",
+  "notes": "Vtable cell 0x1456e2390. Own log. Row crowds/excitement: base_excitement_time_trial/practice/qualification/race/garage into [+0x58]+0x104..+0x114; passes the row to the 15 sub-objects (vt+0x40). (lane owner review requested)"
  },
  "signature": {
   "id": "game.crowd_system_on_game_value_data_loaded",

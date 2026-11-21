@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143228b40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onMultiVoteInProgressForTheFirstTime (class from the log channel); log channel NETWORK-READY: 'onMultiVoteInProgressForTheFirstTime callbacked received'"
+  "evidence": "decomp:re/decomp/143228b40.c;pat:log-message-method;xref:0x1458295c0",
+  "notes": "Callback: logs 'onMultiVoteInProgressForTheFirstTime callbacked received', sets byte [this+0x71]=1 and, if [this-0x18]<2, advances super time [this+0x40] by float [p2+8] and sends the super-ready packet (0x14402e500, log 'sendSuperReady'). Vtable cell. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_ready_on_multi_vote_in_progress_for_the_first_time",

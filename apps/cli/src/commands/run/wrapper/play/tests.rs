@@ -99,3 +99,46 @@ fn a_game_ended_by_a_signal_has_no_exit_code_and_says_why() {
         "the game's process was ended by signal 9, which leaves no exit code"
     );
 }
+
+#[test]
+fn the_ea_session_env_file_carries_the_launcher_saves_switch() {
+    use swofty_core::saves::launcher::OFF_ENV;
+    let root = session_dir("ea-launcher-saves-off");
+    let dir = root.join("game");
+    std::fs::write(dir.join(GAME_EXE), "exe").unwrap();
+    let g = Game {
+        identity: swofty_core::game_folder::baseline::Identity::detect(&dir, Some(1)).unwrap(),
+        dir,
+        user_reg: None,
+    };
+    let store = Store::new(root.join("data"));
+    let session = root.join("session");
+    std::fs::create_dir_all(&session).unwrap();
+    let file = |config: &Config, request: &LaunchRequest| {
+        let env = game_env(&store, config, request, &g, &session, false, false).unwrap();
+        session_env::Contents::new(&request.id, 1_700_000_000, &env, &config.launch.env)
+    };
+    let once = LaunchRequest {
+        id: "once".into(),
+        steam_saves_once: true,
+        ..Default::default()
+    };
+    let config = Config::default();
+    assert_eq!(
+        file(&config, &once).env.get(OFF_ENV).map(String::as_str),
+        Some("off")
+    );
+    let mut off = Config::default();
+    off.launch.env.insert(OFF_ENV.to_owned(), "off".to_owned());
+    assert_eq!(
+        file(&off, &LaunchRequest::default())
+            .env
+            .get(OFF_ENV)
+            .map(String::as_str),
+        Some("off")
+    );
+    if std::env::var_os(OFF_ENV).is_none() {
+        assert_eq!(file(&config, &LaunchRequest::default()).env.get(OFF_ENV), None);
+    }
+    std::fs::remove_dir_all(&root).ok();
+}

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439fdc60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439fdc60.c;xref:0x1439c41cd",
-  "notes": "Computes ring slot index = offset / slot size + base - 1 and slot base addresses for the pool at +0x5b0+index*8. Called from Render_Gfx2Device_Initialise. Hypothesis. vp2-verify partial/disagree"
+  "evidence": "decomp:re/decomp/1439fdc60.c;xref:0x1439c41cd,0x1439c41dd,0x1439d5bb5",
+  "notes": "Takes pool [device+0x5b0+type*8] (type = param_2[0]), allocates increment-size bytes with Render_GfxMem_Allocate under both pool locks, index = offset/increment + base(+0x18) - 1 into param_2+0x20, CPU handle = start(+0x20) + index*inc into param_2[2], GPU handle (+0x28) into param_2[3] when shader-visible (+0x118). Callers Render_Gfx2Device_Initialise 0x1439bc2e0, Render_Gfx2Buffer_Construct 0x1439d5710, 0x1439d7240. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx2_device_select_ring_slot",

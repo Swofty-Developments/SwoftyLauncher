@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439eb550",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/1439eb550.c;xref:0x1439ea642,0x143be0492",
-  "notes": "Fills per-eye VR view data when VR is active (+0x164 == 0): calls the HMD interface (+0x3f0) vcall +0x10 for each eye (eye 0/1 -> +0x2870/+0x2878/+0x2880/+0x2888 and +0x2874..) then vcall +8 for the head pose into +0x2890... Callers Game_Vr_RefreshDevice and Render_SceneView_BuildViewParams. Hypothesis (projection tangents/pose per eye)."
+  "notes": "If +0x164 == 0: HMD object +0x3f0 vcall +0x10(eye, &l,&r,&t,&b) per eye into +0x2870..+0x288c (OpenVR GetProjectionRaw order), vcall +8(ret, eye, near, far) per eye (projection matrix into +0x2890..), vcall +0x20(ret, eye) per eye (eye-to-head transform); else writes fixed default tangents into +0x2870..+0x288c. Callers Game_Vr_RefreshDevice 0x1439e9fb0, Render_SceneView_BuildViewParams 0x143be0360. (lane owner review requested)"
  },
  "signature": {
   "id": "render.scene_view_update_vr_eye_params",

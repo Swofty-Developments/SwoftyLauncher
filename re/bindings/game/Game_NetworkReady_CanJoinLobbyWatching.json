@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1436f1bf0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name canJoinLobbyWatching (class from the log channel); log channel NETWORK-READY: '%s: Player %s is LOCAL and watching.'"
+  "evidence": "decomp:re/decomp/1436f1bf0.c;pat:log-message-method;xref:0x14585ded8",
+  "notes": "State function (vtable cell) writing a next-state hash to *param_2 (0xb446c5b9 / 0x1046f5da / 0x8eeefb3a, default [0x146cb2280]); logs '%s: Player %s is LOCAL and PLAYING.' ('canJoinPlayingLobby') or '...LOCAL and watching.' ('canJoinLobbyWatching'). Old name covered one branch only. (lane owner review requested) Better name: Game_NetworkReadyState_UpdateCanJoinLobby (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_ready_can_join_lobby_watching",

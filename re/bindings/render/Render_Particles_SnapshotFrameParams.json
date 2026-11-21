@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b06390",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143b06390.c;xref:0x143b096d8",
-  "notes": "Per-frame snapshot of particle simulation state into a ring slot (index manager+0x8050a8, stride 0x68 at +0x105310): copies camera/time values from +0xa5b898..0xa5b900 and memcpy blocks of 0x1a00 / 0x680 bytes per slot at +0x2a2ff0, +0x68a5f0, +0x1a9270 from live buffers +0xa5e370/+0xa5f2c0/+0xa5e388 (callback pcRam0000000146441298 first). Caller Game_Particles_UpdateManager. Hypothesis."
+  "notes": "Per-frame snapshot into ring slot index +0x8050a8 (0x68-byte records at +0x105310): memcpy of live particle data from [+0xa5e370] (0x1a00 slot at +0x2a2ff0) and +0xa5f2c0 (0x680 slot at +0x68a5f0), index lists at +0x784370/+0x7c2ad0, then per-effect emitter data. caller Game_Particles_UpdateManager. (lane owner review requested)"
  },
  "signature": {
   "id": "render.particles_snapshot_frame_params",

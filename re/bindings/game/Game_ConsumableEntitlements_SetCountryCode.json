@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1407931b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name setCountryCode (class from the log channel); log channel CONSUMABLE-ENTITLEMENTS: 'setCountryCode(%s)'"
+  "evidence": "decomp:re/decomp/1407931b0.c;pat:log-message-method;xref:0x142b9575d",
+  "notes": "Own log 'setCountryCode(%s)'. Copies a 2-letter code into +0x7970..+0x7973 (empty when not 2 chars), then releases the by-value string param_2. (lane owner review requested)"
  },
  "signature": {
   "id": "game.consumable_entitlements_set_country_code",

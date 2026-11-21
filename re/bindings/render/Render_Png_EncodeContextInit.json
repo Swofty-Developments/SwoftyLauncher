@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14390e310",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14390e310.c;xref:0x142bd43f6,0x143914f38,0x143a79175",
-  "notes": "Hypothesis: sets up a PNG write context (zeroes 0x510 bytes, constants 1000000/8000000, 'Out of memory'); called by Render_Write_PngFile. Named callers: Render_Write_PngFile."
+  "evidence": "decomp:re/decomp/14390e310.c;xref:0x142bd43f6,0x143914f38,0x143a79175,0x143bffc96",
+  "notes": "libpng png_create_png_struct pattern: zeroes a 0x510 stack struct, user limits 1000000x1000000, cache 1000, malloc max 8000000, stores error/malloc callbacks, setjmp, version check 0x14390e0a0, allocates 0x510 (custom malloc or default) and copies; on failure Out of memory. Callers incl. Render_Png_CreateWriteContext and Render_Write_PngFile. (lane owner review requested) Better name: Render_Png_CreatePngStruct (bound record keeps its name)."
  },
  "signature": {
   "id": "render.png_encode_context_init",

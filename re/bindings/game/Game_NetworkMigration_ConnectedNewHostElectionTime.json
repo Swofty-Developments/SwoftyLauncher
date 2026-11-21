@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143089810",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-MIGRATION",
-  "notes": "named from its log messages (channel NETWORK-MIGRATION): '%s: connected to new host(%d, %s), election time: %.3f seconds, migration time: %.3f seconds, original peer number: %d, migration peer number: %d, host left tim'"
+  "evidence": "decomp:re/decomp/143089810.c;pat:log-channel-NETWORK-MIGRATION;xref:0x14580e670",
+  "notes": "cxx=network::GameSessionMigrationManager::onHostMigrated() (virtual): logs '%s().', sets the peer status to Connected (setPeerStatus inlined, logs the status change) and logs 'connected to new host(%d, %s), election time ..., migration time ...'. Only ref: vtable cell 0x14580e670. (lane owner review requested) Better name: Game_NetworkMigration_OnHostMigrated (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_migration_connected_new_host_election_time",

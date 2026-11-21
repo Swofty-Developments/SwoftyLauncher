@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143588410",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): '[Illegal Overtake Data] recieved illegal overtake data for vehicles: %d'"
+  "evidence": "decomp:re/decomp/143588410.c;pat:log-channel-NETWORK;xref:0x1435b0d0c",
+  "notes": "For each vehicle bit in msg+0x18 sets/clears per-vehicle bit masks this+0x20..+0x80 from msg masks +0x28..+0x88 and copies per-vehicle 0x10-byte records from msg+0xa0; logs \"[Illegal Overtake Data] recieved illegal overtake data\". (lane owner review requested) Better name: Game_Network_OnIllegalOvertakeDataMessage (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_recieved_illegal_overtake_data",

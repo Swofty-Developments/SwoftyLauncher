@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-F1OS-TASKSYSTEM",
-  "notes": "named from its log messages (channel F1OS-TASKSYSTEM): 'Refreshing the session token received %s from the server. Logging out'"
+  "evidence": "decomp:re/decomp/14336b390.c;pat:log-channel-F1OS-TASKSYSTEM;xref:0x14583c348",
+  "notes": "Virtual (vtable cell 0x14583c348, next to 0x14336be50). If param_2+0x21 set: state +0x1b8 = 2, 'Network.ForceMPMode' check, 'setting finished on %s : %s'. If the failed child is this[0x35] and its error text matches one of two globals: 'Refreshing the session token received %s from the server. Trying to log in instead.' / '... Logging out'. Better name: Game_OnlineServerLogInTask_OnChildTaskError (bound record keeps its name)."
  },
  "signature": {
   "id": "game.f1os_tasksystem_refreshing_session_token_received",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a30f90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143a30f90.c;xref:0x1439e71b3",
-  "notes": "779-byte list/tree insert helper used by Render_Gfx2_BlockAllocator_Free; contains a sync error trace (ring 0x146107830). Hypothesis on structure."
+  "evidence": "decomp:re/decomp/143a30f90.c;xref:0x1439e71b3,0x1439e7477,0x1439e771d,0x143a2fed4",
+  "notes": "AVL-style insert of node param_2 into the free tree param_1 keyed by offset (+0x10): duplicate key -> error 0x16 (TLS + ring 0x146107830); rebalances via 0x143a30ac0, balance in +0x31 low 5 bits, updates subtree max free size +0x2c = max(own size +0x28, children). (lane owner review requested) Better name: Render_GfxMem_FreeTree_Insert (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_block_allocator_list_insert_a",

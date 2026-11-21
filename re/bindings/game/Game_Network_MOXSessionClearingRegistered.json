@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'MOX/Session: Clearing registered vehicles from the ProgressVehicleManager.'"
+  "evidence": "decomp:re/decomp/1430f3cb0.c;pat:log-channel-NETWORK;xref:0x1458140c0",
+  "notes": "Slot 14 (+0x70) of the NetworkSubsystem vtable 0x145814050. Unsubscribes a bus message (0x143988350), logs 'onSessionExit', clears registered vehicles from the ProgressVehicleManager (0x1432625b0) and VehicleMechanicalManager (0x143242790), NETWORK-MATCHING log, inlined GameSessionMigrationManager::setHaveResults(FALSE), onLoadingTeamHQ branch (setMyRaceStatus 0x143092b20). Better name: Game_NetworkSubsystem_OnSessionExit (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_mox_session_clearing_registered",

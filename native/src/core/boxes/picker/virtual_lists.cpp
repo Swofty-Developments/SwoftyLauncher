@@ -160,17 +160,20 @@ void narrow(void *mode, const char *list)
         if (picker.lines.narrow.note())
             swofty::log("[era] %s offers only %s (of %lld lists)", logic::HOST, list, (long long)count);
     });
-    apply_drs(mode, list);
-    apply_warmers(mode, list);
+    const RuleTarget t = host_target(mode);
+    forget_career_rules();
+    box_rules.host = t.host;
+    apply_drs(t, list);
+    apply_warmers(t, list);
     apply_rev_lights(mode, list);
-    apply_tyre_change(mode, list);
-    apply_fuel(list);
-    apply_weekend(mode, list);
+    apply_tyre_change(t, list);
+    apply_fuel(t, list);
+    apply_weekend(t, mode, list);
     // After the weekend exchange: the points swap edits the race sessions the host mode holds now.
-    apply_points(mode, list);
+    apply_points(t, list);
     apply_box_options(list);
-    apply_grid(list);
-    apply_quali_tyres(list);
+    apply_grid(t, list);
+    apply_quali_tyres(t, list);
 }
 
 // Ends the Time Trial hold, putting the Time Trial cuts back before the swap (logic::end_hold); `cuts` puts them back

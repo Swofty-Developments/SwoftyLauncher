@@ -12,7 +12,7 @@ use serde_json::Value;
 use crate::manifest::{AddonManifest, AddonNeed, AddonOption};
 use crate::profile::Profile;
 
-pub use render::{render_ops, render_text};
+pub use render::{render_ops, render_text, when_holds};
 pub use requests::{Merge, Requests, merge};
 pub use session::{
     SessionAddon, SessionMap, SessionMfd, SessionMod, SessionOption, SessionPlainSaves, SessionSaves,

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143bed850",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143bed850.c;xref:0x14014b81d,0x14014c944",
-  "notes": "Copies a 0x50+ byte surface/view descriptor (param_2[0..10]) into renderer object fields (+0x28..+0x80) with 16-byte SIMD moves. Callers Game_GameSurfacePack_ProcessRenderResources, Ne_Gfx2Renderer_Initialise, 0x142faa6d0. Hypothesis. vp3-verify partial/disagree"
+  "evidence": "decomp:re/decomp/143bed850.c;xref:0x14014b81d,0x14014c944,0x142fab1ee,0x142fab447,0x142fab645,0x1437a4488",
+  "notes": "Copies a 21-qword resource desc into the holder (+0x28..+0xcf), replaces the desc name with the holder name (+0x20, FNV-1a + Ne_StringPool_InternByHash) and, when +0x198 is null, creates the GPU resource with Render_Gfx2Device_CreateResource(0x14618caa8, holder+0x28) into +8 (+0x1d0=1); failure pushes error 0xe. Callers incl 0x14014b81d, Ne_Gfx2Renderer_Initialise 0x143b68e11, 0x143bef06a. (lane owner review requested) Better name: Render_Gfx2_ResourceHolder_CreateFromDesc (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_set_surface_descriptor",

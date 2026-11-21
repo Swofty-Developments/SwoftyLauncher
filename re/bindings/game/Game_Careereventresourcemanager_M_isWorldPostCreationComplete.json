@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140cd70b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name m_isWorldPostCreationComplete (class from the log channel); log channel ~CareerEventResourceManager: 'm_isWorldPostCreationComplete %d m_isWorldShutdownComplete %d m_isWorldShuttingdown %d m_watingforWorldToShutdown %d'"
+  "evidence": "decomp:re/decomp/140cd70b0.c;pat:log-message-method;xref:0x1456847a0",
+  "notes": "Destructor (cell 0x1456847a0, param_2 = delete flag): resets vtable 0x1456841a0, unregisters from per-slot table 0x14605a9e0, clears flags, 0x140c7d670, unloads the asset group handle +0x10, logs the m_isWorld* states ('~CareerEventResourceManager') when +0x80 > 0xffffff and releases worlds +0x48, frees vectors; deletes itself via the global allocator when param_2. (lane owner review requested) Better name: Game_CareerEventResourceManager_Dtor (bound record keeps its name)."
  },
  "signature": {
   "id": "game.careereventresourcemanager_m_is_world_post_creation_complete",

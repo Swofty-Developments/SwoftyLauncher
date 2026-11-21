@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439fdf40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439fdf40.c;xref:0x1439d22cd",
-  "notes": "Wrapper of ID3D12Device::CreateReservedResource (vcall +0xf0): releases old *param_4, creates the tiled resource, vendor error report via 0x1439b8510 with label 'neCreateReservedResource'. Callers 0x1439d1b90, Render_Gfx2Buffer_Construct."
+  "evidence": "decomp:re/decomp/1439fdf40.c;xref:0x1439d22cd,0x1439d5e2d",
+  "notes": "Releases the old *param_4, calls ID3D12Device::CreateReservedResource (vcall +0xf0, IID at 0x1458a0208) and passes the HRESULT to Render_Check_GfxResult with label neCreateReservedResource for vendor ids 0x8086/0x8087, 0x10de, 0x1002. Callers Render_Gfx2Surface_Construct 0x1439d1b90, Render_Gfx2Buffer_Construct 0x1439d5710. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx2_device_create_reserved_resource",

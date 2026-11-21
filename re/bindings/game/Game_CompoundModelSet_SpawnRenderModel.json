@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e82640",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142e82640.c;xref:0x141d79f00",
-  "notes": "Spawns the render model of a compound model set (RenderModel with world object, \"instanceDataPerNode\"/\"instanceDataSize\"/\"is static\", log \"Spawned RenderModel %p %p\"); error context 0x58 on null inputs. Callers Game_TyreComponent_CreateTyreModels, Game_RenderBadgeViewModel_SetupNextCapture."
+  "evidence": "decomp:re/decomp/142e82640.c;xref:0x1428fdc74,0x142ea12d1,0x142ea1312,0x142ea14bc",
+  "notes": "Null inputs log error 0x58. Builds a 'RenderModel' world object (transform, Model.model, lower-cased 'mat binding' '%s?context=%s', instanceDataSize 7, instanceDataPerNode, Render.is static / render to environment map), spawns it to +0x68, logs 'Spawned RenderModel'; +0x70 node, +0x78 component, +0x80=0x1000101, +0x208 tyre mask, LOD 2.6, SetTyreVisibility 0-4, placement reset (-1000.0), refresh. (lane owner review requested)"
  },
  "signature": {
   "id": "game.compound_model_set_spawn_render_model",

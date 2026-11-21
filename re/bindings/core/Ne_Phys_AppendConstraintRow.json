@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1440ebc80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1440ebc80.c;xref:0x1440f7e6b",
-  "notes": "Appends one 0xd0-byte (13x16) solver row to the soft pool (ctx+0x50) or hard pool (ctx+0x40), bumps counters ctx+0x2c/0x30/0x3c, row[+0x80]=1.0 or CFM/ERP-like softness ratio k2/(k1+k2) from ctx+0x18 * desc+0x1c/0x20; bias = dt*ctx[+8]*desc[i+1]; optional limit -param_8*dt*ctx+0x18. Loops up to 3 dof bits of desc byte. Hypothesis: per-dof spring-damper row emission. Caller Ne_Phys_BuildContactRows. CORRECTION vp4-verify: softness ratio stored at +0x84 and 1.0 at +0x98, not row+0x80"
+  "evidence": "decomp:re/decomp/1440ebc80.c;xref:0x1440f7e6b,0x1440f7ef8,0x1440f7f8f,0x1440f9608,0x1440f96df",
+  "notes": "(joint, desc, v3, v4, v5, v6, ctx, limit): for up to 2 dof bits ((desc[0]<<4)>>6) appends a 0xd0-byte row: pool ctx+0x50 (counters +0x2c,+0x3c, row+0x98=1.0) when joint+0x30==0 and joint+0x10!=0, else ctx+0x40 (+0x30,+0x3c). Row: +0x00 v3, +0x10 v5, (+0x20 v4, +0x30 v6, +0xa8 joint+0x2c first pool only), +0x80 bias = k*ctx+8*desc[4+4i] (k=ctx+0xc, or k2/(k1+k2) on 2nd row with +0x84=1/(k1+k2) from ctx+0x18*desc+0x1c/+0x20), +0x88/+0x8c = -/+limit*ctx+8*ctx+0x18, +0xa4 joint+0x28. 14 sites in Ne_Phys_BuildContactRows."
  },
  "signature": {
   "id": "core.phys_append_constraint_row",

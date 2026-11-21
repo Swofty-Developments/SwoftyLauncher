@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143c73e30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143c73e30.c;xref:0x143ee50fe",
-  "notes": "SIMD builder of the decal projection from a 3x4 transform (param_2) and basis at param_3+0x30..0x50: cross products to orthonormalise axes; mode byte param_2[3] (1/2) selects projection flag 4/8 (+4 if param_2[8][8]==0). Output float block param_1. Callers Ne_CustomisationDecalRenderer_RenderSlotA/B. Hypothesis on output layout. vp3-verify partial/disagree"
+  "evidence": "decomp:re/decomp/143c73e30.c;xref:0x143ee50fe,0x143ee596e,0x143ee6a8f",
+  "notes": "SIMD builder of the decal projection block param_1 from transform param_2 and basis param_3+0x30..+0x50 (cross products, orthonormalisation). Mode byte param_2[3]: 2 -> flag 1, 1 -> flag 3, else 0; +4 when byte param_2[8][8] != 0; flag stored as int in param_1[0x18]. Callers Ne_CustomisationDecalRenderer_RenderSlotA 0x143ee50fe, Ne_CustomisationDecalRenderer_RenderSlotB 0x143ee596e, 0x143ee66b0 (0x143ee6a8f). (lane owner review requested)"
  },
  "signature": {
   "id": "render.customisation_decal_build_projection",

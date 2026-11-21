@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143931730",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143931730.c;xref:0x1402ade2c",
-  "notes": "FNV-1a 64 hash of param_2 (null gives 0) and string-pool intern/lookup (param_1+0x10/+0x20). Callers 0x1402ade10, 0x1402b0250. vp1-verify partial/disagree"
+  "evidence": "decomp:re/decomp/143931730.c;xref:0x1402ade2c,0x1402ade71,0x1402adf85",
+  "notes": "(list, const char *name): interns name in the string pool 0x146129740 (FNV-1a 64, 0x14392a0c0; null -> hash 0), then scans the child pointer array list+8 (u16 count list+0x10) for a child whose name hash (at the offset returned by child type vt+0x20) equals it; returns the child or 0. call sites. Better name: Ne_PropList_FindChildByName (bound record keeps its name)."
  },
  "signature": {
   "id": "core.string_pool_find_by_c_str",

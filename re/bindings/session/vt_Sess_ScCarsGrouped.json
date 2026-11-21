@@ -8,8 +8,8 @@
   "type": "vtable[11]",
   "level": "L2",
   "subsystem": "session",
-  "evidence": "decomp:re/decomp/1435f81a0.c;xref:0x1435f9b35",
-  "notes": "SC condition class 'Cars Grouped' (name string directly before the vtable; the type descriptor 0x145f96ca8 at object+0x28 points to it). Constructed in the SC condition factory 0x1435f81a0 (store at 0x1435f9b35); slots 3/4 (0x14361bbb0/0x14361bbc0) are the shared condition base. Secondary vtable 0x1458520c0 at +0x40; also stored at 0x14361e702. (used by vmknolle sc-unlapping)"
+  "evidence": "decomp:re/decomp/1435f81a0.c;xref:0x1435f9b35,0x14361e702",
+  "notes": "SC condition class 'Cars Grouped' (name string before the vtable; type descriptor 0x145f96ca8 at object+0x28). 11 slots, then 0 and the secondary vtable 0x1458520c0 (stored at object+0x40). Slots 3/4 0x14361bbb0/0x14361bbc0 = shared condition base. Ctor 0x1435f81a0 (lea 0x1435f9b35; mov [r15],rax). Also loaded by 0x14361e6f0 (dtor, [rcx])."
  },
  "signature": {
   "id": "session.sc_cars_grouped_vtable",

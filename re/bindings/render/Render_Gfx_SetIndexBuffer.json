@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a02900",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143a02900.c;xref:0x143a012ea,0x141900447",
-  "notes": "Binds an index buffer (cache ctx+0x1418 address, +0x1420 size, +0x1424 format); null clears via context vcall +0x110(0), otherwise vcall +0x110 with (addr,size,fmt) when changed. Used by Render_Gfx_SubmitMeshDraw and 0x1418ff340."
+  "evidence": "decomp:re/decomp/143a02900.c;xref:0x143a012ea,0x143bcb609",
+  "notes": "Builds an index-buffer view {address, size = +0x28 * +0x30, format 0x2a (R32_UINT) for stride 4 else 0x39 (R16_UINT)}, residency insert, compares with cache ctx+0x1418/+0x1420/+0x1424 and calls list vcall +0x110 (null clears). Callers Render_Gfx_SubmitDraw 0x143a007e0, 0x143bcb450. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx_set_index_buffer",

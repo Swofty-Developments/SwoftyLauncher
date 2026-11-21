@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1425e5270",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "gamedb",
   "proto": "void Gdb_Bind_UpgradeCostRowFields(void * self,int64_t *a2)",
-  "evidence": "decomp:re/decomp/1425e5270.c;xref:0x1425e505d;xref:0x142694fdc",
-  "notes": "myteam-g1: Binds columns UpgradeCost, UpgradeCount, UpgradeTechLevel (+0x8,+0xc,+0x10,+0x14,+0x18) of an upgrade cost table row."
+  "evidence": "decomp:re/decomp/1425e5270.c;xref:0x1425e505e,0x142694fdd",
+  "notes": "Binds one My Team inventory card row (binder vtbl+0x40 int, +0x28 bool): VariantStatId +8, Rarity +0xc, SlotType +0x10, Slot +0x14, TechLevel +0x18, Mods (sub +0x20), State +0x38, UseCount +0x3c, DismantleResult (sub +0x40), UpgradeCost (+0x58 via 0x140960ef0), UpgradeTechLevel +0x70, UpgradeCount +0x74, CardId +0x78, LinkedCardId +0x7c, ModsActive +0x80, LocIndex +0x84, IsNew +0x88. Better name: Gdb_Bind_InventoryCardFields (bound record keeps its name)."
  },
  "signature": {
   "id": "gamedb.bind_upgrade_cost_row_fields",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140fd3450",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_Championship_CareerOnlineManagerComponent_SetCareerDataVersion;xref:0x140fd34eb",
-  "notes": "cxx=game::championship::CareerOnlineManagerComponent::setCareerDataVersion; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/140fd3450.c;str:s_Championship_CareerOnlineManagerComponent_SetCareerDataVersion;xref:0x140fd055a,0x140fd3e72",
+  "notes": "this = CareerOnlineDocumentComponent (manager +0x398). If version param_2+0x10 != -1: inlined manager setCareerDataVersion (log, writes it into the current career record +0xa0). Sets +0x3b0 = 1; when session state ([[+0x290]+0x3c0]+0xa8) <= 2: inlined resetAfterSynchronisation (log, +0x3b0 = 0, +0x410 = 0 under CS +0x3e0). (lane owner review requested) Better name: Game_CareerOnlineDocComp_SetDataVersionAndReset (bound record keeps its name)."
  },
  "signature": {
   "id": "game.career_online_manager_component_set_career_data_version",

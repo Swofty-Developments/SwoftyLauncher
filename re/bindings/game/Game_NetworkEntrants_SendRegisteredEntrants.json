@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1431099a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name sendRegisteredEntrants (class from the log channel); log channel NETWORK-ENTRANTS: '%s(%d).'"
+  "evidence": "decomp:re/decomp/1431099a0.c;pat:log-message-method;xref:0x143109b90,0x1431185fe,0x14309fd99",
+  "notes": "Host only (this[1] < 2 and vtable+0x38 false): logs sendRegisteredEntrants(conn); sends an open message (vtable 0x145824310) if this+0xdc, a state message (vtable 0x145824370), then each entrant via 0x143114250. Returns 1 if sent. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_entrants_send_registered_entrants",

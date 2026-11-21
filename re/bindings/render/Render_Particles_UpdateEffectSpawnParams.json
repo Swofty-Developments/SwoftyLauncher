@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b0ed50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143b0ed50.c;xref:0x143b0baaa",
-  "notes": "Large per-effect update (dt = param_3): reads slot data at manager+0xa5de30 (stride 0x30, or inline +0x68 when sign bit of +0x64 set), calls 0x143af3e80 and applies globals 0x146294000.. to compute spawn rate/age/size parameters. Caller Game_Particles_UpdateManager. Hypothesis."
+  "notes": "Per-effect update with dt param_3: slot data from manager+0xa5de30 (stride 0x30) or inline +0x68 when id < 0; age +0x50 += dt; refreshes enable bits (+0x60, inst+0x178), may call 0x143af3e80, then per emitter instance advances age +0xd8 by dt and updates spawn/lifetime state (+0x164/+0x168/+0x174). caller Game_Particles_UpdateManager. (lane owner review requested) Better name: Render_Particles_UpdateEffectEmitters (bound record keeps its name)."
  },
  "signature": {
   "id": "render.particles_update_effect_spawn_params",

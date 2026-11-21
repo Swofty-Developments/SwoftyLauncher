@@ -25,7 +25,7 @@ const SCHEMAS: &[(&str, &str)] = &[
     ),
     (
         "car.profile",
-        include_str!("../../../../../sdk/std/registries/car.profile/1.0.json"),
+        include_str!("../../../../../sdk/std/registries/car.profile/1.1.json"),
     ),
     (
         "career.calendar",

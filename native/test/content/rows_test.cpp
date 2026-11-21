@@ -729,6 +729,7 @@ int main(int argc, char **argv)
     if (argc > 1)
         drs_tests(argv[1]);
     race_fuel_tests();
+    career_rules_tests();
     if (argc > 1)
         career_registry_tests(argv[1]);
     if (argc > 1)

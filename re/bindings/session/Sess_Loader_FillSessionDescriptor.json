@@ -1,0 +1,60 @@
+{
+ "schema": 1,
+ "name": "Sess_Loader_FillSessionDescriptor",
+ "table": "functions",
+ "author": "vmknolle",
+ "row": {
+  "addr": "0x1407d11a0",
+  "level": "L1",
+  "subsystem": "session",
+  "proto": "void Sess_Loader_FillSessionDescriptor(void *game_manager, void *descriptor)",
+  "evidence": "decomp:own Ghidra decomp of 0x1407d11a0 (jmp 0x1487062f0);xref:0x142d48bb2,0x142d48348,0x143575283,0x1436f8814",
+  "notes": "jmp thunk to .data1 0x1487062f0. Fills a session descriptor (the SessionSettings the game manager holds at +0x1a8): 0x142cd18f0(descriptor), then 0x14290fb80(manager+0x88, descriptor) walks the game mode's components and calls each one's slot 0x80 (championship modes: Game_ChampionshipGameMode_BuildSessionSettings 0x1407b7b90; Time Trial: Sess_TimeTrialMode_FillDescriptor 0x142936760), which build the participants +0xad0; ends with 0x142cd23d0(descriptor). Callers: Sess_Loader_SetupTrackAssets (0x142d48bb2, before Game_VehicleAssetManager_ChangeResidentAssets in Sess_Loader_StartFrontendAssetLoad) and the loader keep checks 0x142d48040 (0x142d48348), 0x1436f8340 (0x1436f8814), 0x143575170 (0x143575283) that fill a temporary descriptor to compare with the live one. Research: re/research/session_vehicle_swap.md"
+ },
+ "signature": {
+  "id": "session.loader_fill_session_descriptor",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? CF 5C E9 ?? ?? ?? ?? 13 E9 1D D3 A9 50 D3",
+  "match": "0x1407d11a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407d11a0",
+  "kind": "func_start",
+  "names": [
+   "Sess_Loader_FillSessionDescriptor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-20",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vmknolle",
+   "date": "2026-11-20",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1407d11a0",
+    "target": "0x1407d11a0"
+   },
+   "sigcheck": "passed",
+   "digest": "9bed59673832e9a4987f8bf9cf323b13caf450ec165d478f5656a804acd66cab"
+  }
+ ]
+}

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140ffca90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name isOtherPlayersContractEndingThisSeason (class from the log channel); log channel ONLINE_CONTRACT_NEGOTIATIONS/V: 'isOtherPlayersContractEndingThisSeason() - %s'"
+  "evidence": "decomp:re/decomp/140ffca90.c;pat:log-message-method;xref:0x140ffc9c6,0x140ffcd13,0x140ffd10d,0x140ffd545,0x140ffea6f",
+  "notes": "Resolves the other human entrant (Sess_Match_EntrantIdentity_Thunk), checks whether his contract ends this season and logs 'isOtherPlayersContractEndingThisSeason() - %s'. Called from Game_OnlineContract_IsLeadPlayerParticipating, _ProgressNegotiations, _IsOnlyOnePlayerParticipating and others. (lane owner review requested)"
  },
  "signature": {
   "id": "game.online_contract_negotiations_v_is_other_players_contract_ending_thi",

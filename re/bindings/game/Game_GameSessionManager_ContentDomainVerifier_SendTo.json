@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430637a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionManager::ContentDomainVerifier_SendTo; log channel NETWORK-DATA: 'GameSessionManager::ContentDomainVerifier_SendTo(%d, %p, %d)'"
+  "evidence": "decomp:re/decomp/1430637a0.c;pat:log-message-cxx;xref:0x14580a650",
+  "notes": "Logs 'GameSessionManager::ContentDomainVerifier_SendTo(%d, %p, %d)' (NETWORK-DATA) with connection param_2, buffer param_3, size param_4, then sends the content-domain payload. Virtual (vtable cell 0x14580a650). (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_session_manager_content_domain_verifier_send_to",

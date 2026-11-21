@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143bfba40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143bfba40.c;xref:0x143bfb9d0",
-  "notes": "Per-texture streaming deficit helper (floats, 1.0 constants, calls 143bfd2e0/143bfd410/143bfe190). Caller Render_TextureStreaming_ComputeDeficits."
+  "evidence": "decomp:re/decomp/143bfba40.c;xref:0x143bfb9d0,0x143bfb9ec",
+  "notes": "Walks one request queue (list param_2+0x20) while in-flight count +0x310 < param_3 and byte total *param_4 < 24117248.0 (23 MiB); for textures with wanted mip +0x39 > current +0x38 adds the bytes, sets flag 8 at +0x3d, issues the request (0x143ed57b0 on ctx+0x2e0/+0x300) and dispatches 0x143bfe190/0x143bfd410/0x143bfd2e0 by type. Callers Render_TextureStreaming_ProcessRequestQueues 0x143bfb9d0, 0x143bfb9ec. (lane owner review requested) Better name: Render_TextureStreaming_IssueMipRequests (bound record keeps its name)."
  },
  "signature": {
   "id": "render.texture_streaming_compute_deficit_step",

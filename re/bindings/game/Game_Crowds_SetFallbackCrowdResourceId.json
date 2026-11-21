@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143c52240",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name setFallbackCrowdResourceId (class from the log channel); log channel Crowds: 'setFallbackCrowdResourceId %s'"
+  "evidence": "decomp:re/decomp/143c52240.c;pat:log-message-method;xref:0x1458e6a70",
+  "notes": "Vtable cell 0x1458e6a70. 0x58-byte crowd placement object (vtable 0x1458e69f0), opens package param_4 (Vm_Open_Pkg, log 'loading crowd placement size %d'), parses it (0x143c4c160); on success inlined NeCrowdPlugin::setFallbackCrowdResourceId stores id param_2 at [+0xf8]+0x6f0; on failure frees it. Renamed: old name was the inlined callee. (lane owner review requested) Better name: Game_Crowds_LoadCrowdPlacement (bound record keeps its name)."
  },
  "signature": {
   "id": "game.crowds_set_fallback_crowd_resource_id",

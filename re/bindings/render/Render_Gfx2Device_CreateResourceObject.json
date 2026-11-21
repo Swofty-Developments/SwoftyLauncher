@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439d6880",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439d6880.c;xref:0x140150d30,0x142435fa2",
-  "notes": "Under device critical section (+0x2668) allocates a 0x170-byte Gfx2 resource object from the device allocator (+0x150), initialises lists and registers it. Called from Render_Gfx2Buffer_Construct, Game_Read_RendererGfxConfig and others. Hypothesis: base creation of buffer/texture resource wrapper."
+  "evidence": "decomp:re/decomp/1439d6880.c;xref:0x143a0e31f,0x1439d5d37,0x140150d30",
+  "notes": "Under device CS allocates 0x170 bytes (allocator +0x150), vtable 0x14589f428, serial from 0x14618c680, copies a 7-qword view desc from param_2, inits four slots (5, -1), calls Render_Gfx2Device_AllocViewDescriptor_A 0x143a0e340 and inserts the pointer into the FNV-keyed set at +0x41a0. Render_Gfx2Surface_CreateDefaultView 0x143a0e230 builds the desc and stores the result at surface+0x1a0. Released by 0x1439da200. (lane owner review requested) Better name: Render_Gfx2Device_CreateViewObject_A (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_device_create_resource_object",

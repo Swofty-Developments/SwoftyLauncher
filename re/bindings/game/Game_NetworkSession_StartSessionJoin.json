@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1440638b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-SESSION",
-  "notes": "named from its log messages (channel NETWORK-SESSION): '%s: Failed to start session join, error: %s'"
+  "evidence": "decomp:re/decomp/1440638b0.c;pat:log-channel-NETWORK-SESSION;xref:0x143072c9e,0x14307e3b9,0x143082057,0x1430e3a73",
+  "notes": "__FUNCTION__ 'neon::NeNetSystemClassicMatchmaking::joinSession(...JoinSessionDelegate)': changeState JoiningSession, registers OnJoinSessionComplete 0x144064040 / OnSessionError 0x1440637d0; on failure logs 'Failed to start session join' and LeaveSession 0x144062c40. (lane owner review requested) Better name: Game_NetSystemClassicMatchmaking_JoinSession (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_session_start_session_join",

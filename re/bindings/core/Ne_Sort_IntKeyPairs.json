@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1424ec1c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/1424ec1c0.c;xref:0x14249f84f",
-  "notes": "std::sort (introsort, insertion sort below 0x108 bytes) of 8-byte {int key, int value} pairs by key. Caller Sess_Parse_EntrantSetupMode (3 sites)."
+  "notes": "(first, last, depth): std::sort introsort loop over 8-byte {int key, u8 value} records by key: insertion sort below 0x108 bytes, heap sort at depth 0, partition and self-recursion. external call site 0x14249f84f in Sess_Parse_EntrantSetupMode 0x14249f190 (not 3)."
  },
  "signature": {
   "id": "core.sort_int_key_pairs",

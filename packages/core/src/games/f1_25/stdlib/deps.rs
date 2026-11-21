@@ -31,7 +31,7 @@ pub const STOP_EXIT: u8 = 3;
 /// (`packages/sdk/std/registries/<name>/<major>.<minor>.json`).
 pub const CORE_REGISTRIES: &[(&str, &str)] = &[
     ("addon.option", "1.0"),
-    ("car.profile", "1.0"),
+    ("car.profile", "1.1"),
     ("career.calendar", "1.1"),
     ("career.character", "1.0"),
     ("career.content", "1.1"),

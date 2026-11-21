@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140745900",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: Player requested help page: %s'"
+  "evidence": "decomp:re/decomp/140745900.c;pat:log-channel-TELEMETRY;xref:0x1406eb088,0x14070784e",
+  "notes": "Bus handler: lea 0x1406eb088 in subscribe-all 0x1406d8470 (->0x143987810), lea 0x14070784e in unsubscribe-all 0x1406fd6c0. Allocs 0xa0 record (ctor 0x1405e2c20), copies msg fields, baseCtx by 0x14077bb90 'virtual_help_page_accessed_record', pushed to static queue (guard 0x14604d728) under CS; logs TELEMETRY 'Player requested help page: %s'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_player_requested_help_page",

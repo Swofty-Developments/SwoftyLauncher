@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439ffae0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439ffae0.c;xref:0x1439ffad1,0x143bcb380",
-  "notes": "Binds a render-target set on the Gfx2 command context (param_1 ctx): resets bind state (Render_Gfx_ResetBindState), stores RTV count (+0x70) / flags (+0x74) and depth view (+0x138/+0x140), copies up to 8 RTV views (+0x78..+0xb0), hashes formats with MD5 (Ne_Hash_Md5Transform/Finalize) into +0x148 (render-target-set key used for PSO lookup), registers resources via Ne_HashMap_FindOrInsert_Float and calls context-impl vcall +0x60. ~20 render-pass callers. Hypothesis on exact name (OMSetRenderTargets equivalent)."
+  "evidence": "decomp:re/decomp/1439ffae0.c;xref:0x1439ffad1,0x143bcb380,0x143c2e31b",
+  "notes": "Render_Gfx_ResetBindState, stores colour count (+0x70) and second-group count (+0x74), copies up to 8 colour views (+0x78..) with per-frame descriptors (+0xf8..) and depth (+0x138/+0x140), binds the second group with Render_Gfx_BindSlotRange64(ctx,0,n,param_6,0), MD5 (Ne_Hash_Md5Transform/Finalize) of formats/sample counts into key +0x148, residency inserts, list vcall +0x60(count, +0xf8, depth). Callers 0x1439ff9f0, 0x143bcb150, 0x143c2e240. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx_set_render_targets",

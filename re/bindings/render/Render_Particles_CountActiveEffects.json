@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143af95f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143af95f0.c;xref:0x143af8db7",
-  "notes": "Iterates the effect pointer vector at manager+0x858e90..0x858e98 and counts effects that have emitter instances ([+0x80],[+0x88]) and are not flagged (inst+0x178 & 8). Callers Game_Particles_RemoveEffect, Render_Particles_ApplySpawns. Hypothesis."
+  "evidence": "decomp:re/decomp/143af95f0.c;xref:0x143af8db7,0x143b05b6c",
+  "notes": "Partitions the manager effect vector (+0x858e90): first moves effects with no emitter instances or first instance flag 8 to the front, then effects with id +100 < 0 or (id&0xfc)-4 < 0x1c; updates each effect index +0x58 and stores the total of both groups at +0x1052f0. Not a plain count. (lane owner review requested) Better name: Render_Particles_PartitionEffects (bound record keeps its name)."
  },
  "signature": {
   "id": "render.particles_count_active_effects",

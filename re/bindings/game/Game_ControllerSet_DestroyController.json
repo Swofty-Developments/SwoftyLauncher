@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143897010",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-CONTROLLER_SET",
-  "notes": "named from its log messages (channel CONTROLLER_SET): 'ControllerSet(%d / %s) : destroyed HUMAN controller. | ControllerSet(%d / %s) : destroyed AI controller.'"
+  "evidence": "decomp:re/decomp/143897010.c;pat:log-channel-CONTROLLER_SET;xref:0x1411f6560,0x141344b2e",
+  "notes": "(set, type): type 1 destroys the AI controller +0x28, type 0 the HUMAN +0x20, logs which, clears the pointer. (lane owner review requested)"
  },
  "signature": {
   "id": "game.controller_set_destroy_controller",
