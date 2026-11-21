@@ -360,6 +360,7 @@ impl Pipeline<'_, '_> {
                             &store.root,
                             run.profile,
                             session.launcher_saves.is_some(),
+                            crate::install::Source::detect(&run.game.dir),
                             id_aliases,
                             now,
                         ));

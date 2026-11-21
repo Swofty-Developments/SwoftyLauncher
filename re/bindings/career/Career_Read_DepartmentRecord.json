@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14350a0b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "int Career_Read_DepartmentRecord(void * self,uint64_t a2)",
   "evidence": "decomp:re/decomp/14350a0b0.c;xref:0x14124787b",
-  "notes": "myteam-g1: Deserialises the \"department\" field (save reader)."
+  "notes": "Save reader twin of 0x143509590: walks teams/team_id/career/season_index/season/weekend_index/weekend and per entry reads department, num_adapted, num_adaptable, then inserts via 0x14350af50(this, team_id, season, weekend, &{dept,adapted,adaptable}). Reached by jmp from load dispatcher 0x141247780. (lane owner review requested) Better name: Career_Read_WeekendAdaptationCounts (bound record keeps its name)."
  },
  "signature": {
   "id": "career.read_department_record",

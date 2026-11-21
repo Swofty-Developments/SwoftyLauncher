@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140db9300",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-DRIVER_CONTRACTS",
-  "notes": "named from its log messages (channel DRIVER_CONTRACTS): '*** Begin *** | Contract base values: driverStatId:%s, baseRating:%f, salaryStat:%f, signingBonusStat:%f, driverAge:%f, leverage:%f, isCounteroffer:%s | Contract calculation: successBase:%d, successLe'"
+  "evidence": "decomp:re/decomp/140db9300.c;pat:log-channel-DRIVER_CONTRACTS;xref:0x140db754b,0x140dbb87f,0x140dbb969,0x140dbeba1",
+  "notes": "Builds a contract result into param_2 for driver param_3 (driver slot found in comp+0x480, 0x68 stride, count +0x6f0): logs DRIVER_CONTRACTS base values and success/salary/bonus/clause calculation lines, writes +0x34, +0x44, isCounteroffer param_5 at +0x4c and contract_window_open (+0x834) at +0x4d; empty result with code 5 when the driver is missing. Returns param_2. (lane owner review requested) Better name: Career_DriverContracts_CalculateOffer (bound record keeps its name)."
  },
  "signature": {
   "id": "career.driver_contracts_calc_base_values",

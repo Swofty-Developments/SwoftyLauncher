@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1406d8470",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1406d8470.c;str:s_UpgradeResearchPurchasedMessage;kb:subsystems/career.md#telemetry",
-  "notes": "ElasticSearch/telemetry message subscriber for R&D events: upgrade_research/development_purchased_message, upgrade_{research,development,adaptation}_cancelled_message, upgrades_update_failed_rnd_message, upgrade_adapted_message, UpgradeFittingChangedMessage, MessageESMyTeamFacilityUpgradePurchased, MessageRnDEndofWeekendResourcePointTotal, DriverPerkPurchased. onRnD* handlers near 0x1406da500. Hook surface for purchase/spend events; the RP -= cost write still needs a trace. CORRECTION(V9037): Strings confirm the R&D/facility messages (upgrade_research_purchased_message, MessageRnDEndofWeekendResourcePointTotal, DriverPerkPurchased, MessageESMyTeamFacilityUpgradePurchased) but the same 650KB function also registers many unrelated telemetry messages (session_enter, MessageFlashbackUsed, MessageCheckpointLoaded...); it is a general telemetry subscriber, R&D is a subset."
+  "evidence": "decomp:re/decomp/1406d8470.c;str:s_UpgradeResearchPurchasedMessage;kb:subsystems/career.md#telemetry;xref:0x1406d70ab",
+  "notes": "ElasticSearchReporterModule subscribe-all: 198 calls to subscribe 0x143987810 binding module handlers to bus messages (session_enter/exit, MessageFlashbackUsed, checkpoint/save, R&D upgrade purchased/cancelled/adapted -> Game_ElasticSearchReporterModule_OnRnD* 0x14071a310.., MessageRnDEndofWeekendResourcePointTotal, DriverPerkPurchased, Acm*...). R&D is a subset; no game-state writes. (lane owner review requested) Better name: Career_ElasticSearchReporter_SubscribeMessages (bound record keeps its name)."
  },
  "signature": {
   "id": "career.report_rn_d_telemetry",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14231f990",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void f(void *self)",
-  "evidence": "decomp:re/decomp/14231f990.c;xref:0x142313e57;xref:0x142319054",
-  "notes": "myteam-g1: MY_TEAM_ACTIVITIES panel update (+0x898..+0x914); likely free-days/scheduled counters."
+  "evidence": "decomp:re/decomp/14231f990.c;xref:0x142313e57,0x142319054",
+  "notes": "Logs 'Function: onSelectedActivityBlockChanged'; reads priority via Ne_Property_ResolveBindingChain, then Career_MyTeamActivities_ApplyActivityToSelectedBlock and 0x142321f80. Refs are lea (callback registration) in 0x142313850 and 0x142319010. (lane owner review requested) Better name: Career_MyTeamActivities_OnSelectedBlockChanged (bound record keeps its name)."
  },
  "signature": {
   "id": "career.my_team_activities_update_free_days",

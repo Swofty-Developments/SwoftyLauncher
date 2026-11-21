@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140d8f600",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-CONTRACT_RENEWAL",
-  "notes": "named from its log messages (channel CONTRACT_RENEWAL): 'Driver removed from team, forced onto lowest. Old Team : %s - Driver %s - New team %s '"
+  "evidence": "decomp:re/decomp/140d8f600.c;pat:log-channel-CONTRACT_RENEWAL;xref:0x140d8eba0,0x140d93b98,0x140d94100,0x140ff4b55",
+  "notes": "CONTRACT_RENEWAL 'Driver removed from team, forced onto lowest': picks the lowest team (0x140d98c50, 0x140d8c8f0, 0x140d8d150), reserve backfill 0x140d8ecd0, signs via 0x140d8fcb0, 0x140d8f1f0, 0x1407b72e0. (lane owner review requested)"
  },
  "signature": {
   "id": "career.contract_renewal_force_to_lowest_team",

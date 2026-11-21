@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1422c9160",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void *vm",
   "evidence": "decomp:re/decomp/1422c9160.c;xref:0x1422c3879",
-  "notes": "myteam-g1: Returns the sponsorship notification/state entry (string \"sponsorship\") for the Team HQ advance (calendar) view."
+  "notes": "Not a getter. Processes today's timeline entries (Career_Timeline_ProcessKind0Entries/Kind1Entries with day = [[this+0x6e0]+0x2b0]>>5 /0x2d, kind 0xd), then calls a VM vslot +0x80 with key transition_to_screen and value sponsorship. Only ref: tail jmp in Game_TeamHQAdvanceViewModel_OnCommandRaised. (lane owner review requested) Better name: Career_TeamHqAdvanceVM_OpenSponsorshipScreen (bound record keeps its name)."
  },
  "signature": {
   "id": "career.team_hq_advance_vm_get_sponsorship_entry",

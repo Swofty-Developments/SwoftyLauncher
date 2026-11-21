@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140ffd830",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-ONLINE_CONTRACT_NEGOTIATIONS",
-  "notes": "named from its log messages (channel ONLINE_CONTRACT_NEGOTIATIONS): 'Starting negotiations flow with request type: %d'"
+  "evidence": "decomp:re/decomp/140ffd830.c;pat:log-channel-ONLINE_CONTRACT_NEGOTIATIONS;xref:0x140ffe85c",
+  "notes": "Sets this+0x290 = 3, calls 0x140ffd940 and 0x140ffc450; if the latter is true logs 'Starting negotiations flow with request type: %d' (3) else 'Starting holding screen', then posts bus message 0x1456bb528 with value 3 or 5 via 0x1439876c0. Caller 0x140ffda70. (lane owner review requested)"
  },
  "signature": {
   "id": "career.online_negotiations_start_flow",

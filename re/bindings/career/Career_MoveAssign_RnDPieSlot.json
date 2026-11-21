@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141f45500",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:17-handle-move-assign;xref:0x141f42ff1,0x141f484c8;kb:subsystems/rnd_ui.md#pie-object",
-  "notes": "Pie slot move-assign: Vm_MoveAssign_NodeHandle(dst+8+k*0x20, src+8+k*0x20) for the 17 handles. The populate moves its temp into slot idx @0x141f484c8; an unconstructed destination slot faults in the handle unlink."
+  "evidence": "decomp:re/decomp/141f45500.c;pat:17-handle-move-assign;kb:subsystems/rnd_ui.md#pie-object;xref:0x141f42ff1,0x141f484c8",
+  "notes": "Calls 0x1442bc170 (node-handle move-assign) 17 times for dst+8+k*0x20 / src+8+k*0x20 (k=0..16, up to +0x208); returns dst. Callers: Career_Build_RnDPotentialPie and Career_Populate_RnDPieSlices. (lane owner review requested)"
  },
  "signature": {
   "id": "career.move_assign_rn_d_pie_slot",

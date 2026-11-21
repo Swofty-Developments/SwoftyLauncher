@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "career",
   "proto": "bool Check(void *ctx, int *slot)",
-  "evidence": "decomp:re/decomp/141247100.c;xref:0x140aa8d62;xref:0x1412462d5;xref:0x141246d03",
-  "notes": "myteam-g2: Checks a slot index against the upgrade slot arrays at ctx+0x270/0x290 and flag at +0xd70; read-only. Used by RnD dept page, potential pie, develop cards and notifications."
+  "evidence": "decomp:re/decomp/141247100.c;xref:0x140aa8d62,0x1412462d5,0x141246d03,0x1412472a5",
+  "notes": "Returns false if byte +0x290==0 or (+0x270) vt+0xf8 >= vt+0xd0. Else value = param_2[2], scaled (when +0xd70 set) by a ratio from (+0xd70)+0x270 vt+0x88 vector size / max of (+0xd70)+0x290 +0xc0 list; returns value <= vt+0x100() && vt+0xf8() == param_2[0]."
  },
  "signature": {
   "id": "career.check_upgrade_slot_available",

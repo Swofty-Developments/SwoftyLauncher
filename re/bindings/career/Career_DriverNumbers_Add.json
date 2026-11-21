@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c01550",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-DRIVER_NUMBERS",
-  "notes": "named from its log messages (channel DRIVER_NUMBERS): 'Added driver number %d | DONT ADD. Driver number %d used by entrant %s - %s'"
+  "evidence": "decomp:re/decomp/140c01550.c;pat:log-channel-DRIVER_NUMBERS;xref:0x140c012c4,0x14203d76e",
+  "notes": "DRIVER_NUMBERS log. Copies candidate numbers [comp+0x290]+0x1f8..+0x200 into a new list (param_3), then drops every number held (+0x83) by an entrant row of param_2 (component 0x14605c118 check, row flags +0x80/+0x81 when param_5), logging 'Added driver number' / 'DONT ADD ... used by entrant'. Called by AssignFree (0x140c012c4) and 0x14203d76e. (lane owner review requested) Better name: Career_DriverNumbers_BuildFreeList (bound record keeps its name)."
  },
  "signature": {
   "id": "career.driver_numbers_add",

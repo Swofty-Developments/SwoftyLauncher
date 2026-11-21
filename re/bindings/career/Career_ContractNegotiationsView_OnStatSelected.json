@@ -9,7 +9,7 @@
   "subsystem": "career",
   "proto": "void Career_ContractNegotiationsView_OnStatSelected(void *view, void *event)",
   "evidence": "decomp:re/decomp/141a0c040.c;xref:0x141a0bee0",
-  "notes": "myteam-g1: UI event handler for the contract negotiations screen; writes #ui_menu_data.contract_negotiations.stat_id (selected stat to compare) and forwards focus via 44320fe0 (view+0x1370..0x13a0, +0x1718 array)."
+  "notes": "Large view handler: dispatches start_transition_out (Ne_UiEvent_DispatchByName), reads option career_type, resolves #ui_menu_data.contract_negotiations.stat_id (Vm_Set_ShortProperty_WithUnknownName) and driver_type_select; uses view+0x1370..+0x13a0 and +0x1718.. arrays."
  },
  "signature": {
   "id": "career.contract_negotiations_view_on_stat_selected",

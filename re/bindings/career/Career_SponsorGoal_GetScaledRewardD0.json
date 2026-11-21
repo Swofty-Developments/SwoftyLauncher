@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141106200",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "int32_t (void *goal, void *modifiers_ref)",
-  "evidence": "decomp:re/decomp/141106200.c;xref:0x1410f7bc1;xref:0x1411054a8;xref:0x141108e5d",
-  "notes": "myteam-g2: Same as 1411060f0 but for the second reward field goal+0xd0 (scaled by its modifier id, rounded to thousands). Two sibling reward amounts of a sponsor goal definition."
+  "evidence": "decomp:re/decomp/141106200.c;xref:0x1410f7bc2,0x1411054a9,0x141108e5e,0x141111eea,0x14226e0e2,0x141cc413c",
+  "notes": "Returns base goal+0xd0 scaled by team modifier id 8 (weak ptr param_2, entries id byte + float +4): round((v*base + base)/100)*100, i.e. base*(1+v) rounded to hundreds (not thousands); returns the plain +0xd0 if the modifier list is gone. (lane owner review requested)"
  },
  "signature": {
   "id": "career.sponsor_goal_get_scaled_reward_d0",

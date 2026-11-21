@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140fc6190",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-MY_TEAM_REWARDS",
-  "notes": "named from its log messages (channel MY_TEAM_REWARDS): 'Team %s revoked reward '%s'.'"
+  "evidence": "decomp:re/decomp/140fc6190.c;pat:log-channel-MY_TEAM_REWARDS;xref:0x140fc69f0",
+  "notes": "Twin of 0x140fc6000 differing only in the log: 'Team %s revoked reward'; locks the weak_ptr (+8/+0x10) and calls obj->vt+0x38(param_2). (lane owner review requested)"
  },
  "signature": {
   "id": "career.my_team_rewards_revoke",

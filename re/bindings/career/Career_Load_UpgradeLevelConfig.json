@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141067b10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "int FUN(void *level_table, void *cfg_root, uint64_t flags)",
   "evidence": "decomp:re/decomp/141067b10.c;xref:0x1456ba3c8",
-  "notes": "myteam-g1: Loader that reads an array of 0x5c-byte entries (+0x460) per level from config/save, containing secretUpgradeLevel and simultaneousUpgradeLevel. Returns 0x57/0x58 error codes on missing/wrong type."
+  "notes": "Vtable slot ref 0x1456ba3c8 (class CareerRecognitionComponent, name at 0x1456ba390). Save reader: recognitionDriverData array of 0x5c-byte entries (this+0x460..+0x468, alloc +0x458): driverStatId, start/total/baseline/bonus recognition, academy/secretMeeting/contract/targetRating bonuses, negative-modifier and secret-meeting-declined lists; also secretUpgradeLevel, simultaneousUpgradeLevel, rushPerkEnabled. Returns 0 or 0x57/0x58. (lane owner review requested) Better name: Career_Recognition_ReadSaveData (bound record keeps its name)."
  },
  "signature": {
   "id": "career.load_upgrade_level_config",

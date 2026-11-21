@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c679d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-BANK",
-  "notes": "named from its log messages (channel BANK): 'Bank processed transaction on day %u of type %s - %s'"
+  "evidence": "decomp:re/decomp/140c679d0.c;pat:log-channel-BANK;xref:0x140c6379c,0x140c63888",
+  "notes": "BANK log. Copies the 0x14-byte transaction param_2 into a temp allocation, logs day (+0xc minutes/1440) and type names (+0x10, +0), applies it via 0x140c66c30, frees the temp. Callers in 0x140c635c0 (0x140c6379c, 0x140c63888). (lane owner review requested) Better name: Career_Bank_ProcessTransactionNow (bound record keeps its name)."
  },
  "signature": {
   "id": "career.bank_process_transaction_2",

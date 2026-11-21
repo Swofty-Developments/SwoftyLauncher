@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1422bbda0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-TEAMHQ_ADVANCE",
-  "notes": "named from its log messages (channel TEAMHQ ADVANCE): 'Signalling Finished, day: %d'"
+  "evidence": "decomp:re/decomp/1422bbda0.c;pat:log-channel-TEAMHQ_ADVANCE;xref:0x1422c5362",
+  "notes": "If online byte +0x37: logs 'Signalling Finished, day', posts bus message 0x1456bc838 {day, flag = !cancelling(+0x2c)}, stores day+1 at u16 +0x38. Caller: Game_TeamHQAdvanceViewModel_OnCommandRaised. (lane owner review requested)"
  },
  "signature": {
   "id": "career.team_hq_advance_signal_finished",

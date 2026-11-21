@@ -9,7 +9,7 @@
   "subsystem": "career",
   "proto": "uint64_t Career_Bind_RnDDepartmentsTable_A(void * self)",
   "evidence": "decomp:re/decomp/141c45250.c;xref:0x141c44a31",
-  "notes": "myteam-g1: Registers/binds the \"t_rnd_departments\" UI table on a screen object (flag byte +0x99a=1, two table-bind calls). Pair of Career_Bind_RnDDepartmentsTable_B on another screen class."
+  "notes": "Sets byte +0x99a = 1, sends an event (arg 4) to target 't_rnd_departments' via 0x144320950, then dispatches 'close' (Ne_UiEvent_DispatchByName). Stored as a callback by lea at 0x141c44a31. Better name: Career_Close_RnDDepartmentsTable (bound record keeps its name)."
  },
  "signature": {
   "id": "career.bind_rn_ddepartments_table_a",

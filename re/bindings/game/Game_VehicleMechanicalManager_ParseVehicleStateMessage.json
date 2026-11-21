@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VehicleMechanicalManager::parseVehicleStateMessage; log channel NETWORK-MECHANICAL: 'void network::VehicleMechanicalManager::parseVehicleStateMessage(const NEbyte *, NEsize_t, NEbyte, NEbool) | %s: vehicle(%s) received new engine damage(%02X).'"
+  "evidence": "pat:log-message-cxx;doc:re/research/fuel_mix_five.md#sites",
+  "notes": "cxx=VehicleMechanicalManager::parseVehicleStateMessage; log channel NETWORK-MECHANICAL: 'void network::VehicleMechanicalManager::parseVehicleStateMessage(const NEbyte *, NEsize_t, NEbyte, NEbool) | %s: vehicle(%s) received new engine damage(%02X).' | engine-re fuel-mix-5 2026-11-20 (static): reads ranged 0..3 fields with Ne_BitStream_ReadRangedUInt at 0x14324db53 and 0x14324f13c (the controls fuel mix among them; log text 'fuelmix(%u)' 0x14582c5cd). edited by engine-re with --force 2026-11-20 at user request (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_mechanical_manager_parse_vehicle_state_message",

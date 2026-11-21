@@ -21,6 +21,7 @@ mod loss;
 mod manifest;
 mod prune;
 pub mod rewrite;
+mod split;
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -28,10 +29,14 @@ use std::path::{Path, PathBuf};
 pub use loss::{Loss, Lost, PutBack, put_backs};
 pub use manifest::{Container, Event, Manifest, SCHEMA, SLOT_SUFFIX, Slot, Source, mode_of};
 pub use prune::{Keep, Pruned, prune_all_held};
+pub use split::{SPLIT, SPLIT_ASIDE, Split, split_all_held, split_profile};
 
 use crate::{Result, io_err};
 
 pub const DIR: &str = "plain";
+/// The plain root of a profile's EA layout launcher save, beside `saves/<profile>/ea`, the title folder the EA save
+/// device is pointed at.
+pub const EA_DIR: &str = "ea-plain";
 pub const CURRENT: &str = "CURRENT";
 pub const GENERATIONS: &str = "generations";
 const PINS: &str = "pins.json";
@@ -43,17 +48,30 @@ pub fn root_of_profile(data: &Path, profile: &str) -> PathBuf {
     crate::saves::launcher::root(data).join(profile).join(DIR)
 }
 
+pub fn root_of_profile_ea(data: &Path, profile: &str) -> PathBuf {
+    crate::saves::launcher::root(data).join(profile).join(EA_DIR)
+}
+
+/// The plain root of the launcher save a session on `copy` plays from: the EA layout's for an EA app copy, else the
+/// Steam layout's, as [`crate::saves::launcher::store_of_game`] picks the store.
+pub fn root_of_launcher(data: &Path, profile: &str, copy: crate::install::Source) -> PathBuf {
+    match copy {
+        crate::install::Source::EaApp => root_of_profile_ea(data, profile),
+        _ => root_of_profile(data, profile),
+    }
+}
+
 pub fn root_of_copy(data: &Path, source: &str) -> PathBuf {
     data.join(DIR).join(source)
 }
 
 /// The plain root of a vault source: `launcher-<profile>` keeps it beside the profile's launcher save,
-/// `steam-<id3>` and `ea-<user>` under `$DATA/plain/`.
+/// `launcher-ea.<profile>` beside the EA layout's, `steam-<id3>` and `ea-<user>` under `$DATA/plain/`.
 pub fn root_of_source(data: &Path, source: &str) -> PathBuf {
-    if let Some(p) = source
-        .strip_prefix("launcher-ea.")
-        .or_else(|| source.strip_prefix("launcher-"))
-    {
+    if let Some(p) = source.strip_prefix("launcher-ea.") {
+        return root_of_profile_ea(data, p);
+    }
+    if let Some(p) = source.strip_prefix("launcher-") {
         return root_of_profile(data, p);
     }
     root_of_copy(data, source)
@@ -74,15 +92,22 @@ pub fn remember_copy_source(data: &Path, source: &str) {
     std::fs::write(&path, source).ok();
 }
 
-/// The plain root a session of `profile` writes, which `settings.json` hands the core. A session on the copy's
-/// own save has none until the launcher has found the copy's save once.
-pub fn root_of_session(data: &Path, profile: &str, on_launcher_saves: bool) -> Option<PathBuf> {
+/// The plain root a session of `profile` on `copy` writes, which `settings.json` hands the core. A session on the
+/// copy's own save has none until the launcher has found the copy's save once, and none while the save it found
+/// last belongs to the other copy.
+pub fn root_of_session(
+    data: &Path,
+    profile: &str,
+    on_launcher_saves: bool,
+    copy: crate::install::Source,
+) -> Option<PathBuf> {
     match on_launcher_saves {
-        true => Some(root_of_profile(data, profile)),
+        true => Some(root_of_launcher(data, profile, copy)),
         false => {
             let source = std::fs::read_to_string(data.join(COPY_SOURCE)).ok()?;
             let source = source.trim();
-            (!source.is_empty()).then(|| root_of_copy(data, source))
+            let ea = copy == crate::install::Source::EaApp;
+            (!source.is_empty() && source.starts_with("ea-") == ea).then(|| root_of_copy(data, source))
         }
     }
 }

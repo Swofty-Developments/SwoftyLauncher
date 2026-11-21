@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "void Game_Mfd_FuelMix_BuildOptions(void *fuel_sub, uint32_t mask)",
-  "evidence": "doc:re/db/subsystems/game.md",
-  "notes": "Stores mask at +0x324, adds rows lean/standard/rich/max (lng_hud_fuel_*); Max row skipped when (sessionType-15) < 3 (0x141788c9a: 83 c0 f1 83 f8 03 72 21 -> jb 0x141788cc3; 15..17 = race sessions inferred); NOP 72 21 at 0x141788ca0 shows Max in races (fuel-mix, fuel-verify claim 3) | findings from PR #474 by vogtmarcel07-cloud; independent check 2026-10-28 by fuel-verify: partial"
+  "evidence": "doc:re/db/subsystems/game.md;doc:re/research/fuel_mix_five.md#sites",
+  "notes": "Stores mask at +0x324, adds rows lean/standard/rich/max (lng_hud_fuel_*); Max row skipped when (sessionType-15) < 3 (0x141788c9a: 83 c0 f1 83 f8 03 72 21 -> jb 0x141788cc3; 15..17 = race sessions inferred); NOP 72 21 at 0x141788ca0 shows Max in races (fuel-mix, fuel-verify claim 3) | findings from PR #474 by vogtmarcel07-cloud; independent check 2026-10-28 by fuel-verify: partial | engine-re fuel-mix-5 2026-11-20 (static): the only fixed 4-mix parts are the four bit tests and the four Game_Mfd_FuelMix_AddRow 0x141789520 calls (ids 0..3); AddRow and Game_Mfd_FuelMix_SetSelected 0x1417891f0 take any id, so a replacement with a fifth AddRow(id 4) is enough for the row. The mask is compared with sub+0x324 at 0x14178897d (Game_Mfd_FuelMix_Update) and 0x141788ef9 (Game_Mfd_FuelMix_Recheck); a stored bit 4 the builders do not compute rebuilds the list every frame. edited by engine-re with --force 2026-11-20 at user request (lane owner review requested)"
  },
  "signature": {
   "id": "game.mfd_fuel_mix_build_options",

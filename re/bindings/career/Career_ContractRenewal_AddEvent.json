@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140d8d620",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-CONTRACT_RENEWAL",
-  "notes": "named from its log messages (channel CONTRACT_RENEWAL): 'Adding a renewal event - human driver available | Adding a renewal event'"
+  "evidence": "decomp:re/decomp/140d8d620.c;pat:log-channel-CONTRACT_RENEWAL;xref:0x140d992c7,0x140d9a623",
+  "notes": "CONTRACT_RENEWAL 'Adding a renewal event (- human driver available)' and SCHEDULE_NOTIFICATIONS card log: checks 0x140d8d150 / 0x140d8d2f0, human availability 0x140d8df10 / 0x140d8c8f0 (branch 0x1484f1570), adds the event (0x140d8db70, 0x141289690). (lane owner review requested)"
  },
  "signature": {
   "id": "career.contract_renewal_add_event",

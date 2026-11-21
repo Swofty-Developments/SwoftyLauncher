@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1412df5b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-SPECIALISTS",
-  "notes": "named from its log messages (channel SPECIALISTS): 'Set primary specialist message received | Specialist type: %s | Driver stat id: %s'"
+  "evidence": "decomp:re/decomp/1412df5b0.c;pat:log-channel-SPECIALISTS;xref:0x14a75675c",
+  "notes": "Message handler: logs 'Set primary specialist message received'; finds the manager (+0x358..+0x360, stride 0x128) by driver id (+0x12); if the specialist of type +0x10 is available (+2) clears isPrimary (+1) on all 6 specialists and sets it on that one; repeats for the team-mate path after 0x1412dcbd0. Only ref: .data1 0x14a75675c. (lane owner review requested)"
  },
  "signature": {
   "id": "career.specialists_on_set_primary",

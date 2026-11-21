@@ -915,6 +915,50 @@ fn a_session_on_launcher_saves_hands_the_core_the_profiles_plain_root() {
 }
 
 #[test]
+fn an_ea_app_session_on_launcher_saves_hands_the_core_the_ea_layouts_plain_root() {
+    let root = tmp("plain-root-ea");
+    let store = Store::new(&root);
+    std::fs::create_dir_all(crate::saves::launcher::root(&root)).unwrap();
+    std::fs::write(crate::saves::launcher::marker_path(&root), b"{}").unwrap();
+    let p = store.profile(DEFAULT_PROFILE).unwrap();
+    let ea = store
+        .session_settings_on(&p, crate::install::Source::EaApp)
+        .unwrap();
+    let steam = store
+        .session_settings_on(&p, crate::install::Source::Steam)
+        .unwrap();
+    let view = |path: &std::path::Path| crate::data::paths::game_folder_view(path);
+    assert_eq!(
+        ea.plain_saves.as_ref().unwrap().root,
+        view(&crate::saves::plain::root_of_source(&root, "launcher-ea.default"))
+    );
+    assert!(
+        ea.plain_saves
+            .as_ref()
+            .unwrap()
+            .root
+            .ends_with("saves/default/ea-plain")
+            || ea
+                .plain_saves
+                .as_ref()
+                .unwrap()
+                .root
+                .ends_with("saves\\default\\ea-plain")
+    );
+    assert_eq!(
+        steam.plain_saves.as_ref().unwrap().root,
+        view(&crate::saves::plain::root_of_source(&root, "launcher-default"))
+    );
+    assert_eq!(
+        ea.launcher_saves, steam.launcher_saves,
+        "the core finds the EA title folder beside remote"
+    );
+    let json: serde_json::Value = serde_json::to_value(&ea).unwrap();
+    assert_eq!(json["plain_saves"]["root"], ea.plain_saves.unwrap().root);
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
 fn a_session_on_the_copys_own_save_names_its_plain_root_once_the_launcher_found_the_copy() {
     let root = tmp("plain-copy");
     let store = Store::new(&root);

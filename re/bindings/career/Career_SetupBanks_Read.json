@@ -9,7 +9,7 @@
   "subsystem": "career",
   "proto": "int (void *a, void *json, int64_t is_modded)",
   "evidence": "decomp:re/decomp/140c03d00.c;xref:0x14567f8a8",
-  "notes": "myteam-g1: Reads setup_banks (season_id, setups[]); when param_3==0 defaults to season_2025 via hash and calls 140c02120 to apply the per-season bank setups to the career. Hook for changing starting funds per season. CORRECTION(V8973): Structure matches: param_3==0 resolves season_2025 and calls 140c02120, otherwise loops setup_banks[] reading season_id + setups[] and calls 140c02120 per entry. Callee 140c02120 has no decompile here, so its 'applies bank setups / starting funds' role is unproven; in the param_3==0 path setups[] is read at the top level, not inside setup_banks."
+  "notes": "setup_banks reader (vtable ptr 0x14567f8a8): param_3==0 resolves season_2025 by hash and reads setups[] at top level, calling 0x140c02120; otherwise loops setup_banks[] reading season_id + setups[] and calls 0x140c02120 per entry."
  },
  "signature": {
   "id": "career.setup_banks_read",

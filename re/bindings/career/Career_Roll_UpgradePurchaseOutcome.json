@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14351c490",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void Career_Roll_UpgradePurchaseOutcome(void * self,uint32_t a2,uint64_t a3)",
-  "evidence": "decomp:re/decomp/14351c490.c;xref:0x14351b6c8;xref:0x14351b7e6",
-  "notes": "myteam-g1: purchaseUpgrade helper: sums effect weights (kinds 5 and 8) for the upgrade, RNG roll 0-100 vs the sum, then applies via FUN_1412414c0; on failure re-posts rnd_upgrade_purchase_error. Hook to force success of an upgrade roll. CORRECTION(V8997): Sums modifier kind 5 (gate must be >0) then kind 8; rolls 0..100 and compares <= kind-8 sum, then FUN_1412414c0 applies. The rnd_upgrade_purchase_error string is not in this body (failure path calls FUN_14351ccb0), so that sub-claim is unproven."
+  "evidence": "decomp:re/decomp/14351c490.c;xref:0x14351b6c8,0x14351b7e6",
+  "notes": "Gets instance via 0x14351b330 (on miss calls 0x14351ccb0 first). With Career_Get_TeamModifiers 0x1434fb4b0 (model+0xc90): sums kind-5 modifier floats for dept +0x72; if >0 sums kind-8 and success = rand*100 <= sum (log UPGRADES/R 'Random used for purchaseUpgrade'); else fail. Calls 0x1412414c0(model,team,inst,success,0,0); if it returns 0 calls 0x14351ccb0. (lane owner review requested)"
  },
  "signature": {
   "id": "career.roll_upgrade_purchase_outcome",

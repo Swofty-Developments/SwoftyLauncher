@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "career",
   "proto": "bool Check(void *comp, uint8_t *team_key, uint16_t slot, char flag)",
-  "evidence": "decomp:re/decomp/140d82400.c;xref:0x140c581a1;xref:0x140d79692;xref:0x140d796a9",
-  "notes": "myteam-g2: Finds team entry (comp[0x97], stride 0x30, field +0xc != -1 = has contract), then compares a driver's value (+0x18) against calendar-derived min/max (Career_Calc_CalendarEntryStartMinutes via comp[0x9d]+0x2d8+0x290, /1440 = days) and a driver hash map (comp[0xd2..]); returns whether the driver fits. Read-only filter for AutoContracts / retirement."
+  "evidence": "decomp:re/decomp/140d82400.c;xref:0x140c581a1,0x140d79692,0x140d796a9,0x140d95c53",
+  "notes": "Team entry comp[0x97..0x98] (0x30, key +8): +0xc != -1 returned when param_3==0xffff. Else walks comp[0x54..0x55] drivers: u16 +0x18 must lie in a calendar-day window (0x14111c9a0 / 0x1410f5a80 vs now), hash map comp[0xd2..] gives a u16 for vt+0x2b8; returns vt+0x268() when within param_3 / today, else 0."
  },
  "signature": {
   "id": "career.driver_contracts_is_driver_in_age_range",

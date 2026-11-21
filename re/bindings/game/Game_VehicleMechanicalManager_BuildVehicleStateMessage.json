@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VehicleMechanicalManager::buildVehicleStateMessage; log channel NETWORK-MECHANICAL/V: 'void network::VehicleMechanicalManager::buildVehicleStateMessage(racing::vehicleInstance::Id, const VehicleState &, const VehicleState *) | %s: vehicle(%s) Built Packet ||%s%s%s%s%s%s|%s'"
+  "evidence": "pat:log-message-cxx;doc:re/research/fuel_mix_five.md#sites",
+  "notes": "cxx=VehicleMechanicalManager::buildVehicleStateMessage; log channel NETWORK-MECHANICAL/V: 'void network::VehicleMechanicalManager::buildVehicleStateMessage(racing::vehicleInstance::Id, const VehicleState &, const VehicleState *) | %s: vehicle(%s) Built Packet ||%s%s%s%s%s%s|%s' | engine-re fuel-mix-5 2026-11-20 (static): the requested fuel mix of the controls (byte +0x65; log text 'fuelmix(%u)' 0x14582cc76) is written as a ranged value 0..3 (mov r9d,3 before the writer at 0x1432491ce; the second 0..3 write at 0x143244b41 is another field); 4 is outside the wire range. edited by engine-re with --force 2026-11-20 at user request (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_mechanical_manager_build_vehicle_state_message",
@@ -45,6 +45,16 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/143242a70.c;xref:0x14323cc21",
    "notes": "V5749 name and description match body; log string/pretty name present"
+  },
+  {
+   "date": "2026-11-20",
+   "verifier": "fuel5-verify",
+   "kind": "func",
+   "item": "0x143242a70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "pat:disasm-0x1432491aa-0x1432491ce;pat:disasm-0x143247a2d;xref:0x143247ab8;pat:disasm-0x14324db4a;pat:disasm-0x14324f133",
+   "notes": "V12407 blind re-derivation (own capstone disasm, no write-up read): r8=0 r9=3 into 0x143924390; 0x1432491ce writes [ctrl+0x65], logged as fuelmix; 0x143244b41 writes another field (applied); reader 0x14324c110 ranged 0..3 at both sites"
   }
  ],
  "proofs": []

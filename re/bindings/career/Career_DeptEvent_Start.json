@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140cbbc00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-DEPARTMENT_EVENTS",
-  "notes": "named from its log messages (channel DEPARTMENT_EVENTS): 'Failed to start department event as the department Event start message recieved was invalid. Team: %s Department Event hash: %u | Failed to start department event as the department Event start message'"
+  "evidence": "decomp:re/decomp/140cbbc00.c;pat:log-channel-DEPARTMENT_EVENTS;xref:0x140cbad58,0x140cbafa4,0x140cbcd23,0x140cbcd5a",
+  "notes": "Handler of MessageDepartmentEventStartedDriver/Team (lea 0x140cbad58/0x140cbafa4 subscribe, 0x140cbcd23/0x140cbcd5a unsubscribe): validates the start message (logs invalid), branches team vs driver on 0x1484f1570, eligibility 0x140cb0750, logs 'Player/Team department event started', simulates via 0x140cb3290. (lane owner review requested)"
  },
  "signature": {
   "id": "career.dept_event_start",

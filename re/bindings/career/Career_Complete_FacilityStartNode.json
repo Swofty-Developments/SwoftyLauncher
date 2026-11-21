@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140f8a1a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140f8a1a0.c;xref:0x140f807a3,0x140f807f4;doc:addons/career-editor/protocol/facilities.md#engine-paths",
-  "notes": "Unlock-at-start pass for one facility node: +0xb5 unlock_at_start (from +0xb4 or a list match at +0xc0..+0xc8), then purchased +0xb0 = 1, Career_Complete_PerkTreeNode, seen_completed +0xb3 = 1. The game's own instant-complete pattern for a node."
+  "evidence": "decomp:re/decomp/140f8a1a0.c;doc:addons/career-editor/protocol/facilities.md#engine-paths;xref:0x140f807a3,0x140f807f4",
+  "notes": "Unlock-at-start for one facility node: +0xb5 = +0xb4; if 0, sets +0xb5 when any id in +0xc0..+0xc8 is in the list from 0x14101b830(+0x60, +0x68); if set: purchased +0xb0 = 1, Career_Complete_PerkTreeNode 0x142ea5fe0(node), +0xb3 = 1. (lane owner review requested)"
  },
  "signature": {
   "id": "career.complete_facility_start_node",
