@@ -313,7 +313,7 @@ auto caterham = teams::identities.add("caterham", {
 
 ## Real teams
 
-A `constructor/` id works as a team reference: `teams::identities["constructor/toro_rosso"]` resolves to the last enabled team in load order that is that constructor. Career addons and line-ups name constructors, not one pack's keys, and they work with whichever pack provides the team. Each pack's team is still its own row with its own stat id.
+A `constructor/` id works as a team reference: `teams::identities["constructor/toro_rosso"]` resolves to the last enabled team in load order that is that constructor. In a `car.profile`'s `cars.team` it matches every team that is or provides it ([Picking cars by team, vehicle and driver](/std/systems/car-physics#picking-cars-by-team-vehicle-and-driver)). Career addons and line-ups name constructors, not one pack's keys, and they work with whichever pack provides the team. Each pack's team is still its own row with its own stat id.
 
 The stock team rows, and the rows a season addon adds to `entrants.teams` through database ops, are `game/<row label>` records on every profile, whether or not any addon has team records. `stat_id` on one returns the row's own stat id.
 
