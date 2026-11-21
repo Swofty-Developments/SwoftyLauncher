@@ -642,10 +642,51 @@ fn an_imported_save_with_no_listing_gets_a_titled_placeholder() {
 #[test]
 fn the_fixed_columns_leave_room_at_the_narrowest_window() {
     let content = 960. - 220. - 2. * 28.;
-    let career_fixed = super::MODE_W + super::PLAYED_W + super::CHIP_W + 3. * 10. + 24.;
+    let career_fixed = super::MODE_W + super::PLAYED_W + super::CHIP_W + super::FORGET_W + 4. * 10. + 24.;
     let version_fixed = super::PIN_W + super::WHEN_W + super::SIZE_W + super::ACTIONS_W + 4. * 10. + 24.;
     assert!(content - career_fixed >= 150., "{}", content - career_fixed);
     assert!(content - version_fixed >= 150., "{}", content - version_fixed);
+}
+
+#[test]
+fn a_forgotten_career_leaves_the_careers_list_and_comes_back_with_its_save_slot() {
+    use swofty_core::saves::vault::careers::State;
+    let root = std::env::temp_dir().join(format!("swofty-saves-forget-{}", std::process::id()));
+    std::fs::remove_dir_all(&root).ok();
+    let index = swofty_core::stdlib::careers::data_path(&root);
+    std::fs::create_dir_all(index.parent().unwrap()).unwrap();
+    let write = |status: &str| {
+        std::fs::write(
+            &index,
+            format!(
+                r#"{{"version":1,"careers":[
+                {{"career":"driver_career:a1","profile":"Race","slot":"a1","status":"present","driver":"Oscar PIASTRI","team":"McLaren"}},
+                {{"career":"my_team:b2","profile":"Race","slot":"b2","status":"{status}","team":"Racing Bulls"}}]}}"#
+            ),
+        )
+        .unwrap();
+    };
+    let store = swofty_core::store::Store::new(&root);
+    let states = || {
+        build_saves(&store, None, "Race", false)
+            .view
+            .entries
+            .iter()
+            .map(|e| (e.l.career.clone(), e.l.state))
+            .collect::<Vec<_>>()
+    };
+    let (a, b) = ("driver_career:a1".to_owned(), "my_team:b2".to_owned());
+    write("deleted");
+    assert_eq!(
+        states(),
+        [(a.clone(), State::Present), (b.clone(), State::DeletedInGame)]
+    );
+    assert!(!vault::careers::forget(&root, &a).unwrap());
+    assert!(vault::careers::forget(&root, &b).unwrap());
+    assert_eq!(states(), [(a.clone(), State::Present)]);
+    write("present");
+    assert_eq!(states(), [(a, State::Present), (b, State::Present)]);
+    std::fs::remove_dir_all(&root).ok();
 }
 
 #[test]

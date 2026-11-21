@@ -21,7 +21,7 @@ mod resume;
 mod rows;
 
 pub use index_file::{
-    data_path, keep, kept_ids, migrate, parse, read, rename_profile, replace_profile, sync,
+    data_path, forget, keep, kept_ids, migrate, parse, read, rename_profile, replace_profile, sync,
 };
 pub use list::{
     ListSave, READY as SEVERITY_READY, ResumeRow, RowAddon, VERSION as SEVERITY_VERSION, date_text,

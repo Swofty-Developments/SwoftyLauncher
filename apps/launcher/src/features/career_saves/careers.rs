@@ -1,13 +1,13 @@
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
-use gpui_kit::component::{Icon, h_flex, v_flex};
+use gpui_kit::component::{Disableable, Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::saves::vault::careers::{State as CareerState, mode_label};
 use swofty_i18n::{tr, trf};
 
-use super::labels::listed_later;
+use super::labels::{close_game_first, listed_later};
 use super::plain::{PlainCareer, PlainMode};
 use super::state::{Entry, Imported, SavesView};
 use crate::shell::Shell;
@@ -22,6 +22,7 @@ use crate::ui::tokens::Tone;
 pub(super) const MODE_W: f32 = 124.;
 pub(super) const PLAYED_W: f32 = 104.;
 pub(super) const CHIP_W: f32 = 112.;
+pub(super) const FORGET_W: f32 = 96.;
 
 impl Shell {
     pub(super) fn careers_block(&self, view: &SavesView, p: Palette, cx: &mut Context<Self>) -> Div {
@@ -46,7 +47,13 @@ impl Shell {
                 tr("No careers yet. They appear after you play this profile."),
                 p,
             )],
-            _ => view.entries.iter().map(|e| self.career_row(e, p)).collect(),
+            _ => {
+                let forget = view.entries.iter().any(|e| e.l.state != CareerState::Present);
+                view.entries
+                    .iter()
+                    .map(|e| self.career_row(e, forget, p, cx))
+                    .collect()
+            }
         };
         let notes: Vec<Div> = plain
             .into_iter()
@@ -211,13 +218,33 @@ impl Shell {
             .into_any_element()
     }
 
-    pub(super) fn career_row(&self, e: &Entry, p: Palette) -> AnyElement {
+    pub(super) fn career_row(
+        &self,
+        e: &Entry,
+        forget: bool,
+        p: Palette,
+        cx: &mut Context<Self>,
+    ) -> AnyElement {
         let chip = match e.l.state {
             CareerState::Present => None,
             CareerState::Missing => Some(Pill::new(tr("Missing")).tone(Tone::Warning)),
             CareerState::DeletedInGame => Some(Pill::new(tr("Deleted in game"))),
         };
         let dim = chip.is_some();
+        let blocked = self.saves.game_running;
+        let career = e.l.career.clone();
+        let button = dim.then(|| {
+            Button::new(SharedString::from(format!("forget-{career}")))
+                .ghost()
+                .tap_sm()
+                .label(tr("Forget"))
+                .disabled(blocked)
+                .tooltip(match blocked {
+                    true => close_game_first(),
+                    false => tr("Take this career off the list. No save is deleted, and it shows again if the game finds it."),
+                })
+                .on_click(cx.listener(move |this, _, window, cx| this.forget_career(&career, window, cx)))
+        });
         h_flex()
             .min_h(px(52.))
             .px(px(12.))
@@ -271,6 +298,15 @@ impl Shell {
                     .justify_end()
                     .children(chip),
             )
+            .when(forget, |row| {
+                row.child(
+                    h_flex()
+                        .w(px(FORGET_W))
+                        .flex_shrink_0()
+                        .justify_end()
+                        .children(button),
+                )
+            })
             .into_any_element()
     }
 }

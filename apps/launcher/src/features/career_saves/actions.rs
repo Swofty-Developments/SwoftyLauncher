@@ -253,6 +253,27 @@ impl Shell {
         cx.notify();
     }
 
+    pub(super) fn forget_career(&mut self, career: &str, window: &mut Window, cx: &mut Context<Self>) {
+        if self.saves.game_running {
+            return;
+        }
+        match vault::careers::forget(&self.store.root, career) {
+            Ok(true) => crate::app::app_log::note(&format!(
+                "saves: forgot career {career}, which is gone from the save; its versions and addon data stay"
+            )),
+            Ok(false) => {}
+            Err(e) => {
+                crate::app::app_log::action("forget a career").failed(&e);
+                window.notify(
+                    Notification::warning(trf!("The career was not forgotten: {error}", error = e)),
+                    cx,
+                );
+            }
+        }
+        super::SavesPage::refresh(self, cx);
+        cx.notify();
+    }
+
     pub(super) fn cap_prompt(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         let initial = self
             .store

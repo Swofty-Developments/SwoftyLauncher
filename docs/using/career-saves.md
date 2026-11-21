@@ -14,7 +14,7 @@ This profile's own save
 CAREERS
 Driver Career   Oscar PIASTRI, McLaren                                     3 hours ago
                 Season 2, round 4
-My Team         Racing Bulls                                    Deleted in game
+My Team         Racing Bulls                         Deleted in game  [Forget]
 
 VERSIONS
 After Play            3 hours ago      0.9 MB                          [Pin] [Restore]
@@ -30,6 +30,7 @@ Versions use 2.7 MB of 500 MB · Change · Open folder
 - A disabled action says why on hover.
 - A save that was imported or copied in, with no careers listed yet, shows one row: `Imported Steam save · careers listed after you play this profile once`.
 - A career has a chip only when it is **Missing** or **Deleted in game**.
+- **Forget** on a **Missing** or **Deleted in game** career takes it off the list. It deletes no save: the versions that hold the career keep it, and the career is listed again when the game's save holds it again. It needs F1 25 closed.
 
 ## Resume Career
 

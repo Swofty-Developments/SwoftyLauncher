@@ -130,6 +130,21 @@ pub fn replace_profile(data: &Path, profile: &str, restored: &[Career]) -> crate
     )
 }
 
+/// Take a career that is gone from the save (missing or deleted in game) off the data folder's index. Only
+/// its record goes: the save, the career's addon data and the vault's versions stay, and the core lists the
+/// career again when the game's save slots hold it again. Returns whether a record went.
+pub fn forget(data: &Path, career: &str) -> crate::Result<bool> {
+    let path = data_path(data);
+    let list = read(&path);
+    let gone = |c: &Career| c.career == career && c.is_gone();
+    if !list.iter().any(gone) {
+        return Ok(false);
+    }
+    let kept: Vec<Career> = list.into_iter().filter(|c| !gone(c)).collect();
+    crate::write_json_shared(&path, &serde_json::json!({ "version": 1, "careers": kept }))?;
+    Ok(true)
+}
+
 /// Where the launcher keeps the core's stat-id store: the one store of the install.
 pub fn kept_ids(data: &Path) -> PathBuf {
     crate::stdlib::reports::path(data, crate::stdlib::reports::IDS)

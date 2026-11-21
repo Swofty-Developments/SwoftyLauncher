@@ -1138,6 +1138,16 @@ impl Vault {
         Ok(())
     }
 
+    pub fn forget_career(&self, id: &str) -> Result<bool> {
+        let _lock = self.lock()?;
+        let mut table = self.careers();
+        let changed = table.forget(id);
+        if changed {
+            table.write(&self.dir)?;
+        }
+        Ok(changed)
+    }
+
     pub fn archive_career(&self, id: &str) -> Result<bool> {
         let _lock = self.lock()?;
         let mut table = self.careers();

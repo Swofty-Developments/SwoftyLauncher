@@ -897,6 +897,60 @@ fn migrating_moves_the_old_files_once_and_the_newer_ids_win() {
 }
 
 #[test]
+fn forgetting_takes_only_a_gone_careers_record_off_the_index() {
+    let root = std::env::temp_dir().join(format!("swofty-careers-forget-{}", std::process::id()));
+    std::fs::remove_dir_all(&root).ok();
+    let record = |id: &str, status: &str| {
+        format!(
+            r#"{{"career":"{id}","profile":"p","label":"L {id}","status":"{status}","slot":"{id}","addons":[{{"id":"x.one","why":"{OWN_WHY}"}}]}}"#
+        )
+    };
+    let index = data_path(&root);
+    std::fs::create_dir_all(index.parent().unwrap()).unwrap();
+    std::fs::write(
+        &index,
+        format!(
+            r#"{{"version":1,"careers":[{},{},{}]}}"#,
+            record("a", "present"),
+            record("b", "deleted"),
+            record("c", "missing")
+        ),
+    )
+    .unwrap();
+    let kept = root.join("careers/data/b/x.one.json");
+    std::fs::create_dir_all(kept.parent().unwrap()).unwrap();
+    std::fs::write(&kept, r#"{"version":1,"data":{}}"#).unwrap();
+    let ids = || read(&index).into_iter().map(|c| c.career).collect::<Vec<_>>();
+
+    assert!(!forget(&root, "a").unwrap());
+    assert!(!forget(&root, "nope").unwrap());
+    assert_eq!(ids(), ["a", "b", "c"]);
+    assert!(forget(&root, "b").unwrap());
+    assert_eq!(ids(), ["a", "c"]);
+    assert!(!forget(&root, "b").unwrap());
+    assert!(forget(&root, "c").unwrap());
+    assert_eq!(ids(), ["a"]);
+    let a = &read(&index)[0];
+    assert_eq!(a.label, "L a");
+    assert_eq!(a.field("slot"), Some("a"));
+    assert_eq!(a.addons[0].id, "x.one");
+    assert!(kept.is_file(), "the career's addon data stays");
+
+    std::fs::write(
+        &index,
+        format!(
+            r#"{{"version":1,"careers":[{},{}]}}"#,
+            record("a", "present"),
+            record("b", "present")
+        ),
+    )
+    .unwrap();
+    assert_eq!(ids(), ["a", "b"]);
+    assert!(read(&index).iter().all(|c| !c.is_gone()));
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
 fn resume_needs_label_an_addon_mode_with_its_addon() {
     let list = parse(
         r#"[{"career":"a","slot":"1","mode":"driver_career","addons":[{"id":"x.mode","why":"career content g"}]},

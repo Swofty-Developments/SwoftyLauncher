@@ -27,7 +27,7 @@ pub(crate) use state::SavesPage;
 use {
     banner_data::{banner_from, whose},
     build::build_saves,
-    careers::{CHIP_W, MODE_W, PLAYED_W},
+    careers::{CHIP_W, FORGET_W, MODE_W, PLAYED_W},
     detail::{DetailCache, details},
     labels::{careers_held_line, imported_from, list, reason_label, season_round, short_block},
     state::Built,
