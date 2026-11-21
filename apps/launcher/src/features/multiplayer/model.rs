@@ -325,6 +325,33 @@ pub(crate) fn repeats(detail: &str, text: &str) -> bool {
     plain(detail) == plain(text)
 }
 
+/// The room page's subtitle once the session is over, in place of the room's live details: whether the room
+/// `opened` for this player, and whether they host it.
+pub(crate) fn closed_subtitle(opened: bool, host: bool) -> &'static str {
+    match (opened, host) {
+        (true, _) => tr("Room closed"),
+        (false, true) => tr("The room didn't open"),
+        (false, false) => tr("You didn't join the room"),
+    }
+}
+
+/// What the room page says once the session is over while F1 25 is still `starting`.
+pub(crate) fn game_after_room(over: bool, starting: bool) -> Option<&'static str> {
+    (over && starting).then(|| tr("F1 25 keeps starting without the room."))
+}
+
+/// The play button's word while a session for the room is `busy` and not `over`.
+pub(crate) fn room_starting_word(busy: bool, over: bool, hosting: bool) -> Option<&'static str> {
+    if !busy || over {
+        return None;
+    }
+    Some(if hosting {
+        tr("Opening room…")
+    } else {
+        tr("Joining…")
+    })
+}
+
 /// What a fix plan asks the player to change to match the host, one sentence per step.
 pub(crate) fn fix_lines(plan: &[FixStep]) -> Vec<String> {
     plan.iter()
