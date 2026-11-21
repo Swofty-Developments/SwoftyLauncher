@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'MOX/Location: Default neon country is %s, region %d'"
+  "evidence": "decomp:re/decomp/1430d11b0.c;pat:log-channel-NETWORK;xref:0x145814060",
+  "notes": "Slot 2 (+0x10) of the NetworkSubsystem vtable 0x145814050 (name Net-Subsystem precedes; stored at 0x1430cfff1 and 0x1430d089c; slot 39 is Game_NetworkSubsystem_OnPresenceChanged 0x1430f53f0). (this, registry, arg): resolves dependencies via registry vt+0x28 (first into +0xd0), allocates the 0x1460be8f0 tables, creates many managers, calls 0x1430d2fd0, logs MOX/Location default neon country. Better name: Game_NetworkSubsystem_Slot10 (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_mox_location_default_neon_country",

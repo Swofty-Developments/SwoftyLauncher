@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c808e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name addDriverMorphData (class from the log channel); log channel CareerEventResourceManager: 'addDriverMorphData'"
+  "evidence": "decomp:re/decomp/140c808e0.c;pat:log-message-method;xref:0x140c72eba,0x140c73114",
+  "notes": "Logs 'addDriverMorphData'; finds the driver (0x14246d700(param_2, id param_3+8)), resolves its two morph resources by name (0x14248be60 and 0x14248bb50 -> 0x143a59cd0) and adds each to *param_1 (0x143a599d0); a missing resource is fatal (0x1439182a0). (lane owner review requested)"
  },
  "signature": {
   "id": "game.career_event_resource_manager_add_driver_morph_data",

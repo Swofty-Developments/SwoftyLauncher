@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439dc210",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439dc210.c;xref:0x142bd0004",
-  "notes": "Sets up a GPU to CPU readback of a surface (helpers 0x1439dc660, 0x143a0dec0, Gfx2 locks 0x1439b84d0/90/50; dims +0x210..+0x230). Callers: Game_PhotoModeHelper_CaptureFrame, Game_ThumbnailSystem_RequestAndWriteScreenshot, Render_Write_PngFile. Addon: screenshot capture path. Hypothesis on direction. vp2-verify partial/disagree"
+  "evidence": "decomp:re/decomp/1439dc210.c;xref:0x142bd0004,0x14379c7c3,0x143bff84b",
+  "notes": "Fills map record param_3 for surface param_2[3]: submits its pending list (+0x2a8+frame*8) via 0x1439dc660; mode 1 (param_2+0x20): pitches from the footprint table (+0x260), ID3D12Resource::Map (vcall +0x40, read range set, label Map), returns the pointer; else allocates a CPU staging block (allocator +0x150) sized from +0x220/+0x228 and Render_Gfx2_GetFormatElementSize. Returns 0 or 0xc. Callers 0x142bcfc30, 0x14379c250, Render_Write_PngFile 0x143bff730. (lane owner review requested) Better name: Render_Gfx2Device_MapSurface (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_device_begin_surface_readback",

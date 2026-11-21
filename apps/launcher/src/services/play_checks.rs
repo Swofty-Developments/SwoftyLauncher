@@ -37,7 +37,6 @@ impl Note {
 pub(crate) enum Verdict {
     Go,
     Stop(String),
-    Confirm(String),
 }
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -78,7 +77,6 @@ pub(crate) struct Inputs {
     pub profile: String,
     pub game: PathBuf,
     pub build_id: Option<u64>,
-    pub anyway: bool,
 }
 
 pub(crate) struct Checked {
@@ -101,7 +99,6 @@ pub(crate) fn run(inputs: Inputs) -> Checked {
         profile,
         game,
         build_id,
-        anyway,
     } = inputs;
     let mut timings = Timings::default();
     let gate = timings.time("gate", || Gate {
@@ -148,16 +145,7 @@ pub(crate) fn run(inputs: Inputs) -> Checked {
                     notes.extend(note);
                     lines.extend(line);
                 });
-                registry(
-                    &store,
-                    &game,
-                    &p,
-                    &installed,
-                    &all,
-                    anyway,
-                    &mut notes,
-                    &mut timings,
-                )
+                registry(&store, &game, &p, &installed, &all, &mut notes, &mut timings)
             }
         }
         _ => Verdict::Go,
@@ -375,14 +363,12 @@ fn lonely_note(base: &str, family: &[String]) -> Note {
     Note::warning(&trf!("{base} needs one of its addons", base = base), body)
 }
 
-#[allow(clippy::too_many_arguments)]
 fn registry(
     store: &Store,
     game: &std::path::Path,
     profile: &swofty_core::profile::Profile,
     installed: &std::collections::BTreeMap<String, swofty_core::manifest::AddonManifest>,
     all: &std::collections::BTreeMap<String, swofty_core::stdlib::deps::Std>,
-    anyway: bool,
     notes: &mut Vec<Note>,
     timings: &mut Timings,
 ) -> Verdict {
@@ -403,24 +389,8 @@ fn registry(
     let report = timings.time("deps check", || {
         deps::for_order(&profile.name, &plan.order, installed, all)
     });
-    let (saved, scoped) = timings.time("careers", || {
-        let saved = careers::read(&careers::data_path(&store.root));
-        let mut scoped: Vec<_> = careers::in_save_of(&saved, &store.root, &profile.name)
-            .into_iter()
-            .cloned()
-            .collect();
-        careers::drop_former_owners(
-            &mut scoped,
-            &swofty_core::row_ids::id_owners(&store.root),
-            installed,
-            &plan.order,
-        );
-        (saved, scoped)
-    });
-    let stop = careers::stop_line(&scoped, &plan.order, installed);
-    let play = careers::play_line(&saved, &plan.order, installed);
     let findings = report.findings.iter().map(finding_note).collect();
-    assemble(stop, play, findings, report.stop_text(), anyway, notes)
+    assemble(findings, report.stop_text(), notes)
 }
 
 fn vanilla_note(using: usize) -> Option<Note> {
@@ -454,21 +424,10 @@ fn finding_note(f: &swofty_core::stdlib::deps::Finding) -> Note {
 }
 
 pub(crate) fn assemble(
-    career_stop: Option<String>,
-    career_play: Option<String>,
     findings: Vec<Note>,
     dependency_stop: Option<String>,
-    anyway: bool,
     notes: &mut Vec<Note>,
 ) -> Verdict {
-    if let Some(stop) = career_stop {
-        if anyway {
-            notes.push(Note::warning("Careers that need addons", stop));
-        } else {
-            return Verdict::Confirm(stop);
-        }
-    }
-    notes.extend(career_play.map(|line| Note::warning("Careers that need addons", line)));
     notes.extend(findings);
     match dependency_stop {
         Some(stop) => Verdict::Stop(stop),
@@ -525,41 +484,9 @@ mod tests {
     }
 
     #[test]
-    fn career_stop_asks_before_anything_else() {
-        let mut notes = Vec::new();
-        let v = assemble(
-            Some("stop".into()),
-            Some("play".into()),
-            vec![note("f")],
-            None,
-            false,
-            &mut notes,
-        );
-        assert_eq!(v, Verdict::Confirm("stop".into()));
-        assert!(notes.is_empty());
-    }
-
-    #[test]
-    fn play_anyway_turns_the_stop_into_a_warning_first() {
-        let mut notes = Vec::new();
-        let v = assemble(
-            Some("stop".into()),
-            Some("play".into()),
-            vec![note("f")],
-            None,
-            true,
-            &mut notes,
-        );
-        assert_eq!(v, Verdict::Go);
-        let bodies: Vec<_> = notes.iter().map(|n| n.body.as_str()).collect();
-        assert_eq!(bodies, ["stop", "play", "f"]);
-        assert!(notes[0].sticky);
-    }
-
-    #[test]
     fn dependency_stop_keeps_its_findings_and_blocks() {
         let mut notes = Vec::new();
-        let v = assemble(None, None, vec![note("f")], Some("dep".into()), false, &mut notes);
+        let v = assemble(vec![note("f")], Some("dep".into()), &mut notes);
         assert_eq!(v, Verdict::Stop("dep".into()));
         assert_eq!(notes.len(), 1);
     }
@@ -567,7 +494,7 @@ mod tests {
     #[test]
     fn nothing_found_goes_on() {
         let mut notes = Vec::new();
-        assert_eq!(assemble(None, None, vec![], None, false, &mut notes), Verdict::Go);
+        assert_eq!(assemble(vec![], None, &mut notes), Verdict::Go);
         assert!(notes.is_empty());
     }
 
@@ -771,7 +698,6 @@ mod tests {
             profile: "p".into(),
             game: root.join("game"),
             build_id: None,
-            anyway: false,
         };
         assert!(run(inputs()).damaged.is_empty());
 
@@ -822,7 +748,6 @@ mod tests {
             profile: "p".into(),
             game: root.join("game"),
             build_id: None,
-            anyway: false,
         });
         assert!(
             !matches!(checked.verdict, Verdict::Stop(_)),

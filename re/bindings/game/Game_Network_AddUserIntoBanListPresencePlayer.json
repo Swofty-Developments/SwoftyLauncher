@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143067220",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): '%s: add user into ban list, presence: %s, player: %s'"
+  "evidence": "decomp:re/decomp/143067220.c;pat:log-channel-NETWORK;xref:0x143067207",
+  "notes": "Caller 0x1430670c0 (kick path, tail of Game_Network_KickPlayerFromSession 0x1430c91a0). (this, peerId): finds the player-set entry with peer byte +99 == peerId and flag +0x5b&0x10 in [[this+8]+0x100]+0x58..+0x60, logs cxx=NEbool network::GameSessionManager::addToBanList(const neon::NeNetConnectionID), inserts it into the set this+0x260 (0x14402fd00) and returns 1; returns 0 when none is found. (lane owner review requested) Better name: Game_GameSessionManager_AddToBanList (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_add_user_into_ban_list_presence_player",

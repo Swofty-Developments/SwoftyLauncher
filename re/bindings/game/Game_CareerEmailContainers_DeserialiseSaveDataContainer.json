@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_Championship_CareerEmailContainers_DeserialiseSaveDataContainer;xref:0x140dd62a8,0x140dd720b,0x140dd763b",
-  "notes": "cxx=game::championship::CareerEmailContainers::deserialiseSaveDataContainer; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/140dd5f10.c;str:s_Championship_CareerEmailContainers_DeserialiseSaveDataContainer;xref:0x145694328",
+  "notes": "Strings: version, type, data, driver_id, team_id, dayAdded, new_session, last_trigger, container_version, emailCooldowns, numDaysCooldown; calls 0x140dd9630 (0x140dd64da) and 0x140dd9890 (0x140dd64c9). Only ref is vt cell 0x145694328."
  },
  "signature": {
   "id": "game.career_email_containers_deserialise_save_data_container",

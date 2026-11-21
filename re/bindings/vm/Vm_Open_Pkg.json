@@ -9,7 +9,7 @@
   "subsystem": "vm",
   "proto": "int Vm_Open_Pkg(const void *data, void **out)",
   "evidence": "decomp:re/decomp/14449e140.c;xref:0x1406876b1,0x14068c768,0x1406900b1+28",
-  "notes": "validates a !pkg fragment and returns its root for the readers; 0 = ok"
+  "notes": "validates a !pkg fragment and returns its root for the readers; 0 = ok H1 2026-11-19 engine-re: opens a !pkg (magic '!pkg' 0x676b7021; byte-swapped '!pkg' -> status 5). If the header vca ref (+0xc) has bit 31 set, resolves it as base + (ref & 0x7fffff) (KB 0x143927752, Steam 1.0.145 0x143929ce2), runs Vm_Pkg_ResolveValueTables and stores the resolved delta back (bit 31 clear = already resolved, a second open returns at once). One package = one base: there is no second slot or chain."
  },
  "signature": {
   "id": "vm.open_pkg",
@@ -45,6 +45,16 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/143927510.c;xref:0x1406876b0",
    "notes": "V6393 name/purpose and quoted strings/cxx confirmed in body"
+  },
+  {
+   "date": "2026-11-19",
+   "verifier": "h1-verify",
+   "kind": "func",
+   "item": "Vm_Open_Pkg",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143927510.c;xref:0x143927525,0x143927530,0x14392774c,0x143927752,0x1439278cc",
+   "notes": "V12008 blind capstone re-read 2026-11-19 (addresses + claims only): magic 0x676b7021, swapped -> status 5; jns then and 0x7fffff; positive delta to header+0xc"
   }
  ],
  "proofs": []

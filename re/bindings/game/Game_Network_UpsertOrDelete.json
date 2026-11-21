@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name upsertOrDelete (class from the log channel); log channel NETWORK: 'upsertOrDelete(%s) - %s'"
+  "evidence": "decomp:re/decomp/1430caa20.c;pat:log-message-method",
+  "notes": "Logs NETWORK/T 'upsertOrDelete(%s) - %s' (VOTER / not a voter) and 'removeFindPlayer(%s).'; player lookups 0x1430674a0/0x144121bc0/0x14308d1d0."
  },
  "signature": {
   "id": "game.network_upsert_or_delete",

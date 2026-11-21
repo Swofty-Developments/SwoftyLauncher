@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1434db270",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onMessageMidSessionDriverSwap (class from the log channel); log channel NETWORK: '%s().'"
+  "evidence": "decomp:re/decomp/1434db270.c;pat:log-message-method;xref:0x1434dae94,0x1504b1c78",
+  "notes": "Logs onMessageMidSessionDriverSwap(); then calls own virtuals vtable+0x70 and vtable+0x58 on this. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_on_message_mid_session_driver_swap",

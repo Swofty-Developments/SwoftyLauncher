@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name fillForAdvertise (class from the log channel); log channel NETWORK-ATTRIBUTES: 'fillForAdvertise(%d attrib defs)'"
+  "evidence": "decomp:re/decomp/14407df30.c;pat:log-message-method;xref:0x144087920,0x144089958",
+  "notes": "Logs fillForAdvertise(count); for each attribute def copies its value into the advertise buffer, logs \"Attribute %s(%d) is missing a value.\" / \"has value %d.\" (NETWORK-ATTRIBUTES/V)."
  },
  "signature": {
   "id": "game.network_attributes_fill_for_advertise",

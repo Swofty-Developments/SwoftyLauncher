@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140002650",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/140002650.c;xref:0x1439c30a4",
-  "notes": "Lazy hash-resolved import stub (hash 0xd8265d24), same template as 0x1400031c0. Name only. Caller Render_Gfx2Device_Initialise."
+  "notes": "Lazy import wrapper: bumps in-flight counter 0x145fb8734, gate 0x140002190, resolves target once via resolver 0x145fb8758(hash 0xd8265d24) into cache 0x145fb8968, optional pre/post hooks 0x145fb8768/0x145fb8770, forwards 2 args, returns status or 0xfffffffd if unresolved. Only caller in Render_Gfx2Device_Initialise (0x1439bc2e0). Target API not identified. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx2_device_import_thunk_140002650",

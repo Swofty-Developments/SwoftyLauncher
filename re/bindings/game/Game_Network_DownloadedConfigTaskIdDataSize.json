@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430f5ec0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): '[CONFIG] downloaded config. taskId %u, dataSize %u, error %s'"
+  "evidence": "decomp:re/decomp/1430f5ec0.c;pat:log-channel-NETWORK;xref:0x1430f5d87",
+  "notes": "Only ref: the lea at 0x1430f5d87 in DownloadTitleConfig 0x1430f5a10. Logs '[CONFIG] downloaded config. taskId, dataSize, error', parses via 0x1430f6890, matches the download to a content domain, compares versions (more / not more recent logs), registers the new title config, logs '[CONFIG] new title config selected', 0x1430fa9b0. (lane owner review requested) Better name: Game_NetworkSubsystem_OnTitleConfigDownloaded (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_downloaded_config_task_id_data_size",

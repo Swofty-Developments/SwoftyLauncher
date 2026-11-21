@@ -200,11 +200,11 @@ Right after each `career.hub entered` line, the core logs the career's current w
 [career] weekend already started, session never ran: round 4/17, weekend in progress, current session 1 of 7 (practice_1), 0 of 7 sessions complete, track game/silverstone
 ```
 
-After a `weekend already started, session never ran` line the core logs the player's calendar items running that day and the item the game's calendar check picks, as `Team HQ calendar`, in the same form as `hub opened` below:
+After each of these lines the core logs the player's calendar items running that day, the item the game's calendar check picks and whether the items keep Team HQ's Advance off, as `Team HQ calendar`, in the same form as `hub opened` below. An end of season, race weekend, dynamic break or season break running that day keeps Advance off, in any state:
 
 ```text
 [career] weekend already started, session never ran: round 4/17, weekend in progress, current session 1 of 7 (practice_1), 0 of 7 sessions complete, track game/silverstone
-[career] Team HQ calendar: day 2045, season 0, 2 of 58 calendar items running today (driver 0x00020000, calendar 0x2a1f40e10); the calendar check reads: stay in the hub (item 1, RaceWeekend, decides)
+[career] Team HQ calendar: day 2045, season 0, 2 of 58 calendar items running today (driver 0x00020000, calendar 0x2a1f40e10); the calendar check reads: stay in the hub (item 1, RaceWeekend, decides); Team HQ's Advance is off (item 1, RaceWeekend, keeps it off)
 [career]   item 1/2: RaceWeekend (0x0a) days 2045-2048 state 1 id 12 at 0x2a1f6c2a0 vt 0x1456d10d0
 [career]   item 2/2: FreeTime (0x06) days 2030-2059 state 1 id 3 at 0x2a1f6c340 vt 0x1456d10d0
 ```
@@ -237,7 +237,18 @@ A calendar can start a race weekend inside the season break. The stock 2026 seas
 
 The rest of the break doesn't run. A break with any other item the check weighs ahead of the weekend, or with no started weekend running that day, is left as it is. `SWOFTY_HUB_BREAK_FIX=0` turns the fix off, and the line then ends `left as it is (SWOFTY_HUB_BREAK_FIX=0)`.
 
-All of these come from the flow-state site. Apart from the season break fix, they read the game without writing to it. The calendar reads use `ScheduleComponent` (`seasons_begin`, `seasons_end`, `current_season`, `season_over`), `ScheduleSeason`, `DriverCalendar`, `CalendarActivity` (`day`, `state`, `activity`), `ActivityDef` (`id`, `type`, `duration`) and `CareerTimeComponent.current_minutes` from the generated game headers; the core does not compile without one of them. The weekend reads need `vt_Career_Championship`, `vt_Career_Season` and `vt_Career_Weekend`; the calendar reads need the career components. A build without them logs `the current weekend is not readable` or `the calendar is not readable (<reason>)` in the same lines.
+The ignored break still keeps Team HQ's Advance off on the days after that weekend, and the game's own break flow only starts a break that has not started. At each Team HQ entry, when the only items keeping Advance off are ignored season breaks, the core moves each one back so it ends the day before and logs the calendar again:
+
+```text
+[career] Team HQ calendar: day 172, season 0, 1 of 31 calendar items running today (driver 0x00c90000, calendar 0x344755b18); the calendar check reads: go to Team HQ (no running activity decides); Team HQ's Advance is off (item 1, SeasonBreak, keeps it off)
+[career]   item 1/1: SeasonBreak (0x0c) days 166-180 state 4 id 36 at 0x17121580 vt 0x1456d31f0
+[career] ignored season break over Team HQ: SeasonBreak (0x0c) days 166-180 state 4 id 36 at 0x17121580 vt 0x1456d31f0 keeps Team HQ's Advance off on day 172 with no race weekend running; to days 157-171: moved back so it ends the day before
+[career] Team HQ calendar after the season break move: day 172, season 0, 0 of 31 calendar items running today (driver 0x00c90000, calendar 0x344755b18); the calendar check reads: go to Team HQ (no running activity decides); Team HQ's Advance is on (nothing running today keeps it off)
+```
+
+A race weekend, dynamic break, end of season or a break in another state running that day leaves the break as it is, and so does `SWOFTY_HUB_BREAK_FIX=0`.
+
+All of these come from the flow-state site and the Team HQ entry. Apart from the two season break writes, they read the game without writing to it. The calendar reads use `ScheduleComponent` (`seasons_begin`, `seasons_end`, `current_season`, `season_over`), `ScheduleSeason`, `DriverCalendar`, `CalendarActivity` (`day`, `state`, `activity`), `ActivityDef` (`id`, `type`, `duration`) and `CareerTimeComponent.current_minutes` from the generated game headers; the core does not compile without one of them. The weekend reads need `vt_Career_Championship`, `vt_Career_Season` and `vt_Career_Weekend`; the calendar reads need the career components. A build without them logs `the current weekend is not readable` or `the calendar is not readable (<reason>)` in the same lines.
 
 ## Components
 

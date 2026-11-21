@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143092eb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): '%s, tracking time in seconds: %.2f, frame count: %llu'"
+  "evidence": "decomp:re/decomp/143092eb0.c;pat:log-channel-NETWORK;xref:0x143092ea1,0x1430f332c",
+  "notes": "Tail jump from 0x143092b20 (setMyRaceStatus) and call from Game_NetworkSubsystem_OnSessionFinished 0x1430f3180. Logs 'reportNetworkStats, tracking time in seconds, frame count', inlined reportBandwidthStats (per data type average/peak bandwidth, player counts, race status, histogram) and resetNetworkStats. (lane owner review requested) Better name: Game_Network_ReportNetworkStats (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_tracking_time_seconds_frame_count",

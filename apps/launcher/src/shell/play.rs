@@ -23,7 +23,6 @@ use swofty_i18n::{tr, trf, trn};
 pub(crate) struct Launching {
     pub(crate) launch: Option<Launch>,
     pub(crate) notice: Option<String>,
-    pub(crate) play_anyway: bool,
     pub(crate) play_pending: play_checks::Pending,
     pub(crate) restoring: bool,
     pub(crate) cancelling: bool,
@@ -205,7 +204,6 @@ pub(crate) enum Step {
     ConfirmOffline,
     FirstLaunch,
     Stop(String),
-    ConfirmRows(String),
     Launch,
 }
 
@@ -229,7 +227,6 @@ impl Step {
         match verdict {
             play_checks::Verdict::Go => Self::Launch,
             play_checks::Verdict::Stop(stop) => Self::Stop(stop),
-            play_checks::Verdict::Confirm(text) => Self::ConfirmRows(text),
         }
     }
 
@@ -237,7 +234,7 @@ impl Step {
     pub(crate) fn played(&self) -> Option<Played> {
         match self {
             Self::Dropped | Self::AdminNeeded | Self::Setup | Self::Stop(_) => Some(Played::Stopped),
-            Self::ConfirmOffline | Self::FirstLaunch | Self::ConfirmRows(_) => Some(Played::Asking),
+            Self::ConfirmOffline | Self::FirstLaunch => Some(Played::Asking),
             Self::Launch => None,
         }
     }
@@ -245,7 +242,7 @@ impl Step {
     /// Past the gate: the last launch's notice, blocked files and crash are cleared and the checks'
     /// notes shown.
     pub(crate) fn clears(&self) -> bool {
-        matches!(self, Self::Stop(_) | Self::ConfirmRows(_) | Self::Launch)
+        matches!(self, Self::Stop(_) | Self::Launch)
     }
 }
 
@@ -257,7 +254,6 @@ pub(crate) enum Prompt {
     Setup,
     ConfirmOffline,
     FirstLaunch,
-    ConfirmRows(String),
     Notice(Notification),
     Damaged(Damaged),
 }
@@ -334,7 +330,6 @@ impl PromptHost<Launching> for Shell {
             Prompt::Setup => self.open_setup(window, cx),
             Prompt::ConfirmOffline => self.confirm_offline_play(window, cx),
             Prompt::FirstLaunch => self.first_launch_notice(window, cx),
-            Prompt::ConfirmRows(text) => self.confirm_missing_rows(text, window, cx),
             Prompt::Notice(note) => window.notify(note, cx),
             Prompt::Damaged(d) => {
                 let note = self.damaged_notification(&d, cx);
@@ -386,7 +381,6 @@ impl Launching {
             profile: needs.profile.to_owned(),
             game: install.dir.clone(),
             build_id: install.build_id,
-            anyway: std::mem::take(&mut launching.play_anyway),
         };
         // This press's ask only: a dialog, a cancel or a stale result must not hand it to the next Play.
         let steam_saves_once = std::mem::take(&mut launching.steam_saves_once);
@@ -454,7 +448,6 @@ impl Launching {
                 launching.notice = Some(stop);
                 None
             }
-            Step::ConfirmRows(text) => Some(Prompt::ConfirmRows(text)),
             Step::Dropped | Step::Launch => None,
         };
         for note in &notes {
@@ -798,14 +791,6 @@ mod tests {
         let step = Step::of(false, PASSED, Verdict::Stop("a mod is broken".into()));
         assert_eq!(step, Step::Stop("a mod is broken".into()));
         assert_eq!(step.played(), Some(Played::Stopped));
-        assert!(step.clears());
-    }
-
-    #[test]
-    fn missing_rows_ask_before_launching() {
-        let step = Step::of(false, PASSED, Verdict::Confirm("2 rows are missing".into()));
-        assert_eq!(step, Step::ConfirmRows("2 rows are missing".into()));
-        assert_eq!(step.played(), Some(Played::Asking));
         assert!(step.clears());
     }
 

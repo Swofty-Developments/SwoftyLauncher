@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143d83090",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143d83090.c;xref:0x140150486",
-  "notes": "Constructor of an RTT target-set descriptor (6 pointer params + 2 u32): zeroes a 0x1c0-byte block, stores params into slots 3..5, sets self-linked list heads (+0xd0/+0xe0); body references g_rtt_subsurface_scattering, g_ssaoRttSRV, g_rttVideoSRV, g_rttSsaoEyeSRV (RTT names for SSS, SSAO, video, eye-SSAO). Caller Game_Read_RendererGfxConfig. Addon: names of RTT slots."
+  "notes": "Constructor of an RTT target-set descriptor: zeroes a 0x1c0-byte block, stores params 2/4/6 into slots [3]/[4]/[5], self-linked list heads, binding names g_ssaoRttSRV, g_rttSsaoEyeSRV, g_rttVideoSRV, g_rtt_subsurface_scattering, then Render_Rtt_CreateBlankBindLayout. Only caller Game_Read_RendererGfxConfig 0x140150486. (lane owner review requested)"
  },
  "signature": {
   "id": "render.rtt_construct_target_set",

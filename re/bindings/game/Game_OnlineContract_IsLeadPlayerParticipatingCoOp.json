@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140ffd1c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-ONLINE_CONTRACT_NEGOTIATIONS",
-  "notes": "named from its log messages (channel ONLINE_CONTRACT_NEGOTIATIONS): 'isLeadPlayerParticipating() - Co-op career and the lead player isnt the current career owner %s'"
+  "evidence": "decomp:re/decomp/140ffd1c0.c;pat:log-channel-ONLINE_CONTRACT_NEGOTIATIONS;xref:0x140d79aaf,0x140d8275a,0x140ffcca2,0x140ffe983,0x1410034cc,0x141003748",
+  "notes": "Logs ONLINE_CONTRACT_NEGOTIATIONS 'isLeadPlayerParticipating() - %s' and two special cases (co-op career, lead player not career owner; contract career, same team, contract not ending). Uses Game_OnlineContractNegotiationsV_IsOtherPlayersContractEndingThi and _ArePlayersInNegotiationsOnSameT; returns the negated ending flag. Not co-op only (old suffix CoOp). (lane owner review requested) Better name: Game_OnlineContract_IsLeadPlayerParticipating (bound record keeps its name)."
  },
  "signature": {
   "id": "game.online_contract_is_lead_player_participating_co_op",

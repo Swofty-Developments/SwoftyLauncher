@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14307bb20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name setMatchingObject (class from the log channel); log channel NETWORK-MATCHING: '%s: matching matchingContext: %s'"
+  "evidence": "decomp:re/decomp/14307bb20.c;pat:log-message-method;xref:0x143065370,0x14307b11c,0x14307ba4b,0x14316417b",
+  "notes": "Logs '%s: matching matchingContext: %s' with setMatchingObject and the context name (table 0x14565e750). If a different matching object is active it resets it (vtbl+0x158) and session fields; context 0 clears this+0x28.. to defaults, else creates the new object (0x14411ac60). Callers 0x143065250, 0x143076eb0, 0x14307b950, 0x143163710, 0x143163e90. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_matching_set_matching_object",

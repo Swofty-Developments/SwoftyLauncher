@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439dc7d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439dc7d0.c;xref:0x142bd06b8",
-  "notes": "Strings 'CreatePlacedResource', 'UnmapSurfaceUploadBuffer', 'NeGfx2CommandQueue::flushResourceBarriers', 'NeGfx2::unmap copyToUploadBuffer': creates the placed staging buffer, flushes barriers and maps it for CPU access. Callers: Game_PhotoModeHelper_CaptureFrame, Game_ThumbnailSystem_RequestAndWriteScreenshot. Hypothesis on direction (readback). vp2-verify partial/disagree"
+  "evidence": "decomp:re/decomp/1439dc7d0.c;xref:0x142bd06b8,0x14379d1a3,0x143c000d0",
+  "notes": "Counterpart of Render_Gfx2Device_MapSurface: mode 1 calls ID3D12Resource::Unmap (vcall +0x48, empty range); else GetCopyableFootprints (device +0x130), suballocates the frame upload heap, CreatePlacedResource (+0xe8, state 0xac3, name UnmapSurfaceUploadBuffer), flushes queued barriers, copies rows with Render_Gfx2Device_CopySurfaceRows 0x1439bad30 (label NeGfx2::unmap copyToUploadBuffer), frees the CPU block. Callers 0x142bcfc30, 0x14379c250, Render_Write_PngFile 0x143bff730. (lane owner review requested) Better name: Render_Gfx2Device_UnmapSurface (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_device_readback_surface_copy",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143e93910",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143e93910.c;xref:0x143db297f",
-  "notes": "Releases the buffer pointers at +0xb68..+0xb78.. through the owner allocator (vcall +0x38) and calls 0x143e8a830 / 0x1439e39a0 for GPU-side objects. Caller Render_Rtt_UnregisterGeneratorEntry."
+  "notes": "Destructor body of a generator entry (rename): frees pointers +0xb68..+0xb88, +0x1e0..+0x1f0, +0x2a8..+0x2b8 via allocator [this+8] vcall +0x38, 0x143e8a830(+0x2c0), clears two list/block containers (+0x208..+0x238, +0x258..+0x288), releases device objects +0x68/+0x70/+0x78 via 0x1439e39a0 on 0x14618caa8, DeleteCriticalSection([+0x38]). Caller 0x143db297f in Render_Rtt_UnregisterGeneratorEntry before the free. (lane owner review requested) Better name: Render_Rtt_GeneratorEntry_Destroy (bound record keeps its name)."
  },
  "signature": {
   "id": "render.rtt_release_generator_buffers",

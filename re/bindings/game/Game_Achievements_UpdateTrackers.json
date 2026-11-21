@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14017bbb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-ACHIEVEMENTS",
-  "notes": "named from its log messages (channel ACHIEVEMENTS): 'There's no lead player, just remove any existing trackers | Achievement Tracker for the lead presence not found. Removing all achievement trackers. | Adding a new tracker for the signed presence.'"
+  "evidence": "decomp:re/decomp/14017bbb0.c;pat:log-channel-ACHIEVEMENTS;xref:0x1455df6d8",
+  "notes": "Vtable slot (cell 0x1455df6d8): achievement tracker update. Inactive/unsigned (+0x3e9, +0x3b0 vs +0x3b8) -> frees trackers +0x280..+0x288, returns. Lead presence ((+0x238)+0x140)+0x198)+0x1c0 missing or vcall +0x28 true -> remove all (0x1443afb10(this+0x258)); untracked -> remove, then if signed (vcall +0x10) add tracker 0x1443af490. Writes random stamps +0x390/+0x3a0 into each tracker. (lane owner review requested)"
  },
  "signature": {
   "id": "game.achievements_update_trackers",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143cee760",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143cee760.c;xref:0x143ce0a31",
-  "notes": "Initialiser of the large ground-cover (vegetation instance) state block: zeroes ~0x2400 bytes of SIMD slots (+0x4e0..+0xad0), fills 0xFF mask arrays (+0x640..+0x690) and seven empty-string slots (0x1456135b2) at +0xb30.. Caller Render_GroundCover_Construct. Hypothesis on field meaning."
+  "evidence": "decomp:re/decomp/143cee760.c;xref:0x143ce0a31,0x143ce0aa8",
+  "notes": "Constructor of a large ground-cover state block: owner param_2 at +0, sub-object init via 0x143cdb010, many name slots set to the empty resource name 0x1456135b2 ('<unknown-because-not-initialised/resource>'), a critical section, zeroed SIMD slots and 0xFF mask arrays. Called twice by Render_GroundCover_Construct (0x143ce0a31, 0x143ce0aa8). Field meaning not decoded. (lane owner review requested) Better name: Render_GroundCoverState_Construct (bound record keeps its name)."
  },
  "signature": {
   "id": "render.ground_cover_init_state",

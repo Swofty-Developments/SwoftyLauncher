@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1449a35b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1449a35b0.c;xref:0x143fd5034,0x143fe1087",
-  "notes": "Twin of Game_Eadp_PlayerNetworkIdMessage_ParseFromString for the eadp.common.v2.PlayerId message. Callers Ne_PresenceEadp_ProcessPlayerCardList and 0x143fe0c90."
+  "notes": "Twin of 0x1449a21d0 (identical code) for eadp.common.v2.PlayerId: strlen of C string param_2, temp std::string via 0x14492cc00, move-assign into the string field at +0x50 (cap +0x68), old buffer freed. Not a protobuf parse. Callers 0x143fd4860 (Ne_PresenceEadp_ProcessPlayerCardList), 0x143fe0c90. (lane owner review requested) Better name: Game_Eadp_PlayerIdMessage_SetStringFromCStr (bound record keeps its name)."
  },
  "signature": {
   "id": "game.eadp_player_id_message_parse_from_string",

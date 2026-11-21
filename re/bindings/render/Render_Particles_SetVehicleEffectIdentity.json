@@ -9,7 +9,7 @@
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/1444721b0.c;xref:0x144640d08",
-  "notes": "Hypothesis: when flag 4 of +0x30 set, builds identity-like transform (0x3f800000 constants) for a vehicle effect; from Render_Particles_UpdateVehicleEffects. Named callers: Render_Particles_UpdateVehicleEffects."
+  "notes": "When flag 4 of byte [this+0x30] is set, builds a stack record (unit rotation rows and 1.0 scales, empty 0x40-char name buffer, flag words, owner = this) and under EnterCriticalSection([[0x146cb6808]+0x20]+0xf10d0) passes it to 0x143b35310 on the list [+0x78] (+0x20 or +0 by byte +0x40). Caller 0x144640d08 in Render_Particles_UpdateVehicleEffects (0x14463da30). Better name: Render_Particles_QueueEffectRecord (bound record keeps its name)."
  },
  "signature": {
   "id": "render.particles_set_vehicle_effect_identity",

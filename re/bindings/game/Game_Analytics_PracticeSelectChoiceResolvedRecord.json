@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14073c850",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: PracticeSelectChoiceResolvedRecord'"
+  "evidence": "decomp:re/decomp/14073c850.c;pat:log-channel-TELEMETRY;xref:0x1406e8154,0x140706c21",
+  "notes": "Bus handler: lea 0x1406e8154 in subscribe-all 0x1406d8470 (->0x143987810), lea 0x140706c21 in unsubscribe-all 0x1406fd6c0. Allocs 0xe0 record (ctor 0x14056c980), copies msg fields, baseCtx by 0x14077bb90 'practice_select_choice_resolved_record', pushed to static queue (guard 0x14604d608) under CS; logs TELEMETRY 'PracticeSelectChoiceResolvedRecord'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_practice_select_choice_resolved_record",

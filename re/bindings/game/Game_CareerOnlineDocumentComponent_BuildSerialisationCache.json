@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140fce790",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_Championship_CareerOnlineDocumentComponent_BuildSerialisationCache;xref:0x140fce854",
-  "notes": "cxx=game::championship::CareerOnlineDocumentComponent::buildSerialisationCache; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/140fce790.c;str:s_Championship_CareerOnlineDocumentComponent_BuildSerialisationCache;xref:0x140fd3c28,0x140fd3c97,0x140ff8268,0x140ff8348",
+  "notes": "Logs the phase; walks career entrants ([+0x278]+0x2e0..+0x2e8, 0x88 stride) and pushes keys (+0x50) whose ownership (+0x4b bit 0x10 xor host) matches the sync step +0x2c0 (1 client / 2 host) into vector +0x318..+0x328 ('Entrant added'); then for teams (0x142457610 on +0x2d8) pushes team keys into +0x338..+0x348 ('Team added'). (lane owner review requested)"
  },
  "signature": {
   "id": "game.career_online_document_component_build_serialisation_cache",

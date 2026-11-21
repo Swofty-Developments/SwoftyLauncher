@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140a12d30.c;xref:0x140368c64,0x140368db0",
-  "notes": "Audio state manager: posts/queues audio event key param_3 on category param_2, special-casing music/ambience (play_music_grid_rundown_s/_r, play_ambience/stop_ambience, race/race_f1w, resume_music, play_damage_terminal_damage, terminal_damage, player_count, set_voice_control_button_released). Callers Sess_DoughnutSequence_Enter, Game_GridRundown_ShouldPlay, Game_TalkingPoints_UpdateBroadcastFades, Game_Pod2019FirstScript_Initialise."
+  "evidence": "decomp:re/decomp/140a12d30.c;xref:0x140368c64,0x140368db0,0x140ac70fa,0x140ac75d0,0x140ac81df,0x140ac84eb,0x1421c5907,0x142d59bd5,0x149374523,0x1493745bb,0x14e924613,0x150e147c7,0x150e17e79,0x150e1e8c9,0x150e1fe60",
+  "notes": "Audio reaction to a game state transition (param_3 = state record compared with global state ids, param_2 = phase 0..3): stores state/phase at +0x198/+0xcb9; grid rundown music (_s/_r), ambience start/stop, race/race_f1w, resume_music, terminal damage, player_count, voice button release. Better name: Game_Audio_HandleGameStateChange (bound record keeps its name)."
  },
  "signature": {
   "id": "game.audio_post_state_event",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14308c4f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name restartVote (class from the log channel); log channel NETWORK: '%s() : Trying to restart a vote in the wrong state : %d'"
+  "evidence": "decomp:re/decomp/14308c4f0.c;pat:log-message-method;xref:0x14580f518,0x14580f7f8",
+  "notes": "Slot 5 (+0x28) of vtables 0x14580f4f0 and 0x14580f7d0; no direct calls. In the right state calls 0x14308c6c0(this, 0), recomputes the end time +0x68 = now_us/1e6 + float +0x60 and 0x14308c360(this, ...); else logs 'restartVote() : Trying to restart a vote in the wrong state'. (lane owner review requested) Better name: Game_NetworkVoting_RestartVote (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_restart_vote",

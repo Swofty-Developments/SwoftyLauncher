@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143081160",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-SESSION",
-  "notes": "named from its log messages (channel NETWORK-SESSION): '[HOPPER] quick searching session %s...'"
+  "evidence": "decomp:re/decomp/143081160.c;pat:log-channel-NETWORK-SESSION;xref:0x14580dab0",
+  "notes": "Hopper state update (vtable cell): findGame/quickfindGame via SearchForSessions 0x144064f50 with callback 0x143083c40, joinGame via 0x1440638b0 with callback 0x1430837c0, createGame via 0x144062230, changeState logs (StateSearching/StateError/StateJoinRequested). Quick search is one branch. (lane owner review requested) Better name: Game_GameSessionMatchingHopperCommon_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_session_quick_searching_session",

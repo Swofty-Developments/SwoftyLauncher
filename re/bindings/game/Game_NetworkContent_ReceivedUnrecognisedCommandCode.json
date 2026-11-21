@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-CONTENT",
-  "notes": "named from its log messages (channel NETWORK-CONTENT): 'Received unrecognised command code %d from %d'"
+  "evidence": "decomp:re/decomp/14303abb0.c;pat:log-channel-NETWORK-CONTENT;xref:0x143059f87",
+  "notes": "Content-domain command dispatcher: switch on command byte *param_3 (<5): cmd_Client_ReportLanguage (host), cmd_Host_ReportDomain (EXE/CONFIG version and domain checks, Domain Error), cmd_Client_ReportVerified, availability; logs \"Received unrecognised command code\" otherwise. Better name: Game_NetworkContent_HandleIncomingCommand (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_content_received_unrecognised_command_code",

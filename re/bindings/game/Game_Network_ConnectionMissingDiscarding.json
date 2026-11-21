@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'Connection %d missing, discarding PlayerSet Entry.'"
+  "evidence": "decomp:re/decomp/14316d250.c;pat:log-channel-NETWORK;xref:0x14581f880",
+  "notes": "Slot 38 (+0x130) of vtable 0x14581f750. Calls its own vt+0x140/+0x148/+0x150, clears +0x94, then per entry: missing connection logs 'Connection %d missing, discarding PlayerSet Entry.' and 0x1431684a0(entry, 1); else logs PLAYERSET 'sendPlayerSetInfoMessage' and 0x14316e8a0(this, entry, 0, 0). Better name: Game_PlayerSet_Slot130 (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_connection_missing_discarding",

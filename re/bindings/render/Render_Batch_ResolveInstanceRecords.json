@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143e83aa0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143e83aa0.c;xref:0x143d4d7e2",
-  "notes": "Loops over batch instance list [this+0xd8]->{+8..+0x10} (24-byte records: ptr +8, index +0x10), maps index into the 16-byte table at param_3+0x50 and resolves each record through a type-list walk (sentinels 0x146129ca0/0x146c620c0) with thread-local init guards. Caller Render_Batch_Submit. Hypothesis."
+  "evidence": "decomp:re/decomp/143e83aa0.c;xref:0x143d4d7e2,0x143d4e19e",
+  "notes": "Walks 24-byte records [[this+0xd8]+8..+0x10] {ptr +8, index +0x10}; for index != -1 takes entry index*0x10 of the table [param_3+0x50] (bounds-checked), resolves the handle at ptr+0x28/+0x30 (class-chain sentinels 0x146129ca0/0x146c620c0, TLS slot lookup) and appends a 0x20-byte command {size 0x10, type 0xe, entry, object} to stream param_2 (+8 base, +0x10 cap, +0x18 cursor). Callers 0x143d4d7e2, 0x143d4e19e in Render_Batch_Submit. (lane owner review requested) Better name: Render_Batch_EmitResourceBindCommands (bound record keeps its name)."
  },
  "signature": {
   "id": "render.batch_resolve_instance_records",

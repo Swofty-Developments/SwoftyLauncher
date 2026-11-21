@@ -129,15 +129,26 @@ fn a_put_back_container_and_a_deleted_career_are_not_lost() {
     std::fs::remove_dir_all(&d).ok();
 }
 
+fn claimed(mut g: Gen<'_>) -> Gen<'_> {
+    g.containers[2].1 = "game";
+    g.containers[3].1 = "game";
+    g
+}
+
 #[test]
 fn a_career_missing_from_a_container_the_load_still_has_is_named() {
     let d = dir("career");
     let p = Plain::at(d.join("plain"));
     write(
         &p,
-        &career_gen(1, "save", Some("s1"), &[("0x0a", "Jacob"), ("0x0b", "Ada")]),
+        &claimed(career_gen(
+            1,
+            "save",
+            Some("s1"),
+            &[("0x0a", "Jacob"), ("0x0b", "Ada")],
+        )),
     );
-    write(&p, &career_gen(2, "load", None, &[("0x0a", "Jacob")]));
+    write(&p, &claimed(career_gen(2, "load", None, &[("0x0a", "Jacob")])));
     current(&p, 2);
     let loss = p.loss(&[]).unwrap();
     assert!(!loss.items[0].whole);
@@ -310,13 +321,108 @@ fn a_career_guid_missing_from_either_half_of_a_mode_is_lost() {
     let p = Plain::at(d.join("plain"));
     write(
         &p,
-        &career_gen(1, "save", Some("s1"), &[("0x0a", "Jacob"), ("0x0b", "Ada")]),
+        &claimed(career_gen(
+            1,
+            "save",
+            Some("s1"),
+            &[("0x0a", "Jacob"), ("0x0b", "Ada")],
+        )),
     );
-    write(&p, &career_gen(2, "load", None, &[("0x0a", "Jacob")]));
+    write(&p, &claimed(career_gen(2, "load", None, &[("0x0a", "Jacob")])));
     current(&p, 2);
     let loss = p.loss(&[]).unwrap();
     assert_eq!(loss.items[0].careers.len(), 1);
     assert_eq!(loss.items[0].careers[0].guid, "0x0b");
     assert!(p.careers().iter().all(|r| !r.mode.is_empty()));
+    std::fs::remove_dir_all(&d).ok();
+}
+
+fn records<'a>() -> Vec<FixtureContainer<'a>> {
+    vec![
+        ("options_options", "game", Vec::new()),
+        ("trophies_trophies", "game", Vec::new()),
+        ("journal_entries_entry1", "game", Vec::new()),
+    ]
+}
+
+#[test]
+fn a_load_that_lists_no_registered_container_loses_none_of_them() {
+    let d = dir("unlisted");
+    let p = Plain::at(d.join("plain"));
+    let mut save = claimed(career_gen(1, "save", Some("s1"), &[("0x0a", "Jacob")]));
+    save.containers.extend(records());
+    save.containers
+        .extend(pair("driver_career_1990", "kept", Vec::new()));
+    write(&p, &save);
+    let mut load = Gen {
+        n: 2,
+        event: "load",
+        session: Some("ea"),
+        containers: pair("driver_career_progressive", "injected", Vec::new()),
+    };
+    load.containers
+        .extend(pair("driver_career_1990", "injected", Vec::new()));
+    write(&p, &load);
+    current(&p, 2);
+    assert!(
+        p.loss(&[]).is_none(),
+        "a core that does not capture the registered containers lists none of them"
+    );
+
+    load.n = 3;
+    load.containers.truncate(2);
+    write(&p, &load);
+    current(&p, 3);
+    let loss = p.loss(&[]).unwrap();
+    assert_eq!(
+        loss.modes(),
+        ["driver_career_1990"],
+        "a kept mode is still judged"
+    );
+    assert_eq!(loss.names(), ["Driver Career 1990"]);
+    std::fs::remove_dir_all(&d).ok();
+}
+
+#[test]
+fn a_career_whose_addon_is_off_at_load_is_not_lost() {
+    let d = dir("addon-off");
+    let p = Plain::at(d.join("plain"));
+    write(
+        &p,
+        &claimed(career_gen(1, "save", Some("s1"), &[("0x0a", "Jacob")])),
+    );
+    write(&p, &career_gen(2, "load", None, &[]));
+    current(&p, 2);
+    assert!(
+        p.loss(&[]).is_none(),
+        "the load kept the mode's containers unclaimed and their careers with them"
+    );
+    std::fs::remove_dir_all(&d).ok();
+}
+
+#[test]
+fn the_games_records_and_modes_without_a_career_are_not_careers() {
+    let d = dir("records");
+    let p = Plain::at(d.join("plain"));
+    let mut save = career_gen(1, "save", Some("s1"), &[]);
+    save.containers.extend(records());
+    save.containers.extend(pair("dev", "game", Vec::new()));
+    write(&p, &save);
+    write(
+        &p,
+        &Gen {
+            n: 2,
+            event: "load",
+            session: None,
+            containers: vec![("camera_camera_system", "game", Vec::new())],
+        },
+    );
+    current(&p, 2);
+    let loss = p.loss(&[]).unwrap();
+    assert_eq!(loss.modes(), ["driver_career", "driver_career_progressive"]);
+    assert_eq!(
+        loss.names(),
+        ["Stock, season 2, round 5", "Driver Career Progressive"]
+    );
     std::fs::remove_dir_all(&d).ok();
 }

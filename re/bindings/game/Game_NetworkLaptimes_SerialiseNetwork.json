@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140989b10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name serialiseNetwork (class from the log channel); log channel NETWORK-LAPTIMES: 'serialiseNetwork: (lap %d sector %d) sector time %f session time at sector %f invalidated %d'"
+  "evidence": "decomp:re/decomp/140989b10.c;pat:log-message-method;xref:0x142f303d5",
+  "notes": "Every NETWORK-LAPTIMES log is 'serialiseNetwork: ...': part number, last recorded lap/sector, current lap and combined time, speed trap, lap count and chunking, per-lap valid+time and per-sector time/invalidated; writes with bit-stream writers 0x143924390, 0x1439241b0. Caller 0x142f30040. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_laptimes_serialise_network",

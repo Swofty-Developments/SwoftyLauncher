@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140ff7320",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_Championship_CareerOnlineSynchroniser_Start;xref:0x140ff752b,0x140ff766b",
-  "notes": "cxx=game::championship::CareerOnlineSynchroniser::start; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/140ff7320.c;str:s_Championship_CareerOnlineSynchroniser_Start;xref:0x142d50413,0x1436b05a0",
+  "notes": "Gets the document component (type 0x1460609a8) into +0x28; busy (+0x410) -> log, return 0. If 0x140ff7730 fails: inlined setupCurrentPolicy (default SyncBothPolicy vtable 0x1456b5450 at +0x50, +0x44 = 0) then 0x140ff79d0. Else (one-way +0x44 == 1 needs 0x140fce660) logs the policy name, setNextState WaitingForStart (+0x40 = 1). Returns 1. (lane owner review requested)"
  },
  "signature": {
   "id": "game.career_online_synchroniser_start",

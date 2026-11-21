@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439fe030",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439fe030.c;xref:0x1439d385b",
-  "notes": "Wraps ID3D12Device::CreateCommittedResource (string 'neCreateCommittedResource'); on failure records the caller address in the error ring (Ne_Debug_GetCallerAddress, Ne_ErrorTrace_PushRing) and signals an event. Callers: Render_Gfx2Buffer_Construct (4 sites) and 0x1439d1b90."
+  "evidence": "decomp:re/decomp/1439fe030.c;xref:0x1439d385b,0x1439d5ffd,0x1439d66ac",
+  "notes": "For DEFAULT heap (*param_1 == 1) buffers / suitable textures tries pooled placed resources (pools device+0x2dd0/+0x2f10: GetResourceAllocationInfo +0xc8, Render_GfxMem_Allocate, Render_Gfx2ResourceBlock_CreateHeap, Render_Gfx2Device_CreatePlacedResourceChecked, Ne_Event_Set); otherwise ID3D12Device::CreateCommittedResource (+0xd8) checked with label neCreateCommittedResource. Unknown formats push error 0x16. Callers 0x1439d1b90, Render_Gfx2Buffer_Construct 0x1439d5710. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx2_device_create_committed_resource",

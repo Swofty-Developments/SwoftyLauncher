@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14303cbb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=ContentDomainVerifier::deletePlayerConnectionID; log channel NETWORK-CONTENT: 'ContentDomainVerifier::deletePlayerConnectionID(%d)'"
+  "evidence": "decomp:re/decomp/14303cbb0.c;pat:log-message-cxx;xref:0x14303d4c4,0x14305ab27",
+  "notes": "Own log. Clears bit id in +0x118 and +0x120, +0x12b = changed; on change clears the bit in every peer record (+0x30..+0x38, field +0x28); byte list +0x90[id] = 0xff. (lane owner review requested)"
  },
  "signature": {
   "id": "game.content_domain_verifier_delete_player_connection_id",

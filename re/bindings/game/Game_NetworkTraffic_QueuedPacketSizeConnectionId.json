@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-TRAFFIC",
-  "notes": "named from its log messages (channel NETWORK-TRAFFIC): '%s: queued packet(%p) size(%d bytes) connectionId(%d) m_packetCount(%d) m_largePacketCount(%d) m_maxByteAccum(%d) maxPacketCount(%d) maxLargePacketCount(%d) m_l'"
+  "evidence": "decomp:re/decomp/14406f280.c;pat:log-channel-NETWORK-TRAFFIC;xref:0x14406f225,0x144070604,0x1440735fa,0x144079e99",
+  "notes": "Reliable path (p3!=0): send with 'handleSendToConnection' logs; unreliable path: finds the per-connection queue in a hash map and copies the packet in, logging 'queued packet...' with method 'push'. Better name: Game_NetworkThrottle_QueueOrSendPacket (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_traffic_queued_packet_size_connection_id",

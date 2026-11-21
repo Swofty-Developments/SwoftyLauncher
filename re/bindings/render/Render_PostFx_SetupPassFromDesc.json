@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143bc4b30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143bc4b30.c;xref:0x143b29d6a,0x143b29fdb",
-  "notes": "Sets up a postfx pass from a descriptor (flag bit10 -> +0x89, copies viewport/target fields +0x78..+0x80, interns names via Ne_StringPool_InternByHash, creates buffers via Render_Gfx2Buffer_Construct). Callers Game_PostFx_CreateMotionBloomLensFlare and 5 others. Hypothesis."
+  "evidence": "decomp:re/decomp/143bc4b30.c;xref:0x143b29d6a,0x143b29fdb,0x143b2a143,0x143b2a2ab",
+  "notes": "Copies the buffer desc (bit10 of +0x18 -> +0x89), builds names '<name>.srv0..2'; per slot allocates a 600-byte Render_Gfx2Buffer_Construct object, registers it (PtrFlagSet_Insert), queries VRAM, swaps it into +0x10+i*8 (old -> deferred release) and, when +0x89 is clear, maps it via Render_Gfx2_AcquireBackbuffer into +0x28+i*0x18. Triple-buffer init, not a postfx pass. (lane owner review requested) Better name: Render_Gfx2_TripleBuffer_Create (bound record keeps its name)."
  },
  "signature": {
   "id": "render.post_fx_setup_pass_from_desc",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430ee9a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-NTP/V",
-  "notes": "named from its log messages (channel NETWORK-NTP/V): 'NTP time unavailable'"
+  "evidence": "decomp:re/decomp/1430ee9a0.c;pat:log-channel-NETWORK-NTP/V;xref:0x140765738,0x140b8bac8,0x1430fa281,0x143656819",
+  "notes": "Returns the network time: NTP time from the client at this+0x4e8 when synchronised (else logs 'NTP time unavailable'), compared with the first-party provider and OS server times ('... differs significantly ... (>= 1 day)'); optional out param param_3. Callers 0x1407656e0, 0x140b8ba00, 0x1430f8dc0, 0x143656210, 0x14fb40bb0. (lane owner review requested) Better name: Game_NetworkNtp_GetNetworkTime (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_ntp_ntp_time_unavailable",

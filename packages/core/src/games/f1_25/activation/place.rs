@@ -2,6 +2,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 
 use md5::{Digest as _, Md5};
+use swofty_formats::bxml::Document;
 use swofty_formats::erp::{Entry, ErpFile, Packer, Resource, ZSTD_LEVEL};
 use swofty_formats::gvdb::{Gvdb, Record};
 use swofty_formats::hash::fnv1a64;
@@ -803,7 +804,11 @@ pub fn place(input: &PlaceInput, cache: &Path, packer: &Packer) -> Result<Placem
             Some(res) => (res, true),
             None => (file.load(r)?, false),
         };
-        match ailine::give_routes_space(&res.fragments[0].data()?) {
+        let data = res.fragments[0].data()?;
+        if let Some(Err(defects)) = Document::parse(&data).ok().as_ref().map(ailine::loadable) {
+            return Err(Error::Other(ailine::unloadable_message(who, &defects, &fix)));
+        }
+        match ailine::give_routes_space(&data) {
             Spacing::Fine => {
                 if edited {
                     repointed.insert(i, res);
@@ -912,7 +917,7 @@ pub fn place(input: &PlaceInput, cache: &Path, packer: &Packer) -> Result<Placem
 /// The file beside a placed archive that keeps what placing it found, read instead of the track's archive
 /// while that archive's size, modified time and change time are unchanged.
 const KEPT_FILE: &str = "placement.json";
-const KEPT_VERSION: u32 = 2;
+const KEPT_VERSION: u32 = 3;
 
 #[derive(serde::Serialize, serde::Deserialize)]
 struct Kept {
@@ -1151,22 +1156,15 @@ mod tests {
 
     #[test]
     fn a_package_with_stale_tsmd_stats_is_repaired_or_refused() {
-        use swofty_formats::bxml::{Document, Element, Kind};
         use swofty_formats::erp::{Erp, Fragment, HEADER_LEN, MAGIC, STORED};
         let dir = std::env::temp_dir().join(format!("swofty-place-tsmd-{}", std::process::id()));
         std::fs::remove_dir_all(&dir).ok();
         std::fs::create_dir_all(&dir).unwrap();
         let pkg = TrackPackage::parse(crate::content::track_package::tests::OKAYAMA_LIKE.as_bytes()).unwrap();
-        let line = |gate: &str| Document {
-            root: Element {
-                kind: Kind::Element,
-                pad: 0,
-                name: b"track".to_vec(),
-                attrs: vec![(b"name".to_vec(), gate.as_bytes().to_vec())],
-                children: Vec::new(),
-                end_pad: 0,
-            },
-            tail: Vec::new(),
+        let line = |name: &str| {
+            let mut doc = ailine::tests::aispline(|n| if n < 6 { (-1.2, 6.0) } else { (-6.0, 1.2) }, 9);
+            doc.root.set_attr(b"name", name.as_bytes());
+            doc
         };
         let fragment = |raw: Vec<u8>| Fragment::new(*b"temp", raw.len() as u64, 0x10, STORED, raw);
         let resource = |name: &str, kind: &str, fragments: Vec<Fragment>| Resource {
@@ -1296,6 +1294,10 @@ mod tests {
     }
 
     fn testring(dir: &Path, pit: impl Fn(u32) -> (f32, f32)) -> TrackPackage {
+        testring_with(dir, &ailine::tests::aispline(pit, 7))
+    }
+
+    fn testring_with(dir: &Path, line: &Document) -> TrackPackage {
         use swofty_formats::erp::{Erp, Fragment, HEADER_LEN, MAGIC};
         let pkg = TrackPackage::parse(crate::content::track_package::tests::OKAYAMA_LIKE.as_bytes()).unwrap();
         let fragment = |raw: Vec<u8>| Fragment::new(*b"temp", raw.len() as u64, 0x10, STORED, raw);
@@ -1309,7 +1311,6 @@ mod tests {
         let mut header = [0u8; HEADER_LEN];
         header[..4].copy_from_slice(MAGIC);
         header[4..8].copy_from_slice(&3u32.to_le_bytes());
-        let line = ailine::tests::aispline(pit, 7);
         let bytes = Erp {
             header,
             version: 3,
@@ -1326,6 +1327,39 @@ mod tests {
         .unwrap();
         std::fs::write(dir.join(&pkg.erp), bytes).unwrap();
         pkg
+    }
+
+    #[test]
+    fn a_track_whose_ai_data_the_game_cannot_load_is_refused() {
+        let dir = std::env::temp_dir().join(format!("swofty-place-unloadable-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        std::fs::create_dir_all(&dir).unwrap();
+        let mut line = ailine::tests::aispline(|_| (-4.1, 3.0), 7);
+        let starts = line.root.child_mut(b"corner_start_lines").unwrap();
+        starts.children[0].set_attr(b"id", b"12");
+        starts.children[0].set_attr(b"gate_id", b"0");
+        let pkg = testring_with(&dir, &line);
+        let input = PlaceInput {
+            pkg: &pkg,
+            dir: &dir,
+            game: &dir,
+            slot: None,
+            cars: 22,
+            worlds: &[],
+            ai_teams: &[],
+        };
+        let Err(e) = place(&input, &dir.join("cache"), &Packer::default()) else {
+            panic!("the track should be refused");
+        };
+        assert_eq!(
+            e.to_string(),
+            "Test Ring would crash F1 25 when a session on it starts: the game can't load its AI data, because \
+             corner start 12 starts at gate 0, the first gate of the lap, where no corner can start. Ask the track's \
+             author to fix it. Turn Test Ring off in this profile, and set any race weekend that uses it back to \
+             another track."
+        );
+        assert!(!dir.join("cache").exists(), "nothing is placed");
+        std::fs::remove_dir_all(&dir).ok();
     }
 
     fn opened() -> usize {

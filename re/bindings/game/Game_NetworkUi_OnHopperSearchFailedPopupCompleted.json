@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430ae0b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onHopperSearchFailedPopupCompleted (class from the log channel); log channel NETWORK-UI: '%s().'"
+  "evidence": "decomp:re/decomp/1430ae0b0.c;pat:log-message-method;xref:0x1430b05f7,0x1430b061a",
+  "notes": "Logs NETWORK-UI '%s().' with onHopperSearchFailedPopupCompleted, calls Game_GameSessionMatchingHopper_Cancel([ctx+0x3f0],0xb); if the answer string (*param_2+9) equals 'retry' it re-requests the search via Game_NetworkUI_RequestedHopperSearchGameType. Address taken (lea) twice in Game_NetworkUI_SessionMatchedUnsuitableSafety. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_ui_on_hopper_search_failed_popup_completed",

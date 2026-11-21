@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143999260",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143999260.c;xref:0x1406c40d8,0x1406c97da",
-  "notes": "Image stream open/read step: if stream vcall +0xb8 (valid) then sets thread-local error list codes to 5 when param_4 set, else proceeds to read header fields. Callers include Game_PhotoModeHelper_PredictImageSize, HudCustomisation config sets and Input scheme loading. Hypothesis (libpng-like read path; see 0x143998b80 write counterpart). vp2-verify partial/disagree"
+  "evidence": "decomp:re/decomp/143999260.c;xref:0x1406c40d8,0x1406c97da,0x1416ee367,0x144493684",
+  "notes": "Text-mode sibling of 0x143998b80: error 5 if already open (vcall +0xb8); mode 0 r, 1 w, 2 a via 0x14534890c(path, mode); FILE* at +8, mode at +0x10, clears +0x18; on failure error 5 into the TLS list and ring (returns 5 when param_4). Callers incl. Render_Screenshot_CaptureAndSave and non-render users. (lane owner review requested)"
  },
  "signature": {
   "id": "render.image_stream_read_header",

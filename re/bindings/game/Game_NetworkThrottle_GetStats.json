@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1440765b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name getStats (class from the log channel); log channel NETWORK-THROTTLE: '%s: max_queue_bytes: %d, max_packet_count: %d, max_large_packet_count: %d, m_largestPacketSize: %d, m_maxAllocatePerSecond: %d, m_minBandwidth: %d'"
+  "evidence": "decomp:re/decomp/1440765b0.c;pat:log-message-method;xref:0x14076ed75",
+  "notes": "Calls UpdateStats 0x1440762d0, copies max_queue_bytes etc. to p2 and fills a per-connection array in p3 (max delay, queued bytes, bandwidth) with 'getStats' logs. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_throttle_get_stats",

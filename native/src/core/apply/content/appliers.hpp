@@ -37,6 +37,13 @@ struct WarmersBox {
 };
 WarmersBox tyre_warmers_for_box(const std::string &entrant_list);
 
+// The engine whose rev lights the box with this entrant list shows in equal-performance sessions (rev_lights.hpp): the
+// entrants.engines label most of its content.package's vehicles name (empty when none does), and the line to log.
+struct RevLightsBox {
+    std::string engine, line;
+};
+RevLightsBox rev_lights_for_box(const std::string &entrant_list);
+
 // The mandatory tyre change rule the box with this entrant list runs: its content.package's
 // rules.mandatory_tyre_change (none when the package has no rule), and the line to log.
 struct TyreChangeBox {

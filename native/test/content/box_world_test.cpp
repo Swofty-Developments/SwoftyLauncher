@@ -226,6 +226,34 @@ static void test_lowering_rows()
           "a list no layer gives a world says so");
 }
 
+static void test_time_trial_list()
+{
+    Db d = stock();
+    auto &k = d.keys;
+    k["track_data.track_layers._TrackLayer_instancecount_"] = "4";
+    k["track_data.track_layers.TrackLayer_3._metadata_"] = "sw12_world";
+    k["track_data.track_layers.TrackLayer_3.game_setup_modes"] = "swofty_f1";
+    k["track_data.track_layers.TrackLayer_3.seasons"] = "sw12_season";
+    k["track_data.track_layers.TrackLayer_3.worldEri"] = "eri/f1_26_myteam";
+    k["game_setup.seasons._season_instancecount_"] = "3";
+    k["game_setup.seasons.season_2._metadata_"] = "sw12_season";
+    k["game_setup.seasons.season_2.statId"] = "15";
+
+    auto gp = bw::choose("sw_f1_2012", "swofty_f1", 12, "sw12_season", d.reader());
+    check(!gp.apply && gp.line.empty(), "a Grand Prix list on the addon's own season and My Team layer keeps it");
+
+    auto tt = bw::choose("sw_f1_2012_tt", "swofty_f1", 12, "season_2025", d.reader());
+    check(tt.apply && tt.now == 10 && std::string(tt.from->layer) == "myteam_26" && tt.season == "swofty_box_sw_f1_2012_tt",
+          "its Time Trial list, on f1_2025's season, loads the 10-garage f1 world and gets a My Team world of its own");
+}
+
+static void test_enabled()
+{
+    check(bw::enabled("") && bw::enabled("1") && bw::enabled("yes"),
+          "box worlds are on when SWOFTY_BOX_WORLDS is unset or not 0");
+    check(!bw::enabled("0"), "SWOFTY_BOX_WORLDS=0 turns them off");
+}
+
 static void test_pools()
 {
     bool season = false, layer = false;
@@ -244,6 +272,8 @@ int main()
     test_classic_seasons();
     test_unknown_and_missing();
     test_lowering_rows();
+    test_time_trial_list();
+    test_enabled();
     test_pools();
     std::printf("%s\n", failures ? "FAILED" : "all passed");
     return failures ? 1 : 0;

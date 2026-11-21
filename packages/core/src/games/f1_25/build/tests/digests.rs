@@ -205,9 +205,10 @@ fn the_careers_file_and_the_list_state_are_part_of_the_build_hash() {
             exe_sha256: "0".repeat(64),
         },
     };
+    let profile = crate::profile::Profile::new("default");
     let hash = |wanted: bool| {
         let mut h = BuildHash::new();
-        stamp_resume_list(&mut h, &root, "default", &game, wanted).unwrap();
+        stamp_resume_list(&mut h, &root, &profile, &game, wanted).unwrap();
         h.finish()
     };
     let absent = hash(true);

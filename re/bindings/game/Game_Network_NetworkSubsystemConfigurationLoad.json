@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430d2fd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'NetworkSubsystem configuration: failed to load %s with error %s'"
+  "evidence": "decomp:re/decomp/1430d2fd0.c;pat:log-channel-NETWORK;xref:0x1430d17ce",
+  "notes": "Caller Game_NetworkSubsystem_Slot10 0x1430d11b0. Loads system/mp_activity_names.json (0x143f393a0), parses PSN_Activities: per activity its PSN_ID and the Translations per language (en-GB default, logs 'Activity: %s' / '%s: %s'), into the hash map at this+0x588..+0x5c4; on failure logs 'NetworkSubsystem configuration: failed to load %s with error ...' with that path. (lane owner review requested) Better name: Game_NetworkSubsystem_LoadActivityNames (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_network_subsystem_configuration_load",

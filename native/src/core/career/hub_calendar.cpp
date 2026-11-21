@@ -15,8 +15,8 @@
 // human's calendar activities running today and what the game's calendar check makes of them. When StateSession ends
 // within FAST_END_MS of entering after the hub opened, it logs "[career] session ended <N> ms after start" with the
 // current weekend and the calendar again. At career.hub (Team HQ) entered it logs the current weekend, as "[career]
-// weekend already started, session never ran" when the weekend is past not started with no session complete, followed
-// by "[career] Team HQ calendar" with today's calendar items.
+// weekend already started, session never ran" when the weekend is past not started with no session complete, then
+// "[career] Team HQ calendar" with today's calendar items and whether they keep Team HQ's Advance off.
 // career.calendar.add_activity reports each contract event or secret meeting added, with its day and today. Reads
 // only, every one guarded: the ScheduleComponent (current season, season over, seasons), the season's driver
 // calendars, their activities and definitions through KB structs (L2), the clock through
@@ -29,6 +29,12 @@
 // is logged again. It runs on the thread that sets the hub's status, before the hub's onStateUpdate reads the calendar.
 // An item whose state no longer reads 1 or whose memory is not writable is left as it is. SWOFTY_HUB_BREAK_FIX=0 turns
 // it off; the line then says the break is left.
+//
+// At every Team HQ entry the core logs today's calendar items and whether they keep Team HQ's Advance off. When the
+// only items keeping it off are ignored season breaks (hc::ended_breaks: the weekend the break ran over is done), each
+// one's CalendarActivity.day moves back so the break ends the day before, one "[career] ignored season break over Team
+// HQ" line per item, and the calendar is logged again. An item whose state or day no longer reads as read, or whose
+// memory is not writable, is left; SWOFTY_HUB_BREAK_FIX=0 turns this off too.
 
 namespace swofty::game {
 struct ActivityDef;
@@ -77,7 +83,7 @@ struct Snapshot {
     bool season_over = false;
     uintptr_t calendar = 0;
     size_t total = 0;
-    uint64_t state_offset = 0;
+    uint64_t state_offset = 0, day_offset = 0;
     std::vector<hc::Item> today;
 };
 
@@ -166,6 +172,7 @@ Snapshot snapshot()
                      offsetof(D, type),
                      offsetof(D, duration)};
         s.state_offset = L.item_state;
+        s.day_offset = L.item_day;
         if (!hc::collect(s.calendar, s.day, L, read_raw, nullptr, s.today, &s.total))
             s.stop = "the calendar's activity list does not read";
         return s;
@@ -259,6 +266,54 @@ size_t fix_breaks(const Snapshot &s)
     return ignored;
 }
 
+std::string advance(const Snapshot &s)
+{
+    if (!s.stop.empty() && s.today.empty())
+        return "Team HQ's Advance is not judged";
+    return hc::describe_advance(s.today);
+}
+
+bool move_break(const Snapshot &s, const hc::Item &it, uint16_t first, const char *&how)
+{
+    uintptr_t state_at = uintptr_t(it.at + s.state_offset), day_at = uintptr_t(it.at + s.day_offset);
+    uint8_t state = 0;
+    uint16_t day = 0;
+    if (break_fix_off())
+        how = "left as it is (SWOFTY_HUB_BREAK_FIX=0)";
+    else if (!s.state_offset || !s.day_offset || !mem::read(state_at, state) || state != hc::IGNORED || !mem::read(day_at, day) ||
+             day != it.first)
+        how = "left as it is (its state or day no longer reads as read)";
+    else if (!writable(day_at, sizeof first))
+        how = "left as it is (not writable)";
+    else {
+        std::memcpy(reinterpret_cast<void *>(day_at), &first, sizeof first);
+        how = "moved back so it ends the day before";
+        return true;
+    }
+    return false;
+}
+
+void team_hq_calendar()
+{
+    Snapshot s = snapshot();
+    swofty::log("[career] Team HQ calendar: %s; %s", calendar(s).c_str(), advance(s).c_str());
+    log_items(s);
+    size_t moved = 0;
+    for (const hc::BreakMove &m : hc::ended_breaks(s.today, s.day)) {
+        const hc::Item &it = s.today[m.item];
+        const char *how = "";
+        moved += move_break(s, it, m.first, how);
+        swofty::log("[career] ignored season break over Team HQ: %s keeps Team HQ's Advance off on day %u with no race "
+                    "weekend running; to days %u-%u: %s",
+                    hc::describe(it).c_str(), unsigned(s.day), unsigned(m.first), unsigned(m.first + (it.last - it.first)), how);
+    }
+    if (!moved)
+        return;
+    Snapshot after = snapshot();
+    swofty::log("[career] Team HQ calendar after the season break move: %s; %s", calendar(after).c_str(), advance(after).c_str());
+    log_items(after);
+}
+
 void opened()
 {
     Snapshot s = snapshot();
@@ -288,13 +343,6 @@ void ended(uint64_t ms, uint64_t hub_ms, const char *how)
     swofty::log("[career] session ended %llu ms after start (%s; the career hub opened %llu ms after start): %s; %s",
                 static_cast<unsigned long long>(ms), how, static_cast<unsigned long long>(hub_ms), weekend.c_str(),
                 calendar(s).c_str());
-    log_items(s);
-}
-
-void stuck_calendar()
-{
-    Snapshot s = snapshot();
-    swofty::log("[career] Team HQ calendar: %s", calendar(s).c_str());
     log_items(s);
 }
 
@@ -350,11 +398,11 @@ void hub_calendar_team_hq()
     hc::Weekend w;
     if (!current_weekend(w))
         swofty::log("[career] Team HQ weekend: the current weekend is not readable");
-    else if (hc::never_ran(w)) {
+    else if (hc::never_ran(w))
         swofty::log("[career] weekend already started, session never ran: %s", hc::describe(w).c_str());
-        stuck_calendar();
-    } else
+    else
         swofty::log("[career] Team HQ weekend: %s", hc::describe(w).c_str());
+    team_hq_calendar();
 }
 
 void hub_calendar_added(void *calendar, const void *activity, uint32_t day)

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144091e50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onDiscovery (class from the log channel); log channel NETWORK-LAN: 'onDiscovery received, game name = %s'"
+  "evidence": "decomp:re/decomp/144091e50.c;pat:log-message-method;xref:0x145a54568",
+  "notes": "Logs 'onDiscovery received, game name = %s' (name at param_2+0x49), then matches the discovered entry against the listener list at this+0x70 and calls 0x1440b5530. Only ref: vtable cell 0x145a54568. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_lan_on_discovery",

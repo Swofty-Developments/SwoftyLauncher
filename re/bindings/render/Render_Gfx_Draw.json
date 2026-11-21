@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a02aa0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143a02aa0.c;xref:0x143a01459,0x143ecf7d9",
-  "notes": "Flushes dirty state (loops the pipeline-state descriptor array at [ctx+0x12d8]+0x620 with the per-root-signature setters 0x143a24520 / 0x143a251f0), clears dirty bits (+0x1288, +0x1290/+0x12a0, +0x1468) and issues context vcall +0x130 with (vertexCount, 1 instance, startVertex). Hypothesis: non-indexed draw."
+  "notes": "List vcall +0x188, flushes dirty root parameters of PSO [ctx+0x12d8] (+0x630 table: 0x143a24520 when kind 2, else 0x143a251f0), clears +0x1288, +0x1468, +0x1290..+0x12af, then list vcall +0x130(count param_3, 1 instance, start param_2, 0). Callers Render_Gfx_SubmitDraw 0x143a007e0, 0x143ecf6a0. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx_draw",

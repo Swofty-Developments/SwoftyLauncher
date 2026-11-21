@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): '[CONFIG] parsing title config data (%d bytes).'"
+  "evidence": "decomp:re/decomp/1430f6890.c;pat:log-channel-NETWORK;xref:0x1430f00ba,0x1430f5f93",
+  "notes": "Callers DeclareActivePresence 0x1430ef6c0 and OnTitleConfigDownloaded 0x1430f5ec0. Logs '[CONFIG] parsing title config data (%d bytes).', deserialises Hopper data (0x1430fb0e0), track lists, language and strings definitions; each failure logged as '... didn't deserialize.' Better name: Game_NetworkSubsystem_ParseTitleConfigData (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_parsing_title_config_data",

@@ -1,0 +1,60 @@
+{
+ "schema": 1,
+ "name": "Sess_Build_SessionParticipant",
+ "table": "functions",
+ "author": "vmknolle",
+ "row": {
+  "addr": "0x142e0c700",
+  "level": "L1",
+  "subsystem": "session",
+  "proto": "void *Sess_Build_SessionParticipant(void *participant, const EntrantRecord *rec, void *entrants_system, void *mode_holder, ...)",
+  "evidence": "decomp:own Ghidra decomp of 0x142e0c700 (jmp 0x14f2dcbd0);xref:0x1407b882f,0x1407b1a5f,0x142939e6f,0x142e32fbf,0x142e339e4",
+  "notes": "jmp thunk to .data1 0x14f2dcbd0. Builds one 0x6780-byte session participant from an EntrantRecord: vehicle = Sess_ResolveEntityHandle(entrants_system, rec+0x5c); vehicle customisation (livery preset) from rec+0x64 via Ent_Get_VehicleCustomisation_Thunk 0x14246dcb0 when the u16 +0x66 is not 0x3fff (none: the vehicle's own livery); rec+0x60 via 0x14246db90 when +0x62 is not 0x3fff; team position rec+0x80/+0x81; mode_holder+0xe18 (selected list); then 0x142e0a530(participant, vehicle, 0, ...). The championship fill (Game_ChampionshipGameMode_BuildSessionSettings 0x1407b882f), the generic fill 0x1407b1a5f and the Time Trial fill 0x142939e6f call it per entrant; the result is pushed into the session descriptor +0xad0 (0x1407a0eb0) whose asset paths Game_VehicleAssetManager_ChangeResidentAssets loads. Research: re/research/session_vehicle_swap.md"
+ },
+ "signature": {
+  "id": "session.build_session_participant",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 48 A9 6A C9 06 E9 D8 DC",
+  "match": "0x142e0c700",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e0c700",
+  "kind": "func_start",
+  "names": [
+   "Sess_Build_SessionParticipant"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-20",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vmknolle",
+   "date": "2026-11-20",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142e0c700",
+    "target": "0x142e0c700"
+   },
+   "sigcheck": "passed",
+   "digest": "507f4fe79328b7ca6551c347df619acce563c2b43e12ad2be5d1f57c1b624d15"
+  }
+ ]
+}

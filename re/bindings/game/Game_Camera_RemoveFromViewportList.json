@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144402840",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144402840.c;xref:0x144400fa4,0x144536afa,0x14453719b",
-  "notes": "Hypothesis: uses a TLS slot (TlsAlloc) and the camera at +0x50; from Game_Camera_SetForViewport. Named callers: Game_Camera_SetForViewport. vp4-verify partial/disagree"
+  "evidence": "decomp:re/decomp/144402840.c;xref:0x144400fa3,0x144536afa,0x14453719b,0x154b0250a,0x154b02567",
+  "notes": "List at [this+0x50]: null list/object -> errno 0xe; finds param_2, erases it (memmove), calls object vt+0x30, returns 0; not found -> errno via TLS error slot + backtrace ring. No TlsAlloc of its own (old note wrong). Counterpart of 0x144402400; also reached by jcc 0x144400fa3. (lane owner review requested)"
  },
  "signature": {
   "id": "game.camera_apply_viewport_a",

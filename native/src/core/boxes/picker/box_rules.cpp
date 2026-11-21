@@ -1,4 +1,5 @@
 #include "core/boxes/picker/picker.hpp"
+#include "core/guards/guard.hpp"
 
 #include "core/runtime/runtime.hpp"
 
@@ -68,6 +69,48 @@ void apply_warmers(void *mode, const char *list)
         modes++;
     });
     box_rules.warmers_log.say(modes ? box.line : box.line + "; not applied (no " + std::string(logic::HOST) + " mode found)");
+}
+
+// Rev lights per box: the stat id of the engine most of the pressed box's vehicles name goes into every swofty_f1 mode's
+// equal_performance_engine, the row the wheel LEDs and the HUD rev bar take for a car running equal performance; a box
+// whose vehicles name no engine, or an engine the database lacks, puts the game's engine back. SWOFTY_REV_LIGHTS=0 turns
+// it off.
+void apply_rev_lights(void *mode, const char *list)
+{
+    char off[16];
+    if (swofty_core::guards::env_off("SWOFTY_REV_LIGHTS", off)) {
+        box_rules.rev_lights.put_back();
+        box_rules.rev_lights_log.say(std::string("off (SWOFTY_REV_LIGHTS=") + off + "): " + std::string(logic::HOST) +
+                                     " keeps its own equal-performance engine");
+        return;
+    }
+    auto box = swofty_core::apply::content::rev_lights_for_box(list);
+    if (box.engine.empty()) {
+        box_rules.rev_lights.put_back();
+        box_rules.rev_lights_log.say(box.line);
+        return;
+    }
+    const SwoftyDb *db = runtime::db_table();
+    SwoftyDbCursor row{};
+    SwoftyDbValue stat{};
+    if (!db || db->row("entrants.engines", box.engine.c_str(), &row) != SWOFTY_ASSET_OK ||
+        db->cell(&row, "stat_id", &stat) != SWOFTY_ASSET_OK || stat.tag != SWOFTY_DB_INT || stat.i < 0 || stat.i > 0xff) {
+        box_rules.rev_lights.put_back();
+        box_rules.rev_lights_log.say(box.line + "; not applied (no entrants.engines row " + box.engine + " with a stat_id)");
+        return;
+    }
+    size_t modes = 0, swapped = 0;
+    for_each_host_mode(mode, [&](uint8_t *m) {
+        modes++;
+        if (box_rules.rev_lights.swap(m, uint8_t(stat.i)))
+            swapped++;
+    });
+    std::string line = box.line + " (stat id " + std::to_string(stat.i) + ")";
+    if (!modes)
+        line += "; not applied (no " + std::string(logic::HOST) + " mode found)";
+    else if (!swapped)
+        line += "; not needed (no " + std::string(logic::HOST) + " mode names an equal-performance engine)";
+    box_rules.rev_lights_log.say(line);
 }
 
 // Fuel rules per box: the pressed box's refuelling, race and qualifying fuel and parc ferme rule go to the per-frame fuel
@@ -232,6 +275,9 @@ void put_back_drs()
     if (size_t n = box_rules.warmers.put_back())
         box_rules.warmers_log.say(std::string(logic::HOST) + "'s tyre warmer setting put back on " + std::to_string(n) +
                                   " mode(s)");
+    if (size_t n = box_rules.rev_lights.put_back())
+        box_rules.rev_lights_log.say(std::string(logic::HOST) + "'s equal-performance engine put back on " + std::to_string(n) +
+                                     " mode(s)");
     if (size_t n = box_rules.tyre_change.put_back())
         box_rules.tyre_change_log.say(std::string(logic::HOST) + "'s tyre regulations put back on " + std::to_string(n) +
                                       " mode(s)");

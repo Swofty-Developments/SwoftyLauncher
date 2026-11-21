@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140753dc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: f1 life viewed player'"
+  "evidence": "decomp:re/decomp/140753dc0.c;pat:log-channel-TELEMETRY;xref:0x1406f0664,0x140708203",
+  "notes": "Bus handler(this,msg); subscribed 0x1406f0664 (0x1406d8470), unregistered 0x140708203. 0x78-byte record: five u16 ids msg+0x2a/+0x5a/+0x8a/+0xba/+0xea. Tag 'f1_life_viewed_people_record' via 0x14077a240, GUID+seq, 64-entry queue; logs 'f1 life viewed player' (TELEMETRY). (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_f1_life_viewed_player",

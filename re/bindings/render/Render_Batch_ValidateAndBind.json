@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143d6c1b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143d6c1b0.c;xref:0x143c6ea68,0x143d45ad3",
-  "notes": "Validates a draw batch (flag +0x28 of batch ctx); on failure writes error code 0x58 into the TLS error list; binds the batch otherwise. Callers Ne_CustomisationDecalRenderer_Render, Render_Batch_Submit. Hypothesis."
+  "evidence": "decomp:re/decomp/143d6c1b0.c;xref:0x143c6ea68,0x143d45ad3,0x143d4c6eb",
+  "notes": "Reserves count*0x60 bytes (count u16 batch+0x62) in the transient ring [param_1+0x18] (same algorithm as Render_TransientRing_Reserve, error 0x58 when disabled), copies the batch instance arrays (+0x48, +0x50) into it, stores the ring offsets at batch+0x74/+0x78 and *param_3, frame id param_1+0x20 at batch+0x70. Callers Ne_CustomisationDecalRenderer_Render 0x143c6ea68, 0x143d45900 (0x143d45ad3), Render_Batch_Submit 0x143d4c6eb. (lane owner review requested) Better name: Render_Batch_UploadInstanceDataToRing (bound record keeps its name)."
  },
  "signature": {
   "id": "render.batch_validate_and_bind",
