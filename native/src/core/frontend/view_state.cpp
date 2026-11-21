@@ -56,8 +56,8 @@ const runtime::Sig S_VIEWPORT_OWNER{
     3,
     7};
 
-const char *const CAMERA_NAMES[8] = {"unknown", "nose_cam",      "nose_cam_alt", "cockpit_cam",
-                                     "tv_pod",  "tv_pod_offset", "near_chase",   "far_chase"};
+const char *const CAMERA_NAMES[8] = {"wing",   "nose_cam",      "nose_cam_alt", "cockpit_cam",
+                                     "tv_pod", "tv_pod_offset", "near_chase",   "far_chase"};
 
 constexpr uint64_t pack(uint32_t kind, uint32_t flags, bool valid, uint32_t serial)
 {
@@ -135,6 +135,8 @@ uint32_t camera_kind(int value)
         return frontend::view::CHASE_NEAR;
     case 7:
         return frontend::view::CHASE_FAR;
+    case 0:
+        return frontend::view::WING;
     case 1:
         return frontend::view::NOSE;
     case 2:
@@ -162,7 +164,7 @@ std::string flag_text(uint32_t flags)
 const char *kind_text(uint32_t kind)
 {
     static constexpr const char *NAMES[] = {"unknown", "cockpit",   "tcam",        "tcam_offset", "chase_near", "chase_far",
-                                            "other",   "trackside", "reverse_pod", "nose",        "nose_alt"};
+                                            "other",   "trackside", "reverse_pod", "nose",        "nose_alt",   "wing"};
     return kind < std::size(NAMES) ? NAMES[kind] : "unknown";
 }
 

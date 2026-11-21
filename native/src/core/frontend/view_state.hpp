@@ -15,7 +15,8 @@ enum Kind : uint32_t {
     TRACKSIDE,
     REVERSE_POD,
     NOSE,
-    NOSE_ALT
+    NOSE_ALT,
+    WING
 };
 enum Flag : uint32_t { PAUSED = 1, REPLAY = 2, PHOTO = 4, MENU = 8, CUTSCENE = 16, SPECTATING = 32 };
 

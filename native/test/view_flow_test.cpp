@@ -48,7 +48,7 @@ int main()
     } cuts[] = {
         {8, OTHER, "s01a_cam"},    {8, OTHER, "s02a_cam"},    {8, OTHER, "s03a_cam"},
         {8, OTHER, "s04a_cam"},    {4, TCAM, "pod"},          {5, TCAM_OFFSET, "podoffset"},
-        {6, OTHER, "chase"},       {7, OTHER, "chasefar"},    {0, OTHER, "wing"},
+        {6, OTHER, "chase"},       {7, OTHER, "chasefar"},    {0, WING, "wing"},
         {1, NOSE, "nose"},         {8, OTHER, "pod_reverse"}, {1, NOSE, "nose"},
         {2, NOSE_ALT, "nose_alt"}, {8, OTHER, "pod_reverse"}, {2, NOSE_ALT, "nose_alt"},
         {3, COCKPIT, "cockpit"},   {8, OTHER, "pod_reverse"}, {3, COCKPIT, "cockpit"},
@@ -57,7 +57,7 @@ int main()
     };
     const auto onboard = render::postfx::view_bit("cockpit") | render::postfx::view_bit("tcam") |
                          render::postfx::view_bit("tcam_offset") | render::postfx::view_bit("nose") |
-                         render::postfx::view_bit("nose_alt");
+                         render::postfx::view_bit("nose_alt") | render::postfx::view_bit("wing");
     for (const auto &cut : cuts) {
         camera.observe(0, cut.type);
         expect(camera.kind() == cut.expected, cut.name);
@@ -79,6 +79,7 @@ int main()
     camera.update_phase(false, false);
     camera.update_phase(true, false);
     expect(camera.kind() == UNKNOWN, "a new session begins without a camera");
+    expect(camera.observe(0, 0) && camera.kind() == WING, "raw type zero publishes wing while driving");
     expect(camera.observe(0, 8) && camera.kind() == OTHER, "a cinematic assignment is a non-onboard view");
     expect(camera.observe(0, 3) && camera.observe(0, 5), "retain camera writes during the grid setup");
     camera.update_phase(true, false);
