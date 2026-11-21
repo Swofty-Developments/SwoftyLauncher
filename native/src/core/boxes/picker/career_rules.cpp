@@ -37,7 +37,11 @@ struct CareerRules {
     std::string applied;
 };
 
-CareerRules career_rules;
+CareerRules &rules()
+{
+    static CareerRules r;
+    return r;
+}
 
 uint8_t *current_setup_mode(uintptr_t ctx, std::string &name)
 {
@@ -76,20 +80,20 @@ CareerSession career_session(uintptr_t ctx)
             }
         }
     }
-    CareerSession s{p.career, p.career && !p.key.empty() && p.key == career_rules.applied};
-    career_rules.pending = std::move(p);
+    CareerSession s{p.career, p.career && !p.key.empty() && p.key == rules().applied};
+    rules().pending = std::move(p);
     return s;
 }
 
 void apply_career_rules()
 {
-    Plan p = std::move(career_rules.pending);
-    career_rules.pending = {};
+    Plan p = std::move(rules().pending);
+    rules().pending = {};
     if (!p.career)
         return;
-    if (!p.key.empty() && p.key == career_rules.applied)
+    if (!p.key.empty() && p.key == rules().applied)
         return;
-    career_rules.applied.clear();
+    rules().applied.clear();
     if (p.key.empty()) {
         if (!p.off && !p.box.package.empty() && !p.mode)
             p.box.line += "; not applied (no game setup mode is current)";
@@ -112,21 +116,21 @@ void apply_career_rules()
     apply_points(t, list);
     apply_grid(t, list);
     apply_quali_tyres(t, list);
-    career_rules.applied = p.key;
+    rules().applied = p.key;
 }
 
 void put_back_career_rules(const char *why)
 {
     std::lock_guard<std::mutex> g(hold.lock);
-    career_rules.pending = {};
-    if (career_rules.applied.empty())
+    rules().pending = {};
+    if (rules().applied.empty())
         return;
     put_back_drs();
     clear_fuel();
     box_rules.career_log.say(std::string(why) + ": the career season's rules put back");
 }
 
-void forget_career_rules() { career_rules.applied.clear(); }
+void forget_career_rules() { rules().applied.clear(); }
 
 }
 
