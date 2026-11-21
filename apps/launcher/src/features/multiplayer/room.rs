@@ -262,7 +262,7 @@ impl Shell {
                     .children(
                         st.problem
                             .as_ref()
-                            .and_then(|problem| problem.detail.clone())
+                            .and_then(|problem| problem.detail.clone().filter(|d| !repeats(d, &problem.text)))
                             .filter(|_| !m.leaving)
                             .map(|d| div().text_size(px(13.)).text_color(p.text_muted).child(d)),
                     )

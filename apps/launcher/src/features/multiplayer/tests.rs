@@ -13,7 +13,7 @@ use super::model::{
 };
 use super::model::{
     RoomFocus, StepCard, StepRow, card_rooms, default_room_name, fix_lines, leaves_on_exit, lobby_hint,
-    room_focus, shows_ad, starting, step_title,
+    repeats, room_focus, shows_ad, starting, step_title,
 };
 use super::state::{Lobby, room_sizes, unasked};
 use swofty_core::online::multiplayer::types::RoomContent;
@@ -715,6 +715,37 @@ fn the_headline_shows_above_the_steps_only_for_what_no_step_says() {
     assert!(
         !card.banner && card.rows.len() == 2,
         "an ended session still shows where it stopped"
+    );
+}
+
+#[test]
+fn a_failed_steps_detail_that_repeats_its_problem_is_left_out() {
+    assert!(repeats("The room closed", "The room closed."));
+    assert!(repeats("the room closed.", "The Room Closed"));
+    assert!(!repeats("The room closed after being idle", "The room closed."));
+    let closed = |detail: &str| {
+        let room: SessionStep = serde_json::from_value(serde_json::json!({
+            "id": "room", "state": "failed", "detail": detail,
+            "problem": {"code": "room_closed", "text": "The room closed.", "retry": false,
+                        "detail": "the room closed"},
+        }))
+        .unwrap();
+        stepped(
+            Phase::Ended("the room closed".into()),
+            true,
+            vec![step("account", "done"), room, step("addons", "pending")],
+        )
+    };
+    let card = StepCard::of(&closed("the room closed"), false).unwrap();
+    let failed = row(&card, "room");
+    assert_eq!(failed.problem.as_ref().unwrap().text, "The room closed.");
+    assert_eq!(failed.detail, None, "the detail says what the problem says");
+    assert_eq!(failed.problem.as_ref().unwrap().detail, None);
+    let card = StepCard::of(&closed("lobby: refused with HTTP 404"), false).unwrap();
+    assert_eq!(
+        row(&card, "room").detail.as_deref(),
+        Some("Lobby: refused with HTTP 404"),
+        "a detail that adds something stays"
     );
 }
 

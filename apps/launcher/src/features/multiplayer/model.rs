@@ -290,7 +290,11 @@ impl StepRow {
                 detail: p.detail.clone(),
             }),
             _ => None,
-        };
+        }
+        .map(|mut p| {
+            p.detail = p.detail.take().filter(|d| !repeats(d, &p.text));
+            p
+        });
         let fixes = step
             .problem
             .as_ref()
@@ -299,7 +303,8 @@ impl StepRow {
             .unwrap_or_default();
         let detail = (warning || matches!(shown, StepState::Active | StepState::Failed | StepState::Skipped))
             .then(|| step.detail.as_deref().map(crate::ui::format::capitalised))
-            .flatten();
+            .flatten()
+            .filter(|d| problem.as_ref().is_none_or(|p| !repeats(d, &p.text)));
         Self {
             id: step.id.clone(),
             title: step_title(&step.id, state.host),
@@ -312,6 +317,12 @@ impl StepRow {
             hint: hint.filter(|_| step.id == "race"),
         }
     }
+}
+
+/// Whether `detail` says the same as `text`, ignoring case and a closing full stop.
+pub(crate) fn repeats(detail: &str, text: &str) -> bool {
+    let plain = |s: &str| s.trim().trim_end_matches('.').trim_end().to_lowercase();
+    plain(detail) == plain(text)
 }
 
 /// What a fix plan asks the player to change to match the host, one sentence per step.
