@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "void Game_Mfd_FuelMix_Refresh(void *fuel_sub, uint8_t veh)",
-  "evidence": "doc:re/db/subsystems/game.md",
-  "notes": "Mask bit i = availability int == 0; sets current_fuel_mix.value, show_f2_fuel (FuelTank+0xf8 FixedLoad), show_laps; editable via 0x141789070 (body 0x14b7f7f70: FuelAuto +0xd7 == 0, FixedLoad == 0, >= 2 rows, sub+0x50); sub+0x50 = session per-player byte +0x12 bit 2 read at 0x1417885f2 (fuel-mix, fuel-verify claim 7) | findings from PR #474 by vogtmarcel07-cloud; independent check 2026-10-28 by fuel-verify: agree"
+  "evidence": "doc:re/db/subsystems/game.md;doc:re/research/fuel_mix_five.md#sites",
+  "notes": "Mask bit i = availability int == 0; sets current_fuel_mix.value, show_f2_fuel (FuelTank+0xf8 FixedLoad), show_laps; editable via 0x141789070 (body 0x14b7f7f70: FuelAuto +0xd7 == 0, FixedLoad == 0, >= 2 rows, sub+0x50); sub+0x50 = session per-player byte +0x12 bit 2 read at 0x1417885f2 (fuel-mix, fuel-verify claim 7) | findings from PR #474 by vogtmarcel07-cloud; independent check 2026-10-28 by fuel-verify: agree | engine-re fuel-mix-5 2026-11-20 (static): mask = 4 availability dwords only (the 0x20 per-car entry is 4 fuel + 4 ERS dwords; no fifth). edited by engine-re with --force 2026-11-20 at user request (lane owner review requested)"
  },
  "signature": {
   "id": "game.mfd_fuel_mix_refresh",

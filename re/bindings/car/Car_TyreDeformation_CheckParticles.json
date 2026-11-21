@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "pat:log-channel-DEFORMATION",
-  "notes": "Log channel DEFORMATION: 'Particles have NOT YET been allocated for vehicle %d tyre %d.' | 'Should be 50 physics particles because that is what the data uses for all tyres.'"
+  "evidence": "pat:log-channel-DEFORMATION;doc:re/research/fuel_mix_five.md#sites;xref:0x142f509bc",
+  "notes": "Log channel DEFORMATION: 'Particles have NOT YET been allocated for vehicle %d tyre %d.' | 'Should be 50 physics particles because that is what the data uses for all tyres.' | engine-re fuel-mix-5 2026-11-20 (static): also packs the car state that Car_State_Read_Snapshot 0x14470d760 unpacks: fuel_mode byte (+0x128) shl 4 / and 0x30 into bits 4..5 of a byte (0x14470c3f1..0x14470c3ff), CarErs ers_mode +0x1a68 and 7 into the next byte (0x14470c41a..0x14470c430). Its only caller 0x142f50960 sits next to the reader's caller 0x142f50a00, so this is most likely the snapshot writer and the current name is one section of it (HYPOTHESIS for the whole role; callers: census steam 0x470bd80). edited by engine-re with --force 2026-11-20 at user request (lane owner review requested)"
  },
  "signature": {
   "id": "car.tyre_deformation_check_particles",
@@ -55,6 +55,16 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/14470bd80.c;xref:0x142f509bc",
    "notes": "V7264 name fits, facts hold"
+  },
+  {
+   "date": "2026-11-20",
+   "verifier": "fuel5-verify",
+   "kind": "func",
+   "item": "0x14470bd80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "pat:disasm-0x14470c3ea-0x14470c3ff;pat:disasm-0x14470c41a-0x14470c430;xref:0x142f509bd",
+   "notes": "V12405 blind re-derivation (own capstone disasm, no write-up read): fuel_mode shl 4 and 0x30 into rsp+0x99, ers_mode &7 into rsp+0x9a; single caller in 0x142f50960, next to 0x142f50a00 which calls 0x14470d760"
   }
  ],
  "proofs": []
