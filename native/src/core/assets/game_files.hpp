@@ -31,7 +31,8 @@
 // its eaid:// URI, a texture or texture-array slice decoded to RGBA8, and a UI image catalogue entry's texture array and
 // slice. A URI's package (eaid://<package>/...) names the folder 2025_asset_groups/<package>/; the first read of a
 // package opens the index of every ERP archive in that folder, as the badge and logo readers do, and keeps which
-// archive carries each URI. An overlay archive the launcher layers on a game archive wins over it. The file reads come
+// archive carries each URI (by a 64-bit hash of the URI, so a package of 118,000 resources keeps about 2 MB). An
+// overlay archive the launcher layers on a game archive wins over it. The file reads come
 // from Env, so the same code runs in the core and in host tests.
 
 namespace swofty_core::assets::game_files {
@@ -253,18 +254,13 @@ public:
             at = end + 1;
         }
         std::string uri = "eaid://ui_package/databases/" + database + ".uidb";
-        auto db = databases_.find(uri);
-        if (db == databases_.end()) {
-            std::vector<std::string> frags;
-            if (!fragments(uri, 0, frags, why))
-                return false;
-            auto pkg = std::make_unique<Parsed>();
-            pkg->bytes = std::move(frags[0]);
-            if (!pkg->pkg.read(pkg->bytes))
-                return why = uri + " does not read: " + pkg->pkg.why, false;
-            db = databases_.emplace(uri, std::move(pkg)).first;
-        }
-        uidb::Node *node = db->second->pkg.find(path);
+        std::vector<std::string> frags;
+        if (!fragments(uri, 0, frags, why))
+            return false;
+        uidb::Pkg pkg;
+        if (!pkg.read(frags[0]))
+            return why = uri + " does not read: " + pkg.why, false;
+        uidb::Node *node = pkg.find(path);
         if (!node || node->kind != uidb::Node::object)
             return why = uri + " has no catalogue " + name, false;
         std::string array = uidb::Pkg::text_of(*node, "TextureArrayName");
@@ -293,11 +289,7 @@ private:
     };
     struct Package {
         std::vector<std::string> archives;
-        std::unordered_map<std::string, uint32_t> at;
-    };
-    struct Parsed {
-        std::string bytes;
-        uidb::Pkg pkg;
+        std::vector<std::pair<uint64_t, uint32_t>> at;
     };
 
     bool index(const std::string &package, Package *&out, std::string &why)
@@ -310,32 +302,42 @@ private:
         std::vector<std::string> stock = env_.list ? env_.list(folder) : std::vector<std::string>{};
         if (stock.size() > MAX_ARCHIVES)
             return why = folder + " holds " + std::to_string(stock.size()) + " archives, more than this core reads", false;
-        auto add = [&](const std::string &rel) {
+        struct Seen {
+            uint64_t hash;
+            uint32_t id;
+            bool overlay;
+        };
+        std::vector<Seen> seen;
+        auto open_into = [&](const std::string &rel, bool overlay) {
             auto src = env_.open(rel);
             erp::Archive arc;
             std::string w;
             opened_++;
             if (!src || !erp::open(*src, arc, w))
-                return;
+                return false;
             uint32_t id = uint32_t(p.archives.size());
             p.archives.push_back(rel);
             for (auto &e : arc.entries)
-                p.at.emplace(e.name, id);
-            if (env_.overlays)
-                for (auto &o : env_.overlays(rel)) {
-                    auto osrc = env_.open(o);
-                    erp::Archive oarc;
-                    opened_++;
-                    if (!osrc || !erp::open(*osrc, oarc, w))
-                        continue;
-                    uint32_t oid = uint32_t(p.archives.size());
-                    p.archives.push_back(o);
-                    for (auto &e : oarc.entries)
-                        p.at[e.name] = oid;
-                }
+                seen.push_back({runtime::fnv64(e.name), id, overlay});
+            return true;
         };
         for (auto &rel : stock)
-            add(rel);
+            if (open_into(rel, false) && env_.overlays)
+                for (auto &o : env_.overlays(rel))
+                    open_into(o, true);
+        std::stable_sort(seen.begin(), seen.end(), [](const Seen &a, const Seen &b) { return a.hash < b.hash; });
+        for (size_t i = 0; i < seen.size();) {
+            size_t j = i;
+            uint32_t pick = seen[i].id;
+            bool overlaid = false;
+            for (; j < seen.size() && seen[j].hash == seen[i].hash; j++)
+                if (seen[j].overlay)
+                    pick = seen[j].id, overlaid = true;
+            if (!overlaid)
+                pick = seen[i].id;
+            p.at.push_back({seen[i].hash, pick});
+            i = j;
+        }
         if (env_.indexed)
             env_.indexed(folder, p.archives.size(), p.at.size());
         if (p.archives.empty())
@@ -352,8 +354,9 @@ private:
         Package *p = nullptr;
         if (!index(package, p, why))
             return false;
-        auto it = p->at.find(uri);
-        if (it == p->at.end())
+        uint64_t h = runtime::fnv64(uri);
+        auto it = std::lower_bound(p->at.begin(), p->at.end(), std::pair<uint64_t, uint32_t>{h, 0});
+        if (it == p->at.end() || it->first != h)
             return why = uri + " is in no archive of " + env_.root_folder + package + "/", false;
         w.rel = p->archives[it->second];
         w.src = env_.open(w.rel);
@@ -393,7 +396,6 @@ private:
     Env env_;
     std::mutex lock_;
     std::map<std::string, Package> packages_;
-    std::map<std::string, std::unique_ptr<Parsed>> databases_;
     std::map<std::string, Catalogue> catalogues_;
     size_t opened_ = 0;
 };
