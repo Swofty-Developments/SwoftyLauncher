@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143c89460.c;xref:0x143c8e686,0x143d84fe3",
-  "notes": "Creates deferred lighting pass (strings DeferredLightingGenerator.ContextSetup, DeferredLightingCBuffer, deferred_render/ps_deferred_%s%s/%s/p0, DeferredRender, ps_clear_to_nan). Named callers: Game_Rtt_CreateScenes."
+  "notes": "Strings DeferredLightingGenerator.ContextSetup, DeferredLightingCBuffer, deferred_render/ps_deferred_%s%s/%s/p0, DeferredRender, ps_clear_to_nan; 6 KB body. Callers 0x143c8dce0, Game_Rtt_RttGenerator."
  },
  "signature": {
   "id": "game.rtt_create_deferred_lighting",

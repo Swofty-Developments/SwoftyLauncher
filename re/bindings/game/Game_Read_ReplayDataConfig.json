@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: replay_data.can_flashback, replay_data.controls.camera_view, replay_data.controls.can_cycle_ui, replay_data.controls.change_driver, replay_data.controls.exit, replay_data.controls.fast_forward, replay_data.controls.flashback, replay_data.controls.forward_icon, replay_dat'"
+  "evidence": "decomp:re/decomp/142c02c90.c;pat:log-channel--;xref:0x14e46fc34",
+  "notes": "Replay controls VM bindings: replay_data.controls.* (pause, rewind, cameras, flashback, photo mode), progress0To1, can_flashback, icons."
  },
  "signature": {
   "id": "game.read_replay_data_config",

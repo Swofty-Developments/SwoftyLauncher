@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140503570",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140503570.c;xref:0x140be95b3",
-  "notes": "Sets the std::string field at msg+0x60 of RecursionOptionErrorRecord from C string param_2 (SSO or heap via global allocator 0x14618b130). Caller Sess_WeekendOptions_OnRaceLengthChanged."
+  "notes": "(msg, cstr): if cstr != 0 builds a std::string copy (SSO < 16, heap via allocator 0x14618b130 with 32-byte alignment for >= 0xfff) and moves it into the std::string at msg+0x60 (size +0x70, cap +0x78), freeing the old buffer. Caller 0x140be95b3 (0x140be9370) right after the RecursionOptionErrorRecord ctor. (lane owner review requested)"
  },
  "signature": {
   "id": "game.proto_recursion_option_error_record_set_str",

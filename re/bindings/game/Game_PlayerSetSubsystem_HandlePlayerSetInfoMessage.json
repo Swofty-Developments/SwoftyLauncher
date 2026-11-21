@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
+  "evidence": "decomp:re/decomp/1431692f0.c;pat:log-message-cxx;xref:0x14316905c",
   "notes": "cxx=PlayerSetSubsystem::handlePlayerSetInfoMessage; log channel PLAYERSET: 'void network::PlayerSetSubsystem::handlePlayerSetInfoMessage(neon::NeNetMessage &, neon::NeNetConnectionID) | %s: Player %s being added'"
  },
  "signature": {

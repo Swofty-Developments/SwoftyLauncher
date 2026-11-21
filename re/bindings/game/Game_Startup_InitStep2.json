@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1443c1ce0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "xref:0x1443c0650;decomp:re/decomp/1443c1ce0.c",
-  "notes": "engine-re 2026-10-30 static: returns an errno-style status: 0xc when its first allocation (allocator vfunc+0x18) fails (0x1443c1f1d), 0x16 when [[arg+8]+0x14f0] is null (0x1443c200d), else tail-calls 0x143a52550 (own codes 0x10/0x25..., each recorded with RtlCaptureStackBackTrace + GetCurrentThreadId). The #341 abort means one of these is non-zero; the dump's eax at 0x1443c0655 tells which branch"
+  "evidence": "decomp:re/decomp/1443c1ce0.c;xref:0x1443c0650",
+  "notes": "Called at 0x1443c0650. Decomp is polluted by the merged tail target 0x143a52550; judged by disasm in pdata (+0x49a): allocates a 0x148 object (vt 0x1458a2280, CS + CreateEventW), returns 0xc on alloc failure (0x1443c1f1d), 0x16 when [[arg+8]+0x14f0] is null (0x1443c200d), else vcall +0x18 on it and jmp 0x143a52550 at 0x1443c1e9c (status from there). (lane owner review requested)"
  },
  "signature": {
   "id": "game.startup_init_step2",

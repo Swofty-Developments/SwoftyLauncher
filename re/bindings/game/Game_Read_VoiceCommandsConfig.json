@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: voice_commands.active_command_list_size, voice_commands.command_list, voice_commands.command_recognised, voice_commands.command_unrecognised, voice_commands.feedback_time, voice_commands.is_strategy_list, voice_commands.show, voice_commands.show_next_page, voice_commands'"
+  "evidence": "decomp:re/decomp/142f748e0.c;pat:log-channel--;xref:0x142f79668,0x142f7d5f0,0x142f7db96,0x14facd01d",
+  "notes": "Voice commands HUD VM: voice_commands.* show/list/recognised/feedback, strategy list, pit window strings."
  },
  "signature": {
   "id": "game.read_voice_commands_config",

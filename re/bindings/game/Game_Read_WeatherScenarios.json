@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140b9f490.c",
-  "notes": "weather_custom and weather_scenarios.m_<session>.<single|full>.<short|medium|long> -> weather_<session>_<...> scenario rows."
+  "evidence": "decomp:re/decomp/140b9f490.c;xref:0x14978339d,0x1497833aa,0x1497833b7,0x1497833c4,0x1497833d1,0x1497833de,0x1497833eb,0x1497833f8,0x149783405,0x149783419,0x149783426,0x149783433,0x149783440,0x14978344d,0x14978345a,0x149783467,0x149783479",
+  "notes": "Weather scenarios GDB reader: weather_custom and weather_scenarios.m_<session>.<single|full>.<short|medium|long> -> weather_<...> rows."
  },
  "signature": {
   "id": "game.read_weather_scenarios",

@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1401dbe20.c;xref:0x1401daa04",
+  "evidence": "decomp:re/decomp/1401dbe20.c;xref:0x1401daa04,0x1401e9016,0x1402091f3,0x14020abda,0x14023fe1c,0x14024abad,0x140389fb9,0x14038a2fd,0x14038a54d,0x14038a84d,0x14038aaad,0x1403ada21,0x1403ae76e,0x1403aed21,0x1403af88c,0x1403b008c,0x1403b06cc,0x1403b0a6c,0x1403b11c4,0x1403b16e9,0x1403d1004,0x1403d2fa3,0x1403db084,0x1403db6bd,0x140c75e55,0x1428a4b91,0x1428b6b4e",
   "notes": "355-line SIMD routine that wraps angles (x * 1/2pi rounded, * 2pi, pi constant 0x40490fdb) and interpolates scene-instance transforms of two param blocks. Callers Game_CameraFixedInstance_Update, Game_CameraActorEnable_SpawnScene, Game_CameraActorEnable_SpawnStaticScene. Hypothesis."
  },
  "signature": {

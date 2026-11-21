@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14183e570.c;xref:0x141834763,0x141834903",
+  "evidence": "decomp:re/decomp/14183e570.c;xref:0x141834763,0x141834903,0x141835813,0x141836a84,0x14183c0b0,0x141840345,0x141913cdf,0x141939b83",
   "notes": "About 1600 line destructor/cleanup: resets many embedded view-model members (vtable 0x145612e48 at +0x152*8 ...), releases thumbnails with Ne_Resource_Release. Callers Game_SessionResults_ReleaseThumbnails, PopulateTable. Hypothesis."
  },
  "signature": {

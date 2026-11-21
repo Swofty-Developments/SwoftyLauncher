@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140194930",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140194930.c;xref:0x140194a1a",
-  "notes": "Recursive matcher using Ne_Crt_Strstr / Ne_Crt_Strcmp on name fields (+0x540..+0x558) against param_2. Callers itself, 0x1401a2140, 0x1401a8200. Hypothesis. vp0-verify partial"
+  "evidence": "decomp:re/decomp/140194930.c;xref:0x140194a1a,0x1401a396b,0x1401a3a00,0x1401a3a95,0x1401a3b46,0x1401a823b,0x1401a82ea,0x1401a8598,0x1401a85c2,0x1401a8988,0x1401a89ad,0x1401a969c,0x1401a96c7,0x1401a9716,0x1401a9774,0x1401aa1d2,0x1401bda70,0x1401cbfe4,0x14024274a,0x140245123,0x1402467a3,0x14024a6f9,0x140391e56,0x140391e7b,0x1403921d3,0x1403d3228,0x14288a151,0x14288a269,0x14288a2a2,0x14288a2da,0x14288a312,0x14288a34a,0x14288cb95,0x1428902e7,0x14289fc15,0x1428a0210,0x1428a074a,0x1428a141b,0x1428a5223,0x1428a5358,0x1428a55df,0x1428a5638,0x1472b9312,0x1472cdb79,0x1472cdbc8,0x1472d0830,0x1472d3812,0x1472d7042,0x1472d797f,0x1472dc2d8,0x147304067,0x147304092,0x14730a5a9,0x14730a5d9,0x147315fa9,0x147316009,0x147316eff,0x147316f54,0x147316fa9,0x147317939,0x147317986,0x147332d05,0x147b6c580,0x14d25ef1e,0x14d25ef36,0x14d269d34,0x14d269d4c",
+  "notes": "Recursive node search: node name = string table 0x14618ce08 entry [+0x540] (under lock 0x14618ce18); param_2 starting with \"~\" -> substring match (0x14532aaf8) of param_2+1, else exact strcmp; on match *param_3 = node and returns 1, else recurses into the children +0x550..+0x558. Null name returns 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.scene_match_name_filter",

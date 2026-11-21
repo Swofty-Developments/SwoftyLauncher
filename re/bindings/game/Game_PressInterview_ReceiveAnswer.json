@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140fd4bb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-PRESS_INTERVIEWS",
-  "notes": "named from its log messages (channel PRESS_INTERVIEWS): 'Press interview answer gived network message received, question: %d, answer %d'"
+  "evidence": "decomp:re/decomp/140fd4bb0.c;pat:log-channel-PRESS_INTERVIEWS;xref:0x140fd47fb",
+  "notes": "Network message handler (lea 0x140fd47fb in registration 0x140fd42c0): msg+0x14 = driver key (slot >>14, id &0x3fff); logs 'answer gived network message received' (question msg+0x16, answer msg+0x18); finds the question id in hash map [this+0x298]+0x310 and answer id in +0x358 (entry+8 == id), then 0x141047bb0([this+0x298], key, question, answer). (lane owner review requested)"
  },
  "signature": {
   "id": "game.press_interview_receive_answer",

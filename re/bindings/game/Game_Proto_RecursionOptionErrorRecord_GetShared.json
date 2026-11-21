@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1405029b0.c;xref:0x140be95c7",
-  "notes": "Lazily creates a 400-byte ref-counted object (vtable 0x145623f90) from this+0x40, caches it at +0x50/+0x58 and returns a shared_ptr copy in param_2. Caller Sess_WeekendOptions_OnRaceLengthChanged (2 sites)."
+  "evidence": "decomp:re/decomp/1405029b0.c;xref:0x140be95c7,0x140d3350e",
+  "notes": "(obj, out): lazily creates a 400-byte ref-counted block (vtable 0x145623f90, counts 0x100000001), constructs the payload via 0x1403f7cd0(block+0x10, obj+0x40), caches +0x50/+0x58 (releases old), returns a shared_ptr copy in out. Callers 0x140be95c7 (same object as the RecursionOptionErrorRecord ctor) and 0x140d3350e (0x140d334f0, object [rdx+0x10])."
  },
  "signature": {
   "id": "game.proto_recursion_option_error_record_get_shared",

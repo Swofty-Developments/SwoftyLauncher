@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-SaveDataSystem",
+  "evidence": "decomp:re/decomp/143656980.c;pat:log-channel-SaveDataSystem;xref:0x145855f98",
   "notes": "named from its log messages (channel SaveDataSystem): 'Save data build info: CL=\"%d\" branch=\"%s\" p4Date=\"%s\" saveDateUTC=\"%s\" platform=\"%s\" buildConfig=\"%s\" gameInfoName=\"%s\" smokeTestInfo=\"%s\"'"
  },
  "signature": {

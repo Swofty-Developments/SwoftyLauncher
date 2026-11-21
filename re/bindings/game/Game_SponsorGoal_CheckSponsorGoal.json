@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=SponsorGoal::checkSponsorGoal; log channel SPONSORS: 'SponsorGoal::checkSponsorGoal has no condition on it. Name : %s'"
+  "evidence": "decomp:re/decomp/1411090c0.c;pat:log-message-cxx;xref:0x14110ad91,0x14110cd16",
+  "notes": "pdata 0x1cac bytes; SPONSORS logs no condition / goal completed / condition passed / team and driver awarded. Callers 0x14110ad91, 0x14110cd16."
  },
  "signature": {
   "id": "game.sponsor_goal_check_sponsor_goal",

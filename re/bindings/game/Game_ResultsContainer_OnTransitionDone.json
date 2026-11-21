@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-RESULTS_CONTAINER",
-  "notes": "named from its log messages (channel RESULTS_CONTAINER): 'container close complete | screen close complete | timeout! | screen open complete'"
+  "evidence": "decomp:re/decomp/141d247c0.c;pat:log-channel-RESULTS_CONTAINER;xref:0x141d247b8,0x141d50796,0x141d50ac0,0x145748d30,0x14574ac00",
+  "notes": "Vtable slot (cells 0x145748d30, 0x14574ac00): switch on the event hash *param_2 (0x2d9097c3, 0x2e4d24e3, 0x6adae820, -0x78e45f5f, -0x570399ee) logging 'container close complete' / 'screen close/open complete' / 'timeout!', invoking stored callbacks, a 'restart_resume_replay_confirm' popup, and tail-jumps into Exit. Not a single transition-done hook. Better name: Game_ResultsContainer_OnUIEvent (bound record keeps its name)."
  },
  "signature": {
   "id": "game.results_container_on_transition_done",

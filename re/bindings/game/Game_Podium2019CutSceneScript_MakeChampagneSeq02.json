@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1403606b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=Podium2019CutSceneScript::makeChampagneSeq02; log channel CUTSCENE_PODIUM: 'Podium2019CutSceneScript::makeChampagneSeq02 | Podium2019CutSceneScript::hideActor | PodiumBaseCutSceneScript::spawnPodiumSceneDriverWithResultInRace | getIsLeadEngineerLoaded m_leadEngineerAssetGroup'"
+  "evidence": "decomp:re/decomp/1403606b0.c;pat:log-message-cxx;xref:0x1403685f0,0x140376402",
+  "notes": "Logs; location 'pod_pl'/'test', TV screens, scene 'champagne_seq02' (monaco flag this+0x8f8 hides 'champagne_seq02_official01..04'), 'champagne_seq02_camera1', drivers 'ch2driver_placed_first/second/third' in slots +0x840/+0x848/+0x850, champagne_bottles, lead engineer 'ENG' + trophy 3 + 'champagne_bottle_eng' when this+0x338 set, trophies 0,1,2, ShiftSceneTimingsByName 'podium_champagne_seq02', binds. (lane owner review requested)"
  },
  "signature": {
   "id": "game.podium2019_cut_scene_script_make_champagne_seq02",

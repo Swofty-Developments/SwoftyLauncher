@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1406ad830",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1406ad830.c;xref:0x142d602e9,0x142d90046",
-  "notes": "Posts bus message 0x145649c60 on [0x14618b3b8]+8, resets each camera entry ([[this+0x28]+0x50] +0x18..+0x20) via 0x14400ce20(entry+0x18), then picks camera set this+0xa8 (default) or this+0x98 for session types 1,7,9,0xc..0xf ([[this+0x160]+0x1a8] byte) unless the session is spectating with track time [[this+0x168]+0xd8]+0x4e94 > 0, applied via 0x144533ed0 (racing camera arbitrator). Called from Sess_FormationLapStartLights_OnStateEnter. Hypothesis: camera director reset."
+  "evidence": "decomp:re/decomp/1406ad830.c;xref:0x1406ad933,0x142d602e9,0x142d90046,0x1483ac96c",
+  "notes": "(cam): Ne_Post_BusMessage(vt 0x145649c60) on [0x14618b3b8]+8; 0x14400ce20(entry+0x18) for each camera in [[cam+0x28]+0x50]+0x18..+0x20; camera set cam+0x98 for session type 1,7,9,0xc-0xf ([[cam+0x160]+0x1a8] byte), cam+0xa8 for 0,2-6,8,0xa,0xb,0x10 or when spectating ([cam+0x168]+0xd1 and [[+0x168]+0xd8]+0x4e94 > 0), none otherwise; applied via 0x144533ed0. Callers 0x1406ad910 (jmp), Sess_FormationLapStartLights_OnStateEnter, 0x142d8fcc0, 0x1483ac8a0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.replay_camera_reset_for_session_start",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1436608c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-GameSaveSystemUserInterface",
-  "notes": "named from its log messages (channel GameSaveSystemUserInterface): 'Began displaying notification for operation %s'"
+  "evidence": "decomp:re/decomp/1436608c0.c;pat:log-channel-GameSaveSystemUserInterface;xref:0x145856790",
+  "notes": "Vtable cell 0x145856790 (UI vtable slots 0x145856778..0x145856798). Body only logs GameSaveSystemUserInterface \"Began displaying notification for operation %s\" with the name at [*param_2+0x48]; no other side effects. (lane owner review requested)"
  },
  "signature": {
   "id": "game.save_ui_begin_notification",

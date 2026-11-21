@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141d778d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_RenderBadgeViewModel_UnloadBadgeTextures;xref:0x141d77b09",
-  "notes": "cxx=game::RenderBadgeViewModel::unloadBadgeTextures; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/141d778d0.c;str:s_RenderBadgeViewModel_UnloadBadgeTextures;xref:0x141d733c8,0x14c1d78bd",
+  "notes": "unloadBadgeTextures() (own pretty-function 0x14574a267, log RENDER_BADGE). If request count this+0x3c0 != 0: for each id in vector [this+0x348]+0x38..+0x40 calls 0x1441e3150(obj+8,id,0), clears it, 0x1441e2e60(obj); walks list sentinel +0x3b0 releasing refcounted handles node+0x10/+0x18/+0x28 (short refcount +4, free via 0x146ca54a8 vcall +0x38), splices nodes to free list +0x3a8, count = 0. Callers 0x141d733c8, 0x14c1d78bd (this-0x268). (lane owner review requested)"
  },
  "signature": {
   "id": "game.render_badge_view_model_unload_badge_textures",

@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-PITSTOPS",
+  "evidence": "decomp:re/decomp/1403ad360.c;pat:log-channel-PITSTOPS;xref:0x1403c7876",
   "notes": "named from its log messages (channel PITSTOPS): 'Crew %d m_team %s | Contact John Smedley : failed to find pitlight scene for %s '"
  },
  "signature": {

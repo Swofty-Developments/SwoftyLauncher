@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_RetrieveConsumableEntitlementsTask_CollatePackageData;xref:0x140794ae4",
-  "notes": "cxx=game::RetrieveConsumableEntitlementsTask::collatePackageData; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/140794a00.c;str:s_RetrieveConsumableEntitlementsTask_CollatePackageData;xref:0x140793a76,0x140794982,0x140795e09",
+  "notes": "Pretty-function game::RetrieveConsumableEntitlementsTask::collatePackageData; 5 KB body. Callers Game_RetrieveConsumableEntitlementsTask_RequestSteamPrices, 0x140793e70, 0x140795df0."
  },
  "signature": {
   "id": "game.retrieve_consumable_entitlements_task_collate_package_data",

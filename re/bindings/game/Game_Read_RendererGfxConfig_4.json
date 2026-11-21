@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: Renderer.Gfx.enableDRED, Renderer.Gfx.enableGpuTrace, Renderer.Gfx.enableNvidiaShaderExtensions, Renderer.Gfx.enableRT, Renderer.Gfx.enableRealTimePathTracer, Renderer.Gfx.enableSER, Renderer.Gfx.slLogLevel, Renderer.Gfx.slWindow, Renderer.pathTracerIndirectTargets32Bit'"
+  "evidence": "decomp:re/decomp/1443dd2b0.c;pat:log-channel--;xref:0x14708a042,0x145a89738",
+  "notes": "Graphics settings: Renderer.Gfx.slWindow/slLogLevel/GPU trace/DRED/RT/path tracer/SER/NV extensions and hardware_settings_config display parsing (resolution, vsync, frame limiter, HDR)."
  },
  "signature": {
   "id": "game.read_renderer_gfx_config_4",

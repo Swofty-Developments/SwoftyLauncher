@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14188f530",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: overrides.customisation.icons.cstm_lock, overrides.customisation.icons.cstm_owned, overrides.customisation.icons.cstm_racenet'"
+  "evidence": "decomp:re/decomp/14188f530.c;pat:log-channel--;xref:0x14188c939,0x14188ef71,0x14ba2e465",
+  "notes": "Picks the status icon of a customisation item VM: +0x50 equipped -> cstm_equipped; else by unlock type +0x78 (0..8) and owned flag +0x52: paddock_shop, tier_lock (price +0x8c as text to +0x498), cstm_money, cstm_racenet, cstm_lock, cstm_owned/cstm_fave (+0x60==0x11). Sets UIDB ref at +0x3c0, writes type name (table 0x14571bc10, else eNone) to +0x178. (lane owner review requested) Better name: Game_CustomisationItem_SetStatusIcon (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_overrides_customisation_config",

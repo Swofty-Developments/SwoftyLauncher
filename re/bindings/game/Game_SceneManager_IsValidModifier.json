@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401de400",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=SceneManager::isValidModifier; log channel ACTOR: 'SceneManager::isValidModifier failed type='%s' id='%s''"
+  "evidence": "decomp:re/decomp/1401de400.c;pat:log-message-cxx;xref:0x1401dd833,0x1401ddbd3",
+  "notes": "Checks a scene XML node: name must be \"modifier\" and attributes \"type\" and \"id\" must exist; if global 0x14601e0e9 == 0, type must equal \"game::PhysicBoneSimModifier\" (else 0), otherwise any type passes (1). A missing attribute logs ACTOR \"SceneManager::isValidModifier failed type='%s' id='%s'\" and returns 0. Callers in 0x1401dc2b0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.scene_manager_is_valid_modifier",

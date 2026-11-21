@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_SessionResultsContainerViewModel_SetupNextState;xref:0x141d92c6a",
+  "evidence": "decomp:re/decomp/141d92230.c;str:s_SessionResultsContainerViewModel_SetupNextState;xref:0x14574bb00",
   "notes": "cxx=game::SessionResultsContainerViewModel::setupNextState; named in bulk from a pretty-function or log string that may belong to an inlined callee"
  },
  "signature": {

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1407c31d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1407c31d0.c;xref:0x142da92cc,0x14309c4ff",
-  "notes": "(ctx) Gets the current session descriptor (vcall +0xa8 on ctx+0x1030) and maps its mode (+0xc) / session type (+8) to strings: TimeAttack, OvertakeChallenge, CheckpointChallenge, PursuitChallenge, DriftChallenge, AverageSpeedChallenge, RivalDuelChallenge, Elimination, F1CG, F1AMP, Race, Race2, Race3, TimeTrial, AutoCrossChallenge, ShortPractice, Qualifying1..3, ShortQualifying, OneShotQualifying, SprintShootout1..3, ShortSprintShootout, OneShotSprintShootout ('unknown'), formats with Ne_Crt_Snprintf and writes it to a registry node (Vm_Resolve_RegistryNode 0x1461029d0). Callers Sess_Loader_RequestTrackUnload, Game_Championship_ResetSessionsForRestart. Addon: session-type enum names."
+  "notes": "Gets the session descriptor (vcall +0xa8 on this+0x1030). Mode +0xc 0..3/0x10: name from component 0x14605b388 (0x140be8c10, session type +8) or the session-type table (NotSet..MaxSessionTypes); modes 4..0xf: TimeAttack..F1AMP; default \"?\". Formats \"session_type_data.%s\", resolves the registry node (0x1442b1b60 on 0x146ca54f8) and binds it to view node +0x13b8. Callers Sess_Loader_RequestTrackUnload, Game_Championship_ResetSessionsForRestart. (lane owner review requested)"
  },
  "signature": {
   "id": "game.session_build_session_type_name",

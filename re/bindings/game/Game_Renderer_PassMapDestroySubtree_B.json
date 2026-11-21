@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b44640",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143b44640.c;xref:0x143b1bf45,0x143b1cb79,0x143b4155b",
-  "notes": "Identical twin of 0x143b452e0 (recursive node destroy via allocator vcall +0x38), different template instance. Named callers: Game_Renderer_CreateRenderPasses."
+  "evidence": "decomp:re/decomp/143b44640.c;xref:0x143b1bf45,0x143b1cb79,0x143b4155b,0x143b43ccb,0x143b43ce8,0x143b43f7d,0x143b4419b,0x143b44670",
+  "notes": "Byte-identical twin of 0x143b452e0 (chunk-chain free of pooled list B, 0xf0 nodes). (lane owner review requested) Better name: Game_Renderer_SlotListB_FreeChunkChain (bound record keeps its name)."
  },
  "signature": {
   "id": "game.renderer_pass_map_destroy_subtree_b",

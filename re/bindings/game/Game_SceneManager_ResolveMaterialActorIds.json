@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1401ed220.c;xref:0x1401a6401,0x1401ebb97",
+  "evidence": "decomp:re/decomp/1401ed220.c;xref:0x1401a6401,0x1401ebb97,0x1401ec128",
   "notes": "Takes a vector of u32 actor ids (param_3): empty -> 0xffffffff, single -> that id, else under critical section (+0x30) merges/looks up in the scene actor table (+200) and returns the combined id. Callers Game_SceneManagerSpawn_MergeScene, Game_SceneManager_BuildMaterialActorForScene. Hypothesis."
  },
  "signature": {

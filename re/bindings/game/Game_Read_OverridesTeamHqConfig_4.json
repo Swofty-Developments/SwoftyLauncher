@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: overrides.team_hq.sponsor_contracts.risk_status_overlay.risk_state_01, overrides.team_hq.sponsor_contracts.risk_status_overlay.risk_state_02, overrides.team_hq.sponsor_contracts.risk_status_overlay.risk_state_03, overrides.team_hq.sponsor_contracts.risk_status_overlay.ri'"
+  "evidence": "decomp:re/decomp/1419c51a0.c;pat:log-channel--;xref:0x14168205a,0x142344894,0x142344973,0x14234915a,0x1423d605f",
+  "notes": "Sponsor contract offer card: lng_contract_* headers, risk_status_overlay.risk_state_01..05, Ui_Format_ResourcePointsAmount."
  },
  "signature": {
   "id": "game.read_overrides_team_hq_config_4",

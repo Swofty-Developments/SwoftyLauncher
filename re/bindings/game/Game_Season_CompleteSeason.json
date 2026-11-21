@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1407ba160",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=Season::completeSeason; log channel GAME: 'Season::completeSeason() completion status (%s)'"
+  "evidence": "decomp:re/decomp/1407ba160.c;pat:log-message-cxx;xref:0x1412676a7,0x1422cc5cb,0x14234c587",
+  "notes": "Gets the season ([+0x1058]+0x208 vcall +0x88); returns if none or status +0x538 == 2; sets status 2 when the current event (+0x2a0) is the last one and its state +0x23c == 2; logs GAME \"Season::completeSeason() completion status (%s)\" (names 0x1456608d0); 0x1407ba290(this); per-mode passes over +0x12e8 and [+0x1058]+0x4e8 entries (0x1407bd940 / 0x1407bd950); pushes a bool to view node +0x13d8. (lane owner review requested)"
  },
  "signature": {
   "id": "game.season_complete_season",

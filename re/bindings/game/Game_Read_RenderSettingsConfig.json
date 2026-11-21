@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: render_settings.colour_alpha, render_settings.cone_object_offset, render_settings.cone_object_string, render_settings.default_gate_size, render_settings.gate_depth, render_settings.gate_height, render_settings.gate_height_modifier, render_settings.gate_width_modifier, re'"
+  "evidence": "decomp:re/decomp/142d15520.c;pat:log-channel--;xref:0x1457da598",
+  "notes": "Autocross settings GDB reader: lap proportions, cone/gate penalties, render_settings.* gate geometry, physics_objects/render idf paths."
  },
  "signature": {
   "id": "game.read_render_settings_config",

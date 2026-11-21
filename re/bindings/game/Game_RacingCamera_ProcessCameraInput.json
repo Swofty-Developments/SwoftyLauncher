@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144540050.c;xref:0x14080e237,0x144540040",
-  "notes": "Per-frame racing camera input: checks look-left/right/back/cycle actions (0x1441162f0 on action ids 0x146cc1d00/1d10/1d20/1df0), cycles cameras (0x144541150/0x1445412a0/0x1445413f0), asks Game_RacingCameraArbitrator_RequiresCrossfade, resets FreeLookCameraModifier state (log resetStateData), posts a bus message (Ne_Post_BusMessage). Addon: intercept camera switching / look-back input. d4-verify-b correction: no Ne_Post_BusMessage call; last call 0x144534390 (RequiresCrossfade) with (arbitrator, cam info, vehicle, player idx, 2, 0, 2) acts as a camera-change request"
+  "evidence": "decomp:re/decomp/144540050.c;xref:0x14080e237",
+  "notes": "Callees from disassembly: Ne_InputMapper_IsActionPressed 0x1441162f0, 0x144541150, 0x1445412a0, 0x1445413f0, Ne_Entity_FindComponent 0x143f9b3c0, 0x144534390 (camera request submit); no Ne_Post_BusMessage call. Logs FreeLookCameraModifier::resetStateData. Caller 0x14080e237 (0x14080e110)."
  },
  "signature": {
   "id": "game.racing_camera_process_camera_input",

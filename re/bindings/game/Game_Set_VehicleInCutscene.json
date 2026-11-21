@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140239cf0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140239cf0.c;xref:0x140239c2d,0x140274c98,0x14037019f;imm:0x7c97c1e9",
-  "notes": "logs OSQGHOST setIsInCutscene; sets vehicle+0x9f0a and 4 wheel flags (+0x164), then finds model node 'halo' and restores its rest transform (makes the halo pillar visible again for cutscenes)."
+  "evidence": "decomp:re/decomp/140239cf0.c;imm:0x7c97c1e9;xref:0x140239c2c,0x140274c97,0x14037019e,0x1455eb1f0,0x1456caf70",
+  "notes": "Virtual in the cutscene script vtables (cells 0x1455eb1f0, 0x1456caf70 and more in between). For vehicle index param_3: binds each scene part of param_2 (0x140382200, bones F1Car_AnimBone/F2Car_AnimBone), logs OSQGHOST \"setIsInCutscene %p %s\", sets vehicle+0x9f0a and the 4 wheel flags +0x164, restores the rest transform of node \"halo\", rebinds wheels 0..3 (0x142e83130/0x142e87870); then copies or scales by 0.001 (param_6) model node [+0x10b8] and vcall +0x98(param_7). (lane owner review requested)"
  },
  "signature": {
   "id": "game.set_vehicle_in_cutscene",

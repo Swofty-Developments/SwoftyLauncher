@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142cd5bb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142cd5bb0.c;xref:0x142c19514",
-  "notes": "Sets light node matrices of the start-lights model (Ne_ModelInstance_SetNodeMatrices) for light index param_2 with on/off flags param_3/param_4 (state +0xbbc..+0xc28). Callers Game_StartLights_Update (several). Addon: start lights visuals."
+  "evidence": "decomp:re/decomp/142cd5bb0.c;xref:0x142c19514,0x142c19524,0x142cd6714,0x142cd6873,0x142cd6f00,0x142cd71e6,0x142cd71fe,0x142cd7239,0x142d4ea1b,0x142d721ed,0x14e6f5739,0x14e702117,0x14e70213a,0x14e702254,0x14ea31d06",
+  "notes": "(lights, count, flagA, flagB) only when +0xbbc: +0xc20 = count/5.0 (0 if count>5), +0xc24 = flagA?1.0:0, +0xc28 = flagB?1.0:0, then for each model in +0xbc8..+0xbd0 Ne_ModelInstance_SetNodeMatrices 0x143d3d8e0(model+0x80,this+0xc20,0,1,-1,0) and marks it dirty (+0x128=2, +300 bit 0x40, jobs 0x143d6b440/0x143d3ce20). (lane owner review requested)"
  },
  "signature": {
   "id": "game.start_lights_apply_light_nodes",

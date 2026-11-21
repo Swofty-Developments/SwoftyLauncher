@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=RacingFFBEffectXInput::updateIsXboxOneController; log channel FFB_DEBUG: 'RacingFFBEffectXInput::updateIsXboxOneController - Found Xbox Series pad'"
+  "evidence": "decomp:re/decomp/1446f6020.c;pat:log-message-cxx;xref:0x145c003a8",
+  "notes": "Virtual (vt cell 0x145c003a8). Logs FFB_DEBUG updateIsXboxOneController 'Found xone pad' / 'Not an xone pad' / 'Found Xbox Series pad'."
  },
  "signature": {
   "id": "game.racing_ffb_effect_x_input_update_is_xbox_one_controller",

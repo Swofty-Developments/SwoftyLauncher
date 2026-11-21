@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143032330",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143032330.c",
-  "notes": "RollingStartSystem (MessageRollingStart*, rollingStartDistance)."
+  "evidence": "decomp:re/decomp/143032330.c;xref:0x145d31d18",
+  "notes": "CRT dynamic initialiser (code-pointer cell 0x145d31d18 between initialisers 0x142ecaf40 and 0x14321e1e0). InitializeCriticalSection, string hashes (0x1449087e0) for vehicle_bus_mute/unmute, world_material, car_material..., {type 0x145890940, name} pairs for Vehicle*, Unlock*, *EventNode, VTESystem, LeaderboardViewModel etc., dtors via Ne_Crt_Atexit. Not a rolling-start update. (lane owner review requested) Better name: Game_StaticInit_VehicleUnlockTypeNames (bound record keeps its name)."
  },
  "signature": {
   "id": "game.rolling_start_update",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140a2e9e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140a2e9e0.c;xref:0x142526d9d,0x142526ddc",
-  "notes": "Once (lock this+0x18, flag +0x10): registers setSpeechVODurationDelegate (0x140a2eab0) and setSpeechVOFinishedDelegate (0x140a2ec00) with the speech system [owner+0xa0]+0xc30. Callers Sess_DoughnutSequence_Enter, Game_VoPlaySoundEffectNode_Execute."
+  "evidence": "decomp:re/decomp/140a2e9e0.c;xref:0x142526d9d,0x142526ddc,0x142529270,0x142d59e0b",
+  "notes": "Once under lock this+0x18 (flag +0x10): if [this+8] vcall +0x90 (speech ready), registers 0x140a2eab0 as setSpeechVODurationDelegate (0x140a35510 on [owner+0xa0]+0xc30, slot +0x920) and 0x140a2ec00 as setSpeechVOFinishedDelegate (0x140a35c50, slot +0x960); sets the flag. (lane owner review requested)"
  },
  "signature": {
   "id": "game.speech_vo_register_delegates",

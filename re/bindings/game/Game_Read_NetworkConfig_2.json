@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430aa190",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: network.current_session.selected_player_name, network.invite_data.invite_pending, ui_menu_data.persistent_status.hopper_searching'"
+  "evidence": "decomp:re/decomp/1430aa190.c;pat:log-channel--;xref:0x1430d1b69",
+  "notes": "Ctor: owner [param_2+0x10], QPC timer, completion names joinSessionCompleted (+0x158) and leaveSessionCompleted (+0x268); VM bindings network.invite_data.invite_pending +0x3c0, ui_menu_data.persistent_status.hopper_searching +0x3e0, network.current_session.selected_player_name +0x400; random id block +0x460. (lane owner review requested) Better name: Game_NetSessionJoinLeave_Construct (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_network_config_2",

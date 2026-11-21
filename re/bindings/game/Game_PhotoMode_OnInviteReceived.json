@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142da3e60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-PHOTO-MODE",
-  "notes": "named from its log messages (channel PHOTO-MODE): 'Invite received: Close down photo mode'"
+  "evidence": "decomp:re/decomp/142da3e60.c;pat:log-channel-PHOTO-MODE;xref:0x1457e37f8,0x1457e38b8,0x1457e3958,0x1457e3cc8,0x1457e3dd8,0x1457e3e78",
+  "notes": "Message handler (this, out, msg): msg type +0x10 8/0xd sets photo-mode state [this+0xd60] to 4 (0x1445d5c40) unless state 5/8; type 10 in state 5 logs PHOTO-MODE 'Invite received: Close down photo mode' and Game_PhotoModeSystem_SetEnabled([this+0xdc0],0); when *out != [0x146cb2280]: fade request ('Replay'), [this+0xc88]+0x7b8 |= 0x20, Game_PhotoModeSystem_Disable([this+0xdc0]). Same slot in 6 vtables. (lane owner review requested)"
  },
  "signature": {
   "id": "game.photo_mode_on_invite_received",

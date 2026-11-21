@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: Game.AutoProfile.enabled, Game.AutoProfile.framesToCapture, Game.AutoProfile.framesToWait, Game.EnableSaveGame, Game.suppressWarnings, Steam.cloudEnabled, VTE.enabled'"
+  "evidence": "decomp:re/decomp/1407f7320.c;pat:log-channel--;xref:0x145648700",
+  "notes": "Vt cell 0x145648700. Body 0x5ce5 bytes."
  },
  "signature": {
   "id": "game.read_game_config",

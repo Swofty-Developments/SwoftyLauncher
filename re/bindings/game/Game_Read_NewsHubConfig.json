@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: news_hub.bg_images, news_hub.fe_images, news_hub.qr_codes'"
+  "evidence": "decomp:re/decomp/1417dacc0.c;pat:log-channel--;xref:0x1417d9f5f,0x1417dd612",
+  "notes": "News hub VM: news_first_boot, lng_news, news_hub.bg_images/qr_codes/fe_images, overrides.fe_world news panels, 'key not found'."
  },
  "signature": {
   "id": "game.read_news_hub_config",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142c6f690",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-SAFETY_RATING",
-  "notes": "Log channel SAFETY_RATING: 'Lead player's safety rating went from %u to %u on match completion.'"
+  "evidence": "decomp:re/decomp/142c6f690.c;pat:log-channel-SAFETY_RATING;xref:0x142c6ec0e,0x14e59b25b",
+  "notes": "(sys, results*, bonus): needs +0x388 and +0x3e8. Snapshot as OnEarlyQuit; CalculateSafetyRatingResultsForCurrent(sys, tmp) copied to results+8..+0x18; rating +0x40 = clamp(+0x40 + clamp(res, +0x100, +0x104) + +0x390, +0xe0, +0xe4); logs 'Lead player's safety rating went from %u to %u'; 0x142c6db00; bonus: +0x48 = clamp(+0x48 + +0x120, +0x114, +0x118); tail-jmp WriteOnlinePlayerData. Callers 0x142c6ec0e, 0x14e59b1d0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.safety_rating_on_match_complete",

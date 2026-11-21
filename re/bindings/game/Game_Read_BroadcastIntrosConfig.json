@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: broadcast_intros.driver_comparison_qualifying, broadcast_intros.driver_comparison_race, broadcast_intros.dummy_messages_for_vm.driver_in_car, broadcast_intros.dummy_messages_for_vm.driver_moves, broadcast_intros.dummy_messages_for_vm.intro_driver_info, broadcast_intros.d'"
+  "evidence": "decomp:re/decomp/1419fe120.c;pat:log-channel--;xref:0x1419fd98a,0x1419fd994,0x1419fd99e,0x1419fd9a8,0x1419fd9b2,0x1419fd9bc,0x1419fd9c6,0x1419fd9d0,0x1419fd9da,0x1419fd9e4,0x1419fd9ee,0x1419fd9f8,0x1419fda02,0x1419fda0c,0x1419fda16,0x1419fda20,0x1419fda2a,0x1419fda34,0x1419fda3e,0x1419fda48,0x1419fda52,0x1419fda5c,0x1419fda66",
+  "notes": "call sites in 0x1419fd070. Keys are VM paths broadcast_intros.dummy_messages_for_vm.*."
  },
  "signature": {
   "id": "game.read_broadcast_intros_config",

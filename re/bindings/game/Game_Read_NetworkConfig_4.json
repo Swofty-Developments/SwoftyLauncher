@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: network.current_session.countdown_label_text, network.current_session.countdown_panel_delayed_by_ui, network.current_session.countdown_panel_is_maximised, network.current_session.countdown_panel_should_be_maximised, network.current_session.countdown_panel_show_drivers, n'"
+  "evidence": "decomp:re/decomp/1436e7dc0.c;pat:log-channel--;xref:0x150fe78c4,0x14585cf88,0x14585de48",
+  "notes": "Session ready/countdown policy parsing (lobby, allplayersready, redflagsync, apocalypse timer) and network.current_session.* countdown VM bindings."
  },
  "signature": {
   "id": "game.read_network_config_4",

@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-INPUT",
+  "evidence": "decomp:re/decomp/1434e0560.c;pat:log-channel-INPUT;xref:0x145845210",
   "notes": "named from its log messages (channel INPUT): 'GamePlayerManager::handleControllerReconnectionResult - device NONE  %s to %s | GameInputModule::addNextUnfilteredAxisCallback'"
  },
  "signature": {

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: streamed_install.install_progress_fract, streamed_install.install_progress_percentage, streamed_install.is_available'"
+  "evidence": "decomp:re/decomp/14379fe50.c;pat:log-channel--;xref:0x145872320",
+  "notes": "Streamed install VM update with streamed_install.* properties and two environment_package texture paths."
  },
  "signature": {
   "id": "game.read_streamed_install_config_2",

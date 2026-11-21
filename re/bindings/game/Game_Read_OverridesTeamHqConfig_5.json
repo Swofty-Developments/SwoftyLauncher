@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: overrides.team_hq.sponsor_contracts.risk_status_overlay.risk_state_01, overrides.team_hq.sponsor_contracts.risk_status_overlay.risk_state_02, overrides.team_hq.sponsor_contracts.risk_status_overlay.risk_state_03, overrides.team_hq.sponsor_contracts.risk_status_overlay.ri'"
+  "evidence": "decomp:re/decomp/141cc3540.c;pat:log-channel--;xref:0x141cc2de1,0x141cc2e18",
+  "notes": "Sponsor contract counter-offer tiles counter_offer_%I64u: success rate, seasonal goal, signing bonus, weekend income, risk_status_overlay icons."
  },
  "signature": {
   "id": "game.read_overrides_team_hq_config_5",

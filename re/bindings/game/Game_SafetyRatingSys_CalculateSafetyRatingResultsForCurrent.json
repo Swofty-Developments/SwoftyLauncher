@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_SafetyRatingSystem_CalculateSafetyRatingResultsForCurrentSession;xref:0x142c67292,0x144940e2e",
-  "notes": "cxx=game::SafetyRatingSystem::calculateSafetyRatingResultsForCurrentSession; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/142c66d90.c;str:s_SafetyRatingSystem_CalculateSafetyRatingResultsForCurrentSession;xref:0x142c6d5a6,0x142c6eafb,0x142c6f70d,0x142c6fc54,0x14e59c5ea",
+  "notes": "Pretty-function game::SafetyRatingSystem::calculateSafetyRatingResultsForCurrentSession; 4 KB body. Callers 0x142c6d590, 0x142c6e840, Game_SafetyRating_OnMatchComplete, 0x142c6fa30, 0x14e59c580."
  },
  "signature": {
   "id": "game.safety_rating_sys_calculate_safety_rating_results_for_current",

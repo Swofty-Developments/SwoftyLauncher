@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14076d090.c;xref:0x14323805b",
-  "notes": "(mode, time) Notifies [mode+0x20a58]+0x168 (vcall +0x40) holding a ref to +0x170, then allocates a 0x68 message (0x1404f6c40) carrying the start time. Called from Sess_StartLights_HandleSequenceStartTime. Hypothesis."
+  "notes": "Notifies [this+0x20a58]+0x168 vcall +0x40 (holding a ref to +0x170), allocates 0x68 bytes, Game_Analytics_BuildStartLightsEventPayload 0x1404f6c40, +0x60 = param_2, +0x64 = local player id (from [this+0x209d8]+0xd8), then Game_Analytics_BuildNetDelayedStartEvent 0x14076d230(this,&evt,0xff). Called at 0x14323805b in Sess_StartLights_HandleSequenceStartTime."
  },
  "signature": {
   "id": "game.start_lights_set_sequence_start_time",

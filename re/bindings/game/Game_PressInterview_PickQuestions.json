@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-PRESS_INTERVIEWS",
-  "notes": "named from its log messages (channel PRESS_INTERVIEWS): 'Could Not find at least %d questions for driver: %s ?'"
+  "evidence": "decomp:re/decomp/141041640.c;pat:log-channel-PRESS_INTERVIEWS;xref:0x141330a00,0x1422c7ffb,0x14a4043be",
+  "notes": "Logs PRESS_INTERVIEWS 'Could Not find at least %d questions for driver: %s ?'. Callers 0x141330a00, 0x1422c7ffb, jmp 0x14a4043be."
  },
  "signature": {
   "id": "game.press_interview_pick_questions",

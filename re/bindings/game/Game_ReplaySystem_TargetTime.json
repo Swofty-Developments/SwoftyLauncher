@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name targetTime (class from the log channel); log channel ReplaySystem: 'targetTime %f m_easeInFlashbackStartTime %f m_rewindForInstantReplayTargetTime %f m_easeInFlashbackTimer %f dt %f'"
+  "evidence": "decomp:re/decomp/1445d6ce0.c;pat:log-message-method;xref:0x1445d6b0f,0x1445d6c51",
+  "notes": "Log ReplaySystem 'targetTime %f m_easeInFlashbackStartTime %f m_rewindForInstantReplayTargetTime %f m_easeInFlashbackTimer %f dt %f' and 'ret %s failedToReached(Lerp|Target)Time %s numStillRewinding %d'; calls Game_ReplayStream_Rewind. 'targetTime' is a logged value, not the method name. Callers 0x1445d6040. Better name: Game_ReplaySystem_RewindToTargetTime (bound record keeps its name)."
  },
  "signature": {
   "id": "game.replay_system_target_time",

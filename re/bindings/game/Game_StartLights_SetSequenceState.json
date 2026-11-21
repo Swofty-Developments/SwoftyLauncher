@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142cd7120",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142cd7120.c;xref:0x142c1965d",
-  "notes": "If param_2 and state byte +0x29 == 0: Game_StartLights_ResetSequence(param_1,param_3), posts a bus message (vtable 0x1457e4ba8 via 0x142dd2100 on _DAT_14618b3b8+8); then handles state 3 with param_4. Callers Game_Network_UpdateStartLightsSync, 0x142c19310. Addon: start light sequence state machine."
+  "evidence": "decomp:re/decomp/142cd7120.c;xref:0x142c1965d,0x14327381b",
+  "notes": "(lights, newState, mode, count): if newState and old state +0x29 == 0: Game_StartLights_ResetSequence(mode) and posts message vt 0x1457e4ba8 (0x142dd2100). Old state 3: lights off; old 4 with mode 2: blink = elapsed/freq <= +0xbb8 (stored +0x80) via ApplyLightNodes; for newState != 4 ApplyLightNodes(count or 0, flagB = mode 2 && count); if old != 4: 0x142cd5a50. Stores +0x29=newState, +0x28=mode, +0x7c=count. (lane owner review requested)"
  },
  "signature": {
   "id": "game.start_lights_set_sequence_state",

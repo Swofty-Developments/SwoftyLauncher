@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: network.current_session.settings.return_to_garage, settings.current_settings.time_of_day.custom.practice_1.progression, settings.current_settings.time_of_day.custom.practice_1.start_time, settings.current_settings.time_of_day.custom.practice_2.progression, settings.curre'"
+  "evidence": "decomp:re/decomp/1430b7a90.c;pat:log-channel--;xref:0x143065560,0x150f6e006",
+  "notes": "Subscribes 71 bus handlers for settings.current_settings.time_of_day/weather custom per-session nodes."
  },
  "signature": {
   "id": "game.read_settings_config_3",

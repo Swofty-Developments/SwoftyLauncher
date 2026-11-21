@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140362490",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=PodiumBaseCutSceneScript::starting; log channel CUTSCENE_PODIUM: 'PodiumBaseCutSceneScript::starting'"
+  "evidence": "decomp:re/decomp/140362490.c;pat:log-message-cxx;xref:0x140362335,0x1455f7620",
+  "notes": "starting override (vt cell 0x1455f7620; call 0x140362335 from 0x1403622c0): logs class string, 0x140237f40(this), 0x14032f9a0; for 32 cars 0x140355360(car,1,0); 0x1403c23b0(..,1); global 0x146ce89d8=1; render-state slots 0x16=1, 0x25=4 (when 0x14618caa8), 0x14099e800('podium'); tail-jumps 0x140248480 (podium-crowd.layer). Counterpart of 0x140362c00. (lane owner review requested)"
  },
  "signature": {
   "id": "game.podium_base_cut_scene_script_starting",

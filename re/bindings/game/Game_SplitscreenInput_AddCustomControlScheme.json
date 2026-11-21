@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name addCustomControlScheme (class from the log channel); log channel SPLITSCREEN_INPUT: 'addCustomControlScheme to player %d'"
+  "evidence": "decomp:re/decomp/142a5d5f0.c;pat:log-message-method;xref:0x142a5cdb6",
+  "notes": "SPLITSCREEN_INPUT logs \"addCustomControlScheme to player %d\" and \"onControlSchemeAdded to player %d\"; called at 0x142a5cdb6 (in 0x142a5c7f0)."
  },
  "signature": {
   "id": "game.splitscreen_input_add_custom_control_scheme",

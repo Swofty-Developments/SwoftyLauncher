@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401c93c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=SkinnedActor::~SkinnedActor; log channel ACTOR_MIN_INFO: 'SkinnedActor::~SkinnedActor %p'"
+  "evidence": "decomp:re/decomp/1401c93c0.c;pat:log-message-cxx;xref:0x1401a710e,0x140291f1b,0x140316de3,0x140393bb6,0x14042f5a9,0x14766ffa0,0x147ebb099,0x147ebede7,0x147ec2fc7,0x147ec8a00,0x147ec94e0",
+  "notes": "~SkinnedActor (destructor, not destroy): sets vtable 0x1455e5ad0, logs ACTOR_SET_BINDING and ACTOR_MIN_INFO \"---- %p %s %s\"; vcall +8 + free of each component +0x68..+0x70, vcall +0x170, frees +0x228/+0x230 objects and +0x510/+0x518, resets sub-object vtables (+0x240, +0x3e8, +0x1e8 ...), destroys the override material async (NeMultiSubMaterialResourceFactory) when +0x218, clears the component vector, DeleteCriticalSection(this[2]). One tail jmp caller at 0x1401a710e, the rest are calls (xref). (lane owner review requested) Better name: Game_SkinnedActor_Dtor (bound record keeps its name)."
  },
  "signature": {
   "id": "game.skinned_actor_destroy_2",

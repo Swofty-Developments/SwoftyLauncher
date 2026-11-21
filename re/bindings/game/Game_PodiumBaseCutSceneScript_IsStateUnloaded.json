@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1403580f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=PodiumBaseCutSceneScript::isStateUnloaded; log channel CUTSCENE_PODIUM: 'PodiumBaseCutSceneScript::isStateUnloaded'"
+  "evidence": "decomp:re/decomp/1403580f0.c;pat:log-message-cxx;xref:0x1455f74b0",
+  "notes": "Logs; returns Game_CutsceneManager_AreAssetGroupsUnloaded([this+0x48], this+0x38) & (state this+0x40 == 10). (lane owner review requested)"
  },
  "signature": {
   "id": "game.podium_base_cut_scene_script_is_state_unloaded",

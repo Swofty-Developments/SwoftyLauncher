@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: GameVersionNumber.display_cl, benchmark.benchmark_results, benchmark.benchmark_results.antialiasing.value, benchmark.benchmark_results.average_fps.value, benchmark.benchmark_results.average_frame_time.value, benchmark.benchmark_results.cpu.value, benchmark.benchmark_resu'"
+  "evidence": "decomp:re/decomp/1407acba0.c;pat:log-channel--;xref:0x1407ab4f1",
+  "notes": "Caller 0x1407ab4f1 (0x1407a80d0). Body 0x4520 bytes."
  },
  "signature": {
   "id": "game.read_benchmark_benchmark_results_config",

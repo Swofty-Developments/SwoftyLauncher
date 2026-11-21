@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144541150",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144541150.c;xref:0x144540642,0x1445407e5",
-  "notes": "Looks up action entry param_2 (stride 0x14, table +0x60..+0x68) in the camera input map and checks Ne_InputMapper_IsActionReleased for local player param_3 (global input mgr 0x146cc1cb8, player arrays +0x1c0). Returns bool. Called only from Game_RacingCamera_ProcessCameraInput. Addon: hook to see camera-switch button release."
+  "evidence": "decomp:re/decomp/144541150.c;xref:0x144540642,0x1445407e5,0x1445409c5",
+  "notes": "Twin of 0x1445412a0 with slot entry +4 == 0 and action desc 0x146cc1cf0+player*0x148 (else 0x146cc1de0+player*0x148), via Ne_InputMapper_IsActionReleased 0x1441165b0. Callers 0x144540642, 0x1445407e5, 0x1445409c5 (all in 0x144540050). (lane owner review requested)"
  },
  "signature": {
   "id": "game.racing_camera_is_camera_action_released",

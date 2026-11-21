@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: SpeechRecognition.enabled, SpeechRecognition.nfsDataPath, SpeechRecognition.xmlDataPath'"
+  "evidence": "decomp:re/decomp/144494aa0.c;pat:log-channel--;xref:0x140a274f6,0x1444e2684",
+  "notes": "Speech recognition: SpeechRecognition.enabled/nfsDataPath/xmlDataPath, parses speech_recognition.xml keyword lists and actions."
  },
  "signature": {
   "id": "game.read_speech_recognition_config",

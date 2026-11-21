@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143b1c320.c;xref:0x14015eb05,0x143b180f6,0x143b337b4",
-  "notes": "Hypothesis: 6 KB init routine in the CreateRenderPasses chain: sets flag +0xf0cca, walks pass vector at +0xb8, uses 3 TLS-guarded function statics (InitThreadHeader/Atexit). Named callers: Game_Renderer_CreateRenderPasses."
+  "notes": "6 KB routine in the CreateRenderPasses chain; calls the five pass-group map destructors (0x143b46e50..0x143b47490), SlotList reserve/free helpers and DestroyGeneratorEntries. Callers 0x14015d720, CreateRenderPasses, 0x143b337a0."
  },
  "signature": {
   "id": "game.renderer_init_pass_groups",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141e6eb70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141e6eb70.c;xref:0x141d71645",
-  "notes": "Insert/resize into the badge texture table (refcounted short at obj+4 ++/--), with growth logic. Callers 0x141d715c0, Game_RenderBadgeViewModel_LoadTexture, itself. Hypothesis. vp5-verify partial/disagree"
+  "evidence": "decomp:re/decomp/141e6eb70.c;xref:0x141d71645,0x141d7739b,0x141e6ee24,0x141e6ee6a,0x141e6f3ba,0x141e6f3f6,0x141e6f407,0x141e6f6e7",
+  "notes": "Pooled list reserve(list, capacity, max): shrink releases the 3 refcounted handles (+0x10,+0x18,+0x28) of trailing nodes and, for capacity>0, rebuilds into a temp list via 0x141e6f560 and swaps; capacity 0 frees chunks (0x141e6f830); grow allocates a 0x28 chunk + n*0x30 nodes linked to the free list. Capacity [7], max [8]; returns 0 or 0xc/0x16/1 (trace ring). Callers 0x141d715c0, LoadTexture, self. (lane owner review requested) Better name: Game_RenderBadge_TextureList_Reserve (bound record keeps its name)."
  },
  "signature": {
   "id": "game.render_badge_insert_texture_slot",

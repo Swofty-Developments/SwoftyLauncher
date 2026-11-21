@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: mfd.attacher.anti_stall_panel, mfd.attacher.car_damage_panel, mfd.attacher.car_engine_panel, mfd.attacher.car_settings_panel, mfd.attacher.car_temp_panel, mfd.attacher.mods_panel, mfd.attacher.pit_settings_panel, mfd.header, osd_visibility_option.f1_dial_child, osd_visib'"
+  "evidence": "decomp:re/decomp/1414c7cd0.c;pat:log-channel--;xref:0x141c117fe,0x141c1c4db",
+  "notes": "0x9104-byte body: MFD attacher panels, osd_visibility_option.* children, many Message* bus names (Flashback, HudNotification, Checkpoint): looks like the in-race HUD/MFD VM setup, not a config reader."
  },
  "signature": {
   "id": "game.read_mfd_config",

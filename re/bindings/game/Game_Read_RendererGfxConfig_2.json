@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: Renderer.Gfx.MotionBlur.NewMotionBlurMaxLengthScale, Renderer.Gfx.MotionBlur.OldMotionBlurMaxLengthScale, Renderer.Gfx.MotionBlur.UseNewMotionBlurIn30HzMode, Renderer.Gfx.MotionBlur.UseNewMotionBlurInNot30HzMode'"
+  "evidence": "decomp:re/decomp/143bc2ff0.c;pat:log-channel--;xref:0x1458be978",
+  "notes": "Post-fx GPU setup (histogram, DOF, motion blur, bloom, lens flares) reading Renderer.Gfx.MotionBlur.* settings."
  },
  "signature": {
   "id": "game.read_renderer_gfx_config_2",

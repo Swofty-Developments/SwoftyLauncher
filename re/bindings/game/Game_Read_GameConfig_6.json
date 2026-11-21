@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: Game.EnableLoading, Game.EnableSaveGame, Game.EnableSaveSystemInSkipFE, Game.EnableSaving, Save.SaveTitleOverride'"
+  "evidence": "decomp:re/decomp/14365a8b0.c;pat:log-channel--;xref:0x1458563d0",
+  "notes": "Vt cell 0x1458563d0. Reads Game.Enable* bools into +0x1b4..+0x1b7 (Steam context 0x145f8d6a0), Save.SaveTitleOverride string into +0x80 (0x80 bytes), then 0x143658620 registrations on this+0x38."
  },
  "signature": {
   "id": "game.read_game_config_6",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143d30bd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143d30bd0.c;xref:0x143d32c06,0x143d84f14",
-  "notes": "Creates tiled light culling shaders/buffers (strings htileCbuffer, tiled_lighting/light_culling_bitwise_nvidia, ..._cubemap_..., ..._reflection..., CullLights). Addon: tiled lighting shader names. Named callers: Game_Rtt_CreateScenes."
+  "notes": "(tl, target, depth, pkg, reflection): stores target dims/ptrs (+0x58..+0x80), creates two 600-byte device objects (+0x48, +0x50); picks tiled_lighting/light_culling_bitwise_nvidia or _cubemap_ (4 layers), or with reflection light_culling_bitwise_reflection (vendor 0x10de: the _nvidia variant if present in pkg); creates dispatch 'CullLights' (+0x38) and binds six resources by hash; +0x88 = 1. Callers 0x143d32870, RttGenerator. (lane owner review requested)"
  },
  "signature": {
   "id": "game.rtt_create_tiled_light_culling",

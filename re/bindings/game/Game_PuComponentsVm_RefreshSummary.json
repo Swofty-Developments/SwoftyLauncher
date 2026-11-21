@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141f55300.c;xref:0x141f52728,0x141f59055",
-  "notes": "Power-unit components VM refresh over data [this+0x650] (list +0x228..+0x230): updates per-component wear/summary nodes (L1 hypothesis). Callers Car_Component_Fit, Career_Write_RnDPieTileCounts."
+  "evidence": "decomp:re/decomp/141f55300.c;xref:0x141f52728,0x141f57d5c,0x141f59055",
+  "notes": "Callers 0x141f52728 (0x141f50910), 0x141f57d5c (0x141f57b30), 0x141f59055 (0x141f58a20)."
  },
  "signature": {
   "id": "game.pu_components_vm_refresh_summary",

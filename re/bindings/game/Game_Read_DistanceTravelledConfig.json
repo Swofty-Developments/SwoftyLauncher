@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: DistanceTravelled.DriverStatId.%d, DistanceTravelled.F1WEventMode.%d, DistanceTravelled.F1WEventMode.%d.SectionId.%d, DistanceTravelled.GameSetupModeStatId.%d, DistanceTravelled.GameplayModeId.%d, DistanceTravelled.GameplayModeId.%d.DriverStatId.%d, DistanceTravelled.Gam'"
+  "evidence": "decomp:re/decomp/143761ec0.c;pat:log-channel--;xref:0x145860ab8",
+  "notes": "Vt cell 0x145860ab8. Body has STATEVENT 'Executing EventWriteDistanceTravelled ...' and 'Executing EventWritePuncture ...' strings (decomp may merge two writers); likely a stat event writer, not a DB config read."
  },
  "signature": {
   "id": "game.read_distance_travelled_config",

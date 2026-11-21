@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: Animation.initialAnimArrayCapacity, Animation.initialAnimPlayerCapacity, Animation.initialStringsCapacity'"
+  "evidence": "decomp:re/decomp/1443ba3d0.c;pat:log-channel--;xref:0x145a86be0",
+  "notes": "Vt cell 0x145a86be0. Body references EGO_ANIMATION_* memory-pool names plus Animation.initial* keys."
  },
  "signature": {
   "id": "game.read_animation_config",

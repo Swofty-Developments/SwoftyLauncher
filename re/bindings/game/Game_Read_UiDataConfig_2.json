@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141262be0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: ui_data.base_colour, ui_data.emb_override, ui_data.intensity_lng_string, ui_data.large_panel_background, ui_data.large_panel_base_background, ui_data.mid_colour, ui_data.panel_background, ui_data.top_colour'"
+  "evidence": "decomp:re/decomp/141262be0.c;pat:log-channel--;xref:0x14124c24b,0x14124d59a,0x14124ddaa,0x14124ef20",
+  "notes": "GDB row (param_1) -> struct param_2: ui_data.base_colour [0], mid_colour [1], top_colour [2], intensity_lng_string +0x10, emb_override +0x18, panel_background +0x20, large_panel_background +0x28, large_panel_base_background +0x30 (XOR-decoded strings, key 0x145890978). (lane owner review requested) Better name: Game_Read_UiDataStyleRow (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_ui_data_config_2",

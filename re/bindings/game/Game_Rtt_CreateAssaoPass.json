@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143c2cda0.c;xref:0x143c3073d,0x143d853c2",
-  "notes": "Creates ASSAO ambient occlusion passes (ASSAO DepthOutputArrayUAV, compute/prepare_depths_merged/p0, ASSAO_PrepareDepths, ASSAO_GenerateQuad, ASSAOConstantsBuffer). Named callers: Game_Rtt_CreateScenes."
+  "notes": "Strings ASSAO DepthOutputArrayUAV, compute/prepare_depths_merged/p0, ASSAO_PrepareDepths, ASSAO_GenerateQuad, ASSAOConstantsBuffer; 5 KB body. Callers 0x143c2fee0, Game_Rtt_RttGenerator."
  },
  "signature": {
   "id": "game.rtt_create_assao_pass",

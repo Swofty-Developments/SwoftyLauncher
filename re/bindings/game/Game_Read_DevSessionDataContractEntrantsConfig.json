@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: DevSessionDataContract.Entrants.%s_%u.car_number, DevSessionDataContract.Entrants.%s_%u.driver_customisation_name, DevSessionDataContract.Entrants.%s_%u.driver_emote, DevSessionDataContract.Entrants.%s_%u.driver_gloves, DevSessionDataContract.Entrants.%s_%u.driver_helmet'"
+  "evidence": "decomp:re/decomp/141127eb0.c;pat:log-channel--;xref:0x141125f43,0x14112769d",
+  "notes": "Callers 0x141125f43, 0x14112769d (0x141125e80)."
  },
  "signature": {
   "id": "game.read_dev_session_data_contract_entrants_config",

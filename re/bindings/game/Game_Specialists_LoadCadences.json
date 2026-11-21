@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name loadCadences (class from the log channel); log channel SPECIALISTS: 'loadCadences - Current cadence is %s to %d'"
+  "evidence": "decomp:re/decomp/1412eb290.c;pat:log-message-method;xref:0x1412ed5f4",
+  "notes": "pdata 0x2071 bytes; SPECIALISTS logs \"loadCadences - Current cadence is %s to %d\" and \"Cadence being set for driver %s to %d\". Called at 0x1412ed5f4 (in 0x1412ed310)."
  },
  "signature": {
   "id": "game.specialists_load_cadences",

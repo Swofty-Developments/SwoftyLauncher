@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: content.pit_strategy, content.tyre_performance, hud_spectator_2.content.bottom_right, hud_spectator_2.content.driver_list_panel, hud_spectator_2.content.focused_driver_panel, hud_spectator_2.content.spectator_menu_panel'"
+  "evidence": "decomp:re/decomp/141c1e530.c;pat:log-channel--;xref:0x141496fb3",
+  "notes": "Spectator HUD 2 VM: hud_spectator_2.content.* panels and content.tyre_performance/pit_strategy view models."
  },
  "signature": {
   "id": "game.read_hud_spectator2_config",

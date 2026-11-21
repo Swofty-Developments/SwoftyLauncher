@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1407972c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "uint64_t(void *self)",
-  "evidence": "decomp:re/decomp/1407972c0.c",
-  "notes": "Reads the engine setting VTE.enabled (Ne_Get_SettingBool 0x143a43b90, default = current value) into self+0x18. VTE.enabled is off in the shipped game and switches on the VTE race data export (output folder 0x14473a400)."
+  "evidence": "decomp:re/decomp/1407972c0.c;xref:0x145645070",
+  "notes": "Ne_Get_SettingBool([[this+0x10]+0x18], VTE.enabled, this+0x18, default = current byte +0x18); returns 0. Only reference is a vtable cell. (lane owner review requested)"
  },
  "signature": {
   "id": "game.read_vte_enabled",

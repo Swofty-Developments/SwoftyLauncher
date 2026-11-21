@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14111a750",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=SponsorGoal::findCondition; log channel SPONSORS: 'SponsorGoal::findCondition has no condition name set'"
+  "evidence": "decomp:re/decomp/14111a750.c;pat:log-message-cxx;xref:0x1410f503a,0x1410f506a,0x1410f509a,0x1410fb57e,0x1410fb5ae,0x1410fb5de,0x1411008da,0x14110090a,0x14110094a,0x1411009ba,0x1411009ea,0x141100a1a,0x14226de0a,0x14226de3a,0x14226de6a,0x142272c8a,0x142272cba,0x142272cea,0x14227d25a,0x14227d28a,0x14227d2ba",
+  "notes": "Resolves the goal condition names via component this+0x118 (logs SPONSORS if null or name +0x98 empty): name +0x98 -> +0x78 and +0xc0 -> +0x80 from map comp+0x2d8 (0x140e1da10, entries +0x2f0 stride 0x18, value +0x10), +0xf8 -> +0xe0 from map comp+0x290 (0x140e1dcd0). Callers in xref. (lane owner review requested)"
  },
  "signature": {
   "id": "game.sponsor_goal_find_condition",

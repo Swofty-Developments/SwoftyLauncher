@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: game_mode_data.current_game_mode, game_mode_data.game_modes.time_trial, game_mode_data.game_modes.time_trial.track_info.current_track'"
+  "evidence": "decomp:re/decomp/1414a0270.c;pat:log-channel--;xref:0x1456e8498",
+  "notes": "Strings: GHOSTLAP-TRACE '%s() initialise', game_mode_data.game_modes.time_trial VM fields (pbTimeInMS, rivalTimeInMS, leaderboard positions, ghostsAreSynced): looks like the time trial game-mode VM initialise, not a config reader."
  },
  "signature": {
   "id": "game.read_game_mode_data_config",

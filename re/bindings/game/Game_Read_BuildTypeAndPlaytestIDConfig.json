@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1406c2600",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: BuildTypeAndPlaytestID.buildType, BuildTypeAndPlaytestID.hostUser, BuildTypeAndPlaytestID.playtestID'"
+  "evidence": "decomp:re/decomp/1406c2600.c;pat:log-channel--;xref:0x14708b8c2",
+  "notes": "(db, overwrite): reads string keys BuildTypeAndPlaytestID.buildType / playtestID / hostUser (0x143a44700, 64-byte buffer) into global [0x145f8d6c0]+0x50/+0x70/+0x90 (32 bytes each) when overwrite or the field is empty; chars outside 0x20..0x7e and the quote/apostrophe/']' characters become '_'. Caller 0x14708b8c2 (0x14708b830). (lane owner review requested)"
  },
  "signature": {
   "id": "game.read_build_type_and_playtest_id_config",

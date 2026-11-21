@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: rivals.RivalryTyDriverRatingRivaDriverRatingDataCompletionRivalrChampi, ui_data.lng_string, ui_data.player_colour'"
+  "evidence": "decomp:re/decomp/14124ad20.c;pat:log-channel--;xref:0x1456cd0f0",
+  "notes": "Rivals config GDB reader (rivalry_data types, weightings, thresholds); calls 0x141262be0 for ui_data rows."
  },
  "signature": {
   "id": "game.read_ui_data_config",

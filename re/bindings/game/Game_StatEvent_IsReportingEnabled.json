@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1407bea70.c;xref:0x14372040e",
-  "notes": "Virtual +0x28 type check, then looks up a setting in sub-object +0x1030 and returns !0x14077c790(...) (reporting enable flag). 142 bytes. Caller Game_StatEvent_InitCommon (0x14372040e). Hypothesis."
+  "evidence": "decomp:re/decomp/1407bea70.c;xref:0x141a1e50d,0x14372040e",
+  "notes": "Returns 0 if vcall +0x28 type is 0x146129ca8 (chain root 0x14604ec60) or key 0x14605b128 is missing in this+0x1030 (vcall +0x10); else !0x14077c790(this,1). Used by Game_StatEvent_InitCommon (0x14372040e) as the mode-category-9 test; also lea 0x141a1e50d."
  },
  "signature": {
   "id": "game.stat_event_is_reporting_enabled",

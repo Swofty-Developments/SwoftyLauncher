@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name loadFullReplay (class from the log channel); log channel REPLAY: 'loadFullReplay(path=%S, keepSaveSlot=%d, deserialiseReplay=%d) took %f seconds (%.2f ms)'"
+  "evidence": "decomp:re/decomp/142c4ade0.c;pat:log-message-method;xref:0x142c4656d,0x142c4cf61",
+  "notes": "Log REPLAY 'loadFullReplay(path=%S, keepSaveSlot=%d, deserialiseReplay=%d) took %f seconds' and a header-magic mismatch warning. Callers Game_Replay_LoadSavedReplayJob, 0x142c4cf40."
  },
  "signature": {
   "id": "game.replay_load_full_replay",

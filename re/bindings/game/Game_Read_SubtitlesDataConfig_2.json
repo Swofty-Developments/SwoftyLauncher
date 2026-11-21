@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144353880",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: subtitles_data.display_text, subtitles_data.paused, subtitles_data.reset_to_start, subtitles_data.show_subtitle, subtitles_data.speech_duration'"
+  "evidence": "decomp:re/decomp/144353880.c;pat:log-channel--;xref:0x145a76218",
+  "notes": "Factory (vtable cell): allocates 0x200-byte subtitles VM from this+0x20 (vtable 0x145a6a740), stores [this+8] in 0x146ca5500, binds subtitles_data.show_subtitle, speech_duration, display_text, reset_to_start (1), paused; display_text watch at +0xf8 with cb 0x14425e730; increments this+0x18. (lane owner review requested) Better name: Game_SubtitlesVM_Create (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_subtitles_data_config_2",

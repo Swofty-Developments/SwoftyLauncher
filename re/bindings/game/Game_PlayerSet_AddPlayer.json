@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-PLAYERSET",
+  "evidence": "decomp:re/decomp/14316ad80.c;pat:log-channel-PLAYERSET;xref:0x143108c08,0x14310f402,0x14316a847,0x14316e2c5",
   "notes": "named from its log messages (channel PLAYERSET): '%s: %s | %s: Player(%s) already in the set. | [PlayerSetEntry(%s, %s)] : isLocal = %s. | [PlayerSetEntry(%s, %s)] : playerIx = %d. | [PlayerSetEntry(%s, %s)] : userIx = %d. | [PlayerSetEntry(%s, %s)] '"
  },
  "signature": {

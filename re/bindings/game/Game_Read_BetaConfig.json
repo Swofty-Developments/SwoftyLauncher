@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: beta.driver_headdriverHeadReferebeta.livery_colobeta.team_colour, beta.livery_colours.override_colours, beta.team_colours.override_colours, seasons.2019, seasons.current_season'"
+  "evidence": "decomp:re/decomp/14080a720.c;pat:log-channel--;xref:0x1436c8799",
+  "notes": "lea 0x1436c8799 in 0x1436c7af0 (delegate)."
  },
  "signature": {
   "id": "game.read_beta_config",

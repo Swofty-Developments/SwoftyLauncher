@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1445361a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1445361a0.c;xref:0x1406af584",
-  "notes": "Finds a camera entry (0x40-byte stride list at arbitrator+0x40) matching param_3, hashes the given name string (djb2, seed 5381), consults Game_RacingCameraArbitrator_RequiresCrossfade and Ne_Entity_FindComponent. 10 callers (0x1406af584, 0x1411f61ce, 0x141344d40 ...). Hypothesis: switch racing camera by name with optional crossfade."
+  "evidence": "decomp:re/decomp/1445361a0.c;xref:0x1406af584,0x1411f61ce,0x141344d40,0x142aeda28,0x142bdcddb,0x142c1d297,0x142c1d401,0x142e1a016,0x1487654be,0x14d91e8cf",
+  "notes": "(arb, name, cameraEntity, blend): finds cameraEntity in [arb+0x40]+0x40 (stride 0x40), hashes name case-insensitively (djb2 seed 5381, lower-cased), finds sub-entry with [e+8]+0x70 == hash, builds request (components 0x146cc20a8, 0x146cc39d8 via Ne_Entity_FindComponent) or empty, submits via 0x144534390(arb, req, cam, blend, 2, 0, 2). (lane owner review requested)"
  },
  "signature": {
   "id": "game.racing_camera_arbitrator_select_named_camera",

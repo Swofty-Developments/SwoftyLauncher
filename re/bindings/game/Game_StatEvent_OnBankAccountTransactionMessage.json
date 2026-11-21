@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143737790",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "uint64_t Game_StatEvent_OnBankAccountTransactionMessage(void *owner, void *msg)",
-  "evidence": "decomp:re/decomp/143737790.c;xref:0x143724834;xref:0x143749ded",
-  "notes": "myteam-g2: Stat-event writer handler for BankAccountTransactionMessage (subscribed in Game_StatEvent_SubscribeMessageHandlers). For transaction types in mask 0x7bdffefe (type byte msg+0x14, maps to stat id via table 0x1458740cc) sums income/expense per day (direction byte msg+0x25) and records them through FUN_143760ca0; used for finance stat events. Read-only on bank state. Message layout: msg+0x10 team key (14-bit id + 2-bit kind), +0x14 type, +0x18 amount (int), +0x25 income flag, +0x28 valid flag. CORRECTION(V9010): Role right: type byte msg+0x14 against mask 0x7bdffefe, id via table 0x1458740cc, amount msg+0x18, sums income/expense (ledger entry byte +0x11 = 0/1) and calls FUN_143760ca0 = Game_StatEvent_WriteCareerCashTransactions; no bank writes. Field labels are shaky: msg+0x28 is a kind selector (1 = sum ledger via FUN_140c68c90, 2 = day stat via FUN_143760c40), not just a valid flag; msg+0x25 is turned into a tri-state sign (1 -> +1, 0 -> 0, else -1) while the 68310 handler treats the same byte as the notify flag."
+  "evidence": "decomp:re/decomp/143737790.c;xref:0x143724834,0x143749ded",
+  "notes": "STATEVENT bus handler (lea 0x143724834 in 0x143720bc0, 0x143749ded in 0x143749390). InitCommon event; type byte msg+0x14 in mask 0x7bdffefe, stat id table 0x1458740cc[type-1]; amount msg+0x18; flow msg+0x25 (1 +1, 0 0, else -1); kind msg+0x28 (2 +1, 1 0, else -1). Kind 2: 0x140c68e20 + 0x143760c40 day sums; kind != 1: ledger 0x140c68c90 sums income/expense (entry+0x11 0/1). Then Game_StatEvent_WriteCareerCashTransactions(this+0x48,evt,|amount|,statId,flow,kind,|expense|,income). No bank writes. (lane owner review requested)"
  },
  "signature": {
   "id": "game.stat_event_on_bank_account_transaction_message",

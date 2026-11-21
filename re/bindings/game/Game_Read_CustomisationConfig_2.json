@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: customisation.cstm_badge_large.bg, customisation.cstm_badge_large.bg_style, customisation.cstm_badge_large.emblem, customisation.cstm_badge_large.emblem_style'"
+  "evidence": "decomp:re/decomp/141d75800.c;pat:log-channel--;xref:0x141d78909",
+  "notes": "Caller 0x141d78909 (0x141d77e70). Logs RENDER_BADGE '%s - Setting texture [%s] for layer [%d]' with the game's own 'void game::RenderBadgeViewModel::setTexture(...)' (0x14574a76b); bg_%s / bg_style_blank / emblem_style_blank strings. Better name: Game_RenderBadgeViewModel_SetTexture (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_customisation_config_2",

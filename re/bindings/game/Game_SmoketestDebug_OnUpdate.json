@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onUpdate (class from the log channel); log channel SMOKETEST_DEBUG: '%s Tile count for %s is %u'"
+  "evidence": "decomp:re/decomp/143deeae0.c;pat:log-message-method;xref:0x1527e89a6",
+  "notes": "pdata 0xedf bytes; strings me_renderOrder, zRenderOrder, \"material Render Order parameter not found\", SMOKETEST_DEBUG \"%s Tile count for %s is %u\", \"%s_x%d_y%d\". Only ref: lea 0x1527e89a6 (in 0x1527e87d0)."
  },
  "signature": {
   "id": "game.smoketest_debug_on_update",

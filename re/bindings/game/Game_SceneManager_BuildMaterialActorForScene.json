@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
+  "evidence": "decomp:re/decomp/1401e9150.c;pat:log-message-cxx;xref:0x1401a5955",
   "notes": "cxx=SceneManager::buildMaterialActorForScene; log channel ACTOR: 'SceneManager::buildMaterialActorForScene : MaterialActor[%s][%d] | setWorldObjectId %p Failed to find %p | SceneManager::buildWorldActorForScene : WorldActor[%s][%d] | setWorldObjectId %p Found %p %s '"
  },
  "signature": {

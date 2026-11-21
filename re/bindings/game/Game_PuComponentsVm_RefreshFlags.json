@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141f56090.c;xref:0x141f52730,0x141f5905d",
-  "notes": "Power-unit components VM: iterates [this+0x650]+0x248 entries and sets boolean VM nodes (Vm_NodeSet_Bool) per component (L1 hypothesis). Callers Car_Component_Fit, Career_Write_RnDPieTileCounts."
+  "evidence": "decomp:re/decomp/141f56090.c;xref:0x141f52730,0x141f57d77,0x141f5905d",
+  "notes": "(this): resolves the current selection from [this+0x650]+0x248 (walk up to 0x62 levels), finds it in the list [this+0x650]+0x228 (stride 0x2c8) and its sub-list +0x170 (stride 0x1c8), checks bool VM nodes (+0x190, +0x230, +0x1b0) and writes ONE bool to VM node [this+0x650]+0x288 via Vm_NodeSet_Bool 0x140973e20. Callers 0x141f52730 (0x141f50910), jmp 0x141f57d77 (0x141f57b30), 0x141f5905d (0x141f58a20)."
  },
  "signature": {
   "id": "game.pu_components_vm_refresh_flags",

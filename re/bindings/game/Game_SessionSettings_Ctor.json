@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142ccff50.c;xref:0x1407f7bb7,0x142d48339",
+  "evidence": "decomp:re/decomp/142ccff50.c;xref:0x1407f7bb7,0x142d48339,0x1436f87e8",
   "notes": "SessionSettings constructor: ruleset +0 = 0x10, sessionId +4 = 0, +8 = 0, allocator +0x10, data sub-object +0x20 (vtable 0x1457ea868), 0xcf000-byte arena at +0xad8 (cap 0x20). Callers Sess_Loader_UnloadSession, Game_StateSession_OnStateExit, Game_Read_GameConfig."
  },
  "signature": {

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140feee70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140feee70.c;xref:0x140feeb4a,0x1416e5703",
-  "notes": "Clone of 0x140feecc0 for another map member. Callers Game_RenderBadgeViewModel_InitJob/SetTexture."
+  "evidence": "decomp:re/decomp/140feee70.c;xref:0x140feeb4a,0x1416e5703,0x141d74375,0x141d75889,0x141df3853,0x141fce545,0x142056a06,0x1422664bf,0x142573891,0x142ea9bb4",
+  "notes": "Byte-identical to 0x140feecc0 except the inner-map key is 8 instead of 7 (same outer map obj+0x218 / key obj+0x250, same throw). Called from the same functions, one site after 0x140feecc0. (lane owner review requested) Better name: Game_CustomisationMap_GetCurrentEntryKey8 (bound record keeps its name)."
  },
  "signature": {
   "id": "game.render_badge_find_texture_node_by_key_b",

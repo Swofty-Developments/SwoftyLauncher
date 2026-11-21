@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1440555c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-SSL",
-  "notes": "named from its log messages (channel SSL): '[OpenSSL] [%u] Handshake Completed Successfully'"
+  "evidence": "decomp:re/decomp/1440555c0.c;pat:log-channel-SSL;xref:0x145a4e758",
+  "notes": "Vtable slot (cell 0x145a4e758). Only in state +0x15 == 1: handshake finished (0x144c695a0) -> log 'Handshake Completed Successfully', state 2, completion callback +0xd0 vcall +0x10; on errors other than want-read/write with nothing pending logs 'Handshake Failed', state 3, callback; otherwise sends pending handshake bytes from BIO +0xe8 via +0x50 (log 'Sending Hanshake Message Buffersize %d'). (lane owner review requested) Better name: Game_SslPeer_UpdateHandshake (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ssl_handshake_completed_successfully",

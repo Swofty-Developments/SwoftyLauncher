@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144624660",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: tod.data, tod.data.buf, tod.time, tod.time.buf'"
+  "evidence": "decomp:re/decomp/144624660.c;pat:log-channel--;xref:0x145d32808",
+  "notes": "Static initializer (init table cell 0x145d32808): SIMD constants 0x146ce6700.., type descriptors TimeOfDayComponent, TimeOfDaySystem, TimeOfDayResource, TimeOfDayConfigResource, TimeOfDayModule; names tod.data/tod.data.buf/tod.time/tod.time.buf via 0x1447bc360 into 0x146ce6940..0x146ce69a0. Not a settings reader. (lane owner review requested) Better name: Game_StaticInit_TimeOfDayTypes (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_tod_config",

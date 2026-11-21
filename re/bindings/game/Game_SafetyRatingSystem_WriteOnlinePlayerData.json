@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142c6def0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_SafetyRatingSystem_WriteOnlinePlayerData;xref:0x142c6e0a0",
-  "notes": "cxx=game::SafetyRatingSystem::writeOnlinePlayerData; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/142c6def0.c;str:s_SafetyRatingSystem_WriteOnlinePlayerData;xref:0x142c6d8cb,0x142c6f9c4,0x142c70560",
+  "notes": "(sys): without valid data (+0x521) logs 'aborting cloud write because we don't have valid data'; else gets the online record 0x143276fc0([+0x4d8]+0x3d8) and stores a new 0x10-byte blob {2, rating +0x40, tier byte +0x44, float +0x48} as shared_ptr (vt 0x1457d7230) at record +0x10/+0x18. Tail-jumped from OnEarlyQuit (0x142c6d8cb) and OnMatchComplete (0x142c6f9c4); call 0x142c70560. (lane owner review requested)"
  },
  "signature": {
   "id": "game.safety_rating_system_write_online_player_data",

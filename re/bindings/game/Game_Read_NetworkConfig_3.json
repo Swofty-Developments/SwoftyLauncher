@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: network.voting_data.count_total, network.voting_data.count_yes, network.voting_data.countdown, network.voting_data.kick_available, network.voting_data.kick_player_ref, network.voting_data.mode, network.voting_data.num_players, network.voting_data.result, network.voting_d'"
+  "evidence": "decomp:re/decomp/1430c4610.c;pat:log-channel--;xref:0x1430d1d53",
+  "notes": "GameSessionVotingManager VM: network.voting_data.* (mode, state, counts, kick, skip practice votes)."
  },
  "signature": {
   "id": "game.read_network_config_3",

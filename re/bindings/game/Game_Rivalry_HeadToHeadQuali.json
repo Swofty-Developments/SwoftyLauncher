@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1412631f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-RIVALS",
-  "notes": "Log channel RIVALS: 'Head to head data for %s: FastestLap:%lu FastestSector1:%lu FastestSector2:%lu FastestSector3:%lu QualifyingPosition:%u Penalties:%u' | 'Rival:%s Number of times beaten rival :%d Best Position :%d' | 'Rival:%s Number of times rival beaten us :%d Best Position :%d'"
+  "evidence": "decomp:re/decomp/1412631f0.c;pat:log-channel-RIVALS;xref:0x1456cd680",
+  "notes": "Vtable slot (cell 0x1456cd680). Logs 'Head to head data for %s ...' for Driver (+0x80..+0xb0) and Rival (+0xb8..+0xe8) when stat id +0x78/+0x7a equals the driver trace. For rival record *param_2: our quali position [+0xa8] vs rival [+0xe0] (default 0x1c): increments beaten-rival +0x28 or rival-beat-us +0x3c, updates best positions +0x20/+0x34; logs both. (lane owner review requested)"
  },
  "signature": {
   "id": "game.rivalry_head_to_head_quali",

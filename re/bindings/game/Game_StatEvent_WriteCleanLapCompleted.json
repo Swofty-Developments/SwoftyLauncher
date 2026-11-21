@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-STATEVENT",
-  "notes": "named from its log messages (channel STATEVENT): 'Executing EventWriteCleanLapCompleted with [%d] StatisticDataProviders registered.'"
+  "evidence": "decomp:re/decomp/1437700b0.c;pat:log-channel-STATEVENT;xref:0x14378692a",
+  "notes": "STATEVENT sub-writer: keys via 0x1401009f0 + djb2, providers this+8..+0x10 vcall +0x18 (enabled) / +0x30 (write). Writes CleanLapsCompleted.* (16 key variants incl. CleanLapsCompletedUnique) and FastestCleanLap.* (8 variants); calls 0x144c897d0. Caller 0x14378692a."
  },
  "signature": {
   "id": "game.stat_event_write_clean_lap_completed",

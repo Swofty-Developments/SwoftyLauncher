@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1403700a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=PodiumBaseCutSceneScript::bindToVehicle; log channel BIND: 'PodiumBaseCutSceneScript::bindToVehicle'"
+  "evidence": "decomp:re/decomp/1403700a0.c;pat:log-message-cxx;xref:0x1455f7010,0x1455f7320,0x1455f7630,0x1456033d0,0x145603760,0x145603b00",
+  "notes": "Logs, Game_Set_VehicleInCutscene with all args; when vehicle id (arg3 byte) != 0xff logs 'addForUnbind' and appends it to the unbind list this+0x860 (count this+0x888, capacity this+0x880). Slot in 6 vtables. (lane owner review requested)"
  },
  "signature": {
   "id": "game.podium_base_cut_scene_script_bind_to_vehicle",

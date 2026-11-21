@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14315b500",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=RankedMatching::onSessionLobby; log channel NETWORK-MATCHING: 'virtual void network::RankedMatching::onSessionLobby() | %s'"
+  "evidence": "decomp:re/decomp/14315b500.c;pat:log-message-cxx;xref:0x14581d6b8",
+  "notes": "Virtual (vt cell 0x14581d6b8): logs NETWORK-MATCHING 'onSessionLobby'; rich presence [this+0x18]: track name (+0xe78) unless 'DEV', custom = name == lng_rp_multiplayer_custom, +0x40 = 2, +0x30 = lng_rp_action_in_the_lobby, +0x28 = lng_rp_multiplayer when +0x52, +0x51 = 1; if mode [+0x3c0]+0x1a8 == 1 posts a message (vtable 0x1458234b0) to [this+0x10]+0x458 vt+0x20. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ranked_matching_on_session_lobby",

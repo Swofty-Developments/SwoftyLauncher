@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140fd4980",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-PRESS_INTERVIEWS",
-  "notes": "named from its log messages (channel PRESS_INTERVIEWS): 'Press interview answer given network message sent, question: %d, answer %d'"
+  "evidence": "decomp:re/decomp/140fd4980.c;pat:log-channel-PRESS_INTERVIEWS;xref:0x140fd4381,0x140fd5047",
+  "notes": "(this, ev): builds net message (vtable 0x1456b74c0, 0x12/0x99) with key (ev+0x10<<14 | ev+0x12), question id [ev+0x18]+8, answer id [ev+0x20]+8 or 0xffff; sends via 0x14402e500([this+0x290]+0x3d0, 1, msg); logs 'answer given network message sent'. Returns 0. lea refs in 0x140fd42c0 and 0x140fd4fa0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.press_interview_send_answer",

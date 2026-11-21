@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_RenderBadgeViewModel_SetupNextCapture;xref:0x141d79e9e,0x141d7a353,0x141d7a387,0x141d7b3f5,0x141d7b452",
-  "notes": "cxx=game::RenderBadgeViewModel::setupNextCapture; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/141d79e00.c;str:s_RenderBadgeViewModel_SetupNextCapture;xref:0x145749ea0",
+  "notes": "virtual setupNextCapture() (pretty-function 0x14574a4eb, vtable cell 0x145749ea0): capture types eRenderUIBadgeStatIds / eBlankEnvironmentBadge / eEnvironmentBadge, myteam_logo_01_da default texture; calls SetupBadgeData, LoadTexture, SetTextureForLayer. 6 KB body."
  },
  "signature": {
   "id": "game.render_badge_view_model_setup_next_capture",

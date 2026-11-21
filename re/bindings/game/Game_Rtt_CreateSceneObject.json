@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b5bb00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143b5bb00.c;xref:0x143b5ae2a,0x143b5c7e7,0x143d8877f",
-  "notes": "Hypothesis: creates an RTT scene object named 'Unnamed Scene'; also called by Game_Bink_OnOpen. Named callers: Game_Bink_OnOpen, Game_Rtt_CreateScenes."
+  "evidence": "decomp:re/decomp/143b5bb00.c;xref:0x143b5ae2a,0x143b5c7e7,0x143d8877f,0x143f859d9,0x14478da1f",
+  "notes": "In-place constructor of a render scene object: zeroes header fields, sets 0x30 transform rows to identity patterns, misc defaults (+0x4a0 0x1000000000400, +0x4c0 1.0/20.0, -1 ids) and interns the name 'Unnamed Scene' (hash 0xc4e0605e6d31511b, Ne_StringPool_InternByHash) at +0x4f8/+0x500; returns it. Callers 0x143b5ad80, Render_GeometryPass_Parse, Game_Rtt_RttGenerator, Game_Bink_LoadSubtitles, 0x14478d9d0. (lane owner review requested) Better name: Game_RenderScene_InitDefault (bound record keeps its name)."
  },
  "signature": {
   "id": "game.rtt_create_scene_object",

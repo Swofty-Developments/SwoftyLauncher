@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: ui_menu_data.photo_mode_available, ui_menu_data.photo_mode_enabled, ui_menu_data.start_photo_mode'"
+  "evidence": "decomp:re/decomp/142da44b0.c;pat:log-channel--;xref:0x1457e3dc8",
+  "notes": "Sibling of 0x142d9dfe0 (photo mode request handling) for replay highlights; only diffed, not read in full."
  },
  "signature": {
   "id": "game.read_ui_menu_data_config_6",

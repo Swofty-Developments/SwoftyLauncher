@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143660950",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-GameSaveSystemUserInterface",
-  "notes": "named from its log messages (channel GameSaveSystemUserInterface): 'Finished displaying notification'"
+  "evidence": "decomp:re/decomp/143660950.c;pat:log-channel-GameSaveSystemUserInterface;xref:0x145856798",
+  "notes": "Vtable cell 0x145856798. Body only logs GameSaveSystemUserInterface \"Finished displaying notification\"; no other side effects. (lane owner review requested)"
  },
  "signature": {
   "id": "game.save_ui_end_notification",

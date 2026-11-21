@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14454c3d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: rtao.farDistance, rtao.farRadius, rtao.nearDistance, rtao.nearRadius, rtao.overrideParams'"
+  "evidence": "decomp:re/decomp/14454c3d0.c;pat:log-channel--;xref:0x145be9830",
+  "notes": "Field registrar: 38 calls param_2 vt+0x18(ctx, name, type, &this[off], size, align, 0) for render debug options (rainbeads +0x18/+0x1c, bools +0x20..+0x2a, shadow cascades +0x2c..+0x38/+0x54..+0x60, heat haze +0x4c, planar reflections +0x78/+0x7c, LOD scales +0x80/+0x84, rtao.* +0x88..+0x98). (lane owner review requested) Better name: Game_RenderDebugOptions_RegisterFields (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_rtao_config_2",

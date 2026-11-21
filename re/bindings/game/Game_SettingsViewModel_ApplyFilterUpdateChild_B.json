@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141ddf830",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141ddf830.c;xref:0x14574f0a8",
-  "notes": "Copy B of the filter/rebuild-list slot (vt slot @0x14574f0a8); same body as Game_SettingsViewModel_ApplyFilterRebuildList_A. Shares the inlined UIOptionsSystem::setSelectedFilter block: filter level global 0x14606aa34 (0=filter_basic,1=filter_advanced,2=filter_expert) is matched by name in the options list [this+0x630]+0x70..0x78, then UIOptionsSystem refresh 0x142adc6d0(this+0x640 if this[0x114]) and vcall this+0x118 (refresh view). d4-verify-a: whole body only when child this[0x175] != null; after the filter (0x14606aa34, list this+0x630) calls 0x141da4670(child) and 0x141da7170(child,0,0x8c7614db), then fires a UI event; identical to _D"
+  "notes": "Vtable cell 0x14574f0a8. Body only when child this[0x175] != 0 (vcall child+8 first). Inlined UIOptionsSystem::setSelectedFilter (global 0x14606aa34: 1 filter_advanced, 2 filter_expert, else filter_basic, searched in [this+0x630]+0x70..+0x78), 0x142adc6d0, vcall +0x118, 0x141da4670(this,child), 0x141da7170(child,0,0x8c7614db), UI event rebuilt_list (0x144320fe0). Same body as _C/_D except child slot and hash. (lane owner review requested)"
  },
  "signature": {
   "id": "game.settings_view_model_apply_filter_rebuild_list_b",

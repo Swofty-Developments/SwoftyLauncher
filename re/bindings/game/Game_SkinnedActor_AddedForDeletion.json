@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401cfb10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=SkinnedActor::addedForDeletion; log channel ACTOR_SET_BINDING: 'SkinnedActor::addedForDeletion %p'"
+  "evidence": "decomp:re/decomp/1401cfb10.c;pat:log-message-cxx;xref:0x14737ef89,0x14737efa3,0x1455e5bb8",
+  "notes": "Vtable cell 0x1455e5bb8; also called at 0x14737ef89/0x14737efa3. Logs, sets +0x41 bit0; unless +0x1e0, releases the 20 audio slots in [[[0x14601db08]+0xb0]+0xa0]+3000 +0x48 owned by this (0x14450a0b0 + vcall +0x30), +0x1d8=0. Under lock 0x14601e1a0: each animation data in +0x3a0..+0x3a8: 0x1401f1ee0, log ~SkinnedActorAnimationData, unregisters its resource callback (HandleResourceEvent), frees it; frees global 0x14601e1d0 when empty. Then vcall +0x48 on each component +0x68..+0x70. (lane owner review requested)"
  },
  "signature": {
   "id": "game.skinned_actor_added_for_deletion",

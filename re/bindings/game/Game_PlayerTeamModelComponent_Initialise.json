@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
+  "evidence": "decomp:re/decomp/142a9f390.c;pat:log-message-cxx;xref:0x1457bf018",
   "notes": "cxx=PlayerTeamModelComponent::initialise; log channel ART_WARN_LEVEL_2: '[ART ISSUE] PlayerTeamModelComponent::initialise Material override [%s] doesn't exist for model [%s] using [%s] this maybe intentional used in [%s] [%s] [%s] [%'"
  },
  "signature": {

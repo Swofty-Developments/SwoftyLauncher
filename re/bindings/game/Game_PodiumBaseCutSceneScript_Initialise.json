@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140358cc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=PodiumBaseCutSceneScript::initialise; log channel CUTSCENE_PODIUM: 'PodiumBaseCutSceneScript::initialise'"
+  "evidence": "decomp:re/decomp/140358cc0.c;pat:log-message-cxx;xref:0x1455f7500",
+  "notes": "Logs PodiumBase initialise, then jmp Game_CutSceneScript_Initialise 0x140236880 (rest of the decomp is that callee). vt cell 0x1455f7500. (lane owner review requested)"
  },
  "signature": {
   "id": "game.podium_base_cut_scene_script_initialise",

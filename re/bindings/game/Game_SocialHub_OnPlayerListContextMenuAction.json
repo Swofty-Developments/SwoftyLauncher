@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141c37970",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onPlayerListContextMenuAction (class from the log channel); log channel SOCIAL_HUB: 'onPlayerListContextMenuAction(%s, %s, %s)'"
+  "evidence": "decomp:re/decomp/141c37970.c;pat:log-message-method;xref:0x141c36938,0x145744810,0x14574fd10,0x145750030,0x1457509b0,0x145750e00,0x145751250",
+  "notes": "Called at 0x141c36938; also in view-model vtable cells (xref). Logs SOCIAL_HUB \"onPlayerListContextMenuAction(%s, %s, %s)\" (action name table 0x145719a98[param_2], player id string, name). Only action 2 acts: unless global 0x14604ea28+0x38 or session flag +0x750 blocks, finds player param_3 in tree +0x11c0, stores its name into [this+0x1190]+0x480 and fires UI event go_to_superlicence_comparison via [this+0x620] vcall +0x80. (lane owner review requested)"
  },
  "signature": {
   "id": "game.social_hub_on_player_list_context_menu_action",

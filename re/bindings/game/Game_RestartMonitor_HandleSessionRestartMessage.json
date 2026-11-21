@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143228ec0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=RestartMonitor::handleSessionRestartMessage; log channel NETWORK/F: 'void network::RestartMonitor::handleSessionRestartMessage(neon::NeNetMessage &, neon::NeNetConnectionID) | %s'"
+  "evidence": "decomp:re/decomp/143228ec0.c;pat:log-message-cxx;xref:0x143055fc1",
+  "notes": "Net message handler (fn ptr lea'd at 0x143055fc1 in Game_GameSessionManager_Connect). Logs NETWORK/F with its pretty-function 0x145829ec1 and sets the force-restart flag this+0x19 = 1 (consumed by Game_RestartMonitor_Update). (lane owner review requested)"
  },
  "signature": {
   "id": "game.restart_monitor_handle_session_restart_message",

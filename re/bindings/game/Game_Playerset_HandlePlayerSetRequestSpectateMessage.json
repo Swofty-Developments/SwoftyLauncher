@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14316a360",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name handlePlayerSetRequestSpectateMessage (class from the log channel); log channel PLAYERSET: '%s(%d).'"
+  "evidence": "decomp:re/decomp/14316a360.c;pat:log-message-method;xref:0x143169097",
+  "notes": "Logs; when this+0x28 < 2 finds the PlayerSetEntry matching msg id (+0x58, type +0x18, user ids) in this+0x58..+0x60; if entry+0x67 != request byte msg+0x60: sets it, dirty +0x69, 0x1431682a0(entry), logs, notifies listeners this+0x78..+0x80 (vfunc +0x18); returns 1 when found, else 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.playerset_handle_player_set_request_spectate_message",

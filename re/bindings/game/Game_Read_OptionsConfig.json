@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: options.o_category, options.o_category_f2, ui_menu_data.show_report_code'"
+  "evidence": "decomp:re/decomp/141d97750.c;pat:log-channel--;xref:0x14574c388",
+  "notes": "Options UI VM: settings_* tabs, MessageModeChanged/MessageGameSetupModeChanged, options.o_category(_f2), OPTIONS-UI dynamic texture loading."
  },
  "signature": {
   "id": "game.read_options_config",

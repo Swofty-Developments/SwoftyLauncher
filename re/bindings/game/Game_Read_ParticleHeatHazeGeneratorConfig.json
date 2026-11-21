@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: ParticleHeatHazeGenerator.BlurContextSetup, ParticleHeatHazeGenerator.THHContextSetup, ParticleHeatHazeGenerator.TileBlurContextSetup, ParticleHeatHazeGenerator.TileCullContextSetup'"
+  "evidence": "decomp:re/decomp/143d5f8b0.c;pat:log-channel--;xref:0x143d65354",
+  "notes": "Heat haze generator GPU setup: eaid://vfx_package heatHaze buffers, ParticleHeatHazeGenerator.*ContextSetup names, screen_processing/track_heat_haze/p0."
  },
  "signature": {
   "id": "game.read_particle_heat_haze_generator_config",

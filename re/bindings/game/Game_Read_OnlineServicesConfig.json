@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: EADP.autoLoginEnabled, OnlineServices.LogToFile, OnlineServices.ServerName, OnlineServices.ServerName_win, OnlineServices.enabled'"
+  "evidence": "decomp:re/decomp/1432952c0.c;pat:log-channel--;xref:0x14582fcb0",
+  "notes": "OnlineServices.ServerName(_win), EADP.autoLoginEnabled, OnlineServices.enabled/LogToFile (debug_win/online_services_log.txt), F1OS websocket, HTTP content types."
  },
  "signature": {
   "id": "game.read_online_services_config",

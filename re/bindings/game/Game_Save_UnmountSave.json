@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
+  "evidence": "decomp:re/decomp/1441490a0.c;pat:log-message-method;xref:0x14413f1f7,0x1441522dd",
   "notes": "logged method name unmountSave (class from the log channel); log channel SAVE: 'unmountSave - load op, deleting mount dir '%s''"
  },
  "signature": {

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: lead_player.settings.eye_tracking.value, lead_player.settings.eye_tracking_cam.value, lead_player.settings.head_tracking.value'"
+  "evidence": "decomp:re/decomp/140789270.c;pat:log-channel--;xref:0x1456444a8",
+  "notes": "Parses hardware_settings_config (graphics_card, resolution, motion/dbox, led_display, udp telemetry ip/port/sendRate/format, wooting RGB) plus lead_player head/eye tracking; name too narrow."
  },
  "signature": {
   "id": "game.read_lead_player_config",

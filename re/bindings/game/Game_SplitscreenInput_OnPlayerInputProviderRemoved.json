@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onPlayerInputProviderRemoved (class from the log channel); log channel SPLITSCREEN_INPUT: 'onPlayerInputProviderRemoved %d, %s'"
+  "evidence": "decomp:re/decomp/142a6a990.c;pat:log-message-method;xref:0x1434d7823",
+  "notes": "Called at 0x1434d7823. Logs provider id param_2+0x18; ref-count guard +0x210 with deferred callbacks +0x1f8..+0x200; 0x142a59670/0x142a598c0/0x142a5b910; per player +0x1a8..+0x1b0 removes the provider id from list +0x148..+0x150, +0xb8 = list non-empty, 0x1441144a0; ends with 0x142a5d050."
  },
  "signature": {
   "id": "game.splitscreen_input_on_player_input_provider_removed",

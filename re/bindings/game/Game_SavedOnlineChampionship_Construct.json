@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14322c400",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=SavedOnlineChampionship::SavedOnlineChampionship; log channel NETWORK/F: 'SavedOnlineChampionship::SavedOnlineChampionship(%s,%s) at %p'"
+  "evidence": "decomp:re/decomp/14322c400.c;pat:log-message-cxx;xref:0x140fe2580,0x140fea998,0x1432361b4",
+  "notes": "Ctor of the 0x4e0 object: 4 random u32 pairs from the RNG 0x146108c00 (0x143929b90) as GUID parts, group name \"%08X\" of the code, Ne_Construct_SaveDataContainer(this,param_3,param_4,\"s-o-c\",...); vtable 0x1456bcad0, +0x208 allocator, +0x210 code (param_6), +0x220..+0x230 copy of param_7+8..+0x18, name string +0x238 (param_5); logs NETWORK/F \"SavedOnlineChampionship::SavedOnlineChampionship(%s,%s) at %p\". (lane owner review requested)"
  },
  "signature": {
   "id": "game.saved_online_championship_construct",

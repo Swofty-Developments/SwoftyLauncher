@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=RacingFFBEffectXInput::updateConstantForce; log channel FFB_DEBUG: 'RacingFFBEffectXInput::updateConstantForce - no windows gaming input?? Pad: %d'"
+  "evidence": "decomp:re/decomp/1446f5a60.c;pat:log-message-cxx;xref:0x145c00378",
+  "notes": "Virtual (vt cell 0x145c00378): pad selection (+0x2d0 active pad index, function table 0x14604e1a0) and vibration via 0x1446f5610 / 0x14537f2a0 with motors scaled by 65535; logs FFB_DEBUG updateConstantForce strings."
  },
  "signature": {
   "id": "game.racing_ffb_effect_x_input_update_constant_force",

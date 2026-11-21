@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14366d1a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name createInstance (class from the log channel); log channel SequenceSpawn: 'createInstance [%s]'"
+  "evidence": "decomp:re/decomp/14366d1a0.c;pat:log-message-method;xref:0x145857728",
+  "notes": "Vtable cell 0x145857728. Needs [[+0x90]+0x28] (else error 0x16 to the error ring); logs SequenceSpawn \"createInstance [%s]\" (string table entry [res+0x38]); res+8 refcount +1; allocates a 0x78 instance (0x143660b60) into +0x88; if +0x40 set, appends a 0x30 record (from [+0x40]+0x30/+0x38, +0x98/+0xa0, 0x146100750 defaults) to [[+0x40]+0x20]+0x88, sets its +0xc0 and pushes this into [+0x28]+0x28; returns 0 or 2. (lane owner review requested)"
  },
  "signature": {
   "id": "game.sequence_spawn_create_instance",

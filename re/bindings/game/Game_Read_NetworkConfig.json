@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: Network.ConnectionQuality.ConnectivityThreshold, Network.ConnectionQuality.DelayWarningTimeout, Network.ConnectionQuality.DelayWarningUpperThreshold, Network.ConnectionQuality.PingValueThreshold, Network.Dev.AllowMultiplayerRestart, Network.Dev.DepartedTimeOut, Network.D'"
+  "evidence": "decomp:re/decomp/143040da0.c;pat:log-channel--;xref:0x1430d182e",
+  "notes": "NETWORK-CONFIG ConfigParser: about 260 Network.* registerVar log lines (Transport, Dev, NetStats, ConnectionQuality) and GameSessionConfig."
  },
  "signature": {
   "id": "game.read_network_config",

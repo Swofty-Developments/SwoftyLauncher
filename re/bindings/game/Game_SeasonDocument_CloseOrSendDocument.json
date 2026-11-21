@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143095780",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143095780.c;xref:0x143094e38",
-  "notes": "Resets the lobby (Game_Network_MOXSeasonLobbyResettingCurrent), closeDocument (+0x769=0, +0x766=1, broadcast params, +0x765=0, send close msg) then SendSessionDocumentMessageDocument(param3). d8-verify: role < 2: doc not open (+0x765 == 0) -> 0x143067d40 then close; doc open -> 0x1430a4b60 send document; close message {7,0x12}"
+  "evidence": "decomp:re/decomp/143095780.c;xref:0x143094e36",
+  "notes": "Only when role doc+8 < 2. Doc not open (+0x765 == 0): 0x143067d40(doc,0); if now open: logs NETWORK closeDocument(), +0x769 = 0, +0x766 = 1, Game_Network_MOXSeasonParametersBroadcasted(doc), +0x765 = 0, posts message {0x145823840,7,0x12} via 0x14402e500 on [[doc+0x420]+0x3d0]. Doc open: 0x1430a4b60(doc,param_3) (send document). Returns 1. Referenced by lea at 0x143094e36. (lane owner review requested)"
  },
  "signature": {
   "id": "game.season_document_close_document_and_notify",

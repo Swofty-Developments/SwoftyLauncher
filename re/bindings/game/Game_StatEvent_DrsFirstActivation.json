@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-STAT_EVENT_DRS",
-  "notes": "Log channel STAT_EVENT_DRS: 'DRS activated for the first time in this zone for driver %d'"
+  "evidence": "decomp:re/decomp/14377a0f0.c;pat:log-channel-STAT_EVENT_DRS;xref:0x143779cf4,0x14377a6cd",
+  "notes": "DRS handler (lea 0x143779cf4 in 0x143779830, 0x14377a6cd in 0x14377a640): only for the local driver (msg+0x10 == [this+8]+0x173) and once (this+0x18/+0x19); finds the DRS zone entry, then inlined EventWriteActivateDRS writes ActivateDRS, .SectionId, .F1WEventMode, .F1WEventMode.SectionId to providers [[this+8]+0x70]; sets +0x18=1 and logs STAT_EVENT_DRS."
  },
  "signature": {
   "id": "game.stat_event_drs_first_activation",

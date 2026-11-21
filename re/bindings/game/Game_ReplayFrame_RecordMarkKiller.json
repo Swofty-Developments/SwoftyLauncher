@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=ReplayFrame::recordMarkKiller; log channel SKIDMARKS: 'ReplayFrame::recordMarkKiller (%p)'"
+  "evidence": "decomp:re/decomp/144724ae0.c;pat:log-message-cxx;xref:0x144720ddc,0x1447219fe,0x144723480",
+  "notes": "recordMarkKiller (log SKIDMARKS 'ReplayFrame::recordMarkKiller (%p)'); 6 KB decomp. Callers Render_Skidmarks_Update."
  },
  "signature": {
   "id": "game.replay_frame_record_mark_killer",

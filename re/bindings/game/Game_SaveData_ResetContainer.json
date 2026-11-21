@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1436523b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-SaveGame",
-  "notes": "named from its log messages (channel SaveGame): 'Data container %s reset.'"
+  "evidence": "decomp:re/decomp/1436523b0.c;pat:log-channel-SaveGame;xref:0x143652574,0x1436581e2,0x14d6ef3b8,0x150b20d63,0x150b20db0",
+  "notes": "Recursive container reset: if !param_4 or (param_1[0x1a]^param_1[0x19])&param_3, vcall +0x20(this,param_5) -> result[0]; on non-zero result stores the name hash of +0x80 (0x1439298f0); logs SaveGame \"Data container %s reset.\" (name +0x80); then walks the child bitset map +0x160/+0x168/+0x170 calling itself on child+0x58, stopping at the first error. (lane owner review requested)"
  },
  "signature": {
   "id": "game.save_data_reset_container",

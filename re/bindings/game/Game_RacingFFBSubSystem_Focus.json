@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446f9b70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=RacingFFBSubSystem::Focus; log channel -: 'RacingFFBSubSystem::Focus regained!'"
+  "evidence": "decomp:re/decomp/1446f9b70.c;pat:log-message-cxx;xref:0x1446f9a6b",
+  "notes": "Message handler (lea 0x1446f9a6b in 0x1446f9320) (this, msg): if !+0x2c9: +0x2ca = !msg+0x10; msg+0x10 != 0 logs 'RacingFFBSubSystem::Focus regained!', +0x2c8 = 0, 0x1446f9d40(this); else logs 'Focus loss!', +0x2c8 = 1, 0x1446f9c40(this). (lane owner review requested)"
  },
  "signature": {
   "id": "game.racing_ffb_sub_system_focus",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: Game.F1World.ForceFanzoneChoices, Game.F1World.SkipFanzoneChoices, Testing.EnableSmokeTest'"
+  "evidence": "decomp:re/decomp/1418cfc90.c;pat:log-channel--;xref:0x1418cfaac,0x1418cface,0x1418cfc84",
+  "notes": "(this): skips when 0x146067750/0x146067751 set; reads DB bools Game.F1World.ForceFanzoneChoices, Testing.EnableSmokeTest, Game.F1World.SkipFanzoneChoices (0x143a43b90), checks the player record (+0xa0..+0xa6, +199) and 'fanzone_choices_onboarding_complete' in [this+0x38]+0x228; then [this+0x80] vt+0x10 with 'fan_zone_choices', sets 0x146067751. Callers 0x1418cfaac, 0x1418cface, 0x1418cfc84. Better name: Game_F1World_CheckFanzoneChoicesOnboarding (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_game_config_2",

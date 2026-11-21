@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: Audio.audio_thread_affinity_mask, JobQueueSystem.allowJobStealingAcrossPolicies, JobQueueSystem.allowWakingWhenAnyOtherWorkerHasJobs, JobQueueSystem.assignAllJobsToCurrentThread, JobQueueSystem.enableRaiserThread, JobQueueSystem.enableSpinning, JobQueueSystem.minWorkerTh'"
+  "evidence": "decomp:re/decomp/1443c8d70.c;pat:log-channel--;xref:0x1443c080d",
+  "notes": "EGO_JOB_QUEUE_SYSTEM setup: JobQueueSystem.* settings, CPU topology, job policies, queue creation logs."
  },
  "signature": {
   "id": "game.read_job_queue_system_config",
