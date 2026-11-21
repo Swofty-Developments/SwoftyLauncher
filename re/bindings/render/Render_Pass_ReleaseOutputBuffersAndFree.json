@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143c84d70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143c84d70.c;xref:0x14014e835",
-  "notes": "Same three-buffer release as 0x143c20160 followed by vcall +0x38 on the owner (free the pass object). Called 6+ times from Game_Read_RendererGfxConfig."
+  "evidence": "decomp:re/decomp/143c84d70.c;xref:0x14014e835,0x14014e8da,0x14014e97f,0x14014ea24,0x14014eac9,0x14014eb6e",
+  "notes": "Destroys a 0x90 triple-buffer object param_2: 0x143e843b0, releases buffers +0x20/+0x18/+0x10 via Render_Gfx2Device_QueueDeferredRelease (device 0x14618caa8), Ne_Handle_ReleaseSlotWithErrorTrace, frees it with param_1 vcall +0x38. Same sequence as Render_Gfx2TripleBufferHolder_Destruct. Callers incl Game_Read_RendererGfxConfig 0x14014e835, 0x14014e8da, 0x14015d720 (0x14015e971). (lane owner review requested) Better name: Render_Gfx2TripleBuffer_Destroy (bound record keeps its name)."
  },
  "signature": {
   "id": "render.pass_release_output_buffers_and_free",

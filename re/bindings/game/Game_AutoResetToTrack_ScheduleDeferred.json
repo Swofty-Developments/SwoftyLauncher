@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f02bd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142f02bd0.c;xref:0x142f02135,0x14f5f866f",
-  "notes": "Schedules the deferred auto reset: reads session/job globals _DAT_146044988 (+0x10 allocator, +0x20 -> +0x140 -> +0x198), allocates 8-byte captures, uses Sess_Get_PlayerVehicleIndex for the local player and copies the request (Ne_Crt_Memcpy). Caller Game_AutoResetToTrack_StartTimer. Hypothesis. L2 2026-11-14 (engine-re round 2): decomp read; 2 reference(s) (0x142f02135, 0x14f5f866f). raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)  KEPT L1 (engine-re round 2 self-check): the row still carries a hypothesis / partial claim, so only the decomp and xref evidence was refreshed."
+  "notes": "Not a scheduler: clears auto-reset state for vehicle idx: for each local player (session +0x198/+0x1a0) on idx calls 0x1519eb350(+0x88, idx, 0, 0xf); resets slot +0xe0+idx*0x18; if the map entry (+0x368) is active and idx is the tracked car (+0x4a8) posts msg 0x145800e20; sets UI node \"off\" and a bool node false, entry+0x80 = 0. Callers 0x142f01210, 0x14f5f8640. (lane owner review requested) Better name: Game_AutoResetToTrack_ClearVehicleState (bound record keeps its name)."
  },
  "signature": {
   "id": "game.auto_reset_to_track_schedule_deferred",

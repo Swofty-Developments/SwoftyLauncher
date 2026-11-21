@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143260210",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK/V",
-  "notes": "named from its log messages (channel NETWORK/V): 'Vehicle %d teleporting without progress'"
+  "evidence": "decomp:re/decomp/143260210.c;pat:log-channel-NETWORK/V;xref:0x14325e5e4,0x1432e2851",
+  "notes": "Handler: vehicle index msg+0x10 (<0x1b) -> progress entry this+0xf8[i]; if entry flag +0x7c bit 2 set, logs \"Vehicle %d teleporting without progress\" (NETWORK/V) and increments entry+0xc2. (lane owner review requested) Better name: Game_Network_OnVehicleTeleportMessage (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_vehicle_teleporting_without_progress",

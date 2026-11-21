@@ -116,6 +116,14 @@ int main()
     ok(dbread::cell_key(trk.row_prefix, 3, "statId") == full("tracks.Track_3.statId"), "cell_key tracks.Track_3.statId");
     ok(dbread::label_key(trk.row_prefix, 0) == full("tracks.Track_0._metadata_"), "label_key tracks.Track_0._metadata_");
 
+    ok(dbread::row_stem("entrants.engines") == "Engine", "stem engines->Engine (the schema's capitalised row word)");
+    dbread::TableKeys eng = dbread::table_keys("entrants.engines");
+    ok(eng.ok && eng.count_key == full("entrants.engines._Engine_instancecount_") && eng.count_key == 0x49dc4c7c284f39bcull,
+       "table_keys entrants.engines: count key entrants.engines._Engine_instancecount_ (0x49dc4c7c284f39bc, 26 rows in the "
+       "stock data)");
+    ok(dbread::cell_key(eng.row_prefix, 19, "stat_id") == full("entrants.engines.Engine_19.stat_id"),
+       "cell_key entrants.engines.Engine_19.stat_id");
+
     // table_keys builds the same hashes as the full dotted strings.
     dbread::TableKeys tk = dbread::table_keys("entrants.teams");
     ok(tk.ok, "table_keys ok");

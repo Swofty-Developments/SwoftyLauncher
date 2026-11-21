@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143ecda30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143ecda30.c;xref:0x143bdc9c0",
-  "notes": "vector emplace with reallocation for 0x160-byte elements (div 0x2e8ba2e8ba2e8ba3, max 0xba2e8ba2e8ba2e). Callers Render_Gfx2_BuildBindDescriptor, Ne_RenderGraph_CreateResourceDescB, Render_RenderGraph_CreateResourceDescC."
+  "evidence": "decomp:re/decomp/143ecda30.c;xref:0x143bdc9c0,0x143bdcca1,0x143bdcf7e,0x143bdd26e",
+  "notes": "vector insert-with-reallocation for 0x160-byte elements: new capacity, allocator vcall +0x18 (align 0x10), element-wise move of the prefix, the new element param_3 at position param_2, then the suffix, frees the old buffer. Callers 0x143bdc9c0 (Render_Gfx2_BuildBindDescriptor), 0x143bdcca1 (Ne_RenderGraph_AppendPassDesc), 0x143bdcf7e (Ne_RenderGraph_CreateResourceDescB), 0x143bdd26e (Render_RenderGraph_CreateResourceDescC). (lane owner review requested)"
  },
  "signature": {
   "id": "render.render_graph_pass_vector_insert_realloc",

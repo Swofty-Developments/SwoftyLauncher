@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143d3dd80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143d3dd80.c;xref:0x142e2632d",
-  "notes": "If ctx+0x118 is null allocates a 4-byte counter and a 0x28-byte shared-ptr control block (refs 0x100000001, vtable 0x145a3b500, allocator 0x146129c00) from plRam0000000146c621e0 (+0x40), then fills thumbnail render state. Only caller Game_ThumbnailTask_Update. Hypothesis."
+  "notes": "If no request is pending (+0x118 null): allocates a 4-byte completion counter with shared control block (vtable 0x145a3b500, allocator 0x146129c00), then posts render plugin message 0xf (0x180 bytes) via 0x146c621e0 (+0x20/+0x30) to connection [+8] with the counter, target shared ptr param_3, param_2 and the view desc param_4 over view defaults (1.0, 0.2, 1000, 0.5625). Only caller Game_ThumbnailTask_StatePreloadingTexturesTexture 0x142e2632d. (lane owner review requested) Better name: Render_RttTask_PostRenderRequest (bound record keeps its name)."
  },
  "signature": {
   "id": "render.rtt_task_create_shared_target_ctx",

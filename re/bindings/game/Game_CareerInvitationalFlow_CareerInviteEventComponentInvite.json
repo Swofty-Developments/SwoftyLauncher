@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140f6a0e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-CAREER_INVITATIONAL_FLOW",
-  "notes": "named from its log messages (channel CAREER_INVITATIONAL_FLOW): 'CareerInviteEventComponent: Invite received with ID: %hs'"
+  "evidence": "decomp:re/decomp/140f6a0e0.c;pat:log-channel-CAREER_INVITATIONAL_FLOW;xref:0x140f69d1d,0x140f6a4e3",
+  "notes": "Message handler (lea refs): logs 'Invite received with ID', finds the invitational game mode (0x1407c7280; failure logged, returns 0), its component 0x14605b0e8 -> 0x140bb2130(previous mode +0x278) and 0x140bb1f50(invite id, -1); component 0x14605d5f0 gets the target mode name copied to +0x2a8 (128-byte string). (lane owner review requested) Better name: Game_CareerInviteEventComponent_OnInviteReceived (bound record keeps its name)."
  },
  "signature": {
   "id": "game.career_invitational_flow_career_invite_event_component_invite",

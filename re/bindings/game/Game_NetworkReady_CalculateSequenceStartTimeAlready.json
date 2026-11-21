@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142cf4820",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-READY",
-  "notes": "named from its log messages (channel NETWORK-READY): '- calculateSequenceStartTime(%llu) - already set time %llu.'"
+  "evidence": "decomp:re/decomp/142cf4820.c;pat:log-channel-NETWORK-READY;xref:0x142cf47f1,0x14e763086",
+  "notes": "Logs '- calculateSequenceStartTime(%llu) - ...': no players to sync, not all ready, ALL READY (PROXY / authoritative), sequence starts, already set time; walks the relevant-player bit set before setting the start time. Callers Game_NetworkReady_SetRelevantSet 0x142cf3cb0, jump from 0x14e762f30. (lane owner review requested) Better name: Game_NetworkReady_CalculateSequenceStartTime (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_ready_calculate_sequence_start_time_already",

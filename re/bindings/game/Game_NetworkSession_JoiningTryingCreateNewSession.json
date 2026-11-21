@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14307dc70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-SESSION",
-  "notes": "named from its log messages (channel NETWORK-SESSION): '%s: joining failed, trying to create a new session'"
+  "evidence": "decomp:re/decomp/14307dc70.c;pat:log-channel-NETWORK-SESSION;xref:0x14307e3a0,0x1430e451c,0x143166924",
+  "notes": "__FUNCTION__ 'GameSessionMatchingF1WSocialGP::onJoinSessionComplete(NEbool, NeNetError)': on failure Leave 0x1430605c0, setupRetryJoinSession (10 s) or 'joining failed, trying to create a new session'; notifies join/enter delegates. (lane owner review requested) Better name: Game_GameSessionMatchingF1WSocialGP_OnJoinSessionComplete (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_session_joining_trying_create_new_session",

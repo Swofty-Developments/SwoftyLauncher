@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1407c0860",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-CAREER_INVITATIONAL_FLOW",
-  "notes": "named from its log messages (channel CAREER_INVITATIONAL_FLOW): 'GameModeSystem: Game Mode needs to be switched (%hs)'"
+  "evidence": "decomp:re/decomp/1407c0860.c;pat:log-channel-CAREER_INVITATIONAL_FLOW;xref:0x1407baf58,0x1407bb1f1,0x142d5213c,0x1486a4186,0x148716d4d",
+  "notes": "If a target mode name is pending (+0xa0 non-empty): logs 'Game Mode needs to be switched', looks the name up in the mode hash map (+0x30, values +0x58..+0x60), logs found/failed, returns the mode's entity ([[entry]+0x38]+0x260) or 0. (lane owner review requested) Better name: Game_GameModeSystem_ResolvePendingGameMode (bound record keeps its name)."
  },
  "signature": {
   "id": "game.career_invitational_flow_game_mode_system_game_mode_needs",

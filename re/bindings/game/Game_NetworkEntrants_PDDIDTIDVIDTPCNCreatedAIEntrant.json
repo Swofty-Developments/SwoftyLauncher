@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14310fce0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-ENTRANTS",
-  "notes": "named from its log messages (channel NETWORK-ENTRANTS): 'PD: %s DID : %s TID : %s VID : %s TP : %u CN : %u - Created AI Entrant - %s'"
+  "evidence": "decomp:re/decomp/14310fce0.c;pat:log-channel-NETWORK-ENTRANTS;xref:0x143117d01,0x143109847,0x141ddbe89",
+  "notes": "Fills an AI entrant description *param_2 from template param_3 (driver/team/vehicle ids, 0x3fff = unset, team position via 0x14310e070, scan of the entrant vector); logs \"PD..CN - Created AI Entrant - %s\" (customised by delegate). (lane owner review requested) Better name: Game_NetworkEntrants_CreateAIEntrant (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_entrants_pddidtidvidtpcn_created_ai_entrant",

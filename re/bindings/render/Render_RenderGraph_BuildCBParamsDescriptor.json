@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143bc74c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143bc74c0.c;xref:0x143b82f0b",
-  "notes": "Builds a constant-buffer descriptor named \"CBParams\" (hash 0x74783225cead6076), pushes through 143bdcfb0/143ecd0c0. Callers Render_Tonemap_SetupEyeAdaptation, Render_Tonemap_Execute."
+  "evidence": "decomp:re/decomp/143bc74c0.c;xref:0x143bab71b,0x143bafbb0,0x143bbf3a3",
+  "notes": "Same as Render_FrameArena_AllocCBParams but 0x410 bytes: 16-aligned arena bump allocation (Ne_FatalAbort on overflow), memcpy from param_3, 'CBParams' interned, binding added via 0x143bdcfb0. Callers 0x143bab0a0, Render_Tonemap_SetupEyeAdaptation, Render_Tonemap_Execute. (lane owner review requested) Better name: Render_FrameArena_AllocCBParams410 (bound record keeps its name)."
  },
  "signature": {
   "id": "render.render_graph_build_c_b_params_descriptor",

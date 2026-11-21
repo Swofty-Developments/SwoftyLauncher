@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14310c1d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-ENTRANTS",
-  "notes": "named from its log messages (channel NETWORK-ENTRANTS): '%s: player: %s, team: %s, team position: %d, car number : %d'"
+  "evidence": "decomp:re/decomp/14310c1d0.c;pat:log-channel-NETWORK-ENTRANTS;xref:0x14310adea,0x143111fb1,0x14306862a",
+  "notes": "registerEntrant (logged name): logs player/team/position/car number; unregisters an entrant with the same team info, pushes the 0x88-byte entrant (Sess_EntrantVec_PushBack), host sends it via 0x14402e500 and refills free AI seats via 0x143117630 (requestRegisterAIEntrant). (lane owner review requested) Better name: Game_NetworkEntrants_RegisterEntrant (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_entrants_player_team_team_position_car_number",

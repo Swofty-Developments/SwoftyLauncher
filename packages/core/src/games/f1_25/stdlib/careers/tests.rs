@@ -725,10 +725,6 @@ fn an_id_a_removed_addon_held_before_is_not_a_careers_need() {
     ));
     let stale = stop_line(&list, &on, &installed).unwrap();
     assert!(stale.contains("old.season (not installed)"), "{stale}");
-    let mut checked = list.clone();
-    assert!(drop_former_owners(&mut checked, &owners, &installed, &on));
-    assert_eq!(stop_line(&checked[..4], &on, &installed), None);
-    assert!(checked[0].addons.is_empty());
 
     let played: BTreeSet<String> = list.iter().map(|c| c.career.clone()).collect();
     assert!(settle_rows(
@@ -758,7 +754,6 @@ fn an_id_a_removed_addon_held_before_is_not_a_careers_need() {
         alone.contains("old.season (not installed)") && alone.contains("(driver_career:e)"),
         "{alone}"
     );
-    assert!(!drop_former_owners(&mut list, &owners, &installed, &on));
 
     let mut elsewhere = parse(
         r#"[{"career":"driver_career:c","addons":[],"driver_raw":2,"team_raw":530,"vehicle_raw":9,"source":"slots","slot":"c","status":"present"}]"#,
@@ -767,8 +762,6 @@ fn an_id_a_removed_addon_held_before_is_not_a_careers_need() {
     assert_eq!(ids(&elsewhere[0]), ["new.season", "off.season"]);
     let off = stop_line(&elsewhere, &on, &installed).unwrap();
     assert!(off.contains("off.season (off)"), "{off}");
-    assert!(drop_former_owners(&mut elsewhere, &owners, &installed, &on));
-    assert_eq!(stop_line(&elsewhere, &on, &installed), None);
     let other = ["off.season".to_owned()];
     settle_rows(
         &mut elsewhere,

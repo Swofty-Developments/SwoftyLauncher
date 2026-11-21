@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143f0f3d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143f0f3d0.c;xref:0x143c488e4,0x143c4aa44",
-  "notes": "Erase by 24-byte key from a hash map (FNV-1a 64 over the key bytes, slots +0x10/+0x28); decrements count and frees the slot payload via allocator vcall. Callers Render_Model_BuildPerInstanceBuffers and Game_Particles_ReleaseMeshModelBinding. Hypothesis on map identity (model/instance binding)."
+  "notes": "unordered_map erase(first, last): per node hashes the 8-byte key at node+0x10 (FNV-1a 64, mask [+0x40]), frees it via allocator [+8] vcall +0x38, size [+0x18]--, fixes bucket {first,last} pairs at [+0x28], relinks the list. Callers 0x143c488e4 (Render_Model_BuildPerInstanceBuffers), 0x143c4aa44 jmp (Game_Particles_ReleaseMeshModelBinding). Map identity taken from the callers; key is 8 bytes, not 24. (lane owner review requested) Better name: Render_ModelBindingMap_EraseRange (bound record keeps its name)."
  },
  "signature": {
   "id": "render.model_binding_map_erase",

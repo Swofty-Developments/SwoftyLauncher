@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432dc910",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-F1OS-TASKSYSTEM",
-  "notes": "named from its log messages (channel F1OS-TASKSYSTEM): '[%s] ignoring error %s because the task has already an error %s'"
+  "evidence": "decomp:re/decomp/1432dc910.c;pat:log-channel-F1OS-TASKSYSTEM;xref:0x1432d888c,0x1432d9e1e,0x1432dbea2",
+  "notes": "Logs '[%s] creating error %s : %s' and stores the error on the task, or '[%s] ignoring error %s because the task has already an error %s' when one exists (F1OS-TASKSYSTEM). Callers include 0x1432d8820, 0x1432d9780 (0x1432d9e1e), 0x143369ea0, 0x14336b030. (lane owner review requested) Better name: Game_F1osTasksystem_SetTaskError (bound record keeps its name)."
  },
  "signature": {
   "id": "game.f1os_tasksystem_ignoring_because_task_already",

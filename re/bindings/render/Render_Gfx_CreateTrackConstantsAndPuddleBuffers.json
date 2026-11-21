@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1447889a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/1447889a0.c;xref:0x140109cf5",
-  "notes": "3378-byte creator of per-track GPU buffers/views: ConstantsTODBuffer (g_trackConstants), eaid://ego_package/PuddleBuffer (g_puddleIndicesUAV, PuddleBufferCounter / g_puddleIndicesCounterUAV), trackInfoModelAnimData (g_trackInfoModelAnimDataSRV), trackInfoModelCarData (g_trackInfoModelCarDataSRV), g_screenSpaceHeatHazeNormalMap, screen_space_rtv / world_space_rtv. Uses Render_Gfx2_CreateSrvBuffer, Render_Gfx_RegisterUavResource, Render_Gfx2_BindLayout_Create. 1 caller in Render_Gfx_BuildConfigObject (0x140109cf5). Addon-relevant: names of the track-constants/puddle/heat-haze shader resources."
+  "notes": "Constructor-style creator (base ctor 0x143b5ad80) of per-track GPU resources: ConstantsTODBuffer (g_trackConstants), eaid://ego_package/PuddleBuffer (g_puddleIndicesUAV), PuddleBufferCounter (g_puddleIndicesCounterUAV), trackInfoModelAnimData / trackInfoModelCarData SRVs, g_screenSpaceHeatHazeNormalMap, screen_space_rtv / world_space_rtv; Render_Gfx2_BindLayout_Create, Render_Gfx2_RegisterResourceNotify. Caller 0x140109cf5 in Render_Gfx_BuildConfigObject. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx_create_track_constants_and_puddle_buffers",

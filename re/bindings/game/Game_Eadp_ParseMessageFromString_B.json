@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144aec780",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144aec780.c;xref:0x143fd49bf,0x143e6307c",
-  "notes": "EADP protobuf wrapper: parses a message via 0x14396a260/0x14396a6f0 and traps on failure (Ne_Crt_FatalTrapB). Callers 0x143e60930 and Ne_PresenceEadp_ProcessPlayerCardList. Hypothesis."
+  "evidence": "decomp:re/decomp/144aec780.c;xref:0x143fd49bf",
+  "notes": "Not a parse: builds the std::string 'eadp.playercard.v1.BatchGetPlayerCardsRequest' (immediate stores), calls base message ctor 0x144935190(this, &name), sets vtable 0x1453b33f8 and zeroes fields +0x48..+0xc8. Caller 0x143fd4860 (Ne_PresenceEadp_ProcessPlayerCardList) at 0x143fd49bf. (lane owner review requested) Better name: Game_Eadp_BatchGetPlayerCardsRequest_Construct (bound record keeps its name)."
  },
  "signature": {
   "id": "game.eadp_parse_message_from_string_b",

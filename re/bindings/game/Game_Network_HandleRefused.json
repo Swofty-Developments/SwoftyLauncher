@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430c7300",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name handleRefused (class from the log channel); log channel NETWORK: '%s(%d, %s, %s).'"
+  "evidence": "decomp:re/decomp/1430c7300.c;pat:log-message-method;xref:0x1430c547e",
+  "notes": "Registered by the lea at 0x1430c547e in 0x1430c4610. Logs 'handleRefused(%d, %s, %s).' with the Player text, logs 'vote (%s, %s) refused.' and notifies each listener (vt+0x18(listener, this, msg+0x70)). (lane owner review requested) Better name: Game_NetworkVoting_HandleRefused (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_handle_refused",

@@ -558,6 +558,45 @@ fn an_install_root_that_is_or_holds_the_data_folder_is_refused() {
 }
 
 #[test]
+fn a_refused_update_names_the_folder_the_data_link_resolves_to() {
+    use crate::data::relocate::{link, real_path};
+    let dir = temp("refuse-link");
+    let install = dir.join("E").join("Modowanie F1");
+    release_tree(&install, "v1");
+    write(&install.join("config.json"), "{}");
+    let default = dir.join("Local").join("Swofty");
+    std::fs::create_dir_all(default.parent().unwrap()).unwrap();
+    link::create(&install, &default).unwrap();
+    let real = real_path(&install).display().to_string();
+    let text = refuse_data_root(&install, &default).unwrap_err().to_string();
+    assert!(
+        text.contains(&format!(
+            "the install folder {real} is also the data folder ({} links to it)",
+            default.display()
+        )),
+        "{text}"
+    );
+    assert!(text.contains("new, empty folder"), "{text}");
+    assert!(!text.contains("is or contains"), "{text}");
+    let inside = install.join("Swofty");
+    std::fs::create_dir_all(&inside).unwrap();
+    link::remove(&default).unwrap();
+    link::create(&inside, &default).unwrap();
+    let text = refuse_data_root(&install, &default).unwrap_err().to_string();
+    assert!(
+        text.contains(&format!(
+            "the data folder {} ({} links to it) is inside the install folder {real}",
+            real_path(&inside).display(),
+            default.display()
+        )),
+        "{text}"
+    );
+    let plain = text.replace(&default.display().to_string(), "");
+    assert!(!plain.contains(r"\\?\"), "{text}");
+    std::fs::remove_dir_all(&dir).ok();
+}
+
+#[test]
 fn user_addons_survive_when_the_install_root_is_the_data_folder() {
     let dir = temp("data-root");
     let (root, new) = (dir.join("Swofty"), dir.join("new"));

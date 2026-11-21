@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1449d46c8",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1449d46c8.c;xref:0x1435142da",
-  "notes": "libjpeg jpeg_write_scanlines(cinfo, scanlines, num_lines): requires state 0x65, warns 0x7e when next_scanline >= image_height, calls progress hook, runs the main controller ([0x3c] slot) and returns lines written. Caller Game_ThumbnailSystem_RequestAndWriteScreenshot (+1 other)."
+  "evidence": "decomp:re/decomp/1449d46c8.c;xref:0x14379cf8c,0x144bd90fb",
+  "notes": "libjpeg jpeg_write_scanlines(cinfo, scanlines, num_lines): error 0x15 unless state 0x65, warning 0x7e when next_scanline >= image_height, progress hook, master pass_startup when call_pass_startup ([0x3c]+0x18), clamps to remaining rows, main controller process_data ([0x3d] vcall +8), next_scanline += rows. Callers 0x14379cf8c (0x14379c250), 0x144bd90fb (0x144bd9065). Old xref 0x1435142da not found. (lane owner review requested)"
  },
  "signature": {
   "id": "render.jpeg_write_scanlines",

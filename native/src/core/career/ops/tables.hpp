@@ -19,6 +19,8 @@ struct Labels {
     std::unordered_map<std::string, uint32_t> look_by_label;
     std::unordered_map<uint32_t, std::string> driver_by_stat;
     std::unordered_map<uint32_t, std::string> team_by_stat;
+    std::unordered_map<uint32_t, std::string> vehicle_by_stat;
+    std::unordered_map<std::string, std::string> package_of_vehicle;
 };
 
 struct StartWorn {
@@ -46,6 +48,14 @@ bool db_text(const SwoftyDb *db, const std::string &path, std::string &out);
 bool labels();
 std::string driver_name(uint32_t stat);
 std::string team_name(uint32_t stat);
+// The label of the game database's row with this stat id ("" when there is none or the labels aren't loaded), the
+// package row a vehicle row names, and whether a row of a label is there: what is "team", "vehicle", "driver" or
+// "package". car.profile's cars selectors read them (hooks/car_live.cpp).
+std::string team_label(uint32_t stat);
+std::string driver_label(uint32_t stat);
+std::string vehicle_label(uint32_t stat);
+std::string vehicle_package_label(const std::string &vehicle);
+bool has_label(const char *what, const std::string &label);
 std::string record_label_of(const char *registry, const std::string &id);
 std::string person_driver_label(const std::string &ref);
 int resolve_driver(const std::string &ref);

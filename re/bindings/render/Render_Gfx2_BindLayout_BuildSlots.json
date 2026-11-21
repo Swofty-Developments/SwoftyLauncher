@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143990c70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143990c70.c;xref:0x143991868",
-  "notes": "1144-byte helper with placeholder name '<unknown-because-not-initialised/resource>' called from Render_Gfx2_BindLayout_Create (0x143991868). Hypothesis: builds the slot table of a bind layout."
+  "notes": "Resize of the 0x28-byte slot vector param_1[1..3] to param_2: shrinking drops slot refs (+0x10, refcount +0x18); growing reallocates via allocator *param_1, moves old slots and default-inits new ones (placeholder name, zero ref). Caller 0x1439917c0. (lane owner review requested) Better name: Render_Gfx2_LinkSet_ResizeSlots (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_bind_layout_build_slots",

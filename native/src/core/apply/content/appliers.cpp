@@ -13,6 +13,7 @@
 #include "core/apply/content/gvdb.hpp"
 #include "core/apply/content/logos.hpp"
 #include "core/apply/content/race_fuel.hpp"
+#include "core/apply/content/rev_lights.hpp"
 #include "core/apply/content/quali_tyres.hpp"
 #include "core/apply/content/teams.hpp"
 #include "core/apply/content/box_options.hpp"
@@ -60,13 +61,13 @@ std::recursive_mutex mu;
 std::mutex drs_mu;
 std::map<std::string, DrsGroup> drs_groups;
 
-// Boxes with more teams than their world has garages get a world of their own (box_world.hpp) only with
-// SWOFTY_BOX_WORLDS=1, until an in-game check on 1.0.145 proves it.
+// Boxes with more teams than their world has garages get a world of their own (box_world.hpp) unless
+// SWOFTY_BOX_WORLDS=0.
 bool box_worlds_on()
 {
     char v[8] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_BOX_WORLDS", v, sizeof v);
-    return n && n < sizeof v && v[0] == '1';
+    DWORD n = GetEnvironmentVariableA(box_world::ENV, v, sizeof v);
+    return box_world::enabled(n && n < sizeof v ? std::string_view(v, n) : std::string_view());
 }
 
 void publish_drs(Store &st, Expansion &x)
@@ -998,6 +999,13 @@ void undress_teams(const char *why)
                     why ? why : "");
 }
 
+std::string worn_team(uint16_t stat)
+{
+    std::lock_guard g(live_mutex());
+    auto it = live().wears.find(stat);
+    return it == live().wears.end() ? std::string() : it->second;
+}
+
 DrsBox drs_for_box(const std::string &entrant_list)
 {
     Store &st = registry::store();
@@ -1024,6 +1032,18 @@ WarmersBox tyre_warmers_for_box(const std::string &entrant_list)
         packages.push_back({id, lookup("content.package", id)});
     WarmersPick pick = tyre_warmers_pick(entrant_list, packages);
     return {pick.warmers, pick.line};
+}
+
+RevLightsBox rev_lights_for_box(const std::string &entrant_list)
+{
+    Store &st = registry::store();
+    std::map<std::string, Value> keep;
+    Lookup lookup = store_lookup(st, keep);
+    std::vector<std::pair<std::string, const Value *>> packages;
+    for (auto &id : in_load_order(st, "content.package"))
+        packages.push_back({id, lookup("content.package", id)});
+    RevLightsPick pick = rev_lights_pick(entrant_list, packages, lookup);
+    return {pick.engine, pick.line};
 }
 
 FuelRules fuel_rules_for_box(const std::string &entrant_list)

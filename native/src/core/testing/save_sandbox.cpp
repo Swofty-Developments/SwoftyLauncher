@@ -584,8 +584,11 @@ void read_launcher()
         fail_closed("the launcher saves folder " + remote_a + " could not be created");
     if (backend == Backend::steam_remote)
         build_proxy();
+    std::string from = remote_a, title = backend == Backend::ea_local ? ss::ea_title_dir(remote_a_unix, run_id) : "";
+    if (!title.empty())
+        from = title + "\\profile";
     swofty::log("[saves] launcher saves are on for profile %s: the game's profile save is served from %s", l.profile.c_str(),
-                remote_a.c_str());
+                from.c_str());
 }
 
 void read_run()

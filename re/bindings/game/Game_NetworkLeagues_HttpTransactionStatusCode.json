@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-LEAGUES",
-  "notes": "named from its log messages (channel NETWORK-LEAGUES): 'HTTP Transaction error, statusCode %d irrelevant.'"
+  "evidence": "decomp:re/decomp/143180630.c;pat:log-channel-NETWORK-LEAGUES;xref:0x143179988",
+  "notes": "HTTP callback (lea 0x143179988 in 0x1431717c0): appends param_6 + param_7 bytes from param_5 to the buffer at this+0x168, NUL-terminates when param_7 != 0, and on error logs 'HTTP Transaction error, statusCode %d irrelevant.', 'Authorization failed. Refreshing token data and trying again.' / '... on retry. Going to Error state.', 'Final HTTP status %d.'. Better name: Game_NetworkLeagues_OnHttpResponseData (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_leagues_http_transaction_status_code",

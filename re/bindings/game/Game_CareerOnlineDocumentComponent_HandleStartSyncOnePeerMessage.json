@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140fd3640",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_Championship_CareerOnlineDocumentComponent_HandleStartSyncOnePeerMessa;xref:0x140fd36d4,0x140fd3907,0x140fd392a,0x140fd39b2,0x140fd39ec,0x140fd3a1d",
-  "notes": "cxx=game::championship::CareerOnlineDocumentComponent::handleStartSyncOnePeerMessage; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/140fd3640.c;str:s_Championship_CareerOnlineDocumentComponent_HandleStartSyncOnePeerMessa;xref:0x140fd3eb7",
+  "notes": "Under CS +0x3e0, on peer message type +0x10: 1 request (busy if flags +0x410 & 3 -> reply 4, else reply 2 + flag 8), 2 allowed (reply 3), 3 agreed, 4 busy; updates +0x410. When ready (bit 0x10) and host (low bits == 2) sets callback 0x140fd2dc0 on +0x2b8 and runs inlined startHostSync/startClientSync (+0x2c0 = 2/1, 0x140fce790, 0x143103eb0); then 0x14079c940. (lane owner review requested)"
  },
  "signature": {
   "id": "game.career_online_document_component_handle_start_sync_one_peer_message",

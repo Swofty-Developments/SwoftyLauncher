@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b05a50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "pat:log-channel-PARTICLES",
-  "notes": "named from its log messages (channel PARTICLES): 'perform %d spawns and %d destroys and %d tints | trying to create an effect %s in a slot %04x where we have one already, ignoring (maybe we skipped a delete in replays?)'"
+  "evidence": "decomp:re/decomp/143b05a50.c;pat:log-channel-PARTICLES;xref:0x143b07cb9,0x143b08015,0x143b092bc",
+  "notes": "Applies the double-buffered spawn queue (slot 1-[+0x87b650]): logs 'perform %d spawns and %d destroys and %d tints' on channel PARTICLES_RP, creates effects via Game_Particles_CreateEffectNode into the slot table +0x83d0f0, clears the counters (+0x8050c4..+0x8050dc); with flag 0x100 re-partitions the effects (tail jmp to 0x143af95f0). (lane owner review requested)"
  },
  "signature": {
   "id": "render.particles_apply_spawns",

@@ -246,7 +246,8 @@ pub fn customisation_routes(data: &[u8], f1_world: &[u8]) -> Result<Vec<u8>> {
 /// The f1_world flow's launcher entries: the activity container opened with the Time Trial picker's command
 /// (`time_trial`) or the new Grand Prix picker's (`grand_prix_new`) already raised, the way the game's own
 /// `enter_splitscreen_era_select` opens it with `ss_game_mode_select`, and the bare activity container
-/// (`swofty_enter_return`) the session-end hand-over lands on.
+/// (`swofty_enter_return`) the session-end hand-over lands on. An entry of these an earlier build wrote is written
+/// again in place.
 pub fn f1_world_entries(data: &[u8]) -> Result<Vec<u8>> {
     edit(data, |p| {
         let flows = root_obj(p)?.at_mut("Flows")?.a_mut()?;
@@ -272,9 +273,6 @@ pub fn f1_world_entries(data: &[u8]) -> Result<Vec<u8>> {
             (GRAND_PRIX_ENTRY, Some("grand_prix_new")),
             (RETURN_ENTRY, None),
         ] {
-            if ents.iter().any(|e| e.name() == name) {
-                return Err(err(format!("{F1_WORLD_FLOW} has {name} already")));
-            }
             let mut e = if command.is_some() {
                 with_command.clone()
             } else {
@@ -285,7 +283,10 @@ pub fn f1_world_entries(data: &[u8]) -> Result<Vec<u8>> {
             if let Some(c) = command {
                 set_str(p0.at_mut("command")?.o_mut()?, "value", c)?;
             }
-            ents.push(e);
+            match ents.iter_mut().find(|x| x.name() == name) {
+                Some(earlier) => *earlier = e,
+                None => ents.push(e),
+            }
         }
         fix_ids(f, None);
         Ok(())

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430f15f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=NetworkSubsystem::onGameModeDeselected; log channel NETWORK: 'void network::NetworkSubsystem::onGameModeDeselected() | %s'"
+  "evidence": "decomp:re/decomp/1430f15f0.c;pat:log-message-cxx;xref:0x140bb4294",
+  "notes": "__FUNCTION__ 'NetworkSubsystem::onGameModeDeselected': cancels the OS service session 0x1430766c0 and, unless 'Network.ForceMPMode', setOnlineChampionship(null). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_subsystem_on_game_mode_deselected",

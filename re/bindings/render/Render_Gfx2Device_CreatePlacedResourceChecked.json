@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439bb970",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439bb970.c;xref:0x1439d2201",
-  "notes": "Wrapper of ID3D12Device::CreatePlacedResource (vcall +0xe8 on [g_gfx+0x508]): releases the old resource in *param_6 first, reports vendor-specific errors via 0x1439b8510 (Intel 0x8086/0x8087, NVIDIA 0x10de) with label neCreatePlacedResource. Callers Render_Gfx2Buffer_Construct, 0x1439d1b90, 0x1439fe030."
+  "evidence": "decomp:re/decomp/1439bb970.c;xref:0x1439d2201,0x1439d5a42,0x1439fe396,0x1439fe428",
+  "notes": "Releases *param_6, calls device ([0x14618caa8]+0x508) vcall +0xe8 (CreatePlacedResource) with params 1-5, then Render_Check_GfxResult with label neCreatePlacedResource for vendor ids 0x8086/0x8087, 0x10de, 0x1002. Callers Render_Gfx2Device_CreateResourceInternal, Render_Gfx2Buffer_Construct, Render_Gfx2Device_CreateCommittedResource. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx2_device_create_placed_resource_checked",

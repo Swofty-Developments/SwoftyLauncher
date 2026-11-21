@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140720530",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: Player Fuel Tank Empty'"
+  "evidence": "decomp:re/decomp/140720530.c;pat:log-channel-TELEMETRY;xref:0x1406dc3b4,0x1406fdcea",
+  "notes": "Bus handler: lea 0x1406dc3b4 in subscribe-all 0x1406d8470 (->0x143987810), lea 0x1406fdcea in unsubscribe-all 0x1406fd6c0. Allocs 0x68 record (ctor 0x140533350), copies msg fields, baseCtx by 0x14077bb90 'player_fuel_tank_empty', pushed to static queue (guard 0x14604d4b8) under CS; logs TELEMETRY 'Player Fuel Tank Empty'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_player_fuel_tank_empty",

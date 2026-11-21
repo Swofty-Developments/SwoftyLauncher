@@ -94,6 +94,32 @@ std::string suffix_of_group(const std::string &group)
     return {};
 }
 
+content::Cars cars_of_group(const std::string &group)
+{
+    for (size_t i = 0; i < used(); i++)
+        if (slots[i].desc.data_group == group)
+            return content::cars_of(group, &slots[i].desc);
+    return content::cars_of(group, nullptr);
+}
+
+bool select_cars_of_group(const std::string &group, uint32_t &was, content::Pick &pick)
+{
+    static const uintptr_t selected = swofty::api->resolve("g_FeTile_SelectedCareerContent");
+    static const uintptr_t system = swofty::api->resolve("g_FeTile_CustomisationSystem");
+    was = content::NO_CONTENT;
+    pick = {};
+    if (!selected || !mem::read(selected, was))
+        return false;
+    content::Cars cars = cars_of_group(group);
+    const uint8_t *eb = nullptr, *ee = nullptr;
+    car_entries(system, eb, ee);
+    if (cars.known)
+        pick = content::pick(eb, ee, cars.car_group, cars.model);
+    if (pick.kind != content::Pick::none)
+        *reinterpret_cast<volatile uint32_t *>(selected) = pick.id;
+    return true;
+}
+
 std::string group_of_mode(const std::string &mode)
 {
     if (mode.empty())

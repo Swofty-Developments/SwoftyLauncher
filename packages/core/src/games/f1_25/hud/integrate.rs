@@ -10,7 +10,7 @@ use swofty_addon::ops::ErpOp;
 use swofty_formats::erp::{ErpFile, Packer};
 use swofty_formats::pkg::Pkg;
 
-use super::conflict::{self, Conflict};
+use super::conflict::{self, Conflict, Kind};
 use super::{Input, Layered, Output, Stock, TemplateBase, compose_with, dials, screen_build, screens};
 use crate::erp::ErpBuild;
 use crate::store::Store;
@@ -163,6 +163,18 @@ fn conflict_text(cx: &Context, c: &Conflict, changes: &[Change]) -> String {
         true => vec!["the composed HUD".to_owned()],
         false => ours,
     };
+    if let Kind::Walk { off, .. } = &c.kind {
+        let off: Vec<String> = off.iter().map(|a| (cx.name)(a)).collect();
+        let what = match off.is_empty() {
+            true => format!("some of {}", and_list(&ours)),
+            false => or_list(&off),
+        };
+        return format!(
+            "the HUD elements do not compose: {}; turn {what} off in this profile ({})",
+            c.text(&and_list(&ours), ""),
+            c.detail("")
+        );
+    }
     let theirs = theirs(cx, c, changes, &ours);
     if theirs.is_empty() {
         return format!(
@@ -330,6 +342,8 @@ mod tests {
     const HALO: &str = "nick.f1-2026-halo";
     const PLANKED: &str = "d.planked";
     const TOWER: &str = "pablo.tv-timing-tower";
+    const S10: &str = "swofty.swofty-seasons-2010";
+    const S11: &str = "swofty.swofty-seasons-2011";
     const PARENT: &str = "hud_track_position.osd_visibility_option.track_position";
 
     fn name(id: &str) -> String {
@@ -337,6 +351,8 @@ mod tests {
             HALO => "Project Halo".into(),
             PLANKED => "Planked".into(),
             TOWER => "TV Timing Tower".into(),
+            S10 => "SWOFTY 2010".into(),
+            S11 => "SWOFTY 2011".into(),
             other => other.into(),
         }
     }
@@ -491,6 +507,58 @@ mod tests {
         assert_eq!(
             text(&s, &c, &[]),
             "the HUD elements do not compose: another addon and TV Timing Tower set the HUD editor preview of the Track Position list differently: another addon shows mask, TV Timing Tower hides mask; turn TV Timing Tower off in this profile and use Send Logs (driver_position_table_stacked.uipre from another addon)"
+        );
+    }
+
+    #[test]
+    fn a_board_too_big_for_the_ui_tree_names_every_addon_on_it_and_which_to_turn_off() {
+        let s = store("walk");
+        let walk = |off: Vec<String>| Conflict {
+            resource: screens::CAP.into(),
+            addons: vec![S10.into(), S11.into(), TOWER.into()],
+            kind: Kind::Walk {
+                screen: "standings".into(),
+                host: 14_101,
+                instances: 4,
+                slots: 73_904,
+                off,
+            },
+        };
+        let all = walk(vec![S10.into(), S11.into(), TOWER.into()]);
+        assert_eq!(
+            text(&s, &all, &[]),
+            "the HUD elements do not compose: SWOFTY 2010, SWOFTY 2011 and TV Timing Tower together make the Track Position list too big for the game: about 73904 of the 65536 slots one screen can hold, and the game can close as soon as it shows it; turn SWOFTY 2010, SWOFTY 2011 or TV Timing Tower off in this profile (the board holds the 14101-slot host scene 4 times)"
+        );
+        let none = walk(vec![]);
+        assert!(
+            text(&s, &none, &[])
+                .contains("; turn some of SWOFTY 2010, SWOFTY 2011 and TV Timing Tower off in this profile"),
+            "{}",
+            text(&s, &none, &[])
+        );
+    }
+
+    #[test]
+    fn a_full_anim_string_table_names_the_addon_whose_copy_filled_it() {
+        let s = store("clips");
+        let op = replace("dial.bin");
+        let changes = [Change {
+            resource: dials::F125.strtab.into(),
+            who: name(HALO),
+            op: &op,
+            addon: HALO,
+        }];
+        let c = Conflict {
+            resource: dials::F125.strtab.into(),
+            addons: vec![S10.into()],
+            kind: Kind::Clips {
+                scene: dials::F125.scene.into(),
+                last: "zz_~".into(),
+            },
+        };
+        assert_eq!(
+            text(&s, &c, &changes),
+            "the HUD elements do not compose: Project Halo and SWOFTY 2010 both animate the dial, and Project Halo's animation names leave none after them for SWOFTY 2010; turn Project Halo or SWOFTY 2010 off in this profile (Project Halo's anim string table ends at zz_~)"
         );
     }
 

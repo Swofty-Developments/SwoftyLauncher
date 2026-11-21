@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name eSystemMessageID_ConnectionLeft (class from the log channel); log channel NETWORK: 'Handling eSystemMessageID_ConnectionLeft'"
+  "evidence": "decomp:re/decomp/14406b390.c;pat:log-message-method;xref:0x152f10692",
+  "notes": "NeNetSystemCommon::handleSystemMessage (per log): switches on the system message type (Hello, server hello response, ConnectionLeft ...), checks protocol version, (de)serialises hello messages, calls Game_NetworkTransport_ConnectionLeftCallback, 0x144070890 (RTT list removal) and sendToConnectionIDViaSystemChannel. Better name: Game_Network_NetSystemCommon_HandleSystemMessage (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_e_system_message_id_connection_left",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140cb7210",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): '[Department Events] Sending Department Event message with option: %d'"
+  "evidence": "decomp:re/decomp/140cb7210.c;pat:log-channel-NETWORK;xref:0x140cb69fa",
+  "notes": "Builds a message (vtables 0x14568a0d0 / 0x14568dc10, id 0xae) with param_2+8 and option byte param_2+0x10, sends it via 0x14402e500([this+0x300], 1, &msg), logs '[Department Events] Sending Department Event message with option: %d' (NETWORK). Only caller 0x140cb67a0 at 0x140cb69fa. (lane owner review requested) Better name: Game_Network_SendDepartmentEventMessage (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_sending_department_event_message",

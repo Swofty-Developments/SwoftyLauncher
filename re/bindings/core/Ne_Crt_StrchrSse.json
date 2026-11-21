@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14532a9bc",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14532a9bc.c;xref:0x1406c53ff,0x1406c5417,0x1409a1136",
-  "notes": "Hypothesis: SSE zero-byte scan (strlen/wcslen like) in a CRT region; 18 callers incl Game_Breakable_SpawnPieceRenderModel. Named callers: Game_Breakable_SpawnPieceRenderModel, Game_LoadingTimes_EndAssetGroupRegion. vp4-verify partial/disagree"
+  "evidence": "decomp:re/decomp/14532a9bc.c;xref:0x1406c53ff,0x1406c5417,0x1409a1136,0x1434b4305,0x1439998a7",
+  "notes": "strrchr(s, c), not strchr/strlen: c==0 returns the terminator (pcmpeqb zero scan); else CPU-level paths (0x145f7f5f8) keep the LAST match (bit-scan-reverse on match masks, pcmpistri imm 0x40 = most significant index). Call sites pass backslash then '/' (0x1406c53fa/0x1406c5412, Render_FileStream_ResolveWritePath) and '?' (Game_Breakable_SpawnPieceRenderModel) to split paths. 20 sites. Better name: Ne_Crt_StrrchrSse (bound record keeps its name)."
  },
  "signature": {
   "id": "core.crt_strlen_sse",

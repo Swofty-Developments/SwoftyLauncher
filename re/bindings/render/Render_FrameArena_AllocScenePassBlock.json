@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143bc5760",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143bc5760.c;xref:0x143bab6e4,0x143bad702",
-  "notes": "Lock-free bump allocation (interlocked on arena +0x20, limit +0x10, base +0x18) of a 0x1700-byte per-pass record, then fills it with shader param g_scene (StringPool_InternByHash). Fatal abort on arena overflow. Used by many postfx/pass setup callers (Ne_PostProcessXGenerator_Copy_Render etc). Hypothesis on record meaning."
+  "evidence": "decomp:re/decomp/143bc5760.c;xref:0x143bab6e4,0x143bad702,0x143baef72,0x143bafba0",
+  "notes": "Lock-free bump allocation (CAS on arena +0x20, limit +0x10, base +0x18) of a 16-aligned 0x1700-byte block, memset 0 and filled by 0x143b8be50; Ne_FatalAbort on overflow; interns 'g_scene' (hash 0x36d5e02f47d618b9) and appends a 0x180-byte binding (size 0x1700) to the vector at +0x28 (Ne_Vector_GrowEmplace_Elem384). (lane owner review requested)"
  },
  "signature": {
   "id": "render.frame_arena_alloc_scene_pass_block",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1431153a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name handleEntrantsDocumentMessageOpen (class from the log channel); log channel NETWORK-ENTRANTS: '%s(%d).'"
+  "evidence": "decomp:re/decomp/1431153a0.c;pat:log-message-method;xref:0x1430d8b40",
+  "notes": "Logs handleEntrantsDocumentMessageOpen(conn) and sets the document-open flag this+0xdc = 1. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_entrants_handle_entrants_document_message_open",

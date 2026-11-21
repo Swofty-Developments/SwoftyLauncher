@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1431bc270",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=AttributeSetReplicationManager::removePlayerReplicatedData; log channel NETWORK-ENTRANTS: 'void network::AttributeSetReplicationManager::removePlayerReplicatedData(const PlayerDescription &) | %s: No replication is required in current context.'"
+  "evidence": "decomp:re/decomp/1431bc270.c;pat:log-message-cxx;xref:0x145824568",
+  "notes": "AttributeSetReplicationManager::removePlayerReplicatedData(desc) (vtable cell 0x145824568): key from desc (+0x48 or xor of id pair); non-host only logs; when replication applies removes the set unless it is the lead player (0x140b44530, bus msg 0x14566bd20) and sends remove msg 0xb3 to the server (0x14402e500(net,1,...)). (lane owner review requested)"
  },
  "signature": {
   "id": "game.attribute_set_replication_manager_remove_player_replicated_data",

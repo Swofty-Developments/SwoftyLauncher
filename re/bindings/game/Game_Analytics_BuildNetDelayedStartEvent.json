@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14076d230",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14076d230.c;xref:0x14076d1c6",
-  "notes": "Builds the \"net_delayed_start\" event (online start delayed, start lights sequence); caller Game_StartLights_SetSequenceStartTime."
+  "notes": "(this, unique_ptr<NetDelayedStartMessage>, priority): payload via 0x1404f7430, serialise 0x14077bb90(this, payload, 'net_delayed_start', param_3), then moves the message into the static 'net_delayed_start' queue under CS (max 0x40, oldest dropped). Caller 0x14076d090 (start lights). (lane owner review requested) Better name: Game_Analytics_SubmitNetDelayedStartEvent (bound record keeps its name)."
  },
  "signature": {
   "id": "game.analytics_build_net_delayed_start_event",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140bb2130",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-CAREER_INVITATIONAL_FLOW",
-  "notes": "named from its log messages (channel CAREER_INVITATIONAL_FLOW): 'CareerInviteEventComponent: Switching to InvitationalEvent Game Mode. Target game mode: %hs. Previous game mode: %hs'"
+  "evidence": "decomp:re/decomp/140bb2130.c;pat:log-channel-CAREER_INVITATIONAL_FLOW;xref:0x140f6a2af",
+  "notes": "Called on the invitational championship's component by 0x140f6a0e0: stores param_2 (previous mode) at +0x328, copies the target mode name ([+0x278]+0x220) into a 128-byte string, logs 'Switching to InvitationalEvent Game Mode. Target ... Previous ...' and posts the switch message (0x14565f4d0) via 0x140d2e490. (lane owner review requested) Better name: Game_CareerInviteEvent_SwitchToInvitationalGameMode (bound record keeps its name)."
  },
  "signature": {
   "id": "game.career_invitational_flow_career_invite_event_component",

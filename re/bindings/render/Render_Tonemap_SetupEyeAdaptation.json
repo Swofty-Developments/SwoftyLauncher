@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143bafaf0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143bafaf0.c;xref:0x143baba0c,0x143d8c4a9",
-  "notes": "Eye adaptation pass setup (string PPXTonemap::EyeAdaptation); called from Render_SceneView_SubmitCamera. Addon: exposure/adaptation. Named callers: Render_SceneView_SubmitCamera."
+  "notes": "Eye-adaptation pass setup ('PPXTonemap::EyeAdaptation'): allocates the g_scene block (Render_FrameArena_AllocScenePassBlock), computes tonemap scalars (Render_Tonemap_ComputeCurveParams) and copies the CBParams block (0x143bc74c0). Callers 0x143bab0a0, Render_SceneView_SubmitCamera (0x143d8c4a9). (lane owner review requested)"
  },
  "signature": {
   "id": "render.tonemap_setup_eye_adaptation",

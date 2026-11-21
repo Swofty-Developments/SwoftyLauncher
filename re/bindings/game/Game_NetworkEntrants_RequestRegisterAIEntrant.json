@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143117630",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name requestRegisterAIEntrant (class from the log channel); log channel NETWORK-ENTRANTS: '%s().'"
+  "evidence": "decomp:re/decomp/143117630.c;pat:log-message-method;xref:0x14310d572,0x143117d7b,0x140fe320e",
+  "notes": "Logs requestRegisterAIEntrant(); unregisters an entrant with the same team info, builds the AI entrant (0x143117f90, Ne_Make_RandomIdBlock) and registers it via 0x14310c1d0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_entrants_request_register_ai_entrant",

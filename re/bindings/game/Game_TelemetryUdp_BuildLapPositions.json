@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d025a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142d025a0.c;xref:0x142cfa941,0x142d0562e",
-  "notes": "(state, lap) Fills the lap-positions table at state+0xc820 (stride 0x18 per lap, byte per car): for lap 0 the grid position (vehicle +0x90 ^ +0x98) +1; for lap n collects each car's lap time (Sess_LapTimes_GetCarData +0x40/+0x48 + lap*200), sorts (0x142dd87d0) and writes 1-based positions; max lap +0xc81c. Feeds packet LapPositions. Callers Game_TelemetryUdp_UpdateRace, UDP preferences changed, Sess_ViewInstantReplay_Update."
+  "evidence": "decomp:re/decomp/142d025a0.c;xref:0x142cfa941,0x142d0562e,0x142da2af6",
+  "notes": "(state, lap): fills state+0xc820 (byte per car, 0x18 per lap): lap 0 = grid position from the car's lap-time record (+0x90 ^ +0x98) + 1; lap n = collects each car's lap time (record + lap*200), sorts (0x142dd87d0) and writes 1-based positions. Called from Game_TelemetryUdp_UpdateRace, 0x142d048e0 and Sess_ViewInstantReplay_Update. (lane owner review requested)"
  },
  "signature": {
   "id": "game.telemetry_udp_build_lap_positions",

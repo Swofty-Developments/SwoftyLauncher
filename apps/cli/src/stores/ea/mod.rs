@@ -1,3 +1,4 @@
+pub mod session_env;
 mod setup;
 mod stub;
 

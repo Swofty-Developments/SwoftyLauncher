@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143914f20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143914f20.c;xref:0x14379d2d9,0x144493ac4",
-  "notes": "libpng-style context create: allocates 0x1d8+ struct via 0x14390e310, sets defaults (0xffffffff00002000, 0x100000008, 0xf00000008); message Cannot set both read_data_fn and write_data_fn in the same structure is from the shared set_rw_fn code. Callers Render_Screenshot_CaptureAndSave, Game_ThumbnailSystem_RequestAndWriteScreenshot."
+  "notes": "png_create_write_struct pattern: calls 0x14390e310, sets zlib defaults (+0x1d8 0xffffffff00002000, +0x1e0/+0x1f4 0xf00000008, +0x1e8 0x100000008), bit 0x20 at +0x16a, default write fn 0x1439142f0 (+0x130) and flush 0x143914340 (+0x2b0); warns Cannot set both read_data_fn and write_data_fn if a read fn is set. Callers in 0x14379c250, Render_Screenshot_CaptureAndSave. (lane owner review requested)"
  },
  "signature": {
   "id": "render.png_create_write_context",

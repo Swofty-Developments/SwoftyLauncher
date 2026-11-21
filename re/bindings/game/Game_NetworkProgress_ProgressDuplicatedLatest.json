@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14325b7d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-PROGRESS",
-  "notes": "named from its log messages (channel NETWORK-PROGRESS): 'progress (%s) duplicated : latest(%s)'"
+  "evidence": "decomp:re/decomp/14325b7d0.c;pat:log-channel-NETWORK-PROGRESS;xref:0x14326f35e,0x14582da20,0x145836d10",
+  "notes": "Progress history ring buffer (0xf0-byte records, time stamp at +0xe0): when the type matches, the first record is copied in directly; a later record older than, equal to or too close to the latest logs 'progress (%s) out of order / duplicated / too close to latest : latest(%s)' and is rejected. Caller 0x14326a9c0; vtable cells 0x14582da20, 0x145836d10. (lane owner review requested) Better name: Game_NetworkProgress_HistoryAddProgress (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_progress_progress_duplicated_latest",

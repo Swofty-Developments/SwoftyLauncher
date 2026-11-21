@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140dd9630",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_Championship_CareerEmailContainers_SetupEmailContainerForDriverStatId;xref:0x140dd986f",
-  "notes": "cxx=game::championship::CareerEmailContainers::setupEmailContainerForDriverStatId; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/140dd9630.c;str:s_Championship_CareerEmailContainers_SetupEmailContainerForDriverStatId;xref:0x140dd64da,0x140dd95bb,0x140dd95da",
+  "notes": "Finds the container (ptr vector param_1[7..8]) whose driver id (+0x20) equals *param_2; else allocates a 0x70-byte container (driver id +0x20, team id +0x24 = 0x3fff0000 none, owner param_1[3] +0x1468/+0x1470, day param_1[10]), push_back, logs 'added new container for driver %s' (CAREER_EMAIL_COMPONENT). (lane owner review requested)"
  },
  "signature": {
   "id": "game.career_email_containers_setup_email_container_for_driver_stat_id",

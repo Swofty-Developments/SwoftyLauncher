@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143eca410",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143eca410.c;xref:0x143bc1b9f",
-  "notes": "Interns the shader binding names of the post-process 'copy' pass: g_scene, copyParams, inputRT0, inputCrossFade, srvAcesSdrLUT, srvAcesLUT, lut3DTextureSRV, inputHeatmap, inputNRD, inputVRS, inputDebugRenderTarget, alphaMask, gbufferAlbedo, uavFrameBuffer, outputHudlessBackbuffer. Caller Ne_PostProcessXGenerator_Copy_Render (4+ sites). Addon: ACES SDR/HDR LUT, tonemap/copy inputs, hudless backbuffer."
+  "evidence": "decomp:re/decomp/143eca410.c;xref:0x143bc1b9f,0x143bc2024,0x143bc2283,0x143bc265e",
+  "notes": "Fills 0x28-byte binding descriptors {interned name (0x14392a0c0 with a precomputed 64-bit hash), hash, 0, 0xc0, -1}: g_scene, copyParams, inputRT0, inputCrossFade, srvAcesSdrLUT, srvAcesLUT, lut3DTextureSRV, inputHeatmap, inputNRD, inputVRS, inputDebugRenderTarget, alphaMask, gbufferAlbedo, uavFrameBuffer, outputHudlessBackbuffer. Callers 0x143bc1b9f, 0x143bc2024, 0x143bc2283, 0x143bc265e in Ne_PostProcessXGenerator_Copy_Render. (lane owner review requested)"
  },
  "signature": {
   "id": "render.post_fx_copy_pass_shader_bindings",

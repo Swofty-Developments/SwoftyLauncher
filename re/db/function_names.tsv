@@ -124,6 +124,7 @@ addr	name
 0x1401de400	Game_SceneManager_IsValidModifier
 0x1401df1e0	Game_SceneManager_AddSceneObjects
 0x1401e7aa0	Game_Scene_UpdateInstanceTransformsBatch
+0x1401e8c50	Game_SceneManager_FormatMaterialContexts_Thunk
 0x1401e9150	Game_SceneManager_BuildMaterialActorForScene
 0x1401ed220	Game_SceneManager_ResolveMaterialActorIds
 0x1401ee140	Game_ActorManager_ResetUsageMap
@@ -4980,6 +4981,7 @@ addr	name
 0x142d4c140	Sess_Loader_PrepareGridThumbnails
 0x142d4c6a0	Sess_Loader_PlayGridPlayerShotCutscene
 0x142d4d040	Sess_Loader_RequestLoadThumbnails
+0x142d4d890	Sess_Loader_StartTrackWorldTask
 0x142d4e170	Ne_SharedPtr_MoveAssign
 0x142d4e1c0	Ne_SharedPtr_Release
 0x142d4e8c0	Game_Garage_SendVehicleStatusChange
@@ -7605,6 +7607,7 @@ addr	name
 0x143925e20	Ne_BitStream_ReadQuantisedFloat
 0x143926600	Ne_BitStream_ReadQuantizedFloat
 0x1439268a0	Ne_BitStream_WriteQuantizedFloat
+0x1439272e0	Vm_Pkg_ResolveValueTables
 0x143927510	Vm_Open_Pkg
 0x143927f90	Vm_Find_PkgObjectKey_Thunk
 0x143928e00	Ne_Hash_Md5UpdateLowercased
@@ -7616,6 +7619,7 @@ addr	name
 0x14392a0c0	Ne_StringPool_InternByHash
 0x14392a8b0	Ne_StringTable_Lookup
 0x14392d3a0	Ne_Timer_ConstructQpcDeadline
+0x14392f6e0	Vm_Pkg_ResolveObjectChunk
 0x143930760	Ne_Bag_Clear
 0x143931730	Ne_StringPool_FindObjectByCStr
 0x143931910	Gdb_Find_ReflectedFieldA
@@ -8813,6 +8817,11 @@ addr	name
 0x144160980	Game_NeUgc_StopPlaytimeTrackingCallbackResult
 0x1441630f0	Ne_Format_String
 0x144165860	Ne_Ref_AssignIntrusiveRc16
+0x144166780	Ui_LayoutTrees_RemoveRoot
+0x144167460	Ui_LayoutTrees_WalkAll
+0x144167620	Ui_LayoutTree_Walk
+0x14416ac00	Ui_LayoutTree_CountSlots
+0x14416ac60	Ui_LayoutTree_FlattenNode
 0x14416b220	Ne_IntrusivePtr_Assign
 0x14416bc70	Vm_Find_NodeFactory
 0x14416c1c0	Ne_UIFlow_UnloadAssetsGroups
@@ -8949,6 +8958,7 @@ addr	name
 0x144321a70	Vm_ViewModel_IsBound
 0x1443379f0	Ne_Make_StrFromBuffer
 0x144343aa0	Ui_Find_NodeByName
+0x144344970	Ui_LayoutTrees_WalkJob
 0x144348a20	Ne_StringMap_EmplaceNode
 0x144349300	Vm_Remap_InstanceSignals
 0x144353880	Game_Read_SubtitlesDataConfig_2
@@ -9012,6 +9022,8 @@ addr	name
 0x144428030	FeFlow_Parse_StateElement
 0x144429640	Ne_AssetGroupSubTask_OnComplete
 0x14442a090	Ne_WorldLoadTask_Update
+0x14442a4f0	Ne_WorldModule_StartPrimaryWorld
+0x14442b4c0	Ne_WorldModule_StartSecondaryWorld
 0x14442d470	Ne_PlayerInputProvider_BindToDeviceNode
 0x14442e3f0	Ne_PlayerInputProvider_SetDeviceBound
 0x14442f0c0	Ne_InputSystem_Init
@@ -9090,6 +9102,7 @@ addr	name
 0x14449e140	Vm_Load_UidfResource
 0x14449f5f0	Game_Read_EDynamicLayoutConfig
 0x1444a1b30	Game_Read_UIConfig
+0x1444a3060	Ui_EngineModule_Update
 0x1444a4b70	Game_Read_RendererGfxConfig_5
 0x1444a56f0	Game_HardwareSettings_FindGraphicsDetailConfig
 0x1444a7290	Game_HardwareSettings_GetOptionsNode
@@ -9767,6 +9780,7 @@ addr	name
 0x145378b60	Ne_Crt_Memset
 0x14537eff0	Prot_WinVerifyTrust_Thunk
 0x1473d0fa0	Ui_NoyearCustomMyTeam_Thunk_Body
+0x14741deb0	Game_SceneManager_FormatMaterialContexts_Body
 0x1474fbd30	Game_Cutscene_ResolveTeamStatId
 0x147db8390	Game_PitStopActionObserver_GetLongestStopSequenceLength_Body
 0x147de5cd0	Game_PitstopSystem_FindShowPitstopZone_Body

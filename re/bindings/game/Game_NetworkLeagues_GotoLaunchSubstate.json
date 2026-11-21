@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1431809d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name gotoLaunchSubstate (class from the log channel); log channel NETWORK-LEAGUES: 'gotoLaunchSubstate: %d:%s -> %d:%s'"
+  "evidence": "decomp:re/decomp/1431809d0.c;pat:log-message-method;xref:0x14317425b,0x14317ad5d",
+  "notes": "Logs 'gotoLaunchSubstate: %d:%s -> %d:%s' and stores the new substate (same pattern as Game_NetworkLeagues_GotoSyncSubstate). Callers in 0x1431717c0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_leagues_goto_launch_substate",

@@ -162,6 +162,7 @@ void narrow(void *mode, const char *list)
     });
     apply_drs(mode, list);
     apply_warmers(mode, list);
+    apply_rev_lights(mode, list);
     apply_tyre_change(mode, list);
     apply_fuel(list);
     apply_weekend(mode, list);

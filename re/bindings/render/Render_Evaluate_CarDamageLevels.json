@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f17170",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142f17170.c",
-  "notes": "damage level per part group for the renderer (cases 0..10: wheels, front wing, sidepods/mirrors, floor/bargeboards, rear wing = mean of rearwing_bl/br/top, diffuser)."
+  "evidence": "decomp:re/decomp/142f17170.c;xref:0x142f16b14,0x142f16b26,0x142f16d02",
+  "notes": "Switch on part group param_3 (0..10): damage value from car state ([[param_2+8]+0x58]+0x530/+0x538 float maxima, or mean of named part ratios u16 +0x58/+0x5a: sidepod_fr/fl, sidewing_fr/fl, topcanopy_bm, wing_mirror_l/r (7), bargeboard_fl/fr, floor_damage_l (8), rearwing_bl/br (9)); maps it through threshold tables at param_1+0xc30.. to a level; writes level/value into param_2. Callers in Car_TerminalDamage_EvalPartLevels. (lane owner review requested) Better name: Render_CarDamage_EvalPartGroupLevel (bound record keeps its name)."
  },
  "signature": {
   "id": "render.evaluate_car_damage_levels",

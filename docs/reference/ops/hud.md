@@ -408,7 +408,19 @@ The other side is the addon whose archive change put the node or setter there. W
 - A resource the composer writes goes to every stock archive that carries it, not only to the archives its overlay is made for; an archive that also carries the resource gets an added `<archive>_2.erp` with the composed copies and the archive's new resources. A build that would leave a stock copy beside a composed one stops with `the composed HUD of <addons> would leave the game's own copy of a resource beside the composed one`.
 - A record's nodes are checked against the stock files: the template without the added groups and the signals to them is the stock template, node for node.
 
-The anim nodes a gauge or sweep adds are named `zh_<element>...`, which sorts after every stock name in the scene's anim string table.
+The anim nodes a gauge, sweep or motion adds are named `zh_<prefix>_<element>...`, which sorts after every stock name in the scene's anim string table. The table is sorted, and the names a record appends must sort after its last string. When another addon's copy of the scene already ends the table at or past `zh_<prefix>_` (Project Halo 0.2.4's `dial_complete` ends at `zh_sg8_anim`), the record's anim nodes take the first of `zi_` to `zz_` that sorts after it, and the build says so:
+
+```text
+s10_onboard: the anim string table of dial_complete.idf already ends at zh_sg8_anim, so this record's anim names start zi_
+```
+
+A table that ends past every one of them stops the build, naming the addon whose copy filled it:
+
+```text
+the HUD elements do not compose: Project Halo and SWOFTY 2010 both animate the dial, and Project Halo's animation names leave none after them for SWOFTY 2010; turn Project Halo or SWOFTY 2010 off in this profile (Project Halo's anim string table ends at zz_~)
+```
+
+A decision on a game value reads its states from the stock MVCD on that value under the dial's parent in the game's own template. Another addon's template can carry an MVCD of its own on the same value beside it (Project Halo's `halo_ctl.drs_state` on `drs_pit_state`), and the decision still takes the game's.
 
 ::: info Credit
 The element templates, the placement maths, the clip keys and the binding rules follow Project Halo by nyannoying (https://github.com/nyannoying1337/f1-25-project-halo). Uses work from Project Halo by nyannoying.

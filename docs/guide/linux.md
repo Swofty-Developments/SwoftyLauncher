@@ -89,6 +89,8 @@ If your setup needs CPU affinity or environment variables, set them in `$DATA/co
 }
 ```
 
+On an EA app copy, the `env` entries reach F1 25 through `swofty/session_env.json`; see [EA app](/reference/launch#ea-app).
+
 You can use NixOS too. To run the latest code instead of a release, [build from source](/reference/development).
 
 ## Next

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14473c120",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14473c120.c;xref:0x14473b443",
-  "notes": "CRT-style sprintf(buf, fmt, ...) wrapper around __stdio_common_vsprintf (0x14532e428) with default printf options (0x14029b190). Called in the 0x14473b443 block. cv3-verify: __stdio_common_vfprintf wrapper (stream arg), not sprintf"
+  "evidence": "decomp:re/decomp/14473c120.c;xref:0x14473b443,0x14473b452,0x14473b471,0x14473b480,0x14473b48f",
+  "notes": "fprintf(FILE*, fmt, ...): calls __stdio_common_vfprintf 0x14532e428(*options 0x14029b190, stream, fmt, NULL locale, va_list). 26 sites, all in Car_Vte_WriteSessionReport."
  },
  "signature": {
   "id": "core.crt_sprintf",

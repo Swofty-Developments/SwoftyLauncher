@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140bb87f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): '! ParcFermeRulesComponent can't deserialize net message, buffer contains %d, less than eight byte.'"
+  "evidence": "decomp:re/decomp/140bb87f0.c;pat:log-channel-NETWORK;xref:0x145678f88",
+  "notes": "Virtual (vtable cell 0x145678f88, next to 0x140bb7de0's 0x145678f78). Net-message variant: size checks '! ParcFermeRulesComponent can't deserialize net message, buffer contains %d, less than eight byte / sixteen / twenty four bytes.' (lane owner review requested) Better name: Game_Network_ParcFermeRulesComponent_DeserializeNetMessage (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_parc_ferme_rules_component_deserialize_2",

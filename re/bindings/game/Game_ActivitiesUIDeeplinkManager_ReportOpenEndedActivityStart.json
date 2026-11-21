@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_ActivitiesUIDeeplinkManager_ReportOpenEndedActivityStart;xref:0x143866b4d",
-  "notes": "cxx=game::ActivitiesUIDeeplinkManager::reportOpenEndedActivityStart; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1438667a0.c;str:s_ActivitiesUIDeeplinkManager_ReportOpenEndedActivityStart;xref:0x14587e4b8",
+  "notes": "Vtable slot (cell 0x14587e4b8). By disassembly in pdata bounds: resolves the mode (RTTI); story -> jmp 0x143866ba0, career -> jmp 0x143866d50, online via 0x14077c790 -> tails 0x143867280/0x1438673a0/0x1438674c0/0x1438675e0; inline split-screen branch logs '%s: start activity %s' with the reportOpenEndedActivityStart pretty string and calls Game_Activities_Start('mp_splitscreen_match')."
  },
  "signature": {
   "id": "game.activities_u_i_deeplink_manager_report_open_ended_activity_start",

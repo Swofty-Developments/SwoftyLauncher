@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430717b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-SESSION",
-  "notes": "named from its log messages (channel NETWORK-SESSION): '%s: Pending creation of game, we are still working with the OTC'"
+  "evidence": "decomp:re/decomp/1430717b0.c;pat:log-channel-NETWORK-SESSION;xref:0x143166a26",
+  "notes": "__FUNCTION__ 'GameSessionMatchingCareer::createSession(vector<NePresence*>, CareerCreateDelegate)': stores the delegate at +0xa8/+0xb0, copies presences (0x143071c80), logs 'Pending creation...still working with the OTC' while busy, else calls 0x143071dd0; on failure 0x143071a30(this,0,0x1e). (lane owner review requested) Better name: Game_GameSessionMatchingCareer_CreateSessionWithDelegate (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_session_pending_creation_game_still_working_otc",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1436f0380",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1436f0380.c;xref:0x14585ddb8",
-  "notes": "One-shot-qualifying skip gate: reads session.next_state / flying_to_track_instant; if not OSQ logs 'Not OSQ: skip', else updates per-player ready and calls UpdateSpectatorSkip 0x1436ea400. d6-verify: state update returning the next-state hash via param 2 (0x7c9df43c = stay); checks session next_state 9 or 0xe, else logs Not OSQ: skip, then 0x1436ea400"
+  "notes": "State function (vtable cell): resolves 'session.next_state' and compares with 'flying_to_track_instant'; if not OSQ logs 'Not OSQ: skip (it's %d)', else checks the super-ready time and calls UpdateSpectatorSkip 0x1436ea400, which writes the next-state hash via param_2. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_ready_update_o_s_q_skip",

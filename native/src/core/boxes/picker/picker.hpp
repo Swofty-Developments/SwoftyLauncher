@@ -115,6 +115,8 @@ struct BoxRules {
     runtime::LogChanged drs_log{"[drs] %s"};
     logic::WarmerSwaps warmers;
     runtime::LogChanged warmers_log{"[tyres] %s"};
+    logic::EngineSwaps rev_lights;
+    runtime::LogChanged rev_lights_log{"[rev-lights] %s"};
     logic::PointsSwaps points;
     runtime::LogChanged points_log{"[points] %s"};
     logic::TyreChangeSwaps tyre_change;
@@ -235,6 +237,7 @@ std::vector<logic::ListCars> lists_of(const uint8_t *entrant_setup, std::vector<
 
 void apply_drs(void *mode, const char *list);
 void apply_warmers(void *mode, const char *list);
+void apply_rev_lights(void *mode, const char *list);
 void apply_fuel(const char *list);
 void clear_fuel();
 void apply_weekend(void *mode, const char *list);

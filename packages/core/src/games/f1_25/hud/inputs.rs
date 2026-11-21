@@ -44,6 +44,52 @@ pub fn prefix_for(addon: &str, key: &str, explicit: Option<&str>) -> Result<Stri
     }
 }
 
+/// Records that several addons bring alike: the same key, the same `prefix`, an equal record and the
+/// same bytes in every sprite. A family of addons that each must work alone (a season per addon, say)
+/// can then carry one shared screen record without the board growing with every addon: all screen
+/// records share the cap scene and each brings its own host, so a board holds
+/// `(1 + records) x (cap + every record)` walk slots. The first in load order is composed; the
+/// others are left out with a line. Records that share a prefix and differ in anything still stop
+/// the build in [`compose_with`].
+pub fn shared_records(inputs: Vec<Input>) -> Result<(Vec<Input>, Vec<String>)> {
+    let mut kept: Vec<Input> = Vec::new();
+    let mut lines = Vec::new();
+    'next: for input in inputs {
+        if let Some(p) = input.record.prefix.as_deref() {
+            for k in &kept {
+                if k.key == input.key
+                    && k.record.prefix.as_deref() == Some(p)
+                    && k.record == input.record
+                    && same_sprites(k, &input)?
+                {
+                    lines.push(format!(
+                        "{p}: {} brings the same record {} as {}; composed once",
+                        input.addon, input.key, k.addon
+                    ));
+                    continue 'next;
+                }
+            }
+        }
+        kept.push(input);
+    }
+    Ok((kept, lines))
+}
+
+fn same_sprites(a: &Input, b: &Input) -> Result<bool> {
+    for s in a.record.sprites.values() {
+        let pa = a.dir.join(&s.png);
+        let ra = std::fs::read(&pa).map_err(|e| Error::Io {
+            path: pa.clone(),
+            source: e,
+        })?;
+        match std::fs::read(b.dir.join(&s.png)) {
+            Ok(rb) if rb == ra => {}
+            _ => return Ok(false),
+        }
+    }
+    Ok(true)
+}
+
 /// Reads the records of an addon's hud file into inputs.
 pub fn inputs_of(addon: &str, dir: &Path, file: &str) -> Result<Vec<Input>> {
     let path = dir.join(file);

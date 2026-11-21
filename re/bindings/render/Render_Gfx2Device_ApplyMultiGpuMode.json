@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439c8d00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439c8d00.c;xref:0x1439c38a8",
-  "notes": "Multi-GPU (NVAPI) reconfiguration when the display mode changes: guarded by flag 0x14618c698 and [param_1+0xd1], iterates device objects at +0xa40, logs channel 'MULTI-GPU' ('NVAPI Error: %s'). Callers Render_Gfx2Device_Initialise, Game_Window_NeWindowWinSetDisplayMode. Hypothesis."
+  "evidence": "decomp:re/decomp/1439c8d00.c;xref:0x1439c38a8,0x1439fbd98",
+  "notes": "Unless 0x14618c698 is set and if +0xd1: for adapters +0xa40/+0xa48 enumerates outputs (vcall +0x38 until 0x887a0002), QI output, vcall +0xd8 desc: colour space 12 -> HDR byte +0x31b1+i, luminances +0x31c4/+0x31e4. If vendor +0x880 == 0x10de: per GPU display ids (0x140002560), HDR caps (0x1400027f0) -> +0x31b9, luminances, primaries /50000 into 0x146c3b450..480; errors logged on MULTI-GPU. (lane owner review requested) Better name: Render_Gfx2Device_QueryHdrDisplayCaps (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_device_apply_multi_gpu_mode",

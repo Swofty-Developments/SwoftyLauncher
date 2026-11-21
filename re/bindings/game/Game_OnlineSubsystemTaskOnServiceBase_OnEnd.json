@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432c2420",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_OnlineSubsystemTaskOnServiceBase_OnEnd;xref:0x1432c262d",
-  "notes": "cxx=game::OnlineSubsystemTaskOnServiceBase::onEnd; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1432c2420.c;str:s_OnlineSubsystemTaskOnServiceBase_OnEnd;xref:0x14565b770,0x14565b890,0x14565cbf0,0x1457f1c40,0x1457f1d60,0x1457f30e0",
+  "notes": "Logs '%s() %s' with virtual game::OnlineSubsystemTaskOnServiceBase::onEnd (forced flag), cleans up the request (Game_F1os_CleanUpRequest) and may start a follow-up task (Game_F1os_StartTask). Referenced from many task vtables, e.g. cells 0x14565b770, 0x14565b890, 0x1457f1c40, 0x145837f80 (cell before Game_F1osTask_SetFinished). (lane owner review requested)"
  },
  "signature": {
   "id": "game.online_subsystem_task_on_service_base_on_end",

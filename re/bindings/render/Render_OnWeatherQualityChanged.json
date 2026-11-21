@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14015aa00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "pat:log-channel-WEATHER",
-  "notes": "Log channel WEATHER: 'GameRendererModule::onWeatherQualityChanged' | 'GameRendererModule::onWeatherQualityChanged: rainBeadsEnable %d' | 'GameRendererModule::onWeatherQualityChanged: rainSplashesEnable %d' | 'GameRendererModule::onWeatherQualityChanged: rainHighEnable %d' | 'GameRendererModule::onWeatherQualityChanged: heatHazeE"
+  "evidence": "decomp:re/decomp/14015aa00.c;pat:log-channel-WEATHER;xref:0x140150eea,0x14015db71",
+  "notes": "GameRendererModule::onWeatherQualityChanged: reads quality keys rainBeads, rainSplashes, rainHigh, trackHeatHaze, planarReflectionsEnabled/HQEnabled (compare \"true\"), planarReflectionsRTScale/RangeScale, proceduralCloudRTScale; writes bytes this+0xb44..0xb47, bit 9 of +0xb5c, floats +0xb40/+0xb48/+0xb4c; logs each on channel WEATHER. Referenced by lea in Game_Read_RendererGfxConfig and in 0x14015d720. (lane owner review requested)"
  },
  "signature": {
   "id": "render.on_weather_quality_changed",

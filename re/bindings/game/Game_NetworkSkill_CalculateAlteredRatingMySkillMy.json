@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143237270",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-SKILL",
-  "notes": "named from its log messages (channel NETWORK-SKILL): 'calculateAlteredRating() - my skill %d my finish %d'"
+  "evidence": "decomp:re/decomp/143237270.c;pat:log-channel-NETWORK-SKILL;xref:0x1430f3108,0x1430f38e8",
+  "notes": "Logs 'calculateAlteredRating() - my skill %d my finish %d', compares the finish against each opponent (beat/lost/drew), computes expected vs scored and performance modifiers with 'drag to 1500', returns the new rating. (lane owner review requested) Better name: Game_NetworkSkill_CalculateAlteredRating (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_skill_calculate_altered_rating_my_skill_my",

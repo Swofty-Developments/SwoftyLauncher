@@ -17,6 +17,8 @@ void register_appliers();
 // Starts the boot expansion ahead on a worker once the database load is hooked; SWOFTY_BOOT_AHEAD=0 turns it off.
 void start_boot_ahead();
 void undress_teams(const char *why);
+// The team.identity id the loaded team record of this stat id wears in the current career (a dressed slot), or "".
+std::string worn_team(uint16_t stat);
 
 // The DRS group the box with this entrant list runs: the label of its content.package's rules.drs group if the
 // boot apply added it (empty otherwise), and the line to log.
@@ -36,6 +38,13 @@ struct WarmersBox {
     std::string line;
 };
 WarmersBox tyre_warmers_for_box(const std::string &entrant_list);
+
+// The engine whose rev lights the box with this entrant list shows in equal-performance sessions (rev_lights.hpp): the
+// entrants.engines label most of its content.package's vehicles name (empty when none does), and the line to log.
+struct RevLightsBox {
+    std::string engine, line;
+};
+RevLightsBox rev_lights_for_box(const std::string &entrant_list);
 
 // The mandatory tyre change rule the box with this entrant list runs: its content.package's
 // rules.mandatory_tyre_change (none when the package has no rule), and the line to log.

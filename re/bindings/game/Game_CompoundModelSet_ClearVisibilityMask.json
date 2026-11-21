@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143d3dd10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143d3dd10.c;xref:0x142e83572",
-  "notes": "vpandn of a 16-byte mask into model-set visibility word (+0x70); on change queues refresh (state +0x128, flag +0x12c|=0x20). Caller Game_CompoundModelSet_SetTyreVisibility."
+  "evidence": "decomp:re/decomp/143d3dd10.c;xref:0x142e83572,0x142e8367a",
+  "notes": "(model, mask16): +0x70 &= ~mask (vpandn); on change queues refresh job 0x143d3ce20 once (state +0x128 = 2) and sets +0x12c |= 0x20. (lane owner review requested)"
  },
  "signature": {
   "id": "game.compound_model_set_clear_visibility_mask",

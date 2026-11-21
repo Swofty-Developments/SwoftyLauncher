@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140b87b40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=ChampionshipQualifyingTyreComponent::deserialize; log channel NETWORK/V: 'ChampionshipQualifyingTyreComponent::deserialize()'"
+  "evidence": "decomp:re/decomp/140b87b40.c;pat:log-message-cxx;xref:0x145674548",
+  "notes": "Vtable cell 0x145674548. Own log 'ChampionshipQualifyingTyreComponent::deserialize()'. Optional tagged-stream check (ranged read must be 3), skips an 8-bit header, reads 10 entries via Ne_BitReader_ReadPackedEntryKey into this+0x30..+0x9c (step 0xc); sets stream error flag +0x28 on failure. (lane owner review requested)"
  },
  "signature": {
   "id": "game.championship_qualifying_tyre_component_deserialize",

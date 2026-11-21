@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14390e5b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14390e5b0.c;xref:0x1439120bf",
-  "notes": "1944-byte libpng row/zlib helper (9 callers: 0x1439120bf, 0x1439129c0, 0x143912f4d ...). Hypothesis: row filtering/deflate feed. vq0-verify partial/disagree"
+  "evidence": "decomp:re/decomp/14390e5b0.c;xref:0x1439120bf,0x1439129c0,0x143912f4d",
+  "notes": "(png, info, mask, num): libpng png_free_data: frees text chunks info+0xa0 (count +0x94, stride 0x38; mask 0x4000, num -1 = all), the buffer +0xb8 (mask 0x2000) and further info members by mask bit, using the user free fn png+0x410 or CRT free 0x1453560c8. call sites (Ne_Libpng_WriteImage, 0x1447a7300 ...). Not a row/zlib helper."
  },
  "signature": {
   "id": "core.libpng_write_filter_row_14390e5b0",

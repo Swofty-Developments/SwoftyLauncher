@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142694560",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142694560.c;xref:0x142691c0f,0x142690e90",
-  "notes": "F1OS ServerMethodOperation result callback for method 'UpgradeCard' (method name ptr this+0x118, service this+0x110; lea-registered at 0x142691c0f in onStart/send 0x142690e90). Resp param_2: +0x88 flag / +8 transport error text -> fail 0x14443acd0; +0x98==0 success: JSON-parse body +0xa0 (0x140b5e130), log 'received result (%u)' with HTTP status +0x9c, result JSON keys {UpdatedCard,UpdatedCurrencies} -> result obj this+0x1c8 (raw body also to hook 0x142695610); else ERROR/UNKNOWNERROR: {Message,Data} -> error obj this+0x1b8, Message 'InvalidSessionToken' / 'UpgradeRequired' special-cased. Addon: card upgrade result."
+  "evidence": "decomp:re/decomp/142694560.c;xref:0x142691c0f,0x142691f8a",
+  "notes": "F1OS result callback for 'UpgradeCard'. Chain: Create 0x14268f020 sets method global 0x1460c38e8 (Init stores 'UpgradeCard' at 0x14334c1df), vtable 0x145795fe0 slot 8 = OnStart 0x142690e90, which lea's this fn at 0x142691c0f/0x142691f8a. Body parses JSON {UpdatedCard, UpdatedCurrencies}; errors {Message,Data}. (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1os_on_result_upgrade_card",

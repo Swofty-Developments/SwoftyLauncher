@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140141420",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/140141420.c;xref:0x1401459af",
-  "notes": "Huge (16107 bytes) declaration function for the renderer's named resources, ~96 eaid://ego_package/ names: tile_metadata, vr_hidden_area_mesh_dispatch_indirect_args, taa_dlisp_out, vrs, sdr_ui_copy, taa_result1-4, taa_out, hudless_backbuffer, ui_color_and_alpha, dlss_motion_vectors, dlss_transparency_mask, dlss_linear_depth, video_reel(+_staging_0..2), path_trace_sky_or_combined_light, photo_mode_output, gbuffer_depth_stencil/albedo/normal/surface/surface2, depth_hierarchy, Depth_Down_Sized_1-3, indirect_specular(_alpha)_unfiltered, Renderer.Gfx.SSGI ...; uses Ne_StrBuf_Printf and Ne_Get_SettingBool. 1 caller (Render_Gfx_RegisterNamedResourceViews 0x1401459af). Addon-relevant: list of render target/buffer names."
+  "notes": "Declares engine render targets via 0x14014b860, 0x14014c530 and 0x14014b430 with eaid://ego_package/ names (gbuffer_*, taa_result1-4, dlss_motion_vectors, hudless_backbuffer, video_reel_staging_0-2, depth_hierarchy, rt_*, vrUI; ui_package uiBlurBuffer/tvFeed); calls Render_Gfx_ComputeUpscaleRenderScale and Ne_Get_SettingBool. Caller in Render_Gfx_RegisterNamedResourceViews. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx_declare_named_render_targets",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14074e230",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: StoryHubSocialInteractionCompleteES'"
+  "evidence": "decomp:re/decomp/14074e230.c;pat:log-channel-TELEMETRY;xref:0x1406ee494,0x140707cd2",
+  "notes": "Bus handler: lea 0x1406ee494 in subscribe-all 0x1406d8470 (->0x143987810), lea 0x140707cd2 in unsubscribe-all 0x1406fd6c0. Allocs 0x68 record (ctor 0x1405babe0), copies msg fields, baseCtx by 0x14077bb90 'story_hub_social_interaction_complete_record', pushed to static queue (guard 0x14604d8d8) under CS; logs TELEMETRY 'StoryHubSocialInteractionCompleteES'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_story_hub_social_interaction_complete_es",

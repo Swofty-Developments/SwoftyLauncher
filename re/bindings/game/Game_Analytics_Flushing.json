@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1434b3fd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: Flushing'"
+  "evidence": "decomp:re/decomp/1434b3fd0.c;pat:log-channel-TELEMETRY;xref:0x140c77434,0x142d53174,0x142df5744,0x142df620c,0x1436b1233,0x1436b19a4,0x1436d044b,0x1436d4805,0x1436d6f32,0x1436d9a91,0x1436dffbd,0x1436e0af7,0x1436e1f57,0x1436f6b10,0x1436fb9e7,0x143701500,0x143704c78,0x14bebce03,0x1503cbacf",
+  "notes": "FNV-1a hash of name param_2, searches 32-byte marker entries (vector at [0x1460fa568] or static 0x1460fa4d0); not found: stack backtrace note, returns 2. Found: kind param_3==0 calls 0x140766110 (Report_LoadingTimesEnd) and logs 'Flushing'; calls 0x1434b3870; erases the entry, returns 0. Callers pass names like 'boot_to_press_start'. (lane owner review requested) Better name: Game_Analytics_EndLoadingTimeMarker (bound record keeps its name)."
  },
  "signature": {
   "id": "game.analytics_flushing",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144036a30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name leaveActiveChannel (class from the log channel); log channel NETWORK-VOICE: '%s: channel #%u removed'"
+  "evidence": "decomp:re/decomp/144036a30.c;pat:log-message-method;xref:0x1440368bb",
+  "notes": "Logs '%s: channel #%u removed' with its own name leaveActiveChannel; walks users (Ne_UserId_Equals) and removes them from the active channel. Called from Game_NetworkVoice_JoinChannel. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_voice_leave_active_channel",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143bdada0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143bdada0.c;xref:0x1401023da",
-  "notes": "541-line builder of a render-graph resource description (unordered_map, string pool; throws 'unordered_map/set too long'). Callers 0x14013d2c0 (many), 0x143bc0c40. Hypothesis."
+  "evidence": "decomp:re/decomp/143bdada0.c;xref:0x1401023da,0x14013d575,0x14013d615,0x14013d714",
+  "notes": "Texture twin of 0x143bda160: key = FNV-1a of texture object pointer param_3, map +0x388 (end +0x370); on miss copies the texture desc (+0x08..+0x78, flags +0x40), gets alloc info via 0x143bd9e40, appends a 0x180-byte resource entry to +0x28 and inserts the index; usage mask param_4. Callers incl. 0x143bc0c40, 0x143bc5250. (lane owner review requested) Better name: Render_RenderGraph_ImportTexture (bound record keeps its name)."
  },
  "signature": {
   "id": "render.render_graph_create_resource_desc",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143865260",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_ActivitiesUIDeeplinkManager_StartSplitScreenActivity;xref:0x14386543c",
-  "notes": "cxx=game::ActivitiesUIDeeplinkManager::startSplitScreenActivity; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/143865260.c;str:s_ActivitiesUIDeeplinkManager_StartSplitScreenActivity;xref:0x143862efb",
+  "notes": "PlayGo (+0x63)/trial (0x14078e1a0) gate, then sets #ui_menu_data.frontend_transition_state = splitscreen and logs '%s: called'. Caller OnDeepLinkActivityStarted (type 5). (lane owner review requested)"
  },
  "signature": {
   "id": "game.activities_u_i_deeplink_manager_start_split_screen_activity",

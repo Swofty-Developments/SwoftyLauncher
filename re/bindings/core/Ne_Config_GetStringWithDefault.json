@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a44280",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/143a44280.c;xref:0x14023d937,0x142a9dd07,0x142a9fff5",
-  "notes": "Hypothesis: locks and sets a (key,string) entry in a settings map (hash lookup 0x143905280, CStrLen); 24 callers (cutscene commands, hardware check, leagues). Named callers: Game_CutSceneScript_RunCommand, Game_Hardware_CheckRecommendedPCSpec, Game_NetworkLeagues_UpdateStateMachine, Game_PerformanceMonitoring_Init. vp2-verify partial/disagree"
+  "notes": "Getter, not setter: (cfg,key,outBuf,bufSize,defaultStr). Locks cfg+0x10, looks key up in map [cfg+8] (0x143905280, entries 16 B, value str at +8); found: copies value to outBuf (returns 0, or 0x54 and copies default when value does not fit); missing: copies default, error 2. Unlocks, returns error code. 24 callers incl. Game_CutSceneScript_RunCommand, Game_Hardware_CheckRecommendedPCSpec."
  },
  "signature": {
   "id": "core.config_set_string_property",

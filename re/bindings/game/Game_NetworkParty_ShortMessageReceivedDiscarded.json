@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140811b90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-PARTY",
-  "notes": "named from its log messages (channel NETWORK-PARTY): '? Short message (%zu bytes) received and discarded.'"
+  "evidence": "decomp:re/decomp/140811b90.c;pat:log-channel-NETWORK-PARTY;xref:0x145649140",
+  "notes": "Party message dispatch: messages under 4 bytes log '? Short message (%zu bytes) received and discarded.'; else hashes the u32 message code into the handler map (this+0xa0..+0xd4) and calls the handler, or logs '? Unmapped message code %08X'. Only ref: vtable cell 0x145649140. (lane owner review requested) Better name: Game_NetworkParty_DispatchMessage (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_party_short_message_received_discarded",

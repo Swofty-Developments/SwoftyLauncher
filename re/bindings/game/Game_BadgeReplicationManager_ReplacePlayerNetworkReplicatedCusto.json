@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14312b130",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=BadgeReplicationManager::replacePlayerNetworkReplicatedCustomisation; log channel NETWORK-ENTRANTS: 'game::BadgeStatId::PackedStatId network::BadgeReplicationManager::replacePlayerNetworkReplicatedCustomisation(const PlayerDescription &, const PlayerDescription | %s : Failed to find the network repli'"
+  "evidence": "decomp:re/decomp/14312b130.c;pat:log-message-cxx;xref:0x140fe0f49,0x140feec8f",
+  "notes": "replacePlayerNetworkReplicatedCustomisation(old, new, flag, info): removes old player data (0x14312a530), replaces the badge for the new player (0x143128730, map 0x143211340) and sends it (0x14402e500), or reconciles (0x143128410); logs when no badge to replace. Callers 0x140fdd630, 0x140feea10. (lane owner review requested)"
  },
  "signature": {
   "id": "game.badge_replication_manager_replace_player_network_replicated_custo",

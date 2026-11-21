@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143bc6f50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143bc6f50.c;xref:0x143bc222b,0x143bc253d",
-  "notes": "Bump-allocates a 12-byte (aligned 4) constant block from the frame arena (fatal abort on overflow) and fills it. Called by Ne_PostProcessXGenerator_Copy_Render. vp5-verify partial/disagree"
+  "notes": "Bump-allocates a 4-aligned 12-byte constant block from the frame arena (Ne_FatalAbort on overflow), fills it from param_4, interns 'FSQ' (hash 0xf2ff93199cccab3d), appends the binding (Ne_Vector_GrowEmplace_Elem384) and adds a pass node via Render_RenderGraph_AddPassNode. Callers in Ne_PostProcessXGenerator_Copy_Render. (lane owner review requested)"
  },
  "signature": {
   "id": "render.frame_arena_alloc_const12",
