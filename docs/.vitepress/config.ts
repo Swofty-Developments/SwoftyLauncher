@@ -715,6 +715,7 @@ export default defineConfigWithTheme<DocsThemeConfig>({
                       { text: "Pit lane", link: "/reference/std/pitlane", icon: "file" },
                       { text: "Tyre damage", link: "/reference/std/tyre-damage", icon: "file" },
                       { text: "Race control", link: "/reference/std/race-control", icon: "file" },
+                      { text: "Voice lines", link: "/reference/std/speech", icon: "file" },
                       { text: "Weather setup", link: "/reference/std/weather", icon: "file" },
                       { text: "Standings", link: "/reference/std/standings", icon: "file" },
                       { text: "Database", link: "/reference/std/db", icon: "file" },

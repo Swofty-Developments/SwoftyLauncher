@@ -266,6 +266,9 @@ struct LiveEvent {
 void live_setup();
 bool live_on();
 void live_tick(double now);
+// Speech events (core/audio/speech.cpp): whether the core fires speech.line and its follow-ups, and the flow tick.
+bool speech_live();
+void speech_tick();
 bool live_memory_verified();
 bool live_collision_needs_udp();
 bool live_events_from_memory();
