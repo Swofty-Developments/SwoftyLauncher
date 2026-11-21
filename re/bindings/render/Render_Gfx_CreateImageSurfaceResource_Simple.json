@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14014b430",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14014b430.c;xref:0x1401417e8",
-  "notes": "Simple variant: \"%s.image\" name then allocates and zero-inits a 0x1d8 NeGfx2SurfaceResource (vtable 0x1458c11f0). Returns bool."
+  "evidence": "decomp:re/decomp/14014b430.c;xref:0x1401417e8,0x140141975,0x14014593e",
+  "notes": "Formats \"%s.image\" from param_4, allocates 0x1d8 surface object (vtable 0x1458c11f0), fills desc: size param_5/param_6, param_2/param_3 select layout words at +0x48..+0x54, flags param_9 (no 0x70 bits -> byte +0xb8=1), RGBA8 clear colour param_11 -> 4 floats; Render_Gfx2_SetSurfaceDescriptor 0x143bed850; registers; returns obj+8 != 0. Callers 0x140141420, 0x1401456e0. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx_create_image_surface_resource_simple",

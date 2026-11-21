@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143c196f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143c196f0.c;xref:0x14019d4a5",
-  "notes": "Logs 'NeMultiSubMaterialResourceFactory' (channel hash 0x70850656) with 2 u64 args, allocates a node list through the job/alloc global plRam0000000146c621e0 (vcall +0x20 alloc, +0x30 commit) and builds a 0x48-sized record linked at +0x40. Callers 0x14019d4a5 and Game_CustomMaterialModelComponent_CreateOverrideMaterial. Hypothesis: multi-sub-material creation for override (livery) models."
+  "evidence": "decomp:re/decomp/143c196f0.c;xref:0x14019d4a5,0x142a903b1",
+  "notes": "Logs 'NeMultiSubMaterialResourceFactory' / 'createCombinedMaterialAsync hash=%016I64x' (channel 0x70850656), then posts render plugin message 3 (0x1050 bytes) via 0x146c621e0 (vcall +0x20 on connection [this+8], commit +0x30) with two 16-byte keys and fourteen 0x128-byte slot records. Callers Game_Material_SetPerSlotOverride 0x14019d4a5, Game_CustomMaterialModelComponent_CreateOverrideMaterial 0x142a903b1. (lane owner review requested) Better name: Render_MultiSubMaterialFactory_CreateCombinedAsync (bound record keeps its name)."
  },
  "signature": {
   "id": "render.multi_sub_material_factory_build_sub_list",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439bad30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439bad30.c;xref:0x1439ba7bd",
-  "notes": "945-byte row-by-row memcpy helper for surface upload. Callers Render_Gfx2Device_MapSurfaceViaUploadBuffer (0x1439dcb04), 0x1439ba7bd. Hypothesis."
+  "evidence": "decomp:re/decomp/1439bad30.c;xref:0x1439ba7bd,0x1439dcb04",
+  "notes": "UpdateSubresources pattern: GetDesc (+0x50) of dst and upload, size check, Map upload (+0x40), memcpy rows per subresource (footprints param_6, rows param_7, row size param_8, src param_9), Unmap (+0x48); buffer dst -> cmd list vcall +0x78 (buffer copy) else +0x80 per subresource. Callers in 0x1439ba070, Render_Gfx2Device_MapSurfaceViaUploadBuffer. (lane owner review requested) Better name: Render_Gfx2_UpdateSubresourcesFromUpload (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_device_copy_surface_rows",

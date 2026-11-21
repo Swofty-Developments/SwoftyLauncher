@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143cdde20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143cdde20.c;xref:0x143c4864e,0x15266cded",
-  "notes": "Large (9.3 KB) model draw builder called from Render_Model_BuildPerInstanceBuffers: resolves each submesh material (hash lookup; on miss logs 'Missing material \"%s\", falling back to the default' and uses 'default'), selects shader-group bindings ('PerInstance', 'PerBatch', 'skinningBuffer', 'msaa00' via Render_PassTable_FindOrAddBitByName and Ne_StringPool_InternByHash) and creates draw packets with Render_Gfx_CreateDrawPacket. Addon: source of the 'Missing material' log for modded models."
+  "notes": "Per submesh resolves the material by hash (miss: logs 'Missing material \"%s\", falling back to the default', uses 'default'), selects bindings 'PerInstance', 'PerBatch', 'skinningBuffer', 'msaa00' (Ne_StringPool_InternByHash, Render_PassTable_FindOrAddBitByName) and creates packets with Render_Gfx_CreateDrawPacket. Callers Render_Model_BuildPerInstanceBuffers 0x143c4864e, 0x15266cc00 (0x15266cded). (lane owner review requested)"
  },
  "signature": {
   "id": "render.model_build_draw_packets",

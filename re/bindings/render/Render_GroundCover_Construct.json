@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143ce0630",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "pat:log-channel-GROUND_COVER",
-  "notes": "named from its log messages (channel GROUND_COVER): 'Constructed NeGroundCoverSystem | Enhanced ground cover is enabled (ultra quality is needed).'"
+  "evidence": "decomp:re/decomp/143ce0630.c;pat:log-channel-GROUND_COVER;xref:0x1401500f5",
+  "notes": "Constructs NeGroundCoverSystem: logs 'Constructed NeGroundCoverSystem' and the enhanced ground cover (ultra quality) messages, formats per-camera names (ground_cover_camera_%u_%u, skids, eaid://ego_package/ground_cover_*_%u(.uav/.srv), skidmarks_mask_vp_%u_c_%u), builds two state blocks (0x143cee760) and calls 0x143ce1f40. Only caller Game_Read_RendererGfxConfig 0x1401500f5. (lane owner review requested)"
  },
  "signature": {
   "id": "render.ground_cover_construct",

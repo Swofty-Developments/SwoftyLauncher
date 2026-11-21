@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143bdc710",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143bdc710.c;xref:0x140102458,0x14029ce8f",
-  "notes": "Builds a 0x100+ byte binding/view descriptor (zero-inits large stack struct) from param_3 resource refs and returns an int handle. 190 lines. Many callers (0x140102320, 0x14029cd40, 0x142435270, 0x143bd1780...). Hypothesis."
+  "evidence": "decomp:re/decomp/143bdc710.c;xref:0x140102458,0x14029ce8f,0x14029d05e,0x1424356dd",
+  "notes": "Appends a 0x160-byte record of kind 0 (three default sub-blocks with counts 1) carrying the 0x50-byte payload param_3 to the vector param_1+0x48 (grow via Render_RenderGraph_PassVector_InsertRealloc) and returns its index in *param_2. Twin of 0x143bdcfb0 (kind 3). (lane owner review requested) Better name: Render_RenderGraph_AddViewRecordKind0 (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_build_bind_descriptor",

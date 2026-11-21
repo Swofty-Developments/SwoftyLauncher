@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144115f50.c;xref:0x141c0d662;xref:0x143895d40",
-  "notes": "Walks a list of param holders (this+0x38..0x40), checks enable flag +0x1d8 and matches a 64-bit key param_2 against a static key table at 0x146ca4aa0 (0x27 entries), then reads values through 0x144434690 into float accumulators. Callers 0x141c0d270, 0x141dcb8c0 (many). Hypothesis. | engine-re E1 2026-11-18 (static, rename proposed, owner review requested): this is the input mapper's analog action query, i.e. Ne_InputMapper_GetActionValue(NePlayer *mapper, const u64 *action_handle, bool, int) -> float: walks the mapper's input maps (+0x38..+0x40, enabled +0x1d8), skips the special ids of table 0x146ca4aa0, for ids in the special table 0x146ca4ab0 finds the binding with Ne_InputMapper_FindBindingByHash 0x144434690 and takes the max of the binding values (+0xd0, stride 0xd8); other ids read 0x143aa0a20 on [map+0x10]; returns the first non-zero map value (verify V11513 partial). Sess_HumanController_Update calls it for Clutch, Gear Up/Down, Gear 1..7/Reverse, KERS, DRS, Overtake, Pit Limiter; nothing render-related. Name kept here because signatures.json names the same id."
+  "evidence": "decomp:re/decomp/144115f50.c;xref:0x141c0d662,0x141dcb94d,0x141fefd77",
+  "notes": "Read: walks map list [this+0x38..+0x40] while [this+0x1d8] is set; ids from table 0x146ca4aa0 (0x27 entries) go through Ne_InputMapper_FindBindingByHash 0x144434690 and take the max of binding floats +0xd0 (stride 0xd8), other ids read 0x143aa0a20 on the map value; optional copy of map fields to this+0x50..; returns the first non-zero float. Agrees with engine-re E1: input mapper action-value query, nothing render-related."
  },
  "signature": {
   "id": "render.param_block_apply_by_hash",

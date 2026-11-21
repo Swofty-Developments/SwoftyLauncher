@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143acb7d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143acb7d0.c;xref:0x143abe7a9",
-  "notes": "Exception-cleanup funclet style helper (frame offsets 0x18..0x40, ring trace) belonging to Render_Streaming_ProcessRequest; calls 143aca910. Hypothesis: catch block, not a real function. vq2-verify partial"
+  "evidence": "decomp:re/decomp/143acb7d0.c;xref:0x143abe7a9,0x143abea2f,0x143abefcf,0x143abfe56",
+  "notes": "Same pooled-list insert-before as 0x143aca640 but with a single pointer payload; grows via 0x143aca910 (1.5x, max +0x40, error 0xc). Used for batch/block pointer lists by 0x143abe3f0 and 0x143ac1260. A real function, not a funclet. (lane owner review requested)"
  },
  "signature": {
   "id": "render.streaming_process_request_catch_cleanup_b",

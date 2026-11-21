@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143bfc050",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143bfc050.c;xref:0x1414369de",
-  "notes": "Builds a resource via 0x143bfc180 (pool at ctx+0x228), sets state=1 at +8 and appends it to the tracking vector this+0xd8..0xe8 (grow 1.5x). Caller Game_DecalGeneration_UpdateService. Hypothesis."
+  "notes": "Creates a holder with Render_Gfx_NamedResourceHolder_Create (allocator ctx+0x228, args passed through), sets its state +8 = 1 (locked store) and appends it to the vector this+0xd8..+0xe8 (1.5x growth, allocator +0xd0). Only caller Game_DecalGeneration_OnReadback 0x1414369de. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx_alloc_and_track_resource",

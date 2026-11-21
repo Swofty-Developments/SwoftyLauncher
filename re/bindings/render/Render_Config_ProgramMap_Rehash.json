@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1445bc6d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1445bc6d0.c;xref:0x1445b0357,0x14c9b9d87",
-  "notes": "swiss-style hash map (ne_hash_map.h assert string) grow/rehash of the program-name map (string keys via Ne_Crt_Strcmp) used by Render_Config_ProgramMap_FindOrCreate."
+  "evidence": "decomp:re/decomp/1445bc6d0.c;xref:0x1445b0357",
+  "notes": "Rename (emplace; the rehash is 0x1445bccb0): robin-hood map keyed by C string (FNV-1a 64, info bytes, 0x10-byte slots at [+0x18]), compares with Ne_Crt_Strcmp, on miss shifts entries and writes the info byte; first use allocates via allocator vcall +0x10 (ne_hash_map.h), grows via 0x1445bccb0; writes {slot index, result code} to param_2. Caller 0x1445b0357 in Render_Config_ProgramMap_InsertIfAbsent (0x1445aff00). (lane owner review requested) Better name: Render_Config_ProgramMap_FindOrInsert (bound record keeps its name)."
  },
  "signature": {
   "id": "render.config_program_map_rehash",

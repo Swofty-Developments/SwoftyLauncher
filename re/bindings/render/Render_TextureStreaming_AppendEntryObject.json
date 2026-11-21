@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143bf2360",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143bf2360.c;xref:0x143bf2323",
-  "notes": "Allocates a 0x30 entry object (vtable 0x1458c14f0) and appends it to a vector; trace ring. Caller Render_TextureStreaming_ScanEntries."
+  "evidence": "decomp:re/decomp/143bf2360.c;xref:0x143bf2323,0x143bf2339",
+  "notes": "Moves vector param_4 into a 0x30-byte request object (vtable 0x1458c14f0), appends it to vector param_3, sets state 1 and, if queue param_2 is active (+8, +0x20), pushes it into list +0x28 under critical section +0x88 (Ne_List_PushEntryOrFail) and sets event +0x78; else destroys it. Only caller Render_TextureStreaming_SubmitLoaderRequests (0x143bf2323, 0x143bf2339). (lane owner review requested) Better name: Render_TextureStreaming_QueueBatchRequest (bound record keeps its name)."
  },
  "signature": {
   "id": "render.texture_streaming_append_entry_object",

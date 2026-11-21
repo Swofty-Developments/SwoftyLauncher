@@ -9,7 +9,7 @@
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143d4e990.c;xref:0x1401503f7",
-  "notes": "3.8 KB initialiser of a large renderer state block (offsets +0xa0..+0x578, SIMD constant fills from table 0x1453829d0, loop from +0x2b8); stores two pointers at +0xa0/+0xa8 and zeroes arrays; sub-calls 0x143be2500, 0x143be0360. Caller Game_Read_RendererGfxConfig. Hypothesis - identity unclear."
+  "notes": "Constructor body of a 0x5c0-byte renderer object (stored at GameRendererModule+0x8c8 by Game_Read_RendererGfxConfig 0x1401503f7): allocator/context to +0xa0/+0xa8, SIMD constants, 0x1c0-byte objects (vtable 0x145a3b540) and eight scene-view params objects (+0x110..+0x128, +0x320..+0x338) via Render_SceneViewParams_Construct + Render_SceneView_BuildViewParams, callback 0x143d50b40."
  },
  "signature": {
   "id": "render.gfx_init_frame_state_block",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b05870",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143b05870.c;xref:0x143b08f94",
-  "notes": "Walks the effect vector back to front; for effects whose type char (def+0x10 first byte) - 99 is in mask 0x10003 (types 'c','d','s') clears flag bit0 on effect and emitter instances (inst+0x178 &= ~1, inst+0xdc = def+0x58c) and removes via Game_Particles_RemoveEffect. Caller Game_Particles_UpdateManager. Hypothesis."
+  "notes": "Walks the effect vector back to front; effects whose type char (def+0x10 first byte) is 'c','d' or 's' (mask 0x10003 after -99): clears bit0 at effect+0x60 and each instance +0x178, copies def+0x58c to inst+0xdc, then Game_Particles_RemoveEffect(mgr, eff, 0). (lane owner review requested) Better name: Render_Particles_RemoveEffectsOfTypeCDS (bound record keeps its name)."
  },
  "signature": {
   "id": "render.particles_reset_effects_by_type",

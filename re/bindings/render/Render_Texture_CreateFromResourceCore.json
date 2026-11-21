@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143bef360",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143bef360.c;xref:0x143bef23e,0x143bf3288",
-  "notes": "Hypothesis: 4.4 KB core of texture creation from a resource: hash map (ne_hash_map.h), string reserve, sync wait; calls Game_TextureStreaming_AdjustQualityFactor helpers; caller Render_Texture_CreateFromResource. Named callers: Render_Texture_CreateFromResource."
+  "notes": "Looks *param_2 up in the texture hash map (+0x108..+0x13c, ne_hash_map.h assert path); on miss allocates a 0xf8 streaming entry from +0x228, queues the load (Render_Texture_QueueLoadRequest), waits (Ne_Sync_WaitObject), sizes mips (Render_Gfx2_GetFormatElementSize); on failure Render_TextureStreaming_FreeEntry. Callers Render_Texture_CreateFromResource 0x143bef23e, 0x143bf2ce0 (0x143bf3288). (lane owner review requested)"
  },
  "signature": {
   "id": "render.texture_create_from_resource_core",

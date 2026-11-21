@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14471f650",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "pat:log-channel-SKIDMARKS",
-  "notes": "Log channel SKIDMARKS: 'Something has gone wrong during the mark update code.'"
+  "evidence": "decomp:re/decomp/14471f650.c;pat:log-channel-SKIDMARKS;xref:0x145c02078",
+  "notes": "Vtable cell 0x145c02078 (no direct calls). Per-frame skid-mark update: calls Render_Skidmarks_ComputeEmitFlags (0x144724920), Render_Skidmarks_FindOrCloneChunk (0x14471d4b0), Render_Skidmarks_ProcessCommands (0x144723850), Game_ReplayFrame_RecordMarkKiller (0x144724ae0); logs Something has gone wrong during the mark update code. (SKIDMARKS), ReplayFrame::recordMarkMaker (%p) and c_maxMarksMade needs to be increased? (SKIDMARKS_REPLAY). (lane owner review requested)"
  },
  "signature": {
   "id": "render.skidmarks_update",

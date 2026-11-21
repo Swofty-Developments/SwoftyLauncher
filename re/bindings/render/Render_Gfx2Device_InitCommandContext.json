@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439d8b40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/1439d8b40.c;xref:0x1439c8bfb",
-  "notes": "1161-byte initialiser of a command context object: names D3D objects via Render_Gfx2_SetD3DObjectName and memsets state. Caller Render_Gfx2Device_CreateCommandContext (0x1439c8bfb)."
+  "notes": "Constructor (vtable 0x14589eff0) of the Gfx2 command queue: device vcall +0x48 CreateCommandAllocator x3 (IID 6102dee4 at 0x1458a0268) into +0x38..+0x48, +0x40 CreateCommandQueue (IID 0ec870a6 at 0x1458a0258; D3D type 0/2/3 from desc type 0/1/2, priority 100 when desc+0x24 >= 4) into +0x30, CreateEventExW, 5 committed buffers via +0xd8; names objects with Render_Gfx2_SetD3DObjectName. Caller 0x1439c8bb0. (lane owner review requested) Better name: Render_Gfx2CommandQueue_Construct (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_device_init_command_context",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b8be50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143b8be50.c;xref:0x143bc5858,0x143b8be36",
-  "notes": "Very large (13.8 KB, 2242 decompiled lines) builder filling a 0x1700-byte per-pass scene record: calls through the device (vcall +0x70 on [+0x80][+0x18]), memsets/memcpys view/shadow/light parameter blocks, powf terms (exposure/gamma, 0x14535a510) and helper builders (0x143c29fb0, 0x143bc5380, 0x143c42180). Called from 0x143b8bcc0 and 0x143cf38a0; the allocation counterpart is Render_FrameArena_AllocScenePassBlock. Hypothesis: constant-buffer content for a scene pass."
+  "evidence": "decomp:re/decomp/143b8be50.c;xref:0x143b8be36,0x143bc5858,0x143cf38cc",
+  "notes": "Fills the 0x1700-byte per-view scene constant block that Render_FrameArena_AllocScenePassBlock binds as 'g_scene': device vcall +0x70 on [+0x80][+0x18], memset/memcpy of view/shadow/light blocks, Ne_Crt_Powf terms and helpers 0x143c29fb0/0x143bc5380/0x143c42180. Callers 0x143b8bcc0, 0x143bc5760, 0x143cf38a0. (lane owner review requested)"
  },
  "signature": {
   "id": "render.scene_pass_block_build",

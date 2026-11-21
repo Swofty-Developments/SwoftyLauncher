@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143c20a30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143c20a30.c;xref:0x140100d59",
-  "notes": "Tail-releases descriptor arrays owned by a builder (idx 0xe/0x17 allocators, vtable +0x38 free). Companion of CloneResourceDescArrays; 73 callers."
+  "evidence": "decomp:re/decomp/143c20a30.c;xref:0x140100d59,0x140100ee9,0x140101089,0x140101219,0x1401013a9,0x1401047b9",
+  "notes": "Destructor of the builder with vtable 0x1458c3610 (set at entry): frees the arrays at idx 0x1a..0x1f, the small-buffer list idx 0x12..0x17, the vector idx 0xd..0x10 and list idx 5..0xa through their allocators (vcall +0x38). Pairs with Render_Gfx_DescBuilder_InitFromDesc on the same stack object. Callers incl 0x140100d59, Render_Gfx_InitResourceDescBuilder 0x140100ee9, Render_Gfx_BuildConfigObject 0x140109cff. (lane owner review requested) Better name: Render_Gfx_DescBuilder_Destruct (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx_release_resource_desc_arrays",

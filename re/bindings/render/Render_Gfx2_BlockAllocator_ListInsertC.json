@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a30660",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143a30660.c;xref:0x1439e7342",
-  "notes": "1118-byte container helper with sync trace ring; caller Render_Gfx2_BlockAllocator_Free."
+  "evidence": "decomp:re/decomp/143a30660.c;xref:0x1439e7342,0x1439e75fb,0x143a3045c",
+  "notes": "AVL-style removal of node param_2 from the free tree param_1 (key = offset +0x10): duplicate key on the path -> error 0x16, not found -> 0x57; rebalances via 0x143a30ac0 and refreshes the subtree max size (+0x2c). Balance bits in +0x31 low 5 bits. (lane owner review requested) Better name: Render_GfxMem_FreeTree_Remove (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_block_allocator_list_insert_c",

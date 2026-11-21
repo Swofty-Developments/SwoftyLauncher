@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b81e10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143b81e10.c;xref:0x143b19823",
-  "notes": "Takes a global CS, hashes a C string (0x143f0d610) in the table at this+8 (entries 0x20 stride at this+0x20) and returns a ref-counted entry. 15 call sites in Game_Renderer_CreateRenderPasses (render passes by name). Hypothesis on entry type. vp3-verify partial/disagree"
+  "evidence": "decomp:re/decomp/143b81e10.c;xref:0x143b19823,0x143b1984b,0x143b1987b,0x143b198ae",
+  "notes": "Under CS 0x146c3b4c8: Render_PassTable_FindByName on the table at this+8; if found returns the stored 128-bit mask, else assigns the next bit index (+0x50 counter) as a 128-bit one-hot mask, copies the name (allocator vcall +0x18) and inserts it (0x143f0d760, rehash 0x143f0dd70). Returns a mask, not a ref-counted entry. (lane owner review requested)"
  },
  "signature": {
   "id": "render.pass_table_find_by_name",
