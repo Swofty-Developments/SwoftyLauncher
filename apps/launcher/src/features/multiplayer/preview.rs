@@ -116,7 +116,11 @@ fn member(id: &str, name: &str, number: u8, host: bool, me: bool, stage: &str) -
     json!({
         "id": id, "name": name, "avatar": null, "number": number, "ip": format!("10.77.0.{number}"),
         "host": host, "me": me, "connected": true, "fingerprint": "matches", "relay": "ready",
-        "stage": stage, "traffic": null,
+        "stage": stage,
+        "traffic": (!me).then(|| json!({
+            "packets_out": 0, "bytes_out": 0, "packets_in": 0, "bytes_in": 0, "probes_out": 12,
+            "rtt": {"last_us": 47_900, "min_us": 46_200, "smoothed_us": 48_300, "samples": 12},
+        })),
     })
 }
 

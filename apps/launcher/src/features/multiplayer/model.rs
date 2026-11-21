@@ -722,6 +722,16 @@ pub(crate) fn member_word(m: &MemberState) -> (&'static str, Tone) {
     }
 }
 
+/// The smoothed round trip to a connected member other than this player, through the relay, in whole
+/// milliseconds; `None` until their bridge answered an ask.
+pub(crate) fn round_trip_ms(m: &MemberState) -> Option<u32> {
+    if m.me || !m.connected {
+        return None;
+    }
+    let rtt = m.traffic?.rtt?;
+    Some(rtt.smoothed_us.saturating_add(500) / 1000)
+}
+
 /// A member's word when the host picked the F1 2026 cars and their game says it doesn't have that content.
 pub(crate) fn content_word(content: &RoomContent, m: &MemberState) -> Option<(&'static str, Tone)> {
     (m.connected && content.needs_f1_2026() && content.owns_f1_2026.get(&m.id) == Some(&false))

@@ -344,6 +344,22 @@ pub struct MemberStats {
     pub bytes_out: u64,
     pub packets_in: u64,
     pub bytes_in: u64,
+    /// Round-trip asks this player's bridge sent to the member's; 0 from a module before the asks.
+    #[serde(default)]
+    pub probes_out: u64,
+    /// The answered asks' round trips; `None` until one comes back, and from a module before the asks.
+    #[serde(default)]
+    pub rtt: Option<Rtt>,
+}
+
+/// Round trips from this player's bridge to a member's and back through the relay, in microseconds.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Rtt {
+    pub last_us: u32,
+    pub min_us: u32,
+    /// The first round trip, then 7/8 of the value before plus 1/8 of each new one.
+    pub smoothed_us: u32,
+    pub samples: u64,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

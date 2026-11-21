@@ -487,6 +487,12 @@ impl Shell {
                     .when(m.host, |d| d.child(tag("Host", p)))
                     .when(m.me, |d| d.child(tag("You", p))),
             )
+            .children(round_trip_ms(m).map(|ms| {
+                div()
+                    .text_size(px(13.))
+                    .text_color(p.text_muted)
+                    .child(trf!("{ms} ms", ms = ms))
+            }))
             .child(
                 div()
                     .text_size(px(13.))

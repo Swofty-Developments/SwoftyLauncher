@@ -2,14 +2,14 @@ use std::collections::HashSet;
 use std::time::Instant;
 
 use swofty_core::online::multiplayer::types::{
-    GameStatus, MemberStage, MemberState, Phase, PrintMatch, Problem, RelayStatus, Role, RoomAddon,
-    RoomAddons, RoomSummary, Screen, SessionState, SessionStep, StepState, User,
+    GameStatus, MemberStage, MemberState, MemberStats, Phase, PrintMatch, Problem, RelayStatus, Role,
+    RoomAddon, RoomAddons, RoomSummary, Rtt, Screen, SessionState, SessionStep, StepState, User,
 };
 
 use super::model::{
     GameState, OwnPrint, RoomStatus, Start, Tone, addon_checks, card_addons, content_check, content_word,
     exit_leaves, exit_notice, extra_addons, joined, member_word, missing, refusal, refusal_text,
-    restart_ok_text, room_meta,
+    restart_ok_text, room_meta, round_trip_ms,
 };
 use super::model::{
     RoomFocus, StepCard, StepRow, card_rooms, closed_subtitle, default_room_name, fix_lines, game_after_room,
@@ -122,6 +122,48 @@ fn member(connected: bool, stage: Option<MemberStage>) -> MemberState {
         stage,
         traffic: None,
     }
+}
+
+#[test]
+fn shows_the_round_trip_to_a_connected_member_once_their_bridge_answered() {
+    let mut m = member(true, Some(MemberStage::InLobby));
+    assert_eq!(round_trip_ms(&m), None);
+    m.traffic = Some(MemberStats {
+        probes_out: 3,
+        ..MemberStats::default()
+    });
+    assert_eq!(round_trip_ms(&m), None);
+    m.traffic = Some(MemberStats {
+        probes_out: 9,
+        rtt: Some(Rtt {
+            last_us: 51_000,
+            min_us: 47_200,
+            smoothed_us: 48_500,
+            samples: 9,
+        }),
+        ..MemberStats::default()
+    });
+    assert_eq!(round_trip_ms(&m), Some(49));
+    m.connected = false;
+    assert_eq!(round_trip_ms(&m), None);
+    m.connected = true;
+    m.me = true;
+    assert_eq!(round_trip_ms(&m), None);
+}
+
+#[test]
+fn reads_member_traffic_with_and_without_round_trips() {
+    let before: MemberStats = serde_json::from_value(serde_json::json!({
+        "packets_out": 1, "bytes_out": 2, "packets_in": 3, "bytes_in": 4,
+    }))
+    .unwrap();
+    assert_eq!((before.packets_in, before.probes_out, before.rtt), (3, 0, None));
+    let now: MemberStats = serde_json::from_value(serde_json::json!({
+        "packets_out": 1, "bytes_out": 2, "packets_in": 3, "bytes_in": 4, "probes_out": 9,
+        "rtt": {"last_us": 270_000, "min_us": 268_000, "smoothed_us": 271_000, "samples": 8},
+    }))
+    .unwrap();
+    assert_eq!(now.rtt.map(|r| (r.smoothed_us, r.samples)), Some((271_000, 8)));
 }
 
 #[test]
