@@ -1,33 +1,46 @@
 #include "core/render/d3d12/hooking.hpp"
 #include "core/render/d3d12_hooks.hpp"
 #include "core/render/srv_clamp_logic.hpp"
+#include "core/render/srv_hook_logic.hpp"
 #include "core/runtime/runtime.hpp"
 
+#include <swofty/d3d12.hpp>
 #include <swofty/mixin.hpp>
 
+#include <atomic>
 #include <cstdio>
 #include <cstring>
 #include <mutex>
 #include <string>
-#include <type_traits>
 #include <unordered_set>
 
 namespace render::d3d12 {
 
 namespace {
 
-constexpr size_t RESOURCE_GETDESC_SLOT = 10, SRV_SLOT = 19;
+// ID3D12Device::CreateShaderResourceView is vtable entry 18 (vt+0x90): IUnknown 0-2, ID3D12Object 3-6, then
+// GetNodeCount 7 ... CreateConstantBufferView 17, CreateShaderResourceView 18, CreateUnorderedAccessView 19,
+// CreateRenderTargetView 20 (device_hooks.cpp's RTV_SLOT).
+constexpr size_t RESOURCE_GETDESC_SLOT = 10, SRV_SLOT = 18;
 
-using SrvFn = void(STDMETHODCALLTYPE *)(ID3D12Device *, ID3D12Resource *, const D3D12_SHADER_RESOURCE_VIEW_DESC *, SIZE_T);
-
-// The srv clamp set: the device's CreateShaderResourceView, patched in its vtable.
+// The core's one hook on CreateShaderResourceView: the srv clamp (SWOFTY_SRV_CLAMP=1) and the addons' view callbacks
+// (swofty/d3d12.hpp) share it, so no addon patches the slot itself.
 struct SrvHooks : runtime::loader::HookSet<> {
-    runtime::loader::Original<std::remove_pointer_t<SrvFn>> create_srv;
+    safetyhook::InlineHook create_srv;
 };
 
-constinit SrvHooks hooks;
+SrvHooks hooks;
+constinit srv_hook::Callbacks<swofty::d3d12::SrvFn> callbacks;
+constinit std::atomic<bool> clamp_on{false}, ready_passed{false};
+// Set while this thread runs the callbacks: a view a callback makes itself does not call them again.
+thread_local bool in_callbacks = false;
 
 const GUID kNameW = {0x4cca5fd8, 0x921f, 0x42c8, {0x85, 0x66, 0x70, 0xca, 0xf2, 0xa9, 0xb7, 0x41}};
+
+void create_original(ID3D12Device *dev, ID3D12Resource *r, const D3D12_SHADER_RESOURCE_VIEW_DESC *d, SIZE_T h)
+{
+    hooks.create_srv.call<void>(dev, r, d, h);
+}
 
 std::string srv_name(ID3D12Resource *r)
 {
@@ -77,16 +90,12 @@ void SrvReports::report(ID3D12Resource *r, const srv_clamp::View &v, const srv_c
                     name.c_str());
 }
 
-void STDMETHODCALLTYPE srv_hook(ID3D12Device *dev, ID3D12Resource *r, const D3D12_SHADER_RESOURCE_VIEW_DESC *d, SIZE_T h)
+// The view as the clamp would make it: d itself, c filled from d with the clamp applied, or null when the view starts
+// past the texture's last slice and is skipped.
+const D3D12_SHADER_RESOURCE_VIEW_DESC *clamped(ID3D12Resource *r, const D3D12_RESOURCE_DESC &rd,
+                                               const D3D12_SHADER_RESOURCE_VIEW_DESC *d, D3D12_SHADER_RESOURCE_VIEW_DESC &c)
 {
     using namespace srv_clamp;
-    if (!r || !d) {
-        hooks.create_srv(dev, r, d, h);
-        return;
-    }
-    using GetDescFn = D3D12_RESOURCE_DESC *(STDMETHODCALLTYPE *)(ID3D12Resource *, D3D12_RESOURCE_DESC *);
-    D3D12_RESOURCE_DESC rd{};
-    reinterpret_cast<GetDescFn>((*reinterpret_cast<void ***>(r))[RESOURCE_GETDESC_SLOT])(r, &rd);
     View v;
     v.dimension = int(d->ViewDimension);
     switch (d->ViewDimension) {
@@ -129,8 +138,7 @@ void STDMETHODCALLTYPE srv_hook(ID3D12Device *dev, ID3D12Resource *r, const D3D1
         v.slices = cube_slices(d->TextureCubeArray.NumCubes);
         break;
     default:
-        hooks.create_srv(dev, r, d, h);
-        return;
+        return d;
     }
     Resource res;
     res.texture = rd.Dimension != D3D12_RESOURCE_DIMENSION_BUFFER && rd.Dimension != D3D12_RESOURCE_DIMENSION_UNKNOWN;
@@ -138,14 +146,12 @@ void STDMETHODCALLTYPE srv_hook(ID3D12Device *dev, ID3D12Resource *r, const D3D1
     res.slices = rd.DepthOrArraySize;
     res.mips = rd.MipLevels;
     Plan p = plan(v, res);
-    if (p.action == Action::Pass) {
-        hooks.create_srv(dev, r, d, h);
-        return;
-    }
+    if (p.action == Action::Pass)
+        return d;
     reports.report(r, v, res, p);
     if (p.action == Action::Skip)
-        return;
-    D3D12_SHADER_RESOURCE_VIEW_DESC c = *d;
+        return nullptr;
+    c = *d;
     switch (d->ViewDimension) {
     case D3D12_SRV_DIMENSION_TEXTURE1D:
         c.Texture1D.MostDetailedMip = p.most_detailed_mip;
@@ -184,41 +190,108 @@ void STDMETHODCALLTYPE srv_hook(ID3D12Device *dev, ID3D12Resource *r, const D3D1
     default:
         break;
     }
-    hooks.create_srv(dev, r, &c, h);
+    return &c;
 }
 
+void run_callbacks(ID3D12Device *dev, ID3D12Resource *r, const D3D12_SHADER_RESOURCE_VIEW_DESC *d, SIZE_T h,
+                   const D3D12_RESOURCE_DESC &rd)
+{
+    swofty::d3d12::SrvCreated v{};
+    v.size = sizeof v;
+    v.format = uint32_t(rd.Format);
+    v.device = dev;
+    v.resource = r;
+    v.desc = d;
+    v.cpu_handle = uint64_t(h);
+    v.width = rd.Width;
+    v.height = rd.Height;
+    v.dimension = uint32_t(rd.Dimension);
+    v.depth_or_array_size = rd.DepthOrArraySize;
+    v.mip_levels = rd.MipLevels;
+    in_callbacks = true;
+    callbacks.each([&](swofty::d3d12::SrvFn fn, void *user) { fn(user, &v); });
+    in_callbacks = false;
 }
 
-bool arm_srv_clamp()
+void STDMETHODCALLTYPE create_srv_hook(ID3D12Device *dev, ID3D12Resource *r, const D3D12_SHADER_RESOURCE_VIEW_DESC *d, SIZE_T h)
+{
+    bool clamp = d && clamp_on.load(std::memory_order_relaxed);
+    bool notify = callbacks.any() && !in_callbacks;
+    if (!r || (!clamp && !notify)) {
+        create_original(dev, r, d, h);
+        return;
+    }
+    using GetDescFn = D3D12_RESOURCE_DESC *(STDMETHODCALLTYPE *)(ID3D12Resource *, D3D12_RESOURCE_DESC *);
+    D3D12_RESOURCE_DESC rd{};
+    reinterpret_cast<GetDescFn>((*reinterpret_cast<void ***>(r))[RESOURCE_GETDESC_SLOT])(r, &rd);
+    D3D12_SHADER_RESOURCE_VIEW_DESC c{};
+    const D3D12_SHADER_RESOURCE_VIEW_DESC *use = clamp ? clamped(r, rd, d, c) : d;
+    if (clamp && !use)
+        return;
+    create_original(dev, r, use, h);
+    if (notify)
+        run_callbacks(dev, r, use, h, rd);
+}
+
+// Hooks CreateShaderResourceView once, at its code (the vtable entry of the probe device), so the game's device and
+// any layer in front of it reach the hook alike.
+bool arm()
 {
     if (!hooks.gate.offer())
         return hooks.live();
-    char env[8] = {};
-    GetEnvironmentVariableA("SWOFTY_SRV_CLAMP", env, sizeof env);
-    if (!srv_clamp::enabled(env)) {
-        swofty::log("[gfx] srv clamp is off (SWOFTY_SRV_CLAMP=1 turns it on)");
-        return settle(hooks, false, "SWOFTY_SRV_CLAMP is not 1");
-    }
     ID3D12Device *dev = probe_device();
     void **vt = dev ? *reinterpret_cast<void ***>(dev) : nullptr;
-    void *srv_target = vt ? vt[SRV_SLOT] : nullptr;
-    HMODULE srv_mod = nullptr;
-    module_of(srv_target, &srv_mod);
-    unsigned long long srv_offset = reinterpret_cast<uintptr_t>(srv_target) - reinterpret_cast<uintptr_t>(srv_mod);
-    DWORD old = 0;
-    bool ok = vt && VirtualProtect(&vt[SRV_SLOT], sizeof(void *), PAGE_READWRITE, &old);
-    if (ok) {
-        *hooks.create_srv.slot() = srv_target;
-        vt[SRV_SLOT] = reinterpret_cast<void *>(&srv_hook);
-        VirtualProtect(&vt[SRV_SLOT], sizeof(void *), old, &old);
-        swofty::log("[gfx] srv clamp armed: ID3D12Device::CreateShaderResourceView (vt+0x98, vtable entry for %s+0x%llx) "
-                    "patched; array and mip views past their texture are clamped",
-                    module_of(srv_target).c_str(), srv_offset);
-    } else
-        swofty::log("[gfx] srv clamp: could not patch the ID3D12Device vtable");
+    void *target = vt ? vt[SRV_SLOT] : nullptr;
+    void *detour = reinterpret_cast<void *>(&create_srv_hook);
+    bool ok = install(hooks.create_srv, target, detour, "ID3D12Device::CreateShaderResourceView");
+    if (ok)
+        swofty::log("[gfx] srv hook armed: ID3D12Device::CreateShaderResourceView (vt+0x90, %s); clamp %s, %s",
+                    module_of(target).c_str(), clamp_on.load() ? "on" : "off",
+                    callbacks.any() ? "addon view callbacks registered" : "no addon view callback yet");
+    else
+        swofty::log("[gfx] srv hook: could not hook ID3D12Device::CreateShaderResourceView");
     release(dev);
-    return settle(hooks, ok, "could not patch the ID3D12Device vtable");
+    return settle(hooks, ok, "could not hook ID3D12Device::CreateShaderResourceView");
 }
+
+}
+
+// The ready step: arms the hook when the clamp is on or an addon registered a view callback; otherwise the hook
+// arms with the first callback.
+bool arm_srv_clamp()
+{
+    char env[8] = {};
+    GetEnvironmentVariableA("SWOFTY_SRV_CLAMP", env, sizeof env);
+    clamp_on = srv_clamp::enabled(env);
+    if (!clamp_on)
+        swofty::log("[gfx] srv clamp is off (SWOFTY_SRV_CLAMP=1 turns it on)");
+    bool want = srv_hook::wanted(clamp_on, callbacks.any());
+    bool armed = want ? arm() : hooks.live();
+    ready_passed = true;
+    // A callback registered between the check and ready_passed found the ready step not yet passed: arm for it.
+    if (!want && callbacks.any())
+        armed = arm();
+    if (!want && !armed)
+        swofty::log("[gfx] srv hook not armed yet: no clamp and no addon view callback");
+    return armed;
+}
+
+// 0 registered (live, or arming at the ready step), 1 registered but the hook is not live, -1 invalid, -2 full.
+int add_srv_callback(swofty::d3d12::SrvFn fn, void *user, uint32_t *token)
+{
+    if (!fn)
+        return -1;
+    uint32_t t = callbacks.add(fn, user);
+    if (!t)
+        return -2;
+    if (token)
+        *token = t;
+    if (!ready_passed.load())
+        return 0;
+    return arm() ? 0 : 1;
+}
+
+int remove_srv_callback(uint32_t token) { return callbacks.remove(token) ? 0 : -1; }
 
 }
 
@@ -226,4 +299,15 @@ namespace runtime {
 
 void srv_clamp_setup() { render::d3d12::arm_srv_clamp(); }
 
+}
+
+// swofty/d3d12.hpp looks these up by name: a core without them reads as unavailable.
+extern "C" __declspec(dllexport) int SwoftyCoreD3d12OnSrv(swofty::d3d12::SrvFn fn, void *user, uint32_t *token)
+{
+    return render::d3d12::add_srv_callback(fn, user, token);
+}
+
+extern "C" __declspec(dllexport) int SwoftyCoreD3d12RemoveSrv(uint32_t token)
+{
+    return render::d3d12::remove_srv_callback(token);
 }

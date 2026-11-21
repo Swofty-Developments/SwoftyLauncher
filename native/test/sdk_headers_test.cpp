@@ -9,6 +9,7 @@
 #include <string>
 #include <type_traits>
 
+#include <swofty/d3d12.hpp>
 #include <swofty/ease.hpp>
 #include <swofty/events.hpp>
 #include <swofty/fake_hud.hpp>
@@ -126,6 +127,10 @@ SWOFTY_REGISTER
 static void unavailable_without_core()
 {
     CHECK(!detail::registry_table());
+    CHECK(!d3d12::available());
+    CHECK(d3d12::on_srv_created([](void *, const d3d12::SrvCreated *) {}) == d3d12::Result::unavailable);
+    CHECK(d3d12::on_srv_created(nullptr) == d3d12::Result::invalid);
+    CHECK(d3d12::remove_srv_callback(1) == d3d12::Result::unavailable);
     auto v10 = sounds::engine_sounds.add("v10", {.bundle = file("a.bdl")});
     CHECK(v10.empty());
     auto ferrari =

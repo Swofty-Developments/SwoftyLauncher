@@ -140,6 +140,7 @@ UNITS = [
     Unit('session_job_probe', 'Session job list scan probe unit test'),
     Unit('setup_vm', 'Setup screen car guard unit test'),
     Unit('srv_clamp', 'Shader resource view clamp unit test'),
+    Unit('srv_hook', 'Shader resource view addon callbacks unit test'),
     Unit('rtas_guard', 'Ray tracing build guard unit test'),
     Unit('d3d12_probe', 'D3D12 probe device sharing unit test'),
     Unit('arm_gate', 'D3D12 arm gate unit test'),
