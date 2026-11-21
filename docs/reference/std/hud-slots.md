@@ -125,4 +125,4 @@ While the editor is open the box is the editor's own selection box, which follow
 
 `SwoftyHudSlotState` holds what the core reads: `found`, `enabled`, `editor_open`, `x`, `y`, `scale`, `opacity`, `has_box` with `box` (min x, min y, max x, max y in HUD units, origin at the frame centre, `y` up), `element_key` (the `hud_customisation.xml` key in use) and `key` (`swofty_<addon>_<id>`). The core picks the session layout whose element list has the slot, from the editor's layout while it is open.
 
-The core reads the game's placement data from any thread; call `get` from the paint callback each frame.
+The core calls into the game only on the flow thread (the one that runs `on_frame`), so `read` and `get` are guarded memory reads on any other thread, the paint callback's included. Until the first flow tick after the first read, `get` gives the default box.

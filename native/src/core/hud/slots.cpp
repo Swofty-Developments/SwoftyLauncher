@@ -1,5 +1,6 @@
 #include "core/frontend/ui_vm.hpp"
 #include "core/hud/slots_logic.hpp"
+#include "core/runtime/runtime.hpp"
 #include "core/runtime/settings.hpp"
 
 #include <windows.h>
@@ -11,6 +12,7 @@
 #include <atomic>
 #include <cstdio>
 #include <cstring>
+#include <mutex>
 #include <string>
 
 namespace hud::slots {
@@ -30,6 +32,8 @@ struct Mem {
 std::atomic<uintptr_t> key_at{0}, data_at{0};
 std::atomic<int> scanned{0};
 std::atomic<ULONGLONG> next_try{0};
+std::atomic<uint32_t> flow_tid{0};
+std::once_flag armed;
 
 uintptr_t owner_key()
 {
@@ -49,7 +53,7 @@ uintptr_t owner_key()
 uintptr_t data()
 {
     uintptr_t d = data_at.load(std::memory_order_acquire);
-    if (d)
+    if (d || flow_tid.load(std::memory_order_relaxed) != GetCurrentThreadId())
         return d;
     ULONGLONG now = GetTickCount64();
     if (now < next_try.load(std::memory_order_relaxed))
@@ -84,6 +88,26 @@ uintptr_t data()
     return d;
 }
 
+void frame(double, void *)
+{
+    flow_tid.store(GetCurrentThreadId(), std::memory_order_relaxed);
+    data();
+}
+
+void arm()
+{
+    std::call_once(armed, [] {
+        const SwoftyEvents *ev = ::runtime::events_table();
+        uint32_t token = 0;
+        if (!ev || !ev->on_frame) {
+            swofty::log("[hud-slots] no flow tick: the placement stays the default box");
+            return;
+        }
+        ::runtime::frame_probe_name("hud_slots");
+        ev->on_frame(frame, nullptr, &token);
+    });
+}
+
 uint32_t pick(const Reader<Mem> &r, uintptr_t d, uintptr_t ctrl, const std::string &k)
 {
     uint32_t first_found = 0;
@@ -113,6 +137,7 @@ extern "C" __declspec(dllexport) int SwoftyCoreHudSlotRead(const char *slot, con
     std::string addon = settings_addon(caller, dll);
     std::string k = slot && *slot && !addon.empty() ? s::key(addon, slot) : std::string();
     std::snprintf(out->key, sizeof out->key, "%s", k.c_str());
+    s::arm();
     uintptr_t d = s::data();
     if (!d)
         return 1;
