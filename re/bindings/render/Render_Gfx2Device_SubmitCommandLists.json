@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439dc660.c;xref:0x142bcff15,0x14379c4f6",
-  "notes": "Under device critical section (+0x2668) builds an array of param_2 command-list pointers on the stack (alloca) and submits them to the queue. Callers Game_PhotoModeHelper_CaptureFrame, Game_ThumbnailSystem_RequestAndWriteScreenshot, Render_Gfx2_AcquireBackbuffer. Hypothesis (submit/execute)."
+  "evidence": "decomp:re/decomp/1439dc660.c;xref:0x142bcff15,0x14379c4f6,0x1439dc289",
+  "notes": "Under device CS copies param_2 entries of param_3 into a stack array (Ne_Crt_Chkstk): entries with byte +0x38 == 0 are collected, the others move into the per-frame list at +0x38e0+frame*0x50 (count +0x38f0, size +0x38f8); stamps +0x30 with device+0xa38; if any were collected calls 0x1439e1700 (jmp to .data1 0x151f79060). Callers 0x142bcfc30, 0x14379c250, Render_Gfx2_AcquireBackbuffer 0x1439ad480."
  },
  "signature": {
   "id": "render.gfx2_device_submit_command_lists",

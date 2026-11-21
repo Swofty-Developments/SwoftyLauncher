@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143dfb210",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143dfb210.c;xref:0x143dfb60e,0x143dfdf44",
-  "notes": "XeSS recreate wrapper (string 'XeSS_Recreate'); called from Render_XeSS_Evaluate. Named callers: Render_XeSS_Evaluate."
+  "notes": "Releases handles +0xa0/+0xa8 via 0x1439d9cb0 on device 0x14618caa8; if a context is at +0xe0, fences the queue with label XeSS_Recreate (fence vcall +0x40 completed value, +0x48 set event, WaitForSingleObject INFINITE), calls libxess xessDestroyContext (thunk 0x14537f380); then xessD3D12CreateContext (thunk 0x14537f400) with [device+0x508] into +0xe0. Callers 0x143dfb60e (Render_XeSS_Evaluate), 0x143dfdf44 (in 0x143dfd720). (lane owner review requested)"
  },
  "signature": {
   "id": "render.xe_s_s_recreate",

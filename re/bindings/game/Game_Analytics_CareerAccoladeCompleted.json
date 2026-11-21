@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14075f220",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: Career Accolade Completed'"
+  "evidence": "decomp:re/decomp/14075f220.c;pat:log-channel-TELEMETRY;xref:0x1406f4d78,0x14070de38",
+  "notes": "TELEMETRY bus handler (bound by lea in 0x1406d8470/0x1406fd6c0): allocates a 0xd0-byte record (ctor 0x1403dc8e0), fills it from msg +0x10 (u16), strings +0x28/+0x80/+0xd8, +0x100, +0x104, serialises via 0x14077bb90(this,rec,'accolade_completed',0xff), enqueues it under CS into the static queue (max 0x40 entries, oldest dropped) and logs 'Career Accolade Completed'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_career_accolade_completed",

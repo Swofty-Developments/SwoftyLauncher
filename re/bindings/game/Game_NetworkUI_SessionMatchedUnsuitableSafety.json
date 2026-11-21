@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430b01f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-UI",
-  "notes": "named from its log messages (channel NETWORK-UI): '%s failed : Session matched an unsuitable safety rating'"
+  "evidence": "decomp:re/decomp/1430b01f0.c;pat:log-channel-NETWORK-UI;xref:0x1430afd05,0x1430affa9,0x1430b081a",
+  "notes": "Callback lea'd in 0x1430af6f0/0x1430afe20/0x1430b06e0: logs 'onHopperSearchCompleted'; on error shows unsuitable_safety_rating / lost_connection / hopper_creating_failed popups, on success 'network_hopper_match_found'. (lane owner review requested) Better name: Game_NetworkUi_OnHopperSearchCompleted (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_ui_session_matched_unsuitable_safety",

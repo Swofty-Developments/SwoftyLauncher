@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1431608c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name canReceiveNewInvite (class from the log channel); log channel NETWORK-INVITE: '%s(%s) : cannot receive new invite right now. Waiting to invite party(%s)...'"
+  "evidence": "decomp:re/decomp/1431608c0.c;pat:log-message-method;xref:0x1430732d9,0x1430e8981",
+  "notes": "Logs with method name canReceiveNewInvite: 'ready to receive the new invite' or 'cannot receive new invite right now' per invite state (Join started / in progress, Connecting, LoadingChampionship, LoadingCareer, Waiting to invite party, unhandled). Callers 0x143073200, 0x1430e0560. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_invite_can_receive_new_invite",

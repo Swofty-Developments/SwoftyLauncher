@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143171480",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-LEAGUES",
-  "notes": "named from its log messages (channel NETWORK-LEAGUES): 'Request to start next League event for %s'"
+  "evidence": "decomp:re/decomp/143171480.c;pat:log-channel-NETWORK-LEAGUES;xref:0x141d45b2a",
+  "notes": "Logs 'Request to start next League event for %s' (name at param_2+0x18) and stores the event pointer at this+0xf8. Caller 0x141d44df0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_leagues_request_start_next_league_event",

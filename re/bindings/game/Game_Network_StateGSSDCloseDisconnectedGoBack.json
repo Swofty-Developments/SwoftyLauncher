@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1436d8e10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'StateGSSDClose - we are disconnected, go back to lobby.'"
+  "evidence": "decomp:re/decomp/1436d8e10.c;pat:log-channel-NETWORK;xref:0x14585be18",
+  "notes": "State update: if disconnected (this+0xc88 == 0 or session field) logs \"StateGSSDClose - we are disconnected, go back to lobby.\" and returns the state id from 0x146cb2294; else closes the season document (Game_SeasonDocument_CloseDocument) and returns 0x146cb2280/0x146cb2284 by flag +0x765. (lane owner review requested) Better name: Game_StateGSSDClose_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_state_gssd_close_disconnected_go_back",

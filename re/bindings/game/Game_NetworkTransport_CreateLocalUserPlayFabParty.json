@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14409f370",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-TRANSPORT",
-  "notes": "named from its log messages (channel NETWORK-TRANSPORT): '%s: Create local user for PlayFabParty'"
+  "evidence": "decomp:re/decomp/14409f370.c;pat:log-channel-NETWORK-TRANSPORT;xref:0x14409ec5c,0x1440a0f84",
+  "notes": "Logs 'initialiseInternal' (Initialise PlayFabParty manager) then 'createLocalUser' (Create local user for PlayFabParty / already created / failed). (lane owner review requested) Better name: Game_NetworkTransportPlayFab_InitialiseInternal (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_transport_create_local_user_play_fab_party",

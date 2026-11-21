@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1407612b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: entitlement purchase attempted'"
+  "evidence": "decomp:re/decomp/1407612b0.c;pat:log-channel-TELEMETRY;xref:0x1406f5c64,0x14070e0da",
+  "notes": "Bus handler(this,msg); subscribed 0x1406f5c64 (0x1406d8470), unregistered 0x14070e0da. 0xb0-byte record: msg+0x10, u32 msg+0x20, string msg+0x28. Tag 'entitlement_purchased_record' via 0x14077a240, GUID+seq, 64-entry queue; logs 'entitlement purchase attempted' (TELEMETRY). (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_entitlement_purchase_attempted",

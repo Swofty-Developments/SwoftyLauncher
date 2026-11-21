@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430605c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name leave (class from the log channel); log channel NETWORK: '%s: alsoLeaveParty: %d, reason: %d, fireInterrupt: %d'  (this, alsoLeaveParty, reason, fireInterrupt): this = *(NetSub+0x3c0), this+8 = NetSub; calls Ne_NetSystemCommon_LeaveSession(*(NetSub+0xd8), alsoLeaveParty, reason==0xb, 0), stores fireInterrupt at +0x1e1, and if +0x1a8 != 0 runs Game_GameSessionManager_OnLeavingSession. reason 0xb = MatchingCancelled. Callers 36 (list in re/decomp via scan of E8)."
+  "evidence": "decomp:re/decomp/1430605c0.c;pat:log-message-method;xref:0x14305b3a5,0x143064009,0x140996fba,0x140bb427c,0x1427693c2",
+  "notes": "Tail-jumped with the same this by GameSessionManager::onHostMigrationComplete 0x14305af60; many other callers. (this, alsoLeaveParty, reason, fireInterrupt) under EnterCriticalSection(+0x1b0): logs 'leave'; stores fireInterrupt at +0x1e1; 0x144062c40([this+8]+0xd8, alsoLeaveParty, reason==0xb, 0); if +0x1a8 != 0: 0x143057720(this, reason, 4) and flushes the 0xc0-byte queue 0x146107900 (count 0x146108800) to g 0x14604bbc8 via 0x140772940. (lane owner review requested) Better name: Game_GameSessionManager_Leave (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_leave",

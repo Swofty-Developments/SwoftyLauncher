@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144731660",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144731660.c",
-  "notes": "Builds the 2024-format packets (header packetFormat 2024). UDP telemetry, format index [[this+0xe0]+0xc] (0 = 2024, 1 = 2025, 2 = 2026) chosen in Game_TelemetryOutputUDPUpdateable_Update 0x1447311a0 and 0x144738050."
+  "evidence": "decomp:re/decomp/144731660.c;xref:0x144731269,0x144738113",
+  "notes": "Builds the packetFormat 2024 (0x7e8) packets from car and session state (Car_F1Aero_GetFront/RearRideHeight, raycasts, atan2 angles). Called from Game_TelemetryOutputUDPUpdateable_Update and Game_TelemetryUdp_HandleEvent ('SEND' with format index [[this+0xe0]+0xc] == 0). (lane owner review requested)"
  },
  "signature": {
   "id": "game.telemetry_udp_prepare2024",

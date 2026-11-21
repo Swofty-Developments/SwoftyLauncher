@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a0e5b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143a0e5b0.c;xref:0x1439d74d6",
-  "notes": "713 bytes: AllocDescriptorSlot + Ne_BitAllocator_AllocBit + QueueDeferredRelease. Caller Render_Gfx2Device_NewDeferredCommand (0x1439d74d6). Twin of 0x143a0e340. Hypothesis."
+  "evidence": "decomp:re/decomp/143a0e5b0.c;xref:0x1439d74d6,0x1439e09a2,0x1439e0a02",
+  "notes": "Per GPU-node loop (count from device +0x118 mode, +0x140/+0x144): picks the view's resource by view type (+0x44, 1..8); if none, queues old descriptors for deferred release (0x1439fdd40) and, unless param_2, allocates a slot with Ne_BitAllocator_AllocBit on device+0x1cc0 (table +0x1d28). Tail-jumps (0x143a0e874) to 0x1439ddd20, which fills the view desc and issues the create vcalls. Twin of 0x143a0e340. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx2_device_alloc_view_descriptor_b",

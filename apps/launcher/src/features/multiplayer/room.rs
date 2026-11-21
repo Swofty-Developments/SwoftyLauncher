@@ -159,6 +159,10 @@ impl Shell {
         p: Palette,
         cx: &mut Context<Self>,
     ) -> Div {
+        let starting =
+            self.rooms.game.launching || self.launching.launch.is_some() || self.game.build.is_some();
+        let after = game_after_room(state.phase.is_over(), starting)
+            .map(|text| div().text_size(px(13.)).text_color(p.text_muted).child(text));
         if let Some(card) = StepCard::of(state, self.rooms.leaving) {
             return self
                 .room_card(p)
@@ -168,7 +172,8 @@ impl Shell {
                 })
                 .when(!card.rows.is_empty(), |d| {
                     d.child(self.step_list(&card.rows, state, p, cx))
-                });
+                })
+                .children(after);
         }
         let over = state.phase.is_over();
         let current = step_number(st.progress.step);
@@ -209,6 +214,7 @@ impl Shell {
             .gap(px(14.))
             .child(self.status_head(st, state, true, p, cx))
             .when(!over, |d| d.child(bar).child(steps))
+            .children(after)
     }
 
     /// The card's headline row: the session's state, its hint or problem, and the buttons for them. `race` puts
@@ -262,7 +268,7 @@ impl Shell {
                     .children(
                         st.problem
                             .as_ref()
-                            .and_then(|problem| problem.detail.clone())
+                            .and_then(|problem| problem.detail.clone().filter(|d| !repeats(d, &problem.text)))
                             .filter(|_| !m.leaving)
                             .map(|d| div().text_size(px(13.)).text_color(p.text_muted).child(d)),
                     )
@@ -448,9 +454,10 @@ impl Shell {
         let title = room
             .as_ref()
             .map_or_else(|| "Multiplayer".to_owned(), |r| r.name.clone());
-        let subtitle = room.as_ref().map_or_else(
-            || tr("Setting up the room\u{2026}").to_owned(),
-            |r| {
+        let subtitle = match room.as_ref() {
+            _ if over => closed_subtitle(room.is_some(), state.host).to_owned(),
+            None => tr("Setting up the room\u{2026}").to_owned(),
+            Some(r) => {
                 let mut parts = vec![
                     trf!("{count} in the lobby", count = joined(state)),
                     trf!(
@@ -464,8 +471,8 @@ impl Shell {
                     parts.push(tr("You're the host").into());
                 }
                 parts.join(" \u{00b7} ")
-            },
-        );
+            }
+        };
         let code = room.as_ref().map(|r| r.code.clone());
         let actions = h_flex()
             .gap(px(8.))

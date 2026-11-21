@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name sendNetMessageData (class from the log channel); log channel NETWORK-DATA/R: '%s(%d, %p, %d, %s)'"
+  "evidence": "decomp:re/decomp/143064410.c;pat:log-message-method;xref:0x143059846,0x1430598fd,0x14fd40642",
+  "notes": "Logs sendNetMessageData(target, ptr, bits, flag) and a hex dump \"[MP_NetMessage] SEND(to=..)\"; copies the message bits into a packet and sends it via Game_NetworkData_SendToConnection."
  },
  "signature": {
   "id": "game.network_data_send_net_message_data",

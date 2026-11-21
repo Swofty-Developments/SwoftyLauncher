@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140ffda70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-ONLINE_CONTRACT_NEGOTIATIONS",
-  "notes": "named from its log messages (channel ONLINE_CONTRACT_NEGOTIATIONS): 'First player finished team selection'"
+  "evidence": "decomp:re/decomp/140ffda70.c;pat:log-channel-ONLINE_CONTRACT_NEGOTIATIONS;xref:0x1436c1d39,0x1436c1e30,0x1436c54b4,0x1436c5766",
+  "notes": "Logs 'Progress negotiations' and switches on the flow stage at this+0x290: counts human negotiators, starts holding screen, team-select or negotiation flows ('Starting ... flow with request type: %d'), handles first/second player finished, posts bus messages, ends the flow. Called from Career_ContractUpdate_OnEnter/OnUpdate and Game_ContractTeamSelect_OnEnter/OnUpdate. (lane owner review requested) Better name: Game_OnlineContract_ProgressNegotiations (bound record keeps its name)."
  },
  "signature": {
   "id": "game.online_contract_first_player_finished_team_selection",

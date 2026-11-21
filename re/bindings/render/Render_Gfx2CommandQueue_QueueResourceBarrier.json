@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a06fc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143a06fc0.c;xref:0x142bcff54,0x14379c535",
-  "notes": "Label NeGfx2CommandQueue::flushResourceBarriers; for the 8x8-format case (param_5/6 == 8) with queue index (param_1+0x20)-1 < 2, issues barrier flush then copy via vcall +0xd0 on queue state +0x150. Callers PhotoMode CaptureFrame, ThumbnailSystem screenshot, Game_Hbcn_SetAdditionalMips. Hypothesis. vp2-verify partial/disagree"
+  "evidence": "decomp:re/decomp/143a06fc0.c;xref:0x142bcff54,0x14379c535,0x143bf46f8",
+  "notes": "Appends a 0x20-byte barrier to the queue array +0x150 (count +0x20150; at 0xfff flushes via ResourceBarrier vcall +0xd0 on the immediate list): before == after == 8 (UNORDERED_ACCESS) on queue types 1/2 -> UAV barrier (type 2); else transition {flags param_7&3, resource, subresource param_3, before param_5, after param_6}; skipped when before == after on other queues. Callers 0x142bcfc30, 0x14379c250, Game_Hbcn_SetAdditionalMips 0x143bf3fc0. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx2_command_queue_flush_barriers_and_copy",

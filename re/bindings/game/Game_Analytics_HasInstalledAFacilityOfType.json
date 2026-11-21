@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140737da0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: %s has installed a facility of type %s'"
+  "evidence": "decomp:re/decomp/140737da0.c;pat:log-channel-TELEMETRY;xref:0x1406e62c4,0x1406fed4b",
+  "notes": "Bus handler(this,msg); subscribed 0x1406e62c4 (0x1406d8470), unregistered 0x1406fed4b. 0xb8-byte record: u32s msg+0x18..+0x30, enum string by msg+0x14 (log arg 2), flag msg+0x28 picks The player / An Ai team, optional list msg+0x40..+0x48 (flag msg+0x58). Tag 'career_facility_upgrade_installed_record' via 0x14077a240, GUID+seq, 64-entry queue; logs '%s has installed a facility of type %s' (TELEMETRY). (lane owner review requested) Better name: Game_Analytics_FacilityUpgradeInstalled (bound record keeps its name)."
  },
  "signature": {
   "id": "game.analytics_has_installed_a_facility_of_type",

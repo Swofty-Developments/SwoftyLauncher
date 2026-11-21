@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1413ef8c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-CrowdSystem",
-  "notes": "Log channel CrowdSystem: 'onSessionLoaded' | 'readSessionCrowdData' | 'applyTrackSettingsToCrowd'"
+  "evidence": "decomp:re/decomp/1413ef8c0.c;pat:log-channel-CrowdSystem;xref:0x1456e23b0",
+  "notes": "Vtable cell 0x1456e23b0. Own logs onSessionLoaded / readSessionCrowdData / applyTrackSettingsToCrowd. Unless +0x68: reads the track's session crowd data into +0x70..+0x9c and sends crowd plugin data (message 3, 0x20 bytes) with the density chosen by session type. (lane owner review requested)"
  },
  "signature": {
   "id": "game.crowd_system_on_session_loaded",

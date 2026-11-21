@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439932e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439932e0.c;xref:0x1401057dd",
-  "notes": "Looks up/creates a slot in the table at this+0x30 (0x1439933a0), stores vcall0(param_3) at slot+0x30 and the object at slot+0x28 if empty, then under CS this+0x38 calls every listener (fn,ctx pairs at this+0x10..0x18) as fn(ctx,key,&slot,0). Resource-registry notify. Hypothesis on exact registry type."
+  "evidence": "decomp:re/decomp/1439932e0.c;xref:0x1401057dd,0x140140eed,0x1401495ea,0x14014bb25",
+  "notes": "Ne_HashMap_U64_FindOrInsertSlot(this+0x30, key param_2) -> slot; slot+0x30 = vcall0(param_3); if slot+0x28 is empty stores param_3 and, under CS this+0x38 with reentry counter +0x28, calls each listener (fn,ctx pairs this+0x10..0x18) as fn(ctx,key,&slot,0); drops the slot ref (+0x18). (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx2_register_resource_notify",

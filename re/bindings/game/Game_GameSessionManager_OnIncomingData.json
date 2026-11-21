@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143058640",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionManager::onIncomingData; log channel NETWORK: 'void network::GameSessionManager::onIncomingData(neon::NeNetConnectionID, const neon::NeNetData *) | %s: add user into ban list, presence: %s'"
+  "evidence": "decomp:re/decomp/143058640.c;pat:log-message-cxx;xref:0x143056b56",
+  "notes": "GameSessionManager::onIncomingData (__FUNCSIG__ in '%s: add user into ban list, presence: %s'): 'Received data from connection %d, size = %d', then parses byte commands (session data requests, voice, BandwidthMessage, ComponentMessage, ContentDomainMessage, GameModeSyncMessage). Lea'd at 0x143056b56 in 0x143056b10; calls 0x140996e20 at 0x1430595b0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_session_manager_on_incoming_data",

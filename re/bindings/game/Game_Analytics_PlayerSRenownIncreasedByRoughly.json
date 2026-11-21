@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140742b90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: Player's Renown increased by roughly %d'"
+  "evidence": "decomp:re/decomp/140742b90.c;pat:log-channel-TELEMETRY;xref:0x1406ea304,0x140707704",
+  "notes": "Bus handler: lea 0x1406ea304 in subscribe-all 0x1406d8470 (->0x143987810), lea 0x140707704 in unsubscribe-all 0x1406fd6c0. Allocs 0x68 record (ctor 0x14055ab30), copies msg fields, baseCtx by 0x14077bb90 'player_renown_awarded_record', pushed to static queue (guard 0x14604de00) under CS; logs TELEMETRY 'Player's Renown increased by roughly %d'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_player_s_renown_increased_by_roughly",

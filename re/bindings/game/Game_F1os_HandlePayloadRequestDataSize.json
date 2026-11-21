@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143293e90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-F1OS",
-  "notes": "named from its log messages (channel F1OS): 'handle payload for request %d, error = %s, dataSize = %I64u, complete = %d, statusCode = %d'"
+  "evidence": "decomp:re/decomp/143293e90.c;pat:log-channel-F1OS;xref:0x1432937c0",
+  "notes": "HTTP payload callback (lea'd at 0x1432937c0 in 0x1432934a0): logs 'handle payload for request %d, error = %s, dataSize = %I64u, complete = %d, statusCode = %d', looks the request up (0x143294550 at 0x143293f7f), handles 'content-length' / 'content-encoding' 'gzip', completion/abort ('Request %d is complete', '... aborted, free the request immediately'). (lane owner review requested) Better name: Game_F1os_HttpRequest_OnPayload (bound record keeps its name)."
  },
  "signature": {
   "id": "game.f1os_handle_payload_request_data_size",

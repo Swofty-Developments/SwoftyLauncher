@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144070890",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'Removing connection [%d] from RTT list'"
+  "evidence": "decomp:re/decomp/144070890.c;pat:log-channel-NETWORK;xref:0x14406c453,0x1440703b5,0x144070e79",
+  "notes": "Logs \"Removing connection [%d] from RTT list\"; clears the connection bit in the connectivity mask this+0x180 (logs setLocalConnectivity off), erases the 0x58-byte entry from the RTT vector this+0x10..0x18 and returns the next iterator in *param_2. (lane owner review requested) Better name: Game_Network_RemoveConnectionFromRttList (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_removing_connection_rtt_list",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140187560.c;xref:0x1401cba91",
-  "notes": "10 KB actor build step: resolves model resources by id, tries \".idf?render\" and \".emb?context=default\" names, logs \"MISSING RESOURCE modelResourceID [%s] derived from %s derived from %s\" at ACTOR_WARN. Callers Game_MultipartActor_AddPart, Game_SceneManager_BuildMaterialActorForScene. Addon: shows which render model/emb files an actor needs."
+  "evidence": "decomp:re/decomp/140187560.c;xref:0x1401cba91,0x1401ebe00",
+  "notes": "Actor model resource build: tries '.idf?render', '.idf?model', '.emb?context=default', '_rig_head_lite', head morph v1/v2, '.fbx/.idf?context=animset' under eaid:// names; logs MISSING RESOURCE modelResourceID/proxyResourceID [%s] derived from %s (ACTOR_WARN/ACTOR_FAIL). Callers in 0x1401cb030, 0x1401e9150."
  },
  "signature": {
   "id": "game.actor_load_model_resources",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143544f30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143544f30.c;xref:0x14014d26d",
-  "notes": "120 KB initialiser (15698 decomp lines) declaring renderer render targets / textures by name, e.g. aid://ego_package/rr_style_target_for_ml_export_in_nrd_mode.image, video_reel_staging_0, cubemap_gbuffer_depth_stencil_0, aid://vfx_package/volumeLightIBLDataRight.image (G-buffer, NRD denoiser, cubemaps, volumetric light, video reel). Single caller Game_Read_RendererGfxConfig. Addon: authoritative list of render target ids. Hypothesis on exact role."
+  "notes": "Static init of hashed resource-name ids: for each literal (aid://ego_package/... .image/.buffer, ui_package, environment_package names) lowercases it, MD5 (Ne_Hash_Md5Transform_Alt/Md5PadFinalBlock), byte-swaps to a 64-bit id, inserts {id, string ptr} via Ne_HashMap_U64_FindOrInsertSlot 0x1439933a0 into map param_1 and caches the slot in a global (e.g. 0x1460fda00). Single caller Game_Read_RendererGfxConfig. (lane owner review requested) Better name: Render_Gfx_InitStaticResourceNameIds (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx_register_render_targets",

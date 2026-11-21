@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e67830",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142e67830.c;xref:0x142e677f4",
-  "notes": "Typed task allocator used by Game_GameTransactionSystem_RequestPurchaseTier: allocates 0x168 bytes, base ctor Game_OnlineSubsystemTaskOnServiceBase_Ctor 0x1432c1ee0, intermediate vtable 0x1457f1ce0, two sub-objects at +0x148/+0x158 (vtables 0x14583d290 and 0x14583d2b0), final vtable 0x1457f1bc0; holder vtable 0x1457f1ea0; logs 'Allocated new task %s' on F1OS-TASKSYSTEM and AddTask 0x1432dd060, returns {task,holder} in param_2 (null if the type check fails). Addon: hook to observe purchase-tier transactions. cs3-verify correction: +0x148/+0x158 hold the allocator pointers, the sub-object pointers are at +0x150/+0x160"
+  "notes": "Allocates a 0x168 task: base ctor 0x1432c1ee0, vtable 0x1457f1ce0, sub-objects (vtables 0x14583d290 / 0x14583d2b0) with allocator pointers at +0x148/+0x158 and object pointers at +0x150/+0x160, final vtable 0x1457f1bc0; holder vtable 0x1457f1ea0; logs 'Allocated new task %s', adds via 0x1432dd060. Only caller 0x142e67670 (Game_GameTransactionSystem_RequestPurchaseTier) at 0x142e677f4. (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1os_tasksystem_create_task_vt1457f1bc0",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1406ab6a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_Cache_CacheEntryBase_NotifyStatusChanged;xref:0x1406ab72c",
-  "notes": "cxx=game::cache::CacheEntryBase::notifyStatusChanged; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1406ab6a0.c;str:s_Cache_CacheEntryBase_NotifyStatusChanged;xref:0x1406a97c5,0x1406ab077,0x1406ab5a2,0x1406ab5e8,0x14328072b,0x143282b92,0x143283585",
+  "notes": "CacheEntryBase::notifyStatusChanged: logs (CACHE_SYSTEM), notifies listeners in tree +0x108 (removes those returning false), then for status +0x38 = 1/2/3 runs callback lists +0x120/+0x140/+0x160 and removes callbacks that return true. (lane owner review requested)"
  },
  "signature": {
   "id": "game.cache_entry_base_notify_status_changed",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143fd6f20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-EadpSDK",
-  "notes": "named from its log messages (channel EadpSDK): 'Failed to logout. m_isLoggedIn = %d, m_loggedInUserIndex = %d'"
+  "evidence": "decomp:re/decomp/143fd6f20.c;pat:log-channel-EadpSDK;xref:0x145a45058,0x145a45118",
+  "notes": "Virtual (vtable cells 0x145a45058, 0x145a45118): sets +0x30 = 1; if not logged in (+0x31 == 0) or user index +0x2c == -1 logs 'Failed to logout. m_isLoggedIn = %d, m_loggedInUserIndex = %d'; else calls auth object (+8) vcall +0x38(userIndex, callback functor vtables 0x145a45f28/0x145a45f40). (lane owner review requested) Better name: Game_EadpSDK_Logout (bound record keeps its name)."
  },
  "signature": {
   "id": "game.eadp_sdk_logout_is_logged_in_logged_in_user_index",

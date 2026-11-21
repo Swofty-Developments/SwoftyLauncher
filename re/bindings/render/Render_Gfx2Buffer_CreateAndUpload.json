@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439bb0f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/1439bb0f0.c;xref:0x1439d634a,0x1439d6537",
-  "notes": "Creates the D3D12 buffer resource (strings CreateCommittedResource / CreatePlacedResource / UploadInitialDataForBuffer), allocates GPU memory via Render_GfxMem_Allocate (heap +0x1b0, size, align 0x10000, flags 7) and uploads initial data. Caller Render_Gfx2Buffer_Construct only."
+  "notes": "Gets a staging block (Render_GfxMem_Allocate, align 0x10000, flags 7) and places an upload resource there (+0xe8) or creates a committed one (+0xd8), names it UploadInitialDataForBuffer, Map + memcpy/memset + Unmap, waits for a free copy slot (64 x 0x18, fence vcall +0x40), records the copy (+0x78), executes and signals, returns staging info in param_7. Callers in Render_Gfx2Buffer_Construct. (lane owner review requested) Better name: Render_Gfx2Buffer_UploadInitialData (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_buffer_create_and_upload",

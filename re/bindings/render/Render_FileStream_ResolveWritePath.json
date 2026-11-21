@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439997d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439997d0.c;xref:0x143998eaa",
-  "notes": "763-byte path helper with static TLS and Ne_Crt_StrchrSse (finds separators). Callers Render_FileStream_OpenWrite (0x143998eaa), 0x14399990d. Hypothesis."
+  "evidence": "decomp:re/decomp/1439997d0.c;xref:0x143998eaa,0x14399990d",
+  "notes": "mkdir -p: GetFileAttributesA; existing dir/reparse point (0x410) -> 0, existing file -> error 1; else copies the path up to the last backslash (0x14532a9bc), recurses on the parent, then CreateDirectoryA; failure -> error 1 in TLS list/ring. Callers 0x143998b80 and itself. (lane owner review requested) Better name: Render_FileStream_CreateDirectoryRecursive (bound record keeps its name)."
  },
  "signature": {
   "id": "render.file_stream_resolve_write_path",

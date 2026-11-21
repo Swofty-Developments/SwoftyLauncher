@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14196a7c0.c;decomp:re/decomp/141968020.c",
-  "notes": "VM team_%d/item_%d lists: default livery item (lng_default_livery_title/description) then each unlockable item with vt+0x40 state==1; per item 0x141968020 sets is_selected, livery_owned(=1), livery_title=name_loc_tag text, livery_description=desc_loc_tag text; caller 0x141dee040 (feature bit 22) binds special_livery_ref"
+  "evidence": "decomp:re/decomp/14196a7c0.c;xref:0x14196da86,0x141bf858a,0x141c0102e,0x141defe57",
+  "notes": "Special livery list (team_%d/item_%d, default livery then owned unlockables)."
  },
  "signature": {
   "id": "game.build_special_livery_list",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143fff8e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-EADP_PRESENCE",
-  "notes": "named from its log messages (channel EADP_PRESENCE): 'PRESENCE UPDATE: OFFLINE'"
+  "evidence": "decomp:re/decomp/143fff8e0.c;pat:log-channel-EADP_PRESENCE;xref:0x145a46800",
+  "notes": "Presence-update stream callback (vtable cell 0x145a46800): error -> 'PresenceUpdates: Failed to handle a presence update' (WARN); else per update 'Player Id %s' and 'PRESENCE UPDATE: OFFLINE' for offline entries (EADP_PRESENCE). (lane owner review requested) Better name: Game_EadpPresence_OnPresenceUpdateStreamMessage (bound record keeps its name)."
  },
  "signature": {
   "id": "game.eadp_presence_presence_update_offline",

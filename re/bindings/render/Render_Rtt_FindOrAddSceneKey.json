@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143ceaa30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143ceaa30.c;xref:0x143ce8215",
-  "notes": "FNV-1a hashes a scene name and looks it up with Render_PassTable_FindByName (0x143b81e10); state offsets +0x4a54/+0x4a60/+0x25260. Callers Game_Rtt_CreateScenes (3 sites) and 0x143ce5d80. vp3-verify partial/disagree"
+  "evidence": "decomp:re/decomp/143ceaa30.c;xref:0x143ce8215,0x143ce8a94,0x143d5031f,0x143d8847f,0x143d8861f,0x143d88ef4",
+  "notes": "Interns the name *param_2 (FNV-1a + Ne_StringPool_InternByHash) into param_1[4]/[5], gets its 16-byte key via Render_PassTable_FindOrAddBitByName(param_3, name), then under critical section [0x146c62030]+0x25260 finds or appends the key in table +0x4a60 (count +0x4a54; 0x143e93e10 on add); returns key and index in param_1[0..2]. Callers 0x143ce5d80 (0x143ce8215), Game_Rtt_RttGenerator 0x143d8847f. (lane owner review requested)"
  },
  "signature": {
   "id": "render.rtt_find_scene_by_name",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-TRANSPORT",
-  "notes": "named from its log messages (channel NETWORK-TRANSPORT): 'NeNetReliableAsyncSocket constructed with DTLS encryption provider'"
+  "evidence": "decomp:re/decomp/14405f260.c;pat:log-channel-NETWORK-TRANSPORT;xref:0x14fe393e9",
+  "notes": "Constructor-like: clears a NeNetConnectivityMap<64>, creates the 'NeNetReliableAsyncSocket' worker (NULL or DTLS provider, cipher 'ECDHE-RSA-AES256-GCM-SHA384', encrypt/decrypt callbacks) and a 'NeNetTransport' worker with Steam P2P callbacks. Better name: Game_NetworkTransport_ConstructSocketAndTransport (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_transport_ne_net_reliable_async_socket",

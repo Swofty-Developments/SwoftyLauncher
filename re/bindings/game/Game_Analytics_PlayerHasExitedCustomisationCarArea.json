@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14072abf0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: Player has exited customisation car area'"
+  "evidence": "decomp:re/decomp/14072abf0.c;pat:log-channel-TELEMETRY;xref:0x1406e15f4,0x1406fe5bc",
+  "notes": "Bus handler: lea 0x1406e15f4 in subscribe-all 0x1406d8470 (->0x143987810), lea 0x1406fe5bc in unsubscribe-all 0x1406fd6c0. Allocs 0x90 record (ctor 0x14052fa70), copies msg fields, baseCtx by 0x14077a240 'player_exits_customisation_car_screen_record', pushed to static queue (guard 0x14604d278) under CS; logs TELEMETRY 'Player has exited customisation car area'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_player_has_exited_customisation_car_area",

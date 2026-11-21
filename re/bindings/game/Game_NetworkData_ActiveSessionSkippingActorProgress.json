@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432666b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-DATA/U",
-  "notes": "named from its log messages (channel NETWORK-DATA/U): '%s(conn=%d, %d/%d bits) : is_active(%s) in_session(%s). skipping actor progress update.'"
+  "evidence": "decomp:re/decomp/1432666b0.c;pat:log-channel-NETWORK-DATA/U;xref:0x1430594b1",
+  "notes": "handlePacket (logged name): reads actor count/bits from bitstream param_3 (Ne_BitStream_ReadRangedUInt); if the session is not active / not in session logs \"skipping actor progress update\", else passes each actor to 0x1432665a0 (which calls Game_Network_DeserialiseVehicle). (lane owner review requested) Better name: Game_NetworkData_HandleVehicleSyncPacket (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_data_active_session_skipping_actor_progress",

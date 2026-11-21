@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1431e7a70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1431e7a70.c;xref:0x1431e641b,0x1431e679f",
-  "notes": "Session/SessionBrowserGetSessionByID: key {Session}. Addon: join-by-id lookup. Common: F1OS ServerMethodOperation result callback (service char* this+0x110, method this+0x118; resp param_2 +0x9c HTTP status, +0x98 no-payload flag, +0xa0 body; 200 -> result obj this+0x1c8, 4xx {Message,Data} -> error obj this+0x1b8; finish 0x14443acd0)."
+  "evidence": "decomp:re/decomp/1431e7a70.c;xref:0x1431e6418,0x1431e679c",
+  "notes": "F1OS result callback for 'SessionBrowserGetSessionByID'. Chain: Create 0x1431e2570 sets method global 0x1460c4960 (Init stores the name at 0x14334c46b), vtable 0x1458255b0 slot 8 = OnStart 0x1431e43e0, which calls 0x1431e5e10 (0x1431e4602) that lea's this fn at 0x1431e6418/0x1431e679c. Body: status +0x9c, body +0xa0 JSON 'Session' -> result obj; errors {Message,Data}. (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1os_on_result_session_browser_get_session_by_i_d",

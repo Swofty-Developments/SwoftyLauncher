@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143267690",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onDiscardedConnection (class from the log channel); log channel NETWORK: '%s(%d).'"
+  "evidence": "decomp:re/decomp/143267690.c;pat:log-message-method;xref:0x14582dbd8",
+  "notes": "Logs onDiscardedConnection(conn); refreshes local/host connection ids (this+0x18/+0x19 from transport vtable+0x18/+0x10) and erases the connection key from the observer hash map at [this+0x48] (0x24-byte entries), then cleans further per-connection state. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_on_discarded_connection",

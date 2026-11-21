@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143bdcfb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143bdcfb0.c;xref:0x140101a31",
-  "notes": "193-line sibling of 0x143bdada0 (helper 0x143ecda30). Callers 0x140101940, 0x1401404b0, 0x14029c660, 0x143bab0a0. Hypothesis. vp5-verify partial/disagree"
+  "evidence": "decomp:re/decomp/143bdcfb0.c;xref:0x140101a31,0x140140637,0x14014084a,0x14029c8ef",
+  "notes": "Appends a 0x160-byte record of kind 3 with the 0x50-byte payload param_3 (stored at the record tail) to the vector param_1+0x48 (grow via Render_RenderGraph_PassVector_InsertRealloc) and returns its index. Used by 0x143bc6b10, 0x143bc74c0 and 0x143bdd2a0. Not a sibling of 0x143bdada0. (lane owner review requested) Better name: Render_RenderGraph_AddViewRecordKind3 (bound record keeps its name)."
  },
  "signature": {
   "id": "render.render_graph_create_buffer_desc",

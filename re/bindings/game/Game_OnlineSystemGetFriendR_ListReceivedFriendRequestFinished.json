@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432ced30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-OnlineSystemGetFriendRequestListTask",
-  "notes": "named from its log messages (channel OnlineSystemGetFriendRequestListTask): 'List received friend request has finished: requestID = %I64u, err = %d, num = %d'"
+  "evidence": "decomp:re/decomp/1432ced30.c;pat:log-channel-OnlineSystemGetFriendRequestListTask;xref:0x1432ceba3",
+  "notes": "Callback: logs 'List received friend request has finished: requestID = %I64u, err = %d, num = %d', under lock [this+0x148] copies the returned ids into the vector this+0x180..+0x190 and clears this+0x1b8. Address taken (lea) in Game_OnlineSystemGetFriendRequestListTask_OnStart. (lane owner review requested) Better name: Game_OnlineSystemGetFriendRequestListTask_OnListFinished (bound record keeps its name)."
  },
  "signature": {
   "id": "game.online_system_get_friend_r_list_received_friend_request_finished",

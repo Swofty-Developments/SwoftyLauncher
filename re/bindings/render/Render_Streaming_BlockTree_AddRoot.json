@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143abdfe0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143abdfe0.c;xref:0x143abec2d,0x143abd955",
-  "notes": "Allocates a 0x48-byte root block (allocator vcall +0x18), initialises it with Render_Streaming_BlockTree_Split(node, 0x40, -1) and inserts it into the block set (0x143acba50). Hypothesis. Caller Render_Streaming_ProcessRequest."
+  "evidence": "decomp:re/decomp/143abdfe0.c;xref:0x143abd955,0x143abec2d,0x143abf25e,0x143ac1900",
+  "notes": "If the block list is empty or its last block is in use: reuses a cached 0x48-byte pooled-list block from param_1[0xf] (count [0x11]) or allocates one (allocator vcall +0x18) and reserves 0x40 nodes (0x143abcbd0); then appends it to the block list at param_1+0x14 (0x143acba50). The same code is inlined in 0x143abe3f0. (lane owner review requested) Better name: Render_JobSystem_PushNewJobBlock (bound record keeps its name)."
  },
  "signature": {
   "id": "render.streaming_block_tree_add_root",

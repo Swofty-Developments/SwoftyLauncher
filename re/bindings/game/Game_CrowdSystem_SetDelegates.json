@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1413ee4f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name setDelegates (class from the log channel); log channel CrowdSystem: 'setDelegates'"
+  "evidence": "decomp:re/decomp/1413ee4f0.c;pat:log-message-method;xref:0x1456e2380",
+  "notes": "Vtable cell 0x1456e2380. Logs CrowdSystem 'connect'. Services via param_2 vt+0x28 (0x14604ec98 -> +0x28, 0x146cb8278 -> +0x30) and map entries of param_3 (+0x38/+0x40), inlined NeCrowdPluginProxy::setDelegates (message 2, callback 0x1413eefe0), manager [+0x58] gets +0xa0..+0xd8, then the 15 sub-objects vt+0x18(param_2,param_3); missing entry -> error 0x16. Renamed: old name was the inlined callee. (lane owner review requested) Better name: Game_CrowdSystem_Connect (bound record keeps its name)."
  },
  "signature": {
   "id": "game.crowd_system_set_delegates",

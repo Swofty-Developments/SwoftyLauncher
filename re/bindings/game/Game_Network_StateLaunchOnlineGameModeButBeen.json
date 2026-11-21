@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'StateLaunch - We are in an Online game mode but have been disconnected, go back to FE.'"
+  "evidence": "decomp:re/decomp/1436dd020.c;pat:log-channel-NETWORK;xref:0x14585c108",
+  "notes": "StateLaunch update: handles disconnect (\"go back to FE\"), host migration, documents closed, flow-state changes, kicks inappropriate players, finalises network documents, starts/ends datasync, begins championship, stops the FrontEnd flow; writes the next state id to *param_2. Better name: Game_StateLaunch_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_state_launch_online_game_mode_but_been",

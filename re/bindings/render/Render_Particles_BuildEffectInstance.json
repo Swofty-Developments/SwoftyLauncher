@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143af4990",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143af4990.c;xref:0x143af3b26",
-  "notes": "Builds the emitter instances of an effect (param_1) from effect definition param_2: instance count = (defs end-begin)/0x68 (inverse mult 0x2697cc8aef46c0f7), scaled by manager multiplier (global 0x1464412c8+0xa7d090 when id == -0xfe), copies 0x180-byte instance records (Ne_Crt_Memcpy) into param_1[0x10..0x11]; reads emitter table at manager+0xa5fa18. Callers 0x143af3a10, 0x143af7480, Game_Particles_CreateStoredEffect. Hypothesis."
+  "evidence": "decomp:re/decomp/143af4990.c;xref:0x143af3b26,0x143af763b,0x143af874a",
+  "notes": "Sets param_1[0] = def param_2; emitter def count = (def+0x30 - def+0x28)/0xc70, times the manager multiplier (0x1464412c8+0xa7d090) when id +100 == -0xfe; (re)allocates the 0x180-byte instance vector param_1[0x10..0x12] (0xc on OOM) and fills one instance record per emitter def and multiplier. (lane owner review requested)"
  },
  "signature": {
   "id": "render.particles_build_effect_instance",

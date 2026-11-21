@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14211f960",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14211f960.c;xref:0x14200014f",
-  "notes": "Builds the UI view-model row for a car decal with keys 'name', 'texture', 'current_texture', 'has_texture', 'is_new', 'is_remove_button' (Vm_Set_String/NodeRef/Bool). Callers Game_CarDecals_BuildList (4 sites). Addon: decal list UI."
+  "evidence": "decomp:re/decomp/14211f960.c;xref:0x14200014f,0x1420001ed,0x14200038c,0x142000432",
+  "notes": "Constructor of a 0x140-byte decal row VM item: under root node param_1+8 binds 'name' (+0x20), 'texture' (+0x40), 'current_texture' (+0x60, relative to texture), bools 'has_texture' (+0x80), 'is_new' (+0xa0), 'is_remove_button' (+0xc0), 'show_icon' (+0xe0), string 'icon_path' (+0x100); +0x120 = 0, key +0x130 = invalid (9, 0xffff, vt 0x145613520). (lane owner review requested)"
  },
  "signature": {
   "id": "game.car_decals_build_decal_row_node",

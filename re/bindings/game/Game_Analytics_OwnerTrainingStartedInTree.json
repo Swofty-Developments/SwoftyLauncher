@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140749790",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: Owner Training started in tree %s'"
+  "evidence": "decomp:re/decomp/140749790.c;pat:log-channel-TELEMETRY;xref:0x1406ec578,0x140707322",
+  "notes": "Bus handler(this,msg); subscribed 0x1406ec578 (0x1406d8470), unregistered 0x140707322. 0x120-byte record: returns 0 if msg+0x1e4 == 0xffff; strings msg+0x20 (log arg)/+0x58/+0xb8/+0x120/+0x158, u32s msg+0xa0..+0x1e4. Tag 'owner_training_start_record' via 0x14077a240, GUID+seq, 64-entry queue; logs 'Owner Training started in tree %s' (TELEMETRY). (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_owner_training_started_in_tree",

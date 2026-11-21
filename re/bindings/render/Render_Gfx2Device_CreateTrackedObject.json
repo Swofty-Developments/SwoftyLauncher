@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439d7570",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439d7570.c;xref:0x143c89811,0x1439d3407",
-  "notes": "Under the device critical section (+0x2668) allocates a 0xa0-byte object (allocator +0x150), initialises it (0x1439d7620), inserts it into the device object lists (+0x3aa8/+0x4518 and map +0x350 keyed by param_2+0x20) and returns it. Callers Game_Rtt_CreateDeferredLighting and 0x1439d1b90/0x143bd2df0."
+  "evidence": "decomp:re/decomp/1439d7570.c;xref:0x1439d3407,0x143c89811,0x143bd3c09",
+  "notes": "Under device CS allocates 0xa0 bytes (allocator +0x150), initialises it via 0x1439d7620(obj, param_2), inserts it into the set +0x4518 and the map +0x350 keyed by param_2+0x20. Released by 0x1439db490 (erases +0x4518 and +0x350). Callers 0x1439d1b90, 0x143bd2df0, Game_Rtt_CreateDeferredLighting 0x143c89460. Object type unknown. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx2_device_create_tracked_object",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a5b5e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143a5b5e0.c;xref:0x143a5b09e,0x143a6ba8e",
-  "notes": "Looks up asset-group id (param_1) in the global table [0x14628f688] (swiss hash), then does a second hash lookup of the found record's +8 object pointer in a secondary registry (static 0x146129740, shared lock 0x1449e2298/22bc) and returns the resolved object or 0. Callers Game_AssetGroup_BuildDataPathById and Game_EgoErpLoader_StartRead. Addon: asset-group id -> loaded object."
+  "notes": "Looks the id up in map [0x14628f688] (+0x18 mult, entries +0x20), takes the entry value (+8) and looks it up in a second map (lazy static 0x146129740, shared lock +8), returning the mapped value or 0. 0x143a5aee0 prints the result with \"%s\" (a name string). Callers 0x143a5aee0, 0x143a6b870. (lane owner review requested)"
  },
  "signature": {
   "id": "game.asset_group_resolve_record_object_by_id",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430abfc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onUnlockSlotRequested (class from the log channel); log channel NETWORK-UI: '%s(%d).'"
+  "evidence": "decomp:re/decomp/1430abfc0.c;pat:log-message-method;xref:0x1430aaa59,0x1430df52a",
+  "notes": "UI command handler lea'd in NetworkUi init 0x1430aa810 (and 0x1430dda70): logs 'onUnlockSlotRequested(%d)' and displays a UI message 0x1442d9bf0 with a listener handle at +0x3a8. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_ui_on_unlock_slot_requested",

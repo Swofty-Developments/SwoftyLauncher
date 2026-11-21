@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14073e700",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: Online Driver Career Activities Free Days Calculated'"
+  "evidence": "decomp:re/decomp/14073e700.c;pat:log-channel-TELEMETRY;xref:0x1406e8bb4,0x14070716f",
+  "notes": "Bus handler(this,msg); subscribed 0x1406e8bb4 (0x1406d8470), unregistered 0x14070716f. 0x68-byte record: u16 msg+0x10. Tag 'driver_career_activities_free_days_calculated_record' via 0x14077a240, GUID+seq, 64-entry queue; logs 'Online Driver Career Activities Free Days Calculated' (TELEMETRY). (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_online_driver_career_activities_free_days",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143259920",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): '[FORMATION_LAP] updated vehicle [%02d] state(%s).'"
+  "evidence": "decomp:re/decomp/143259920.c;pat:log-channel-NETWORK;xref:0x14ffbdc03",
+  "notes": "Message handler: looks up vehicle id msg+0x10 in a hash map at this+0x78..; creates an entry if missing (logs \"[FORMATION_LAP] created vehicle\"), copies msg+0x28..+0x48 into it, sets +0x50=1, logs \"updated vehicle [%02d] state(%s)\" with parked_on_grid/on_track from msg+0x2a. (lane owner review requested) Better name: Game_Network_FormationLap_OnVehicleStateMessage (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_updated_vehicle_state",

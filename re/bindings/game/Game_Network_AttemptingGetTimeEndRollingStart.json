@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'Warning: Attempting to get the time to the end of the rolling start with an out-of-range vehicle index (%d).'"
+  "evidence": "decomp:re/decomp/142f0f2a0.c;pat:log-channel-NETWORK;xref:0x1457f5068",
+  "notes": "Slot 25 (+0xc8) of vtable 0x1457f4fa0 (stored at 0x142fe5021 and 0x142fe5131); no direct calls. Loops vehicles (0x28-byte records from +0x94, hash map +0x4a8..+0x4dc), rolling-start time getter with the out-of-range warning inlined, OSQ start-lights messages 'Not Ready, so no lights' / 'Out of monitor, lights are on', state strings Rolling/off. Better name: Game_Network_Unk_142f0f2a0 (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_attempting_get_time_end_rolling_start",

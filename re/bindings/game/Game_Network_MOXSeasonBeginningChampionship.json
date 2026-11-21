@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14309e220",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'MOX/Season:   - Beginning championship with track name %hs'"
+  "evidence": "decomp:re/decomp/14309e220.c;pat:log-channel-NETWORK;xref:0x1436dd586,0x1436dd64d,0x1436fec17",
+  "notes": "Callers 0x1436dd020, 0x1436fe500. Only when the document is not open (+0x765 == 0): sets [NetSub+0x500]+0x70=1, rebuilds the season (0x143099350) when the data object is missing, 0x1407b5c40(data, 0, 1), logs 'Beginning championship with track name %hs', clears the flag, 0x143099190(this); returns true in that case. (lane owner review requested) Better name: Game_GameSessionSeasonDocument_BeginChampionship (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_mox_season_beginning_championship",

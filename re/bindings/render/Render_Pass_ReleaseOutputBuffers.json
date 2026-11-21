@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143c20160",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143c20160.c;xref:0x14015e5df",
-  "notes": "Releases three GPU resources (+0x10, +0x18, +0x20) via Render_Gfx2Device_QueueDeferredRelease on the global device (0x14618caa8), then 0x1403118b0; called by pass teardown in Game_Renderer_CreateRenderPasses (8 sites)."
+  "evidence": "decomp:re/decomp/143c20160.c;xref:0x14015e5df,0x14029d29b,0x143b1a2a9,0x143b1a507,0x143b1a75c,0x143b1a849",
+  "notes": "If the object at +0x10 and allocator +8 are set: 0x143e843b0 on it, releases its buffers +0x20/+0x18/+0x10 with Render_Gfx2Device_QueueDeferredRelease (device 0x14618caa8), Ne_Handle_ReleaseSlotWithErrorTrace, frees it via allocator vcall +0x38. The object is the 0x90 triple-buffer of 0x143d761d0. Callers incl 0x14015e5df, Game_Renderer_CreateRenderPasses 0x143b1a2a9, Game_Renderer_InitPassGroups 0x143b1cead. (lane owner review requested) Better name: Render_Gfx2TripleBufferHolder_Destruct (bound record keeps its name)."
  },
  "signature": {
   "id": "render.pass_release_output_buffers",

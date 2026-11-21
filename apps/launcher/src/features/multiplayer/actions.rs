@@ -89,15 +89,9 @@ impl Shell {
     /// can't be pressed as a second Play.
     pub(crate) fn room_starting_label(&self) -> Option<&'static str> {
         let m = &self.rooms;
-        if !m.busy() {
-            return None;
-        }
+        let over = m.state.as_ref().is_some_and(|s| s.phase.is_over());
         let hosting = m.starting.as_deref() == Some("create") || m.state.as_ref().is_some_and(|s| s.host);
-        Some(if hosting {
-            tr("Opening room…")
-        } else {
-            tr("Joining…")
-        })
+        room_starting_word(m.busy(), over, hosting)
     }
 
     pub(crate) fn room_can_play(&self) -> bool {

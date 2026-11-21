@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14386ac40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-ACTIVITIES",
-  "notes": "named from its log messages (channel ACTIVITIES): 'Finish activity %s'"
+  "evidence": "decomp:re/decomp/14386ac40.c;pat:log-channel-ACTIVITIES;xref:0x1438660aa,0x14386629e,0x143866474,0x1438664f0,0x143866520,0x14386b606,0x14386b722",
+  "notes": "Logs ACTIVITIES 'Finish activity %s'; builds a 0xa0-byte request (vtable 0x14588aca0): +0x8 activity id = param_2, +0x38 outcome 'completed', +0x70 'zoneId', +0x68 = param_3 with set flag +0x6c; submits it to the activity service (+0x30)+0x4c0 via 0x144134d70. (lane owner review requested)"
  },
  "signature": {
   "id": "game.activities_finish",

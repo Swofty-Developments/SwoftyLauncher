@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143ff63a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-EADP_INVITES",
-  "notes": "named from its log messages (channel EADP_INVITES): 'Failed to send game invite. Error: %s'"
+  "evidence": "decomp:re/decomp/143ff63a0.c;pat:log-channel-EADP_INVITES;xref:0x145a46250",
+  "notes": "Completion callback (vtable cell 0x145a46250; this, result param_2 moved out, error param_3). Error -> 'Failed to send game invite. Error: %s' (error text +0x30); else 'Successfully sent game invite'; then calls the stored functor this+8/+0x10 (EADP_INVITES). (lane owner review requested) Better name: Game_EadpInvites_OnSendGameInviteResult (bound record keeps its name)."
  },
  "signature": {
   "id": "game.eadp_invites_send_game_invite",

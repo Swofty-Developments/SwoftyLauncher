@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143e83ef0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143e83ef0.c;xref:0x143c49a43",
-  "notes": "Loops over instance buffer slots (+0x18/+0x38) calling 1403118b0 sync release. Caller Render_Model_BuildPerInstanceBuffers. vq1-verify partial/disagree"
+  "evidence": "decomp:re/decomp/143e83ef0.c;xref:0x143c49a43,0x143c49ad8",
+  "notes": "vector<Handle>::resize(n) for 16-byte handles {ptr 0, slot 0xffffffff}; layout [allocator, begin, end, capacity]. Shrink releases the tail with 0x1403118b0; grow reallocates (x1.5 or n) via allocator vcall +0x18, moves, default-inits new slots, frees old storage with vcall +0x38. Callers 0x143c49a43, 0x143c49ad8 in Render_Model_BuildPerInstanceBuffers. Old note (sync release loop +0x18/+0x38) was wrong. (lane owner review requested) Better name: Render_HandleVector_Resize (bound record keeps its name)."
  },
  "signature": {
   "id": "render.model_release_per_instance_buffers",

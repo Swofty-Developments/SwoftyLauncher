@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142cac290",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_Cache_CacheHandle_Reset;xref:0x142cac362",
-  "notes": "cxx=game::cache::CacheHandle<game::cache::PaddockPassDataCacheEntry>::reset; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/142cac290.c;str:s_Cache_CacheHandle_Reset;xref:0x142b9df2c,0x142b9e0a2,0x142c7d91d,0x142cac15b",
+  "notes": "CacheHandle<PaddockPassDataCacheEntry>::reset: locks the weak ref (+0x10 count); if the entry (+8) is valid and status +0x38 != 3 logs \"still valid, removing the handle\" and removes this handle from entry+0xe8 (0x1406abb90); releases refs and clears +8/+0x10. (lane owner review requested)"
  },
  "signature": {
   "id": "game.cache_handle_reset",

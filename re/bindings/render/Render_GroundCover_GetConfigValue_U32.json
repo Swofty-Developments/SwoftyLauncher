@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1444689d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1444689d0.c;xref:0x1444673a7",
-  "notes": "Resolves a ground-cover asset by hash through three chained lookup objects at (*param_1)+0xf0, +0xe8, +0xe0 (vcall +8), falling back to the error ring with code 0x57. Callers Render_GroundCover_ReadCascadeConfig (4+ sites). Addon: ground cover (grass) asset resolution. vp5-verify partial/disagree"
+  "evidence": "decomp:re/decomp/1444689d0.c;xref:0x1444673a7,0x1444673ce,0x1444673f5,0x14446741c",
+  "notes": "Rename: same three-source lookup ([*this]+0xf0/+0xe8/+0xe0, status 0x57 absent), type check against the float type descriptor 0x146129be0, copies 4 bytes to *param_4 (status 0), else 0x16. Callers in Render_GroundCoverCascade_Load (0x1444673a7, 0x1444673ce, 0x1444673f5, 0x14446741c and more). (lane owner review requested) Better name: Render_GroundCover_GetPropertyFloat (bound record keeps its name)."
  },
  "signature": {
   "id": "render.ground_cover_resolve_asset_ref",
