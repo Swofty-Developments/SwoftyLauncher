@@ -122,7 +122,7 @@ The core writes the reason to `swofty/launcher-saves.json` in the game folder, a
 $ swofty run --steam-saves-once
 ```
 
-The session sets `SWOFTY_LAUNCHER_SAVES=off` for the game. To stay on Steam's saves, turn **Use launcher saves** off in the menu beside Play.
+The session sets `SWOFTY_LAUNCHER_SAVES=off` for the game, through `swofty/session_env.json` on an EA app copy ([EA app](/reference/launch#ea-app)). The core then leaves the profile's launcher saves and their plain store alone. To stay on Steam's saves, turn **Use launcher saves** off in the menu beside Play.
 
 ### The EA app copy
 
@@ -169,7 +169,7 @@ With `plain_saves` in `settings.json`, the core writes the plain store of the pr
 {"plain_saves": {"root": "Z:\\data\\saves\\default\\plain", "schema": 1}}
 ```
 
-Without the key the core writes and injects nothing. A key with another `schema`, no `root` or a `..` part in the root logs `[saves] plain store off: <why>` and leaves the store alone.
+Without the key the core writes and injects nothing. A key with another `schema`, no `root` or a `..` part in the root logs `[saves] plain store off: <why>` and leaves the store alone. A session with `SWOFTY_LAUNCHER_SAVES=off` and a `launcher_saves` block in `settings.json` runs on the copy's own save while the root is the launcher saves' plain store. The core leaves that store alone and logs `[saves] plain store off: this session runs on the copy's own save (SWOFTY_LAUNCHER_SAVES=off), and the root is the plain store of the profile's launcher saves (<root>); nothing is written or put back`.
 
 The core writes a generation after each finished profile load (`event: "load"`, the tree after any injection) and after each finished profile save (`event: "save"`) on a worker thread, so a save never waits for it. A generation is `generations/<12 digits>/manifest.json` and `containers/<fnv64>.bag`, then `CURRENT`. Every file is written to a temporary name, flushed to disk, renamed, and its folder is flushed. `CURRENT` moves last. A generation number is above `CURRENT` and above every folder on disk, so a number is never reused. The core never deletes a generation.
 
@@ -396,7 +396,7 @@ The core writes the launcher's own copy of every save container from inside the 
   pins.json                       generations the launcher keeps
 ```
 
-The root is `$DATA/saves/<profile>/plain/` for a session on launcher saves and `$DATA/plain/<vault source>/` (`steam-<id3>`, `ea-<user>`) for a session on the copy's own save. A profile without `plain_saves` in its settings writes and injects nothing.
+The root is `$DATA/saves/<profile>/plain/` for a session on launcher saves and `$DATA/plain/<vault source>/` (`steam-<id3>`, `ea-<user>`) for a session on the copy's own save. A session run once on the copy's own save with launcher saves on writes neither. A profile without `plain_saves` in its settings writes and injects nothing.
 
 The core writes a generation after every profile load the game finishes (`event: "load"`) and after every profile save the game reports done (`event: "save"`). `packages/core/src/games/f1_25/saves/plain/` reads it:
 
