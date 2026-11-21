@@ -296,6 +296,9 @@
 [log session/estimate_laptime_guard.cpp]
 [session] a virtual session lap estimate has no tyre object for vehicle %u, so it returns the lap time unchanged%s
 
+[log session/marshal_lights_guard.cpp]
+[guard] +0x%llx null object skipped: the first marshal light is in no marshal light zone, so the zone walk erases it and ends at the start of the light list instead of reading before it%s
+
 [log session/quali_tyres_guard.cpp]
 [tyres] %s: option %u (%s) is qualifying only, refused in session %u%s
 [tyres] qualifying tyre hooks off (SWOFTY_QUALI_TYRES=%s)
