@@ -9,7 +9,7 @@
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/1439aa0f0.c;xref:0x1401da2a6,0x1401da347,0x143d6dfa4",
-  "notes": "(ConfigNode **node,float *out): value = (*node) vt+0x40(*node,node); if null or no node sets TLS error 2 (Ne_Tls_GetValue chain + error ring 0x146107830) and returns 2; else parses with CRT atof-like 0x145343ff4 into out, returns 0. 192 call sites: Render_Skidmarks_Init, Car_Parse_TyreModel, Render_RainFile_Load, Game_TrackInformation_ParseTrackInfoXml."
+  "notes": "(ConfigNode **node,float *out): value = (*node) vt+0x40(*node,node); if null or no node sets TLS error 2 (Ne_Tls_GetValue chain + error ring 0x146107830) and returns 2; else parses with CRT atof-like 0x145343ff4 into out, returns 0. call sites: Render_Skidmarks_Init, Car_Parse_TyreModel, Render_RainFile_Load, Game_TrackInformation_ParseTrackInfoXml."
  },
  "signature": {
   "id": "core.config_read_float",

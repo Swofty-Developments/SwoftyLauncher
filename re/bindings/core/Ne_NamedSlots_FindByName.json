@@ -9,7 +9,7 @@
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/140317790.c;xref:0x1401b928c,0x1407adf40,0x1407ae08e",
-  "notes": "(slots, const char *name): linear search over 8 fixed slots of 0x70 bytes: used flag int +0, name +0x30; returns the first used slot whose name equals name (Ne_Crt_Strcmp 0x14535d850), else null. 82 call sites."
+  "notes": "(slots, const char *name): linear search over 8 fixed slots of 0x70 bytes: used flag int +0, name +0x30; returns the first used slot whose name equals name (Ne_Crt_Strcmp 0x14535d850), else null. call sites."
  },
  "signature": {
   "id": "core.string_equals_c_str_null_safe",

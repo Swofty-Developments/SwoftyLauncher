@@ -9,7 +9,7 @@
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/1403118b0.c;xref:0x140311809,0x142fa9725,0x1439ac381",
-  "notes": "(handle{ptr,u32 id}): no-op when *handle==0. TLS index 0x14618c688 == -1 -> errno 1 + trace ring, *handle=0. Else TlsGetValue: if the per-thread cache maps id (byte table tls+8) to a slot with tls+0x24[slot]==id it clears that entry (-1, +0x128 ptr 0, byte 0x40). Then, if id!=-1, under the critical section of 0x14618c690 (+0x28) clears bit id in bitmap +8 and byte +0x59. 41 call sites. Not a SetEvent wrapper. Better name: Ne_SlotHandle_ReleaseTlsCached (bound record keeps its name)."
+  "notes": "(handle{ptr,u32 id}): no-op when *handle==0. TLS index 0x14618c688 == -1 -> errno 1 + trace ring, *handle=0. Else TlsGetValue: if the per-thread cache maps id (byte table tls+8) to a slot with tls+0x24[slot]==id it clears that entry (-1, +0x128 ptr 0, byte 0x40). Then, if id!=-1, under the critical section of 0x14618c690 (+0x28) clears bit id in bitmap +8 and byte +0x59. call sites. Not a SetEvent wrapper. Better name: Ne_SlotHandle_ReleaseTlsCached (bound record keeps its name)."
  },
  "signature": {
   "id": "core.sync_release_with_error_trace",

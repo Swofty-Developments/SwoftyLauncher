@@ -9,7 +9,7 @@
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/1413ca0d0.c;doc:research/exe.md#3.1;xref:0x140152e45,0x140217e98,0x140217f74",
-  "notes": "Thunk (jmp) to .data1 body 0x14aaaef80: once (guard 0x146064618) gets the current content set name (Sess_Get_CurrentContentSetName 0x1413e1cd0), finds its row in gamedb table 'content_sets' (Gdb_Find_RowByLabel 0x1445a2bd0) and loads its feature mask (Game_Features_LoadContentSetMask 0x1413ed470) into 0x146064620; returns &0x146064620 (16 bytes). 698 call sites. Better name: Ne_Get_ContentSetFeatureMask (bound record keeps its name)."
+  "notes": "Thunk (jmp) to .data1 body 0x14aaaef80: once (guard 0x146064618) gets the current content set name (Sess_Get_CurrentContentSetName 0x1413e1cd0), finds its row in gamedb table 'content_sets' (Gdb_Find_RowByLabel 0x1445a2bd0) and loads its feature mask (Game_Features_LoadContentSetMask 0x1413ed470) into 0x146064620; returns &0x146064620 (16 bytes). call sites. Better name: Ne_Get_ContentSetFeatureMask (bound record keeps its name)."
  },
  "signature": {
   "id": "core.get_feature_flags",

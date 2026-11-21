@@ -9,7 +9,7 @@
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/140101790.c;xref:0x14012ec0d,0x14012ec72,0x14012ed16",
-  "notes": "(vec, src): assign for a vector of owned polymorphic pointers: [0] element allocator, [1] buffer allocator, begin/end/cap +0x10/+0x18/+0x20. Destroys old elements (vcall +0(0), elem allocator vt+0x38), grows 1.5x via [1] vt+0x18 (throw 0x14029b1a0 on overflow), then clones each src element via vcall +8(allocator). 13 call sites, 10 in 0x14012e320."
+  "notes": "(vec, src): assign for a vector of owned polymorphic pointers: [0] element allocator, [1] buffer allocator, begin/end/cap +0x10/+0x18/+0x20. Destroys old elements (vcall +0(0), elem allocator vt+0x38), grows 1.5x via [1] vt+0x18 (throw 0x14029b1a0 on overflow), then clones each src element via vcall +8(allocator). call sites, 10 in 0x14012e320."
  },
  "signature": {
   "id": "core.ptr_vector_assign_owned",

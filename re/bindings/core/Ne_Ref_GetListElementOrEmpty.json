@@ -9,7 +9,7 @@
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/14420a770.c;xref:0x140b98dba,0x140c14764,0x140c148c2,0x140c15895,0x140c20fbf",
-  "notes": "(unused, node**, index): returns sentinel 0x146ca0e90 when *node is null. While node vcall +0x30 is true it follows [node+0x58] vcall +0x38 (up to 99 hops, alias chain); then if target vcall +0x10 is true and index < ([t+0x48]-[t+0x40])/8, returns element[index]+8 (or the sentinel if null), else the sentinel. 751 call sites."
+  "notes": "(unused, node**, index): returns sentinel 0x146ca0e90 when *node is null. While node vcall +0x30 is true it follows [node+0x58] vcall +0x38 (up to 99 hops, alias chain); then if target vcall +0x10 is true and index < ([t+0x48]-[t+0x40])/8, returns element[index]+8 (or the sentinel if null), else the sentinel. call sites."
  },
  "signature": {
   "id": "core.weak_ref_get_or_empty_sentinel",

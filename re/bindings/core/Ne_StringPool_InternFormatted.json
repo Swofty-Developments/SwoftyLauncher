@@ -9,7 +9,7 @@
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/140129660.c;xref:0x14010585d,0x1401058ee,0x140106458",
-  "notes": "(out{ptr,hash}, fmt, ...): vsnprintf (0x14532e54c) into a stack buffer (max 255 chars, empty on error), FNV-1a 64 of the text, interns it in the global pool 0x146129740 (lazy init) via Ne_StringPool_InternByHash 0x14392a0c0; writes out[0]=pooled ptr, out[1]=hash, returns out. 291 call sites (163 in Render_Gfx_BuildConfigObject 0x140104f70)."
+  "notes": "(out{ptr,hash}, fmt, ...): vsnprintf (0x14532e54c) into a stack buffer (max 255 chars, empty on error), FNV-1a 64 of the text, interns it in the global pool 0x146129740 (lazy init) via Ne_StringPool_InternByHash 0x14392a0c0; writes out[0]=pooled ptr, out[1]=hash, returns out. call sites (163 in Render_Gfx_BuildConfigObject 0x140104f70)."
  },
  "signature": {
   "id": "core.string_pool_intern_cached_name",
