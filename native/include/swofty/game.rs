@@ -128,6 +128,11 @@ pub struct CarWheelProxies {
 }
 
 #[repr(C)]
+pub struct CutscenePlacementRegistry {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
 pub struct DepartmentData {
     _opaque: [u8; 0],
 }
@@ -4555,6 +4560,8 @@ pub type Game_PitLane_ProjectBoxPose_t = unsafe extern "C" fn(
 ) -> bool;
 pub type Game_PitLane_PutVehicleInPitBox_t = unsafe extern "C" fn(pitlane: *mut c_void, vehicle: u8);
 pub type Game_PitLane_UpdateMovement_t = unsafe extern "C" fn(mgr: *mut c_void, dt: f32);
+pub type Game_PitLane_VehicleWantsToLeaveGarage_Thunk_t =
+    unsafe extern "C" fn(pit_lane_system: *mut c_void, vehicle_idx: u8, instant: bool);
 pub type Game_Pitlane_SetVehicleStatus_t = unsafe extern "C" fn(self_: *mut c_void, vehicle: u8, status: u32);
 pub type Game_Place_Vehicle_t = unsafe extern "C" fn(
     car: *mut c_void,
@@ -4623,6 +4630,8 @@ pub type Game_SceneManagerSpawn_SpawnScene_t = unsafe extern "C" fn(
     ov_b: *mut c_void,
     p7: u64,
 ) -> *mut c_void;
+pub type Game_Scene_FindByName_t =
+    unsafe extern "C" fn(scene_mgr: *mut c_void, name: *const c_char, log_on_miss: bool) -> *mut c_void;
 pub type Game_Scene_UpdateInstanceTransformsBatch_t =
     unsafe extern "C" fn(scene: *mut c_void, actor_update_flag: u8);
 pub type Game_SeasonLength_ApplyPreset_t = unsafe extern "C" fn(component: *mut c_void, preset: u8);
@@ -12086,6 +12095,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_PitLane_VehicleWantsToLeaveGarage_Thunk: Binding = Binding {
+        id: "Game_PitLane_VehicleWantsToLeaveGarage_Thunk",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_PitStopInstance_PlaySequence: Binding = Binding {
         id: "Game_PitStopInstance_PlaySequence",
         kind: "func",
@@ -12653,6 +12667,11 @@ pub mod bindings {
     };
     pub const Game_SceneManager_DestroyScene: Binding = Binding {
         id: "Game_SceneManager_DestroyScene",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Scene_FindByName: Binding = Binding {
+        id: "Game_Scene_FindByName",
         kind: "func",
         status: Status::Experimental,
     };
@@ -17806,6 +17825,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Render_SceneView_BuildViewParams: Binding = Binding {
+        id: "Render_SceneView_BuildViewParams",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Render_SceneView_SubmitCamera: Binding = Binding {
         id: "Render_SceneView_SubmitCamera",
         kind: "func",
@@ -18878,6 +18902,11 @@ pub mod bindings {
     };
     pub const Sess_RaceRuleset_SetTimeLimit: Binding = Binding {
         id: "Sess_RaceRuleset_SetTimeLimit",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_RaceRuleset_SetTotalLaps: Binding = Binding {
+        id: "Sess_RaceRuleset_SetTotalLaps",
         kind: "func",
         status: Status::Experimental,
     };
@@ -21193,6 +21222,11 @@ pub mod bindings {
     };
     pub const g_FeTile_SelectedCareerContent: Binding = Binding {
         id: "g_FeTile_SelectedCareerContent",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const g_Game_CutscenePlacements: Binding = Binding {
+        id: "g_Game_CutscenePlacements",
         kind: "data",
         status: Status::Experimental,
     };
