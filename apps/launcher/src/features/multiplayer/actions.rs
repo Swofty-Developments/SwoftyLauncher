@@ -12,6 +12,7 @@ use swofty_core::online::multiplayer::types::{RoomSettings, RoomSummary};
 use swofty_i18n::{tr, trf};
 
 use super::model::*;
+use super::room_game::Withdrawn;
 use super::state::*;
 use super::steward;
 use super::tracker::{PlayWord, play_word};
@@ -405,6 +406,7 @@ impl Multiplayer {
         window: &mut Window,
         cx: &mut Context<H>,
     ) {
+        Self::withdraw(host, window, cx);
         Self::launch(host, window, cx);
         let dialog = window.has_active_dialog(cx);
         let (m, needs) = <H as Host<Self>>::split(host);
@@ -528,6 +530,26 @@ impl Multiplayer {
         }
         m.game.closing = Some(pids);
         true
+    }
+
+    /// Cancels the room's Play while it waits on its checks or a prompt once the session no longer asks for
+    /// it: the room ended, is being left, or the session withdrew its ask.
+    fn withdraw<H: Host<Self> + PromptHost<Launching>>(
+        host: &mut H,
+        window: &mut Window,
+        cx: &mut Context<H>,
+    ) {
+        let m = <H as Host<Self>>::split(host).0;
+        let Some(withdrawn) = m.game.withdraw(m.session.as_ref(), m.leaving) else {
+            return;
+        };
+        diag::line("launch: the session no longer asks for F1 25; the room's Play is cancelled");
+        match withdrawn {
+            Withdrawn::Checks => <H as Host<Launching>>::split(host).0.play_pending.cancel(),
+            Withdrawn::Prompt if window.has_active_dialog(cx) => window.close_dialog(cx),
+            Withdrawn::Prompt => {}
+        }
+        cx.notify();
     }
 
     /// Starts F1 25 for the room when the session asks, the game is closed and the launcher has put the
