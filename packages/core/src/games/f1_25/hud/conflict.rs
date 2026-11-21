@@ -88,6 +88,9 @@ pub enum Kind {
         slots: usize,
         off: Vec<String>,
     },
+    /// The anim string table of `scene`, sorted, ends at `last`, past every name a record can add:
+    /// another addon's copy of the scene added anim names of its own.
+    Clips { scene: String, last: String },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -112,7 +115,7 @@ impl Conflict {
     pub fn node(&self) -> Option<&str> {
         match &self.kind {
             Kind::Board { node, .. } | Kind::Shown { node, .. } => Some(node),
-            Kind::Preview { .. } | Kind::Walk { .. } => None,
+            Kind::Preview { .. } | Kind::Walk { .. } | Kind::Clips { .. } => None,
         }
     }
 
@@ -143,6 +146,13 @@ impl Conflict {
                 screens::board_of(screen),
                 super::walk::SLOT_LIMIT
             ),
+            Kind::Clips { scene, .. } => format!(
+                "{theirs} and {ours} both animate {}, and {theirs}'s animation names leave none after them for {ours}",
+                match shown_on(&uipre_of(scene)) {
+                    part if part.ends_with(".uipre") => short(scene).to_owned(),
+                    part => part,
+                }
+            ),
         }
     }
 
@@ -157,6 +167,7 @@ impl Conflict {
             Kind::Walk { host, instances, .. } => {
                 format!("the board holds the {host}-slot host scene {instances} times")
             }
+            Kind::Clips { last, .. } => format!("{theirs}'s anim string table ends at {last}"),
         }
     }
 }

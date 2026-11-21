@@ -539,6 +539,30 @@ mod tests {
     }
 
     #[test]
+    fn a_full_anim_string_table_names_the_addon_whose_copy_filled_it() {
+        let s = store("clips");
+        let op = replace("dial.bin");
+        let changes = [Change {
+            resource: dials::F125.strtab.into(),
+            who: name(HALO),
+            op: &op,
+            addon: HALO,
+        }];
+        let c = Conflict {
+            resource: dials::F125.strtab.into(),
+            addons: vec![S10.into()],
+            kind: Kind::Clips {
+                scene: dials::F125.scene.into(),
+                last: "zz_~".into(),
+            },
+        };
+        assert_eq!(
+            text(&s, &c, &changes),
+            "the HUD elements do not compose: Project Halo and SWOFTY 2010 both animate the dial, and Project Halo's animation names leave none after them for SWOFTY 2010; turn Project Halo or SWOFTY 2010 off in this profile (Project Halo's anim string table ends at zz_~)"
+        );
+    }
+
+    #[test]
     fn lists_read_as_english() {
         let v = |a: &[&str]| a.iter().map(|s| (*s).to_owned()).collect::<Vec<_>>();
         assert_eq!(and_list(&v(&["A"])), "A");

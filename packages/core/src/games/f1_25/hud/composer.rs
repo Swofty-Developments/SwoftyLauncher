@@ -198,6 +198,7 @@ pub fn compose_with(
         let text_from = (dial != Dial::F126).then_some(om_xm.as_slice());
         let mut b = Builder::new(facts, &scene_bytes, &mods, &bar, text_from)?;
         b.with_donors(&stacked, &lap_counter)?;
+        let end = anim_end(stock, facts);
         if here.iter().any(|e| units::used(&e.rec.elements)) {
             b.units = units::load(stock, dials::STOCK_ERP)?;
         }
@@ -212,6 +213,13 @@ pub fn compose_with(
                 b.park(&parts)?;
                 parked = true;
             }
+            b.anim = anim_of(
+                end.as_deref(),
+                facts,
+                &pfx_of[e.input],
+                &inputs[e.input].addon,
+                &mut out.lines,
+            )?;
             let mut plan = b.add_record(&e.rec, &pfx_of[e.input], &loaded[e.input].sprites, Mode::Live)?;
             let sw = e
                 .switch
@@ -416,8 +424,16 @@ pub fn compose_with(
         let bytes = first(stock.read(dials::STOCK_ERP, scene)?, scene)?;
         let mut b = Builder::for_scene(facts, &bytes, &om_xm, &mods, &bar)?;
         b.with_donors(&stacked, &lap_counter)?;
+        let end = anim_end(stock, facts);
         let mut plans = Vec::new();
         for &i in members {
+            b.anim = anim_of(
+                end.as_deref(),
+                facts,
+                &pfx_of[i],
+                &inputs[i].addon,
+                &mut out.lines,
+            )?;
             let plan = b.add_scene_record(&inputs[i].record, &pfx_of[i], &loaded[i].sprites)?;
             plans.push((i, plan));
         }
@@ -581,6 +597,47 @@ pub fn cover_carriers(stock: &dyn Stock, archives: &mut Vec<Built>, lines: &mut 
     }
     archives.extend(added);
     Ok(())
+}
+
+/// The last name of the anim string table of the scene of `facts`, when the table is sorted: the anim
+/// names a record adds to the scene sort after it ([`clip_resources`]).
+pub(super) fn anim_end(stock: &dyn Stock, facts: &DialFacts) -> Option<String> {
+    let strtab = first(stock.read(dials::STOCK_ERP, facts.strtab).ok()?, facts.strtab).ok()?;
+    let have = animclip::read_strings(&strtab).ok()?;
+    match have.is_sorted() {
+        true => have.last().cloned(),
+        false => None,
+    }
+}
+
+/// The anim prefix of the record `pfx` of `addon` in the scene of `facts`, whose anim string table ends
+/// at `end` ([`scene::anim_prefix`]), or the refusal naming the addon whose copy of the table leaves
+/// the record no name that sorts after it.
+pub(super) fn anim_of(
+    end: Option<&str>,
+    facts: &DialFacts,
+    pfx: &str,
+    addon: &str,
+    lines: &mut Vec<String>,
+) -> Result<String> {
+    let last = end.unwrap_or_default();
+    let Some(anim) = scene::anim_prefix(end, pfx) else {
+        let kind = conflict::Kind::Clips {
+            scene: facts.scene.to_owned(),
+            last: last.to_owned(),
+        };
+        return Err(conflict::by(
+            conflict::Conflict::error(facts.strtab, kind),
+            &[addon.to_owned()],
+        ));
+    };
+    if anim != scene::ANIM_PREFIX {
+        lines.push(format!(
+            "{pfx}: the anim string table of {} already ends at {last}, so this record's anim names start {anim}",
+            facts.scene.rsplit('/').next().unwrap_or(facts.scene)
+        ));
+    }
+    Ok(anim)
 }
 
 /// The anim string table and the clips the plans put in `facts.scene`: the new names appended

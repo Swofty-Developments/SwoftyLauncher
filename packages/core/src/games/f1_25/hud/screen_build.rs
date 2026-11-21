@@ -743,9 +743,12 @@ pub fn compose_screens(
     if recs.iter().any(|r| units::used(&r.input.record.elements)) {
         cap.units = units::load(stock, screens::FLOW_RACE)?;
     }
+    let end = super::composer::anim_end(stock, &CAP_FACTS);
     let mut plans: Vec<Plan> = Vec::new();
     let mut previews: Vec<Plan> = Vec::new();
     for r in &recs {
+        cap.anim =
+            super::composer::anim_of(end.as_deref(), &CAP_FACTS, &r.pfx, &r.input.addon, &mut out.lines)?;
         let plan = cap.add_scene_record(&r.input.record, &r.pfx, &r.sprites)?;
         let root = scene_root_mut(&mut cap.pkg)?;
         let mine =
