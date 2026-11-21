@@ -4,6 +4,7 @@ use super::model::HudElement;
 use super::{Input, err};
 use crate::{Error, Result};
 use std::path::Path;
+use swofty_addon::ops::HudFile;
 
 pub(super) fn slug(s: &str) -> String {
     let mut out = String::new();
@@ -90,14 +91,20 @@ fn same_sprites(a: &Input, b: &Input) -> Result<bool> {
     Ok(true)
 }
 
-/// Reads the records of an addon's hud file into inputs.
-pub fn inputs_of(addon: &str, dir: &Path, file: &str) -> Result<Vec<Input>> {
+/// An addon's hud file: its text and what it holds.
+pub fn read(dir: &Path, file: &str) -> Result<(String, HudFile)> {
     let path = dir.join(file);
     let text = std::fs::read_to_string(&path).map_err(|e| Error::Io {
         path: path.clone(),
         source: e,
     })?;
-    let doc = swofty_addon::ops::HudFile::parse(&text)?;
+    let doc = HudFile::parse(&text).map_err(|e| err(format!("{path:?}: {e}")))?;
+    Ok((text, doc))
+}
+
+/// The records of an addon's hud file `doc`, read from `file`, as inputs.
+pub fn inputs_of(addon: &str, dir: &Path, file: &str, doc: HudFile) -> Result<Vec<Input>> {
+    let path = dir.join(file);
     let mut out = Vec::new();
     for (id, value) in doc.elements {
         let key = id.rsplit('/').next().unwrap_or(&id).to_owned();
