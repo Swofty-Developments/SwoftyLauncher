@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143536e90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "bool Career_Rnd_IsPanelEntryForPart(void *panel, uint32_t part_key, void *entry)",
   "evidence": "decomp:re/decomp/143536e90.c;xref:0x1416b55c4,0x141c51d29,0x141c8f219",
-  "notes": "param_3 is an upgrade instance. If last entry state == 2 with a non-player owner key and the key != param_2 -> 0. If state is 6 or 1: returns sum of kind-5 dept (+0x72) modifiers (Career_Get_TeamModifiers 0x1434fb4b0 on this+0x18) > 0 (same gate as Roll_UpgradePurchaseOutcome). Otherwise 0. Callers: Ui_Rnd_SetUnlockInstantText, RnD adapt-part and rush panels. Better name: Career_Upgrades_CheckOwnerStateDeptModifier5 (bound record keeps its name)."
+  "notes": "(this, packedKey, upgrade): last entry of upgrade vector +0xc0..+0xc8: state byte -8 == 2 with owner key (-0x10/-0xe) not the player key (0x1460fc2b0) and != param_2 -> 0. If state 6 or 1: sums float +4 of kind-5 modifiers with dept == upgrade+0x72 and flag [3] from Career_Get_TeamModifiers 0x1434fb4b0(this+0x18); returns sum > 0. Else 0. Better name: Career_Upgrades_CheckOwnerStateDeptModifier5 (bound record keeps its name). (lane owner review requested)"
  },
  "signature": {
   "id": "career.rnd_is_panel_entry_for_part",

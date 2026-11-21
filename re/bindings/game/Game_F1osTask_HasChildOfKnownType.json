@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143282510",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143282510.c;xref:0x142b9d68f,0x1431702bb,0x14327c765",
-  "notes": "Disassembly: calls vcall +0x20 on children +0x20..+0x40 and compares with 0x1460c4918, but every branch lands at 0x143282593; the return is only ([[0x1460c4a30]+0x4e0]+0x20090 != 0) && string ptr +0x20150 non-empty. Callers 0x142b9d670, 0x143170290, 0x14327c730, 0x1432c1ac0, 0x1432d9780, 0x143369ea0. Better name: Game_F1osTask_GlobalStringFlagSet (bound record keeps its name)."
+  "evidence": "decomp:re/decomp/143282510.c;xref:0x142b9d68f,0x1431702bb,0x14327c765,0x1432c1b52,0x1432dbdee,0x143369f95",
+  "notes": "Name misleading: vcalls +0x20 on children +0x20..+0x40 are compared with 0x1460c4918 but every path goes to 0x143282593; result is only ([[0x1460c4a30]+0x4e0]+0x20090 != 0) && char* +0x20150 non-NULL and non-empty. Better name Game_F1osTask_GlobalStringFlagSet (bound record keeps its name). (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1os_task_has_child_of_known_type",

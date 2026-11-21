@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1434c0600",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1434c0600.c;xref:0x1434b8028,0x1434c0431",
-  "notes": "Spline builder type 0 of Game_PitLane_BuildPitSplineByType (0x1434c0431); also Game_PitLane_HandleEnterPitBox 0x1434b8028; ends in Ne_Spline_ComputeLengths. Earlier static round (C2): box entry pulling through the preceding box (neighbour box via mgr+0xc2a, box record mgr+0x40+box*0x90, factors mgr+0x8c8/+0x8d0/+0x8d8), knots into car record +0x118. Better name: Game_PitLane_BuildEntrySplinePullThrough (bound record keeps its name)."
+  "notes": "Body read in full. (mgr, spline out, car pose param_3, box param_4): box position mgr+0x70+box*0x90 (box 0xc via [mgr+8]+0x738, else [mgr+8]+0x838+box*8, 0x142f62580); neighbour box = box +-1 by byte [*mgr]+0xc2a; distance ratio *0.25 scaled by factors at mgr+0x8c0..+0x8d8; three 0x1434c6e00 helper points; appends the knots (pose +0x20/+0x30, box points) to the spline vector out+0x10 and ends in 0x1445041c0 (Ne_Spline_ComputeLengths). Better name Game_PitLane_BuildEntrySplinePullThrough (bound record keeps its name). (lane owner review requested)"
  },
  "signature": {
   "id": "game.pitlane_resolve_vehicle_state0",

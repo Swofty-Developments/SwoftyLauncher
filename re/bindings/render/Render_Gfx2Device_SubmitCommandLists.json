@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439dc660",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439dc660.c;xref:0x142bcff15,0x14379c4f6,0x1439dc289",
-  "notes": "Under device CS copies param_2 entries of param_3 into a stack array (Ne_Crt_Chkstk): entries with byte +0x38 == 0 are collected, the others move into the per-frame list at +0x38e0+frame*0x50 (count +0x38f0, size +0x38f8); stamps +0x30 with device+0xa38; if any were collected calls 0x1439e1700 (jmp to .data1 0x151f79060). Callers 0x142bcfc30, 0x14379c250, Render_Gfx2_AcquireBackbuffer 0x1439ad480."
+  "evidence": "decomp:re/decomp/1439dc660.c;xref:0x142bcff15,0x14379c4f6,0x1439ad4d3,0x1439dc289,0x1439dfba9,0x1439e4e32,0x1439f429c,0x1439f4400,0x143a07a69,0x143a07be9,0x143bf17ed,0x143bf46b9,0x143bf478e,0x143cc08e0,0x143cc0995,0x143cc1de8,0x143cc1e80,0x143cc1f61,0x143cc1ff2,0x143cc20a2,0x143cc2139,0x143cc221d,0x143cc22b4,0x143d193e7,0x143d19635,0x143de11c5,0x143de14c3,0x143de314e,0x143de35d0,0x143f85229,0x143f8a874,0x143f8ab50,0x1444931ca,0x14f6bc675,0x151f765af,0x151f7a956,0x151f7a966,0x151fd9bd4",
+  "notes": "Read in full. Under CS [dev+0x2668], alloca param_2*8 (0x144c897d0). Each non-null entry with +0x10 set: +0x30 = dev+0xa38; byte +0x38 == 0 -> collected (with its +0x10); else unlinked and re-linked at the head of per-frame list dev+0x38e0+[dev+0x148]*0x50 (count +0x38f0, bytes +0x38f8 by +0x28). If any collected calls 0x1439e1700(dev). Callers incl. Render_Gfx2_AcquireBackbuffer 0x1439ad480. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx2_device_submit_command_lists",

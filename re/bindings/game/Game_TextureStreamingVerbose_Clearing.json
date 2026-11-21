@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143eb8070.c;pat:log-message-method;xref:0x1459bf918",
-  "notes": "vtable cell 0x1459bf918. Decomp polluted (hundreds of removed blocks, tail into 0x1449e22b4): visible part evicts one texture cache entry under SRW lock (cancels stream commands in 4 lists, 'cache %d adjusted by %d', Render_TextureStreaming_FreeEntry); calls 0x143bfc330 at 0x143eb9512."
+  "notes": "Vtable cell. Old name a log fragment. Body 0x143eb8070-0x143eb9be7: eviction loop under SRW lock (stream cmds in 4 lists, 'cache %d adjusted by %d', 0x143bf3320), then 0x143bf1f30/0x143bfb790/0x143bfc8d0, qsort 0x14535b670, PURGE/SKIP PRELOADED, TEXTURE_STREAM_QUALITY factor logs, Setting/Clearing requestLoadMoreFailedAndBlocked flag, 0x143bfc330. Better name: Game_TextureManager_UpdateStreaming (bound record keeps its name)."
  },
  "signature": {
   "id": "game.texture_streaming_verbose_clearing",

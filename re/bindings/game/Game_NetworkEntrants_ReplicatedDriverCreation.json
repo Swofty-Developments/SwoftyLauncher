@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143130280.c;pat:log-channel-NETWORK-ENTRANTS;xref:0x14257b6f7,0x140fe0890,0x140fee1c4",
-  "notes": "CustomDriverNetworkMessageHandler::createCustomNetworkReplicat.. (per __FUNCTION__): logs \"Adding PlayerDriver\"; builds driver info from name info, inlined EntrantReplicationManager::addReplicatedPlayer, adds the driver (Ent_EntrantsSystem_AddDriver_2); logs \"Replicated Driver Creation Failed\". Better name: Game_CustomDriverNetMsg_CreateReplicatedDriver (bound record keeps its name)."
+  "notes": "CustomDriverNetworkMessageHandler::createCustomNetworkReplicat.. (per __FUNCTION__): logs \"\"Adding PlayerDriver\"\"; builds driver info from name info, inlined EntrantReplicationManager::addReplicatedPlayer, adds the driver (Ent_EntrantsSystem_AddDriver_2); logs \"\"Replicated Driver Creation Failed\"\". Better name: Game_CustomDriverNetMsg_CreateReplicatedDriver (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_entrants_replicated_driver_creation",

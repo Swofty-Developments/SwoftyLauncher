@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143260570",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143260570.c;pat:log-message-cxx;xref:0x143262aa1,0x143268199",
-  "notes": "Pretty-function string NEbool network::VehicleProgressSync::calculateLocalProgress(VehicleProgressData &) and 'progress: %s' (NETWORK-PROGRESS/V) plus CoM logs (NETWORK-PHYSICS/V) are in the body. Callers 0x143262840, 0x143267b90."
+  "notes": "Body read fully; pretty-function 'NEbool network::VehicleProgressSync::calculateLocalProgress(VehicleProgressData &)'. From car [[this+0x48]+0x58]: plane offsets of wheel-contact triangles (wheels [+0x580]+0x70..+0x88, +0x2f0) averaged -> out+0x80 ('V%02dL CoMoff'); fills out +0x10 pos, +0x20 vel, +0x40 ang vel, +0x70 speed, +0x30 quaternion from matrix +0x190..+0x1b0, +0x60 track progress, +0x74/+0x78/+0x7c, +0x84, +0x88/+0x89 flags, +8=3, +0xd9, +0xd0 time; logs 'progress: %s'; returns 1. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_progress_sync_calculate_local_progress",

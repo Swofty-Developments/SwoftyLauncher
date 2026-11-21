@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b11930",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143b11930.c;xref:0x143b0d94d,0x143b0dca8",
-  "notes": "Read part: per view (count mgr+0xa7d090, views mgr+0xa5b9d8) builds view-projection matrices and frustum (0x14395cd70), inverse scale mgr+0xa5b900; job name 'ParticleManagerVisJobs'. Callers in 0x143b06d90."
+  "notes": "Body read fully. Per view (count mgr+0xa7d090, views mgr+0xa5b9d8): view-projection matrix, frustum 0x14395cd70, inverse scale mgr+0xa5b900. Splits emitters param_2+8..+0x10 into batches (<=256, limits mgr+0xa5b868/+0xa5b86c, 0x2000/0x8000 caps), 0x780-byte job records (4 view blocks 0x1c0) with 0x60-byte entries; one batch -> inline callback mgr+0xa5b838, else jobs 'ParticleManagerVisJobs' via [mgr+0xa5b748] vt+8 then 'WAIT:waitForFinish' (0x143ac0100). Callers 0x143b0d94d, 0x143b0dca8 in 0x143b06d90. (lane owner review requested)"
  },
  "signature": {
   "id": "game.particles_run_vis_jobs",

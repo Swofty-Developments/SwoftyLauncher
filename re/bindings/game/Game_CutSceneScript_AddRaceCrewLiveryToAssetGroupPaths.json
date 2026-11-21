@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14023a860",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14023a860.c;pat:log-message-cxx;xref:0x1455eb9a0,0x1455ed170",
-  "notes": "Renamed: script-text asset pass; addRaceCrewLiveryToAssetGroupPaths is only an inlined warning. Refs = vtable cells. Splits the script text (+0x850) by lines and '%s %s'; on 'BeginSceneContext' logs 'loadAssetGroupsUsingSceneContext()', parses the context (0x14023b9a0, stored via 0x140230250 at +0x190), adds driver model/head (0x140234750, 0x140234a20, 0x140234440) and the race crew livery of vehicle +0x1b2. Better name: Game_CutSceneScript_LoadAssetGroupsUsingSceneContext (bound record keeps its name)."
+  "notes": "Refs = vtable cells. Script text +0x850 split by CRLF, '%s %s'; on 'BeginSceneContext' logs 'loadAssetGroupsUsingSceneContext()' (CUTSCENE_SCRIPT_COMMANDS), parses context 0x14023b9a0, stores via 0x140230250 at +0x190, adds driver assets (0x140234750, 0x140234a20, 0x140234440) for ids +0x198 and +0x1b6, race crew livery of vehicle +0x1b2 twice (team record +0x28 and +0x40); id 0x3fff -> addRaceCrewLivery warning. Better name: Game_CutSceneScript_LoadAssetGroupsUsingSceneContext (bound record keeps its name). (lane owner review requested)"
  },
  "signature": {
   "id": "game.cut_scene_script_add_race_crew_livery_to_asset_group_paths",

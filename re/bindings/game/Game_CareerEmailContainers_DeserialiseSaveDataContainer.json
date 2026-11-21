@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140dd5f10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140dd5f10.c;str:s_Championship_CareerEmailContainers_DeserialiseSaveDataContainer;xref:0x145694328",
-  "notes": "Strings: version, type, data, driver_id, team_id, dayAdded, new_session, last_trigger, container_version, emailCooldowns, numDaysCooldown; calls 0x140dd9630 (0x140dd64da) and 0x140dd9890 (0x140dd64c9). Only ref is vt cell 0x145694328."
+  "notes": "Assert str CareerEmailContainers::deserialiseSaveDataContainer. new_session->+0x360, last_trigger (max 9)->+0x361; per email_containers: driver_id/team_id u16 (14-bit id, 0x3fff=none) -> 0x140dd9630/0x140dd9890 lookup in +0x2e0, cleared; emails[] (type,body_type,version,data -> 0x140dd7e70), emailCooldowns[] (dayAdded,numDaysCooldown,groupStatId as u64); on error drops container from +0x318. (lane owner review requested)"
  },
  "signature": {
   "id": "game.career_email_containers_deserialise_save_data_container",

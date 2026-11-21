@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1407b56a0.c;xref:0x1407b4fd7,0x142da8e2a,0x1485fd3bb",
-  "notes": "Reads event list champ[0x20d..0x20e], current champ[0x20b], per-event state vcalls +0x78/+0x88 of event+0x208, vt+0x168, ends with Game_GameModeChampionship_Begin(champ,0,ok)."
+  "notes": "(champ, flag): finds the event after current champ[0x20b] in champ[0x20d..0x20e]; if current state (event+0x208 vt+0x78) == 2 and next == 0 calls champ vt+0x168; for the first state-1 event walks its session (vt+0x88; list +0x288, idx +0x2a0, 0xa0-byte items +0x220/+0x238) calling vt+0x168 until no progress. If flag and current state 0: ready check vt+0x218 over champ[0x25d..0x25e] and event+0x4e8..+0x4f0, Game_GameModeChampionship_Begin 0x1407b5c40(champ,0,ok), returns 0x5f4ee932."
  },
  "signature": {
   "id": "game.championship_advance_to_next_event",

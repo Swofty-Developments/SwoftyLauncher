@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1440517b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1440517b0.c;pat:log-channel-NEOS_WS/V;xref:0x14404e523",
-  "notes": "lea 0x14404e523. WinHttp websocket status callback: logs bytes written/read, unexpected shutdown/close, handle closing, operation errors."
+  "notes": "Registered by lea at 0x14404e523 (in 0x14404e260) as the WinHttp status callback. NEOS_WS/V logs internetStatus; under lock pushes the status into vector +0x38; 0x4000000/0x2000000 -> 'Unexpected websocket shutdown/close', +0xac=1; 0x200000 error -> +8 = dwError (0x2ef1 cancelled on close/shutdown op kept quiet); 0x800 handle closing; 0x80000 read (+0x10 += bytes, +0xc), 0x100000 write (+0x14 += bytes), +0xb0 = buffer type. (lane owner review requested)"
  },
  "signature": {
   "id": "game.neos_ws_callback_async_web_socket_callback",

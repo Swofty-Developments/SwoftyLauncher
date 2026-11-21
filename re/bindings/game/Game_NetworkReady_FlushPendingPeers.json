@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144074da0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144074da0.c;xref:0x14305fe35,0x143237a44,0x1436ea5fe",
-  "notes": "Sums [entry+0xf0] over hash-set entries (+0x20..+0x30) whose key byte == p2, adds overhead ((n+0x48d)/0x48e*0x42), divides by max(0x1238,[this+0x50]>>3) and keeps the maximum ratio/bytes/count in the map at +0xc0 (0x1440b4340). No flushing seen. Better name: Game_NetworkTraffic_UpdatePeakRateForKey (bound record keeps its name)."
+  "evidence": "decomp:re/decomp/144074da0.c;xref:0x14305fe35,0x143237a44,0x1436ea5fe,0x14ff88d13",
+  "notes": "Sums [value+0xf0] and counts entries of flat hash set +0x20..+0x30 whose key byte == p2; bytes' = b + ((b+0x48d)/0x48e)*0x42; rate = bytes'/max(0x1238,[this+0x50]>>3); finds/creates key p2 in map +0xc0 (0x1440b4340, slots [+0xd8] stride 0x20), keeps max rate +8 with denom +0x14, bytes +0x10, count +0x18. No flushing. Better name: Game_NetworkTraffic_UpdatePeakRateForKey (bound record keeps its name). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_ready_flush_pending_peers",

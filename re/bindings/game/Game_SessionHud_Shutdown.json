@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1414a3960",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1414a3960.c;xref:0x1456e8540",
-  "notes": "In-session HUD/time-trial presenter (vtable ~0x1456e84a0, same class as Game_TimeTrial_Leave/SetReference) shutdown (logged on GHOSTLAP-TRACE): unregisters TT leave callback 0x14147c2d0 and 0x141483fc0 from the [+0x158] datastore, releases HUD data nodes +0x20560..+0x20798. Addon: HUD/TT teardown hook. d3-verify correction: unregisters the message handlers viewGhostProfileByDriverId 0x141483fc0 and clearRivalSelection 0x14147c2d0; frees the whole [+0x158] datastore (+0x20540..+0x20798), sets [+0x158] = 0, frees the +0x168 object"
+  "notes": "Slot +0xc0 of vtable 0x1456e8480. Calls 0x1414a4b60, then for datastore [+0x158]: log GHOSTLAP-TRACE 'shutdown', removes delegates 0x14147c2d0 (Game_TimeTrial_Leave) / 0x14147e740 from +0x20548/+0x20528 via 0x14422fde0, Ne_EventBus_Unsubscribe 'viewGhostProfileByDriverId' (0x141483fc0) and 'clearRivalSelection' (0x1414842f0, not 0x14147c2d0), unregisters +0x20758..+0x20798, releases +0x20280..+0x20540, frees, [+0x158]=0; same for [+0x168]; destroys vectors +0x188 and +0x1a8. (lane owner review requested)"
  },
  "signature": {
   "id": "game.session_hud_shutdown",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14365a8b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14365a8b0.c;pat:log-channel--;xref:0x1458563d0",
-  "notes": "Vt cell 0x1458563d0. Reads Game.Enable* bools into +0x1b4..+0x1b7 (Steam context 0x145f8d6a0), Save.SaveTitleOverride string into +0x80 (0x80 bytes), then 0x143658620 registrations on this+0x38."
+  "notes": "Body read in full (vt cell 0x1458563d0). Resolves services via param_2 vt+0x28 (0x146cb8278, 0x14604ec98 -> +0x20, 0x146cb8078 -> +0x28, 0x146cb8218 -> +0x30; missing -> 0x16); reads Game.EnableSaveGame/EnableSaving/EnableLoading into +0x1b4..+0x1b6, Game.EnableSaveSystemInSkipFE into +0x1b7 when Steam context 0x145f8d6a0 is set, Save.SaveTitleOverride into +0x80 (0x80 bytes); entry 0x146100bf8 of param_3 -> +0x148/+0x150; four 0x143658620 registrations on +0x38. (lane owner review requested)"
  },
  "signature": {
   "id": "game.read_game_config_6",
