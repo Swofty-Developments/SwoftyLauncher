@@ -1000,7 +1000,7 @@ A career content declares the addons its careers need beyond its own:
 }
 ```
 
-Before Play, the launcher checks every career in the index against the profile's addons. A career whose needed addon is off, missing or the wrong version adds one line to the Play log and a warning to the notice that already shows before Play:
+At each build, the launcher checks every career in the index against the profile's addons. A career whose needed addon is off, missing or the wrong version adds one line to the build log, and the game's Career list shows its row as `Missing` or `Mismatched`:
 
 ```text
 2 careers won't load in this profile: Progressive: Max Verstappen, 2016 needs Sochi Autodrom (mod.sochi), which is off; Driver Career: Lando Norris needs R&D: Tyres & Thermal Management (swofty.rnd-tyres-thermal), which is off

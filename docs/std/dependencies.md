@@ -10,7 +10,7 @@ Content depends on other content. A 2016 season races at Sochi, which a track ad
 Every dependency is checked four times:
 
 1. **At install,** the Addon Browser offers what's needed and recommended.
-2. **Before Play,** the launcher names what's missing, what's skipped, and which careers won't load.
+2. **Before Play,** the launcher names what's missing and what's skipped.
 3. **In game,** a guard cancels the start, the load or the box press, with a popup that names the fix.
 4. **After load,** a career that loaded without its addons is stopped before it can save over its progress.
 
@@ -365,16 +365,12 @@ Missing content
   F1 2016 GP/TT Addon: the German Grand Prix (round 12) is left out, because no track provides Hockenheim.
   The Malaysian Grand Prix (round 16) races at Sepang (mod.bahrain24).
   [Install Hockenheim]
-
-  2 careers won't load in this profile:
-    Progressive Career: Max Verstappen, 2016: needs Sochi Autodrom (mod.sochi), which is off.
-    Driver Career: Lando Norris, season 3: needs R&D: Tyres & Thermal Management, which is off.
-  [Turn on Sochi Autodrom]  [Turn on R&D: Tyres & Thermal Management]
   The launcher backs up your saves before this session.
 ```
 
 - **What stops Play:** a missing `requires` entry, or a `breaks` on an installed addon, with a message naming the fix.
-- **A career's own rows stop Play too:** Play asks first, with **Play anyway**, when an addon that is off or uninstalled owns a row a career in the save uses. Two things count. The first is the team, vehicle or driver id in the career's save slot: an id above the highest `stat_id` the stock game database gives that table, which the install's `registry/row-ids.json` gives to an addon (the ids it keeps and the ids those rows had before) or its `registry/ids.json` gives to an addon's team, vehicle or driver record (the id it keeps for that career, else the id it holds now). When several addons hold the id, the ones that are installed and on count and the others don't. The launcher checks this at each build and after each session, and takes the addon off again when the career moves to a stock team. The second is a My Team car: when the core loads a save and finds a My Team car with no vehicle row, it loads the car as a stock placeholder and logs it (`[myteam]` in `loader.log`), and after the session the launcher gives that career the addon that owns the row. The dialog names the addon and the careers, which may not load, or may load with a stock car in place of the missing one. Only the careers in the save the profile boots count: its own launcher save with Use launcher saves on, otherwise the Steam save. A career deleted in game, and a record that no save slot backs, are left out.
+- **Careers don't stop Play.** A career that needs an addon that is off or not installed shows as `Missing: <addon>` in the game's [Career list](/using/career-saves#resume-career), which asks **Load Anyway** or **Back** before it loads, and the build log names it. A career of an addon's career mode doesn't load while that addon is off; the core keeps its save container until the addon is back on.
+- **A career's own rows are a need:** the career index records the addon that owns a row a career in the save uses. Two things count. The first is the team, vehicle or driver id in the career's save slot: an id above the highest `stat_id` the stock game database gives that table, which the install's `registry/row-ids.json` gives to an addon (the ids it keeps and the ids those rows had before) or its `registry/ids.json` gives to an addon's team, vehicle or driver record (the id it keeps for that career, else the id it holds now). When several addons hold the id, the ones that are installed and on count and the others don't. The launcher checks this at each build and after each session, and takes the addon off again when the career moves to a stock team. The second is a My Team car: when the core loads a save and finds a My Team car with no vehicle row, it loads the car as a stock placeholder and logs it (`[myteam]` in `loader.log`), and after the session the launcher gives that career the addon that owns the row. Without that addon the career may not load, or may load with a stock car in place of the missing one. Only the careers in the save the profile boots count: its own launcher save with Use launcher saves on, otherwise the Steam save. A career deleted in game, and a record that no save slot backs, are left out.
 - **An addon that was only on is not a need.** Older launchers added every enabled addon with vehicle, engine, team, driver or head rows, and every addon whose track a session loaded, to each career saved in that session (`why` `database rows in the save` and `a track its sessions loaded`). Those entries say what was on, so they raise nothing at Play or when the addon is turned off. Ids above the stock rows that no addon of the install owns add a line to the build's warnings that lists the database addons that are off.
 - **What warns:** a `conflicts` entry, and a reference inside a record. An unresolved record hides its era box or tile, or guards it.
 - **Where the launcher gets records:** each enabled addon's `registry.lock.json`, data files and `registry.json`, plus the core's `registry/catalog.json` from the last session for what actually loaded.
