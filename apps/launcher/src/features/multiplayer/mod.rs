@@ -14,3 +14,4 @@ mod tests;
 mod tracker;
 
 pub(crate) use state::{Multiplayer, RoomLaunch};
+pub(crate) use tracker::PlayWord;

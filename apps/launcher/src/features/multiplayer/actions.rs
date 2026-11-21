@@ -14,6 +14,7 @@ use swofty_i18n::{tr, trf};
 use super::model::*;
 use super::state::*;
 use super::steward;
+use super::tracker::{PlayWord, play_word};
 use crate::shell::Launching;
 use crate::shell::host::Host;
 use crate::shell::host::PromptHost;
@@ -85,13 +86,15 @@ impl Shell {
         self.rooms.lobby.rooms.iter().find(|r| r.code == code)
     }
 
-    /// The play button's word while a shared session starts and F1 25 isn't building or running yet, so it
-    /// can't be pressed as a second Play.
-    pub(crate) fn room_starting_label(&self) -> Option<&'static str> {
+    /// The play button while a shared session runs and F1 25 isn't building or running yet, so it can't be
+    /// pressed as a second Play.
+    pub(crate) fn room_play_word(&self) -> Option<PlayWord> {
         let m = &self.rooms;
-        let over = m.state.as_ref().is_some_and(|s| s.phase.is_over());
-        let hosting = m.starting.as_deref() == Some("create") || m.state.as_ref().is_some_and(|s| s.host);
-        room_starting_word(m.busy(), over, hosting)
+        play_word(m.busy(), m.leaving, m.state.as_ref())
+    }
+
+    pub(crate) fn room_starting_label(&self) -> Option<&'static str> {
+        self.room_play_word().map(PlayWord::label)
     }
 
     pub(crate) fn room_can_play(&self) -> bool {
@@ -195,7 +198,7 @@ impl Shell {
         cx.notify();
     }
 
-    pub(super) fn room_step_in(&mut self, cx: &mut Context<Self>) {
+    pub(crate) fn room_step_in(&mut self, cx: &mut Context<Self>) {
         self.rooms.away = false;
         self.open_page(Page::Multiplayer, cx);
     }

@@ -410,3 +410,43 @@ pub(crate) fn shows_closed(state: &SessionState, card: Option<&StepCard>) -> boo
 pub(crate) fn shows_players(state: &SessionState) -> bool {
     !state.phase.is_over()
 }
+
+/// The play button while a session runs. Its words are neutral: the play bar shows on every page.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum PlayWord {
+    /// The session is starting or leaving: a disabled button with a spinner.
+    Busy(&'static str),
+    /// The session waits for the player on its page: the button opens it.
+    Needed,
+}
+
+impl PlayWord {
+    pub(crate) fn label(self) -> &'static str {
+        match self {
+            Self::Busy(word) => word,
+            Self::Needed => tr("Action needed"),
+        }
+    }
+}
+
+/// `busy` is that a session is starting or running.
+pub(crate) fn play_word(busy: bool, leaving: bool, state: Option<&SessionState>) -> Option<PlayWord> {
+    if !busy || state.is_some_and(|s| s.phase.is_over()) {
+        return None;
+    }
+    if leaving {
+        return Some(PlayWord::Busy(tr("Leaving…")));
+    }
+    let stopped = state.is_some_and(|s| {
+        if s.steps.is_empty() {
+            s.problem.is_some()
+        } else {
+            s.steps.iter().any(|st| st.state == StepState::Failed)
+        }
+    });
+    Some(if stopped {
+        PlayWord::Needed
+    } else {
+        PlayWord::Busy(tr("Starting…"))
+    })
+}

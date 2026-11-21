@@ -333,18 +333,6 @@ pub(crate) fn game_after_room(over: bool, starting: bool) -> Option<&'static str
     (over && starting).then(|| tr("F1 25 keeps starting without the room."))
 }
 
-/// The play button's word while a session for the room is `busy` and not `over`.
-pub(crate) fn room_starting_word(busy: bool, over: bool, hosting: bool) -> Option<&'static str> {
-    if !busy || over {
-        return None;
-    }
-    Some(if hosting {
-        tr("Opening room…")
-    } else {
-        tr("Joining…")
-    })
-}
-
 /// What a fix plan asks the player to change to match the host, one sentence per step.
 pub(crate) fn fix_lines(plan: &[FixStep]) -> Vec<String> {
     plan.iter()

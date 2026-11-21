@@ -13,7 +13,7 @@ use super::model::{
 };
 use super::model::{
     RoomFocus, StepCard, StepRow, card_rooms, closed_subtitle, default_room_name, fix_lines, game_after_room,
-    leaves_on_exit, lobby_hint, repeats, room_focus, room_starting_word, shows_ad, starting, step_title,
+    leaves_on_exit, lobby_hint, repeats, room_focus, shows_ad, starting, step_title,
 };
 use super::state::{Lobby, room_sizes, unasked};
 use swofty_core::online::multiplayer::types::RoomContent;
@@ -780,14 +780,6 @@ fn a_game_still_starting_when_the_room_ends_keeps_starting_without_it() {
     );
     assert_eq!(game_after_room(true, false), None);
     assert_eq!(game_after_room(false, true), None, "a live room says nothing");
-}
-
-#[test]
-fn play_stops_reading_as_the_room_opening_once_the_room_is_over() {
-    assert_eq!(room_starting_word(true, false, true), Some("Opening room…"));
-    assert_eq!(room_starting_word(true, false, false), Some("Joining…"));
-    assert_eq!(room_starting_word(true, true, true), None);
-    assert_eq!(room_starting_word(false, false, true), None);
 }
 
 #[test]
