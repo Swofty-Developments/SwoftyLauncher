@@ -7,7 +7,7 @@
   "addr": "0x1446f2690",
   "level": "L2",
   "subsystem": "game",
-  "proto": "-",
+  "proto": "int32_t Game_RacingFFBEffectDirectInput_UpdateDeviceEffects(void *effect, const float *lanes)",
   "evidence": "decomp:re/decomp/1446f2690.c;pat:log-message-cxx;xref:0x145bff998",
   "notes": "Virtual (vt cell 0x145bff998) (this, float[4]): DirectInput path (device +0x1e0 vt+0x38 false), throttled >10 ms (+0x218): logs FFB_DEBUG, SetParameters (vt+0x30) on effect +0x1e8 (constant force -f0*10000), +0x1f0, +0x1f8 (|f3|*10000) under crit sec +0x228; on 0x8007001e/0x8007000c calls [device+0x10] vt+0x38, sets +0x220; else TrueForce path 0x1449e8d60/0x1449e8dc0 with clamp(-f0)*+0x200 and max(f3,0)*+0x208. (lane owner review requested)"
  },
@@ -45,7 +45,37 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/1446f2690.c",
    "notes": "V6843 updateDeviceEffects strings confirmed. (vtable/indirect, no direct call site)"
+  },
+  {
+   "date": "2026-11-21",
+   "verifier": "vogtmarcel07-cloud",
+   "kind": "func",
+   "item": "Game_RacingFFBEffectDirectInput_UpdateDeviceEffects",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446f2690.c;decomp:own capstone disasm 0x1446f2690-0x1446f2ebc;xref:0x145bff998",
+   "notes": "gh:vogtmarcel07-cloud independent re-check 2026-11-21: slot 5 (+0x28) of the DirectInput effect vtable 0x145bff970 (cell 0x145bff998, its only reference; the Thrustmaster table 0x145bfff10 has Game_FfbThrustmaster_ConfigureEffects in the same slot). Body read in its pdata range: 0xe without device [effect+0x1e0]; device vt+0x38 false -> DirectInput path throttled on +0x218 (QPC), SetParameters vt+0x30 on +0x1e8 (lane 0 * 10000), +0x1f0, +0x1f8 (|lane 3| * 10000) each under the critical section +0x228; a 0x8007001e/0x8007000c result calls the device vt+0x38 and sets +0x220; else TrueForce 0x1449e8d60/0x1449e8dc0 scaled by the doubles +0x200/+0x208. Returns a 32-bit status (mov eax, ebx at 0x1446f2e30), so proto int32_t (void *effect, const float *lanes)."
   }
  ],
- "proofs": []
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1446f2690",
+    "target": "0x1446f2690"
+   },
+   "sigcheck": "passed",
+   "digest": "60c727d9549409cf8798baa92157b9257aaf4bbc159a747b581bf85da6daf991"
+  }
+ ]
 }
