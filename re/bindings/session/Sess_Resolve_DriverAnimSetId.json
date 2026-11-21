@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14248ba90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14248ba90.c;xref:0x1413d9a17,0x1413d9a21",
-  "notes": "Looks up a row in GameDB 'entrants.animation.driver_animation_sets' and returns its stat_id ref (0x3fff0000 when missing). Callers Sess_Load_VehicleAiConfig, Game_Read_VehiclePackageRow, Game_FrontendSceneDriver_Update, Game_F1SeasonStandings_Clear."
+  "evidence": "decomp:re/decomp/14248ba90.c;xref:0x1413d9a17,0x1413d9a21,0x142504727,0x1425057e9,0x14289b6d7,0x14289c9e8",
+  "notes": "GameDB query 0x1445a2bd0 on table 'entrants.animation.driver_animation_sets' keyed by column 'driver_animation_set' = arg; column 'stat_id' via 0x1445a2cf0; returns u8 at value+8 (movzx), 0 when the row/column is missing (not 0x3fff0000). Callers Sess_Parse_ContentSet x2, Sess_Load_VehicleAiConfig, Game_Read_VehiclePackageRow, 0x14289b240 x2."
  },
  "signature": {
   "id": "session.resolve_driver_anim_set_id",

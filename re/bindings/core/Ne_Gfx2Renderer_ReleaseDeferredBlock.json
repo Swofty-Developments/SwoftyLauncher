@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143c243b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143c243b0.c;xref:0x143d3f647,0x152524712",
-  "notes": "Releases a deferred-release record: returns its block to Render_Gfx2_BlockAllocator_Free (this+0x2ab*8) and frees three owned arrays via allocator vcall +0x38. Caller Ne_Gfx2Renderer_ReleaseDeferredObjects. vq1-verify partial/disagree"
+  "evidence": "decomp:re/decomp/143c243b0.c;xref:0x143d3f647,0x152524712,0x1526fa742",
+  "notes": "(renderer,rec): under CS this[1]: Render_Gfx2_BlockAllocator_Free(this+0x1558, rec[10]) under CS this[0x2a1]; frees four owned arrays rec[4..7] (+0x20..+0x38) via rec allocator vt+0x38 and nulls them; frees rec via [this] vt+0x38. Caller Ne_Gfx2Renderer_ReleaseDeferredObjects (+2 in .data1). Old note said three arrays."
  },
  "signature": {
   "id": "core.gfx2_renderer_release_deferred_block",

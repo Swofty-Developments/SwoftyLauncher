@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a70a40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/143a70a40.c;xref:0x143b79a42,0x143b874be,0x1443dcc82",
-  "notes": "Hypothesis: static-init + spin lock (lock cmpxchg on 0x1460fb5a8) guarding a one-time init, calls Ne_Event_Set; used by RenderFrame. Named callers: Game_Network_MOXEntitlementReportingPending, Ne_Gfx2Renderer_RenderFrame. vp2-verify partial/disagree"
+  "notes": "Event pump, not a timestamp getter: spinlock 0x1460fb5a8 guards a nesting count with QPC busy-time accumulation (0x1460fb5b0/b8). If [this+0x118] vt+0x28 and +0x70 set and +0x60 pending: Ne_EventQueue_DispatchPending(this+8). Under CS [this+0x1a8] handles list +0x1f8 entries in state 1 (Ne_Gfx2Renderer_ProcessResourceEvent) and list +0x240 state 3 (ForwardEventToListener), unlinks/frees them; Ne_Event_Set if +0x130. Returns 0. Better name: Ne_Gfx2Renderer_PumpQueueStateEvents (bound record keeps its name)."
  },
  "signature": {
   "id": "core.gfx2_renderer_spinlocked_static_init",

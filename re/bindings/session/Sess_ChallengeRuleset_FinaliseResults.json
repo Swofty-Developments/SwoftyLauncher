@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d3df50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
   "proto": "-",
   "evidence": "decomp:re/decomp/142d3df50.c;xref:0x1457dcc88",
-  "notes": "Slot +0x1d8 of challenge vt 0x1457dcab0 (reset logs PursuitChallengeRuleset::reset). Every active car -> eFinished reason 2 (0x203); the car with the best score (R+0x38^+0x40 f64) gets R+0x125 = 1 (winner); rows via 0x142c7c050 with the progress record (0x142f2bc90([rs+0x368], id)); when no car is active: 'Sorting results...', positions, rs+0x398 = vt+0x208 (challenge outcome). d1-verify-a correction: R+0x125 is set on EVERY active car if any car's score (+0x38^+0x40) > 0, not only on the best one"
+  "notes": "Slot +0x1d8 of RivalDuelChallengeRuleset vt 0x1457dcab0. Each status-2 entrant: 0x142d3d340(rs,id,laps); -> eFinished (+0x11d=0x203); R+0x125=1 when any entrant score (+0x38^+0x40 f64) > 0; row via 0x142c7c050(row, 0x142f2bc90([rs+0x368],id)). When no entrant is still status 2: 'Sorting results...', vt+0x118, positions 0x142c7bce0, rs+0x398 = vt+0x208(). Better name: Sess_RivalDuelRuleset_FinaliseResults (bound record keeps its name)."
  },
  "signature": {
   "id": "session.challenge_ruleset_finalise_results",

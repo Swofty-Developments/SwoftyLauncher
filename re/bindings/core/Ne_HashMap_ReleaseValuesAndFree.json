@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143eb7960",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143eb7960.c;xref:0x143bc4322,0x143d822b1",
-  "notes": "Computes target bucket count at 80 percent load (count+1)*0x50/100, caps 0xff, clears chain heads; hash map reset used by postfx/resource maps. Callers Game_PostFx_CreateMotionBloomLensFlare, Game_Rtt_CreateScenes, 0x143d82110. vp3-verify partial/disagree"
+  "evidence": "decomp:re/decomp/143eb7960.c;xref:0x143bc4322,0x143d822b1,0x143d8548d",
+  "notes": "If count +0x40: zeroes +0x38, for each occupied ctrl byte (+0x30, count+1 + 80% slack <=0xff) passes node value [slot+8] to 0x1439d9cb0 on the device [0x14618caa8]; frees slot storage +0x28 (unless inline +0x40) via [+0x18] vt+0x38; then frees the free-list chain +0x10 node by node, +8=0. Old note (bucket reset) wrong. Callers Game_Read_RendererGfxConfig_2, Game_Rtt_RebuildTextureViews, Game_Rtt_RttGenerator."
  },
  "signature": {
   "id": "core.hash_map_clear_and_rehash_target",

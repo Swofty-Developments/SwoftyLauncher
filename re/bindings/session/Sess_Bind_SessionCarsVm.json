@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141489440",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141489440.c;xref:0x1414a2091,0x1414a93e6;str:s_session_cars",
-  "notes": "Binds the session.cars (UNK_1456f8d92) and current_car (UNK_1456e837c) VM nodes plus further per-car UI keys into VmPropHolder link structures on g_Vm_Registry. Entry point for the 26-car UI/HUD per-car audit. L1 (full key set not enumerated). sb2-verify-a correction: UNK_1456e837c = 'session.players'; 'session.current_car' = UNK_1456e838c (third node, param_1[8..0xb]); also guest_car, top_car, numCars, currentCarEra"
+  "evidence": "decomp:re/decomp/141489440.c;str:s_session_cars;xref:0x1414a2090,0x1414a93e5",
+  "notes": "Creates/binds the session VM nodes on g_Vm_Registry: session.cars, session.players, session.current_car, session.guest_car, session.top_car (+ lng_dash default), session.top_car_team_name(_short), session.rival_ghost, session.numCars, session.numTier1/2/3Cars, session.currentCarEra, session.guestCarEra, session.last. Callers Game_Read_GameModeDataConfig, Game_SessionHud_OnSessionEnter."
  },
  "signature": {
   "id": "session.bind_session_cars_vm",

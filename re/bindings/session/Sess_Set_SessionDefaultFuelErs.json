@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "session",
   "proto": "void Sess_Set_SessionDefaultFuelErs(void *sys)",
-  "evidence": "doc:re/db/subsystems/game.md;decomp:re/decomp/142f43b30.c;xref:0x142f41896,0x142f43558",
-  "notes": "For each primary controller (getter [entry+0x20] vfunc +0x18) writes ERS +0x08 and fuel mix +0x00: 3 for session types 5..14 and 18, 1 for races 15..17, nothing for 0..4 / 19 (0x142f43b7b..0x142f43bbb): races start on Standard mix + Medium ERS (agent ai_race, aaa-verify claim 9) sb3-verify-a correction: handles ONE vehicle (low byte of msg+0x10, only when that ushort > 0xff; vehicle from table [0x146096578]+0x30), not a loop; session type [[this+0x78]+0x1a8]+4: types 5..14 and 18 -> 3, 15..17 -> 1, 0..4 and 19 write nothing; writes +8 then +0"
+  "evidence": "doc:re/db/subsystems/game.md;decomp:re/decomp/142f43b30.c;xref:0x142f41894,0x142f43556",
+  "notes": "Bus handler for 'player_dropped_in' (0x1456136a8): subscribed in 0x142f41610 (lea 0x142f41894, Ne_Subscribe_BusMessage), unsubscribed in Game_VehicleSystem_Terminate (lea 0x142f43556, 0x143988350). One vehicle: msg ushort +0x10 > 0xff, low byte = index into [g 0x146096578]+0x30; controller [entry+0x20] vfunc +0x18 -> writes u32 +8 then +0 = 3 for session types 5..14 and 18, 1 for 15..17, nothing else (type [[this+0x78]+0x1a8]+4). Returns 0. Better name: Sess_PlayerDroppedIn_SetDefaultFuelErs (bound record keeps its name)."
  },
  "signature": {
   "id": "session.set_session_default_fuel_ers",

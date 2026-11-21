@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1445e3960",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1445e3960.c;xref:0x142c00d4c,0x142d6019c",
-  "notes": "Identical recursive std::map node erase as 0x1445e3a00 for a second map type (node+0x19 isnil, value node[5] released via vcall +0x38, node freed via allocator vcall +0x38). Callers Sess_FormationLapStartLights_OnStateEnter, Game_Replay_SetPosition, MP skip-lights."
+  "evidence": "decomp:re/decomp/1445e3960.c;xref:0x142c00d4c,0x142d6019c,0x142d8ff01,0x1445dde58,0x1445e1b8c",
+  "notes": "std::map _Erase pattern: until isnil (node+0x19): recurse right (node[2]), next = left (node[0]); if node[6] (buffer) set, release it through node[5] allocator vcall +0x38 and clear node[6..8]; free node via (*param_2) vcall +0x38. Body identical to 0x1445e3a00 (other value type). Callers incl. Sess_FormationLapStartLights_OnStateEnter, Game_Network_SkippingLightsMPReasons."
  },
  "signature": {
   "id": "core.rb_tree_destroy_subtree_b",
