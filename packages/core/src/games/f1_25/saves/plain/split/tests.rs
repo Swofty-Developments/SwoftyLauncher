@@ -120,7 +120,7 @@ fn a_shared_store_of_steam_39_and_ea_40_splits_without_losing_either_side_or_rai
     let (m39, m40) = (s.manifest(39).unwrap(), s.manifest(40).unwrap());
     let (b39, b40) = (bags(&s, 39), bags(&s, 40));
 
-    let split = split_profile(&d, "default").unwrap().unwrap();
+    let split = split_profile(&d, "default").unwrap().split.unwrap();
     assert_eq!(
         split,
         Split {
@@ -179,7 +179,7 @@ fn an_ea_only_store_moves_to_the_ea_root_whole() {
     write_on(&s, &ea_gen(1, "load", "e1"), EA);
     write_on(&s, &ea_gen(2, "save", "e1"), EA);
     current(&s, 2);
-    let split = split_profile(&d, "default").unwrap().unwrap();
+    let split = split_profile(&d, "default").unwrap().split.unwrap();
     assert_eq!(split.ea, [1, 2]);
     assert!(split.copied);
     let e = ea_store(&d);
@@ -198,7 +198,7 @@ fn a_steam_only_store_stays_as_it_is_and_the_ea_root_is_not_made() {
     write_on(&s, &steam_gen(2, "load", "s2"), STEAM);
     current(&s, 2);
     let before = tree(&s.root);
-    let split = split_profile(&d, "default").unwrap().unwrap();
+    let split = split_profile(&d, "default").unwrap().split.unwrap();
     assert!(split.ea.is_empty() && !split.copied);
     let mut after = tree(&s.root);
     after.retain(|(p, _)| p != SPLIT);
@@ -212,7 +212,7 @@ fn a_steam_only_store_stays_as_it_is_and_the_ea_root_is_not_made() {
 fn a_profile_without_a_plain_store_has_nothing_to_split() {
     let d = dir("none");
     std::fs::create_dir_all(d.join("saves/default/remote")).unwrap();
-    assert_eq!(split_profile(&d, "default").unwrap(), None);
+    assert_eq!(split_profile(&d, "default").unwrap(), Outcome::default());
     assert!(!shared(&d).root.join(SPLIT).exists());
     std::fs::remove_dir_all(&d).ok();
 }
@@ -232,7 +232,7 @@ fn a_second_split_changes_nothing() {
         lines[0]
     );
     let (shared_after, ea_after) = (tree(&s.root), tree(&ea_store(&d).root));
-    assert_eq!(split_profile(&d, "default").unwrap(), None);
+    assert_eq!(split_profile(&d, "default").unwrap(), Outcome::default());
     assert!(split_all_held(&d).is_empty());
     assert_eq!(tree(&s.root), shared_after);
     assert_eq!(tree(&ea_store(&d).root), ea_after);
@@ -275,7 +275,7 @@ fn a_split_that_stopped_while_it_copied_runs_again_from_the_start_of_that_copy()
     std::fs::create_dir_all(torn.join("containers")).unwrap();
     std::fs::write(torn.join("manifest.json"), b"{ half").unwrap();
     assert!(e.generations().is_empty(), "a copy in progress is no generation");
-    let split = split_profile(&d, "default").unwrap().unwrap();
+    let split = split_profile(&d, "default").unwrap().split.unwrap();
     assert_eq!(split.ea, [38, 40]);
     assert!(split.copied);
     assert_split(&d, &s, &m38, &m39, &m40);
@@ -289,7 +289,7 @@ fn a_split_that_stopped_after_one_copy_finishes_the_rest() {
     let e = ea_store(&d);
     copy_generation(&s.generation_dir(38), &e, 38).unwrap();
     assert!(e.newest().is_none(), "no CURRENT yet, no store");
-    split_profile(&d, "default").unwrap().unwrap();
+    split_profile(&d, "default").unwrap().split.unwrap();
     assert_split(&d, &s, &m38, &m39, &m40);
     std::fs::remove_dir_all(&d).ok();
 }
@@ -305,7 +305,7 @@ fn a_split_that_stopped_while_it_set_generations_aside_finishes_them() {
     let kept = Plain::at(s.root.join(SPLIT_ASIDE));
     std::fs::create_dir_all(kept.root.join(GENERATIONS)).unwrap();
     std::fs::rename(s.generation_dir(38), kept.generation_dir(38)).unwrap();
-    let split = split_profile(&d, "default").unwrap().unwrap();
+    let split = split_profile(&d, "default").unwrap().split.unwrap();
     assert_eq!(
         split.ea,
         [38, 40],
@@ -320,10 +320,10 @@ fn a_split_that_stopped_while_it_set_generations_aside_finishes_them() {
 fn a_split_that_stopped_before_its_marker_writes_the_same_marker() {
     let d = dir("stop-marker");
     let (s, m38, m39, m40) = three_way(&d);
-    let first = split_profile(&d, "default").unwrap().unwrap();
+    let first = split_profile(&d, "default").unwrap().split.unwrap();
     std::fs::remove_file(s.root.join(SPLIT)).unwrap();
     let ea_before = tree(&ea_store(&d).root);
-    let again = split_profile(&d, "default").unwrap().unwrap();
+    let again = split_profile(&d, "default").unwrap().split.unwrap();
     assert_eq!(again, first);
     assert_eq!(tree(&ea_store(&d).root), ea_before);
     assert_split(&d, &s, &m38, &m39, &m40);
@@ -338,7 +338,7 @@ fn an_ea_root_a_core_wrote_first_gets_no_copy_and_keeps_its_own_generations() {
     write_on(&e, &ea_gen(1, "load", "new"), EA);
     current(&e, 1);
     let own = e.manifest(1).unwrap();
-    let split = split_profile(&d, "default").unwrap().unwrap();
+    let split = split_profile(&d, "default").unwrap().split.unwrap();
     assert_eq!(split.ea, [38, 40]);
     assert!(!split.copied);
     assert_eq!(e.generations(), [own]);
@@ -384,7 +384,7 @@ fn a_torn_ea_generation_stays_where_it_is() {
     current(&s, 2);
     let m = s.manifest(2).unwrap();
     std::fs::remove_file(s.bag_path(2, &m.containers[0])).unwrap();
-    let split = split_profile(&d, "default").unwrap().unwrap();
+    let split = split_profile(&d, "default").unwrap().split.unwrap();
     assert!(split.ea.is_empty());
     assert!(s.generation_dir(2).is_dir());
     assert!(!ea_store(&d).root.exists());
@@ -395,7 +395,7 @@ fn a_torn_ea_generation_stays_where_it_is() {
 fn every_profile_and_its_ea_root_are_plain_roots_for_pruning_and_withdrawing() {
     let d = dir("roots");
     let (s, ..) = three_way(&d);
-    split_profile(&d, "default").unwrap().unwrap();
+    split_profile(&d, "default").unwrap().split.unwrap();
     let mut roots = super::super::prune::roots(&d);
     roots.sort();
     assert_eq!(roots, [ea_store(&d).root, s.root.clone()]);
@@ -419,7 +419,7 @@ fn the_lost_careers_banner_of_neither_copy_comes_up_after_the_split() {
         "the shared store's false loss"
     );
 
-    split_profile(&d, "default").unwrap().unwrap();
+    split_profile(&d, "default").unwrap().split.unwrap();
     assert!(steam.probable_loss().is_none());
     assert!(ea.probable_loss().is_none());
 
@@ -436,5 +436,266 @@ fn the_lost_careers_banner_of_neither_copy_comes_up_after_the_split() {
         ea.probable_loss().is_none(),
         "the first EA app session after the split"
     );
+    std::fs::remove_dir_all(&d).ok();
+}
+
+fn requests_world(name: &str) -> (PathBuf, Plain) {
+    let d = dir(name);
+    let s = shared(&d);
+    write_on(&s, &steam_gen(39, "save", "s39"), STEAM);
+    write_on(&s, &ea_gen(40, "save", "e40"), EA);
+    current(&s, 40);
+    (d, s)
+}
+
+fn take(root: &Plain) {
+    std::fs::rename(root.root.join(inject::INJECT), root.root.join(inject::APPLYING)).unwrap();
+}
+
+#[test]
+fn a_pending_request_for_an_ea_generation_moves_with_it_and_an_ea_session_takes_it() {
+    use crate::install::Source::{EaApp, Steam};
+    let (d, s) = requests_world("request-ea");
+    let asked = s.restore_mode(40, "f1_world", 50).unwrap();
+    assert_eq!(asked.len(), 2);
+
+    let out = split_profile(&d, "default").unwrap();
+    assert!(out.split.is_some());
+    assert_eq!(out.requests.len(), 2);
+    assert!(
+        out.requests
+            .iter()
+            .all(|m| m.kept && m.generation == 40 && m.file == inject::INJECT)
+    );
+    let e = ea_store(&d);
+    assert!(s.pending().is_empty());
+    assert!(!s.root.join(inject::INJECT).exists());
+    assert_eq!(e.pending(), asked);
+    assert_eq!(
+        e.pins().get(&40).map(Vec::as_slice),
+        Some(&["restore".to_owned()][..])
+    );
+    assert!(
+        e.kept(Keep { newest: 0 }).contains(&40),
+        "pruning keeps the generation it names"
+    );
+
+    assert_eq!(
+        super::super::root_of_session(&d, "default", true, EaApp),
+        Some(e.root.clone())
+    );
+    assert_eq!(
+        super::super::root_of_session(&d, "default", true, Steam),
+        Some(s.root.clone())
+    );
+    take(&e);
+    assert_eq!(e.applying(), asked);
+    for r in e.applying() {
+        let m = e
+            .manifest(r.generation)
+            .expect("the generation the request names is in the EA store");
+        assert!(m.container(&r.container).is_some(), "{}", r.container);
+    }
+    std::fs::remove_dir_all(&d).ok();
+}
+
+#[test]
+fn a_request_for_a_steam_generation_stays_in_the_steam_layouts_store() {
+    let (d, s) = requests_world("request-steam");
+    let asked = s.restore_mode(39, "driver_career_progressive", 50).unwrap();
+    let out = split_profile(&d, "default").unwrap();
+    assert!(out.split.is_some());
+    assert!(out.requests.is_empty());
+    assert_eq!(s.pending(), asked);
+    assert!(s.manifest(39).is_some());
+    let e = ea_store(&d);
+    assert!(e.pending().is_empty() && e.answers().is_empty());
+    assert!(!e.root.join(inject::INJECT).exists());
+    std::fs::remove_dir_all(&d).ok();
+}
+
+fn mixed(s: &Plain) -> (Vec<inject::Request>, Vec<inject::Request>) {
+    let steam = inject::ask(&s.root, 39, "gm_driver_career_progressive", true, 50).unwrap();
+    let ea = inject::ask(&s.root, 40, "gm_f1_world", true, 50).unwrap();
+    let applying_steam = inject::Request {
+        id: "taken-steam".into(),
+        ..steam.clone()
+    };
+    let applying_ea = inject::Request {
+        id: "taken-ea".into(),
+        ..ea.clone()
+    };
+    inject::hold(
+        &s.root,
+        inject::APPLYING,
+        vec![applying_steam.clone(), applying_ea.clone()],
+    )
+    .unwrap();
+    (vec![steam, applying_steam], vec![ea, applying_ea])
+}
+
+#[test]
+fn a_mixed_request_file_splits_by_generation() {
+    let (d, s) = requests_world("request-mixed");
+    let (steam, ea) = mixed(&s);
+    let out = split_profile(&d, "default").unwrap();
+    let e = ea_store(&d);
+    assert_eq!(s.pending(), [steam[0].clone()]);
+    assert_eq!(s.applying(), [steam[1].clone()]);
+    assert_eq!(e.pending(), [ea[0].clone()]);
+    assert_eq!(e.applying(), [ea[1].clone()]);
+    let files: Vec<(&str, &str)> = out.requests.iter().map(|m| (m.id.as_str(), m.file)).collect();
+    assert_eq!(
+        files,
+        [
+            (ea[0].id.as_str(), inject::INJECT),
+            ("taken-ea", inject::APPLYING)
+        ]
+    );
+
+    let withdrawn = withdraw_all_unanswered(&d);
+    assert_eq!(withdrawn.len(), 2, "{withdrawn:?}");
+    assert!(
+        e.answers()
+            .iter()
+            .any(|a| a.id == "taken-ea" && a.detail == inject::WITHDRAWN)
+    );
+    assert!(
+        s.answers()
+            .iter()
+            .any(|a| a.id == "taken-steam" && a.detail == inject::WITHDRAWN)
+    );
+    assert!(!e.answers().iter().any(|a| a.id == "taken-steam"));
+    std::fs::remove_dir_all(&d).ok();
+}
+
+#[test]
+fn a_split_with_requests_run_twice_moves_each_once() {
+    let (d, s) = requests_world("request-twice");
+    let (steam, ea) = mixed(&s);
+    let lines = split_all_held(&d);
+    assert_eq!(lines.len(), 3, "{lines:?}");
+    assert!(
+        lines[1].contains(&format!("moved restore request {}", ea[0].id)),
+        "{}",
+        lines[1]
+    );
+    assert!(lines[2].contains("inject.applying.json"), "{}", lines[2]);
+    let (shared_after, ea_after) = (tree(&s.root), tree(&ea_store(&d).root));
+    assert!(split_all_held(&d).is_empty());
+    assert_eq!(split_profile(&d, "default").unwrap(), Outcome::default());
+    assert_eq!(tree(&s.root), shared_after);
+    assert_eq!(tree(&ea_store(&d).root), ea_after);
+    assert_eq!(s.pending(), [steam[0].clone()]);
+    assert_eq!(ea_store(&d).pending(), [ea[0].clone()]);
+    std::fs::remove_dir_all(&d).ok();
+}
+
+fn undo_set_aside_and_marker(s: &Plain) {
+    std::fs::remove_file(s.root.join(SPLIT)).unwrap();
+    let kept = Plain::at(s.root.join(SPLIT_ASIDE));
+    std::fs::rename(kept.generation_dir(40), s.generation_dir(40)).unwrap();
+}
+
+#[test]
+fn a_split_that_stopped_after_moving_requests_and_before_split_json_moves_none_twice() {
+    let (d, s) = requests_world("request-stop");
+    let (steam, ea) = mixed(&s);
+    let first = split_profile(&d, "default").unwrap().split.unwrap();
+    let e = ea_store(&d);
+    let (pending, applying) = (e.pending(), e.applying());
+    assert_eq!(pending, [ea[0].clone()]);
+
+    undo_set_aside_and_marker(&s);
+    let again = split_profile(&d, "default").unwrap();
+    assert_eq!(again.split, Some(first.clone()));
+    assert!(again.requests.is_empty(), "the requests moved before the stop");
+    assert_eq!((e.pending(), e.applying()), (pending.clone(), applying.clone()));
+    assert_eq!(
+        (s.pending(), s.applying()),
+        (vec![steam[0].clone()], vec![steam[1].clone()])
+    );
+
+    undo_set_aside_and_marker(&s);
+    inject::hold(&s.root, inject::INJECT, vec![steam[0].clone(), ea[0].clone()]).unwrap();
+    inject::hold(&s.root, inject::APPLYING, vec![steam[1].clone(), ea[1].clone()]).unwrap();
+    let third = split_profile(&d, "default").unwrap();
+    assert_eq!(third.split, Some(first));
+    assert_eq!(
+        third.requests.len(),
+        2,
+        "stopped before the shared store's files were written"
+    );
+    assert_eq!((e.pending(), e.applying()), (pending, applying), "each id once");
+    assert_eq!(
+        (s.pending(), s.applying()),
+        (vec![steam[0].clone()], vec![steam[1].clone()])
+    );
+    std::fs::remove_dir_all(&d).ok();
+}
+
+#[test]
+fn a_request_for_an_ea_generation_the_ea_store_has_no_copy_of_is_answered_not_lost() {
+    let (d, s) = requests_world("request-own");
+    let e = ea_store(&d);
+    write_on(&e, &ea_gen(1, "load", "new"), EA);
+    current(&e, 1);
+    let asked = inject::ask(&s.root, 40, "gm_f1_world", true, 50).unwrap();
+    let out = split_profile(&d, "default").unwrap();
+    assert!(!out.split.unwrap().copied);
+    assert_eq!(out.requests.len(), 1);
+    assert!(!out.requests[0].kept);
+    assert!(s.pending().is_empty() && e.pending().is_empty());
+    let answer = e.answers().last().cloned().unwrap();
+    assert_eq!((answer.id.as_str(), answer.ok), (asked.id.as_str(), false));
+    assert_eq!(answer.detail, not_copied(40));
+    assert!(answer.detail.contains("generation 40") && answer.detail.contains(SPLIT_ASIDE));
+    assert!(Plain::at(s.root.join(SPLIT_ASIDE)).manifest(40).is_some());
+    assert_eq!(e.generations().len(), 1, "no copy");
+    let lines = split_all_held(&d);
+    assert!(lines.is_empty(), "{lines:?}");
+    std::fs::remove_dir_all(&d).ok();
+}
+
+#[test]
+fn a_store_split_before_moves_the_requests_it_left_for_ea_generations() {
+    let (d, s) = requests_world("request-later");
+    split_profile(&d, "default").unwrap().split.unwrap();
+    let left = inject::ask(&s.root, 40, "gm_f1_world", true, 60).unwrap();
+    let steam = inject::ask(&s.root, 39, "gm_driver_career_progressive", true, 60).unwrap();
+    let lines = split_all_held(&d);
+    assert_eq!(lines.len(), 1, "{lines:?}");
+    assert!(
+        lines[0].contains("the next EA app session takes it"),
+        "{}",
+        lines[0]
+    );
+    let e = ea_store(&d);
+    assert_eq!(e.pending(), [left]);
+    assert_eq!(s.pending(), [steam]);
+    assert_eq!(split_profile(&d, "default").unwrap(), Outcome::default());
+    std::fs::remove_dir_all(&d).ok();
+}
+
+#[test]
+fn a_request_is_never_pointed_at_an_ea_store_generation_of_its_own_under_the_same_number() {
+    let (d, s) = requests_world("request-same-number");
+    let e = ea_store(&d);
+    write_on(&e, &ea_gen(40, "load", "own"), EA);
+    current(&e, 40);
+    let own = e.manifest(40).unwrap();
+    assert_ne!(Some(&own), s.manifest(40).as_ref());
+    let asked = inject::ask(&s.root, 40, "gm_f1_world", true, 50).unwrap();
+    let out = split_profile(&d, "default").unwrap();
+    assert!(!out.split.unwrap().copied);
+    assert_eq!(out.requests.len(), 1);
+    assert!(!out.requests[0].kept);
+    assert!(e.pending().is_empty());
+    assert_eq!(
+        e.answers().last().map(|a| (a.id.clone(), a.ok)),
+        Some((asked.id, false))
+    );
+    assert_eq!(e.manifest(40), Some(own));
+    assert!(e.pins().is_empty());
     std::fs::remove_dir_all(&d).ok();
 }

@@ -9,17 +9,20 @@
 //! saves/<profile>/ea-plain/
 //!   generations/<n>/               a copy of it
 //!   CURRENT                        the newest one copied
+//!   inject.json                    the shared store's requests for those generations
+//!   inject.applying.json
 //! ```
 //!
-//! The split runs once per profile, with the session lock held and F1 25 closed. It copies before it sets anything aside
-//! and writes `split.json` last, so a split that stopped half way runs again from where it stopped. A generation no
-//! known build wrote stays in the shared store, which stays the Steam layout's.
+//! The split runs once per profile, with the session lock held and F1 25 closed. It copies, moves the requests, sets
+//! aside and writes `split.json` last, so a split that stopped half way runs again from where it stopped. A generation
+//! no known build wrote stays in the shared store, which stays the Steam layout's, and so do the requests for it.
 
 use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
+use super::inject::{self, Answer, Request};
 use super::{CURRENT, GENERATIONS, Manifest, Plain};
 use crate::{Result, io_err};
 
@@ -69,6 +72,94 @@ pub struct Split {
     pub unknown: Vec<u64>,
 }
 
+/// A launcher request the shared store held for an EA app generation, and where it went.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Moved {
+    pub id: String,
+    pub container: String,
+    pub generation: u64,
+    /// [`inject::INJECT`] or [`inject::APPLYING`], the file it was in.
+    pub file: &'static str,
+    /// It is in the same file of the EA layout's store, whose next EA app session takes it. Otherwise the EA layout's
+    /// store holds no copy of its generation and `injected.json` there answers it as not applied.
+    pub kept: bool,
+}
+
+/// What one call of [`split_profile`] did.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct Outcome {
+    /// The split, when this call ran it.
+    pub split: Option<Split>,
+    pub requests: Vec<Moved>,
+}
+
+/// The answer to a request for an EA app generation the EA layout's store has no copy of.
+pub fn not_copied(generation: u64) -> String {
+    format!(
+        "the launcher did not apply this restore: the EA app copy wrote generation {generation} before each copy had \
+         its own plain store, and the EA app copy's store had newer generations of its own, so it got no copy; \
+         generation {generation} is kept in plain/{SPLIT_ASIDE} of the Steam layout's store"
+    )
+}
+
+/// Move the requests of the shared store's request files that name an EA app generation into the same file of the EA
+/// layout's store, each id once, with its generation pinned there. A request whose generation the EA layout's store has
+/// no copy of (none, or one of its own under that number) is answered there as not applied instead. The shared store's file is written last, without them, so a
+/// move that stopped part way runs again whole.
+fn move_requests(shared: &Plain, ea_root: &Plain, ea: &BTreeSet<u64>) -> Result<Vec<Moved>> {
+    let mut out = Vec::new();
+    for file in [inject::INJECT, inject::APPLYING] {
+        let (theirs, ours): (Vec<Request>, Vec<Request>) = inject::held(&shared.root, file)
+            .into_iter()
+            .partition(|r| ea.contains(&r.generation));
+        if theirs.is_empty() {
+            continue;
+        }
+        let (kept, refused): (Vec<Request>, Vec<Request>) = theirs.into_iter().partition(|r| {
+            ea_root
+                .manifest(r.generation)
+                .is_some_and(|there| ea_manifest(shared, r.generation).is_some_and(|(m, _)| m == there))
+        });
+        if !kept.is_empty() {
+            for r in &kept {
+                ea_root.pin(r.generation, "restore")?;
+            }
+            let mut there = inject::held(&ea_root.root, file);
+            let new: Vec<Request> = kept
+                .iter()
+                .filter(|r| !there.iter().any(|t| t.id == r.id))
+                .cloned()
+                .collect();
+            there.extend(new);
+            inject::hold(&ea_root.root, file, there)?;
+        }
+        if !refused.is_empty() {
+            inject::answer(
+                &ea_root.root,
+                refused
+                    .iter()
+                    .map(|r| Answer {
+                        id: r.id.clone(),
+                        ok: false,
+                        detail: not_copied(r.generation),
+                    })
+                    .collect(),
+            )?;
+        }
+        inject::hold(&shared.root, file, ours)?;
+        let moved = |r: &Request, kept: bool| Moved {
+            id: r.id.clone(),
+            container: r.container.clone(),
+            generation: r.generation,
+            file,
+            kept,
+        };
+        out.extend(kept.iter().map(|r| moved(r, true)));
+        out.extend(refused.iter().map(|r| moved(r, false)));
+    }
+    Ok(out)
+}
+
 fn aside(shared: &Plain) -> Plain {
     Plain::at(shared.root.join(SPLIT_ASIDE))
 }
@@ -111,14 +202,25 @@ fn copy_generation(from: &Path, to: &Plain, n: u64) -> Result<()> {
     Ok(())
 }
 
-/// Split the shared plain store of `profile`: copy the EA app generations into the EA layout's root, then set them
-/// aside in the shared store. `None` when there is nothing to split or the split already ran. The caller holds the
-/// session lock and has checked that F1 25 is closed.
-pub fn split_profile(data: &Path, profile: &str) -> Result<Option<Split>> {
+/// Split the shared plain store of `profile`: copy the EA app generations into the EA layout's root, move the requests
+/// for them there, then set them aside in the shared store. A store split before moves its leftover requests for the
+/// generations `split.json` names. The caller holds the session lock and has checked that F1 25 is closed.
+pub fn split_profile(data: &Path, profile: &str) -> Result<Outcome> {
     let shared = Plain::at(super::root_of_profile(data, profile));
     let marker = shared.root.join(SPLIT);
-    if marker.is_file() || !shared.root.join(CURRENT).is_file() {
-        return Ok(None);
+    let ea_root = Plain::at(super::root_of_profile_ea(data, profile));
+    if marker.is_file() {
+        let Ok(done) = crate::read_json::<Split>(&marker) else {
+            return Ok(Outcome::default());
+        };
+        let ea: BTreeSet<u64> = done.ea.into_iter().collect();
+        return Ok(Outcome {
+            split: None,
+            requests: move_requests(&shared, &ea_root, &ea)?,
+        });
+    }
+    if !shared.root.join(CURRENT).is_file() {
+        return Ok(Outcome::default());
     }
     let set_aside = aside(&shared);
     let mut ea: BTreeSet<u64> = set_aside
@@ -137,7 +239,6 @@ pub fn split_profile(data: &Path, profile: &str) -> Result<Option<Split>> {
         }
     }
     unknown.sort_unstable();
-    let ea_root = Plain::at(super::root_of_profile_ea(data, profile));
     let copied = !ea.is_empty()
         && ea_root.numbers().into_iter().all(|n| {
             ea_root
@@ -159,6 +260,7 @@ pub fn split_profile(data: &Path, profile: &str) -> Result<Option<Split>> {
             crate::write_json(&ea_root.root.join(CURRENT), &top)?;
         }
     }
+    let requests = move_requests(&shared, &ea_root, &ea)?;
     for n in &ea {
         let from = shared.generation_dir(*n);
         if !from.is_dir() {
@@ -176,7 +278,10 @@ pub fn split_profile(data: &Path, profile: &str) -> Result<Option<Split>> {
         unknown,
     };
     crate::write_json(&marker, &split)?;
-    Ok(Some(split))
+    Ok(Outcome {
+        split: Some(split),
+        requests,
+    })
 }
 
 fn split_line(data: &Path, profile: &str, s: &Split) -> String {
@@ -205,6 +310,24 @@ fn split_line(data: &Path, profile: &str, s: &Split) -> String {
     )
 }
 
+fn request_line(data: &Path, profile: &str, m: &Moved) -> String {
+    let what = format!(
+        "restore request {} ({} from generation {}) of profile {profile}",
+        m.id, m.container, m.generation
+    );
+    match m.kept {
+        true => format!(
+            "saves: moved {what} to {} of the EA layout's store {}; the next EA app session takes it",
+            m.file,
+            super::root_of_profile_ea(data, profile).display()
+        ),
+        false => format!(
+            "saves: answered {what} as not applied: {}",
+            not_copied(m.generation)
+        ),
+    }
+}
+
 /// Split the shared plain store of every profile under `data`. The caller holds the session lock and has checked
 /// that F1 25 is closed. Lines for the log.
 pub fn split_all_held(data: &Path) -> Vec<String> {
@@ -218,8 +341,10 @@ pub fn split_all_held(data: &Path) -> Vec<String> {
     let mut out = Vec::new();
     for profile in profiles {
         match split_profile(data, &profile) {
-            Ok(Some(s)) if !s.ea.is_empty() => out.push(split_line(data, &profile, &s)),
-            Ok(_) => {}
+            Ok(o) => {
+                out.extend(o.split.filter(|s| !s.ea.is_empty()).map(|s| split_line(data, &profile, &s)));
+                out.extend(o.requests.iter().map(|m| request_line(data, &profile, m)));
+            }
             Err(e) => out.push(format!(
                 "saves: could not split the plain store of profile {profile} between the Steam and EA app copies: {e}"
             )),
