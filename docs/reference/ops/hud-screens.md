@@ -154,6 +154,31 @@ names each mask's scene in `mask_scenes`; without it, the wrappers go into the i
 The host instances need nothing of this: each record shows its own `<prefix>_host`, and `o_<other>`
 hides the other records' roots inside it.
 
+### How big a board can grow
+
+The game walks a screen's UI tree as one flat list of 16-byte slots with 16-bit child indices, so one
+tree holds at most 65,536 slots. A board holds the host scene once for the stock cap and once per
+screen record on the screen, and every host instance holds every record's root and editor copy:
+
+```text
+board      = (1 + records on the screen) x host scene slots
+race tree  = board + about 17,500 slots of the rest of the race HUD
+HUD editor = 3 x board + 816
+```
+
+SWOFTY 2010, SWOFTY 2011 and TV Timing Tower on the standings make a 14,101-slot host scene, a
+56,404-slot board and a race tree of about 73,904 slots. The build stops before the game starts,
+naming every addon with a record on the screen and the ones whose removal alone brings the tree
+inside the limit:
+
+```text
+the HUD elements do not compose: SWOFTY 2010, SWOFTY 2011 and TV Timing Tower together make the Track Position list too big for the game: about 73904 of the 65536 slots one screen can hold, and the game can close as soon as it shows it; turn SWOFTY 2010, SWOFTY 2011 or TV Timing Tower off in this profile (the board holds the 14101-slot host scene 4 times)
+```
+
+A board whose HUD editor tree passes the limit builds with a warning line: the game can close when
+HUD customisation opens. The build lists each record's nodes, walk slots and walk stack (256 at
+most), and each screen's board and tree.
+
 ## The three presets
 
 | | `standings` | `replay` | `spectator` |
