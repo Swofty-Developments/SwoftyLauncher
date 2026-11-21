@@ -19,6 +19,10 @@ pub(crate) fn fnv(name: &str) -> String {
 }
 
 pub(crate) fn write(p: &Plain, g: &Gen) {
+    write_on(p, g, "e");
+}
+
+pub(crate) fn write_on(p: &Plain, g: &Gen, exe: &str) {
     let gd = p.generation_dir(g.n);
     std::fs::create_dir_all(gd.join("containers")).unwrap();
     let containers: Vec<serde_json::Value> = g
@@ -38,7 +42,7 @@ pub(crate) fn write(p: &Plain, g: &Gen) {
         .collect();
     let manifest = serde_json::json!({
         "schema": 1, "generation": g.n, "event": g.event, "written_at": 1000 + g.n, "core_version": "1.10.0",
-        "exe_sha256": "e", "profile": "default", "session": g.session, "loaded_addons": [],
+        "exe_sha256": exe, "profile": "default", "session": g.session, "loaded_addons": [],
         "containers": containers
     });
     std::fs::write(gd.join("manifest.json"), manifest.to_string()).unwrap();

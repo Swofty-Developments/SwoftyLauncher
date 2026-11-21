@@ -21,6 +21,7 @@ mod loss;
 mod manifest;
 mod prune;
 pub mod rewrite;
+mod split;
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -28,6 +29,7 @@ use std::path::{Path, PathBuf};
 pub use loss::{Loss, Lost, PutBack, put_backs};
 pub use manifest::{Container, Event, Manifest, SCHEMA, SLOT_SUFFIX, Slot, Source, mode_of};
 pub use prune::{Keep, Pruned, prune_all_held};
+pub use split::{SPLIT, SPLIT_ASIDE, Split, split_all_held, split_profile};
 
 use crate::{Result, io_err};
 
