@@ -33,7 +33,7 @@ pub use resume::{
     CareerNeeds, MissingRows, ResumeNeed, RowSet, mark_missing_modes, mode_owners, mode_suffix, of_profile,
     resume_needs, session_needs,
 };
-pub use rows::{Played, drop_former_owners, settle_rows, stock_max_for};
+pub use rows::{Played, settle_rows, stock_max_for};
 
 pub const GAME_PATH: &str = "swofty/careers/index.json";
 pub const DATA_PATH: &str = "careers/index.json";

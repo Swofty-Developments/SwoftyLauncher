@@ -22,6 +22,14 @@
 // 0x1412682d0 gives a SeasonBreak inside a dynamic break, so the weekend decides. A started break's own start hook
 // (ScheduleEntry vt+0x78) does nothing, so there is nothing to undo.
 //
+// The ignored break then keeps Team HQ's Advance off once the weekend is over: Career_TeamHqAdvance_PopulateButtons
+// 0x1422c5900 sets canAdvance (vm+0x758) false when any activity running today (the same collector) has a definition
+// of type EndSeason, RaceWeekend, DynamicBreak or SeasonBreak, whatever its state, and
+// Game_TeamHQAdvanceViewModel_PressAdvance 0x1422c6860 does nothing without canAdvance. The stock break flow
+// (team_hq_advance_season_break_message, 0x1422cd9a0 -> Career_Timeline_ProcessKind0Entries 0x14128b310) only starts
+// breaks in state 0, so nothing moves the clock out of a break in state 4. ended_breaks names the ignored season
+// breaks that alone keep Advance off on a Team HQ day; the core moves each one's day back so it ends the day before.
+//
 // A career session enters SessionStateCareerHub right after StateSession enters and leaves it in the same
 // millisecond, healthy or not. The tell of the stuck-weekend crash is StateSession itself ending within FAST_END_MS of
 // its start after the hub opened; SessionWatch reports that. A weekend whose progress state is past not started with
@@ -52,7 +60,9 @@ constexpr uint32_t MINUTES_PER_DAY = 1440;
 constexpr size_t MAX_ITEMS = 512;
 constexpr uint64_t SLOT_SIZE = 16;
 constexpr uint64_t SLOT_ITEM = 8;
+constexpr uint8_t END_SEASON = 0x05;
 constexpr uint8_t RACE_WEEKEND = 0x0a;
+constexpr uint8_t DYNAMIC_BREAK = 0x0b;
 constexpr uint8_t SEASON_BREAK = 0x0c;
 constexpr uint8_t CONTRACT_EVENT = 0x0f;
 constexpr uint8_t SECRET_MEETING = 0x10;
@@ -192,6 +202,55 @@ inline BreakFix breaks_before_weekend(const std::vector<Item> &today, bool seaso
         f.breaks.push_back(i);
     }
     return {};
+}
+
+inline bool blocks_advance(uint8_t type)
+{
+    return type == END_SEASON || type == RACE_WEEKEND || type == DYNAMIC_BREAK || type == SEASON_BREAK;
+}
+
+// The first item running today that keeps Team HQ's Advance off, or -1.
+inline int advance_blocker(const std::vector<Item> &today)
+{
+    for (size_t i = 0; i < today.size(); ++i)
+        if (today[i].def && today[i].id != NO_ID && blocks_advance(today[i].type))
+            return int(i);
+    return -1;
+}
+
+inline std::string describe_advance(const std::vector<Item> &today)
+{
+    int b = advance_blocker(today);
+    if (b < 0)
+        return "Team HQ's Advance is on (nothing running today keeps it off)";
+    char s[96];
+    snprintf(s, sizeof s, "Team HQ's Advance is off (item %d, %s, keeps it off)", b + 1, type_name(today[size_t(b)].type));
+    return s;
+}
+
+// An ignored season break that alone keeps Advance off (item) and the first day that makes it end the day before
+// today (first).
+struct BreakMove {
+    size_t item = 0;
+    uint16_t first = 0;
+};
+
+// Every item keeping Advance off on day is a season break in state 4 that fits in the days before today: each one, with
+// its new first day. Empty otherwise: a race weekend, a dynamic break, the end of the season or a break in another
+// state still running today is left to the game.
+inline std::vector<BreakMove> ended_breaks(const std::vector<Item> &today, uint16_t day)
+{
+    std::vector<BreakMove> out;
+    for (size_t i = 0; i < today.size(); ++i) {
+        const Item &it = today[i];
+        if (!it.def || it.id == NO_ID || !blocks_advance(it.type))
+            continue;
+        uint16_t length = uint16_t(it.last - it.first + 1);
+        if (it.type != SEASON_BREAK || it.state != IGNORED || it.last < it.first || length > day)
+            return {};
+        out.push_back({i, uint16_t(day - length)});
+    }
+    return out;
 }
 
 inline bool read_item(uint64_t at, const Layout &L, Read rd, void *user, Item &out)

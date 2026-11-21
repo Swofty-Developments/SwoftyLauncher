@@ -111,8 +111,8 @@ pub(super) fn loader_missing(exe_dir: Option<&Path>) -> String {
     )
 }
 
-/// The refusal for an addon's change the game's own copy of `rel` already holds. `play` is for a check
-/// before Play, which puts a backed-up original back itself.
+/// The refusal for an addon's change, or an entry of the launcher's own menus, the game's own copy of `rel`
+/// already holds. `play` is for a check before Play, which puts a backed-up original back itself.
 pub fn stale_text(detail: &str, rel: &str, play: bool) -> String {
     let first = match play {
         true => "press Play, which puts its backed-up original back, or ",
