@@ -12,6 +12,8 @@ mod steward;
 #[cfg(test)]
 mod tests;
 mod tracker;
+#[cfg(test)]
+mod tracker_tests;
 
 pub(crate) use state::{Multiplayer, RoomLaunch};
 pub(crate) use tracker::PlayWord;
