@@ -319,9 +319,9 @@ SNAPSHOTS = [Program('snapshots_test', [
              'src/core/career/snapshots/freeze.cpp', 'src/core/registry/store.cpp', 'src/core/registry/validate.cpp',
              'src/core/registry/schema.cpp'], SNAPSHOTS_FLAGS), ZSTD])]
 
-CAR_LIVE = [Program(t, [Objects([f'test/hooks/{t}.cpp'], ['-Isrc', '-std=c++23', '-O1', '-Wall', '-Wextra', '-Werror',
+CAR_LIVE = [Program(t, [Objects([f'test/hooks/{t}.cpp'], ['-Isrc', '-Iinclude', '-std=c++23', '-O1', '-Wall', '-Wextra', '-Werror',
                                                           '-Wno-nullability-completeness', SDK])])
-            for t in ('car_live_test', 'car_profile_test', 'ai_racecraft_test')]
+            for t in ('car_live_test', 'car_profile_test', 'car_identity_test', 'ai_racecraft_test')]
 
 FAST_FAIL = [Program('fast_fail_test', [Objects(['test/fast_fail_test.cpp'], ['-Isrc', '-std=c++23', '-O2', '-Wall', '-Wextra',
                                                                               '-Wno-nullability-completeness'])])]
@@ -389,7 +389,7 @@ SCRIPTS = [
     Script('game_points', 'Game hook points host test', ['{out}/game_points_test'], cwd='test', programs=[hook_test('game_points')]),
     Script('session_points', 'Session control, AI controller and spectator points host test', ['{out}/session_points_test'],
            cwd='test', programs=[hook_test('session_points')]),
-    Script('car_live', 'Live car operations host test', each('car_live_test', 'car_profile_test', 'ai_racecraft_test'), cwd='test',
+    Script('car_live', 'Live car operations host test', each('car_live_test', 'car_profile_test', 'car_identity_test', 'ai_racecraft_test'), cwd='test',
            programs=CAR_LIVE),
     Script('w5_review', 'Hook points review test', ['{out}/w5_review_test'], cwd='test',
            programs=[Program('w5_review_test', [Objects(['test/hooks/w5_review_test.cpp'], HOOK_FLAGS)])]),
