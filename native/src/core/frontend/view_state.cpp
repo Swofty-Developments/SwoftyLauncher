@@ -46,6 +46,16 @@ constexpr runtime::build_proof::Proof VIEWPORT_CAMERA_LAYOUT{
     "the primary viewport camera type", runtime::build_proof::bit(runtime::build_proof::Build::steam_1_0_145)};
 constexpr runtime::build_proof::Gate VIEWPORT_CAMERA_GATE{"active viewport camera", &VIEWPORT_CAMERA_LAYOUT};
 
+// This game reader loads the current camera owner and reads its primary camera at +0x98.
+const runtime::Sig S_VIEWPORT_OWNER{
+    "g_Game_ViewportOwner",
+    "48 8B 05 ?? ?? ?? ?? 48 8B 80 98 00 00 00 48 85 C0 74 4D 48 8B 88 A0 02 00 00 48 39 88 A8 02 00 00 74 3D",
+    0x6cc5a18,
+    runtime::Sig::riprel,
+    0,
+    3,
+    7};
+
 const char *const CAMERA_NAMES[8] = {"unknown", "nose_cam",      "nose_cam_alt", "cockpit_cam",
                                      "tv_pod",  "tv_pod_offset", "near_chase",   "far_chase"};
 
@@ -81,6 +91,8 @@ private:
     uint32_t groups_active();
     void recompute();
     void recompute_locked();
+    uintptr_t active_primary_record() const;
+    void recover_replay_view();
     Kind classify_fallback_camera(const safetyhook::Context &ctx) const;
 
     safetyhook::MidHook h_photo_on, h_photo_off, h_camera_setting, h_pause, h_viewport_camera;
@@ -92,6 +104,8 @@ private:
     std::atomic<uint32_t> pause_mask{0};
     std::mutex change_lock;
     ViewportCamera assigned_camera;
+    bool instant_replay_exited = false;
+    uintptr_t viewport_owner_slot = 0;
     std::vector<CameraUid> trackside_camera_uids;
     bool trust_camera = false;
     std::atomic<int> pause_logged{0};
@@ -329,6 +343,26 @@ safetyhook::MidHook install(const runtime::Sig &sig, safetyhook::MidHookFn fn)
     return std::move(*h);
 }
 
+uintptr_t ViewState::active_primary_record() const
+{
+    uintptr_t owner = 0, current_camera = 0;
+    if (!viewport_owner_slot || !swofty::mem::read(viewport_owner_slot, owner) || !owner ||
+        !swofty::mem::read(owner + 0x98, current_camera) || !swofty::mem::object_like(current_camera))
+        return 0;
+    return owner + 0x98;
+}
+
+void ViewState::recover_replay_view()
+{
+    if (!h_viewport_camera || assigned_camera.kind() != UNKNOWN)
+        return;
+    const auto record = active_primary_record();
+    uint8_t type = 255;
+    const bool readable = record && swofty::mem::read(record + 0x20, type);
+    if (readable && type >= 3 && type <= 5 && assigned_camera.observe(0, type))
+        swofty::log("[view] recovered %s from the current primary viewport", kind_text(assigned_camera.kind()));
+}
+
 void ViewState::flow(uint32_t hash, uint32_t to)
 {
     std::lock_guard lock(change_lock);
@@ -340,8 +374,22 @@ void ViewState::flow(uint32_t hash, uint32_t to)
             active.fetch_or(bit, std::memory_order_relaxed);
         else if (to == 0 || to == 3)
             active.fetch_and(~bit, std::memory_order_relaxed);
-        if (TRACKED[i].group == G_SESSION && (to == 0 || to == 3))
+        const auto group = TRACKED[i].group;
+        if (group == G_SESSION && (to == 0 || to == 3)) {
             trackside_camera_uids.clear();
+            instant_replay_exited = false;
+        }
+        if ((group == G_REPLAY || group == G_CUTSCENE || group == G_SPECTATE) && to == 1)
+            instant_replay_exited = false;
+        if (hash == view_flow::djb2("InstantReplay") && to == 3)
+            instant_replay_exited = bool(groups_active() & G_SESSION);
+        // At InGame Entering the primary viewport can still hold the outgoing replay camera.
+        if (group == G_DRIVING && to == 2 && instant_replay_exited) {
+            instant_replay_exited = false;
+            const auto groups = groups_active();
+            if ((groups & (G_SESSION | G_REPLAY | G_CUTSCENE | G_SPECTATE)) == G_SESSION)
+                recover_replay_view();
+        }
         if (TRACKED[i].group == G_REPLAY && (to == 0 || to == 3) && photo.exchange(false))
             swofty::log("[view] photo mode cleared by the replay state leaving");
         break;
@@ -359,8 +407,10 @@ void ViewState::setup()
     h_camera_setting = install(S_CAMERA, [](safetyhook::Context &ctx) { view_state.camera(ctx); });
     h_pause = install(S_PAUSE, [](safetyhook::Context &ctx) { view_state.pause(ctx); });
     if (runtime::holds(VIEWPORT_CAMERA_GATE)) {
+        const auto owner_slot = runtime::find(S_VIEWPORT_OWNER, "active primary viewport owner", "view");
         auto hook = install(S_VIEWPORT_CAMERA, [](safetyhook::Context &ctx) { view_state.viewport_camera(ctx); });
         std::lock_guard lock(change_lock);
+        viewport_owner_slot = owner_slot;
         h_viewport_camera = std::move(hook);
     }
     swofty::log("[view] setup: photo %s/%s, camera setting %s%s, pause reasons %s; flow states come from the career flow "
