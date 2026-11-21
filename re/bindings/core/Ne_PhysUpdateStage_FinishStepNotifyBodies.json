@@ -7,9 +7,9 @@
   "addr": "0x1440c7d70",
   "level": "L2",
   "subsystem": "core",
-  "proto": "-",
-  "evidence": "decomp:re/decomp/1440c7d70.c;xref:0x14445b27e",
-  "notes": "Waits for physics jobs, pumps Ne_PhysWorld_AdvanceStepState to idle, then walks the body list (world+0x40) and for bodies with a post-step callback (body+0x80 -> +0x28) fills a struct with linear speed |v| (+0x170/+0x180), angular speed (+0x190/+0x1a0) and contact flags (+0x2dc/+0x304 bits) and calls it. Hypothesis: source of impact/contact callback speeds (damage, sound, vfx). Caller Game_PhysicsUpdateStage_Update."
+  "proto": "void Ne_PhysUpdateStage_FinishStepNotifyBodies(void *stage)",
+  "evidence": "decomp:own capstone disasm 0x1440c7d70-0x1440c7e0d, 0x1440c65e0-0x1440c6982, 0x1440bf620-0x1440c084e, 0x1440cd9b0-0x1440cf0a8, 0x1440c12e0-0x1440c158e, 0x1440c17c0-0x1440c1b60, 0x1441011a0-0x1441015d1 (re/tools/disx.py);xref:0x14445b27e,0x1440c06f5,0x1440c77c6,0x1440e0810,0x14410148d",
+  "notes": "End of a physics update, on the thread that runs it. rcx = the update stage: Game_PhysicsUpdateStage_Update passes [rsi+0x18] at 0x14445b27e, after it leaves the world lock [[stage+8]+0x60] (0x14445b26e) and only when byte [rsi+0x60] is 0. world = [rcx+8]; world+0xcf0 is the step state (Ne_PhysUpdateStage_RunSubsteps sets 1 at 0x1440c7ac1 once it starts the last step). State 0 returns at once. State 7, with [[world+0x30]+0x10e0]+0xcf0 also 7, waits on [world+0x30]+0x1118 (0x143ac0100) when [world+0x30]+0xf58 >= 2 and sets that state to 0; any other state calls Ne_PhysWorld_AdvanceStepState(world) until world+0xcf0 is 0. Then, when byte rcx+0x69 is set, it calls Ne_PhysUpdateStage_FlushSubstepRecords(rcx) and tail-jumps to Ne_PhysWorld_NotifyBodyStepCallbacks(rcx). void: the caller reads no rax after the call (0x14445b283 loads r12). Correction to the earlier row: the list NotifyBodyStepCallbacks walks (world+0x40, next +0x40) holds constraints, not bodies. Ne_PhysWorld_CreateConstrainedBody builds those entries with +8 = body A (the +0x18 of the first handle), +0x10 = body B, +0x40 = 0 and the callback block at +0x80 (0x1440cdd47-0x1440cdda1, 0x1440cf017), and the values it hands the callback are the lengths of the entry's own +0x170/+0x180/+0x190/+0x1a0 vectors. The rigid bodies are on world+0x48, linked through body+0x330 (prev +0x338): Ne_PhysWorld_CreateRigidBody links each new body at the head (0x1440c06e9-0x1440c071b, world = [its rcx+8]), Ne_PhysWorld_RunStepPipeline steps its cursor world+0x50 through +0x330 and wraps it to world+0x48 (0x1440c77bd-0x1440c77da), Ne_PhysWorld_ResetFrameState walks the list (0x1440e07f8-0x1440e0847), and the body teardown 0x1441011a0 unlinks from it under the lock [[body+0x368]+0x60] (0x144101481-0x1441014d4). Body fields: +0x1c0 is row 3 of the world transform +0x190..+0x1cf, the position (Ne_PhysBody_SetTransform stores it at 0x1440c17fe); +0x220 is the linear velocity (Ne_PhysBody_ApplyImpulse adds J times the inverse mass +0x438 at 0x1440c1310-0x1440c1325 when flags +0x46c bit 0 is set; only the bit 1 path then clamps its length to +0x400 at 0x1440c13b8-0x1440c1414); +0x210 is the angular velocity (ApplyImpulse adds the inverse inertia rows +0xd0..+0x100 times (point - [+0x378]) x J at 0x1440c1335-0x1440c13b0 when bit 1 is set, then limits each axis to +0x3f4..+0x3fc in the frame +0x150..+0x170); +0x458 is the body's handle (0x1440c07b8), whose +0x18 is the body. Steam 26566308 0x1440ca340, EA 1.0.141 0x1440b62a0 and EA 1.0.145 0x1440b8870 have the same instruction stream (branch targets function-relative, RIP displacements masked), and so do NotifyBodyStepCallbacks, RunStepPipeline, AdvanceStepState, FlushSubstepRecords, RunSubsteps, ApplyImpulse, SetTransform, ResetFrameState, CreateRigidBody, CreateConstrainedBody, the teardown and Game_PhysicsUpdateStage_Update. callers: census steam 0x40c7d70. Core's physics non-finite log wraps it: after the game's code it walks world+0x48 once per update that finished a step and logs each body whose +0x1c0, +0x210 or +0x220 holds a value that is not finite once; it writes nothing to the game."
  },
  "signature": {
   "id": "core.phys_update_stage_finish_step_notify_bodies",
@@ -33,7 +33,9 @@
     "how": "static"
    }
   ],
-  "used_by": []
+  "used_by": [
+   "native/src/core/guards/engine/phys_nonfinite_guard.cpp"
+  ]
  },
  "verify": [
   {
@@ -45,7 +47,66 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/1440c7d70.c;xref:0x14445b27e",
    "notes": "V7609 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  },
+  {
+   "date": "2026-11-21",
+   "verifier": "native-guards-phys-nonfinite-blind",
+   "kind": "func",
+   "item": "Ne_PhysUpdateStage_FinishStepNotifyBodies",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1440c7d70-0x1440c7e0d, 0x14445aea0-0x14445b4d8, 0x1440c65e0-0x1440c6982, 0x1440cd9b0-0x1440cf0a8, 0x1441058e0-0x144105ffc, 0x1440bf620-0x1440c084e, 0x1440c7710-0x1440c7967, 0x1440c7ae0-0x1440c7d67, 0x1440c7970-0x1440c7ad8, 0x1440e07d0-0x1440e0850, 0x1441011a0-0x1441015d1, 0x1440c12e0-0x1440c158e, 0x1440c17c0-0x1440c1b60 (re/tools/disx.py);xref:0x14445b27e,0x14445b26e,0x14445b0c1,0x1440c06f5,0x1440c77c6,0x1440e0810,0x14410148d,0x144105b13;sig:core.phys_update_stage_finish_step_notify_bodies",
+   "notes": "V120006 Blind re-derivation on d873a1c8. Function 0x1440c7d70-0x1440c7e0d: rcx is the stage and world = [rcx+8] (0x1440c7d77); world+0xcf0 == 0 returns at 0x1440c7e04; state 7 with [[world+0x30]+0x10e0]+0xcf0 also 7 calls Ne_JobSignal_WaitWithTimeout 0x143ac0100 on [[world+0x30]+0x1118] when [world+0x30]+0xf58 >= 2 and stores 0 to [[world+0x30]+0x10e0]+0xcf0 (0x1440c7dca); every path then runs Ne_PhysWorld_AdvanceStepState(world) 0x1440c7ae0 until world+0xcf0 is 0 (0x1440c7dd6-0x1440c7de5); byte [rcx+0x69] gates FlushSubstepRecords 0x1440c64e0(stage) and the tail jmp to NotifyBodyStepCallbacks 0x1440c65e0(stage) at 0x1440c7dff. Only rcx is consumed, so the one-pointer proto holds. Game_PhysicsUpdateStage_Update 0x14445aea0 calls it at 0x14445b27e with rcx = [rsi+0x18], after LeaveCriticalSection (IAT 0x145d3c6c0) on [[stage+8]+0x60] at 0x14445b26e (entered at 0x14445b0c1) and only when byte [rsi+0x60] is 0; 0x14445b283 onward never reads rax, so void holds. callers: census steam 0x40c7d70. RunSubsteps stores 1 to world+0xcf0 at 0x1440c7ac1 after RunIntegratorJobs. Constraint list confirmed: NotifyBodyStepCallbacks walks [[stage+8]+0x40] through +0x40 (0x1440c65ed-0x1440c6630), reads entry +8 then its +0x458, +0x10, +0x30, the +0x80 block, and the lengths (vdpps 0xff, vsqrtss) of +0x170/+0x180/+0x190/+0x1a0; CreateConstrainedBody sets +8 = [[arg]+0x18], +0x10 = [[arg+8]+0x18] or 0, +0x30, +0x40 = 0 and +0x80 at 0x1440cdd47-0x1440cdda1 and 0x1440cf017, and links the entry on body A +0x350 (next +0x60) and body B +0x358 (next +0x70); Ne_PhysWorld_RunSolveJobs 0x1441058e0 pushes the entries whose byte +0x78 is 0 from those body lists onto world+0x40 through +0x40 (0x144105b0f-0x144105b58), the producer of that list. Rigid body list confirmed at all four sites: CreateRigidBody head insert 0x1440c06e9-0x1440c071b with world = [rcx+8] saved at 0x1440bf730; RunStepPipeline cursor 0x1440c77bd-0x1440c77da (AdvanceStepState repeats it at 0x1440c7b80-0x1440c7ba6); ResetFrameState 0x1440e07f8-0x1440e0847 on [rcx+0x10e0]; teardown unlink 0x144101481-0x1441014d4 between EnterCriticalSection 0x1441011b5 and the LeaveCriticalSection tail jmp 0x1441015b5. Body fields confirmed: SetTransform writes rows +0x190..+0x1cf with +0x1c0 at 0x1440c17fe and sets +0x1cc to 1.0, so row 3 is the position; ApplyImpulse adds J*[+0x438] to +0x220 under +0x46c bit 0 and the rows +0xd0..+0x100 times (P - [+0x378]) x J to +0x210 under bit 1; CreateRigidBody zeroes +0x438 for the static kinds (qword store at 0x1440c076d); +0x458 is the aligned inline handle whose +0x18 is the body (0x1440c07b4, 0x1440c07b8). Cross-build: masked instruction streams over the .pdata ranges (rel32 and RIP displacements masked, internal targets function-relative) are identical on Steam 26566308, EA 1.0.141 and EA 1.0.145 for this function (0x1440ca340, 0x1440b62a0, 0x1440b8870) and for every function the notes list, CreateConstrainedBody at 0x1440cff80, 0x1440bbee0, 0x1440be4b0, the teardown at 0x144103770, 0x1440ef6d0, 0x1440f1ca0 and Game_PhysicsUpdateStage_Update at 0x14445d470, 0x14444ff90, 0x144452560, with callees mapped to the counterparts; each build's census call site is the Update counterpart's +0x3de (0x14445d84e, 0x14445036e, 0x14445293e). Corrections to the prose: ApplyImpulse clamps the +0x220 length to +0x400 only on the bit 1 path (0x1440c132f skips both clamps when bit 1 is clear), not after the bit 0 add; the record calls the +0x170..+0x1a0 lengths speeds, the code only shows they are vector lengths. Not checked: the sentence about core's hook (native source out of scope for this review)."
+  },
+  {
+   "date": "2026-11-21",
+   "verifier": "native-guards-phys-nonfinite-blind",
+   "kind": "sig",
+   "item": "core.phys_update_stage_finish_step_notify_bodies",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "sig:core.phys_update_stage_finish_step_notify_bodies;decomp:own capstone disasm 0x1440c7d70-0x1440c7e0d, 0x1440ca340-0x1440ca3dd, 0x1440b62a0-0x1440b633d, 0x1440b8870-0x1440b890d (re/tools/disx.py);xref:0x14445b27e,0x14445d84e,0x14445036e,0x14445293e",
+   "notes": "V120007 Blind re-derivation on d873a1c8. sigcheck.py --exe on the KB exe passes with hits=1 and match = target = 0x1440c7d70, the first instruction of the function (push rsi; push rdi; push rbx; sub rsp,0x20; mov rdi,[rcx+8]; mov eax,[rdi+0xcf0]) and the start of its .pdata entry 0x1440c7d70-0x1440c7e0d, so func_start holds. My own scan of every executable section finds the 16 bytes once per image: KB .xtls 0x1440c7d70, Steam 26566308 .tls$ 0x1440ca340, EA 1.0.141 .rdata 0x1440b62a0, EA 1.0.145 .arch 0x1440b8870, each the start of a .pdata function with the same masked instruction stream as the KB function and its callees mapped to the counterparts. The section each hit sits in is the one each overlay maps .xtls to, and the overlay hints steam-26566308 0x40ca340, ea 0x40b62a0 and ea-1-0-145 0x40b8870 point at those starts. The pattern is 16 bytes with no wildcards and needs none (no rel32 or RIP displacement in it)."
   }
  ],
- "proofs": []
+ "proofs": [
+  {
+   "by": "native-guards-phys-nonfinite",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1440c7d70",
+    "target": "0x1440c7d70"
+   },
+   "sigcheck": "passed",
+   "digest": "99508390912345ab88d90d49911feb2c79db5bd65c72bbe40d8830184ce559f8"
+  },
+  {
+   "by": "native-guards-phys-nonfinite",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1440ca340",
+    "target": "0x1440ca340"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "199373c9b3456ba2656b73b7b3a74a3ed0b07baf6103501fa88cffab53cc55ed"
+  }
+ ]
 }
