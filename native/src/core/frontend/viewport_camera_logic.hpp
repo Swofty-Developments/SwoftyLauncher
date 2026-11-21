@@ -56,6 +56,10 @@ private:
             return TCAM;
         case 5:
             return TCAM_OFFSET;
+        case 6:
+            return CHASE_NEAR;
+        case 7:
+            return CHASE_FAR;
         default:
             return OTHER;
         }
