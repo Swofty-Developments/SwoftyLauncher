@@ -424,12 +424,14 @@ void drop_setup_pointers()
     }
     p.drs = box_rules.drs.forget();
     box_rules.warmers.forget();
+    box_rules.rev_lights.forget();
     box_rules.tyre_change.forget();
     box_rules.time_limits.forget();
     box_rules.weekends.forget();
     box_rules.points.forget();
     box_rules.drs_log.forget();
     box_rules.warmers_log.forget();
+    box_rules.rev_lights_log.forget();
     box_rules.points_log.forget();
     box_rules.tyre_change_log.forget();
     box_rules.weekend_log.forget();

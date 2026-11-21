@@ -81,6 +81,7 @@ src/core/guards/career/standings_guard.cpp: StandingsGuard guard;
 src/core/guards/cars/chassis_registry.cpp: guards::SiteGuard guard{guards::CoreSetId::chassis_registry,
 src/core/guards/cars/ers_mode.cpp: guards::SiteGuard guard{guards::CoreSetId::ers_mode,
 src/core/guards/cars/ers_newlap.cpp: guards::SiteGuard guard{guards::CoreSetId::ers_newlap,
+src/core/guards/cars/tyre_curve_guard.cpp: guards::SiteGuard guard{guards::CoreSetId::tyre_curve,
 src/core/guards/cars/tyre_slots.cpp: guards::SiteGuard guard{
 src/core/guards/engine/audio_queue.cpp: guards::SiteGuard guard{
 src/core/guards/engine/heap_sizes.cpp: HeapSizes guard;

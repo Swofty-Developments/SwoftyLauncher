@@ -515,6 +515,51 @@ fn the_session_end_hand_over_lands_on_the_activity_container_within_the_loader_r
 
 const SETUP_ROUTE: &str = "career_wizard_driver_career_progressive";
 
+#[test]
+#[ignore = "needs SWOFTY_STOCK_DATABASES, a stock databases.erp"]
+fn a_databases_erp_an_earlier_build_wrote_is_written_again_the_same() {
+    let stock = PathBuf::from(std::env::var_os("SWOFTY_STOCK_DATABASES").expect("set"));
+    assert!(
+        marks::launcher_entries("databases.erp", &stock)
+            .unwrap()
+            .is_empty()
+    );
+    let dir = std::env::temp_dir().join(format!("swofty-databases-again-{}", std::process::id()));
+    std::fs::remove_dir_all(&dir).ok();
+    let packer = Packer::default();
+    let archives = ArchiveWriter::new(&packer);
+    let state = || vec![("page".to_owned(), node::s("home"))];
+    let once = dir.join("once/databases.erp");
+    write_databases(&(stock.clone(), once.clone()), state(), &archives).unwrap();
+    assert_eq!(
+        marks::launcher_entries("databases.erp", &once).unwrap(),
+        [
+            "the tooltip mod_menu",
+            "the tooltip mod_menu_offline",
+            "the tooltip swofty_adjust",
+            "the ui data swofty",
+            "the icon list settings.swofty_addons",
+        ]
+    );
+    let twice = dir.join("twice/databases.erp");
+    write_databases(&(once.clone(), twice.clone()), state(), &archives).unwrap();
+    assert_eq!(std::fs::read(&twice).unwrap(), std::fs::read(&once).unwrap());
+    std::fs::remove_dir_all(&dir).ok();
+}
+
+#[test]
+#[ignore = "needs SWOFTY_STOCK_PERSISTENT, a stock persistent.erp"]
+fn the_f1_world_entries_go_in_once() {
+    let src = PathBuf::from(std::env::var_os("SWOFTY_STOCK_PERSISTENT").expect("set"));
+    assert!(
+        marks::launcher_entries("persistent.erp", &src)
+            .unwrap()
+            .is_empty()
+    );
+    let once = patch::f1_world_entries(&read_frag(&src, FLOWS, 0).unwrap()).unwrap();
+    assert_eq!(patch::f1_world_entries(&once).unwrap(), once);
+}
+
 fn choice(id: &str, addon: &str, values: &[&str]) -> serde_json::Value {
     let states: Vec<serde_json::Value> = values
         .iter()

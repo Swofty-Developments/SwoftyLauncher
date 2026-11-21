@@ -520,6 +520,10 @@ inline constexpr fn<"Car_Tyre_ChangeToNextCompound", Car_Tyre_ChangeToNextCompou
 using Car_Tyre_CheckCompoundClassRule_t = bool(const void *set);
 inline constexpr fn<"Car_Tyre_CheckCompoundClassRule", Car_Tyre_CheckCompoundClassRule_t> Car_Tyre_CheckCompoundClassRule{}; // L2 experimental
 inline constexpr address<"Car_Tyre_ComputeGripMultiplier"> Car_Tyre_ComputeGripMultiplier{}; // L2 experimental
+using Car_Tyre_CurveMap_FindBracketA_t = void(void *curves, float key, void **bracket);
+inline constexpr fn<"Car_Tyre_CurveMap_FindBracketA", Car_Tyre_CurveMap_FindBracketA_t> Car_Tyre_CurveMap_FindBracketA{}; // L2 experimental
+using Car_Tyre_CurveMap_FindBracketB_t = void(void *curves, float key, void **bracket);
+inline constexpr fn<"Car_Tyre_CurveMap_FindBracketB", Car_Tyre_CurveMap_FindBracketB_t> Car_Tyre_CurveMap_FindBracketB{}; // L2 experimental
 inline constexpr address<"Car_Tyre_GripScale"> Car_Tyre_GripScale{}; // L2 experimental
 using Car_Tyre_IsCompoundAllowed_t = bool(const void *set);
 inline constexpr fn<"Car_Tyre_IsCompoundAllowed", Car_Tyre_IsCompoundAllowed_t> Car_Tyre_IsCompoundAllowed{}; // L2 experimental

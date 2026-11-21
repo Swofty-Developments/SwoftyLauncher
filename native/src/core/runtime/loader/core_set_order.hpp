@@ -64,6 +64,7 @@ enum class CoreSetId : uint8_t {
     ai_line_set,
     weather_chain,
     resume_gate,
+    tyre_curve,
     count,
 };
 
@@ -121,6 +122,7 @@ constexpr std::array<std::string_view, CORE_SET_COUNT> CORE_SET_NAMES = {
     "ai_line_set",
     "weather_chain",
     "resume_gate",
+    "tyre_curve",
 };
 
 constexpr std::string_view core_set_name(CoreSetId id) { return CORE_SET_NAMES[size_t(id)]; }
@@ -177,6 +179,7 @@ constexpr std::array<CoreSetId, CORE_SET_COUNT - 1> COMMIT_ORDER = {
     CoreSetId::ai_line_set,
     CoreSetId::weather_chain,
     CoreSetId::resume_gate,
+    CoreSetId::tyre_curve,
 };
 
 constexpr bool settles(CoreSetId id) { return id != CoreSetId::garage_placement; }
