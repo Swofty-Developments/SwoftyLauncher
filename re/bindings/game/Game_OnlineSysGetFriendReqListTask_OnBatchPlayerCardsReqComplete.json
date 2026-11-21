@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432cef10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_OnlineSystemGetFriendRequestListTask_OnBatchPlayerCardsRequestComplete;xref:0x1432cf1e0,0x1432cf1fa",
-  "notes": "cxx=game::OnlineSystemGetFriendRequestListTask::onBatchPlayerCardsRequestComplete; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1432cef10.c;str:s_OnlineSystemGetFriendRequestListTask_OnBatchPlayerCardsRequestComplete;xref:0x1432d16b8",
+  "notes": "Pretty name game::OnlineSystemGetFriendRequestListTask::onBatchPlayerCardsRequestComplete(NEerrno, NEuint64, const NeEadpPersona*, NEint): logs EADP errors per eaUserId or unknown ids and copies persona names into the result list. Address taken (lea) in Game_OnlineSystemGetFriendRequestListTask_OnPlayerCards as callback. (lane owner review requested)"
  },
  "signature": {
   "id": "game.online_sys_get_friend_req_list_task_on_batch_player_cards_req_complete",

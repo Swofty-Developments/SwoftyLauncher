@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401ce3a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name setNodeVisibility (class from the log channel); log channel ACTOR_NODE_VIS: 'setNodeVisibility [%s] matches [%s] %s'"
+  "evidence": "decomp:re/decomp/1401ce3a0.c;pat:log-message-method;xref:0x1401ce2f6,0x1401ce31c,0x1401ce340,0x1401ce36f,0x1401cea78,0x1455e5b88",
+  "notes": "(this, pattern, visible, lodIdx): model = +0x230 or +0x228; for each node (count ((+0xd0)+0x48)) of type 10 or 1, matches the name by substring ('~' prefix, 0x14532aaf8) or exact (0x14535e280); sets/clears its bit in ((+0xa0)+0x80) + stride(+0x96)*(lodIdx+2), queues 0x143d3ce20 once (+0x128 = 2), +0x12c |= 4, logs matches. Returns 1 if any, else logs 'found no matches' and 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.actor_node_vis_set_node_visibility",

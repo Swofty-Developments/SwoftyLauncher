@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140208810",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=CameraFixedInstance::update; log channel WARN: 'CameraFixedInstance::update failed to find scene %s - please report nicely to JohnS'"
+  "evidence": "decomp:re/decomp/140208810.c;pat:log-message-cxx;xref:0x1455e7be0",
+  "notes": "CameraFixedInstance::update (vt cell 0x1455e7be0). First run (+0x98 == 0, +0x99 set) spawns the scene by type +0x34: CameraManScaffoldScene/CameraManBoomScene/CameraManTVScene (WARN 'failed to find scene'), starts its sequence, finds bone 'cam' (+200). Then state +0x9c 0..4: picks a car whose track distance lies in +0xa8..+200 m (car table 0x146ce86e0), tracks it, resets beyond 300/200 m. (lane owner review requested)"
  },
  "signature": {
   "id": "game.camera_fixed_instance_update",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439fdd40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439fdd40.c;xref:0x1439d732a,0x1439e0e2e",
-  "notes": "Bumps global frame counter (0x14618c160) into the command context (+0x528 -> +0x140) and queues the resource tuple (param_2[0..4]) for deferred destruction; param_3 forces immediate path. Callers 0x14397a450, 0x1439d7240, 0x143a0e340 (resource destroy paths). Hypothesis."
+  "evidence": "decomp:re/decomp/1439fdd40.c;xref:0x1439d732a,0x1439e0e2e,0x143a0e480",
+  "notes": "Frees a descriptor record {type, block, cpu, gpu, index} (param_2): for type 0 without param_3 bumps serial 0x14618c160 (stored at [device+0x528]+0x140) and appends {serial, record} to the 0x30-byte deferred list +0xd78..+0xd88; else frees the block at once (Render_Gfx2_BlockAllocator_Free in pool +0x5b0+type*8). Clears the record. Callers 0x1439d7240, 0x1439e0d50, Render_Gfx2Device_AllocViewDescriptor_A/B 0x143a0e340/0x143a0e5b0. (lane owner review requested) Better name: Render_Gfx2Device_FreeDescriptorSlot (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_queue_deferred_release",

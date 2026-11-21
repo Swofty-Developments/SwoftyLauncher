@@ -225,7 +225,7 @@ constexpr uint8_t MODE_HEAD[] = {0x56, 0x57, 0x48, 0x83, 0xEC, 0x68, 0x80, 0xFA,
 const runtime::Sig SIG_SET_DATA_GROUP{"game.career_wizard_set_data_group",
                                       "56 57 48 83 EC 28 48 89 D7 48 89 CE 48 85 D2 74 0D 48 89 F9 E8 ?? ?? ?? ?? 48 FF C0 EB 05 "
                                       "B8 01 00 00 00 48 8B 8E 20 01 00 00",
-                                      0x387f690};
+                                      0x387d100};
 using SetDataGroup = void(void *wizard, const char *group);
 using Reserve = void(void *str, uint64_t n);
 using ModeOf = void *(void *vm, uint8_t kind);

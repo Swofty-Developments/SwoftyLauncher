@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432b3b20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name startTask (class from the log channel); log channel F1OS: '%s: Requested a task for service %s : method %s .'"
+  "evidence": "decomp:re/decomp/1432b3b20.c;pat:log-message-method;xref:0x143297e62,0x1432b49db,0x1432c2689",
+  "notes": "F1OS task manager startTask: logs '%s: Requested a task for service %s : method %s .' (method name 'startTask'); queues behind a running task ('%s : %s queued because the current task ... is now in progress') or sends ('HTTPRequest: ... sent args: %s', 'Request Length : %d, CRC : %s'). Callers 0x143297080, 0x1432b4440, 0x1432c2420, 0x1432c3190. (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1os_start_task",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1406b7250",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-CAMERA",
-  "notes": "named from its log messages (channel CAMERA): '- | Warning: could not set spline data, world is not active yet | Warning: Could not set spline data, object with ID (%s) could not be found in the world | Warning: Cannot set spline data, SplineCompo'"
+  "evidence": "decomp:re/decomp/1406b7250.c;pat:log-channel-CAMERA;xref:0x14563e4c0",
+  "notes": "ProgressBasedSplineCameraBehaviour slot (vt cell 0x14563e4c0): needs VehicleProgressComponent (0x146ce6690) on target +0x200 (else CAMERA warning, return 0x57); on first run finds the spline object by ID +0x30/+0x38 (SplineComponent 0x146cb89b0; warnings for inactive world/missing object/component/data) and caches start/end distances of points +0x50/+0x60; writes progress clamped 0..1 to +0x70. (lane owner review requested) Better name: Game_ProgressSplineCamBehaviour_UpdateProgress (bound record keeps its name)."
  },
  "signature": {
   "id": "game.camera_set_spline_data",

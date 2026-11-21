@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143c06bf0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143c06bf0.c;xref:0x143b1b60f,0x143b72f0e",
-  "notes": "Copies param_4 bytes into a GPU-visible buffer in 16-byte chunks with tail handling (memcpy of rest). Callers Game_Renderer_CreateRenderPasses, Game_UIDrawing_InitBuffers, 0x143b71f00. Hypothesis. vp3-verify partial/disagree"
+  "evidence": "decomp:re/decomp/143c06bf0.c;xref:0x143b1b60f,0x143b72f0e,0x1442df83b,0x1442df8ea,0x1442e30bd,0x14ca391e3",
+  "notes": "Sums data sizes of param_4 input records (32-byte stride, size +0x14), allocates count*0x28+data (allocator +0x10), writes 0x28-byte entries at +0x78 (name hash pair, two u32, binding -1 at +0x20, data ptr) and copies each record's data; param_2 to +0x50, count +0x68, 0x143c08fd0 -> +0x208, bumps version +0x1b0. Not a 16-byte GPU copy. Callers Game_Renderer_CreateRenderPasses 0x143b1b60f, Game_Read_RendererUIConfig 0x1442e30bd. (lane owner review requested)"
  },
  "signature": {
   "id": "render.buffer_copy_padded16",

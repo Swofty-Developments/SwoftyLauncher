@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430ac850",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onViewSuperLicenceRequestedFrontEnd (class from the log channel); log channel NETWORK-UI: '%s(%d).'"
+  "evidence": "decomp:re/decomp/1430ac850.c;pat:log-message-method;xref:0x1430aafc3,0x1430df75e",
+  "notes": "UI command handler lea'd in 0x1430aa810: logs 'onViewSuperLicenceRequestedFrontEnd(%d)', finds the player entry with ix p2 and passes its id block to 0x140817800 (object +0x4f0). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_ui_on_view_super_licence_requested_front_end",

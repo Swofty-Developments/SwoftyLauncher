@@ -7510,6 +7510,7 @@ addr	name
 0x14386d890	Game_CareerWizard_PushNextStep
 0x14386e590	Career_MyTeamEntryPoint_ChosenText
 0x143875010	Ui_CareerWizard_ReleaseItemWidgets
+0x14387d100	Game_CareerWizard_SetDataGroup
 0x1438831d0	Game_UIConnectionManager_ShowConnectionLostPopup
 0x143883f60	Game_TOPLevelUI_ThereOngoingReconnectingIgnore
 0x143884c00	Game_UIConnectionManager_ForceOfflineMode
@@ -7604,6 +7605,7 @@ addr	name
 0x143925e20	Ne_BitStream_ReadQuantisedFloat
 0x143926600	Ne_BitStream_ReadQuantizedFloat
 0x1439268a0	Ne_BitStream_WriteQuantizedFloat
+0x1439272e0	Vm_Pkg_ResolveValueTables
 0x143927510	Vm_Open_Pkg
 0x143927f90	Vm_Find_PkgObjectKey_Thunk
 0x143928e00	Ne_Hash_Md5UpdateLowercased
@@ -7615,6 +7617,7 @@ addr	name
 0x14392a0c0	Ne_StringPool_InternByHash
 0x14392a8b0	Ne_StringTable_Lookup
 0x14392d3a0	Ne_Timer_ConstructQpcDeadline
+0x14392f6e0	Vm_Pkg_ResolveObjectChunk
 0x143930760	Ne_Bag_Clear
 0x143931730	Ne_StringPool_FindObjectByCStr
 0x143931910	Gdb_Find_ReflectedFieldA
@@ -8809,6 +8812,11 @@ addr	name
 0x144160980	Game_NeUgc_StopPlaytimeTrackingCallbackResult
 0x1441630f0	Ne_Format_String
 0x144165860	Ne_Ref_AssignIntrusiveRc16
+0x144166780	Ui_LayoutTrees_RemoveRoot
+0x144167460	Ui_LayoutTrees_WalkAll
+0x144167620	Ui_LayoutTree_Walk
+0x14416ac00	Ui_LayoutTree_CountSlots
+0x14416ac60	Ui_LayoutTree_FlattenNode
 0x14416b220	Ne_IntrusivePtr_Assign
 0x14416bc70	Vm_Find_NodeFactory
 0x14416c1c0	Ne_UIFlow_UnloadAssetsGroups
@@ -8945,6 +8953,7 @@ addr	name
 0x144321a70	Vm_ViewModel_IsBound
 0x1443379f0	Ne_Make_StrFromBuffer
 0x144343aa0	Ui_Find_NodeByName
+0x144344970	Ui_LayoutTrees_WalkJob
 0x144348a20	Ne_StringMap_EmplaceNode
 0x144349300	Vm_Remap_InstanceSignals
 0x144353880	Game_Read_SubtitlesDataConfig_2
@@ -9086,6 +9095,7 @@ addr	name
 0x14449e140	Vm_Load_UidfResource
 0x14449f5f0	Game_Read_EDynamicLayoutConfig
 0x1444a1b30	Game_Read_UIConfig
+0x1444a3060	Ui_EngineModule_Update
 0x1444a4b70	Game_Read_RendererGfxConfig_5
 0x1444a56f0	Game_HardwareSettings_FindGraphicsDetailConfig
 0x1444a7290	Game_HardwareSettings_GetOptionsNode

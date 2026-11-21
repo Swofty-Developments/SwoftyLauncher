@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144704740",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "pat:log-channel-PARTICLES_C",
-  "notes": "named from its log messages (channel PARTICLES_C): 'mat '%s' effect name '%s' scrape '%s' priority %d'"
+  "evidence": "decomp:re/decomp/144704740.c;pat:log-channel-PARTICLES_C;xref:0x14463c5f7",
+  "notes": "Rename: constructs a 0xb0-byte entry with three 0x20-char strings read from the PARTICLE node of param_2 (keys name, effect, scrapeEffect) and an int priority; remembers entries with ids CARB/CARC/PLNC/PLNW/PLNK (FourCC *param_3) in globals 0x146ce83f0..0x146ce8418; logs mat %s effect name %s scrape %s priority %d (PARTICLES_C). Registered as a callback by Game_RacingVehicles_Initialise (lea 0x14463c5f7, 0xb0-byte list entries). (lane owner review requested) Better name: Render_Particles_ParseSurfaceParticleEntry (bound record keeps its name)."
  },
  "signature": {
   "id": "render.particles_select_scrape_effect",

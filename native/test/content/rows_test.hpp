@@ -5,6 +5,7 @@
 #include "core/apply/content/box_options.hpp"
 #include "core/apply/content/grid_rules.hpp"
 #include "core/apply/content/quali_tyres.hpp"
+#include "core/apply/content/rev_lights.hpp"
 #include "core/apply/content/tyre_change.hpp"
 #include "core/apply/content/tyre_warmers.hpp"
 #include "core/apply/content/weekend.hpp"

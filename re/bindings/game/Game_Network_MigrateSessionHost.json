@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144099410",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name migrateSessionHost (class from the log channel); log channel NETWORK: '%s() waiting...'"
+  "evidence": "decomp:re/decomp/144099410.c;pat:log-message-method;xref:0x145a54a40",
+  "notes": "Host migration: logs migrateSessionHost \"leaving lobby\", \"creating new lobby\", \"waiting...\"; leaves the old lobby, requests a new one and registers Game_Network_OnLobbyMigratedHost as call result (lea 0x144099d6d). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_migrate_session_host",

@@ -122,7 +122,7 @@ template  <prefix>_ctl
 
 A turn's clip is its rotation keys only, two or more of them, in a `syst` padded to 16 bytes, like every clip the composer writes: the game reads quaternion keys with aligned 16-byte loads, and a one-key rotation or an unpadded buffer faulted it at HUD load. Each quaternion is signed to the same side as the one before it.
 
-The players and the triggers are shaped on the stock HUD template: its `show_mfd_background` and `hide_mfd_background` nodes (an Alpha override pair started by `activateOverride`), its `show_penalty_group` node (a decision on a bool, with events `1` and `0`) and the `UIXA` players its decisions send `goToFraction` and `playToFraction` to. The holder's name starts with `zh_`, which sorts after every stock name in the scene's anim string table, the way the gauge and sweep nulls do.
+The players and the triggers are shaped on the stock HUD template: its `show_mfd_background` and `hide_mfd_background` nodes (an Alpha override pair started by `activateOverride`), its `show_penalty_group` node (a decision on a bool, with events `1` and `0`) and the `UIXA` players its decisions send `goToFraction` and `playToFraction` to. The holder's name starts with `zh_`, which sorts after every stock name in the scene's anim string table, the way the gauge and sweep nulls do; after another addon's anim names it starts with the record's later prefix (`zi_` to `zz_`, see [the composer's rules](/reference/ops/hud#rules-the-composer-keeps)).
 
 On a screen record the players sit under `<prefix>_ctl.host_n`, inside the instance, and the `trigger` and `untrigger` commands of the control group register the triggers when the stock element is enabled.
 

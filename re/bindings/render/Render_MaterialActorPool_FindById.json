@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1443ab250",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/1443ab250.c;xref:0x1401e987c",
-  "notes": "Under critical section looks up a material actor by 128-bit id: hash lookup via 0x1443acc60 (24-byte slots), falls back to linear scan of actor list [this+0xa0..0xa8] comparing the id at actor->+0x88. Caller Game_SceneManager_BuildMaterialActorForScene."
+  "notes": "Under EnterCriticalSection([this]) looks up the 128-bit id param_2 in the hash map at this+0x50 (0x1443acc60, 24-byte slots, value at +0x10); on miss scans actor lists [this+0xa0..0xa8] and [this+0xc0..0xc8] comparing the id at [actor+8]+0x88 (default 0x146129b18). Returns the actor or 0. Caller 0x1401e987c in Game_SceneManager_BuildMaterialActorForScene. (lane owner review requested)"
  },
  "signature": {
   "id": "render.material_actor_pool_find_by_id",

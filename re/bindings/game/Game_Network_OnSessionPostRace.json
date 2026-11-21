@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430f3a10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onSessionPostRace (class from the log channel); log channel NETWORK: '%s'"
+  "evidence": "decomp:re/decomp/1430f3a10.c;pat:log-message-method;xref:0x1458140f8",
+  "notes": "Slot 21 (+0xa8) of the NetworkSubsystem vtable 0x145814050. Logs 'onSessionPostRace', setMyRaceStatus 0x143092b20([this+0x3c0]+0xa8, 10), NETWORK-MATCHING log and tail-calls the matching object [[this+0x4d8]+0x28] vt+0xd8. (lane owner review requested) Better name: Game_NetworkSubsystem_OnSessionPostRace (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_on_session_post_race",

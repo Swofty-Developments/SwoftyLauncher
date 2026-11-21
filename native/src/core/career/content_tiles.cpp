@@ -141,14 +141,8 @@ bool adopt_systems(HomeItem *item, const Slot &s)
 Action *press(HomeItem *item, Action *out)
 {
     Slot *s = by_vtable(item);
-    auto *system = *reinterpret_cast<const uint8_t *const *>(b.customisation);
     const uint8_t *eb = nullptr, *ee = nullptr;
-    if (system && mem::readable(system + content::SYSTEM_ENTRIES_BEGIN, 0x10)) {
-        eb = content::at<const uint8_t *>(system, content::SYSTEM_ENTRIES_BEGIN);
-        ee = content::at<const uint8_t *>(system, content::SYSTEM_ENTRIES_END);
-        if (!eb || ee < eb || !mem::readable(eb, size_t(ee - eb)))
-            eb = ee = nullptr;
-    }
+    car_entries(b.customisation, eb, ee);
     content::Pick pick = s ? content::pick(eb, ee, s->desc.car_group, s->desc.model) : content::Pick{};
     *reinterpret_cast<uint32_t *>(b.selected) = pick.id;
     if (s && s->presses++ < LOG_FIRST)

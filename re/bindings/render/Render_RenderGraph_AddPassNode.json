@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143bdd920",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143bdd920.c;xref:0x143baf65b",
-  "notes": "Lock-free bump allocation (CAS on arena offset +0x20, base +0x18, size +0x10) of an 0xa0-byte pass node; falls to 1439182a0 (assert) when full. Callers Render_Tonemap_Execute, Render_RenderGraph_AddPassWithConst12, Render_CustomisationDecal_AddPassWithConst12. vq1-verify partial/disagree"
+  "evidence": "decomp:re/decomp/143bdd920.c;xref:0x143baf65b,0x143bc0a05,0x143bc745d,0x143bc871e",
+  "notes": "Lock-free bump allocation (CAS arena +0x20, base +0x18, limit +0x10, Ne_FatalAbort when full) of an 8-aligned 0xa0-byte pass node: colour scale 1.0 x4, node index from the vector +0x70..0x78, looks up the pass by hash in map +0x130 and links the node into the pass list (+0x90..0xa0). Callers incl. Render_Tonemap_Execute, Render_RenderGraph_AddPassWithConst12. (lane owner review requested)"
  },
  "signature": {
   "id": "render.render_graph_alloc_pass_node",

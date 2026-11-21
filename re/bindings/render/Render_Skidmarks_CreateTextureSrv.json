@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144719970",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144719970.c;xref:0x144719524",
-  "notes": "Builds an SRV for a texture handle (param_4) with debug name 'SkidmarksGenerator textureSRV' (string-pool interned); uses device vcalls at +0x50 and 0x1439d6880/0x1439da200/0x1439fe470. Callers Render_Bind_WetnessSamplers (several)."
+  "evidence": "decomp:re/decomp/144719970.c;xref:0x144719524,0x144719553,0x144719580,0x1447195ad",
+  "notes": "Resolves texture handle param_4 through [this+0x50] vcalls; if *param_2 is empty creates an SRV (0x1439d6880 on device 0x14618caa8) with the interned debug name SkidmarksGenerator textureSRV and releases the previous one (0x1439da200); then binds it to the generators at this+0x68.. . Callers 0x144719524, 0x144719553, 0x144719580, 0x1447195ad in Render_Bind_WetnessSamplers. (lane owner review requested)"
  },
  "signature": {
   "id": "render.skidmarks_create_texture_srv",

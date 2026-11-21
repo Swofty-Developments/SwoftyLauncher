@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143c20210",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143c20210.c;xref:0x14014ffb5",
-  "notes": "Large (322 lines) recreate: allocates a 0x90-byte zeroed descriptor, releases old buffers (QueueDeferredRelease), builds names with the string pool and creates new buffers with Render_Gfx2Buffer_Construct (CS +0x2668, set +0x4078). Callers Game_Read_RendererGfxConfig, Game_Renderer_CreateRenderPasses (many). Hypothesis on resource roles."
+  "evidence": "decomp:re/decomp/143c20210.c;xref:0x14014ffb5,0x14016f401,0x143b1a2d7,0x143b1a538,0x143b1a78d,0x143b1a87a",
+  "notes": "Body is 0x123 bytes: allocates a zeroed 0x90 object (+8 = -1), swaps it into +0x10, destroys the old one like 0x143c20160, stores the allocator at +8, then tail-jumps to 0x143bc4b30 (creates the three buffers from desc param_3). The decomp file also holds 0x143bc4b30's body (labels 0x143bc4cbd...). Callers incl Game_Read_RendererGfxConfig 0x14014ffb5, Game_Renderer_CreateRenderPasses 0x143b1a2d7. (lane owner review requested) Better name: Render_Gfx2TripleBufferHolder_Recreate (bound record keeps its name)."
  },
  "signature": {
   "id": "render.pass_recreate_output_buffers",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144097360",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'Steam API : Create Lobby Successful -> Lobby ID: %lu'"
+  "evidence": "decomp:re/decomp/144097360.c;pat:log-channel-NETWORK;xref:0x14409733a",
+  "notes": "Steam lobby-created call result: on failure (result != 1 or io failure) records an error entry in the error ring 0x146107900 (source hash Ne_Hash_Djb2Xor of the file path); on success logs \"Create Lobby Successful -> Lobby ID\" and continues lobby setup (0x14407eab0). (lane owner review requested) Better name: Game_Network_Steam_OnLobbyCreated (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_steam_api_create_lobby_successful_lobby",

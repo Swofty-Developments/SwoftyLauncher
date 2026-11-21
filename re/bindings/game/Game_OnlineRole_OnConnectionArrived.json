@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1409981e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-PLAYERSET",
-  "notes": "named from its log messages (channel PLAYERSET): 'MOX/Role: onSessionConnectionArrived(%d, %d players) | %s: connection id: %d'"
+  "evidence": "decomp:re/decomp/1409981e0.c;pat:log-channel-PLAYERSET;xref:0x145658668",
+  "notes": "Logs 'MOX/Role: onSessionConnectionArrived(%d, %d players)' and per player creates PlayerSet entries (PlayerSetSubsystem::createHumanPlayers inlined, Game_PlayerSet_AddPlayer, '[PlayerSetEntry ...] isLocal/isPlaying' logs, ReportPlayerSetEntryChanged), notifyOnNewConnectionArrived and presence-name sends. Only reference: vtable cell 0x145658668. (lane owner review requested)"
  },
  "signature": {
   "id": "game.online_role_on_connection_arrived",

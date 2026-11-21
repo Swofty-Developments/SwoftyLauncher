@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-CUSTOMISATION-REPLICATION",
-  "notes": "named from its log messages (channel NETWORK-CUSTOMISATION-REPLICATION): '%s: Receiving new connection from %d...'"
+  "evidence": "decomp:re/decomp/143184840.c;pat:log-channel-NETWORK-CUSTOMISATION-REPLICATION;xref:0x145821c18",
+  "notes": "CustomisationReplicationManager::onNewConnection (virtual, per __FUNCTION__ log): logs \"Receiving new connection from %d\"; for a human player connection runs sendReplicatedData (logs \"Sending/Sent replicated data\") and updates player life data (Game_CustomisationReplicationManager_UpdatePlayerLifeData). Better name: Game_CustomisationRepl_OnNewConnection (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_customisation_receiving_new_connection",

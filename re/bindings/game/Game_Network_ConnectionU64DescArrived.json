@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14409b980",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): '[TRANSPORT] connection(%d) u64[%llu] desc(%s) arrived.'"
+  "evidence": "decomp:re/decomp/14409b980.c;pat:log-channel-NETWORK;xref:0x145a54e60",
+  "notes": "Adds the connection to the store (Game_NetworkTransport_AddConnectionToStoreClient this+0x40); on success sets local connectivity (Ne_NetTransportCommon_SetLocalConnectivity), calls the delegate this+0x20/+0x28 and logs \"[TRANSPORT] connection(%d) u64[%llu] desc(%s) arrived.\" with the Steam persona name. (lane owner review requested) Better name: Game_Network_SteamTransport_OnConnectionArrived (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_connection_u64_desc_arrived",

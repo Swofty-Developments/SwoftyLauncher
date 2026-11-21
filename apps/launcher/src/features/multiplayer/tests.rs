@@ -12,8 +12,8 @@ use super::model::{
     restart_ok_text, room_meta,
 };
 use super::model::{
-    RoomFocus, StepCard, StepRow, card_rooms, default_room_name, fix_lines, leaves_on_exit, lobby_hint,
-    room_focus, shows_ad, starting, step_title,
+    RoomFocus, StepCard, StepRow, card_rooms, closed_subtitle, default_room_name, fix_lines, game_after_room,
+    leaves_on_exit, lobby_hint, repeats, room_focus, room_starting_word, shows_ad, starting, step_title,
 };
 use super::state::{Lobby, room_sizes, unasked};
 use swofty_core::online::multiplayer::types::RoomContent;
@@ -716,6 +716,63 @@ fn the_headline_shows_above_the_steps_only_for_what_no_step_says() {
         !card.banner && card.rows.len() == 2,
         "an ended session still shows where it stopped"
     );
+}
+
+#[test]
+fn a_failed_steps_detail_that_repeats_its_problem_is_left_out() {
+    assert!(repeats("The room closed", "The room closed."));
+    assert!(repeats("the room closed.", "The Room Closed"));
+    assert!(!repeats("The room closed after being idle", "The room closed."));
+    let closed = |detail: &str| {
+        let room: SessionStep = serde_json::from_value(serde_json::json!({
+            "id": "room", "state": "failed", "detail": detail,
+            "problem": {"code": "room_closed", "text": "The room closed.", "retry": false,
+                        "detail": "the room closed"},
+        }))
+        .unwrap();
+        stepped(
+            Phase::Ended("the room closed".into()),
+            true,
+            vec![step("account", "done"), room, step("addons", "pending")],
+        )
+    };
+    let card = StepCard::of(&closed("the room closed"), false).unwrap();
+    let failed = row(&card, "room");
+    assert_eq!(failed.problem.as_ref().unwrap().text, "The room closed.");
+    assert_eq!(failed.detail, None, "the detail says what the problem says");
+    assert_eq!(failed.problem.as_ref().unwrap().detail, None);
+    let card = StepCard::of(&closed("lobby: refused with HTTP 404"), false).unwrap();
+    assert_eq!(
+        row(&card, "room").detail.as_deref(),
+        Some("Lobby: refused with HTTP 404"),
+        "a detail that adds something stays"
+    );
+}
+
+#[test]
+fn a_closed_room_says_so_in_place_of_its_live_details() {
+    assert_eq!(closed_subtitle(true, true), "Room closed");
+    assert_eq!(closed_subtitle(true, false), "Room closed");
+    assert_eq!(closed_subtitle(false, true), "The room didn't open");
+    assert_eq!(closed_subtitle(false, false), "You didn't join the room");
+}
+
+#[test]
+fn a_game_still_starting_when_the_room_ends_keeps_starting_without_it() {
+    assert_eq!(
+        game_after_room(true, true),
+        Some("F1 25 keeps starting without the room.")
+    );
+    assert_eq!(game_after_room(true, false), None);
+    assert_eq!(game_after_room(false, true), None, "a live room says nothing");
+}
+
+#[test]
+fn play_stops_reading_as_the_room_opening_once_the_room_is_over() {
+    assert_eq!(room_starting_word(true, false, true), Some("Opening room…"));
+    assert_eq!(room_starting_word(true, false, false), Some("Joining…"));
+    assert_eq!(room_starting_word(true, true, true), None);
+    assert_eq!(room_starting_word(false, false, true), None);
 }
 
 #[test]

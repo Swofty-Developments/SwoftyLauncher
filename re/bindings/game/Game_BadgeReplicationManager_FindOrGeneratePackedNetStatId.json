@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143129d90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=BadgeReplicationManager::findOrGeneratePackedNetStatId; log channel NETWORK-ENTRANTS: 'game::BadgeStatId::PackedStatId network::BadgeReplicationManager::findOrGeneratePackedNetStatId(const PlayerDescription &, game::BadgeInfo &&) | %s : Attempt to add a new network replicated badge was '"
+  "evidence": "decomp:re/decomp/143129d90.c;pat:log-message-cxx;xref:0x140fe0ff6,0x140feec9e,0x1431be41d,0x1431be7dc",
+  "notes": "findOrGeneratePackedNetStatId(desc, badge): host only; finds the player in list mgr+0x58; existing id -> reconcile (0x143128410) when the badge differs; else allocates in the badge store (0x142471c60), packed id = (byte+0x160 << 14) | u16+0x162, adds player (0x143128d60) and sends msg 0x7d. Packed id: top 2 bits category (names 0x145612e60), low 14 bits index. (lane owner review requested)"
  },
  "signature": {
   "id": "game.badge_replication_manager_find_or_generate_packed_net_stat_id",

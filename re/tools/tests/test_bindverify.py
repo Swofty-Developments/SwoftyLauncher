@@ -299,18 +299,33 @@ def why_it_differs(img, ref, b, r, rr):
     return None
 
 
+def ea_145_image():
+    """The EA 1.0.145 dump and the bindings its run verified live, with the core's patches put back from that run's
+    loader.log when SWOFTY_EA_145_LOG names it, as bindverify.py --restore does."""
+    img = bindverify.Image(os.environ['SWOFTY_EA_145_DUMP'])
+    log = os.environ.get('SWOFTY_EA_145_LOG')
+    if not log:
+        return img, {}
+    import sigverify
+    with open(log, errors='replace') as f:
+        sigverify.restore(img, f)
+    with open(log, errors='replace') as f:
+        return img, bindverify.live_verified(f)
+
+
 @unittest.skipUnless(os.environ.get('SWOFTY_EA_145_DUMP'), 'set SWOFTY_EA_145_DUMP to a decrypted EA 1.0.145 image dump')
 class Ea145Dump(unittest.TestCase):
-    """The EA 1.0.145 dump was taken with the core running, so some code holds its hooks."""
+    """The EA 1.0.145 dump was taken with the core running, so some code holds its hooks. With SWOFTY_EA_145_LOG set to
+    that run's loader.log the resolve test puts the original bytes back first; without it the hooked hints fail."""
 
     def test_every_binding_resolves_by_hint_and_by_scan(self):
-        img = bindverify.Image(os.environ['SWOFTY_EA_145_DUMP'])
+        img, proven = ea_145_image()
         d = bindverify.gen_set_for(img)
         self.assertTrue(img.flat)
         self.assertEqual(d['build']['pe_timestamp'], img.stamp)
         hinted = {b['id'] for b in d['bindings'] if b.get('match')}
         for kb_first, method in ((True, 'hint'), (False, 'scan')):
-            res = bindverify.Resolver(img, d, d['build']['size'], kb_first=kb_first).run()
+            res = bindverify.Resolver(img, d, d['build']['size'], kb_first=kb_first, live_verified=proven).run()
             bad = [(r['id'], r['result'], r['reason']) for r in res
                    if r['result'] != 'unresolvable' and not resolves(r, method, hinted)]
             self.assertEqual(bad, [], method)

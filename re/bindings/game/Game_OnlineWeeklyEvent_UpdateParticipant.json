@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432d4d00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_OnlineSystems_OnlineWeeklyEvent_UpdateParticipant;xref:0x1432d5166",
-  "notes": "cxx=game::online_systems::OnlineWeeklyEvent::updateParticipant; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1432d4d00.c;str:s_OnlineSystems_OnlineWeeklyEvent_UpdateParticipant;xref:0x142767296,0x14276733f,0x142767450,0x1427697a2,0x1427697be,0x1432d543d",
+  "notes": "Logs WEEKLY_GP '%s, Participant->PracticeSession=%d' with its pretty name game::online_systems::OnlineWeeklyEvent::updateParticipant(const OSObjectWrapper<EventParticipant>&, NEbool) and copies participant fields. Called from Game_WeeklyGp_OnEnterRaceResult, 0x142769720 and 0x1432d5180. (lane owner review requested)"
  },
  "signature": {
   "id": "game.online_weekly_event_update_participant",

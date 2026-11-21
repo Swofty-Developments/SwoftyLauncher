@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143ce1f40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143ce1f40.c;xref:0x143ce1a55,0x143ce4691",
-  "notes": "Large (8.9 KB) ground cover (grass/gravel instancing) builder; strings 'Unnamed Scene', 'UpdateGroundCoverMeshIndices'; called from Render_GroundCover_Construct. Addon: where grass instancing meshes are prepared. Named callers: Render_GroundCover_Construct."
+  "notes": "Creates the ground-cover GPU objects: SRV buffers (Render_Gfx2_CreateSrvBuffer), UAVs (Render_Gfx_UavResource_Construct), per-camera views (Render_GroundCover_CreateCameraView), bind layouts (Render_Gfx2_BindLayout_Create, cb 0x143ce5d80), the 'Unnamed Scene' key and the program 'UpdateGroundCoverMeshIndices' (Render_Gfx2_NamedProgram_Create). Callers Render_GroundCover_Construct 0x143ce1a55, 0x143ce45d0 (0x143ce4691). (lane owner review requested) Better name: Render_GroundCover_CreateGpuResources (bound record keeps its name)."
  },
  "signature": {
   "id": "render.ground_cover_build_mesh_indices",

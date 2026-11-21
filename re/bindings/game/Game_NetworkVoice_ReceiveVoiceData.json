@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144036fc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name receiveVoiceData (class from the log channel); log channel NETWORK-VOICE: '%s: passing %d bytes through to the voice system for connection %d'"
+  "evidence": "decomp:re/decomp/144036fc0.c;pat:log-message-method;xref:0x143066c0c",
+  "notes": "Logs '%s: passing %d bytes through to the voice system for connection %d' with its own name receiveVoiceData; looks up the remote user by connection (Ne_UserId_Equals) and forwards the payload to the voice backend. Called from Game_NetworkData_VoiceDataBytes. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_voice_receive_voice_data",

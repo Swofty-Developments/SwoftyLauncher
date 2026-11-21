@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): '%s: new session token: %d'"
+  "evidence": "decomp:re/decomp/14305af60.c;pat:log-channel-NETWORK;xref:0x143056b95",
+  "notes": "Only ref: the lea at 0x143056b95 in 0x143056b10 (callback). Logs cxx=void network::GameSessionManager::onHostMigrationComplete(NEbool) result; on failure tail-jumps Game_GameSessionManager_Leave (0x14305b3a5); on success inlined incrementSessionToken/updateSessionToken (attr SessionToken), Privacy attribute, then if host in lobby opens the season document 0x143067d40 and the entrants document, posts hostMigrated. Better name: Game_GameSessionManager_OnHostMigrationComplete (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_new_session_token",

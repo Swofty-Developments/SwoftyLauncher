@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14077b4c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14077b4c0.c;xref:0x14077a359",
-  "notes": "852-byte tag builder handling the '{UID_TAG}' placeholder and values 'master', 'steam' (build branch/platform tag). Callers Game_Analytics_QueueEvent (0x14077a359), Game_Analytics_FillSessionContext. Hypothesis on exact tag. vq0-verify partial/disagree"
+  "evidence": "decomp:re/decomp/14077b4c0.c;xref:0x14077a359,0x14077c0b5",
+  "notes": "Fills record header param_2 from context param_3 (built by 0x14077a3d0): '{UID_TAG}', +0x70=0x15a289, 'master','win','steam', player name for ctx+0x50 (else 'unknown' / ctx+0x60), country ctx+0x58 ('??'), ctx+0x10..+0xe4, this+0x20318. (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_build_tag_string",

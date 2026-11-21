@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430f0e30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=NetworkSubsystem::onGameModeSelected; log channel NETWORK: 'void network::NetworkSubsystem::onGameModeSelected() | %s: game mode: %s'  in LAN mode adds this game's own user with #lead_player.settings.lan_name (or the NetSub+0x3c8 +0x6b4 override) through Ne_PresenceNameResolverFixed_AddName at 0x1430f1132 (decomp:re/decomp/1430f0e30.c)"
+  "evidence": "decomp:re/decomp/1430f0e30.c;pat:log-message-cxx;xref:0x140bb401c",
+  "notes": "__FUNCTION__ 'NetworkSubsystem::onGameModeSelected': SetScenario 0x1430913f0, '#lead_player.settings.lan_name' (or NetSub+0x3c8 +0x6b4) passed to call 0x14412a320 at 0x1430f1132, SelectTitleConfig 0x143099420, 'settings.scenario'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_subsystem_on_game_mode_selected",

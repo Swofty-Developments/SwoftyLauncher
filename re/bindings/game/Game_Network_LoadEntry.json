@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d70de0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name loadEntry (class from the log channel); log channel NETWORK: 'loadEntry %s'"
+  "evidence": "decomp:re/decomp/142d70de0.c;pat:log-message-method;xref:0x1457e0150",
+  "notes": "Virtual (vtable cell 0x1457e0150): result = 0x1431499c0([[this+0xcb8]+0x3b0]); logs 'loadEntry %s' with 'passed'/'failed' (NETWORK) and returns it. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_load_entry",

@@ -57,6 +57,7 @@ John BENNETT       wefew                    F1® 2026 My Team    Season 1, Race 
 - A newer patch version of the version the career was saved with is not a mismatch: a career saved with 1.0.5 is `Ready` with 1.0.6. An older version (1.0.4), another minor version (1.1.0) and another major version (2.0.0) are `Mismatched`. A career whose record gives a version range (`need`) is checked against that range instead.
 - After a session in which the game saved a career with an addon on at a newer patch version, the career index records that version as the one the career was saved with. A session that loads a career and does not save it changes nothing.
 - A ready row loads the career.
+- A row press selects the career's content (2025, 2026 or an addon's career content) as the game's own content tiles do. Team HQ's car, livery and decal screens show the cars of that content.
 - A row that is not ready opens **Add-ons do not match** with **Load Anyway** and **Back**. **Load Anyway** loads the career. **Back** returns to the list.
 - **Add-ons do not match** names the addons that are off or not installed, and each addon the career was saved with at another version as `<addon> (saved with <version>, installed <version>)`.
 - A `Mismatched rows from <addon>` row opens **Add-ons do not match** with **Load Anyway** and **Back** too. The rows checked are the profile's database and the team, car and driver rows the core adds in game from the registry records of the addons on (`ids.json`), so a career driving a registry car of an addon that is on is `Ready`.
@@ -66,7 +67,17 @@ John BENNETT       wefew                    F1® 2026 My Team    Season 1, Race 
 - **New Career** opens the game's Career menu.
 - With no careers, the list shows **New Career** and `No careers yet`.
 
-To use the game's own Career menu and Resume Career screens instead, start the game with `SWOFTY_RESUME_LIST=0` in its environment.
+To use the game's own Career menu and Resume Career screens instead, set `SWOFTY_RESUME_LIST` to `0` under `"env"` in `"launch"` in `$DATA/config.json`, then select **Play**:
+
+```json
+{
+  "launch": {
+    "env": { "SWOFTY_RESUME_LIST": "0" }
+  }
+}
+```
+
+`SWOFTY_RESUME_LIST=0` in the launcher's own environment does the same when `config.json` doesn't set it.
 
 ## Careers saved under earlier addon ids
 

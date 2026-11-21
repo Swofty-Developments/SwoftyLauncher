@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143c38a40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143c38a40.c;xref:0x140183b4e",
-  "notes": "Copies four 16-byte-row matrices (param_2[0..3] = 4x4 float matrix) into ctx+0xf0..+0x12f plus derived fields (274 lines). Callers Game_ThumbnailTask_Update, 0x143c38993, 0x142fae62d, 0x140183b4e. Hypothesis: view/projection setup for render-to-texture."
+  "evidence": "decomp:re/decomp/143c38a40.c;xref:0x140183b4e,0x142e262cb,0x142fae62d",
+  "notes": "Stores one 4x4 float matrix (param_2 rows 0..3) at +0xf0..+0x12f and its SIMD inverse (cofactors times 1/det) at +0xb0..+0xef. Not four matrices, nothing RTT-specific. Callers 0x140183810 (0x140183b4e), Game_ThumbnailTask_StatePreloadingTexturesTexture 0x142e262cb, 0x142faa6d0 (0x142fae62d). (lane owner review requested) Better name: Render_View_SetMatrixAndInverse (bound record keeps its name)."
  },
  "signature": {
   "id": "render.rtt_view_set_view_matrices",

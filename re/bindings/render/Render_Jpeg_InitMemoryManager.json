@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1449d55c8",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/1449d55c8.c;xref:0x1449d3dae",
-  "notes": "libjpeg-style compress setup: allocates a 0x98-byte module struct (alloc fn 0x144d93960) and fills function pointers (0x1449df8f4, 0x1449dfa60, 0x1449dfb48, ... 0x1449e05b0); on allocation failure raises error code 0x38. Caller Render_Jpeg_CreateCompress. Hypothesis (jinit main/master controller). vq1-verify partial/disagree"
+  "notes": "libjpeg jinit_memory_mgr: max memory via jpeg_mem_init (0x144d93994), allocates the 0x98-byte manager (0x144d93960; on failure jpeg_mem_term and error 0x38), installs alloc_small/large/sarray/barray/request_virt/realize/access/free_pool/self_destruct (0x1449df8f4..0x1449e05b0), max_alloc_chunk 1000000000, clears the two pools. Caller 0x1449d3dae (Render_Jpeg_CreateCompress). Old note called it the main/master controller. (lane owner review requested)"
  },
  "signature": {
   "id": "render.jpeg_init_compress_main_modules",

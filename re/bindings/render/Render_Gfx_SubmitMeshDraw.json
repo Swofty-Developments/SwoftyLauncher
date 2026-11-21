@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a007e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143a007e0.c;xref:0x14243515c",
-  "notes": "Central mesh draw submission (14 params): sets up from model+0x20 mesh (40-byte submesh table +0x678..+0x680, count=diff/40), packs per-submesh bitmask, calls sub-steps 0x143a01670/02430/02580/02720/02900/02a50/.., updates a global draw counter (0x14618b5f4). 192 callers (0x142433b80, 0x142a46250, 0x143a03f70...). Addon: single choke point of mesh draws. Hypothesis on name."
+  "evidence": "decomp:re/decomp/143a007e0.c;xref:0x14243515c,0x142a46d70,0x143a04214",
+  "notes": "Adds param_8 to counter 0x14618b5f4, Render_Gfx_ResolveDrawPipelineState, walks the 40-byte binding table [param_2+0x20]+0x678 binding each entry by kind via BindSlotRange14/128/64, sets vertex/index buffers and topology (param_5+0xb1), then by draw kind calls Draw/DrawIndexed/DrawInstanced/DrawIndexedInstanced/DrawIndirect/DrawIndexedIndirect/Dispatch/0x143a03440/ExecuteIndirectKeyed/DispatchRays. Callers 0x142433b80, 0x142a46250, 0x143a03f70. (lane owner review requested) Better name: Render_Gfx_SubmitDraw (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx_submit_mesh_draw",

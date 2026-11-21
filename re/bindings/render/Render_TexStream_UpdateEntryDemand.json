@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143bf38d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143bf38d0.c;xref:0x143c60066",
-  "notes": "Updates a texture-streaming entry with a new demand: new = max(p4,0)*entry[8]; if above entry[2] stores priority [1]=max(old,p4+entry[0xc]) and desired size [0]; stamps frame [3]=ctx+0x4dc; if wanted mip (+0x37) > current (+0x38) and ctx flag +0x21c&1, atomically sets bit0 of entry+0x24 and pushes the entry into pending vector ctx+0x148..0x158 under lock ctx+0x590. Caller Render_Draw_ProcessInstanceBatch. Addon: streaming demand/priority hook."
+  "evidence": "decomp:re/decomp/143bf38d0.c;xref:0x143c60066,0x143d4b70a,0x143db5cd6,0x143df117a",
+  "notes": "new = max(demand,0)*entry[8]; stamps entry[3] = ctx+0x4dc; if new > entry[2]: stores it, entry[1] = max(entry[1], p4+entry[0xc]), entry[0] = new*k - size[cur mip]. If wanted mip +0x37 > current +0x38 and ctx+0x21c bit0, sets bit0 of +0x24 atomically and appends the entry to ctx vector +0x148 (lock +0x590). Callers 0x143c60066, Render_Draw_ProcessInstanceBatch 0x143d4b70a, 0x143db5cd6, Render_TerrainPlugin_Render 0x143df117a. (lane owner review requested)"
  },
  "signature": {
   "id": "render.tex_stream_update_entry_demand",

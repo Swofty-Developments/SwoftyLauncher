@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143bf1f30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143bf1f30.c;xref:0x143eb94b5,0x143ebb64d",
-  "notes": "Hypothesis: scans entries (type==1 skipped), strncmp against '/temp' paths; from AdjustQualityFactor. Named callers: Game_TextureStreaming_AdjustQualityFactor."
+  "notes": "Purges finished (state +8 != 1) job objects from the vectors +0x28 and +0x48, re-registers entries whose path starts with '/temp' (Ne_Crt_Strncmp 5) via Ne_Loader_RegisterRequest, wraps pending batches into 0x30-byte job objects (vtables 0x1458c1510/0x1458c1530) and registers them, then submits two more via 0x143bf2360. Callers Game_TextureStreamingVerbose_Clearing 0x143eb94b5, 0x143eb9ca0 (0x143ebb64d). (lane owner review requested) Better name: Render_TextureStreaming_SubmitLoaderRequests (bound record keeps its name)."
  },
  "signature": {
   "id": "render.texture_streaming_scan_entries",

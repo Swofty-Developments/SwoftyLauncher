@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432551a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'MOX/Mechanical: host migrated.'"
+  "evidence": "decomp:re/decomp/1432551a0.c;pat:log-channel-NETWORK;xref:0x14582ce00",
+  "notes": "Logs \"MOX/Mechanical: host migrated.\"; walks the vehicle set at this+0xf8/+0x100 and for each entry with flag +0x80 builds a message (vtable 0x145836530) and sends it through 0x14402e500 on transport [this+0x18]+0x3d0. (lane owner review requested) Better name: Game_Network_MOXMechanical_OnHostMigrated (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_mox_mechanical_host_migrated",

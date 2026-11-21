@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143ff28e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-EADP_NOTIFICATIONS",
-  "notes": "named from its log messages (channel EADP_NOTIFICATIONS): 'Failed to receive a notification. Check the error for details. %llu'"
+  "evidence": "decomp:re/decomp/143ff28e0.c;pat:log-channel-EADP_NOTIFICATIONS;xref:0x145a46000",
+  "notes": "Notification stream callback (vtable cell 0x145a46000): error -> 'Failed to receive a notification. Check the error for details. %llu'; end -> 'Server closed the stream. Resubscribe...'; dispatches hasBlockListNotification / hasReceivedInviteListNotification / hasFriendListNotification payloads with 'update type #%u' logs. (lane owner review requested) Better name: Game_EadpNotifications_OnNotificationStreamMessage (bound record keeps its name)."
  },
  "signature": {
   "id": "game.eadp_notifications_receive_notification_check_details",

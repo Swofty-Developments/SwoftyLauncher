@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142cd62a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK/T",
-  "notes": "named from its log messages (channel NETWORK/T): 'MOX/StartLights: eCompleteCount %+1.3f at time %1.3fs'"
+  "evidence": "decomp:re/decomp/142cd62a0.c;pat:log-channel-NETWORK/T;xref:0x142d56ca9,0x142d5d553,0x142d5ff84",
+  "notes": "Start-lights state machine: returns unless +0xbbd; switch on state +0x29 (<5) with timers +0x70/+0x78, light modes 'formation', 'all_green', 'off', sound 'play_hud_start_light_beep', logs 'MOX/StartLights: eCompleteCount %+1.3f at time %1.3fs' (NETWORK/T). Callers include 0x142d566a0, 0x142d5d480, 0x142d5fd60, 0x143273710. (lane owner review requested) Better name: Game_Network_StartLights_UpdateState (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_mox_start_lights_e_complete_count_time",

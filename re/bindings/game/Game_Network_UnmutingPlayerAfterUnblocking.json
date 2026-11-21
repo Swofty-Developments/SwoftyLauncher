@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430cb940",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'Unmuting player %llu after unblocking'"
+  "evidence": "decomp:re/decomp/1430cb940.c;pat:log-channel-NETWORK;xref:0x143055c43,0x1430cbc48",
+  "notes": "Referenced by the leas at 0x143055c43 (in 0x143054470) and 0x1430cbc48 (in 0x1430cba50). (this, event): when the unblocked user is found and muted, logs 'Unmuting player %llu after unblocking' and tail-jumps 0x144033b30 (unmute). (lane owner review requested) Better name: Game_NetworkVoice_UnmutePlayerAfterUnblock (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_unmuting_player_after_unblocking",

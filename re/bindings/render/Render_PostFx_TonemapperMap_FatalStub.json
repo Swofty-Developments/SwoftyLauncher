@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143ecb9e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143ecb9e0.c;xref:0x143bca5b8,0x143ecc100",
-  "notes": "13-byte noreturn fatal stub for the assert in Render_PostFx_TonemapperMap_Rehash. Name only."
+  "notes": "10-byte noreturn stub: sub rsp,0x28; call Ne_Crt_InvalidParameterAbort (0x145351784, CRT abort path); int3. Reached from cold paths at 0x143bca5b8 (Render_PostFx_InitTonemapper) and 0x143ecc100 (Render_PostFx_TonemapperMap_Rehash). (lane owner review requested)"
  },
  "signature": {
   "id": "render.post_fx_tonemapper_map_fatal_stub",

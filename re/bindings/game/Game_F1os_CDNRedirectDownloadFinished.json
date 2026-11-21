@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432b7710",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-F1OS",
-  "notes": "named from its log messages (channel F1OS): 'CDN Redirect download finished with error %d'"
+  "evidence": "decomp:re/decomp/1432b7710.c;pat:log-channel-F1OS;xref:0x145834048",
+  "notes": "Virtual (vtable cell 0x145834048): logs 'CDN Redirect download finished' or '... with error %d', builds 'skuName=%s, platformName=%s, server=%s' / payload strings (platform 'steam', 'default'); request lookup via 0x143294550 (0x1432b7743). (lane owner review requested) Better name: Game_F1os_OnCdnRedirectDownloadFinished (bound record keeps its name)."
  },
  "signature": {
   "id": "game.f1os_cdn_redirect_download_finished",

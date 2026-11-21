@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446379f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1446379f0.c;imm:0x2fa4e2c6",
-  "notes": "vtable method; node ids frontwingmoving_fl/fr, rearwingmoving_top(_2) and x0_frontwingmoving{1,2}_fixed_{fl,fr} hinge dummies; missing -> -1 + log, moving-front-wing flag at +0x1330 false"
+  "evidence": "decomp:re/decomp/1446379f0.c;imm:0x2fa4e2c6;xref:0x145bf79e8",
+  "notes": "Vtable cell 0x145bf79e8. Node ids frontwingmoving_fl/fr (+0x1308/+0x130c), rearwingmoving_top (+0x1300), rearwingmoving_top_2 (+0x1304), logs missing ones; normalised hinge axes from x0_frontwingmoving1/2_fixed_fl/fr dummies at +0x1310 / +0x1320; +0x1330 = both front nodes found and dummies present. (lane owner review requested)"
  },
  "signature": {
   "id": "game.check_moving_wing_nodes",

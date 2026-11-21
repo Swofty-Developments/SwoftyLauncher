@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1407d18b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-CAREER_INVITATIONAL_FLOW",
-  "notes": "named from its log messages (channel CAREER_INVITATIONAL_FLOW): 'GameModeSystem: Game Mode details set to: %hs'"
+  "evidence": "decomp:re/decomp/1407d18b0.c;pat:log-channel-CAREER_INVITATIONAL_FLOW;xref:0x1407c8e75,0x1407c96bf",
+  "notes": "Message handler (lea refs): copies the C string at param_2+0x20 (<= 127 chars) into the 128-byte string at this+0x98 (data +0xa8) and logs 'GameModeSystem: Game Mode details set to: %hs'. (lane owner review requested) Better name: Game_GameModeSystem_SetGameModeDetails (bound record keeps its name)."
  },
  "signature": {
   "id": "game.career_invitational_flow_game_mode_system_game_mode_details_set",

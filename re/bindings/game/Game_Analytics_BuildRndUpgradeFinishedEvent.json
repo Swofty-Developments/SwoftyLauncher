@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140777ff0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140777ff0.c;xref:0x14071e735",
-  "notes": "Builds the analytics event \"rnd_upgrade_finished\" (R&D upgrade completed) with the generic key/value payload. Callers PlayerFittedUpgradedPartToDriver / PlayerTeamPartsUpgradeHasFailed. Telemetry only."
+  "evidence": "decomp:re/decomp/140777ff0.c;xref:0x14071e735,0x14071e9b8",
+  "notes": "(this, unique_ptr<RnDUpgradeFinishedRecord>): payload via 0x14058dca0, serialise 0x14077bb90(this, payload, 'rnd_upgrade_finished', 0xff), then moves the record into the static 'rnd_upgrade_finished' queue under CS (max 0x40). Callers 0x14071e470, 0x14071e810. (lane owner review requested) Better name: Game_Analytics_SubmitRndUpgradeFinishedEvent (bound record keeps its name)."
  },
  "signature": {
   "id": "game.analytics_build_rnd_upgrade_finished_event",

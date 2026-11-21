@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1406bf130",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-CONTROLLER_SET",
-  "notes": "named from its log messages (channel CONTROLLER_SET): 'ControllerSet(%d / %s) : flag(%s) set to (%s).'"
+  "evidence": "decomp:re/decomp/1406bf130.c;pat:log-channel-CONTROLLER_SET;xref:0x1406c078e,0x1406c12ef,0x14843b7ee,0x1484467c6,0x14844912a",
+  "notes": "[CINEMATIC DIRECTOR] step: compares requested flags +0x58 with applied +0x48; HUD hide reason 10 (bit0), bus messages for bits 1-4 and 9, ControllerSet flag 0x10000 on every controller set for bit 6 (log '...flag set'), camera/VR/spectator for bits 10-14, sends 'Cinematic Data Message' (+0x30 < 2), then +0x48 = +0x58. Renamed: old name came from an inlined log. (lane owner review requested) Better name: Game_CinematicDirector_ApplyFlags (bound record keeps its name)."
  },
  "signature": {
   "id": "game.controller_set_set_flag",

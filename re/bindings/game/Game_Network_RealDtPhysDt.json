@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14325f3e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): '[LAGSPIKE] real_dt(%.3f secs) phys_dt(%.3f secs).'"
+  "evidence": "decomp:re/decomp/14325f3e0.c;pat:log-channel-NETWORK;xref:0x14325dc12,0x1432e2925",
+  "notes": "Measures real frame time with QueryPerformanceCounter (this+0x340/+0x348/+0x350) and compares with phys dt param_2; if real-phys > 0.1 s logs \"[LAGSPIKE] real_dt phys_dt\" and sets a flag in a 32-slot ring at this+0x318 indexed by this+0x200. (lane owner review requested) Better name: Game_Network_DetectLagSpike (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_real_dt_phys_dt",

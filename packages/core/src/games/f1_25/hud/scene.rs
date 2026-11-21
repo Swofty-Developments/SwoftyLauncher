@@ -173,10 +173,26 @@ struct Templates {
     centre: Option<Node>,
 }
 
+/// The prefix of the anim nodes a record adds: it sorts after every stock name in an anim string table.
+pub const ANIM_PREFIX: &str = "zh_";
+
+/// The prefix of the anim nodes the record `pfx` adds to a scene whose sorted anim string table ends
+/// at `last`, so that every name it appends sorts after the table's end: [`ANIM_PREFIX`], or, when
+/// another addon's copy of the scene already ends the table at or past `zh_<pfx>_` (Project Halo
+/// 0.2.4's dials end at `zh_sg8_anim`), the first of `zi_` to `zz_` that sorts after it. `None` when
+/// none does.
+pub fn anim_prefix(last: Option<&str>, pfx: &str) -> Option<String> {
+    (b'h'..=b'z')
+        .map(|c| format!("z{}_", c as char))
+        .find(|p| last.is_none_or(|l| format!("{p}{pfx}_").as_str() > l))
+}
+
 pub struct Builder {
     pub facts: &'static DialFacts,
     pub pkg: Pkg,
     t: Templates,
+    /// The prefix of the anim nodes the next record adds ([`anim_prefix`]).
+    pub anim: String,
     /// The stock units a `unit` element may instance (`units::load`); empty until loaded.
     pub units: units::Units,
     pub names: BTreeSet<String>,
@@ -314,6 +330,7 @@ impl Builder {
                 stacker: None,
                 centre: None,
             },
+            anim: ANIM_PREFIX.to_owned(),
             units: units::Units::new(),
             names: BTreeSet::new(),
             stock_ids,
@@ -378,6 +395,7 @@ impl Builder {
                 centre: None,
             },
             pkg,
+            anim: ANIM_PREFIX.to_owned(),
             units: units::Units::new(),
             names: BTreeSet::new(),
             stock_ids,
@@ -811,7 +829,7 @@ impl Builder {
                 };
                 let mut holder = match (&e.motion, preview) {
                     (Some(m), false) => {
-                        let hn = super::motion::holder_name(&name, m);
+                        let hn = super::motion::holder_name(&self.anim, &name, m);
                         let clip = m.track()? != super::motion::Track::Fade;
                         let h = self.null(&hn, [0.0; 3], None, clip, false)?;
                         super::motion::plan(cx.plan, e, m, &hn)?;
@@ -1087,7 +1105,10 @@ impl Builder {
         let (wn, cn) = if preview {
             (format!("zs_{name}_win"), format!("zs_{name}_ctr"))
         } else {
-            (format!("zh_{name}_win"), format!("zh_{name}_ctr"))
+            (
+                format!("{}{name}_win", self.anim),
+                format!("{}{name}_ctr", self.anim),
+            )
         };
         let mut win_anim = self.null(&wn, bp, None, !preview, false)?;
         let win = self.window(&format!("{name}_win"), [0.0, 0.0, -0.12], K * ww, K * wh)?;
@@ -1151,7 +1172,7 @@ impl Builder {
         let anim_name = if preview {
             format!("zs_{name}_rot")
         } else {
-            format!("zh_{name}_rot")
+            format!("{}{name}_rot", self.anim)
         };
         let rot = if let Mode::Preview(state) = &cx.mode {
             let f = state
@@ -1408,5 +1429,80 @@ mod tests {
         d[1].initial = Some("yes".into());
         assert!(!switched_by(&d)["shared"]);
         assert!(switched_by(&d)["hot"]);
+    }
+
+    /// The names of the field: Project Halo 0.2.2's dial table ended at `zh_rpm_flash_anim` and 0.2.4's
+    /// at `zh_sg8_anim`, where SWOFTY 2010's `zh_s10_onboard_needle_rpm` was refused; with Halo the
+    /// standings cap's table ends at `tt_xout`.
+    #[test]
+    fn anim_names_sort_after_the_last_name_another_addon_left_in_the_table() {
+        for (last, pfx) in [
+            (None, "s10_onboard"),
+            (Some("tt_xout"), "tv_timing_tower"),
+            (Some("zh_rpm_flash_anim"), "s10_onboard"),
+            (Some("zh_rpm_flash_anim"), "s11_onboard"),
+        ] {
+            assert_eq!(
+                anim_prefix(last, pfx).as_deref(),
+                Some(ANIM_PREFIX),
+                "{last:?} {pfx}"
+            );
+        }
+        let halo = Some("zh_sg8_anim");
+        for pfx in ["s10_onboard", "s11_onboard"] {
+            let anim = anim_prefix(halo, pfx).unwrap();
+            assert_eq!(anim, "zi_");
+            for name in ["needle_rpm", "rpm_a_rot", "ers_win"] {
+                assert!(format!("{anim}{pfx}_{name}").as_str() > "zh_sg8_anim");
+            }
+        }
+        assert!("zh_s10_onboard_needle_rpm" < "zh_sg8_anim");
+        assert_eq!(anim_prefix(halo, "t").as_deref(), Some(ANIM_PREFIX));
+        assert_eq!(
+            anim_prefix(Some("zq_s10_onboard_x"), "s10_onboard").as_deref(),
+            Some("zr_")
+        );
+        assert_eq!(anim_prefix(Some("zz_s10_onboard_x"), "s10_onboard"), None);
+        assert_eq!(anim_prefix(Some("~"), "s10_onboard"), None);
+    }
+
+    #[test]
+    fn appended_anim_names_keep_a_sorted_table_sorted() {
+        use swofty_formats::animclip;
+        use swofty_formats::pkg::{Arr, Obj};
+        let table = |strings: &[&str]| {
+            Pkg {
+                name: *b"ANST",
+                root: Node::Obj(Obj::new(vec![(
+                    Val::str("strings"),
+                    Node::Arr(Arr::new(
+                        strings.iter().map(|s| Node::Val(Val::str(*s))).collect(),
+                    )),
+                )])),
+                vca: vec![],
+                layout: None,
+            }
+            .to_bytes()
+            .unwrap()
+        };
+        let halo = table(&["central_bg_fill", "zh_rpm_flash_anim", "zh_sg8_anim"]);
+        let e = animclip::append_strings(&halo, &["zh_s10_onboard_needle_rpm"])
+            .unwrap_err()
+            .to_string();
+        assert!(
+            e.contains("zh_s10_onboard_needle_rpm does not sort after zh_sg8_anim"),
+            "{e}"
+        );
+        let anim = anim_prefix(Some("zh_sg8_anim"), "s10_onboard").unwrap();
+        let names = [
+            format!("{anim}s10_onboard_needle_rpm"),
+            format!("{anim}s10_onboard_rpm_a_rot"),
+            format!("{anim}s11_onboard_needle_rpm"),
+        ];
+        let refs: Vec<&str> = names.iter().map(String::as_str).collect();
+        let (out, first) = animclip::append_strings(&halo, &refs).unwrap();
+        assert_eq!(first, 3);
+        let have = animclip::read_strings(&out).unwrap();
+        assert!(have.is_sorted(), "{have:?}");
     }
 }

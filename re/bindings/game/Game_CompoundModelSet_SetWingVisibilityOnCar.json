@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e87ab0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name setWingVisibilityOnCar (class from the log channel); log channel CompoundModelSetVerbose: 'setWingVisibilityOnCar [%p] [%s] [%s]'"
+  "evidence": "decomp:re/decomp/142e87ab0.c;pat:log-message-method;xref:0x140239ebd,0x142e946a8,0x142e95360,0x142e95bee,0x14f3c6ad1,0x14f49900b",
+  "notes": "Own log. For 24 front-wing part slots resolves the node (Car_FrontWing_ResolvePartNodeId), caches the vehicle part objects (+0x190, once, flag +0x188), SetPartVisibilityBit, and when hiding or part detached rewrites the local matrix and recomputes world matrices; queues refresh; [veh+0xe0]+0xd34 bit3 = param_3. (lane owner review requested)"
  },
  "signature": {
   "id": "game.compound_model_set_set_wing_visibility_on_car",

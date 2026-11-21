@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432b4440",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name cleanUpRequest (class from the log channel); log channel F1OS: '%s(%d): Cleaning up task %s : method %s .'"
+  "evidence": "decomp:re/decomp/1432b4440.c;pat:log-message-method;xref:0x1432c256a,0x1432c25b8,0x1432c2f31",
+  "notes": "F1OS task manager cleanUpRequest: logs '%s(%d): Cleaning up task %s : method %s .' (method name 'cleanUpRequest'), 'Aborted OnlineServiceRequest %d', 'The task to clean was the current task in the Task Manager'; lookup via 0x143294550. Callers 0x1432c2420 (0x1432c256a, 0x1432c25b8), 0x1432c2980 (0x1432c2f31). (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1os_clean_up_request",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14303c490",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=ContentDomainVerifier::sendContentDomainIdentifier; log channel NETWORK-CONTENT/F: 'ContentDomainVerifier::sendContentDomainIdentifier(%d, language %d, exeVersion: %d)'"
+  "evidence": "decomp:re/decomp/14303c490.c;pat:log-message-cxx;xref:0x14303b833,0x14305f513",
+  "notes": "Own log. Packet {1, len(domain), len(language), +0x128, +0x129, exeVersion [+0xf0]+0x60, domain, language} from config-dict indices [+0xf0]+8 and +0xc+lang*4, sent via [+0x108] vt+0 to peer param_2. (lane owner review requested)"
  },
  "signature": {
   "id": "game.content_domain_verifier_send_content_domain_identifier",

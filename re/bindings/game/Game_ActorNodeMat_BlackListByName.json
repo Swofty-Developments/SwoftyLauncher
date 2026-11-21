@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name blackListByName (class from the log channel); log channel ACTOR_NODE_MAT: 'blackListByName [%s] matches [%s]'"
+  "evidence": "decomp:re/decomp/142f12750.c;pat:log-message-method;xref:0x1457f52f0",
+  "notes": "Vtable slot (cell 0x1457f52f0) of an ACTOR_NODE_MAT component: registers self in a table at index ((+0x40)+0x58)+0xe8, subscribes MessageReplayPostDeserialisation (handler 0x142f132c0), then walks node lists of (+0x30)+0x490/+0x4a0 and blacklists material nodes by name, logging 'blackListByName [%s] matches [%s]'."
  },
  "signature": {
   "id": "game.actor_node_mat_black_list_by_name",

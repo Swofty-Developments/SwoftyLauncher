@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430a9610",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name setupFromRankedMatchmakingSettings (class from the log channel); log channel NETWORK/F: 'setupFromRankedMatchmakingSettings()'"
+  "evidence": "decomp:re/decomp/1430a9610.c;pat:log-message-method;xref:0x14315b818,0x14315c262",
+  "notes": "Logs 'setupFromRankedMatchmakingSettings()' (NETWORK/F). Reads a settings block (param_2: u32 mode at +0, bytes at +4, +0xd..+0x11) and pushes each value into session option objects at this+0x4a8..+0x4e0 (vtbl+0x10 get, +0x18 set) and setters 0x14309fe00, 0x1430a01f0, 0x1430a0390, 0x1430a0520; reads option mp_unsafe_pit_release. Callers 0x14315b6a0, 0x14315be10. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_f_setup_from_ranked_matchmaking_settings",

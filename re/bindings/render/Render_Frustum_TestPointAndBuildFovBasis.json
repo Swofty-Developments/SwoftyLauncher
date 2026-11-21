@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14395d980",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/14395d980.c;xref:0x143d8c8bf,0x143dcb16f",
-  "notes": "Hypothesis: builds frustum/projection data from two matrices and a scalar (atanf); called from SceneView_SubmitCamera. Named callers: Render_SceneView_SubmitCamera. vp1-verify partial/disagree"
+  "notes": "Cone vs frustum: rejects if apex param_2 with radius (xmm3) is outside one of 6 planes param_1, else builds an octagon at apex+dir param_3*range with radius Ne_Crt_Atanf(param_5)*range*1.0824 and tests 8 side and 8 base triangles with 0x14395d690, returning the first non-zero result. Callers in Render_SceneView_SubmitCamera, 0x143dcb020. (lane owner review requested) Better name: Render_Frustum_TestSpotCone (bound record keeps its name)."
  },
  "signature": {
   "id": "render.camera_build_frustum_planes",

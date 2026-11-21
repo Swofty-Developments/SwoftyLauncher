@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144076060",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name connectionLeft (class from the log channel); log channel NETWORK-THROTTLE: '%s: connectionLeft(%d), queue DESTROYED.'"
+  "evidence": "decomp:re/decomp/144076060.c;pat:log-message-method;xref:0x14305a7ad",
+  "notes": "Logs 'connectionLeft(%d)', calls UpdateStats 0x1440762d0, removes the connection's queue ('queue DESTROYED'). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_throttle_connection_left",

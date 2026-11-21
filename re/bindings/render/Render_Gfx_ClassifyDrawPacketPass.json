@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439e5970",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/1439e5970.c;xref:0x1439d8b02",
-  "notes": "596-byte helper using Ne_Crt_Strstr on names containing 'voxel' / 'skyshadow' to classify the draw packet pass. Caller Render_Gfx_CreateDrawPacket (0x1439d8b02). Hypothesis."
+  "notes": "Returns a flag word for a packet of Render_Gfx_CreateDrawPacket: 0 unless type byte +0xba is 2 or 4, 0 if the group name ([[+0x20]+0x20]+8) contains voxel or for 4 listed group hashes; else ORs bits from bound resources (+0x30.., format +0x38, slot kinds 7/8 at group+0x771) and adds bit 1 or 5 unless the name contains skyshadow. Caller 0x1439d8970. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx_classify_draw_packet_pass",

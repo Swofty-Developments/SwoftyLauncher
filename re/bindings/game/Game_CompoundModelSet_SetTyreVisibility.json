@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e83130",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name setTyreVisibility (class from the log channel); log channel CompoundModelSetVerbose: 'setTyreVisibility %p m_tyreModelVisibility %x \"%s\" [%d] [%s] [%s]'"
+  "evidence": "decomp:re/decomp/142e83130.c;pat:log-message-method;xref:0x140239e0f,0x140239e38,0x140239e64,0x140239e90,0x1403ace11,0x1403b8908,0x1403caa16,0x142e82eb8,0x142e82ecb,0x142e82ee3,0x142e82ef6,0x142e82f09,0x142e942cb,0x142e9430e,0x142e9434e,0x142e9438e,0x142e943ce,0x142e944f7,0x142e9453f,0x142e94590,0x142e945dc,0x142e94692,0x142e94deb,0x142e94e03,0x142e94e1b,0x142e94e2e,0x142e94e41,0x142e94e54,0x142e94e67,0x142e94e7a,0x142e94e8d,0x142e94ea0,0x142e94eb3,0x142e94ec6,0x142e94ed9,0x142e94eec,0x142e94eff,0x142e959aa,0x142e959c4,0x142e959df,0x142e959fa,0x142e95a15,0x142e95a34,0x142e95a4f,0x142e95a66,0x142e95a81,0x142e95a9c,0x142e95abb,0x142e95ad6,0x142e95af1,0x142e95b0c,0x142e95b26,0x142e96b02,0x142e96b2f,0x142e96b60,0x142e96be1,0x142e96c1e,0x142e96cc5,0x142ea2ce0,0x142ea2d52,0x14f3c28c0,0x14f3c28d3,0x14f3c28ed,0x14f3c2900,0x14f3c2913,0x14f43e382,0x14f43e3b3,0x14f43fa99,0x14f43fac6,0x14f43fb02,0x14f493772,0x14f4937d3,0x14f497ae8,0x14f498ff5",
+  "notes": "Own log 'setTyreVisibility'. (set, tyre < 5, visible): toggles bit in +0x208 (0x142e83e80 when low 5 bits clear, 0x142e83d20 when any set); tyre < 4: 9 wheel nodes via Game_CompoundModelSet_SetPartVisibilityBit and view masks (ClearVisibilityMask / 0x143d3dc10 / SetVisibilityMaskForGroup 0/1, group masks +0x80/+0x90) from +0x494 and +0x230. (lane owner review requested)"
  },
  "signature": {
   "id": "game.compound_model_set_set_tyre_visibility",

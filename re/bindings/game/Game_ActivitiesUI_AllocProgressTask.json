@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14386a5e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14386a5e0.c;xref:0x14386634b",
-  "notes": "Allocates a 0x88-byte task object with vtable 0x14588acd0 and links it into the activities list; callers Game_ActivitiesUIDeeplinkManager_Report*Activity* (10)."
+  "evidence": "decomp:re/decomp/14386a5e0.c;xref:0x14386634b,0x143866727,0x14386674f,0x143867165,0x14386721f,0x143867c06,0x143867c38,0x143868a82,0x143869300,0x14386a1e5,0x15194050b",
+  "notes": "Not a progress task: builds a 0x88-byte activity-availability change request (vtable 0x14588acd0, mode 'delta'), adds each id of param_2 to its available list (+0x60, logs 'Change activity %s to available') and each id of param_3 to the unavailable list (+0x8, logs '... to unavailable'), then submits it to the activity service (+0x30)+0x4c0 via 0x144134d70. (lane owner review requested) Better name: Game_ActivitiesUI_ChangeActivityAvailability (bound record keeps its name)."
  },
  "signature": {
   "id": "game.activities_u_i_alloc_progress_task",

@@ -59,13 +59,20 @@ pub struct RowAddon {
     pub state: String,
 }
 
-/// Whether the Resume Career list screen is on: always, unless `SWOFTY_RESUME_LIST=0`.
+const LIST_VAR: &str = "SWOFTY_RESUME_LIST";
+
 fn loadable_default() -> bool {
     true
 }
 
-pub fn wanted() -> bool {
-    wanted_from(std::env::var("SWOFTY_RESUME_LIST").ok().as_deref())
+/// Whether the Resume Career list screen is on: always, unless `SWOFTY_RESUME_LIST` is `0` in the game's
+/// environment, where `launch.env` in config.json overrides the launcher's own environment.
+pub fn wanted(launch_env: &BTreeMap<String, String>) -> bool {
+    wanted_from(game_value(launch_env, std::env::var(LIST_VAR).ok()).as_deref())
+}
+
+fn game_value(launch_env: &BTreeMap<String, String>, own: Option<String>) -> Option<String> {
+    launch_env.get(LIST_VAR).cloned().or(own)
 }
 
 fn wanted_from(value: Option<&str>) -> bool {
@@ -637,6 +644,19 @@ mod tests {
         assert!(wanted_from(Some("1")));
         assert!(wanted_from(Some("")));
         assert!(!wanted_from(Some("0")));
+    }
+
+    #[test]
+    fn the_launch_env_in_config_turns_the_list_screen_off() {
+        let off = BTreeMap::from([(LIST_VAR.to_owned(), "0".to_owned())]);
+        let on = BTreeMap::from([(LIST_VAR.to_owned(), "1".to_owned())]);
+        assert!(!wanted_from(game_value(&off, None).as_deref()));
+        assert!(!wanted_from(game_value(&off, Some("1".into())).as_deref()));
+        assert!(wanted_from(game_value(&on, Some("0".into())).as_deref()));
+        assert!(!wanted_from(
+            game_value(&BTreeMap::new(), Some("0".into())).as_deref()
+        ));
+        assert!(wanted_from(game_value(&BTreeMap::new(), None).as_deref()));
     }
 
     fn db() -> Gvdb {

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1407425f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: Player's Form was updated from %d to %d'"
+  "evidence": "decomp:re/decomp/1407425f0.c;pat:log-channel-TELEMETRY;xref:0x1406ea0c4,0x1407076cd",
+  "notes": "Bus handler: lea 0x1406ea0c4 in subscribe-all 0x1406d8470 (->0x143987810), lea 0x1407076cd in unsubscribe-all 0x1406fd6c0. Allocs 0x68 record (ctor 0x140531fb0), copies msg fields, baseCtx by 0x14077bb90 'player_form_changed_record', pushed to static queue (guard 0x14604dde8) under CS; logs TELEMETRY 'Player's Form was updated from %d to %d'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_player_s_form_was_updated_from",

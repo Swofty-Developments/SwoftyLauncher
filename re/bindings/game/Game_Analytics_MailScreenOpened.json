@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1407521b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: mail screen opened'"
+  "evidence": "decomp:re/decomp/1407521b0.c;pat:log-channel-TELEMETRY;xref:0x1406efa34,0x140708014",
+  "notes": "Bus handler(this,msg); subscribed 0x1406efa34 (0x1406d8470), unregistered 0x140708014. 0x68-byte record: u32 msg+0x10. Tag 'mail_screen_opened_record' via 0x14077a240, GUID+seq, 64-entry queue; logs 'mail screen opened' (TELEMETRY). (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_mail_screen_opened",

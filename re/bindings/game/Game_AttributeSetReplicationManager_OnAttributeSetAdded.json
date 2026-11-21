@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=AttributeSetReplicationManager::onAttributeSetAdded; log channel NETWORK-ENTRANTS: 'neon::NeDispatchAction network::AttributeSetReplicationManager::onAttributeSetAdded(neon::NeMessage &) | %s: Sent update message for newly added attribute set with key %u to the server.'"
+  "evidence": "decomp:re/decomp/143126390.c;pat:log-message-cxx",
+  "notes": "onAttributeSetAdded (own pretty-function string in the body)."
  },
  "signature": {
   "id": "game.attribute_set_replication_manager_on_attribute_set_added",

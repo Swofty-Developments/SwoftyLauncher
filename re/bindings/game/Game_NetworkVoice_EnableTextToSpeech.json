@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14403f6f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name enableTextToSpeech (class from the log channel); log channel NETWORK-VOICE: '%s: Failed to set text options: %hs'"
+  "evidence": "decomp:re/decomp/14403f6f0.c;pat:log-message-method;xref:0x145a4a228",
+  "notes": "Sets PlayFab text chat options; on failure logs '%s: Failed to set text options: %hs' with its own name enableTextToSpeech. Only reference is vtable cell 0x145a4a228. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_voice_enable_text_to_speech",
