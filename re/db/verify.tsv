@@ -970,6 +970,7 @@ date	verifier	kind	item	claimed	verdict	evidence	notes
 2026-10-28	su-verify	func	Car_Setup_SetFrontRideHeight	L2	partial	decomp:re/decomp/1446d7c80.c;xref:0x140c11550	V1739 claim 3; +0x164c / +0x1648 on opposite axles
 2026-10-28	su-verify	func	Car_Setup_SetRearRideHeight	L2	partial	decomp:re/decomp/1446d8080.c;xref:0x140c11550	V1740 claim 3
 2026-10-28	su-verify	func	Car_Solver_PrepareDrivetrain	L2	agree	decomp:re/decomp/1446db280.c;xref:0x1446dc480	V1741 claim 4 lane loader mappings exact
+2026-10-28	su-verify	func	Car_Suspension_Integrate	L2	partial	decomp:re/decomp/1446e1920.c;xref:0x1446dceb0	V1742 claim 5; ARB MR +0x240, Fz only HV < 7
 2026-10-28	su-verify	func	Car_F1Aero_GetFrontRideHeight	L2	partial	decomp:re/decomp/1446cb000.c;xref:0x1446dd570	V1743 claim 6
 2026-10-28	su-verify	func	Car_F1Aero_GetRearRideHeight	L2	partial	decomp:re/decomp/1446cb260.c;xref:0x1446dd53c	V1744 claim 6; rear ref +0x98
 2026-10-28	su-verify	func	Car_SuspensionSystem_OnTuningChanged_Body	L1	agree	decomp:re/decomp/15543f450.c	V1745 claim 8
