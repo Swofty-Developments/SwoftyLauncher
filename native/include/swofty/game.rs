@@ -2891,6 +2891,45 @@ pub struct SpectatorDirectorGap {
 const _: () = assert!(core::mem::offset_of!(SpectatorDirectorGap, gap_mode) == 0xe4);
 
 #[repr(C)]
+pub struct SpeechLine {
+    _pad_0x0: [u8; 0x80],
+    pub speaker: u64,
+    pub duration_ms: u32,
+    pub id: u32,
+    _pad_0x90: [u8; 0xa8],
+    pub subtitle_stem: *mut c_char,
+    pub category: u8,
+    _pad_0x141: [u8; 0x3],
+    pub state: u32,
+}
+const _: () = assert!(core::mem::offset_of!(SpeechLine, speaker) == 0x80);
+const _: () = assert!(core::mem::offset_of!(SpeechLine, duration_ms) == 0x88);
+const _: () = assert!(core::mem::offset_of!(SpeechLine, id) == 0x8c);
+const _: () = assert!(core::mem::offset_of!(SpeechLine, subtitle_stem) == 0x138);
+const _: () = assert!(core::mem::offset_of!(SpeechLine, category) == 0x140);
+const _: () = assert!(core::mem::offset_of!(SpeechLine, state) == 0x144);
+
+#[repr(C)]
+pub struct SpeechSpeaker {
+    _pad_0x0: [u8; 0x18],
+    pub name: *mut c_char,
+}
+const _: () = assert!(core::mem::offset_of!(SpeechSpeaker, name) == 0x18);
+
+#[repr(C)]
+pub struct SpeechSystem {
+    _pad_0x0: [u8; 0x728],
+    pub speakers: *mut u8,
+    _pad_0x730: [u8; 0x9c],
+    pub speaker_count: u32,
+    _pad_0x7d0: [u8; 0x3c0],
+    pub radio_delay: f64,
+}
+const _: () = assert!(core::mem::offset_of!(SpeechSystem, speakers) == 0x728);
+const _: () = assert!(core::mem::offset_of!(SpeechSystem, speaker_count) == 0x7cc);
+const _: () = assert!(core::mem::offset_of!(SpeechSystem, radio_delay) == 0xb90);
+
+#[repr(C)]
 pub struct SponsorEntry {
     _pad_0x0: [u8; 0x10],
     pub name: *const c_char,
