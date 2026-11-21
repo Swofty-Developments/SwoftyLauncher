@@ -692,6 +692,12 @@ void career_season(int year)
     scheduler().career_season(year);
 }
 
+void career_dated(int year)
+{
+    attach();
+    scheduler().career_dated(year);
+}
+
 void box_picked(const char *entrant_list) { box_picked(entrant_list, nullptr); }
 
 void box_picked(const char *entrant_list, const void *mode_context)
