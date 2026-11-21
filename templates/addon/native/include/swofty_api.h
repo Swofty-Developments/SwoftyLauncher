@@ -133,8 +133,9 @@ typedef void (*SwoftyPaintFn)(SwoftyPaint *paint, void *user);
 /* Overlay v2: the SwoftyOverlay entries after image() exist when the running swofty_core.dll exports
    SwoftyCoreOverlayVersion and it returns 2 or more (swofty/overlay.hpp checks); the v3 entries after
    ui_scale() exist when it returns 3 or more. A text style and an input snapshot are read and written
-   up to their size field, so later fields can be added. */
-#define SWOFTY_OVERLAY_VERSION 3
+   up to their size field, so later fields can be added. The v4 entry after focus() exists when it returns 4 or
+   more. */
+#define SWOFTY_OVERLAY_VERSION 4
 
 enum {
     SWOFTY_TEXT_LEFT = 0x00,
@@ -258,6 +259,8 @@ typedef struct SwoftyOverlay {
     /* v3 */
     int (*input)(const SwoftyPaint *paint, SwoftyInput *out);
     int (*focus)(int on);
+    /* v4 */
+    int (*load_image_rgba)(const char *id, uint32_t width, uint32_t height, const void *rgba);
 } SwoftyOverlay;
 
 #define SWOFTY_TELEMETRY_VERSION 2
@@ -1565,6 +1568,43 @@ typedef struct SwoftyMem {
     void (*invalidate)(void);
 } SwoftyMem;
 
+/* Game assets (standard library, swofty/game_assets.hpp), from the core export SwoftyCoreGameAssets; not a SwoftyApi
+   field, so SWOFTY_API_VERSION is unchanged and the table carries its own version. NULL export or table: a core
+   without it. Table version 1. Every call reads the game's archives in the game folder, with the overlay archives
+   the launcher layers on them on top; it blocks on file reads, so call it off the game's threads. Calls are safe
+   from any thread. The results are the SWOFTY_ASSET_* codes plus SWOFTY_TOO_SMALL; unavailable when the game
+   folder is unknown, invalid for a bad argument or a resource, catalogue or name the game does not have.
+   read: the decompressed bytes of fragment `fragment` of the resource at an eaid:// URI, or of all its fragments one
+   after another with SWOFTY_GAME_ALL_FRAGMENTS; *len is set to the size, and a NULL buf or a cap below it returns
+   SWOFTY_TOO_SMALL. The first call for a package (eaid://<package>/...) opens the index of every archive in
+   2025_asset_groups/<package>/ and keeps it. texture: the header of the texture or texture array at uri (its first
+   fragment): the engine format id, the size of the top level, the level and layer counts. texture_rgba: one level of
+   one layer decoded to straight RGBA8 rows, top row first, width*height*4 bytes; formats 52 and 54 (BC1), 55 and 57
+   (BC3), 65 (BC5, blue 0 and alpha 255) and 69 and 70 (BC7). catalogue_find: the texture array of a UI image
+   catalogue entry and its layer: catalogue is the dotted name of a list in a UI database, the first part naming
+   eaid://ui_package/databases/<part>.uidb ("overrides.team_logos.driver_career_2024_team_select"), name an entry's
+   Name ("redbull"); texture_uri gets the array's eaid:// URI (SWOFTY_TOO_SMALL with *len when cap is too small).
+   catalogue_name: the Name of the entry at index (an empty name for an entry without one), SWOFTY_ASSET_LATE past
+   the last entry. */
+#define SWOFTY_GAME_ASSETS_VERSION 1
+#define SWOFTY_GAME_ALL_FRAGMENTS 0xffffffffu
+
+typedef struct SwoftyGameTexture {
+    uint32_t format, width, height, levels, layers;
+} SwoftyGameTexture;
+
+typedef struct SwoftyGameAssets {
+    uint32_t version;
+    int (*available)(void);
+    int (*read)(const char *uri, uint32_t fragment, void *buf, size_t cap, size_t *len);
+    int (*texture)(const char *uri, SwoftyGameTexture *out);
+    int (*texture_rgba)(const char *uri, uint32_t layer, uint32_t level, void *rgba, size_t cap, uint32_t *width,
+                        uint32_t *height);
+    int (*catalogue_find)(const char *catalogue, const char *name, char *texture_uri, size_t cap, size_t *len,
+                          uint32_t *layer);
+    int (*catalogue_name)(const char *catalogue, uint32_t index, char *name, size_t cap, size_t *len);
+} SwoftyGameAssets;
+
 typedef struct SwoftyApi {
     uint32_t version;
     void (*log)(const char *fmt, ...);
@@ -1792,6 +1832,7 @@ typedef const SwoftyCarOps *(*SwoftyCoreCarOpsFn)(void);
 typedef const SwoftyContentOps *(*SwoftyCoreContentOpsFn)(void);
 typedef const SwoftyLive *(*SwoftyCoreLiveFn)(void);
 typedef const SwoftyMem *(*SwoftyCoreMemFn)(void);
+typedef const SwoftyGameAssets *(*SwoftyCoreGameAssetsFn)(void);
 typedef const SwoftyLapHost *(*SwoftyCoreLapHostFn)(void);
 typedef const SwoftySessionHost *(*SwoftyCoreSessionHostFn)(void);
 typedef uint32_t (*SwoftyCoreLangVersionFn)(void);
@@ -1817,6 +1858,7 @@ SWOFTY_EXPORT const SwoftyCarOps *SwoftyCoreCarOps(void);
 SWOFTY_EXPORT const SwoftyContentOps *SwoftyCoreContentOps(void);
 SWOFTY_EXPORT const SwoftyLive *SwoftyCoreLive(void);
 SWOFTY_EXPORT const SwoftyMem *SwoftyCoreMem(void);
+SWOFTY_EXPORT const SwoftyGameAssets *SwoftyCoreGameAssets(void);
 SWOFTY_EXPORT const SwoftyLapHost *SwoftyCoreLapHost(void);
 SWOFTY_EXPORT const SwoftySessionHost *SwoftyCoreSessionHost(void);
 SWOFTY_EXPORT uint32_t SwoftyCoreLangVersion(void);

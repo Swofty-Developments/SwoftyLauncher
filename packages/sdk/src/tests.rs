@@ -129,13 +129,16 @@ fn layout_matches_header() {
         "SwoftyCoreRegistry(void);",
         "#define SWOFTY_MEM_VERSION 1",
         "SwoftyCoreMem(void);",
+        "#define SWOFTY_GAME_ASSETS_VERSION 1",
+        "SwoftyCoreGameAssets(void);",
+        "int (*load_image_rgba)(const char *id, uint32_t width, uint32_t height, const void *rgba);",
         "} SwoftyEraBox;",
         "#define SWOFTY_EVENT_CAREER_HUB \"career.hub\"",
         "} SwoftyCareerState;",
         "#define SWOFTY_EVENT_SESSION_START \"session.start\"",
         "#define SWOFTY_TELEMETRY_VERSION 2",
         "#define SWOFTY_EVENT_TELEMETRY_OVERTAKE \"telemetry.overtake\"",
-        "#define SWOFTY_OVERLAY_VERSION 3",
+        "#define SWOFTY_OVERLAY_VERSION 4",
         "#define SWOFTY_LANG_VERSION 2",
         "SwoftyCoreLangVersion(void);",
         "} SwoftyInput;",
@@ -197,6 +200,10 @@ fn template_headers_match() {
     assert_eq!(
         include_str!("../../../templates/addon/native/include/swofty/storage.hpp"),
         STORAGE_HEADER
+    );
+    assert_eq!(
+        include_str!("../../../templates/addon/native/include/swofty/game_assets.hpp"),
+        GAME_ASSETS_HEADER
     );
     assert_eq!(
         include_str!("../../../templates/addon/native/include/swofty/career.hpp"),

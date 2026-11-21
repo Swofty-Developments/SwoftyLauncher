@@ -7,6 +7,7 @@ pub const OVERLAY_UI_HEADER: &str = include_str!("../include/swofty/overlay_ui.h
 pub const TELEMETRY_HEADER: &str = include_str!("../include/swofty/telemetry.hpp");
 pub const DB_HEADER: &str = include_str!("../include/swofty/db.hpp");
 pub const STORAGE_HEADER: &str = include_str!("../include/swofty/storage.hpp");
+pub const GAME_ASSETS_HEADER: &str = include_str!("../include/swofty/game_assets.hpp");
 pub const CAREER_HEADER: &str = include_str!("../include/swofty/career.hpp");
 pub const CAREER_CONTENT_HEADER: &str = include_str!("../include/swofty/career_content.hpp");
 pub const MEM_HEADER: &str = include_str!("../include/swofty/mem.hpp");

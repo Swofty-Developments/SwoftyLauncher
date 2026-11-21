@@ -12,6 +12,7 @@
 #include <swofty/ease.hpp>
 #include <swofty/events.hpp>
 #include <swofty/fake_hud.hpp>
+#include <swofty/game_assets.hpp>
 #include <swofty/hud_format.hpp>
 #include <swofty/hud_frame.hpp>
 #include <swofty/hud_leaves.hpp>
@@ -795,9 +796,89 @@ static void hud_runtime_headers()
     CHECK(swofty::ease::level(1.f, 4) == 4 && swofty::hud::format::speed(10.f).kph == 36);
 }
 
+namespace fake_game_assets {
+int available() { return 1; }
+int read(const char *uri, uint32_t fragment, void *buf, size_t cap, size_t *len)
+{
+    std::string_view bytes = fragment == SWOFTY_GAME_ALL_FRAGMENTS ? "abcdef" : "abc";
+    if (std::string_view(uri) != "eaid://ui_package/x.bin")
+        return SWOFTY_ASSET_INVALID;
+    *len = bytes.size();
+    if (!buf || cap < bytes.size())
+        return SWOFTY_TOO_SMALL;
+    std::memcpy(buf, bytes.data(), bytes.size());
+    return SWOFTY_ASSET_OK;
+}
+int texture(const char *, SwoftyGameTexture *out)
+{
+    *out = {70, 2, 2, 1, 3};
+    return SWOFTY_ASSET_OK;
+}
+int texture_rgba(const char *, uint32_t layer, uint32_t, void *rgba, size_t cap, uint32_t *w, uint32_t *h)
+{
+    if (cap < 16)
+        return SWOFTY_TOO_SMALL;
+    std::memset(rgba, int(layer), 16);
+    *w = *h = 2;
+    return SWOFTY_ASSET_OK;
+}
+const char *const names[] = {"ferrari", "redbull"};
+int catalogue_find(const char *, const char *name, char *uri, size_t cap, size_t *len, uint32_t *layer)
+{
+    std::string_view u = "eaid://ui_package/art/a.texarray.image";
+    for (uint32_t i = 0; i < 2; i++)
+        if (std::string_view(name) == names[i] && cap > u.size()) {
+            std::memcpy(uri, u.data(), u.size());
+            uri[u.size()] = 0;
+            *len = u.size();
+            *layer = i;
+            return SWOFTY_ASSET_OK;
+        }
+    return SWOFTY_ASSET_INVALID;
+}
+int catalogue_name(const char *, uint32_t index, char *name, size_t cap, size_t *len)
+{
+    if (index >= 2)
+        return SWOFTY_ASSET_LATE;
+    *len = std::strlen(names[index]);
+    if (cap <= *len)
+        return SWOFTY_TOO_SMALL;
+    std::memcpy(name, names[index], *len + 1);
+    return SWOFTY_ASSET_OK;
+}
+const SwoftyGameAssets table = {1, available, read, texture, texture_rgba, catalogue_find, catalogue_name};
+}
+
+static void game_assets_wrappers()
+{
+    namespace ga = swofty::game_assets;
+    ga::detail::set_table(nullptr);
+#if !defined(_WIN32)
+    CHECK(!ga::available());
+#endif
+    std::string out;
+    ga::detail::set_table(&fake_game_assets::table);
+    CHECK(ga::available());
+    CHECK(ga::read("eaid://ui_package/x.bin", out) == ga::Result::ok && out == "abcdef");
+    CHECK(ga::read("eaid://ui_package/x.bin", out, 0) == ga::Result::ok && out == "abc");
+    CHECK(ga::read("eaid://ui_package/y.bin", out) == ga::Result::invalid && out == "abc");
+    size_t n = 0;
+    CHECK(ga::size("eaid://ui_package/x.bin", &n) == ga::Result::ok && n == 6);
+    ga::Image im;
+    CHECK(ga::rgba("eaid://ui_package/art/a.texarray.image", 2, im) == ga::Result::ok && im.width == 2 && im.rgba.size() == 16 &&
+          im.rgba[5] == 2);
+    auto slot = ga::find("overrides.team_logos.list", "redbull");
+    CHECK(slot && slot->layer == 1 && slot->texture == "eaid://ui_package/art/a.texarray.image");
+    CHECK(!ga::find("overrides.team_logos.list", "nobody"));
+    std::vector<std::string> list;
+    CHECK(ga::names("overrides.team_logos.list", list) == ga::Result::ok && list.size() == 2 && list[1] == "redbull");
+    ga::detail::set_table(nullptr);
+}
+
 int main()
 {
     hud_runtime_headers();
+    game_assets_wrappers();
     unavailable_without_core();
     session_operations();
     content_ownership();
