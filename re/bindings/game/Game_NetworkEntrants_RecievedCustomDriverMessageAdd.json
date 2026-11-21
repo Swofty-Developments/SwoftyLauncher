@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143135fe0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-ENTRANTS",
-  "notes": "named from its log messages (channel NETWORK-ENTRANTS): '%s : Recieved CustomDriverMessageAdd from connection id (%d) for player description (%s) with stat id (%s).'"
+  "evidence": "decomp:re/decomp/143135fe0.c;pat:log-channel-NETWORK-ENTRANTS;xref:0x14312f36b",
+  "notes": "cxx=network::CustomDriverNetworkMessageHandler::handleCustomDriverMessageAdd(NeNetMessage&, NeNetConnectionID). Logs the received add (connection id, player description, stat id); 'Recieved invalid add message' when msg+0x630 == 0 or id 0x3fff; fails when the description already has a driver, else adds it (addReplicatedPlayer inlined). Handler stored by lea 0x14312f36b in 0x14312f230. (lane owner review requested) Better name: Game_NetworkEntrants_HandleCustomDriverMessageAdd (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_entrants_recieved_custom_driver_message_add",

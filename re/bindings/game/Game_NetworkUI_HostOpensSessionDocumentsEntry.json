@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1436e4880",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-UI",
-  "notes": "named from its log messages (channel NETWORK-UI): 'HOST opens the session documents on entry to the player lobby.'"
+  "evidence": "decomp:re/decomp/1436e4880.c;pat:log-channel-NETWORK-UI;xref:0x14585cb10",
+  "notes": "State vtable cell: if host logs 'HOST opens the session documents on entry to the player lobby.', resets the MOX season lobby 0x143067d40, sends openDocument via 0x14402e500; for 'SpectatorLobby' logs 'onSessionLobby', SetMyRaceStatus(2), MatchingContext_OnSessionLobby. (lane owner review requested) Better name: Game_NetworkReadyState_OnEnterPlayerLobby (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_ui_host_opens_session_documents_entry",

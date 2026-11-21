@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143116e80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name requestRegisterCustomEntrant (class from the log channel); log channel NETWORK-ENTRANTS: '%s().'"
+  "evidence": "decomp:re/decomp/143116e80.c;pat:log-message-method;xref:0x14256e35a,0x1431173fd",
+  "notes": "Host only, document open: logs requestRegisterCustomEntrant(); finds the entrant matching param_2 and the one linked from it (Sess_Match_EntrantIdentity_Thunk) and unregisters it (0x14310ecb0); then registers the custom entrant via 0x14310c1d0 with ids from param_3+0x50/+0x80/+0x83. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_entrants_request_register_custom_entrant",

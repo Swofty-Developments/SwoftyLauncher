@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14029cd40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/14029cd40.c;xref:0x14013d5ab,0x14013d5e1,0x14013d64b",
-  "notes": "Hypothesis: Variant of 0x14029c660 with a different switch; 55 callers. Named callers: Render_SceneView_SubmitCamera."
+  "notes": "(u32 *handle, u32 *out, graph): out=-1; handle!=-1 indexes the resource table graph+0x30 (stride 0x180); requires flag 0x10 in byte +0xd8, switches on dimension +0xcc and array size +0xc8, format byte +0xd0, fills a view desc on the stack and creates it via 0x143bdc710; returns out (new view id or -1). param_4!=0 remaps the format via 0x14029d240, else a typeless->typed switch on it. Creates a view, not a plain resolve. Better name: Ne_RenderGraph_CreateViewFlag10 (bound record keeps its name)."
  },
  "signature": {
   "id": "core.render_graph_resolve_handle_b",

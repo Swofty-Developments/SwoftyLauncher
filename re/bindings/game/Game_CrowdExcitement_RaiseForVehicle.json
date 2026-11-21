@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1413f3ae0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-CROWD_EXCITEMENT",
-  "notes": "Log channel CROWD_EXCITEMENT: 'Zone : %u - Raising excitement because of vehicle id %u because of trigger %s'"
+  "evidence": "decomp:re/decomp/1413f3ae0.c;pat:log-channel-CROWD_EXCITEMENT;xref:0x1413f38d8,0x1413f3d4b,0x1413f4a3b,0x1413f5902,0x14abf8268",
+  "notes": "(mgr, zone idx, vehicle id, trigger): if enabled (+0x30) and the zone exists in [+0x18]+8, gain = +0x10 (+ +0x14 when the vehicle id is in list +0x28); logs 'Raising excitement...' and runs the inlined CrowdExcitementZone::increaseExcitement on the zone. (lane owner review requested)"
  },
  "signature": {
   "id": "game.crowd_excitement_raise_for_vehicle",

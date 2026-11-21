@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1445bcca0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/1445bcca0.c;xref:0x1445b038b,0x1445bcef4",
-  "notes": "13-byte noreturn fatal stub for the assert in Render_Config_ProgramMap_Rehash. Name only."
+  "notes": "10-byte noreturn stub: call Ne_Crt_InvalidParameterAbort (0x145351784); int3. Callers 0x1445b038b (Render_Config_ProgramMap_InsertIfAbsent, insert result 0) and 0x1445bcef4 (map rehash 0x1445bccb0). (lane owner review requested)"
  },
  "signature": {
   "id": "render.config_program_map_fatal_stub",

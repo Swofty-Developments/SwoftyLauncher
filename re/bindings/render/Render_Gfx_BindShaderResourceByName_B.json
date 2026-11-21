@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439fe750",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439fe750.c;xref:0x143c2cf3a",
-  "notes": "Byte-identical twin of BindShaderResourceByName_A (same FNV-1a 64 name lookup, same slots); a second instantiation for another binding class (Hypothesis: SRV vs UAV)."
+  "evidence": "decomp:re/decomp/1439fe750.c;xref:0x143c2cf3a,0x143c2cfcc,0x143c2cff8",
+  "notes": "Decompiles identically to Render_Gfx_BindShaderResourceByName_A 0x1439fe5e0 (same FNV-1a lookup in [[this+0x20]+0x20]+0x678, same this+0xc0 / +0xc8 writes) and to 0x1439fe470; why the copies exist is not known. Callers Game_Rtt_CreateAssaoPass 0x143c2cda0, Game_Rtt_CreateCmaa2Bindings 0x143c3f6d0. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx_bind_shader_resource_by_name_b",

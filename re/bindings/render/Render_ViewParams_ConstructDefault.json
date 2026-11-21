@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143bdfd10.c;xref:0x140140edd",
-  "notes": "Constructor filling a large (>0x1c8 bytes, repeated sub-blocks) parameter object with vtable 0x14560e200 and defaults: floats 1.0, 0.2, 1000.0, 0.5625, -1.0 at +0x78, identity-like 16-byte rows. 3 callers incl. Render_Gfx2_CreateAndRegisterNamedResource (0x140140edd). Hypothesis: view/camera or pass parameter defaults."
+  "evidence": "decomp:re/decomp/143bdfd10.c;xref:0x140140edd,0x142fab74d,0x143c74c1e",
+  "notes": "Constructor: vtable 0x14560e200, repeated 0x150-byte sub-blocks each with defaults 1.0, 1.0, 0.2, 1000.0, 1.0, 0.5625 and three identity-like 16-byte row sets. Callers Render_Gfx2_CreateAndRegisterNamedResource (0x140140edd), 0x142fab74d, 0x143c74c1e."
  },
  "signature": {
   "id": "render.view_params_construct_default",

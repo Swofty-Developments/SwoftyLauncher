@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143af5620",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "pat:log-channel-PARTICLES",
-  "notes": "named from its log messages (channel PARTICLES): 'USED!! | Car start %u | Car stop %u | Couldn't create effect '%s'!'"
+  "evidence": "decomp:re/decomp/143af5620.c;pat:log-channel-PARTICLES;xref:0x1458b7ff8",
+  "notes": "Slot 1 of the secondary vtable 0x1458b7ff0 (interface at object+0x90; installed by Game_Particles_CreateEffectNode at 0x143b029fc and the dtor at 0x143af5363). Switch on message id *param_2 (2..0x15), payload param_3: 2 = create effect by name (Game_Particles_FindEffectDefByName, log 'Couldn't create effect'), 5 logs 'Car start %u', 0xc logs 'USED!!'. (lane owner review requested) Better name: Render_Particles_EffectNode_HandleMessage (bound record keeps its name)."
  },
  "signature": {
   "id": "render.particles_create_car_effect",

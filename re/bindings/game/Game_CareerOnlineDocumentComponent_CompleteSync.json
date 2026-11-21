@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140fcf560",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_Championship_CareerOnlineDocumentComponent_CompleteSync;xref:0x140fcf5fa",
-  "notes": "cxx=game::championship::CareerOnlineDocumentComponent::completeSync; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/140fcf560.c;str:s_Championship_CareerOnlineDocumentComponent_CompleteSync;xref:0x140fd2dfa,0x140ff7a70,0x140ff7e0f,0x140ff7edf",
+  "notes": "If a sync step is active (+0x2c0 != 0): logs 'aborting sync while steps is client_sync/host_sync', 0x143104060([+0x2b8]), +0x2c0 = 0, clears the key vectors (+0x320 = +0x318, +0x340 = +0x338) and the hash set +0x2e8 (count +0x2f0 = 0, control bytes reset, +0x308 = 0x20). (lane owner review requested)"
  },
  "signature": {
   "id": "game.career_online_document_component_complete_sync",

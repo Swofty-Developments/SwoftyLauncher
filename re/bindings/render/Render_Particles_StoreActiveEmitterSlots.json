@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b0e470",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143b0e470.c;xref:0x143b08f7a",
-  "notes": "For every effect in the manager vector (+0x858e90) and each emitter instance whose id != -0xfe (not killed), computes float params (consts 1.0 and 15.5) and calls 0x143af41a0 / Game_Particles_StoreParticleSlot to store the emitter into the GPU slot table. Caller Game_Particles_UpdateManager. Hypothesis."
+  "notes": "For effects with id != -0xfe and instances with (1+def+0x594)*def+0x590 >= 15.5 and id < 0: walks the particle chunk ring (+0xf8, 16-bit live masks), writes (id<<16|def+0x54) to param_1+4 and fills 0x68-byte records at +0x808 via Game_Particles_StoreParticleSlot, stepping position back by 15.5*velocity; returns the record count. (lane owner review requested) Better name: Render_Particles_StoreLiveParticleRecords (bound record keeps its name)."
  },
  "signature": {
   "id": "render.particles_store_active_emitter_slots",

@@ -78,39 +78,55 @@ static bool reads_inside(const Track &t, const Lookup &l)
 
 int main()
 {
-    expect(act::time_unordered(from_bits(0x7fc00000u)), "the quiet NaN 0x7fc00000 the crash reports carry is not a number");
-    expect(act::time_unordered(from_bits(0xffc00000u)), "a negative quiet NaN is not a number");
-    expect(act::time_unordered(from_bits(0x7f800001u)), "a signalling NaN is not a number");
-    expect(act::time_unordered(std::numeric_limits<float>::quiet_NaN()), "quiet_NaN() is not a number");
+    expect(act::time_not_finite(from_bits(0x7fc00000u)), "the quiet NaN 0x7fc00000 the crash reports carry is not finite");
+    expect(act::time_not_finite(from_bits(0xffc00000u)), "a negative quiet NaN is not finite");
+    expect(act::time_not_finite(from_bits(0x7f800001u)), "a signalling NaN is not finite");
+    expect(act::time_not_finite(std::numeric_limits<float>::quiet_NaN()), "quiet_NaN() is not finite");
+    expect(act::time_not_finite(from_bits(0x7f800000u)), "plus infinity is not finite");
+    expect(act::time_not_finite(from_bits(0xff800000u)), "minus infinity is not finite");
 
-    expect(!act::time_unordered(0.f) && !act::time_unordered(-0.f), "zero and minus zero are times");
-    expect(!act::time_unordered(0.5f) && !act::time_unordered(2.25f), "clip times are times");
-    expect(!act::time_unordered(FLT_MAX) && !act::time_unordered(-FLT_MAX), "the largest floats are times");
-    expect(!act::time_unordered(INFINITY) && !act::time_unordered(-INFINITY), "infinities are times");
+    expect(!act::time_not_finite(0.f) && !act::time_not_finite(-0.f), "zero and minus zero are times");
+    expect(!act::time_not_finite(0.5f) && !act::time_not_finite(2.25f), "clip times are times");
+    expect(!act::time_not_finite(FLT_MAX) && !act::time_not_finite(-FLT_MAX), "the largest floats are times");
+    expect(!act::time_not_finite(FLT_TRUE_MIN) && !act::time_not_finite(-FLT_TRUE_MIN), "denormals are times");
 
     expect(to_bits(act::sample_time(from_bits(0x7fc00000u))) == to_bits(-FLT_MAX),
            "a time that is not a number becomes the lowest float");
+    expect(to_bits(act::sample_time(INFINITY)) == to_bits(-FLT_MAX), "plus infinity becomes the lowest float");
+    expect(to_bits(act::sample_time(-INFINITY)) == to_bits(-FLT_MAX), "minus infinity becomes the lowest float");
     expect(act::sample_time(1.5f) == 1.5f, "a time passes through unchanged");
     expect(to_bits(act::sample_time(-0.f)) == to_bits(-0.f), "minus zero passes through bit for bit");
-    expect(act::sample_time(INFINITY) == INFINITY && act::sample_time(-INFINITY) == -INFINITY, "infinities pass through");
+    expect(act::sample_time(FLT_MAX) == FLT_MAX && act::sample_time(-FLT_MAX) == -FLT_MAX, "the largest floats pass through");
+    expect(act::sample_time(3e9f) == 3e9f, "a finite time past 2^31 passes through");
     expect(std::isfinite(act::EARLIEST_TIME) && act::EARLIEST_TIME < -3e38f, "the replacement time is the lowest finite float");
 
     const std::vector<Track> tracks = {{0.f, 30.f, 4}, {0.f, 1.f, 4}, {-1.f, 60.f, 128}, {2.f, 0.5f, 2}, {0.f, 0.f, 3}};
     const float nan = from_bits(0x7fc00000u);
-    bool nan_reads_outside = true, guarded_takes_first = true, clip_times_stay_inside = true;
+    bool nan_reads_outside = true, inf_reads_outside = true, minus_inf_takes_first = true;
+    bool guarded_takes_first = true, clip_times_stay_inside = true, clip_times_unchanged = true;
     for (auto &t : tracks) {
         Lookup l = game_lookup(t, nan);
         nan_reads_outside = nan_reads_outside && l.path == Path::bucket && l.bucket == INT32_MIN;
-        l = game_lookup(t, act::sample_time(nan));
-        guarded_takes_first = guarded_takes_first && l.path == Path::first_key;
-        for (float x : {-INFINITY, -FLT_MAX, -5.f, -0.f, 0.f, 0.01f, 0.5f, 1.f, 2.f, 3.f, 10.f, 100.f}) {
+        l = game_lookup(t, INFINITY);
+        inf_reads_outside = inf_reads_outside && l.path == Path::bucket && l.bucket == INT32_MIN;
+        l = game_lookup(t, -INFINITY);
+        minus_inf_takes_first = minus_inf_takes_first && l.path == Path::first_key;
+        for (float x : {nan, from_bits(0xffc00000u), from_bits(0x7f800001u), INFINITY, -INFINITY}) {
             l = game_lookup(t, act::sample_time(x));
-            clip_times_stay_inside = clip_times_stay_inside && reads_inside(t, l);
+            guarded_takes_first = guarded_takes_first && l.path == Path::first_key;
+        }
+        for (float x : {-FLT_MAX, -5.f, -0.f, 0.f, 0.01f, 0.5f, 1.f, 2.f, 3.f, 10.f, 100.f}) {
+            Lookup guarded = game_lookup(t, act::sample_time(x)), game = game_lookup(t, x);
+            clip_times_stay_inside = clip_times_stay_inside && reads_inside(t, guarded);
+            clip_times_unchanged = clip_times_unchanged && guarded.path == game.path && guarded.bucket == game.bucket;
         }
     }
     expect(nan_reads_outside, "the game's samplers index the bucket table at 0x80000000 for a time that is not a number");
-    expect(guarded_takes_first, "with the guard's time the samplers take their first-key exit");
-    expect(clip_times_stay_inside, "every clip time and minus infinity indexes inside the bucket table");
+    expect(inf_reads_outside, "the game's samplers index the bucket table at 0x80000000 for plus infinity");
+    expect(minus_inf_takes_first, "the game's samplers already take their first-key exit for minus infinity");
+    expect(guarded_takes_first, "with the guard's time the samplers take their first-key exit for every non-finite time");
+    expect(clip_times_stay_inside, "every clip time indexes inside the bucket table");
+    expect(clip_times_unchanged, "every clip time takes the same path and bucket as without the guard");
 
     swofty_core::guards::LogFirst<act::LOG_FIRST> r{"replacements"};
     int lines = 0, last = 0;

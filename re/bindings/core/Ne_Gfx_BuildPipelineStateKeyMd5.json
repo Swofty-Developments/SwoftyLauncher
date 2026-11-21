@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439d4c90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439d4c90.c;xref:0x1424372fa",
-  "notes": "253-line open hash map find-or-insert keyed by FNV-1a string hash (helpers 0x143928ed0, 0x1439297a0). Callers 0x142435aa0, 0x142a476d0, 0x143b5e0e0, 0x143bebcf0 (renderer resource tables). Hypothesis. vp2-verify partial/disagree"
+  "evidence": "decomp:re/decomp/1439d4c90.c;xref:0x1424372fa,0x142a48bd3,0x143b5e67c,0x143bec0b0",
+  "notes": "Constructor, not a hash map (old note wrong): this[0]=vt 0x14589efa0, copies 20 qwords of the desc; for 8 slots desc[3..10] (and depth desc[0x13]) packs format byte tex+0x20 (0x56->0x0f) and sample mask 1<<[tex+0x28]+0x3c into a 0x48-byte key, count at +0xb0; MD5 (Ne_Hash_Md5Transform/Finalize) of the key, first 8 bytes byte-swapped to +0xa8. call sites, e.g. Game_DrlGenerator_CreateGpuResources. Better name: Ne_Gfx2_ConstructAttachmentSetMd5Key (bound record keeps its name)."
  },
  "signature": {
   "id": "core.hash_map_find_or_insert_by_str",

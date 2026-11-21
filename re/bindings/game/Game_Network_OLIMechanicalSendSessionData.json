@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143254b60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'OLI/Mechanical: sendSessionData(%02d)'"
+  "evidence": "decomp:re/decomp/143254b60.c;pat:log-channel-NETWORK;xref:0x1432550ff,0x143255191",
+  "notes": "Tail jumps from OnRequestSessionData 0x143254e50 and 0x143255110. (this, target): logs 'OLI/Mechanical: sendSessionData(%02d)'; for each entry of the hash set +0xf8..+0x108 with byte +0x80 sends message 0x145836530 (0x14402e500, channel 2 or 1 by target) and for vehicles < 0x1b with state 2 sends 0x145843a50 records (0x1434c4280). (lane owner review requested) Better name: Game_Network_MechanicalSendSessionData (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_oli_mechanical_send_session_data",

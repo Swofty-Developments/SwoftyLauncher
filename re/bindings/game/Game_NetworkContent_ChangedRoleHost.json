@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143039ea0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-CONTENT",
-  "notes": "named from its log messages (channel NETWORK-CONTENT): 'Changed role to HOST (conn %d)'"
+  "evidence": "decomp:re/decomp/143039ea0.c;pat:log-channel-NETWORK-CONTENT;xref:0x14305bb4a,0x143064a12",
+  "notes": "Content domain verifier: logs \"Changed role to HOST (conn %d)\"; resets player/connection lists (this+0xb0, map this+0xc8), sets host state, dumps IDMAP and re-evaluates content items (\"ContentItem %s is now enabled/DISABLED\"). (lane owner review requested) Better name: Game_NetworkContent_BecomeHost (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_content_changed_role_host",

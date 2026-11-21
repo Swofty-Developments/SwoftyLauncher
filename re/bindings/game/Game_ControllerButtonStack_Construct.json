@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a561c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=ControllerButtonStack::ControllerButtonStack; log channel INPUT: 'Snap ControllerButtonStack::ControllerButtonStack'"
+  "evidence": "decomp:re/decomp/142a561c0.c;pat:log-message-cxx;xref:0x141dbb2a0",
+  "notes": "Base ctor 0x14423ec70, binds Vm bool 'visible' of the view (+8) into the ref at +0x20..+0x38, +0x40 = arg4, +0x48 = arg5, logs 'Snap ControllerButtonStack::ControllerButtonStack', +0x50 = Game_InputModule_TakeSnapshot([arg5+0x58]); returns this. (lane owner review requested)"
  },
  "signature": {
   "id": "game.controller_button_stack_construct",

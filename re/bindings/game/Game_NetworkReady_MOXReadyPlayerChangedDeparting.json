@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143228710",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-READY",
-  "notes": "named from its log messages (channel NETWORK-READY): 'MOX/Ready: Player(%s, %d) changed by departing.'"
+  "evidence": "decomp:re/decomp/143228710.c;pat:log-channel-NETWORK-READY;xref:0x1458295a8",
+  "notes": "If entry flag [p2+0x66] set, logs 'MOX/Ready: Player(%s, %d) changed by departing.' (name from 0x143066920) and tail-calls vfunc [this]+8 with the entry. Referenced as a vtable cell. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_ready_mox_ready_player_changed_departing",

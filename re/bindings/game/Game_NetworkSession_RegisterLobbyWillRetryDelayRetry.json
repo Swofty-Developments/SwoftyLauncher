@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430750b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-SESSION",
-  "notes": "named from its log messages (channel NETWORK-SESSION): '%s: register lobby failed, we will retry, delay the retry for %f seconds'"
+  "evidence": "decomp:re/decomp/1430750b0.c;pat:log-channel-NETWORK-SESSION;xref:0x1430e3f69",
+  "notes": "__FUNCTION__ 'GameSessionMatchingCareer::onRegisterLobby(NEbool, NeNetError)': on failure Leave 0x1430605c0 and retry or not ('register lobby failed, we will/won't retry'); on success logs 'join lobby event succeed!' and notifies result 1. (lane owner review requested) Better name: Game_GameSessionMatchingCareer_OnRegisterLobby (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_session_register_lobby_will_retry_delay_retry",

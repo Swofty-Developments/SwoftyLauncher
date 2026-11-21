@@ -999,6 +999,13 @@ void undress_teams(const char *why)
                     why ? why : "");
 }
 
+std::string worn_team(uint16_t stat)
+{
+    std::lock_guard g(live_mutex());
+    auto it = live().wears.find(stat);
+    return it == live().wears.end() ? std::string() : it->second;
+}
+
 DrsBox drs_for_box(const std::string &entrant_list)
 {
     Store &st = registry::store();

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143bdd2a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143bdd2a0.c;xref:0x143c72753,0x143c7278a",
-  "notes": "Returns a view handle for resource index param_3 (entries stride 0x180 at ctx+0x30; 0xffffffff -> invalid), with mip/slice params and a flag char; copies type field (+0xd0). Callers render passes. Hypothesis."
+  "notes": "For resource index param_3 (0xffffffff -> invalid) builds a view payload with mip param_4, slice param_5 and format char param_6 (':' selects variant 2) and adds it via 0x143bdcfb0, returning the new record index. call sites in Ne_CustomisationDecalRenderer_BakePasses. (lane owner review requested) Better name: Render_RenderGraph_AddResourceView (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_get_resource_view_handle",

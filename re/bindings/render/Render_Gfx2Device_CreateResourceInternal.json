@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439d1b90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439d1b90.c;xref:0x1439d5653",
-  "notes": "8474-byte resource creation: Ne_Gfx2Texture_ClampBlockMinAndGetAllocInfo, Render_Gfx2Device_CreatePlacedResourceChecked / CreateCommittedResource, Render_Gfx2_SetD3DObjectName ('<unknown/NeGfx2Surface>' default name), memset. 3 callers incl. Render_Gfx2Device_CreateResource (0x1439d5653). Addon-relevant: where D3D12 resources are actually created."
+  "evidence": "decomp:re/decomp/1439d1b90.c;xref:0x1439d5653,0x151f5d326",
+  "notes": "Constructor of the 0x2c0-byte surface object: vtable 0x14589f3c0 into param_1, copies the desc from param_2, Ne_Gfx2Texture_ClampBlockMinAndGetAllocInfo, creates the D3D12 resource (Render_Gfx2Device_CreatePlacedResourceChecked / CreateCommittedResource 0x1439fe030 / CreateReservedResource 0x1439fdf40), names it (default <unknown/NeGfx2Surface>), creates views (0x1439d7370, 0x1439d7570, 0x143a0e230). (lane owner review requested) Better name: Render_Gfx2Surface_Construct (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_device_create_resource_internal",

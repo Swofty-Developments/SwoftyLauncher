@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401c08d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1401c08d0.c;xref:0x1401901e3",
-  "notes": "1806-byte switch on camera-actor type creating the typed camera component and registering it with the owner; called by Game_CameraActor_RefreshCameraState (0x1401c115c) and Game_WorldActorProxy_RequestSetDisabled. Counterpart of 0x1401c0fe0. Hypothesis."
+  "evidence": "decomp:re/decomp/1401c08d0.c;xref:0x1401901e3,0x1401c115c",
+  "notes": "Switch on requested type +0x1f8: types 0..3 allocate a 16-byte typed component from owner allocator +400 (vt+0x18; vtables 0x1459b1a48/aa8/ad8/b38), register a render resource via 0x146c621e0 (type values 0/3/2/5), store it at +0x3c0/+0x440/+0x5a0/+0x848 and upload the normalised basis +0x1a0..+0x1c0 + translation +0x1d0 plus per-type params; type 4 publishes this+0x140 to [[0x14601db08+0x90]+0x90]. Ends +0x1fc = +0x1f8. (lane owner review requested)"
  },
  "signature": {
   "id": "game.camera_actor_create_typed_component",

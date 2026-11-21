@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143240770",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name requestDropIn (class from the log channel); log channel NETWORK: '%s(%s). requesting drop-in promotion to the host, vehicleIx: %d'"
+  "evidence": "decomp:re/decomp/143240770.c;pat:log-message-method;xref:0x142d5187c,0x142d6a1e9,0x142d70147,0x142e19510",
+  "notes": "Callers 0x142d50db0, 0x142d692e0, 0x142d6feb0 and the site 0x142e19510. (this, vehicleIx): builds a drop-in request (vtable 0x1458364b0) with the local player identity ([[this+0x20]+0x390] vt+0x38) and vehicleIx, runs FindEntrantToDropIn(this, req, 1); when none is found locally sends message 0x145836510 to the host (0x14402e500(..., 0, ...)) and logs 'requesting drop-in promotion to the host'; returns 0x50 or 2. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_request_drop_in",

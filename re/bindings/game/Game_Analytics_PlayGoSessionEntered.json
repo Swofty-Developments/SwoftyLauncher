@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: Play Go Session Entered | reported ai driver choices for race weekend session'"
+  "evidence": "decomp:re/decomp/140713050.c;pat:log-channel-TELEMETRY;xref:0x1406d84b2,0x1406fd6e6",
+  "notes": "Bus handler (lea 0x1406d84b2 in 0x1406d8470, lea 0x1406fd6e6 in 0x1406fd6c0) using strings 'SessionEntered','onSessionEnter','es_report_on_session_enter'; emits several records: adaptive_ai_session_started, play_go_session_entered, customisation_loadout_on_session_start, race_weekend_session_driver_choices. Old name covers one of them only. Better name: Game_Analytics_OnSessionEntered (bound record keeps its name)."
  },
  "signature": {
   "id": "game.analytics_play_go_session_entered",

@@ -161,7 +161,7 @@
 [tyres] slot guard (%s): vehicle %u's fitted option %u has no usable slot in its class's table (count %llu, options %s); slot %d %s with the compounds of option %u's slot%s
 
 [log engine/anim_clip_time_guard.cpp]
-[anim] an animation clip got a time that is not a number, so it shows the clip's first frame%s
+[anim] an animation clip got a time that is not a finite number, so it shows the clip's first frame%s
 
 [log engine/audio_queue.cpp]
 [audio] queue fix: the overflow queue at %p is not readable; requests pass through

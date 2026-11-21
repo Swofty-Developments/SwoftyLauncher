@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1419ee670",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_AwardCeremonyViewModel_HandleUnlockGroupCeremony;xref:0x1419ee88e,0x1419ef20a",
-  "notes": "cxx=game::AwardCeremonyViewModel::handleUnlockGroupCeremony; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1419ee670.c;str:s_AwardCeremonyViewModel_HandleUnlockGroupCeremony;xref:0x1419ec05e,0x1419ee4f8,0x1419ef1f0,0x1419ef5e6",
+  "notes": "AwardCeremonyViewModel::handleUnlockGroupCeremony: advances group vm+0xaf0 in vector vm+0x310 (stride 0x28); none left -> animated_close, returns 1; else title lng key by group type +0x20, list_entry_%d rows (icon, powerful_gear, should_show_completed), animated_open; empty group recurses. Callers 0x1419e9a40, 0x1419ee4a0 (jmp), self, 0x1419ef240. (lane owner review requested)"
  },
  "signature": {
   "id": "game.award_ceremony_view_model_handle_unlock_group_ceremony",

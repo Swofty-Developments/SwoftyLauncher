@@ -184,8 +184,7 @@ void CoverScreen::paint(hud::drawlist::Frame &f, uint64_t now)
             int sig = runtime::direct_start_cover_signal();
             last = sig < 0 ? Signal::failed : sig > 0 ? Signal::shown : Signal::waiting;
         } else {
-            int sig = runtime::session_host_cover_signal();
-            last = sig < 0 ? Signal::failed : sig > 0 ? Signal::shown : Signal::waiting;
+            last = plugin_signal(runtime::direct_start_cover_signal(), runtime::session_host_cover_signal());
         }
     }
     Event ev = Event::none;

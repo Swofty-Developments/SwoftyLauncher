@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14360d700",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
   "proto": "-",
   "evidence": "decomp:re/decomp/14360d700.c;xref:0x145851068",
-  "notes": "SafetyCarTetherSystem update: per vehicle tether entry (list sys+0x48..+0x50: +0x18 vehicle, +0x20 race status, +0x69 attached), attaches only under SC/VSC (SCLogic+0x108 1/2) for the speed-delta and gap rules (mostly the player); receive 0x14360d4d0, send 0x14360bf30/0x143610340, attach 0x14360aff0, detach 0x14360b550. sb4-verify correction: send function is 0x143610340 only; 0x14360bf30 is onPlayerDriverChanged (log only)"
+  "notes": "Vtable cell 0x145851068 (slot +0xc8 of vt 0x145850fa0). Per tether entry (sys+0x48..+0x50; +0x48, +0x69 attached), acting only when SC logic [sys+0x188]+0x108 is 1 or 2; calls Sess_SafetyCarTether_UpdateTarget 0x14360aff0, _UpdateVehicle 0x14360b230, _UpdateProgress 0x14360b550 x2, _ApplyAssistOverrides 0x14360ba60, _IsVehicleAttached 0x14360bc30, 0x1436183e0/0x1436184e0; sends via 0x14402e500 with NETWORK_SAFETY_CAR_TETHER 'Sending Safety Car Tether Message ...'. 0x14360d4d0/0x143610340 are not called here."
  },
  "signature": {
   "id": "session.safety_car_tether_update",

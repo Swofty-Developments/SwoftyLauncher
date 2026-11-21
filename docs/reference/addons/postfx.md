@@ -197,13 +197,14 @@ The core runs the group count that covers the output. A pass that is not raw run
 ```
 
 ```text
-views  cockpit  tcam  tcam_offset  chase_near  chase_far  other
+views  cockpit  tcam  tcam_offset  chase_near  chase_far  other  trackside  reverse_pod
 skip   paused  replay  photo  menu  cutscene  spectating
 ```
 
 - `menu` is every state without a player-driven session view: the frontend, the garage and the hub.
 - A pass without `when` runs in every view.
-- The view is reported only where the core recognises the game's state, and `swofty/loader.log` logs each change as `[view] kind=… flags=… valid=…`. While `valid` is 0, a pass with `views` does not run and `skip` does not apply. The driving camera stays unknown until it is confirmed on the game's build, so `views` passes stay off for now.
+- The view is reported only where the core recognises the game's state, and `swofty/loader.log` logs each change as `[view] kind=… flags=… valid=…`. While `valid` is 0, a pass with `views` does not run and `skip` does not apply. On builds without a verified camera hook, the driving camera stays unknown and `views` passes stay off.
+- On Steam 1.0.145 (26566308), recognized driving and replay views report `cockpit`, `tcam` or `tcam_offset` for the active forward onboard camera. A camera from the current stock circuit’s replay layers reports `trackside`. The centered and offset rear pod definitions (`pod_reverse` and `podoff_reverse`) report `reverse_pod`. Other observed cameras report `other`. On entry to driving, the view stays unknown until the core has seen a camera assignment for the current session or replay transition.
 - A shader reads the same state with `view_kind()` and `view_is(SWOFTY_VIEW_PAUSED)`, to change what it draws rather than whether it runs. The `paused` flag follows the game's pause flow state; native code reads the game's pause reasons with [`swofty::view::paused()`](/reference/std/events#pause-and-resume).
 
 ## Live options and enabled
@@ -291,7 +292,7 @@ uint   swofty_pass;                // the pass's place in this frame's chain, fr
 float  random(uint2 pixel, uint salt); // a hash of pixel, frame and salt, from 0 to 1, for grain and dithering
 
 // the view
-uint   view_kind();                // SWOFTY_VIEW_COCKPIT, _TCAM, _TCAM_OFFSET, _CHASE_NEAR, _CHASE_FAR, _OTHER or _UNKNOWN
+uint   view_kind();                // SWOFTY_VIEW_COCKPIT, _TCAM, _TCAM_OFFSET, _CHASE_NEAR, _CHASE_FAR, _OTHER, _TRACKSIDE, _REVERSE_POD or _UNKNOWN
 bool   view_is(uint flag);         // SWOFTY_VIEW_PAUSED, _REPLAY, _PHOTO, _MENU, _CUTSCENE or _SPECTATING
 
 // colour

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143ffe070",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-EADP_PLAYER_CARD",
-  "notes": "named from its log messages (channel EADP_PLAYER_CARD): 'Player card error returns - %s'"
+  "evidence": "decomp:re/decomp/143ffe070.c;pat:log-channel-EADP_PLAYER_CARD;xref:0x145a466e0",
+  "notes": "Player-card result callback (vtable cell 0x145a466e0): locks the weak owner (+0x20/+0x28); no result + error param_3 -> 'Player card error returns - %s'; otherwise walks the returned cards, mapping platform strings ('STEAM', 'XBOX', ...) to flag bits (EADP_PLAYER_CARD). (lane owner review requested) Better name: Game_EadpPlayerCard_OnPlayerCardsResult (bound record keeps its name)."
  },
  "signature": {
   "id": "game.eadp_player_card_player_card_returns",

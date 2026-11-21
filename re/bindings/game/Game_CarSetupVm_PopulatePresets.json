@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140c15e10.c;xref:0x140c1c0bc,0x140c1c72b",
-  "notes": "Car setup VM: fills the setup preset list (num_presets, is_preset, is_current_set_preset, number_id, lng_preset_1..5, lng_cs_preset_N_title/description, custom preset strings). Callers Game_CarSetupVm_ShowParcFerme, Car_Setup_OnValueChanged."
+  "evidence": "decomp:re/decomp/140c15e10.c;xref:0x140c1b49c,0x140c1b4bb,0x140c1b4d7,0x140c1b4f3,0x140c1b50f,0x140c1b711,0x140c1b856,0x140c1b888,0x140c1b8a4,0x140c1b8c0,0x140c1b8dc,0x140c1b8f8,0x140c1c0bc,0x140c1c72b,0x140c1ed67,0x140c1ef01,0x149a3b4e0",
+  "notes": "Preset list builder of the car setup VM (calls from 0x140c1b1a0, 0x140c1bf00, 0x140c1c360, 0x140c1e690, 0x140c1edd0, 0x149a3b3e0)."
  },
  "signature": {
   "id": "game.car_setup_vm_populate_presets",

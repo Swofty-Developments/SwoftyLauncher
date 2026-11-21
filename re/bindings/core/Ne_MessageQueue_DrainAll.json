@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14398c0d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14398c0d0.c;xref:0x143567389,0x14356b87f",
-  "notes": "(q) Under CS q+0xd8: pops each message (q+0x58 list), sets busy +0x69, invokes msg vtable[0](msg,0) and frees it via allocator q+0x70 (vcall +0x38); then 0x14391d010(q+200) and clears +0x6b. Callers Sess_PenaltyLog_SendAllRecords, Sess_Rules_DisqualifyForPenaltyPoints, Ne_Subscribe_BusMessage."
+  "evidence": "decomp:re/decomp/14398c0d0.c;xref:0x143567389,0x14356a76c,0x14356b87f,0x14398bf75",
+  "notes": "Under CS [q+0xd8]: pops each message from list q+0x58 (next = msg+8), sets q+0x69=1, leaves CS, calls msg vt[0](msg,0) then allocator [q+0x70] vt+0x38(alloc,msg) to free; repeats; clears q+0x6b, Ne_Event_ResetWithErrorTrace(q+0xc8). Callers: 0x143567220, 0x14356a490 (tail jmp), Sess_Rules_DisqualifyForPenaltyPoints, 0x14398bf50 (not Ne_Subscribe_BusMessage as the old note said)."
  },
  "signature": {
   "id": "core.message_queue_drain_all",

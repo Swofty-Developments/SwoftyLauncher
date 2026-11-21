@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144733850",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144733850.c",
-  "notes": "Builds the 2025-format packets (packetFormat 2025, 22 cars). UDP telemetry, format index [[this+0xe0]+0xc] (0 = 2024, 1 = 2025, 2 = 2026) chosen in Game_TelemetryOutputUDPUpdateable_Update 0x1447311a0 and 0x144738050."
+  "evidence": "decomp:re/decomp/144733850.c;xref:0x14473136e,0x14473814e",
+  "notes": "Builds the packetFormat 2025 packets (0x7e9 written at this+0xff30); same inputs as Prepare2024 (ride heights, raycasts). Called from Game_TelemetryOutputUDPUpdateable_Update and Game_TelemetryUdp_HandleEvent (format index 1). (lane owner review requested)"
  },
  "signature": {
   "id": "game.telemetry_udp_prepare2025",

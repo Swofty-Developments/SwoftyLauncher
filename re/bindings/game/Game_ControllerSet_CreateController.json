@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1438971e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-CONTROLLER_SET",
-  "notes": "named from its log messages (channel CONTROLLER_SET): 'ControllerSet(%d / %s) : created HUMAN controller. | ControllerSet(%d / %s) : created AI controller.'"
+  "evidence": "decomp:re/decomp/1438971e0.c;pat:log-channel-CONTROLLER_SET;xref:0x1411f631e,0x1411f6537,0x141344ac9,0x14325fec5",
+  "notes": "(set, type): type 1 creates the AI controller at +0x28 (vtable 0x145882150), type 0 the HUMAN one at +0x20 (vtable 0x145882170) when not present; logs which was created. (lane owner review requested)"
  },
  "signature": {
   "id": "game.controller_set_create_controller",

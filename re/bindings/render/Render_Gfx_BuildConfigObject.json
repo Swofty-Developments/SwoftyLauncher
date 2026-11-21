@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140104f70.c;xref:0x140151eda",
-  "notes": "pdata range is 146839 bytes (likely several merged routines); decompile timed out, nothing read. Callers Game_Read_RendererGfxConfig, 0x14015d5b0 (x2). Hypothesis - large renderer config/pipeline setup; needs separate analysis. vp0-verify partial"
+  "evidence": "decomp:re/decomp/140104f70.c;xref:0x140151eda,0x14015d623,0x14015d689",
+  "notes": "pdata range 0x140104f70-0x140128d07 (~146 KB). Decompile timed out, body not read. Holds call sites of 0x140104640, 0x140128d10, 0x140129830, 0x140129b50, 0x1439932e0. Callers 0x140151eda (Game_Read_RendererGfxConfig), 0x14015d623/0x14015d689 (in 0x14015d5b0)."
  },
  "signature": {
   "id": "render.gfx_config_table_dispatch",

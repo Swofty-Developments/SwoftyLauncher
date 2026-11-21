@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430407e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): '<<< Game voice chat restriction : %d listeners. >>>'"
+  "evidence": "decomp:re/decomp/1430407e0.c;pat:log-channel-NETWORK;xref:0x1436e078b",
+  "notes": "Caller 0x1436dff80. Computes the voice-chat listener limit: 0x10 or [NetSub+0x3c8]+0x48, by matching mode [[NetSub+0x4d8]+0x28]+8 (4 -> 2, 5 -> 0x14 or league +0x268, 7 -> 0x1430dc620), scaled by a bandwidth value from 0x143040120 when [NetSub+0xd8]+0x750 is not 1; writes VM node #network.chat_data.max_listeners (0x140d394f0), logs the restriction, returns it. (lane owner review requested) Better name: Game_NetworkVoice_UpdateMaxListeners (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_game_voice_chat_restriction_listeners",

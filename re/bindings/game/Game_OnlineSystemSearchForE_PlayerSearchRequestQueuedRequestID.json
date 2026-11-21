@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432cd000",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-OnlineSystemSearchForEADPFriendTask",
-  "notes": "named from its log messages (channel OnlineSystemSearchForEADPFriendTask): 'Player search request queued, requestID = %I64u, error = %d'"
+  "evidence": "decomp:re/decomp/1432cd000.c;pat:log-channel-OnlineSystemSearchForEADPFriendTask;xref:0x145835350",
+  "notes": "Vtable cell 0x145835350 (same slot as the other task OnStart methods; next cell Game_F1osTask_FinishLocked_PlayerSearch). Checks NetworkSubsystem, EADP login, EA user id and search name ('Name for search is empty!'), queues the player search, logs 'Player search request queued, requestID = %I64u, error = %d'. (lane owner review requested) Better name: Game_OnlineSystemSearchForEADPFriendTask_OnStart (bound record keeps its name)."
  },
  "signature": {
   "id": "game.online_system_search_for_e_player_search_request_queued_request_id",

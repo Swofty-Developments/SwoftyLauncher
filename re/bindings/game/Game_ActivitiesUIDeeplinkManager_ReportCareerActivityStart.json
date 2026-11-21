@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143866d50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_ActivitiesUIDeeplinkManager_ReportCareerActivityStart;xref:0x1438670e8",
-  "notes": "cxx=game::ActivitiesUIDeeplinkManager::reportCareerActivityStart; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/143866d50.c;str:s_ActivitiesUIDeeplinkManager_ReportCareerActivityStart;xref:0x1438649ff,0x1438668bf",
+  "notes": "Own pretty string reportCareerActivityStart. PlayGo/trial gate; builds '%s_%s_weekend_%d' (my_team_ variant when 0x140778420) from series name and weekend +0x2a0; at weekend 0 builds career_%s_%s and makes it available (0x14386a5e0; career_f2_short/medium/full too unless series is f2, logs 'should hide F2 Activities'); then Game_Activities_Start 0x14386a240(weekend id). (lane owner review requested)"
  },
  "signature": {
   "id": "game.activities_u_i_deeplink_manager_report_career_activity_start",

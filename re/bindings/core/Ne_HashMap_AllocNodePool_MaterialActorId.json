@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14032c940",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/14032c940.c;xref:0x1401ed51d",
-  "notes": "Open-addressing hash lookup/reserve helper (InvalidParameterNoReturn). Caller Game_SceneManager_ResolveMaterialActorIds (0x1401ed51d). Trio with 0x14032ca20 (grow) and 0x14032c930 (length error). vq2-verify partial"
+  "notes": "(pool): node-pool chunk allocator: walks the chunk chain pool+8 to size the next chunk (4,8,..,0x2000 nodes), allocates n*0x10+8 bytes via allocator pool[2] vt+0x10 (containers file, line 0x34), links the chunk, threads its 16-byte nodes into a free list pushed on pool[0]; returns the first node. Fatal 0x1403139f0 on alloc failure. Only caller Game_SceneManager_ResolveMaterialActorIds."
  },
  "signature": {
   "id": "core.hash_map_find_slot_material_actor_id",

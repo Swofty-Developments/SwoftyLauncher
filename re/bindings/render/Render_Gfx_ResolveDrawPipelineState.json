@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a01670",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143a01670.c;xref:0x143a00824,0x143d5ccc1",
-  "notes": "Per-draw pipeline-state resolve in the Gfx2 context: looks up the PSO in the shader group's hash map (key = RT-set key at ctx+0x12e0), builds the PSO desc from a 0x290-byte copy when missing, and on failure logs (channel GFX2/RENDER_MISC) \"DX12: PSO doesn't exist -> shadergroup:%s hash=0x016%I64x\" plus per-RTV/DSV format lines 'DX12:     RTV%i   FORMAT:%s' / 'DX12:     DSV%i   FORMAT:%s'; fatal via Ne_FatalAbort. Sole named caller Render_Gfx_SubmitMeshDraw. Addon: where missing-PSO crashes are reported."
+  "evidence": "decomp:re/decomp/143a01670.c;xref:0x143a00824,0x143d5ccc1,0x143ecf6ed",
+  "notes": "Resolves the PSO for shader group param_2 (0x1439e1ca0 on device+0x32c0, key param_2+0x638 into ctx+0x12e0); when missing copies the 0x290-byte desc (param_2+0x30), builds it (0x1439e3280) and on failure logs GFX2 / RENDER_MISC \"DX12: PSO doesn't exist -> shadergroup:%s ...\" with RTV/DSV FORMAT and sampleDesc lines, then Ne_FatalAbort. Callers Render_Gfx_SubmitDraw 0x143a007e0, 0x143d5cb70, 0x143ecf6a0. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx_resolve_draw_pipeline_state",

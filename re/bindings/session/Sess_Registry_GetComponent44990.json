@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142bb3270",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142bb3270.c;xref:0x142bb2bc5,0x14356792d",
-  "notes": "(registry) Component lookup for key 0x146044990 (results-related; also used by FinaliseResultsSync). Stored by Sess_RuleManager_Initialise at +0x1c90; also Sess_FormationLapLogic_Reset."
+  "evidence": "decomp:re/decomp/142bb3270.c;xref:0x142bb2bc5,0x14356792d,0x143616ea2",
+  "notes": "Registry lookup: key 0x146044990 -> 0x14030ffd0(reg,&key), entry = idx*0x10 + [reg+0x18]; returns entry+8 or 0 when entry == [reg+0x20]. Key 0x146044990 is the type record whose name ptr (+8) is set to 'GameHelpersSystem' (0x1455d93d8) at 0x1403326ab; not results-related. Callers 0x142bb28b0 (-> +0x108), Sess_RuleManager_Initialise (-> +0x1c90), 0x143616c60. Better name: Sess_Registry_GetGameHelpersSystem (bound record keeps its name)."
  },
  "signature": {
   "id": "session.registry_get_component44990",

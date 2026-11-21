@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1414346c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=AsyncFileLoadOp::doJob; log channel CUSTOMISATION_DECALS: 'virtual void game::GameDecalFileMananger::AsyncFileLoadOp::doJob() | %s, allocRead(%s)'"
+  "evidence": "decomp:re/decomp/1414346c0.c;pat:log-message-cxx;xref:0x1456e40e0",
+  "notes": "game::GameDecalFileMananger::AsyncFileLoadOp::doJob (vtable cell 0x1456e40e0): logs path op+0x28, status op+0x90 = 0x58, starts allocRead (0x143f393a0) of the path with allocator op+0x10 into op+0x80, keeps handle op+0x98, waits up to 10000 ms (0x14391ca60): status 0x24 on timeout, else handle+0x30. (lane owner review requested)"
  },
  "signature": {
   "id": "game.async_file_load_op_do_job",

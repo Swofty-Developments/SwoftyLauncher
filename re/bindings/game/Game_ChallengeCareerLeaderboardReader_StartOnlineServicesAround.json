@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140ade120",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_ChallengeCareerLeaderboardReader_StartOnlineServicesAroundPlayer;xref:0x140ade1c6",
-  "notes": "cxx=game::ChallengeCareerLeaderboardReader::startOnlineServicesAroundPlayer; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/140ade120.c;str:s_ChallengeCareerLeaderboardReader_StartOnlineServicesAroundPlayer;xref:0x14566a590",
+  "notes": "Vtable cell 0x14566a590. Own pretty-function log startOnlineServicesAroundPlayer. Same context setup as _Start (+0x3c type, +0x88 maxEntries, +0xe8=2), request range [param_4, param_4+param_5) around the player via 0x140b69920, callback 0x140add940; returns +0x80 != 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.challenge_career_leaderboard_reader_start_online_services_around",

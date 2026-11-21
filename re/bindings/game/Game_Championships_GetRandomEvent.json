@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140bb1380",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name getRandomEvent (class from the log channel); log channel CHAMPIONSHIPS: 'getRandomEvent: Choose a random event, but done include nationality(%d) or ruleset(%d)'"
+  "evidence": "decomp:re/decomp/140bb1380.c;pat:log-message-method;xref:0x140bb1116,0x140bb12bf",
+  "notes": "Own logs 'getRandomEvent: ...'. Finds the event group named +0x2a0, collects indices of events (stage with rank >= param_3) whose track nationality byte +0x2b0 != param_2 and ruleset byte +9 == param_4, seeds MT19937 from +0x280 and returns a random collected id (logs it). (lane owner review requested)"
  },
  "signature": {
   "id": "game.championships_get_random_event",

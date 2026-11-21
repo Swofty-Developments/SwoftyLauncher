@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143c19910",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143c19910.c;xref:0x142a941cc",
-  "notes": "Larger sibling of 0x143c196f0 (209 lines): logs 'NeMultiSubMaterialResourceFactory' (hash 0x70850656) and allocates the multi-sub-material node set via plRam0000000146c621e0. Caller Game_CustomDecalModel_Bake. Hypothesis: material resource of a baked decal model."
+  "notes": "Same pattern as 0x143c196f0 with log 'createOverrideMaterialAsync hash=%016I64x': posts render plugin message 5 (0x360 bytes) via 0x146c621e0 (+0x20 alloc on connection [this+8], +0x30 commit) with the two keys and the override slot data from param_4. Only caller Game_CustomDecalModel_Bake 0x142a941cc. (lane owner review requested) Better name: Render_MultiSubMaterialFactory_CreateOverrideAsync (bound record keeps its name)."
  },
  "signature": {
   "id": "render.multi_sub_material_factory_create_from_slots",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144738050",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144738050.c",
-  "notes": "Second format switch (index 0/1/2 -> prepare + send for 2024/2025/2026), sets per-packet ready flags +0x17158.. . UDP telemetry, format index [[this+0xe0]+0xc] (0 = 2024, 1 = 2025, 2 = 2026) chosen in Game_TelemetryOutputUDPUpdateable_Update 0x1447311a0 and 0x144738050."
+  "evidence": "decomp:re/decomp/144738050.c;xref:0x145c02a30",
+  "notes": "Slot 12 (+0x60) of UDP output vtable 0x145c029d0 (cell 0x145c02a30) - the slot Game_TelemetryUdp_OnCollisionMessage calls with ('COLL', payload). 'SSTA' arms +0xd273; 'SEND' sets ready flags +0x17068.. and runs prepare+send for format [[this+0xe0]+0xc] 0/1/2; other codes (FTLP, DRSE, PENA, OVTK, BUTN...) handled in the event branch. Old name FlushFormat. (lane owner review requested) Better name: Game_TelemetryUdp_HandleEvent (bound record keeps its name)."
  },
  "signature": {
   "id": "game.telemetry_udp_flush_format",

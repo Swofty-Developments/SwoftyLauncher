@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1411f6d80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-PDS/V",
-  "notes": "named from its log messages (channel NETWORK-PDS/V): '%s: sending PDS Data Message for Driver: %s'"
+  "evidence": "decomp:re/decomp/1411f6d80.c;pat:log-channel-NETWORK-PDS/V;xref:0x1411f6749,0x1411f7fef,0x1411f8718",
+  "notes": "Sends the PDS driver data message via 0x14402e500 (session at this+0x450) and logs '%s: sending PDS Data Message for Driver: %s' with the id formatted '%s %u' from *param_2. Callers 0x1411f61e0, 0x1411f7c90, 0x1411f83d0, 0x1411fd430. (lane owner review requested) Better name: Game_NetworkPDS_SendDriverDataMessage (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_pds_sending_pds_data_message_driver",

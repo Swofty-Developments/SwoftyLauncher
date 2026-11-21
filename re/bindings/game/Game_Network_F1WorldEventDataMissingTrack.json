@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'F1 World Event data - missing track. Filling from the season document ...'"
+  "evidence": "decomp:re/decomp/1431581a0.c;pat:log-channel-NETWORK;xref:0x14581cd80",
+  "notes": "Slot 20 (+0xa0) of vtable 0x14581cce0 (preceded by the cxx string of network::EventMatching::onSessionLobby). Missing track: logs 'F1 World Event data - missing track. Filling from the season document ...' and reads the season data ([..]+0x1030 vt+0x88); else logs 'matched track to the current event stat id'. Better name: Game_Network_FillWorldEventTrack (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_f1_world_event_data_missing_track",

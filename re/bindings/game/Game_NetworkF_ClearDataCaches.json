@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14309d6a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name clearDataCaches (class from the log channel); log channel NETWORK/F: 'clearDataCaches() cancelled - still receiving initial data'"
+  "evidence": "decomp:re/decomp/14309d6a0.c;pat:log-message-method;xref:0x143067f13,0x1430a1fbd,0x143097cc5,0x1430a53d0",
+  "notes": "cxx=network::GameSessionSeasonDocument::clearDataCaches(). Returns with 'cancelled - still receiving initial data' while the doc is receiving; else clears entry flags, releases +0x450 objects, erases net progress records (+0x448), clears +0x460 and a set at session+0x470; tail jumps to 0x143242790 (clearVehicleSet, inlined in the decomp). Callers 0x143067d40, 0x1430a1e90; jumps from 0x143097c10, 0x1430a5170. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_f_clear_data_caches",

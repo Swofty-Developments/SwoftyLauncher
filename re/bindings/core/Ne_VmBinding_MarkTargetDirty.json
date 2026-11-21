@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1442bc390",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1442bc390.c;xref:0x140828702",
-  "notes": "If binding has a pending list (+0x40 != +0x48), resolves target (vtable +0x38 on +0x58), takes a ref (+0x24 counter) and sets flag 4 in +0x60 when the target reports changed. Callers Vm_NodeSet_String, Ne_Property_SetS32IfChanged, Vm_NodeSet_Bool, Ne_VmNode_SetFloat."
+  "evidence": "decomp:re/decomp/1442bc390.c;xref:0x140828702,0x14083c6f7,0x14097302f,0x140974070,0x140977d6e",
+  "notes": "If the binding has listeners (+0x40 != +0x48): resolves target via [binding+0x58] vcall +0x38, holds a temp handle (list +0x28, ref +0x24), and by target kind (vcall +0x20 / +0x10 / +0x28) registers callback 0x1442bc870 / 0x1442bc8e0 / 0x1442bc950 with ctx=binding via 0x1442344c0 (unique add to target's listener list +0x40); sets flag 4 @+0x60; releases the handle. Callers: Vm_NodeSet_String/Bool, Ne_Property_SetS32IfChanged, Ne_VmNode_SetFloat. Better name: Ne_VmBinding_SubscribeToTarget (bound record keeps its name)."
  },
  "signature": {
   "id": "core.vm_binding_mark_target_dirty",

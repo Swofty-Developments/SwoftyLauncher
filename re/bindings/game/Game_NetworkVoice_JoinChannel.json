@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144036890",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name joinChannel (class from the log channel); log channel NETWORK-VOICE: '%s: channel #%u created'"
+  "evidence": "decomp:re/decomp/144036890.c;pat:log-message-method;xref:0x14305cac1",
+  "notes": "Logs '%s: channel #%u created' with its own name joinChannel; first calls Game_NetworkVoice_LeaveActiveChannel, then creates/joins the channel. Called from Gdb_Unk_14305c1f0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_voice_join_channel",

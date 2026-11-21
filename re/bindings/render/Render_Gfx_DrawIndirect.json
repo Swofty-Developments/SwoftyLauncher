@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a02f70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143a02f70.c;xref:0x143a0151a",
-  "notes": "Dirty-state flush then ExecuteIndirect-style context vcall +0x148(signature global [0x14618caa8+0x2580], count 1, argument buffer address, offset): draw-indirect with the global draw command signature. Hypothesis."
+  "notes": "Resolves the argument-buffer GPU address of param_2 (per-frame +0x90/+0xd0 tables), residency insert, same flush, then list vcall +0x148(signature device+0x2580, 1, argument buffer, offset param_3, ..). Caller Render_Gfx_SubmitDraw 0x143a007e0. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx_draw_indirect",

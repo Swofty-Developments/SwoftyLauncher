@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141107420",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141107420.c;xref:0x1410f67f2",
-  "notes": "Builds a vector (param_2) from the decal entries at param_1+0xb8..0xc0 and the {key,level} table +0x98..0xa0; keeps entries whose level (+4) <= param_1+0x114 (quality cap) via allocator [param_1+0x90] vcall +0x38. Caller Game_CarDecals_BuildList plus 4 more. Hypothesis: decal quality filter."
+  "evidence": "decomp:re/decomp/141107420.c;xref:0x1410f67f2,0x141107e69,0x14110807f,0x141ff7953,0x1420005d6",
+  "notes": "Builds a temp vector of 16-byte keys (vt 0x145613520) from entries +0xb8..+0xc0 (u32 +8) plus 0x78-byte entries +0x98..+0xa0 with level +4 <= cap +0x114 and enabled +0x18 (key +0x10), then returns only the FIRST key in param_2 (invalid 9/0xffff if empty) and frees the vector (allocator +0x90). Not a list filter. (lane owner review requested) Better name: Game_LevelCappedList_GetFirstKey (bound record keeps its name)."
  },
  "signature": {
   "id": "game.car_decals_filter_list_by_lod",

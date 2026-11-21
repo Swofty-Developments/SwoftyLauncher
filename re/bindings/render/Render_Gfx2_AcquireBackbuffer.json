@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439ad480",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439ad480.c;xref:0x1439ad194,0x143b7ceed",
-  "notes": "Acquires the next swapchain image: submits pending cmd lists via 0x1439dc660, calls swapchain vcall +0x40 (acquire), then vendor-specific debug marker by GPU vendor id at renderer+0x880 (0x8086 Intel, 0x10de NVIDIA, 0x1002 AMD). Returns error code or 0. Called by 0x143b7f890 and Ne_Gfx2Renderer_RenderFrame. Addon: renderer+0x880 holds the PCI vendor id."
+  "evidence": "decomp:re/decomp/1439ad480.c;xref:0x1439ad194,0x143b7ceed,0x143b7f90a",
+  "notes": "Picks the per-frame resource of param_2 (index this+0x148) into param_3[1], submits pending lists (Render_Gfx2Device_SubmitCommandLists), read range [0, +0x100] when type (+0x20|2)==3; if not persistently mapped (+0x140) calls resource vcall +0x40 (Map, subresource 0) into param_3[0] and checks the HRESULT per vendor id this+0x880 with label Map; else uses the stored pointer. Returns 0 or 0xe. (lane owner review requested) Better name: Render_Gfx2Device_MapFrameBuffer (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_acquire_backbuffer",

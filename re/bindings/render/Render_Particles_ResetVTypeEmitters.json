@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b05930",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143b05930.c;xref:0x143b08f9c",
-  "notes": "For effects of type char 'v' (0x76) resets each emitter instance runtime state (+0x158=1, +0xe8=0, +0x104=0, +0xe0=0, frees +0xf8 chain). Caller Game_Particles_UpdateManager. Hypothesis."
+  "notes": "For effects of type 'v': per emitter instance sets +0x158=1, clears +0xe8/+0x104/+0xe0 and pushes the +0xf0..+0xf8 particle chunk chain back onto the global free list 0x146294210 (lock cmpxchg). (lane owner review requested)"
  },
  "signature": {
   "id": "render.particles_reset_v_type_emitters",

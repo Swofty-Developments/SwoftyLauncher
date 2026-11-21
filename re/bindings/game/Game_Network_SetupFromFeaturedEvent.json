@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430a8720",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name setupFromFeaturedEvent (class from the log channel); log channel NETWORK: '%s:'"
+  "evidence": "decomp:re/decomp/1430a8720.c;pat:log-message-method;xref:0x142594cb8",
+  "notes": "Caller 0x142594c70. GameSessionSeasonDocument method (this+0x420 NetSub, same +0x766/+0x768 pending flags as ProcessPending). Logs 'setupFromFeaturedEvent:', reads the featured event, copies its settings (track, weather per k_Sess_WeatherDatasetOrder up to WEATHER_SEED_EXTENDED, session flags) into the document; each change calls 0x143227630([NetSub+0xf8]) and sets +0x766/+0x768; ends with 0x143098e90, 0x14309ac00, 0x14309e400. (lane owner review requested) Better name: Game_GameSessionSeasonDocument_SetupFromFeaturedEvent (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_setup_from_featured_event",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-CUSTOMISATION-REPLICATION",
-  "notes": "named from its log messages (channel NETWORK-CUSTOMISATION-REPLICATION): '%s: Handling player (%s) life data vehicle segmented decals add...'"
+  "evidence": "decomp:re/decomp/14318d560.c;pat:log-channel-NETWORK-CUSTOMISATION-REPLICATION;xref:0x143184802",
+  "notes": "handleF1LifeDataVehicleSegmentedDecalsAdd (per __FUNCTION__): logs handling; finds the player by user id (Ne_UserId_Equals), inlined addPlayerLifeDataVehicleSegmentedDecals builds the decal node list (Game_NetSerialisableVehicleDecalNodeList_CreateDecalNodeList) and enqueues replication messages. Better name: Game_CustomisationRepl_HandleLifeDataVehicleDecalsAdd (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_customisation_handling_player_life_data_vehicle",

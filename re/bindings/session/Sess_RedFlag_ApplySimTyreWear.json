@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f6af90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142f6af90.c;xref:0x142f662d3,0x142f666ab",
-  "notes": "Applies simulated tyre wear in red-flag unlap: takes the 4 tyre wear values (+0xc/+0x18/+0x24/+0x30 of the current set), shifts them so the worst equals this+0xb58 and clamps to 0..1. Callers: Sess_RedFlag_SimulateUnlapLaps."
+  "evidence": "decomp:re/decomp/142f6af90.c;xref:0x142f662d3,0x142f666ab,0x142f66b8a,0x142f671d0,0x142f67398,0x142f67718",
+  "notes": "Callers Sess_RedFlag_SimulateUnlapLaps x3 and Sess_VirtualSession_SimulateEntrantStep x3 (not red-flag only). Current tyre set ([this+0x20]+0x9c68/+0x9c98): shifts wear +0xc/+0x18/+0x24/+0x30 so the max equals this+0xb58, clamped 0..1. Then [[this+0x10]+0x58]+0x540 +0x100 = clamp(this+0xb60 - (...), 0, +0x98^+0xa0), clears bit 0 of +0x10c; if this+0xb74==1 and car this+0xb24 < 0x1b increments a counter +0x14. Better name: Sess_VirtualEntrant_ApplySimTyreWear (bound record keeps its name)."
  },
  "signature": {
   "id": "session.red_flag_apply_sim_tyre_wear",

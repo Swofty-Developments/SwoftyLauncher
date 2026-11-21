@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430837c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-SESSION",
-  "notes": "named from its log messages (channel NETWORK-SESSION): '%s: join result %s, error code: %s'"
+  "evidence": "decomp:re/decomp/1430837c0.c;pat:log-channel-NETWORK-SESSION;xref:0x14308203c",
+  "notes": "__FUNCTION__ 'GameSessionMatchingHopperCommon::onSessionJoinComplete(NEbool, NeNetError)'; lea'd as join callback in 0x143081160. Logs join result, enters via GameSessionManager_Enter 0x1430647a0, changeState StateJoined, else EvaluateGameInvite 0x143086410. (lane owner review requested) Better name: Game_GameSessionMatchingHopperCommon_OnSessionJoinComplete (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_session_join_result_code",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143985820",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-ASYNC",
-  "notes": "named from its log messages (channel NETWORK-ASYNC): 'Async job queue seconds:%1.3f, length: %d'"
+  "evidence": "decomp:re/decomp/143985820.c;pat:log-channel-NETWORK-ASYNC;xref:0x1430e093d,0x1443d252d",
+  "notes": "neon::NeNetwork::update (log uses that __FUNCTION__): re-arms NotifyAddrChange/CancelIPChangeNotify for IP change detection, checks Steam, processes the async job queue (logs \"job is done, queue seconds\" and \"Async job queue seconds:%1.3f, length: %d\"). (lane owner review requested) Better name: Game_Network_NeNetwork_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_async_async_job_queue_seconds_length",

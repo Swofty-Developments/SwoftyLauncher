@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1447377d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1447377d0.c",
-  "notes": "Sends the 2026-format packets built by Game_TelemetryOutputUDPUpdateable_PreparePackets 0x144736210 (packetFormat 2026, 24 cars: lap data 1399 bytes, motion 54 bytes per car, extra 'Car telemetry packet 2' 269 bytes, Lap Positions 1231). UDP telemetry, format index [[this+0xe0]+0xc] (0 = 2024, 1 = 2025, 2 = 2026) chosen in Game_TelemetryOutputUDPUpdateable_Update 0x1447311a0 and 0x144738050."
+  "evidence": "decomp:re/decomp/1447377d0.c;xref:0x14473139e,0x144738144",
+  "notes": "Sends the 2026-format buffers built by Game_TelemetryOutputUDPUpdateable_PreparePackets, each gated by Game_TelemetryUdp_RateLimitTick, via 0x144737d30 (sizes include 0x577 = 1399, 0x10d = 269, 0x4cf = 1231, 0x5b4). Tail-jumped from Game_TelemetryOutputUDPUpdateable_Update, called from Game_TelemetryUdp_HandleEvent (format index 2). (lane owner review requested)"
  },
  "signature": {
   "id": "game.telemetry_udp_send2026",

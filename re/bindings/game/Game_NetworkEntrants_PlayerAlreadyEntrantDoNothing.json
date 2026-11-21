@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143116ca0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-ENTRANTS",
-  "notes": "named from its log messages (channel NETWORK-ENTRANTS): 'Player is already this entrant, do nothing!'"
+  "evidence": "decomp:re/decomp/143116ca0.c;pat:log-channel-NETWORK-ENTRANTS;xref:0x143111e52",
+  "notes": "If [[[this+0x28]+0x4f8]+0xe10]+0x18 is 0: logs \"Player is already this entrant, do nothing!\" and returns param_3 == param_4; else copies the target ids from param_2+0x68.. and calls registerEntrant (0x14310c1d0) with team position from 0x14310e070. (lane owner review requested) Better name: Game_NetworkEntrants_TakeEntrant (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_entrants_player_already_entrant_do_nothing",

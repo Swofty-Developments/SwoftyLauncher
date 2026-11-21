@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143d761d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143d761d0.c;xref:0x14014e811",
-  "notes": "Zero-initialises a 0x90-byte render-target/buffer description (+0x08 = -1) and fills it from (name, a, b, c, ptr, flag, uint) with names interned via Ne_StringPool_InternByHash. Called from Game_Read_RendererGfxConfig (render pass target definitions). Hypothesis on field meaning."
+  "evidence": "decomp:re/decomp/143d761d0.c;xref:0x14014e811,0x14014e8b6,0x14014e95b,0x14014ea00,0x14014eaa5,0x14014eb4a",
+  "notes": "Zero-initialises the 0x90-byte triple-buffer object (+8 = -1), builds a desc on the stack (name interned via FNV-1a/Ne_StringPool_InternByHash, params 3-8) and calls 0x143bc4b30, which creates the three buffers +0x10/+0x18/+0x20 and maps them unless +0x89. Callers Game_Read_RendererGfxConfig 0x14014e811, 0x14014e8b6, Game_Read_RendererUIConfig 0x1442e329c. (lane owner review requested) Better name: Render_Gfx2TripleBuffer_Construct (bound record keeps its name)."
  },
  "signature": {
   "id": "render.render_target_desc_construct",

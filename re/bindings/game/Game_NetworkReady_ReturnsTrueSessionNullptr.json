@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1436f2830",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-READY/V",
-  "notes": "named from its log messages (channel NETWORK-READY/V): '%s() returns true - session is nullptr!'"
+  "evidence": "decomp:re/decomp/1436f2830.c;pat:log-channel-NETWORK-READY/V;xref:0x14585dfd8",
+  "notes": "State function (vtable cell): evaluates 'canProgressToSession' (disconnected, red-flag restart, going to front end, isMinimumParticipartionRequiredForSession, >=2 players, host race status) and writes [0x146cb2284] or [0x146cb2280] to *param_2 by byte [this+0xcc8]. 'session is nullptr' is one log branch only. (lane owner review requested) Better name: Game_NetworkReadyState_UpdateCanProgressToSession (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_ready_returns_true_session_nullptr",

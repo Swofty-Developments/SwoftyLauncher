@@ -93,13 +93,15 @@ pub const POSTFX_FORMATS: [&str; 7] = [
     "r11g11b10f",
 ];
 
-pub const POSTFX_VIEWS: [&str; 6] = [
+pub const POSTFX_VIEWS: [&str; 8] = [
     "cockpit",
     "tcam",
     "tcam_offset",
     "chase_near",
     "chase_far",
     "other",
+    "trackside",
+    "reverse_pod",
 ];
 
 pub const POSTFX_SKIPS: [&str; 6] = ["paused", "replay", "photo", "menu", "cutscene", "spectating"];

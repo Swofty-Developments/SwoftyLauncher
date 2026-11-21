@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14409ea80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-TRANSPORT",
-  "notes": "named from its log messages (channel NETWORK-TRANSPORT): '%s: Initialise PlayFabParty for host'"
+  "evidence": "decomp:re/decomp/14409ea80.c;pat:log-channel-NETWORK-TRANSPORT;xref:0x145a55138",
+  "notes": "Vtable cell: NetConnectionStore_Initialise 0x14405a430, logs 'Initialise PlayFabParty for host' ('initialiseHost'), InitialiseInternal 0x14409f370, then createNetwork/connectNetwork. (lane owner review requested) Better name: Game_NetworkTransportPlayFab_InitialiseHost (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_transport_initialise_play_fab_party_host",

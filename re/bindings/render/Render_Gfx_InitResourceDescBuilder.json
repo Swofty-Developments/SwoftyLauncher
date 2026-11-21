@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140100d70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140100d70.c;xref:0x1400fe1f7",
-  "notes": "Initialises a stack descriptor builder (name \"<unknown-because-not-initialised/resource>\", hash seed 0xc4ceb9fe1a85ec53, inline arrays cap 0x20) and clones arrays via 143c208d0. 68 calls from the config object builders at 0x1400fe..."
+  "evidence": "decomp:re/decomp/140100d70.c;xref:0x1400fe1f7,0x1400fe59c,0x140102e0a",
+  "notes": "Builds a stack resource desc (placeholder name, seed 0xc4ceb9fe1a85ec53, inline arrays cap 0x20, cloned by 0x143c208d0), allocates 0x550 bytes (align 0x10) via allocator *param_1 vcall +0x18, constructs with Render_GeometryPass_Parse 0x143b5c740, returns {allocator, object} in param_2, releases desc (0x143c20a30). Callers in 0x1400fd6d0, 0x140102560. (lane owner review requested) Better name: Render_Gfx_CreateGeometryPassNode (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx_init_resource_desc_builder",

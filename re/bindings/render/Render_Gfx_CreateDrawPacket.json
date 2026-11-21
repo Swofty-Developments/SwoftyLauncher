@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439d8970.c;xref:0x142437122",
-  "notes": "Under critical section [ctx+0x2668] allocates a 0xd8-byte packet (vtbl 0x14589e880) via allocator [ctx+0x150] vcall +0x18, copies the 0xb8-byte param block, sizes two per-submesh arrays from the 40-byte element table of mesh [packet+0x20] (+0x678..+0x680), memsets them, computes a key via 0x1439e5970 and registers it in the list at ctx+0x3aa8. 151 callers = generic draw/scene packet factory. Hypothesis on name."
+  "evidence": "decomp:re/decomp/1439d8970.c;xref:0x142437122,0x1439aca4d,0x143b2c8b6",
+  "notes": "Under device CS allocates 0xd8 bytes, vtable 0x14589e880, copies a 0xb8-byte block; pkt+0x20 holds an object whose +0x20 has the 40-byte binding table (+0x678..+0x680, the table BindShaderResourceByName indexes); allocates per-entry arrays pkt+0xc0 (8 B) / +0xc8 (1 B), stores the flags of Render_Gfx_ClassifyDrawPacketPass at +0xd0, inserts into set +0x49b8 (destroyed by 0x1439dbea0)."
  },
  "signature": {
   "id": "render.gfx_create_draw_packet",

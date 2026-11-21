@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143db28d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143db28d0.c;xref:0x140162b88",
-  "notes": "Under critical section [this+8] removes a generator by name: key via vcall +0x78 of object [this+0x68]+0x20, erases from two maps (0x143db29b0 and FNV-1a of the name string via 0x143db30c0) and frees the entry with allocator vcall +0x38 after 0x143e93910. Caller Ne_Rtt_UnregisterGenerators."
+  "notes": "Under EnterCriticalSection([this+8]): obj = vcall +0x20 on [this+0x68], obj vcall +0x78 builds a key from the name [entry+0x10], erased from map this+0x50 via 0x143db29b0; FNV-1a 64 of the name string erased from tree this+0x38 via 0x143db30c0; then 0x143e93910(entry) and free via [this] vcall +0x38. Caller 0x140162b88 in Ne_Rtt_UnregisterGenerators (0x14015f750). (lane owner review requested)"
  },
  "signature": {
   "id": "render.rtt_unregister_generator_entry",

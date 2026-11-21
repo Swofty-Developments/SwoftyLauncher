@@ -120,19 +120,70 @@ pub struct RoomSummary {
     pub created_at: u64,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RoomAddons {
     pub count: u32,
     #[serde(default)]
     pub tracks: Vec<String>,
     #[serde(default)]
     pub list: Vec<RoomAddon>,
+    /// The host's launcher version, from a server that lists it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub launcher: Option<String>,
+    /// The SHA-256 of the host's game executable, from a server that lists it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub game: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub dlc: Option<bool>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RoomAddon {
     pub id: String,
     pub name: String,
+    /// The version, Addon Browser download, load order place and built-in flag of the host's copy, from a
+    /// server that lists them.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub version: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub registry: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub order: Option<usize>,
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub builtin: bool,
+}
+
+/// The host's addons as the host's fingerprint lists them, which the session module reports beside its state
+/// once the host's fingerprint arrived.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct HostPrint {
+    pub digest: String,
+    #[serde(default)]
+    pub launcher: String,
+    #[serde(default)]
+    pub exe_sha256: String,
+    #[serde(default)]
+    pub dlc: Option<bool>,
+    #[serde(default)]
+    pub addons: Vec<HostAddon>,
+    /// Addon id to option id to value.
+    #[serde(default)]
+    pub options: BTreeMap<String, BTreeMap<String, Value>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct HostAddon {
+    pub id: String,
+    pub name: String,
+    pub version: semver::Version,
+    /// The SHA-256 of the Addon Browser download the host's copy came from.
+    #[serde(default)]
+    pub registry: Option<String>,
+    /// Its place in the host's load order among the addons that change game data.
+    #[serde(default)]
+    pub order: Option<usize>,
+    #[serde(default)]
+    pub builtin: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

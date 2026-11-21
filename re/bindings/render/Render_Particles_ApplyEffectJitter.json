@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143af3e80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143af3e80.c;xref:0x143af3dfe",
-  "notes": "Orthonormalises the effect transform (rows +0x10..+0x40 normalised by vdpps) and adds a random jitter vector (11-bit LCG, mult 0x60b7a437 / 0x10d63af1 / 0x41a7, scale 1/2048 - 0.5) scaled by emitter-def extents (*(+0x80)+0x160 +0x63c/+0x644). Callers Render_Particles_CreateCarEffect, Game_Particles_CreateEffectNode, Game_Particles_RestoreStoredEffects. Hypothesis on exact fields."
+  "evidence": "decomp:re/decomp/143af3e80.c;xref:0x143af3dfe,0x143af5c64,0x143b02fbf,0x143b041e9",
+  "notes": "Reads the effect transform rows param_1+0x10..+0x40, adds an LCG jitter (seed 0x145f96f80, mults 0x60b7a437/0x10d63af1/0x41a7, 11-bit, -0.5..0.5) scaled by def +0x63c/+0x644 to the translation and writes the rows into every emitter instance (+0x10..+0x40, stride 0x180); non-unit axes are normalised, scales stored at +0x124..+0x12c and +0x150. (lane owner review requested) Better name: Render_Particles_SetEmitterTransformsJittered (bound record keeps its name)."
  },
  "signature": {
   "id": "render.particles_apply_effect_jitter",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1435bb400",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1435bb400.c;xref:0x1435bb1b5,0x1435bd45f",
-  "notes": "(mc, carA, carB, kind, flag) Records a contact/incident row (count +0x48++) for the misconduct table (201 lines). Called 4x from Sess_Misconduct_CheckEnvironmentContact. Hypothesis."
+  "evidence": "decomp:re/decomp/1435bb400.c;xref:0x1435bb1b5,0x1435bd45f,0x1435be34e,0x1435bed74",
+  "notes": "(mc, carA, carB, int v, u8 f): table mc+0x4c, 0x44-byte entries, count mc+0x48 (max 0x6c). If carA has an active entry (+0x5c, timer +0x4c > 0): min/max of v at +0x54/+0x58, +0x5d = f when raised. Else new entry: active=1, timer = g 0x145f96670, +0x50 session time, +0x54/+0x58 v, +0x5d f, +0x60 carA (+0x68 its participant +0x1c byte), +0x78 carB. Callers Sess_Misconduct_CheckEnvironmentContact, 0x1435bd310, 0x1435be260, 0x1435bec80."
  },
  "signature": {
   "id": "session.misconduct_record_contact",

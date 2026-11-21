@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140ffa6f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_Championship_CareerOnlineTimeAdvancementControllerComponent_HandleTime;xref:0x140ffa7a6",
-  "notes": "cxx=game::championship::CareerOnlineTimeAdvancementControllerComponent::handleTimeAdvanceMessage; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/140ffa6f0.c;str:s_Championship_CareerOnlineTimeAdvancementControllerComponent_HandleTime;xref:0x140ffa24c",
+  "notes": "Net message handler (lea at 0x140ffa24c): logs 'received message: %s, day: %d, continue %d' (type name table 0x1456bd488) and reposts the fields (+0x14 type, +0x16 day, +0x18 continue) on the bus via Ne_Post_BusMessage 0x1439876c0 (message 0x1456bc838). (lane owner review requested)"
  },
  "signature": {
   "id": "game.career_online_time_advancement_ctrl_comp_handle_time_advance_msg",

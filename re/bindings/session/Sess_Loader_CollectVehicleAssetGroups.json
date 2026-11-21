@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140612a80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
   "proto": "-",
   "evidence": "decomp:re/decomp/140612a80.c;xref:0x142d47d2e",
-  "notes": "Resolves a vehicle's 'asset_data' row and its XOR-obfuscated 'base_car' reference and collects the asset groups to load for the frontend car. Caller Sess_Loader_StartFrontendAssetLoad."
+  "notes": "(loader, ?, ?, ?): gets two components via vcall +0x28 (types 0x146cb8278, 0x14604ec98; missing -> errno 0x16), finds the vehicle in a robin_hood map (0x14030ffd0), builds an Ai car profile (0x140613d30, Ai_CarProfile_ResolveNames, Ai_Build_BrakeLineSettingsFileName), reads gamedb 'asset_data' row (Gdb_Find_RowByLabel) and XOR-decoded 'base_car' (Gdb_Get_FieldInt), resolves asset groups via Game_AssetGroupRegistry_LookupById and appends them (0x143a599d0). Caller Sess_Loader_StartFrontendAssetLoad."
  },
  "signature": {
   "id": "session.loader_collect_vehicle_asset_groups",

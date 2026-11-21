@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143c66390",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143c66390.c;xref:0x143c6c40a,0x143c65889",
-  "notes": "Full decal-set GPU teardown: frees buffers at +0x1e8/+0x1f8 and bound views, defers releases (Render_Gfx2Device_DeferRelease_A/B, Render_Gfx2_LookupEntryOrDefault). Callers Render_DecalsSet_EraseConnectionById, 0x143c65870, 0x143c671e0, 0x143c77e30."
+  "evidence": "decomp:re/decomp/143c66390.c;xref:0x143c65889,0x143c68699,0x143c686b7,0x143c6c40a,0x143c7861d",
+  "notes": "Frees the objects at +0x1e8 (after 0x143ccd6c0) and +0x1f8, unregisters +0xe0 via Render_Gfx2_LookupEntryOrDefault and destroys it, then per 0xb8-byte record of +0xf0 destroys its pass (Render_Gfx_DestroyPassResources) and defers its views (Render_Gfx2Device_DeferRelease_A/B). Callers Render_CustomisationDecals_Teardown 0x143c65889, 0x143c671e0 (0x143c68699), 0x143c6c40a, Render_CustomisationDecalsSet_Build 0x143c7861d. (lane owner review requested)"
  },
  "signature": {
   "id": "render.decals_set_release_all_gpu_resources",

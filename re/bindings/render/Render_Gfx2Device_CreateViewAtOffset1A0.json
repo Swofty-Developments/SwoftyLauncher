@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a0e230",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143a0e230.c;xref:0x140146023",
-  "notes": "Releases/queues a view stored at +0x1a0 of the object via 1439d6880. Callers Render_Gfx_RegisterNamedResourceViews. vq0-verify partial/disagree"
+  "evidence": "decomp:re/decomp/143a0e230.c;xref:0x140146023,0x1439d341e,0x14016fb05",
+  "notes": "Only when desc+0x38 has bit 8: builds a view desc from surface param_1 and desc param_2 (format +0x30; dimension +0x2c 1-4 mapped to view kinds 3..9, array variants when +0x28 > 1) and stores Render_Gfx2Device_CreateViewObject_A(device, desc) at surface+0x1a0. Callers Render_Gfx2Surface_Construct 0x1439d1b90, Render_Gfx_RegisterNamedResourceViews 0x1401456e0, 0x14016d890. (lane owner review requested) Better name: Render_Gfx2Surface_CreateDefaultView (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_device_release_view_at_offset1_a0",

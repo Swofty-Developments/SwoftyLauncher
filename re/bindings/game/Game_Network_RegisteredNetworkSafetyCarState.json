@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): '[SAFETY_CAR] registered network safety car(%d) state(%s).'"
+  "evidence": "decomp:re/decomp/1430cf560.c;pat:log-channel-NETWORK;xref:0x1430cfbc5,0x1430e079e",
+  "notes": "Callers 0x1430cfbb0 and 0x1430e0560. Loops the registered safety cars, logs '[SAFETY_CAR] registered network safety car(%d) state(%s).' and the transition text, inserts via 0x143207b00/0x1432080a0. Better name: Game_Network_UpdateNetworkSafetyCars (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_registered_network_safety_car_state",

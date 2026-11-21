@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439da200",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439da200.c;xref:0x14015ed90",
-  "notes": "Under device lock appends the 16-byte record *param_2 {handle, frame serial} to the pending-release vector at +0xce8/+0xcf0 (cap +0xcf8, grows 1.5x via Ne_Crt_Memcpy) and bumps global frame counter 0x14618c160 (also stored at [[param_1+0x528]+0x140]). 131 call sites incl Render_Gfx2Buffer_Destroy. Hypothesis: deferred GPU resource destruction list."
+  "evidence": "decomp:re/decomp/1439da200.c;xref:0x14015ed90,0x143a0edb9,0x142fa970b",
+  "notes": "Under device CS erases *param_2 from the view set +0x41a0 (filled by Render_Gfx2Device_CreateViewObject_A 0x1439d6880), bumps +0x42b0, removes the view from a per-resource map (+0x3f0 when view+0x44 == 1, else +0x2b0, key view+0x48), then appends {serial 0x14618c160, view} to the release vector +0xce8..+0xcf8. Callers 0x14015d720, Render_Gfx2Buffer_Destroy 0x143a0ed70, 0x142fa9570. (lane owner review requested) Better name: Render_Gfx2Device_ReleaseViewObjectDeferred_A (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_device_defer_release_a",

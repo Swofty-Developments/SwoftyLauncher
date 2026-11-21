@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143864a20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_ActivitiesUIDeeplinkManager_StartRankedActivity;xref:0x143864c83",
-  "notes": "cxx=game::ActivitiesUIDeeplinkManager::startRankedActivity; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/143864a20.c;str:s_ActivitiesUIDeeplinkManager_StartRankedActivity;xref:0x143862ee1",
+  "notes": "PlayGo (+0x63)/trial (0x14078e1a0) gate, then prepares online (0x143083570/0x1430ed330 by lobby state (+0x30)+0x130/+0xd8), frontend_transition_state = ranked_templates, +0x61 = 1, presence mp_ranked_match, logs '%s: called'. Caller OnDeepLinkActivityStarted (type 3). (lane owner review requested)"
  },
  "signature": {
   "id": "game.activities_u_i_deeplink_manager_start_ranked_activity",

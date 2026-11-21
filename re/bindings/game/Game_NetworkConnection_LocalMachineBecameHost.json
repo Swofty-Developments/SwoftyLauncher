@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-CONNECTION-QUALITY",
-  "notes": "named from its log messages (channel NETWORK-CONNECTION-QUALITY): '%s: Local machine became the host'"
+  "evidence": "decomp:re/decomp/144065aa0.c;pat:log-channel-NETWORK-CONNECTION-QUALITY;xref:0x14406597b",
+  "notes": "Per-tick update under critical section this[0xe4]: updates sub-systems (vtable+0x30), packet throttle (Game_NetworkThrottle_SendPacket), host-change detection (logs \"Local machine became/stopped being the host\"), inlined NeNetConnectionQuality arbiter/tester/bandwidth tests, handshake timeout (log names NeNetSystemCommon::update). Better name: Game_Network_NetSystemCommon_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_connection_local_machine_became_host",

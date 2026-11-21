@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143c307c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143c307c0.c;xref:0x140150745",
-  "notes": "275-line constructor (vtables 0x1458bdb80 then 0x1458c55f0, CriticalSection, arrays of param_5 qwords from allocator param_2). Callers Game_Read_RendererGfxConfig and Game_Render_InitCamerasAndPVS (many). Hypothesis: PVS/visibility view set."
+  "evidence": "decomp:re/decomp/143c307c0.c;xref:0x140150745,0x14015530a,0x140155382,0x140155422,0x140155680,0x140155701",
+  "notes": "Constructor (vtable 0x1458bdb80 then 0x1458c55f0, CriticalSection) allocating parallel arrays from allocator param_2 with capacities param_5 and param_4 rounded up to 16. Game_Pvs_MaxPVSRenderInstances creates them with capacity 6000 / 0x740 and registers them by name ('default', 'GroundCoverDefaultGenerator') via vcall +0x48: render instance generators. Callers Game_Read_RendererGfxConfig 0x140150745, Game_Pvs_MaxPVSRenderInstances 0x14015530a. (lane owner review requested) Better name: Render_InstanceGenerator_Construct (bound record keeps its name)."
  },
  "signature": {
   "id": "render.pvs_view_set_construct",
