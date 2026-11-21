@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=CutsceneManager::playInternal; log channel CUTSCENE_MANAGER: '>>>>>>>> CutsceneManager::playInternal [%p] [%s] | CutsceneManager::playInternal %f activeScript->isStateIdle() | CutsceneManager::playInternal %f   NOT activeScript->isStateAnyInitialised() && (activ'"
+  "evidence": "decomp:re/decomp/140227db0.c;pat:log-message-cxx;xref:0x140227d6c,0x140ac9e4f,0x140ac9f35,0x1428b4540,0x1428b4580,0x142c74b8c,0x142c74bcc,0x142d79b4a,0x142d79b8a,0x142d8a2b5,0x142d8a2f5,0x142d8b51e,0x142d8b55e,0x142df8535,0x142df8580",
+  "notes": "Called from Game_CutsceneManager_PlayShared and the listed call sites."
  },
  "signature": {
   "id": "game.cutscene_manager_play_internal",

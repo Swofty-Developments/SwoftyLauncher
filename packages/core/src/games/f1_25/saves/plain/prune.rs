@@ -76,7 +76,7 @@ impl Plain {
     }
 }
 
-/// Every plain root under `data`: each profile's and each copy's.
+/// Every plain root under `data`: each profile's, Steam and EA layout, and each copy's.
 pub fn roots(data: &Path) -> Vec<PathBuf> {
     let dirs = |parent: PathBuf| -> Vec<PathBuf> {
         std::fs::read_dir(parent)
@@ -89,7 +89,7 @@ pub fn roots(data: &Path) -> Vec<PathBuf> {
     };
     let mut out: Vec<PathBuf> = dirs(crate::saves::launcher::root(data))
         .into_iter()
-        .map(|p| p.join(super::DIR))
+        .flat_map(|p| [p.join(super::DIR), p.join(super::EA_DIR)])
         .collect();
     out.extend(dirs(data.join(super::DIR)));
     out.retain(|p| p.join(super::CURRENT).is_file());

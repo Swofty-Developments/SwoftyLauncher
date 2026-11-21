@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "career",
   "proto": "void *Career_Rnd_GetPausedReason(void *out, void *a2, void *rnd, uint32_t part_key)",
-  "evidence": "decomp:re/decomp/14385a2e0.c;xref:0x14181613b;xref:0x141816676;xref:0x1419bf164",
-  "notes": "myteam-g2: Builds a lookup key with the active profile (0x14604c2c8), loops over the R&D queue (rnd+0x2e0..+0x2e8, 0x88 stride) and writes {ushort reason, byte flag} into out for the upgrade progress popup. Read-only."
+  "evidence": "decomp:re/decomp/14385a2e0.c;xref:0x14181613b,0x141816676,0x1419bf164",
+  "notes": "Out {byte0, byte1} = 0. Finds the CareerEntity row (+0x2e0..+0x2e8, 0x88 stride) matching the active profile id (0x14604c2c8); match = row key (+0x50/+0x52) == param_4. Depending on 0x14385a9b0 (<2), a component query (0x1460609c8) and a record lookup (+0x30 == 1) sets byte0 (match) or byte1 to 1. No R&D queue at +0x2e0 (those are entrant rows). Better name: Career_Rnd_ResolvePlayerFlagPairByEntrantKey (bound record keeps its name)."
  },
  "signature": {
   "id": "career.rnd_get_paused_reason",

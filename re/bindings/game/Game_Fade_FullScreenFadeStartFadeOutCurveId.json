@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1437efea0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-FADE",
-  "notes": "named from its log messages (channel FADE): '[this=%p] [master=%d] FullScreenFade::startFadeOut curveId=%u'"
+  "evidence": "decomp:re/decomp/1437efea0.c;pat:log-channel-FADE;xref:0x1515b4d07",
+  "notes": "Own log FADE '[this=%p] [master=%d] FullScreenFade::startFadeOut curveId=%u'. vcall +0xd0, state +0x50=1 (setState log), stores param_4 at +0x60/+0x68, then posts three render events (alpha from param_5 byte 3, RGB, curve param_3 or default +0x58) through [0x146ca5500] vcall +0x68. (lane owner review requested) Better name: Game_FullScreenFade_StartFadeOut (bound record keeps its name)."
  },
  "signature": {
   "id": "game.fade_full_screen_fade_start_fade_out_curve_id",

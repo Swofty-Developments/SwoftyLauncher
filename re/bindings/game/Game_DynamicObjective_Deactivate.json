@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14115dad0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-DYNAMIC_OBJECTIVES",
-  "notes": "named from its log messages (channel DYNAMIC_OBJECTIVES): 'Attempting to deactivate the %s Dynamic Objective that's already inactive.'"
+  "evidence": "decomp:re/decomp/14115dad0.c;pat:log-channel-DYNAMIC_OBJECTIVES;xref:0x1456c28d0,0x1456c3ca0,0x1456c3e50,0x1456c4030,0x1456c41a0,0x1456c4380,0x1456c44f0,0x1456c4660,0x1456c47d0,0x1456c4940,0x1456c4ab0,0x1456c4c20,0x1456c4d90,0x1456c4f00,0x1456c5060,0x1456c51d0,0x1456c5340,0x1456c54b0,0x1456c6fd0,0x1456c7140,0x1456c72b0,0x1456c7420",
+  "notes": "If state byte +0x18 != 0: state=0, vcall +0xa0 type, posts bus msg vt 0x1456c59f0 {id +0x40, type, 1} via Ne_Post_BusMessage (0x1439876c0). Else logs DYNAMIC_OBJECTIVES \"Attempting to deactivate the %s Dynamic Objective that's already inactive.\" Returns old state != 0. Refs are vtable cells of the objective classes. (lane owner review requested)"
  },
  "signature": {
   "id": "game.dynamic_objective_deactivate",

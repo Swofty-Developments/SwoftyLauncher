@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1406d2470",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-GameEadpModule",
-  "notes": "named from its log messages (channel GameEadpModule): 'Accept friend request queued, requestID = %I64u, error = %d'"
+  "evidence": "decomp:re/decomp/1406d2470.c;pat:log-channel-GameEadpModule;xref:0x1418528bd",
+  "notes": "Only ref: lea at 0x1418528bd (in 0x1418522f0). Gets local user id from [[0x146ca0810]+0x198]+0x1c0 vt+0x38, runs 0x143febee0 on [[p1+0x90]+0x280] (weak ref +0x288), then with the friends service [[p1+0x90]+0x250] (weak +0x258) queues the accept via 0x143fe6fc0(user, p2 target, p4 callback, owner p1+0x98/+0xa0); logs GameEadpModule 'Accept friend request queued, requestID = %I64u, error = %d' and, if p1+0xe0, shows social_msg_friend_request_accepted_ea_succeed/_failed via 0x1406d1db0(p1,msg,p3,8). Renamed from a log fragment. (lane owner review requested) Better name: Game_GameEadpModule_AcceptFriendRequest (bound record keeps its name)."
  },
  "signature": {
   "id": "game.game_eadp_module_accept_friend_request_queued_request_id",

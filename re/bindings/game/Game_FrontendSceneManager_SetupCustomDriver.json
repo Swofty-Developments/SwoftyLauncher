@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428ddc30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name setupCustomDriver (class from the log channel); log channel FRONTEND_SCENE_MANAGER/DRIVER: '%s()'"
+  "evidence": "decomp:re/decomp/1428ddc30.c;pat:log-message-method;xref:0x140c82a33,0x1416ba71b,0x1416ba758,0x1416c9f75,0x1416d182b,0x1416d22b0,0x1417e5741,0x1417e5ed7,0x1417e6ce1,0x1417e6d1b,0x1417e81ca,0x1417e87c1,0x1418684b7,0x14196ef9a,0x1419977b7,0x141a16e99,0x141a253fa,0x141a254b2,0x141a572b1,0x141a572ee,0x141a578bb,0x141a578f8,0x141a5dafc,0x141a5db39,0x141a6084f,0x141a60907,0x141a6177e,0x141a6183c,0x141a67474,0x141a674b1,0x141adbea3,0x141bf2ecd,0x141bf3655,0x141bf412c,0x141bf4931,0x141c591db,0x141c5921d,0x141ea643c,0x141ea6c47,0x141ee571e,0x141eea0de,0x141eeea9a,0x141ef00de,0x141ef0117,0x1421cce10,0x1422afd6c,0x1422afda7,0x1422df008,0x1422f8663,0x14230333e,0x14230424d,0x1423051fc,0x14230cb4b,0x14230d512,0x14230e861,0x142311d7f,0x14234c340,0x1425434ec,0x142543813,0x142545ed8,0x1425470ad,0x1425478fa,0x142547b6a,0x14254b4c3,0x14254dcc3,0x1427b0db7,0x1427b3609,0x143703cfc,0x1438797aa,0x143879862",
+  "notes": "Logs setupCustomDriver (FRONTEND_SCENE_MANAGER/DRIVER). Finds driver component (this+0x6fb8, stride 0x450, id +0xb8 == param_2), copies the optional sub-blocks of the setup desc param_3 (flags at +0x190/+0x358, handles +0x360/+0x380) into a local desc and calls 0x1428dc7b0(this, comp, desc); else logs 'Failed to find Driver Component Id'. Releases param_3's handles at +0x360/+0x380 (consumes the arg). (lane owner review requested)"
  },
  "signature": {
   "id": "game.frontend_scene_manager_setup_custom_driver",

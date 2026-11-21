@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143c4a8e0.c;xref:0x14204292c,0x143b134ee,0x143b40880",
-  "notes": "Hypothesis: tears down a particle mesh-model binding: ushort count at +0x4e of the object at *param_1, per-entry release 0x1439dbea0(g 0x14618caa8, ptr+8*i) when +0x20==0, else allocator vcall +0x38 frees; then frees +0x18 array. Named callers: Game_Particles_BindMeshModel."
+  "evidence": "decomp:re/decomp/143c4a8e0.c;xref:0x143b134ee,0x143b40880,0x152562b6e,0x152562bbc,0x152562cbe,0x1526f39e9",
+  "notes": "Teardown (obj, allocator): *obj sub-object: ushort count +0x4e entries released via 0x1439dbea0(global 0x14618caa8) when +0x20 == 0 else +0x20 freed; frees +0x18 and the sub-object; releases handles obj[6] (0x1439da200) and obj[5] (0x1439da070); destroys vector obj[10..0xc] (0x1403118b0); clears hash map obj[0xe..0x16]. Particle/mesh context not shown by the body; callers 0x143b133f0, 0x143b40820 and others."
  },
  "signature": {
   "id": "game.particles_release_mesh_model_binding",

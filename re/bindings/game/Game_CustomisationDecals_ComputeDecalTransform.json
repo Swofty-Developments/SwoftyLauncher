@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141423e40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141423e40.c;xref:0x141421022,0x142a95d57",
-  "notes": "Computes a decal placement transform into float[] param_2 from the decal node arrays (+0x60 position, +0x78/+0x80/+0x88 size/rotation/uv sub-nodes, values at node+8/+0x10); handles null nodes with zeros. Called by Game_CustomisationDecals_LoadConfig and Game_CustomDecalModel_Bake. Hypothesis on exact outputs."
+  "notes": "(decal node, float out[16]): 4x4 matrix; row0 = normalize(vec [+0x88]+0x10) * scalar [+0x60]+8, row1 = normalize(cross(row0 dir, -normalize(vec [+0x80]+0x10))) * scalar [+0x78]+8, row2 = -normalize(vec [+0x80]+0x10) * scalar [+0x60]+8, row3 = xyz of [+0x58]+0x10 with w = 1; null scalar nodes give 0. Position is the +0x58 sub-node (not +0x60). (lane owner review requested)"
  },
  "signature": {
   "id": "game.customisation_decals_compute_decal_transform",

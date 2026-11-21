@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142ead3f0.c;xref:0x142ea66d0",
-  "notes": "per unlockable folder, one table cursor per row type, one item per row, key via Game_Init_UnlockableItemKey(item+0x18,type). unlockable_se_livery rows (block 0x142ebd9ea-0x142ebdb1a): 0x130-byte item, vt_Game_SELiveryUnlockItem, [1]=owner, [2]=0x142ec8fc0(owner,row), type 0x18 eSELivery. Other types: 0 eLivery, 1-4 avatar helmet/glove/suit/outfit, 7 eDriverHead, 8 podium emote, 9 pose, 0xb/0xc badge bg/emblem, 0xd eDecalSet, 0xe eItemPack, 0xf sticker, 0x10 eVictoryVO, 0x11-0x15 casual wear, 0x19 eDriverNumber, 0x1b eDecalGroup"
+  "evidence": "decomp:re/decomp/142ead3f0.c;xref:0x142eab33f",
+  "notes": "Very large loader (15160-line decomp). Only caller 0x142eab33f."
  },
  "signature": {
   "id": "game.load_unlockable_items",

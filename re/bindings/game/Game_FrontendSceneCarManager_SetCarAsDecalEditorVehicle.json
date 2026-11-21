@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428b1750",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name setCarAsDecalEditorVehicle (class from the log channel); log channel FRONTEND_SCENE_CAR_MANAGER: 'setCarAsDecalEditorVehicle %s'"
+  "evidence": "decomp:re/decomp/1428b1750.c;pat:log-message-method;xref:0x1428c57cd,0x14d39c781",
+  "notes": "(carMgr,carId*,enable). Logs 'setCarAsDecalEditorVehicle %s' (FRONTEND_SCENE_CAR_MANAGER); hash lookup of u16 id in map +0x168..+0x19c (0x18-byte slots); if found and enable: for spawned car (+0x94 == 2) resets [+0x78]+0x1b0=-1 and copies +0x96 to [+0x78]+0x1ac; sets car +0x76f2 = (state != 2). Callers 0x1428c3ef0, 0x14d39c6e0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.frontend_scene_car_manager_set_car_as_decal_editor_vehicle",

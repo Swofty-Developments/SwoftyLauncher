@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143537e10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "int Career_Read_UpgradesLostNotificationSeason(void * self,uint64_t a2,uint64_t a3)",
   "evidence": "decomp:re/decomp/143537e10.c;xref:0x1412407e3",
-  "notes": "myteam-g1: Reads last_upgrades_lost_notification_season / error_department."
+  "notes": "Save reader twin of 0x143537920: reads per-dept '<dept>_watched_research_day/_develop_day/_fit_day/_shutdown' (also legacy '<dept>_watched_day'), last_dev_day_before_first_weekend and last_upgrades_lost_notification_season. 'error_department' is only the fallback dept name. Called by Game_UpgradesComponent_Deserialise 0x14123f930. (lane owner review requested) Better name: Career_Read_UpgradesWatchedDays (bound record keeps its name)."
  },
  "signature": {
   "id": "career.read_upgrades_lost_notification_season",

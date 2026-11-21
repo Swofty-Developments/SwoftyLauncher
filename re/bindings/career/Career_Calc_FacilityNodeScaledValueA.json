@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140f8e5f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "int Calc(void *node)",
-  "evidence": "decomp:re/decomp/140f8e5f0.c;xref:0x140f819d3;xref:0x140f8233f;xref:0x140f823f5",
-  "notes": "myteam-g2: Looks up a scale curve entry (FUN_1412192b0 config by node+0x58, level node+0x68, selector *(node+0x98)), clamps [min +0xc, max +0x10, min(+0x7c)] and returns round(factor * node+0x80). Used for upgrade node value (e.g. perk reward) in Tick_FacilityNodes and Claim_FacilityPerkRewards. Read-only."
+  "evidence": "decomp:re/decomp/140f8e5f0.c;xref:0x140f819d3,0x140f8233f,0x140f823f5,0x140f89918",
+  "notes": "value = node int +0x80; stat A (Career_Find_TeamStatRange 0x1412192b0 with +0x58, +0x68, [+0x98]) clamped by descriptor min/max -> value = round(A * value); if stat B ([+0x98]+0x10) >= int +0x40, stat C ([+0x98]+0x18) -> value = round(C * value). Returns value. (lane owner review requested)"
  },
  "signature": {
   "id": "career.calc_facility_node_scaled_value_a",

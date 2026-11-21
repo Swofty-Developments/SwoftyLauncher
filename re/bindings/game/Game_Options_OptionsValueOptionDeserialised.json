@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142abd800",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-OPTIONS",
-  "notes": "named from its log messages (channel OPTIONS): 'Options value for option %s was not deserialised  - value out of range'"
+  "evidence": "decomp:re/decomp/142abd800.c;pat:log-channel-OPTIONS;xref:0x142abd9b7,0x142ac1c1b,0x142ac1e54,0x142ad6fbc",
+  "notes": "(option, value): type byte +0x18: 6 returns value; 2 (int) returns value when inside range +0xb8 (lo,hi) else logs 'was not deserialised - value out of range' and returns lo-1; 1 (enum) returns index of the value entry (+0x80..+0x88 stride 0x50, id +8, aliases +0x40 count +0x48) or lo-1 when not found. Old name was a log fragment. (lane owner review requested) Better name: Game_Options_ResolveDeserialisedValue (bound record keeps its name)."
  },
  "signature": {
   "id": "game.options_options_value_option_deserialised",

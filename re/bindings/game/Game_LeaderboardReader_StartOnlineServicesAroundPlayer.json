@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142fbf540",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_LeaderboardReader_StartOnlineServicesAroundPlayer;xref:0x142fbf5e5",
-  "notes": "cxx=game::LeaderboardReader::startOnlineServicesAroundPlayer; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/142fbf540.c;str:s_LeaderboardReader_StartOnlineServicesAroundPlayer;xref:0x1457ff270",
+  "notes": "startOnlineServicesAroundPlayer(ctx, Type, NEint before, NEuint max, ResultDelegate) (cell 0x1457ff270, slot +0x10). Logs, vcall +0x30(changed). Only when byte +0xf8 != 0 (else returns 0): stores type/count/ctx/ver/delegate like Start and issues 0x1432d3860(0x1460c22c8, out, before, max-before, friends) -> task +0xd8/+0xe0; returns task != 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.leaderboard_reader_start_online_services_around_player",

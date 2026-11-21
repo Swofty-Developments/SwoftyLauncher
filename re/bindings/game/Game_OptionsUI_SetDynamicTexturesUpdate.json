@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-OPTIONS-UI",
-  "notes": "named from its log messages (channel OPTIONS-UI): 'set Dynamic Textures on update'"
+  "evidence": "decomp:re/decomp/141dbd9d0.c;pat:log-channel-OPTIONS-UI;xref:0x14574d530",
+  "notes": "vt cell 0x14574d530. 5 KB SettingsEditScreenViewModel update (enable_list, cat_ea_trax, INPUT)."
  },
  "signature": {
   "id": "game.options_ui_set_dynamic_textures_update",

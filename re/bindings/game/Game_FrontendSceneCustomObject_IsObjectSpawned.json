@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14288e870",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name isObjectSpawned (class from the log channel); log channel FRONTEND_SCENE_CUSTOM_OBJECT: 'isObjectSpawned %s'"
+  "evidence": "decomp:re/decomp/14288e870.c;pat:log-message-method;xref:0x1428cae6d,0x1428ec906,0x1428f2d65,0x1428f2dcb,0x1428f2e51",
+  "notes": "(objMgr,id*) -> bool. Hash lookup of u16 id in map +0x120..+0x154; miss -> false; hit logs 'isObjectSpawned %s' with state name table 0x1457b6428[+0x48] and returns state +0x48 == 3 && +0x49 == 3. Callers 0x1428c9060, 0x1428ec620, 0x1428f2d40, 0x1428f2db0, 0x1428f2e20. (lane owner review requested)"
  },
  "signature": {
   "id": "game.frontend_scene_custom_object_is_object_spawned",

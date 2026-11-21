@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1407a73e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameModeBenchmark::takeScreenshot; log channel BENCHMARK: 'GameModeBenchmark::takeScreenshot - identifier=\"%s\"'"
+  "evidence": "decomp:re/decomp/1407a73e0.c;pat:log-message-cxx;xref:0x1407a6bd8,0x1407a6d3e",
+  "notes": "Callers 0x1407a6bd8 and 0x1407a6d3e (both in 0x1407a6900). Logs BENCHMARK 'takeScreenshot - identifier=\\\"%s\\\"' (p2). Gets the screenshot module from [p1+0x10c8] vt+0x28 (type 0x146cb7cc0); missing -> 'Screenshot module not available'. Else builds a file path from the current date/time, p2 and the user documents folder (spaces -> '_', 0x14391a470), copies it into the module request (+0x30/+0x38, len 0x104), sets format +0x140 from table 0x1456608c0, frees the temp path via the file service 0x14618b130. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_mode_benchmark_take_screenshot",

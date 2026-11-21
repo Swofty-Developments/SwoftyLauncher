@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141870d10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141870d10.c;xref:0x14186f899",
-  "notes": "1302-byte helper using Game_Vm_HolderGetCStrOrEmpty and Ne_Resource_Release. Callers 0x14186f899, 0x1418cbd25 (Game_Livery_ApplyTeamTextureSet area). Hypothesis."
+  "evidence": "decomp:re/decomp/141870d10.c;xref:0x14186f899,0x1418cbd25",
+  "notes": "(node, out{u8 type, u16 idx}): byte +0x1e4 != 1: reads the packed u16 (hash 0xaddbd7ed, type 0x146129e68) from property +0x150 (link chain <= 0x63) -> type = id>>14, idx = id & 0x3fff. Mode 1: reads the id from +0x170 and searches [[+0x1b8]+0x560][byte [0x146070320]+0x110] (stride 0x88, +0x50/+0x52) for an entry valid in the +0x2c8 tables -> its +0x58; else {0,0,0xff,0x3f}. No texture param: renamed. (lane owner review requested) Better name: Game_Livery_ResolveTeamEntryKey (bound record keeps its name)."
  },
  "signature": {
   "id": "game.livery_resolve_team_texture_param",

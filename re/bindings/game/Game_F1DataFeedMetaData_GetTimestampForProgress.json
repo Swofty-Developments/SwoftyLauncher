@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142c1ea50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=F1DataFeedMetaData::getTimestampForProgress; log channel F1-DATA-FEED-EM-MOTORSPORT-LAPS: 'F1DataFeedMetaData::getTimestampForProgress'"
+  "evidence": "decomp:re/decomp/142c1ea50.c;pat:log-message-cxx;xref:0x142c1ae2c,0x142c1ae52,0x142c1aed1,0x142c1aef7,0x142c1f240,0x142c1f2be,0x142c1f2d2",
+  "notes": "Own log 'F1DataFeedMetaData::getTimestampForProgress'. Finds car slot (0..0x17) whose id at +0x1700+i*4 equals param_3, then interpolates between the two timestamps at index progress*100 and +1 (table +0x1780 per car, stride 80000) and returns the time (sec,nsec) in *param_2; 0 if progress*100 >= 9999. (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1_data_feed_meta_data_get_timestamp_for_progress",

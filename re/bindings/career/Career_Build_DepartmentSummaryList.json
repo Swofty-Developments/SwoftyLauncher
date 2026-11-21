@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1422faac0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void Career_Build_DepartmentSummaryList(void * self)",
   "evidence": "decomp:re/decomp/1422faac0.c;xref:0x14577dd38",
-  "notes": "myteam-g1: Builds department_list, focus_department, num_upgrades_applied and upgrades_success_rate for the department summary."
+  "notes": "Vtable slot (cell 0x14577dd38). Builds the secret meeting screen: showing_interested_team, interested_team, display_data_team, screen_title/meeting_title/description/accept_meeting_text (lng_secret_meeting_1..3_*), team_performance (driver_list/team_list/team_ref), team_development (num_upgrades_applied, upgrades_success_rate, average_time, focus_department, department_list), team_hopes, can_go_back, show_all_meetings_as_completed. (lane owner review requested) Better name: Career_SecretMeetingVM_BuildScreen (bound record keeps its name)."
  },
  "signature": {
   "id": "career.build_department_summary_list",

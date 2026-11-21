@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1425adcd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-INVENTORY",
-  "notes": "named from its log messages (channel INVENTORY): 'Accessing wallet [%s] | --Setting amount of currency %s to %d | ----Difference: %d'"
+  "evidence": "decomp:re/decomp/1425adcd0.c;pat:log-channel-INVENTORY;xref:0x14255c078,0x14255cc0c,0x1425ae7d5",
+  "notes": "(inv, wallet, currency, value) -> diff: wallet map lookup; if value >= 0 sets currency amount (+4) = value and returns value - old; logs 'Setting amount of currency %s to %d' / 'Difference: %d'. 0 if wallet or currency missing. (lane owner review requested)"
  },
  "signature": {
   "id": "game.inventory_set_currency",

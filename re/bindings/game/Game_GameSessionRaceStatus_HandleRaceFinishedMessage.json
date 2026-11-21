@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143092320",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionRaceStatus::handleRaceFinishedMessage; log channel NETWORK-SESSION: 'void network::GameSessionRaceStatus::handleRaceFinishedMessage(neon::NeNetMessage &, neon::NeNetConnectionID) | %s - myRaceStatus: %s'"
+  "evidence": "decomp:re/decomp/143092320.c;pat:log-message-cxx;xref:0x1430554da",
+  "notes": "Only ref: lea 0x1430554da (in 0x143054470, message handler table). Own pretty-function string 0x14580fa40 'void ...GameSessionRaceStatus::handleRaceFinishedMessage(NeNetMessage &, NeNetConnectionID)'. When the session state p1+8 > 1 and my race status exists (0x143067c10): logs 'myRaceStatus: %s' (names 0x145f941a0) and, if the status is < 8 (race not finished), posts item 5 to the 'InterruptQueue' service (0x140799d20). (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_session_race_status_handle_race_finished_message",

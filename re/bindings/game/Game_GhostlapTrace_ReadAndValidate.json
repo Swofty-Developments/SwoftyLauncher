@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f8a730",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name readAndValidate (class from the log channel); log channel GHOSTLAP-TRACE: '%s(%d bytes) : ghostlap size(%d) is invalid.'"
+  "evidence": "decomp:re/decomp/142f8a730.c;pat:log-message-method;xref:0x142f8ad2b,0x142f8b0a5,0x142f98730,0x142f9dab6",
+  "notes": "readAndValidate(D,stream,ctx): deserialise 0x142f8a400 (its error returned); version D+0 > ctx+0x88 -> 0x49; reset table ctx+0x98..+0xa0 check logs only; size D+4 <1 -> 0x16, > 0xC800 -> 0x37, > stream remaining -> 0x16; if D+0x70 != 0x4fffffff the sectors D+0x74/+0x78/+0x7c must be > 0 and sum within 10 ms of D+0x70&0xbfffffff, else 0x16. Callers 0x142f8ac70, 0x142f8afc0, 0x142f98320, 0x142f9d860. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ghostlap_trace_read_and_validate",

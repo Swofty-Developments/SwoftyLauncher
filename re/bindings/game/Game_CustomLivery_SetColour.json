@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a99780",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-CUSTOM_LIVERY_MODEL",
-  "notes": "named from its log messages (channel CUSTOM_LIVERY_MODEL): 'Set beta instance colour %d,%d,%d on vehicle index %d | Tried to set a valid customisation with no selected livery in CustomLiveryModelComponent. Setting to default customisation'"
+  "evidence": "decomp:re/decomp/142a99780.c;pat:log-channel-CUSTOM_LIVERY_MODEL;xref:0x142a99393,0x14db40d84",
+  "notes": "Renamed (not a plain colour setter). Needs p1+0x50 == 0 and a vehicle index; finds the session entrant (0x88 stride, byte +0x82). Debug overrides at [0x14604ea28]: per-entrant customisation or 'Set beta instance colour' (float4 [p1+0x48]+0xe60). Else vehicle customisation 0x14246dcb0([p1+0x30], entrant+0x64): valid -> 0x142a968c0 + paint finish 0x142a9a040; invalid -> VEHICLE_LIVERY 'Setting to default customisation' (ConstructFromKey(entrant+0x5c)). Then CreateOverrideMaterial. (lane owner review requested) Better name: Game_CustomLiveryModel_SetupVehicleLivery (bound record keeps its name)."
  },
  "signature": {
   "id": "game.custom_livery_set_colour",

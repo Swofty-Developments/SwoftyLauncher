@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140276080",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140276080.c;xref:0x14027a855",
-  "notes": "Spawns \"CarMonitor\" or \"DualCarMonitor\" actor type (type hashes cached in statics) depending on garage flag (+0x42). 18 callers (garage cutscenes). vp0-verify partial"
+  "evidence": "decomp:re/decomp/140276080.c;xref:0x14027a855,0x14027d7df,0x14027fb7b,0x1402818d8,0x1402818f8,0x140282bd8,0x140283da8,0x140284481,0x1402844a1,0x1402856f4,0x140286a08,0x140287e07,0x140288743,0x140288763,0x1402898f8,0x1403390f4,0x14033a5d7,0x14033c897",
+  "notes": "Not a spawn: looks up 'CarMonitor' / 'DualCarMonitor' actors (type hashes cached 0x14601f928/0x14601f930) in world param_2 and calls vt+0xd8(0) on them, the all-parts-off call 0x140384f70 makes before it shows parts. Garage record (0x14022a8c0 by inst+0x1b2) +0x42==0 -> DualCarMonitor off, and CarMonitor off unless param_3. Called from the garage cutscene initialisers. (lane owner review requested) Better name: Game_GarageCrew_HideCarMonitorParts (bound record keeps its name)."
  },
  "signature": {
   "id": "game.garage_crew_spawn_car_monitor",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14351fdc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void *Lookup(void *tree, void *out16, uint64_t key)",
-  "evidence": "decomp:re/decomp/14351fdc0.c;xref:0x140ab205f;xref:0x141241d06;xref:0x14124275c",
-  "notes": "myteam-g2: Looks up an upgrade tree node in the RnD tree arrays (tree+0x18, +0x138, +0x178, +0x1d0, +0xb8) via FUN_1435eeaf0/FUN_14351fa70 etc.; returns node info. Read-only."
+  "evidence": "decomp:re/decomp/14351fdc0.c;xref:0x140ab205f,0x141241d06,0x14124275c,0x141c7d83f,0x141f42c30",
+  "notes": "Not a tree-node lookup. Switch on operating_mode (this+8 -> +0x3e0): 2 -> FindOrCreate 0x1435e9640 in map +0x178 (first use marks set +0x1d0 and inits via 0x14351fa70 on +0x138); 1 -> entrant row team key -> 0x143522ef0(+0xb8); 0 -> 0x14351b330(+0x18). Copies the 0x30-byte {base,dev,fit} recommended record to out; default 3x zero with 0x101 at +8. (lane owner review requested) Better name: Career_Get_RecommendedUpgradesForOwner (bound record keeps its name)."
  },
  "signature": {
   "id": "career.lookup_upgrade_tree_node_by_key",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140fefb80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-ONLINE_CONTRACT_NEGOTIATIONS",
-  "notes": "named from its log messages (channel ONLINE_CONTRACT_NEGOTIATIONS): 'Progress negotiations | Both players finished, exiting negotiations | Ending the negotiations flow | Human drivers that will negotiate: %d | areBothPlayersFired() - %s | Starting negotiations flow wit'"
+  "evidence": "decomp:re/decomp/140fefb80.c;pat:log-channel-ONLINE_CONTRACT_NEGOTIATIONS;xref:0x140fefafc,0x1436bf71b",
+  "notes": "Logs 'Progress negotiations'. State this+0x290: 0 -> 1, copies drivers vector +0x2c8..+0x2d8 ('Human drivers that will negotiate: %d'); player list +0x2e8..+0x2f0 (0x10 bytes = both players). Calls 0x140fef670 (lead turn), 0x140ff0da0, 0x1410c7010/0x1410ca800, sends via 0x140ff1380, posts bus msg 0x1456bb528 (0x1439876c0), sets +0x300=1 ('Starting holding screen'). (lane owner review requested)"
  },
  "signature": {
   "id": "career.online_negotiations_progress",

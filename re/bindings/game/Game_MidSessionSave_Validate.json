@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-MidSessionDataSaveDataContainer",
-  "notes": "named from its log messages (channel MidSessionDataSaveDataContainer): 'Failed - replay system not yet initalised | Failed to validate checksum | Failed to get full replay and/or key frame buffer'"
+  "evidence": "decomp:re/decomp/142fe10a0.c;pat:log-channel-MidSessionDataSaveDataContainer;xref:0x14111ec38,0x142c13e0e,0x142c14551,0x142d725f8,0x1458008d8",
+  "notes": "Counterpart virtual (cell 0x1458008d8; callers 0x14111ec38, 0x142c13e0e, 0x142c14551, 0x142d725f8): same keys plus 'data', 'position', 'file_size' and 'Failed to validate checksum'."
  },
  "signature": {
   "id": "game.mid_session_save_validate",

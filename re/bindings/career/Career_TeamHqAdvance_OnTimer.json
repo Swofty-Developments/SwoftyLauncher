@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1422c7570",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-TEAMHQ_ADVANCE",
-  "notes": "named from its log messages (channel TEAMHQ ADVANCE): '****** TIMER ELAPSED, day: %d |     stop occured, day: %d |     advancing, day: %d |     showing cards, day: %d |     READY TO ADVANCE, day: %d |     READY TO ADVANCE ONCE to match peer, peer: %d, day'"
+  "evidence": "decomp:re/decomp/1422c7570.c;pat:log-channel-TEAMHQ_ADVANCE;xref:0x1422c537d,0x1422ca6d2",
+  "notes": "TeamHQAdvance VM timer handler (this = VM, AdvanceData at this+0x730). Logs TIMER ELAPSED / showing cards / stop occurred / READY TO ADVANCE [ONCE to match peer]; calls Career_TeamHqAdvance_Stopped/RequestStop(this+0x730), PopulateButtons, AdvanceOneDay, 0x1422c5670 (advance finished (peer)), StopAdvance, posts peer signals, tail-jumps SignalStart. Callers: OnCommandRaised (jmp), Career_TeamHqAdvanceVM_Update. (lane owner review requested)"
  },
  "signature": {
   "id": "career.team_hq_advance_on_timer",

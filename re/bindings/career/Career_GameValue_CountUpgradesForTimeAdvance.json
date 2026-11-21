@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140ab6770",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "uint32_t Career_GameValue_CountUpgradesForTimeAdvance(void *ctx, void *state_name)",
-  "evidence": "decomp:re/decomp/140ab6770.c;xref:0x140a78a6b;xref:0x140a78a8b;xref:0x140a78aab",
-  "notes": "myteam-g2: Resolves the My Team upgrade component (+0x88 -> +0x260 -> +0x1030), looks the state name up (Ne_HashMap_FindByCStr_Elem24) and counts upgrades with that state (completed / failed / researched) in the time-advance results. Read only."
+  "evidence": "decomp:re/decomp/140ab6770.c;xref:0x140a78a6b,0x140a78a8b,0x140a78aab",
+  "notes": "Generic named int game value: same path as 0x140a83430 (component 0x14605c178 map +0x290 by name param_2, obj type 0x14605d618), evaluates obj vt+0xf0 for the local player's entrant row +0x50; returns out dword if out byte+4 set, else 0. Only callers: the three time-advance wrappers 0x140a78a60/80/a0 (upgrades failed/completed/researched). (lane owner review requested) Better name: Career_GameValue_GetIntForPlayerDriver (bound record keeps its name)."
  },
  "signature": {
   "id": "career.game_value_count_upgrades_for_time_advance",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143121640",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=EntrantReplicationManager::removePlayerReplicatedDataInternal; log channel NETWORK-ENTRANTS: 'NEbool network::EntrantReplicationManager::removePlayerReplicatedDataInternal(const PlayerDescription &, NEbool) | %s: allow to remove player replicated data: %s'"
+  "evidence": "decomp:re/decomp/143121640.c;pat:log-message-cxx;xref:0x142576233,0x1430ee241,0x1431192ed,0x143121504",
+  "notes": "(mgr, PlayerDescription*, NEbool force): logs '%s: player: %s'. Without force: refuses (returns 0) when [[+0x28]+0x4f8] exists and 0x1431221d0 says busy, or the player is still in its participant list +0x2e0..+0x2e8 (0x1431146d0, stride 0x88). Otherwise logs '%s: allow to remove player replicated data: %s', calls listener vcall +8(desc) for each of +0x48..+0x50 and returns 1. Callers 0x142576180, 0x1430edda0, 0x143118ec0, 0x143121410. (lane owner review requested)"
  },
  "signature": {
   "id": "game.entrant_replication_manager_remove_player_replicated_data_interna",

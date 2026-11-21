@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401bc010",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name setQualityChanged (class from the log channel); log channel HairModifier: 'setQualityChanged m_strandHairEnabled %s'"
+  "evidence": "decomp:re/decomp/1401bc010.c;pat:log-message-method;xref:0x1455e2928",
+  "notes": "HairModifier vt cell 0x1455e2928, logs 'setQualityChanged m_strandHairEnabled %s'. If the actor (+0x10) has the expected type calls actor[0xb0] vt+0xc0('hair_x', !strandHairEnabled 0x145f8d26e): mesh hair shown when strand hair is off. (lane owner review requested)"
  },
  "signature": {
   "id": "game.hair_modifier_set_quality_changed",

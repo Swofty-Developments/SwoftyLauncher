@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1444450e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1444450e0.c;xref:0x1444413a6,0x144441776",
-  "notes": "SignalR hub completion handler: reads invocationId (to int), error, result (classic short keys I/E/T/S as well) and resolves the pending call in the hash map this+0x430..0x464 (callback vcall +0x10). Addon: observe NEOS hub call results."
+  "evidence": "decomp:re/decomp/1444450e0.c;xref:0x1444413a5,0x144441775",
+  "notes": "Callers 0x1444413a5, 0x144441775. Mode +0x10738 == 2: reads invocationId (int), error, result; classic keys I, E, R, T, S. Looks the id up in the pending-call map this+0x430..+0x464, calls the stored callback (vcall +0x10) and erases it; returns id >= 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.neos_signal_r_handle_completion",

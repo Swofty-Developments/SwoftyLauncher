@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1402371f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name testAndClrRequestStop (class from the log channel); log channel CUTSCENE_SCRIPT_VERBOSE: 'testAndClrRequestStop returned true %p %s'"
+  "evidence": "decomp:re/decomp/1402371f0.c;pat:log-message-method;xref:0x1455eaf90,0x1455eb730,0x1455ecf00,0x1455ed550,0x1455ee5a0,0x1455ee9b0,0x1455eed80,0x1455ef0c0",
+  "notes": "Returns bit2 of flags byte this+0x538 (stop request) and clears it; logs CUTSCENE_SCRIPT_VERBOSE 'testAndClrRequestStop returned true %p %s' when it was set. Cells = this slot in the cutscene script vtables (subset listed). (lane owner review requested)"
  },
  "signature": {
   "id": "game.cutscene_script_test_and_clr_request_stop",

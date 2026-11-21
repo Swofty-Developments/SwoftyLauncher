@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f8bbc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-GHOSTLAPS",
-  "notes": "named from its log messages (channel GHOSTLAPS): '%s() : Save operation for file '%s' completed with result code: %i | %s() : Save operation canceled'"
+  "evidence": "decomp:re/decomp/142f8bbc0.c;pat:log-channel-GHOSTLAPS;xref:0x142f97fc8",
+  "notes": "onSaveComplete(task,res,p3): as 0x142f8bd90 but sets global 0x145f96c90=1 when p3==0; delegate +0x238, frees +0x228, state +0x220 5/4. Registered (lea) in 0x142f97b50. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ghost_laps_on_save_done",

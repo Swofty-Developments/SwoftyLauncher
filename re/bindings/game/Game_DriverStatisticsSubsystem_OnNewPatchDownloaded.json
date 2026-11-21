@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14242ad00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_DriverStatistics_DriverStatisticsSubsystem_OnNewPatchDownloaded;xref:0x14242ad9d",
-  "notes": "cxx=game::driverStatistics::DriverStatisticsSubsystem::onNewPatchDownloaded; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/14242ad00.c;str:s_DriverStatistics_DriverStatisticsSubsystem_OnNewPatchDownloaded;xref:0x14242a57d",
+  "notes": "(subsys, bool downloaded), lea'd at 0x14242a57d in 0x14242a560. Logs DRIVER_STATISTICS with its own pretty-function 0x145789c01 (DriverStatisticsSubsystem::onNewPatchDownloaded); when downloaded and int subsys+0x240 != [subsys+0x238]+0x48: clears byte +0x244 and tail-jumps 0x14335f030([subsys+0x228]) (decomp merges that target; own code ends 0x14242adb1). (lane owner review requested)"
  },
  "signature": {
   "id": "game.driver_statistics_subsystem_on_new_patch_downloaded",

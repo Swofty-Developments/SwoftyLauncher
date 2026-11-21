@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141169cc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-DYNAMIC_OBJECTIVES",
-  "notes": "named from its log messages (channel DYNAMIC_OBJECTIVES): '%s Relevance Criterion: was triggered when criterion was already triggered this race'"
+  "evidence": "decomp:re/decomp/141169cc0.c;pat:log-channel-DYNAMIC_OBJECTIVES;xref:0x1456c2de8",
+  "notes": "Manager update (vtable cell), gated by +0x3c4a/+0x3c46/+0x3c47 and +0x3c49 in 3..7: rescores criteria +0x3cc0..+0x3cc8 (vcall +0x10, decay table [crit+8]+0xd0), sorts (0x1411c3540); when +0x3c84 armed and vehicle +0x74 passes the threshold picks a random top criterion (0x143929b90), marks +0xa9 (logs '%s Relevance Criterion: was triggered when criterion was already triggered this race'), activates the matching objective -> +0x2e0. Posts vt 0x1456c5aa8. (lane owner review requested) Better name: Game_DynamicObjectives_UpdateRelevance (bound record keeps its name)."
  },
  "signature": {
   "id": "game.dynamic_objective_trigger_relevance",

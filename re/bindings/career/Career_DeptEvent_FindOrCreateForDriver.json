@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "career",
   "proto": "uint64_t Career_DeptEvent_FindOrCreateForDriver(void *mgr, void *args)",
-  "evidence": "decomp:re/decomp/140cb0750.c;xref:0x140cac42f;xref:0x140cad197;xref:0x140cadfe3",
-  "notes": "myteam-g2: Wrapper that resolves a department event record via the lookup FUN_140cb0e30 for ChooseOutcome / Schedule / Start. Read mostly."
+  "evidence": "decomp:re/decomp/140cb0750.c;xref:0x140cac42f,0x140cad197,0x140cadfe3,0x140caf3ea",
+  "notes": "Bool, not a lookup: driver row param_2 (key +0x50) -> its entrant row in [this+0x278]+0x2e0 and team schedule 0x140cb0e30(row+0x58); teammates via 0x142456530; true if both driver and teammate rows have +0x4b&0x10, false if neither, else schedule+0xa59 == (row+0x80==0 && row+0x81!=0). Callers ChooseOutcome/Schedule/Start. Better name: Career_DeptEvent_IsDriverEligible (bound record keeps its name)."
  },
  "signature": {
   "id": "career.dept_event_find_or_create_for_driver",

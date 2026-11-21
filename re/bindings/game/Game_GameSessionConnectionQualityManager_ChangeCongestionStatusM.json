@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143053e90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionConnectionQualityManager::changeCongestionStatusMap; log channel NETWORK-CONNECTION-QUALITY/V: 'void network::GameSessionConnectionQualityManager::changeCongestionStatusMap(neon::NeNetConnectionID, CongestionStatus) | %s: connectionId: %d, status change from: %s to: %s'"
+  "evidence": "decomp:re/decomp/143053e90.c;pat:log-message-cxx;xref:0x143054233,0x14305ff2e",
+  "notes": "Own pretty-function string 0x14580a510 'void network::GameSessionConnectionQualityManager::changeCongestionStatusMap(NeNetConnectionID, CongestionStatus)'. Refs: tail-jmp 0x143054233 (from HandleCongestionUpdate) and call 0x14305ff2e. Find-or-insert of connection id p2 in the byte map p1+0x80 (0x1431fd9c0; slots [p1+0x98] = {id,status}); new slot -> {id,0}; logs NETWORK-CONNECTION-QUALITY/V 'connectionId: %d, status change from: %s to: %s' (names table 0x1458231e0), stores status p3 in slot+1. Insert failure -> 0x1431fdf80 + int3. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_session_connection_quality_manager_change_congestion_status_m",

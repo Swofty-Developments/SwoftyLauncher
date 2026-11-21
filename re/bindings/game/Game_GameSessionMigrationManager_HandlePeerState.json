@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14308a6c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionMigrationManager::handlePeerState; log channel NETWORK-MIGRATION/V: 'void network::GameSessionMigrationManager::handlePeerState(neon::NeNetConnectionID, const NEbyte *, NEuint) | %s: received state from %d: (%s).'"
+  "evidence": "decomp:re/decomp/14308a6c0.c;pat:log-message-cxx;xref:0x1430599d5",
+  "notes": "Own pretty-function string 0x14580f244 'void ...::handlePeerState(NeNetConnectionID, const NEbyte *, NEuint)'. Only caller 0x1430599d5 (in 0x143058640). Bit-reads buffer p3/p4 (typed tags via 0x143925660/0x1439259f0): sqn u8, id u8, enabled bit, status, host id, flag bit, priority u32. Finds or creates (CreatePeer) the peer of that id in map p1+0x20 and stores sqn/id/enabled/status/flag/priority/host at Peer+8..+0x14; logs NETWORK-MIGRATION/V 'received state from %d' (formatted via 0x1439182c0). Parse failure -> 'failed to parse buffer data. Ignoring message.' (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_session_migration_manager_handle_peer_state",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14308a620",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionMigrationManager::onNewConnection; log channel NETWORK-MIGRATION: 'virtual void network::GameSessionMigrationManager::onNewConnection(neon::NeNetConnectionID) | %s(%d).'"
+  "evidence": "decomp:re/decomp/14308a620.c;pat:log-message-cxx;xref:0x14580e678",
+  "notes": "Vtable cell 0x14580e678. Own bounds 0x14308a620..0x14308a6b7: logs NETWORK-MIGRATION 'virtual void ...::onNewConnection(NeNetConnectionID)(%d).', calls Game_GameSessionMigrationManager_CreatePeer(p1,p2) (0x14308a6a2), then tail-jumps (0x14308a6b2) to sendSelfState 0x143088690 (merged into the decomp: serialises own state [p1+0x68] and sends it via sendToConnection 0x143063490). (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_session_migration_manager_on_new_connection",

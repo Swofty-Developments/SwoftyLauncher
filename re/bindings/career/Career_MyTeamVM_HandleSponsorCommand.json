@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1422693e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void *vm, void **cmd",
   "evidence": "decomp:re/decomp/1422693e0.c;xref:0x145777060",
-  "notes": "myteam-g1: Handles the sponsor command in the My Team view model (14 callees); neighbour of Career_MyTeamVM_RequestThumbnails."
+  "notes": "Vtable slot (cell 0x145777060), command hash dispatch with mode byte [this+0x2b28]. Select 0x2b0357a writes the choice into the setup record 0x14606d340 (mode1 [+0x2b34], mode3 driver_1 [+0x2b2a], mode4 driver_2 [+0x2b2e]; mode2 writes [+0x2b32] and calls 0x142270160([this+0x2b10])), fires route; 0x493fe92b back; 0x70d928ee stores focused stat_id; then 0x1422703e0 -> [this+0x2b38]. (lane owner review requested) Better name: Career_MyTeamSetupVM_HandleCommand (bound record keeps its name)."
  },
  "signature": {
   "id": "career.my_team_vm_handle_sponsor_command",

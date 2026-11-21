@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1406d2b10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-GameEadpModule",
-  "notes": "named from its log messages (channel GameEadpModule): 'Remove friend request queued, requestID = %I64u, error = %d'"
+  "evidence": "decomp:re/decomp/1406d2b10.c;pat:log-channel-GameEadpModule;xref:0x1416849c6,0x14185266b",
+  "notes": "Refs: lea at 0x1416849c6 and 0x14185266b. Same pattern as Game_GameEadpModule_AcceptFriendRequest: local user id from [[0x146ca0810]+0x198]+0x1c0, friends service [[p1+0x90]+0x250] (weak +0x258), queues 0x143fe5440(user, p2, p4 callback, owner +0x98/+0xa0); logs 'Remove friend request queued, requestID = %I64u, error = %d' and always shows social_msg_friend_removed_ea_succeed/_failed via 0x1406d1db0(p1,msg,p3,8). Renamed: removes a friend. (lane owner review requested) Better name: Game_GameEadpModule_RemoveFriend (bound record keeps its name)."
  },
  "signature": {
   "id": "game.game_eadp_module_remove_friend_request_queued_request_id",

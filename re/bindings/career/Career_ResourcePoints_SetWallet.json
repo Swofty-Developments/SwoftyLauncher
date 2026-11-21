@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1434fd730",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-RESOURCE_POINTS",
-  "notes": "named from its log messages (channel RESOURCE_POINTS): 'Setting driver %s wallet to %d'"
+  "evidence": "decomp:re/decomp/1434fd730.c;pat:log-channel-RESOURCE_POINTS;xref:0x1434fd038",
+  "notes": "(wallets, driverKey, points) Logs RESOURCE_POINTS 'Setting driver %s wallet to %d', finds the wallet in the robin-hood map keyed by driver id (insert/resolve through entrant list [*this]+0x2e0 stride 0x88 when missing), stores points (>0), posts a bus message. Caller 0x1434fcfb0. (lane owner review requested)"
  },
  "signature": {
   "id": "career.resource_points_set_wallet",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140da6700",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "uint32_t Career_Load_DriverContractsComponent(void *comp, uint64_t save_node, uint64_t version)",
   "evidence": "decomp:re/decomp/140da6700.c;xref:0x145692348",
-  "notes": "myteam-g1: Reader counterpart (1730 lines): rebuilds decidedDriverContracts / pendingDriverContracts, the four driver lists at comp+0x7d0/0x790/0x7b0/0x7f0 and the 0x68-byte contract slot array at comp+0x4dc (count +0x6f0). Best hook to inspect or rewrite pending/decided driver contracts when a My Team save loads. CORRECTION(V8992): Loader confirmed: pending list at +0x790, lastSeasonsSignings +0x7f0, decided +0x7b0, slot count +0x6f0 with 0x68-byte entries. Offset +0x7d0 does not appear anywhere in the function, so the four-list claim is only three proven."
+  "notes": "Save reader (vtable cell 0x145692348), version-gated: driver_slots into 0x68-byte slots from comp+0x480 (count +0x6f0), progression maps (+0x700, +0x760), contract_window_open (+0x834), then via 0x140da9f20 pendingDriverMoves (+0x7d0, written as decimal 2000 in the decomp; key 'driverMoves' for old saves), pendingDriverContracts (+0x790), lastSeasonsSignings (+0x7f0, v>10), decidedDriverContracts (+0x7b0, v>15), forcedDriverMoves (+0x818..+0x820). (lane owner review requested)"
  },
  "signature": {
   "id": "career.load_driver_contracts_component",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14022d400",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name setupDataFromTeamStatIdAndDriverIndex (class from the log channel); log channel CUTSCENE_PARAMS: 'setupDataFromTeamStatIdAndDriverIndex(teamStatId %s, index %d,...) [%s]'"
+  "evidence": "decomp:re/decomp/14022d400.c;pat:log-message-method;xref:0x1402673d5,0x140267548",
+  "notes": "(params, teamKey u32, allocator): logs CUTSCENE_PARAMS 'setupDataFromTeamStatIdAndDriverIndex(teamStatId %s, index %d,...) [%s]' (index printed as 0); if team id != 0x3fff collects participants in [[[g 0x14604c2c8+0xc0]+0x88]+0x260]+0x2e0..+0x2e8 (stride 0x88) whose +0x58 u8/+0x5a u16 match, then calls 0x14022d670(params, first match +0x50, 0). No empty-list check before *list. (lane owner review requested)"
  },
  "signature": {
   "id": "game.cutscene_params_setup_data_from_team_stat_id_and_driver_index",

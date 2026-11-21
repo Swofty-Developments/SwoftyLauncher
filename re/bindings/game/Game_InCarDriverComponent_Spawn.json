@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=InCarDriverComponent::spawn; log channel DRIVER: 'InCarDriverComponent::spawn - game mode is null, skipping (vehicleId=%d)'"
+  "evidence": "decomp:re/decomp/1403a7040.c;pat:log-message-cxx;xref:0x145623320",
+  "notes": "DRIVER 'InCarDriverComponent::spawn - game mode is null, skipping' (log string)."
  },
  "signature": {
   "id": "game.in_car_driver_component_spawn",

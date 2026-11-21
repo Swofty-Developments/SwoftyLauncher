@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1423208a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void f(void *self)",
-  "evidence": "decomp:re/decomp/1423208a0.c;xref:0x14132cb53;xref:0x14231abc5;xref:0x14231c5b6",
-  "notes": "myteam-g1: Larger MY_TEAM_ACTIVITIES menu layout/commit routine."
+  "evidence": "decomp:re/decomp/1423208a0.c;xref:0x14231abc5,0x14231c5b6,0x14231d663,0x14231fc43",
+  "notes": "Logs applyActivityToSelectedCalendarBlock / markDaysToDelete / updateCalendarActionAndRespawn; sets calendar_icons.activity_%s or placement_icons.blocked, timeline_activity_block_%d / block_%d nodes, 'delete' actions, calls MarkAllTilesToStay, fires update_action_and_despawn, then UpdateSelectionFlags and 0x1423205e0. (lane owner review requested) Better name: Career_MyTeamActivities_ApplyActivityToSelectedBlock (bound record keeps its name)."
  },
  "signature": {
   "id": "career.my_team_activities_menu_layout",

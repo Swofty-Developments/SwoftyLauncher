@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141a690b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_DriverCareerTeamSelectViewModel_OnSelectedSameTeamDisplayMessage;xref:0x141a69120",
-  "notes": "cxx=game::DriverCareerTeamSelectViewModel::onSelectedSameTeamDisplayMessage; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/141a690b0.c;str:s_DriverCareerTeamSelectViewModel_OnSelectedSameTeamDisplayMessage;xref:0x141a684d4,0x141a6943a",
+  "notes": "Dispatch handler lea'd at 0x141a684d4 (in 0x141a68080) and 0x141a6943a (in 0x141a69300). Logs its own pretty-function string 0x145729f5e (onSelectedSameTeamDisplayMessage), then shows UI message 'career_select_same_team_confirmation' (inline literal) via Game_UiMessage_DisplayMessage 0x1442d9bf0 on [vm+0x2b0]+0x10 (vcall +0x58) with callback 0x141a6add0, and drops the listener handle (0x1442aa980). Returns 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.driver_career_team_select_view_model_on_selected_same_team_display",

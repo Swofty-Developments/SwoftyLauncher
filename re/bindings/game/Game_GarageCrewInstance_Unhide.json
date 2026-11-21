@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1403846b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GarageCrewInstance::unhide; log channel GARAGECREWINSTANCE: '%p GarageCrewInstance::unhide'"
+  "evidence": "decomp:re/decomp/1403846b0.c;pat:log-message-cxx;xref:0x140341f20,0x140355740,0x140356120,0x140362d50,0x140369a70,0x14036a5b0,0x140388bc0,0x14038e140,0x14038f030,0x14038f210,0x1403c67f0,0x147b43b40,0x147b473c0",
+  "notes": "GarageCrewInstance::unhide(inst): only when inst+0x132 bit1 set; clears it, activates extra world +0x210 (0x1444bcd80), shows models +0xc8/+0xd0/+0xe0/+0xf0 (0x140190110(.,1)), sets the render flag of [0x14601f5c8]+0xc8, updates anim players +0xf8/+0x100 (0x14366b6c0); the decomp tail for +0x108 is that callee merged in. (lane owner review requested)"
  },
  "signature": {
   "id": "game.garage_crew_instance_unhide",

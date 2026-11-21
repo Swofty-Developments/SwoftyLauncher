@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14370c370",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_FrontendSceneSystemSubTask_Activate;xref:0x14370c615,0x14370c6fe,0x14370c716,0x14370c79e,0x14370c7d3,0x14370c85e,0x14370c906,0x14370c9ae,0x14370ca2e,0x14370cc93,0x14370ccc5,0x14370cd1f,0x14370cd37",
-  "notes": "cxx=game::FrontendSceneSystemSubTask::activate; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/14370c370.c;str:s_FrontendSceneSystemSubTask_Activate;xref:0x14585fe78",
+  "notes": "Vtable cell 0x14585fe78 (neighbours code). Own pretty-function string 0x14585fec1 'virtual void game::FrontendSceneSystemSubTask::activate()' (FLOW). Reads inPlayGo/f1LifeEnabled/inF1CG, calls preload of initial customisation (0x1428bd7f0), preloadScene (0x1428bd420) for F1CG/F1World/[+0x1198]+0x10/Shop/AbstractScene, then switchScene (0x1428cfaa0 on [p1+0x70]) with preset 0x30 eF1CG, 0x15 eF1WMap, 0x13 eF1WGenericBackDrop, 1 eAbstractScene or 0x14 ePlayGo; sets p1+0x88..+0x8a = 1. (lane owner review requested)"
  },
  "signature": {
   "id": "game.frontend_scene_system_sub_task_activate",

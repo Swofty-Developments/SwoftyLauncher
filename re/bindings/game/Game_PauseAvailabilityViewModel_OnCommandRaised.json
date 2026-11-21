@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=PauseAvailabilityViewModel::onCommandRaised; log channel FFB_DEBUG: 'PauseAvailabilityViewModel::onCommandRaised - exit_flow'"
+  "evidence": "decomp:re/decomp/142bc10f0.c;pat:log-message-cxx;xref:0x1457cba40",
+  "notes": "PauseAvailabilityViewModel::onCommandRaised (own log string, channel FFB_DEBUG); vtable cell 0x1457cba40."
  },
  "signature": {
   "id": "game.pause_availability_view_model_on_command_raised",

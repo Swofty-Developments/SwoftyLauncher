@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142fbb880",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=JSONLeaderboardReader::operationFriendsCompleted; log channel LEADERBOARD: 'game::JSONLeaderboardReader::operationFriendsCompleted() with error %s: %s'"
+  "evidence": "decomp:re/decomp/142fbb880.c;pat:log-message-cxx;xref:0x142fbb2e0",
+  "notes": "Completion callback (fn ptr lea'd at 0x142fbb2e0 in StartOperation). Acts only if the fetched request (+0x78 name, +0xa0 ver, +0xa4) matches the requested one (+0xc0/+0xe8/+0xec) and mode +0x3c == 2: success -> total +0x38 = result+0xc8, rows via 0x142fbc080, log '...with %d results and %s player entry', 0x142fbc430(result+0xa0); error -> vcall +0x30(1), status 3. Calls delegate +0x110/+0x118 once, releases op +0x58/+0x60. (lane owner review requested)"
  },
  "signature": {
   "id": "game.json_leaderboard_reader_operation_friends_completed",

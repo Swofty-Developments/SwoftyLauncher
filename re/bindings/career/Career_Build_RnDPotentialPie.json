@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141f41d60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141f41d60.c",
-  "notes": "Builds the R&D DEVELOPMENT POTENTIAL pie + per-dept overview descriptions. Loops k_Career_UpgradeDeptCodeTable but GATED: if(code<4) and if(4<i)break => effectively 4 depts. switch(code) maps 0->aero,1->chassis,2->maintenance,3->engine, default->error_department, with INLINE hardcoded colours 0xffeead00/0xff3ec58d/0xff16deff/0xff7a2aed (default white). Writes per-dept entries at base+0x6b0 stride 0x220. Hardcoded 4, independent of the dept data model. Class A (vt_Career_RnDResearchViewModel 0x14575e000, Team HQ research overview); constructs its object with Career_Construct_RnDPieObject @0x141f41e56 and move-assigns it @0x141f41e7d like class B."
+  "evidence": "decomp:re/decomp/141f41d60.c;xref:0x14575e098",
+  "notes": "Vtable slot +0x98 of class A (cell 0x14575e098). Allocs 0x900, Career_Construct_RnDPieObject, Career_MoveAssign_RnDPieObject into this+0x6a8. Loops dept codes: if code<4, break when idx>4; inline colours aero 0xffeead00, chassis 0xff3ec58d, maintenance 0xff16deff, engine 0xff7a2aed; slot = [this+0x6b0]+0x80+idx*0x220 via Career_MoveAssign_RnDPieSlot; Career_Get_TeamModifiers([this+0x690]+0xc90). (lane owner review requested)"
  },
  "signature": {
   "id": "career.build_rn_d_potential_pie",

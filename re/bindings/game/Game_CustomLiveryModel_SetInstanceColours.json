@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a9a310",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name setInstanceColours (class from the log channel); log channel CUSTOM_LIVERY_MODEL: 'setInstanceColours: Colour1 %d,%d,%d,%d - Colour2 %d,%d,%d,%d - Colour3 %d,%d,%d,%d - Colour4 %d,%d,%d,%d on vehicle index %d'"
+  "evidence": "decomp:re/decomp/142a9a310.c;pat:log-message-method;xref:0x14db487e7,0x14db48884",
+  "notes": "(comp, out, u32 colours[4]): logs the 4 RGBA colours + vehicle index (CUSTOM_LIVERY_MODEL); converts each u32 (bytes 0,1,2 sRGB -> linear: c/12.92 below 0.04045 else pow((c+0.055)/1.055, 2.4); byte 3 /255 as w) into float4 at out+0xb0, +0xc0, +0xd0, +0xe0. Both calls from 0x14db487b0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.custom_livery_model_set_instance_colours",

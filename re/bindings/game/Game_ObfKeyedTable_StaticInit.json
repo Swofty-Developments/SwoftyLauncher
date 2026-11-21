@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1409d50b0.c;xref:0x140b6ff38",
-  "notes": "Large static initialiser (static-init block at 0x140b6ff38 next to the AttributesSystem registration): lazily seeds the anti-tamper MT19937 state 0x146108c00 from QPC (x0x5d5e6971) and fills a table of 0x58-byte records (pushed into vectors) whose values are XOR-keyed with MT outputs. Table role is an L1 hypothesis (caller labelled car_type_f1_26)."
+  "notes": "Only caller 0x140b6ff38 (static-init block 0x140b6ebb0). 37 KB static initialiser."
  },
  "signature": {
   "id": "game.obf_keyed_table_static_init",

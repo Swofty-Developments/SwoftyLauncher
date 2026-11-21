@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141c85f70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141c85f70.c",
-  "notes": "Populates view_model_data.laptop_r_and_d_departments_container (the R&D>Performance dept box grid). HARDCODED 4 departments: makes exactly 4 literal Career_Construct_RnDDeptCard calls with compile-time (lang_key,icon,enum): aero(lng_rnd_dept_aero,rnd_dept_icons_small.aero,0), chassis(..chassis,1), engine/Powertrain(..engine,3), maintenance/Durability(..maintenance,2); plus 2 non-dept panel cards (tab_rnd_upgrade_purchase_panel, tab_rnd_perks). Result vector sized to EXACTLY 6 ptrs (0x30) then truncated. Initial selection = DAT_145f93c08 clamped <4 vs k_Career_RnDDeptNameTable. Does NOT enumerate the UpgradeDepartmentEntry data model, so the loader-count bump to 5 does not add a 5th box. No E8 callers (vtable-dispatched screen builder)."
+  "evidence": "decomp:re/decomp/141c85f70.c;xref:0x145740718",
+  "notes": "Vtable cell 0x145740718. Populates laptop_r_and_d_departments_container with exactly 4 Career_Construct_RnDDeptCard calls (aero 0, chassis 1, engine 3, maintenance 2; lng_rnd_dept_*, rnd_dept_icons_small) plus tab_rnd_upgrade_purchase_panel and tab_rnd_perks; result vector sized 6; initial selection DAT_145f93c08 clamped < 4. Does not enumerate the department data model. (lane owner review requested)"
  },
  "signature": {
   "id": "career.build_rn_d_dept_box_grid",

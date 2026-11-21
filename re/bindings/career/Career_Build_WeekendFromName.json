@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140aee2b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140aee2b0.c;xref:0x140af2406,0x140ae614a",
-  "notes": "Weekend ctor: base node ctor 0x14364d570 with type name weekend and the given name, then vt_Career_Weekend; sessions start empty (+0x220); XOR-obfuscated counters seeded"
+  "evidence": "decomp:re/decomp/140aee2b0.c;xref:0x140ae6149,0x140af2405,0x140b98fc5,0x140b9ecb0",
+  "notes": "Weekend ctor: seeds the global MT (0x146108c00), packs two randoms ^ param_6 as obfuscated id, calls base ctor 0x14364d570 (Ne_Construct_SaveDataContainer) with type name 'weekend' and name param_3/4, sets vtable 0x14566b5d0, zeroes vectors from +0x208, allocator param_2 at +0x218/+0x248/+0x250/+0x280/+0x480, byte +0x278 = param_7. (lane owner review requested)"
  },
  "signature": {
   "id": "career.build_weekend_from_name",

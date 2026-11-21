@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "career",
   "proto": "bool Career_Check_RndProgressPaused(void *rnd, uint32_t part_key, char flag)",
-  "evidence": "decomp:re/decomp/143531220.c;xref:0x14123acc9;xref:0x14123ae55;xref:0x1412862bc",
-  "notes": "myteam-g2: For rnd state 1 or 2 hashes part_key into the hash map at (rnd+0x18)+0xb8 and returns whether the upgrade progress entry is paused/blocked; used by the progress paused text and state icon."
+  "evidence": "decomp:re/decomp/143531220.c;xref:0x14123acc9,0x14123ae55,0x1412862bc,0x1418157d0,0x141818907",
+  "notes": "Mode (+8) 2, or mode 1 with key 0x3fff: hashes team key +0xc into the per-owner map at (this+0x18)+0xb8 and sums kind-9 modifiers for dept param_3 from that entry (+0x18..+0x20); else uses Career_Get_TeamModifiers 0x1434fb4b0. Returns sum > 0. Callers: Career_Update_RnDProgressPausedText 0x141814320, Ui_Rnd_SetProgressStateIcon 0x141818860."
  },
  "signature": {
   "id": "career.check_rnd_progress_paused",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "void Game_Load_Scenarios(void *registry, void *alloc)",
-  "evidence": "decomp:re/decomp/142a224f0.c",
-  "notes": "Reads game_setup.scenarios (cursor on the table, row count from _scenario_instancecount_), finds each row's game setup mode, reads statId, display_name, race_class, use_custom_vehicle_spec and entrant_list, and registers the scenario (0x142a33aa0, 0x50-byte entries) when the entrant list is one of the setup mode's entrant setup mode lists; else logs GAME 'Scenario %s not available as entrant list %s is not'. Called from .data1 at 0x14d83faeb."
+  "evidence": "decomp:re/decomp/142a224f0.c;xref:0x14d83faea",
+  "notes": "Scenario table loader (strings statId, display_name, game_setup_mode, entrant_list, race_class, use_custom_vehicle_spec; GAME 'Scenario %s not available as entrant list %s is not, which is probably fine'). Only caller 0x14d83faea."
  },
  "signature": {
   "id": "game.load_scenarios",

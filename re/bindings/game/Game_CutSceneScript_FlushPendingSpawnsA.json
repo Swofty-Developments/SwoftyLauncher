@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14018eb70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14018eb70.c;xref:0x14024093d",
-  "notes": "Under critical section (+200) moves every pointer from the pending list (+0x28..+0x30) into the active vector (+0x68, 1.5x growth, allocator +0x60) then clears pending. Variant A of the two near-identical cutscene spawn-queue flushes; 142 callers (every cutscene Initialise). Hypothesis."
+  "evidence": "decomp:re/decomp/14018eb70.c;xref:0x14024093d,0x1402507d4,0x140254988,0x140255122,0x140256b38,0x14025c51f,0x140261114,0x140261f54,0x1402624d8,0x1402629b8,0x1402631f8,0x140263528,0x140263858,0x1402654d8,0x14026566d,0x140267e48,0x140269708,0x140269ad8,0x140269ec8,0x14026a288",
+  "notes": "(list block): under CriticalSection [p1+0xc8] appends every pointer of the pending vector [p1+0x28,+0x30) to the active vector p1+0x68/+0x70/+0x78 (1.5x growth via allocator [p1+0x60] vt+0x18, old block freed vt+0x38), then empties the pending vector. Called with script+0x50 (e.g. EnableCamerasChainFirstNextScene). (lane owner review requested)"
  },
  "signature": {
   "id": "game.cut_scene_script_flush_pending_spawns_a",

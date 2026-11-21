@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446fa740",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-FFB_DEBUG",
-  "notes": "named from its log messages (channel FFB_DEBUG): 'Disconnected vehicle %d from device %s %d.'"
+  "evidence": "decomp:re/decomp/1446fa740.c;pat:log-channel-FFB_DEBUG;xref:0x142884c67,0x14389b358,0x14d21c91a",
+  "notes": "(subsys,vehicleIdx byte). Repeats: finds a device controller whose +0x128 == vehicleIdx, calls vcall +0x28 (stop), stores result in TLS error slot, disconnects (0x1446f1730), logs 'Disconnected vehicle %d from device %s %d.'; returns 0 when none left. Callers in 0x142884a90, 0x14389a2b0, 0x14d21c840. Renamed from _2 (old base name moved to the all-vehicles variant). (lane owner review requested) Better name: Game_Ffb_DisconnectVehicle (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ffb_disconnect_vehicle_2",

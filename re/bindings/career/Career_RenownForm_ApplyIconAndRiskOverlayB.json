@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1423d75e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void *vm",
   "evidence": "decomp:re/decomp/1423d75e0.c;xref:0x145786290",
-  "notes": "myteam-g1: Applies renown_icon_large.renown_icon_01_la and risk_state_03 overlay overrides (variant B, returns a flag)."
+  "notes": "Vtable slot (cell 0x145786290). Placeholder strings into holders: renown_icon_01_large, '1 Year', '3.7m', lng_contracts_initial/_chance, risk_state_03 overlay, Game_Get_SponsorRiskStatusIcon(0x32), 'Removed', 'Reduced by 5%', 'Increased by 10%', 'Meeting with ....', Lorem ipsum; ends with tail jmp Vm_Holder_SetCStr (no flag). (lane owner review requested) Better name: Career_SponsorContractVM_SetPlaceholderTextB (bound record keeps its name)."
  },
  "signature": {
   "id": "career.renown_form_apply_icon_and_risk_overlay_b",

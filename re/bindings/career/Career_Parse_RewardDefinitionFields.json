@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140fc4630",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void *Career_Parse_RewardDefinitionFields(void *self, void *owner, void *row)",
-  "evidence": "decomp:re/decomp/140fc4630.c;xref:0x140f99e63;xref:0x140f9a1d7;xref:0x140f9a3a0",
-  "notes": "myteam-g2: Constructs a reward definition from a game-DB row: reads int fields (Gdb_Get_FieldInt, Gdb_FindMetadata) and FNV-1a hashed lowercase names. Used by Career_DeptEventReward_CreateUpgradeDiscount and Load_MyTeamRewardDefinitions; the upgrade discount reward value comes from here."
+  "evidence": "decomp:re/decomp/140fc4630.c;xref:0x140f99e63,0x140f9a1d7,0x140f9a3a0,0x140f9a760",
+  "notes": "Reward definition base ctor: vtable 0x1456b0fd0, +0x28 = param_2, statId -> +8, reward_context (FNV hash) -> byte +0x38, description -> +0x40, ui_icon_name -> +0x48, ui_is_positive -> +0x50, show_adjustment_arrow -> +0x51, row label (0x1445a3900) into the string at +0x10. Returns param_1. (lane owner review requested)"
  },
  "signature": {
   "id": "career.parse_reward_definition_fields",

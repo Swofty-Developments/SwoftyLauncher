@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141146d00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_Championship_DriverStatisticsComponent_PreviewPatch;xref:0x141146e40",
-  "notes": "cxx=game::championship::DriverStatisticsComponent::previewPatch; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/141146d00.c;str:s_Championship_DriverStatisticsComponent_PreviewPatch;xref:0x1416dad85,0x142310a67",
+  "notes": "Real pdata body 0x141146d00-0x141146e54 (decomp polluted, judged by disasm): copies this+0x2a8 Data (0x1c bytes, containers +0x2c8/+0x2e8/+0x308 via 0x1411a9c30/0x1411a9f30/0x1411aab60, u64 +0x328) into out Data&; if patch obj (this+0x358)->+0x238 has entries and id +0x48 !=0 and != this+0x2ac/+0x2b0, gets value from vcall this+0x270 slot 0x108 and tail-jumps 0x14114f480(obj,out,id,value); else logs 'no pending patch!' (DRIVER_STATISTICS). (lane owner review requested)"
  },
  "signature": {
   "id": "game.driver_statistics_component_preview_patch",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142ab60b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-OPTIONS",
-  "notes": "named from its log messages (channel OPTIONS): 'Failed to find option '%s' for value subset range '%s''"
+  "evidence": "decomp:re/decomp/142ab60b0.c;pat:log-channel-OPTIONS;xref:0x142ab6b9e,0x142acabb8,0x142acaf88,0x142acc688,0x142ad35fe",
+  "notes": "Builds keys '<name>.value_subset' and '<name>.value_subrange' and walks both arrays: subset entries go to 0x142a1a0b0; subrange entries read 'option' (looked up in options map +0x270), 'min_value'/'max_value' clamped to option range +0xb8, kept as int range (type 2) or enum bitmask (type 1) via 0x142ad89b0; each result appended to param_1 by 0x1428764b0. Logs 'Failed to find option ... value subset range'. (lane owner review requested) Better name: Game_Options_ParseValueSubsetsAndRanges (bound record keeps its name)."
  },
  "signature": {
   "id": "game.options_find_option_value_subset_range",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140336830.c;xref:0x14027a7f3",
-  "notes": "Garage cutscene setup: skipped when the local player flag (+0x1c8) is set; instances props by name (FL_BRAKE_PROP, FL_LBAY_TYREBLANKET, FL_NEW_TYREBLANKET, CREW_NC_1/2...). 34 callers (CrewWorkingOnCar/DriverGettingReady/SwapTyres _Initialise)."
+  "evidence": "decomp:re/decomp/140336830.c;xref:0x14027a7f3,0x14027aad1,0x14027d76a,0x14027fb06,0x140281222,0x140281876,0x140282b76,0x140283d46,0x14028441f,0x140285692,0x1402869a6,0x140287da5,0x1402886e1,0x140289896,0x14028add0,0x14028c332,0x14028d676,0x14033652d,0x140339092,0x14033a575,0x14033bb50,0x14033c835,0x14034130f,0x140346436,0x14034adb1,0x14034baff,0x14034c790,0x14034d48f,0x14034e19f,0x14034ee30,0x14034fb2f,0x14035083f,0x14038b411,0x14038b41b",
+  "notes": "Garage cutscene prop setup (old note). Called from the garage cutscene Initialise functions and 0x140388cf0."
  },
  "signature": {
   "id": "game.garage_crew_setup_garage_props",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d2ab80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=F1CGRuleset::reset; log channel RaceResults: 'F1CGRuleset::reset'"
+  "evidence": "decomp:re/decomp/142d2ab80.c;pat:log-message-cxx;xref:0x1457dbc60",
+  "notes": "Same as Game_F1AMPRuleset_Reset for F1CG: per-car flag resets, +0x2a8 = +0x2b0, word +0x2e8 = 0, +0x2c8 = +0x2d0 & 1, logs RaceResults 'F1CGRuleset::reset', 0x142ccede0 when +0x368 == 1, tail-calls vcall +0xd0(this, +0x394). Ref: vtable cell 0x1457dbc60. (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1_cg_ruleset_reset",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428b2730",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name setCarDecalNode (class from the log channel); log channel FRONTEND_SCENE_CAR_MANAGER: 'setCarDecalNode()'"
+  "evidence": "decomp:re/decomp/1428b2730.c;pat:log-message-method;xref:0x1402496f0,0x1428e7fb6",
+  "notes": "(carMgr,carId*). Logs 'setCarDecalNode()'; looks up car in map +0x168 (miss: 'Can't find car with handle'); for spawned car (+0x94==2) with decal object +0x7268 and +0x7280: logs 'Setting Custom Decal Nodes' (FRONTEND_SCENE_CAR_VERBOSE), checks livery entry and decal flags (+0x20&4), logs 'Clear All Decal Nodes' and calls 0x142a97190. Decomp has a chunk label 0x1428aa5bb outside pdata. Callers 0x140249370, 0x1428e7d80. (lane owner review requested)"
  },
  "signature": {
   "id": "game.frontend_scene_car_manager_set_car_decal_node",

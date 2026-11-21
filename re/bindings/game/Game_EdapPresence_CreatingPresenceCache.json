@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143fea580",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-EDAP_PRESENCE",
-  "notes": "named from its log messages (channel EDAP_PRESENCE): 'NOT Creating presence cache'"
+  "evidence": "decomp:re/decomp/143fea580.c;pat:log-channel-EDAP_PRESENCE;xref:0x143fea1ef",
+  "notes": "If +0x138 == 0: logs EDAP_PRESENCE 'Creating presence cache' (tail 0x143fea801), [+0xd8] vcall +0xe8 with {0x7d0, 1.0} and callback vt 0x145a45c18, +0x138=1; else 'NOT Creating presence cache'. Registers callback vt 0x145a46880 via [+0xd8] vcall +0x18 -> id +0x13c, +0x70=2 under lock +0x20, logs EADP_PRESENCE 'registered PresenceCallback #%lu '. Tail jmp from 0x143fea050. (lane owner review requested) Better name: Game_EdapPresence_CreatePresenceCacheAndRegister (bound record keeps its name)."
  },
  "signature": {
   "id": "game.edap_presence_creating_presence_cache",

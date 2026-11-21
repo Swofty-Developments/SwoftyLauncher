@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "career",
   "proto": "bool (void *tab)",
-  "evidence": "decomp:re/decomp/14197b310.c;xref:0x14197b257;xref:0x14197fc3b",
-  "notes": "myteam-g2: Fitting-tab check: queries the owner setup record and FUN_143536fe0 and returns whether there is a part available to fit (result field != 0). Part of the left-without-research onboarding check."
+  "evidence": "decomp:re/decomp/14197b310.c;xref:0x14197b257,0x14197fc3b",
+  "notes": "Gets UpgradesComponent (0x146063160) and OwnerSetupComponent (0x146060a08) from the game mode, resolves the player team key (+0x348/+0x370), finds its Upgrades model (+0x298..+0x2a0) and returns whether query 0x143536fe0 (filters upgrades by dept +0x72 / category +0x71) with a fresh filter yields any result."
  },
  "signature": {
   "id": "career.check_fitting_tab_has_unfitted_parts",

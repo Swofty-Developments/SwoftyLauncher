@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140d8d2f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "uint64_t Career_ContractRenewal_TeamHasActiveDriverSlot(void *comp, uint32_t team_key)",
-  "evidence": "decomp:re/decomp/140d8d2f0.c;xref:0x140d8d682;xref:0x140d8e0cb;xref:0x140d8e151",
-  "notes": "myteam-g2: Same walk as 0x140d8d150 but returns false when a driver contract status byte (+0x10) is < 2, i.e. the team still has an active (signed) driver."
+  "evidence": "decomp:re/decomp/140d8d2f0.c;xref:0x140d8d683,0x140d8e0cb,0x140d8e151,0x140d95b55",
+  "notes": "Same walk as 0x140d8d150 but returns 1 if a matching entry has status byte +0x10 < 2. (lane owner review requested) Better name: Career_ContractRenewal_HasDayEntryWithStatusBelow2 (bound record keeps its name)."
  },
  "signature": {
   "id": "career.contract_renewal_team_has_active_driver_slot",

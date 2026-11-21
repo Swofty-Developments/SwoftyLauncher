@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140d98c50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "uint8_t Career_ContractRenewal_AnySlotHasPendingDriver(void *comp)",
-  "evidence": "decomp:re/decomp/140d98c50.c;xref:0x140d8c24d;xref:0x140d8e67d;xref:0x140d8fc4d",
-  "notes": "myteam-g2: Scans the 0x58-byte slots at (comp+0x278)+0x2e0..; for slots with flag 0x10 it looks up the pending driver (+0x50 or +0x58 depending on a team flag) in the lists at comp+0x368 / +0x348 and ORs driver count != 0. Returns true if any slot already has a pending driver."
+  "evidence": "decomp:re/decomp/140d98c50.c;xref:0x140d8c24d,0x140d8e67d,0x140d8fc4d,0x140d9904e",
+  "notes": "Walks entrants [comp+0x278]+0x2e0..+0x2e8 (0x88 stride); for entrants with byte +0x4b bit 0x10 looks up the approach record by driver key +0x50 in comp+0x368 (when 0x140778420([comp+0x278]) is false) or by team key +0x58 in comp+0x348, and ORs (record int +0 != 0). Returns that OR. (lane owner review requested) Better name: Career_ContractRenewal_AnyFlaggedEntrantHasRecord (bound record keeps its name)."
  },
  "signature": {
   "id": "career.contract_renewal_any_slot_has_pending_driver",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141d089c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=PhotoModeViewModel::onGridLinesChanged; log channel PHOTO-MODE: 'PhotoModeViewModel::onGridLinesChanged: Setting = %d'"
+  "evidence": "decomp:re/decomp/141d089c0.c;pat:log-message-cxx;xref:0x141cefe62",
+  "notes": "PhotoModeViewModel handler (this, cmd): acts only when cmd+8 == 10, reads \"value\" from cmd+0x10 (int or float by type check), logs PHOTO-MODE; registered by lea in 0x141cef700. int; writes bool (value == 1) into the two bound UI values at this+0x3b0 and +0x3d0 (0x140973e20). (lane owner review requested)"
  },
  "signature": {
   "id": "game.photo_mode_view_model_on_grid_lines_changed",

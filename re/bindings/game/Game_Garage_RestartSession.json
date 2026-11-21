@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140383360",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name restartSession (class from the log channel); log channel GARAGE: '%s: vehicleId: %d, garageId: %d'"
+  "evidence": "decomp:re/decomp/140383360.c;pat:log-message-method;xref:0x14038c694,0x14038e073,0x14038ef63,0x14038f143",
+  "notes": "GarageCrewInstance restartSession (logs vehicleId inst+0x120, garageId inst+0x11c): clears event queue, resets the state machine to self (state 1), releases +0xf8/+0x100/+0x108, 0x140381810, copies the garage pose from [[0x14601f5c8]+0x20]+0x1a8 +0xad8 (stride 0x6780) into inst+0x200, 0x140383660(inst,0), sets the render flag. Callers 0x140388cf0, 0x14038dfc0, 0x14038eeb0, 0x14038f090. (lane owner review requested) Better name: Game_GarageCrewInstance_RestartSession (bound record keeps its name)."
  },
  "signature": {
   "id": "game.garage_restart_session",

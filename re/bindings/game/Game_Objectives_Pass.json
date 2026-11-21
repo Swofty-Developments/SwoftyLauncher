@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142ab45a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-OBJECTIVES",
-  "notes": "named from its log messages (channel OBJECTIVES): 'Objective [%s] has been sucessfully passed.'"
+  "evidence": "decomp:re/decomp/142ab45a0.c;pat:log-channel-OBJECTIVES;xref:0x1456d26e0,0x1456d2940,0x1456d2b20,0x1456d2ca0,0x1456d2e10,0x1456d3020,0x1456d31b0,0x1456d33d0,0x1456d35d0,0x1456d3790,0x1456d3940,0x1456d3b00,0x1456d3ce0,0x1456d3e50,0x1456d4060,0x1456d4220,0x1456d43e0,0x1456d4560,0x1456d4750,0x1456d48f0,0x1456d4b30,0x1456d4d20,0x1456d4ec0,0x1456d50b0,0x1456d5230,0x1456d5430,0x1456d5640,0x1456d5810,0x1456d59c0,0x1456d5bc0,0x1456d5dd0,0x1456d5f50,0x1456d6140,0x1456d6330,0x1456d64a0,0x1456d66d0,0x1456d6880,0x1456d6a90",
+  "notes": "Shared objective vslot (cells listed). Sets state +0x18 = 2 and logs 'Objective [%s] has been sucessfully passed.' with name +0x10. (lane owner review requested)"
  },
  "signature": {
   "id": "game.objectives_pass",

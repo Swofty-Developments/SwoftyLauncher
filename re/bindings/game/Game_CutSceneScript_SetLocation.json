@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140241330",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=CutSceneScript::setLocation; log channel CUTSCENE_SCRIPT_VERBOSE: 'CutSceneScript::setLocation %p %s for [%s] failed - check the placement markers exist in the wep'"
+  "evidence": "decomp:re/decomp/140241330.c;pat:log-message-cxx;xref:0x14023e35e,0x14025baef,0x140260de6,0x140261baa,0x140261be2,0x140264c94,0x1402653ae,0x1402654fb,0x140267ea0,0x140267ee7,0x14026951d,0x140269533,0x140269876,0x14026988c,0x140269c46,0x140269c5c,0x14026a09d,0x14026a0b3,0x14026a3f6,0x14026a40c",
+  "notes": "(script, const char *marker <= 15 chars, bool warn): with the placement-marker registry 0x14607c1d8 set, packs the name into 16 bytes and scans its marker list (+0x278..+0x280) for a match at marker+0x18/+0x20; hit: copies the marker object's 4x4 transform (entry +0xf8 of the 0x70-stride table [+0xf0]+0x10 at +0x20, else +0x90) to script+0x470..+0x4af, normalizes the three axis rows, logs it, returns 1. Miss: with warn logs 'setLocation %p %s for [%s] failed - check the placement markers exist in the wep', returns 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.cut_scene_script_set_location",

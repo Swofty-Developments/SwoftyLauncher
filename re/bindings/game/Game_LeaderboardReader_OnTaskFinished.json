@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142fc0920",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_LeaderboardReader_OnTaskFinished;xref:0x142fc09c7",
-  "notes": "cxx=game::LeaderboardReader::onTaskFinished; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/142fc0920.c;str:s_LeaderboardReader_OnTaskFinished;xref:0x1457ff2b0",
+  "notes": "virtual onTaskFinished(BaseTaskPtr) (cell 0x1457ff2b0; secondary base, reader at this-0x40). Logs '%s: [%s]'. If the task equals +0x98: converts each 0x100-byte result entry of task+0x138 into a row (0x142fbce00), total task+0x140 -> +0x90, hands the rows to 0x142fbdd50, frees the temp vector, releases task ref +0x98/+0xa0. Always drops the passed ref. (lane owner review requested)"
  },
  "signature": {
   "id": "game.leaderboard_reader_on_task_finished",

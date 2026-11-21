@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143132540",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143132540.c;xref:0x14257b7b1,0x1431bf619",
-  "notes": "createNewDriverInfo returning DriverInfo by value; second copy used by replace/update/FindPlayerSetEntry paths. d6-verify: overload createNewDriverInfo(const game::DriverInfo&)"
+  "evidence": "decomp:re/decomp/143132540.c;xref:0x14257b7b1,0x143131b00,0x1431320c4,0x143138ac1,0x1431bf619",
+  "notes": "Pretty-function string 0x14581972e = CustomDriverNetworkMessageHandler::createNewDriverInfo(const game::DriverInfo&) (NETWORK-ENTRANTS). Copies DriverInfo p3 -> out p2 (+0..+0x18, four 0x80-cap SBO strings at +0x18/+0xb0/+0x148/+0x1e0 vt 0x145613670, 13-cap string +0x278, +0x2a0/+0x2a4, 0x310-byte block +0x2a8), then replaces the 13-char initials string +0x290 with the localised lng_name_initials_default (loc table [p1+0x30], vt+0x18). (lane owner review requested)"
  },
  "signature": {
   "id": "game.custom_driver_network_message_handler_create_new_driver_info_2",

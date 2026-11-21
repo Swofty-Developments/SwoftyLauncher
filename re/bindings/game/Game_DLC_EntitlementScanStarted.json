@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140792020",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-DLC",
-  "notes": "named from its log messages (channel DLC): 'Entitlement scan started'"
+  "evidence": "decomp:re/decomp/140792020.c;pat:log-channel-DLC;xref:0x145644918",
+  "notes": "DLC system update (vtable cell 0x145644918). State +0x51c: 0 -> registers game/game.fullgame/game.trial (0x140791d80, Steam ownership via vcall +0xe0), sets rescan +0x518, state 1. State 1: +0x519 and resource 0x146054310 ready -> state 2 + 0x14078f9c0; +0x518 set -> logs 'Entitlement scan started', lists Steam DLCs (vcalls +0x50/+0x58), decodes item names, 0x140791d80 each, logs finished, +0x518=0, +0x519=1. (lane owner review requested) Better name: Game_DLC_UpdateEntitlementScan (bound record keeps its name)."
  },
  "signature": {
   "id": "game.dlc_entitlement_scan_started",

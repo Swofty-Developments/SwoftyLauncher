@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "career",
   "proto": "void Career_Handle_RnDResearchProjectDeveloped(void * self,uint32_t a2)",
-  "evidence": "decomp:re/decomp/141c55060.c;xref:0x141c543ed;xref:0x141c54409",
-  "notes": "myteam-g1: Handles my_team_research_project_developed after an upgrade finished developing; error_department fallback for unknown department."
+  "evidence": "decomp:re/decomp/141c55060.c;xref:0x141c543ed,0x141c54409",
+  "notes": "Returns early unless upgrade +0x300 is set and flags +0x324/+0x325/+0x327 are clear; calls 0x1412414c0(+0x2c0, team key, upgrade, param_2, +0x34a, 1); on success stamps day at (+0x2c0)+0x418, opens 'overview' with VariantToOpen = dept name (table 0x145755e58 / error_department) when +0x34f==1 else 'back'; then sets tutorial flag my_team_research_project_developed. Better name: Career_RnD_ConfirmDevelopUpgrade (bound record keeps its name)."
  },
  "signature": {
   "id": "career.handle_rn_dresearch_project_developed",

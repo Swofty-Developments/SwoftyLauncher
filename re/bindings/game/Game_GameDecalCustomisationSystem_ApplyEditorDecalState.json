@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14142c6f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14142c6f0.c;xref:0x14142d183,0x14142e1ef",
-  "notes": "Finds editor decal node in list (+0x178..+0x180) whose id (+0x20) matches *param_2 and copies placement fields from param_3 (+0x10,+0x18,+0x28,+0x30..0x40,+0x58...): position/scale/rotation/flip state. Callers FlipEditorDecalNode, Update. Addon: decal editor node record layout."
+  "evidence": "decomp:re/decomp/14142c6f0.c;xref:0x14142d183,0x14142e1ef,0x14142f666,0x141ff0b83",
+  "notes": "Own bounds 0x14142c6f0..0x14142c851 (decomp merges tail target 0x141428e60). Finds decal node with id *p2 in vector p1+0x178..+0x180 (16-byte entries, node+0x20 = id), copies state p3 (+0x10..+0x66: type/slot, transform +0x30/+0x50, flags) into it; unless a matching entry (+0x18 byte, +0x1a u16) in [[p1+0x2a8]+0x260]+0x10.. has +0x48 set, makes scale x/z (+0x50/+0x58) positive; then 0x14142c860(p1), p1+0x168 = 1, tail-jump 0x141428e60(p1,node,1). (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_decal_customisation_system_apply_editor_decal_state",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-INPUT",
-  "notes": "named from its log messages (channel INPUT): 'generatePresetControlSchemes:: Scheme already created %d, %s | generatePresetControlSchemes:: Adding Control Scheme %d, %s | addPresetControlScheme | Failed to get device type loctag from UIDB \"%s\"'"
+  "evidence": "decomp:re/decomp/142a598c0.c;pat:log-channel-INPUT;xref:0x142a69b57,0x142a6aa35,0x142a78478,0x14da34499",
+  "notes": "INPUT generatePresetControlSchemes / addPresetControlScheme (log strings)."
  },
  "signature": {
   "id": "game.input_generate_preset_control_schemes",

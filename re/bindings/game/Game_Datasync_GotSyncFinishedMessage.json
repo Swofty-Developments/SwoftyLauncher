@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143103860",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-DATASYNC",
-  "notes": "named from its log messages (channel DATASYNC): '[%s] Got sync finished message from %d'"
+  "evidence": "decomp:re/decomp/143103860.c;pat:log-channel-DATASYNC;xref:0x14fe71f28",
+  "notes": "Handler (lea at 0x14fe71f28 in 0x14fe71e00). Finds the session by msg+0x10 in list this+0x48; ignores stale (msg+0x14 == +0x20) or foreign cookies (!= +0x1c). State 1/2: logs '[%s] Got sync finished message from %d' and sets state +0x24 = 3 (Finishing) with 'State %s -> %s'; other states: 'Ignoring sync finished message ... in state %s'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.datasync_got_sync_finished_message",

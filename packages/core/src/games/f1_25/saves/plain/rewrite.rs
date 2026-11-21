@@ -341,16 +341,17 @@ pub struct SaveFile<'a> {
     pub snapshot: Option<&'a str>,
 }
 
-/// The log lines of a build's rewrite for `profile`: one per career mapped, or why nothing was. A launcher
-/// save is checked against the generation; a session on the copy's own save has no file to compare.
+/// The log lines of a build's rewrite for `profile` on `copy`: one per career mapped, or why nothing was. A
+/// launcher save is checked against the generation; a session on the copy's own save has no file to compare.
 pub fn prepare(
     data: &std::path::Path,
     profile: &str,
     on_launcher_saves: bool,
+    copy: crate::install::Source,
     aliases: &crate::row_ids::IdAliases,
     now: i64,
 ) -> Vec<String> {
-    prepare_play(data, profile, on_launcher_saves, aliases, now, None)
+    prepare_play(data, profile, on_launcher_saves, copy, aliases, now, None)
 }
 
 fn mtime(path: &std::path::Path) -> Option<i64> {
@@ -364,12 +365,13 @@ pub fn prepare_play(
     data: &std::path::Path,
     profile: &str,
     on_launcher_saves: bool,
+    copy: crate::install::Source,
     aliases: &crate::row_ids::IdAliases,
     now: i64,
     save: Option<SaveFile<'_>>,
 ) -> Vec<String> {
     let maps = IdMaps::from_aliases(aliases);
-    let Some(root) = super::root_of_session(data, profile, on_launcher_saves) else {
+    let Some(root) = super::root_of_session(data, profile, on_launcher_saves, copy) else {
         return Vec::new();
     };
     let file = save.filter(|_| on_launcher_saves);
@@ -377,7 +379,7 @@ pub fn prepare_play(
         .then(|| {
             let path = file
                 .map(|f| f.path.to_path_buf())
-                .unwrap_or_else(|| crate::saves::launcher::remote_dir(data, profile).join(SAVE_FILE));
+                .unwrap_or_else(|| crate::saves::launcher::store_of_copy(data, profile, copy).data_file());
             mtime(&path)
         })
         .flatten();

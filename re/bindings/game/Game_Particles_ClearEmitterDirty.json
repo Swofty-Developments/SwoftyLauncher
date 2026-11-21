@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143af9170",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143af9170.c;xref:0x143b083b3,0x143b083c8",
-  "notes": "For each manager effect slot, clears bit0 of flags at node+0xc0 +0x60 and walks emitter array (stride 0x180) resetting state. Called by Game_Particles_UpdateManager."
+  "notes": "(slots[32]): for each non-null effect node: effect = node+0xc0, clears +0x60 bit0, per emitter (+0x80..+0x88 stride 0x180) clears +0x178 bit0, resets +0xdc from def+0x58c, +0xe0/+0xe8/+0x104, returns particle chunks +0xf0/+0xf8 to free list 0x146294210; then node vcall +8(0) and frees it through allocator (0x1464412c8)+0x857aa8; nulls the slot. Called from 0x143b06d90 with mgr+0xa815f0 and mgr+0xa80bd0 when flags +0xa5b7ce / +0xa5be20 set. (lane owner review requested) Better name: Game_Particles_DestroyEffectSlots32 (bound record keeps its name)."
  },
  "signature": {
   "id": "game.particles_clear_emitter_dirty",

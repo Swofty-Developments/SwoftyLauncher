@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-INVENTORY",
-  "notes": "named from its log messages (channel INVENTORY): 'Added inventory [%s]'"
+  "evidence": "decomp:re/decomp/142a7d830.c;pat:log-channel-INVENTORY;xref:0x1425b0a57,0x1425b0aa7,0x1425b0af7,0x14279bdac,0x14279bdff",
+  "notes": "INVENTORY 'Added inventory [%s]' (log string)."
  },
  "signature": {
   "id": "game.inventory_add_inventory",

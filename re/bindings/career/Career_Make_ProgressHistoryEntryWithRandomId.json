@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "career",
   "proto": "void *Make(void *out, void *src, void *p3)",
-  "evidence": "decomp:re/decomp/14197b940.c;xref:0x14197b861;xref:0x14197fa83;xref:0x141f3f2cf",
-  "notes": "myteam-g2: Builds a progress-history entry with new random id (FUN_142458560); used by RnD progress history and tab vehicles init."
+  "evidence": "decomp:re/decomp/14197b940.c;xref:0x14197b861,0x14197fa83,0x141f3f2d0",
+  "notes": "Returns a 12-byte struct of three packed keys (init 0x3fff0000) filled from the game mode (+0x88 ->+0x260, vt+0x1c8 list), Ne_Make_RandomIdBlock and Career_Collect_PlayerTeamDriverContracts."
  },
  "signature": {
   "id": "career.make_progress_history_entry_with_random_id",

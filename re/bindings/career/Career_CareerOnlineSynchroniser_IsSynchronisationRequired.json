@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140ff7730",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=CareerOnlineSynchroniser::isSynchronisationRequired; log channel CAREER_DATA_SYNC: 'NEbool game::championship::CareerOnlineSynchroniser::isSynchronisationRequired() const | %s Playing alone - NO NEED TO SYNCHRONISE'"
+  "evidence": "decomp:re/decomp/140ff7730.c;pat:log-message-cxx;xref:0x140ff742c,0x140ff880e",
+  "notes": "Reads player list [[this+0x20]+0x3c0]+0x130..+0x138 and looks up the local career entry (0x140fd0720 + 0x143066810) state in a hash map (entry+4 == 2 = other player present). Logs on CAREER_DATA_SYNC 'Playing alone' (list empty) / 'Other Player in the lobby' - NO NEED TO SYNCHRONISE. Returns true only if the list is non-empty and the state is not 2. (lane owner review requested)"
  },
  "signature": {
   "id": "career.career_online_synchroniser_is_synchronisation_required",

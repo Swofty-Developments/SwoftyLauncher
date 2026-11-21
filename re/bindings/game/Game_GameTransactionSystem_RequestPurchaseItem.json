@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e66b50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_GameTransactionSystem_RequestPurchaseItem;xref:0x142e66be0",
-  "notes": "cxx=game::GameTransactionSystem::requestPurchaseItem; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/142e66b50.c;str:s_GameTransactionSystem_RequestPurchaseItem;xref:0x1419e40c7",
+  "notes": "requestPurchaseItem(sys,out handle,itemId,delegate): logs pretty-function and 'Item ID %d' (COMMERCE/T), stores delegate sys+0x98/+0xa0 if empty, gets the item price via 0x142a80290(sys+0x60), queues a 0x18 bus message (vt 0x1457f1518, itemId|price), builds an OS operation (completion 0x142e673c0) and returns its handle. Caller 0x1419e3ff0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_transaction_system_request_purchase_item",

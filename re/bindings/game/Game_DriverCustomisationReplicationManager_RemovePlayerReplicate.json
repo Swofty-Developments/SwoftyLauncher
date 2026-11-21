@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14313bcd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=DriverCustomisationReplicationManager::removePlayerReplicatedData; log channel NETWORK-ENTRANTS: 'void network::DriverCustomisationReplicationManager::removePlayerReplicatedData(const PlayerDescription &) | %s : removing player %s'"
+  "evidence": "decomp:re/decomp/14313bcd0.c;pat:log-message-cxx;xref:0x14313c70a",
+  "notes": "(mgr, player desc), called from 0x14313c660 (0x14313c70a). Only when int [mgr+0x10]+8 < 2: hashes the player id (+0x48 flags, +0x10..+0x28 ids by kind +8) into the map (buckets [mgr+0x58], mask mgr+0x70, end mgr+0x40); found -> logs 'removing player %s', sends net message 0x145824860 (player desc + id entry+0x60) via 0x14402e500([mgr+0x20], 1, ...) and calls RemovePlayerDriverCus 0x14313c000(mgr, player, id); not found -> logs 'could not be found'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.driver_customisation_replication_manager_remove_player_replicate",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140ca0510",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: career.department_events.%s.department_event_groups, career.department_events.%s.department_event_groups.%s.events, career.department_events.%s.department_event_groups.%s.follow_up_event, career.department_events.%s.department_event_groups.%s.outcomes, career.department_'"
+  "evidence": "decomp:re/decomp/140ca0510.c;pat:log-channel--;xref:0x140ca0333",
+  "notes": "Reads career.department_events.<id>.* DB keys (department_event_groups, events, outcomes, outcome_values, outcome_modifiers, follow_up_event, min/max_event_outcomes, exit_delay, not_applicable_min/max_tag, priority_resource_threshold, resource_value, ui_value_string) via Gdb_Get_FieldInt and related readers into the event config containers. (lane owner review requested)"
  },
  "signature": {
   "id": "career.read_career_department_events_config",

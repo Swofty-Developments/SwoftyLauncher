@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140d97ec0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-CONTRACT_RENEWAL",
-  "notes": "named from its log messages (channel CONTRACT_RENEWAL): 'Driver is on our team and meets our requirements : %s - Team : %s  | Driver is on our team and in our available drivers list Driver but we want to change him : %s - Team : %s '"
+  "evidence": "decomp:re/decomp/140d97ec0.c;pat:log-channel-CONTRACT_RENEWAL;xref:0x140d9a96b,0x140d9a9bb",
+  "notes": "For own entrant param_2 (driver key +0x50) of team param_3: if no due contract entry (0x140db7e30 on [comp+0x298]) and 0x140dca800 passes, runs 0x140d982c0; on pass logs 'on our team and meets our requirements' and returns 1 only if 0x140d98850 is false and 0x140d94f10 allows the approach; on fail logs 'we want to change him' and returns 0. (lane owner review requested)"
  },
  "signature": {
   "id": "career.contract_renewal_check_own_driver",

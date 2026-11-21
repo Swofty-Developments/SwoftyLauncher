@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14146c360",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14146c360.c;xref:0x141427d5c,0x141427df2",
-  "notes": "Red-black tree lower_bound/find with ushort key (param_3) returning iterator-like pair. Called from Game_CustomisationDecals_UnloadAssetBatch. vp0-verify partial"
+  "notes": "std::map<u16,ptr> try_emplace: lower_bound of *p3 (node key u16 +0x20) in the tree p1[1]; existing -> {node,false}; else (size limit 0x555555555555555 -> throw) allocates a 0x30-byte node (key, value +0x28 = 0) via allocator p1[0] vt+0x18, inserts with 0x14146c110 and returns {node,true} in p2. (lane owner review requested)"
  },
  "signature": {
   "id": "game.customisation_decals_map_find_by_u16",

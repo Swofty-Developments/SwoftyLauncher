@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=MipmapLoadTask::doJob; log channel TEXTURE_STREAMING_VERBOSE: 'MipmapLoadTask::doJob decompression out of memory \"%s\"'"
+  "evidence": "decomp:re/decomp/143bfed50.c;pat:log-message-cxx;xref:0x1459bf970",
+  "notes": "MipmapLoadTask::doJob (vtable cell 0x1459bf970): TEXTURE_STREAMING_VERBOSE 'Decompressed mip %d from %s'; errors 'decompression out of memory \"%s\"', 'decompression failed \"%s\"', 'UNSUPPORTED MIPMAP COMPRESSION METHOD for %s'."
  },
  "signature": {
   "id": "game.mipmap_load_task_do_job",

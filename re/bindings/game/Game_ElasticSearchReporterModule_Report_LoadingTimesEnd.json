@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140766110",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=ElasticSearchReporterModule::report_LoadingTimesEnd; log channel TELEMETRY: 'ElasticSearchReporterModule::report_LoadingTimesEnd(%s)'"
+  "evidence": "decomp:re/decomp/140766110.c;pat:log-message-cxx;xref:0x1434b40c2",
+  "notes": "report_LoadingTimesEnd(module, name): logs TELEMETRY 'report_LoadingTimesEnd(%s)'; FNV-1a of name looked up in the start table 0x14604bc00 (0x28-byte records, count 0x14604c100) -> elapsed ms, record removed; 0xf8 event (0x1404d18e0: ms, name, 'win', CPU name + hyperThreading flag from config tree 0x14604e620, CPU count via GetNativeSystemInfo) sent as 'loading_times2', 64-entry ring. Caller 0x1434b3fd0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.elastic_search_reporter_module_report_loading_times_end",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143036200",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionSeasonDocument::setupFromSavedLobbyOptions; log channel NETWORK/F: 'network::GameSessionSeasonDocument::setupFromSavedLobbyOptions(%s)'"
+  "evidence": "decomp:re/decomp/143036200.c;pat:log-message-cxx;xref:0x141de4246",
+  "notes": "Only caller 0x141de4246 (in 0x141de40d0). Logs NETWORK/F 'network::GameSessionSeasonDocument::setupFromSavedLobbyOptions(%s)' (p2+0x10). Frees the pack buffer, repacks (PackChampionship, 0x1430362cd), then overwrites the header p1+0x80..+0x1f0 with the saved record p2+0xa0..+0x210 but keeps the live track-set name (+0x88..+0xa6, copied char-wise) and the current weekend/session +0x130..+0x138; applies it (0x1430a1e90), +0x410 = 0xff, grid slot from p2+0x210 (0x1430913f0), options data via [p1+0x498] (0x142ad4800/0x142ad58c0 with p2+0x218), sets +0x766/+0x768, 0x143098e90, 0x14309ceb0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_session_season_document_setup_from_saved_lobby_options",

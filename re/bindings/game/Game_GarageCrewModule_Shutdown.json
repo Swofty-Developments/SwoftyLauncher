@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14038cd90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GarageCrewModule::shutdown; log channel GARAGE: 'GarageCrewModule::shutdown'"
+  "evidence": "decomp:re/decomp/14038cd90.c;pat:log-message-cxx;xref:0x14561b310",
+  "notes": "GarageCrewModule::shutdown(mod): unsubscribes MessageTriggerGarageCrewEvent handler 0x14038cc80 (0x143988350), destroys and frees the 32 instances mod+0x68 (0x140381380) under CS 0x146045a38, releases mod+0x28 (0x143ac3e60). Vtable cell 0x14561b310. (lane owner review requested)"
  },
  "signature": {
   "id": "game.garage_crew_module_shutdown",

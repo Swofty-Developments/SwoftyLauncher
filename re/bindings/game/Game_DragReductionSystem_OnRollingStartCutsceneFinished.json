@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142bebcf0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=DragReductionSystem::onRollingStartCutsceneFinished; log channel GAME: 'DragReductionSystem::onRollingStartCutsceneFinished().'"
+  "evidence": "decomp:re/decomp/142bebcf0.c;pat:log-message-cxx;xref:0x142beb64d,0x142bec654",
+  "notes": "Message handler (lea'd at 0x142beb64d in 0x142beb5c0 and 0x142bec654 in 0x142bec020). Logs GAME 'DragReductionSystem::onRollingStartCutsceneFinished().' (0x1457cdb67), calls 0x142becf90(this), returns 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.drag_reduction_system_on_rolling_start_cutscene_finished",

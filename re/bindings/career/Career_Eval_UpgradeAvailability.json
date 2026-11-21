@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14352e720",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:calls-Career_Search_UpgradeGraph@0x14352e91e;xref:0x14352e66d;kb:subsystems/rnd_ui.md#instances",
-  "notes": "Mode-0 availability evaluation under Career_Set_UpgradesOwner; uses Career_Search_UpgradeGraph (@0x14352e91e). CORRECTION(V9241): It evaluates availability via the graph search and a cost check, but it is not mode-0 only: it branches on mode byte == 2 (hash lookup of per-owner slot) and otherwise a single-slot path."
+  "evidence": "decomp:re/decomp/14352e720.c;pat:calls-Career_Search_UpgradeGraph@0x14352e91e;kb:subsystems/rnd_ui.md#instances;xref:0x14352e66d",
+  "notes": "For a team-tree instance (+0x7c==0xff), enabled (+0xc) and state < 2: picks owner slot (mode 2: hash map +0x1a60 -> +0x1970+idx*0x58, else +0x1970), runs Career_Search_UpgradeGraph 0x1435288f0 for states {6,4,7,8,3} (mode 2) or {3}; if found, result = sum of kind-4 dept modifiers (0x1434fb4b0) >= (float)inst+0x74, else !byte -3 of last entry. Writes result byte to out. (lane owner review requested)"
  },
  "signature": {
   "id": "career.eval_upgrade_availability",

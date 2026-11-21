@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144026cd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-LEADERBOARDS",
-  "notes": "named from its log messages (channel LEADERBOARDS): 'Read pivot user request for leaderboard %s, maxNumEntriesToRead = %d'"
+  "evidence": "decomp:re/decomp/144026cd0.c;pat:log-channel-LEADERBOARDS;xref:0x1430e6d36,0x1430e7c19",
+  "notes": "(mgr, user, def, pivot, max, .., delegate, out id): logs 'Read pivot user request...', max clamped to 100; errors 1/0x10 as the other queue calls. Queues a 0x298 request. Pivot == caller's id (user vcall +0x38) -> kind +0x28c = 1 (around user, count +0x178); else logs 'Leaderboard PivotUser request for presence who is not caller, getting just this user' and queues kind 3 with that one user id. Returns 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.leaderboards_read_pivot_user_request_leaderboard",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430973a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionSeasonDocument::handleSessionDocumentMessageDocumentBegin; log channel NETWORK/F: 'GameSessionSeasonDocument::handleSessionDocumentMessageDocumentBegin()'"
+  "evidence": "decomp:re/decomp/1430973a0.c;pat:log-message-cxx;xref:0x143095d28",
+  "notes": "Only ref: lea 0x143095d28 (in 0x143095910, handler table). Logs NETWORK/F 'handleSessionDocumentMessageDocumentBegin()'. From the host only, state >= 2 and +0x765 set: sets +0x76b and [[p1+0x420]+0x500]+0x70, copies the document header p2+0x10..+0x180 into p1+0x80..+0x1f0 (0x1431a2fb0 for +0x1d0), replaces the receive buffer object +0x618 (allocator +0x610) with a new 0x30-byte buffer (vtable 0x1458155b0) holding a zeroed 0x710-byte block. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_session_season_document_handle_session_document_message_docum",

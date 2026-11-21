@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401f3a10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1401f3a10.c;xref:0x14039b08f,0x1403a6c25",
-  "notes": "(model, hint): sets NeModelProxy_Texture cache timeout hint (LONG/SOON/RTT/CUTSCENE_NOW/CUTSCENE_NEXT) on all texture proxies of the model, logging 'Set %s TEXTURE_CACHE_TIMEOUT_HINT_*'. Callers: Car_Visual_UpdateRenderState, Game_InCarDriver_EvaluateAnimLayers, Game_SkinnedActor_RequestDelete."
+  "evidence": "decomp:re/decomp/1401f3a10.c;xref:0x1401d0385,0x14039b08f,0x1403a6c25,0x1473ab7ff,0x1473ab852,0x147e2e942,0x14f83bad8",
+  "notes": "(proxy, hint): 1/2/4/8/0x10/0x20 -> flag 0x80/0x100/0x200/0x400/0x800/0x1000 in +0x12c (no-op if already set); logs NeModelProxy_Texture 'Set %s TEXTURE_CACHE_TIMEOUT_HINT_CUTSCENE_NOW/_NEXT/_SOON/_LONG/_RTT' (0x10 reuses the LONG text) and queues update 0x143d3ce20 once via +0x128. (lane owner review requested)"
  },
  "signature": {
   "id": "game.model_proxy_set_texture_cache_hint",

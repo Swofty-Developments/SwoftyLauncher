@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143b10fa0.c;xref:0x143b09d6d,0x143b0d6c3",
-  "notes": "Builds and runs ParticleManagerNewJobs: memset 20000 bytes at manager+0xa5fbd0, Game_Particles_UpdateEmitters call (0x143af9c70), logs WARN The signal timed out, this is unexpected on wait timeout (WAIT:waitForFinish, unknown queue/job). Called by Game_Particles_UpdateManager."
+  "notes": "Read part: memset 20000 bytes at mgr+0xa5fbd0, 0x143af9c70 fills per-emitter counts, batches into up to 0x100 jobs limited by mgr+0xa5b860 (emitters) / +0xa5b864 (particles), allocates 0x20-byte job records (allocator mgr+0xa5b740); job name 'ParticleManagerNewJobs', wait with deadlock warning. Callers in 0x143b06d90."
  },
  "signature": {
   "id": "game.particles_run_new_jobs",

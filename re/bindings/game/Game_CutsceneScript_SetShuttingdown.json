@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140235fb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name setShuttingdown (class from the log channel); log channel CUTSCENE_SCRIPT_VERBOSE: 'setShuttingdown %p %s'"
+  "evidence": "decomp:re/decomp/140235fb0.c;pat:log-message-method;xref:0x1455eaff0,0x1455eb790,0x1455ecf60,0x1455ed5b0,0x1455ee600,0x1455eea10,0x1455eede0,0x1455ef120",
+  "notes": "Logs CUTSCENE_SCRIPT_VERBOSE 'setShuttingdown %p %s' and sets state this+0x40 = 0xb. Cells = this slot in the cutscene script vtables (subset listed). (lane owner review requested)"
  },
  "signature": {
   "id": "game.cutscene_script_set_shuttingdown",

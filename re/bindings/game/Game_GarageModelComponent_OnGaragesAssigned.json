@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a9e9d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GarageModelComponent::onGaragesAssigned; log channel GarageModelComponent: 'GarageModelComponent::onGaragesAssigned [m_garageId %d] | neon::NEerrno GarageModelComponent ~ setMultisubMaterialResourceID  [m_garageId %d] model [%s] | neon::NEerrno GarageModelComponent ~ setMulti'"
+  "evidence": "decomp:re/decomp/142a9e9d0.c;pat:log-message-cxx;xref:0x142b0f559,0x142b167f3",
+  "notes": "onGaragesAssigned(comp,msg): for each entrant assigned to garage comp+0x18: TeamColourModelComponent setColoursFromTeamStatId (0x142aa1db0); picks the multisub material override for the team from [0x146079090]+0x20 list +0x28..+0x30 (filtered by condition bits +0x48/+0x4c/+0x50); when it differs sets the model resource ID (model+0x58/+0x60, render proxy +0xf0). Handler (lea) in 0x142b165f0 / 0x142b0f3a0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.garage_model_component_on_garages_assigned",

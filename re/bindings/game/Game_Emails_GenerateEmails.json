@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name generateEmails (class from the log channel); log channel EMAILS: 'generateEmails(%s)'"
+  "evidence": "decomp:re/decomp/140ddfb70.c;pat:log-message-method;xref:0x140dd4914,0x140dd4e10,0x140dd51f7",
+  "notes": "3029-line decomp with merged code fragments; pdata 0x140ddfb70-0x140de3d6e; callers 0x140dd4870, 0x140dd5060. Name from the EMAILS log 'generateEmails(%s)'."
  },
  "signature": {
   "id": "game.emails_generate_emails",

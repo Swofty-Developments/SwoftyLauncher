@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143708830",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-FLOW",
-  "notes": "named from its log messages (channel FLOW): 'Game Mode changed to [%s] while in team HQ! '"
+  "evidence": "decomp:re/decomp/143708830.c;pat:log-channel-FLOW;xref:0x143706b32,0x143706b74",
+  "notes": "Bus-message handler: lea at 0x143706b32 passed to Ne_Subscribe_BusMessage (call 0x143706b4d) and at 0x143706b74 to unsubscribe (0x143706b91), both in 0x143706ae0. Body: asserts message payload +0x10 non-null, logs 'Game Mode changed to [%s] while in team HQ!' with payload +0x220 (FLOW); returns 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.flow_game_mode_changed_while_team_hq",

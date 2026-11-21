@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c5ab20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "int Career_Save_PendingDriverContract(void *contract, void *save_node)",
   "evidence": "decomp:re/decomp/140c5ab20.c;xref:0x145682c50",
-  "notes": "myteam-g1: Writer for the pending_driver_contract save block: adds fields from contract+0x292 (u16), +0x294 (u16), +0x3e4, a list of pending entries (vector +0x4f0..+0x4f8, 0x30 bytes each: packed driver key (u16 team/idx), value at +0x20, optional second key) and +0x458. Save-game format of one pending driver contract negotiation."
+  "notes": "Save writer (vtable ptr 0x145682c50) of the automatic contracts state: idle_days_remaining u16 +0x292, ramping_approach_chance +0x294, num_ai_driver_switches +0x3e4, team_handlers (vector +0x4f0..+0x4f8, 0xc0 stride: team_stat_id packed key, days_until_contract_processed +0x20, pending_driver_contract packed key +4/+6 if byte +8), base_cap_ai_signing_icon +0x458. (lane owner review requested) Better name: Career_AutoContracts_WriteSaveData (bound record keeps its name)."
  },
  "signature": {
   "id": "career.save_pending_driver_contract",

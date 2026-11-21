@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name returnAllVehiclesToGarage (class from the log channel); log channel GARAGE: '%s'"
+  "evidence": "decomp:re/decomp/142d7d120.c;pat:log-message-method;xref:0x1457e0d00",
+  "notes": "Session-exit style vslot (cell 0x1457e0d00): uidbTransitionString lobby cases plus an inlined returnAllVehiclesToGarage (0x142a3f330 per vehicle); the current name covers only that inlined part."
  },
  "signature": {
   "id": "game.garage_return_all_vehicles_to_garage",

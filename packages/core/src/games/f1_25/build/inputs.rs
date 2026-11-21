@@ -189,9 +189,10 @@ impl Inputs {
         }
         let record_ui = record_ui_lists(&ui_maps, &fitted, &resolve, &mut built.warnings);
         let caches = Vec::new();
+        let copy = crate::install::Source::detect(&game.dir);
         let mut session = match lent {
-            true => store.session_settings_of(p)?,
-            false => store.session_settings(profile)?,
+            true => store.session_settings_on(p, copy)?,
+            false => store.session_settings_on(&store.profile(profile)?, copy)?,
         };
         session.set_maps(
             fitted

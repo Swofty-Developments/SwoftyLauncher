@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1444483d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NEOS_WS",
-  "notes": "named from its log messages (channel NEOS_WS): 'Detached web socket stream'"
+  "evidence": "decomp:re/decomp/1444483d0.c;pat:log-channel-NEOS_WS;xref:0x1444cdcc7,0x145a8e958",
+  "notes": "Call 0x1444cdcc7, cell 0x145a8e958. Sets +0x134 = 1; detaches stream +0x140 (its +8 = 0 under its CS, log 'Detached web socket stream'), releases +0x148, frees +0x138, removes id +0x130 from the global transport map (0x146cb5a18.., CS 0x146cb4890), +0x130 = 0. (lane owner review requested) Better name: Game_NeosWS_DetachStream (bound record keeps its name)."
  },
  "signature": {
   "id": "game.neos_ws_detached_web_socket_stream",

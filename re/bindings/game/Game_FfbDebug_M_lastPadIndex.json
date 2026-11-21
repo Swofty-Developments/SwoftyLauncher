@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446f5610",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name m_lastPadIndex (class from the log channel); log channel FFB_DEBUG: 'm_lastPadIndex == padIndex && m_lastForceFeedback == forceFeedback  %d'"
+  "evidence": "decomp:re/decomp/1446f5610.c;pat:log-message-method;xref:0x1446f5eea,0x1446f5f94,0x1554da791",
+  "notes": "Own logs 'RacingFFBEffectXInput::setWindowsGamingInputGamepadVibration pad %d' / 'setGamepadVibration happened FORCEFEEDBACK'. Skips if same pad (+0x2b0) and same 4 motor values (+0x2c0); sleeps 10 ms if last send <10 ms ago (Xbox One driver workaround); calls fnptr [0x14604e1a0]+0x20(pad, doubles); stores pad/values and time +0x298. Old name was a log fragment. (lane owner review requested) Better name: Game_RacingFFBEffectXInput_SetGamepadVibration (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ffb_debug_m_last_pad_index",

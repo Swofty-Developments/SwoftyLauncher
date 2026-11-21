@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1410f5590",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-SPONSORS",
-  "notes": "named from its log messages (channel SPONSORS): 'Sponsor %s added with stat id %d '"
+  "evidence": "decomp:re/decomp/1410f5590.c;pat:log-channel-SPONSORS;xref:0x1410f45c0,0x1410f4a39",
+  "notes": "Returns if the team already has a record with def id +0x28. Else logs 'Sponsor %s added with stat id %d ' (SPONSORS), copies the def into a 0x160 record (0x140ce3080), day param_8; per loyalty level (0x78) 0x14111a560 and +0x68/+0x70 = param_2/3; record +0xd8==0: contract provider 0x1410f8230; ==1: claims reached levels 0x141118600; pushes via 0x1410fe630 to team+0x10; dtor 0x1410f6bf0. (lane owner review requested)"
  },
  "signature": {
   "id": "career.sponsors_add",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-GARAGECREW",
-  "notes": "named from its log messages (channel GARAGECREW): 'STOP OVERLAY SEQUENCE [%d] | LeftBay() | PLAY OVERLAY SEQUENCE [%d] %s | LeftBay() ETA %f | Mirrored Track | RightBay() | RightBay() ETA %f'"
+  "evidence": "decomp:re/decomp/140386ba0.c;pat:log-channel-GARAGECREW;xref:0x1403836f1,0x14038e81c",
+  "notes": "Bay overlay sequences (LeftBay/RightBay strings). Callers 0x140383660, 0x14038e4f0."
  },
  "signature": {
   "id": "game.garage_crew_update_bay_sequences",

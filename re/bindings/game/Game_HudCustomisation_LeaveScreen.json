@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-HUD_CUSTOMISATION",
-  "notes": "named from its log messages (channel HUD_CUSTOMISATION): 'Leaving the hud customisation screen, discarding changes | Leaving the hud customisation screen, calling saveHudConfigSet'"
+  "evidence": "decomp:re/decomp/141c10810.c;pat:log-channel-HUD_CUSTOMISATION;xref:0x14573be20",
+  "notes": "HUD_CUSTOMISATION 'Leaving the hud customisation screen, discarding changes | calling saveHudConfigSet' (log strings); vtable cell 0x14573be20."
  },
  "signature": {
   "id": "game.hud_customisation_leave_screen",

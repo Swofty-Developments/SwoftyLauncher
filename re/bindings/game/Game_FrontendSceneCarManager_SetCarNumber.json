@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428b2d70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name setCarNumber (class from the log channel); log channel FRONTEND_SCENE_CAR_MANAGER: 'setCarNumber()'"
+  "evidence": "decomp:re/decomp/1428b2d70.c;pat:log-message-method;xref:0x1428c3e97,0x1428e9e2c",
+  "notes": "Logs setCarNumber() (FRONTEND_SCENE_CAR_MANAGER). Hash lookup of ushort handle *param_2 in car map (+0x168..+0x19c); missing -> WARN 'Can't find car with handle %d.'. Car +0x7268 component (type 0x1460798e0): writes number param_3 to +0x67f9 and flag +0x67fa=1, recomputes visibility bytes +0xf0/+0x78 and refreshes (0x142a9b470, 0x142a8fe40). Decomp tail at 0x142a9c1f0 is a merged tail-jump target outside pdata. (lane owner review requested)"
  },
  "signature": {
   "id": "game.frontend_scene_car_manager_set_car_number",

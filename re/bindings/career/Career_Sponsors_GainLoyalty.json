@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141106870",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-SPONSORS",
-  "notes": "named from its log messages (channel SPONSORS): 'Team %s has gained %d loyalty with sponsor %s for %s'"
+  "evidence": "decomp:re/decomp/141106870.c;pat:log-channel-SPONSORS;xref:0x14110a695,0x14110ac32,0x14110af45,0x14110cf53,0x14110d175",
+  "notes": "Finds the team (c+0x298) and its active record; scales the gain by a table c+0x640 indexed via [c+0x278] vf+400, adjusts via 0x1411048f0, adds to loyalty xp +0x114, claims reached loyalty levels (0x141118600), logs 'Team %s has gained %d loyalty with sponsor %s for %s' (reason table 0x1456c5650), uses 0x1410f5a80 for timing and posts 0x1456c56d8 via 0x1439876c0. (lane owner review requested)"
  },
  "signature": {
   "id": "career.sponsors_gain_loyalty",

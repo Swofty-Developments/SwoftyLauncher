@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143a356e0.c;xref:0x143a35e8a",
-  "notes": "Builds the 64-byte aligned per-target blend/weight buffer for a morph modifier (alloca via Ne_Crt_Chkstk, memcpy/memset of float/u32 arrays, index-driven scatter). Sole caller Game_MorphModifier_BuildTargets. Hypothesis on exact buffer meaning."
+  "notes": "Per-morph builder called from Game_MorphModifier_BuildTargets (0x143a35e8a) when the target set has more than one entry."
  },
  "signature": {
   "id": "game.morph_modifier_build_blend_buffer",

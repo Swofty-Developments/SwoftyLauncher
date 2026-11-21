@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140234b80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=CutSceneScript::addHeadModelToAssetGroupPaths; log channel CUTSCENE_ASSETS: 'CutSceneScript::addHeadModelToAssetGroupPaths head [%s][%s][%s]'"
+  "evidence": "decomp:re/decomp/140234b80.c;pat:log-message-cxx;xref:0x140234b08,0x140236250",
+  "notes": "(script, u32 headId, bool alt): invalid head id -> WARN. Head record 0x14246d700([0x14604c2c8]+0x290, id), logs 'head [%s][%s][%s]' (CUTSCENE_ASSETS); when the record's group name (table entrants+0x490, 0x40 stride, index byte +0x4a) is 'female' and alt is set builds the path with 0x14248c170, else 0x14248bb50; adds it with 0x140233a70(script, script+0x38 request, path). (lane owner review requested)"
  },
  "signature": {
   "id": "game.cut_scene_script_add_head_model_to_asset_group_paths",

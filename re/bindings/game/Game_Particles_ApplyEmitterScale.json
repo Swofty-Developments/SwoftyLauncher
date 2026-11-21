@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143af9740.c;xref:0x143afad5b,0x143afaf41",
-  "notes": "Applies per-instance scale (float at [param_1[3]+8] when type==1) to emitter parameter floats param_3[0..]; uses temp vec4 array. Caller Game_Particles_UpdateEmitters. Hypothesis."
+  "notes": "Read part: if *(param_1[4]) == 1 multiplies 12 floats of param_3 by constant param_1[3]+8; else evaluates a curve for SIMD lanes of param_2 (16-entry byte table lerp via pshufb when 0x146106f14 set, else 0x143b15690) and multiplies param_3 lanes by the result. Callers in 0x143af9c70. Looks like a curve multiplier rather than a plain scale."
  },
  "signature": {
   "id": "game.particles_apply_emitter_scale",

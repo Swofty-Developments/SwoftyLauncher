@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1418cba70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1418cba70.c;xref:0x14187004b",
-  "notes": "If decals are enabled (+0x1e7): evaluates a decal texture object [this+0x110] (vcall +0x20) and updates placement from a {flag, short 0x3fff} param pair. Callers Game_Read_TexturesConfig, 0x141870760, 0x1418cbe00. Hypothesis. vp0-verify partial"
+  "evidence": "decomp:re/decomp/1418cba70.c;xref:0x14187004b,0x1418707e6,0x1418cbe3c",
+  "notes": "(node, key1, key2, mode): only if +0x1e7. Bool property +0x110 = key1 valid (not {0,0x3fff}); if valid, string 0x1423ef070(key1) -> property +0x148; key2 likewise -> +0x130 / 0x1423dbe10 -> +0x168. Then Game_Livery_ApplyTeamColours(this); mode < 4 sets bytes +0x1e5/+0x1e6 from the shift tables 0x1010000/0x1000100. (lane owner review requested)"
  },
  "signature": {
   "id": "game.livery_update_decal_placement_from_texture",

@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143b030e0.c;xref:0x143b04025,0x143b04d7d",
-  "notes": "Restores one stored effect (id = u32 at +100: high bits slot, low byte lane <4) from the saved array at manager+0xa5e370 (stride 0x40 x4) into live emitters; 700 lines of SIMD copies. Caller Game_Particles_RestoreStoredEffects. Used by replay/rewind."
+  "notes": "Callers 0x143b04025, 0x143b04d7d in Game_Particles_RestoreStoredEffects. Note from input (saved array mgr+0xa5e370) not re-verified."
  },
  "signature": {
   "id": "game.particles_restore_stored_effect",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=Hub::create; log channel EadpSDK: 'Calling eadp::foundation::Hub::create'"
+  "evidence": "decomp:re/decomp/143fcd400.c;pat:log-message-cxx;xref:0x145a44ca0",
+  "notes": "EadpSDK 'Calling eadp::foundation::Hub::create' (log string); vtable cell 0x145a44ca0."
  },
  "signature": {
   "id": "game.hub_create",

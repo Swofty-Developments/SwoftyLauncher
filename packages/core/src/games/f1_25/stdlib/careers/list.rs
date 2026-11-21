@@ -528,7 +528,8 @@ fn list_save_with(
     own: impl FnOnce() -> Option<Location>,
 ) -> ListSave {
     let redirect = crate::saves::launcher::redirected(data, profile, launcher_saves);
-    let plain = crate::saves::plain::root_of_session(data, profile, redirect).map(Plain::at);
+    let copy = crate::install::Source::detect(&game.dir);
+    let plain = crate::saves::plain::root_of_session(data, profile, redirect, copy).map(Plain::at);
     let store = redirect
         .then(|| crate::saves::launcher::store_of_game(data, profile, game))
         .filter(crate::saves::launcher::has_files);
@@ -1515,7 +1516,7 @@ mod tests {
         crate::saves::plain::remember_copy_source(root, &own.source);
         generation(&Plain::of_source(root, &own.source), 2, "load", Vec::new());
         generation(
-            &Plain::at(crate::saves::plain::root_of_profile(root, "default")),
+            &Plain::at(crate::saves::plain::root_of_profile_ea(root, "default")),
             1,
             "load",
             crate::saves::plain::fixture::pair(
@@ -1535,7 +1536,7 @@ mod tests {
     fn launcher_saves_off_lists_the_ea_copys_own_save_and_not_a_stale_plain_store() {
         let root = scratch("niggo-off");
         let (ea, own) = niggo_layout(&root);
-        let stale = Plain::at(crate::saves::plain::root_of_profile(&root, "default"));
+        let stale = Plain::at(crate::saves::plain::root_of_profile_ea(&root, "default"));
         assert_eq!(save_careers(&stale).0.len(), 2);
         assert!(save_careers(&Plain::of_source(&root, &own.source)).0.is_empty());
         let saved = list_save_with(&root, "default", false, &ea, || Some(own.clone()));
@@ -1570,7 +1571,7 @@ mod tests {
     fn an_ea_plain_generation_with_no_containers_hides_no_career() {
         let root = scratch("ea-empty-plain");
         let (ea, own) = niggo_layout(&root);
-        let launcher = Plain::at(crate::saves::plain::root_of_profile(&root, "default"));
+        let launcher = Plain::at(crate::saves::plain::root_of_profile_ea(&root, "default"));
         generation(&launcher, 2, "load", Vec::new());
         generation(&launcher, 3, "save", Vec::new());
         generation(&Plain::of_source(&root, &own.source), 3, "save", Vec::new());
@@ -1578,6 +1579,33 @@ mod tests {
         let off = list_save_with(&root, "default", false, &ea, || Some(own.clone()));
         assert_eq!(on.careers.len(), 3);
         assert_eq!(off.careers.len(), 4);
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn an_ea_session_on_launcher_saves_lists_careers_from_the_ea_layouts_plain_store_only() {
+        let root = scratch("ea-not-steam-plain");
+        let (ea, own) = niggo_layout(&root);
+        let before = list_save_with(&root, "default", true, &ea, || Some(own.clone()));
+        let progressive = || {
+            crate::saves::plain::fixture::pair(
+                "driver_career_progressive",
+                "kept",
+                vec![("0x00000000000000cc", "Progressive 2010")],
+            )
+        };
+        let steam = Plain::at(crate::saves::plain::root_of_profile(&root, "default"));
+        generation(&steam, 7, "save", progressive());
+        let after = list_save_with(&root, "default", true, &ea, || Some(own.clone()));
+        assert_eq!(keys(&after), keys(&before), "a Steam session's generation");
+        let ea_plain = Plain::at(crate::saves::plain::root_of_profile_ea(&root, "default"));
+        generation(&ea_plain, 7, "save", progressive());
+        let fed = list_save_with(&root, "default", true, &ea, || Some(own.clone()));
+        assert!(
+            keys(&fed).contains(&"00000000000000cc".to_owned()),
+            "{:?}",
+            keys(&fed)
+        );
         std::fs::remove_dir_all(&root).ok();
     }
 

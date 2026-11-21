@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141883960",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141883960.c;xref:0x14151c5ea",
-  "notes": "1646-byte text builder using loc key lng_tyre_and_compound with TYRE / COMPOUND tokens. 10 callers incl. Game_HudTyrePerformance_PopulateRow (0x14152c45d). Addon-relevant: HUD tyre/compound label."
+  "evidence": "decomp:re/decomp/141883960.c;xref:0x14151c5ea,0x14152c45d,0x14154bb54,0x1415b7076,0x1415c6156,0x1417f9a04,0x1417f9aa6,0x141c07df8,0x141fabff0",
+  "notes": "(vm, tyreInfo) text: mode +0x8c picks the value via 0x142e9dc20 / 0x142e9d530; +0x88==0 uses the compound name; else if the visual name (djb2) differs from the compound name and not simple mode builds lng_tyre_and_compound with TYRE/COMPOUND tokens (0x1417eaa50); passes the result to 0x141883fd0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.hud_format_tyre_and_compound_text",

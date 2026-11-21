@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1409763b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14172c840.c;xref:0x14172c8b4",
-  "notes": ".xtls jmp thunk (to 0x148a89770): (table = game mode context +0x30, const NeStr *name) -> index into the vector at context +0x58 (8-byte entries; entry+0x38 -> +0x260 is the mode entity). The name hash is case-insensitive FNV-1a. No bounds check and no miss value, so a caller checks the index against the vector. Called by the LAN tile getAction (0x14172c840) with \"online_custom\"."
+  "evidence": "decomp:re/decomp/14172c840.c;xref:0x1401b0c37,0x1401b0ce8,0x1407c0c72,0x1407c10dd,0x1407c71f2,0x1407c75b3,0x1407cab05,0x1407d1113,0x1407d2114,0x1407d26b2,0x1407d278e,0x14172c8b4,0x141be10ec,0x141be1874,0x142224fdd,0x142233392",
+  "notes": "5-byte jmp thunk (no pdata entry) to 0x148a89770 (pdata 0x148a89770..0x148a898af, read in full). Robin-hood string-key hash map find: FNV-1a of the C string [p2+0x10] (case-SENSITIVE: compare 0x14535d850 is strcmp), x mult p1+0x20, metadata bytes [p1+0x30], slot pointers [p1+0x28] (key at entry+0x10). Returns the slot index; miss returns the end index (meta - slots)>>3 or 0 when the mask p1+0x40 is 0. Corrects the old 'case-insensitive, no miss value' note. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_modes_name_index",

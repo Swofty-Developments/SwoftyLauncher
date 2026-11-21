@@ -788,6 +788,7 @@ inline constexpr address<"Game_GameSessionUI_Shutdown"> Game_GameSessionUI_Shutd
 using Game_Game_HandleInterruptEvent_t = uint64_t(void *game, const void *event);
 inline constexpr fn<"Game_Game_HandleInterruptEvent", Game_Game_HandleInterruptEvent_t> Game_Game_HandleInterruptEvent{}; // L2 experimental
 inline constexpr address<"Game_Game_OnRetireLocalPlayersMessage"> Game_Game_OnRetireLocalPlayersMessage{}; // L2 experimental
+inline constexpr address<"Game_Game_RetireLocalPlayer"> Game_Game_RetireLocalPlayer{}; // L2 experimental
 using Game_Game_SetCurrentGameMode_t = void(void *mode_context, void *mode);
 inline constexpr fn<"Game_Game_SetCurrentGameMode", Game_Game_SetCurrentGameMode_t> Game_Game_SetCurrentGameMode{}; // L2 experimental
 inline constexpr address<"Game_GarageCrewInstanceLogic_StateSendCarToTrack_P3"> Game_GarageCrewInstanceLogic_StateSendCarToTrack_P3{}; // L2 experimental, GarageCrewInstanceLogic::StateSendCarToTrack_P3

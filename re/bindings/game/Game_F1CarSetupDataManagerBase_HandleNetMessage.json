@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c0fc80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=F1CarSetupDataManagerBase::handleNetMessage; log channel NETWORK: ' F1CarSetupDataManagerBase::handleNetMessage()'"
+  "evidence": "decomp:re/decomp/140c0fc80.c;pat:log-message-cxx;xref:0x145672ac8,0x14568d7f8,0x1457afd48,0x1457b0d68",
+  "notes": "Vtable slot. Logs ' F1CarSetupDataManagerBase::handleNetMessage()'; reads one 16-bit driver id, skips when no track is loaded ([this+0x18]+0x1a8 -> +0x30 null), finds or creates the binding (0x2048 bytes, 0x140c05ce0) and calls BindingDeserialize 0x140c0f4a0; error logs for empty buffer / failed deserialize. (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1_car_setup_data_manager_base_handle_net_message",

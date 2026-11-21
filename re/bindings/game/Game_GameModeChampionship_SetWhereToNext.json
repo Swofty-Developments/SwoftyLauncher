@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1407ba860",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameModeChampionship::setWhereToNext; log channel FLOW: 'GameModeChampionship::setWhereToNext() keeps SessionExit at %s'"
+  "evidence": "decomp:re/decomp/1407ba860.c;pat:log-message-cxx;xref:0x142d52a0c,0x1437046bf,0x14864e2ca,0x1486923d3,0x148717018,0x145646c70",
+  "notes": "Calls at the listed sites plus vtable cell 0x145646c70. SessionExit byte = [p1[0x1e8]]+0x1fc, set via 0x142c76810 and logged (FLOW, names from table 0x14565f3e0). Sets ui_menu_data.show_loading_options. Keeps 1/4; otherwise picks by state: 8 (schedule component), 1 (championship Completed, last weekend of last season, return-to-frontend between weekends), 3 (more championships / weekend completed), 0/2 (weekend InProgress per +0x220 table), 3 + 'game mode is changing to %s', 6 (pending events +0x550), 5 + career_error teamHQ_weekend_not_completed, 7 (f2 -> f1 transition). (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_mode_championship_set_where_to_next",

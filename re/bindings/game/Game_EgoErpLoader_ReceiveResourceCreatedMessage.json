@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a62d90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name receiveResourceCreatedMessage (class from the log channel); log channel EGO_ERP_LOADER_VERBOSE: 'receiveResourceCreatedMessage'"
+  "evidence": "decomp:re/decomp/143a62d90.c;pat:log-message-method;xref:0x143a60eca",
+  "notes": "Bus handler: logs EGO_ERP_LOADER_VERBOSE 'receiveResourceCreatedMessage'; for the resource msg+0x10 frees fragments (32-byte records at +0x38, count byte +0x20) tagged 'tmp0'/'temp'/'tmp1' via allocator [this] vcall +0x38 and nulls them; if msg+0x18 == 0 and status byte +0x22 != 4 sets status 3 and loader +0x3f4 = 1. Returns 0. Fn ptr taken by lea in 0x143a60bc0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ego_erp_loader_receive_resource_created_message",

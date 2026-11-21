@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140f82580",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-FACILITIES_AUTO",
-  "notes": "named from its log messages (channel FACILITIES_AUTO): 'Team %s is tracking %s %.2f of the cost cap. | (DOWN) Team %s adjusting %s capacity from %u%s to %u. | ( UP ) Team %s adjusting %s capacity from %u%s to %u. Facility is now running uncapped. | ( UP ) '"
+  "evidence": "decomp:re/decomp/140f82580.c;pat:log-channel-FACILITIES_AUTO;xref:0x1456af020",
+  "notes": "Facilities cost-cap adjust (vtable cell 0x1456af020): logs 'Team %s is tracking %s %.2f of the cost cap', compares projection (0x140f8f690) and team attributes (0x140f88c60, 0x140f88ed0), adjusts capacity via 0x140f890e0 / 0x140f893b0 with ( UP )/(DOWN) FACILITIES_AUTO logs. (lane owner review requested)"
  },
  "signature": {
   "id": "career.facilities_auto_adjust_capacity",

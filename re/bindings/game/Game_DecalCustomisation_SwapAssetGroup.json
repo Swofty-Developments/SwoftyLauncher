@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-CUSTOMISATION_DECALS",
-  "notes": "named from its log messages (channel CUSTOMISATION_DECALS): 'Asset group triggerAssetGroupSwap() | Service for id %I64d is deactivated, removing from GameDecalCustomisationSystem | Vehicle %d; Advanced generation state by %d states'"
+  "evidence": "decomp:re/decomp/14142e7f0.c;pat:log-channel-CUSTOMISATION_DECALS;xref:0x1456e3c18",
+  "notes": "Vtable cell 0x1456e3c18."
  },
  "signature": {
   "id": "game.decal_customisation_swap_asset_group",

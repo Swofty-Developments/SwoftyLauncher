@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14307b1f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionMatchingCustom::onCustomJoinComplete; log channel NETWORK-SESSION: 'GameSessionMatchingCustom::onCustomJoinComplete(%s, %d)'"
+  "evidence": "decomp:re/decomp/14307b1f0.c;pat:log-message-cxx;xref:0x143076dd6,0x1430e3a5a,0x1430e3b1b",
+  "notes": "Refs: call 0x143076dd6 (Cancel), lea 0x1430e3a5a and call 0x1430e3b1b (in 0x1430e0560). Logs 'GameSessionMatchingCustom::onCustomJoinComplete(%s, %d)'. Restarts the timer +0x60/+0x68, clears +0xba; calls and clears the join delegate (fn +0xc0, ctx +0xc8) with result {+0xd0 = +0xbc, ok +0xd4 = p2, code +0xd8 = p3}; stores p3 at [[p1+8]+0x4d8]+0x34 and, when +0x44, clears +0x47 and accumulates the join wait time +0x78 from +0x80. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_session_matching_custom_on_custom_join_complete",

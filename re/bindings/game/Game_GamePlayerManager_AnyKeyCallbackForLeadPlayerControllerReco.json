@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1434df050",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GamePlayerManager::anyKeyCallbackForLeadPlayerControllerReconnection; log channel INPUT: 'GamePlayerManager::anyKeyCallbackForLeadPlayerControllerReconnection - calling forceRefresh()'"
+  "evidence": "decomp:re/decomp/1434df050.c;pat:log-message-cxx;xref:0x1434df060,0x1434e0016,0x1434e012c,0x1434e01e4",
+  "notes": "Refs: lea at 0x1434df060 (itself, re-arm via 0x1434df6e0) and 0x1434e0016/0x1434e012c/0x1434e01e4 (in 0x1434dfef0). Unless 0x1434df6e0 consumes it and when a lead player [p1+0x198] exists: sets [[p1+0x528]+0x10 vt+0x48]+0xbaa0 = 1, assigns device p2 to the lead player (0x14411bcf0, own vt+0x60), logs INPUT '...anyKeyCallbackForLeadPlayerControllerReconnection - calling forceRefresh()', calls the reconnect delegate p1[0x44]/p1[0x45] with the player id (+0x18), sets [p1+0x538]+0x72 = 1. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_player_manager_any_key_callback_for_lead_player_controller_reco",

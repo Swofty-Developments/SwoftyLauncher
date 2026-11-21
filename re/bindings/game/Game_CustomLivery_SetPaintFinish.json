@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a9a910",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-CUSTOM_LIVERY_MODEL",
-  "notes": "named from its log messages (channel CUSTOM_LIVERY_MODEL): 'Setting paint finish: Base roughness %f - Metallic %f,%f,%f with metallic amount %f on vehicle index %d'"
+  "evidence": "decomp:re/decomp/142a9a910.c;pat:log-channel-CUSTOM_LIVERY_MODEL;xref:0x14db487f5,0x14db48892",
+  "notes": "(comp, out, u8 finish[4]): for each of the 4 colour slots looks up finish id finish[i] in the unordered_map [p1+0x40] (FNV-1a of the byte; missing -> throw 'invalid unordered_map<K, T> key'); entry+0x18 float (base roughness) -> out+0xbc/+0xcc/+0xdc/+0xec (w of the colour float4s), metallic float4 out+0xf0/+0x100/+0x110/+0x120 = clamp01(slot colour xyz + [[p1+0x40]+0x80]), w = entry+0x1c byte3/255; logs 'Setting paint finish' per slot. (lane owner review requested)"
  },
  "signature": {
   "id": "game.custom_livery_set_paint_finish",

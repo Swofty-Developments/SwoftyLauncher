@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140cc91a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void FUN(void *career, void *event)",
   "evidence": "decomp:re/decomp/140cc91a0.c;xref:0x145688138",
-  "notes": "myteam-g1: Handles department_event_hash and story_department_event_history: stores the hash of a played story department event."
+  "notes": "Reader (vtable ptr 0x145688138): clears the history map +0x2e8, then reads story_department_event_history[] entries {department_event_hash, outcome_hash} (0x143931730) and inserts them via 0x140d63ad0; TLS error 0x57/0x58 on missing/wrong field. (lane owner review requested) Better name: Career_DeptEvent_Deserialise_StoryHistory (bound record keeps its name)."
  },
  "signature": {
   "id": "career.dept_event_record_story_history",

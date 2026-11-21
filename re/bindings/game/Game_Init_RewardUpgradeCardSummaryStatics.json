@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "void Game_Init_RewardUpgradeCardSummaryStatics(void)",
   "evidence": "decomp:re/decomp/142ccaee0.c;xref:0x145d31cc8",
-  "notes": "myteam-g1: Static initialiser for RewardF1WUniqueUpgradeCardSummary / RewardF1WUpgradeCardSummary / RewardUpgradeCardResult globals (default floats 0.5/3.0, 0xffff markers)."
+  "notes": "Static initialiser for RewardF1WUniqueUpgradeCardSummary / RewardF1WUpgradeCardSummary / RewardUpgradeCardResult globals (earlier notes)."
  },
  "signature": {
   "id": "game.init_reward_upgrade_card_summary_statics",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144550bc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NeCheckEventChainUid",
-  "notes": "named from its log messages (channel NeCheckEventChainUid): 'GetVehicleInFocusEventNode: inputPin %u with uid%, outputPin %u with uid %u, vp %u'"
+  "evidence": "decomp:re/decomp/144550bc0.c;pat:log-channel-NeCheckEventChainUid;xref:0x154b8ff39",
+  "notes": "Binder 0x154b8ff00 (lea 0x154b8ff39). vp index from hash map 0x146cc3ab8 (r8>>32), optional NeCheckEventChainUid log; for vp 0..1 reads [0x146cc3ab8]+0x38 entry vp*0x28+0x98 -> vehicle list +0x2a0 first -> +8 -> +0x88 (16 bytes, else zero) into data pin this+0x18, fires output this+0x10 (0x14400c680). Decomp polluted; disassembly read. (lane owner review requested) Better name: Game_EventNode_GetVehicleInFocus_OnInput (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ne_check_event_chain_uid_get_vehicle_in_focus_event_node_input_pin",

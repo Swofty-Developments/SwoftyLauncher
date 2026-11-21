@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1431005a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-DATASYNC",
-  "notes": "named from its log messages (channel DATASYNC): '[%s] Received start message from %d as %s'"
+  "evidence": "decomp:re/decomp/1431005a0.c;pat:log-channel-DATASYNC;xref:0x14fe71e48",
+  "notes": "Handler (lea at 0x14fe71e48 in 0x14fe71e00). Logs 'Received start message from %d as %s'. Stale continuation cookie -> broadcast finished (0x73). State 2: msg cookie 0 -> a sender that has a cookie sends it (msg 0x70) and opens the peer entry (0x1431053e0, +0x50 = 1); new cookie -> stored at +0x1c; different cookie -> state 1. Other states are logged and ignored. (lane owner review requested) Better name: Game_Datasync_OnSyncStartMessage (bound record keeps its name)."
  },
  "signature": {
   "id": "game.datasync_received_start_message_as",

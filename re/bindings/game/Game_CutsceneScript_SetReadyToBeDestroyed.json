@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140236b80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name setReadyToBeDestroyed (class from the log channel); log channel CUTSCENE_SCRIPT_VERBOSE: 'setReadyToBeDestroyed %p %s [%s]'"
+  "evidence": "decomp:re/decomp/140236b80.c;pat:log-message-method;xref:0x1455eb888,0x1455ed058,0x1455ee6f8,0x1455eeb08,0x1455f0e18,0x1455f6f08,0x1455f7218,0x1455f7998",
+  "notes": "(script, bool): logs CUTSCENE_SCRIPT_VERBOSE 'setReadyToBeDestroyed %p %s [%s]' (true/false) and sets bit3 of byte this+0x539 to the bool. Cells = this slot in the cutscene script vtables (subset listed). (lane owner review requested)"
  },
  "signature": {
   "id": "game.cutscene_script_set_ready_to_be_destroyed",

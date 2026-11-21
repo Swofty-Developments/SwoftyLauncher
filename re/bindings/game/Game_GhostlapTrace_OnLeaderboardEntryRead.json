@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onLeaderboardEntryRead (class from the log channel); log channel GHOSTLAP-TRACE: '%s(#%d) : Mismatch in active presences : current(%s) task(%s).'"
+  "evidence": "decomp:re/decomp/142fa53c0.c;pat:log-message-method;xref:0x142f9ae64",
+  "notes": "Leaderboard entry read callback (strings). Registered (lea) in 0x142f98320."
  },
  "signature": {
   "id": "game.ghostlap_trace_on_leaderboard_entry_read",

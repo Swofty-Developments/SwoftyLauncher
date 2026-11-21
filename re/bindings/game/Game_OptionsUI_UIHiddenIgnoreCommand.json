@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-OPTIONS-UI",
-  "notes": "named from its log messages (channel OPTIONS-UI): 'UI is hidden, ignore command %s'"
+  "evidence": "decomp:re/decomp/141dae7f0.c;pat:log-channel-OPTIONS-UI;xref:0x14574d520",
+  "notes": "vt cell 0x14574d520. 6 KB settings VM command handler (exit, show_view, show_bg, cat_controls, cat_accessibility, migrate_to_splash_transition). Decomp polluted."
  },
  "signature": {
   "id": "game.options_ui_ui_hidden_ignore_command",

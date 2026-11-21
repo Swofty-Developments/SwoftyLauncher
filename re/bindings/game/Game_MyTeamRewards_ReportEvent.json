@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140fc6320",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "void f(void *writer, void *out)",
-  "evidence": "decomp:re/decomp/140fc6320.c;xref:0x1456aff68;xref:0x1456b0048;xref:0x1456b0128",
-  "notes": "myteam-g1: Analytics hook: writes the MY_TEAM_REWARDS event through a writer vtable slot +0x30 after hashing the name (hash 0x21c83a88)."
+  "evidence": "decomp:re/decomp/140fc6320.c;xref:0x1456aff68,0x1456b0048,0x1456b0128,0x1456b0228,0x1456b0568,0x1456b1008,0x1456b19a8,0x1456b1a98,0x1456b1b48,0x1456b1c28,0x1456b1dc8,0x1456b1f08,0x1456b1ff8,0x1456b20c8",
+  "notes": "Shared vslot (cells in many MY_TEAM_REWARDS vtables). Builds a string, fills it via this->vslot+0x30(this,&str), logs ' - %s' on MY_TEAM_REWARDS when channel hash 0x21c83a88 is enabled, frees it. 0x21c83a88 is the log-channel hash, not a name hash. (lane owner review requested) Better name: Game_MyTeamRewards_LogDescription (bound record keeps its name)."
  },
  "signature": {
   "id": "game.my_team_rewards_report_event",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14197f870",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void f(void *view)",
-  "evidence": "decomp:re/decomp/14197f870.c;xref:0x14197f856;xref:0x1419807c6;xref:0x141981486",
-  "notes": "myteam-g1: Raises the _facility_ceremony UI/flow event after a facility upgrade."
+  "evidence": "decomp:re/decomp/14197f870.c;xref:0x14197f856,0x1419807c6,0x141981486",
+  "notes": "Returns {1, name}: name = param_5 string, or param_5 + '_facility_ceremony' (Ne_String_CloneAppendCStr) when Career_Check_TopLevelUnlocked(param_2,param_3,param_4) is true. Raises no event itself. (lane owner review requested) Better name: Career_Resolve_FacilityCeremonyName (bound record keeps its name)."
  },
  "signature": {
   "id": "career.trigger_facility_ceremony",

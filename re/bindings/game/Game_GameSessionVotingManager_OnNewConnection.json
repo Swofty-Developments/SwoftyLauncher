@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430ca7c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionVotingManager::onNewConnection; log channel NETWORK/V: 'GameSessionVotingManager::onNewConnection()'"
+  "evidence": "decomp:re/decomp/1430ca7c0.c;pat:log-message-cxx;xref:0x1458135d8",
+  "notes": "Vtable cell 0x1458135d8 (secondary base). Own bounds 0x1430ca7c0..0x1430ca855: logs NETWORK/V 'GameSessionVotingManager::onNewConnection()'; only when the state [p1+8] == 1 (host) tail-jumps (0x1430ca830) to 0x1430c9bc0(p1-8, p2), which the decomp merges in: it packs the current vote state (message 0x145823c80, type 7/0x1f, vote entries with state 1 from +0xc8..+0xd0, stride 0x60) and sends it to the new connection via [[..+0x18]+0x3d0] 0x14402e500. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_session_voting_manager_on_new_connection",

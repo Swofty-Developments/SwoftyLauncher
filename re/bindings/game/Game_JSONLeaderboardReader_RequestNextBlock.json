@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142fbb570",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=JSONLeaderboardReader::requestNextBlock; log channel LEADERBOARD: 'game::JSONLeaderboardReader::requestNextBlock() on %s(ver=%d), was at %llu, +%llu'"
+  "evidence": "decomp:re/decomp/142fbb570.c;pat:log-message-cxx;xref:0x1457feef8",
+  "notes": "Vtable slot +0x18 (cell 0x1457feef8, table 0x1457feee0). Logs LEADERBOARD 'requestNextBlock() on %s(ver=%d), was at %llu, +%llu'. Count +0x108 == 0 -> 0; else first = +0x100 + 1 -> +0xf8, last = first + count -> +0x100, returns StartOperation(this, this+0xb0, mode byte +0x3c, first, last). (lane owner review requested)"
  },
  "signature": {
   "id": "game.json_leaderboard_reader_request_next_block",

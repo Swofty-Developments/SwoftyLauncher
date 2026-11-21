@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14142bc30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14142bc30.c;xref:0x14142ebb7",
-  "notes": "Looks up car index byte param_2 in the car list this+0x2d8..0x2e0 (refcounted) and returns readiness. Callers Game_GameDecalCustomisationSystem_Update, 0x1428b36d0."
+  "evidence": "decomp:re/decomp/14142bc30.c;xref:0x14142ebb7,0x1428b37de",
+  "notes": "(sys, char* carIdx): finds the car whose +0x10 byte == *carIdx in the shared_ptr list sys+0x2d8..+0x2e0 and returns (car+0xd8 == 9 && car+0x160 == 0) (generation state eReady, no pending regeneration params); -1 or not found -> 0. Callers Game_DecalCustomisation_SwapAssetGroup (0x14142ebb7), tail jmp in 0x1428b36d0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.decal_customisation_is_editor_car_ready",

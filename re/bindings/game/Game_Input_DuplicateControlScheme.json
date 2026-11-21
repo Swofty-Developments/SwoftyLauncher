@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name duplicateControlScheme (class from the log channel); log channel INPUT: 'duplicateControlScheme name:%s'"
+  "evidence": "decomp:re/decomp/142a5f900.c;pat:log-message-method;xref:0x1457bb700",
+  "notes": "INPUT 'duplicateControlScheme name:%s' (log string)."
  },
  "signature": {
   "id": "game.input_duplicate_control_scheme",

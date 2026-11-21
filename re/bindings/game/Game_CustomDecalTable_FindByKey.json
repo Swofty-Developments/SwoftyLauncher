@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141430010",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141430010.c;xref:0x142a934c1",
-  "notes": "FNV-1a style 64-bit hash lookup of a u32 key (rotated by 14) in the bucket tables [[param_1+0x250]+0x230..0x238]; returns entry pointer. Only caller Game_CustomDecalModel_Bake. Hypothesis."
+  "notes": "Two-level lookup: key u32 rotated (k<<14|k>>16), low u16 FNV-1a hashed, searched in bucket chains (match u16 at node+0x10) of each 0x60-byte table in [[p1+0x250]+0x230,+0x238); on hit the table's u32 id is hashed (mul [p1+0x118]) into the open-addressing map p1+0x120/+0x128/+0x138; returns value+8 or 0. Caller in Game_CustomDecalModel_Bake. (lane owner review requested)"
  },
  "signature": {
   "id": "game.custom_decal_table_find_by_key",

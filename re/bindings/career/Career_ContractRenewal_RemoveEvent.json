@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140d8e0a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-CONTRACT_RENEWAL",
-  "notes": "named from its log messages (channel CONTRACT_RENEWAL): 'Removing a renewal event on current day | Removing a renewal event on next day'"
+  "evidence": "decomp:re/decomp/140d8e0a0.c;pat:log-channel-CONTRACT_RENEWAL;xref:0x140d992bf,0x140d9a61b",
+  "notes": "CONTRACT_RENEWAL 'Removing a renewal event on current/next day' / 'from driver': checks 0x140d8d2f0 for today and tomorrow, removes via 0x140d8e1e0 / 0x141267e30 (branch 0x1484f1570). (lane owner review requested)"
  },
  "signature": {
   "id": "career.contract_renewal_remove_event",

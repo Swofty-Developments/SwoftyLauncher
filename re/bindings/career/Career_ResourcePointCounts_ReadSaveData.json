@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1434feb60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "undefined4 f(void *counts, void *save_in)",
-  "evidence": "decomp:re/decomp/1434feb60.c;xref:0x1434fe6b0;xref:0x1435091d9",
-  "notes": "myteam-g1: Save reader for the two num_resource_points values."
+  "evidence": "decomp:re/decomp/1434feb60.c;xref:0x1434fe6b0,0x1435091d9",
+  "notes": "Save reader: looks up 'num_resource_points' (u32 -> out+0) and 'is_unlimited' (byte -> out+4) via Ne_StringPool_FindObjectByCStr 0x143931730 with type checks; returns 0, 0x57 (missing) or 0x58 (type mismatch) and records the code in the error ring. Not two point values: the second field is the is_unlimited flag. (lane owner review requested)"
  },
  "signature": {
   "id": "career.resource_point_counts_read_save_data",

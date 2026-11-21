@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-FADE_REQUESTS",
-  "notes": "named from its log messages (channel FADE_REQUESTS): 'Pending Change for a Custom Driver that doesn't exisit, removing pending change.'"
+  "evidence": "decomp:re/decomp/1428c9060.c;pat:log-channel-FADE_REQUESTS;xref:0x1457acf48",
+  "notes": "Vtable cell 0x1457acf48. FRONTEND_SCENE_MANAGER update: transition state changes (eIdle/eRequested/eFadeOut via setTransitionState), processes pending custom driver / car / object changes ('Pending Change for a Custom Driver that doesn't exisit ...', processPendingCustomObjectChanges, startSpawn). Old name was a log fragment. Better name: Game_FrontendSceneManager_ProcessPendingChanges (bound record keeps its name)."
  },
  "signature": {
   "id": "game.fade_requests_pending_change_custom_driver_doesn",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1422caed0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-TEAMHQ_ADVANCE",
-  "notes": "named from its log messages (channel TEAMHQ ADVANCE): 'ADVANCING ONE DAY, day: %d | Advancing set to: %s | Starting advancing from stopped | Stopping because the peer signalled stop, day: %d | %s | Not advancing, no cards, stop occured: %d | Signalling st'"
+  "evidence": "decomp:re/decomp/1422caed0.c;pat:log-channel-TEAMHQ_ADVANCE;xref:0x1422c7b75,0x1422c7b90",
+  "notes": "(VM) Logs ADVANCING ONE DAY; 0x14111cad0([this+0x6e0],1,1,0) advances the calendar; card check -> [this+0x759]; 0x1422bfef0; peer stop/finished signals (posts, day+1 at +0x768/+0x770 = AdvanceData+0x38/+0x40); on stop StopAdvance; else sets +0x75a, PopulateButtons, 0x1422bb5c0(this+0x730), 0x1422ca8a0. Callers: Career_TeamHqAdvance_OnTimer (call and jmp). (lane owner review requested)"
  },
  "signature": {
   "id": "career.team_hq_advance_advance_one_day",

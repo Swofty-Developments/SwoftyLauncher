@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143165d50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionMatchingHopper::joinMatch; log channel NETWORK-CONTENT: 'GameSessionMatchingHopper::joinMatch()'"
+  "evidence": "decomp:re/decomp/143165d50.c;pat:log-message-cxx;xref:0x14581f280",
+  "notes": "Vtable cell 0x14581f280. Dispatches the join on matching type p1[3] (after 0x143065010 check, else 0x16): 1-3 custom join (vt+0x58 + 0x144062230, callback 0x143165c90, locale en-GB); 4 inlined GameSessionMatchingHopper::joinMatch() on [p1[1]+0x3f0] (delegate 0x143165bd0, vt+0x48, failure -> OnMatchJoinComplete(...,0,0x1e)); 7 DLC domain 'unselected' + career joinSession on [p1[1]+0x400]; 8 F1WSocialGP joinSession on [p1[1]+0x408]; 10/11 presence joins (0x144064830 / 0x1440638b0) with players p1[0x16a..0x16c]. Returns 0 or error. Renamed: joinMatch is one inlined case. (lane owner review requested) Better name: Game_GameSessionMatching_JoinSessionByType (bound record keeps its name)."
  },
  "signature": {
   "id": "game.game_session_matching_hopper_join_match",
