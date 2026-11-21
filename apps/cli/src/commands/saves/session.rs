@@ -38,6 +38,7 @@ fn map_moved_ids(store: &Store, profile: &str, g: &Game, loc: &Location, snapsho
         &store.root,
         profile,
         on_launcher_saves,
+        swofty_core::install::Source::detect(&g.dir),
         &aliases,
         now,
         save,

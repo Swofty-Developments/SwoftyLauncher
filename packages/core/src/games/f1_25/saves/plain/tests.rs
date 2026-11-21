@@ -283,8 +283,63 @@ fn roots_follow_the_contract() {
         root_of_source(data, "launcher-default"),
         data.join("saves/default/plain")
     );
+    assert_eq!(
+        root_of_source(data, "launcher-ea.default"),
+        data.join("saves/default/ea-plain")
+    );
     assert_eq!(root_of_source(data, "steam-123"), data.join("plain/steam-123"));
     assert_eq!(root_of_source(data, "ea-me"), data.join("plain/ea-me"));
+    assert_eq!(
+        root_of_launcher(data, "default", crate::install::Source::Steam),
+        root_of_source(data, "launcher-default")
+    );
+    assert_eq!(
+        root_of_launcher(data, "default", crate::install::Source::EaApp),
+        root_of_source(data, "launcher-ea.default")
+    );
+    assert_eq!(
+        root_of_launcher(data, "default", crate::install::Source::Unknown),
+        root_of_source(data, "launcher-default"),
+        "a copy no store installed plays the Steam layout's store, as store_of_game picks it"
+    );
+}
+
+#[test]
+fn every_vault_source_of_a_profile_maps_to_the_root_its_session_writes() {
+    use crate::install::Source::{EaApp, Steam};
+    use crate::saves::launcher::store_of_copy;
+    let d = dir("session-roots");
+    for copy in [Steam, EaApp] {
+        assert_eq!(
+            root_of_session(&d, "p", true, copy),
+            Some(root_of_source(&d, &store_of_copy(&d, "p", copy).source))
+        );
+    }
+    assert_ne!(
+        root_of_session(&d, "p", true, Steam),
+        root_of_session(&d, "p", true, EaApp)
+    );
+    std::fs::remove_dir_all(&d).ok();
+}
+
+#[test]
+fn a_session_on_the_copys_own_save_writes_no_root_while_the_save_found_last_is_the_other_copys() {
+    use crate::install::Source::{EaApp, Steam};
+    let d = dir("own-roots");
+    assert_eq!(root_of_session(&d, "p", false, Steam), None);
+    remember_copy_source(&d, "steam-843502855");
+    assert_eq!(
+        root_of_session(&d, "p", false, Steam),
+        Some(d.join("plain/steam-843502855"))
+    );
+    assert_eq!(root_of_session(&d, "p", false, EaApp), None);
+    remember_copy_source(&d, "ea-steamuser");
+    assert_eq!(
+        root_of_session(&d, "p", false, EaApp),
+        Some(d.join("plain/ea-steamuser"))
+    );
+    assert_eq!(root_of_session(&d, "p", false, Steam), None);
+    std::fs::remove_dir_all(&d).ok();
 }
 
 #[test]
