@@ -190,6 +190,8 @@ The grid size follows the pressed list. A list with more cars than the setup mod
 [era] bdx_s5_2012 pressed: max_entrants 20 -> 22 for a list of 24 cars; clamped to 22 cars, the stock grid
 ```
 
+A box's rules go into `swofty_f1` with the press. A career's session load puts them back, and a career whose season names a box then runs that box's rules in its own setup mode ([The season's rules](/std/systems/career#the-season-s-rules)).
+
 ## Availability
 
 ```cpp
