@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143165750",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143165750.c;pat:log-channel-NETWORK;xref:0x14581f2a0",
-  "notes": "Slot 6 (+0x30) of vtable 0x14581f270. Compares the invite's session with the current one via vt+0x68 and logs 'Oli/Invite: Game invite is to our current session. Ignoring invite.'; returns param 2's low 32 bits. Better name: Game_Network_FilterInviteToCurrentSession (bound record keeps its name)."
+  "notes": "Cell 0x14581f2a0 = slot 6 of vtable 0x14581f270. Gets the current session id via vt+0x68 of [[[this+8]+0xd8]+0x148] and compares it with the invite (param_2+0x10/+0x18, else +0x20/+0x24); on match low byte 1 and logs NETWORK 'Oli/Invite: Game invite is to our current session. Ignoring invite.', else 0. Better name: Game_Network_IsInviteToCurrentSession (bound record keeps its name). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_oli_invite_game_invite_our_current",

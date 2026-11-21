@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e24b20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142e24b20.c;pat:log-channel-THUMBNAIL_TASK;xref:0x142e23ef4,0x142e23f26",
-  "notes": "0x2287-byte state machine: SettingUp, AwaitingMultiSubMaterials, PreloadingTextures, Rendering (logs), FRONTEND_SCENE_WORLD Spawn World."
+  "notes": "Whole state-machine tick under CS param_1[0xd]; state byte +0xa0 loops until unchanged. States: 1 find scene object by FNV hash of +0x28 in map ([+0x18]+0x30 +0xd8), reset it (+0x1a8.., +0x189=4) ->2; 2 wait load states +0x1048/+0x1049==4, +0x3f8==3 ->3; 3 vfunc +0x48/+0x58, ->5; 5 build camera (fov/aspect 0.5625, Euler->quat from +0xe0..+0xe8), FUN_143c38a40, FUN_143d3dd80 per target ->4; 4 wait targets (+0x118==1), queue fences ->6; 6 timeout +0x1d8/fences -> 7 (0x142e3a590); abort flag +0x1c0 -> 10. (lane owner review requested) Better name: Game_ThumbnailTask_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.thumbnail_task_state_preloading_textures_texture",

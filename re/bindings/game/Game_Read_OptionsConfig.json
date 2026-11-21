@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141d97750",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141d97750.c;pat:log-channel--;xref:0x14574c388",
-  "notes": "Options UI VM: settings_* tabs, MessageModeChanged/MessageGameSetupModeChanged, options.o_category(_f2), OPTIONS-UI dynamic texture loading."
+  "notes": "Vtable slot. options_tex_path -> +0x8e8; queues textures for 42 category names (table 0x14574c7d0) + options.o_category(_f2), OPTIONS-UI log. Creates settings_home_screen/save_load/select_track/select_ai_vehicle/select_ai_driver pages in +0x288; subscribes MessageModeChanged (0x141d9a8d0), MessageGameSetupModeChanged (0x141d9aab0); binds settings_filter/category. (lane owner review requested) Better name: Game_OptionsUi_InitTabsAndTextures (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_options_config",

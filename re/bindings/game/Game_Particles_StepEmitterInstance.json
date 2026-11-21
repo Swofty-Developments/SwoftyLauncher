@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b90b40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143b90b40.c;xref:0x143b0ce54,0x143b10e97,0x1526e4104",
-  "notes": "Callers 0x143b06d90, 0x143b0faf0, 0x1526e40b0."
+  "notes": "Fills light slot param_2 (0x80 rec in this[0x12], 0x190 rec in this[0x16]) from param_4: cone angle clamp 0.1..179.9, cos half-angles + 1/(cosI-cosO) falloff, colour bytes /255 pow 2.2 * intensity, radius sqrt(I/0.05) min range; projector texture refcount list this[0x1a]; if shadow flag +0x60 builds view+perspective (near 0.2) matrices at +0x40..+0xb0. (lane owner review requested) Better name: Game_Particles_UpdateEmitterSpotLight (bound record keeps its name)."
  },
  "signature": {
   "id": "game.particles_step_emitter_instance",

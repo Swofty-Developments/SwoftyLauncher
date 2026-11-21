@@ -9,7 +9,7 @@
   "subsystem": "session",
   "proto": "-",
   "evidence": "pat:log-channel-LAPTIMES;decomp:re/decomp/142f32480.c",
-  "notes": "Logs LAPTIMES 'received lap %d, to vehicle %d, and session time was %f'. No call/jmp/lea or absolute pointer reference to 0x142f32480 in any section (rip-relative and 8-byte scans)."
+  "notes": "Body read: logs LAPTIMES 'received lap %d, to vehicle %d, and session time was %f' (msg +0x14/+0x10/+0x1c), writes 3 sector times via 0x14098c7a0 into the lap table of vehicle msg+0x10 (0x142f32ee0), sets lap-valid flag from msg+0x18 bit5, best-lap checks 0x142f2e520, posts 0x142f2e2a0. No call/jmp/lea or pointer ref found (rip-relative + 8-byte scans)."
  },
  "signature": {
   "id": "session.lap_times_on_lap_received",

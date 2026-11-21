@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143bdfd10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143bdfd10.c;xref:0x140140edd,0x142fab74d,0x143c74c1e",
-  "notes": "Constructor: vtable 0x14560e200, repeated 0x150-byte sub-blocks each with defaults 1.0, 1.0, 0.2, 1000.0, 1.0, 0.5625 and three identity-like 16-byte row sets. Callers Render_Gfx2_CreateAndRegisterNamedResource (0x140140edd), 0x142fab74d, 0x143c74c1e."
+  "notes": "Body read fully. Constructor: vtable 0x14560e200; six 0x150-byte sub-blocks at +0x20,+0x170,+0x2c0,+0x410,+0x560,+0x6b0, each with defaults 1.0,1.0,0.2,1000.0,1.0,0.5625 (9/16), -1.0, three identity-style row sets and int 1; copies 16 bytes of param_2 to +0x7f0 and sets +0x800 = -1. Callers in 0x140140e90, 0x142faa6d0, 0x143c74be0. (lane owner review requested)"
  },
  "signature": {
   "id": "render.view_params_construct_default",

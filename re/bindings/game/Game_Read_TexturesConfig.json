@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14186ffc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14186ffc0.c;pat:log-channel--;xref:0x1418caaf2,0x1418caf1a,0x141d166c6,0x141d1686d,0x1421af38b,0x1421af69e",
-  "notes": "Fanzone driver card refresh: Game_Livery_UpdateSlotPropertiesFromPackedIds, VM bools, textures.fanzone_expressions(_large)(_26) by +0x1e8, second_name, Game_Livery_ApplyTeamTextureSet."
+  "notes": "Returns unless +0x1e7. Packed ids (param_2 or +0x1a0 or [+0x190]+0xa0) -> 0x1418cba70; VM bools +0x50=1, +0xd0=0, +0x30=0, +0x70=+0x1e5; texture node 'textures.fanzone_expressions(_large)(_26)' (0x145715bbb..0x145715c21, by +0x1e8 and flag [0x146070320]+0xe8); string 'second_name' (0x1456f7c6b) into node +0xb0; 0x1414c70f0(+0xe8, texture); 0x1418cbd10. Old name Game_Read_TexturesConfig misleading (no config read). (lane owner review requested) Better name: Game_FanzoneDriverCard_Refresh (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_textures_config",

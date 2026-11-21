@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140999600",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140999600.c;pat:log-channel--;xref:0x1407f305e",
-  "notes": "Subtitles VM bindings (10 subtitles_data.* properties incl. character_ref/texture, speaker notification)."
+  "notes": "Body read in full: constructor (vtables 0x145be6000 -> 0x145662da0, child vtable 0x145be6130), two hash tables filled from static tables 0x14604f538 (20 entries) and 0x14604f728 (22 entries), critical section, VM property handles subtitles_data.paused/show_subtitle/speech_duration/display_text/reset_to_start/type/character_ref/character_texture/show_speaker_notification/shown_and_enabled. Caller 0x1407f305e in 0x1407e5420. Renamed: not a config reader. (lane owner review requested) Better name: Game_SubtitlesVM_Ctor (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_subtitles_data_config",

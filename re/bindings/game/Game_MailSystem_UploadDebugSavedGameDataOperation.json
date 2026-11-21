@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143359540",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143359540.c;str:s_MailSystem_UploadDebugSavedGameDataOperation;xref:0x141cb2f3e",
-  "notes": "Pretty-function 'neon::NeOSOperationHandlePtr game::MailSystem::uploadDebugSavedGameDataOperation(MessageId, const UploadDebugSavedGameDataOperationCompletionCallback &)'; uses SAVE_TEMP_ALLOC/_HUGE and 'SaveGame', logs 'Largest free block: %u'. Only caller 0x141cb2f3e."
+  "notes": "Full read; pretty-function is its own. Under lock 0x146100c18 allocs largest free block of 'SAVE_TEMP_ALLOC' (logs 'Largest free block'), serialises save (0x143658130 on this+0x2b0, 0x1432c6c30 on this+0x10) to bytes, builds op (vtable 0x14583fe00, tag 'SAVE_OS_PROPERTY_BAG_TEMP', MessageId param_3+8, callback param_4+0x38, thunk 0x14335a310) queued on this+0x278->+0x30; handle -> param_2 (zero on fail). (lane owner review requested)"
  },
  "signature": {
   "id": "game.mail_system_upload_debug_saved_game_data_operation",

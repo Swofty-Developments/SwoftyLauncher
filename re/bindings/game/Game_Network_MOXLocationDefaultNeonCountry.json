@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430d11b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1430d11b0.c;pat:log-channel-NETWORK;xref:0x145814060",
-  "notes": "Slot 2 (+0x10) of the NetworkSubsystem vtable 0x145814050 (name Net-Subsystem precedes; stored at 0x1430cfff1 and 0x1430d089c; slot 39 is Game_NetworkSubsystem_OnPresenceChanged 0x1430f53f0). (this, registry, arg): resolves dependencies via registry vt+0x28 (first into +0xd0), allocates the 0x1460be8f0 tables, creates many managers, calls 0x1430d2fd0, logs MOX/Location default neon country. Better name: Game_NetworkSubsystem_Slot10 (bound record keeps its name)."
+  "notes": "Slot 2 (+0x10) of vtable 0x145814050 (cell 0x145814060, 'Net-Subsystem' precedes). Init(this,registry,ctx): deps via registry vt+0x28 into +0xd0,+0xc8,+0x210,+0x30..; allocs 0x1460be8f0 tables; managers from ctx (+0x50..+0x150); new sub-objects (+0x3a0..+0x560,+0x1108); child init loop at +0x178; logs NETWORK 'MOX/Location: Default neon country'; returns 0, or 0x16 on missing dependency. (lane owner review requested) Better name: Game_NetworkSubsystem_Init (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_mox_location_default_neon_country",
