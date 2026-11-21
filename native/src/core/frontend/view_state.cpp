@@ -104,7 +104,6 @@ private:
     std::atomic<uint32_t> pause_mask{0};
     std::mutex change_lock;
     ViewportCamera assigned_camera;
-    bool instant_replay_exited = false;
     uintptr_t viewport_owner_slot = 0;
     std::vector<CameraUid> trackside_camera_uids;
     bool trust_camera = false;
@@ -375,17 +374,10 @@ void ViewState::flow(uint32_t hash, uint32_t to)
         else if (to == 0 || to == 3)
             active.fetch_and(~bit, std::memory_order_relaxed);
         const auto group = TRACKED[i].group;
-        if (group == G_SESSION && (to == 0 || to == 3)) {
+        if (group == G_SESSION && (to == 0 || to == 3))
             trackside_camera_uids.clear();
-            instant_replay_exited = false;
-        }
-        if ((group == G_REPLAY || group == G_CUTSCENE || group == G_SPECTATE) && to == 1)
-            instant_replay_exited = false;
-        if (hash == view_flow::djb2("InstantReplay") && to == 3)
-            instant_replay_exited = bool(groups_active() & G_SESSION);
         // At InGame Entering the primary viewport can still hold the outgoing replay camera.
-        if (group == G_DRIVING && to == 2 && instant_replay_exited) {
-            instant_replay_exited = false;
+        if (group == G_DRIVING && to == 2) {
             const auto groups = groups_active();
             if ((groups & (G_SESSION | G_REPLAY | G_CUTSCENE | G_SPECTATE)) == G_SESSION)
                 recover_replay_view();
