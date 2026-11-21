@@ -374,6 +374,130 @@ fn only_the_unloaded_racing_line_fault_is_named_for_it() {
     assert_eq!(diagnose(&tracks_on(&mixed, &[LONG_BEACH])), None);
 }
 
+const LAGUNA_SECA: (&str, &str) = ("ashton.lagsec", "Laguna Seca Grand Prix");
+
+const LAGUNA_SECA_FACTS: &str = "2026-11-20 22:21:56.157 [16872] [apply] facts: mode driver_career, session practice (practice_1), track ashton.lagsec/lagsec\n";
+
+const MARSHAL_LIGHTS_STEAM: [&str; 3] = [
+    "F1_25.exe+0x2c794d2 .tls$ fn base+0x2c79330+0x1a2",
+    "F1_25.exe+0xe17978d .trace fn base+0xe179740+0x4d",
+    "F1_25.exe+0x80c599 .tls$ fn base+0x80c350+0x249",
+];
+
+fn marshal_lights_log(facts: &str, frames: &[&str]) -> String {
+    let mut log = facts.to_owned();
+    log.push_str(&format!(
+        "2026-11-20 23:14:38.536 [26752] [career] flow \"StateSession\" None -> Entering
+2026-11-20 23:14:38.726 [ 4012] [crash] #1 first-chance (the game may still handle it) ACCESS_VIOLATION (0xc0000005) on thread 4012, 4787 s after load, at {at}
+2026-11-20 23:14:38.726 [ 4012] [crash]   writing 0x34
+2026-11-20 23:14:38.726 [ 4012] [crash]   rsi=000000000788d1e0 rdi=000000000787b720 rbp=0000000027735a20 rsp=000000007de9ec40
+2026-11-20 23:14:38.728 [ 4012] [crash]   code: C5 FA 11 78 34 4C 3B 6E 68 0F 84 F7 02 00 00 49
+2026-11-20 23:14:38.728 [ 4012] [crash]   stack:
+",
+        at = frames[0]
+    ));
+    for (i, frame) in frames.iter().enumerate() {
+        log.push_str(&format!(
+            "2026-11-20 23:14:38.728 [ 4012] [crash]   #{i:<2} {frame}\n"
+        ));
+    }
+    log.push_str(&format!(
+        "2026-11-20 23:14:38.733 [ 4012] [crash] unhandled ACCESS_VIOLATION (0xc0000005) at {} reached the top-level filter; passing it to the game's filter\n",
+        frames[0]
+    ));
+    log
+}
+
+#[test]
+fn a_crash_matching_marshal_lights_to_their_zones_names_the_sessions_track() {
+    let log = marshal_lights_log(LAGUNA_SECA_FACTS, &MARSHAL_LIGHTS_STEAM);
+    let d = diagnose(&tracks_on(
+        &log,
+        &[("ashton.roadam", "Road America"), LAGUNA_SECA],
+    ))
+    .unwrap();
+    assert_eq!(d.id, "track_marshal_lights");
+    assert_eq!(
+        d.title,
+        "Laguna Seca Grand Prix's marshal lights crashed F1 25 as the session started"
+    );
+    assert_eq!(
+        d.what,
+        "F1 25 crashed as the session on Laguna Seca Grand Prix started, while it matched the track's marshal lights \
+         to its marshal light zones. Laguna Seca Grand Prix has marshal lights outside every marshal light zone, and \
+         the game's own code crashes on them."
+    );
+    assert_eq!(
+        d.steps,
+        [
+            "Turn Laguna Seca Grand Prix off in your profile, and set any race weekend that uses it back to another \
+             track.",
+            "Ask its author to give the track a marshal light zone (marshal_light_zone in its track markup) for every \
+             part of the lap that has marshal lights.",
+        ]
+    );
+    for fault in [
+        "F1_25.exe+0x2c76f42 .xtls Sess_MarshalLights_AssignToZones+0x1a2",
+        "F1_25.exe+0x2c6ac92 .rdata fn base+0x2c6aaf0+0x1a2",
+        "F1_25.exe+0x2c6d222 .rdata fn base+0x2c6d080+0x1a2",
+    ] {
+        let other_build = marshal_lights_log(LAGUNA_SECA_FACTS, &[fault, MARSHAL_LIGHTS_STEAM[1]]);
+        assert_eq!(
+            diagnose(&tracks_on(&other_build, &[LAGUNA_SECA])).unwrap(),
+            d,
+            "{fault}"
+        );
+    }
+}
+
+#[test]
+fn a_marshal_lights_crash_without_the_sessions_track_names_the_tracks_on() {
+    let log = marshal_lights_log("", &MARSHAL_LIGHTS_STEAM);
+    let one = diagnose(&tracks_on(&log, &[LAGUNA_SECA])).unwrap();
+    assert_eq!(
+        one.title,
+        "Laguna Seca Grand Prix's marshal lights crashed F1 25 as the session started"
+    );
+    let two = diagnose(&tracks_on(
+        &log,
+        &[("ashton.roadam", "Road America"), LAGUNA_SECA],
+    ))
+    .unwrap();
+    assert_eq!(
+        two.title,
+        "A track's marshal lights crashed F1 25 as the session started"
+    );
+    assert_eq!(
+        two.steps[0],
+        "Turn off the track you raced on (Road America and Laguna Seca Grand Prix are on in your profile), and set \
+         any race weekend that uses it back to another track."
+    );
+    let stock =
+        "2026-11-20 22:21:56.157 [16872] [apply] facts: mode grand_prix, session race, track game/suzuka\n";
+    let stock = marshal_lights_log(stock, &MARSHAL_LIGHTS_STEAM);
+    assert_eq!(
+        diagnose(&tracks_on(&stock, &[])).unwrap().steps[0],
+        "Race on another track, or turn off the addon that changes this track's marshal lights."
+    );
+}
+
+#[test]
+fn only_a_fault_at_the_marshal_light_store_is_named_for_it() {
+    let near = marshal_lights_log(
+        LAGUNA_SECA_FACTS,
+        &[
+            "F1_25.exe+0x2c794d7 .tls$ fn base+0x2c79330+0x1a7",
+            MARSHAL_LIGHTS_STEAM[1],
+        ],
+    );
+    assert_eq!(diagnose(&tracks_on(&near, &[LAGUNA_SECA])), None);
+    let other_module = marshal_lights_log(
+        LAGUNA_SECA_FACTS,
+        &["kizi_ai_tweaks.dll+0x2c794d2", MARSHAL_LIGHTS_STEAM[1]],
+    );
+    assert_eq!(diagnose(&tracks_on(&other_module, &[LAGUNA_SECA])), None);
+}
+
 const TYRE_CURVE_STEAM: [&str; 3] = [
     "F1_25.exe+0x2e7e5ec .tls$ fn base+0x2e7e530+0xbc",
     "F1_25.exe+0xf5d41d6 .trace fn base+0xf5d3eb0+0x326",
