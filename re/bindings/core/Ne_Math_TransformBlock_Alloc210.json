@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143d2e8b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143d2e8b0.c;xref:0x1401c0f83",
-  "notes": "847-byte SIMD math routine over 16-byte vectors (param_2 matrix block, param_3 output). 9 callers incl. Game_CameraActor_RefreshCameraState (0x1401c17a8) and 0x1401c0f83. Hypothesis: matrix/transform composition for actor placement. vq1-verify partial/disagree"
+  "evidence": "decomp:re/decomp/143d2e8b0.c;xref:0x1401c0f83,0x1401c17a8,0x14447b044",
+  "notes": "Maps a 0x210-byte message of type 2 for connection this+8 via render message interface [0x146c621e0] vt+0x28, copies the 3 basis rows p2 and the 0x1e0-byte block p3, computes the 3x3 inverse (cofactors / 1/det, AVX) into +0x70..+0x9f, sets +0xf8 = 0x100 and +0x100 = ptr to +0x108, commits via vt+0x38 (tail jmp). call sites: Game_CameraActor_CreateTypedComponent, Game_CameraActor_RefreshCameraState, 0x14447b... Better name: Ne_RenderMsg_PostTransformWithInverse (bound record keeps its name)."
  },
  "signature": {
   "id": "core.math_transform_block_143d2e8b0",

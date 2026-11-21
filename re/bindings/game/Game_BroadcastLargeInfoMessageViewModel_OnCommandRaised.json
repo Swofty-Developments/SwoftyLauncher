@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=BroadcastLargeInfoMessageViewModel::onCommandRaised; log channel TRACE: 'BroadcastLargeInfoMessageViewModel::onCommandRaised: Unsupported display type %s'"
+  "evidence": "decomp:re/decomp/1419d7170.c;pat:log-message-cxx;xref:0x145724620",
+  "notes": "BroadcastLargeInfoMessageViewModel::onCommandRaised (vtable cell 0x145724620): rows by display type (lng_event_target_*), calls 0x1419d86f0; unsupported type logged."
  },
  "signature": {
   "id": "game.broadcast_large_info_message_view_model_on_command_raised",

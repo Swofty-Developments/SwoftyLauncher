@@ -5,6 +5,7 @@
 #include "core/apply/content/box_options.hpp"
 #include "core/apply/content/grid_rules.hpp"
 #include "core/apply/content/quali_tyres.hpp"
+#include "core/apply/content/rev_lights.hpp"
 #include "core/apply/content/tyre_change.hpp"
 #include "core/apply/content/tyre_warmers.hpp"
 #include "core/apply/content/weekend.hpp"
@@ -131,3 +132,4 @@ void stock_only_tests(const std::string &regs);
 void virtual_list_tests(const std::string &regs);
 void late_write_tests(const std::string &regs);
 void ahead_tests(const std::string &regs);
+void career_rules_tests();

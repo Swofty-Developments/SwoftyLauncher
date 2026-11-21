@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_Championship_CareerOnlineDocumentComponent_InternalSerialiseAndCalcula;xref:0x140fd19b9,0x140fd1e3d,0x140fd2bbc,0x140fd2c47",
-  "notes": "cxx=game::championship::CareerOnlineDocumentComponent::internalSerialiseAndCalculateHash; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/140fd0990.c;str:s_Championship_CareerOnlineDocumentComponent_InternalSerialiseAndCalcula;xref:0x140fcdbfd,0x140fce0c2,0x140fcfdba",
+  "notes": "Own pretty string 'CareerOnlineDocumentComponent::internalSerialiseAndCalculateHash(void *, const KeysContainer &, NeNetConnectionID)'; logs 'Serialising %s', 'Skipping %s because already synced', 'changing synchronisation hashes'. Decomp polluted (merged tails)."
  },
  "signature": {
   "id": "game.career_online_document_comp_internal_serialise_and_calculate_hash",

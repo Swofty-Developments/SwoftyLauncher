@@ -26,6 +26,7 @@ void left_out(const std::string &addon, int teams, int vehicles, int lists);
 void career_loaded(const char *key, unsigned mode);
 void career_unloaded();
 void career_season(int year);
+void career_dated(int year);
 void career_renamed(const char *from, const char *to);
 void box_picked(const char *entrant_list);
 void box_picked(const char *entrant_list, const void *mode_context);

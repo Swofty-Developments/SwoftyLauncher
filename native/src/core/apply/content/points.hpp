@@ -160,7 +160,7 @@ struct PointsPick {
 // The points system for the box whose entrant list was pressed: the last content.package (in the order given) with
 // that entrant list, its rules.points, and that system if the boot apply added it.
 inline PointsPick points_pick(const std::string &entrant_list, const std::vector<std::pair<std::string, const Value *>> &packages,
-                              const std::map<std::string, PointsSystem> &systems)
+                              const std::map<std::string, PointsSystem> &systems, const std::string &host = "swofty_f1")
 {
     PointsPick p;
     const Value *found = nullptr;
@@ -170,19 +170,19 @@ inline PointsPick points_pick(const std::string &entrant_list, const std::vector
             found = rec;
         }
     if (!found) {
-        p.line = "box " + entrant_list + ": no content.package; swofty_f1 keeps its own points";
+        p.line = "box " + entrant_list + ": no content.package; " + host + " keeps its own points";
         return p;
     }
     const Value &pts = (*found)["rules"]["points"];
     if (!pts.is_string()) {
-        p.line = "box " + entrant_list + " (" + p.package + "): no points rule; swofty_f1 keeps its own points";
+        p.line = "box " + entrant_list + " (" + p.package + "): no points rule; " + host + " keeps its own points";
         return p;
     }
     p.rule = std::string(pts.as_string());
     auto it = systems.find(p.rule);
     if (it == systems.end()) {
-        p.line = "box " + entrant_list + " (" + p.package + "): rules.points " + p.rule +
-                 " was not added at boot; swofty_f1 keeps its own points";
+        p.line = "box " + entrant_list + " (" + p.package + "): rules.points " + p.rule + " was not added at boot; " + host +
+                 " keeps its own points";
         return p;
     }
     p.system = it->second;
@@ -190,7 +190,7 @@ inline PointsPick points_pick(const std::string &entrant_list, const std::vector
     for (int32_t v : it->second.full)
         if (v)
             shown += (shown.empty() ? "" : "-") + std::to_string(v);
-    p.line = "box " + entrant_list + " (" + p.package + "): swofty_f1 race points " + shown +
+    p.line = "box " + entrant_list + " (" + p.package + "): " + host + " race points " + shown +
              (it->second.rule ? ", fastest lap +" + std::to_string(it->second.bonus) : std::string()) + " (rules.points " +
              p.rule + ", preset " + it->second.label + ")";
     return p;

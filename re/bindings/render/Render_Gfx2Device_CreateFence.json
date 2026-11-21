@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a076f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143a076f0.c;xref:0x142bd01d7,0x14379c6d1",
-  "notes": "Creates a named GPU fence object (default label Unnamed fence) under the device critical section (global device 0x14618caa8, +0x2668), fence array at +0x2630 (stride 0x10). Callers PhotoMode CaptureFrame, ThumbnailSystem screenshot, Render_Screenshot_CaptureAndSave."
+  "evidence": "decomp:re/decomp/143a076f0.c;xref:0x142bd01d7,0x14379c6d1,0x143b5a999",
+  "notes": "Under device CS takes the next slot of the fence ring device+0x2630 (16-byte {fence, value}, index +0x2648, wraps to >= 1), ++ +0x3194, flushes queued barriers (0x1439d3e20), names the fence (default Unnamed fence), takes serial 0x14618c160+1 as value (queue+0x140, slot+8) and calls ID3D12CommandQueue::Signal (vcall +0x70, rdx fence, r8 value) on queue+0x30; returns {index, value}. Callers 0x142bcfc30, 0x14379c250, Ne_Gfx2Renderer_FrameStartEnd 0x143b5a830. (lane owner review requested) Better name: Render_Gfx2CommandQueue_SignalFence (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_device_create_fence",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x145378320",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/145378320.c;xref:0x14018781a",
-  "notes": "memchr-style scan (broadcast byte via 0x01010101, 8-byte strides) over [param_1, param_3). Callers Game_Actor_LoadModelResources (path component search). Hypothesis on exact CRT name. vq2-verify partial"
+  "evidence": "decomp:re/decomp/145378320.c;xref:0x14018781a,0x140187854,0x140187a3b,0x140187a74,0x14031c29a",
+  "notes": "memchr(buf, c, n): byte loop until 16-aligned, then 2x16-byte SSE compare per loop with the broadcast byte, tail handling; returns pointer to the first match or NULL. 43 sites (e.g. Game_Actor_LoadModelResources)."
  },
  "signature": {
   "id": "core.str_find_byte_in_range",

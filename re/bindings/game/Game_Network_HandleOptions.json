@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14308efa0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name handleOptions (class from the log channel); log channel NETWORK: '%s(%d, %d).'"
+  "evidence": "decomp:re/decomp/14308efa0.c;pat:log-message-method;xref:0x14fd7497c",
+  "notes": "Only ref: the lea at 0x14fd7497c in 0x14fd74680 (handler table). (this, msg, flag): logs 'handleOptions(%d, %d).', rebuilds the option list at +0xd8 (0x143202c00) and logs NETWORK-VOTING 'handleOptions Adding track: %s' per track. (lane owner review requested) Better name: Game_NetworkVoting_HandleOptions (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_handle_options",

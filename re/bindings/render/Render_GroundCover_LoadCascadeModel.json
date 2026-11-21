@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144467200",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "pat:log-channel-GROUND_COVER",
-  "notes": "named from its log messages (channel GROUND_COVER): 'Ground cover cascade %d loading model: %s'"
+  "evidence": "decomp:re/decomp/144467200.c;pat:log-channel-GROUND_COVER;xref:0x145a90518",
+  "notes": "Rename: slot 3 of vtable 0x145a90500 (cell 0x145a90518, no direct calls). Reads the cascade properties (enabled, cascade, enable_fins, height_cutoff_low/high, height_scale, lod0/lod1 tier 1/2, draw_distance tier 1/2, resolution tier 1/2, width/height %d, mesh lod0/1, modelId %d, materialId %d, min/max_scale %d, visibility mask channel %d) through 0x144468330/0x144468680/0x1444689d0 and logs Ground cover cascade %d loading model: %s (GROUND_COVER). (lane owner review requested) Better name: Render_GroundCoverCascade_Load (bound record keeps its name)."
  },
  "signature": {
   "id": "render.ground_cover_load_cascade_model",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14403f970",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name setTextToSpeechProfile (class from the log channel); log channel NETWORK-VOICE: '%s: Failed to set TTS profile: %hs'"
+  "evidence": "decomp:re/decomp/14403f970.c;pat:log-message-method;xref:0x14403d5e5",
+  "notes": "Sets the PlayFab TTS profile; on failure logs '%s: Failed to set TTS profile: %hs' with its own name setTextToSpeechProfile. Called from Game_NetworkVoice_HandlePlayFabPartyStateChange. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_voice_set_text_to_speech_profile",

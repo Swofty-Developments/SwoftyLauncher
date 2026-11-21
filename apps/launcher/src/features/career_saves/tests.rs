@@ -253,7 +253,7 @@ fn write_generation(
             std::fs::write(gd.join("containers").join(format!("{}.bag", fnv(name))), &bytes).unwrap();
             serde_json::json!({
                 "name": name, "fnv64": fnv(name), "type_id": 1, "bytes": bytes.len(), "sha256": format!("{name}:{}", slots.iter().map(|s| s.1).collect::<Vec<_>>().join(",")),
-                "registered": false, "source": source,
+                "registered": *source == "game", "source": source,
                 "slots": slots.iter().enumerate().map(|(i, (guid, who))| serde_json::json!({
                     "slot": i, "guid": guid, "name": who, "season": 2016, "round": 7, "last_played": 1_000 + i
                 })).collect::<Vec<_>>()
@@ -325,6 +325,93 @@ fn the_banner_names_a_career_the_newest_generation_lacks_and_offers_its_containe
         }
         _ => panic!("expected a lost banner"),
     }
+    std::fs::remove_dir_all(&d).ok();
+}
+
+#[test]
+fn an_ea_copy_load_beside_a_steam_save_raises_no_banner_for_the_games_records_or_addon_off_careers() {
+    let d = std::env::temp_dir().join(format!("swofty-launcher-saves-ea-load-{}", std::process::id()));
+    std::fs::remove_dir_all(&d).ok();
+    let loc = vault::Location::launcher_ea(&d, "default");
+    std::fs::create_dir_all(&loc.dir).unwrap();
+    std::fs::write(loc.dir.join("NXDSMWW.BWW"), vec![1u8; 4000]).unwrap();
+    std::fs::write(loc.dir.join("QKRHMYXE"), vec![2u8; 416]).unwrap();
+    let v = Vault::of(&d, &loc).unwrap();
+    v.snapshot(&loc, vault::Meta::new(vault::Reason::Imported), 1_000)
+        .unwrap();
+    let plain = swofty_core::saves::plain::root_of_source(&d, &loc.source);
+    write_generation(
+        &plain,
+        39,
+        "save",
+        Some("steam"),
+        &[
+            ("camera_camera_system", "game", &[]),
+            ("options_options", "game", &[]),
+            ("journal_entries_entry4", "game", &[]),
+            ("gm_dev", "game", &[]),
+            ("gm_driver_career_26", "game", &[]),
+            (
+                "driver_career_26_SaveSlotGameModeComponent",
+                "game",
+                &[("0x01", "Career Save 1")],
+            ),
+            ("gm_driver_career_sw_progressive", "game", &[]),
+            (
+                "driver_career_sw_progressive_SaveSlotGameModeComponent",
+                "game",
+                &[("0x0a", "Career Save 1")],
+            ),
+            ("gm_driver_career_progressive", "kept", &[]),
+            ("driver_career_progressive_SaveSlotGameModeComponent", "kept", &[]),
+        ],
+    );
+    write_generation(
+        &plain,
+        40,
+        "load",
+        Some("ea"),
+        &[
+            ("gm_driver_career_sw_progressive", "injected", &[]),
+            (
+                "driver_career_sw_progressive_SaveSlotGameModeComponent",
+                "injected",
+                &[],
+            ),
+            ("gm_driver_career_progressive", "injected", &[]),
+            (
+                "driver_career_progressive_SaveSlotGameModeComponent",
+                "injected",
+                &[],
+            ),
+        ],
+    );
+    assert!(banner_from(&d, loc.source.clone(), "default".into()).is_none());
+    write_generation(
+        &plain,
+        41,
+        "load",
+        Some("steam-addons-off"),
+        &[
+            ("camera_camera_system", "game", &[]),
+            ("options_options", "game", &[]),
+            ("gm_driver_career_26", "game", &[]),
+            (
+                "driver_career_26_SaveSlotGameModeComponent",
+                "game",
+                &[("0x01", "Career Save 1")],
+            ),
+            ("gm_driver_career_sw_progressive", "kept", &[]),
+            (
+                "driver_career_sw_progressive_SaveSlotGameModeComponent",
+                "kept",
+                &[],
+            ),
+            ("gm_driver_career_progressive", "kept", &[]),
+            ("driver_career_progressive_SaveSlotGameModeComponent", "kept", &[]),
+        ],
+    );
+    assert!(banner_from(&d, loc.source.clone(), "default".into()).is_none());
     std::fs::remove_dir_all(&d).ok();
 }
 

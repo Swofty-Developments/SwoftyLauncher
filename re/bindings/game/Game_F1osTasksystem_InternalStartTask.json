@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432d9780",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name internalStartTask (class from the log channel); log channel F1OS-TASKSYSTEM: '%s request on a nullptr task'"
+  "evidence": "decomp:re/decomp/1432d9780.c;pat:log-message-method;xref:0x1432d951c,0x1432d9995",
+  "notes": "Task system internalStartTask (logged method name): '%s request on a nullptr task', 'calling start on %s', gates 'not_logged_in' / 'EA_not_logged_in' / 'user_signed_out' / 'no_internet_granted', 'raising an error for %s : code (%d)', 'calling end() on %s'; calls 0x1432c0610 and 0x1432dc910. Callers 0x1432d9420 (0x1432d951c) and itself (0x1432d9995). (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1os_tasksystem_internal_start_task",

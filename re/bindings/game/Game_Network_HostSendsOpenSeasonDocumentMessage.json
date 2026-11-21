@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'Host sends open Season Document Message on role changed'"
+  "evidence": "decomp:re/decomp/1430a5170.c;pat:log-channel-NETWORK;xref:0x14580fad8",
+  "notes": "Slot 1 (+0x8) of vtable 0x14580fad0, whose slot 3 is Game_GameSessionSeasonDocument_OnNewConnection; no direct calls. Calls ProcessPending 0x14309ceb0, rebuild 0x143099350, OpenDocument 0x143067d40, logs 'Host sends open Season Document Message on role changed', sends it (0x14402e500) and logs the generated correlationId; one branch tail-jumps 0x14309d6a0. Better name: Game_GameSessionSeasonDocument_OnRoleChanged (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_host_sends_open_season_document_message",

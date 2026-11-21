@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1438654b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_ActivitiesUIDeeplinkManager_StartCollaborativeActivity;xref:0x143865713",
-  "notes": "cxx=game::ActivitiesUIDeeplinkManager::startCollaborativeActivity; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1438654b0.c;str:s_ActivitiesUIDeeplinkManager_StartCollaborativeActivity;xref:0x143862f88",
+  "notes": "PlayGo (+0x63)/trial (0x14078e1a0) gate, then prepares the online session (0x143083570/0x1430ed330), frontend_transition_state = collaborative_event, +0x61 = 1, presence ((+0x30)+0x10f8)+0x18 = mp_collaborative_match (vcall +0x38), logs '%s: called'. Caller OnDeepLinkActivityStarted (type 9). (lane owner review requested)"
  },
  "signature": {
   "id": "game.activities_u_i_deeplink_manager_start_collaborative_activity",

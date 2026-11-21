@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a06580",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143a06580.c;xref:0x143b5a35a,0x143c3c6ca,0x143c7f662",
-  "notes": "Hypothesis: Variant of 0x143a06320 taking a param_2 handle; 54 callers. Named callers: Ne_MipTailGenerator_Record, Render_BackBuffer_CopyToCpu. vp2-verify partial/disagree"
+  "notes": "Closes node param_2 opened by BeginGpuMarker: end breadcrumb (0x143a04350, re-emitting 0x143a04230 when an unclosed parent exists), --depth (+0x38), node+0x3c = 1 and, when timing is on, native EndQuery (+0x1a8, TIMESTAMP, index node+0x28). Errors 0xe / 0x58. Callers Ne_Gfx2Renderer_RecordCommandNodes 0x143b5a210, 0x143c3afd0, 0x143c7eff0. (lane owner review requested) Better name: Render_Gfx2CmdContext_EndGpuMarker (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_resource_get_native_b",

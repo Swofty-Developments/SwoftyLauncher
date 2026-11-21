@@ -116,6 +116,7 @@ void publish(const career::state::Edges &e, const SwoftyCareerState &s)
         swofty::log("[career] career.unloaded (mode %s)", mode_name(e.old_mode));
         fire(SWOFTY_EVENT_CAREER_UNLOADED, e.old_mode, 0, &s);
         swofty_core::apply::moments::career_unloaded();
+        runtime::era_career_unloaded();
     }
     if (e.loaded) {
         perf::mark("career", "loaded");

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142cf9820",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142cf9820.c;xref:0x142d02c45,0x142d62fa0;decomp:re/decomp/142cfe4f0.c",
-  "notes": "Per-frame UDP telemetry output during a race (state +0xd1a0 vehicles, +0xd298 lap times, +0xd2a0 UDP sender): returns if no player car (Sess_Get_PlayerVehicleIndex) or no sender; Sess_CopyOptionsToState, Game_TelemetryUdp_SyncLapData for round-robin car +0xd32c, per-car packets (0x142cfe4f0, 0x142cfec80, 0x142d00060, 0x142d01660, 0x142d01e10), lap positions (Game_TelemetryUdp_BuildLapPositions with +0xd334) and advances +0xd32c = (+1) mod numCars. Callers Sess_InGameRace_Update, Game_TelemetryUdp_SendAllSessionHistory, MP skip-lights. | live-car-re: the car-telemetry fill for EVERY vehicle id 0..22 (loop over g_Sess_VehicleTable, rec = state+0x13ca+id*0x3b): speed u16 = |body+0x220|*3.6, throttle float = CarLive+0x188 (brake +0x190, swapped in reverse), steer = -(Steering+0xe8^+0xf0)/(Steering+0x28^+0x30), clutch u8 = CarLive+0x18c*100, gear i8 = GearBox+0x680-1, rpm u16 = Engine+0x2538*60/2pi, drs = F1Aero+0x1988&1, surface u8[4] at rec+0x37 = [[wheel+0x200]+0x78] for wheels [CarLive+0x580]+0x70/78/80/88 (RL RR FL FR); g-force shorts*1000 from Chassis+0x320/0x324/0x328. Player id = Sess_Get_PlayerVehicleIndex(state+0xd200, 0)."
+  "evidence": "decomp:re/decomp/142cf9820.c;decomp:re/decomp/142cfe4f0.c;xref:0x142d02c45,0x142d62fa0,0x142d8fd82,0x14e7730e2",
+  "notes": "Returns without player car (Sess_Get_PlayerVehicleIndex(state+0xd200)) or sender +0xd2a0. Sess_CopyOptionsToState, SyncLapData + UpdateCarSessionHistory for round-robin car +0xd32c, per-car telemetry at state+0x13ca+id*0x3b (gear GearBox+0x680-1, rpm Engine+0x2538*60/2pi, DRS F1Aero+0x1988&1), UpdateCarDrsAndDamage, BuildLapPositions(+0xd334); +0xd32c/+0xd334 advance modulo. (lane owner review requested)"
  },
  "signature": {
   "id": "game.telemetry_udp_update_race",

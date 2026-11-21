@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143db9e60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143db9e60.c;xref:0x14015031f",
-  "notes": "7 KB initialiser of shadow resources: translucentSpotShadow%dDsv / %dSrv (formatted per light), gs_sky_shadow_map_rt_merge_context, aid://ego_package/g_skyWorldShadowTexCopy.image; uses Ne_StrBuf_Printf and Ne_HashedName_FromString. Caller Game_Read_RendererGfxConfig. Addon: shadow map RT names."
+  "notes": "Constructor of the shadow system (rename): stores args, zeroes two 0x250 blocks, hashes shadow resource names into globals 0x145f97xxx (spotShadow%dDsv/Srv, translucentSpotShadow%d*, skyShadowTexDsv_%d, gs_sky_shadow_map_*, eaid://ego_package/g_sky*/g_spotShadow* images) with Ne_StrBuf_Printf + Ne_HashedName_FromString, creates a 0x1c-slot bind layout named NeShadowSystem (Render_Gfx2_BindLayout_Create) at +0x10 and sets its slots. Caller 0x14015031f in Game_Read_RendererGfxConfig. (lane owner review requested) Better name: Render_ShadowSystem_Construct (bound record keeps its name)."
  },
  "signature": {
   "id": "render.shadow_register_shadow_targets",

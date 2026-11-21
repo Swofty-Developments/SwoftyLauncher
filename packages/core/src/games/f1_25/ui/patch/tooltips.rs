@@ -1,4 +1,5 @@
-//! The tooltips dictionary: the launcher's tooltip for its own settings.
+//! The tooltips dictionary: the launcher's tooltip for its own settings. A tooltip of the launcher's the dictionary
+//! already holds, as in an archive an earlier build wrote, is written again in place.
 
 use swofty_formats::pkg::Obj;
 
@@ -32,9 +33,6 @@ pub(super) fn add_tooltip(
 ) -> Result<Vec<u8>> {
     edit(data, |p| {
         let d = tooltip_dict(p)?;
-        if d.get(name).is_some() {
-            return Err(err(format!("the tooltips already have {name}")));
-        }
         let mut e = d.at(src)?.clone();
         let eo = e.o_mut()?;
         set_str(eo, "Name", name)?;

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143099350",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK/F",
-  "notes": "named from its log messages (channel NETWORK/F): 'MOX/Season: rebuildSeason()'"
+  "evidence": "decomp:re/decomp/143099350.c;pat:log-channel-NETWORK/F;xref:0x143065568,0x14309863c,0x14309cfcc,0x14309e27f,0x1430a5508",
+  "notes": "Logs NETWORK/F 'MOX/Season: rebuildSeason()'; if [[this+0x420]+0x4f8] != 0 runs 0x143099420(that+0x220), 0x143099650(this,1,0), 0x143099190(this), 0x143098e90(this) when role +8 < 2, and 0x14309ac00(this); returns 1. (lane owner review requested) Better name: Game_GameSessionSeasonDocument_RebuildSeason (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_mox_season_rebuild_season",

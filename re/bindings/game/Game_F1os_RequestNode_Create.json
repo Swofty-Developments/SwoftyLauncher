@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14082abc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14082abc0.c;xref:0x140829493",
-  "notes": "Allocates a 0x48-byte request node (vtable 0x14565fda0) through allocator vtable +0x18, wires an inner functor from param_4+0x38 into node+0x40. 1 caller Game_F1os_RequestRing_Push (0x140829493)."
+  "notes": "Allocates a 0x48-byte node (vtable 0x14565fda0) via allocator param_2 vcall +0x18, clones the functor at param_4+0x38 into node+8 (result at node+0x40), then a 0x20 control block (0x14443cfd0); returns {allocator, ctrl} in param_1 (node destroyed if the block alloc fails). Only caller 0x1408293d0 at 0x140829493. (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1os_request_node_create",

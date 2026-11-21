@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14323d6e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name handleDropInResultMessage (class from the log channel); log channel NETWORK: '%s(%s, %d). received a drop-in result from the host.'"
+  "evidence": "decomp:re/decomp/14323d6e0.c;pat:log-message-method;xref:0x14323d3b6",
+  "notes": "Registered by the lea at 0x14323d3b6 in 0x14323d040. (this, msg): msg+0x6c != 0 -> logs 'host denied a drop-in request (reason = %d)' and returns; else logs 'received a drop-in result from the host' and appends a result record (vtable 0x145836470, identity msg+0x20..+0x58, vehicle +0x68, byte +0x70) to the list this+0xc0 (count +0xd0, node pool +0xb8; 0x143316760 grows the pool). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_handle_drop_in_result_message",

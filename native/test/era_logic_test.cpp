@@ -103,6 +103,39 @@ static void warmer_swap_tests()
            "GameSetupMode +0x1c8 has_tyre_warmers (re/db structs/GameSetupMode.h)");
 }
 
+static void rev_lights_swap_tests()
+{
+    era::EngineSwaps swaps;
+    Mode a("f1_2024"), b("f1_2024"), c("f1_2024");
+    a.mem[era::MODE_EQUAL_ENGINE] = 2;
+    a.mem[era::MODE_EQUAL_ENGINE_SET] = 1;
+    b.mem[era::MODE_EQUAL_ENGINE] = 2;
+    b.mem[era::MODE_EQUAL_ENGINE_SET] = 1;
+    expect(swaps.swap(a.mem, 27) && swaps.swap(b.mem, 27) && a.mem[era::MODE_EQUAL_ENGINE] == 27 &&
+               b.mem[era::MODE_EQUAL_ENGINE] == 27 && a.mem[era::MODE_EQUAL_ENGINE_SET] == 1 && swaps.active() == 2,
+           "a press writes the box's engine stat id into every host mode's equal_performance_engine");
+    expect(!swaps.swap(c.mem, 27) && c.mem[era::MODE_EQUAL_ENGINE] == 0 && swaps.active() == 2,
+           "a mode without an equal_performance_engine is left alone (each car shows its own engine)");
+    swaps.swap(a.mem, 25);
+    expect(a.mem[era::MODE_EQUAL_ENGINE] == 25 && swaps.active() == 2,
+           "a second press without a put back keeps the game's engine once");
+    expect(swaps.put_back() == 2 && a.mem[era::MODE_EQUAL_ENGINE] == 2 && b.mem[era::MODE_EQUAL_ENGINE] == 2 &&
+               swaps.active() == 0,
+           "put back restores the game's engine in every swapped mode");
+
+    swaps.swap(a.mem, 27);
+    a.mem[era::MODE_EQUAL_ENGINE] = 3; // the game reloaded the mode since the press
+    expect(swaps.put_back() == 0 && a.mem[era::MODE_EQUAL_ENGINE] == 3,
+           "put back leaves an engine the game changed since the swap");
+
+    swaps.swap(a.mem, 27);
+    expect(swaps.forget() == 1 && swaps.active() == 0 && a.mem[era::MODE_EQUAL_ENGINE] == 27 && swaps.put_back() == 0,
+           "forget drops the swaps and writes nothing into the modes");
+    expect(!swaps.swap(nullptr, 27) && swaps.active() == 0, "no mode: nothing is swapped");
+    expect(era::MODE_EQUAL_ENGINE == 0xfa && era::MODE_EQUAL_ENGINE_SET == 0xfb,
+           "GameSetupMode +0xfa equal_performance_engine stat id, +0xfb its set flag (re/db structs/GameSetupMode.h)");
+}
+
 static void time_limit_swap_tests()
 {
     era::TimeLimitSwaps swaps;
@@ -1385,6 +1418,7 @@ int main()
 
     drs_swap_tests();
     warmer_swap_tests();
+    rev_lights_swap_tests();
     points_tests();
     tyre_change_tests();
     time_limit_swap_tests();

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143fe0480",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-EADP_INVITES",
-  "notes": "named from its log messages (channel EADP_INVITES): 'Start game invites service waiting for connect'"
+  "evidence": "decomp:re/decomp/143fe0480.c;pat:log-channel-EADP_INVITES;xref:0x145a45698",
+  "notes": "Virtual (vtable cell 0x145a45698). If state +0xf0 == 2 logs 'NeEadpInviteServiceState Disconnected Error'; logs 'Start game invites service waiting for connect' / 'Starting game invites service after connect and %u seconds', clears +0xf8, allocates the service holders (vtable 0x145a45fb0), logs 'Initialised  Game Invite' (EADP_INVITES). (lane owner review requested) Better name: Game_EadpInvites_StartInviteService (bound record keeps its name)."
  },
  "signature": {
   "id": "game.eadp_invites_start_game_invites_service_waiting",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'OTC: AB filter, is SteamID %llu bit 8 set?'"
+  "evidence": "decomp:re/decomp/1430f8dc0.c;pat:log-channel-NETWORK;xref:0x1430f8abe,0x1430f8f43",
+  "notes": "Called from 0x1430f8110 and recursively from itself (0x1430f8f43). Evaluates a filter node: AND/NOT recurse; type userlist (users), date_range (time_begin/time_end), changelist-lte, platforms (win/steam), eadp-env (prod/dev/cert/test), testGroup with the OTC AB filter on SteamID bit 8 or EAUserId bit 21 (GroupA/GroupB); ends with 0x1430ee9a0. Better name: Game_Network_EvaluateTitleConfigFilter (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_otcab_filter_steam_id_bit_set",

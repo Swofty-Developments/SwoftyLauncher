@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430568f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionManager::onSessionError; log channel NETWORK: 'void network::GameSessionManager::onSessionError(neon::NeNetError) | %s: error: %s, connection status: %s'"
+  "evidence": "decomp:re/decomp/1430568f0.c;pat:log-message-cxx;xref:0x143056bc4",
+  "notes": "__FUNCSIG__ 'void network::GameSessionManager::onSessionError(neon::NeNetError)' logged with '%s: error: %s, connection status: %s' (NETWORK); calls onLeavingSession 0x143057720 (0x14305697c). Fn ptr lea'd at 0x143056bc4 in 0x143056b10 (handler table). (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_session_manager_on_session_error",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430ac600",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onLeaveSessionNotification (class from the log channel); log channel NETWORK-UI: '%s().'  registered as the UI command 'leaveSession' in the NetworkUi init 0x1430aa810 (cancelInvite -> OnInviteCancelled 0x1430ac6e0 = this + InviteManager::cancel). Resets the VM sync point, Leave(Network,1,0,1), no explicit interrupt."
+  "evidence": "decomp:re/decomp/1430ac600.c;pat:log-message-method;xref:0x1430aad07,0x1430ac75c,0x1430df63d",
+  "notes": "UI command handler lea'd in 0x1430aa810; also called by OnInviteCancelled 0x1430ac6e0. Logs 'onLeaveSessionNotification', resets the VM sync point +0x268, championship save 0x143038620, Leave(Network,1,0,1). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_ui_on_leave_session_notification",

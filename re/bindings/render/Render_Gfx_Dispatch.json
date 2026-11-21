@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a03310",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143a03310.c;xref:0x143a0157d,0x143d5d13a",
-  "notes": "Dirty-state flush then context vcall +0x140(x,y,z): compute dispatch. Hypothesis."
+  "evidence": "decomp:re/decomp/143a03310.c;xref:0x143a0157d,0x143d5d13a,0x143ecf8ce",
+  "notes": "Same dirty-state flush as Render_Gfx_Draw, then list vcall +0x140(x, y, z). Callers Render_Gfx_SubmitDraw 0x143a007e0, 0x143d5cb70, 0x143ecf870. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx_dispatch",

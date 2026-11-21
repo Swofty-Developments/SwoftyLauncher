@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14308c000",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): '%s( %s) : Trying to start a vote in the wrong state: %d'"
+  "evidence": "decomp:re/decomp/14308c000.c;pat:log-channel-NETWORK;xref:0x143090c7d,0x14580f510",
+  "notes": "Called from 0x14308f6c0 and slot 4 (+0x20) of vtable 0x14580f4f0. (this, params): in the idle state sets params+0x10 = now_us/1e6 + params+8 (endTime), copies the params into this+0x60..+0x79 and calls 0x14308c360(this, ...); otherwise logs 'startVote: Trying to start a vote in the wrong state' with the Param(endTime, optionsCount) text. (lane owner review requested) Better name: Game_NetworkVoting_StartVote (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_trying_start_vote_wrong_state",

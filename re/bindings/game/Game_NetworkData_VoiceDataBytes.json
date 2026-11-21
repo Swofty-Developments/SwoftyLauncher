@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143066a00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-DATA",
-  "notes": "named from its log messages (channel NETWORK-DATA): 'Voice data from %d (unknown?) of %d bytes'"
+  "evidence": "decomp:re/decomp/143066a00.c;pat:log-channel-NETWORK-DATA;xref:0x143059970",
+  "notes": "Incoming voice data: without payload forwards an EVoiceMessageID (Game_NetworkVoice_EVoiceMessageID); else finds the player by index *param_3 in the player set, logs \"Voice data from %d (player ix %d)\" or \"(unknown?)\" and passes the data to Game_NetworkVoice_ReceiveVoiceData. (lane owner review requested) Better name: Game_NetworkData_HandleVoiceData (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_data_voice_data_bytes",

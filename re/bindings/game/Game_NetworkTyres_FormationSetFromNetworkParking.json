@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143614c80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-TYRES",
-  "notes": "named from its log messages (channel NETWORK-TYRES): 'FORMATION: setFromNetwork() V%02d PARKING'"
+  "evidence": "decomp:re/decomp/143614c80.c;pat:log-channel-NETWORK-TYRES;xref:0x14325a82c",
+  "notes": "Logs 'FORMATION: setFromNetwork() V%02d PARKING/NOT PARKING/PARKED/NOT PARKED' and posts the state change with Ne_Post_BusMessage 0x1439876c0. (lane owner review requested) Better name: Game_NetworkTyres_FormationSetFromNetwork (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_tyres_formation_set_from_network_parking",

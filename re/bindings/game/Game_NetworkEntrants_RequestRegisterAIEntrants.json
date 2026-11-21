@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143117bb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name requestRegisterAIEntrants (class from the log channel); log channel NETWORK-ENTRANTS: '%s: numberOfAIs: %d'"
+  "evidence": "decomp:re/decomp/143117bb0.c;pat:log-message-method;xref:0x14315ef6c,0x141ddfe18,0x14256e057",
+  "notes": "Host only, document open: logs requestRegisterAIEntrants numberOfAIs param_2; loops param_2 times: picks an AI template (0x14310f840), fills it with 0x14310fce0 (create AI entrant) and registers it with 0x143117630 (requestRegisterAIEntrant). Returns host && open. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_entrants_request_register_ai_entrants",

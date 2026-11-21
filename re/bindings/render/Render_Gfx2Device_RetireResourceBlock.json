@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439bb4d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439bb4d0.c;xref:0x143a0f263",
-  "notes": "Waits until the fence value (vcall +0x40 of [param_1+8]) >= param_2[2], then under CriticalSection (+0x618) releases *param_2 and, under (+0x670), returns block param_2[1] to the block allocator via 0x1439e7170 (+0x6c0). Callers Render_Gfx2Buffer_Destroy, 0x143a12920. Hypothesis."
+  "evidence": "decomp:re/decomp/1439bb4d0.c;xref:0x143a0f263,0x143a13122",
+  "notes": "Spins until fence (vcall +0x40 of [param_1+8]) reaches param_2[2], then under CS +0x618 releases *param_2, under CS +0x670 frees block param_2[1] with Render_Gfx2_BlockAllocator_Free (+0x6c0), and removes param_2 from the FNV-1a pointer hash set at +0x650. Callers Render_Gfx2Buffer_Destroy, 0x143a12920. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx2_device_retire_resource_block",

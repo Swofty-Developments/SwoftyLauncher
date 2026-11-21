@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14323e5b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): '%s: m_dropInRequests size: %d, after removing: %s'"
+  "evidence": "decomp:re/decomp/14323e5b0.c;pat:log-channel-NETWORK;xref:0x1430e4fc9,0x14323f427",
+  "notes": "Callers 0x1430e0560 and ForceDropInSpectator 0x14323efc0. For each request in the list this+0x78: FindEntrantToDropIn(this, req, 1), inlined tryHostDropIn (logs player, vehicleIx, driverStatId); on success ApplyDropIn([this+0x28], ...), 0x14316bff0 and broadcasts confirmation message 0x145836490 (0x14402e500, 1), else sends 'drop in FAILED' to the requester (channel 2); removes the node, logs 'm_dropInRequests size', queues the result (0x143316760 on +0xa0/+0xc0). (lane owner review requested) Better name: Game_Network_UpdateDropInRequests (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_drop_in_requests_size_after_removing",

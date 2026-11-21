@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14073fd80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: Driver contract progressed to bracket %s'"
+  "evidence": "decomp:re/decomp/14073fd80.c;pat:log-channel-TELEMETRY;xref:0x1406e9524,0x1407072b4",
+  "notes": "Bus handler(this,msg); subscribed 0x1406e9524 (0x1406d8470), unregistered 0x1407072b4. 0x90-byte record: copies string msg+0x10 (log arg), packed ids msg+0x18/+0x1c, msg+0x20/+0x24. Tag 'driver_contract_progressed_record' via 0x14077a240, GUID+seq, 64-entry queue; logs 'Driver contract progressed to bracket %s' (TELEMETRY). (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_driver_contract_progressed_to_bracket",

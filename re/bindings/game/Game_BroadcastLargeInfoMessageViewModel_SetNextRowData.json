@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1419d86f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=BroadcastLargeInfoMessageViewModel::setNextRowData; log channel TRACE: 'BroadcastLargeInfoMessageViewModel::setNextRowData: Already added %d rows - this has been capped.'"
+  "evidence": "decomp:re/decomp/1419d86f0.c;pat:log-message-cxx;xref:0x1419d8344,0x1419d853a",
+  "notes": "BroadcastLargeInfoMessageViewModel::setNextRowData(vm, header, value, listNode): row index = list size; capped -> TRACE log; else creates row \"%d\" with child nodes header/value (strings) and valueLocalise (bool), keeps the handles in vm and sets them (0x1407b10c0, 0x140973e20). Callers: 2 sites in 0x1419d7170. (lane owner review requested)"
  },
  "signature": {
   "id": "game.broadcast_large_info_message_view_model_set_next_row_data",

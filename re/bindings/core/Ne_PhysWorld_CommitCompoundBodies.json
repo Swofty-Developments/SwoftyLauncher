@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1440c24a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1440c24a0.c;xref:0x142bc8779,0x1440c8582",
-  "notes": "(world, compound, applyOffset): under world lock +0x10e8 walks body list compound+0x360 (next +0x118), commits dirty bodies (flag 4 @+0x170), recomputes bounds via shape-type table 0x145f98830, optional translation offset, updates broadphase and both contact caches (+0x1130/+0x1138). Callers: Ne_PhysBody_SetLinearVelocity and 7 others."
+  "evidence": "decomp:re/decomp/1440c24a0.c;xref:0x142bc8779,0x1440c8582,0x14444c4fc,0x144554aae,0x144554c48,0x14470df35",
+  "notes": "(world, compound, bool applyOffset): offset = compound+0x2a0 - *[compound+0x378] when set. Under EnterCriticalSection([world+0x10e8]) walks bodies [compound+0x360] (next +0x118); for flag 4 @+0x170: 0x1440e1230(world,body,1), AABB +0x90/+0xa0 rebuilt via shape table 0x145f98830[body+0x160] (skipped and flag 0x10 cleared if set) plus offset, 0x1440e0c90(world,body,aabb); flags&3 -> 0x1440e1910 on [world+0x1130] and [world+0x1138]. call sites in 6 funcs (e.g. Car_State_Read_Snapshot)."
  },
  "signature": {
   "id": "core.phys_world_commit_compound_bodies",

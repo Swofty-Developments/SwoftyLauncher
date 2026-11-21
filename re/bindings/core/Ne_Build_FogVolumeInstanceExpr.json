@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143c9ee50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "void Ne_Build_FogVolumeInstanceExpr(int64_t *self,void * a2,void * a3,void * a4,void * a5, void * param_6,void * param_7,void * param_8,void * param_9,void * self0, void * self1,void * self2,void * self3,void * self4, void * self5,void * self6,void * self7,void * self8, void * self9,void * a20,void * a21,void * a22, uint64_t a23,void * a24)",
-  "evidence": "decomp:re/decomp/143c9ee50.c;xref:0x143cbbc24",
-  "notes": "myteam-g1: Generic renderer routine using the string fog_vol_rnd_inst_exp (fog volume instance expression); not My Team."
+  "evidence": "decomp:re/decomp/143c9ee50.c;xref:0x143cbbc25",
+  "notes": "24-arg constructor returning this: stores the args, loads the fog compute shader variants (fog_lm_lut_export, fog_ibl_lut_export, fog_vol_lut_light_cull*, fog_vol_lut_export*, fog_vol_clear1/2, fog_vol_pt_cull, fog_vol_rnd_inst_exp, fog_vol_inst_cull, fog_vol_ray_exp, fog_vol_sort, fog_vol_shadows, fog_vol_lut_accum, clear_buffer utils) and creates buffers eaid://ego_package/fog_volume_cb etc.; uses 0x1439d4c90. Old name took 1 of ~20 strings. Caller 0x143cba630. Better name: Ne_FogRenderer_Construct (bound record keeps its name)."
  },
  "signature": {
   "id": "core.build_fog_volume_instance_expr",

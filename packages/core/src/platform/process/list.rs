@@ -22,13 +22,30 @@ pub(crate) fn named(name: &str) -> Vec<GameProcess> {
         .filter_map(|e| {
             let pid = e.file_name().to_str()?.parse().ok()?;
             let comm = std::fs::read_to_string(e.path().join("comm")).ok()?;
-            (comm.trim_end() == name && !is_dead(&e.path())).then(|| GameProcess {
+            let named = comm.trim_end() == name || {
+                let cmdline = std::fs::read(e.path().join("cmdline")).unwrap_or_default();
+                runs_exe(&cmdline, name)
+            };
+            (named && !is_dead(&e.path())).then(|| GameProcess {
                 pid,
                 started: started(pid),
                 origin: Origin::default(),
             })
         })
         .collect()
+}
+
+/// Whether a process's first argument names the exe `name`, as a Unix or Windows path in any case. Wine
+/// keeps the Windows path there, and a program that renames its main thread, like the EA app's
+/// `CrBrowserMain`, or a name longer than 15 bytes, never shows in `comm`.
+#[cfg(target_os = "linux")]
+pub(super) fn runs_exe(cmdline: &[u8], name: &str) -> bool {
+    let first = cmdline.split(|&b| b == 0).next().unwrap_or_default();
+    let first = String::from_utf8_lossy(first);
+    first
+        .rsplit(['/', '\\'])
+        .next()
+        .is_some_and(|file| !file.is_empty() && file.eq_ignore_ascii_case(name))
 }
 
 /// A process that has exited and is only waiting for its parent to reap it (`Z`), or is gone (`X`).

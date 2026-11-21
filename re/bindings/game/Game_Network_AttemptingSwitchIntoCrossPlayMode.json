@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'Attempting to switch into CrossPlay mode post Authentication with server.'"
+  "evidence": "decomp:re/decomp/1430e0560.c;pat:log-channel-NETWORK;xref:0x145814118",
+  "notes": "Slot 25 (+0xc8) of the NetworkSubsystem vtable 0x145814050; only that cell refers to it. 52 KB body: platform events (network cable plugged/unplugged, online service lost/restored, CrossPlay switch), matchmaking timeouts, leaderboard cache; calls Game_Network_SelectChampionshipByCode, the drop-in updates, Game_Network_HostExtendPracticeSession, SkipCurrentWeekend. Better name: Game_NetworkSubsystem_SlotC8 (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_attempting_switch_into_cross_play_mode",

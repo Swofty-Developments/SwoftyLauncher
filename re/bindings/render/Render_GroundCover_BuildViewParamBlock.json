@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143ce5680",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143ce5680.c;xref:0x143ce3030",
-  "notes": "648-line GroundCover mesh parameter build: default param object via 143be2500, floats 1000.0, 0.0005, -1/1, per-vertex tables. Caller Render_GroundCover_BuildMeshIndices. vq1-verify partial/disagree"
+  "evidence": "decomp:re/decomp/143ce5680.c;xref:0x143ce3030,0x143ce322f",
+  "notes": "Allocates a 0x810 scene-view params object (allocator +0x58), constructs it (Render_SceneViewParams_Construct), builds a camera desc on the stack (normalised basis from constants 0x1453829d0/0x1454876f0, matrix inverse, param_3) and fills the view with Render_SceneView_BuildViewParams; returns {allocator, view}. Callers Render_GroundCover_CreateGpuResources 0x143ce3030, 0x143ce322f. (lane owner review requested) Better name: Render_GroundCover_CreateCameraView (bound record keeps its name)."
  },
  "signature": {
   "id": "render.ground_cover_build_mesh_params",

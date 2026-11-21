@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432cea90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-OnlineSystemGetFriendRequestListTask",
-  "notes": "named from its log messages (channel OnlineSystemGetFriendRequestListTask): 'List received friend request queued, requestID = %I64u, error = %d'"
+  "evidence": "decomp:re/decomp/1432cea90.c;pat:log-channel-OnlineSystemGetFriendRequestListTask;xref:0x145835500",
+  "notes": "Same vtable slot as EADPAsyncTask_OnStart (cell 0x145835500, next cell Game_OnlineSystemGetFriendRequestListTask_Update). Checks NetworkSubsystem, EADP login and non-zero EA user id (eLogicError + StopTask otherwise), queues the received-friend-request list with its finished callback, logs 'List received friend request queued, requestID = %I64u, error = %d'. (lane owner review requested) Better name: Game_OnlineSystemGetFriendRequestListTask_OnStart (bound record keeps its name)."
  },
  "signature": {
   "id": "game.online_system_get_friend_r_list_received_friend_request_queued",

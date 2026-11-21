@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1411dfae0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-AB-System/V",
-  "notes": "named from its log messages (channel NETWORK-AB-System/V): '%s: Recievied AB Team Data Message for Team: %s'"
+  "evidence": "decomp:re/decomp/1411dfae0.c;pat:log-channel-NETWORK-AB-System/V;xref:0x1411dfa3b",
+  "notes": "Handler: finds the team entry with id msg+0x10 in this+0x380..0x388 (skips own team), copies msg+0x12..+0x18 into it, destroys the old item list and rebuilds it from the msg+0x28 array; logs \"Recievied AB Team Data Message for Team\" (NETWORK-AB-System/V). (lane owner review requested) Better name: Game_NetworkABSystem_OnTeamDataMessage (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_ab_system_recievied_ab_team_data_message_team",

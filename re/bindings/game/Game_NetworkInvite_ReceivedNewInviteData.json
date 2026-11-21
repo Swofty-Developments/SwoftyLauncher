@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143073200",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-INVITE",
-  "notes": "named from its log messages (channel NETWORK-INVITE): '%s(%s) : received new invite data...'"
+  "evidence": "decomp:re/decomp/143073200.c;pat:log-channel-NETWORK-INVITE;xref:0x14081158d,0x1430730c3,0x14307b6f9,0x1430ad988",
+  "notes": "Logs '%s(%s) : received new invite data...' with method name receiveInviteData. Calls Game_NetworkInvite_CanReceiveNewInvite (0x1430732d9); if busy logs 'Invite manager currently busy', else retires local players, sets the exclusive player and fires an InterruptQueue interrupt ('Accepted invite, fired interrupt'). Callers 0x1408113a0, 0x143072ea0, 0x14307b510, 0x1430ad6d0. (lane owner review requested) Better name: Game_NetworkInvite_ReceiveInviteData (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_invite_received_new_invite_data",

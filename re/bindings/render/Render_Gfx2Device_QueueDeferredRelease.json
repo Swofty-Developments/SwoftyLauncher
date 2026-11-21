@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439da070",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439da070.c;xref:0x1439abe93",
-  "notes": "Under device CS adds resource handle *param_2 to the deferred-destroy list (+0xcc8..+0xcd8, 16-byte entries, grows 1.5x) and the live set (+0x4078, counter +0x4188), stamps a frame serial (global 0x14618c160) at obj+0x140. Called for every GPU resource freed."
+  "evidence": "decomp:re/decomp/1439da070.c;xref:0x1439abe93,0x1439c6c55,0x1439ac300",
+  "notes": "Under device CS erases *param_2 from the buffer set +0x4078 (filled after Render_Gfx2Buffer_Construct 0x1439d5710, e.g. in 0x143bc2ff0), bumps +0x4188, increments serial 0x14618c160 (stored at [+0x528]+0x140) and appends {serial, buffer} to the release vector +0xcc8..+0xcd8 (16-byte entries, 1.5x growth); clears *param_2. Callers 0x1439abc80, 0x1439ac160, 0x1439bc2e0. (lane owner review requested) Better name: Render_Gfx2Device_ReleaseBufferDeferred (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_device_queue_deferred_release",

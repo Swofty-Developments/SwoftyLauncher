@@ -1,0 +1,102 @@
+{
+ "schema": 1,
+ "name": "Ne_AnimClipPlayer_Sample_Thunk",
+ "table": "functions",
+ "author": "native-guards-anim-clip",
+ "row": {
+  "addr": "0x1403a6400",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_AnimClipPlayer_Sample_Thunk(void *player, float time)",
+  "evidence": "decomp:own capstone disasm 0x147d19900-0x147d19ac6 (re/tools/disx.py) and 0x143a3aea0-0x143a3b022, 0x143a3b030-0x143a3b0d8;xref:0x14039e0fd,0x14039e125,0x147d012ff,0x147d01320,0x1403994d4,0x140399c23,0x1403a0627,0x1403a2704",
+  "notes": "5-byte jmp to the .data1 body 0x147d19900 (on Steam 26566308 the jmp at 0x1403a6440 goes to 0x147c36b40, on EA 1.0.141 0x1403a6b40 to 0x147be8570, on EA 1.0.145 0x1403a6b80 to 0x147c23100; each other body is the KB body with a few constants the protector decodes another way: the zeroing stride, the output offset 0x28, the packet-loop stride and the log probe start); read from a capstone listing of the body (re/tools/disx.py 0x147d19900 0x1c6), not from Ghidra. rcx = an animation clip player (clip index +0xc, anim set +0x20, output count +0x28, output tracks +0x30, weights +0x38), xmm1 = the time to sample; no other argument register is read and rax is left unread after every call. Returns when the clip index is negative or the set has no clip at that index, and after an 'expected binding' log line when it has no binding there; otherwise zeroes the weights and calls slot +0x18 of every packet in the clip with (packet, its binding, time in xmm2, player+0x28). The keyframe packets' slot +0x18 (0x143a3b030 for the 3-float packet) passes the time on in xmm3 to a per-track sampler (0x143a3aea0; same NaN path in 0x143a397b0, 0x143a39df0, 0x143a3a520, 0x143a3bb00 and 0x143a3bf30), whose only compare before the index is vucomiss first_key,time; jae (not taken when unordered), and which turns (time - first_key) * rate into a bucket index with vcvttss2si: NaN gives 0x80000000, the signed bucket-count test passes it, and movzx ecx,word [buckets + index*2] at 0x143a3af7b reads 4 GB below the table (Steam 26566308 F1_25.exe+0x3a3d54b, EA 1.0.145 +0x3a2a56b). The half-float packets' helper 0x143a3aae0 sends a negative index to its first frame. Car_Visual_UpdateRenderState (call at 0x14039e0fd) and the in-car driver update 0x147d01230 (call at 0x147d012ff) sample the cockpit steering_steer player at car visual +0x1370 with the time at +0x1384; the next call in each samples windscreen_wipers at +0x1a30. callers: census steam 0x3a6400. Core's anim clip time guard wraps the thunk and passes the lowest float for a time that is not a number, so each sampler takes its own before-the-first-key exit and samples the first key."
+ },
+ "signature": {
+  "id": "core.anim_clip_player_sample_thunk",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? CC 98 FC CC 81 0F 88 DA CB 20",
+  "match": "0x1403a6400",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403a6400",
+  "kind": "func_start",
+  "names": [
+   "Ne_AnimClipPlayer_Sample_Thunk"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-21",
+    "by": "native-guards-anim-clip",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/engine/anim_clip_time_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-21",
+   "verifier": "native-guards-anim-clip-blind",
+   "kind": "func",
+   "item": "Ne_AnimClipPlayer_Sample_Thunk",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1403a6400-0x1403a6405, 0x147d19900-0x147d19ac6, 0x143a3b030-0x143a3b0d8, 0x143a3aea0-0x143a3b022 (re/tools/disx.py);xref:0x14039e0fd,0x14039e125,0x147d012ff,0x147d01320,0x1403994d4,0x140399c23,0x1403a0627,0x1403a2704,0x1403a2d4a,0x1403a2d5e,0x1403a2e41,0x1403a2f6f;sig:core.anim_clip_player_sample_thunk",
+   "notes": "V120004 Blind re-derivation on d873a1c8. 0x1403a6400 is in .xtls outside every .pdata entry (the neighbours are 0x1403a4540-0x1403a63ff and 0x1403a66d0): E9 FB 34 97 07, jmp 0x147d19900, the .data1 body with .pdata 0x147d19900-0x147d19ac6. Arguments: the body reads rcx (mov eax,[rcx+0xc] at 0x147d19915) and xmm1 (vmovaps xmm6,xmm1 at 0x147d1994f). rdx is written at 0x147d19927, r8 at 0x147d199a9/0x147d199d1 and r9 at 0x147d19a34 before any read. xmm0 and xmm3 are never touched, and xmm2 is written at 0x147d19a30. Object reads: an int32 clip index at +0xc (js 0x147d19ab0 returns when it is negative); set = [rcx+0x20]; clip = [[set]][index] (null returns); binding = [[set+8]+0x10][index]. A null binding goes to 0x147d19a3c: when byte 0x14604bac4 is 1, that path probes the dword table 0x14604b4f0 for 0xc21bd8db and calls the log thunk 0x1406d4c80 with \"DRIVER\" and \"SkinnedActor::NeSequenceClipTargetImpl::populateneon::slotArrayHelper expected binding\", then returns. Next come a u32 count at +0x28 and a weights pointer at +0x38. The body zeroes those weights with an alignment loop and memset 0x145378b60, then reads the u32 packet count at clip+0x10 (0 returns) and slots = [binding+8]. For each non-null packet [clip][i] it calls [[packet]+0x18] with rcx = packet, rdx = &slots[i], xmm2 = time and r9 = player + ([0x14b6aca9c] xor 0x0f4dffdc = 0x28). It leaves r8 and xmm3 unset. rax holds a leftover value on every return. The call sites 0x14039e0fd, 0x14039e125, 0x147d012ff, 0x147d01320, 0x1403994d4, 0x140399c23, 0x1403a0627, 0x1403a2704, 0x1403a2d4a, 0x1403a2d5e, 0x1403a2e41 and 0x1403a2f6f overwrite it or never read it, so the function is void, with (void *player, float time) in rcx/xmm1. callers: census steam 0x3a6400. At 0x14039e0fd (in 0x14039aa80), rcx = lea [owner+0x1370] and xmm1 = [owner+0x1384]. At 0x147d012ff (in 0x147d01230), rcx = rsi+0x1370 and xmm1 = [rsi+0x1384]. Every site I checked passes the float at player+0x14. 0x140399720 binds owner+0x1370 to \"steering_steer\" and owner+0x1a30 to \"windscreen_wipers\" (0x140394d09-0x140394d3e). Packet slot: vtable 0x1458a1a00 (the name \"NeAnimPacket_L3\" sits just before it) holds 0x143a3b030 at +0x18. 0x143a3b030 keeps the time in xmm6 and reads tracks from [r9+8] (player+0x30, 16-byte entries) and weights from [r9+0x10] (player+0x38). It writes 1.0f to the weight of every mapped channel and calls 0x143a3aea0 with rcx = packet, rdx = channel, r8d = channel index, xmm3 = time and the stack argument = &tracks[map]. In 0x143a3aea0, on the path for 3 or more keys, vucomiss [desc+0x10],xmm3 at 0x143a3aef4 is followed by jae 0x143a3af54. The jae is not taken for NaN, because an unordered compare sets CF. (time - start) * [desc+0x14] then goes to vcvttss2si r10d at 0x143a3af05, which gives 0x80000000. The signed cmp esi,r10d; jle at 0x143a3af17 is not taken, because bucket count - 1 > INT_MIN. 0x143a3af73-0x143a3af7b then loads [desc+8] and reads the word at buckets + sign-extended index * 2, 4 GiB below the table. The 2-key path (0x143a3af21) gives a NaN weight at index 0, so no bad index comes out of it. For -3.4028235e38, the jae at 0x143a3aef8 is taken and 0x143a3af54 samples segment 0 at weight 0 (the first key); the 2-key path clamps that time to 0 with vmaxss. Where I agree with the author's row: the layout, the early returns, the slot call and its registers, and the NaN path and its read site. The read site is also at Steam 26566308 0x143a3d54b and EA 1.0.145 0x143a2a56b, and 0x143a397b0, 0x143a39df0, 0x143a3a520, 0x143a3bb00 and 0x143a3bf30 have the same vucomiss/jae/vcvttss2si/jle shape. Corrections to the prose, none of which change the level or the proto: (1) The missing-binding exit logs before it returns, so it does not return at once. (2) The EA bodies do not differ only in the output-zeroing stride. EA 1.0.141 also takes 0x28 and the probe start 0x4f as immediates. EA 1.0.145 keeps the KB zeroing stride and instead decodes the packet-loop stride 8 (0x147c231f6) and the probe start (0x147c23245). (3) The sampler compares the time again after the index is formed (0x143a3af6a, 0x143a3af9b). Gap in the guard (not a claim of this row): +inf, or any time where (time - start) * rate reaches 2^31, also makes vcvttss2si return 0x80000000 and reaches the same read, but time_unordered in anim_clip_time_logic.hpp tests only isnan."
+  },
+  {
+   "date": "2026-11-21",
+   "verifier": "native-guards-anim-clip-blind",
+   "kind": "sig",
+   "item": "core.anim_clip_player_sample_thunk",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "sig:core.anim_clip_player_sample_thunk;decomp:own capstone disasm 0x1403a6400-0x1403a6410, 0x147d19900-0x147d19ac6 and the bodies 0x147c36b40, 0x147be8570, 0x147c23100 (re/tools/disx.py);xref:0x14039e0fd,0x147d012ff,0x1403fdabd,0x14050dac1,0x14775e0b9",
+   "notes": "V120005 Blind re-derivation on d873a1c8. sigcheck --only core.anim_clip_player_sample_thunk: OK, hits=1, match=target=0x1403a6400. The thunk has no .pdata entry of its own. The func_start check passes through the jmp-thunk rule: the E9 at the target lands on 0x147d19900, the start of the .data1 .pdata entry 0x147d19900-0x147d19ac6. Pattern: 15 bytes, with a fixed E9 first and a fixed 20 last; the only wildcards are the rel32. No rel32 or disp32 operand and no 8-byte absolute pointer in any executable section reaches 0x1403a6401-0x1403a6404. Some raw 4-byte values reach the tail at 0x1403a6405/0x1403a6409/0x1403a640d, from 0x1403fdabd, 0x14050dac1 and 0x14775e0b9, but those are instruction starts (mov rdx,rdi; mov rcx,rbp; add rsp,-8), not operands. The bytes after the jmp (CC 98 FC CC 81 0F 88 DA CB 20) are not code. They are outside .pdata, nothing references them, and they decode to int3/cwde/cld/or [rdi]/sti/jrcxz junk. Overrides: the steam-26566308.json pattern hits exactly once in the executable sections, in .tls$ at 0x1403a6440 = hint 0x3a6440, an E9 to 0x147c36b40 in .trace (.pdata to 0x147c36d16). The ea.json pattern hits once in .rdata at 0x1403a6b40 = hint, an E9 to 0x147be8570 in .xcode (.pdata to 0x147be8736). The ea-1-0-145.json pattern hits once in .arch at 0x1403a6b80 = hint, an E9 to 0x147c23100 in .xtls (.pdata to 0x147c232c6). Bodies compared with function-relative branch targets: EA 1.0.141 equals KB except in three places: the memset stride [0x1552172cc]+0xb75df018 (=0x10) in place of shl r13,4; add rsi,0x28 in place of the xor-decoded 0x28; and mov eax,0x4f in place of the xor-decoded probe start. EA 1.0.145 equals KB except for add rsi,0x28, the packet-loop stride [0x14e41ed5c]-0xa8888b40 (=8) in place of shl rdi,3, and the probe start [0x14c09b778]+0x137cb7ad (=0x4f). Steam 26566308 has the memset stride 0x41000010-[0x1560f8c94] (=0x10), add rsi,0x28, mov eax,0x4f, a dead xor r15b,[0x14ea864f4] after the second memset (0x147c36c2f) and longer nops, so its branch targets move by up to 0x10. Every replaced value decodes to the KB value, and each body calls its build's memset twice and logs the same two strings. Callers (census.py show on the hinted thunk in each build): the .xtls callers keep their KB sizes and site offsets (0x140393eb0 size 0x5864 +0x5624, 0x140399720 0x534 +0x503, 0x14039aa80 0x4ba5 +0x367d/+0x36a5, 0x1403a03d0 0x2da +0x257, 0x1403a1790 0x195e +0xf74 to +0x17df) and move by +0x40 (Steam 26566308), +0x740 (EA 1.0.141) and +0x780 (EA 1.0.145). The .data1 caller 0x147d01230 (sites +0xcf/+0xf0) becomes 0x147c2f720 (+0xe5/+0x106), 0x147bd8900 (+0xcd/+0xee) and 0x147c20640 (+0xe5/+0x106), and its site offsets change because the code is obfuscated again in each build. The overlay prose is looser than the bytes, but the patterns and hints are right. ea-1-0-145.json says the protector rewrites the output-zeroing stride, yet that body keeps the KB zeroing stride and rewrites the packet-loop stride. steam-26566308.json calls its body the KB stream, yet it carries the substitutions above."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "native-guards-anim-clip",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1403a6400",
+    "target": "0x1403a6400"
+   },
+   "sigcheck": "passed",
+   "digest": "cafc38fd6fb654acbbf3844abadf4034b35c17c3c4a0769577de0b5eb220e497"
+  },
+  {
+   "by": "native-guards-anim-clip",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1403a6440",
+    "target": "0x1403a6440"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ece48bb7529d6f2d751fa6d28c0e97425b79ae6a0f2b0bae53564d45b510a382"
+  }
+ ]
+}

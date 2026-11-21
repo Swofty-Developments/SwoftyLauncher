@@ -26,7 +26,8 @@ struct TyreChangePick {
 // The mandatory tyre change rule for the box whose entrant list was pressed: the last content.package (in the order
 // given) with that entrant list, and its rules.mandatory_tyre_change when that is a bool.
 inline TyreChangePick tyre_change_pick(const std::string &entrant_list,
-                                       const std::vector<std::pair<std::string, const Value *>> &packages)
+                                       const std::vector<std::pair<std::string, const Value *>> &packages,
+                                       const std::string &host = "swofty_f1")
 {
     TyreChangePick p;
     const Value *found = nullptr;
@@ -36,17 +37,17 @@ inline TyreChangePick tyre_change_pick(const std::string &entrant_list,
             found = rec;
         }
     if (!found) {
-        p.line = "box " + entrant_list + ": no content.package; swofty_f1 keeps its own tyre regulations";
+        p.line = "box " + entrant_list + ": no content.package; " + host + " keeps its own tyre regulations";
         return p;
     }
     const Value &m = (*found)["rules"]["mandatory_tyre_change"];
     if (!m.is_bool()) {
-        p.line = "box " + entrant_list + " (" + p.package +
-                 "): no mandatory tyre change rule; swofty_f1 keeps its own tyre regulations";
+        p.line = "box " + entrant_list + " (" + p.package + "): no mandatory tyre change rule; " + host +
+                 " keeps its own tyre regulations";
         return p;
     }
     p.required = m.as_bool();
-    p.line = "box " + entrant_list + " (" + p.package + "): swofty_f1 races " + (*p.required ? "with" : "without") +
+    p.line = "box " + entrant_list + " (" + p.package + "): " + host + " races " + (*p.required ? "with" : "without") +
              " a mandatory tyre change (rules.mandatory_tyre_change)";
     return p;
 }

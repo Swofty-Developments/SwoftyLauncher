@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143091c40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name handleRaceStatusMessage (class from the log channel); log channel NETWORK: '%s: Received race status, peer id %d , status: %s , sessionId: %u'"
+  "evidence": "decomp:re/decomp/143091c40.c;pat:log-message-method;xref:0x143055498",
+  "notes": "Only ref: the lea at 0x143055498 in 0x143054470 (handler registration). (this, msg): msg+0x10 peer, +0x11 status, +0x14 sessionId; logs 'handleRaceStatusMessage: Received race status'; updates or inserts (0x143203110/0x1432036f0) the peer's 0xc-byte entry in the hash map this+0x40..+0x74, queues event 0x145823668 (Ne_Event_Set); for the local peer sets [..]+0x38 = (status == 8), else stores a timestamp in the peer's connection record. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_handle_race_status_message",

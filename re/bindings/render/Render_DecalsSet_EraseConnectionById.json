@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143c6bc20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143c6bc20.c;xref:0x143c7905b",
-  "notes": "Erases one connection record keyed by a u64 id from the decals-set plugin maps: FNV-1a over the 8 id bytes, bucket mask this+0xa8 / sub-map +0x60, intrusive list nodes (key at node+0x10), releases the refcounted object (vcall +0/+8), stores result code (0 ok, 2 not found, 0xe invalid) into a TLS error slot plus a small backtrace ring (0x146107830). Caller Ne_CustomisationDecalsSetPlugin_CloseConnection. Hypothesis on exact container role."
+  "evidence": "decomp:re/decomp/143c6bc20.c;xref:0x143c7905b,0x143c790a3",
+  "notes": "Erases a connection keyed by u64 id: FNV-1a over the 8 id bytes masked by +0xa8 (sub-map +0x60), unlinks the node, releases the refcounted object (vcall +0x38), Render_DecalsSet_ConnectionMap_Erase(+0x130); on the last one calls Render_DecalsSet_ReleaseTargets and Render_DecalsSet_ReleaseAllGpuResources; result 0/2/0xe into the TLS error slot. Caller Ne_CustomisationDecalsSetPlugin_CloseConnection 0x143c7905b, 0x143c790a3. (lane owner review requested)"
  },
  "signature": {
   "id": "render.decals_set_erase_connection_by_id",

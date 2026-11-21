@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143ec1aa0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143ec1aa0.c;xref:0x143b8711a,0x143ec0e97",
-  "notes": "Builds a job record in the renderer (param_1) from the 0x20-byte-entry ring (+0xa0, count +0x9c/+0x98, slot table +0x400c0): fills job fn 0x143ec1d90 (+0x50), arg (+0x58), flags (+0x70) and, when single-threaded (+0x48 < 2, nothing pending +0x78), runs it inline; otherwise posts it to the job system. Caller Render_Gfx2Renderer_WaitRenderSignal. Hypothesis."
+  "evidence": "decomp:re/decomp/143ec1aa0.c;xref:0x143b8711a,0x143ec0e97,0x143ec0f02",
+  "notes": "Closes the pending batch: count = [+0x98] - [+0x9c]*0x20; stores {entries at +0xa0 + idx*0x400, count} in table +0x400c0[idx]; if the job list allows (+0x48 < 2, +0x78 empty) fills job {fn 0x143ec1d90, arg = table entry, +0x68 = [+0x88], flags 1} and appends it, else error code 0xc; increments [+0x9c] and on the first batch or one job submits via 0x143abe3f0([+0x80], +0x10). Callers 0x143b8711a (Render_Gfx2Renderer_WaitRenderSignal), 0x143ec0e97/0x143ec0f02 (0x143ec0e70). (lane owner review requested) Better name: Render_Gfx2Renderer_FlushEntryBatch (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_renderer_build_signal_job",

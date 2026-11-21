@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "void(void *cfg)",
-  "evidence": "decomp:re/decomp/1409b5fb0.c",
-  "notes": "Loads canned_events.Faults/Failures/Accidents.RaceLengthPercentages and canned_events.player_data.fault_data (attributes with faultType and FaultChanceAttribute, race_length_point_thresholds, track_vo fault_imminent/occurred/fixed) and failure_data.track_vo (suspected, confirmed, innocuous, ai_control, retirement_destination). Fault types: Engine, Gearbox, MissingGear, GearJammed, ERS, DRS, Tyre, ERSInaccessibleModes, ERSSoftwareGlitch, EngineLeanFuel."
+  "evidence": "decomp:re/decomp/1409b5fb0.c;xref:0x145664ec0",
+  "notes": "Strings confirm canned_events Faults/Failures/Accidents RaceLengthPercentages, player_data fault_data/failure_data track_vo keys and faultType parsing. Only ref is vt cell 0x145664ec0."
  },
  "signature": {
   "id": "game.canned_events_load_player_fault_data",

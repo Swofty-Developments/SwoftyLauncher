@@ -59,15 +59,25 @@ impl Shell {
             Ok(())
         }) {
             Ok(()) => {
+                let ea = self
+                    .game
+                    .install
+                    .as_ref()
+                    .is_some_and(|i| i.source == swofty_core::install::Source::EaApp);
                 crate::app::app_log::note(&format!(
                     "saves: profile {name} now plays on {}",
-                    if on { "its launcher saves" } else { "Steam's saves" }
+                    match (on, ea) {
+                        (true, _) => "its launcher saves",
+                        (false, true) => "the EA app copy's own saves",
+                        (false, false) => "Steam's saves",
+                    }
                 ));
                 self.library.profile.launcher_saves = on;
                 window.notify(
-                    Notification::info(match on {
-                        true => trf!("{name} plays on its own launcher saves.", name = name),
-                        false => trf!("{name} plays on your Steam saves.", name = name),
+                    Notification::info(match (on, ea) {
+                        (true, _) => trf!("{name} plays on its own launcher saves.", name = name),
+                        (false, true) => trf!("{name} plays on the EA app copy's own saves.", name = name),
+                        (false, false) => trf!("{name} plays on your Steam saves.", name = name),
                     }),
                     cx,
                 );

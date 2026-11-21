@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140bb3a60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=OnlineDocumentComponent::onGameModeSelected; log channel GAME: 'OnlineDocumentComponent::onGameModeSelected().'"
+  "evidence": "decomp:re/decomp/140bb3a60.c;pat:log-message-cxx;xref:0x1456785c8,0x1456b2ad8",
+  "notes": "Logs GAME 'OnlineDocumentComponent::onGameModeSelected().', calls Game_NetworkSubsystem_OnGameModeSelected, logs '%s: onlineChampionship: %s' (setOnlineChampionship) and subscribes MessageSessionResultsFinalised / MessageStartLightsComplete (Ne_Subscribe_BusMessage). Referenced only by vtable cells 0x1456785c8 and 0x1456b2ad8. (lane owner review requested)"
  },
  "signature": {
   "id": "game.online_document_component_on_game_mode_selected",

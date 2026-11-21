@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439aa0f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439aa0f0.c;xref:0x143d6d510,0x14464aaa0",
-  "notes": "(ConfigNode **node, float *out): fetches the node value string via node vtable +0x40 and parses it as float (0x145343ff4 atof-like); errno 2 when missing. Callers: Render_RainFile_Load, Car_Read_VtfConvexHulls, Car_F1Plank_Read."
+  "evidence": "decomp:re/decomp/1439aa0f0.c;xref:0x1401da2a6,0x1401da347,0x143d6dfa4",
+  "notes": "(ConfigNode **node,float *out): value = (*node) vt+0x40(*node,node); if null or no node sets TLS error 2 (Ne_Tls_GetValue chain + error ring 0x146107830) and returns 2; else parses with CRT atof-like 0x145343ff4 into out, returns 0. call sites: Render_Skidmarks_Init, Car_Parse_TyreModel, Render_RainFile_Load, Game_TrackInformation_ParseTrackInfoXml."
  },
  "signature": {
   "id": "core.config_read_float",

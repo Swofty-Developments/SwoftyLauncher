@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140733d80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: Home Screen News Popup Opened'"
+  "evidence": "decomp:re/decomp/140733d80.c;pat:log-channel-TELEMETRY;xref:0x1406e4c44,0x1406feb25",
+  "notes": "Bus handler(this,msg); subscribed 0x1406e4c44 (0x1406d8470), unregistered 0x1406feb25. 0xa8-byte record: msg+0x10..+0x40 incl. string msg+0x38. Tag 'home_screen_news_popup_opened_record' via 0x14077a240, GUID+seq, 64-entry queue; logs 'Home Screen News Popup Opened' (TELEMETRY). (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_home_screen_news_popup_opened",

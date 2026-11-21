@@ -4,4 +4,5 @@
 
 pub mod client;
 pub mod fingerprint;
+pub mod matching;
 pub mod types;

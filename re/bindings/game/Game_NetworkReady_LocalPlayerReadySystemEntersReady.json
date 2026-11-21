@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143223e10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-READY",
-  "notes": "named from its log messages (channel NETWORK-READY): 'Local player %d ReadySystem enters ready monitor %d at time %+1.3f, human requirement [%d]'"
+  "evidence": "decomp:re/decomp/143223e10.c;pat:log-channel-NETWORK-READY;xref:0x1436ea1a9",
+  "notes": "Method name enterReadyMonitor in its log: 'Local player %d ReadySystem enters ready monitor %d at time ..., human requirement', 'Local Human is already in that monitor', host sets m_currentPolicyType, sends super-ready (sendSuperReady log) and a message via 0x14402e500. Caller 0x1436e9ca0. (lane owner review requested) Better name: Game_NetworkReady_EnterReadyMonitor (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_ready_local_player_ready_system_enters_ready",

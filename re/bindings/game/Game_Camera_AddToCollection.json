@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14453a420",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-CAMERA",
-  "notes": "named from its log messages (channel CAMERA): 'Camera (World Instance name '%s') already exists in collection '%s'. Please ensure any duplicates are removed from the layer or world.'"
+  "evidence": "decomp:re/decomp/14453a420.c;pat:log-channel-CAMERA;xref:0x14563e008,0x145be89b8",
+  "notes": "Copies the camera's collection name (component 0x146cc2128 +0x28) into a static string, djb2-lowercase hash; finds the collection in this+0x60..+0x68 by hash (+0x30) or creates a 0x58-byte one (allocator +0x50, vector alloc +0x58). If the camera (or one with the same id +0x70) is already in the collection's 0x28-byte entry list +0x40 logs the CAMERA duplicate warning, else appends (0x144538dc0). (lane owner review requested)"
  },
  "signature": {
   "id": "game.camera_add_to_collection",

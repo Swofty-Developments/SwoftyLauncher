@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name isCurrentVoSequenceDataPreloaded (class from the log channel); log channel A2FCharacter: 'isCurrentVoSequenceDataPreloaded() - Preloading VO Sequence [%s] - on Character [%s]'"
+  "evidence": "decomp:re/decomp/14025e0e0.c;pat:log-message-method;xref:0x1455ede78",
+  "notes": "Vtable slot (cell 0x1455ede78) of A2FCharacter: VO state-machine tick; logs Summoning/Dismissing Character, Pending VO found, Requested Preload, waiting on VO Sequence to preload, Playing VO Sequence. The isCurrentVoSequenceDataPreloaded() line is one log inside (likely an inlined callee); old name covers only that fragment. Better name: Game_A2fcharacter_UpdateVoState (bound record keeps its name)."
  },
  "signature": {
   "id": "game.a2fcharacter_is_current_vo_sequence_data_preloaded",

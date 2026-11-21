@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144048650",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-TRANSPORT",
-  "notes": "named from its log messages (channel NETWORK-TRANSPORT): '[RecvNewConnection][%u] My Conn ID: %d, Their Conn ID: %d, Mode: %s'"
+  "evidence": "decomp:re/decomp/144048650.c;pat:log-channel-NETWORK-TRANSPORT;xref:0x1440485bb",
+  "notes": "Thread function (lea'd at 0x1440485bb and passed to the thread start 0x14391da30): __FUNCTION__ 'NeNetReliableAsyncSocket::recvThreadFunc', receives datagrams, logs '[RecvNewConnection]...', creates SSL peer channels (FindOrCreateChannel 0x144049210), 'RECV thread ends'. (lane owner review requested) Better name: Game_NetReliableAsyncSocket_RecvThreadFunc (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_transport_my_conn_id_their_conn_id_mode",

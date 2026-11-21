@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143d90000",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143d90000.c;xref:0x143b7cadc,0x143b7cbab",
-  "notes": "Adds a callback entry (vtable 0x143ec0810, object param_2, id from vcall +0x10) to a fixed 32-slot table (stride 0x28 at +0x368, count +0x868) under critical section +0x20. Caller Ne_Gfx2Renderer_RenderFrame. Hypothesis (deferred per-frame callbacks)."
+  "notes": "If sink +0x10 is null runs the request at once (vcall +8). Else under critical section +0x20 stores {thunk 0x143ec0810 (calls vcall +8), request param_2, id from vcall +0x10} in a 32-slot table (stride 0x28 at +0x368, count +0x868) linked into +0x58 (count +0x360); at 32 entries flushes via 0x143abe3f0(+0x10, +0x58). Full: error 0xc. Caller Ne_Gfx2Renderer_RenderFrame 0x143b7cadc, 0x143b7cbab. (lane owner review requested) Better name: Render_Gfx2_RequestBatch_Push_A (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_renderer_queue_callback_a",

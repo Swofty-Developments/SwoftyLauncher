@@ -366,11 +366,15 @@ void team_tests(const std::string &regs)
     live.record = [&](uint16_t stat) -> uint8_t * { return stat == 600 ? record.data() : nullptr; };
     live.pending.clear();
     auto done = run_dresser();
-    int32_t primary;
+    int32_t primary, secondary, menu;
     std::memcpy(&primary, record.data() + content::team_record::PRIMARY, sizeof primary);
+    std::memcpy(&secondary, record.data() + content::team_record::SECONDARY, sizeof secondary);
+    std::memcpy(&menu, record.data() + content::team_record::MENU, sizeof menu);
     check(done.first == 1 && done.second == 0, "apply_teams dresses the slot row through the dresser");
-    check(std::string(bufs[0].c_str()) == "B Toro" && std::string(bufs[3].c_str()) == "STR" && primary == int32_t(0xFF0A1E3C),
+    check(std::string(bufs[0].c_str()) == "B Toro" && std::string(bufs[3].c_str()) == "STR" && primary == int32_t(0xFF3C1E0A),
           "the loaded record takes the season team's names and colours");
+    check(menu == int32_t(0xFF3C1E0A) && secondary == int32_t(0xFF2E10C8),
+          "loaded record colours are 0xAABBGGRR, the order the game's colour rows load in: #0A1E3C is 0xFF3C1E0A");
     check(std::string(bufs[4].c_str()) == "Faenza, Italy" && record[content::team_record::TEAM_BOSS] == 41,
           "and its base text and principal: team_boss is the stat id of the character row its label names");
     std::vector<uint8_t> reloaded(0x768, 0);
