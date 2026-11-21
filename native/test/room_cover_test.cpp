@@ -161,6 +161,22 @@ int main()
         float a = c.frame(10 + rc::SESSION_CAP_MS, rc::Signal::waiting, &ev);
         expect(ev == rc::Event::came_off && c.why() == rc::Why::timeout && a == 1, "and comes off at its own cap");
     }
+    expect(rc::plugin_signal(0, 0) == rc::Signal::waiting, "a start on its way with the plugin waiting waits");
+    expect(rc::plugin_signal(1, 0) == rc::Signal::waiting, "the direct start's own session screen does not show it");
+    expect(rc::plugin_signal(0, 1) == rc::Signal::shown, "the plugin showing it shows it");
+    expect(rc::plugin_signal(0, -1) == rc::Signal::failed, "the plugin failing fails it");
+    expect(rc::plugin_signal(-1, 0) == rc::Signal::failed, "a failed direct start fails it while the plugin still waits");
+    expect(rc::plugin_signal(-1, 1) == rc::Signal::failed, "and whatever the plugin says");
+    {
+        rc::Cover c;
+        c.arm();
+        c.frame(0, rc::plugin_signal(0, 0), &ev);
+        expect(c.frame(4000, rc::plugin_signal(0, 0), &ev) == 1 && ev == rc::Event::none,
+               "the cover stays up while the start is on its way");
+        expect(c.frame(4100, rc::plugin_signal(-1, 0), &ev) == 0 && ev == rc::Event::came_off && c.why() == rc::Why::failed,
+               "a direct start that failed takes it off at once, with the menu open behind it");
+        expect(!c.drawing(), "and it stays off");
+    }
     std::printf(failed ? "room cover test: FAILED\n" : "room cover test: ALL PASSED\n");
     return failed ? 1 : 0;
 }
