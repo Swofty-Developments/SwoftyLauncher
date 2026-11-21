@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140adc450",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_ChallengeCareerLeaderboardReader_Start;xref:0x140adc4fb",
-  "notes": "cxx=game::ChallengeCareerLeaderboardReader::start; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/140adc450.c;str:s_ChallengeCareerLeaderboardReader_Start;xref:0x14566a588",
+  "notes": "Vtable cell 0x14566a588. Own pretty-function log. Stores context (+0xb0 name, +0xb8..+0xd8, +0x3c type, +0xe8=2, +0xf0 delegate). Type 2: collects friend ids into a comma list and requests the friends board with callback Game_ChallengeCareerLeaderboardReader_HandleGetFriendCC; else ranked request via 0x140b69920, callback 0x140add940. Returns +0x80 != 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.challenge_career_leaderboard_reader_start",

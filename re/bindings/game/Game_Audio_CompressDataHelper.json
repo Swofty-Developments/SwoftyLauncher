@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14403bbb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name compressDataHelper (class from the log channel); log channel AUDIO: 'compressDataHelper: compressing %d bytes failed, error '%s''"
+  "evidence": "decomp:re/decomp/14403bbb0.c;pat:log-message-method;xref:0x145a49ac0",
+  "notes": "Local voice chat update (NETWORK-VOICE, vtable cell 0x145a49ac0): mic frames -> RMS noise gate 500, end-of-play packet after 0.8 s quiet, leftovers dropped after 0.5 s; buffers mic data at 0x146c934a0, encodes chunks of 60..2880 samples (0x144c37640; compressDataHelper is only an inlined error log) and queues packets at +0x6fb8 (CS +0x6f78). (lane owner review requested) Better name: Game_VoiceChatLocal_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.audio_compress_data_helper",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143371320",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_OnlineSystems_Tasks_CheckPrivilegeTask_ShowPopupMessageGeneratedFromTa;xref:0x1433713a0",
-  "notes": "cxx=game::online_systems::tasks::CheckPrivilegeTask::showPopupMessageGeneratedFromTask; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/143371320.c;str:s_OnlineSystems_Tasks_CheckPrivilegeTask_ShowPopupMessageGeneratedFromTa;xref:0x143370ab1,0x14345043d,0x14345071d",
+  "notes": "Own pretty-function log. Handler +0x168 vt+8 (fallback +0x178) builds the popup text for privilege param_2, then 0x143370ff0(this, text, callback Game_CheckPrivilegeTask_CallPrivilegeCheckCallback, param_2). (lane owner review requested)"
  },
  "signature": {
   "id": "game.check_privilege_task_show_popup_message_generated_from_task",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140bb1900",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-CAREER_INVITATIONAL_FLOW",
-  "notes": "named from its log messages (channel CAREER_INVITATIONAL_FLOW): 'InvitationalEventSetupComponent: Overriding AI difficulty on selected: event %hs on %hs'"
+  "evidence": "decomp:re/decomp/140bb1900.c;pat:log-channel-CAREER_INVITATIONAL_FLOW;xref:0x140bb211a,0x141c32e49",
+  "notes": "AI difficulty: param_2 == -1 -> +1000 = -1 ('not overridden'), else +1000 = first table value whose threshold +4 >= param_2 for the event named +0x2a0 (logged). Then for that event: optional team/livery override via 0x14079f300, sets career entity +0xe10/+0xe18 and flag +0xe28 |= 2, posts two messages, finally 0x140baa900. (lane owner review requested) Better name: Game_InvitationalEventSetup_ApplyEventAndAiDifficulty (bound record keeps its name)."
  },
  "signature": {
   "id": "game.career_invitational_flow_invitational_event_setup_component",

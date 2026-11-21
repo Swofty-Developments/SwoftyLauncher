@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141007000",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-CAREER_ONLINE_MANAGER",
-  "notes": "named from its log messages (channel CAREER_ONLINE_MANAGER): 'Online Career: failed to deserialise the server career'"
+  "evidence": "decomp:re/decomp/141007000.c;pat:log-channel-CAREER_ONLINE_MANAGER;xref:0x1456b7348",
+  "notes": "Not a deserialiser: vt cell 0x1456b7348 (vtable 0x1456b7310, slot +0x38) of an async load operation; switch on state +0x15c (copied to +0x158): 1 request, 2 receive, 3 deserialise 0x140fdc5d0 (logs 'failed to deserialise the server career'), setup slot 0x1429d42f0, load 0x1429d0b90, owner name '#ui_menu_data.current_online_career_owner_name'; 4/9 'Career_Online_FailedLoadCareer', 6 'Career_Online_RecoverBackup'. (lane owner review requested) Better name: Game_CareerOnlineLoadCareerOp_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.career_online_manager_online_career_deserialise_server",

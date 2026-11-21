@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140dd9890",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_Championship_CareerEmailContainers_SetupEmailContainerForTeamStatId;xref:0x140dd9acf",
-  "notes": "cxx=game::championship::CareerEmailContainers::setupEmailContainerForTeamStatId; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/140dd9890.c;str:s_Championship_CareerEmailContainers_SetupEmailContainerForTeamStatId;xref:0x140dd64c9,0x140dd94ba",
+  "notes": "Finds the container (ptr vector param_1[7..8]) whose team id (+0x24) equals *param_2; else allocates a 0x70-byte container (team id +0x24, driver id +0x20 = 0x3fff0000 none), push_back, logs 'added new container for team %s'. Twin of 0x140dd9630. (lane owner review requested)"
  },
  "signature": {
   "id": "game.career_email_containers_setup_email_container_for_team_stat_id",

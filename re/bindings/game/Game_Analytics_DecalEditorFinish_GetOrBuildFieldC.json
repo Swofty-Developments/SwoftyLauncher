@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14045cff0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14045cff0.c;xref:0x14074ffa0",
-  "notes": "Analytics payload C for PlayerFinishedDecalEditorSessionOf (also 0x1408f1250). Telemetry only. vp4-verify partial/disagree"
+  "evidence": "decomp:re/decomp/14045cff0.c;xref:0x14074ffa0,0x1408f126e",
+  "notes": "Lazy payload getter of the decal-editor-finish record (callers in 0x14074f320 and 0x1408f1250): if rec+0x50 is null allocs 400 bytes (refcounts 1/1, vtbl 0x145623f90), 0x1403f7cd0(obj, rec+0x40), stores obj at +0x50 and ctrl at +0x58; returns 16-byte ref {obj,ctrl} with refcount+1. (lane owner review requested) Better name: Game_Analytics_GetPayload_DecalEditorFinish (bound record keeps its name)."
  },
  "signature": {
   "id": "game.analytics_build_decal_editor_finish_event_c",

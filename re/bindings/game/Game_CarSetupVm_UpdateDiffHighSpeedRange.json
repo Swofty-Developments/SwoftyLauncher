@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c1d750",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140c1d750.c;xref:0x140c1cbd6,0x140c1edaf",
-  "notes": "Car setup VM: formats the high-speed differential range text (lng_cs_diff_range_high_speed, '%.1f', lng_unit_kph). Callers Game_CarSetupVm_ShowParcFerme, Car_Setup_OnValueChanged."
+  "evidence": "decomp:re/decomp/140c1d750.c;xref:0x140c1b938,0x140c1cbd6,0x140c1edaf,0x140c1eec3",
+  "notes": "Formats the high-speed diff value ('%.1f' of [[[+0x268]+0x28]+0x590]+0x2a0) with min/max from the handling block (vt+0x38: +0x30/+0x34) into 'lng_cs_diff_range_high_speed (... lng_unit_kph)' on node +0x12a0, bool +0x12c0. Twin of 0x140c1def0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.car_setup_vm_update_diff_high_speed_range",

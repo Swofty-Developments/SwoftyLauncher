@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143863d50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_ActivitiesUIDeeplinkManager_OnPresenceReady;xref:0x143863fe4,0x143864000,0x1438640ae,0x14386415e",
-  "notes": "cxx=game::ActivitiesUIDeeplinkManager::onPresenceReady; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/143863d50.c;str:s_ActivitiesUIDeeplinkManager_OnPresenceReady;xref:0x143860f3d,0x143862374",
+  "notes": "Bus handler (bound by lea in 0x143860d80, which subscribes via 0x143987810 and unsubscribes via 0x143988350). Once (+0x62): PlayGo progress ((+0x48)+0x88)+0x68 < 1 -> +0x63 = 1, flag playgo_activities_disabled, submits reset request (vt 0x145884bb0) to the activity service (+0x30)+0x4c0 via 0x144134d70; else (not trial) on first run or after PlayGo finished: reset + 0x143869910(1) + flag activities_initialised. (lane owner review requested)"
  },
  "signature": {
   "id": "game.activities_u_i_deeplink_manager_on_presence_ready",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14018fbe0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=AnimatedSceneManager::update; log channel CUTSCENE_ANIMATEDSCENEMANAGER_TIMESTEP: 'AnimatedSceneManager::update deltaTime %.3fs [abs %.3fs %.3fs %.3fHz %d]'"
+  "evidence": "decomp:re/decomp/14018fbe0.c;pat:log-message-cxx;xref:0x140237894,0x14023a794,0x140261510,0x140261fb4,0x1402626c4,0x140262f04,0x140263234,0x140263564,0x140263894,0x140268744,0x14026ea0e,0x140275b2c,0x14027ebec,0x140281c1c,0x140349970,0x140349b8e,0x14036165c,0x1403687fa,0x14037572c,0x1427ad576",
+  "notes": "AnimatedSceneManager::update(mgr, timestep) under CS mgr+0xc8: dt = (float)ts+0x10, x0.1 if mgr+0xc2, 0 if mgr+0xc1 (paused), negated if mgr+0xc3, times mgr+0xc4; each node of mgr+0x68..+0x70 without flags 0x21 gets node+0x5c += dt*[node+8]+0x54, then 0x14366b6c0; per-node log. (lane owner review requested)"
  },
  "signature": {
   "id": "game.animated_scene_manager_update",

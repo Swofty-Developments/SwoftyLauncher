@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140740910",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: Player offered %s a driver contract in MyTeam as %s'"
+  "evidence": "decomp:re/decomp/140740910.c;pat:log-channel-TELEMETRY;xref:0x1406e99a8,0x1407075ce",
+  "notes": "Bus handler: lea 0x1406e99a8 in subscribe-all 0x1406d8470 (->0x143987810), lea 0x1407075ce in unsubscribe-all 0x1406fd6c0. Allocs 0xe8 record (ctor 0x1404f0290), copies msg fields, baseCtx by 0x14077bb90 'my_team_driver_contract_processed_record', pushed to static queue (guard 0x14604dda0) under CS; logs TELEMETRY 'Player offered %s a driver contract in MyTeam as %s'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_player_offered_a_driver_contract_in",

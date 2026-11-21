@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1404f6c40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1404f6c40.c;xref:0x14076d14b",
-  "notes": "Analytics/event payload builder used by Game_StartLights_SetSequenceStartTime (companion of the net_delayed_start event). Telemetry only."
+  "notes": "Constructor of protobuf message 'f1.proto.NetDelayedStartMessage': base ctor 0x144935190(this, type name built on the stack), vtable 0x14562b4b0, zeroes the fields. Called right after the allocation in 0x14076d090 (start-lights sequence). (lane owner review requested) Better name: Game_Analytics_NetDelayedStartMessage_Ctor (bound record keeps its name)."
  },
  "signature": {
   "id": "game.analytics_build_start_lights_event_payload",

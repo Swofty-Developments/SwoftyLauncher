@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14073b700",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: Record for player sending counter offer to '%s' processed as %s offer'"
+  "evidence": "decomp:re/decomp/14073b700.c;pat:log-channel-TELEMETRY;xref:0x1406e78c8,0x14070679a",
+  "notes": "Bus handler: lea 0x1406e78c8 in subscribe-all 0x1406d8470 (->0x143987810), lea 0x14070679a in unsubscribe-all 0x1406fd6c0. Allocs 0xe0 record (ctor 0x140448870), copies msg fields, baseCtx by 0x14077bb90 'counter_offer_processed_record', pushed to static queue (guard 0x14604d5d8) under CS; logs TELEMETRY 'Record for player sending counter offer to '%s' processed as %s offer'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_record_for_player_sending_counter_offer",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14025cd30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onPlayVoOnSummonedCharacter (class from the log channel); log channel A2FCharacter: 'onPlayVoOnSummonedCharacter() - VO [%s] - on Character [%s] state [%s] canInterrupt [%s] shouldInterrupt [%s]'"
+  "evidence": "decomp:re/decomp/14025cd30.c;pat:log-message-method;xref:0x14025b4e1,0x14025d37b",
+  "notes": "Bus handler for MessagePlayVOOnSummonedFacilityHead (subscribed in 0x14025aeb0 via lea 0x14025b4e1; also bound in 0x14025d1f0). If active (+0x400) and state +0x588 == 0, or 3..4 with msg+0xa8 shouldInterrupt: logs, stops VO (0x14025fe70), copies VO name msg+0x20 into +0x2e8 (0x80 buf, ptr +0x2e0), state = 3. Else stores msg +0x28..+0xa0 as pending VO at +0x5a8 (ptr +0x5a0). (lane owner review requested)"
  },
  "signature": {
   "id": "game.a2fcharacter_on_play_vo_on_summoned_character",
