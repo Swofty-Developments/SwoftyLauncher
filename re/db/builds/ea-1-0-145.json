@@ -12189,6 +12189,12 @@
   "site_Sess_InGameSessionCompleteAiCall": {
    "match": "0x2d4ca55"
   },
+  "site_Sess_MarshalLights_PrevLightLoad": {
+   "match": "0x2c6d212"
+  },
+  "site_Sess_MarshalLights_WalkDone": {
+   "match": "0x2c6d523"
+  },
   "site_Sess_PitEvalListNext": {
    "match": "0x36848f9"
   },

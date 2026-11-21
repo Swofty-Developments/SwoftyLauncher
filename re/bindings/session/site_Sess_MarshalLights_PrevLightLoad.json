@@ -1,0 +1,82 @@
+{
+ "schema": 1,
+ "name": "site_Sess_MarshalLights_PrevLightLoad",
+ "table": "globals",
+ "author": "marshal-lights",
+ "row": {
+  "addr": "0x142c76f37",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:own capstone disasm 0x142c76da0-0x142c772c9 (Sess_MarshalLights_AssignToZones, .pdata 0x142c76da0-0x142c772c9);xref:0x142c76f32,0x142c77243,0x142c76f4b,0x142c7745d",
+  "notes": "mov rax,[rbp-8] in Sess_MarshalLights_AssignToZones (+0x197), 4 bytes, then mov r13,rbp; add r13,-8; vmovss [rax+0x34],xmm7 (+0x1a2); cmp r13,[rsi+0x68]; je +0x4a8. The step of the back-to-front walk over the light list (rsi = MarshalLightsSystem, list begin [rsi+0x68], end [rsi+0x70]): reached by jmp from +0x4a3 after a light got a zone (rbp = r13, one past it) and by fall-through after a light in no zone was erased (memmove at +0x18d, end -= 8 at +0x192, rbp = the erased light's slot). It loads the light before rbp and stores the walk's lap fraction (xmm7) at its +0x34. When the erased light was the first one, rbp == [rsi+0x68] and [rbp-8] is the 8 bytes before the list's block: 0 in all three crash reports (ACCESS_VIOLATION writing 0x34 at +0x1a2, F1_25.exe+0x2c794d2 on Steam 26566308, rbp = list begin, 7 lights left, capacity 42); a non-zero value would be written to and the walk would go on below the list (r13 = begin-8 never equals begin). No branch lands in +0x198..+0x19d."
+ },
+ "signature": {
+  "id": "session.marshal_lights_prev_light_load",
+  "section": ".xtls",
+  "pattern": "48 83 46 70 F8 48 8B 45 F8 49 89 ED",
+  "match": "0x142c76f32",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c76f37",
+  "kind": "mid",
+  "expect": "48 8B 45 F8 49 89 ED",
+  "names": [
+   "site_Sess_MarshalLights_PrevLightLoad"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-21",
+    "by": "marshal-lights",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/session/marshal_lights_guard.cpp"
+  ]
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "marshal-lights",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142c76f32",
+    "target": "0x142c76f37"
+   },
+   "sigcheck": "passed",
+   "digest": "cf5945273b3eb640d2cbe2083c0fec3b0c1c232b2d9f4ff54b884addb47686b9"
+  },
+  {
+   "by": "marshal-lights",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142c794c2",
+    "target": "0x142c794c7"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a4901b87e998e879abc5093eacdef521215f9997421248f49db4913430513e49"
+  }
+ ]
+}

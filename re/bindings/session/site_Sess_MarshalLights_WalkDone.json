@@ -1,0 +1,82 @@
+{
+ "schema": 1,
+ "name": "site_Sess_MarshalLights_WalkDone",
+ "table": "globals",
+ "author": "marshal-lights",
+ "row": {
+  "addr": "0x142c77248",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:own capstone disasm 0x142c76da0-0x142c772c9 (Sess_MarshalLights_AssignToZones, .pdata 0x142c76da0-0x142c772c9);xref:0x142c76f4b,0x142c76f37",
+  "notes": "mov rax,[rsi+0x70] in Sess_MarshalLights_AssignToZones (+0x4a8): where the light walk ends (je from +0x1ab when r13 == list begin [rsi+0x68]). Bubble-sorts the light list by ID (light+0, signed) over n = ([rsi+0x70] - r13) / 8 lights read from [rsi+0x68], then restores xmm6/xmm7 and returns. Reads rsi and r13 only (rax, rcx, rdx, r8-r11 are set before use) with the walk's rsp. A jump here with r13 = begin has the state of the game's own exit. The rip target of core's marshal lights guard; never hooked."
+ },
+ "signature": {
+  "id": "session.marshal_lights_walk_done",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 48 8B 46 70 4C 29 E8",
+  "match": "0x142c77243",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c77248",
+  "kind": "mid",
+  "expect": "48 8B 46 70 4C 29 E8",
+  "names": [
+   "site_Sess_MarshalLights_WalkDone"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-21",
+    "by": "marshal-lights",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/session/marshal_lights_guard.cpp"
+  ]
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "marshal-lights",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142c77243",
+    "target": "0x142c77248"
+   },
+   "sigcheck": "passed",
+   "digest": "8364754208f8ec96777ade7c842151af1a90e322a5457a99443eea2ca5662775"
+  },
+  {
+   "by": "marshal-lights",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142c797d3",
+    "target": "0x142c797d8"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a62f1936af21603ae49c7693841f7ac7387be7fbb7e5270b3ffdce08dbecf30b"
+  }
+ ]
+}
