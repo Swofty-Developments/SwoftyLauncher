@@ -729,6 +729,7 @@ export default defineConfigWithTheme<DocsThemeConfig>({
                       { text: "HUD formatting", link: "/reference/std/hud-format", icon: "file" },
                       { text: "Smoothing helpers", link: "/reference/std/ease", icon: "file" },
                       { text: "HUD frame", link: "/reference/std/hud-frame", icon: "file" },
+                      { text: "HUD slots", link: "/reference/std/hud-slots", icon: "file" },
                       { text: "Timing tower", link: "/reference/std/timing", icon: "file" },
                       { text: "CSV recorder", link: "/reference/std/diag-csv", icon: "file" },
                       { text: "Options struct", link: "/reference/std/settings-struct", icon: "file" },

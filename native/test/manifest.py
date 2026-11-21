@@ -384,6 +384,7 @@ SCRIPTS = [
     Script('lang_override', 'String override Wine test', ['bash', 'native/test/run_lang_override_test.sh'], wine=True),
     Script('toolkit', 'Overlay toolkit Wine test', ['bash', 'native/test/run_toolkit_test.sh'], wine=True),
     Script('hud', 'Overlay draw-list unit test', ['bash', 'native/test/run_hud_test.sh']),
+    Script('hud_slots', 'HUD slot reader and placement host test', ['bash', 'native/test/run_hud_slots_test.sh']),
     Script('hud_dial_template', 'HUD dial template host test', ['bash', 'templates/hud-dial/native/test/run_test.sh']),
     Script('guard', 'Handler guard Wine test', ['bash', 'native/test/run_guard_test.sh'], wine=True),
     Script('pdh', 'GPU Engine counter calls Wine test (pinned pdh.dll, faults kept)', ['bash', 'native/test/run_pdh_test.sh'], wine=True),

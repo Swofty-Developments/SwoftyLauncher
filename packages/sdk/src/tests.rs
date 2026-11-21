@@ -263,6 +263,10 @@ fn template_headers_match() {
         HUD_LEAVES_HEADER
     );
     assert_eq!(
+        include_str!("../../../templates/addon/native/include/swofty/hud_slot.hpp"),
+        HUD_SLOT_HEADER
+    );
+    assert_eq!(
         include_str!("../../../templates/addon/native/include/swofty/log_csv.hpp"),
         LOG_CSV_HEADER
     );

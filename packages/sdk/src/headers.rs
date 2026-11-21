@@ -22,6 +22,7 @@ pub const EASE_HEADER: &str = include_str!("../include/swofty/ease.hpp");
 pub const HUD_FORMAT_HEADER: &str = include_str!("../include/swofty/hud_format.hpp");
 pub const HUD_FRAME_HEADER: &str = include_str!("../include/swofty/hud_frame.hpp");
 pub const HUD_LEAVES_HEADER: &str = include_str!("../include/swofty/hud_leaves.hpp");
+pub const HUD_SLOT_HEADER: &str = include_str!("../include/swofty/hud_slot.hpp");
 pub const LOG_CSV_HEADER: &str = include_str!("../include/swofty/log_csv.hpp");
 pub const SETTINGS_STRUCT_HEADER: &str = include_str!("../include/swofty/settings_struct.hpp");
 pub const TIMING_HEADER: &str = include_str!("../include/swofty/timing.hpp");

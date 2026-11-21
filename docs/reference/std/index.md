@@ -143,6 +143,7 @@ Each entry names the header, the `SwoftyApi` member and its API version, the fea
   - **[Overlay](./overlay)** (`swofty/overlay.hpp`): 2D rectangles, lines, text and images drawn over the game. `overlay`, API 5; feature `overlay` (experimental); the render thread.
   - **[Popup](./popup)** (`swofty/popup.hpp`): the game's message popup with your text. `popup`, API 7; feature `popup` (stable); any thread, shown on the flow thread.
   - **[Race HUD](./hud)** (`swofty/hud.hpp`): toasts in the race HUD's own notification, and HUD data leaves. The `SwoftyCoreHud` export, feature-detected (API 8 header); feature `popup` (stable); any thread, posted on the flow thread.
+  - **[HUD slots](./hud-slots)** (`swofty/hud_slot.hpp`): an entry of your own in the game's HUD editor, made by a `hud.slot` record, and the placement the player gives it. The `SwoftyCoreHudSlotRead` export, feature-detected; no feature; any thread.
   - **[Strings](./strings)** (`swofty/lang.hpp`): the text a `lng_*` key shows, read and changed while the game runs. `lang`, API 8 (`text` and `language` with the `SwoftyCoreLangVersion` export); feature `lang` (stable); any thread, `refresh` on the game thread.
 - **The career front end**
   - **[Career contents](./career-content)** (`swofty/career_content.hpp`): extra tiles in the Addons row of Driver Career, My Team or both, with their own save slots, and the per-career check. `career_content`, API 6 or later and the `SwoftyCoreCareerContent` export; feature `career` (experimental); addon init and the flow thread.
@@ -181,6 +182,7 @@ packages/sdk/include/
   swofty/career_wizard.hpp  per-career new-career wizard control
   swofty/era.hpp            boxes in the Addons row of the Grand Prix / Time Trial era picker
   swofty/hud.hpp            toasts in the race HUD's own notification
+  swofty/hud_slot.hpp       the placement of the addon's own HUD editor entry
   swofty/view.hpp           the game's pause reason mask: paused(), pause_reasons()
   swofty/hub.hpp            Team HQ tabs (not in the template's native/include/)
   swofty/mem.hpp            guarded memory reads: read, in_image, object_like, c_string
