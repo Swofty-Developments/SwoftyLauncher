@@ -1358,6 +1358,8 @@ inline constexpr fn<"Game_UITrack_Select_DefaultTrack", Game_UITrack_Select_Defa
 inline constexpr address<"Game_UI_BroadcastGridRundownViewModel"> Game_UI_BroadcastGridRundownViewModel{}; // L2 experimental
 inline constexpr address<"Game_UI_BroadcastGridRundownViewModel_2"> Game_UI_BroadcastGridRundownViewModel_2{}; // L2 experimental
 inline constexpr address<"Game_UiMessageScreen_Destructor"> Game_UiMessageScreen_Destructor{}; // L2 experimental
+using Game_Update_WeatherTimelineScalar_t = void(void *weather_owner);
+inline constexpr fn<"Game_Update_WeatherTimelineScalar", Game_Update_WeatherTimelineScalar_t> Game_Update_WeatherTimelineScalar{}; // L2 experimental
 inline constexpr address<"Game_VehicleAntiStallSystem_GetStateByPlayerId"> Game_VehicleAntiStallSystem_GetStateByPlayerId{}; // L2 experimental
 inline constexpr address<"Game_VehicleAntiStallSystem_IsLaunchPending"> Game_VehicleAntiStallSystem_IsLaunchPending{}; // L2 experimental
 inline constexpr address<"Game_VehicleAntiStallSystem_IsStalled"> Game_VehicleAntiStallSystem_IsStalled{}; // L2 experimental
