@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439ff9f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439ff9f0.c;xref:0x142433c03",
-  "notes": "Counts non-null bound-resource pointer slots of a draw state (+0x20..+0x58, +0x68..) and forwards counts/pointers to 0x1439ffae0 (device at ctx+0x60). 64 callers (0x142433b80, 0x142a46250, 0x143b59380...). Hypothesis."
+  "evidence": "decomp:re/decomp/1439ff9f0.c;xref:0x142433c03,0x142a462b0,0x143b593df",
+  "notes": "Takes a render-target set param_2: counts the non-null pointers of the 8 colour slots +0x20..+0x58 and of the 8 slots +0x60..+0x98, reads depth +0xa0 and, when the context has no list or list type (+0x20) is 0, calls Render_Gfx_SetRenderTargets(ctx, nColour, +0x20, depth, nSecond, +0x60). Callers 0x142433b80, 0x142a46250, 0x143b59380. (lane owner review requested) Better name: Render_Gfx_SetRenderTargetSet (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx_count_bound_resources",

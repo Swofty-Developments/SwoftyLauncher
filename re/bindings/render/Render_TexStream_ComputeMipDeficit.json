@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143bfc8d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143bfc8d0.c;xref:0x143eb930c",
-  "notes": "Computes mip deficit for a streamed texture: wanted = density*scale*p3 against the per-mip size table at tex+0xd8 (mip bounds tex+0x35..+0x39), picks mip index, raises pending-mip count, uses ctx+0x1f0/0x200 and ctx flags 0x21c. Log strings TEXTURE_STREAM_ADD_COMMANDS, \"[Priority %3.3f] Density [%3.3f] Deficit [%3.3f] ... Mips %d to %d\", \"FAILED for %s Required %llu, Available Memory %d, Available Temp Memory\". Caller Game_TextureStreaming_AdjustQualityFactor. Addon: texture streaming debug/quality."
+  "evidence": "decomp:re/decomp/143bfc8d0.c;xref:0x143eb930c,0x143eb9427",
+  "notes": "Wanted = density*scale*param_3 against the per-mip size table tex+0xd8 (bounds +0x35..+0x39); writes the wanted mip to +0x39, checks the byte budget per extra mip (vcall +0x60 of ctx+0x230, ctx+0x1f0/+0x200), logs TEXTURE_STREAM_ADD_COMMANDS / Priority-Density lines when enabled, queues via 0x143ed5c60. Callers Game_TextureStreamingVerbose_Clearing 0x143eb930c, 0x143eb9427. (lane owner review requested)"
  },
  "signature": {
   "id": "render.tex_stream_compute_mip_deficit",

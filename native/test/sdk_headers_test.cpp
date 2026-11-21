@@ -263,6 +263,16 @@ static void unavailable_without_core()
     CHECK(from_json(to_json(profile), round) && round.power_scale == 0.9725f && round.limiter_offset_rpm == -300 &&
           round.ai_grip_scale == 0.87f && round.when.size() == 2 && !round.fuel_modes);
     CHECK(std::string(cars::profiles.name()) == "car.profile" && !cars::profiles.schema().empty());
+    cars::Profile team;
+    team.cars.team = {"mercedes"};
+    team.cars.driver = {"game/lewis_hamilton"};
+    team.scope = cars::ProfileScope::global;
+    cars::Profile team_round;
+    CHECK(from_json(to_json(team), team_round) && team_round.cars.team.size() == 1 && team_round.cars.driver.size() == 1 &&
+          team_round.scope == cars::ProfileScope::global && cars::Profile{}.scope == cars::ProfileScope::automatic);
+    CHECK(cars::profiles.schema().find("\"x-version\":\"1.1\"") != std::string::npos &&
+          cars::profiles.schema().find("\"automatic\"") != std::string::npos &&
+          cars::profiles.schema().find("\"driver\"") != std::string::npos);
     CHECK(detail::run_register(nullptr) == 1);
 }
 

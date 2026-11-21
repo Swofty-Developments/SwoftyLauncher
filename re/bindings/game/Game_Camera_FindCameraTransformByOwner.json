@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144534230",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144534230.c;xref:0x1406af26d",
-  "notes": "Linear search in pointer vector [this+0x60..0x68] for the entry whose id equals param_3 and returns a 48-byte (3 x 16) copy, zeroed on miss. 19 callers (0x1406af0c0 x2, Game_CinematicPitStop_Start...). Hypothesis on content (camera placement)."
+  "evidence": "decomp:re/decomp/144534230.c;xref:0x1406af26d,0x1406af2cf,0x1406b4ca4,0x1406c16b3,0x1406c16f9,0x1407a1a43,0x14084a5c7,0x142bdbda3,0x142c1b919,0x142c1d192,0x142c2f21d,0x142d8eddf,0x142da6c73,0x142e19fb0,0x143610e09,0x143613434,0x14453574d,0x14eb99928,0x14eb9996e",
+  "notes": "Linear search of 7-qword records [this+0x60..+0x68] for key param_3; hit with cached data (+8 != 0) returns 48 bytes from the record; otherwise resolves by djb2-lowercase hash of name this+0xa8 (0x1445337e0) and fills from components 0x146cc20a8 (+0x70/+0xd8) and 0x146cc39d8; zero on miss. (lane owner review requested)"
  },
  "signature": {
   "id": "game.camera_find_camera_transform_by_owner",

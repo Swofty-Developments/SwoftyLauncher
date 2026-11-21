@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1431154c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name handleEntrantsDocumentMessageClear (class from the log channel); log channel NETWORK-ENTRANTS: '%s(conn=%d)'"
+  "evidence": "decomp:re/decomp/1431154c0.c;pat:log-message-method;xref:0x1430d8bda",
+  "notes": "Client only (this+8 > 1): logs handleEntrantsDocumentMessageClear(conn); posts events through 0x1424e2b90/0x1424e2f00 (bus g 0x14618b3b8), sets the dirty flag +0x2f8 and empties the entrant vector at [[this+0x28]+0x4f8]+0x2d8. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_entrants_handle_entrants_document_message_clear",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1443c4fa0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=Application::initialiseHardwareSettings; log channel HARDWARE_SETTINGS: '[Application::initialiseHardwareSettings] Apply defaults'"
+  "evidence": "decomp:re/decomp/1443c4fa0.c;pat:log-message-cxx;xref:0x1443c07d5",
+  "notes": "Application::initialiseHardwareSettings: creates hardware_settings_config/info/options/restrictions; args -benchmark <f> (benchmark/%s, else example_benchmark.xml), -safemode (safe_mode=option_on), -applyOOTB, -windowed (displayMode 0); OOTB reset on applyOOTB=true or changed CPU; dlss unsupported -> taa; rating = min(system,cpu,gpu) or Testing.OverrideGraphicsPreset -> detail_preset_ultralow..ultra/ultra_pt; copies GPU info to [0x145f96d68]+0x55d. (lane owner review requested)"
  },
  "signature": {
   "id": "game.application_initialise_hardware_settings",

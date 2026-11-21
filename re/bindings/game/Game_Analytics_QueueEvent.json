@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14077a240",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14077a240.c;xref:0x140724d09",
-  "notes": "Analytics event helper (0x14077a3d0, 0x14077b4c0) used by Game_Analytics_PlayHighlightTriggeredWithId, SaveHighlightTriggered, ExportHighlightTriggered, CustomisationColourChangedWithId. Not graphics. Hypothesis."
+  "evidence": "decomp:re/decomp/14077a240.c;xref:0x140724d09,0x1407257a3,0x140726e0f,0x140727394,0x140727914,0x140728454,0x140728a9a,0x1407290ca,0x14072965e,0x140729bfe,0x14072a19e,0x14072a73e,0x14072b0e9,0x14072bb63,0x14072c1f5,0x14072ee93,0x140730a88,0x140731036,0x1407327c3,0x140732d57,0x1407332f7,0x1407338cc,0x140733e9a,0x140735f4e,0x14073c3ae,0x14073f31f,0x14074b005,0x140750695,0x140750c2f,0x1407511b3,0x14075174f,0x140751ce0,0x14075228d,0x14075284a,0x140752dee,0x140753913,0x140753ec3,0x1407553b5,0x140755c9d,0x1407565ae,0x1407571ce,0x140757779,0x140758081,0x140758991,0x1407592a1,0x14075f8d3,0x140760dfb,0x140770fad,0x1407715bd,0x14077253d,0x1407746bd,0x140780554,0x140780a45,0x140780e76,0x1407815d8,0x1407820e5,0x140782bdd,0x1407830e2,0x1407834c7,0x140786e44,0x140788e38,0x14078974d,0x140789d05,0x14078a5d8,0x14078b5ec,0x14078d105",
+  "notes": "Builds a default context on stack (param_3 = record type string at ctx+8), 0x14077a3d0(0,ctx) gathers it, 0x14077b4c0(mgr,param_2,ctx) copies ctx fields into the record baseCtx via setters (name via 0x1405a3190). Does not queue; sibling of 0x14077bb90 (extra byte arg). (lane owner review requested) Better name: Game_Analytics_FillRecordBaseCtx (bound record keeps its name)."
  },
  "signature": {
   "id": "game.analytics_queue_event",

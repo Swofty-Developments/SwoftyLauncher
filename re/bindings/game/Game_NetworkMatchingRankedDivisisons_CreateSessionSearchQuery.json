@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14315c6b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=NetworkMatchingRankedDivisisons::createSessionSearchQuery; log channel NETWORK-MATCHING: 'virtual void network::NetworkMatchingRankedDivisisons::createSessionSearchQuery(neon::NeNetSessionQuery *&) const | %s'"
+  "evidence": "decomp:re/decomp/14315c6b0.c;pat:log-message-cxx;xref:0x14581d930",
+  "notes": "cxx=network::NetworkMatchingRankedDivisisons::createSessionSearchQuery(NeNetSessionQuery*&) const (virtual). Builds the query via 0x1430711b0 and logs setMatchSearchParams '{ Safety rating: %s, race length: %d }' (NETWORK-SESSION). Only ref: vtable cell 0x14581d930. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_matching_ranked_divisisons_create_session_search_query",

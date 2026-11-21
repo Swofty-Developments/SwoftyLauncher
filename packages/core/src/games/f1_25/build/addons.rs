@@ -8,6 +8,7 @@ use super::registry::added_tables;
 use super::run::Run;
 use crate::addons::builtin::{CORE_DB, CORE_ID, core_db_ops};
 use crate::addons::registry::{Host, Registry};
+use crate::addons::settings::when_holds;
 use crate::asset::Features;
 use crate::asset::{AssetOp, FileKind, Op, OpFile, Origin, Root, Source};
 use crate::content::runtime_assets::Runtime;
@@ -285,9 +286,27 @@ impl Gather<'_, '_, '_> {
         let dir = self.run.addon_dir(id);
         for f in &m.operations.hud {
             out.reads(id, &Source::addon(f.clone()));
-            let path = dir.join(f);
-            self.hash.update(std::fs::read(&path).map_err(io_err(&path))?);
-            gathered.hud_inputs.extend(crate::hud::inputs_of(id, &dir, f)?);
+            let (text, doc) = crate::hud::read(&dir, f)?;
+            self.hash.update(&text);
+            let on = match &doc.when {
+                Some(when) => when_holds(when, m, self.run.settings, self.run.on)?,
+                None => true,
+            };
+            self.hash.update(format!("hud {f} {on};"));
+            if doc.when.is_some() && f.starts_with(&format!("{}/", crate::stdlib::data::DIR)) {
+                self.built.warnings.push(format!(
+                    "{id}: {f} has a when, which the core refuses in a registry/ data file; move the file out of registry/"
+                ));
+            }
+            if !on {
+                self.built
+                    .lines
+                    .push(format!("hud: {f} of {} is off by its when", m.name));
+                continue;
+            }
+            gathered
+                .hud_inputs
+                .extend(crate::hud::inputs_of(id, &dir, f, doc)?);
         }
         Ok(())
     }

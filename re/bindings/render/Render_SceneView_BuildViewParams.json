@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143be0360",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143be0360.c;xref:0x14013c2c8,0x1401583d0,0x142fae638",
-  "notes": "Hypothesis: huge (5.2 KB) view parameter builder: Ne_RenderViewParams_InitDefaults x2, atanf x4 (FOV), statics at 0x1464d2840; 27 callers incl Game_WetMap_CreateResources. Named callers: Game_WetMap_CreateResources, Render_SceneView_SubmitCamera."
+  "evidence": "decomp:re/decomp/143be0360.c;xref:0x14013c2c8,0x1401583d0,0x142fae638,0x143c389df,0x143c74dfe,0x143ce5d0e",
+  "notes": "Fills a 0x810 scene-view params object (ctor 0x143be2500) from a camera desc: copies desc qwords to +0x10..+0x7f, derives projection terms (2/w, 2/h, 1/(near-far)); statics 0x1464d2840 via Ne_RenderViewParams_InitDefaults; calls Render_SceneView_UpdateVrEyeParams. Callers incl 0x143ce5d0e (GroundCover view), Render_Gfx_InitFrameStateBlock 0x143d4f516, Render_SceneView_SubmitCamera 0x143d8d012, Game_WetMap_CreateResources 0x14478cf82. (lane owner review requested)"
  },
  "signature": {
   "id": "render.scene_view_build_view_params",

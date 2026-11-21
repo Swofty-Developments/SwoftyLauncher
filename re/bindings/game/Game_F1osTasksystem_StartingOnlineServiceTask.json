@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432c3190",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-F1OS-TASKSYSTEM",
-  "notes": "named from its log messages (channel F1OS-TASKSYSTEM): 'Starting online service task %s'"
+  "evidence": "decomp:re/decomp/1432c3190.c;pat:log-channel-F1OS-TASKSYSTEM;xref:0x1432c20ca,0x1432c2153",
+  "notes": "Logs 'Starting online service task %s' (F1OS-TASKSYSTEM) and calls startTask 0x1432b3b20 (0x1432c3386); error path 'F1OS/ERROR' 'eLogicError', 'setting finished on %s : %s', metrics 'OS_METRICS' 'recordURL %d: %s'. Callers 0x1432c2080 (0x1432c20ca), 0x1432c20f0 (0x1432c2153). (lane owner review requested) Better name: Game_F1osTasksystem_StartOnlineServiceTask (bound record keeps its name)."
  },
  "signature": {
   "id": "game.f1os_tasksystem_starting_online_service_task",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143227240",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name sendPlayerReady (class from the log channel); log channel NETWORK-READY: '%s: playerIx: %d, player ready: %d, monitor policy: %d, apocalypse time  %.01f'"
+  "evidence": "decomp:re/decomp/143227240.c;pat:log-message-method;xref:0x1432270fe,0x14322848e",
+  "notes": "Ghidra stops at a jumptable; read from disassembly: builds a packet (header 0x145836300, player ix, byte [this+ix+0xbb], [this+0x13c+ix*4] status) and logs '%s: playerIx...' with method string 'sendPlayerReady' (NETWORK-READY), then calls 0x14402e500 (send). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_ready_send_player_ready",

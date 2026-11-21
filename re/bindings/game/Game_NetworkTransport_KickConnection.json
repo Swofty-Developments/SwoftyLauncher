@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14406fa70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name kickConnection (class from the log channel); log channel NETWORK-TRANSPORT: '%s: server handle client disconnection, connection ID %d'"
+  "evidence": "decomp:re/decomp/14406fa70.c;pat:log-message-method;xref:0x14306713c,0x1430fd736,0x1430ff459",
+  "notes": "Server side: sends a kick/disconnect message, logs 'server handle client disconnection, connection ID %d' with 'kickConnection' and calls HandleClientDisconnection 0x144070210. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_transport_kick_connection",

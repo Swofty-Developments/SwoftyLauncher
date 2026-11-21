@@ -114,6 +114,9 @@ hud_track_position.osd_visibility_option.track_position
     <prefix>_sn1  v_<prefix>  visible = false   (the stock cap instance never shows the elements)
 ```
 
+`also.<the record's own screen>` takes only `hide`: those elements stay off the record's own screen
+(for one record that shows a short list on the HUD and the long one on the replay screen).
+
 `isHidden` on a scene element does not hide it in game, so every static hide here is a template node:
 `hidden: true` on an element, `also.<screen>.hide`, the cap's graphics and the editor copy.
 
@@ -124,6 +127,14 @@ never draw inside another's host; the `.uipre` hides the same two elements insid
 HUD editor. These are childless template nodes: `2 x (records - 1)` per record and screen, one walk
 slot each, plus one child-list slot on `host_n` for every eight more children. The host scene itself
 does not grow. The build lists the count per record and screen.
+
+Every screen record also adds its own host instance to the board, so a board holds the cap scene
+once per record plus the stock one: `(1 + records) x (cap + every record)` walk slots. A family of
+addons that each must work alone (a season per addon, say) can carry one shared record instead of
+one each: when several addons bring a record with the same key, the same explicit `prefix`, equal
+fields and the same bytes in every sprite, the build composes it once, from the first addon in the
+load order, and prints `<prefix>: <addon> brings the same record <key> as <first>; composed once`
+for the others. Records that share a prefix and differ in anything still stop the build.
 
 Masks on the other screens are layout chains into the stock instances: replay `driver_table > Scene
 Root` and `session_timer > Scene Root`; spectator `spectator_mode_2 > driver_position_table >
@@ -153,6 +164,31 @@ names each mask's scene in `mask_scenes`; without it, the wrappers go into the i
 
 The host instances need nothing of this: each record shows its own `<prefix>_host`, and `o_<other>`
 hides the other records' roots inside it.
+
+### How big a board can grow
+
+The game walks a screen's UI tree as one flat list of 16-byte slots with 16-bit child indices, so one
+tree holds at most 65,536 slots. A board holds the host scene once for the stock cap and once per
+screen record on the screen, and every host instance holds every record's root and editor copy:
+
+```text
+board      = (1 + records on the screen) x host scene slots
+race tree  = board + about 17,500 slots of the rest of the race HUD
+HUD editor = 3 x board + 816
+```
+
+SWOFTY 2010, SWOFTY 2011 and TV Timing Tower on the standings make a 14,101-slot host scene, a
+56,404-slot board and a race tree of about 73,904 slots. The build stops before the game starts,
+naming every addon with a record on the screen and the ones whose removal alone brings the tree
+inside the limit:
+
+```text
+the HUD elements do not compose: SWOFTY 2010, SWOFTY 2011 and TV Timing Tower together make the Track Position list too big for the game: about 73904 of the 65536 slots one screen can hold, and the game can close as soon as it shows it; turn SWOFTY 2010, SWOFTY 2011 or TV Timing Tower off in this profile (the board holds the 14101-slot host scene 4 times)
+```
+
+A board whose HUD editor tree passes the limit builds with a warning line: the game can close when
+HUD customisation opens. The build lists each record's nodes, walk slots and walk stack (256 at
+most), and each screen's board and tree.
 
 ## The three presets
 

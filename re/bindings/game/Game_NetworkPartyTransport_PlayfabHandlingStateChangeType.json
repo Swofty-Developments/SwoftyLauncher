@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1440ba650",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-PARTY-TRANSPORT",
-  "notes": "named from its log messages (channel NETWORK-PARTY-TRANSPORT): 'PLAYFAB not handling stateChangeType %d'"
+  "evidence": "decomp:re/decomp/1440ba650.c;pat:log-channel-NETWORK-PARTY-TRANSPORT;xref:0x145a596c8",
+  "notes": "NETWORK-PARTY-TRANSPORT: dispatches a PlayFab Party state change by type: connect-to-network and create-endpoint results ('Failed to connect to network : %hs', 'Failed to create local endpoint : %hs'), endpoint and invitation destroyed; other types log 'PLAYFAB not handling stateChangeType %d'. Only ref: vtable cell 0x145a596c8. (lane owner review requested) Better name: Game_NetworkPartyTransport_HandlePlayfabStateChange (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_party_transport_playfab_handling_state_change_type",

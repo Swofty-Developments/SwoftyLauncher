@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140b87cc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140b87cc0.c;xref:0x140b7a937",
-  "notes": "Reads a 16-bit little-endian value at the current bit offset (+0x24) from buffer (+0x10, size +0x1c, limit +0x20); sets error byte +0x28 on overrun. Callers Game_ChampComponent_FlushPendingSpawn, ChampionshipQualifyingTyreComponent_Deserialize. vp0-verify partial"
+  "evidence": "decomp:re/decomp/140b87cc0.c;xref:0x140b87c3c,0x140b87c48,0x140b87c54",
+  "notes": "(rec, BitStream *bs): reads a 3-field record: u16 at bit offset bs+0x24 (buf +0x10, bytes +0x1c, bit limit +0x20) stored rotated as ((v&0x3fff)<<16)|(v>>14) in rec[0]; ranged int -1..5 (0x143925a50) in rec[1]; u8 in rec+8. Typed mode (bs+0x29) checks tags 5/3 via 0x143925660. Overrun sets error byte bs+0x28. Only caller Game_ChampionshipQualifyingTyreComponent_Deserialize 0x140b87b40 (10 sites). Better name: Ne_BitStream_ReadPackedKeyRecord (bound record keeps its name)."
  },
  "signature": {
   "id": "core.bit_reader_read_u16",

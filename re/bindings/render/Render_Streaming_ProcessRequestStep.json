@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143abf420",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143abf420.c;xref:0x143ab5b94",
-  "notes": "515-line streaming request step (queue/priority handling, error-trace sites). Callers Render_Streaming_ProcessRequest. Hypothesis on role. vq1-verify partial/disagree"
+  "evidence": "decomp:re/decomp/143abf420.c;xref:0x143abe9cb,0x143abef51,0x143ac13d1",
+  "notes": "Distributes the jobs of batch param_2 (count +0x30) over the worker list [param_1+8]+0x48..0x50: optional affinity mask (param_1+0x14 vs worker+0xa4 bit), even split by worker count (param_1+0x18 limit), round-robin start +0x24; grows each worker queue (0x143abcbd0) and links the job nodes. Adds the count to param_1+0x160. (lane owner review requested) Better name: Render_JobSystem_DispatchBatchToWorkers (bound record keeps its name)."
  },
  "signature": {
   "id": "render.streaming_process_request_step",

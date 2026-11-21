@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140732020",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: Store Opened From Upsell Screen'"
+  "evidence": "decomp:re/decomp/140732020.c;pat:log-channel-TELEMETRY;xref:0x1406e3ec4,0x1406fe9db",
+  "notes": "Bus handler (lea 0x1406e3ec4 in 0x1406d8470, lea 0x1406fe9db in 0x1406fd6c0): 0x140770c40(mgr,'StoreOpenedFromUpsellScreen') then TELEMETRY log 'Store Opened From Upsell Screen'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_store_opened_from_upsell_screen",

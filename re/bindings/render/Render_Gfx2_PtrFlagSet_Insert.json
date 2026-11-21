@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a181d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143a181d0.c;xref:0x142435ef0",
-  "notes": "Inserts a (ptr,flag) 16-byte record into an open-addressing set (array at +0x18, counts +0x108/+0x110) after probing 0x143a18260; rehashes via 0x143a18890 when full. Used next to Gfx2 buffer creation. Hypothesis on purpose (tracks resources)."
+  "evidence": "decomp:re/decomp/143a181d0.c;xref:0x142435ef0,0x142436e9e,0x142436fd9,0x142a47b2e",
+  "notes": "Under lock param_1 (0x1449e2290/0x1449e22b4) inserts a 16-byte (ptr,1) record into the open-addressing set param_3 (array +0x18) after probe 0x143a18260; probe result 0 -> rehash 0x143a18890; bumps counts +0x108/+0x110. 0x143b73720 calls it with lock device+0x3aa8 and set device+0x4078 right after Render_Gfx2Buffer_Construct. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx2_ptr_flag_set_insert",

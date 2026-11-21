@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14310ecb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-ENTRANTS",
-  "notes": "named from its log messages (channel NETWORK-ENTRANTS): 'PD: %s DID : %s DCID : %s TID : %s VID : %s TP : %u - Unregistered Entrant -'"
+  "evidence": "decomp:re/decomp/14310ecb0.c;pat:log-channel-NETWORK-ENTRANTS;xref:0x14310c649,0x143068798,0x1430ee38e",
+  "notes": "Sets the dirty flag [[this+0x28]+0x4f8]+0x2f8; logs \"PD..TID..VID..TP - Unregistered Entrant -\"; removes the 0x88-byte entrant from the entrants vector, calls 0x1430adae0 and sends an unregister message via 0x14402e500. (lane owner review requested) Better name: Game_NetworkEntrants_UnregisterEntrant (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_entrants_pddid_dcid_tidvidtp_unregistered",

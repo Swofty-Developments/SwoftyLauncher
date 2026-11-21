@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430ade60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onCustomCreatingPopupCompleted (class from the log channel); log channel NETWORK-UI: '%s().'"
+  "evidence": "decomp:re/decomp/1430ade60.c;pat:log-message-method;xref:0x1430ae670,0x1430b22ac",
+  "notes": "Logs NETWORK-UI '%s().' with its own name onCustomCreatingPopupCompleted, then calls Game_GameSessionMatchingCustom_Cancel and updates VM nodes (Vm_NodeSet_Bool, Vm_Holder_SetCStr). Address taken (lea) in 0x1430ae3f0 and Game_Network_CECreate, i.e. passed as popup-completed callback. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_ui_on_custom_creating_popup_completed",

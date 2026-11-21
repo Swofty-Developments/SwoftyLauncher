@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140ffec40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name arePlayersInNegotiationsOnSameTeam (class from the log channel); log channel ONLINE_CONTRACT_NEGOTIATIONS/V: 'arePlayersInNegotiationsOnSameTeam() - %s'"
+  "evidence": "decomp:re/decomp/140ffec40.c;pat:log-message-method;xref:0x140ffc6e9,0x140ffd117,0x140ffd659,0x140ffd94e,0x140ffddfd,0x141001e04",
+  "notes": "Compares the negotiating teams of both human players and logs 'arePlayersInNegotiationsOnSameTeam() - %s'. Called from Career_OnlineNegotiations_CheckPlayerTurnGate, Game_OnlineContract_IsLeadPlayerParticipating, Career_OnlineNegotiationsB_ProcessContractSent/Recv and others. (lane owner review requested)"
  },
  "signature": {
   "id": "game.online_contract_negotiations_v_are_players_in_negotiations_on_same_t",

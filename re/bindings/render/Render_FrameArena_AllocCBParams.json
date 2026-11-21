@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143bc6b10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143bc6b10.c;xref:0x143bc1b32,0x143bc26a3",
-  "notes": "Bump-allocates a 0x250-byte constant-buffer block (aligned 16) from the frame arena and fills it, shader param name CBParams. Called by Ne_PostProcessXGenerator_Copy_Render."
+  "notes": "Bump-allocates a 16-aligned 0x250-byte block from the frame arena (CAS +0x20, limit +0x10, Ne_FatalAbort on overflow), memcpy from param_3, interns 'CBParams' and adds the binding via 0x143bdcfb0 / Ne_Vector_GrowEmplace_Elem384. Callers in Ne_PostProcessXGenerator_Copy_Render. (lane owner review requested)"
  },
  "signature": {
   "id": "render.frame_arena_alloc_c_b_params",

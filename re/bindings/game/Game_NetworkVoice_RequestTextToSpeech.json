@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14403f820",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name requestTextToSpeech (class from the log channel); log channel NETWORK-VOICE: '%s: Failed to send TTS request: %hs'"
+  "evidence": "decomp:re/decomp/14403f820.c;pat:log-message-method;xref:0x145a4a230",
+  "notes": "Sends a PlayFab TTS synthesis request; on failure logs '%s: Failed to send TTS request: %hs' with its own name requestTextToSpeech. Only reference is vtable cell 0x145a4a230. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_voice_request_text_to_speech",

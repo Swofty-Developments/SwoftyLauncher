@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1413f1f30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-CROWD_EXCITEMENT",
-  "notes": "Log channel CROWD_EXCITEMENT: 'trigger %s' | 'Zone : %u - CrowdExcitementZone::increaseExcitement excitementChanged %s' | 'Zone : %u - Too small excitement gain to trigger event gain: %f) %s' | 'CrowdExcitementZone::excitementChanged %p %s from %d'"
+  "evidence": "decomp:re/decomp/1413f1f30.c;pat:log-channel-CROWD_EXCITEMENT;xref:0x1413f3c1e,0x1413f73ee,0x1413f7b1e,0x14abbd21e,0x14abc863e,0x14abd328e,0x14abd848e,0x14abec55e,0x14abf1a3e,0x14ac1635e",
+  "notes": "Own Class::method logs. (zone, ?, trigger), gain in xmm1: when >= 2 s since last change or gain > last+10, excitement +0xc < 100 and gain > 0.1: excitement = min(100, +0xc + gain, halved if trigger counter < 15), restarts timer, posts 0x1456e5910; then CrowdShocked for trigger 2 (> 5 s) or others except 1/11; flag +0xa4. (lane owner review requested)"
  },
  "signature": {
   "id": "game.crowd_excitement_zone_increase_excitement",

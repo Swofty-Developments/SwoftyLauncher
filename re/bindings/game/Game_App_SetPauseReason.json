@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14080e110",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14080e110.c;xref:0x142d6a8e0,0x142d742e0;decomp:re/decomp/14080e110.c;xref:0x142d742e0",
-  "notes": "(app, char set, int bit): sets/clears bit in pause-reason mask app+0x210 (array of u32); on transition to/from 0 walks 'application_object' worker list (app+0x30) and wakes them (Ne_Event_Set). Callers: Sess_State_Pause/Unpause, Sess_GarageState_OnStateExit, Sess_NetJournalMonitorState_OnEnter/OnExit. Addon: why the game is paused. pause-reason bit set/clear (rcx app, dl set, r8d bit; mask dwords at app+0x210); bit 0 is the one SessionStateNetJournalMonitor (0x142d742e0) and 15 other callers set. Hooked at entry by the view state for a diagnostic mask only."
+  "evidence": "decomp:re/decomp/14080e110.c;xref:0x141a37325,0x141a38186,0x141bc56ae,0x141bc653d,0x142c0559a,0x142c15da7,0x142d65f44,0x142d65f74,0x142d6ab64,0x142d74395,0x142d743d4,0x142d76068,0x142d77c78,0x142da3816,0x142da71e5,0x142e796e1,0x14e93c140",
+  "notes": "(app, set, bit): sets/clears bit in pause mask app+0x210 (u32 array). Acts only when dword 0 goes 0->nonzero (set) or ->0 (clear): pauses/resumes global 0x146cc3a80 (0x14453f4e0 / 0x14453f6f0(...,7)), then 0x1519eb350(obj, player idx, set, 5) or vt slot 0xe/0xd on [svc+0x88]+0x260 plus a 0x18-byte message (vtable 0x14564b690, byte set) posted to the application_object queue. (lane owner review requested)"
  },
  "signature": {
   "id": "game.app_set_pause_reason",

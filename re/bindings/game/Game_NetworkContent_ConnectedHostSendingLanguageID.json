@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14303a520",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-CONTENT",
-  "notes": "named from its log messages (channel NETWORK-CONTENT): 'Connected to host %d, sending language ID %d (conn %d)'"
+  "evidence": "decomp:re/decomp/14303a520.c;pat:log-channel-NETWORK-CONTENT;xref:0x14305b33e,0x143064c01",
+  "notes": "Client side: resets lists, stores host conn this+0xe0 and own conn this+0xe1, sends the language report; logs \"Connected to host %d, sending language ID %d (conn %d)\" and the addPlayerConnectionID mask. (lane owner review requested) Better name: Game_NetworkContent_ConnectToHost (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_content_connected_host_sending_language_id",

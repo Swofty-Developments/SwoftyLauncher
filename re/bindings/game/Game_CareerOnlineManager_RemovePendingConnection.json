@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140fe3d20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name removePendingConnection (class from the log channel); log channel CAREER_ONLINE_MANAGER: '%s: connection: %d'"
+  "evidence": "decomp:re/decomp/140fe3d20.c;pat:log-message-method;xref:0x1456b3a98",
+  "notes": "removePendingConnection(id) on the manager sub-object (cell 0x1456b3a98): logs, computes the equal_range of the byte id in set +0xd0 and erases it (whole tree cleared via 0x1410c28e0 when the range covers everything, else per node 0x1410c6b30 + free via +200). (lane owner review requested)"
  },
  "signature": {
   "id": "game.career_online_manager_remove_pending_connection",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14323a4d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name removeAIPlayer (class from the log channel); log channel NETWORK: '%s: removed AI %s'"
+  "evidence": "decomp:re/decomp/14323a4d0.c;pat:log-message-method;xref:0x14323a4b6,0x14323a8aa",
+  "notes": "Callers 0x14323a480 and Game_Network_OnPlayerSetEntryDiscarded 0x14323a7f0. (this, identity): finds the matching entry in the vector this+0xa8..+0xb0 (0x58 stride), shifts the tail down, shrinks the end by 0x58, logs 'removeAIPlayer: removed AI %s' and returns 1; returns 0 when none matches. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_remove_ai_player",

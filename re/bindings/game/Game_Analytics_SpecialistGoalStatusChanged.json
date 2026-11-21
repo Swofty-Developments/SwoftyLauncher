@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14075e660",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: Specialist Goal Status Changed'"
+  "evidence": "decomp:re/decomp/14075e660.c;pat:log-channel-TELEMETRY;xref:0x1406f48f4,0x14070ddca",
+  "notes": "Bus handler: lea 0x1406f48f4 in subscribe-all 0x1406d8470 (->0x143987810), lea 0x14070ddca in unsubscribe-all 0x1406fd6c0. Allocs 0x78 record (ctor 0x1405af4c0), copies msg fields, baseCtx by 0x14077bb90 'specialists_relationship_changed', pushed to static queue (guard 0x14604ded8) under CS; logs TELEMETRY 'Specialist Goal Status Changed'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_specialist_goal_status_changed",

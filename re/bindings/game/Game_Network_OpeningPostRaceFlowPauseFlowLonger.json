@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'Opening the PostRaceFlow - the PauseFlow is no longer active.'"
+  "evidence": "decomp:re/decomp/142d7ab60.c;pat:log-channel-NETWORK;xref:0x1457e0a48",
+  "notes": "Slot 9 (+0x48, onStateUpdate per the vt_Sess_* rows) of vtable 0x1457e0a00 (name SessionStatePostRace precedes); only ref. (this, out, dt): adds dt to this[0x1b6]; while byte +0xfb8 bit7 is set waits for the pause flow (logs Can't open / Opening the PostRaceFlow), then requests enter_session_results / enter_multiplayer_driver_of_the_day, fades (Broadcast/Replay/BroadcastFull), logs POST_RACE Next State, posts via Ne_Post_BusMessage 0x1439876c0. Better name: Game_SessionStatePostRace_OnStateUpdate (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_opening_post_race_flow_pause_flow_longer",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a60650",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143a60650.c;xref:0x1409a9d8c",
-  "notes": "Under critical section [this+0x88] runs deferred fix-up 0x143a60500 when flag +0x10c is set, then under [this+0xd8] iterates the callback list [this+0xc0..0xc8] (24-byte {fn, ctx, arg, id}) and invokes each. 5 callers (Game_ActorAssetGroupManager_Update, Game_GameDecalCustomisationSystem_Update, Game_FrontendSceneSystem_ProcessCommand...). Hypothesis. vp2-verify partial/disagree"
+  "evidence": "decomp:re/decomp/143a60650.c;xref:0x1409a9d8c,0x14142f0e4,0x1428ba56b,0x1437ab689",
+  "notes": "Under CS [this+0x88]: if +0x10c set, ++counter +0x108 and when it was >0 calls 0x143a60500(this). Then under CS [this+0xd8] iterates vector [+0xc0,+0xc8) of 32-byte records {fn,ctx,arg,u32}: when fn or ctx non-null calls fn(ctx,arg,u32); then clears the vector (end=begin). Callers Game_ActorAssetGroupManager_Update, Game_DecalCustomisation_SwapAssetGroup, Game_FrontendSceneSystem_ProcessCommand."
  },
  "signature": {
   "id": "core.deferred_callbacks_flush",

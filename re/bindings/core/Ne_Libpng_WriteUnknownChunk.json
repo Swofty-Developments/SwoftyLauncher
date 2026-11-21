@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143914360",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143914360.c;xref:0x143914722",
-  "notes": "png write of unknown chunk list entry (\"Writing zero-length unknown chunk\" warning); calls png_write_chunk_header (1447a1690) and data (1447a0590). Callers Ne_Libpng_WriteInfo/WriteEnd."
+  "evidence": "decomp:re/decomp/143914360.c;xref:0x143914722,0x143914c55,0x143914edd",
+  "notes": "(png, info, where): libpng write_unknown_chunks: loops info unknown chunks +0x130 (count +0x138, stride 0x20) with location byte +0x18 & where, applies keep rules (list png+1000 count png+0x3e4, default png+0x3e0, safe-to-copy bit), warns 'Writing zero-length unknown chunk' (Ne_Libpng_Warning 0x1447a0590, not chunk data) and writes each via 0x1447a1690 (name, data, size). Callers Ne_Libpng_WriteInfo (call+jmp), Ne_Libpng_WriteEnd."
  },
  "signature": {
   "id": "core.libpng_write_unknown_chunk",

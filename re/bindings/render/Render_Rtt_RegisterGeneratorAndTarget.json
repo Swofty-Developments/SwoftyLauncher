@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b33ca0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143b33ca0.c;xref:0x140157465,0x140157480",
-  "notes": "Appends generator pointer param_2 to renderer RTT generator vector (renderer+0xf0d20: begin +8, end +0x10) unless already present; copies descriptor param_3; sets TLS error code 2 if duplicate. Called from Game_Render_InitCamerasAndPVS. Pair of Render_Rtt_UnregisterGenerator. vp3-verify partial/disagree"
+  "notes": "If both vectors at renderer+0xf0d20 and +0xf0d30 exist: appends param_2 to the first and param_3 to the second (begin +8, end +0x10, grow 1.5x via the allocator) unless already present; the not-found path sets TLS error 2 before appending. Called twice from 0x140153d60. (lane owner review requested)"
  },
  "signature": {
   "id": "render.rtt_register_generator",

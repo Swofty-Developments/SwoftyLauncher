@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1407267a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: SaveReplayCompleted'"
+  "evidence": "decomp:re/decomp/1407267a0.c;pat:log-channel-TELEMETRY;xref:0x1406dfab4,0x1406fe2ef",
+  "notes": "Bus handler: lea 0x1406dfab4 in subscribe-all 0x1406d8470 (->0x143987810), lea 0x1406fe2ef in unsubscribe-all 0x1406fd6c0. Allocs 0x80 record (ctor 0x14057c460), copies msg fields, baseCtx by 0x14077bb90 'replay_saved_record', pushed to static queue (guard 0x14604d908) under CS; logs TELEMETRY 'SaveReplayCompleted'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_save_replay_completed",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140ffaa60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_Championship_CareerOnlineTimeAdvancementControllerComponent_CancelAdva;xref:0x140ffaad0",
-  "notes": "cxx=game::championship::CareerOnlineTimeAdvancementControllerComponent::cancelAdvancing; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/140ffaa60.c;str:s_Championship_CareerOnlineTimeAdvancementControllerComponent_CancelAdva;xref:0x1422c3746,0x1422c427a",
+  "notes": "Logs cancelAdvancing (TEAMHQ ADVANCE) and sets state this+0x290 = 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.career_online_time_advancement_controller_comp_cancel_advancing",

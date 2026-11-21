@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143226a90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name handleSuperMessage (class from the log channel); log channel NETWORK-READY: '%s: MESSAGE: paused(%d, %.3f secs) SuperReady(%d) at time(%+1.3f) for time(%+1.3f)'"
+  "evidence": "decomp:re/decomp/143226a90.c;pat:log-message-method;xref:0x14ff56360",
+  "notes": "Method name handleSuperMessage: logs 'MESSAGE: paused(%d, %.3f secs) SuperReady(%d) at time ... for time ...', applies pause and super-ready, 'Unpausing advances the super-ready time'. Handler stored by lea 0x14ff56360 in 0x14ff562b0 (.data1). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_ready_handle_super_message",

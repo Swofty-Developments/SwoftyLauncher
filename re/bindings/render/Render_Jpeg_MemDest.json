@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1449d3e5c",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/1449d3e5c.c;xref:0x14379cf33",
-  "notes": "libjpeg jpeg_mem_dest(cinfo, unsigned char **outbuffer, unsigned long *outsize): error 0x18 on null, allocates the 0x50-byte destination manager (callbacks 0x1449df684..). Caller Game_ThumbnailSystem_RequestAndWriteScreenshot."
+  "notes": "libjpeg jpeg_mem_dest(cinfo, outbuffer, outsize): error 0x18 on null args, allocates the 0x50-byte destination manager via mem alloc_small when absent, callbacks 0x1449df684/0x1449df688/0x1449df728, allocates a 0x1000-byte buffer if none (error 0x38 on failure). Caller 0x14379cf33 in 0x14379c250 (Game_ThumbnailSystem_WritingOutJpegTookMicroseconds). (lane owner review requested)"
  },
  "signature": {
   "id": "render.jpeg_mem_dest",

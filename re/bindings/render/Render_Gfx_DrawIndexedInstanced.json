@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a02e30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143a02e30.c;xref:0x143a014f4,0x143ee6d58",
-  "notes": "Dirty-state flush then context vcall +0x138 with (indexCount, instanceCount, startIndex, baseVertex, startInstance). Hypothesis."
+  "notes": "Same flush as Render_Gfx_Draw, then list vcall +0x138(count param_3, instances param_5, start param_2, base vertex param_4, start instance 0). Callers Render_Gfx_SubmitDraw 0x143a007e0, 0x143ee66b0. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx_draw_indexed_instanced",

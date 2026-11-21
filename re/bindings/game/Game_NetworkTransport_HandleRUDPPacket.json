@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14404a460",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name handleRUDPPacket (class from the log channel); log channel NETWORK-TRANSPORT: '%s: received eConnect message, firing new connection callback, credentials: %llu'"
+  "evidence": "decomp:re/decomp/14404a460.c;pat:log-message-method;xref:0x144046d39,0x144094948",
+  "notes": "Logs 'handleRUDPPacket' length/addr; on eDisconnect sets channel state disconnecting, on eConnect fires the new-connection callback with credentials. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_transport_handle_rudp_packet",

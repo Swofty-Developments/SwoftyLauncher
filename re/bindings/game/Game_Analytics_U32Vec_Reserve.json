@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1408f0130",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1408f0130.c;xref:0x14074f475,0x14074f52f",
-  "notes": "vector of u32 grow/reserve (max 0x3fff...; allocations over 0x3ff elements get 0x27-byte header alignment); string unknown. Called by PlayerFinishedDecalEditorSession analytics."
+  "evidence": "decomp:re/decomp/1408f0130.c;xref:0x14074f475,0x14074f52f,0x1434b2400",
+  "notes": "Generic std::vector<4-byte> reserve(*param_2): alloc, memcpy old, free, sets begin/end/cap. Also called outside analytics (0x1434b2400). (lane owner review requested) Better name: Game_U32Vec_Reserve (bound record keeps its name)."
  },
  "signature": {
   "id": "game.analytics_u32_vec_reserve",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143ee3640",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143ee3640.c;xref:0x143c6c2c6,0x143c64f7c",
-  "notes": "Erase by byte-key (FNV-1a 64, mask +0x40) from a hash map; decrements count +0x18, frees via allocator (+8) vcall +0x38. Callers Render_DecalsSet_EraseConnectionById and 0x143c64d10."
+  "notes": "unordered_map erase(key) with an 8-byte key hashed bytewise (FNV-1a 64) and masked by [+0x40]; buckets {first,last} at [+0x28], list sentinel [+0x10]; unlinks the node whose key at node+0x10 matches, fixes bucket ends, size [+0x18]--, frees the node via allocator [+8] vcall +0x38. Callers 0x143c6c2c6 (Render_DecalsSet_EraseConnectionById), 0x143c64f7c (0x143c64d10). (lane owner review requested)"
  },
  "signature": {
   "id": "render.decals_set_connection_map_erase",

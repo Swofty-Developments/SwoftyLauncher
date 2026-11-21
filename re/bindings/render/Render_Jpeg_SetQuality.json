@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1449d4404",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1449d4404.c;xref:0x14379cf74",
-  "notes": "libjpeg jpeg_set_quality: converts quality (0x1449d4594) and installs scaled standard quant tables 0 (std luminance 0x14539aec0) and 1 (chrominance 0x14539afc0) through 0x1449d448c. Caller Game_ThumbnailSystem_RequestAndWriteScreenshot. Addon: quality passed here controls screenshot JPEG compression."
+  "evidence": "decomp:re/decomp/1449d4404.c;xref:0x14379cf74,0x1449d3fb8",
+  "notes": "libjpeg jpeg_set_quality(cinfo, quality, force_baseline): scale = jpeg_quality_scaling (0x1449d4594), then jpeg_add_quant_table (0x1449d448c) for table 0 (std luminance 0x14539aec0) and 1 (std chrominance 0x14539afc0). Callers 0x14379cf74 (0x14379c250 thumbnail writer), 0x1449d3fb8 (Render_Jpeg_SetDefaults). (lane owner review requested)"
  },
  "signature": {
   "id": "render.jpeg_set_quality",

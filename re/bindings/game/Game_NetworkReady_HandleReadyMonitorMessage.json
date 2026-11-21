@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143226eb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name handleReadyMonitorMessage (class from the log channel); log channel NETWORK-READY: '%s: MESSAGE: Ready monitor time set to(%+1.3f) at time(%+1.3f)'"
+  "evidence": "decomp:re/decomp/143226eb0.c;pat:log-message-method;xref:0x14ff563a5",
+  "notes": "Method name handleReadyMonitorMessage: logs 'MESSAGE: Ready monitor time set to(%+1.3f) at time(%+1.3f)' and stores the monitor time. Handler stored by lea 0x14ff563a5 in 0x14ff562b0 (.data1). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_ready_handle_ready_monitor_message",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14323f450",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name addDropInRequest (class from the log channel); log channel NETWORK: '%s: player: %s, vehicleIx: %d'"
+  "evidence": "decomp:re/decomp/14323f450.c;pat:log-message-method;xref:0x14323d601,0x14323f08b",
+  "notes": "Tail jump from HandleDropInRequestMessage 0x14323d550 and call from ForceDropInSpectator 0x14323efc0. (this, request): returns for role +8 > 1; removes queued requests with the same identity from the list this+0x78 (count +0x88), takes a node from the pool +0x70 (grown via 0x143314ef0), stores the request (vtable 0x1458364b0, vehicle +0x58), links it and logs 'addDropInRequest: player, vehicleIx'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_add_drop_in_request",

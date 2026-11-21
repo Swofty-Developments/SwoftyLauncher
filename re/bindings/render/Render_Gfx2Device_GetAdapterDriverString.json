@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439c7f80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439c7f80.c;xref:0x1439c1bf5",
-  "notes": "Builds a driver description string from PCI vendor id param_1 (0x8086/0x8087 Intel: 'Intel %d.%d.%d.%d' from registry SOFTWARE\\Microsoft\\DirectX AdapterLuid/DriverVersion; 0x10de 'NVIDIA %u, %s'; AMD 'AMD %s') with fallbacks 'Unknown'/'unknown' and '%d.%d.%d.%d' / '%d.%d.%d' formats. Callers Render_Gfx2Device_Initialise, Game_Info_GenerateGraphicsWin."
+  "evidence": "decomp:re/decomp/1439c7f80.c;xref:0x1439c1bf5,0x144015602",
+  "notes": "Driver string by PCI vendor param_1: Intel (0x8086/0x8087) enumerates HKLM SOFTWARE\\Microsoft\\DirectX subkeys (AdapterLuid, DriverVersion) -> Intel %d.%d.%d.%d; 0x10de NVIDIA %u, %s; 0x1002 AMD %s; fallbacks Unknown/unknown and %d.%d.%d(.%d). Callers Render_Gfx2Device_Initialise, Game_Info_GenerateGraphicsWin. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx2_device_get_adapter_driver_string",

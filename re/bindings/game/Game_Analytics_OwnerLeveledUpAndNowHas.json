@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14074a390",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: Owner Leveled up and now has %d trainings points'"
+  "evidence": "decomp:re/decomp/14074a390.c;pat:log-channel-TELEMETRY;xref:0x1406ecbd4,0x140707560",
+  "notes": "Bus handler(this,msg); subscribed 0x1406ecbd4 (0x1406d8470), unregistered 0x140707560. 0x70-byte record: returns 0 if u16 msg+0x18 == -1; msg+0x10, msg+0x14 (log arg), msg+0x18. Tag 'owner_level_gained_record' via 0x14077a240, GUID+seq, 64-entry queue; logs 'Owner Leveled up and now has %d trainings points' (TELEMETRY). (lane owner review requested) Better name: Game_Analytics_OwnerLevelGained (bound record keeps its name)."
  },
  "signature": {
   "id": "game.analytics_owner_leveled_up_and_now_has",

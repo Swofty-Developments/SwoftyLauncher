@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1442bc5b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1442bc5b0.c;xref:0x140828501",
-  "notes": "Counterpart: when flags &6==6, resolves target and clears flag 4 after the target evaluates; same property-setter callers (Vm_NodeSet_String/Bool, Ne_Property_SetS32/S64IfChanged, Ne_VmNode_SetFloat)."
+  "evidence": "decomp:re/decomp/1442bc5b0.c;xref:0x140828501,0x140972e27,0x140973e68,0x140977b66,0x140b3c71d",
+  "notes": "Counterpart of 0x1442bc390: only when flags @+0x60 have 4 and 2 set; resolves the target the same way and removes the same kind-specific callback via 0x14422fde0 (jmp to .data1 0x1534b2580: finds {fn,ctx} in target +0x40..+0x48, erases it or marks it removed + flag 8 while iterating); clears flag 4. Same property-setter callers. Better name: Ne_VmBinding_UnsubscribeFromTarget (bound record keeps its name)."
  },
  "signature": {
   "id": "core.vm_binding_clear_target_dirty",

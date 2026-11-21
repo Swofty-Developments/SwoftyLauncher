@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a59cd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143a59cd0.c;xref:0x1401a3e91",
-  "notes": "Thread-safe (EnterCriticalSection [param_1+0xe0]) lookup of u64 id param_2 in a swiss-table style hash map (multiplier +0x88, ctrl bytes +0x98, slots +0x90, 24-byte entries); returns the asset-group record or null; ne_hash_map.h asserts. 63 call sites (cutscene / asset-group loaders, Game_GameWeatherSystem_*). Addon: central asset group id -> record lookup. Record meaning is a hypothesis."
+  "evidence": "decomp:re/decomp/143a59cd0.c;xref:0x1401a3e91,0x1401a3ed8,0x1401a40c6,0x1401a4114,0x1401a4162,0x1401a41b1,0x1401a4204,0x1401a42d7,0x1401b6d6b,0x1401b6ec6,0x1401b6f14,0x1401b6f5e,0x14061346e,0x140613576,0x140819137,0x14081917b,0x1408191ea,0x14081923b,0x14081927f,0x1408192c3,0x14081930f,0x1409a95c9,0x1409a9608,0x1409a9719,0x1409a9754,0x140c72a49,0x140c72ac3,0x140c809b4,0x140c809ed,0x1427abfb2,0x1427abfef,0x1427ac02c,0x1427ac069,0x14288c3d3,0x142890ee2,0x1428911e5,0x14289128a,0x14289adfb,0x142e3e243,0x143a59c14,0x143a5a475,0x143a5d333,0x143a5f15b,0x1474d0133,0x148bc6fc2,0x148bee943,0x148beeda3,0x148bf6753,0x148c02313,0x148c02ac3,0x148c132b3,0x148c1efc3,0x148c21053,0x148c26957,0x148c35357,0x148c3d9b7,0x148c3f2d1,0x148c549ce,0x148c55767,0x148c59d86,0x148c5b947,0x14ac847ef,0x15211b5f6",
+  "notes": "Not a pure lookup: find-or-create under CS reg+0xe0 in a u64->ptr robin-hood map (mult +0x88, entries +0x90 16 bytes {id,ptr}, meta +0x98, mask +0xa8). Missing id: allocates a 16-byte record {id, u32 0, flag byte +0xc from global table 0x14628f690 entry +0xc bits 31/30, byte +0xd} and inserts it (rehash 0x143a74f20, fatal 0x143a74f10). Never returns null. (lane owner review requested) Better name: Game_AssetGroupRegistry_FindOrCreateById (bound record keeps its name)."
  },
  "signature": {
   "id": "game.asset_group_registry_lookup_by_id",

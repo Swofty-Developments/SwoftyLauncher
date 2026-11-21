@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140ff8d90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_Championship_CareerOnlineSynchroniserBasePolicy_StartNextStepAfterSync;xref:0x140ff8ef3",
-  "notes": "cxx=game::championship::CareerOnlineSynchroniserBasePolicy::startNextStepAfterSynchronisation; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/140ff8d90.c;str:s_Championship_CareerOnlineSynchroniserBasePolicy_StartNextStepAfterSync;xref:0x1456b5480,0x1456b5770,0x1456b5910",
+  "notes": "Policy slot +0x30 (vtables 0x1456b5450/0x1456b5740/0x1456b58e0): session [[sync+0x20]+0x4f8]+0x1030 vt+0xa8; no session, or a non-virtual session with a flagged entrant (+0x4b bit 0x10) or state 3 -> 'Starting saves operations', own slot +0x50; else 'Skipping saves operations because current session is Virtual', slot +0x58. (lane owner review requested)"
  },
  "signature": {
   "id": "game.career_online_sync_base_policy_start_next_step_after",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143133c40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-ENTRANTS",
-  "notes": "named from its log messages (channel NETWORK-ENTRANTS): '%s: removing driver for player: %s'"
+  "evidence": "decomp:re/decomp/143133c40.c;pat:log-channel-NETWORK-ENTRANTS;xref:0x1431320b1,0x14257a2ed,0x1431bf542",
+  "notes": "cxx=network::CustomDriverNetworkMessageHandler::removeCustomDriver(const PlayerDescription&) (pretty name in its logs: removing driver / isDocumentOpen / driverStatId / no matching stat id / result); postRemoveCustomDriverMessage is inlined at the end. Callers 0x143131f70, 0x142579c10, tail jump from 0x1431bf4a0. (lane owner review requested) Better name: Game_NetworkEntrants_RemoveCustomDriver (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_entrants_removing_driver_player",

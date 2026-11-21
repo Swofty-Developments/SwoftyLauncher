@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142eff3d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142eff3d0.c;xref:0x142efeec7,0x143567915",
-  "notes": "(registry) Component lookup for key 0x146080ca8 (returns entry+8 or 0). Stored by Sess_RuleManager_Initialise at +0x1c88; also Game_Network_ReceivedRuleMessage."
+  "evidence": "decomp:re/decomp/142eff3d0.c;xref:0x142efeec7,0x143567915,0x14356850a",
+  "notes": "Registry lookup: key 0x146080ca8 -> 0x14030ffd0(reg,&key), entry = idx*0x10 + [reg+0x18]; returns entry+8 or 0. Key 0x146080ca8 is the type record whose name ptr (+8) is set to 'SpectatorDirector' (0x1457eac0b) at 0x142efcf8e in Game_Register_TransactionSponsorManagerTypes. Callers 0x142efec80, Sess_RuleManager_Initialise (-> +0x1c88), Sess_RuleManager_ResolveSubsystems. Better name: Sess_Registry_GetSpectatorDirector (bound record keeps its name)."
  },
  "signature": {
   "id": "session.registry_get_component80ca8",

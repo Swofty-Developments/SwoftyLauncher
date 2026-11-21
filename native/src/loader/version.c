@@ -15,6 +15,7 @@
 #include "supported_builds.h"
 #include "build_gate.h"
 #include "pe_imports.h"
+#include "session_env.h"
 
 #define HOST_EXE L"F1_25.exe"
 #define EXPECTED_SIZE 408063872ULL
@@ -1788,6 +1789,76 @@ static void log_build(void)
              (unsigned long long)sections[i].size, sections[i].flags);
 }
 
+/* The session's environment for a game the EA app starts, which starts the game with an environment of its own:
+   swofty\session_env.json (native/include/session_env.h) names the variables, and they are set here, before
+   anything reads one. Without the file nothing changes. The values are never logged. The file is removed once
+   applied; a game folder the game may not change (Program Files) keeps it, and the launcher removes it when the
+   session ends. */
+static char session_env_line[512];
+
+static long long process_started(void)
+{
+    FILETIME created, exited, kernel, user;
+    if (!GetProcessTimes(GetCurrentProcess(), &created, &exited, &kernel, &user) ||
+        !(created.dwLowDateTime | created.dwHighDateTime))
+        GetSystemTimeAsFileTime(&created);
+    ULARGE_INTEGER t;
+    t.LowPart = created.dwLowDateTime;
+    t.HighPart = created.dwHighDateTime;
+    return (long long)((t.QuadPart - 116444736000000000ULL) / 10000000ULL);
+}
+
+static void apply_session_env(void)
+{
+    wchar_t path[MAX_PATH * 2];
+    swprintf(path, MAX_PATH * 2, L"%ls\\swofty\\session_env.json", game_dir);
+    HANDLE f =
+        CreateFileW(path, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, 0, NULL);
+    if (f == INVALID_HANDLE_VALUE)
+        return;
+    static char buf[256 << 10];
+    static SwoftySessionEnv env;
+    LARGE_INTEGER size;
+    DWORD got = 0;
+    int whole = GetFileSizeEx(f, &size) && size.QuadPart < (LONGLONG)sizeof buf;
+    if (whole && !ReadFile(f, buf, sizeof buf - 1, &got, NULL))
+        got = 0;
+    CloseHandle(f);
+    buf[got] = 0;
+    long long started = process_started();
+    int code = whole ? swofty_session_env_read(buf, started, &env) : SWOFTY_SESSION_ENV_UNREADABLE;
+    if (code != SWOFTY_SESSION_ENV_OK) {
+        char detail[96] = "";
+        if (code == SWOFTY_SESSION_ENV_EXPIRED)
+            snprintf(detail, sizeof detail, " (%lld s before)", started - env.expires);
+        else if (code == SWOFTY_SESSION_ENV_LATER)
+            snprintf(detail, sizeof detail, " (%lld s after)", env.written - started);
+        else if (!whole)
+            snprintf(detail, sizeof detail, " (larger than %u KB)", (unsigned)(sizeof buf >> 10));
+        snprintf(session_env_line, sizeof session_env_line,
+                 "session env: swofty\\session_env.json ignored: %s%s; the game keeps the environment it was started with",
+                 swofty_session_env_why(code), detail);
+        return;
+    }
+    static wchar_t name[512], value[32768];
+    int set = 0;
+    for (int i = 0; i < env.count; i++)
+        if (MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, env.names[i], -1, name, 512) &&
+            MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, env.values[i], -1, value, 32768) &&
+            SetEnvironmentVariableW(name, value))
+            set++;
+    char removed[160] = "removed the file";
+    if (!DeleteFileW(path))
+        snprintf(removed, sizeof removed,
+                 "the file could not be removed (error %lu), so the launcher removes it when the session ends", GetLastError());
+    else if (GetFileAttributesW(path) != INVALID_FILE_ATTRIBUTES)
+        snprintf(removed, sizeof removed,
+                 "the file is still there after the delete, so the launcher removes it when the session ends");
+    snprintf(session_env_line, sizeof session_env_line,
+             "session env: set %d of %d variable(s) from swofty\\session_env.json (launch request %.64s); %s", set, env.count,
+             env.request, removed);
+}
+
 /* Before the real version.dll is loaded, which is where a hooking module can stall the loader before its first
    log line: one small write of the pid to %LOCALAPPDATA%\Swofty\state\loader-start.marker. kernel32 only; no
    loading, no locks. Any failure is ignored. */
@@ -1858,6 +1929,7 @@ BOOL WINAPI DllMain(HINSTANCE self, DWORD reason, LPVOID reserved)
 
     wcscpy(game_dir, exe_path);
     game_dir[slash ? slash - exe_path : 0] = 0;
+    apply_session_env();
     InitializeCriticalSection(&log_lock);
     open_log();
     {
@@ -1872,6 +1944,8 @@ BOOL WINAPI DllMain(HINSTANCE self, DWORD reason, LPVOID reserved)
     if (real)
         GetModuleFileNameW(real, real_path, MAX_PATH);
     slog("swofty loader (version.dll proxy) attached, pid %lu", GetCurrentProcessId());
+    if (session_env_line[0])
+        slog("%s", session_env_line);
     if (refused_error)
         log_refused();
     slog("log: %s",

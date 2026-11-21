@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144069f10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onMigrateSessionHostComplete (class from the log channel); log channel NETWORK-MIGRATION: '%s: save the migration data, start migration host task'"
+  "evidence": "decomp:re/decomp/144069f10.c;pat:log-message-method;xref:0x144069d83",
+  "notes": "Logs '%s: migrationSuccess: %d, m_migrationHostTask: %d' with onMigrateSessionHostComplete (NETWORK-SESSION); on failure 'migration failed. Aborting', else 'save the migration data, start migration host task' and tail jumps to 0x144068e20 (NeNetSystemClassicMatchmaking::notifyPeersMigrationResult, inlined in the decomp). Callback stored by lea 0x144069d83 in 0x144069ce0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_migration_on_migrate_session_host_complete",

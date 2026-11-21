@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143d6c910",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143d6c910.c;xref:0x14446c4a2",
-  "notes": "Hypothesis: returns float fade/LOD factor for an instance from its property array (+0x60..0x68, +0x88); from Render_Apply_InstanceRenderProperties. Named callers: Render_Apply_InstanceRenderProperties. vp3-verify partial/disagree"
+  "notes": "Samples rings around position param_2 (radius from 2.8, 16 angles of pi/8), quantises each sample to a 4-unit cell key, looks it up in the cell hash set (+0x58 seed, +0x60/+0x68 slots, +0x78 mask, +0x88/+0x8c) and returns ring radius - param_3 for the first occupied cell. Only caller Render_Apply_InstanceRenderProperties 0x14446c4a2. (lane owner review requested)"
  },
  "signature": {
   "id": "render.instance_eval_fade",

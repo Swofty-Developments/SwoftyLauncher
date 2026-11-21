@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143ee27d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143ee27d0.c;xref:0x143df2ed0,0x14477d300,0x14477d520",
-  "notes": "FNV-1a 64 hash of an 8-byte key (basis 0xcbf29ce484222325, prime 0x100000001b3); particle instance map. Named callers: Game_Particles_RegisterInstance. vp5-verify partial/disagree"
+  "evidence": "decomp:re/decomp/143ee27d0.c;xref:0x14477d300,0x14477d520,0x143df2ed0",
+  "notes": "Byte-identical copy of 0x143ec4ff0: FNV-1a 64 over the 8 key bytes (basis 0xcbf29ce484222325, prime 0x100000001b3) * seed +0x10, swiss probe, 16-byte entries +0x18; returns slot or end. call sites incl. Game_Particles_RegisterInstance (0x14477d300)."
  },
  "signature": {
   "id": "core.hash_fnv1a64_key8_particles",

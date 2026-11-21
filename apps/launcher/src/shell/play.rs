@@ -19,6 +19,11 @@ use super::probe::GameWatch;
 use super::{PlayState, Seen, Shell};
 use swofty_i18n::{tr, trf, trn};
 
+/// The profile a launch plays: the room's when the room names one, else the active one.
+pub(crate) fn played_profile<'a>(room: Option<&'a RoomLaunch>, active: &'a str) -> &'a str {
+    room.and_then(|r| r.profile.as_deref()).unwrap_or(active)
+}
+
 #[derive(Default)]
 pub(crate) struct Launching {
     pub(crate) launch: Option<Launch>,
@@ -376,9 +381,10 @@ impl Launching {
         let Some(generation) = launching.play_pending.begin() else {
             return false;
         };
+        let profile = played_profile(room.as_ref(), needs.profile);
         let inputs = play_checks::Inputs {
             store: needs.store.clone(),
-            profile: needs.profile.to_owned(),
+            profile: profile.to_owned(),
             game: install.dir.clone(),
             build_id: install.build_id,
         };
@@ -420,7 +426,7 @@ impl Launching {
             crate::app::app_log::note(line);
         }
         let (launching, needs) = host.split();
-        let stale = needs.profile != checked.profile
+        let stale = played_profile(room.as_ref(), needs.profile) != checked.profile
             || needs.game.install.as_ref().map(|i| &i.dir) != Some(&checked.game);
         let step = Step::of(stale, checked.gate, checked.verdict);
         let Some(install) = needs.game.install.clone().filter(|_| step != Step::Dropped) else {
@@ -489,7 +495,7 @@ impl Launching {
         });
         match Launch::start(
             needs.store,
-            needs.profile,
+            played_profile(room.as_ref(), needs.profile),
             &install,
             needs.mode,
             armed.as_deref(),
@@ -617,6 +623,23 @@ mod tests {
     use swofty_core::install::Source;
 
     use super::{Launching, Played, Press, Step};
+
+    #[test]
+    fn a_room_launch_plays_the_room_profile_and_others_the_active_one() {
+        use crate::features::multiplayer::RoomLaunch;
+        let room = RoomLaunch {
+            row_ids: None,
+            profile: Some("-room".into()),
+            direct_start: "lobby".into(),
+        };
+        assert_eq!(super::played_profile(Some(&room), "mine"), "-room");
+        let hosting = RoomLaunch {
+            profile: None,
+            ..room
+        };
+        assert_eq!(super::played_profile(Some(&hosting), "mine"), "mine");
+        assert_eq!(super::played_profile(None, "mine"), "mine");
+    }
     use crate::services::game::{Copies, Install, Owner};
     use crate::services::play_checks::{Gate, Verdict};
     use crate::shell::PlayState;

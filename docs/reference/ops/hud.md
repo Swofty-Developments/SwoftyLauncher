@@ -68,6 +68,31 @@ A Halo-like dial: a base, a speed text, a boost lamp, a level bar, a battery gau
 
 `swofty hud compose <addon folder> registry/hud.json` writes the archives to a folder and exits 1 when a stock archive that carries a composed resource is left out. `swofty hud check` asserts the stock facts below against the game's original files, with the archives that carry each resource the composer writes and that they all hold the same copy.
 
+## A HUD file behind a setting
+
+A `when` at the top of a HUD file composes its records only while it holds, with the same keys as an [op file's `when`](/reference/addons/settings#content-that-needs-another-addon): option values and `addon`. A file whose `when` does not hold adds nothing to the HUD, and the build lists it as off. The composition is made when the profile builds, so the option binds `db` and a change applies at the next launch.
+
+```jsonc [swofty.json]
+{
+  "compat": { "game": "f1_25", "launcher": ">=1.10.14" },   // older launchers ignore the when and always compose the file
+  "options": [
+    { "id": "season_hud", "type": "toggle", "label": "Season HUD", "default": true, "binds": "db" }
+  ],
+  "operations": { "hud": ["hud/season.json"] }
+}
+```
+
+```jsonc [hud/season.json]
+{
+  "when": { "season_hud": true },        // off: the game's own HUD, with nothing composed
+  "hud.element": {
+    "season": { "dial": "f1_26", "sprites": { … }, "elements": [ … ] }
+  }
+}
+```
+
+The core loads every file in `registry/` as registry data and refuses a top-level `when` there, so a HUD file with a `when` sits outside `registry/`. The build warns about one inside it.
+
 ## Units and placement
 
 One HUD unit is one pixel of a 640x360 frame, the origin is the dial centre and `v` points down. A record written in Project Halo's tower unit (1/3 px at 1080p) says `"units": "tower"`; the composer reads every `at`, `bounds`, `box`, `pitch`, `gap`, `size` and `cap_height` in that unit (0.03 scene units) and the default `hud` stays 0.018. A sprite's `bounds` is where it sits in that frame, so a sprite's art lines up with the others without an `at`. The record's root sits where the bottom of its box lands on the stock bottom customisation point; the box is `box`, else the bounds of the sprite named `base`, else the bounds of every sprite. That point differs by a few hundred-thousandths between the dials, so a record that must land on one exact spot in every dial sets `root_y`, in its own units, `v` down from the dial centre; a variant's `root_y` overrides it for that dial. The selection box follows the root either way.
@@ -408,7 +433,19 @@ The other side is the addon whose archive change put the node or setter there. W
 - A resource the composer writes goes to every stock archive that carries it, not only to the archives its overlay is made for; an archive that also carries the resource gets an added `<archive>_2.erp` with the composed copies and the archive's new resources. A build that would leave a stock copy beside a composed one stops with `the composed HUD of <addons> would leave the game's own copy of a resource beside the composed one`.
 - A record's nodes are checked against the stock files: the template without the added groups and the signals to them is the stock template, node for node.
 
-The anim nodes a gauge or sweep adds are named `zh_<element>...`, which sorts after every stock name in the scene's anim string table.
+The anim nodes a gauge, sweep or motion adds are named `zh_<prefix>_<element>...`, which sorts after every stock name in the scene's anim string table. The table is sorted, and the names a record appends must sort after its last string. When another addon's copy of the scene already ends the table at or past `zh_<prefix>_` (Project Halo 0.2.4's `dial_complete` ends at `zh_sg8_anim`), the record's anim nodes take the first of `zi_` to `zz_` that sorts after it, and the build says so:
+
+```text
+s10_onboard: the anim string table of dial_complete.idf already ends at zh_sg8_anim, so this record's anim names start zi_
+```
+
+A table that ends past every one of them stops the build, naming the addon whose copy filled it:
+
+```text
+the HUD elements do not compose: Project Halo and SWOFTY 2010 both animate the dial, and Project Halo's animation names leave none after them for SWOFTY 2010; turn Project Halo or SWOFTY 2010 off in this profile (Project Halo's anim string table ends at zz_~)
+```
+
+A decision on a game value reads its states from the stock MVCD on that value under the dial's parent in the game's own template. Another addon's template can carry an MVCD of its own on the same value beside it (Project Halo's `halo_ctl.drs_state` on `drs_pit_state`), and the decision still takes the game's.
 
 ::: info Credit
 The element templates, the placement maths, the clip keys and the binding rules follow Project Halo by nyannoying (https://github.com/nyannoying1337/f1-25-project-halo). Uses work from Project Halo by nyannoying.

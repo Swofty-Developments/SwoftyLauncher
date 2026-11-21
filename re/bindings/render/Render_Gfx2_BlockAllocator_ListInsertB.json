@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a302f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143a302f0.c;xref:0x1439e7337",
-  "notes": "Second block-allocator container helper (874 bytes, element size via 0x49249249 divide), same trace ring; caller Render_Gfx2_BlockAllocator_Free."
+  "evidence": "decomp:re/decomp/143a302f0.c;xref:0x1439e7337,0x1439e75f0,0x1439e7899,0x143a2fdff",
+  "notes": "Releases a free block node: requires flag 0x20 (else error 0x16), unlinks it from the prev/next index list (+0x20/+0x24; 0xffffffff -> error 6), removes it from the free tree (0x143a30660 on +0x38), clears the node and pushes its index on the node free-stack (+0x28/+0x30). Errors go to the TLS error list and ring 0x146107830. (lane owner review requested) Better name: Render_GfxMem_RemoveFreeBlockNode (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_block_allocator_list_insert_b",

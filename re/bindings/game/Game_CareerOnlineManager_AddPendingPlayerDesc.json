@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name addPendingPlayerDesc (class from the log channel); log channel CAREER_ONLINE_MANAGER: '%s: playerDesc: %s'"
+  "evidence": "decomp:re/decomp/140fdb4f0.c;pat:log-message-method;xref:0x1456b39a8",
+  "notes": "Vfunc (cell 0x1456b39a8): for each pending connection in set +0x360 finds the session player (+0x2d0 -> +0x100 list) and either inlined addPendingPlayerDesc (log, vector +0x378, 0x58 stride) or adds a member record (+0x3a8) and erases the connection; state +0x350: 0 -> starts op 0x140fd6a00 (+0x390/+0x398), 2 -> sends member messages and finishes. Better name: Game_CareerOnlineManager_ProcessPendingConnections (bound record keeps its name)."
  },
  "signature": {
   "id": "game.career_online_manager_add_pending_player_desc",

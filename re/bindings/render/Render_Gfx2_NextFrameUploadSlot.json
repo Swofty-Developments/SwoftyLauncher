@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143d75270",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143d75270.c;xref:0x143af8fe1",
-  "notes": "Advances a triple-buffer index (+0x70, mod 3: three frames in flight) and with the slot's 0x18-byte descriptor array (+0x28) calls 0x1439ad480 on the graphics device global 0x14618caa8 to map/lock the upload buffer; returns status int (0x16 when no mapping). Callers Render_Particles_ReadbackVertexBuffer and 7 render helpers (0x143b21800). Hypothesis."
+  "evidence": "decomp:re/decomp/143d75270.c;xref:0x143af8fe1,0x143b28c78,0x143b28c90,0x143b28ca8,0x143b28cc0,0x143b28cd8",
+  "notes": "Advances slot +0x70 mod 3 of a 0x90 triple-buffer; with per-frame mapping (+0x89) maps the slot buffer [+0x10+slot*8] via 0x1439ad480 (resource vcall +0x40 = Map) into the slot desc +0x28+slot*0x18, success to +0x88; else uses +0x88 (error 0x16); returns status. Callers Render_Particles_ReadbackVertexBuffer 0x143af8fe1, 0x143b21800 (0x143b28c78), 0x1442e1c40 (0x1442e2bf4). (lane owner review requested) Better name: Render_Gfx2TripleBuffer_AdvanceAndMap (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_next_frame_upload_slot",

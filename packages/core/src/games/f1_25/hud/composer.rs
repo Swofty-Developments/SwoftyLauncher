@@ -25,6 +25,45 @@ pub(super) fn first(v: Vec<Vec<u8>>, what: &str) -> Result<Vec<u8>> {
         .ok_or_else(|| err(format!("{what} has no data")))
 }
 
+/// The game's own race and spectator templates, read the first time a decision looks up its stock
+/// MVCD: the copies the composer starts from carry other addons' nodes.
+struct GameTemplates<'a> {
+    stock: &'a dyn Stock,
+    race: std::cell::OnceCell<Pkg>,
+    spectator: std::cell::OnceCell<Pkg>,
+}
+
+impl<'a> GameTemplates<'a> {
+    fn new(stock: &'a dyn Stock) -> Self {
+        Self {
+            stock,
+            race: std::cell::OnceCell::new(),
+            spectator: std::cell::OnceCell::new(),
+        }
+    }
+
+    fn read(&self, name: &str) -> Result<Pkg> {
+        Ok(Pkg::parse(&first(
+            self.stock.game_copy(dials::STOCK_ERP, name)?,
+            name,
+        )?)?)
+    }
+
+    fn race(&self) -> Result<&Pkg> {
+        if self.race.get().is_none() {
+            let _ = self.race.set(self.read(dials::TEMPLATE)?);
+        }
+        Ok(self.race.get().expect("set above"))
+    }
+
+    fn spectator(&self) -> Result<&Pkg> {
+        if self.spectator.get().is_none() {
+            let _ = self.spectator.set(self.read(dials::SPECTATOR)?);
+        }
+        Ok(self.spectator.get().expect("set above"))
+    }
+}
+
 /// Composes `inputs` against the stock files into the overlay archives.
 pub fn compose(stock: &dyn Stock, inputs: &[Input]) -> Result<Output> {
     compose_with(stock, inputs, None, &Packer::default())
@@ -139,6 +178,7 @@ pub fn compose_with(
     };
     let mut spectator = spec_stock.clone();
     let race_tags = StockTags::race(&race_stock.root);
+    let game_templates = GameTemplates::new(stock);
 
     let mut spectator_used = false;
     let mut preview_hides: Vec<String> = Vec::new();
@@ -158,6 +198,7 @@ pub fn compose_with(
         let text_from = (dial != Dial::F126).then_some(om_xm.as_slice());
         let mut b = Builder::new(facts, &scene_bytes, &mods, &bar, text_from)?;
         b.with_donors(&stacked, &lap_counter)?;
+        let end = anim_end(stock, facts);
         if here.iter().any(|e| units::used(&e.rec.elements)) {
             b.units = units::load(stock, dials::STOCK_ERP)?;
         }
@@ -172,6 +213,13 @@ pub fn compose_with(
                 b.park(&parts)?;
                 parked = true;
             }
+            b.anim = anim_of(
+                end.as_deref(),
+                facts,
+                &pfx_of[e.input],
+                &inputs[e.input].addon,
+                &mut out.lines,
+            )?;
             let mut plan = b.add_record(&e.rec, &pfx_of[e.input], &loaded[e.input].sprites, Mode::Live)?;
             let sw = e
                 .switch
@@ -293,9 +341,14 @@ pub fn compose_with(
             vec![std::mem::take(&mut new_scene)],
         ));
         for (e, plan) in &plans {
+            let mvcd = plan.decisions.iter().any(|d| d.kind == "mvcd");
             template::attach(
                 &mut template.root,
                 &race_stock.root,
+                match mvcd {
+                    true => &game_templates.race()?.root,
+                    false => &race_stock.root,
+                },
                 &race_tags,
                 facts.race_parent,
                 plan,
@@ -311,6 +364,10 @@ pub fn compose_with(
                 template::attach(
                     &mut spectator.root,
                     &spec_stock.root,
+                    match mvcd {
+                        true => &game_templates.spectator()?.root,
+                        false => &spec_stock.root,
+                    },
                     &tags,
                     facts.spectator_parent,
                     plan,
@@ -367,8 +424,16 @@ pub fn compose_with(
         let bytes = first(stock.read(dials::STOCK_ERP, scene)?, scene)?;
         let mut b = Builder::for_scene(facts, &bytes, &om_xm, &mods, &bar)?;
         b.with_donors(&stacked, &lap_counter)?;
+        let end = anim_end(stock, facts);
         let mut plans = Vec::new();
         for &i in members {
+            b.anim = anim_of(
+                end.as_deref(),
+                facts,
+                &pfx_of[i],
+                &inputs[i].addon,
+                &mut out.lines,
+            )?;
             let plan = b.add_scene_record(&inputs[i].record, &pfx_of[i], &loaded[i].sprites)?;
             plans.push((i, plan));
         }
@@ -532,6 +597,47 @@ pub fn cover_carriers(stock: &dyn Stock, archives: &mut Vec<Built>, lines: &mut 
     }
     archives.extend(added);
     Ok(())
+}
+
+/// The last name of the anim string table of the scene of `facts`, when the table is sorted: the anim
+/// names a record adds to the scene sort after it ([`clip_resources`]).
+pub(super) fn anim_end(stock: &dyn Stock, facts: &DialFacts) -> Option<String> {
+    let strtab = first(stock.read(dials::STOCK_ERP, facts.strtab).ok()?, facts.strtab).ok()?;
+    let have = animclip::read_strings(&strtab).ok()?;
+    match have.is_sorted() {
+        true => have.last().cloned(),
+        false => None,
+    }
+}
+
+/// The anim prefix of the record `pfx` of `addon` in the scene of `facts`, whose anim string table ends
+/// at `end` ([`scene::anim_prefix`]), or the refusal naming the addon whose copy of the table leaves
+/// the record no name that sorts after it.
+pub(super) fn anim_of(
+    end: Option<&str>,
+    facts: &DialFacts,
+    pfx: &str,
+    addon: &str,
+    lines: &mut Vec<String>,
+) -> Result<String> {
+    let last = end.unwrap_or_default();
+    let Some(anim) = scene::anim_prefix(end, pfx) else {
+        let kind = conflict::Kind::Clips {
+            scene: facts.scene.to_owned(),
+            last: last.to_owned(),
+        };
+        return Err(conflict::by(
+            conflict::Conflict::error(facts.strtab, kind),
+            &[addon.to_owned()],
+        ));
+    };
+    if anim != scene::ANIM_PREFIX {
+        lines.push(format!(
+            "{pfx}: the anim string table of {} already ends at {last}, so this record's anim names start {anim}",
+            facts.scene.rsplit('/').next().unwrap_or(facts.scene)
+        ));
+    }
+    Ok(anim)
 }
 
 /// The anim string table and the clips the plans put in `facts.scene`: the new names appended

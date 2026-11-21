@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430ff4e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-OS-SESSION",
-  "notes": "named from its log messages (channel NETWORK-OS-SESSION): '[CACHE] Caching version on session %s: %d --> %d'"
+  "evidence": "decomp:re/decomp/1430ff4e0.c;pat:log-channel-NETWORK-OS-SESSION;xref:0x1430fc6e7,0x1430fdd60",
+  "notes": "With an active session (this+0x70, refcount held) logs '[CACHE] Caching version on session %s: %d --> %d' and stores the new version. Callers 0x1430fc4e0, 0x1430fdbc0. (lane owner review requested) Better name: Game_NetworkOSSession_CacheSessionVersion (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_os_session_caching_version_session",

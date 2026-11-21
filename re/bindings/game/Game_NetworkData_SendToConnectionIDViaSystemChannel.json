@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name sendToConnectionIDViaSystemChannel (class from the log channel); log channel NETWORK-DATA/V: '%s: send to: connection %d packet size: %d, error: %d'"
+  "evidence": "decomp:re/decomp/144073560.c;pat:log-message-method;xref:0x144063021,0x1440689d8,0x14406e47d",
+  "notes": "NeNetSystemCommon::sendToConnectionIDViaSystemChannel(conn, size): queues the packet on the system channel (Game_NetworkTraffic_QueuedPacketSizeConnectionId) and logs \"send to: connection %d packet size: %d, error: %d\"; returns the error code."
  },
  "signature": {
   "id": "game.network_data_send_to_connection_id_via_system_channel",

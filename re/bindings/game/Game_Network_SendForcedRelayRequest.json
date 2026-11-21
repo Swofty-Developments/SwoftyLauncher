@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14326a880",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name sendForcedRelayRequest (class from the log channel); log channel NETWORK: 'sendForcedRelayRequest(%d/%s) - but I am the host, there's no-one to relay for me.'"
+  "evidence": "decomp:re/decomp/14326a880.c;pat:log-message-method;xref:0x1432683af,0x143268412",
+  "notes": "Logs sendForcedRelayRequest(target, RELAY/no relay); if local is not host (this+0x18 != this+0x19) sends a relay-request message (vtable 0x145836670) to the host via 0x14402e500 and applies it locally with 0x140769aa0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_send_forced_relay_request",

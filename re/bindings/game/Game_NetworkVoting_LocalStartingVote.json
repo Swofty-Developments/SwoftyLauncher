@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14308f6c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-VOTING",
-  "notes": "named from its log messages (channel NETWORK-VOTING): '%s Local - starting vote'"
+  "evidence": "decomp:re/decomp/14308f6c0.c;pat:log-channel-NETWORK-VOTING;xref:0x14580f7f0",
+  "notes": "Logs NETWORK-VOTING '%s Local - starting vote' with its own name startVote, builds the vote option list ('Adding track %s' per candidate) and sends it (Game_Network_SendOptions); in the wrong state calls Game_Network_TryingStartVoteWrongState. Only reference is vtable cell 0x14580f7f0 (MultiVotingManager vtable, next cell Game_Network_RestartVote). (lane owner review requested) Better name: Game_NetworkVoting_StartVote (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_voting_local_starting_vote",

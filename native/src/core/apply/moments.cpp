@@ -1,5 +1,7 @@
 #include "core/apply/moments.hpp"
 
+#include "core/frontend/view_state.hpp"
+
 #include "core/hooks/hooks.hpp"
 #include "core/diagnostics/perf.hpp"
 #include "core/registry/table.hpp"
@@ -690,6 +692,12 @@ void career_season(int year)
     scheduler().career_season(year);
 }
 
+void career_dated(int year)
+{
+    attach();
+    scheduler().career_dated(year);
+}
+
 void box_picked(const char *entrant_list) { box_picked(entrant_list, nullptr); }
 
 void box_picked(const char *entrant_list, const void *mode_context)
@@ -765,6 +773,8 @@ void session_load(const char *source)
     if (facts::ModeKind k = facts::mode_kind(true, true, f.mode); k != facts::ModeKind::unknown)
         note_mode(k, "the session load");
     scheduler().session_load(f);
+    if (flow)
+        frontend::view::load_trackside_cameras(f.track);
     std::call_once(report_writer_once, [] { std::thread(report_writer_main).detach(); });
     report_queue.want(from);
 }

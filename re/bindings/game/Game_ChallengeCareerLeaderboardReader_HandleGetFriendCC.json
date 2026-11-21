@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140add3d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_ChallengeCareerLeaderboardReader_HandleGetFriendCCLeaderboardResponse;xref:0x140add45e",
-  "notes": "cxx=game::ChallengeCareerLeaderboardReader::handleGetFriendCCLeaderboardResponse; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/140add3d0.c;str:s_ChallengeCareerLeaderboardReader_HandleGetFriendCCLeaderboardResponse;xref:0x140adcd58",
+  "notes": "Own pretty-function log handleGetFriendCCLeaderboardResponse; bound as callback by lea 0x140adcd58 in ..._Start. On empty error string builds an entry vector from response +0xa0 (0x88-byte rows via 0x140adc100), +0x60 = resp+0xb8, total resp+200, calls 0x140adf000(this,result); always releases op handle +0x78/+0x80. (lane owner review requested)"
  },
  "signature": {
   "id": "game.challenge_career_leaderboard_reader_handle_get_friend_c_c",

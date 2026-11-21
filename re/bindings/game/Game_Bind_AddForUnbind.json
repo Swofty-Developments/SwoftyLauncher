@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140274c30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name addForUnbind (class from the log channel); log channel BIND: 'addForUnbind %p %d %d max %d'"
+  "evidence": "decomp:re/decomp/140274c30.c;pat:log-message-method;xref:0x1455f7aa0,0x1455f7db0,0x1455f80c0,0x1455fc3b0,0x1455fc730,0x1455fcab0,0x1455fce30,0x1455fd1b0,0x1455fd530,0x1455fd8b0,0x1455fdc30,0x1455fdfb0,0x1455fe330,0x1455fe6b0,0x1455fea30,0x1455fedb0,0x1455ff130,0x1455ff4b0,0x1455ff830,0x1455ffbb0,0x1455fff30,0x1456002b0,0x145600630,0x1456009b0,0x145600d30,0x1456010b0,0x145601430,0x1456017b0,0x145601b40,0x145601ed0,0x145602260,0x1456025e0,0x145602960,0x145602ce0,0x145603050,0x145603e90,0x1456070e0",
+  "notes": "Virtual override in many cutscene actor vtables: calls base bind 0x140239cf0 with all args; when target and slot byte (!= 0xff) are given logs BIND addForUnbind and appends the slot byte to the unbind list +0x998 (count +0x9c0, max +0x9b8). (lane owner review requested)"
  },
  "signature": {
   "id": "game.bind_add_for_unbind",

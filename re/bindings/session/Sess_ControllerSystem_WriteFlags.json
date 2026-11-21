@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14389ce30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
   "proto": "void(ControllerSystem*, Stream*)",
   "evidence": "decomp:re/decomp/14389ce30.c;xref:0x1458825f0",
-  "notes": "Recordable interface of the sub-object at system+0x20 (this = system+0x20, so [this+0x10..+0x18] is the system's set list). For each set writes dword flags [set+0x30] then one byte ((rec+8 & 7) << 4 | rec+0 & 3) of the active input record; Game_ControllerSet_DeserialiseFlags (0x14389ceb0) reads it back. Flashback and replay frames carry the sets' flags and modes this way; this path does not free or rebuild sets."
+  "notes": "Slot +0x20 of vt 0x1458825d0 (recordable sub-object; same type record as the Sess_ControllerSystem_Init vt). For each set in [this+0x10..+0x18]: writes u32 [set+0x30] at the stream cursor (arg+8), then one byte ((rec[8]&7)<<4 | rec[0]&3) of rec = [set+0x20] vt+0x10(); advances the cursor."
  },
  "signature": {
   "id": "session.controller_system_write_flags",

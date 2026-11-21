@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143609cf0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): '[SAFETY_CAR] sending teleport message for safety car: %d'"
+  "evidence": "decomp:re/decomp/143609cf0.c;pat:log-channel-NETWORK;xref:0x143609ce6,0x1436133d5,0x143644ad9",
+  "notes": "Applies a safety-car teleport payload: sets the session clock (Sess_SessionClock_SetTime), regroups cars (Sess_SafetyCar_BuildGroupedCarList, lap progress), posts bus messages (Ne_Post_BusMessage); when this+8 < 2 sends the teleport message via 0x14402e500 and logs \"sending teleport message\". (lane owner review requested) Better name: Game_Network_SafetyCar_ApplyTeleport (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_sending_teleport_message_safety_car",

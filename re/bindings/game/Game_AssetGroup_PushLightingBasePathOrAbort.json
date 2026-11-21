@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a5a460",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143a5a460.c;xref:0x1438c6eed",
-  "notes": "Looks up an asset-group record via Game_AssetGroupRegistry_LookupById(uRam14628f510); Ne_FatalAbort when missing; otherwise push_back (growth 1.5x) of a pointer into vector param_1 (begin +8, end +0x10, cap +0x18). Only caller Game_GameWeatherSystem_SetLightingDataBasePaths. Addon: lighting data base paths come from the asset group registry."
+  "notes": "push_back (1.5x growth, allocator vec[0]) of Game_AssetGroupRegistry_FindOrCreateById(global 0x14628f510 id) into vector param_1 (+8 begin, +0x10 end, +0x18 cap); fatal path if the result is null. Only caller 0x1438c6ca0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.asset_group_push_lighting_base_path_or_abort",

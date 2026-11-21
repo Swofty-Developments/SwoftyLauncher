@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14364d4d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=CompressedSaveDataSerialiser::getThumbnailSize; log channel CompressedSaveDataSerialiser: '[thread=%I64u] CompressedSaveDataSerialiser::getThumbnailSize returning 0'"
+  "evidence": "decomp:re/decomp/14364d4d0.c;pat:log-message-cxx;xref:0x145855798",
+  "notes": "Vtable cell 0x145855798. Logs '...::getThumbnailSize returning 0' and returns 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.compressed_save_data_serialiser_get_thumbnail_size",

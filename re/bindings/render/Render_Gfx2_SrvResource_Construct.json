@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b73940",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143b73940.c;xref:0x1401481e6",
-  "notes": "Constructs a 'GfxSRVResource' (string) object: name via the string pool, 0x68-byte table through 0x1439917c0, fields +0x28..+0x50. Called by 0x1401456e0, 0x14014b860, 0x140153140 (renderer setup)."
+  "evidence": "decomp:re/decomp/143b73940.c;xref:0x1401481e6,0x1401490dd,0x140149588,0x14014b99d",
+  "notes": "Constructor (vtable 0x1458c1160): stores context param_3, param_4 and the name pair; when param_4 == 0 interns the name (FNV-1a, string pool) and creates a bind layout via Render_Gfx2_BindLayout_Create(ctx, 1, callback 0x143bed130, name, 'GfxSRVResource', param_5) into +0x10; otherwise copies fields from param_4. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx2_srv_resource_construct",

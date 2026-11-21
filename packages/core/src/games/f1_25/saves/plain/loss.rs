@@ -55,7 +55,7 @@ impl Loss {
         self.items
             .iter()
             .flat_map(|i| match i.careers.is_empty() {
-                true => vec![i.mode.clone()],
+                true => vec![crate::saves::vault::careers::mode_label(Some(&i.mode))],
                 false => i
                     .careers
                     .iter()
@@ -85,15 +85,35 @@ fn halves<'a>(m: &'a Manifest, mode: &'a str) -> Vec<&'a Container> {
     m.halves(mode).collect()
 }
 
+/// A mode with careers: a container of it lists career slots, or it is a mode the core keeps for an addon no
+/// loaded game mode claims, whose slots the game does not read. The game's own records (options, trophies,
+/// journal entries) and modes with no career are not careers.
+fn holds_careers(was: &[&Container]) -> bool {
+    was.iter()
+        .any(|c| !c.slots.is_empty() || (!c.registered && c.mode() != c.name))
+}
+
+/// Whether a generation lists the containers a loaded game mode read. A core on a build whose save layout is
+/// not proven (the EA app copy) leaves them out and lists only the containers it keeps or puts back.
+fn lists_registered(m: &Manifest) -> bool {
+    m.containers.iter().any(|c| c.registered)
+}
+
 fn lost_mode(good: &Manifest, newest: &Manifest, mode: &str) -> Option<Lost> {
     let was = halves(good, mode);
     let now = halves(newest, mode);
+    if !holds_careers(&was) {
+        return None;
+    }
     if now.iter().any(|c| c.source == Source::Injected) && now.len() >= was.len() {
         return None;
     }
-    let missing_half = was.iter().any(|g| !now.iter().any(|n| n.same(g)));
-    let careers: Vec<LostCareer> = was
+    let listed = lists_registered(newest);
+    let judged: Vec<&Container> = was.iter().copied().filter(|c| listed || !c.registered).collect();
+    let missing_half = judged.iter().any(|g| !now.iter().any(|n| n.same(g)));
+    let careers: Vec<LostCareer> = judged
         .iter()
+        .filter(|g| !now.iter().any(|n| n.same(g) && !n.registered))
         .flat_map(|c| c.slots.iter())
         .filter(|s| !now.iter().any(|n| n.slots.iter().any(|t| t.guid == s.guid)))
         .fold(Vec::new(), |mut out: Vec<LostCareer>, s| {
@@ -121,6 +141,8 @@ impl Plain {
     /// wrote. Only a load generation newer than it can show a loss; a career gone from a later save was
     /// deleted in a session with the core, and deletions stick. A container the core put back is in the
     /// newest generation with source `injected`, and one named in its put-back log lines is not lost.
+    /// Only modes with careers count. A load generation that lists no registered container judges only the
+    /// kept ones, and a container the load kept unclaimed (its addon off) still holds its careers.
     pub fn loss(&self, put_back: &[PutBack]) -> Option<Loss> {
         let gens = self.generations();
         let newest = gens.first()?;

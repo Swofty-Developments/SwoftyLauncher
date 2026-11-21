@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d3e5d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
   "proto": "-",
   "evidence": "decomp:re/decomp/142d3e5d0.c;xref:0x1457dcb28",
-  "notes": "Slot +0x78 of challenge vt 0x1457dcab0, (rs, dt): vt+0x218; countdown rs+0x414 -= dt while state rs+0x418 == 1 and session type ([rs+0x328]+0x1e8) != 0x10, at 0 -> state 2 and 0x142d34a70 (start); toggles flag 2 at +0x13c of the object list rs+0x480..+0x488 (16-byte) by [rs+0x340]+0x20 == 5 / +0x3c, queuing job 0x143d3ce20. Logs SESSION-RESULT on status requests. d1-verify-a correction: 0x142d34a70 is called every tick while countdown rs+0x414 > 0; at 0 it only sets countdown 0 and state 2; session type 4 also finishes cars (eFinished + R+0x125 = 1)"
+  "notes": "Slot +0x78 of RivalDuelChallengeRuleset vt 0x1457dcab0, (rs, dt). vt+0x218(); while rs+0x418==1 and [rs+0x328]+0x1e8 != 0x10: if rs+0x414 > 0 calls 0x142d34a70 and rs+0x414 -= dt, else rs+0x414=0, state 2. Toggles flag 2 at +0x13c of the rs+0x480 objects by [rs+0x340]+0x20==5 / +0x3c, queueing 0x143d3ce20. Session type 4: entrants -> eFinished and +0x125=1. Better name: Sess_RivalDuelRuleset_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "session.challenge_ruleset_update",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143254e50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'OLI/Mechanical: onRequestSessionData(%02d)'"
+  "evidence": "decomp:re/decomp/143254e50.c;pat:log-channel-NETWORK;xref:0x14582ce10",
+  "notes": "Slot 4 (+0x20) of vtable 0x14582cdf0; only that cell. Logs 'OLI/Mechanical: onRequestSessionData(%02d)', sends (0x14402e500), calls 0x1403b8960, then tail-jumps MechanicalSendSessionData 0x143254b60 (0x1432550ff). (lane owner review requested) Better name: Game_Network_MechanicalOnRequestSessionData (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_oli_mechanical_on_request_session_data",

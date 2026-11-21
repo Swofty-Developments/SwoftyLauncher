@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1402474e0.c;xref:0x14023e6f8",
-  "notes": "3992-byte camera actor enable/disable handler: logs 'CameraActor::enable %p %s [%s]' (CAMERA_ACTOR_ENABLE), updates instance transforms (Game_Scene_UpdateInstanceTransformsBatch), registers part callbacks (Game_Scene_RegisterPartCallbackAndTrack), visibility requests (Game_CameraActorVisible_ProcessVisibilityRequest), tint colours (Render_ModelInstance_SetTintColoursSrgb) and cutscene drive (Game_CutSceneScript_ApplyDrive). 3 callers (0x14023e6f8...). Addon-relevant: toggles camera actors."
+  "evidence": "decomp:re/decomp/1402474e0.c;xref:0x14023e6f8,0x140246613,0x14024c86e",
+  "notes": "Not a CameraActor::enable body: validates the driver slot (+0x31a < 3, index +0x31c, session +0x290 tables +0x2c8/+0x450), builds spawn flags (asset names 'cinematic'/'careerhub'/'careerhub2' by param_7 bits 0x800/0x1000), spawns a scene (0x1401b71c0), sets its transform, per camera actor logs 'CameraActor::enable' (inlined) and calls 0x140197cd0; applies 'racecrewclothes'/'Driver::Head' (0x14024a370). Better name: Game_CutScene_SpawnCharacterScene (bound record keeps its name)."
  },
  "signature": {
   "id": "game.camera_actor_enable",

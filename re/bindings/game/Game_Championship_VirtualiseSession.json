@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140bd4bc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-GAME-CHAMPIONSHIP",
-  "notes": "named from its log messages (channel GAME-CHAMPIONSHIP): 'Virtualising Session %s'"
+  "evidence": "decomp:re/decomp/140bd4bc0.c;pat:log-channel-GAME-CHAMPIONSHIP;xref:0x140bd441c,0x140bd4975,0x140bd4a14,0x140bd4b2c",
+  "notes": "Own log 'Virtualising Session %s'. If session info (vcall +0x98 of [+0x278]+0x1030): type 0 -> 0x1407bfd20; Game_VirtualSession_Simulate(+0x290, session, p3, mode +0x8c == 2, out list); on success and (types 0xf-0x11, Game.AlwaysVirtualiseSessionsIndividually, or championship checks) sets [[+0x298]+0xf0]+0x2e8 = 0x101 and calls champ vt+0x150/+0x160; frees the result list. (lane owner review requested)"
  },
  "signature": {
   "id": "game.championship_virtualise_session",

@@ -353,7 +353,7 @@ The data version has no dropped scores: those need the handler. A data file can'
 
 ## Rules per box
 
-A box sets its rules in `content::Package::rules`. They apply when a session loads in that box, and every other box in `swofty_f1` keeps its own.
+A box sets its rules in `content::Package::rules`. They apply when a session loads in that box, and every other box in `swofty_f1` keeps its own. A career whose season names the box runs them in the career's own setup mode ([The season's rules](./career#the-season-s-rules)).
 
 ```cpp
 // a 2009 pack: 10-8-6-5-4-3-2-1, no fastest-lap point, no DRS
@@ -375,7 +375,7 @@ SWOFTY_REGISTER
          (points community.f1-2009/f1_2009, drs community.f1-2009/none, refuelling on)
 ```
 
-Points per box ship in 1.9.61 (`session.points` 1.0, experimental). Each record becomes one `game_setup.session_standings` preset at boot, a copy of the stock `standard_race` with the record's points (padded with 0 to 26 places), its fastest lap bonus (the game's `BestOfTop10` rule; `null` for none) and the points of a race stopped at 75, 50 and 25 % distance (`reduced`; a missing level gives the full points). Pressing a box whose `rules.points` names a record points the race sessions (race, race_2, race_3) of `swofty_f1`'s non-sprint weekends at that preset; a box without the rule, a stock box or a career load puts the game's presets back:
+Points per box ship in 1.9.61 (`session.points` 1.0, experimental). Each record becomes one `game_setup.session_standings` preset at boot, a copy of the stock `standard_race` with the record's points (padded with 0 to 26 places), its fastest lap bonus (the game's `BestOfTop10` rule; `null` for none) and the points of a race stopped at 75, 50 and 25 % distance (`reduced`; a missing level gives the full points). Pressing a box whose `rules.points` names a record points the race sessions (race, race_2, race_3) of `swofty_f1`'s non-sprint weekends at that preset; a box without the rule, a stock box or a career load puts the game's presets back, and the career load then points its own setup mode at its season box's preset:
 
 ```text
 [points] box f1_1950 (community.f1-1950/f1_1950): swofty_f1 race points 8-6-4-3-2, fastest lap +1 (rules.points

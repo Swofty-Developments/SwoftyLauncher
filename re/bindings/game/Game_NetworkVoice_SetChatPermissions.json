@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14403e810",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name setChatPermissions (class from the log channel); log channel NETWORK-VOICE: '%s: allow communication with connection #%d on channel #%u...'"
+  "evidence": "decomp:re/decomp/14403e810.c;pat:log-message-method;xref:0x14403e3ca,0x14403eed9,0x14403f019",
+  "notes": "Logs with its own name setChatPermissions (local user / remote user %llu, 'allow communication with connection #%d on channel #%u' or 'disable any communication'), then sets PlayFab chat permissions ('Failed to set chat permissions ...'). Called from Game_NetworkVoice_UserJoinedNetwork; tail-jumped from _UserJoinedChannel and _UserLeftChannel. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_voice_set_chat_permissions",

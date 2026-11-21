@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143e81090",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143e81090.c;xref:0x143bc62c2",
-  "notes": "Evaluates an ACES-like tone curve: log of input, (x+4)/2.30103, exp blends with 0.18 mid-grey and 18.0, coefficient -0.7447275. Callers Render_PostProcess_ComputeColorParams."
+  "evidence": "decomp:re/decomp/143e81090.c;xref:0x143bc62c2,0x143bc6547",
+  "notes": "ACES single-stage tone scale init (ssts init_TSParams; rename): from minLum (param_2), maxLum (param_3), two stop limits (param_4, param_5; RRT ends -15/18) and an exposure shift (param_6) it fills a 21-float TsParams: Min/Mid/Max points (x = log2 - shift, y = lum, slopes 0 / 1.55 / 0, mid y 4.8) and coefsLow/coefsHigh (1.8355689 + 1.55*x, 0.89..0.9 blend, log10(0.18) = -0.7447275). Callers 0x143bc62c2, 0x143bc6547 in Render_PostProcess_ComputeColorParams. (lane owner review requested) Better name: Render_Tonemap_AcesSstsInitParams (bound record keeps its name)."
  },
  "signature": {
   "id": "render.tonemap_aces_rrt_eval_curve",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=AttributeSetReplicationManager::handleAttributeSetRemove; log channel NETWORK-ENTRANTS: 'void network::AttributeSetReplicationManager::handleAttributeSetRemove(neon::NeNetMessage &, neon::NeNetConnectionID) | %s: Removed attribute set with key %u.'"
+  "evidence": "decomp:re/decomp/1431235d0.c;pat:log-message-cxx",
+  "notes": "network::AttributeSetReplicationManager::handleAttributeSetRemove: looks up set key msg+0x10 in map [mgr+0x30]+0xa8; refuses if it belongs to the lead player; else removes it (0x140b44530 on +0x80) and posts msg vtable 0x14566bd20 on the bus."
  },
  "signature": {
   "id": "game.attribute_set_replication_manager_handle_attribute_set_remove",

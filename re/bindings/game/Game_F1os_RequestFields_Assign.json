@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140826200",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140826200.c;xref:0x140822a97",
-  "notes": "Copy-assign of a vector of 0x40-byte {id, refcounted string, ...} request-field records (param_2 -> param_1) using Ne_String_Reserve and allocator vcall +0x18, with refcount increments. 103 call sites (all Game_F1os_Create_* constructors, FePopup_Start_BusySpinner). Hypothesis."
+  "evidence": "decomp:re/decomp/140826200.c;xref:0x140822a97,0x1408338e7,0x140b14be7",
+  "notes": "Copy-assign of a vector {alloc +0, begin +8, end +0x10, cap +0x18} of 0x40-byte records (u32 id, shared_ptr +8/+0x10 with atomic inc of ctrl+8, string object +0x18 vtable 0x145612ec0->0x145612eb8); reallocates via allocator vcall +0x18 when cap is too small. Callers include 0x1408225a0, 0x140833320, 0x140b14610 (Game_F1os_Create_GetCalendar). (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1os_request_fields_assign",

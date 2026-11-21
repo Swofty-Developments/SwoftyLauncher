@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430af6f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-UI",
-  "notes": "named from its log messages (channel NETWORK-UI): 'Requested hopper search for game type: %s'"
+  "evidence": "decomp:re/decomp/1430af6f0.c;pat:log-channel-NETWORK-UI;xref:0x1430ad4d5,0x1430ae1a9,0x143373b9a",
+  "notes": "Logs 'handleHopperSearch' and 'Requested hopper search for game type', checks network 0x1430af1a0, cancels the old hopper search, sets match search params and calls SearchMatch 0x14307fd70 with callback 0x1430b01f0. (lane owner review requested) Better name: Game_NetworkUi_HandleHopperSearch (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_ui_requested_hopper_search_game_type",

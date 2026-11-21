@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143db29b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/143db29b0.c;xref:0x143db291a",
-  "notes": "Third deferred-entry destroyer, hash-map owning variant (clears via 0x143ebf290, returns a value). Caller Render_Rtt_UnregisterGeneratorEntry. Hypothesis on entry type. vq1-verify partial/disagree"
+  "notes": "std::map erase by 128-bit key (lexicographic compare of node+0x20,+0x28 against key[0],key[1]); whole-tree range -> clear 0x143ebf290, else rb-tree unlink/rebalance per node, size-1, free via [map] vt+0x38; returns erased count. Only caller Render_Rtt_UnregisterGeneratorEntry (0x143db28d0), so the Deferred prefix comes from the sibling, not proven."
  },
  "signature": {
   "id": "core.gfx2_renderer_destroy_deferred_entry_c",

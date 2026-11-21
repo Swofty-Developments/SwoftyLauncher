@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143192bf0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'ESRPreferences::onMutableRoleChanged() from offline'"
+  "evidence": "decomp:re/decomp/143192bf0.c;pat:log-channel-NETWORK;xref:0x145822b78",
+  "notes": "Slot 1 (+0x8) of vtable 0x145822b70; only that cell. (this, newRole): if the old role +8 is 0 logs 'ESRPreferences::onMutableRoleChanged() from offline', rebuilds the byte vector +0x30..+0x40 and logs 'setting my connectionId %d showPlayerName to %d' (+0x20); if newRole == 2 logs 'to remote - broadcasting preference' and inlined sendPreference: NETWORK/F log and 0x14402e500([[this+0x18]+0x3d0], 1, msg). (lane owner review requested) Better name: Game_EsrPreferences_OnMutableRoleChanged (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_esr_preferences_on_mutable_role_changed",

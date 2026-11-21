@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1441344d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-AVATARS",
-  "notes": "named from its log messages (channel AVATARS): 'Attempting to retrieve imageId %d, size %u, userId %s, bufferSize %d'"
+  "evidence": "decomp:re/decomp/1441344d0.c;pat:log-channel-AVATARS;xref:0x1530f0e01",
+  "notes": "Steam avatar image fetch into a cache slot: size w*h*4 from table 0x145a5c180[size], ISteamUtils vt+0x30 (GetImageRGBA) into the buffer; on success stores user id, size and buffer in slot mgr+0x60+n*0x60 (6 slots, wraps at 6) and logs. Caller 0x1530f0b70. (lane owner review requested) Better name: Game_Avatars_RetrieveImageRgba (bound record keeps its name)."
  },
  "signature": {
   "id": "game.avatars_attempting_retrieve_image_id_size",

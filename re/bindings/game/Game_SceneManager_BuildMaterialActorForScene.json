@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "pat:log-message-cxx",
-  "notes": "cxx=SceneManager::buildMaterialActorForScene; log channel ACTOR: 'SceneManager::buildMaterialActorForScene : MaterialActor[%s][%d] | setWorldObjectId %p Failed to find %p | SceneManager::buildWorldActorForScene : WorldActor[%s][%d] | setWorldObjectId %p Found %p %s '"
+  "notes": "cxx=SceneManager::buildMaterialActorForScene; log channel ACTOR: 'SceneManager::buildMaterialActorForScene : MaterialActor[%s][%d] | setWorldObjectId %p Failed to find %p | SceneManager::buildWorldActorForScene : WorldActor[%s][%d] | setWorldObjectId %p Found %p %s ' | 2026-11-19 engine-re: the context suffix for a part is entry [part material index +0x114] of the instance's material context list (stride 0x28, string +0x10), else '.emb?context=default' (0x14560e1ce, lea 0x1401ebc2b); then Game_Actor_LoadModelResources 0x140187560 (call 0x1401ebe00) resolves it."
  },
  "signature": {
   "id": "game.scene_manager_build_material_actor_for_scene",

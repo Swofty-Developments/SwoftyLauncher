@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14019b260",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14019b260.c;xref:0x14019a7d7",
-  "notes": "SIMD angle wrap (x/(2*pi) rounded, *2*pi) and trig composition of the camera clip rotation (param_2[2] = angle) into a transform at param_1. Single caller Game_CameraActor_SyncCameraClipTarget. Hypothesis."
+  "notes": "Pure math: builds a 4x4 rotation matrix at param_1 from three Euler angles param_2[0..2] (each wrapped to [-pi,pi] via x*0.15915494 rounded *6.2831855, sin/cos minimax polynomials); rows 0..2 rotation, row 3 = (0,0,0,1). No camera state read; caller in 0x140199cd0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.camera_clip_compose_rotation",

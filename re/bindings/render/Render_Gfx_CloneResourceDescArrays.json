@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143c208d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143c208d0.c;xref:0x140100cfc",
-  "notes": "Copies three descriptor arrays (param_2 idx 8/9, 0x11/0x12, 0x1a/0x1b) with the owner allocator (vtable +0x18/+0x38) and calls 143c20b40 with a 12-byte-element count. 73 callers from the config object builders."
+  "evidence": "decomp:re/decomp/143c208d0.c;xref:0x140100cfc,0x140100e8c,0x140101024,0x1401011bc,0x14010134c,0x14010475c",
+  "notes": "Initialises a builder object (vtable 0x1458c3610) from desc param_2: copies three arrays (idx 8/9, 0x11/0x12, 0x1a/0x1b) with the desc allocator (vcall +0x18, Ne_Crt_Memcpy), calls 0x143c20b40 with count (param_2[3]-param_2[2])/12, frees the temporaries. In Render_Gfx_InitResourceDescBuilder the builder feeds 0x143b5c740 (0x550 object). Callers incl 0x140100cfc, 0x140100e8c, Render_Gfx_BuildConfigObject 0x140109c9d. (lane owner review requested) Better name: Render_Gfx_DescBuilder_InitFromDesc (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx_clone_resource_desc_arrays",
