@@ -1812,8 +1812,8 @@ static void apply_session_env(void)
 {
     wchar_t path[MAX_PATH * 2];
     swprintf(path, MAX_PATH * 2, L"%ls\\swofty\\session_env.json", game_dir);
-    HANDLE f = CreateFileW(path, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, 0,
-                           NULL);
+    HANDLE f =
+        CreateFileW(path, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, 0, NULL);
     if (f == INVALID_HANDLE_VALUE)
         return;
     static char buf[256 << 10];
@@ -1850,14 +1850,13 @@ static void apply_session_env(void)
     char removed[160] = "removed the file";
     if (!DeleteFileW(path))
         snprintf(removed, sizeof removed,
-                 "the file could not be removed (error %lu), so the launcher removes it when the session ends",
-                 GetLastError());
+                 "the file could not be removed (error %lu), so the launcher removes it when the session ends", GetLastError());
     else if (GetFileAttributesW(path) != INVALID_FILE_ATTRIBUTES)
         snprintf(removed, sizeof removed,
                  "the file is still there after the delete, so the launcher removes it when the session ends");
     snprintf(session_env_line, sizeof session_env_line,
-             "session env: set %d of %d variable(s) from swofty\\session_env.json (launch request %.64s); %s", set,
-             env.count, env.request, removed);
+             "session env: set %d of %d variable(s) from swofty\\session_env.json (launch request %.64s); %s", set, env.count,
+             env.request, removed);
 }
 
 /* Before the real version.dll is loaded, which is where a hooking module can stall the loader before its first

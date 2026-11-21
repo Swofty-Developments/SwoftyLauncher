@@ -246,10 +246,7 @@ static inline int swofty_session_env_skip(char **p, int depth)
     return 1;
 }
 
-static inline int swofty_session_env_valid_name(const char *name)
-{
-    return *name && !strchr(name, '=');
-}
+static inline int swofty_session_env_valid_name(const char *name) { return *name && !strchr(name, '='); }
 
 static inline int swofty_session_env_pairs(char **p, SwoftySessionEnv *e)
 {
