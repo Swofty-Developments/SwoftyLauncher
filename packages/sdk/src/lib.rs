@@ -45,7 +45,7 @@ pub use headers::{
     STORAGE_HEADER, TELEMETRY_HEADER, TIMING_HEADER,
 };
 pub use hud::{HUD_BOOL, HUD_INT, HUD_TEXT, HUD_VERSION, SwoftyHud};
-pub use lang::SwoftyLang;
+pub use lang::{LANG_VERSION, SwoftyLang};
 pub use mixin::{
     MIXIN_ON_LOAD, MIXIN_OVERWRITE, MIXIN_PATCH, MIXIN_REDIRECT, MIXIN_SITE, MIXIN_VTABLE, MIXIN_WRAP,
     RegisterMixinsFn, SwoftyMixin,

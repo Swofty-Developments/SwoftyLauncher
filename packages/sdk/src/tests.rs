@@ -40,7 +40,7 @@ fn layout_matches_header() {
     assert_eq!(std::mem::offset_of!(SwoftyApi, popup), 128);
     assert_eq!(std::mem::offset_of!(SwoftyApi, lang), 136);
     assert_eq!(std::mem::offset_of!(SwoftyApi, career_content), 144);
-    assert_eq!(std::mem::size_of::<SwoftyLang>(), 40);
+    assert_eq!(std::mem::size_of::<SwoftyLang>(), 56);
     assert_eq!(std::mem::size_of::<SwoftyCareer>(), 80);
     assert_eq!(std::mem::offset_of!(SwoftyCareer, block), 64);
     assert_eq!(std::mem::size_of::<SwoftyCareerStart>(), 80);
@@ -136,6 +136,8 @@ fn layout_matches_header() {
         "#define SWOFTY_TELEMETRY_VERSION 2",
         "#define SWOFTY_EVENT_TELEMETRY_OVERTAKE \"telemetry.overtake\"",
         "#define SWOFTY_OVERLAY_VERSION 3",
+        "#define SWOFTY_LANG_VERSION 2",
+        "SwoftyCoreLangVersion(void);",
         "} SwoftyInput;",
         "} SwoftyTextStyle;",
         "SWOFTY_DB_BOOL = 5",

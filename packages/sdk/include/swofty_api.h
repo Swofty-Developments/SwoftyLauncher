@@ -595,13 +595,23 @@ typedef struct SwoftyHub {
    game runs. language NULL or "*" means every language; otherwise a language code (eng, fre, ...)
    that applies while it is the game's current language and wins over "*". The text is UTF-8 and is
    copied. A change shows wherever the game looks the key up next; refresh() re-sends the current
-   language to the game's language listeners so bound labels read their text again (game thread). */
+   language to the game's language listeners so bound labels read their text again (game thread).
+   Version 2 appends text and language, present when the core exports SwoftyCoreLangVersion and it
+   returns 2 or more: text(key) writes the key's text in the current language (the override when one
+   applies, else the game's text) as UTF-8 into out, with *len the byte count without the NUL, and
+   returns SWOFTY_TOO_SMALL with *len set when cap is too small or out is NULL, or SWOFTY_ASSET_INVALID
+   when no table has the key; language writes the current language code (eng, fre, ...). Both copy
+   and work from any thread once the game's locale module is up; before that they return
+   SWOFTY_ASSET_UNAVAILABLE. */
+#define SWOFTY_LANG_VERSION 2
 typedef struct SwoftyLang {
     int (*available)(void);
     int (*override_set)(const char *language, const char *key, const char *text);
     int (*override_clear)(const char *language, const char *key);
     int (*override_clear_all)(void);
     int (*refresh)(void);
+    int (*text)(const char *key, char *out, size_t cap, size_t *len);
+    int (*language)(char *out, size_t cap, size_t *len);
 } SwoftyLang;
 
 /* Extra career contents (no API version of its own: the table is read only when the core exports
@@ -1784,6 +1794,7 @@ typedef const SwoftyLive *(*SwoftyCoreLiveFn)(void);
 typedef const SwoftyMem *(*SwoftyCoreMemFn)(void);
 typedef const SwoftyLapHost *(*SwoftyCoreLapHostFn)(void);
 typedef const SwoftySessionHost *(*SwoftyCoreSessionHostFn)(void);
+typedef uint32_t (*SwoftyCoreLangVersionFn)(void);
 
 #define SWOFTY_STAGE_WINDOW 1
 
@@ -1808,6 +1819,7 @@ SWOFTY_EXPORT const SwoftyLive *SwoftyCoreLive(void);
 SWOFTY_EXPORT const SwoftyMem *SwoftyCoreMem(void);
 SWOFTY_EXPORT const SwoftyLapHost *SwoftyCoreLapHost(void);
 SWOFTY_EXPORT const SwoftySessionHost *SwoftyCoreSessionHost(void);
+SWOFTY_EXPORT uint32_t SwoftyCoreLangVersion(void);
 
 #ifdef __cplusplus
 }
