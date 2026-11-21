@@ -132,3 +132,4 @@ void stock_only_tests(const std::string &regs);
 void virtual_list_tests(const std::string &regs);
 void late_write_tests(const std::string &regs);
 void ahead_tests(const std::string &regs);
+void career_rules_tests();

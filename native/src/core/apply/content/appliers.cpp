@@ -8,6 +8,7 @@
 #include "core/apply/scheduler.hpp"
 #include "core/apply/content/boot.hpp"
 #include "core/apply/content/boot_ahead.hpp"
+#include "core/apply/content/career_rules.hpp"
 #include "core/apply/content/garage_build.hpp"
 #include "core/apply/content/grid_rules.hpp"
 #include "core/apply/content/gvdb.hpp"
@@ -1006,141 +1007,119 @@ std::string worn_team(uint16_t stat)
     return it == live().wears.end() ? std::string() : it->second;
 }
 
-DrsBox drs_for_box(const std::string &entrant_list)
+namespace {
+
+struct Packages {
+    std::map<std::string, Value> keep;
+    Lookup lookup;
+    std::vector<std::pair<std::string, const Value *>> list;
+};
+
+void collect_packages(Packages &p)
 {
     Store &st = registry::store();
-    std::map<std::string, Value> keep;
-    Lookup lookup = store_lookup(st, keep);
-    std::vector<std::pair<std::string, const Value *>> packages;
+    p.lookup = store_lookup(st, p.keep);
     for (auto &id : in_load_order(st, "content.package"))
-        packages.push_back({id, lookup("content.package", id)});
+        p.list.push_back({id, p.lookup("content.package", id)});
+}
+
+}
+
+DrsBox drs_for_box(const std::string &entrant_list, const std::string &host)
+{
+    Packages p;
+    collect_packages(p);
     DrsPick pick;
     {
         std::lock_guard g(drs_mu);
-        pick = drs_pick(entrant_list, packages, drs_groups);
+        pick = drs_pick(entrant_list, p.list, drs_groups, host);
     }
     return {pick.group ? pick.group->label : std::string(), pick.line};
 }
 
-WarmersBox tyre_warmers_for_box(const std::string &entrant_list)
+WarmersBox tyre_warmers_for_box(const std::string &entrant_list, const std::string &host)
 {
-    Store &st = registry::store();
-    std::map<std::string, Value> keep;
-    Lookup lookup = store_lookup(st, keep);
-    std::vector<std::pair<std::string, const Value *>> packages;
-    for (auto &id : in_load_order(st, "content.package"))
-        packages.push_back({id, lookup("content.package", id)});
-    WarmersPick pick = tyre_warmers_pick(entrant_list, packages);
+    Packages p;
+    collect_packages(p);
+    WarmersPick pick = tyre_warmers_pick(entrant_list, p.list, host);
     return {pick.warmers, pick.line};
 }
 
 RevLightsBox rev_lights_for_box(const std::string &entrant_list)
 {
-    Store &st = registry::store();
-    std::map<std::string, Value> keep;
-    Lookup lookup = store_lookup(st, keep);
-    std::vector<std::pair<std::string, const Value *>> packages;
-    for (auto &id : in_load_order(st, "content.package"))
-        packages.push_back({id, lookup("content.package", id)});
-    RevLightsPick pick = rev_lights_pick(entrant_list, packages, lookup);
+    Packages p;
+    collect_packages(p);
+    RevLightsPick pick = rev_lights_pick(entrant_list, p.list, p.lookup);
     return {pick.engine, pick.line};
 }
 
 FuelRules fuel_rules_for_box(const std::string &entrant_list)
 {
-    Store &st = registry::store();
-    std::map<std::string, Value> keep;
-    Lookup lookup = store_lookup(st, keep);
-    std::vector<std::pair<std::string, const Value *>> packages;
-    for (auto &id : in_load_order(st, "content.package"))
-        packages.push_back({id, lookup("content.package", id)});
-    return fuel_rules_pick(entrant_list, packages);
+    Packages p;
+    collect_packages(p);
+    return fuel_rules_pick(entrant_list, p.list);
 }
 
-WeekendBox weekend_for_box(const std::string &entrant_list)
+WeekendBox weekend_for_box(const std::string &entrant_list, const std::string &host)
 {
-    Store &st = registry::store();
-    std::map<std::string, Value> keep;
-    Lookup lookup = store_lookup(st, keep);
-    std::vector<std::pair<std::string, const Value *>> packages;
-    for (auto &id : in_load_order(st, "content.package"))
-        packages.push_back({id, lookup("content.package", id)});
-    WeekendPick pick = weekend_pick(entrant_list, packages);
+    Packages p;
+    collect_packages(p);
+    WeekendPick pick = weekend_pick(entrant_list, p.list, host.c_str());
     return {pick.time_limit_s, pick.weekend_mode, pick.line};
 }
 
 BoxOptionsPick box_options_for_box(const std::string &entrant_list)
 {
-    Store &st = registry::store();
-    std::map<std::string, Value> keep;
-    Lookup lookup = store_lookup(st, keep);
-    std::vector<std::pair<std::string, const Value *>> packages;
-    for (auto &id : in_load_order(st, "content.package"))
-        packages.push_back({id, lookup("content.package", id)});
-    return box_options_pick(entrant_list, packages);
+    Packages p;
+    collect_packages(p);
+    return box_options_pick(entrant_list, p.list);
 }
 
 GridBox grid_for_box(const std::string &entrant_list)
 {
-    Store &st = registry::store();
-    std::map<std::string, Value> keep;
-    Lookup lookup = store_lookup(st, keep);
-    std::vector<std::pair<std::string, const Value *>> packages;
-    for (auto &id : in_load_order(st, "content.package"))
-        packages.push_back({id, lookup("content.package", id)});
-    GridPick pick = grid_pick(entrant_list, packages);
+    Packages p;
+    collect_packages(p);
+    GridPick pick = grid_pick(entrant_list, p.list);
     return {pick.rule, pick.line};
 }
 
 bool any_grid_rule()
 {
-    Store &st = registry::store();
-    std::map<std::string, Value> keep;
-    Lookup lookup = store_lookup(st, keep);
-    for (auto &id : in_load_order(st, "content.package"))
-        if (const Value *rec = lookup("content.package", id); rec && (*rec)["rules"]["grid"].is_object())
+    Packages p;
+    collect_packages(p);
+    for (auto &[id, rec] : p.list)
+        if (rec && (*rec)["rules"]["grid"].is_object())
             return true;
     return false;
 }
 
 QualiTyresBox quali_tyres_for_box(const std::string &entrant_list)
 {
-    Store &st = registry::store();
-    std::map<std::string, Value> keep;
-    Lookup lookup = store_lookup(st, keep);
-    std::vector<std::pair<std::string, const Value *>> packages;
-    for (auto &id : in_load_order(st, "content.package"))
-        packages.push_back({id, lookup("content.package", id)});
-    QualiTyresPick pick = quali_tyres_pick(entrant_list, packages);
+    Packages p;
+    collect_packages(p);
+    QualiTyresPick pick = quali_tyres_pick(entrant_list, p.list);
     return {pick.mask, pick.line};
 }
 
 bool any_quali_tyres()
 {
-    Store &st = registry::store();
-    std::map<std::string, Value> keep;
-    Lookup lookup = store_lookup(st, keep);
-    for (auto &id : in_load_order(st, "content.package")) {
-        const Value *rec = lookup("content.package", id);
+    Packages p;
+    collect_packages(p);
+    for (auto &[id, rec] : p.list)
         if (rec && (*rec)["entrant_list"].is_string() &&
             quali_tyres_pick(std::string((*rec)["entrant_list"].as_string()), {{id, rec}}).mask)
             return true;
-    }
     return false;
 }
 
-PointsBox points_for_box(const std::string &entrant_list)
+PointsBox points_for_box(const std::string &entrant_list, const std::string &host)
 {
-    Store &st = registry::store();
-    std::map<std::string, Value> keep;
-    Lookup lookup = store_lookup(st, keep);
-    std::vector<std::pair<std::string, const Value *>> packages;
-    for (auto &id : in_load_order(st, "content.package"))
-        packages.push_back({id, lookup("content.package", id)});
+    Packages p;
+    collect_packages(p);
     PointsPick pick;
     {
         std::lock_guard g(points_mu);
-        pick = points_pick(entrant_list, packages, points_systems);
+        pick = points_pick(entrant_list, p.list, points_systems, host);
     }
     PointsBox box;
     box.line = pick.line;
@@ -1155,17 +1134,15 @@ PointsBox points_for_box(const std::string &entrant_list)
     return box;
 }
 
-TyreChangeBox tyre_change_for_box(const std::string &entrant_list)
+TyreChangeBox tyre_change_for_box(const std::string &entrant_list, const std::string &host)
 {
-    Store &st = registry::store();
-    std::map<std::string, Value> keep;
-    Lookup lookup = store_lookup(st, keep);
-    std::vector<std::pair<std::string, const Value *>> packages;
-    for (auto &id : in_load_order(st, "content.package"))
-        packages.push_back({id, lookup("content.package", id)});
-    TyreChangePick pick = tyre_change_pick(entrant_list, packages);
+    Packages p;
+    collect_packages(p);
+    TyreChangePick pick = tyre_change_pick(entrant_list, p.list, host);
     return {pick.required, pick.line};
 }
+
+CareerBox career_box_now(const registry::Context &ctx) { return career_box(registry::store(), ctx); }
 
 void start_boot_ahead()
 {
