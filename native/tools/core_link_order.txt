@@ -234,3 +234,4 @@ src/core/assets/db_first_read.cpp
 src/core/guards/garage/pit_garage_state.cpp
 src/core/guards/career/resume_gate_guard.cpp
 src/core/guards/cars/tyre_curve_guard.cpp
+src/core/guards/engine/anim_clip_time_guard.cpp

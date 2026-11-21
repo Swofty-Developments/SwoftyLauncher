@@ -113,6 +113,10 @@
    "pattern": "E9 ?? ?? ?? ?? C9 1D A9 0F 87 78 62 8D 01 3B 0F",
    "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
+  "Ne_AnimClipPlayer_Sample_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 0F 85 65 2F 60 FD F4 0F 83 15",
+   "note": "The bytes after the 5-byte jmp are not code and differ on EA (thunk 0x1403a6b80 to the body 0x147c23100, the KB body with the output offset, the packet-loop stride and the log probe start written another way)."
+  },
   "Ne_Container_AbortNoReturn_1435d82f0": {
    "pattern": "FF 50 08 48 8B 4C 24 48 48 8B 01 49 89 06 4C 89 31 E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? CC",
    "note": "The pattern is the EA 1.0.145 code of this function, found by whole-function comparison with the Steam 1.0.145 and EA 1.0.141 builds; the loader's own jump patches in the decrypted dump are wildcarded.",
@@ -6577,6 +6581,9 @@
   },
   "Ne_ActorSceneDataResource_DestroyScenes": {
    "match": "0x292040"
+  },
+  "Ne_AnimClipPlayer_Sample_Thunk": {
+   "match": "0x3a6b80"
   },
   "Ne_AnimClipResourceFactory_CreateResource": {
    "match": "0x43ac450"
