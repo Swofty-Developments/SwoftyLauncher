@@ -4667,6 +4667,7 @@ pub type Game_UITrack_Apply_DevContractTrack_t = unsafe extern "C" fn(self_: *mu
 pub type Game_UITrack_FindTrackInfoWithFallback_t =
     unsafe extern "C" fn(contract: *mut c_void, track_name: *const c_char);
 pub type Game_UITrack_Select_DefaultTrack_t = unsafe extern "C" fn(self_: *mut c_void, cfg: *mut c_void);
+pub type Game_Update_WeatherTimelineScalar_t = unsafe extern "C" fn(weather_owner: *mut c_void);
 pub type Game_VehiclePlacementSystem_Connect_t =
     unsafe extern "C" fn(self_: *mut c_void, owner: *mut c_void, registry: *mut c_void) -> u32;
 pub type Game_Vfx_UpdateWheelTyreInstance_t = unsafe extern "C" fn(
@@ -13393,6 +13394,11 @@ pub mod bindings {
     };
     pub const Game_UiMessageScreen_Destructor: Binding = Binding {
         id: "Game_UiMessageScreen_Destructor",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Update_WeatherTimelineScalar: Binding = Binding {
+        id: "Game_Update_WeatherTimelineScalar",
         kind: "func",
         status: Status::Experimental,
     };

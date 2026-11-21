@@ -1673,6 +1673,84 @@
     }
    ],
    "used_by": []
+  },
+  {
+   "id": "game.update_weather_timeline_scalar",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 48 C5 F8 29 74 24 30 48 89 CE 48 8B 81 D0 02 00 00",
+   "match": "0x14479c3f0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14479c3f0",
+   "kind": "func_start",
+   "names": [
+    "Game_Update_WeatherTimelineScalar"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-21",
+     "by": "vogtmarcel07-cloud",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "addons/wet-track"
+   ]
+  },
+  {
+   "id": "render.model_component_apply_render_props",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 38 48 83 B9 80 00 00 00 00 0F 84 ?? ?? ?? ?? 48 89 CE 48 8B 91 B0 00 00 00",
+   "match": "0x14446ea70",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14446ea70",
+   "kind": "func_start",
+   "names": [
+    "Render_ModelComponent_ApplyRenderProps"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-21",
+     "by": "vogtmarcel07-cloud",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "addons/wet-track"
+   ]
+  },
+  {
+   "id": "render.model_component_on_transform",
+   "section": ".xtls",
+   "pattern": "56 48 83 EC 30 48 8B 71 68 48 85 F6",
+   "match": "0x144470870",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144470870",
+   "kind": "func_start",
+   "names": [
+    "Render_ModelComponent_OnTransform"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-21",
+     "by": "vogtmarcel07-cloud",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "addons/wet-track"
+   ]
   }
  ]
 }
