@@ -1,0 +1,130 @@
+{
+ "schema": 1,
+ "name": "Ne_AnimPacketB1_Sample",
+ "table": "functions",
+ "author": "anim-packet-time",
+ "row": {
+  "addr": "0x143a397b0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_AnimPacketB1_Sample(void *packet, void *binding, float time, void *out)",
+  "evidence": "decomp:own capstone disasm 0x143a397b0-0x143a39c25 (re/tools/disx.py);xref:0x1458a1728",
+  "notes": "Slot +0x18 (sample) of the NeAnimPacket_B1 vtable 0x1458a1710 and its only reference (cell 0x1458a1728); the packet factory 0x1443b5880 installs that vtable. rcx = packet (+8 track list: u32 count, 0x28-byte entries at +8), rdx = &binding slot ([rdx]+0x20/+0x28 channel map), xmm2 = time (kept in xmm6), r9 = output (+8 values, +0x10 weights); rax is unread by its callers. Its per-track sampling is inline: vucomiss xmm0,xmm6 at 0x143a3995d, vcvttss2si r8d at 0x143a3996d, movzx eax,word [rax+rcx*2] at 0x143a399da (Steam 26566308 F1_25.exe+0x3a3bfaa, two crash reports reached from the UI animation player 0x1441f8d50). A track of 3 or more keys compares the time only with its first key (vucomiss; jae, not taken when unordered), turns (time - first key) * rate into a bucket index with vcvttss2si, passes the signed cmp/jle against the bucket count and reads the bucket table at that index: a time that is not a number or plus infinity gives 0x80000000 and reads 4 GB below the table. The lowest float takes the first-key exit (segment 0 at weight 0); a 2-key track clamps it to weight 0 with vmaxss; a 1-key track ignores the time. Core's anim packet time guard wraps it."
+ },
+ "signature": {
+  "id": "core.anim_packet_b1_sample",
+  "section": ".xtls",
+  "pattern": "EB BE CC CC CC CC CC CC CC CC CC CC CC CC CC CC 41 57 41 56 41 55",
+  "match": "0x143a397a0",
+  "anchor": "0x10",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a397b0",
+  "kind": "func_start",
+  "names": [
+   "Ne_AnimPacketB1_Sample"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-21",
+    "by": "anim-packet-time",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/engine/anim_packet_time_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-21",
+   "verifier": "anim-packet-time-blind",
+   "kind": "func",
+   "item": "Ne_AnimPacketB1_Sample",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x143a397b0-0x143a39c25, 0x1443b5880-0x1443b6c8a, 0x143a36380-0x143a36945, 0x1441f9210-0x1441f9228 (re/tools/disx.py);xref:0x1458a1728,0x1443b6387,0x1441f9223",
+   "notes": "gh:anim-packet-time-blind Blind re-derivation on d873a1c8. The factory 0x1443b5880 switches on the packet type through the jump table 0x145a969c8; type 3 stores the vtable 0x1458a1710 (lea at 0x1443b6387; the string NeAnimPacket_B1 sits just before it and its slot +0x10 0x143a38160 passes that name to 0x143a38180). The vtable has 11 slots, so no +0x58, and +0x18 is its only slot that reads a float register. Slot +0x18 = 0x143a397b0 (.pdata to 0x143a39c25). Its only reference is the cell 0x1458a1728: no rel32 or 8-byte pointer elsewhere. rcx = packet, rdx = binding slot, xmm2 = time (vmovaps xmm6,xmm2 at 0x143a39823), r9 = output; r8 is written before it is read. For 3+ keys, vucomiss [desc+0x10],xmm6 at 0x143a3995d; jae 0x143a399b3 is not taken when unordered. vcvttss2si r8d at 0x143a3996d gives INT_MIN; cmp r10d,r8d; jle at 0x143a3997f lets it through; movzx eax,word [rax+rcx*2] at 0x143a399da reads 4 GB low. The body equals Steam 26566308 0x143a3bd80 apart from rip displacements, and the read is at Steam 0x143a3bfaa (the crash site; xmm6 from xmm2, r8d 0x80000000). The Steam caller call [rax+0x18] at 0x1441fb7f3 (in 0x1441fb320) is KB 0x1441f9223 in 0x1441f8d50, which the NeUIFlow function 0x1441db170 calls. With -FLT_MAX the jae is taken: segment 0, weight 0, and the weight-0 compare (0x143a39ae0 against 0.0) takes the direct cubic, so the solver 0x143a36380 is not reached (its vcvttps2dq are float round trips, not indexes). The 2-key path clamps with vmaxss against 0 to weight 0 at segment 0 and indexes nothing by time; 1-key ignores the time. Large finite times with (time-first)*rate >= 2^31 also give INT_MIN, a gap in a guard that maps only non-finite values. Same text and rip constants at Steam 0x143a3bd80 (.tls$, +0x18 of vtable 0x1458a3880), EA 1.0.141 0x143a267d0 (.rdata, vtable 0x1459b2950), EA 1.0.145 0x143a28da0 (.arch, vtable 0x1459b5aa0). The pattern hits once in the whole file of all four, at 0x3a397a0/0x3a3bd70/0x3a267c0/0x3a28d90, = the hints; anchor 0x10 gives the starts."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "anim-packet-time",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143a397a0",
+    "target": "0x143a397b0"
+   },
+   "sigcheck": "passed",
+   "digest": "b3695f4ba2826cd67a4619da66d80af90dc13dfc40c2afc8f477801b8a49b59d"
+  },
+  {
+   "by": "anim-packet-time",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143a3bd70",
+    "target": "0x143a3bd80"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "3773d9acc308d00d656b436605f2d90d35c47265bc65ed3ad64b198619289818"
+  },
+  {
+   "by": "anim-packet-time-blind",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143a397a0",
+    "target": "0x143a397b0"
+   },
+   "sigcheck": "passed",
+   "digest": "b3695f4ba2826cd67a4619da66d80af90dc13dfc40c2afc8f477801b8a49b59d"
+  },
+  {
+   "by": "anim-packet-time-blind",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143a3bd70",
+    "target": "0x143a3bd80"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "3773d9acc308d00d656b436605f2d90d35c47265bc65ed3ad64b198619289818"
+  }
+ ]
+}
