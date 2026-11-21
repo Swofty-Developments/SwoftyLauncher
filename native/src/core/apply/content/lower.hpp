@@ -62,6 +62,7 @@ struct Folder {
 
 struct GarageArt {
     std::string id, addon, package, team, folder, root, game_path;
+    std::string registry = "team.garage"; // or track.sponsors: the box's trackside boards, on every car of the box
     bool srgb = true;
     std::vector<std::string> vehicles, groups;
 };

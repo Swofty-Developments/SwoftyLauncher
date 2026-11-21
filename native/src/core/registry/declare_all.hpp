@@ -58,6 +58,7 @@ template <class Declare> std::size_t declare_system_registries(Declare &&declare
     one(tracks::tracks);
     one(tracks::venues);
     one(tracks::data);
+    one(tracks::sponsors);
     one(tracks::per_package);
     one(sessions::points);
     return count;

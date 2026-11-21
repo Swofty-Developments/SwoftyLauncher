@@ -115,6 +115,7 @@ void twelve_team_tests(const std::string &regs);
 void short_list_tests(const std::string &regs);
 void package_team_row_tests();
 void garage_tests();
+void sponsors_tests();
 void livery_tests();
 void stock_team_rows(Db &db);
 void team_tests(const std::string &regs);

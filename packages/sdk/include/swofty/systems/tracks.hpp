@@ -118,6 +118,20 @@ struct PackageTrack {
 SWOFTY_RECORD(PackageTrack, package, track, venue, offered, order, world, laps, fuel, tyre_class, pit, names, date)
 SWOFTY_RECORD_REGISTRY(PackageTrack, "track.per_package")
 
+// One box's own trackside sponsor boards: a folder of .dds and .png files named like the stock shared sponsor
+// textures below root. The core packs them into one archive and lists it first in the asset groups of every car
+// the package names, so a session of any other box never loads it (the teams::Garage route).
+struct Sponsors {
+    static constexpr Version version{1, 0};
+    Ref<content::Package> package;
+    Path textures;
+    std::string root = "eaid://environment_package/core_assets/shared_textures/sponsors/";
+    bool srgb = true;
+    json::Value extra;
+};
+SWOFTY_RECORD(Sponsors, package, textures, root, srgb)
+SWOFTY_RECORD_REGISTRY(Sponsors, "track.sponsors")
+
 // What a box offers in one mode, as the core's catalog.json and [tracks] log lines report it: the season's real
 // calendar in round order, then every other track that fits ("More tracks"), and the tracks left out with why.
 struct LeftOut {
@@ -139,6 +153,7 @@ inline Registry<Venue> venues{"track.venue",
                                .shared = {.provider_registry = "track", .provides = "/provides", .resolved = "/track"}}};
 inline Registry<TrackData> data{"track.data", {.applies = Applies::session}};
 inline Registry<PackageTrack> per_package{"track.per_package", {.applies = Applies::content}};
+inline Registry<Sponsors> sponsors{"track.sponsors", {.applies = Applies::boot}};
 
 namespace detail {
 
