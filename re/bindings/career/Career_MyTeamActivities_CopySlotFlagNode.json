@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14231afa0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void (void *menu, void *slot_ref, char value)",
-  "evidence": "decomp:re/decomp/14231afa0.c;xref:0x142318bca;xref:0x14231a5dc;xref:0x14231f917",
-  "notes": "myteam-g2: If the slot has a valid VM bool node (slot+0xb0) of the right type it reads it, and writes the flag into the menu bool node at menu+0x410 (Vm_NodeSet_Bool). Tiny UpdateSlot helper."
+  "evidence": "decomp:re/decomp/14231afa0.c;xref:0x142318bca,0x14231a5dc,0x14231f917,0x14231f969",
+  "notes": "(menu, slotRef, flag) Reads a u8 index from the VM node at [*slotRef]+0xb0 (0 if absent), takes entry idx of the 16-byte list [menu+0x410]+0x130..0x138, and writes flag into its bool node entry+0x110 (Vm_NodeSet_Bool); then releases the slotRef shared pointer. (lane owner review requested) Better name: Career_MyTeamActivities_SetIndexedSlotFlag (bound record keeps its name)."
  },
  "signature": {
   "id": "career.my_team_activities_copy_slot_flag_node",

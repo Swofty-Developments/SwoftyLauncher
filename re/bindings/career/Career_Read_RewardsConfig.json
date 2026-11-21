@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141011690",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: rewards.tier_1, rewards.tier_2, rewards.tier_3, rewards.tier_4, rewards.tier_5'"
+  "evidence": "decomp:re/decomp/141011690.c;pat:log-channel--;xref:0x14100ff53,0x141017136,0x141017411",
+  "notes": "Clears the vector this+0x2f0..+0x2f8 (0x10 stride, shared ptrs), resolves the local team key into this+0x478 if +0x47a is unset, then iterates game-DB array 'career.owner_perks.specialisations' (OwnerPerkSpecialisation): per entry a 0x88 object with display_name, description, stewardship/engineering/commercial_percentage and reward sets rewards.tier_1..tier_5 (0x140f8b360 + 0x14101a100). (lane owner review requested) Better name: Career_Read_OwnerPerkSpecialisations (bound record keeps its name)."
  },
  "signature": {
   "id": "career.read_rewards_config",

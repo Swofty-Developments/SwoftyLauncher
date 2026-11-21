@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142518490",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142518490.c;xref:0x145790988",
-  "notes": "vtable slot (0x145790988) of the ERS system: per-participant ERS tick; skips an entry whose +0x28 vehicle component or its +0x5a8 ERS state is null (the check Game_ErsSystem_HandleVehicleNewLap lacks). | engine-re 2026-10-28 (static): overtake button (car+0x1ed bits 0x10/0x08) latches ERS mode 2 and stores the previous mode in +0x1a6c, restores on release; in race sessions locks Hotlap (EngineModeAvail bit 0x200) while F1Aero+0x19ac = 2026 Partial mode (not DRS open, see Game_DRS_UpdateCars) | findings from PR #474 by vogtmarcel07-cloud | engine-re E1 2026-11-18 (static): the overtake bits it tests (CarLive+0x1ed 0x10 at 0x1425186ca, 0x08 at 0x142518767) are the per-tick latch of CarLive+0x1b9 bits 4/3, which Sess_ControllerSystem_ApplyRecord sets from the Overtake action (InputRecord bits 22/21). Player setting [NePlayer+0x619] picks toggle (0x10 edge) or hold (0x08); the latch to ERS mode 2 needs ctrlSys ERS-auto +0xd6 == 0 and EngineModeAvail [0x14606ec28]+0x40+veh*0x20 == 0 (mode 2 available) and ERS state +0x5a8 present. On a car without ERS the bits are still set, only this consumer does nothing."
+  "notes": "Update(sys, dt), skipped if dt+0x36; per participant with vehicle +0x28 and ERS +0x5a8. Race sessions (0xf..0x11): byte [veh+0x570]+0x19ac -> entry+0x36, toggling bit 0x200 of [0x14606ec28]+0x44+car*0x20. Cooldown +0x30; overtake button bits 0x10/0x08 of veh+0x1ed latch mode +0x1a68 = 2 (old in +0x1a6c), restore on release, HUD vcall +0x18; cooldown 0.1/0.2. Ref: vtable cell 0x145790988. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ers_system_update",

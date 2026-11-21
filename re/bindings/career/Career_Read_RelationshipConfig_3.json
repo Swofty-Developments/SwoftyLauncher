@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1412e8be0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: relationship.hasAchievedNewHighestLevel, relationship.highestLevelAchieved, relationship.level, relationship.levelProgress' DISPUTE(V9177): This is the specialists save-data writer (27 field adds 143932a40: specialistManagers, packedDriverStatId, cadenceIndex, relationship.* fields), not a config reader."
+  "evidence": "decomp:re/decomp/1412e8be0.c;pat:log-channel--;xref:0x141668a94,0x1456d2280",
+  "notes": "Specialists save writer: Gdb_Write_ReflectedFieldA (0x143932a40) per field: specialistManagers, packedDriverStatId, cadenceIndexValid, cadenceIndex, specialistsContainer, isAvailable, isPrimary, selectedObjective, selectableObjectives, relationship.*, dynamicObjectives*, specialistObjective*, cooldown and history containers (managers +0x358..+0x360). Vtable cell 0x1456d2280. Not a config reader. (lane owner review requested) Better name: Career_Specialists_WriteSaveData (bound record keeps its name)."
  },
  "signature": {
   "id": "career.read_relationship_config_3",

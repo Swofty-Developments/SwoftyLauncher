@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14076ecc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name report_ThrottlerStats (class from the log channel); log channel ELASTIC_VERBOSE: '%s: report throttler_record'"
+  "evidence": "decomp:re/decomp/14076ecc0.c;pat:log-message-method;xref:0x1430938ba",
+  "notes": "report_ThrottlerStats(module, info): stats via 0x1440765b0([[[+0x209d8]+0xd8]+0x130]) (fail -> return); 0xb0 'throttler_record' event (0x1405c9540, info fields +0x60..+0x71, stats +0x98..+0xa8) sent via 0x14077bb90 + ring; logs ELASTIC_VERBOSE '%s: report throttler_record'; then one 0xb8 'throttler_conn_record' (0x1405c7840) per connection entry. Caller 0x143092eb0. ElasticVerbose was only the log channel. (lane owner review requested) Better name: Game_ElasticSearchReporterModule_ReportThrottlerStats (bound record keeps its name)."
  },
  "signature": {
   "id": "game.elastic_verbose_report_throttler_stats",

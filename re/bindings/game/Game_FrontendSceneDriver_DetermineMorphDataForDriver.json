@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14289d9b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name determineMorphDataForDriver (class from the log channel); log channel FRONTEND_SCENE_DRIVER: 'determineMorphDataForDriver [%p]'"
+  "evidence": "decomp:re/decomp/14289d9b0.c;pat:log-message-method;xref:0x1428ef0c1,0x14f352d32,0x14f352de9",
+  "notes": "Next ushort id from 0x146075bc8 (skips 0xffff); allocs via this+0x10: param_3 vcall +8 ==2 -> 0xd090 bytes vtable 0x1457a8fe0, else 0xcc90 vtable 0x1457a8c70; init 0x142894590, sets owner/param_4/flags; non-2 path inlines determineMorphDataForDriver (its log). Inserts (id,alloc,obj) into map this+0xb8, writes id to *param_2. Caller 0x1428ef0c1 in Game_FrontendSceneComponentDriver_Spawn. (lane owner review requested) Better name: Game_FrontendSceneDriver_CreateDriverComponent (bound record keeps its name)."
  },
  "signature": {
   "id": "game.frontend_scene_driver_determine_morph_data_for_driver",

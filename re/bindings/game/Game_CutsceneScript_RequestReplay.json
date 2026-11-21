@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140236ed0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name requestReplay (class from the log channel); log channel CUTSCENE_SCRIPT_VERBOSE: 'requestReplay %p %s'"
+  "evidence": "decomp:re/decomp/140236ed0.c;pat:log-message-method;xref:0x1455eaf78,0x1455eb718,0x1455ecee8,0x1455ed538,0x1455ee588,0x1455ee998,0x1455eed68,0x1455ef0a8",
+  "notes": "Logs CUTSCENE_SCRIPT_VERBOSE 'requestReplay %p %s' and sets flags byte this+0x538 = (b & 0xd8) | 0x21 (bit0 play request, bit5 replay). Cells = this slot in the cutscene script vtables (subset listed). (lane owner review requested)"
  },
  "signature": {
   "id": "game.cutscene_script_request_replay",

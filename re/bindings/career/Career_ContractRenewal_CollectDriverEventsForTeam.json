@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "career",
   "proto": "uint64_t Career_ContractRenewal_CollectDriverEventsForTeam(void *comp, uint32_t team_key)",
-  "evidence": "decomp:re/decomp/140d8c8f0.c;xref:0x140d8c158;xref:0x140d8c228;xref:0x140d8c32a",
-  "notes": "myteam-g2: Iterates the driver events at (comp+0x278)+0x2e0..0x2e8 (0x58-byte records, team key u8@+0x58 / u16@+0x5a) and builds a growing vector of pointers to those whose team matches team_key, then filters by availability. Returns 1 when none exist. Core of AI contract renewal bookkeeping."
+  "evidence": "decomp:re/decomp/140d8c8f0.c;xref:0x140d8c158,0x140d8c228,0x140d8c32a,0x140d8c3b8",
+  "notes": "Collects the entrant rows of team key param_2 ([+0x278]+0x2e0, key +0x58/+0x5a); no rows -> 1. Else 1 when a row with +0x81 set and seat +0x80<2 has its driver key in the list +0x308..+0x310, or when the team lacks a +0x81 row with +0x80==0 or ==1; else 0. callers. Better name: Career_ContractRenewal_TeamHasOpenRaceSeat (bound record keeps its name)."
  },
  "signature": {
   "id": "career.contract_renewal_collect_driver_events_for_team",

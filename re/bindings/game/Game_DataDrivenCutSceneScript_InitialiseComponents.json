@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1402501d0.c;xref:0x1455ed030",
-  "notes": "DataDrivenCutSceneScript::initialise (vt 0x1455ece70 +0x1c0): sets HQ characters / skip frustum culling / prewarm texture params, reads the ecsfile (eaid://) Components/Component/Name/Parameter/Type/Value blocks, builds the components (list at this+0x870), then base initialise. Addon: entry point of data-driven (ecs) cutscenes; replacing the ecs file changes components without code. d13-verify: tokenizes the script text at this+0x870, calls vslot 0x60 on existing components and binds actors; components are created by 0x140251190 (called from 0x140250ee0)"
+  "notes": "DataDrivenCutSceneScript vtable cell 0x1455ed030."
  },
  "signature": {
   "id": "game.data_driven_cut_scene_script_initialise",

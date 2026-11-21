@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141193310",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-DYNAMIC_OBJECTIVES",
-  "notes": "Log channel DYNAMIC_OBJECTIVES: 'onCarToCarCollision found new collision, count = %d, impulse = %f, depth = %f, position = %f - %f - %f'"
+  "evidence": "decomp:re/decomp/141193310.c;pat:log-channel-DYNAMIC_OBJECTIVES;xref:0x141192f04,0x1411934b6",
+  "notes": "Handler of AvoidCarCollisions objective: if state +0x18==1, flag +0x68 set, msg+0x18 == own vehicle id +0x44 and msg position +0x40 differs from last stored +0x90: count +0xa0++, store position, log 'onCarToCarCollision found new collision...' (impulse msg+0x10, depth +0x14); if count - baseline +0x7c > limit +0x78 calls vcall +0x38. Returns 0. Fn ptr taken by lea in 0x141192c80, 0x141193460. (lane owner review requested)"
  },
  "signature": {
   "id": "game.dynamic_objective_on_car_to_car_collision",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14142b550",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14142b550.c;xref:0x141427e5f",
-  "notes": "Red-black-tree (std::map) lower-bound lookup keyed by a ushort (param_2) in the loaded asset batch map, used by unload logic. Caller Game_CustomisationDecals_UnloadAssetBatch. Hypothesis. vp0-verify partial"
+  "notes": "std::map erase(key) on a map {allocator p1[0], head p1[1], size p1[2]} with u16 key at node+0x20: equal_range by *p2, counts the range; whole tree in range -> 0x14146c470 frees all and resets head; else erases each node with red-black rebalancing, size--, drops the value ref (atomic dec value+0x24) and frees the node via allocator vt+0x38. Returns the erased count. (lane owner review requested)"
  },
  "signature": {
   "id": "game.customisation_decals_find_loaded_batch_node",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140ff43c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-ONLINE_CONTRACT_NEGOTIATIONS",
-  "notes": "named from its log messages (channel ONLINE_CONTRACT_NEGOTIATIONS): 'Driver exited auction'"
+  "evidence": "decomp:re/decomp/140ff43c0.c;pat:log-channel-ONLINE_CONTRACT_NEGOTIATIONS;xref:0x140ff2907,0x140ff577b",
+  "notes": "Logs 'Driver exited auction'; packs driver id (msg+0x10/+0x12), sends type 0xd via 0x140ff1380. Bound in 0x140ff1480, unbound in 0x140ff5560. (lane owner review requested)"
  },
  "signature": {
   "id": "career.online_negotiations_on_driver_exited_auction",

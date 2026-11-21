@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1410f6f20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void Career_Sponsors_DestroyGoalList(void **list)",
-  "evidence": "decomp:re/decomp/1410f6f20.c;xref:0x1410f6d5f;xref:0x1410f8e25;xref:0x1410f8fbe",
-  "notes": "myteam-g2: Destructor of the sponsor goal container; calls the reset helper and frees buffers. Used by Load_SponsorDefinition and Sponsors_Remove."
+  "evidence": "decomp:re/decomp/1410f6f20.c;xref:0x1410f6d60,0x1410f8e26,0x1410f8fbf,0x14111600f,0x14111693f",
+  "notes": "Destructor of the sponsor definition part: releases shared ptr +0x120, string +0xe8, decal entries +0xb8..+0xc0 (vf+0 per 0x10 entry), loyalty levels +0x98..+0xa0 (0x78 stride, reward lists +0x50), goal vectors +0x78/+0x58/+0x38 (dtor 0x1410f7230), string +0x10. Base dtor called at the end of 0x1410f6bf0; also used by loader 0x141114160 and save reader 0x1410f85c0. (lane owner review requested) Better name: Career_SponsorDefinition_Dtor (bound record keeps its name)."
  },
  "signature": {
   "id": "career.sponsors_destroy_goal_list",

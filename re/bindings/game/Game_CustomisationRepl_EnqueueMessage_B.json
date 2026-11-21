@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143218e00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143218e00.c;xref:0x143189327",
-  "notes": "Twin of Game_CustomisationRepl_PostMessageA (different payload layout, same 0x58 record). Callers UpdatePlayerLifeData and HandleSegmentedDecalsAdd. Hypothesis. vp5-verify partial/disagree"
+  "evidence": "decomp:re/decomp/143218e00.c;xref:0x143189327,0x14318db2a",
+  "notes": "Twin of 0x143218a60 (same bus queue at p1+0x58/+0x60, CriticalSection [p1+0x98], SetEvent [p1+0x90], 0x60-byte record with p2+8 and the PlayerDescription) for the message vtable 0x14579ae30. (lane owner review requested)"
  },
  "signature": {
   "id": "game.customisation_repl_post_message_b",

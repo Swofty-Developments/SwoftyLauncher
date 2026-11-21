@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1434f58b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:80-unrolled-add-calls;xref:0x14123b57d,0x1434f8450,0x1434f9679;kb:subsystems/rnd_ui.md#modifiers",
-  "notes": "Mode-0 team modifier list init: 80 unrolled Career_Add_TeamModifier calls over departments 0..3 only."
+  "evidence": "decomp:re/decomp/1434f58b0.c;pat:80-unrolled-add-calls;kb:subsystems/rnd_ui.md#modifiers;xref:0x14123b57d,0x1434f8450,0x1434f9679",
+  "notes": "80 unrolled Career_Add_TeamModifier (0x1434f8a00) calls with packed u32 {kind, dept, source, active}; dept byte only 0..3 (23/19/19/19). 0x14123b3f0 calls it when mode byte [[team+0xc98]+0x58] is not 1/2 (mode 0). (lane owner review requested)"
  },
  "signature": {
   "id": "career.init_shared_team_modifiers",

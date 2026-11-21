@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143139cc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=CustomDriverNetworkMessageHandler::resolveChangesInDriverInfo; log channel NETWORK-ENTRANTS: 'void network::CustomDriverNetworkMessageHandler::resolveChangesInDriverInfo(const PlayerDriver &, const game::DriverInfo &, NEbool) | %s : Driver changed successfully'"
+  "evidence": "decomp:re/decomp/143139cc0.c;pat:log-message-cxx;xref:0x143133ba3,0x143134fdf,0x143136930",
+  "notes": "Pretty-function 0x145819799 = resolveChangesInDriverInfo(const PlayerDriver&, const game::DriverInfo&, NEbool). Finds the driver by stat id p2+0x50 (0x1423dbcf0 on [p1+0x28]); if 0x14246eb40 says it differs: builds info via CreateDriverInfoFromNameInfo, applies 0x14246e3a0; on result 0/2/4 logs 'Driver changed successfully', refreshes component 0x14605ade0 (0x140c00580) or patches byte +0x83 of the matching 0x88-byte session entry; p4 != 0 -> 0x143138f10. (lane owner review requested)"
  },
  "signature": {
   "id": "game.custom_driver_network_message_handler_resolve_changes_in_driver_inf",

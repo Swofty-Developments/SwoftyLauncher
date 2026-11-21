@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14234e940",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void f(void *ctx)",
   "evidence": "decomp:re/decomp/14234e940.c;xref:0x145781818",
-  "notes": "myteam-g1: Posts my_team_exiting_engineering_top_level."
+  "notes": "Vtable slot (cell 0x145781818); body 0xbe bytes. Looks up option research_player_control (0x142b5dfd0, Game_Option_ClampValueIndex); if the value is nonzero, tail-jumps to Game_MaskedTutorial_AddToQueue([this+0x290], my_team_exiting_engineering_top_level); else returns 0. (lane owner review requested) Better name: Career_MyTeamEngineering_QueueTopLevelExitTutorial (bound record keeps its name)."
  },
  "signature": {
   "id": "career.my_team_engineering_top_level_exit",

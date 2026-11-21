@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1422c5900",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-TEAMHQ_ADVANCE",
-  "notes": "named from its log messages (channel TEAMHQ ADVANCE): '    populating advance buttons, day: %d | state 3 | Setting canAdvance to: %s | state 2 | %s(allowed: %s, super ready: %s) | state 3 - advancing, ignore unready tooltip | state 1a | state 1b | state 1'"
+  "evidence": "decomp:re/decomp/1422c5900.c;pat:log-channel-TEAMHQ_ADVANCE;xref:0x1422bf83a,0x1422c0862,0x1422c1899,0x1422c4958,0x1422c52f8,0x1422c687f",
+  "notes": "Logs populating advance buttons; evaluates states 1a/1b/1c/2/3 from today's activities (Vm_TeamHqTimeline_IsCurrentDayBoolB, Career_Collect_ActivitiesByStage, day = [[this+0x6e0]+0x2b0]>>5 /0x2d); writes canAdvance byte [this+0x758]; hide_unready events; text lng_unscheduled_event/lng_timeline_event at [this+0x780]+0x280; 0x1422c86e0 timeline buttons; posts bus message. (lane owner review requested)"
  },
  "signature": {
   "id": "career.team_hq_advance_populate_buttons",

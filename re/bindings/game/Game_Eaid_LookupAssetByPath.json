@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1441e04d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1441e04d0.c;xref:0x14384a705,0x14384a790",
-  "notes": "Builds an eaid:// asset URI: copies the path from resource header (+9, up to 0x400), prefixes eaid://%s unless already prefixed, hashes with Ne_Hash_Md5U64 and Ne_HashedName_FromString. Callers Game_Read_HighlightAssetsConfig. Addon: eaid:// resource id scheme hashed with MD5 (u64). vp4-verify partial/disagree"
+  "evidence": "decomp:re/decomp/1441e04d0.c;xref:0x14384a705,0x14384a790,0x14384acb3,0x14384b019",
+  "notes": "Copies the name at [param_2]+9 (<= 0x3ff), splits at '.'; first token prefixed 'eaid://%s' unless already, hashed 0x1439298f0 and looked up in [*param_1] vcall +0x98 table; entry -> key 0x143994bc0 + name (+0x50) hashed *33 seed 0x7bb34a05 -> table vcall +0x68. Further tokens: djb2 -> child vcall +0x60, 'eXRef' proxies followed (+0x178). Returns object or 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.eaid_build_path_hash",

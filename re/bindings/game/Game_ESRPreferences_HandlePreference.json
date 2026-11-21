@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143192a20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=ESRPreferences::handlePreference; log channel NETWORK: 'ESRPreferences::handlePreference() setting remote connectionId %d showPlayerName to %d'"
+  "evidence": "decomp:re/decomp/143192a20.c;pat:log-message-cxx;xref:0x143055de1",
+  "notes": "(this, msg): grows byte vector +0x30/+0x38 (cap +0x40, allocator +0x28) with zeros until it covers connection id msg+0x10; logs NETWORK 'ESRPreferences::handlePreference() setting remote connectionId %d showPlayerName to %d'; vec[id] = msg+0x11; posts msg vt 0x145825ba8 {id} via 0x14321cbf0. Fn ptr taken by lea in 0x143054470 (handler table). (lane owner review requested)"
  },
  "signature": {
   "id": "game.esr_preferences_handle_preference",

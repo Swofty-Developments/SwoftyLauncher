@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14114bb60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: driver_statistics.driver_statistics.driver_statistics_info, driver_statistics.driver_statistics.dynamic_driver_statistics_info, driver_statistics.story_mode_driver_statistics.driver_statistics_info'"
+  "evidence": "decomp:re/decomp/14114bb60.c;pat:log-channel--;xref:0x141133589",
+  "notes": "Reads driver_statistics.driver_statistics.driver_statistics_info / dynamic_driver_statistics_info and driver_statistics.story_mode_driver_statistics.driver_statistics_info (StatisticInfo / DynamicStatisticInfo): stat_id, weighting_factor, default_baseline_value, resting_point_value/tick, initial_level bounds, level_to_weight/gain/loss graphs, banner thresholds, abstract adjustments (race_win ... pole_position). Caller 0x141133480. (lane owner review requested)"
  },
  "signature": {
   "id": "career.read_driver_statistics_config",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "career",
   "proto": "void* (void *out, void *a, void *b, void *c)",
-  "evidence": "decomp:re/decomp/1419857a0.c;xref:0x141984ef0;xref:0x14198715e;xref:0x141987ce0",
-  "notes": "myteam-g2: Builds the renown level name text (Ne_Make_StrFromCStr + Ne_Crt_Snprintf into a 0x100 buffer, Ne_String_AssignWithMode) for RenownForm_BuildLevelName and the facility upgrade info panel. Display only."
+  "evidence": "decomp:re/decomp/1419857a0.c;xref:0x141984ef0,0x14198715e,0x141987ce0,0x14232542a",
+  "notes": "Gets a string via param_3 vt+0x28, localises it via param_4 vt+0x18, then substitutes up to 8 numbered args (Ne_Crt_Snprintf into 0x100 buffers) and assigns the result (Ne_String_AssignWithMode); returns '' when param_4 is null."
  },
  "signature": {
   "id": "career.renown_form_format_level_name",

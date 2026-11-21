@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141ff79b0.c;doc:re/research/sponsors.md#decal-editor",
-  "notes": "Occupied-decal action menu: entries via 0x141855ba0(list, id, label, callback, ?, enabled, message). Labels edit 0x1457647e8 (id 0, always enabled), delete 0x1457647f7 (id 1), swap 0x145764808 (id 2), mirror 0x145764817 (id 3), duplicate 0x145764828 (id 4). In team_hq mode 2 swap/delete require slot_index >= area reserved count (sites 0x141ff80b0 / 0x141ff81eb: ecx index, r12d resp. r15d reserved), else messages lng_decal_editor_reserved_swap/_delete (0x145764a01/0x145764a20). Duplicate enabled = !0x14142a6d0(system, container+0x80, 0x141ff7610(screen)), else lng_decal_editor_no_free_slots (r15 = 0x1457649bc from 0x141ff7ddd on). Mirror: at 0x141ff7ee1 calls 0x141ffdd40(rcx=screen rsi, rdx=container rbx); al==0 -> disabled entry at 0x141ff7f7b with message r15; partner linked -> disabled lng_decal_editor_decal_already_linked. Stack: [rsp+0x78] container (set at 0x141ff70a0), [rsp+0x80] element whose +0x250 is the node (0x141ff72f0); rsi = screen, screen+0x290 = editor system. Guards do not call 0x141ff7610. (L1 for the earlier reserved-guard part, L2 for the 0.9.6 decompile+asm part.) [static L2 evidence in the doc; added at L1 for the lane owner to raise]"
+  "evidence": "decomp:re/decomp/141ff79b0.c;doc:re/research/sponsors.md#decal-editor;xref:0x141ff6bf3",
+  "notes": "Called from Game_DecalEditor_SetDirty (0x141ff5950)."
  },
  "signature": {
   "id": "game.decal_editor_build_slot_action_menu",

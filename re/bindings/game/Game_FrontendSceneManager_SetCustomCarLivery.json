@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428eb990",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name setCustomCarLivery (class from the log channel); log channel FRONTEND_SCENE_MANAGER/CAR: '%s() Car [%u]'"
+  "evidence": "decomp:re/decomp/1428eb990.c;pat:log-message-method;xref:0x1417e3804",
+  "notes": "Own body (pdata to 0x1428ebae7): logs '%s() Car [%u]' setCustomCarLivery (FRONTEND_SCENE_MANAGER/CAR), finds car component by ushort id in this+0x6fd8 vector (stride 0x6990, id +0xb8) and tail-jumps (0x1428ebac2) to 0x1428e64b0 Game_FrontendSceneComponentManager_SetCarLivery; otherwise logs 'Failed to find Car Component Id %u'. Decomp is merged with that tail target. (lane owner review requested)"
  },
  "signature": {
   "id": "game.frontend_scene_manager_set_custom_car_livery",

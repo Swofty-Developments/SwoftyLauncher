@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143540a40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void Career_Parse_UpgradeCostTweakables(uint8_t (*self)",
-  "evidence": "decomp:re/decomp/143540a40.c;xref:0x14122ff4e;xref:0x1434f6631;xref:0x1434fae31",
-  "notes": "myteam-g1: Parses R&D cost config: cost_increase_per_upgrade, major_upgrade_cost, major_upgrade_cost_to_develop, major_upgrade_num_days_to_develop/research, minor_upgrade_cost (defaults 100.0). Hook to change upgrade costs/days. CORRECTION(V8996): Parses the listed names but also many more (ultimate_*, rush_*, development/research/dual percentages, max_simultaneous_*). The 100.0 default (0x42c80000) is only set for four struct slots at init, not for the cost fields."
+  "evidence": "decomp:re/decomp/143540a40.c;xref:0x14122ff4e,0x1434f6631,0x1434fae31,0x143539d59",
+  "notes": "Reads the R&D tweakables row ('%s.%s'): minor/major/ultimate upgrade cost, cost_to_develop, num_days_to_research/develop, cost_increase_per_upgrade, research/development time and cost percentages, failure/delay chances, rush_*, dual_development_*, max_simultaneous_developments/research, secret_upgrades_viewable_level, practice_programme_points_percentage, high_inflation, research_delay_*. Callers incl. Career_Init_TeamModifiers 0x1434f9770, Career_Load_UpgradeRows 0x143539bc0. (lane owner review requested)"
  },
  "signature": {
   "id": "career.parse_upgrade_cost_tweakables",

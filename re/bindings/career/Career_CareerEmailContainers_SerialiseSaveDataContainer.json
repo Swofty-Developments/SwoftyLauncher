@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140dd5210",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=CareerEmailContainers::serialiseSaveDataContainer; log channel CAREER_EMAIL_COMPONENT: 'neon::NEerrno game::championship::CareerEmailContainers::serialiseSaveDataContainer(neon::NePropertyBag &, const ISaveDataSerialisable::SaveDataContext &) const | %s listing all drivers with a contain'"
+  "evidence": "decomp:re/decomp/140dd5210.c;pat:log-message-cxx;xref:0x145694320",
+  "notes": "CareerEmailContainers::serialiseSaveDataContainer (vtable cell 0x145694320): writes new_session, last_trigger, email_containers (driver_id, team_id, container_version, emails with type/body_type/version/data) and emailCooldowns (dayAdded, numDaysCooldown, groupStatId); logs CAREER_EMAIL_COMPONENT container listings. (lane owner review requested)"
  },
  "signature": {
   "id": "career.career_email_containers_serialise_save_data_container",

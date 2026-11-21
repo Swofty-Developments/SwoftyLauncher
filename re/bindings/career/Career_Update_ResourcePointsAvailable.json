@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141bc6c80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void f(void *view)",
-  "evidence": "decomp:re/decomp/141bc6c80.c;xref:0x141f773b0;xref:0x145753cf8",
-  "notes": "myteam-g1: View update showing resource_points_available with the RP icon overrides."
+  "evidence": "decomp:re/decomp/141bc6c80.c;xref:0x141f773b0,0x145753cf8",
+  "notes": "View update (vtable cell 0x145753cf8; call 0x141f773b0): session_track_info (session_type, track, track_contextual_data, time_remaining time_ms/time_str, low_on_time, track_status_*, num_cars_on_track, total_cars_in_session, temperature_unit) plus resource_points_available with resource_icon / resource_inf_icon and endless_resources (option). (lane owner review requested) Better name: Career_Update_SessionTrackInfoPanel (bound record keeps its name)."
  },
  "signature": {
   "id": "career.update_resource_points_available",

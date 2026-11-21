@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143155ef0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=EventMatching::onSessionLobby; log channel NETWORK-MATCHING: 'virtual void network::EventMatching::onSessionLobby() | %s'"
+  "evidence": "decomp:re/decomp/143155ef0.c;pat:log-message-cxx;xref:0x14581cad8",
+  "notes": "Virtual (vtable cell 0x14581cad8): logs NETWORK-MATCHING '%s' with 'virtual void network::EventMatching::onSessionLobby()'; on the rich-presence block of [[[+0x18]+0x280]+0x88]+0x260: takes its mode string +0xe78 unless 'DEV', sets +0x52 when it is 'lng_rp_multiplayer_custom'; presence state +0x40 = 2, action 'lng_rp_action_in_the_lobby', title 'lng_rp_multiplayer' when +0x52, flag +0x51 = 1; then 0x1432b0f00([0x1460c3d90], 1, {}). (lane owner review requested)"
  },
  "signature": {
   "id": "game.event_matching_on_session_lobby",

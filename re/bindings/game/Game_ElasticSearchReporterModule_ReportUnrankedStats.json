@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140770670",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_ElasticSearch_ElasticSearchReporterModule_ReportUnrankedStats;xref:0x1407706f0",
-  "notes": "cxx=game::elastic_search::ElasticSearchReporterModule::report_UnrankedStats; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/140770670.c;str:s_ElasticSearch_ElasticSearchReporterModule_ReportUnrankedStats;xref:0x1430b0eb0",
+  "notes": "report_UnrankedStats(module, u32 cluster id): logs NETWORK-STATS '%s: unranked cluster id: %d' (pretty-function string 0x14564263e); refreshes [+0x20a58]+0x168 vcall +0x40; builds a 0x68 event (0x1405de3a0, +0x60 = id) and sends it via 0x140770810(module, &ev, 0xff). Caller 0x1430b0cc0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.elastic_search_reporter_module_report_unranked_stats",

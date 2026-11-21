@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142323d10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void f(void *view)",
   "evidence": "decomp:re/decomp/142323d10.c;xref:0x14577edd0",
-  "notes": "myteam-g1: Sets the office facility icon override of the activities screen."
+  "notes": "Vtable slot (cell 0x14577edd0). Writes default/debug texts into holders: lng_activities_header_owner, 'X Available', facility_icons.office, lng_activities_debug_name/_category/_activity_desc, 'Activity Time', activity_icons.activity_fan, benefit_%d rows with benefits_icons.time and benefit_positive background; 0x142324230. (lane owner review requested) Better name: Career_MyTeamActivities_SetPlaceholderActivityText (bound record keeps its name)."
  },
  "signature": {
   "id": "career.bind_office_facility_icon",

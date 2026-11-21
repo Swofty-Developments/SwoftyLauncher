@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14022a110",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=CutsceneManager::areAssetGroupsLoaded; log channel CUTSCENE_MANAGER_ASSET_GROUPS_TRACKING: 'CutsceneManager::areAssetGroupsLoaded -------------------'"
+  "evidence": "decomp:re/decomp/14022a110.c;pat:log-message-cxx;xref:0x140239640,0x140252288,0x140252596,0x1402639c5,0x140263a4f,0x140269400,0x140269750,0x140269b20,0x140269f80,0x14026a2d0,0x14026a650,0x14026a9d0,0x14026b530,0x14026b880,0x14026bc00,0x14026bf50,0x140273fc4,0x140273fd8,0x1402745d4,0x1402745e8",
+  "notes": "(mgr, sharedRef *batch): under CriticalSection *mgr, 0x1402291f0 refresh, then per asset group of the batch checks the tracked entries mgr[0x17..0x18] (0x20 stride) for this batch: byte +0x18 loading / +0x1a unloading / +0x1b unloaded -> 0 with the matching 'LOADING/UNLOADING/UNLOADED -> FALSE' log, +0x19 loaded -> 'LOADED -> TRUE'; no entry -> 'NOT FOUND -> FALSE'. Returns 1 only when every group is loaded. Used by PollAssetsLoaded and many cutscene scripts. (lane owner review requested)"
  },
  "signature": {
   "id": "game.cutscene_manager_are_asset_groups_loaded",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140251d10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name setStateInitialising (class from the log channel); log channel CUTSCENE_SCRIPT_COMPONENTS_VERBOSE: 'setStateInitialising %p %s'"
+  "evidence": "decomp:re/decomp/140251d10.c;pat:log-message-method;xref:0x1455ecf38",
+  "notes": "Vtable cell 0x1455ecf38 of the DataDrivenCutSceneScript vtable (next cell 0x1455ecf40 = setStateInitialised). Logs CUTSCENE_SCRIPT_VERBOSE 'setStateInitialising %p %s', state this+0x40 = 3, this+0x830 = 0, logs CUTSCENE_SCRIPT_COMPONENTS_VERBOSE '[%s]' setStateInitialising, then calls vslot +0x18 on each component this+0x8c0..+0x8c8. (lane owner review requested) Better name: Game_DataDrivenCutSceneScript_SetStateInitialising (bound record keeps its name)."
  },
  "signature": {
   "id": "game.cutscene_script_components_set_state_initialising",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1431c1d90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=DriverCustomisationReplicationManager::onNewConnection; log channel NETWORK-ENTRANTS: 'void network::DriverCustomisationReplicationManager::onNewConnection(neon::NeNetConnectionID) | %s : Could not find human for connection id (%d)'"
+  "evidence": "decomp:re/decomp/1431c1d90.c;pat:log-message-cxx;xref:0x145824898",
+  "notes": "Vtable cell 0x145824898 (this=[obj+8] = manager). Only when int [mgr+0x10]+8 < 2 (host): sends every replicated player's customisation (map list [mgr+0x40], id +0x60, record via Wear_Get_DriverCustomisation_Thunk 0x14246d940) to the new connection as net message 0x145824820 (0x14402e500([mgr+0x20], 2, ..)); then finds the human of that connection in [[mgr+0x18]+0x58..+0x60] (+0x63 == conn, +0x5b bit4), builds a default record, gets its id from FindOrGeneratePackedN 0x14313b680 and sends message 0x1458247c0; no human -> logs 'Could not find human for connection id (%d)'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.driver_customisation_replication_manager_on_new_connection",

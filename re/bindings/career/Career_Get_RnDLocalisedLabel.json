@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142387230",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "uint64_t Career_Get_RnDLocalisedLabel(int64_t *self,void * a2,void * a3)",
   "evidence": "decomp:re/decomp/142387230.c;xref:0x1422e9985",
-  "notes": "myteam-g1: Builds lng_rnd_%s key from an enum value, falls back to lng_rnd_unknown."
+  "notes": "(card, upgrade, event) Label lng_rnd_%s from upgrade+0x10 (lng_rnd_unknown when [upgrade+200]-3 != 0); value -[event+0x58] formatted (0x1441ebbd0); Career_Get_EffectiveUpgradeCost; lng_deptevent_research_discount / lng_deptevent_development_discount; reward icons resource / cash. Caller 0x1422e7650. (lane owner review requested) Better name: Career_DeptEvent_FillUpgradeDiscountCard (bound record keeps its name)."
  },
  "signature": {
   "id": "career.get_rn_dlocalised_label",

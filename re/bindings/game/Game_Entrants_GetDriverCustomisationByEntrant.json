@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14024c460.c;xref:0x14024c69a",
-  "notes": "Entrant index -> driver customisation: same entrant/player-list lookup (car index at +0x82), then team index byte +0x58 (<3) into [g_14604c2c8+0x290]+0x2c8 table (stride 0x10). Callers 0x14024c670, Game_Pod2019First_RequestPodiumThumbnails."
+  "evidence": "decomp:re/decomp/14024c460.c;xref:0x14024c69a,0x140361806",
+  "notes": "(this, entrant index): same participant lookup as 0x140248f90 (car id byte +0x82), key type byte +0x58 (< 3) / u16 +0x5a (fallback type 0, entrant idx); returns entry+8 of table [[0x14604c2c8]+0x290]+0x2c8+type*0x10 (stride 0x10) or 0. Callers 0x14024c670, 0x140361670."
  },
  "signature": {
   "id": "game.entrants_get_driver_customisation_by_entrant",

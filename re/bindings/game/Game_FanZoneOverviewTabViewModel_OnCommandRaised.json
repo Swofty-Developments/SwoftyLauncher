@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1421b8030",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_FanZoneOverviewTabViewModel_OnCommandRaised;xref:0x1421b813c",
-  "notes": "cxx=game::FanZoneOverviewTabViewModel::onCommandRaised; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1421b8030.c;str:s_FanZoneOverviewTabViewModel_OnCommandRaised;xref:0x1421b8247,0x145771f30",
+  "notes": "Own pretty-function FanZoneOverviewTabViewModel::onCommandRaised. If not allowed (0x146104df8 vcall +0x20) logs ignore. Hashes 0x61b114ab/0xf96d6451/0x2339c81c/0x34abcde7 set sub-tab global 0x146068900 = 0/1/2/3 and push the route via navigator [+0x620] vcall +0x80 (mode 4); 0x38b61839 opens a popup (0x142e72b40). Adjustor thunk 0x1421b8240. (lane owner review requested)"
  },
  "signature": {
   "id": "game.fan_zone_overview_tab_view_model_on_command_raised",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144702c70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-ER_INPUT",
-  "notes": "named from its log messages (channel ER_INPUT): 'initialise - connectedDeviceCount=%I64u | initialise - copying preset action map priorities for currently connected devices into device priority map | initialise - binding currently connected devices '"
+  "evidence": "decomp:re/decomp/144702c70.c;pat:log-channel-ER_INPUT;xref:0x1407f86f8",
+  "notes": "initialise(binder): enumerates connected devices (sources [this+8]+0x28..+0x30, vcall +0x28), logs ER_INPUT 'initialise - connectedDeviceCount=%I64u' and 'copying preset action map priorities...', fills the priority map +0x18/+0x30 (0x143edb000), logs 'binding currently connected devices...', Game_ErInput_BindToPlayer per device, registers 0x144703f70 ([this+8]+0x348) and Game_ErInput_PresetCreated (+0x3c8). Caller 0x1407f7320. (lane owner review requested)"
  },
  "signature": {
   "id": "game.er_input_init",

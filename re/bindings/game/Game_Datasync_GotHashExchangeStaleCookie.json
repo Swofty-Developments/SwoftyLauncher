@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-DATASYNC",
-  "notes": "named from its log messages (channel DATASYNC): '[%s] Got hash exchange with stale cookie 0x%08x from %d - broadcasting finished message'"
+  "evidence": "decomp:re/decomp/143100c40.c;pat:log-channel-DATASYNC;xref:0x14fe71e99",
+  "notes": "Handler registered by lea at 0x14fe71e99 in 0x14fe71e00."
  },
  "signature": {
   "id": "game.datasync_got_hash_exchange_stale_cookie",

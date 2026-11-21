@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VirtualSessionEntrant::setNumPartialLapsAccordingToProgress; log channel LAPTIMES: 'Partial lap set from VirtualSessionEntrant::setNumPartialLapsAccordingToProgress()'"
+  "evidence": "pat:log-message-cxx;doc:re/research/fuel_mix_five.md#sites",
+  "notes": "cxx=VirtualSessionEntrant::setNumPartialLapsAccordingToProgress; log channel LAPTIMES: 'Partial lap set from VirtualSessionEntrant::setNumPartialLapsAccordingToProgress()' | engine-re fuel-mix-5 2026-11-20 (static): maps fuel_mode for the virtual lap model: switch 0 -> 0, 1 -> table 0x145803e30 [0,0,1,1,3,3] by ERS mode, 2 and 3 -> 1, default -> 3; and 0x142f72b1e indexes the burn table by fuel_mode*0x10 without a bound. edited by engine-re with --force 2026-11-20 at user request (lane owner review requested)"
  },
  "signature": {
   "id": "game.virtual_session_entrant_set_num_partial_laps_according_to_progress",

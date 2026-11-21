@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140d7da70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-CONTRACT_RENEWAL",
-  "notes": "named from its log messages (channel CONTRACT_RENEWAL): 'AVAILABLE - Driver %s passed all checks | UNAVAILABLE - Driver %s already has a cached contract | UNAVAILABLE - Driver %s retired | AVAILABLE - Driver %s has been replaced from current team | UNAVAILA'"
+  "evidence": "decomp:re/decomp/140d7da70.c;pat:log-channel-CONTRACT_RENEWAL;xref:0x140d7c46f,0x140d7cadb",
+  "notes": "CONTRACT_RENEWAL: logs 'Approaching BEST available driver that would be willing to join our team %s' / 'Couldnt find any appropriate drivers': filters drivers (fired/retired/cached contract/replaced logs), team requirements 0x140d7e8d0, rating band 0x140d7f0d0; returns an optional driver key in param_2. Callers in 0x140d7b530. (lane owner review requested) Better name: Career_ContractRenewal_FindBestAvailableDriver (bound record keeps its name)."
  },
  "signature": {
   "id": "career.contract_renewal_check_driver_available",

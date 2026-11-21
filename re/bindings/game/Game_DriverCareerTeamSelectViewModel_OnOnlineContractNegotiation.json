@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141a68e80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_DriverCareerTeamSelectViewModel_OnOnlineContractNegotiationSynced;xref:0x141a68f00",
-  "notes": "cxx=game::DriverCareerTeamSelectViewModel::onOnlineContractNegotiationSynced; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/141a68e80.c;str:s_DriverCareerTeamSelectViewModel_OnOnlineContractNegotiationSynced;xref:0x141a6828a,0x141a69403",
+  "notes": "Dispatch handler lea'd at 0x141a6828a (in 0x141a68080) and 0x141a69403 (in 0x141a69300); logs its pretty-function 0x145729eeb (onOnlineContractNegotiationSynced). Switch on [msg+0x10]: 2 -> gets component 0x146060840 from [vm+0x2b8]+0x208 (vcall +0x10) and, unless 0x140ffcc70(comp, key from vm+0x2d0) is true, calls 0x141a68d80(vm); 3 -> posts bus message 0x1456117e8 (byte 7) and dispatches UI event 'close'; 5 -> fires route 'open_holding_screen'. Returns 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.driver_career_team_select_view_model_on_online_contract_negotiation",

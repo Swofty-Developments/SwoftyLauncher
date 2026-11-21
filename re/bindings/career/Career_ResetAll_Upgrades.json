@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14352e1c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:per-instance-reset-call-0x14352e223;xref:0x141238503,0x14123d06f;kb:subsystems/rnd_ui.md#instances",
-  "notes": "Resets every upgrade instance through 0x143517d80 (@0x14352e223). Mode 0 then sets the owner cache U+0x1aa8 = 0x3fff0000 so the next query re-runs Career_Set_UpgradesOwner; modes 1/2 refresh availability."
+  "evidence": "decomp:re/decomp/14352e1c0.c;pat:per-instance-reset-call-0x14352e223;kb:subsystems/rnd_ui.md#instances;xref:0x141238503,0x14123d06f",
+  "notes": "Resets every instance of every slot (+0xe0+k*0xc40, range +0x10..+0x18, 0xe0 stride) via 0x143517d80; sets +0x1a98 = 100.0f. operating_mode (+8) 1/2 -> Career_Refresh_UpgradeAvailability 0x14352f300; 0 -> +0x1aa8 = 0x3fff0000 and posts bus message (0x14584e360, team key +0xc). Clears hash set +0x1ae8..+0x1b08. (lane owner review requested)"
  },
  "signature": {
   "id": "career.reset_all_upgrades",

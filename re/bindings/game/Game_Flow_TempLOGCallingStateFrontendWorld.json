@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1436d64a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-FLOW/V",
-  "notes": "named from its log messages (channel FLOW/V): 'TEMP_LOG: Calling StateFrontendWorld::onStateEnter. INTERRUPT:%d'"
+  "evidence": "decomp:re/decomp/1436d64a0.c;pat:log-channel-FLOW/V;xref:0x14585b6e0",
+  "notes": "Vtable cell 0x14585b6e0. Logs 'TEMP_LOG: Calling StateFrontendWorld::onStateEnter' and '...onStateEnter. FINISHED' (FLOW/V). First call (+0xca8): clears subtasks, defineSubTasks inlined (log) creating PreloadUIStateFlowSubTask, NeFunctionSubTask (cb 0x1436d7d60/0x1436d7de0), UILoadUnloadFrontendWorld, UICameraSubTask; activates via 0x144426920. Returns true when status +0xc18 == 3 (then 0x1434b3fd0 'load_frontend_world'). (lane owner review requested) Better name: Game_StateFrontendWorld_OnStateEnter (bound record keeps its name)."
  },
  "signature": {
   "id": "game.flow_temp_log_calling_state_frontend_world",

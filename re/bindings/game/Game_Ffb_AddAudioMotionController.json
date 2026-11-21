@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14451de90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-FFB_DEBUG",
-  "notes": "named from its log messages (channel FFB_DEBUG): 'Called addAudioMotionController %s'"
+  "evidence": "decomp:re/decomp/14451de90.c;pat:log-channel-FFB_DEBUG;xref:0x1446efcb0,0x1446f0c4b,0x15050d740",
+  "notes": "(mgr,controller*). Non-null: under CS mgr+0x168 inserts controller into hash set mgr+0x58 (0x14452fdc0, grow 0x1445303f0 on full), logs 'Called addAudioMotionController %s' with controller vcall +8 name (FFB_DEBUG). Callers in 0x1446ef680, 0x1446f04c0, 0x15050d5c0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ffb_add_audio_motion_controller",

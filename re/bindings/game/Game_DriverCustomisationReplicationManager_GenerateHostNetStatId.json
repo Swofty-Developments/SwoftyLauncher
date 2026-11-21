@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1431c22e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=DriverCustomisationReplicationManager::generateHostNetStatId; log channel NETWORK-ENTRANTS: 'void network::DriverCustomisationReplicationManager::generateHostNetStatId() | %s : There is no driver customisation assigned to the global slot.'"
+  "evidence": "decomp:re/decomp/1431c22e0.c;pat:log-message-cxx;xref:0x1458248a0",
+  "notes": "Vtable cell 0x1458248a0. mgr=[this+8]; local key = [[mgr+0x80]+0x268] (or +0x1b4 when the high half is 0x3fff); looks it up in [[mgr+0x80]+0x280] via Wear_Get_DriverCustomisation_Thunk 0x14246d940; missing -> logs 'There is no driver customisation assigned to the global slot.' (own pretty-function 0x145819a6f). Else builds a player description (Ne_Make_RandomIdBlock 0x1441207d0, or from [[[0x14604c2c8]+0x140]+0x198]+0x1c0 vcall +0x38), copies the record and calls FindOrGeneratePackedNetStatId 0x14313b680(mgr, desc, copy). (lane owner review requested)"
  },
  "signature": {
   "id": "game.driver_customisation_replication_manager_generate_host_net_stat_id",

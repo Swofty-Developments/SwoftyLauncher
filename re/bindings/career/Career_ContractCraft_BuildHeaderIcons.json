@@ -9,7 +9,7 @@
   "subsystem": "career",
   "proto": "void *vm",
   "evidence": "decomp:re/decomp/141ad2dc0.c;xref:0x14572e550",
-  "notes": "myteam-g1: Sets #overrides.f1_world.craft_header_icons[rnd_head|sponsor] icon overrides and slot captions for the craft/contract header."
+  "notes": "F1 World craft inventory view (vtable cell 0x14572e550): slot captions lng_sponsor/principal/rnd_head/strategist/wing/engine/gearbox/brakes(_contract)_slot with #overrides.f1_world.craft_header_icons[...], lng_upgrade_card, CARD_TYPE, lng_crafting_inventory_full."
  },
  "signature": {
   "id": "career.contract_craft_build_header_icons",

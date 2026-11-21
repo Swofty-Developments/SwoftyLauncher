@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "career",
   "proto": "uint64_t Set(void **params, void *key, void *node, void **out)",
-  "evidence": "decomp:re/decomp/1417eaa50.c;xref:0x1417e9cec;xref:0x14184d38a;xref:0x141883eeb",
-  "notes": "myteam-g2: Writes a value into Game_EventParams (Game_EventParams_SetValue) with an interned key; helper that packs facility/cost-cap event parameters for UI events."
+  "evidence": "decomp:re/decomp/1417eaa50.c;xref:0x1417e9cec,0x14184d38a,0x141883eeb,0x1418ae39f",
+  "notes": "Builds a Game_EventParams block from param_3 and param_3+0x20 (Game_EventParams_SetValue x2); if param_4 (localiser) is set translates string param_1 via vt+0x18 first; then 0x1416673e0(params, string, param_2)."
  },
  "signature": {
   "id": "career.set_event_param_from_node_value",

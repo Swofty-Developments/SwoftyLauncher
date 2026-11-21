@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446f7a20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-FFB_DEBUG",
-  "notes": "named from its log messages (channel FFB_DEBUG): 'Calling deviceConnected %s for connected device \"%s\". | FFB controller for connected device \"%s\" already exists! Potential programming error. | Removed FFB controller for disconnected device \"%s\" (eff'"
+  "evidence": "decomp:re/decomp/1446f7a20.c;pat:log-channel-FFB_DEBUG;xref:0x1446f6ae1,0x1446f8c99",
+  "notes": "deviceConnected(this, bool connected, descriptor) under lock +0x1d8: finds existing controller in vector +0x50..+0x58. Disconnect: remove audio-motion 0x14451dfb0, erase, destroy. Connect: by device type creates controller: pad (idx<4) 0xe0 vt 0x145bff850 init 0x1446f04c0; Logitech 0xf0 vt 0x145bff700 init 0x1446eeb70; Thrustmaster 0xe8 vt 0x145bff820 init 0x1446efd10; type 0x146292228 0xe0 vt 0x145bff7f0 init 0x1446ef680; push_back, log. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ffb_on_device_connected",

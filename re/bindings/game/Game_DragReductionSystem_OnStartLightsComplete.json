@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142bebc60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=DragReductionSystem::onStartLightsComplete; log channel GAME: 'DragReductionSystem::onStartLightsComplete().'"
+  "evidence": "decomp:re/decomp/142bebc60.c;pat:log-message-cxx;xref:0x142beb616,0x142bec414",
+  "notes": "Message handler (lea'd at 0x142beb616 in 0x142beb5c0 and 0x142bec414 in 0x142bec020). Logs GAME 'DragReductionSystem::onStartLightsComplete().' (0x1457cdb39), calls Game_DragReductionSystem_InformRearWingsOfRaceStart 0x142becf90(this), returns 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.drag_reduction_system_on_start_lights_complete",

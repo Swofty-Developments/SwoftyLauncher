@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141434050",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141434050.c;xref:0x141429f2f,0x141434502",
-  "notes": "Allocates a 0x28-byte job object (vtable 0x1456e4180) holding a shared-ptr to the file list with refcount increment; used by DeleteFiles. Callers Game_CustomisationDecals_DeleteFiles, Game_DecalCustomisation_DeleteAllFiles."
+  "notes": "(sys, sharedPtr<list>*): allocates a 0x28 job (vtable 0x1456e4180, +0x10 allocator, +0x18/+0x20 shared_ptr copy of the list) with a 0x28 control block (vtable 0x1456e63f0); submits it to scheduler sys[0x10] (0x143ac8ce0), or runs it inline (vcall +0x10) when there is none or submit fails; stores it in vector sys+0x60 (Game_DecalFiles_Vec16_PushBack). Callers 0x141429d20, Game_DecalCustomisation_DeleteAllFiles. (lane owner review requested)"
  },
  "signature": {
   "id": "game.decal_file_op_create_delete_job",

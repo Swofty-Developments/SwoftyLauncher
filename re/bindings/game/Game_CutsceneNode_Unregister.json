@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142ab5ea0.c;xref:0x1406a64b9,0x1406a650e",
-  "notes": "Removes this node from its owner list ([this+0x10]+0x108..+0x110) when the cutscene system (g 0x146079258) exists and releases its resources."
+  "evidence": "decomp:re/decomp/142ab5ea0.c;xref:0x1406a64b9,0x1406a650e,0x1406a65fc,0x1406a6651,0x14081ac81,0x14081aca1,0x140b1c143",
+  "notes": "Body read: when g 0x146079258 != 0 erases this from the pointer vector [this+0x10]+0x108..+0x110, then on the owner recomputes an index (vcall +0x60, 0x142abb3a0, 0x142abb9c0) and notifies listeners owner+0xe8..+0xf0 (stride 0x18, flag 2) or calls 0x142abc3d0. Callers come from many unrelated modules (xref list truncated)."
  },
  "signature": {
   "id": "game.cutscene_node_unregister",

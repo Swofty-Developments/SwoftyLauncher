@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428eb1b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name setCustomCarDecals (class from the log channel); log channel FRONTEND_SCENE_MANAGER/CAR: '%s() Car [%u]'"
+  "evidence": "decomp:re/decomp/1428eb1b0.c;pat:log-message-method;xref:0x1417e3813",
+  "notes": "Logs '%s() Car [%u]' (MANAGER/CAR, setCustomCarDecals); scans custom-car vector this+0x6fd8..+0x6fe0 (stride 0x6990) for ushort id +0xb8 == param_2; hit -> tail-jmp 0x1428e72e0(this,car,decals) at 0x1428eb2df; miss and id!=0xffff -> logs 'Failed to find Car Component Id %u'. Decomp merges the tail target; judged by disasm 0x1428eb1b0..0x1428eb304. (lane owner review requested)"
  },
  "signature": {
   "id": "game.frontend_scene_manager_set_custom_car_decals",

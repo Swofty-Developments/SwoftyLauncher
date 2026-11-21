@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "career",
   "proto": "uint64_t Career_Rnd_QueryPanelSlotState(void *panel, uint32_t part_key, void *entry, uint8_t flag)",
-  "evidence": "decomp:re/decomp/14352f8d0.c;xref:0x141c52ee1;xref:0x141c8f237;xref:0x141c8f28b",
-  "notes": "myteam-g2: Reads the state byte of an R&D panel entry (entry+0xc8 vector end, state at -8: 3 = in progress, 4 = done) and decides whether the adapt-part / rush panels may be shown for the part. Read-only. Level 1."
+  "evidence": "decomp:re/decomp/14352f8d0.c;xref:0x141c52ee1,0x141c8f237,0x141c8f28b,0x143516b3d,0x1435175bf",
+  "notes": "param_3 is an upgrade instance, not a panel entry. Returns 0 if last state (+0xc8 end -8) == 4, state 3 with byte -7 == 1, or state 2 right after a state-4 entry. Mode (+8) 0/1 -> 0x1435349a0(closure); mode 2 and state 1 -> clamp(sum of kind-14 dept modifiers via 0x1434fb4b0, 0, 100) as float. Callers include RnD adapt-part 0x141c4fde0 and rush 0x141c8f0a0 panels, Start_UpgradeResearch/Development."
  },
  "signature": {
   "id": "career.rnd_query_panel_slot_state",

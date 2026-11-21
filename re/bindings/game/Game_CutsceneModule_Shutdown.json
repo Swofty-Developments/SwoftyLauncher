@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=CutsceneModule::shutdown; log channel CUTSCENE_MODULE: 'CutsceneModule::shutdown'"
+  "evidence": "decomp:re/decomp/140212740.c;pat:log-message-cxx;xref:0x1455e8140",
+  "notes": "Vtable cell 0x1455e8140 (CutsceneModule vtable)."
  },
  "signature": {
   "id": "game.cutscene_module_shutdown",

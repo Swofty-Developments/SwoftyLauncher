@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14313c810",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=DriverCustomisationReplicationManager::handleDriverCustomisationReplace; log channel NETWORK-ENTRANTS: 'void network::DriverCustomisationReplicationManager::handleDriverCustomisationReplace(neon::NeNetMessage &, neon::NeNetConnectionID) | %s : new driver customisation for %s is not the default one, reco'"
+  "evidence": "decomp:re/decomp/14313c810.c;pat:log-message-cxx;xref:0x14313c7e0,0x14313cf78,0x14febedd6",
+  "notes": "handleDriverCustomisationReplace(msg, conn): copies record msg+0xc0, looks up user id (msg+0x68..+0xa8) in map this+0x58 (mask +0x70) -> stat id u16 node+0x60; if default (0x1460605b8): resolve id from msg+0x18.. and call 0x14313baf0(this,msg+0x60,id,rec) + 0x143211340(this+0x30,msg+0x10); else if rec != default 0x1460a6fc0 -> Reconcile 0x14313c2e0. If conn byte == 0 forwards via 0x14402e500(this+0x20,1,msg,0). (lane owner review requested)"
  },
  "signature": {
   "id": "game.driver_customisation_replication_manager_handle_driver_customisa",

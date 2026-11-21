@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14076ffc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_ElasticSearch_ElasticSearchReporterModule_ReportNetworkJobStats;xref:0x14077015e",
-  "notes": "cxx=game::elastic_search::ElasticSearchReporterModule::report_NetworkJobStats; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/14076ffc0.c;str:s_ElasticSearch_ElasticSearchReporterModule_ReportNetworkJobStats;xref:0x1430938cb",
+  "notes": "report_NetworkJobStats(module, race status): reads global stats (max queue time float 0x14604ed18, max queue length 0x14604ed1c); refreshes [+0x20a58]+0x168; 0x88 event (0x1404f82f0, status 0x1404f97e0, +0x80/+0x84) sent via 0x140770240(module, &ev, 0xff); logs NETWORK-STATS '%s: race status: %s, max queue time: %f seconds, max queue length: %u'. Caller 0x143092eb0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.elastic_search_reporter_module_report_network_job_stats",

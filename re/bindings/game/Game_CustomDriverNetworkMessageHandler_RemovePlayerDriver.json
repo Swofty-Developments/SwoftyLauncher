@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143134470",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=CustomDriverNetworkMessageHandler::removePlayerDriver; log channel NETWORK-ENTRANTS: 'void network::CustomDriverNetworkMessageHandler::removePlayerDriver(const PlayerDescription &) | %s: removing player: %s'"
+  "evidence": "decomp:re/decomp/143134470.c;pat:log-message-cxx;xref:0x143133947,0x143134297,0x143137447",
+  "notes": "Pretty-function 0x145819894 = removePlayerDriver(const PlayerDescription&). Erases from the vector [p1+0x40,+0x48) (0x58-byte PlayerDriver records) every entry whose PlayerDescription matches p2 (flags +0x48 bit 28, type byte 7/3 compares, else 0x144121bc0), shifting the tail down and shrinking +0x48; logs 'removing player' / 'removed player' on NETWORK-ENTRANTS. (lane owner review requested)"
  },
  "signature": {
   "id": "game.custom_driver_network_message_handler_remove_player_driver",

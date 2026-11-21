@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1403c3690",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name requestDelete (class from the log channel); log channel ACTOR_SET_BINDING: 'requestDelete %p'"
+  "evidence": "decomp:re/decomp/1403c3690.c;pat:log-message-method;xref:0x14561deb8",
+  "notes": "Vtable slot 5 of 0x14561de90. Logs 'requestDelete %p' and ACTOR_SET_BINDING 'SkinnedActor::requestDelete %p', calls 0x140180e10(actor manager 0x14601d4c8, this), then tail-jumps 0x1401810c0, which appends this to the manager's pending-delete vector (+0x730) under spinlock +0x5c4. (lane owner review requested)"
  },
  "signature": {
   "id": "game.fe_vehicle_proxy_actor_request_delete",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141248f00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "int64_t Career_Copy_RndEntriesForDepartment(void *owner, void *out_arr, uint64_t dept_key, uint64_t kind)",
-  "evidence": "decomp:re/decomp/141248f00.c;xref:0x14180d76b;xref:0x141811d0b",
-  "notes": "myteam-g2: Wrapper: runs Career_Collect_RndEntriesForDepartment into a 0xc38-byte stack array and copies the resulting pointer list into out_arr (count at +0xc00). Used by BuildDevComplete / BuildDevFailed notifications."
+  "evidence": "decomp:re/decomp/141248f00.c;xref:0x14123bb78,0x14180d76b,0x141811d0b",
+  "notes": "Clears out (+0xc00 count), runs Career_Collect_DeptUpgradesForRound (0x141249090) into a 0xc38-byte stack array for dept 0,1,2,3 in turn and appends each result to out; returns out. Callers 0x14123b640, 0x14180caf0, 0x141810ce0. (lane owner review requested) Better name: Career_Collect_RoundUpgradesAllDepts (bound record keeps its name)."
  },
  "signature": {
   "id": "career.copy_rnd_entries_for_department",

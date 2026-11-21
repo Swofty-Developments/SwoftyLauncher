@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142542680",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-F1LifeSystem",
-  "notes": "named from its log messages (channel F1LifeSystem): 'Setting up F1LifeScene with context [%s]'"
+  "evidence": "decomp:re/decomp/142542680.c;pat:log-channel-F1LifeSystem;xref:0x1416e59d7,0x141bb27b4,0x14253f4ef,0x14253fd4f,0x14253fe5f,0x142540004,0x142540056,0x142540375,0x1425403cc,0x142540599,0x14cdf8605,0x14ce093dd",
+  "notes": "Real body 0x142542680..0x142542844 (decomp merges tail targets). Returns if loading/fade active, not spawned (+0x1b09) or mode 5; logs 'Setting up F1LifeScene with context [%s]', runs 6 setup helpers, switch on mode +0x1b08: 0 -> tail 0x142542850; 1/3/4 -> 0x142545a20/0x1425469d0/0x142546b60, tail 0x142547d80; 2 -> tail VisitDriverEnvironment 0x1425439c0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1_life_setup_scene",

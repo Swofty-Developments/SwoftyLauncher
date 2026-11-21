@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141c7b880",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:pdata-0x141c7b880-0x141c7f997;imm:0x6d8;xref:0x141c7b6f4;kb:subsystems/rnd_ui.md#page",
-  "notes": "Builds one R&D department tab page (called from 0x141c7b3d0). rsi = the 0x950 dept card: dept = byte [card+0x6d8], team = dword [card+0x6bc], per-team Upgrades model = [card+0x688]. @0x141c7d8cf calls Career_Query_EnabledUpgrades(U, out=rsp+0xdf0, &team=rsp+0x8c, 0xffff) and keeps results whose byte [u+0x72] == the card dept; @0x141c7dcb5 reads Career_Get_TeamModifiers for the research-slot count. Department-4 pages are empty because dept-4 instances are never enabled (rnd_ui.md#instances), not because this builder refuses 4."
+  "evidence": "decomp:re/decomp/141c7b880.c;pat:pdata-0x141c7b880-0x141c7f997;imm:0x6d8;kb:subsystems/rnd_ui.md#page;xref:0x141c727f6,0x141c7b6f4",
+  "notes": "Builds one R&D department page (callers 0x141c7b3d0, 0x141c724a0). dept = byte [card+0x6d8], team = dword [card+0x6bc], Upgrades model [card+0x688]; Career_Query_EnabledUpgrades at 0x141c7d8cf keeps upgrades with byte [u+0x72]==dept; Career_Get_TeamModifiers for slot count; nodes rows/row_%d, sim_upgrade_*, resource_points, side_panel. Dept-4 pages empty because dept-4 instances are never enabled. (lane owner review requested)"
  },
  "signature": {
   "id": "career.build_rn_d_dept_page",

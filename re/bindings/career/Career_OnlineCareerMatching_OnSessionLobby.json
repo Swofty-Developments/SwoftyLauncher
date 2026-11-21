@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143158ca0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=OnlineCareerMatching::onSessionLobby; log channel NETWORK-MATCHING: 'virtual void network::OnlineCareerMatching::onSessionLobby() | %s'"
+  "evidence": "decomp:re/decomp/143158ca0.c;pat:log-message-cxx;xref:0x14581d278",
+  "notes": "Vtable slot (cell 0x14581d278); __FUNCTION__ OnlineCareerMatching::onSessionLobby (NETWORK-MATCHING); sets rich presence (lng_rp_multiplayer / lng_rp_multiplayer_custom, lng_rp_action_in_the_lobby) after strcmp checks. (lane owner review requested)"
  },
  "signature": {
   "id": "career.online_career_matching_on_session_lobby",

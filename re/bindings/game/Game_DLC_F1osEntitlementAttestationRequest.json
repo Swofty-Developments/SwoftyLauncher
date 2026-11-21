@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-DLC",
-  "notes": "named from its log messages (channel DLC): 'F1OS entitlement attestation request finished.'"
+  "evidence": "decomp:re/decomp/140791120.c;pat:log-channel-DLC;xref:0x140791fe8",
+  "notes": "Called from 0x140791fe0; also an absolute cell 0x145644608 whose neighbours are not pdata code."
  },
  "signature": {
   "id": "game.dlc_f1os_entitlement_attestation_request",

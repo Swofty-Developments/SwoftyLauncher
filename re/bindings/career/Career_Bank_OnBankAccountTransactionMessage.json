@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c68310",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "uint64_t Career_Bank_OnBankAccountTransactionMessage(void *bank, void *msg)",
-  "evidence": "decomp:re/decomp/140c68310.c;xref:0x140c649e0;xref:0x140c64acc",
-  "notes": "myteam-g2: Handler for BankAccountTransactionMessage (unsubscribed in Career_Bank_UnregisterMessageHandlers). Copies the message into a local transaction (vtable 14568d508; fields msg+8/+0x10/+0x18, date mode byte at msg+0x25, notify flag at msg+0x26), resolves the due date from the clock bank+0x2d0 -> +0x2b0 (+0x5a0 per day: mode 0 = now, 1 = next day, 2 = next race day within 7 days via calendar at clock+0x290/0x298), calls FUN_140c67b10 (process transaction) and, if it returns true, FUN_140c635c0 (commit). Posts a result message (type 1456899c8) when the notify flag is 1. Hook: post this message on the bus (Ne_Post_BusMessage) to change team funds. CORRECTION(V9008): Core role right (copy msg into txn vtbl 14568d508, due date from clock bank+0x2d0->+0x2b0 with +0x5a0/day, FUN_140c67b10 then FUN_140c635c0; result msg 1456899c8 posted when notify==1; 140c64acc unsubscribes this message name). Offsets are off by one: disassembly shows date-mode byte at msg+0x24 (0 now, 1 next day, 2 next race day within 7 days) and notify flag at msg+0x25, not +0x25/+0x26. Result message is posted before the commit, regardless of the process result."
+  "evidence": "decomp:re/decomp/140c68310.c;xref:0x140c649e0,0x140c64acc",
+  "notes": "BankAccountTransactionMessage handler (lea 0x140c649e0 subscribe, 0x140c64acc unsubscribe): copies msg into a txn (vtable 0x14568d508); date mode byte msg+0x24 (0 now, 1 next day, 2 next race day within 7 days via calendar clock+0x290/0x298, else explicit msg+0x20), clock [this+0x2d0]+0x2b0 (+0x5a0/day); 0x140c67b10; notify msg+0x25==1 posts 0x1456899c8 with the result; if ok 0x140c635c0. (lane owner review requested)"
  },
  "signature": {
   "id": "career.bank_on_bank_account_transaction_message",

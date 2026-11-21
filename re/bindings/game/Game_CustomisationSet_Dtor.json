@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14030c740",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14030c740.c;xref:0x140249993,0x140249e73",
-  "notes": "Destructor of a large customisation/livery data object (vtable 0x145612f60): destroys up to [+0x930] 0x1820-byte slots at +0x328 and the 0x30-byte list (sub vtable 0x145613070, count +0x326). Type is an L1 hypothesis. 220 callers incl. Game_CarCustomisation_ApplyDriverNumbers, Game_MyTeamHq_SpawnFoyerCar, Game_ChampionshipGameMode_BuildSessionSettings."
+  "evidence": "decomp:re/decomp/14030c740.c;xref:0x140249993,0x140249e73,0x14030c8eb,0x1407a0fd4,0x1407b1874,0x1407b1a93,0x1407b1c73,0x1407b83c4,0x1407b8863,0x1407b8af3,0x140819b74,0x140819cc4,0x140819e24,0x140819f74,0x14081a0c4,0x14081a204,0x140bc243d,0x140bc24bd,0x140d67c0f,0x140fe0c99",
+  "notes": "Renamed: same vtables 0x145612f60/0x145612f80 that ConstructFromKey 0x1413ffe80 writes; WriteBackEditorDecals and SetupVehicleLivery destroy their copies with it. Destroys [+0x4980] 0x1820-byte slots at +0x1940 and [+0x1930] 0x30-byte entries at +0x130; base: releases the decal shared_ptr vector +0xe8..+0xf0 (allocator +0xe0) and, if +0xd0, the [+0xc0] 0x30-byte objects at +0x60. xref list truncated to 20. (lane owner review requested) Better name: Game_VehicleCustomisation_Dtor (bound record keeps its name)."
  },
  "signature": {
   "id": "game.customisation_set_dtor",

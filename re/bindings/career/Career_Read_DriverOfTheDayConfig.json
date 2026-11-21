@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14112f600",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: driver_of_the_day.points_for_clean_drive, driver_of_the_day.points_for_fastest_lap, driver_of_the_day.points_per_overtake, driver_of_the_day.points_per_position_above_grid_pos'. Game DB values: points_for_clean_drive 4, points_for_fastest_lap 6, points_per_overtake 2, points_per_position_above_grid_pos 2."
+  "evidence": "decomp:re/decomp/14112f600.c;pat:log-channel--;xref:0x1456c12c0",
+  "notes": "Vtable slot ref 0x1456c12c0. Reads driver_of_the_day.points_for_fastest_lap -> this+0x290, points_per_position_above_grid_pos -> +0x294, points_per_overtake -> +0x298, points_for_clean_drive -> +0x29c (kept if missing), then copies up to 29 floats from a global settings hash-map entry ([0x146cc4278]) into +0x2a4. Game DB values (outside the exe): 6/2/2/4. (lane owner review requested)"
  },
  "signature": {
   "id": "career.read_driver_of_the_day_config",

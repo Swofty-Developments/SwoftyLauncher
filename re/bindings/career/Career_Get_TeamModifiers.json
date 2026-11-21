@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1434fb4b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:8-byte-entries-kind-dept-source-active-value;xref:0x141c8e299,0x141c7dcb5,0x140d6bd07,0x140d6be96;kb:subsystems/rnd_ui.md#modifiers",
-  "notes": "Returns the per-team modifier list (57 E8 callers): vector {alloc, begin, end, cap} of 8-byte entries {u8 kind, u8 dept (ENUM A), u8 source, u8 active, f32 value}."
+  "evidence": "decomp:re/decomp/1434fb4b0.c;pat:8-byte-entries-kind-dept-source-active-value;kb:subsystems/rnd_ui.md#modifiers;xref:0x141c8e299,0x140d6bd07,0x140d6be96,0x140d6bfb7",
+  "notes": "(store, teamKey) Mode byte [[store+8]+0x58]: 1/2 -> resolve team via entrants [*store]+0x2e0 (stride 0x88, key +0x50/+0x52 -> +0x58), robin-hood lookup in map at store+0xc0.. and return node+0x10; mode 0 -> lookup by key in map store+0x48.. and return node+0x20; else 0. Result = vector of 8-byte {kind, dept, source, active, f32} entries (callers). (lane owner review requested)"
  },
  "signature": {
   "id": "career.get_team_modifiers",

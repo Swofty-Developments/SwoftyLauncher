@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1437020a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void Career_StateTeamHq_ApplyFlowMessages(void *state, char exiting)",
-  "evidence": "decomp:re/decomp/1437020a0.c;xref:0x1436ffd5a;xref:0x143704bc2",
-  "notes": "myteam-g2: Team HQ state enter/exit helper: resets the HQ sub-state (FUN_140df1ec0 at +0x1110) and posts the messages team_hq_set_scene, start_hq_flow, team_hq_enable_pause and is_masked_tutorial_playing_message on the bus (global 0x14618b3b8 +8); on error paths records code 0x58 in the thread error stack. Hook: posting team_hq_enable_pause lets a mod pause/unpause HQ time. DISPUTE(V9020) role per verifier: It does not post messages. After resetting +0x1110, with flag!=0 it calls Ne_Subscribe_BusMessage (0x143987810) and with flag==0 Ne_Unsubscribe (0x143988350, confirmed by the Bank unsubscribe site) for four names with delegates {callback, state}: FUN_143703370, FUN_143703d40 (Ui_EnterMyTeamCareer_Main), 0x1436ffac0, 0x1436ffad0; stores the flag at state+0x1244. So it is the Team HQ state subscribe/unsubscribe of those four messages."
+  "evidence": "decomp:re/decomp/1437020a0.c;xref:0x1436ffd5a,0x143704bc2",
+  "notes": "Resets sub-state +0x1110 (0x140df1ec0). flag != 0: Ne_Subscribe_BusMessage 0x143987810, flag == 0: unsubscribe 0x143988350, for team_hq_set_scene (0x143703370), start_hq_flow (0x143703d40), team_hq_enable_pause (0x1436ffac0), is_masked_tutorial_playing_message (0x1436ffad0), delegate {cb,state}; stores flag at +0x1244. Called with 1 by OnStateEnter, 0 by Career_StateTeamHq_OnStateExit 0x143704280. (lane owner review requested)"
  },
  "signature": {
   "id": "career.state_team_hq_subscribe_flow_messages",

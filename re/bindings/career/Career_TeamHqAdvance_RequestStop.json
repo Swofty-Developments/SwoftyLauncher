@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1422bb780",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-TEAMHQ_ADVANCE",
-  "notes": "named from its log messages (channel TEAMHQ ADVANCE): 'Request to stop advancing received | Advancing set to: %s | Stopping set to: %s'"
+  "evidence": "decomp:re/decomp/1422bb780.c;pat:log-channel-TEAMHQ_ADVANCE;xref:0x1422c6c78,0x142331728",
+  "notes": "Logs 'Request to stop advancing received'; clears +0x29 advancing, sets +0x2a stopping=1, posts bus message 0x1457825d8. Callers: Career_TeamHqAdvanceVM_StopAdvancing, Career_TeamHqMyTeamVM_StopAdvancing. (lane owner review requested)"
  },
  "signature": {
   "id": "career.team_hq_advance_request_stop",

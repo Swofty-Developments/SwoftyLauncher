@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140d766b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-CONTRACT_RENEWAL",
-  "notes": "named from its log messages (channel CONTRACT_RENEWAL): 'Dont need to replace old position. Team : %s - Driver %s | Replace new drivers old position. Team : %s - Driver %s replaced with reserve driver %s  | Dont need to replace entrant. Team : %s - Driver %' CORRECTION(V9067): Log text includes Add new driver / Replace old RESERVE driver / Replace old driver besides Dont need to replace old position, so it is a larger apply-contract-changes pass (48KB), not only ReplaceOldPosition."
+  "evidence": "decomp:re/decomp/140d766b0.c;pat:log-channel-CONTRACT_RENEWAL;xref:0x140d765d6,0x140d7893e,0x140d7b122,0x1436c1fac",
+  "notes": "CONTRACT_RENEWAL logs: Add new driver/contract, Replace old (RESERVE) driver, Replace new drivers old position, Dont need to replace, Assign driver position; writes entrant data via 0x1407b72e0 (6x), reserve backfill 0x140d8ecd0, posts bus messages (0x1439876c0 x9). (lane owner review requested) Better name: Career_ContractRenewal_ApplyContractChanges (bound record keeps its name)."
  },
  "signature": {
   "id": "career.contract_renewal_replace_old_position",

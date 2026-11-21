@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c42fc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void *entry, void *a, void *b, uint64_t flags",
   "evidence": "decomp:re/decomp/140c42fc0.c;xref:0x1456823e8",
-  "notes": "myteam-g1: Reads the same entries back from save data (renownPoints int)."
+  "notes": "Reader (slot ptr 0x1456823e8) of the same accolade array: statId, accoladeTypeName, currentTotal, target, completedWeekendIndex, renownPoints, tierLevel, status, weekendStartTotal, hasRecentlyCompleted via 0x143931730, entries rebuilt with 0x140c408a0; TLS error 0x57/0x58 on missing/wrong type. (lane owner review requested) Better name: Career_Deserialise_RenownAccolades (bound record keeps its name)."
  },
  "signature": {
   "id": "career.deserialise_team_renown_points",
