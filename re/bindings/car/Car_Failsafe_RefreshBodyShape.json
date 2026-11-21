@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14467ba10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14467ba10.c;xref:0x1409d5920,0x1446782c4",
-  "notes": "Sets body parameter [[+0x340]+0x18]+0x450 from table 0x145bf69b0 by car+0x124, recreates the failsafe shape (Ne_PhysShape_CreateConvex) and commits it. Hypothesis. Caller: Car_Failsafe_LimitVelocity. (2 xref site(s), fb.py callers.)"
+  "evidence": "decomp:re/decomp/14467ba10.c;xref:0x1409d591e,0x1446782c4",
+  "notes": "(failsafe, dt): [[+0x340]+0x18]+0x450 = table 0x145bf69b0[car+0x124==0]; if +0x3f0 null: AABB of the body shape list -> Ne_PhysShape_CreateConvex box (+0x420 half extents, +0x430 centre), callback Car_Collision_CarToCar, added to body; if car+0x130&0x20 the box is swept by velocities +0x170/+0x180 and enabled (shape+0x170 bit1) by speed; then Ne_PhysWorld_CommitBody or UpdateBodyBroadphase. (lane owner review requested)"
  },
  "signature": {
   "id": "car.failsafe_refresh_body_shape",

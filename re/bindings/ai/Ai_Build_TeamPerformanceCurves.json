@@ -9,7 +9,7 @@
   "subsystem": "ai",
   "proto": "void Ai_Build_TeamPerformanceCurves(void **builder)",
   "evidence": "decomp:re/decomp/14065d170.c;xref:0x1405fff21",
-  "notes": "List L = [[[*b+0x68]+0x1a8]+0x30]+0x4d8..+0x4e0, stride 0x70, name ptr +0x68. Gets an entity from EntrantsManager ([[*b+0x60]+0x88]+0x260 vcall +0xa0), resolves it with Sess_ResolveEntityHandle(session=*b+0x110, ent+8 +0x5c), takes the name [[[[session+0x4e0]+8+byte(v+0xce8)*0x10]+0x50]+0x10] and strcmp-matches it against L (first entry if none). Copies entry +0x60 -> builder+0x68 and +0x64 -> builder+0x6c; finds the first index where curves +0x08 and +0x28 are both 1.0; then resamples three float curves (+0x08, +0x28, +0x48) into builder vectors +0x10, +0x50, +0x30 (builder+0x6c+1 samples, piecewise-linear: samples 0..[+0x68] map to 0..1.0-index, the rest to 1.0-index..end). (corrected 2026-11-14: was 'copies curves into builder +0x68'; +0x68/+0x6c are the two counts, curves go to +0x10/+0x30/+0x50.) KEPT L1 2026-11-14 (engine-re AI round): Resampling is decoded, but which entrant is resolved (player or other) and that the 0x70-byte entries are team performance curves is not proven. edited by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+  "notes": "List L=[[[*b+0x68]+0x1a8]+0x30]+0x4d8..+0x4e0 (stride 0x70); entity from [[[*b+0x60]+0x88]+0x260] vcall +0xa0, resolved by 0x14243fd10(*b+0x110, ent+8+0x5c); name [[[[sess+0x4e0]+8+byte(+0xce8)*0x10]+0x50]+0x10] strcmp (0x14535d850) vs entry+0x68, default first. Copies +0x60 -> b+0x68, +0x64 -> b+0x6c; resamples curves +0x08/+0x28/+0x48 piecewise-linear into vectors b+0x10/+0x50/+0x30."
  },
  "signature": {
   "id": "ai.build_team_performance_curves",

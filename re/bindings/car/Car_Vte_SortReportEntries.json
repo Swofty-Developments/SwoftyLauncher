@@ -9,7 +9,7 @@
   "subsystem": "car",
   "proto": "-",
   "evidence": "decomp:re/decomp/144769c90.c;xref:0x14473bbaf,0x14476a274,0x14476a299",
-  "notes": "Introsort of 16-byte entries by u32 at +8 (descending). Caller: Car_Vte_WriteSessionReport. (4 xref site(s), fb.py callers.)"
+  "notes": "Introsort of 16-byte entries by u32 at +8, descending (insertion step moves an entry to the front when the front key is smaller). Recursion sites 0x14476a274/0x14476a299; outer caller 0x14473bbaf in 0x14473a9a0."
  },
  "signature": {
   "id": "car.vte_sort_report_entries",

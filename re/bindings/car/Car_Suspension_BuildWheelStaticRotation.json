@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1446b91d0.c;xref:0x1446db07f",
-  "notes": "Composes the static wheel rotation: euler(this+0x15c, +/- chassis[+0x4c] negated for side 2, 0) via Ne_Math_QuatFromEulerXYZ, multiplied by Car_Suspension_ComputeWheelAxisQuat and DAT_1453829c0 basis; 251 lines. Sole caller Car_Physics_SubstepTyreUpdate. Hypothesis: wheel orientation per substep (camber/toe/steer)."
+  "evidence": "decomp:re/decomp/1446b91d0.c;xref:0x1446db07f,0x1446db08e,0x155457f10,0x155457f21",
+  "notes": "Wheel rotation from euler(+0x15c) and Car_Suspension_ComputeWheelAxisQuat; callers Car_Physics_SubstepWheelFrames (0x1446db07f, 0x1446db08e) and 0x155457ea0."
  },
  "signature": {
   "id": "car.suspension_build_wheel_static_rotation",

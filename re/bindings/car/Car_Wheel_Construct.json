@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446af9c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "void *Car_Wheel_Construct(void *wheel, void *car)",
-  "evidence": "doc:re/db/subsystems/car.md",
-  "notes": "Writes qword 0x3f80000000000000 at wheel+0x8c (1446af9ff/a09): tyre water 0.0, wetness-grip scale wheel+0x90 = 1.0; +0x94 blister 0; wheel+0 = wheel+0x10 = car (wx-verify claim 10) | findings from PR #471 by vogtmarcel07-cloud; independent check 2026-10-28 by wx-verify: agree"
+  "evidence": "decomp:re/decomp/1446af9c0.c;doc:re/db/subsystems/car.md;xref:0x144753318,0x144753363,0x1447533ab,0x1447533f9",
+  "notes": "(w,car,arg3,side,axle): w+0 = w+0x10 = car; w+0x8c = 0 (water), w+0x90 = 1.0, w+0x94 = 0; ambient+273.15 into w+0x70/+0x6c/+0x74/+0xc8/+0xcc; random seeds from the XOR key table 0x146108c00; w+0x140 = arg3; w+0x2b4 = side, w+0x2b8 = axle; w+0xd0 = derived wheel index. All calls in 0x144753050. (lane owner review requested)"
  },
  "signature": {
   "id": "car.wheel_construct",

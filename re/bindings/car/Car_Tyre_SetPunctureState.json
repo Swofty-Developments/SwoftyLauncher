@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144656f80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144656f80.c;xref:0x142bdd346,0x142bdd411,0x142bdd4df",
-  "notes": "Toggles flag bit0 at +0x18 (on: check 0x14464e200 on [[+8]+0xd8]+0x3f70, sets bit1 and pressure factor +0x90 >= 1.0; off: factor 0/1). Hypothesis. Callers: Car_TyreDamage_Update, Game_NetworkMechanical_VehicleRacingVehicleCar. (6 xref site(s), fb.py callers.) lb23-verify partial"
+  "evidence": "decomp:re/decomp/144656f80.c;xref:0x142bdd346,0x142bdd411,0x142bdd4df,0x142bdd5a8,0x14324bb11,0x14470e143",
+  "notes": "(w,on): acts only when on differs from bit0 of w+0x18. off: clear bit0, w+0x90 = bit1 ? 1 : 0. on, bits0/1 clear: 0x14464e200([[w+8]+0xd8]+0x3f70, car idx [w+8]+0xe8, w) ok -> bit1 (puncture), w+0x90 = max(1,w+0x90), w+0x2c = w+0x30. on with bit1 set -> bit0 (burst). Then inlined Car_Tyre_UpdateDeflation. Callers in 0x142bdd220, 0x1432495e0, 0x14470d760. (lane owner review requested)"
  },
  "signature": {
   "id": "car.tyre_set_puncture_active",

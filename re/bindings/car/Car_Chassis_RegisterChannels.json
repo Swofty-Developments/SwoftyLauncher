@@ -9,7 +9,7 @@
   "subsystem": "car",
   "proto": "-",
   "evidence": "decomp:re/decomp/144707540.c;xref:0x142944261,0x144629973",
-  "notes": "Large registration routine: for many car sub-systems (body via Ne_Entity_FindComponent type 0x146ce8a00, +0x530 ...) calls 0x144710b80 with getter/setter function pairs and ranges (e.g. max 7200.0). Hypothesis: telemetry/debug channel registration. Callers: Car_Chassis_Build, 0x142943e00. (2 xref site(s), fb.py callers.)"
+  "notes": "Large registration routine: for many car sub-systems (body via Ne_Entity_FindComponent type 0x146ce8a00, +0x530 ...) calls 0x144710b80 with getter/setter function pairs and ranges (e.g. max 7200.0). Hypothesis: telemetry/debug channel registration. Callers: Car_Chassis_Build, 0x142943e00."
  },
  "signature": {
   "id": "car.chassis_register_channels",

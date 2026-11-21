@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14464e200",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "pat:log-channel-TYRE_DAMAGE_MONITOR",
-  "notes": "Log channel TYRE_DAMAGE_MONITOR: 'Added puncture for vehicle %d tyre %p.'"
+  "evidence": "decomp:re/decomp/14464e200.c;pat:log-channel-TYRE_DAMAGE_MONITOR;xref:0x1409b353c,0x1409b375b,0x142bdd2ec,0x142bdd3b7,0x142bdd485,0x142bdd54c,0x142e888f9,0x142e889e9,0x142e88adc,0x142e88bd3,0x14324bb77,0x144656d85,0x144656ef5,0x144656fee,0x1446b5ba6,0x1446b5c98,0x1446b5d31,0x1446b5df2,0x1446b5edc,0x14470e183",
+  "notes": "(monitor, veh, tyre): under CS [+0x28]: if count +0x24 < max +0x20: count++, push {tyre, veh byte} (16 bytes) to vector +8..+0x18 (allocator [+0]); log TYRE_DAMAGE_MONITOR 'Added puncture...'; returns bool added. (lane owner review requested)"
  },
  "signature": {
   "id": "car.puncture_add",

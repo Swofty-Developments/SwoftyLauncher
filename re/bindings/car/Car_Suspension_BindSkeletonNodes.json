@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144655640",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144655640.c;xref:0x14462b147",
-  "notes": "(susp, out, int *nodeIdx, uint flags): resolves suspension/wheel bones ('suspension_f...') under a node of the car skeleton ([[this+8]+0xe0]+0x38), builds pointer array at this+0x110..+0x120. Called 4x from 0x14462b147 block (car model setup)."
+  "evidence": "decomp:re/decomp/144655640.c;xref:0x14462b147,0x14462b18e,0x14462b1cd,0x14462b253,0x14462b30e,0x14462b337,0x14462b41f,0x14462b450,0x14462b476,0x14462b523,0x14462b5b3",
+  "notes": "(chassis, name, bones[3], attachIdx): AABB of up to 3 bone positions from the pose ([[car+0xe0]+0x38]); Car_Create_DetachablePart(car+0x2c8, name, bone id, params, scale) (random scale when rule list empty); first rule in +0x88..+0x90 (stride 0x30) whose substring matches the part name sets attach type part+0x160 (1/2/3) and anchors ('suspension_f' sign); part pushed to +0x110..+0x120. (lane owner review requested) Better name: Car_Damage_CreatePartFromBones (bound record keeps its name)."
  },
  "signature": {
   "id": "car.suspension_bind_skeleton_nodes",
