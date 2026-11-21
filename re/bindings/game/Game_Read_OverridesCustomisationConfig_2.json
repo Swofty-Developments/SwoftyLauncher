@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: overrides.customisation.casual_item_catergories.caps, overrides.customisation.casual_item_catergories.footwear, overrides.customisation.casual_item_catergories.sunglasses, overrides.customisation.casual_item_catergories.tops, overrides.customisation.casual_item_catergori'"
+  "evidence": "decomp:re/decomp/142015a30.c;pat:log-channel--;xref:0x142013d15,0x142013d3e,0x142013d67,0x142013d90,0x142013db9,0x142013de2,0x142013e7b,0x142013ea7,0x142013ed3,0x142013eff,0x142013f2b,0x142013f57",
+  "notes": "Customisation PiP menu: suit/helmet/gloves/emotes/poses/victory_vo icons and casual item categories (sunglasses, caps, footwear, tops, trousers)."
  },
  "signature": {
   "id": "game.read_overrides_customisation_config_2",

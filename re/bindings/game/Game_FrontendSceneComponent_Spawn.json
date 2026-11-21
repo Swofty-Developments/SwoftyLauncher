@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428efd50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name spawn (class from the log channel); log channel FRONTEND_SCENE_COMPONENT/MAINSCENE: '%s() - %s'"
+  "evidence": "decomp:re/decomp/1428efd50.c;pat:log-message-method;xref:0x1457b6610",
+  "notes": "MAINSCENE component vtable cell. Main scene name +0xc0 != current +0x108: logs 'Spawning scene', inlined spawnMainScene on system +0x98 (scene map +0x1000, subscene/camera lookup with fallback), result +0x1050..+0x1068 copied to this+0x130..+0x148, ret 1. Else subscene 0x1428be0f0 / camera 0x1428efa50, then refreshActiveScene 0x1428f0cf0; ret 1 while new subscene inactive, else 0x1428f17d0, ret 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.frontend_scene_component_spawn",

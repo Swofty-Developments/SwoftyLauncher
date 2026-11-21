@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143087650",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=MatchingProcessor::search; log channel NETWORK-MATCHING: 'MatchingProcessor::search()'"
+  "evidence": "decomp:re/decomp/143087650.c;pat:log-message-cxx;xref:0x142226780,0x1430e4adb,0x143159d91",
+  "notes": "MatchingProcessor::search(): clears +0x58/+0x59; sets [[+0x30]+0x3c8]+0x680 on filters [[+0x30]+0xd8]+0x768/+0x770/+0x778 (vcall +0x38), starts the search 0x144064f50(svc, [+0x30]+0x390, [+0x30]+8, cb 0x143087780); if [[+0x28]+0x4d8]+0x90 == 0 calls 0x1430715b0; state byte +0 -> 1 ('searching') with QPC time. (lane owner review requested)"
  },
  "signature": {
   "id": "game.matching_processor_search",

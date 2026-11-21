@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143199e90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionMigrationManager::~GameSessionMigrationManager; log channel NETWORK-MIGRATION: 'virtual network::GameSessionMigrationManager::~GameSessionMigrationManager() | %s().'"
+  "evidence": "decomp:re/decomp/143199e90.c;pat:log-message-cxx;xref:0x14580e660",
+  "notes": "Vtable cell 0x14580e660 (slot 0 of the vtable at 0x14580e660, written as *p1 here). Virtual deleting destructor ('~GameSessionMigrationManager()' log, NETWORK-MIGRATION): resets vtable, unregisters p1 from [p1[3]+0x110] (0x140997ee0), frees every Peer in the map p1[7..0xc] through [p1[3]+0x10] vt+0x38, clears the metadata and frees the slot array; if p2 != 0 frees p1 via the file/memory service 0x14618b130 (vt+0xe0 check, vt+0x38). Returns p1. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_session_migration_manager_destroy",

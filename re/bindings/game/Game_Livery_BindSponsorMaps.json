@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "void *out, void *a, void *b, int c",
   "evidence": "decomp:re/decomp/143e85d50.c;xref:0x143db23be",
-  "notes": "myteam-g1: Renderer binding: sets shader params me_numSponsors, me_sponsorMap, me_sponsorAlphaMap for car livery sponsor decals."
+  "notes": "Large material binder (only caller 0x143db23be). Strings cover generic material slots (me_logoMap, me_albedoMap, me_customisationDecalsAlbedoMap, me_diffuseTex, me_normalTex, me_smoothTarmacMap, me_baseMapWSM...) and screen SRVs (g_jumbotronSRV, g_mirrorLeftSRV, g_carMonitorSRV, g_steeringScreenSRV): scope looks wider than sponsor maps."
  },
  "signature": {
   "id": "game.livery_bind_sponsor_maps",

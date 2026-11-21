@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=NetSerialisableAttributeSetInfo::retrieveAttributes; log channel NETWORK-ENTRANTS: 'void network::NetSerialisableAttributeSetInfo::retrieveAttributes(neon::NeIAllocPool *, const game::AttributeSet &) | %s: Loaded net info, with %u elements.'"
+  "evidence": "decomp:re/decomp/143124fb0.c;pat:log-message-cxx;xref:0x143124adb,0x143125ef0,0x143126748,0x1431bcfc9",
+  "notes": "Callers 0x143124adb, 0x143125ef0, 0x143126748, 0x1431bcfc9. Clears own array (+0x10 count, +0x18, +0x20 alloc), +0x28 = set+0x40 -> +0xb0, collects attributes of set +0x28..+0x30 whose def +0x2c flag is set; logs 'Loaded net info, with %u elements'."
  },
  "signature": {
   "id": "game.net_serialisable_attribute_set_info_retrieve_attributes",

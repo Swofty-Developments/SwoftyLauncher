@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-RIVALS",
-  "notes": "named from its log messages (channel RIVALS): 'Starting new rivalry with %s'"
+  "evidence": "decomp:re/decomp/141250d40.c;pat:log-channel-RIVALS;xref:0x1456cd1e0",
+  "notes": "Vtable slot (cell 0x1456cd1e0); 13 KB body with 'Starting new rivalry with %s' log; calls Game_Rivalry_Start."
  },
  "signature": {
   "id": "game.rivalry_start_2",

@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-PLAYERSET",
+  "evidence": "decomp:re/decomp/14316c790.c;pat:log-channel-PLAYERSET;xref:0x14581f898",
   "notes": "named from its log messages (channel PLAYERSET): '%s: Player %s at Player IX %d being discarded | %s(%s). | %s(%s, %d). | [PlayerSetEntry(%s, %s)] : DESTROYED. info(%s). | %s: Player %s at Player IX %d has an invalid connection ID'"
  },
  "signature": {

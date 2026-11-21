@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142ad7170",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_OptionsSystem_OnMutableRoleChanged;xref:0x142ad737a",
-  "notes": "cxx=game::OptionsSystem::onMutableRoleChanged; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/142ad7170.c;str:s_OptionsSystem_OnMutableRoleChanged;xref:0x1457c0918",
+  "notes": "vt cell 0x1457c0918. (this,role): logs restriction count and role; if state +0x348 == 6 enabled = career save (0x140fdb170) field +0x30 == 1, else enabled = role < 2; each replicated restriction (0x38 stride, +0x358..+0x360) gets +0x30 = 2 or 0 and its option re-evaluated (0x142abdb60); +0x370 = 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.options_system_on_mutable_role_changed",

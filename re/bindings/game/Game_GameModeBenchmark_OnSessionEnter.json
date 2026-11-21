@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1407a7880",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameModeBenchmark::onSessionEnter; log channel BENCHMARK: 'GameModeBenchmark::onSessionEnter'"
+  "evidence": "decomp:re/decomp/1407a7880.c;pat:log-message-cxx;xref:0x145645e30",
+  "notes": "Vtable cell 0x145645e30. Logs BENCHMARK 'GameModeBenchmark::onSessionEnter'. Uses subsystem map p1[0x21a] (0x14030ffd0 by type key): starts [p1+0xf98] (0x1438acea0), finds the local player entrant in p1[0x5c..0x5d] (stride 0x88) and sets its driver slot (+0x82) via 0x1519eb350 and weight 1.0, caches type 0x146cc3ac0 at p1[0x21c], clears flags in 0x146ce8a60/0x1460fe000 systems, 0x14017b6c0(.,0) on 0x146044730, disables HUD items 0x16/0x19/0x1a/0x1b/0x1e (0x142f38f80), reads options virtual_rear_view_mirror (+0x1819eb) and benchmark_camera, then own vt+0x1f0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_mode_benchmark_on_session_enter",

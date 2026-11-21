@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14386e590",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void f(void *self)",
   "evidence": "decomp:re/decomp/14386e590.c;xref:0x141a2bcbf",
-  "notes": "myteam-g1: Entry-point difficulty text lng_my_team_entry_point_chosen_easy/med/hard and homescreen string."
+  "notes": "Switch on setting index param_2 (0..0x14) returns the lng key for the career wizard summary: career title/2P/my team, difficulty/entry point (lng_my_team_entry_point_chosen_easy/med/hard), F2 skip/start, season length (f2/normal medium/short), default/custom settings, invite friend, classic drivers, team/driver icons; reads wizard state +0x100..+0x108, +0x168, +0x180/+0x181, +0x1c8. (lane owner review requested) Better name: Career_Wizard_GetSettingSummaryText (bound record keeps its name)."
  },
  "signature": {
   "id": "career.my_team_entry_point_chosen_text",

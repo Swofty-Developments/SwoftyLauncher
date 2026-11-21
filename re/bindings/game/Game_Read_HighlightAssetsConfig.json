@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
+  "evidence": "decomp:re/decomp/14384ac50.c;pat:log-channel--;xref:0x14384a90a,0x14384aa14",
   "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: highlight_assets.bottom_left, highlight_assets.bottom_right, highlight_assets.point_of_interest, highlight_assets.top_left, highlight_assets.top_right'"
  },
  "signature": {

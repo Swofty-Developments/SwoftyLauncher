@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143af7870",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143af7870.c;xref:0x143af7453,0x143b0b1ea",
-  "notes": "Computes min/max AABB (init +-1e10: 0x4b18967f / 0xcb18967f) over the emitter array (+0x80..+0x88) of an effect; uses param_3 time/scale. Callers Game_Particles_InitEffectInstance, UpdateManager. Hypothesis."
+  "evidence": "decomp:re/decomp/143af7870.c;xref:0x143af7453,0x143b0b1ea,0x143b0b20c",
+  "notes": "(mgr, effect, range): AABB over emitters (init +-1e10; emitter +0x130/+0x140 when +0x104 != 0 else pos +0x40 +-0.1), centre and radius; picks the best entry of list mgr+0x87b280 (stride 0xa0, radius < range) and up to 4 spheres from mgr+0xa5ce2c (count +0xa5be28) and mgr+0xa5be2c (count +0xa5be24) intersecting the bounds; packs indices into effect +0x68/+0x6c/+0x70. Tail of 0x143af7160 (jmp 0x143af7453) and calls in 0x143b06d90. (lane owner review requested) Better name: Game_Particles_ComputeBoundsAndVolumeLinks (bound record keeps its name)."
  },
  "signature": {
   "id": "game.particles_compute_emitter_bounds",

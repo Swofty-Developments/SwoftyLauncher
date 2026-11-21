@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143af4410",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143af4410.c;xref:0x143b0a8dd,0x143b0ac1d",
-  "notes": "Packs emitter state (stride 0x80/0x180) of one effect into the replay store buffer (limit 0x1e80 bytes, lane id from emitter count) via Game_Particles_StoreParticleSlot. Called by Game_Particles_UpdateManager. Hypothesis (replay store). vp2-verify partial/disagree"
+  "notes": "(effect, out, end): needs 0x7a0 dwords room; header low 5 bits = emitter count, high bits = changed-emitter mask; per emitter (stride 0x180) writes transform (12 floats, or pos when id +100 in range) when def +0xb98 bit0, packs live particles per chunk via 0x143af41a0 (0x1a dwords each), writes +0xe0/+0xdc/count/+4 when changed; header +4 = (*effect)+0x18. Returns write pointer or 0 when full. Callers in 0x143b06d90. (lane owner review requested)"
  },
  "signature": {
   "id": "game.particles_store_effect_emitters",

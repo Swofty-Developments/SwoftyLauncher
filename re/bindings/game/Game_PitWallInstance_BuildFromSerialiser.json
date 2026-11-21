@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
+  "evidence": "decomp:re/decomp/1403d0bd0.c;pat:log-message-cxx;xref:0x1403d054b,0x147e4709a",
   "notes": "cxx=PitWallInstance::buildFromSerialiser; log channel TRACE: 'RAW: PitWallInstance::buildFromSerialiser failed unable to find script %s'"
  },
  "signature": {

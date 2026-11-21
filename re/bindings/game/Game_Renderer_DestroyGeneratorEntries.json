@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b437a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143b437a0.c;xref:0x143b18aba,0x143b1d48d,0x143b412fe",
-  "notes": "Destroys vector of 0x70-byte entries: frees ptr at +0x38 (0x143e83df0), calls Game_Renderer_ReleaseSceneGenerators (0x143b33a40) on +0x68. Called from CreateRenderPasses. Named callers: Game_Renderer_CreateRenderPasses."
+  "notes": "(allocator, vec*): for each 0x70-byte entry: model +0x38 -> Render_Model_ReleaseGpuResources then free via entry allocator +0; generator +0x60 -> Game_Renderer_DestroyGenerator(renderer +0x68, gen); frees the buffer and the vector object itself via allocator vcall +0x38. Callers Game_Renderer_CreateRenderPasses, Game_Renderer_InitPassGroups, 0x143b40e20. (lane owner review requested)"
  },
  "signature": {
   "id": "game.renderer_destroy_generator_entries",

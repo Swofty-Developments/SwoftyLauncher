@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446f3d70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-FFB_DEBUG",
-  "notes": "named from its log messages (channel FFB_DEBUG): 'Called stop() on an already stopped PS pad effect'"
+  "evidence": "decomp:re/decomp/1446f3d70.c;pat:log-channel-FFB_DEBUG;xref:0x145bffe70",
+  "notes": "Slot 2 of PS pad effect vtable 0x145bffe60 (cell 0x145bffe70; slot 1 = 0x1446f3660 start). If not running (+0x1e0 == 0) logs 'Called stop() on an already stopped PS pad effect' (FFB_DEBUG). Else vcall +0x50, if +0x1e2 sends zero motors/triggers through 0x143aa9cc0 (pad plugin singleton), notifies device audio-motion (0x1446f3f40 -> 0x14451e1b0) and clears +0x1e0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ffb_pad_stop_effect",

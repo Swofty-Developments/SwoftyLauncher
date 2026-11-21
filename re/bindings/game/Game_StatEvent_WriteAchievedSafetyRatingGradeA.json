@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1437424c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-STATEVENT",
-  "notes": "named from its log messages (channel STATEVENT): 'Executing EventWriteAchievedSafetyRatingGradeA with [%d] StatisticDataProviders registered.'"
+  "evidence": "decomp:re/decomp/1437424c0.c;pat:log-channel-STATEVENT;xref:0x1437292e4,0x14374a56e",
+  "notes": "STATEVENT bus handler (lea in 0x143720bc0 / 0x143749390): local entrant + Game_StatEvent_InitCommon, providers this+0x50..+0x58 vcall +0x18 / +0x30. Single key \"AchievedSafetyRatingA\", value 1.0. Only when 0x142c6d930([this+0xd8]) returns a non-empty string and this+0xfc is set. (lane owner review requested)"
  },
  "signature": {
   "id": "game.stat_event_write_achieved_safety_rating_grade_a",

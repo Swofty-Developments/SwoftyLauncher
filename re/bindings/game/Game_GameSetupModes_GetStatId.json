@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a0e4d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142a0e4d0.c;xref:0x14020d882,0x1406a7028",
-  "notes": "Gdb lookup in table game_setup.game_setup_modes for row label param_1; returns byte field stat_id. Callers: Career_DriverMarketXml_FindDriverStatId, Sess_Apply_ContentAvailability."
+  "evidence": "decomp:re/decomp/142a0e4d0.c;xref:0x14020d882,0x1406a7028,0x141153a6a,0x1413501a1,0x1413d8e27,0x1413d8e31,0x1413e679b,0x1413e6c4b,0x14290cb64,0x142c276b1,0x142c27894,0x142c2a512,0x142e5a7c8,0x1437d0969,0x14389e028",
+  "notes": "Builds the table path 'game_setup.game_setup_modes' (row type 'game_setup_mode') on the stack, looks up row p1 in it via 0x1445a2bd0, reads field 'stat_id' (0x1445a2cf0) and returns its byte value (+8), or 0 when the row/field is missing. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_setup_modes_get_stat_id",

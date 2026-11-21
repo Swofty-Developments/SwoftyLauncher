@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "career",
   "proto": "uint32_t *Get(void *tree_vm, int dept_index)",
-  "evidence": "decomp:re/decomp/141c7f9a0.c;xref:0x141c7b80d;xref:0x141c7fe69",
-  "notes": "myteam-g2: Returns the selected RnD tree/department entry from the tree VM (vm+0x6d0 state), updating cached S64 properties if changed (Ne_Property_SetUIDBRefIfChanged) and releasing temp nodes. Used by RnD tree view build and player-control department selection. UI-side read."
+  "evidence": "decomp:re/decomp/141c7f9a0.c;xref:0x141c7b80d,0x141c7fe69",
+  "notes": "Walks (+0x6d0)+0x858..+0x860 entries, their +0x2b0 lists and +0x1d0 objects via virtual calls, updating properties (Ne_Property_SetUIDBRefIfChanged)."
  },
  "signature": {
   "id": "career.get_rn_dtree_department_selection",

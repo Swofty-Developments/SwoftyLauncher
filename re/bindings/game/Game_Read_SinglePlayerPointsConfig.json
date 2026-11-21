@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: single_player_points.difficulty.above.range_lower, single_player_points.difficulty.above.range_upper, single_player_points.difficulty.below.range_lower, single_player_points.difficulty.below.range_upper, single_player_points.tech_level.above.range_lower, single_player_po'"
+  "evidence": "decomp:re/decomp/14275af20.c;pat:log-channel--;xref:0x14579e8c8",
+  "notes": "GDB reader single_player_points.{tech_level,difficulty}.{above,below}.range_lower/upper."
  },
  "signature": {
   "id": "game.read_single_player_points_config",

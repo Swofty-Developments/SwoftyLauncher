@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f781e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: overrides.osd.change_strategy_icons.damage, overrides.osd.change_strategy_icons.high_tyre_wear, overrides.osd.change_strategy_icons.low_tyre_wear, overrides.osd.change_strategy_icons.tyre_wear_danger, overrides.osd.change_strategy_icons.tyre_wear_puncture, overrides.osd.'"
+  "evidence": "decomp:re/decomp/142f781e0.c;pat:log-channel--;xref:0x142f7dd01",
+  "notes": "(this, reason, flag): 0 high_tyre_wear, 1 low_tyre_wear, 2 tyre_wear_danger, 3 damage (flag: tyre_wear_puncture), 4 weather, 5 'safety car' under overrides.osd.change_strategy_icons; resolves the registry node and sets it as UIDB ref on node +0x1f8 (Ne_Property_SetUIDBRefIfChanged). Other values: no-op. (lane owner review requested) Better name: Game_Osd_SetChangeStrategyReasonIcon (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_overrides_osd_config_4",

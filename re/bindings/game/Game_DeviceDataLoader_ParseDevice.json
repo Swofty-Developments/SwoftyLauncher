@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a6fc70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-INPUT",
-  "notes": "named from its log messages (channel INPUT): 'GameDeviceDataLoader - Device %s is a GAMEPAD | GameDeviceDataLoader - Unrecognised tooltip data \"%s\" | GameDeviceDataLoader - Registering tooltip for Axis:%s | GameDeviceDataLoader - Unrecognised dat'"
+  "evidence": "decomp:re/decomp/142a6fc70.c;pat:log-channel-INPUT;xref:0x142a76c55,0x142a778c5",
+  "notes": "Parses buffer param_1[0x1d] (typeid/display/type), finds device entry by name param_1[0x1a]; display -> entry+0xb0; type wheel/pedals/pad/other -> entry+0xf4 = 1/2/0/3; sections Tooltips (Axis icon/is_button/localise -> map entry+0x28.., flag +0xf0), ForceFeedback (UndersteerEnhance +0x84, Strength/OnTrack/Rumblestrip/OffTrack/PitStop/Cutscene/WheelWeight +0x64..+0x7c as v/100 clamped 0..1, flag +0xf1), ActionMaps (0x143a8b310, flag +0xf2); result -> param_1+0xf8. (lane owner review requested)"
  },
  "signature": {
   "id": "game.device_data_loader_parse_device",

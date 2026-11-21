@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1434c2870.c;xref:0x1434bf6d9",
-  "notes": "State 3 handler (returns char result): placement transform + Ne_Crt_Fmodf + memcpy. 3241 bytes. Callers Game_Pitlane_ApplyVehicleResetState (0x1434c0476), 0x1434bf6d9. Hypothesis. | engine-re 2026-11-17 track round C2 (static): per-car box EXIT spline, pull-through (also the safety car, box 12), into car record +0x128 (Game_PitLane_BuildBoxExitSpline 0x1434bf6d9, record +0xd4 = 3); reads box_exit_max_box_id_that_can_pull_through [mgr+0x920] (0x1434c28e4); finalised at 0x1434c34a6."
+  "evidence": "decomp:re/decomp/1434c2870.c;xref:0x1434bf6d9,0x1434c0476",
+  "notes": "Spline builder type 3 (0x1434c0476); Game_PitLane_BuildBoxExitSpline 0x1434bf6d9 uses it for the safety car (rec+0xe0 == 99, last arg true) and when the neighbour box is safe (record +0xd4 = 3); ends in Ne_Spline_ComputeLengths. Earlier round: reads box_exit_max_box_id_that_can_pull_through [mgr+0x920]. Better name: Game_PitLane_BuildExitSplinePullThrough (bound record keeps its name)."
  },
  "signature": {
   "id": "game.pitlane_resolve_vehicle_state3",

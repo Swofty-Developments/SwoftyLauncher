@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: RearViewMirrors.enabled, RearViewMirrors.ultraMode, RearViewMirrors.updateMode, Renderer.Gfx.CarDamage.enabled, Renderer.Gfx.CarDynamicCubeMap.enabled, Renderer.Gfx.allowLensDistortion, Renderer.Gfx.allowPerfomanceModeOnXboxSeriesS, Renderer.Gfx.enablePlanarReflections, '"
+  "evidence": "decomp:re/decomp/14014d230.c;pat:log-channel--;xref:0x1455ddc90",
+  "notes": "GameRendererModule init (slot 3 of vtable 0x1455ddc70 per KB): GAME_RENDERER, ~25 Renderer.Gfx.* / RearViewMirrors.* settings, view names, RTT cameras."
  },
  "signature": {
   "id": "game.read_renderer_gfx_config",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14326a9c0.c;pat:log-message-method;xref:0x14326666f",
-  "notes": "Reads one vehicle record from bitstream param_5 (Ne_BitStream_ReadRangedInt/ReadRangedUInt/ReadQuantisedFloat); logs deserialiseVehicle \"vehicleIx not in range / not registered\"; inlined VehicleProgressSync::addRemoteProgress (teleport detection, out-of-order checks) and applies chassis state (Game_VehicleProgress_ApplyChassisState)."
+  "evidence": "decomp:re/decomp/14326a9c0.c;pat:log-message-method;xref:0x14326666f;pat:disasm-0x14326b251-0x14326b267;kb:subsystems/tracks.md#ai-and-track-markup-size-limits",
+  "notes": "Reads one vehicle record from bitstream param_5 (Ne_BitStream_ReadRangedInt/ReadRangedUInt/ReadQuantisedFloat); logs deserialiseVehicle \"vehicleIx not in range / not registered\"; inlined VehicleProgressSync::addRemoteProgress (teleport detection, out-of-order checks) and applies chassis state (Game_VehicleProgress_ApplyChassisState). | 2026-11-20 engine-re round L2 AI / track-markup size limits (static): TSQuadTree use: the received position anchor is one byte (bitstream read, cStack_3a0); 0xff (cmp r9b, 0xff at 0x14326b251) = quantise in the whole tree box 0x1460bff88..0x1460bff9c, else index < point count [0x1460bffa4] (cmp at 0x14326b25b, jle to the error path 0x14326ad01) selects point [0x1460bffb0]+i*16 with half-size radius [0x1460bffa0]. So the TSQuadTree is a network position-compression table and its point index is u8 on the wire: at most 255 usable points (0..254)."
  },
  "signature": {
   "id": "game.network_deserialise_vehicle",
@@ -45,6 +45,16 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/14326a9c0.c;xref:0x143241538",
    "notes": "V5831 name and description match body; log string/pretty name present"
+  },
+  {
+   "date": "2026-11-20",
+   "verifier": "ailim-verify",
+   "kind": "func",
+   "item": "0x14326a9c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "pat:disasm-0x14326b251;pat:disasm-0x14326b25b;pat:disasm-0x14326b267;pat:disasm-0x14326b293",
+   "notes": "V12206 byte r9b stored to rsp+0x348; ==0xff -> box path reading floats 0x1460bff88..0x1460bff9c; else movzx, cmp [0x1460bffa4],eax jle 0x14326ad01 (bounds check present), point=[[0x1460bffb0]+idx*16]."
   }
  ],
  "proofs": []

@@ -11350,6 +11350,12 @@
   "site_Sess_InGameSessionCompleteAiCall": {
    "match": "0x2d58d15"
   },
+  "site_Sess_MarshalLights_PrevLightLoad": {
+   "match": "0x2c794c2"
+  },
+  "site_Sess_MarshalLights_WalkDone": {
+   "match": "0x2c797d3"
+  },
   "site_Sess_PitEvalListNext": {
    "match": "0x36946b9"
   },

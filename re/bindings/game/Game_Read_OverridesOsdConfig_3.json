@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: overrides.osd.practice_graph_lap_icons.graph_lap_icon_failed, overrides.osd.practice_graph_lap_icons.graph_lap_icon_not_set, overrides.osd.practice_graph_lap_icons.graph_lap_icon_passed, overrides.osd.practice_graph_lap_icons.graph_lap_icon_perfect, overrides.osd.practic'"
+  "evidence": "decomp:re/decomp/141569430.c;pat:log-channel--;xref:0x141568f0f,0x1415692d4,0x1415693d4",
+  "notes": "Practice graph lap icons and quali pace lap icons (not_set/failed/passed/perfect), lng_hud_laps."
  },
  "signature": {
   "id": "game.read_overrides_osd_config_3",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14024d440",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=CutSceneScript::setupVehiclePartProxies; log channel ACTOR: 'CutSceneScript::setupVehiclePartProxies binding [%s] [%s] [%s] [%d]'"
+  "evidence": "decomp:re/decomp/14024d440.c;pat:log-message-cxx;xref:0x14027d77d,0x14027fb19,0x1402810d7,0x14028d551,0x1403363ef,0x14033ba11,0x14034642c,0x14034ac8c,0x14034c5a5,0x14034d378,0x14034e088,0x14034ec45,0x14034fa18,0x140350728,0x1403549c0,0x140365b0d",
+  "notes": "(_, scene, bool, u8 side): for 12 slots (FL_Wheel, FR_Wheel, FL_OLD_TYRE, ...) with bones FrontTyre_AnimBone01 / BackTyre_AnimBone and targets wheel_fl/fr/bl/br (swapped when side != 0) finds proxy actors of the scene ([scene+0x78]) by name, logs 'setupVehiclePartProxies binding ...' (ACTOR), binds (0x1403b2c60), sets flags +0x62c..+0x647, vt+0x1b8/+0x98. Then binds 'prop' to steering_wheel_proxy/steer_master; none -> 'failed to find any actors'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.cut_scene_script_setup_vehicle_part_proxies",

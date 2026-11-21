@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: overrides.osd.practice_target_icons.ers_icon, overrides.osd.practice_target_icons.fuel_icon, overrides.osd.practice_target_icons.score_icon, overrides.osd.practice_target_icons.tyre_icon'"
+  "evidence": "decomp:re/decomp/14151fcc0.c;pat:log-channel--;xref:0x1456ecab0",
+  "notes": "Practice target VM: score/tyre/fuel/ers target icons with good/perfect lng strings, abovePar, bestInSession, reset_targets."
  },
  "signature": {
   "id": "game.read_overrides_osd_config_2",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140355360",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GarageCrewInstance::hide; log channel GARAGECREW: '%p GarageCrewInstance::hide'"
+  "evidence": "decomp:re/decomp/140355360.c;pat:log-message-cxx;xref:0x140239ca8,0x140274f98,0x1403416c8,0x140341f4a,0x1403445e8,0x140355111,0x14035576a,0x140356008,0x14035614a,0x1403569e8,0x140362588,0x140362d7a,0x140369878,0x140369a9a,0x14036a3b8,0x14036a5da,0x140388be9,0x14038e16a,0x14038f05a,0x14038f23a,0x1403c6758,0x1403c681a,0x140c93828,0x14121382c,0x147b43b6a,0x147b43ea8,0x147b473ea",
+  "notes": "GarageCrewInstance::hide(inst,hideCar,keepFlag): unless already hidden in the same mode: sets inst+0x132 bit1, inst+0x133=hideCar, deactivates extra world +0x210, hides models +0xc8, +0xd0 (hideCar only), +0xe0, +0xf0 (0x140190110(.,0)); !keepFlag clears a render flag of [0x14601f5c8]+0xc8; hideCar also hides all TyreSystem tyre parts. (lane owner review requested)"
  },
  "signature": {
   "id": "game.garage_crew_instance_hide",

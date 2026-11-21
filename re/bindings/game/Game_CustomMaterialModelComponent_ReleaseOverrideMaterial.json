@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a90980",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name releaseOverrideMaterial (class from the log channel); log channel CustomMaterialModelComponent: 'releaseOverrideMaterial  %016I64x pcn 0x%016I64x  vId %d sId %d  - override material 0x%016I64x'"
+  "evidence": "decomp:re/decomp/142a90980.c;pat:log-message-method;xref:0x142a9042f,0x142a904ee,0x14dafe800",
+  "notes": "If an override material is set (p1+0x48): logs 'releaseOverrideMaterial ...' (CustomMaterialModelComponent), under allocator 0x146c621e0 scope 0x1464d1d08 posts a type-6 0x10-byte record {p1+0x48,p1+0x50} (NeMultiSubMaterialResourceFactory 'destroyOverrideMaterialAsync'), then clears p1+0x48 = 0, p1+0x50 = 0x1456135b2. (lane owner review requested)"
  },
  "signature": {
   "id": "game.custom_material_model_component_release_override_material",

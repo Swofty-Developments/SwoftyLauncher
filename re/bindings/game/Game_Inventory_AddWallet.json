@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-INVENTORY",
-  "notes": "named from its log messages (channel INVENTORY): 'Added wallet [%s]'"
+  "evidence": "decomp:re/decomp/1425b0a00.c;pat:log-channel-INVENTORY;xref:0x1425ae989,0x1425b1973",
+  "notes": "INVENTORY 'Added wallet [%s]' (log string)."
  },
  "signature": {
   "id": "game.inventory_add_wallet",

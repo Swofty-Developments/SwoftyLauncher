@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14146cc00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14146cc00.c;xref:0x141431b6f,0x141432708",
-  "notes": "Hash map node emplace (node stride 0x18, 1 byte key + shared ptr copy with refcount); grows via 0x14146d340. Caller Game_DecalCustomisation_LinkFileToPlayer."
+  "notes": "Hash map emplace: takes a free node (pool this+8, grown by Game_DecalFiles_HashMap_GrowNodePool), node = {u8 key, shared_ptr copy}, 0x14146cd60 finds the slot; result 1 (exists) returns the node to the pool, 2/3 store it in slots this+0x28, 0 traps. Returns {slot ptr, meta this+0x30+idx, inserted}. Caller Game_DecalCustomisation_LinkFileToPlayer. (lane owner review requested)"
  },
  "signature": {
   "id": "game.decal_files_hash_map_emplace_a",

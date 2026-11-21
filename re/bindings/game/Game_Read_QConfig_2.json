@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--;xref:0x1445006cc,0x1445007a4",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: loc.chgrqst, loc.cstate, q.world.create, q.world.delete, q.world.list, q.world.select'  | 2026-11-17 engine-re: the body is mainly the engine static init that fills about 230 type descriptors {name pointer, djb2 at +8}: resources WOInstances 0x146cb7990, WOTypes 0x146cb7a30, World 0x146cb7a50, WorldLayerModule 0x146cb7968, NeEditorWorldResource/LayerResource; components AudioEmitter, AudioMultiEmitter, AudioRoom, AudioPortal, AudioSpeaker, AudioZone, AudioCameraListener, Trigger, StaticPhysics, CrowdPlacement, CrowdZone, Camera, CameraBehaviour, CameraModifier and others. The q.world.* DB key name comes from the bulk pattern and covers only a small part."
+  "evidence": "decomp:re/decomp/1444fa1e0.c;pat:log-channel--;xref:0x145d32780",
+  "notes": "0x6600-byte static initializer (192 atexit registrations) of engine type descriptors (Anim*, Audio*, Camera*, World*) and audio/camera name ids; q.world.* is a small part (engine-re 2026-11-17 note agrees)."
  },
  "signature": {
   "id": "game.read_q_config_2",

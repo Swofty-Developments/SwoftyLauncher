@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name maxPVSRenderInstances (class from the log channel); log channel PVS: 'maxPVSRenderInstances is %d'"
+  "evidence": "decomp:re/decomp/140153d60.c;pat:log-message-method;xref:0x14014e797",
+  "notes": "Logs PVS 'maxPVSRenderInstances is %d'. Caller 0x14014e797 (0x14014d230). Body 0x3876 bytes."
  },
  "signature": {
   "id": "game.pvs_max_pvs_render_instances",

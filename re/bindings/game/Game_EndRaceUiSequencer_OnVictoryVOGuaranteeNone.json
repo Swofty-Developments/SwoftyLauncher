@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142ea3d60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onVictoryVOGuaranteeNone (class from the log channel); log channel END_RACE_UI_SEQUENCER: 'onVictoryVOGuaranteeNone() called'"
+  "evidence": "decomp:re/decomp/142ea3d60.c;pat:log-message-method;xref:0x142ea35b4,0x142ea3ed6",
+  "notes": "Bus handler: logs 'onVictoryVOGuaranteeNone() called'; if current state +0x58 == 0 sets next state +0x59 = 3 (skip victory VO). Returns 0. Fn ptr taken by lea in 0x142ea3330, 0x142ea3e80. (lane owner review requested)"
  },
  "signature": {
   "id": "game.end_race_ui_sequencer_on_victory_vo_guarantee_none",

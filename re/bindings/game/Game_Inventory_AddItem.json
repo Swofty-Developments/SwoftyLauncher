@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-INVENTORY",
-  "notes": "named from its log messages (channel INVENTORY): 'Accessing inventory [%s] | --New item, assigning ID: %d | --Existing item %d, increasing amount'"
+  "evidence": "decomp:re/decomp/142a7e4a0.c;pat:log-channel-INVENTORY;xref:0x1425aec05,0x1425aefb8,0x1425af7b8,0x14279cbb7,0x14279ddef,0x142c5b2a5,0x142c5b4f9,0x142c5c035",
+  "notes": "INVENTORY AddItem ('New item, assigning ID: %d', 'Existing item %d, increasing amount') (log strings)."
  },
  "signature": {
   "id": "game.inventory_add_item",

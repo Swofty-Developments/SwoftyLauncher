@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401c5fc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=MorphModifier::postBuild; log channel MorphModifier: 'MorphModifier::postBuild %p'"
+  "evidence": "decomp:re/decomp/1401c5fc0.c;pat:log-message-cxx;xref:0x1455e32a8,0x147343d58",
+  "notes": "MorphModifier::postBuild (cell 0x1455e32a8; also called at 0x147343d58). Under the set lock finds the 'neutral' target, lazily builds targets (Game_MorphModifier_BuildTargets, 0x30-byte objects), sets base layer 'base' (0x143a373c0) and the other layers (0x143a37510); then caches channels 'Look_Left'/'Look_Right'/'Look_L_Left'/'Look_L_Right'/'Look_R_Left'/'Look_R_Right' -> +0xa0..+0xc8; +0x98 = 1. (lane owner review requested)"
  },
  "signature": {
   "id": "game.morph_modifier_post_build",

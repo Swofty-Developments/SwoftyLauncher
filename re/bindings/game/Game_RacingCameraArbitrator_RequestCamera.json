@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144536330",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/144536330.c;xref:0x1407a1a88,0x142d836ab",
-  "notes": "(arb, kind, cameraEntity, blend) Searches arb+0x40 list (+0x40..+0x48, stride 0x40) for cameraEntity, then its sub-list for kind byte (+0x18) and builds a camera request; falls back to an empty request; submits via Game_RacingCameraArbitrator_RequiresCrossfade(arb, req, cam, blend, 2, 0, 2). Callers Sess_PreRace_Update, Game_GameModeBenchmark_OnStartLightsComplete."
+  "notes": "(arb, kind, cameraEntity, blend): finds cameraEntity in [arb+0x40]+0x40 (stride 0x40), then the entry with kind byte +0x18 in its sub-list (stride 0x28); request = entity + components 0x146cc20a8 (+0x70/+0x78/+0xd8/+0xe0) and 0x146cc39d8 (Ne_Entity_FindComponent), else empty; submits via 0x144534390(arb, req, cam, blend, 2, 0, 2). Callers 0x1407a1a88, 0x142d836ab. (lane owner review requested)"
  },
  "signature": {
   "id": "game.racing_camera_arbitrator_request_camera",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name makeSceneSetup (class from the log channel); log channel DRIVER_ACTOR_SPAWNER: '%s()'"
+  "evidence": "decomp:re/decomp/1401b1860.c;pat:log-message-method;xref:0x1401b7512",
+  "notes": "(spawner, out setup, driver desc): logs DRIVER_ACTOR_SPAWNER '%s()' makeSceneSetup; memsets a 0x9c0 setup and move-assigns it into out; returns early with 'The driver needs a head to be spawned!' when desc[0]==0; sets path vars PREFIX/STEERINGANIM/YEAR/GENDER/LIVERY/ANIMATION_PACKAGE/CHARACTER_PACKAGE/LIVERY_PACKAGE (sapien vs normal) and resolves suit/logo/glove/helmet scenes via 0x1401b6b40 + Game_Scene_FindByName."
  },
  "signature": {
   "id": "game.driver_actor_spawner_make_scene_setup",

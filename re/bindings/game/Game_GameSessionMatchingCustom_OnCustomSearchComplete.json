@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143076eb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionMatchingCustom::onCustomSearchComplete; log channel NETWORK-SESSION: 'GameSessionMatchingCustom::onCustomSearchComplete(%s, %d sessions, isFinal=%d)'"
+  "evidence": "decomp:re/decomp/143076eb0.c;pat:log-message-cxx;xref:0x143076db9,0x14307b83b,0x14307b905,0x14307bb14,0x1430e371a",
+  "notes": "Own pretty-function string 0x14580cd65 'onCustomSearchComplete(NEbool, NeNetSessionEnumerator *, NEbool)'. p2 ok, p3 enumerator (+0x18..+0x20), p4 isFinal. Restarts timer +0x60/+0x68, error 0x1e on failure ([[p1+8]+0x4d8]+0x34). Per session, skipping banned ids ('Ignoring %s'), decodes the attributes (0x1440813b0; Track, Session, Practice..Sprint2Race, Round, Damage, Weather, ..., Privacy) into a 0x1a0-byte result appended to p1+0x20..+0x30. When final calls and clears the search delegate +0x80/+0x88, 0x14307bb20, clears +0xb9. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_session_matching_custom_on_custom_search_complete",

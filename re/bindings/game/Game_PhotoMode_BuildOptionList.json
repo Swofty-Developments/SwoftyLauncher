@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141d05010.c;xref:0x141cf9c56",
-  "notes": "Builds photo mode option lists (keys selected_option, options, value) for the UI; 23 callers incl. Game_PhotoMode_OnScenarioLoaded (x2). Hypothesis."
+  "evidence": "decomp:re/decomp/141d05010.c;xref:0x141cf9c56,0x141cfe139,0x141cfe14c,0x141cfe15f,0x141cfe1d7,0x141cfe1eb,0x141cfe212,0x141cfe296,0x141cfe30d,0x141cfe38d,0x141cffe48,0x141d04ee4,0x141d08516,0x141d0869e,0x141d0973b,0x141d09751,0x141d09878,0x141d0988c,0x141d098b3,0x141d098f7,0x141d09924,0x141d0993a",
+  "notes": "Builds photo mode option lists (keys selected_option, options, value) for the UI; callers incl. Game_PhotoMode_OnScenarioLoaded (0x141cfe139..0x141cfe38d). Hypothesis."
  },
  "signature": {
   "id": "game.photo_mode_build_option_list",

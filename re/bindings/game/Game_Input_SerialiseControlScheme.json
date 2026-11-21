@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a69440",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-INPUT",
-  "notes": "named from its log messages (channel INPUT): 'Failed to serialise control scheme id=%d name=\"%s\"'"
+  "evidence": "decomp:re/decomp/142a69440.c;pat:log-channel-INPUT;xref:0x1457bb740",
+  "notes": "Serialise, vt cell 0x1457bb740: node 'control_schemes', child per custom scheme (+0x1a/+0x1b) via 0x142a61bb0 (on error logs 'Failed to serialise control scheme id=%d name=\"%s\"' and drops the child); then 'control_schemes_player_index_%d' per player entry (+0x218 stride 0x50) with scheme ids; returns an error code. (lane owner review requested)"
  },
  "signature": {
   "id": "game.input_serialise_control_scheme",

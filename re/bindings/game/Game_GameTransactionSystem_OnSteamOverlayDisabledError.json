@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e66a80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_GameTransactionSystem_OnSteamOverlayDisabledError;xref:0x142e66af0",
-  "notes": "cxx=game::GameTransactionSystem::onSteamOverlayDisabledError; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/142e66a80.c;str:s_GameTransactionSystem_OnSteamOverlayDisabledError;xref:0x142e662fa",
+  "notes": "onSteamOverlayDisabledError(sys): logs its pretty-function, calls and clears delegates sys+0xb8/+0xc0 and sys+0xc8/+0xd0 (premium-item and currency flows). Callback (lea) in 0x142e66210, the overlay check used by 0x142e65c60 and 0x142e66770. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_transaction_system_on_steam_overlay_disabled_error",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f8afc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-GHOSTLAP",
-  "notes": "named from its log messages (channel GHOSTLAP): '%s(%d, %d bytes) : applied telemetry data. | %s(%d, %d bytes) : failed to read dataset telemetry has incomplete flag on.'"
+  "evidence": "decomp:re/decomp/142f8afc0.c;pat:log-channel-GHOSTLAP;xref:0x1414b52f6,0x1414b5841",
+  "notes": "applyTelemetryData(storage,idx,stream,ctx,out5,out6,out7): ReadAndValidate 0x142f8a730, copies optional header fields to out5/6/7 when unset, resets telemetry lap object storage+0x50[idx] and reads it (0x1437ad610); returns 0 when the read fails or incomplete flag bit2 of +0x2c0 is set. Callers 0x1414b5160 (two sites). (lane owner review requested)"
  },
  "signature": {
   "id": "game.ghost_lap_apply_dataset_telemetry",

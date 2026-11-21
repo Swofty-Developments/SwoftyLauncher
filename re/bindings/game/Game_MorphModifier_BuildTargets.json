@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a35d90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143a35d90.c;xref:0x1401c1ce6",
-  "notes": "Builds morph/blend target array of count outer*inner (0x143a35eb0 resize), for each source resource creates a target via 0x143a35370 and stores into this+8 array. Callers Game_CameraActor_SyncClipTarget, Game_MorphModifier_PostBuild (x2). Hypothesis."
+  "evidence": "decomp:re/decomp/143a35d90.c;xref:0x1401c1ce6,0x1401c61ea,0x1401c6328,0x140399b5e,0x1443b7ec6,0x1443be802,0x15205397e",
+  "notes": "(targets, morph list, set): stores +0x28/+0x20; resizes (0x143a35eb0) to morphs*set entries; one set entry -> per morph Game_MorphModifier_BuildChannelRemap into slot [+8][i] (refcounted swap); otherwise Game_MorphModifier_BuildBlendBuffer per morph. (lane owner review requested)"
  },
  "signature": {
   "id": "game.morph_modifier_build_targets",

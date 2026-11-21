@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: RecommendedPCSpec.AMDMinimumDredDriverVersion.value, RecommendedPCSpec.AMDRecommendedDriverVersion.displayValue, RecommendedPCSpec.AMDRecommendedDriverVersion.value, RecommendedPCSpec.AMDRequiredMinimumDriverVersion.displayValue, RecommendedPCSpec.AMDRequiredMinimumDrive'"
+  "evidence": "decomp:re/decomp/1443d5ce0.c;pat:log-channel--;xref:0x1443c8355",
+  "notes": "Recommended PC spec check: RecommendedPCSpec.* driver versions per vendor, min CPU/RAM/VRAM, fake/skip switches."
  },
  "signature": {
   "id": "game.read_recommended_pc_spec_config",

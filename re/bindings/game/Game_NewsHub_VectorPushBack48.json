@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1417df2a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1417df2a0.c;xref:0x1417dc609",
-  "notes": "vector push_back for 48-byte elements (growth 1.5x) used by the news hub view model. Callers Game_Build_NewsHubViewModel (x2), Game_RenderBadgeViewModel_LoadTexture."
+  "evidence": "decomp:re/decomp/1417df2a0.c;xref:0x1417dc609,0x1417dc7a7,0x141d774db,0x142071363,0x1420713ea,0x144216eac",
+  "notes": "Generic emplace_back on {alloc,begin,end,cap} with 0x30 elements {u32 *param_2, refcounted string *param_3, refcounted string *param_4, 24 bytes from param_5}; grows 1.5x via allocator vslot +0x18, moves old elements, frees the old block. Used by 0x1417dacb0, 0x141d76d70, 0x142070d00, 0x144216e30, not only the news hub. (lane owner review requested) Better name: Game_Vec48_EmplaceBack_IdTwoStrings (bound record keeps its name)."
  },
  "signature": {
   "id": "game.news_hub_vector_push_back48",

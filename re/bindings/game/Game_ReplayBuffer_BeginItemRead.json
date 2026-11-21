@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1445c5990",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=ReplayBuffer::beginItemRead; log channel REPLAYBUFFER: 'ReplayBuffer::beginItemRead failed'"
+  "evidence": "decomp:re/decomp/1445c5990.c;pat:log-message-cxx;xref:0x145befd48,0x145befed8",
+  "notes": "ReplayBuffer vtable slot (cells 0x145befd48/0x145befed8, this = buffer+0x2d8). Peeks 4 bytes via base [this-0x2d8] vcall +0x18; on 'IT' marker (0x5449) consumes them (own vcall +0x10), *out = 3rd byte (item type), +0x13 = 1, +0x16 = type, returns 1; peek failure logs 'ReplayBuffer::beginItemRead failed'; returns 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.replay_buffer_begin_item_read",

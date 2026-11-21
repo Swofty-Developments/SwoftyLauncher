@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1445c6240",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name endCompression (class from the log channel); log channel REPLAYBUFFER_VERBOSE: 'endCompression'"
+  "evidence": "decomp:re/decomp/1445c6240.c;pat:log-message-method;xref:0x142c46d8c,0x142c46e05,0x142c4ac6f,0x142fe0d85,0x142fe0dba,0x1445beddd,0x1445c038a,0x1445c3cf5,0x1445c44a1,0x1445c4a9d,0x1445c4b67,0x1445c51fa,0x1445c5914,0x1445c5adb,0x1445c5bab,0x1445cd2f0,0x1445cd648,0x1445d0f05,0x1445d10dc,0x1445d695c,0x154efde4b,0x154f38f96,0x154f38fcf,0x154f48eb4",
+  "notes": "(buf): logs 'endCompression'; +0x350 = compressed size u32 +0x398; through the stream at +0x2d8 writes the 8-byte size and the compressed bytes (+0x338) (vcall +0x68 twice), +0x2ed = 1, vcall +0x80; logs 'Compressed frame from %zu bytes to %zu bytes (%d%%)'. Many callers incl. GetMinimumTime, BeginFrameRead, Game_MidSessionSave_GetReplayBuffers, Ne_Replay_WriteFrames. (lane owner review requested) Better name: Game_ReplayBuffer_EndCompression (bound record keeps its name)."
  },
  "signature": {
   "id": "game.replaybuffer_end_compression",

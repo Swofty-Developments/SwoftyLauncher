@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-INPUT;decomp:re/decomp/142a56310.c",
-  "notes": "named from its log messages (channel INPUT): 'GameInputModule taking input snapshot' | engine-re E1 2026-11-18 (static): this snapshot is the controls-settings capture (axis names hashed with djb2 into a map of name -> value, read back by Game_InputModule_ReadAxisSnapshot 'Snapshot good %s is pressed'); it is NOT the per-frame gameplay input path. Gameplay actions are read per frame by Sess_HumanController_Update 0x1438959c0 and Game_GameMfdSystem_Update 0x142a8e070 through Ne_InputMapper_* on interned action handles."
+  "evidence": "pat:log-channel-INPUT;decomp:re/decomp/142a56310.c;xref:0x141dbdda9,0x142a562fa,0x142a7d555,0x1434de6f5,0x1434df820,0x1434e0290,0x1434e03fc,0x1434e0433,0x1434e0c82",
+  "notes": "INPUT 'GameInputModule taking input snapshot' (log string)."
  },
  "signature": {
   "id": "game.input_module_take_snapshot",

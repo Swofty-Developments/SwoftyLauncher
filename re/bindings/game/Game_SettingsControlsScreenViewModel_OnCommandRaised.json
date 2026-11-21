@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_SettingsControlsScreenViewModel_OnCommandRaised;xref:0x141da0373",
+  "evidence": "decomp:re/decomp/141d9f6d0.c;str:s_SettingsControlsScreenViewModel_OnCommandRaised;xref:0x14574cb90",
   "notes": "cxx=game::SettingsControlsScreenViewModel::onCommandRaised; named in bulk from a pretty-function or log string that may belong to an inlined callee"
  },
  "signature": {

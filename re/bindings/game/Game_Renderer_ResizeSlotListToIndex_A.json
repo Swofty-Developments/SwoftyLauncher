@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b446a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143b446a0.c;xref:0x143b1be88,0x143b1cb00,0x143b226f9",
-  "notes": "Hypothesis: 12 KB std::list-like resize (nodes spliced between lists at +0x18/+0x20, counters +0x30/+0x38) with 4 TLS-guarded statics; twin of 0x143b439d0. Named callers: Game_Renderer_CreateRenderPasses."
+  "evidence": "decomp:re/decomp/143b446a0.c;xref:0x143b1be88,0x143b1cb00,0x143b226f9,0x143b4158d,0x143b4474a,0x143b4479a,0x143b44e0a,0x143b44e46,0x143b44e57,0x143b45137",
+  "notes": "Pooled list reserve(list, capacity, max) for 0xd0-byte nodes (same template as 0x141e6eb70 without element destructors): shrink unlinks trailing nodes to the free list and, for capacity>0, rebuilds via 0x143b44fb0 and swaps; grow allocates a 0x28 chunk + n*0xd0 nodes; capacity [7], max [8]; returns 0 or 0xc/1. Twin 0x143b439d0. (lane owner review requested) Better name: Game_Renderer_SlotListA_Reserve (bound record keeps its name)."
  },
  "signature": {
   "id": "game.renderer_resize_slot_list_to_index_a",

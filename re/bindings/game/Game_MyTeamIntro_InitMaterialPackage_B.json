@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "void f(void)",
   "evidence": "decomp:re/decomp/140266170.c;xref:0x1455eff30",
-  "notes": "myteam-g1: Sibling of the intro material package init (same shape, another f1_my_team_int* material set)."
+  "notes": "vt cell 0x1455eff30 = vt 0x1455efd20 +0x210 (base slot 0x140239270 is a protector jmp stub). Same VideoModuleQueue sequence as 0x140265930 (same eaid paths, 0x140263f10 / 0x140263ba0) without the base call. Not a material-package init. Better name: Game_MyTeamIntroScript_VideoQueueSlot210 (bound record keeps its name)."
  },
  "signature": {
   "id": "game.my_team_intro_init_material_package_b",

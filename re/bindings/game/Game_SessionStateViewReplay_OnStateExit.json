@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d9f2a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onStateExit (class from the log channel); log channel SessionStateViewReplay: 'onStateExit'"
+  "evidence": "decomp:re/decomp/142d9f2a0.c;pat:log-message-method;xref:0x142d9efed,0x142da1a3c,0x142da3ad7,0x142da3c1e,0x142da5b27,0x142da73f8,0x1457e3cc0",
+  "notes": "Logs SessionStateViewReplay \"onStateExit\"; clears +0xf40 bit0, pushes false to view node +0xee8; unless +0xed4 (then logs \"onStateExit m_dropThrough\"): resets [+0xdb8]+0x134..+0x140 (=7), 0x14080cfb0([+0xc98],+0xed0), clears bit 2 in the 0x146cc3a80 entries, mode 2 removes the event_mode_details_close handler, 0x14453f760(...,0x14). Called by derived state exits and vtable 0x1457e3cc0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.session_state_view_replay_on_state_exit",

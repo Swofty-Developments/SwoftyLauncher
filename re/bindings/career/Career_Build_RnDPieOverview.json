@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141f46eb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141f46eb0.c;xref:0x141f46f94,0x141f46fb8,0x141f4785c;kb:subsystems/rnd_ui.md#pie-object",
-  "notes": "LIVE DEVELOPMENT POTENTIAL pie builder for the career R&D>Performance page: vtable slot +0x98 of class B (vt_Career_RnDPerfViewModel 0x14575e300, created by Career_Create_RnDPerfViewModel 0x141c43290). NOT 0x141f41d60 (class A, Team HQ research overview). No E8 callers; reached as vt slot 19 through Vm_Route_BindingEvent on binding event 7, so it first runs at career load. Allocs 0x900 (0x80 + 4*0x220) @0x141f46f75, constructs the object with Career_Construct_RnDPieObject @0x141f46f94 (the only place slots are built: exactly four), move-assigns it into this+0x668 with Career_MoveAssign_RnDPieObject @0x141f46fb8; the following moved-from destroy block 0x141f46fbd..0x141f4718a is dead (its 4 calls to 0x141f45650 are slot DESTRUCTOR calls, not constructors). Populates via Career_Populate_RnDPieSlices 0x141f48030, then Career_Write_RnDPieTileCounts @0x141f4785c. Sector handler 0x141f4ac40 (slot +0x50). See rnd_ui.md#pie-object."
+  "evidence": "decomp:re/decomp/141f46eb0.c;kb:subsystems/rnd_ui.md#pie-object;xref:0x14575e398",
+  "notes": "Vtable slot +0x98 of class B (cell 0x14575e398). Allocs 0x900, Career_Construct_RnDPieObject, Career_MoveAssign_RnDPieObject into this+0x668 (4 Career_Destroy_RnDPieSlot calls on the moved-from temp). Then Career_Populate_RnDPieSlices, Career_Query_EnabledUpgrades, Career_Write_RnDPieTileCounts; registers callbacks 0x141f4a2e0 and 0x141f4a760; fires init_pie_sector/rnd_overview_activated. (lane owner review requested)"
  },
  "signature": {
   "id": "career.build_rn_d_pie_overview",

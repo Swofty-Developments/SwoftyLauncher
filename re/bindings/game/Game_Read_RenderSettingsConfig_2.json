@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: render_settings.default_gate_colour, render_settings.fade_enabled, render_settings.height, render_settings.near_fade_end, render_settings.near_fade_start, render_settings.original_width, render_settings.render_gates, render_settings.width_multiplier, render_settings.y_of'"
+  "evidence": "decomp:re/decomp/142d222a0.c;pat:log-channel--;xref:0x1457e7558",
+  "notes": "Checkpoint/gate challenge settings: time_between_checkpoints, min/max time, render_settings.* fade and gate colour; VEHICLE_PLACEMENT 'Invalid slot (%d)'."
  },
  "signature": {
   "id": "game.read_render_settings_config_2",

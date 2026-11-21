@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: Game.F1World.ForceFanzoneChoices, Game.F1World.SkipFanzoneChoices, Testing.EnableSmokeTest'"
+  "evidence": "decomp:re/decomp/141b19e80.c;pat:log-channel--;xref:0x1457301b0",
+  "notes": "Vt cell 0x1457301b0. If +0x16ce: clears it, finds the player record, and when choices are incomplete (+0xa0..+0xa6, +199) and not skipped by Game.F1World.ForceFanzoneChoices / SkipFanzoneChoices / Testing.EnableSmokeTest calls 0x142e689c0([this+0x730], 'fanzone_choices_onboarding'), sets +0x16d1. Better name: Game_F1World_TryShowFanzoneChoicesOnboarding (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_game_config_3",

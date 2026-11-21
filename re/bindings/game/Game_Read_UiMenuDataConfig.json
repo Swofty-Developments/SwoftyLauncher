@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141610510",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: ui_menu_data.hud_lap_description_loc_tag, ui_menu_data.hud_lap_description_string, ui_menu_data.hud_lap_description_visible, ui_menu_data.hud_lap_number_visible, ui_menu_data.hud_position_tracker_visible, ui_menu_data.hud_top_left_position_visible, ui_menu_data.hud_total'"
+  "evidence": "decomp:re/decomp/141610510.c;pat:log-channel--;xref:0x1414ac2b3,0x1414ac313",
+  "notes": "Ctor of 7 VM bindings: ui_menu_data.hud_total_lap_count_visible +0xc0, hud_lap_number_visible +0xe0, hud_lap_description_visible +0x100, hud_top_left_position_visible +0x120, hud_position_tracker_visible +0x140 (bools 0), hud_lap_description_string +0x160 (empty), hud_lap_description_loc_tag +0x180 (1). (lane owner review requested) Better name: Game_HudLapInfoBindings_Construct (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_ui_menu_data_config",

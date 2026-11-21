@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-HTTP/V",
-  "notes": "named from its log messages (channel HTTP/V): '[%u] Valid Session Handle: Create session for URI %s (wide %ls)'"
+  "evidence": "decomp:re/decomp/14404cae0.c;pat:log-channel-HTTP/V;xref:0x145a4d638",
+  "notes": "HTTP/V '[%u] Valid Session Handle: Create session for URI %s (wide %ls)' (log string); vtable cell 0x145a4d638."
  },
  "signature": {
   "id": "game.http_valid_session_handle_create_session_uri",

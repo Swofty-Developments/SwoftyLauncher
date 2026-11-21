@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1406b1970",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1406b1970.c;xref:0x1406b1d36",
-  "notes": "per-camera settings: fov mirror_rot_x near_plane_off x/y/z_offset rot_x shake movement look_limit halo_column(byte +0x30); writer 0x140849590"
+  "evidence": "decomp:re/decomp/1406b1970.c;xref:0x1406b10e6,0x1406b1492",
+  "notes": "(props, out): reads camera properties fov->+8, mirror_rot_x->+0x20, near_plane_off->+0xc, x_offset->+0x14, y_offset->+0x18, z_offset->+0x1c, rot_x->+0x10, shake->+0x24, movement->+0x28, look_limit->+0x2c (float type 0x146129be0) and halo_column->byte +0x30 (bool type 0x146129dc0); missing key returns 0x57, wrong type 0x58, else 0. Callers 0x1406b10e6, 0x1406b1492 (0x1406b0380). (lane owner review requested)"
  },
  "signature": {
   "id": "game.read_camera_settings",

@@ -9,7 +9,7 @@
   "subsystem": "career",
   "proto": "void f(void *ctx)",
   "evidence": "decomp:re/decomp/141c610e0.c;xref:0x141c5fc32",
-  "notes": "myteam-g1: Posts my_team_part_fitting event (player fits a part)."
+  "notes": "Queues the masked tutorial 'my_team_part_fitting' (inlined Game_MaskedTutorial_AddToQueue: tutorial_grouping, ignore_watched, ONBOARDING log); early return of +0x338. Better name: Career_MyTeamPartFitting_QueueTutorial (bound record keeps its name)."
  },
  "signature": {
   "id": "career.my_team_part_fitting_event",

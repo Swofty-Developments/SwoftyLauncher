@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NEOS",
-  "notes": "named from its log messages (channel NEOS): 'Sending web socket string: %s'"
+  "evidence": "decomp:re/decomp/144443b50.c;pat:log-channel-NEOS;xref:0x1432ba8f6",
+  "notes": "Reached by jmp 0x1432ba8f6. SignalR connection event/state handler: WS errors, 'Http request error', handshake reply 0x144444340, 'Sending web socket string', eWaitForSignalRConnect / eWaitForWebSocketStarted, 0x1444440d0."
  },
  "signature": {
   "id": "game.neos_sending_web_socket_string",

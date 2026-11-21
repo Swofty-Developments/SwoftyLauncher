@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1406adf50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1406adf50.c;xref:0x141fa63e6,0x142da28e4",
-  "notes": "(cam) When active (+0xf or [+0x50]+0x8a): if focus vehicle +0x81 no longer valid (0x1406ae510) builds a candidate list (0x1406ae1e0) and picks the car ahead/behind by race position (+0x48 ^ +0x50 obfuscated) from vehicles [this+0x70]+0x148; sets +0x14/+0x18/+0x20 and calls 0x1406ae650; uses entity component 0x146cb78b8. Callers Sess_ViewInstantReplay_Update, GarageMonitorTvFeedVM. Hypothesis: replay/TV camera focus selection."
+  "evidence": "decomp:re/decomp/1406adf50.c;xref:0x1406ae381,0x141fa63e6,0x142c05dc2,0x142da10b0,0x142da28e4",
+  "notes": "(cam): returns unless +0xf or [+0x50]+0x8a. If focus +0x81 is no longer selectable: builds the candidate list (0x1406ae1e0) and picks a neighbour by obfuscated race position (+0x48 ^ +0x50) of vehicles [cam+0x70]+0x148 relative to +0x14 (0xff if none); its camera component (0x146cb78b8) -> SetFocusVehicle(cam, idx, +0x15, comp+0x28); then +0x18 = component of +0x14, +0x20 = word +0x14, +0x80 = 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.replay_camera_update_focus_vehicle",

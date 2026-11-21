@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143b90b40.c;xref:0x143b0ce54,0x143b10e97",
-  "notes": "Hypothesis: huge (5.3 KB) per-emitter simulation step called from Game_Particles_UpdateManager; uses powf x6, sqrtf, trig; string \"<unknown-because-not-initialised/resource>\" for unresolved resource names; contains a std::function call (bad_function_call throw). Named callers: Game_Particles_UpdateManager."
+  "evidence": "decomp:re/decomp/143b90b40.c;xref:0x143b0ce54,0x143b10e97,0x1526e4104",
+  "notes": "Callers 0x143b06d90, 0x143b0faf0, 0x1526e40b0."
  },
  "signature": {
   "id": "game.particles_step_emitter_instance",

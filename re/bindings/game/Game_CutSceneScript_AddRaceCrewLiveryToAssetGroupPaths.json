@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=CutSceneScript::addRaceCrewLiveryToAssetGroupPaths; log channel CUTSCENE_SCRIPT_COMMANDS: 'CutSceneScript::addRaceCrewLiveryToAssetGroupPaths invalid VehicleStatId %s'"
+  "evidence": "decomp:re/decomp/14023a860.c;pat:log-message-cxx;xref:0x1455eb9a0,0x1455ed170",
+  "notes": "Renamed: script-text asset pass; addRaceCrewLiveryToAssetGroupPaths is only an inlined warning. Refs = vtable cells. Splits the script text (+0x850) by lines and '%s %s'; on 'BeginSceneContext' logs 'loadAssetGroupsUsingSceneContext()', parses the context (0x14023b9a0, stored via 0x140230250 at +0x190), adds driver model/head (0x140234750, 0x140234a20, 0x140234440) and the race crew livery of vehicle +0x1b2. Better name: Game_CutSceneScript_LoadAssetGroupsUsingSceneContext (bound record keeps its name)."
  },
  "signature": {
   "id": "game.cut_scene_script_add_race_crew_livery_to_asset_group_paths",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b05370",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143b05370.c;xref:0x143b08f8c,0x143b090da",
-  "notes": "Replay rewind helper: for every effect in mgr+0x858e90 after mark mgr+0x1052f0 whose state (+0x64 & 0xfc) is deletable, kills all its live particles: per emitter (stride 0x180) lock +0x158, counts +0xe0/+0xe8/+0x104 = 0, returns particle chunk list +0xf0/+0xf8 to the global free list 0x146294210, clears particle buffers. Others logged 'not deleting %s'; negative count logged 'The old code using size_t would have failed here...'. Caller Game_Particles_UpdateManager. d1-verify-b: also removes deletable effects from mgr+0x858e90 (swap with last, shrink) and frees them"
+  "notes": "For effects in mgr+0x858e90 after mark mgr+0x1052f0: negative count logs 'The old code using size_t would have failed here...'; effects whose state (+0x64 & 0xfc) is not deletable log 'not deleting %s'; deletable ones: reset emitters (stride 0x180, +0x158 lock, +0xe0/+0xe8/+0x104 = 0, chunks back to free list 0x146294210), clear particle buffers, swap with last (index +0x58), shrink list, free emitter array and effect (allocator mgr+0x857aa8). Callers in 0x143b06d90. (lane owner review requested)"
  },
  "signature": {
   "id": "game.particles_reset_effects_since_mark",

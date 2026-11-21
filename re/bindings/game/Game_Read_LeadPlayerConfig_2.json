@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: DebugOSD.GameInputModule.showInputProviders, lead_player.settings.eye_tracking.value, lead_player.settings.eye_tracking_cam.value, lead_player.settings.head_tracking.value'"
+  "evidence": "decomp:re/decomp/142a733f0.c;pat:log-channel--;xref:0x1457bc470",
+  "notes": "EGO_INPUT_SYSTEM: input_device/axis/vk_code_0x%02X icon tables, MessageOnOptionsLoaded, Head Tracking Reset; lead_player tracking keys are a small part."
  },
  "signature": {
   "id": "game.read_lead_player_config_2",

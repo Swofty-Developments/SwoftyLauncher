@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name rttGenerator (class from the log channel); log channel RTT: 'rttGenerator has no instances - nothing will render!'"
+  "evidence": "decomp:re/decomp/143d84490.c;pat:log-message-method;xref:0x143d8b5a3",
+  "notes": "Log RTT 'rttGenerator has no instances - nothing will render!'; 27 KB body that calls the ASSAO/CMAA2/deferred/tiled-lighting/decal setup functions. Caller Render_SceneView_SubmitCamera."
  },
  "signature": {
   "id": "game.rtt_rtt_generator",

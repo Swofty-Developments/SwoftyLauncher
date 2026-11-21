@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: session.top_car.driver.full_name_tv_style, session.top_car.team, session.top_car_team_name_short'"
+  "evidence": "decomp:re/decomp/1414869d0.c;pat:log-channel--;xref:0x1414aec7d,0x1414b72a3",
+  "notes": "End-of-session banner VM: weather icons, eos_single/double layouts, lng_race_winner, session.top_car driver/team names."
  },
  "signature": {
   "id": "game.read_session_top_car_config",

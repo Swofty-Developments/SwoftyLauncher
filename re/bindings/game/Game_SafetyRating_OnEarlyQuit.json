@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142c6d630",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-SAFETY_RATING",
-  "notes": "Log channel SAFETY_RATING: 'The lead player has quitted a match early; their safety rating went from %u to %u.'"
+  "evidence": "decomp:re/decomp/142c6d630.c;pat:log-channel-SAFETY_RATING;xref:0x1500091fc",
+  "notes": "(sys, penalty): snapshot prev rating +0x58 = +0x40, reason byte +0x5c (3 if +0x428, else 5 or from list +200..+0xd0), +0x60 = +0x48; rating +0x40 = clamp(+0x40 - penalty, +0xe0, +0xe4); 0x142c6db00; float +0x48 = clamp(+0x48 + +0x11c, +0x114, +0x118); logs 'The lead player has quitted a match early...'; tail-jmp WriteOnlinePlayerData (decomp merges it). Caller 0x150009120. (lane owner review requested)"
  },
  "signature": {
   "id": "game.safety_rating_on_early_quit",

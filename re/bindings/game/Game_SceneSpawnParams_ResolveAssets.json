@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142e0b390.c;xref:0x141c00d74",
+  "evidence": "decomp:re/decomp/142e0b390.c;xref:0x141c00d74,0x142e0b374",
   "notes": "4976-byte copy of a scene spawn parameter set (RobinHoodMap_U64 lookups, HashedName_FromString). Callers 0x141c00d74 and Game_SceneSpawnParams_CopyConstruct (0x142e0b374). Hypothesis. vq0-verify partial/disagree"
  },
  "signature": {

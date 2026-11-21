@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428fe140",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1428fe140.c",
-  "notes": "vtable method; reads VTF Chassis COMY COMZ Front/RearVisualHeightOffset and SuspensionSystem Tyre TyreRadius, Suspension Camber LocalRestPositionX/Y/Z RideHeightOffset (front then rear sibling), mirrors X for the other side"
+  "evidence": "decomp:re/decomp/1428fe140.c;xref:0x1457af388",
+  "notes": "Vtable cell 0x1457af388. Sets node matrices (0x143d3d8e0) and render-flag masks (lowLODShadows off; alwaysLowLODShadows, LitPlanarReflectionsGeneratorHQ, custom_decals on). VTF [this+0x290]+0x28: Chassis COMY/COMZ -> +0x570, Front/RearVisualHeightOffset -> +0x564/+0x560; SuspensionSystem Tyre TyreRadius -> +0x2a0/+0x350, sibling -> +0x400/+0x4b0; Suspension Camber, LocalRestPositionX/Y(+RideHeightOffset)/Z -> +0x2a4..+0x2b8, X mirrored +0x354..+0x368, sibling +0x404../+0x4b4... (lane owner review requested)"
  },
  "signature": {
   "id": "game.setup_frontend_car_from_vtf",

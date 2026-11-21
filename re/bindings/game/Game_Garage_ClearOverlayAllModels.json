@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1403b8180",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1403b8180.c;xref:0x1403b7b05",
-  "notes": "For all 26 garage model slots (param_1+0xe0) clears the \"OVERLAY\" material parameter on each sub-model (vcall +0x10/+0x28 on component +0x240). Caller Car_PitStop_ApplyTyreAndWingVisuals."
+  "evidence": "decomp:re/decomp/1403b8180.c;xref:0x1403b7b05,0x1403b80a7",
+  "notes": "Clears the 'OVERLAY' material parameter (vt+0x10 set, vt+0x28 clear on component +0x240) of every sub-model of all 27 (0x1b, old note said 26) garage model slots garage+0xe0; skipped when garage+0x64 is set. Callers 0x1403b77c0 (two sites). (lane owner review requested)"
  },
  "signature": {
   "id": "game.garage_clear_overlay_all_models",

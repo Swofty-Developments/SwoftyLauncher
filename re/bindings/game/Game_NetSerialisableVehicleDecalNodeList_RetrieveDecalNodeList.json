@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14313d600",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=NetSerialisableVehicleDecalNodeList::retrieveDecalNodeList; log channel NETWORK-ENTRANTS/V: 'void network::NetSerialisableVehicleDecalNodeList::retrieveDecalNodeList(neon::NeIAllocPool *, const game::VehicleDecalNodeList &, const NEsize_t &, const NEsiz | %s: Loaded net decals from %zu to %zu'"
+  "evidence": "decomp:re/decomp/14313d600.c;pat:log-message-cxx;xref:0x143143dab,0x1431885ca",
+  "notes": "Callers 0x143143dab, 0x1431885ca. (this,alloc,list,&first,&last): destroys old entries, +8 = list+0x20, allocates last-first+1 0x60 entries (vt 0x14581a460) and copies node fields (+0x10/+0x12, +0x18, +0x20, +0x28, +0x30.., +0x50.., +0x60, +0x64, type +0x65, 0xff if none) from list nodes (list+8, 0x10 stride). (lane owner review requested)"
  },
  "signature": {
   "id": "game.net_serialisable_vehicle_decal_node_list_retrieve_decal_node_list",

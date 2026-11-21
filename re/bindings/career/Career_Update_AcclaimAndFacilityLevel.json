@@ -9,7 +9,7 @@
   "subsystem": "career",
   "proto": "void f(void *view)",
   "evidence": "decomp:re/decomp/141a27410.c;xref:0x145727618",
-  "notes": "myteam-g1: View update reading acclaim and facility_level values for display."
+  "notes": "Career setup wizard view (vtable cell 0x145727618): Ui_CareerSetup_BuildScreenBindings, posts a bus message (Ne_Post_BusMessage), builds 'modes' tiles (career_wizard_small_tile_button) with title, subtitle, cash, acclaim, facility_level. Better name: Career_Wizard_BuildModeTiles (bound record keeps its name)."
  },
  "signature": {
   "id": "career.update_acclaim_and_facility_level",

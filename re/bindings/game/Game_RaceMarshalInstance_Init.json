@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1403c2920",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1403c2920.c",
-  "notes": "finds the marshal's track position (TrackSpace 0x1445f3630/0x1445f37b0/0x1445f3ad0 -> lap fraction, marshal zone) and the track side, loads script RaceMarshall_FaceLeft or RaceMarshall_FaceRight (0x143662b90)."
+  "evidence": "decomp:re/decomp/1403c2920.c;xref:0x1403d3369,0x147e662e9",
+  "notes": "(inst): projects inst pos +0x10 on TrackSpace ([0x14604c2c8+0x298]+0x28: 0x1445f3630 with retries, then 0x1445f37b0), lap distance 0x1445f3ad0 -> +0x94, fraction +0x90, marshal zone from [0x14604c2c8+0x2a0] -> +0x98 (-2 none), side +0x8c; loads script RaceMarshall_FaceRight/FaceLeft (0x143662b90, 0x143660a60), random rate/start; state +0x9c 3 or 5. Callers 0x1403d3369, 0x147e662e9. (lane owner review requested)"
  },
  "signature": {
   "id": "game.race_marshal_instance_init",

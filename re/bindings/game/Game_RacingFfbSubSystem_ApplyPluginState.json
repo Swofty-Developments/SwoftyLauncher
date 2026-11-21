@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446f83f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-FFB_DEBUG",
-  "notes": "named from its log messages (channel FFB_DEBUG): 'RacingFFBSubSystem - applying plugin state change %d -> %d | RacingFFBSubSystem - applying plugin state change - stoping FFB effects | RacingFFBSubSystem - applying plugin state change - resuming FFB '"
+  "evidence": "decomp:re/decomp/1446f83f0.c;pat:log-channel-FFB_DEBUG;xref:0x145c00828",
+  "notes": "Virtual (vt cell 0x145c00828): if !+0x2c9: lazily creates the 'RacingFFBSubSystem' worker (+0x1c8, 0x14391d280 stack 0xc000, callback 0x1446fab00) and global 0x146ce83e0; when state +0x2c0 != applied +0x2c4 logs 'applying plugin state change %d -> %d', 0 -> 0x1446f8640 (stop effects), 1 -> 0x1446f8780 (resume), then +0x2c4 = +0x2c0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.racing_ffb_sub_system_apply_plugin_state",

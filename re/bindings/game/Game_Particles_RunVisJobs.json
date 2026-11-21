@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143b11930.c;xref:0x143b0d94d,0x143b0dca8",
-  "notes": "Runs ParticleManagerVisJobs: dispatches visibility/cull jobs and waits (WAIT:waitForFinish). 557 lines. Called by Game_Particles_UpdateManager."
+  "notes": "Read part: per view (count mgr+0xa7d090, views mgr+0xa5b9d8) builds view-projection matrices and frustum (0x14395cd70), inverse scale mgr+0xa5b900; job name 'ParticleManagerVisJobs'. Callers in 0x143b06d90."
  },
  "signature": {
   "id": "game.particles_run_vis_jobs",

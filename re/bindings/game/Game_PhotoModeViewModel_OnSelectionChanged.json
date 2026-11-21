@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141d05b80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=PhotoModeViewModel::onSelectionChanged; log channel PHOTO-MODE: 'PhotoModeViewModel::onSelectionChanged: Selection = %d'"
+  "evidence": "decomp:re/decomp/141d05b80.c;pat:log-message-cxx;xref:0x141cef7a5",
+  "notes": "PhotoModeViewModel handler (this, cmd): acts only when cmd+8 == 10, reads \"value\" from cmd+0x10 (int or float by type check), logs PHOTO-MODE; registered by lea in 0x141cef700. int -> this+0x848, keeps a ref to the value at +0x830..+0x840; bound flag +0x908 = (selection not 3/4); refresh 0x141ced320; system+0x2d14 = selection; 0x141ced190. (lane owner review requested)"
  },
  "signature": {
   "id": "game.photo_mode_view_model_on_selection_changed",

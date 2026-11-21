@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name constructNewControlScheme (class from the log channel); log channel INPUT: 'constructNewControlScheme control scheme name:\"%s\"'"
+  "evidence": "decomp:re/decomp/142af1f30.c;pat:log-message-method;xref:0x142af1daa,0x14ddfd1f8",
+  "notes": "INPUT 'constructNewControlScheme control scheme name' (log string)."
  },
  "signature": {
   "id": "game.input_construct_new_control_scheme",

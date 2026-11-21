@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430b2710",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionUI::onJoinCareerSessionCompleted; log channel NETWORK-UI: 'void network::GameSessionUI::onJoinCareerSessionCompleted(NEbool, neon::NeNetError, NEbool) | %s: success: %d, error code: %d'"
+  "evidence": "decomp:re/decomp/1430b2710.c;pat:log-message-cxx;xref:0x1430ad68b",
+  "notes": "__FUNCTION__ GameSessionUI::onJoinCareerSessionCompleted(NEbool, NeNetError, NEbool); logs success/error; on retry calls joinCareerSession again with network_career_searching, on failure shows popup with completion 0x1430adf50; CareerSearch. Ref: lea in onCareerSessionRequested. (lane owner review requested)"
  },
  "signature": {
   "id": "career.game_session_ui_on_join_career_session_completed",

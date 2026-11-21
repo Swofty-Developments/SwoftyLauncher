@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=Options::apply; log channel HARDWARE_SETTINGS: '[hardwareSettings::Options::apply] Applying reference '%s:%s''"
+  "evidence": "decomp:re/decomp/1440217f0.c;pat:log-message-cxx;xref:0x144022450,0x1443c67e3,0x1443c6e11",
+  "notes": "Callers 0x144022450 (recursive), 0x1443c67e3, 0x1443c6e11. hardwareSettings::Options::apply: applies reference category/option entries (hardware_settings_info, graphics_card, show)."
  },
  "signature": {
   "id": "game.options_apply",

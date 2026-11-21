@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141d06930",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=PhotoModeViewModel::onColourGradeChanged; log channel PHOTO-MODE: 'PhotoModeViewModel::onColourGradeChanged: Colour grade value = %d'"
+  "evidence": "decomp:re/decomp/141d06930.c;pat:log-message-cxx;xref:0x141cef8fe",
+  "notes": "PhotoModeViewModel handler (this, cmd): acts only when cmd+8 == 10, reads \"value\" from cmd+0x10 (int or float by type check), logs PHOTO-MODE; registered by lea in 0x141cef700. int -> this+0x4f8; copies grade entry (table (system+0x310)+0x10, stride 0x38) to system +0x2d90/+0x2d98/+0x2da1, +0x2da0 = (index != 0), +0x2d18 = index; dirty, refresh. (lane owner review requested)"
  },
  "signature": {
   "id": "game.photo_mode_view_model_on_colour_grade_changed",

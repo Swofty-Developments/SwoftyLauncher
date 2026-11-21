@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-GHOSTLAP-TRACE",
-  "notes": "named from its log messages (channel GHOSTLAP-TRACE): '%s(#%d, %s, %s) | %s(#%d) : no active presence. | %s(#%d) : no ghostlap found. | %s(#%d) : stream remaining size(%d) != upload size(%d). | Failed to download ghost lap data. Error = %d | %s(#%d) : gho'"
+  "evidence": "decomp:re/decomp/142fa8010.c;pat:log-channel-GHOSTLAP-TRACE;xref:0x142fa09ca",
+  "notes": "Ghost download task (GHOSTLAP-TRACE strings). Registered (lea) in 0x142fa0320."
  },
  "signature": {
   "id": "game.ghost_laps_download",

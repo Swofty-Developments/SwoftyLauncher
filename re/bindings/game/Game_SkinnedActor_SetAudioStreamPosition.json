@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=SkinnedActor::setAudioStreamPosition; log channel ACTOR_AUDIO: 'SkinnedActor::setAudioStreamPosition - actor is not visible, disabled or muted [%p] [%s] [%s] PackName [%s] Trigger [%s] Time [%f] object [%d]'"
+  "evidence": "decomp:re/decomp/1401fb5b0.c;pat:log-message-cxx;xref:0x1455e1068,0x1455e1578,0x1455e1748,0x1455e35a8,0x1455e5b08,0x14560ba58,0x14561b688,0x14561c468,0x14561c648,0x14561ddf8,0x14561e2a8,0x14561e478,0x14561e6c8",
+  "notes": "Next slot after PlayAudioStream in the same actor vtables (cells in xref). When visible and the packet layer weight >= 0.8: +0x1d0 = *param_3 and 0x1401f36a0; otherwise ACTOR_AUDIO logs \"not weighted enough\" or \"not visible, disabled or muted\"."
  },
  "signature": {
   "id": "game.skinned_actor_set_audio_stream_position",

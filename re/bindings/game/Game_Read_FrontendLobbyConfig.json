@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: frontend_lobby.colours.colour_default_icon, frontend_lobby.colours.colour_low_time, frontend_lobby.colours.colour_text_label, frontend_lobby.colours.colour_text_value, frontend_lobby.other.always_show_players, frontend_lobby.other.always_show_spectators, frontend_lobby.o'"
+  "evidence": "decomp:re/decomp/14228fd80.c;pat:log-channel--;xref:0x145778008",
+  "notes": "Vt cell 0x145778008. Strings colour/value/default/info/icon/visible plus frontend_lobby.* paths."
  },
  "signature": {
   "id": "game.read_frontend_lobby_config",

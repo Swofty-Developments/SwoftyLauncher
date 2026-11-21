@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14142c860.c;xref:0x14142c831",
-  "notes": "If the decal system flag byte (0x146064623 & 0x80) is set, finds the pending decal asset by id (param_2) in this+0x178..0x180 (16-byte entries) and processes completion. Callers 0x14142c6f0, 0x14142d290, 0x14142d630. vp0-verify partial"
+  "evidence": "decomp:re/decomp/14142c860.c;xref:0x14142c831,0x14142d5e3,0x14142d793,0x14142dfd2,0x14142e750,0x141ff032d",
+  "notes": "Called from 0x14142c6f0, 0x14142d290, 0x14142d630, 0x14142dc70, 0x14142e220, 0x141ff0070."
  },
  "signature": {
   "id": "game.decal_customisation_handle_asset_event",

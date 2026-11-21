@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e65060",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_GameTransactionSystem_StartItemPurchaseFlow;xref:0x142e650e0",
-  "notes": "cxx=game::GameTransactionSystem::startItemPurchaseFlow; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/142e65060.c;str:s_GameTransactionSystem_StartItemPurchaseFlow;xref:0x1419fc4bd,0x141d4933d,0x141ea0f78,0x141f66809",
+  "notes": "startItemPurchaseFlow(sys,delegate,itemId): stores delegate sys+0xa8/+0xb0; offline ([sys+0x68]+0x80/+0x81) -> popup 'customisation_confirm_reconnect'; else finds the shop item (sys+0x30 list +0x50, id +0xa4, type 0x146096530) and shows 'transaction_confirm_purchase' (callback 0x142e654e0) with purchase_type=PPShopItem, item_ID, price; posts bus msg vt 0x1457f14a8. Callers 0x1419fc3c0, 0x141d49230, 0x141ea0e40, 0x141f66720. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_transaction_system_start_item_purchase_flow",

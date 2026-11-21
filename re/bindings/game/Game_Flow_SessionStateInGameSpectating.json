@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d6a590",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-FLOW",
-  "notes": "named from its log messages (channel FLOW): 'SessionStateInGameSpectating::onStateUpdate() sets SessionExit to SessionExit::eFRONT_END_DISCONNECT because of spectator director getShouldQuit().'"
+  "evidence": "decomp:re/decomp/142d6a590.c;pat:log-channel-FLOW;xref:0x1457df648",
+  "notes": "Slot 5 (+0x28, onStateUpdate) of state vtable 0x1457df620 (cell 0x1457df648). Handles spectator camera toggles (+0xde8), then: 0x14323ed70 true -> next 0x27831cf0; spectator director getShouldQuit (+0xd70+0xd3) -> logs SessionExit eFRONT_END_DISCONNECT (FLOW), 0x142c76810(exit,4), next 0x7c9d0608; else optional pause UI, next 0x5fa57fc or 0x142d61d70. Writes next id to +0xc90 and *param_2. (lane owner review requested) Better name: Game_SessionStateInGameSpectating_OnStateUpdate (bound record keeps its name)."
  },
  "signature": {
   "id": "game.flow_session_state_in_game_spectating",

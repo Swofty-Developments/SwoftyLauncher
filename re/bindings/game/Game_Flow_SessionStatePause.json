@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d766c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-FLOW",
-  "notes": "named from its log messages (channel FLOW): 'SessionStatePause::onPauseFlowStateChange() sets SessionExit to %s because of user action.'"
+  "evidence": "decomp:re/decomp/142d766c0.c;pat:log-channel-FLOW;xref:0x142d75c70,0x142d7721d,0x14ea4d50c",
+  "notes": "Logs 'SessionStatePause::onPauseFlowStateChange() sets SessionExit to %s because of user action.' (FLOW). param_3==0: re-registers itself (0x14421b3a0), reads pause action string (+0xcb0+0x78): restart/quit -> bus post 0x1439876c0 (pause_restart/pause_quit); not replay/quit/settings -> 0x142d76050; then djb2 switch of action sets SessionExit +0xc90 and calls 0x142d78530 (Sess_StatePause_OnPauseFlowStateChange helper). Xrefs are lea. (lane owner review requested) Better name: Game_SessionStatePause_OnPauseFlowStateChange (bound record keeps its name)."
  },
  "signature": {
   "id": "game.flow_session_state_pause",

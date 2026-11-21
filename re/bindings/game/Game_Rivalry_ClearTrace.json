@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141254be0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-RIVALS",
-  "notes": "named from its log messages (channel RIVALS): '%s: Clearing trace'"
+  "evidence": "decomp:re/decomp/141254be0.c;pat:log-channel-RIVALS;xref:0x1456cd0c0",
+  "notes": "Vtable slot (cell 0x1456cd0c0, next to 0x141254150). Inlined driver/team RivalryManager::clearTrace ('%s: Clearing trace'): driver trace 0x145f93b90 = 0x3fff0000 if any of +0x6b9/+0x801/+0x299, team trace 0x145f93b94 if +0x919; then unsubscribes three bus handlers (0x14125aea0, 0x14125af10, 0x14125b150; messages 0x1456982b8, 0x145659c79, 0x145697fc8) via 0x143988350 when the bus is live. (lane owner review requested) Better name: Game_RivalManagerComponent_Shutdown (bound record keeps its name)."
  },
  "signature": {
   "id": "game.rivalry_clear_trace",

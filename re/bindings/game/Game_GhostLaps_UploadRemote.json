@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-GHOSTLAP-TRACE",
-  "notes": "named from its log messages (channel GHOSTLAP-TRACE): '%s(#%d, %s, %s) | %s(#%d) : remote storage upload failed to deserialise descrption. | %s(%d) : remote storage upload failed (NE_ENOSPC). | %s(#%d) : remote storage upload failed (%d). | %s(#%d) : copi'"
+  "evidence": "decomp:re/decomp/142fa65f0.c;pat:log-channel-GHOSTLAP-TRACE;xref:0x142fa447f",
+  "notes": "Remote storage upload task (strings). Registered (lea) in 0x142fa3de0."
  },
  "signature": {
   "id": "game.ghost_laps_upload_remote",

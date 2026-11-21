@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428b7b80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name removeSceneFromMultiActorAnimManager (class from the log channel); log channel FRONTEND_SCENE_SCRIPT/MultiActorAnims: 'removeSceneFromMultiActorAnimManager() - Trying to remove a scene from MultiActorManager for animation [%s] - but the manager doesnt exist'"
+  "evidence": "decomp:re/decomp/1428b7b80.c;pat:log-message-method;xref:0x1428960b1,0x1428982c7",
+  "notes": "Strings 0x1457abbbb/0x1457abc37/0x1457abcb1 = removeSceneFromMultiActorAnimManager() (channel FRONTEND_SCENE_SCRIPT/MultiActorAnims). Looks up p2 (animation key, name *p2) in FNV-1a-of-pointer hash map p1+0x28/mask +0x40; missing -> log. Else decrements refcount node+0x18, under CS node[0x1e] walks list +0x90..+0x98, removes scene p3 (and p4) from node+0x28; at 0 destroys shared sequence node+0x20, unlinks node, frees via allocator [p1+8] vt+0x38. (lane owner review requested)"
  },
  "signature": {
   "id": "game.frontend_scene_script_multiactoranims_remove_scene_from_multi_acto",

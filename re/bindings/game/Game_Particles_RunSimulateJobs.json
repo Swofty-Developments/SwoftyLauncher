@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143b0faf0.c;xref:0x143b09d52,0x143b0d6a8",
-  "notes": "Largest particle routine (1248 lines): sets up ParticleManager simulation job batch with stack frame 0x1100+, waits with WAIT:waitForFinish via Ne_JobSignal_WaitWithTimeout, memsets work buffers. Called by Game_Particles_UpdateManager. Hypothesis on exact split with the other job functions."
+  "notes": "Callers in 0x143b06d90."
  },
  "signature": {
   "id": "game.particles_run_simulate_jobs",

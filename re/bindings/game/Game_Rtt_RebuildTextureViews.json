@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143d82110.c;xref:0x143d7f0dc,0x143d840c9",
-  "notes": "Hypothesis: builds names '%s.image' for RTT textures (Ne_StrBuf_Printf + HashedName_FromString); caller Game_Rtt_CreateTextures. Named callers: Game_Rtt_CreateTextures."
+  "notes": "Frees owned objects +0x4e8..+0x550 (vcall +8 then allocator +0x38) and re-inits many texture slots via 0x143d7ba40; the '%s.image' naming part lies in protector code at 0x15276da58. Callers Game_Rtt_CreateTextures, 0x143d83bd0."
  },
  "signature": {
   "id": "game.rtt_rebuild_texture_views",

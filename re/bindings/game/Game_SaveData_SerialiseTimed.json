@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143658130",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-SaveGame",
-  "notes": "named from its log messages (channel SaveGame): 'SDC serialisation took %f ms, root = %s, group = %I64u, inlineEncoding = %d'"
+  "evidence": "decomp:re/decomp/143658130.c;pat:log-channel-SaveGame;xref:0x1429ce6d0,0x142c47107,0x1430a6cef,0x1433597fa,0x150b16391",
+  "notes": "Timed serialise: optional progress message {0x145800880,0xb} to [+0x230] vcall +0x30 before/after (param_9); optional reset first (0x1436523b0, param_7); writes a header (two u64 1, type tag 0x145892430 on container+0x70, u32) to stream param_4 then 0x143651030, or 0x14364e000 when param_3 is set; QPC-timed, logs SaveGame \"SDC serialisation took %f ms, root = %s, group = %I64u, inlineEncoding = %d\". (lane owner review requested)"
  },
  "signature": {
   "id": "game.save_data_serialise_timed",

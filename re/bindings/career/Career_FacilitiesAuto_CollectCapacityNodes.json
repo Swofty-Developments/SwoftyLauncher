@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "career",
   "proto": "int64_t Career_FacilitiesAuto_CollectCapacityNodes(void *comp, int64_t unused, uint32_t team_key)",
-  "evidence": "decomp:re/decomp/140c67de0.c;xref:0x140f81782;xref:0x140f8266a",
-  "notes": "myteam-g2: Finds the team entry (0x30-byte records at comp+0x298..0x2a0, key u8@+0x28 / u16@+0x2a) and iterates its facility nodes (FUN_140c66e20, FUN_140ce4740), summing capacity per node. Used by Career_FacilitiesAuto_AdjustCapacity and Tick_FacilityNodes."
+  "evidence": "decomp:re/decomp/140c67de0.c;xref:0x140f81782,0x140f8266a",
+  "notes": "Finds the team entry (0x30 records comp+0x298..+0x2a0, key +0x28) and walks its nodes (+0x10..+0x18, 0x1b0 stride); for the first node with +0x1a0 set extracts a 0x140-byte optional from node+0x60 (0x140c66e20) and copies it into out (0x140ce4740, fields +0x48..+0xc0), out+0xe8 = has-value. No summing. Callers 0x140f81782 (Career_Tick_FacilityNodes), 0x140f8266a. Better name: Career_FacilitiesAuto_GetFirstTeamNodeValue (bound record keeps its name)."
  },
  "signature": {
   "id": "career.facilities_auto_collect_capacity_nodes",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1436607c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-GameSaveSystemUserInterface",
-  "notes": "named from its log messages (channel GameSaveSystemUserInterface): 'Continuing to display progress, %f'"
+  "evidence": "decomp:re/decomp/1436607c0.c;pat:log-channel-GameSaveSystemUserInterface;xref:0x145856780",
+  "notes": "Vtable cell 0x145856780. Body only logs GameSaveSystemUserInterface \"Continuing to display progress, %f\" with param_2; no other side effects. (lane owner review requested)"
  },
  "signature": {
   "id": "game.save_ui_update_progress",

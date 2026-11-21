@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f3a5d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: Game.VehicleSpawning.EnableMemorySnapshots, Game.VehicleSpawning.MaxConcurrentSpawns, Game.VehicleSpawning.VehicleTimeout'"
+  "evidence": "decomp:re/decomp/142f3a5d0.c;pat:log-channel--;xref:0x1457f7bb0",
+  "notes": "Vehicle spawning system init (vt cell 0x1457f7bb0): services 0x146cb8278 -> +0xb8, 0x146cb8018 -> +0xc0, registry systems 0x1460967a8 -> +0xc8, 0x146064d10 -> +0xd0; Game.VehicleSpawning.EnableMemorySnapshots -> bool +0xe8, VehicleTimeout -> int +0xec, MaxConcurrentSpawns -> u64 +0xf0 (current values as defaults); error 0x16 when a dependency is missing. (lane owner review requested)"
  },
  "signature": {
   "id": "game.read_game_config_5",

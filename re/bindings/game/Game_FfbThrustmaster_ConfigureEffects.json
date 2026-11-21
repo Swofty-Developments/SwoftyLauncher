@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446f4b80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TM_FFB",
-  "notes": "named from its log messages (channel TM_FFB): 'Thrustmaster: Unable to configure 'Constant Force' on device (%d) | Thrustmaster: Unable to configure 'Spring Force' on device (%d) | Thrustmaster: Unable to configure 'Friction Force' on device (%d)'"
+  "evidence": "decomp:re/decomp/1446f4b80.c;pat:log-channel-TM_FFB;xref:0x1446f4af3,0x1446f4fab,0x145bfff38",
+  "notes": "Slot 5 of TM effect vtable 0x145bfff10 (cell 0x145bfff38); also called by stop 0x1446f4aa0 and release 0x1446f4ee0 with zero forces. If device handle (+0x1e0)+0xa00 != 0: tm_api_force_config_effect slot 0 constant (-param_2[0]), slot 1 spring if +0x2ac, slot 2 friction (|param_2[3]|), logging each failure (TM_FFB). Returns 0, or 0xe without handle. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ffb_thrustmaster_configure_effects",

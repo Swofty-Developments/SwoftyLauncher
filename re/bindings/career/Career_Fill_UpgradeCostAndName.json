@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1422da5e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "char * Career_Fill_UpgradeCostAndName(void *self,uint64_t *a2,void * a3)",
   "evidence": "decomp:re/decomp/1422da5e0.c;xref:0x14577c270",
-  "notes": "myteam-g1: Fills upgrade_cost and upgrade_name text fields for an upgrade row (loc lookups at +0x278/+0x2b0)."
+  "notes": "Vtable slot (cell 0x14577c270); body 0x1422da5e0-0x1422daade. Command 0xe196c0a8: if [this+0x440]==0 and item idx (0x230-stride list) is purchasable, sets +0x440, shows message perk_purchase_confirm_message (Game_UiMessage_DisplayMessage, callback 0x1422daae0, handle this+0x430) with params upgrade_name / upgrade_cost. The decomp file also holds unrelated blocks (0x140d8d.., 0x1428e1..). (lane owner review requested) Better name: Career_PerkPurchaseVM_HandleCommand (bound record keeps its name)."
  },
  "signature": {
   "id": "career.fill_upgrade_cost_and_name",

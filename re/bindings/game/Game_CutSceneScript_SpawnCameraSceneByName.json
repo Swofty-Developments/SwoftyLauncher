@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14023ef30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14023ef30.c;xref:0x140210f07",
-  "notes": "Builds a command string (sbo string vtable 0x145612ec0, script id +0x200) and dispatches a cutscene command with 4 flag args; 133 callers (every cutscene Initialise). vp0-verify partial"
+  "evidence": "decomp:re/decomp/14023ef30.c;xref:0x14023d1b6,0x14024bcba,0x1402539a9,0x1402558ae,0x140255b77,0x140255e37,0x1402560f7,0x1402563b7,0x140256677,0x140256939,0x140260eb3,0x140261bd0,0x140261d50,0x140261d74,0x140264d21,0x1402653d2,0x1402653f6,0x140265588,0x140267ec7,0x14026aeb3",
+  "notes": "(script, name, const char *extra, 4 flag bytes): builds a small array of SBO strings from the script's two path strings (+0x200, +0x2b0) plus an optional string from extra, then returns 0x14023f920(script, name, byte +0x45c, script+0x450, paths, &extra, flags..., 0, 1) and destroys the temporaries. Nothing in the body is camera-specific (the camera part is an inference from callers). (lane owner review requested)"
  },
  "signature": {
   "id": "game.cut_scene_script_run_command_string",

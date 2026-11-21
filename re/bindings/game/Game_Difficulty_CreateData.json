@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142417640",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-DIFFICULTY",
-  "notes": "Log channel DIFFICULTY: 'Difficulty Data Created For %s'"
+  "evidence": "decomp:re/decomp/142417640.c;pat:log-channel-DIFFICULTY;xref:0x142417104",
+  "notes": "Logs DIFFICULTY 'Difficulty Data Created For %s' ('settings'); allocates 0x300 data (ctor 0x1424251a0 'settings', this+0x20, +0x28, 9, 1), inserts name 'settings' into hash map this+0x68 (nodes +0x70, buckets +0x90/+0x98), appends (allocator, data) to vector this+0x50..+0x60 and returns data; if the name exists the data is destroyed and 0 returned. (lane owner review requested)"
  },
  "signature": {
   "id": "game.difficulty_create_data",

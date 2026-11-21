@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=SplitPracticeQualifyingRuleset::splitSession; log channel SESSION-RESULT: 'SplitPracticeQualifyingRuleset::splitSession: Disabling simulation for vehicle with id %d. This driver will be in the player's inactive group.'"
+  "evidence": "decomp:re/decomp/142d3ecc0.c;pat:log-message-cxx",
+  "notes": "Finds the local entrant, compares each vehicle group byte (+0x82), stores the group flag to +0x360; for other-group vehicles logs \"Disabling simulation for vehicle %d\" and sets status eNotClassified (+0x11f=1,+0x11d=6,+0x11e=4) via 0x142c7bae0. No rip-relative or absolute ref found."
  },
  "signature": {
   "id": "game.split_practice_qualifying_ruleset_split_session",

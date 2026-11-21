@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144728560",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-DBOX",
-  "notes": "named from its log messages (channel DBOX): 'Failed to close DBOX device. Result was %d | Failed to terminate DBOX API. Result was %d'"
+  "evidence": "decomp:re/decomp/144728560.c;pat:log-channel-DBOX;xref:0x1406cdbfa,0x1406cdcb0,0x144728684",
+  "notes": "If the DBOX open flag g 0x146ce86a4 is set: 0x144c83340 (close device) and 0x144c83300 (terminate API), logging DBOX 'Failed to close DBOX device. Result was %d' / 'Failed to terminate DBOX API. Result was %d' on non-zero results; clears the flag; returns 0. Callers 0x1406cdb80, 0x1406cdc30, 0x144728680. (lane owner review requested)"
  },
  "signature": {
   "id": "game.dbox_shutdown",

@@ -98,6 +98,7 @@ src/core/guards/garage/garage_slots.cpp: guards::SiteGuard guard{guards::CoreSet
 src/core/guards/garage/pit_box.cpp: PitBoxGuard guard;
 src/core/guards/garage/pit_slots.cpp: guards::SiteGuard guard{
 src/core/guards/session/estimate_laptime_guard.cpp: guards::SiteGuard guard{guards::CoreSetId::estimate_laptime,
+src/core/guards/session/marshal_lights_guard.cpp: guards::SiteGuard guard{guards::CoreSetId::marshal_lights,
 src/core/guards/session/quali_tyres_guard.cpp: QualiTyresGuard guard;
 src/core/guards/session/red_flag_recompute_guard.cpp: guards::SiteGuard guard{guards::CoreSetId::red_flag_recompute,
 src/core/guards/session/session_enter.cpp: guards::SiteGuard guard{guards::CoreSetId::session_enter,

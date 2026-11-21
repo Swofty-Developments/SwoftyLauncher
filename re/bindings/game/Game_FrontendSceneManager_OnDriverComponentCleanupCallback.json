@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428c85f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onDriverComponentCleanupCallback (class from the log channel); log channel FRONTEND_SCENE_MANAGER/VERBOSE: '%s() - Cleaning up driver placement pointers'"
+  "evidence": "decomp:re/decomp/1428c85f0.c;pat:log-message-method;xref:0x1428c8235",
+  "notes": "Callback registered by lea at 0x1428c8235 in 0x1428c8040. For each driver component (this+0x6fb8, stride 0x450) and pending list +0x7078 whose placement (0x1428db7c0) == param_2: logs, releases handle +0x18, collects ids; same for main scene +0x6b60 (0x1428daa30); then calls 0x1428db9f0(this,id) per collected id. Log '%s() - Cleaning up driver placement pointers'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.frontend_scene_manager_on_driver_component_cleanup_callback",

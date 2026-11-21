@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141c8d540",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:research-limit-store-0x6d2@0x141c8e76e;xref:0x141c8bb58,0x141c8d513;kb:subsystems/rnd_ui.md#modifiers",
-  "notes": "Purchase panel update (cost, slots, timeline, comparison). @0x141c8e299 reads Career_Get_TeamModifiers; slots = sum of {kind 0, dept == [panel+0x6e8], active} values; [panel+0x6d2] research-limit = gate && slots <= in-use (@0x141c8e766). A department with no modifier entries (dept 4) gets slots 0 and the research-limit flag."
+  "evidence": "decomp:re/decomp/141c8d540.c;pat:research-limit-store-0x6d2@0x141c8e76e;kb:subsystems/rnd_ui.md#modifiers;xref:0x141c8bb58,0x141c8d513",
+  "notes": "R&D purchase panel update (cost via Career_Get_EffectiveUpgradeCost, timeline icons, rnd_simultaneous_upgrades sim_upgrade_* nodes). Career_Get_TeamModifiers([this+0x680]+0xc90, [this+0x6cc]); slots = sum of f32 values of entries with kind 0, dept == [this+0x6e8], active; in-use = enabled upgrades (Career_Query_EnabledUpgrades) with +0x72 == dept and state 2; [this+0x6d2] = gate && slots <= in-use. (lane owner review requested)"
  },
  "signature": {
   "id": "career.update_rn_d_purchase_panel",

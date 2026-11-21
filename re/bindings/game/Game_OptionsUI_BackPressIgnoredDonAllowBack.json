@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-OPTIONS-UI",
-  "notes": "named from its log messages (channel OPTIONS-UI): 'Back press ignored: don't allow back'"
+  "evidence": "decomp:re/decomp/141dcfe30.c;pat:log-channel-OPTIONS-UI;xref:0x14574e7c0",
+  "notes": "vt cell 0x14574e7c0. 4 KB options view-model command handler (exit, close_and_go_back, story_difficulty, tutorial_shown, update_player_select)."
  },
  "signature": {
   "id": "game.options_ui_back_press_ignored_don_allow_back",

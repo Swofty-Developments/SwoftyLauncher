@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f89920",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name evaluateRivalLaptime (class from the log channel); log channel GHOSTLAPS: '%s(%s) : evaluated rival lap time(%s).'"
+  "evidence": "decomp:re/decomp/142f89920.c;pat:log-message-method;xref:0x142f86cf0",
+  "notes": "evaluateRivalLaptime(sys,myMs,out): needs vt checks on sys+0x608/+0x4c8, +0x61b bit6 and +0x4d8 bit30 clear; t = clamp((my-lo)/(hi-lo)), lo = +0x9d8 or +0x4d8, hi = +0x9dc or +0x618*1.12; out = max(+0x4d8, my*(1-(t*0.009+0.001))) capped at my; logs. Caller 0x142f869f0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ghostlaps_evaluate_rival_laptime",

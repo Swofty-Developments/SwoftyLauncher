@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a35370",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143a35370.c;xref:0x143a35e0c",
-  "notes": "Allocates a 0x38-byte refcounted remap object (vtable 0x1458a16d8) holding a vector<u16>; for each channel of the source binding set (count vcall +0x28, name +0x30, type +0x38) calls Ne_BindingTable_FindChannel(table, type, name) and stores the u16 index. Sole caller Game_MorphModifier_BuildTargets."
+  "notes": "(out ref, morph, target set, p4): allocates a 0x38 refcounted map (vt 0x1458a16d8, allocator 0x14627cea0), sizes its u16 vector to the morph's channel count (vcall +0x28), then per channel u16 = 0x143a35550(set, p4, index vcall +0x30, name vcall +0x38). Only caller 0x143a35e0c in BuildTargets. (lane owner review requested)"
  },
  "signature": {
   "id": "game.morph_modifier_build_channel_remap",

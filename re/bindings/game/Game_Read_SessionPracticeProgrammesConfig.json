@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: session.number_of_laps, session.practice_programmes.bottomPill, session.practice_programmes.topPill'"
+  "evidence": "decomp:re/decomp/142944640.c;pat:log-channel--;xref:0x14295f489,0x14295fa73,0x14295fc4a,0x14295fe99,0x142960069,0x14296038d,0x14296056b",
+  "notes": "Session HUD: session.number_of_laps, practice_programmes.topPill/bottomPill, race_flags pp_icon variants."
  },
  "signature": {
   "id": "game.read_session_practice_programmes_config",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d95990",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_SessionStateTalkingPoints_OnStateInterrupt;xref:0x142d95b79",
-  "notes": "cxx=game::SessionStateTalkingPoints::onStateInterrupt; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/142d95990.c;str:s_SessionStateTalkingPoints_OnStateInterrupt;xref:0x1457e2d18",
+  "notes": "Vtable cell 0x1457e2d18. Interrupt message type +0x10: 8/0xd -> +0xea3 = 1, QPC stamps in [+0xe88]+0xa8/+200, 0x14416dc30 on the sequence, logs TalkingPoints \"talking point sequence suspended\"; 9/0x13 -> +0xea3 = 0, 0x140acc6e0, logs \"...resumed\". Returns param_2. (lane owner review requested)"
  },
  "signature": {
   "id": "game.session_state_talking_points_on_state_interrupt",

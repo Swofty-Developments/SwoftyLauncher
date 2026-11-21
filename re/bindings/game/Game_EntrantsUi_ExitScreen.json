@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1424b6550",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name exitScreen (class from the log channel); log channel ENTRANTS_UI: '%s exit screen type %d not handled'"
+  "evidence": "decomp:re/decomp/1424b6550.c;pat:log-message-method;xref:0x1424b3569",
+  "notes": "exitScreen(ui, type): 0..5 call 0x1428cfaa0([+0x68], 0x13/0x15/1/8/1/0x15) and set the next screen name +0x100 (ptr +0xf8, cap 0x40): 'new_home', 'custom_games', 'weekly_gp', 'tt_track_select', 'settings', 'events_map'. 6: screen stack 0x146103818 (or 0x146103b38) resets its pending entry and notifies listeners. Others log ENTRANTS_UI '%s exit screen type %d not handled'. jmp from 0x1424b2c90. (lane owner review requested)"
  },
  "signature": {
   "id": "game.entrants_ui_exit_screen",

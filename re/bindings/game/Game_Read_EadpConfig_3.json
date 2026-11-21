@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: eadp.director.retry.interval, eadp.director.retry.intervalMultiplier, eadp.director.useHardcodedConfig.interval'"
+  "evidence": "decomp:re/decomp/1449c070c.c;pat:log-channel--",
+  "notes": "pdata start 0x1449c070c (size 0x346); no rip-relative or absolute reference found."
  },
  "signature": {
   "id": "game.read_eadp_config_3",

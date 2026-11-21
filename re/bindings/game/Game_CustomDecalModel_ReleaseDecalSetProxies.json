@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142b15ea0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142b15ea0.c;xref:0x142a926b1,0x142a934a7",
-  "notes": "Iterates the 16-byte entries (+0x70..+0x78) of a model, decrements refcount at proxy+0xC, calls Ne_DecalsSetProxy_Dtor when zero. Callers Game_CustomisationDecals_DestroySetProxy, Game_CustomDecalModel_Bake."
+  "evidence": "decomp:re/decomp/142b15ea0.c;xref:0x142a926b1,0x142a934a7,0x142b77a20",
+  "notes": "Full destroy+free of a decal set object (param_2): releases each 16-byte entry [+0x70,+0x78) (proxy=entry+8, atomic dec proxy+0xC, vcall +8 at 0), frees that vector via allocator [+0x68] vt+0x38, releases refcounted values of the hash map +0x38..+0x50, frees list +0x20, frees +8 buffer, then param_1 vt+0x38(param_1,param_2) frees the object. Renamed: not only the proxies are released. (lane owner review requested) Better name: Game_CustomDecalModel_DestroyDecalSet (bound record keeps its name)."
  },
  "signature": {
   "id": "game.custom_decal_model_release_decal_set_proxies",

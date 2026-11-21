@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428d8680",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name requiresTransition (class from the log channel); log channel FRONTEND_SCENE_COMPONENT/MAINSCENE: '%s() - %s'"
+  "evidence": "decomp:re/decomp/1428d8680.c;pat:log-message-method;xref:0x1428d772f",
+  "notes": "Passes own name 'requiresTransition' (0x1457aeb79) to '%s() - %s' (ch FRONTEND_SCENE_COMPONENT/MAINSCENE). Logs active (this+0x108..0x118, flag +0x128), pending (+0xc0..0xd0, flag +0xe0) and new request (param_2[0..2] string handles). Returns 0 if request equals queued or active scene; else 1, sets *param_3 when no active scene, main differs, or subscene entry (table this+0x98+0x1000, sub +0x100, +0x1d0) exists. (lane owner review requested)"
  },
  "signature": {
   "id": "game.frontend_scene_component_requires_transition",

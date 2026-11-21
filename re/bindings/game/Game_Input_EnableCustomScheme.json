@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a5ec00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-INPUT",
-  "notes": "named from its log messages (channel INPUT): 'Enable custom control scheme \"%s\" for player %d | Cannot enable custom control scheme \"%s\", 1 or more required device types are not connected.'"
+  "evidence": "decomp:re/decomp/142a5ec00.c;pat:log-channel-INPUT;xref:0x1457bb6f8",
+  "notes": "(input, player, schemeId, enable) -> 0 ok, 2 scheme not found (vt+0x20), 1 required devices not connected. No-op if already in that state. Disable: 0x142a5e9a0 + 0x142a5d050. Enable: logs, per-player binding set from devices (0x144113f20, 0x142a5f740 x4), disables conflicting schemes, 0x142a5e2d0; then 0x1434d7cc0 and deferred callbacks. (lane owner review requested)"
  },
  "signature": {
   "id": "game.input_enable_custom_scheme",

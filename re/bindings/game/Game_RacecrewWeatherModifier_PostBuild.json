@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401d9570",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-RacecrewWeatherModifier",
-  "notes": "named from its log messages (channel RacecrewWeatherModifier): 'postBuild | e_ClothingSun | e_ClothingDry | e_ClothingWet'"
+  "evidence": "decomp:re/decomp/1401d9570.c;pat:log-channel-RacecrewWeatherModifier;xref:0x1455e46e8",
+  "notes": "postBuild (vt cell 0x1455e46e8): logs RacecrewWeatherModifier 'postBuild'; weather class from this+0x20 (table 0x1456138b8) or [actor+0x528]+0xb7; hides all clothing meshes (trousers_x, shorts_x, radio_x...) via actor vt+0xc0, then shows the e_ClothingDry (1), e_ClothingSun (2) or e_ClothingWet set (+0x24 adds extras); 2-float param via 0x143d3d8e0 on [actor+0x580]+0x228. (lane owner review requested)"
  },
  "signature": {
   "id": "game.racecrew_weather_modifier_post_build",

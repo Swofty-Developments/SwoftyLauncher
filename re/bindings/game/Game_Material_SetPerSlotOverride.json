@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14019cf30.c;xref:0x1401a9701",
-  "notes": "Applies a material override to a model instance slot: formats '%s.emb?context=%s' (context 'ACTOR'), resolves the multi-sub-material resource (NeMultiSubMaterialResourceFactory) and logs 'MISSING RESOURCE setPerSlotMaterialOverride \"%s\". Is it loaded?' when absent. Caller Game_DriverCustomiser_ApplySuitDecals (and others). Addon: per-slot material swaps (suits, liveries)."
+  "evidence": "decomp:re/decomp/14019cf30.c;xref:0x1401a9701,0x1401a9754,0x1401aa341,0x1428a5340,0x1428a543a,0x1472cdbb1",
+  "notes": "Builds '%s.%s' names per override entry (param_2+8.., stride 0x18), hashes them, resolves via 0x143993660 ([[0x14601db08+0x78]+0x20]+0x2268) and writes render commands through 0x146c621e0 (+0x18/+0x20/+0x30) into this+0x30/+0x38."
  },
  "signature": {
   "id": "game.material_set_per_slot_override",

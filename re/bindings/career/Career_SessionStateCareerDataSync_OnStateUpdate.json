@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d50590",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=SessionStateCareerDataSync::onStateUpdate; log channel CAREER_DATA_SYNC: 'virtual neon::NeFlowStateBase::LinkRoute game::SessionStateCareerDataSync::onStateUpdate(const NEdouble) | %s Disconnected, returning to lobby'"
+  "evidence": "decomp:re/decomp/142d50590.c;pat:log-message-cxx;xref:0x1457ddc98",
+  "notes": "Vtable slot (cell 0x1457ddc98) of SessionStateCareerDataSync; __FUNCTION__ string onStateUpdate. Calls 0x140ff7cf0, posts a bus message, on disconnect logs CAREER_DATA_SYNC '%s Disconnected, returning to lobby'; returns a LinkRoute. (lane owner review requested)"
  },
  "signature": {
   "id": "career.session_state_career_data_sync_on_state_update",

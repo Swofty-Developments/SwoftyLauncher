@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140385b80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GarageCrewInstanceLogic::StateZoomIntoMonitor; log channel GARAGECREW: 'GarageCrewInstanceLogic::StateZoomIntoMonitor::processEvent unexpected %d %s'"
+  "evidence": "decomp:re/decomp/140385b80.c;pat:log-message-cxx;xref:0x145622d48",
+  "notes": "StateZoomIntoMonitor::processEvent: only while logic+0x90 set; event 2 -> state 0xc (logic+0x28, transition flag set), event 4 -> state 7 (logic+0x10); else 'unexpected' log; pops the event. Vtable cell 0x145622d48. (lane owner review requested)"
  },
  "signature": {
   "id": "game.garage_crew_instance_logic_state_zoom_into_monitor",

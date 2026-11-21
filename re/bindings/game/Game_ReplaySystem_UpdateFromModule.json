@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name updateFromModule (class from the log channel); log channel REPLAY_VERBOSE: 'updateFromModule m_requestCalcRewindForInstantReplayTargetTime'"
+  "evidence": "decomp:re/decomp/1445d6040.c;pat:log-message-method;xref:0x1402a37eb",
+  "notes": "Log REPLAY_VERBOSE 'updateFromModule ...' (record / play / playFromStart / instant replay min/max/finish times); calls 0x1445d6ce0 and EndCompression. Caller thunk 0x1402a37e0."
  },
  "signature": {
   "id": "game.replay_system_update_from_module",

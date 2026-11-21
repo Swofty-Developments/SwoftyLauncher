@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1417f0a80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-PAGINATION",
-  "notes": "named from its log messages (channel PAGINATION): 'Number of elements changing from %u to %u'"
+  "evidence": "decomp:re/decomp/1417f0a80.c;pat:log-channel-PAGINATION;xref:0x14178463b,0x141cb25e8",
+  "notes": "(pager, count): logs 'Number of elements changing from %u to %u', stores count at +0x18, clamps current page +0x20 (valid flag +0x28) to the new page count (page size +0x10), calls change callback +0x40(+0x48) and vcall +0x20, then tail-jumps (0x1417f0b7b) into Game_Pagination_RequestCurrentView 0x1417f0220. Callers 0x141784580 (inbox) and 0x141cb24b0. (lane owner review requested) Better name: Game_Pagination_SetElementCount (bound record keeps its name)."
  },
  "signature": {
   "id": "game.pagination_number_elements_changing",

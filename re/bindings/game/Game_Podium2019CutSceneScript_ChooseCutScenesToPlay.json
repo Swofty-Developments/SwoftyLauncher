@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=Podium2019CutSceneScript::chooseCutScenesToPlay; log channel CUTSCENE_PODIUM: 'Podium2019CutSceneScript::chooseCutScenesToPlay | Podium2019CutSceneScript::getWorldName | Podium2019CutSceneScript::getMonacoBarrierWorldObject | setHidePrimaryWorld %p %s %s'  | 2026-11-17 engine-re round A2: hard-coded tracks: copies the track name (overrideTrackName, else TrackName) into this+0x930 (64 chars) and cuts it at the first digit (so bahrain24 -> bahrain); 'monaco' (dword compare 0x140356d29) sets +0x8f8 and looks up the world object 'Env- Barriers$mon_armco_parcferme_a' into +0x8f0 (hidden by SetMonacoBarrierVisibility); 'monza' (imm 0x7a6e6f6d at 0x140356d3f) sets +0x8f9. Both flags go to Game_PodiumBaseCutSceneScript_SpawnTVScreens (0x140363850 line 757); +0x8f9 also picks a branch in Game_Pod2019FirstScript_Initialise. podium2022_tunnel_walk (+0x8fb) comes from the game mode (+0x2b0 +0x210), not from a name.  | 2026-11-17 engine-re round A2 correction after verify V11014: the cut at the first digit applies only to the name taken from the track record; with Game.Context.overrideTrackName set, Game.Context.TrackName is copied to +0x930 uncut."
+  "evidence": "decomp:re/decomp/140356a20.c;pat:log-message-cxx;xref:0x1403632ef,0x140375a80,0x140375e2f,0x1403762be",
+  "notes": "Earlier round A2 (static): copies the track name (overrideTrackName, else TrackName cut at the first digit) into this+0x930; 'monaco' sets +0x8f8 and looks up 'Env- Barriers$mon_armco_parcferme_a' into +0x8f0; 'monza' sets +0x8f9; both flags go to Game_PodiumBaseCutSceneScript_SpawnTVScreens. Callers: Pod2019FirstScript_SetStateLoading and the three variant setStateLoading functions."
  },
  "signature": {
   "id": "game.podium2019_cut_scene_script_choose_cut_scenes_to_play",

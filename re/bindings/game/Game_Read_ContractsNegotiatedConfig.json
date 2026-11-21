@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143736fb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: ContractsNegotiated.GameplayModeId.%d, ContractsNegotiated.GameplayModeId.%d.IsInTeamCareer.%d, ContractsNegotiatedInABetterTeam.GameplayModeId.%d.IsInTeamCareer.%d'"
+  "evidence": "decomp:re/decomp/143736fb0.c;pat:log-channel--;xref:0x1437245f4,0x143749db6",
+  "notes": "Stat event writer (lea 0x1437245f4 in 0x143720bc0, 0x143749db6 in 0x143749390) (this, ev): only if ev+0x1c; logs STATEVENT 'Executing EventWriteContractsNegotiated with [%d] StatisticDataProviders'; djb2 keys ContractsNegotiated, .GameplayModeId.%d, .GameplayModeId.%d.IsInTeamCareer.%d to every enabled provider (this+0x50..+0x58, vt+0x18/+0x30); if team rank(ev+0x14) < rank(ev+0x18) also ContractsNegotiatedInABetterTeam. (lane owner review requested) Better name: Game_StatEvent_WriteContractsNegotiated (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_contracts_negotiated_config",

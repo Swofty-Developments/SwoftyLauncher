@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
+  "evidence": "decomp:re/decomp/142da2de0.c;pat:log-message-method;xref:0x1457e3950",
   "notes": "logged method name onStateExit (class from the log channel); log channel SessionStateViewInstantReplay: 'onStateExit'"
  },
  "signature": {

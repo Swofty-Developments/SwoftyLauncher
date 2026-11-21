@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_OptionsSystem_DeserialiseReplicatedOptions;xref:0x142ad65c0,0x142ad7130",
-  "notes": "cxx=game::OptionsSystem::deserialiseReplicatedOptions; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/142ad6480.c;str:s_OptionsSystem_DeserialiseReplicatedOptions",
+  "notes": "No decoded static caller (only rel32 noise 0x140bb59e8 / 0x140bb5a25, not checked for vtable cells beyond the abs scan). Pretty function OptionsSystem::deserialiseReplicatedOptions(NeBitBuffer&); logs 'Clearing replicated restrictions' / 'Replicated restrictions updated'."
  },
  "signature": {
   "id": "game.options_system_deserialise_replicated_options",

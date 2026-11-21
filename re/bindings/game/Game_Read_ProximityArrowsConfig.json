@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: proximity_arrows.distance_threshold, proximity_arrows.front_fade_angle, proximity_arrows.inner_distance_threshold, proximity_arrows.outer_distance_threshold, proximity_arrows.red_arrow_distance'"
+  "evidence": "decomp:re/decomp/142be35f0.c;pat:log-channel--;xref:0x1457cd798",
+  "notes": "Proximity arrows HUD per-player update: arrows_player_%d/arrow_%d visible, anim fractions, carID, red_visible, distance thresholds via Gdb_Lookup_Key."
  },
  "signature": {
   "id": "game.read_proximity_arrows_config",

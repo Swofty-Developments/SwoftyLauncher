@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1443d1bc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: TimeManager.cap, TimeManager.capValue, TimeManager.fixedTimeStep, TimeManager.mode, TimeManager.smoothing'"
+  "evidence": "decomp:re/decomp/1443d1bc0.c;pat:log-channel--;xref:0x1443c08ee",
+  "notes": "Allocates 0xc0 TimeManager (allocator this+0xb8) -> 0x146ca5c28. TimeManager.mode (default realtime_smoothed, FNV-1a lower hash -> enum 0..6 at +0x48, one value sets +0xb0), fixedTimeStep (60, <=0 warns) -> +0x68 = 1/step, smoothing (0.05) -> +0x80, cap (1) -> +0x89, capValue (0.08) -> +0x60. Returns 0 or 0xc. (lane owner review requested) Better name: Game_TimeManager_CreateFromConfig (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_time_manager_config",

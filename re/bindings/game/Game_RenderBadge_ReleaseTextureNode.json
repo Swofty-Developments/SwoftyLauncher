@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141e6f830",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141e6f830.c;xref:0x141d7165d",
-  "notes": "Frees a node of a texture tree (frees payload via vtable +0x38, recurses on child at +8). Called from Game_RenderBadge_ResizeTextureList."
+  "evidence": "decomp:re/decomp/141e6f830.c;xref:0x141d7165d,0x141e6ed82,0x141e6ed9f,0x141e6f1fd,0x141e6f41b,0x141e6f860",
+  "notes": "(allocator holder, chunk): frees the chunk node buffer +0x10 via [chunk+0x20] vcall +0x38, recurses into next chunk +8, then frees the chunk via allocator vcall +0x38. Chunk chain of the pooled badge texture list. Callers 0x141d7165d, 0x141e6eb70. (lane owner review requested) Better name: Game_RenderBadge_TextureList_FreeChunkChain (bound record keeps its name)."
  },
  "signature": {
   "id": "game.render_badge_release_texture_node",

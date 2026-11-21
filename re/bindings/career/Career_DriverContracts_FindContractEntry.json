@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140db7e30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "bool Find(void *comp, uint32_t *driver_key, uint16_t slot)",
-  "evidence": "decomp:re/decomp/140db7e30.c;xref:0x140aa1bd0;xref:0x140aa1be0;xref:0x140c580be",
-  "notes": "myteam-g2: Robin-Hood hash lookup (comp[0xdb] multiplier, shift byte @+0x70c, table comp[0xdc..]) of a driver key in the contracts map; checks the contract slot (u16). Boolean answer for 'does this driver have this contract / slot'. Hash=(id)*mult;h^=h>>33 open-addressing Robin-Hood map (key packed as u32: byte kind @+0, ushort id @+2)."
+  "evidence": "decomp:re/decomp/140db7e30.c;xref:0x140aa1bd0,0x140aa1be0,0x140c580be,0x140d8dda9",
+  "notes": "On the contracts component: finds the entry for driver key *param_2 in the list +0x2a0..+0x2a8 (16-byte, record +8 key), day = record u16 +0x28 or the override from the Robin-Hood map (+0x6d8 mult, +0x6e0 slots, +0x6e8 ctrl, +0x6f8 mask, +0x708/+0x70c); if day <= param_3 returns the result of this->vt+0x268, else false. (lane owner review requested) Better name: Career_DriverContracts_HasEntryDueByDay (bound record keeps its name)."
  },
  "signature": {
   "id": "career.driver_contracts_find_contract_entry",

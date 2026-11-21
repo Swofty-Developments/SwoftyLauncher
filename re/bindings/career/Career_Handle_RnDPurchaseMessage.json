@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141c8bcc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:vtable-0x145740ac0-slot-0x50;imm:0x493fe92b;kb:subsystems/rnd_ui.md#back",
-  "notes": "Purchase panel message handler (vt+0x50). back_pressed (djb2 0x493fe92b) @0x141c8c150: name = dept <= 3 ? k_Career_RnDDeptNameTable[dept] : \"error_department\" (cmp rax,3 ; ja @0x141c8c158), then container vt+0x80(\"open\", name). For dept 4 the container ignores the name and Back does nothing."
+  "evidence": "decomp:re/decomp/141c8bcc0.c;pat:vtable-0x145740ac0-slot-0x50;imm:0x493fe92b;kb:subsystems/rnd_ui.md#back;xref:0x141c8d537,0x145740b10",
+  "notes": "Purchase panel message handler (vtable 0x145740ac0 slot +0x50, cell 0x145740b10; this-adjust thunk jmp at 0x141c8d537). back_pressed (cmp eax,0x493fe92b at 0x141c8bd5e) -> 0x141c8c150: name = dept <= 3 ? k_Career_RnDDeptNameTable[dept] : 'error_department' (cmp rax,3 at 0x141c8c158), then container 'open'(name). Also purchase_tab_selected / trigger_unfocus paths. (lane owner review requested)"
  },
  "signature": {
   "id": "career.handle_rn_d_purchase_message",

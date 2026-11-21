@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a13860",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142a13860.c;xref:0x141fa0ae0,0x142d843e0",
-  "notes": "(out, Entity *e, ?, ?): if e has the component type 0x146063fb0 (e[0x206] vtable +0x10) copies its name (+0x5b8, len +0x5b0) into out via 0x1441974e0; else falls back to id e[0x1c3]+0xb0. Callers: Game_GarageMonitorTvFeedVM_OnActivate, Sess_PreRace_OnStateExit, Sess_ViewInstantReplay_Update, Sess_RedFlagRaceStrategy_Enter, Sess_RedFlagToRestart_Enter, Game_AutoResetToTrack_StartTimer."
+  "evidence": "decomp:re/decomp/142a13860.c;xref:0x1415c2fa8,0x141fa1b1d,0x142c123a8,0x142d6d64e,0x142d85168,0x142da2cb1,0x142da39ec,0x142dfc64a,0x142dfdf4a,0x142dfef3c,0x142e06217,0x142e06be7,0x142f01ead,0x143612e7f",
+  "notes": "(out, entity e, ctx, u8 variant): custom name of component 0x146063fb0 (e+0x1030 vcall +0x10; +0x5b8, len +0x5b0) if non-empty. Else (needs e[0x56]) picks table 0x140ac14e0(ctx, e), keys from session type (types 0xf..0x11 -> record +0x68) and id [e[0x1c3]]+0xb0 (>=0x100 -> 0xff), walks the chain (+0x368), out = entry[variant+5]+0x10. Empty out for null e. (lane owner review requested)"
  },
  "signature": {
   "id": "game.entity_get_name_string",

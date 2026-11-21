@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142bce8c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-PHOTO-MODE",
-  "notes": "named from its log messages (channel PHOTO-MODE): 'PhotoModeHelperModule::processFinalImageThreadFunc | PhotoModeHelperModule::createSuperResolutionImage |   - Percent = %d, block = %d, %d | Creating the super resolution photo took %I64d microseconds'"
+  "evidence": "decomp:re/decomp/142bce8c0.c;pat:log-channel-PHOTO-MODE;xref:0x142bce24d",
+  "notes": "PhotoModeHelperModule::processFinalImageThreadFunc (own log string; thread func, lea in 0x142bcdec0): dispatches on capture type +0xb0: 0/1 -> CreateNormalPhoto, 2/3 and 4/5 -> Create3dPhoto, 6 -> super resolution (tiles +0x1268 x +0x126c, progress +0x12d4, 'Creating the super resolution photo took'), then 0x142bcf220(mod,0) and clears +0x12c4/+0x12d4/+0x12d0. (lane owner review requested) Better name: Game_PhotoModeHelperModule_ProcessFinalImageThread (bound record keeps its name)."
  },
  "signature": {
   "id": "game.photo_mode_helper_process_final_image",

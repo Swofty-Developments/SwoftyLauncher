@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401c54e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=MaterialActorProxyPropertyRegister::registerUpdateGroup; log channel MaterialActorProxyPropertyRegister: 'MaterialActorProxyPropertyRegister::registerUpdateGroup %s'"
+  "evidence": "decomp:re/decomp/1401c54e0.c;pat:log-message-cxx;xref:0x1455f5af8",
+  "notes": "Virtual (cell 0x1455f5af8). Logs 'MaterialActorProxyPropertyRegister::registerUpdateGroup %s', appends param_5 to the vector [this+8]+0x68 (Ne_Vector16_PushBack), *out = 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.material_actor_proxy_property_register_register_update_group",

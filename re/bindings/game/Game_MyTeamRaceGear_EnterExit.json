@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "void f(void *self)",
   "evidence": "decomp:re/decomp/142061e90.c;xref:0x145767040",
-  "notes": "myteam-g1: Events my_team_entering_race_gear / my_team_exiting_race_gear (race gear customisation screens)."
+  "notes": "vt cell 0x145767040. Event handler switching on ids 0x493fe92a, 0x8cf3cd82, 0xea5525b5, 0x2b0357a; strings my_team_entering_race_gear, my_team_exiting_race_gear, advance_overview, show_header, nav_anim_off, TeamHQExteriorWalk."
  },
  "signature": {
   "id": "game.my_team_race_gear_enter_exit",

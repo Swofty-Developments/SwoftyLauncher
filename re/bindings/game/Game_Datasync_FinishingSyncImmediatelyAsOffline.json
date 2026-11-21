@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-DATASYNC",
-  "notes": "named from its log messages (channel DATASYNC): '[%s] Finishing sync immediately as we are offline or ignoring sync'"
+  "evidence": "decomp:re/decomp/1431041a0.c;pat:log-channel-DATASYNC;xref:0x140fd2dee,0x140ff7e03,0x140ff7ed3,0x1436dd447,0x1436feace",
+  "notes": "Calls Game_Datasync_ShouldSyncWithPeer at 0x14310429c,0x143104784,0x143104804,0x143104d50,0x143104eb1."
  },
  "signature": {
   "id": "game.datasync_finishing_sync_immediately_as_offline",

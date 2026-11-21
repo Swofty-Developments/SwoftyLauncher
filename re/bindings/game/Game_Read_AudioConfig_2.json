@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1443e6db0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "pat:log-channel--;decomp:re/decomp/1443e6db0.c;xref:0x145a89f58",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: audio.addDoppler, audio.event.%02I64u, audio.param.%02I64u, audio.playImmediately, audio.playOutsideTrackOnly'  | 2026-11-17 engine-re (decomp read): this is the AudioEmitter world-object component property reader (vt slot 0x145a89f58), not a DB config read. It needs the entity's component of type 0x146cb8098 (Ne_Entity_FindComponent), else error 2. audio.event.01..10 (loop of 10): each non-empty string becomes a Wwise id (Game_Get_WwiseIdFromString) at this+0x48+4*i; then audio.param.NN, audio.playImmediately, audio.playOutsideTrackOnly, audio.addDoppler. Every key is looked up in three property sources in turn (+0xf0, +0xe8, +0xe0 of the init block). Track use: layer audio_env (e.g. play_sfx_pit_horn) and audio_occlusion_next_gen (play_amb_garage); the event ids are in metadata.bnk, so per-track audio is placement data in the track ERP only."
+  "notes": "AudioEmitter component property reader (vt cell 0x145a89f58): stores 3 property sources into init+0xe0/+0xe8/+0xf0; needs component 0x146cb8098 (Ne_Entity_FindComponent, else error 2). audio.event.01..10: non-empty string -> Wwise id (0x1449087e0) at this+0x48+4*i; audio.param.01 -> +0x70 (+0x74 = 0); bool keys -> +0x79...; each key looked up in +0xf0, then +0xe8, then +0xe0. Not a DB config read. (lane owner review requested) Better name: Game_AudioEmitter_ReadProperties (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_audio_config_2",

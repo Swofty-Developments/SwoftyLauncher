@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: textures.fanzone_expressions, textures.fanzone_expressions_26, textures.fanzone_expressions_large, textures.fanzone_expressions_large_26'"
+  "evidence": "decomp:re/decomp/14186ffc0.c;pat:log-channel--;xref:0x1418caaf2,0x1418caf1a,0x141d166c6,0x141d1686d,0x1421af38b,0x1421af69e",
+  "notes": "Fanzone driver card refresh: Game_Livery_UpdateSlotPropertiesFromPackedIds, VM bools, textures.fanzone_expressions(_large)(_26) by +0x1e8, second_name, Game_Livery_ApplyTeamTextureSet."
  },
  "signature": {
   "id": "game.read_textures_config",

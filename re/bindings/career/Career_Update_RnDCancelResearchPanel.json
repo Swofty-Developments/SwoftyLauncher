@@ -9,7 +9,7 @@
   "subsystem": "career",
   "proto": "void f(void *panel)",
   "evidence": "decomp:re/decomp/141c6e1b0.c;xref:0x14573fd48",
-  "notes": "myteam-g1: R&D cancel-research panel (lng_rnd_cancel_research, upgrade_hash_name); uses Career_Query_EnabledUpgrades, Career_Get_RpWallet, Career_Get_TeamModifiers."
+  "notes": "Vtable cell 0x14573fd48. Upgrade panel binder on #r_and_d_flow.upgrade_hash_name: resource_points (+icons), button_text/icon/enabled, upgrade_type/size/desc, duration, selected_tile, card anim status, timeline_data, build_data; uses Career_Query_EnabledUpgrades, Career_Get_RpWallet, Career_Get_EffectiveUpgradeCost, Career_Get_TeamModifiers. Better name: Career_Update_RnDUpgradeInfoPanel (bound record keeps its name)."
  },
  "signature": {
   "id": "career.update_rn_dcancel_research_panel",

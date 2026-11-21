@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-PHOTO-MODE",
+  "evidence": "decomp:re/decomp/141cfe090.c;pat:log-channel-PHOTO-MODE;xref:0x141ceffc4",
   "notes": "named from its log messages (channel PHOTO-MODE): 'Scenario loaded'"
  },
  "signature": {

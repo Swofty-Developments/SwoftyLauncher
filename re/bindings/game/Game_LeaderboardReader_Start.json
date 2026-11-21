@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142fbd7e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_LeaderboardReader_Start;xref:0x142fbd8b5",
-  "notes": "cxx=game::LeaderboardReader::start; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/142fbd7e0.c;str:s_LeaderboardReader_Start;xref:0x1457ff268",
+  "notes": "virtual NEbool start(const LeaderboardContext&, Type, Rank, NEuint, ResultDelegate) (cell 0x1457ff268, slot +0x8). Logs; vcall +0x30(changed); no context +0x48 -> 0. Stores type +0x3c, count +0x50, ctx name block +0x80.., ver +0xa0, direction +0xb0=2, delegate +0xb8; task type 1/3; online_services -> 0x14314fc00 (cb 0x142fbdd50, id +0xc8), first_party -> 0x1432d36d0(0x1460c22c8, rank, count, friends) -> +0xd8/+0xe0. Returns started. (lane owner review requested)"
  },
  "signature": {
   "id": "game.leaderboard_reader_start",

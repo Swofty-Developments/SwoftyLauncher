@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "void *f(void *self)",
   "evidence": "decomp:re/decomp/1428d0020.c;xref:0x1428cfb50",
-  "notes": "myteam-g1: Giant (6k lines) config builder for the MyTeamDriverCustomisationRoom and MyTeamVehicleCustomisationRoom scenes."
+  "notes": "Only caller 0x1428cfb50 in 0x1428cfaa0 ('Looking up Scene Description from Preset'). 30 KB body naming scenes Main, F1World, Customisation, Story, TeamHQV2, Home, GenericRoom...; builds front-end scene preset descriptions for many scenes, not only the My Team rooms. Better name: Game_FrontendScene_BuildPresetDescriptions (bound record keeps its name)."
  },
  "signature": {
   "id": "game.my_team_customisation_rooms_build",

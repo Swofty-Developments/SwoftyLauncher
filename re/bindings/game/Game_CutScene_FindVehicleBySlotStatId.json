@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14024c580",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14024c580.c;xref:0x14024c6a5",
-  "notes": "Formats '%s %u' and the category ENTRANTS_SYSTEM with 'Vehicle with stat id %s not found' via Ne_StrBuf_Printf. 1 caller Game_CutScene_SpawnCarForSlot (0x14024c6a5). Diagnostic. vq2-verify partial"
+  "notes": "Renamed: it resolves, the 'not found' log lives in the callee. (_, u32 slot): slot byte from [[0x14601f5c8]+0xb0]+0x108[slot]; if a session entrant (vt+0xa0 list, 0x88 stride, byte +0x82) has it, tail-jumps Sess_ResolveEntityHandle 0x14243fd10 with that entrant's vehicle stat id; else calls it with stat id {0, slot} and returns its result (the decomp merges the callee: table [ents+0x328+type*0x10], ENTRANTS_SYSTEM 'Vehicle with stat id %s not found'). (lane owner review requested) Better name: Game_CutScene_ResolveVehicleForSlot (bound record keeps its name)."
  },
  "signature": {
   "id": "game.cut_scene_log_vehicle_stat_id_not_found",

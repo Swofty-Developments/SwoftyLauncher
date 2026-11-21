@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143527a70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "int Career_Read_DepartmentsAffected(void * self,uint64_t a2,void * a3)",
   "evidence": "decomp:re/decomp/143527a70.c;xref:0x141247aa6",
-  "notes": "myteam-g1: Reads department and departments_affected."
+  "notes": "Save reader twin of 0x143527400: reads schedule[] {name, season_index, rumour_start_weekend, confirmation_weekend, departments_affected/department, types_affected/type} and adds each entry via 0x143527230. Called from load dispatcher 0x141247780. (lane owner review requested) Better name: Career_Read_DepartmentsAffectedSchedule (bound record keeps its name)."
  },
  "signature": {
   "id": "career.read_departments_affected",

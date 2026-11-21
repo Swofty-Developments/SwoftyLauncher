@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: specialisation_extra_details.diagram.code_commercial_point, specialisation_extra_details.diagram.code_dot_point, specialisation_extra_details.diagram.code_engineering_point, specialisation_extra_details.diagram.code_stewardship_point'"
+  "evidence": "decomp:re/decomp/142355020.c;pat:log-channel--;xref:0x145781d78",
+  "notes": "Owner perks specialisation tree VM: stewardship/engineering/commercial pills, levels, points, team badge."
  },
  "signature": {
   "id": "game.read_specialisation_extra_details_config",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a92460",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142a92460.c;xref:0x142a9723c",
-  "notes": "Frees the decal set proxy (Game_CustomisationDecals_DestroySetProxy), clears param_1+0x1b0/+0x1b8 (refcounted surface, atomic dec at +8), calls 0x142a92700 and logs 'Vehicle %d, destroying surface and surface proxy' on channel 'CUSTOMISATION_DECALS/V' (also strings 'GameSurfacePackSystem', 'removeSur...'), then removes the surface through the surface-pack system (vcall +0x38). Callers 0x142a97190 (apply livery), 0x142a97250, Game_CustomisationDecals_ApplyVehicleDecalNodeList. Addon: livery/decal surface lifetime per vehicle."
+  "evidence": "decomp:re/decomp/142a92460.c;xref:0x142a9723c,0x142a972fc,0x142a97eee,0x14db270c7",
+  "notes": "DestroySetProxy 0x142a925e0, clears the shared surface p1+0x1b0/+0x1b8 (release), DestroyMaterialOverride 0x142a92700, logs 'Vehicle %d, destroying surface and surface proxy' (CUSTOMISATION_DECALS/V), frees the object at [[p1+0xc8]+8] (vt+8 then allocator vt+0x38). Then for component 0x1460467f0 of [p1+8] (0x143f9b3c0) with surface id [[c+0x38]+0x228]+8: 0x1437a7f00([p1+0x48], id), GameSurfacePackSystem log 'removeSurfaceResourcesAndUnassignHelmet', 0x1437a7ac0 for slots 0..4, erase from map +0x18380. (lane owner review requested)"
  },
  "signature": {
   "id": "game.customisation_decals_destroy_surface_and_proxy",

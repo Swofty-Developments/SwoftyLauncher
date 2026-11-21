@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141d07760",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=PhotoModeViewModel::onDOFFocusDistanceChanged; log channel PHOTO-MODE: 'PhotoModeViewModel::onDOFFocusDistanceChanged: DOF Focus Distance = %f'"
+  "evidence": "decomp:re/decomp/141d07760.c;pat:log-message-cxx;xref:0x141cefbb0",
+  "notes": "PhotoModeViewModel handler (this, cmd): acts only when cmd+8 == 10, reads \"value\" from cmd+0x10 (int or float by type check), logs PHOTO-MODE; registered by lea in 0x141cef700. float -> this+0x520 and system+0x2d64; dirty, refresh. (lane owner review requested)"
  },
  "signature": {
   "id": "game.photo_mode_view_model_on_dof_focus_distance_changed",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_Championship_DepartmentEventsComponent_SerialiseTeamData;xref:0x140cbd930,0x140cbddc9,0x140cbe6de,0x140cc04ac,0x140cc04f8,0x140cc13c5,0x140cc13ef,0x140cc1699,0x140cc174e,0x140cc176f",
-  "notes": "cxx=game::championship::DepartmentEventsComponent::serialiseTeamData; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/140cbd660.c;str:s_Championship_DepartmentEventsComponent_SerialiseTeamData;xref:0x145686b40",
+  "notes": "VT cell 0x145686b40. Own pretty-function string 'game::championship::DepartmentEventsComponent::serialiseTeamData' is the %s arg of its DE_deserialise_trace logs; writes department_events_team_data, packed_team_stat_id, event_cooldowns, current_timed_goals, outcome_instance_data, department_events_spawn_rate via Gdb_Write_ReflectedFieldA 0x143932a40. Input xrefs were internal sites of this body."
  },
  "signature": {
   "id": "game.department_events_component_serialise_team_data",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f89c70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name evaluateRivalFriendLaptime (class from the log channel); log channel GHOSTLAPS: '%s(%s) : evaluated rival lap time(%s).'"
+  "evidence": "decomp:re/decomp/142f89c70.c;pat:log-message-method;xref:0x142f86d14",
+  "notes": "evaluateRivalFriendLaptime(sys,friendMs,myMs,out): friendMs<1 -> 0; target = friend - (friend-my)*1.5, not below sys+0x4d8, = friend when the delta is negative; logs both as hh:mm:ss.mmm; returns friendMs>0. Caller 0x142f869f0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ghostlaps_evaluate_rival_friend_laptime",

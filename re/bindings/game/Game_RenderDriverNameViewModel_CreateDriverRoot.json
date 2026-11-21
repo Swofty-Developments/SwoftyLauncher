@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=RenderDriverNameViewModel::createDriverRoot; log channel GARAGE_BOARD_DEBUG: 'RenderDriverNameViewModel::createDriverRoot garage %d slot %d entrant %s'"
+  "evidence": "decomp:re/decomp/141d7bce0.c;pat:log-message-cxx;xref:0x14574a9b8",
+  "notes": "Vtable slot (cell 0x14574a9b8). Log GARAGE_BOARD_DEBUG 'RenderDriverNameViewModel::createDriverRoot garage %d slot %d entrant %s', strings garage_%u_slot_%u, driverName %s, car_number %d, complete_sync_point; calls 0x141d7cff0. 4 KB body."
  },
  "signature": {
   "id": "game.render_driver_name_view_model_create_driver_root",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428d96c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name removeAnyInvalidPendingComponents (class from the log channel); log channel FRONTEND_SCENE_MANAGER: '%s()'"
+  "evidence": "decomp:re/decomp/1428d96c0.c;pat:log-message-method;xref:0x1428d7b2b",
+  "notes": "(mgr,sceneCfg). By scene type cfg+0x18 (table 0x1457ad830, mask 100) invalidates (0x1428daa30) components +0x6b60, +0x6fb8 (0x450), +0x1d0, cars +0x6fd8 (0x6990), objects +0x6ff8 (0x130); logs removeAnyInvalidPendingComponents; if +0x160 checks the pending cutscene +0x7188 exists in the new scene/subscene maps, else logs 'Found a Cutscene that is Pending Play, and will be invalid' and clears it. Caller 0x1428d7610 (SwitchScene). (lane owner review requested)"
  },
  "signature": {
   "id": "game.frontend_scene_manager_remove_any_invalid_pending_components",

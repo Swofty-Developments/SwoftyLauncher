@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141249090",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "uint64_t Career_Collect_RndEntriesForDepartment(void *owner, void *out_arr, uint64_t dept_key, uint64_t kind)",
-  "evidence": "decomp:re/decomp/141249090.c;xref:0x141248f2f;xref:0x141248f8b;xref:0x141248fe6",
-  "notes": "myteam-g2: Walks the department list (owner+0x2f8..+0x300, int key at +0) and collects the R&D development entries belonging to dept_key and kind into out_arr. Read-only."
+  "evidence": "decomp:re/decomp/141249090.c;xref:0x141248f2f,0x141248f8b,0x141248fe6,0x141249036",
+  "notes": "Finds round param_3 in +0x2f8..+0x300 (id at +0, allowed dept bytes); if dept arg5 is allowed, for team param_4 ((+0xd60)+0x298 model) takes enabled upgrades (Career_Query_EnabledUpgrades) with +0x72 == dept; day = min(round start Career_Calc_CalendarEntryStartMinutes, now)>>5/45; keeps those with a kind-3 event on/before day-1, drops ones also having a kind-2 event at day-1; appends to out (+0xc00). (lane owner review requested) Better name: Career_Collect_DeptUpgradesForRound (bound record keeps its name)."
  },
  "signature": {
   "id": "career.collect_rnd_entries_for_department",

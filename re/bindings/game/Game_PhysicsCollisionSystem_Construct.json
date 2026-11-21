@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
+  "evidence": "decomp:re/decomp/1440dfa30.c;pat:log-message-cxx;xref:0x1440c4d4e,0x1440c77f4,0x1440c7d1f",
   "notes": "cxx=PhysicsCollisionSystem::PhysicsCollisionSystem; log channel PHYSICS: 'PhysicsCollisionSystem::PhysicsCollisionSystem m_numIntersectionUnits = %d'"
  },
  "signature": {

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: subtitles_data.character_ref, subtitles_data.character_texture, subtitles_data.display_text, subtitles_data.paused, subtitles_data.reset_to_start, subtitles_data.show_speaker_notification, subtitles_data.show_subtitle, subtitles_data.shown_and_enabled, subtitles_data.spe'"
+  "evidence": "decomp:re/decomp/140999600.c;pat:log-channel--;xref:0x1407f305e",
+  "notes": "Subtitles VM bindings (10 subtitles_data.* properties incl. character_ref/texture, speaker notification)."
  },
  "signature": {
   "id": "game.read_subtitles_data_config",

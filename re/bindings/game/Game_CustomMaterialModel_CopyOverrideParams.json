@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144637850",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/144637850.c;xref:0x142a903cc,0x142a904e6",
-  "notes": "Loops 0xe0 bytes of param slots (+0x1130 base), allocates 0x13-byte records from allocator 0x146c621e0 and copies them to the param_2 block. Caller Game_CustomMaterialModelComponent_CreateOverrideMaterial. Hypothesis. CORRECTION vp4-verify: 0x13 is the allocator type id; record size is 0x10"
+  "notes": "Renamed (no param copy). (model, u128 material): for each non-null render node in the pointer arrays model+0x1050..+0x1130 and +0x1130..+0x12f8 posts a type-0x13 0x10-byte record via allocator 0x146c621e0 and stores the material at node+0xf0/+0xf8; then calls vt+0x58(material) on every object in [[model+0x58]+0x2e0,+0x2e8). Caller CreateOverrideMaterial. (lane owner review requested) Better name: Game_CustomMaterialModel_ApplyMaterialToNodes (bound record keeps its name)."
  },
  "signature": {
   "id": "game.custom_material_model_copy_override_params",

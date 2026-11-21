@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1403582f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=Podium2019CutSceneScript::onShutDownComplete; log channel CUTSCENE_PODIUM: 'Podium2019CutSceneScript::onShutDownComplete | PodiumBaseCutSceneScript::onShutDownComplete'"
+  "evidence": "decomp:re/decomp/1403582f0.c;pat:log-message-cxx;xref:0x1455f7248,0x1456032f8,0x145603688,0x145603a28",
+  "notes": "Logs Podium2019/PodiumBase onShutDownComplete, 0x14024d360, vfunc +0x1b8, sets state this+0x40 = 0xc (setStateShutdown). Slot in 4 vtables. (lane owner review requested)"
  },
  "signature": {
   "id": "game.podium2019_cut_scene_script_on_shut_down_complete",

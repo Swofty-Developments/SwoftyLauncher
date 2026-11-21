@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: f1_life.offline_driver_customisations.offline_casual_customisation_tem, f1_life.offline_driver_customisations.offline_favourite_trophies, stom_avatar.eyewDriverAnimation'"
+  "evidence": "decomp:re/decomp/14252f270.c;pat:log-channel--;xref:0x145791bc8",
+  "notes": "Vt cell 0x145791bc8. Body 0x3d9e bytes."
  },
  "signature": {
   "id": "game.read_f1_life_config",

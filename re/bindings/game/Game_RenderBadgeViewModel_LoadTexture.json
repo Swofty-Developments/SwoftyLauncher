@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141d76d70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_RenderBadgeViewModel_LoadTexture;xref:0x141d76e27,0x141d770d7,0x141d77408",
-  "notes": "cxx=game::RenderBadgeViewModel::loadTexture; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/141d76d70.c;str:s_RenderBadgeViewModel_LoadTexture;xref:0x141d73808,0x141d73ba2,0x141d73e7b,0x141d74215,0x141d7457e,0x141d748c5,0x141d74b78,0x141d74ebf,0x141d75f9d,0x141d763c7,0x141d76827,0x141d76c58,0x141d78d66,0x141d791d4,0x141d7972a,0x141d79b61,0x141d7a55c,0x141d7a8d8,0x141d7ac4a,0x141d7afc9",
+  "notes": "loadTexture(NeVector<NeUITextureLoader::ModificationData>& mods, BadgeTexturePath& p) (own pretty-function 0x14574a29e). Releases p+0x18 handle, searches the request list (sentinel this+0x3b0) for a node with equal handles p+0/p+8 (id&0xfffff + Ne_Crt_Strcmp): hit copies node+0x28 into p+0x18. Miss: logs, emplaces {p0,p8,p10,p18} (grow via 0x141e6eb70 on this+0x390), pushes {0,p0,p8,cb 0x141d77bd0,this} into mods (0x1417df2a0). (lane owner review requested)"
  },
  "signature": {
   "id": "game.render_badge_view_model_load_texture",

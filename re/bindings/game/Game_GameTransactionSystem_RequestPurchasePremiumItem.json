@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e67b40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_GameTransactionSystem_RequestPurchasePremiumItem;xref:0x142e67bc0",
-  "notes": "cxx=game::GameTransactionSystem::requestPurchasePremiumItem; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/142e67b40.c;str:s_GameTransactionSystem_RequestPurchasePremiumItem;xref:0x1419e3ab6",
+  "notes": "requestPurchasePremiumItem(sys,packageId,name,price,delegate): sets sys+0x70=1, stores delegate sys+0x98/+0xa0, posts message vt 0x1457f1680 (id,name,price) via 0x142eeb240, logs CURRENCY request line, starts the store purchase via 0x1433747b0([sys+0x38]+0x7948,id). Caller 0x1419e2b70. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_transaction_system_request_purchase_premium_item",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_OptionsSystem_OnGameModeChanged;xref:0x142ac96ee",
-  "notes": "cxx=game::OptionsSystem::onGameModeChanged; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/142ac9260.c;str:s_OptionsSystem_OnGameModeChanged;xref:0x142ac7ae3,0x142ac7b10",
+  "notes": "lea 0x142ac7ae3, 0x142ac7b10. Pretty function OptionsSystem::onGameModeChanged(NeMessage&); clears replicated restrictions; calls 0x142ad42e0."
  },
  "signature": {
   "id": "game.options_system_on_game_mode_changed",

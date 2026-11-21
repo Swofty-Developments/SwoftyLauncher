@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142c66490",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_SafetyRatingSystem_ReadOnlinePlayerData;xref:0x142c665e2",
-  "notes": "cxx=game::SafetyRatingSystem::readOnlinePlayerData; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/142c66490.c;str:s_SafetyRatingSystem_ReadOnlinePlayerData;xref:0x14327f9c1",
+  "notes": "(sys): 0 if offline (+0x428). +0x521 = 0; online record 0x143276fc0([+0x4d8]+0x3d8) (none -> 0x57); no blob -> log, defaults +0x4c/+0x50/+0x54, 0x57; else rating blob+4, tier min(blob+8, 5), float blob+0xc into +0x40/+0x44/+0x48. Bus msgs on rating (vt 0x1457d41f8) / tier change (0x1457d4208), 0x142c701b0, net broadcast via 0x14402e500(+0x4f8), +0x521 = 1, queues vt 0x1457d4270. Caller 0x14327f4a0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.safety_rating_system_read_online_player_data",

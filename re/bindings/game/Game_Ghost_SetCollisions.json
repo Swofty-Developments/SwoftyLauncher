@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f1cb00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-GAME_GHOST",
-  "notes": "named from its log messages (channel GAME_GHOST): '%s: car[%d] vehicle collisions %s. | %s: car[%d] world collisions %s.'"
+  "evidence": "decomp:re/decomp/142f1cb00.c;pat:log-channel-GAME_GHOST;xref:0x142f1bf5d,0x142f1f69c,0x142f20df9",
+  "notes": "Old name wrong: VehicleGhostComponent::checkCollisions(comp,&veh,&world) (pretty-function string): world = (comp+0x4b0 & (comp+0x520[comp+0x628] | comp+0x518)) == 0, veh = 0x142f1ccf0(); logs only when they differ from car flags [comp+0x18]+0x130 bits 4/5; returns comp+0x18 != 0. Callers 0x142f1be60, 0x142f1e460, 0x142f20cf0. (lane owner review requested) Better name: Game_VehicleGhostComponent_CheckCollisions (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ghost_set_collisions",

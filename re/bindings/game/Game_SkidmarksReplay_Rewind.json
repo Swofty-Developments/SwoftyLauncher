@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-SKIDMARKS_REPLAY",
-  "notes": "named from its log messages (channel SKIDMARKS_REPLAY): '- | rewindFadeMaker() mark %d | rewindQuadMaker() quad %d | rewindMarkMaker() mark %d | rewindMarkKiller() mark %d | rewindQuadKiller() quad %d | replayMarkKiller() mark %d | replayFadeMaker() mark %d'"
+  "evidence": "decomp:re/decomp/144725390.c;pat:log-channel-SKIDMARKS_REPLAY;xref:0x1447277ef,0x144727802",
+  "notes": "Large replay routine (pdata 0x21df bytes) with SKIDMARKS_REPLAY logs rewindFadeMaker/QuadMaker/MarkMaker/MarkKiller/QuadKiller, replayMarkKiller/FadeMaker; calls Game_SkidmarksReplay_ApplyCommand and Game_SkidmarksReplay_UnpackRecord. Called from 0x1447275f0."
  },
  "signature": {
   "id": "game.skidmarks_replay_rewind",

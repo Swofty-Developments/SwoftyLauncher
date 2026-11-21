@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
+  "evidence": "decomp:re/decomp/1422a7b50.c;pat:log-message-cxx;xref:0x1422a6c2f,0x1457793b8",
   "notes": "cxx=SessionResultsStandardViewModel::onTabActivated; log channel SESSION_RESULTS_TOOLTIPS: 'Rebuild Tooltips from: SessionResultsStandardViewModel::onTabActivated'"
  },
  "signature": {

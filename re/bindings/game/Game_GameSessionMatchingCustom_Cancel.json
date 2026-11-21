@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143076d10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionMatchingCustom::cancel; log channel NETWORK-SESSION: 'GameSessionMatchingCustom::cancel(%s)'"
+  "evidence": "decomp:re/decomp/143076d10.c;pat:log-message-cxx;xref:0x1422252d8,0x14222632d,0x142232b92,0x1430623af,0x1430adf25,0x1430b2e49,0x1430e3657,0x1430ef33e",
+  "notes": "Logs NETWORK-SESSION 'GameSessionMatchingCustom::cancel(%s)' (reason p2, names table 0x1458272d0, < 0x20). Completes pending requests as failed: search delegate +0x80/+0x88 -> OnCustomSearchComplete(p1,1,0,1); join delegate +0xc0/+0xc8 -> OnCustomJoinComplete(p1,0,p2); create delegate +0xe8/+0xf0 -> OnCustomCreateComplete(p1,0,p2). Then optional 0x143064ce0, 0x144065670([[p1+8]+0xd8]), 0x1430605c0([[p1+8]+0x3c0],1,p2,1), restarts timer +0x60/+0x68. Returns 1. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_session_matching_custom_cancel",

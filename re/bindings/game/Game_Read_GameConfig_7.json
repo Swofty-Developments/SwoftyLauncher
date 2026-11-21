@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: Game.DriverHQIntro.DriverHQIntro.ForceOn, Game.DriverHQIntro.DriverRatingsMilestone.ForceOn, Game.DriverHQIntro.DriverWonWorldChampionship.ForceOn, Game.DriverHQIntro.NewSeasonEstablishingCutscene.ForceOn'"
+  "evidence": "decomp:re/decomp/1436c5ef0.c;pat:log-channel--;xref:0x14585a7c0",
+  "notes": "Strings show a DriverHQ intro cutscene/fade sub-task (DriverHQIntroMessage, UICameraSubTask, FADE_REQUESTS 'Clearing fade reasons') reading 4 Game.DriverHQIntro.*.ForceOn bools; name 'GameConfig_7' is vague."
  },
  "signature": {
   "id": "game.read_game_config_7",

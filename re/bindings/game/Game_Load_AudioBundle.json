@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144528310",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144528310.c;imm:0x145be7cab",
-  "notes": "loads <audio dir>/bundles/<name>.bdl (format %s/bundles/%s). No magic or version check: header version at +0x04, section offset at +0x10; version > 0x73 reads +0x38/+0x3c (and +0x40 unless 0x74) for the part flags, else flags 3 (engine, exhaust). Stock bundles are 0x77 (0x76 for the AMG cars); the F1 25 Engine Sound Pack bundles are 0x6a"
+  "evidence": "decomp:re/decomp/144528310.c;imm:0x145be7cab;xref:0x14451c6af",
+  "notes": "Thread entry (fn ptr lea 0x14451c6af in Game_AudioEngineBundle_Initialise). Loops while the wait vcall +8(0x14) times out (0x3c): pops a 0xa8 request from +0x70..+0x78 (lock +0x18), opens '%s/bundles/%s' with '.bdl' forced (0x143f393a0), parses the header into a 0x110 record (rate 48000, flags 1/2/4 -> pairs of 0x1760 objects via 0x144524b30), publishes it to the waiters (+0x208) or clears bit 4 of +0x69 on failure. Returns 0. (lane owner review requested) Better name: Game_AudioBundle_LoaderThreadMain (bound record keeps its name)."
  },
  "signature": {
   "id": "game.load_audio_bundle",

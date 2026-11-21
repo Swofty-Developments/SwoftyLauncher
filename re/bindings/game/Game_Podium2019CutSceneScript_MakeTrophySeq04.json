@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14035e9c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=Podium2019CutSceneScript::makeTrophySeq04; log channel CUTSCENE_PODIUM: 'Podium2019CutSceneScript::makeTrophySeq04 | PodiumBaseCutSceneScript::spawnPodiumSceneDriverWithResultInRace | Podium2019CutSceneScript::hideActor'"
+  "evidence": "decomp:re/decomp/14035e9c0.c;pat:log-message-cxx;xref:0x140367387,0x140375fa3",
+  "notes": "Logs; location 'pod_pl'/'test', TV screens, champagne bottles, scene 'trophySeq04', trophies 1,2,0, drivers in slots +0x840/+0x848/+0x850 with nodes 'driver_placed_first'+team suffix (0x14036fe30), 'driver_placed_second', 'driver_placed_third', ShiftSceneTimingsByName 'podium_trophy_seq04'; monaco flag hides 'trophySeq04delegate01'/'delegate02', binds. (lane owner review requested)"
  },
  "signature": {
   "id": "game.podium2019_cut_scene_script_make_trophy_seq04",

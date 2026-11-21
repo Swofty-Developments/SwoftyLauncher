@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142c75060",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142c75060.c;xref:0x142d865b1,0x142d86677",
-  "notes": "(seq) When not playing (+0x61 == 0), loading enabled (+0x62), name present ([+0x10]) and no handle (+0x68): builds a cutscene load request (asset type from +0x5c via 0x14022d670) and submits it to the cutscene manager ([0x14601f5c8]+0xc0, 0x140227400); stores handle at +0x68/+0x70, state +0x58 = 2, clears +0x62. Callers PreloadRewardSequence enter, Sess_RetirementSequence_Update."
+  "evidence": "decomp:re/decomp/142c75060.c;xref:0x142d865b1,0x142d86677,0x142d8a67b",
+  "notes": "(seq): when not playing (+0x61 == 0), loading enabled (+0x62), name [+0x10] non-empty, state +0x58 != 0 and no handle (+0x68): builds a cutscene load request (asset id +0x5c via 0x14022d670) and submits it to [0x14601f5c8]+0xc0 (0x140227400); stores the shared handle +0x68/+0x70 (old released), handle vcall +0x1d8(1), +0x58 = 2; clears +0x62. Callers Game_SessionStatePreloadRewardSequence_OnStateEnter, 0x142d86620, Sess_RetirementSequence_Update. (lane owner review requested)"
  },
  "signature": {
   "id": "game.reward_sequence_preload_cutscene",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1440acfd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-SSL",
-  "notes": "named from its log messages (channel SSL): '[OpenSSL] [%u] Cleaning up Peer'"
+  "evidence": "decomp:re/decomp/1440acfd0.c;pat:log-channel-SSL;xref:0x145a4e740",
+  "notes": "Scalar deleting destructor (slot 0 of vtable 0x145a4e740): frees the SSL object +0xd8 (0x144c60540) and clears +0xd8..+0xe8, logs SSL '[OpenSSL] [%u] Cleaning up Peer' (peer id +0x10), base vt 0x145a564b0, destroys functors +0xd0, +0x90, +0x50; flag != 0 frees this via the default allocator. (lane owner review requested) Better name: Game_SslPeer_Destroy (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ssl_cleaning_up_peer",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141166160",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: objectives.dynamic_objectives.relevance_criteria.invalidating_assists, objectives.dynamic_objectives.settings.race_length_scaling.F1, objectives.dynamic_objectives.settings.race_length_scaling.F2'"
+  "evidence": "decomp:re/decomp/141166160.c;pat:log-channel--;xref:0x1456c2c70,0x1411435cd",
+  "notes": "Vtable slot ref 0x1456c2c70. Reads objectives.dynamic_objectives.relevance_criteria.invalidating_assists (option/option_value), objectives.dynamic_objectives.settings.race_length_scaling.F1/F2, and per objective type: objectives_to_trigger, min_duration, objective_duration, min_proportion_around_lap, disruption_buffer, end_buffer, min_gap_duration, add_remainder_to_buffer, trigger_laps. (lane owner review requested)"
  },
  "signature": {
   "id": "career.read_objectives_config",

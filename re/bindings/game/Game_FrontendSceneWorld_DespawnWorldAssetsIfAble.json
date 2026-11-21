@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e232a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name despawnWorldAssetsIfAble (class from the log channel); log channel FRONTEND_SCENE_WORLD: 'despawnWorldAssetsIfAble() - Thumbnail [%d] - preventing unload, status %s'"
+  "evidence": "decomp:re/decomp/142e232a0.c;pat:log-message-method;xref:0x1457eb548",
+  "notes": "Vtable cell 0x1457eb548 (system vtable, stub neighbours). Strings THUMBNAIL_SYSTEM/THUMBNAIL_TASK. Walks thumbnail-set map p1+0xc8 (state +0x28: 0 NotGenerated, 1 GenerationPending, 3 Cancelling, 4 cleared) and pending id list +0xe0..+0xe8; starts up to 0x16 generations (task init, state 1), calls result delegates (+0x20/+0x28), releases cancelled sets. Tail inlines despawnWorldAssetsIfAble: unloads RTT worlds in list +0x158 (logs Unloading RTT World / Despawn World) unless sets pending. Old name was only the inlined tail. (lane owner review requested) Better name: Game_ThumbnailSystem_ProcessThumbnailSets (bound record keeps its name)."
  },
  "signature": {
   "id": "game.frontend_scene_world_despawn_world_assets_if_able",

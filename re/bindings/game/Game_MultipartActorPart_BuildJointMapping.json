@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=MultipartActorPart::buildJointMapping; log channel MULTI_PART_ACTOR: 'MultipartActorPart::buildJointMapping inMyJointName %s inBaseJointName %s jointCount %d baseJointCount %d'"
+  "evidence": "decomp:re/decomp/1401cce60.c;pat:log-message-cxx;xref:0x1401cbf99",
+  "notes": "Called from Game_MultipartActor_AddPart (0x1401cbf99)."
  },
  "signature": {
   "id": "game.multipart_actor_part_build_joint_mapping",

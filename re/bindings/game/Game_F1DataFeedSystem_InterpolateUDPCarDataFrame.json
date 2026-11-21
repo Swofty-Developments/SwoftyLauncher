@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142c2f250",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=F1DataFeedSystem::interpolateUDPCarDataFrame; log channel F1-DATA-FEED: 'F1DataFeedSystem::interpolateUDPCarDataFrame called, time = %f, fileOffset1 = %I64u, fileOffset2 = %I64u, fract = %f'"
+  "evidence": "decomp:re/decomp/142c2f250.c;pat:log-message-cxx;xref:0x142c1b65d",
+  "notes": "Own log string. Mode 0 of FetchCarDataFrame 0x142c1b630. Returns 0x16 when paused (+400 set, +0x191 clear); finds two UDP packets around time (0x142c36820), reads both (0x142c319e0), lerps per car (20 x 0xc0) position, orientation, lap distance (0..1 wrap); copies into frames this+0x18b470+i*0xc0, sets +0x18e0b4. (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1_data_feed_system_interpolate_udp_car_data_frame",

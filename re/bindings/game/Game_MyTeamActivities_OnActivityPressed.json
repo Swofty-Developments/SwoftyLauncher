@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14231c710",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-MY_TEAM_ACTIVITIES",
-  "notes": "named from its log messages (channel MY_TEAM_ACTIVITIES): 'Function: activityPressed'"
+  "evidence": "decomp:re/decomp/14231c710.c;pat:log-channel-MY_TEAM_ACTIVITIES;xref:0x142319d18,0x14231acd1",
+  "notes": "(ui, item ref): item = param or +0x8a8; with a selection (+0x898) logs MY_TEAM_ACTIVITIES 'Function: activityPressed'; if the item's and the slot's enable flags (+0x110) are set: icon '#overrides.team_hq.activities.calendar_icons.activity_%s' -> slot +0x130, copies activity +0x2b0 to the slot, 0x1423205e0(this,1), schedules via 0x140bf1850([+0x308], id, +0x348, value), ticks tutorials 'my_team_activity_scheduled' etc. (0x142e6ef40), 0x142314ef0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.my_team_activities_on_activity_pressed",

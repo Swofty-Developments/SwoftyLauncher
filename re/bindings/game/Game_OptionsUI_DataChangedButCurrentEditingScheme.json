@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141dbf690",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-OPTIONS-UI",
-  "notes": "named from its log messages (channel OPTIONS-UI): 'data changed, but current editing scheme is still valid'"
+  "evidence": "decomp:re/decomp/141dbf690.c;pat:log-channel-OPTIONS-UI;xref:0x141dad8cd,0x141dae534",
+  "notes": "lea 0x141dad8cd, 0x141dae534. Controls VM: when +0xd92 set scans device lists of [this+0xae8]+0x58; edited device gone -> logs 'device disconnected, go back to controls home', +0xd91 = 1, fires 'back_pressed' (vslot +0x50); else logs 'data changed, but current editing scheme is still valid' and refreshes scheme flags (+0xd8d, +0xd8f, +0xd90). (lane owner review requested) Better name: Game_OptionsUI_Controls_OnDeviceDataChanged (bound record keeps its name)."
  },
  "signature": {
   "id": "game.options_ui_data_changed_but_current_editing_scheme",

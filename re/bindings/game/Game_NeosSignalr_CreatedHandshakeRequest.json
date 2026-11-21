@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1444440d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NEOS_SIGNALR/V",
-  "notes": "named from its log messages (channel NEOS_SIGNALR/V): 'created handshake request: %s'"
+  "evidence": "decomp:re/decomp/1444440d0.c;pat:log-channel-NEOS_SIGNALR/V;xref:0x1444435c4,0x144443fc5",
+  "notes": "Callers 0x1444435c4, 0x144443fc5. Builds the SignalR connect query: clientProtocol=1.5, connectionData=[{\"name\":\"%s\"}], connectionToken, transport=webSockets, SessionToken (0x14443e9f0 appends), then logs 'created handshake request: %s' (NEOS_SIGNALR/V). (lane owner review requested)"
  },
  "signature": {
   "id": "game.neos_signalr_created_handshake_request",

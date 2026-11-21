@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143825110",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: proximity_arrows.angle_position, proximity_arrows.back_red_angle, proximity_arrows.bounding_circle_height, proximity_arrows.bounding_circle_width, proximity_arrows.front_red_angle'"
+  "evidence": "decomp:re/decomp/143825110.c;pat:log-channel--;xref:0x14587a228",
+  "notes": "HUD element init (vtable cell 0x14587a228): GDB keys proximity_arrows.front_red_angle (def 45)->+0xe8 rad, back_red_angle->+0xec, bounding_circle_width (0.25)->+0xf4 (sq +0xfc), bounding_circle_height->+0xf8 (sq +0x100), angle_position (0.3)->+0x104; Vm_ElementBase_Init; deps +0x50..+0x70; binds node current_car.value to +0xb0; callback 0x1438250b0 on +0xa8. (lane owner review requested) Better name: Game_ProximityArrowsElement_Init (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_proximity_arrows_config_2",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e66770",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_GameTransactionSystem_StartPremiumItemPurchaseFlow;xref:0x142e667f0",
-  "notes": "cxx=game::GameTransactionSystem::startPremiumItemPurchaseFlow; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/142e66770.c;str:s_GameTransactionSystem_StartPremiumItemPurchaseFlow;xref:0x1419e3209,0x141ce8fda",
+  "notes": "startPremiumItemPurchaseFlow(sys,delegate,packageId): stores delegate sys+0xb8/+0xc0; after overlay check 0x142e66210 shows 'transaction_confirm_purchase_premium_item' (callback 0x142e669d0) kept in sys+0x88 with purchase_type=PremiumItem and selected_productId. Callers 0x1419e2b70, 0x141ce8ed0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_transaction_system_start_premium_item_purchase_flow",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142bb26e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142bb26e0.c;xref:0x14102ec16,0x143619728,0x15231dd18",
-  "notes": "(out vec, prefix) -> builds '<prefix>parking_box' and reads width/height/depth ints via Gdb_Init_TableCursor / Gdb_MakeIndexedKey / Gdb_Get_FieldInt into out[0..2]. Used by pit crew training config and formation-lap mini game reader. (3 xref site(s), fb.py callers.)"
+  "evidence": "decomp:re/decomp/142bb26e0.c;xref:0x14102ec16,0x143619728",
+  "notes": "(out vec3, prefix): copies prefix, appends 'parking_box', opens the gdb table (0x1445a25c0) and for each row reads ints width/height/depth (0x1445a2cf0) into out[0..2]. Callers 0x14102b110, 0x143618cf0 (old third xref not code). (lane owner review requested)"
  },
  "signature": {
   "id": "game.gdb_read_parking_box_size",

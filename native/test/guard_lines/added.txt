@@ -39,3 +39,9 @@ off [anim] clip time guard off (SWOFTY_ANIM_CLIP_TIME_GUARD=%s)
 unresolved [anim] clip time guard off: needs Ne_AnimClipPlayer_Sample_Thunk, which this build does not resolve
 armed [anim] clip time guard armed: an animation clip sampled at a time that is not a finite number shows its first frame instead of faulting
 not_installed [anim] clip time guard did not install (see the [core] lines)
+
+[marshal_lights]
+off [session] marshal lights guard off (SWOFTY_MARSHAL_LIGHTS_GUARD=%s)
+unresolved [session] marshal lights guard off: needs site_Sess_MarshalLights_PrevLightLoad and site_Sess_MarshalLights_WalkDone, which this build does not resolve
+armed [session] marshal lights guard armed: a track whose first marshal light is in no marshal light zone ends the zone walk at the start of the light list instead of faulting
+not_installed [session] marshal lights guard did not install (see the [core] lines)

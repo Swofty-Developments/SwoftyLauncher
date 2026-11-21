@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141d07c50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=PhotoModeViewModel::onCameraRollChanged; log channel PHOTO-MODE: 'PhotoModeViewModel::onCameraRollChanged: Roll = %f degrees'"
+  "evidence": "decomp:re/decomp/141d07c50.c;pat:log-message-cxx;xref:0x141cefc7f",
+  "notes": "PhotoModeViewModel handler (this, cmd): acts only when cmd+8 == 10, reads \"value\" from cmd+0x10 (int or float by type check), logs PHOTO-MODE; registered by lea in 0x141cef700. float degrees -> this+0x52c; camera (system+0x378)+0x128 = -deg/57.29578 (dirty when change > 0.5 deg); refresh unless +0x364. (lane owner review requested)"
  },
  "signature": {
   "id": "game.photo_mode_view_model_on_camera_roll_changed",

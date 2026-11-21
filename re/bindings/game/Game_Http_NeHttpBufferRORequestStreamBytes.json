@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1408535c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-HTTP/V",
-  "notes": "named from its log messages (channel HTTP/V): 'NeHttpBufferRORequestStream - %d bytes written (progress=%.2f %%)'"
+  "evidence": "decomp:re/decomp/1408535c0.c;pat:log-channel-HTTP/V;xref:0x14565c960",
+  "notes": "NeHttpBufferRORequestStream vt cell 0x14565c960: this[4] += bytes; logs HTTP/V '%d bytes written (progress=%.2f %%)' as total / vt+0x10 size * 100. (lane owner review requested)"
  },
  "signature": {
   "id": "game.http_ne_http_buffer_ro_request_stream_bytes",

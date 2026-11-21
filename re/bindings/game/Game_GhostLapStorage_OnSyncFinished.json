@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1407e2140",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-GAME",
-  "notes": "named from its log messages (channel GAME): 'm_ghostLapStorageSystem->syncTasksFinished() : DRY | m_ghostLapStorageSystem->syncTasksFinished() : WET'"
+  "evidence": "decomp:re/decomp/1407e2140.c;pat:log-channel-GAME;xref:0x145648400",
+  "notes": "Game handler for ghost storage syncTasksFinished (vtable cell 0x145648400): for DRY then WET gets the PB ghost of the track (0x142f93bb0(storage,[+0xe18]+0xe0,?,wet)), swaps pending handler +0x280 into +0x278, reads its header (0x142f8ac70) into PB times game+0x11f6/+0x11fc (dry) and +0x1202/+0x1208 (wet), posts bus msg vt 0x14564b0b8 when they changed; then pushes participant data via 0x1437a7290. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ghost_lap_storage_on_sync_finished",

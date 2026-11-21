@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141d06c40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=PhotoModeViewModel::onBrightnessChanged; log channel PHOTO-MODE: 'PhotoModeViewModel::onBrightnessChanged: Brightness value = %f'"
+  "evidence": "decomp:re/decomp/141d06c40.c;pat:log-message-cxx;xref:0x141cef988",
+  "notes": "PhotoModeViewModel handler (this, cmd): acts only when cmd+8 == 10, reads \"value\" from cmd+0x10 (int or float by type check), logs PHOTO-MODE; registered by lea in 0x141cef700. float -> this+0x504 and system(+0x288)+0x2d38, dirty +0x425, refresh, +0x478 = 1. (lane owner review requested)"
  },
  "signature": {
   "id": "game.photo_mode_view_model_on_brightness_changed",

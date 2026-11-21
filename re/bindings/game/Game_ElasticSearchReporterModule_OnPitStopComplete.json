@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14071ff40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=ElasticSearchReporterModule::onPitStopComplete; log channel TELEMETRY: 'ElasticSearchReporterModule::onPitStopComplete(id: %d, pitTime=%f, pitReleaseTime=%f, stopCount=%d)'"
+  "evidence": "decomp:re/decomp/14071ff40.c;pat:log-message-cxx;xref:0x1406dc174,0x1406fdcb3",
+  "notes": "Bus handler: local player only (0x1400f9fd0(msg+0x10)); refreshes [+0x20a58]+0x168; 0x70 event (0x14052b920; +0x60 pitTime msg+0x14, +0x64 release msg+0x18, +0x68 stop count msg+0x1c) sent as 'pitstop' (0x14077bb90) and pushed into a 64-entry ring; logs TELEMETRY 'onPitStopComplete(id: %d, pitTime=%f, pitReleaseTime=%f, stopCount=%d)'. Returns 0. Fn ptr lea in 0x1406d8470, 0x1406fd6c0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.elastic_search_reporter_module_on_pit_stop_complete",

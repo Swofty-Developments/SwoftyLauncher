@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14180b660",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:slot-handles-total_upgrades-upgrades_fitted;xref:0x141f42fe6,0x141f484bd;kb:subsystems/rnd_ui.md#pie-object",
-  "notes": "Builds a temporary pie slot for one department (handles total_upgrades @0x14180b6ac, upgrades_fitted @0x14180b746, upgrades_fitted_percent @0x14180b7d0, ...); the populate then move-assigns it into the object slot and destroys the temp."
+  "evidence": "decomp:re/decomp/14180b660.c;pat:slot-handles-total_upgrades-upgrades_fitted;kb:subsystems/rnd_ui.md#pie-object;xref:0x141f42fe6,0x141f484bd",
+  "notes": "Builds a temporary pie slot: resolves handles total_upgrades, upgrades_fitted, upgrades_fitted_percent(_visible), department_name, name, progress_wheel_bg_icon_tex, description, title_1/2, remaining_weeks, dept_colour, show_status_icon, status_icon, watched_by_icon/driver, is_watched_by_team_mate (Ui_Resolve_TokenNodeByName_*, Vm_Set_*); returns the slot. Callers 0x141f41d60, 0x141f48030. (lane owner review requested)"
  },
  "signature": {
   "id": "career.build_rn_d_pie_slot",

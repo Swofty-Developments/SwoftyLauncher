@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: eDynamicLayout.dynamicFilter, eDynamicLayout.dynamicGroup, eDynamicLayout.dynamicKey, eDynamicLayout.dynamicTemplate'"
+  "evidence": "decomp:re/decomp/14449f5f0.c;pat:log-channel--;xref:0x145a92490",
+  "notes": "Vt cell 0x145a92490. Strings target/position/components/nameId/xref/layouts/eDynamicLayout.*."
  },
  "signature": {
   "id": "game.read_e_dynamic_layout_config",

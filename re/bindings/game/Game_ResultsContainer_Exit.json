@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141d7dcd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-RESULTS_CONTAINER",
-  "notes": "named from its log messages (channel RESULTS_CONTAINER): 'exit container: %hs'"
+  "evidence": "decomp:re/decomp/141d7dcd0.c;pat:log-channel-RESULTS_CONTAINER;xref:0x141d2321e,0x141d24ad6,0x141d7e0c0",
+  "notes": "(c, state string&): stores it to +0x11a8; returns if a type-0 step is pending; logs 'exit container: %hs'; drops queued steps after the first type-2 one; unless state == 'complete' queues steps 3 and 6; then queues steps 4, 1, 0 (lambda vts 0x145752c90..0x145752d50) via 0x141d7d7e0(c+0x1178). Callers 0x141d23040, jmp 0x141d24ad6, 0x141d7e040. (lane owner review requested)"
  },
  "signature": {
   "id": "game.results_container_exit",

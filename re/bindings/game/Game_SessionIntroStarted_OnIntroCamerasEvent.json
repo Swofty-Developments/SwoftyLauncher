@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d0a730",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onIntroCamerasEvent (class from the log channel); log channel SessionIntroStarted: 'onIntroCamerasEvent: sending start signal'"
+  "evidence": "decomp:re/decomp/142d0a730.c;pat:log-message-method;xref:0x142d0a44d,0x142d0a7ea",
+  "notes": "Handler registered by lea at 0x142d0a44d and 0x142d0a7ea: when event field +0x10 == 0, logs SessionIntroStarted \"onIntroCamerasEvent: sending start signal\" and calls 0x14400c680([this+8],[this+0x10]); returns 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.session_intro_started_on_intro_cameras_event",

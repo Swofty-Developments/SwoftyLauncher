@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=SkinnedActor::destroy; log channel ACTOR_SET_BINDING: 'SkinnedActor::destroy %p'"
+  "evidence": "decomp:re/decomp/140181720.c;pat:log-message-cxx;xref:0x14018b453,0x14018cbb2",
+  "notes": "SkinnedActor::destroy (log ACTOR_SET_BINDING); pdata 0x1d8f bytes. Callers 0x14018b453 (in 0x14018a550), 0x14018cbb2 (in 0x14018cb90)."
  },
  "signature": {
   "id": "game.skinned_actor_destroy",

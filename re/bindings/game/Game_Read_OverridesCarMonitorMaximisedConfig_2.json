@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: overrides.car_monitor_maximised.max_pp_status_icons.green_%i, overrides.car_monitor_maximised.max_pp_status_icons.purple_%i, view_model_data.garage_monitor_practice_select'"
+  "evidence": "decomp:re/decomp/141f893f0.c;pat:log-channel--;xref:0x145761988",
+  "notes": "Practice programme car-monitor VM: Message*UpdateUIResults per programme, programme_1..3, objectives, tyre_tex, session timer, green/purple status icons."
  },
  "signature": {
   "id": "game.read_overrides_car_monitor_maximised_config_2",

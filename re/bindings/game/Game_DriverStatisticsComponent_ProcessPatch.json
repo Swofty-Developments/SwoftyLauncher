@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1438a9950",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_Championship_DriverStatisticsComponent_ProcessPatch;xref:0x1438a9a0b",
-  "notes": "cxx=game::championship::DriverStatisticsComponent::processPatch; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1438a9950.c;str:s_Championship_DriverStatisticsComponent_ProcessPatch;xref:0x145882920",
+  "notes": "WRONG OLD NAME: the cited 'ProcessPatch' xref 0x1438a9a0b is an 'and r9d,1' operand, no string ref; the body (0x1438a9950..0x1438a9d04, vtable cell 0x145882920, between Sess_VirtualPerformance_* functions) is maths only. (this, out vec4, t, lane): vcall +0x178(lane) gate; samples float table [this+0xa0]+lane*0x48+0x30 at clamped t (linear interp), selects offset block by thresholds this+0xc8/+0xd4, evaluates spline this[0x1e]/[0x1f] at value+offset (wrap/clamp), returns its normalised derivative scaled by globals 0x1460484b0/0x1460484c0. (lane owner review requested) Better name: Game_VirtualPerformance_EvalLaneDirection (bound record keeps its name)."
  },
  "signature": {
   "id": "game.driver_statistics_component_process_patch",

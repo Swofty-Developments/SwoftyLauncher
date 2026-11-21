@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143d3c770",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143d3c770.c;xref:0x14069c7c1,0x1429ab927,0x1434f0f14",
-  "notes": "Constructor (vtable 0x1459b26e8): identity transforms, model id, flags param_6/7. Callers: Game_ModelProxyList_Resolve, Game_TimeAttackGates_CreateGateModel, Game_Create_CarPartProxy, Car_Component_LogFitFailure. Hypothesis. (9 xref site(s), fb.py callers.)"
+  "evidence": "decomp:re/decomp/143d3c770.c;xref:0x14069c7c1,0x1429ab927,0x1442f7dad,0x14446e492,0x144636c9e,0x144662952,0x1447974fb,0x14742c470",
+  "notes": "Ctor (vt 0x1459b26e8): identity transforms, model +0xc8, skeleton +0xd0, lod count +0xd8, flag +0xd9, bounds +0xe0/+0xf0, +0x100/+0x108, +0x130, flags 0x8007e. One zeroed block from the render allocator 0x146c621e0 (+0x48) for node matrices/bitsets sized by *param_2 nodes and the lods, wired into +0xa0; registers the instance (+0x18) -> +8, queues update 0x143d3ce20 once and a 0x40-byte create command (+0x20/+0x30). (lane owner review requested)"
  },
  "signature": {
   "id": "game.model_instance_construct",

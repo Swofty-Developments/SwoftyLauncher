@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1406ae650.c;xref:0x1406ae141",
-  "notes": "Sets/clears the replay camera focus vehicle (param_2 index, 0xff = none): stores flag +0x15, updates per-vehicle bitmask entries (20-byte records at [this+0x48]+0x60, bit 1<<[this+0xc]) and preset name \"spectator_default_1\". Callers Game_ReplayCamera_UpdateFocusVehicle, 0x1406ae360, 0x1406aeac0. Addon: replay camera vehicle follow control."
+  "evidence": "decomp:re/decomp/1406ae650.c;xref:0x1406ae141,0x1406ae506,0x1406aec60,0x1406aee10,0x1406aef68,0x1406af0b5,0x142c05d17",
+  "notes": "(cam, idx, flag, comp): stores +0x15; idx 0xff clears focus (0x144534390 with preset 0x14565bc9e, +0x29 = 1, +0x14 = 0xff); else updates per-vehicle bitmasks [cam+0x48]+0x60 (stride 0x14) and sets focus via 0x1445361a0, +0x14 = idx. Decomp runs past pdata end 0x1406ae904 (merged tail code)."
  },
  "signature": {
   "id": "game.replay_camera_set_focus_vehicle",

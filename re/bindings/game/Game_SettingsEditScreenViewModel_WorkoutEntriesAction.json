@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_SettingsEditScreenViewModel_WorkoutEntriesAction;xref:0x141db803d,0x141db820d",
+  "evidence": "decomp:re/decomp/141db26d0.c;str:s_SettingsEditScreenViewModel_WorkoutEntriesAction;xref:0x14574d5d8",
   "notes": "cxx=game::SettingsEditScreenViewModel::workoutEntriesAction; named in bulk from a pretty-function or log string that may belong to an inlined callee"
  },
  "signature": {

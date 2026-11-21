@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: Audio.asserts, Audio.bankDataPath, Audio.bankDataPathSubfolder, Audio.cameraDiscontinuityThreshold, Audio.enabled, Audio.ignoreCameraFocusOnCars, Audio.maxSoundEmitterDistance, Audio.speechDataPath, Audio.xmlDataPath'"
+  "evidence": "decomp:re/decomp/1443ed5c0.c;pat:log-channel--;xref:0x140a036e9,0x145a8a3c0,0x145be71b0",
+  "notes": "Caller 0x140a036e9 (0x140a036c0); vt cells 0x145a8a3c0, 0x145be71b0."
  },
  "signature": {
   "id": "game.read_audio_config_3",

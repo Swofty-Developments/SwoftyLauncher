@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446f4700",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TM_FFB",
-  "notes": "named from its log messages (channel TM_FFB): 'RacingFFBEffectThrustmasterWin::start, m_device = %p, handle = %d'"
+  "evidence": "decomp:re/decomp/1446f4700.c;pat:log-channel-TM_FFB;xref:0x145bfff18",
+  "notes": "Slot 1 of TM effect vtable 0x145bfff10 (cell 0x145bfff18). Resets +0x1b0, QPC stamp +0x1c0/+0x1c8, calls 0x1446f47d0 (starts device effects via tm_api_force_set_effect_state), logs 'RacingFFBEffectThrustmasterWin::start' with device +0x1e0 and handle +0xa00 (TM_FFB). Returns void. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ffb_thrustmaster_start",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446f2690",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=RacingFFBEffectDirectInput::updateDeviceEffects; log channel FFB_DEBUG: 'RacingFFBEffectDirectInput::updateDeviceEffects FORCEFEEDBACK %f, %f, %f, %f'"
+  "evidence": "decomp:re/decomp/1446f2690.c;pat:log-message-cxx;xref:0x145bff998",
+  "notes": "Virtual (vt cell 0x145bff998) (this, float[4]): DirectInput path (device +0x1e0 vt+0x38 false), throttled >10 ms (+0x218): logs FFB_DEBUG, SetParameters (vt+0x30) on effect +0x1e8 (constant force -f0*10000), +0x1f0, +0x1f8 (|f3|*10000) under crit sec +0x228; on 0x8007001e/0x8007000c calls [device+0x10] vt+0x38, sets +0x220; else TrueForce path 0x1449e8d60/0x1449e8dc0 with clamp(-f0)*+0x200 and max(f3,0)*+0x208. (lane owner review requested)"
  },
  "signature": {
   "id": "game.racing_ffb_effect_direct_input_update_device_effects",

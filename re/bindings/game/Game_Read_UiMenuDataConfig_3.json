@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d9bf60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: ui_menu_data.in_replay, ui_menu_data.replay_control_mode, ui_menu_data.show_event_mode_info'"
+  "evidence": "decomp:re/decomp/142d9bf60.c;pat:log-channel--;xref:0x142dcabb0,0x142dcb53b,0x149eeb9b6,0x14f040b6b,0x14f04228b",
+  "notes": "Ctor: base 0x142d74480 (vtable 0x1457d31d0) then vtable 0x1457e3c70; registration with 0x146c621e0 when device 0x14618caa8 exists; VM bindings ui_menu_data.in_replay +0xee0, replay_control_mode +0xf00 (string table 0x1457e7b20 by +0xed8), show_event_mode_info +0xf20. (lane owner review requested) Better name: Game_ReplayMenuUi_Construct (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_ui_menu_data_config_3",

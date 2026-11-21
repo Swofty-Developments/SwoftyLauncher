@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: overrides.f1_world.fz_activity_list_textures.tab_announce, overrides.f1_world.fz_activity_list_textures.tab_goal, overrides.f1_world.fz_activity_list_textures.tab_member, overrides.f1_world.fz_room_info_icons.fz_act_announce_icon, overrides.f1_world.fz_room_info_icons.fz'"
+  "evidence": "decomp:re/decomp/1421c36c0.c;pat:log-channel--;xref:0x1421c09a9,0x1421c1102",
+  "notes": "F1 World fan zone room info: fz_room_info_icons and fz_activity_list_textures, PLAYER_NAME, fan_zone_rooms_entry_activity."
  },
  "signature": {
   "id": "game.read_overrides_f1_world_config",

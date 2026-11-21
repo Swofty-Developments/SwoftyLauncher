@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_RenderBadgeViewModel_SetupBadgeData;xref:0x141d780e9,0x141d78169,0x141d781e0,0x141d788f5,0x141d78b0a,0x141d793f6",
-  "notes": "cxx=game::RenderBadgeViewModel::setupBadgeData; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/141d77e70.c;str:s_RenderBadgeViewModel_SetupBadgeData;xref:0x141d7a365",
+  "notes": "setupBadgeData(BadgeStatId) (pretty-function 0x14574a3c0): strings for default badge, background/emblem processing, customisation.cstm_badge_large.* and bg_%s/_style_ formats; calls LoadTexture. 7.7 KB body."
  },
  "signature": {
   "id": "game.render_badge_view_model_setup_badge_data",

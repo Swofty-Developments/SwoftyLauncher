@@ -3108,7 +3108,6 @@
   "func:Sess_ControllerSet_ClearSessionNotStarted": "V3734",
   "func:Sess_ControllerSystem_BuildSets": "V7134",
   "func:Sess_Controllers_ReleaseForRaceStart": "V3488",
-  "func:Sess_CopyOptionsToState": "V1889",
   "func:Sess_DelayOnLoadingScreen_Update": "V2704",
   "func:Sess_DoughnutSequence_Enter": "V1862",
   "func:Sess_DoughnutSequence_Update": "V2705",

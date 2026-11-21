@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: eadp.auth.account, eadp.candi.catalog.service, eadp.candi.drm.service, eadp.candi.entitlement.v2.service, eadp.candi.firstpartycheckout, eadp.candi.offer.service, eadp.candi.offer.v2.service, eadp.candi.valuetransfer.service, eadp.candi.valuetransfer.v2.service, eadp.cha'"
+  "evidence": "decomp:re/decomp/1449bbf40.c;pat:log-channel--;xref:0x1449bb03d,0x1449c387b,0x1449c3cc4,0x1449c3e89,0x1449c42c9",
+  "notes": "Callers 0x1449bb03d, 0x1449c387b, 0x1449c3cc4, 0x1449c3e89, 0x1449c42c9. Contains DirectorServiceImpl::loadHardcodedConfiguration() and EADP service URL strings."
  },
  "signature": {
   "id": "game.read_eadp_config_2",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1410f43f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1410f43f0.c;xref:0x141100a80,0x140fc7e10,0x1423f6230;doc:re/research/sponsors.md#career-sponsors",
-  "notes": "void discover(CareerSponsorsComponent *c, short sponsor_id, uint team_key): team entry from c+0x298 (0x88 stride, key +8; match on byte0 + hi16), sponsor definition from c+0x500 pointer list (def +0x10 code char*, +0x28 id); returns if either is missing or the team already has a record with that id. Else day = ([c+0x3b0]+0x2b0)/day and 0x1410f5590(team, [c+0x390], [c+0x398], [c+0x3c8], [c+0x3e0], [c+0x3c0], copy of def, day) builds the record, pushed with 0x1410fe630. If 0x1410f4270 (My Team mode + team flag 0x10 at +0x4b = player team) it posts DiscoveredSecondarySponsorCount (vtable 0x1456c55e0) on g_Game_MessageBus. [static L2 evidence in the doc; added at L1 for the lane owner to raise] CORRECTION(V9144): Lookup of team (c+0x298, 0x88 stride) and sponsor def (c+0x500) and the call to 1410f5590 plus 1410f4270 message gate all match; however the record push with 1410fe630 is not in this function (it is inside 1410f5590 at 0x1410f5933)."
+  "evidence": "decomp:re/decomp/1410f43f0.c;doc:re/research/sponsors.md#career-sponsors;xref:0x140fc7e34,0x141101028,0x14110108a,0x1423f634e",
+  "notes": "discover(c, short sponsor_id, uint team_key): team from c+0x298 (0x88 stride, key +8), def from c+0x500 (id +0x28); returns if either is missing or the team records (+0x18..+0x20, 0x160) already hold the id. Else calls Add 0x1410f5590(team, c+0x390, +0x398, +0x3c8, +0x3e0, +0x3c0, def copy, day from [c+0x3b0]+0x2b0). If 0x1410f4270 is true posts 0x1456c55e0 (c+0x4e0 count minus records with +0xd8==1). (lane owner review requested)"
  },
  "signature": {
   "id": "career.sponsors_discover",

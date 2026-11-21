@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140f8f690",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-FACILITIES_AUTO",
-  "notes": "named from its log messages (channel FACILITIES_AUTO): 'Projection: %d, Modified Cap: %f'"
+  "evidence": "decomp:re/decomp/140f8f690.c;pat:log-channel-FACILITIES_AUTO;xref:0x140f81804,0x140f82685",
+  "notes": "Gets the projection (0x140c9a610) and modifier (0x140c99fa0) for +0x28 and the value of [+0x70]+0x1030 vt+0xf8, modified cap = param_2 * modifier, logs FACILITIES_AUTO 'Projection: %d, Modified Cap: %f', returns modifiedCap < projection (0 when either lookup fails). (lane owner review requested) Better name: Career_FacilitiesAuto_IsProjectionOverCap (bound record keeps its name)."
  },
  "signature": {
   "id": "career.facilities_auto_project",

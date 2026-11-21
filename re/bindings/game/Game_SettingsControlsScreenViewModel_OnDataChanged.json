@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141d9f240",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_SettingsControlsScreenViewModel_OnDataChanged;xref:0x141d9f604,0x141d9f628,0x141d9f63d",
-  "notes": "cxx=game::SettingsControlsScreenViewModel::onDataChanged; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/141d9f240.c;str:s_SettingsControlsScreenViewModel_OnDataChanged;xref:0x141d9eaa1,0x141da8e70,0x14c25e312",
+  "notes": "Handler registered by lea at 0x141d9eaa1, 0x141da8e70, 0x14c25e312. Same busy checks as deviceConnectionStatusChanged plus +0xba0 (ugc refresh, logged); scans the scheme list [+0xaf8]+0x130 for unusable schemes; then either vcall +0x138 (reload) or pushes true to +0x9d0 and calls Game_SettingsTabbingBaseViewModel_UpdateFilterLevel (0x141d9ca70). (lane owner review requested)"
  },
  "signature": {
   "id": "game.settings_controls_screen_view_model_on_data_changed",

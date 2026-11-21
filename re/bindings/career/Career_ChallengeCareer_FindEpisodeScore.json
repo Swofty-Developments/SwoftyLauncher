@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c84790",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-CHALLENGE_CAREER",
-  "notes": "named from its log messages (channel CHALLENGE_CAREER): 'Could Not Find Score For Episodes Weekends: %s'"
+  "evidence": "decomp:re/decomp/140c84790.c;pat:log-channel-CHALLENGE_CAREER;xref:0x140c8bde7,0x14173c09c,0x1418a2a37,0x141a6c10e",
+  "notes": "Sums the optional float scores (0x140c84590) of the episode weekends param_3+8..+0x10 (0x28 stride); out={sum,has} if any found, else logs CHALLENGE_CAREER 'Could Not Find Score For Episodes Weekends' with the joined ids and returns has=0. (lane owner review requested) Better name: Career_ChallengeCareer_SumEpisodeScore (bound record keeps its name)."
  },
  "signature": {
   "id": "career.challenge_career_find_episode_score",

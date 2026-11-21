@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1419a4000",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: overrides.team_hq.sponsor_contracts.risk_status_icon.risk_state_01, overrides.team_hq.sponsor_contracts.risk_status_icon.risk_state_02, overrides.team_hq.sponsor_contracts.risk_status_icon.risk_state_03, overrides.team_hq.sponsor_contracts.risk_status_icon.risk_state_04,'"
+  "evidence": "decomp:re/decomp/1419a4000.c;pat:log-channel--;xref:0x1419c5d01,0x1419c6852,0x141cc3eea,0x14234ae18,0x1423d76c9,0x1423fb086,0x1423fc24e,0x1423fe91a",
+  "notes": "(this, pct): 0x1419a3e40 builds a string from pct, set into string node +0x48; icon by pct: <0x15 risk_state_01, <0x29 _02, <0x3d _03, <0x51 _04, <0x65 _05, else empty (0x145612762) under overrides.team_hq.sponsor_contracts.risk_status_icon; Vm_Resolve_IconNodeByPath(this+0x60, path). (lane owner review requested) Better name: Game_SponsorContract_SetRiskStatusIcon (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_overrides_team_hq_config",

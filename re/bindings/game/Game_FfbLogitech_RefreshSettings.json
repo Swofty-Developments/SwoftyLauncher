@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142884fe0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-FFB_DEBUG",
-  "notes": "named from its log messages (channel FFB_DEBUG): 'notifyRefreshSettings - setting m_refreshSettings = true :: forceUpdate = %d | Trueforce Value(%.3f) | refreshSettings - clearing m_refreshSettings'"
+  "evidence": "decomp:re/decomp/142884fe0.c;pat:log-channel-FFB_DEBUG;xref:0x142884baf,0x142884d7c,0x1504a739a",
+  "notes": "Runs when this+0x88 (m_refreshSettings) set: for both vehicle slots (+0x140 +0x1c0/0x1c8) sets device +0x88=1 (FFB_DEBUG notifyRefreshSettings log), writes clamped settings record (+0x5c4..+0x5dc, 0..1, first 0..1.5), pushes trueforce value +0x5f0*24/1.5 to +0x40->+0x90 (LOGITECH log), then clears this+0x88. Callers incl. Game_GameForceFeedbackSystem_UpdateFFBDeviceChanges. Renamed: generic FFB system method; only the trueforce push is Logitech. (lane owner review requested) Better name: Game_GameForceFeedbackSystem_RefreshSettings (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ffb_logitech_refresh_settings",

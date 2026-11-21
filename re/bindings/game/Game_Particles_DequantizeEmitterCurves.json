@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143aee2b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143aee2b0.c;xref:0x143af316c",
-  "notes": "Expands byte-quantised curve data (vpmovzxbd to float: byte * scale(+0x20) + bias(+0x24)) into float curves for emitter definitions. Callers Game_Particles_BuildEmitterDefs (4 sites). Addon: where particle curve data is decoded."
+  "evidence": "decomp:re/decomp/143aee2b0.c;xref:0x143af316c,0x143af3235,0x143af3455,0x143af352f",
+  "notes": "(curve, outT, outStartFlag, outEndFlag): decodes 32 byte samples (u32 words 0..7, vpmovzxbd) as byte*scale(+0x20)+bias(+0x24); if sample 0 >= 0.001 searches from the end for the last sample >= 0.001 and sets outEndFlag, else searches the first sample >= 0.001 and sets outStartFlag; *outT = (index - [0xd]) / [0xc]. Callers in Game_Particles_BuildEmitterDefs. Old name (dequantize into curves) did not match the body. (lane owner review requested) Better name: Game_Particles_FindQuantizedCurveActiveEdge (bound record keeps its name)."
  },
  "signature": {
   "id": "game.particles_dequantize_emitter_curves",

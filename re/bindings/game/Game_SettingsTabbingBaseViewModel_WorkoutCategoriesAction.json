@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_SettingsTabbingBaseViewModel_WorkoutCategoriesAction;xref:0x141dd6c1a,0x141dd6ec7,0x141dd70d8,0x141dd71ce,0x141dd7318,0x141dd73d6,0x141dd7507",
+  "evidence": "decomp:re/decomp/141dd66c0.c;str:s_SettingsTabbingBaseViewModel_WorkoutCategoriesAction;xref:0x141da5dbe,0x141dd3eba",
   "notes": "cxx=game::SettingsTabbingBaseViewModel::workoutCategoriesAction; named in bulk from a pretty-function or log string that may belong to an inlined callee"
  },
  "signature": {

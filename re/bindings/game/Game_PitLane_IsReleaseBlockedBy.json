@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "bool Game_PitLane_IsReleaseBlockedBy(void *mgr, uint8_t other, uint8_t car)",
-  "evidence": "decomp:re/decomp/1434c4510.c;doc:re/db/subsystems/game.md",
+  "evidence": "decomp:re/decomp/1434c4510.c;doc:re/db/subsystems/game.md;xref:0x1434b8f2b,0x1434b98e4",
   "notes": "Unsafe-release gate, called per other car in the release loop (agent pitstop, H)"
  },
  "signature": {

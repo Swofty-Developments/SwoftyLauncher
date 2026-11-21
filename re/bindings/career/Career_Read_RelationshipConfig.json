@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1412d89f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: relationship.hasAchievedNewHighestLevel, relationship.highestLevelAchieved, relationship.level, relationship.levelProgress' DISPUTE(V9172): This is the specialists save-data reader (27 field getters 143931730: specialistsContainer, selectedObjective, cooldowns, history, relationship.level etc.), not a config reader."
+  "evidence": "decomp:re/decomp/1412d89f0.c;pat:log-channel--;xref:0x1412ea84b",
+  "notes": "Specialists save reader: Ne_StringPool_FindObjectByCStr (0x143931730) per field: specialistsContainer, isAvailable, isPrimary, selectedObjective, selectableObjectives, relationship.level/levelProgress/highestLevelAchieved/hasAchievedNewHighestLevel, dynamicObjectives*, specialistObjective*, specialistsObjectivesCooldownsContainer, specialistsObjectiveHistoryList. Called from 0x1412ea4c0. Not a config reader. (lane owner review requested) Better name: Career_Specialists_ReadSaveData (bound record keeps its name)."
  },
  "signature": {
   "id": "career.read_relationship_config",

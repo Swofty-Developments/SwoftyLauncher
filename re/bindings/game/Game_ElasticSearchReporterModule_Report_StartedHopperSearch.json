@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140770de0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=ElasticSearchReporterModule::report_StartedHopperSearch; log channel TELEMETRY: 'ElasticSearchReporterModule::report_StartedHopperSearch(%d)'"
+  "evidence": "decomp:re/decomp/140770de0.c;pat:log-message-cxx;xref:0x14307fe38",
+  "notes": "report_StartedHopperSearch(module, u32 a, u32 b): logs TELEMETRY 'report_StartedHopperSearch(%d)' with a; refreshes [+0x20a58]+0x168 vcall +0x40; builds a 0x68 event (0x1404dc520, +0x60 = a, +0x64 = b) and sends it via 0x140770f80(module, &ev, 0xff). Caller 0x14307fd70. (lane owner review requested)"
  },
  "signature": {
   "id": "game.elastic_search_reporter_module_report_started_hopper_search",

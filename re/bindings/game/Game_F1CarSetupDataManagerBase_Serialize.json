@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c0e2b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=F1CarSetupDataManagerBase::serialize; log channel NETWORK/F: ' F1CarSetupDataManagerBase::serialize() v%03d'"
+  "evidence": "decomp:re/decomp/140c0e2b0.c;pat:log-message-cxx;xref:0x145672ab0,0x14568d7e0,0x1457afd30,0x1457b0d50",
+  "notes": "Vtable slot. Writes version byte 0 and binding count byte, then per binding (vector +0x38..+0x40) a 16-bit id built from +0x20 and the binding payload via 0x140c0e770; logs NETWORK/F ' serialize() v%03d' and NETWORK/V per binding. Mirror of Deserialize 0x140c0eb60. (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1_car_setup_data_manager_base_serialize",

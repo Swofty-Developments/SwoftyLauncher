@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: overrides.team_hq.card_textures.cost_cap_on_target, overrides.team_hq.card_textures.cost_cap_over_budget, overrides.team_hq.card_textures.cost_cap_under_budget'"
+  "evidence": "decomp:re/decomp/1419ad560.c;pat:log-channel--;xref:0x145721ec8",
+  "notes": "Team HQ cost cap card VM: card_title/description, spent, on_target/under/over budget visibility and labels, cost_cap_* card textures."
  },
  "signature": {
   "id": "game.read_overrides_team_hq_config_2",

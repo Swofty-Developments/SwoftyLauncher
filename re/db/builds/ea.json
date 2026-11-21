@@ -2287,6 +2287,12 @@
   },
   "site_Game_SwapTyres_TeamRecord": {
    "match": "0x27df1a"
+  },
+  "site_Sess_MarshalLights_PrevLightLoad": {
+   "match": "0x2c6ac82"
+  },
+  "site_Sess_MarshalLights_WalkDone": {
+   "match": "0x2c6af93"
   }
  },
  "unresolvable": {

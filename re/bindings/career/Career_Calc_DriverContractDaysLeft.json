@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "career",
   "proto": "void Career_Calc_DriverContractDaysLeft(void *comp, void *unused, int16_t *days_left, uint64_t *out_date)",
-  "evidence": "decomp:re/decomp/140d817c0.c;xref:0x1422f05b5;xref:0x1422f6f1a",
-  "notes": "myteam-g2: Reads the driver key (comp+0x370 +0x428) and contract info (FUN_14126f540, FUN_141289bc0 field 0xf), subtracts days elapsed (comp+0x358 +0x2b0 /0x2d0) from the contract length, builds the end date via FUN_14111dbc0 and Ne_Crt_Localtime64. Gives remaining days of the My Team driver contract. CORRECTION(V9035): Days left = field 0xf of a record minus elapsed days ((comp+0x358)+0x2b0 minutes >>5 * 0x5b05b06 >>32, i.e. minutes/1440), clamped at 0, with a calendar-based fallback; end date built as claimed. But the record comes from FUN_14126f540 (KB: ActivityRecordByIndex) indexed by (comp+0x370)+0x428, which looks like an activity/calendar index rather than a driver key, so 'My Team driver contract' is unproven."
+  "evidence": "decomp:re/decomp/140d817c0.c;xref:0x1422f05b6,0x1422f6f1a",
+  "notes": "Record = 0x14126f540(comp+0x370, index (comp+0x370)+0x428); days = field 0xf (0x141289bc0) - elapsed days ((comp+0x358)+0x2b0 minutes/1440), clamped at 0; end date via 0x14111dbc0 and 0x14534a0ec; if 0, a calendar-span fallback is added. Better name: Career_Calc_ActivityDaysRemaining (bound record keeps its name)."
  },
  "signature": {
   "id": "career.calc_driver_contract_days_left",

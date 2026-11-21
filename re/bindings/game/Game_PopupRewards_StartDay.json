@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1414c7450",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-POPUP_REWARDS",
-  "notes": "named from its log messages (channel POPUP_REWARDS): 'Start of day | Cash = %d | Resource Points = %d'"
+  "evidence": "decomp:re/decomp/1414c7450.c;pat:log-channel-POPUP_REWARDS;xref:0x1414c2fd4,0x1414c4625",
+  "notes": "(this): if the player entity ([this+0xa60]+0x88 -> +0x260) is not the excluded type, builds a key from the provider at [0x14604c2c8+0x140]+0x198 -> +0x1c0 and finds the matching record in entity+0x2e0..+0x2e8 (stride 0x88, matcher 0x1431146d0); on match 0x1414c5f80(this, entity, rec+0x58, rec+0x50); then logs POPUP_REWARDS 'Start of day | Cash = %d | Resource Points = %d' (+0x490/+0x494). Returns 0. lea refs = delegate. (lane owner review requested)"
  },
  "signature": {
   "id": "game.popup_rewards_start_day",

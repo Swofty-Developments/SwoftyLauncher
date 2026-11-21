@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-GAME",
+  "evidence": "decomp:re/decomp/142586a60.c;pat:log-channel-GAME;xref:0x14255a941,0x1425868a0,0x14258d1ed,0x142592913,0x142592f8e,0x142594dbc,0x1426f081d,0x1426f2bcd",
   "notes": "named from its log messages (channel GAME): '%s: Set percentage of laps completed from %.2f to %.2f.'"
  },
  "signature": {

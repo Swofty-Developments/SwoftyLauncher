@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
+  "evidence": "decomp:re/decomp/140ae35a0.c;pat:log-message-cxx;xref:0x1407b629c",
   "notes": "cxx=Season::start; log channel GAME: 'Season::start() completion status (%s)'"
  },
  "signature": {

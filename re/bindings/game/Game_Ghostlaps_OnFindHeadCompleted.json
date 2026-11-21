@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f869f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onFindHeadCompleted (class from the log channel); log channel GHOSTLAPS: '%s(%d, %s, %s, %d)'"
+  "evidence": "decomp:re/decomp/142f869f0.c;pat:log-message-method;xref:0x142f99690",
+  "notes": "GHOSTLAPS onFindHeadCompleted '%s(%d, %s, %s, %d)'. Clears +0xb8. Rows>0: rank-1 own entry -> fills +0x4d0/+0x610/+0x750, +0x9f0=1/1, Finish(1); else head -> +0x4d0, 0x142f89920/0x142f89c70/0x142f89ef0 give target rank +0x9e8 and SetState 6 (FindMid) or 7. Failure: Finish 3/4. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ghostlaps_on_find_head_completed",

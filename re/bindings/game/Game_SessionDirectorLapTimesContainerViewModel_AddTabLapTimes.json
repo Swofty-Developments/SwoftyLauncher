@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1422a41d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_SessionDirectorLapTimesContainerViewModel_AddTabLapTimesScreen;xref:0x1422a4250",
-  "notes": "cxx=game::SessionDirectorLapTimesContainerViewModel::addTabLapTimesScreen; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1422a41d0.c;str:s_SessionDirectorLapTimesContainerViewModel_AddTabLapTimesScreen;xref:0x1422a3184,0x1422a319f",
+  "notes": "Logs UI addTabLapTimesScreen; allocates a 0x820 tab VM from [+0x2a0], base init 0x1414bdac0 with \"session_director_lap_times\"/\"lng_lap_times\", vtable 0x145778e30, copies byte +0x2ea and pointer this+0x2eb into it; pushes it to vector +0x288..+0x298 and a 0 byte to vector +0x888..+0x898. Callers in 0x1422a30a0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.session_director_lap_times_container_view_model_add_tab_lap_times",

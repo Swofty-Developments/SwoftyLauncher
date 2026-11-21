@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140213e10.c",
-  "notes": "game::CutsceneManager name table: podium, grid, garage, results, terminal_damage, intro_flag, track extras track_marshalls_01..03 (sweeping and talking marshals), marshals_walk_on_roof, ferris_wheel_01, helicopter_01, photographer_01, monaco_boat_harbour, career hub and F1 World scenes."
+  "evidence": "decomp:re/decomp/140213e10.c;xref:0x1402136bd",
+  "notes": "Decomp failed (timeout); 0x1240a-byte body with 115 static guards registering game::CutsceneManager names (podium, grid, garage, results, marshals, ferris_wheel, helicopter, career hub)."
  },
  "signature": {
   "id": "game.register_cutscenes",

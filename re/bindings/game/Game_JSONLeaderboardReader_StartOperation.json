@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142fba740",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_JSONLeaderboardReader_StartOperation;xref:0x142fba7fd",
-  "notes": "cxx=game::JSONLeaderboardReader::startOperation; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/142fba740.c;str:s_JSONLeaderboardReader_StartOperation;xref:0x142fba72a,0x142fbb654,0x142fbb75b",
+  "notes": "(reader, ctx, mode, first, last): returns 0 if an op is pending (+0x60). Logs 'startOperation(%s(ver=%d), %s, %llu, %llu)', copies ctx to +0x78/+0xa0. Mode 2: friend ids from [[+0x40]+0x3a0] vcall +0x30 plus ids at [[+0x48]+0x110]+0x50 (stride 0xa8), comma-joined; request 0x14302afd0, callback OperationFriendsCompleted. Else request {name, ver, first, last-1, mode} via 0x14302b200, callback OperationGlobalCompleted. Op -> +0x58/+0x60; returns 1. (lane owner review requested)"
  },
  "signature": {
   "id": "game.j_s_o_n_leaderboard_reader_start_operation",

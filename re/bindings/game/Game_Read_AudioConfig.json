@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: Audio.passbySystem_enabled, Audio.speechVO_alt_com_allowed_%s, Audio.speechVO_delayForRadioBeep, Audio.speechVO_enabled, UI.PreviewEvent'"
+  "evidence": "decomp:re/decomp/140a249f0.c;pat:log-channel--;xref:0x1456687e8",
+  "notes": "Vt cell 0x1456687e8. Body 0x5440 bytes."
  },
  "signature": {
   "id": "game.read_audio_config",

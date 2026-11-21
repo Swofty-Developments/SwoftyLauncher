@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143161610",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=InviteManager::sendCrossplayInvite; log channel NETWORK-INVITE: 'void network::InviteManager::sendCrossplayInvite(neon::NePresenceUserID, const NEchar *, NEbool, EADPonInviteSentCallback) | %s: EA user ID: %llu'"
+  "evidence": "decomp:re/decomp/143161610.c;pat:log-message-cxx;xref:0x141dfccc1,0x141dfe20a",
+  "notes": "'InviteManager::sendCrossplayInvite(NePresenceUserID, name, isFriend, cb)'. If crossplay enabled: logs invitee and EA user id (id^key), sends via 0x143fe0c90. If 'account_show_notifications' allows, toast 'social_msg_invite_sent_a_succeed' with player_name and platform_icon. Address loaded by lea in 0x141dfc830 and 0x141dfe090. (lane owner review requested)"
  },
  "signature": {
   "id": "game.invite_manager_send_crossplay_invite",

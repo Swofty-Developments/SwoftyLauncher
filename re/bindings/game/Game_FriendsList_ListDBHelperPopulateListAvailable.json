@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14184e780",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-FRIENDS_LIST",
-  "notes": "named from its log messages (channel FRIENDS_LIST): 'ListDBHelper: populateList for %s: %d available slots - %d new entries - %s - header - %s - %d'"
+  "evidence": "decomp:re/decomp/14184e780.c;pat:log-channel-FRIENDS_LIST;xref:0x141e02f3d,0x141e03043,0x141e0310d,0x141e03207",
+  "notes": "ListDBHelper::populateList (log FRIENDS_LIST 0x14571235d). Entries 0x88 B in [p2+8,p2+0x10); p5={index,pageSize,page}: only entries in window page*size..(page+1)*size get an item: alloc 0x2a0 + ctor 0x14184bd70, name 'list_entry_%04u', props from entry +0x20/+0x38/+0x78/+0x80, appended via 0x14184f6a0 (this+0x50) and 0x14193cb20 (this+0xc0). p4: clear 0x14184cef0 + reserve 0x14184d240. Else index += count. All callers in 0x141e024e0. (lane owner review requested) Better name: Game_FriendsList_ListDBHelper_PopulateList (bound record keeps its name)."
  },
  "signature": {
   "id": "game.friends_list_list_db_helper_populate_list_available",

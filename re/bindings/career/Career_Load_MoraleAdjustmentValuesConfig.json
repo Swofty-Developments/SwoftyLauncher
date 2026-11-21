@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14127b2e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "uint64_t Career_Load_MoraleAdjustmentValuesConfig(void *cfg, void *xml_doc, char flag)",
-  "evidence": "decomp:re/decomp/14127b2e0.c;xref:0x142c70e2f",
-  "notes": "myteam-g1: XML config loader for the upgrade/morale definitions: iterates nodes, reads names and values, collects the morale_adjustment_values table and builds upgrade definitions (sorted vector via 412c2790, children via 41275120/412c3510). Hook for tuning morale adjustment per upgrade."
+  "evidence": "decomp:re/decomp/14127b2e0.c;xref:0x142c70e30",
+  "notes": "Gdb table loader (Gdb_Init_TableCursor/Gdb_Get_RowByIndex, not XML): per row reads stat_id, type (matched against name table 0x1456a63dd), activity_tracks, duration, outcome, language_string, notification_priority and the morale_adjustment_values list (0x141275120); sorts (0x1412c2790) and builds records (0x1412c3510). Caller 0x142c70df0. (lane owner review requested) Better name: Career_Load_ActivityDefinitions (bound record keeps its name)."
  },
  "signature": {
   "id": "career.load_morale_adjustment_values_config",

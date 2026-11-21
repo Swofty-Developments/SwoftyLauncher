@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143af92e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143af92e0.c;xref:0x143b07e29",
-  "notes": "Iterates the effect list (+0x8715a0..a8, 16-byte entries); effects whose emitter range (+0x80..+0x88) is empty are removed via Game_Particles_RemoveEffect, others get emitter state reset (+0x158=1, +0xe8, +0x104). Called from Game_Particles_UpdateManager (3 sites)."
+  "evidence": "decomp:re/decomp/143af92e0.c;xref:0x143b07e29,0x143b083f2,0x143b08ce0",
+  "notes": "Walks the list mgr+0x8715a0..a8 (16-byte entries, effect at +8): effects with no emitters or with zero live particles (sum of emitter +0xe4) are removed via 0x143af89a0 and swap-removed from the list (index fixed up); others get emitter state reset (+0x158, +0xe0/+0xe8/+0x104, chunks to free list 0x146294210). Callers in 0x143b06d90. (lane owner review requested)"
  },
  "signature": {
   "id": "game.particles_reap_finished_effects",

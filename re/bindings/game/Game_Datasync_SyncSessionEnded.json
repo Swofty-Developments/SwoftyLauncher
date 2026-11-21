@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143104060",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-DATASYNC",
-  "notes": "named from its log messages (channel DATASYNC): '[%s] Sync session ended'"
+  "evidence": "decomp:re/decomp/143104060.c;pat:log-channel-DATASYNC;xref:0x140fcf60a,0x143103ef9,0x1436dd66f,0x1436fed10",
+  "notes": "(session): state +0x24 == 4 (Finished) -> logs DATASYNC '[%s] Sync session ended'; any non-zero state is logged 'State %s -> None' and set to 0. Callers 0x140fcf560, Game_Datasync_StartingSyncAs, 0x1436dd020, 0x1436fe500. (lane owner review requested)"
  },
  "signature": {
   "id": "game.datasync_sync_session_ended",

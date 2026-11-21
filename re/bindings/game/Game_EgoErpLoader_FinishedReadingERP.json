@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a69a90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name finishedReadingERP (class from the log channel); log channel EGO_ERP_LOADER: 'finishedReadingERP - \"%s\"'"
+  "evidence": "decomp:re/decomp/143a69a90.c;pat:log-message-method;xref:0x143a67321,0x143a67c23,0x143a69596",
+  "notes": "(ERPInfo*): logs EGO_ERP_LOADER 'finishedReadingERP - \"%s\"' (name via 0x143a5aee0). Listener info+0x20: if byte +0x68 == 0 only records error breadcrumb 0x58; else under lock +0xd8 allocates a 0x18 node (allocator +0x70) vt 0x1458a35d0 {info+0x28}, appends to list +0x58/+0x60, sets +0x6b and signals event +0xc8 (0x14391cdd0) if it was clear (alloc failure -> breadcrumb 0xc). Callers 0x143a65bd0, 0x143a691a0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ego_erp_loader_finished_reading_erp",

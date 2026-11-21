@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1442e2f80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: Renderer.UI.Draw.maxAAGraphCount, Renderer.UI.Draw.maxCanvasCount, Renderer.UI.Draw.maxLineSegmentCount, Renderer.UI.Draw.maxShapeInstanceCount, Renderer.UI.Draw.maxTriangleCount'"
+  "evidence": "decomp:re/decomp/1442e2f80.c;pat:log-channel--;xref:0x1444a88b7",
+  "notes": "Reads Renderer.UI.Draw.maxShapeInstanceCount/maxCanvasCount/maxLineSegmentCount/maxTriangleCount/maxAAGraphCount into +0x124..+0x134, builds 4 materials (+0x70..), bind layout NeUIDrawingPlugin (+0x68), buffers lineData +0xb8, triangleData +0xc8, canvasData +0xd8, shapeInstanceData +0xe8, aaGraphInstanceData +0x108, batch buffers +0xf8/+0x118, prebuilt shapes +0x110. (lane owner review requested) Better name: Game_UiDrawingPlugin_CreateGpuResources (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_renderer_ui_config",

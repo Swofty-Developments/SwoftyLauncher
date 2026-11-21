@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1403d2ed0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1403d2ed0.c",
-  "notes": "builds the visible marshal from scene 'RaceMarshal' (scene library [0x14601db08]+0x68, lookup 0x1401a4810, instance 0x1401a4b70) at the instance's world matrix (+0x20)."
+  "evidence": "decomp:re/decomp/1403d2ed0.c;xref:0x1403d1e3a",
+  "notes": "lea 0x1403d1e3a in 0x1403d1af0. Looks up scene 'RaceMarshal' in library [0x14601db08]+0x68 (0x1401a4810), instantiates it (0x1401a4b70) into inst+0x68 (TRACE 'buildFromSerialiser failed unable to find scene' when null), world matrix = inst matrix +0x20 x scene local, 0x1401e7aa0(obj,1); per actor: 'Flag' node +0x228 -> inst+0x78, hides 'mouth_x', actor+0x48 = 300.0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.race_marshal_instance_build_actor",

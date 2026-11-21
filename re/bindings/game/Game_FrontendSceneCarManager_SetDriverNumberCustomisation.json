@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428b3100",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name setDriverNumberCustomisation (class from the log channel); log channel FRONTEND_SCENE_CAR_MANAGER: 'setDriverNumberCustomisation()'"
+  "evidence": "decomp:re/decomp/1428b3100.c;pat:log-message-method;xref:0x1428c3ecd,0x1428e9175",
+  "notes": "Logs setDriverNumberCustomisation() and 'Setting Driver Number Customisation'. Same handle hash lookup as SetCarNumber (WARN when missing). Copies param_3 array (+0x10..+0x2c, count +0x60, 0x30-byte entries) into car data +0x6800..+0x6860 with valid flag +0x6870, when car state +0x94 == 2; updates visibility +0xf0 and applies via 0x142a9c4e0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.frontend_scene_car_manager_set_driver_number_customisation",

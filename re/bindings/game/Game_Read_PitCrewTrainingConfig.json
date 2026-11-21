@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: pit_crew_training.mini_game, pit_crew_training.mini_game.AR_objects.sounds.%s, pit_crew_training.mini_game.AR_objects.voice_over.%s'"
+  "evidence": "decomp:re/decomp/14102b110.c;pat:log-channel--;xref:0x1456b85c0",
+  "notes": "GDB reader for pit_crew_training.probabilities / mini_game rows (time loss, mistake chances, AI button accuracy, AR object sounds/VO)."
  },
  "signature": {
   "id": "game.read_pit_crew_training_config",

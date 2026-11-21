@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onSessionLoaded (class from the log channel); log channel GARAGE: 'onSessionLoaded'"
+  "evidence": "decomp:re/decomp/14038f360.c;pat:log-message-method;xref:0x14561b510",
+  "notes": "onSessionLoaded (GARAGE), vtable cell 0x14561b510; calls spawnGarageCrew 0x140388cf0 per garage."
  },
  "signature": {
   "id": "game.garage_on_session_loaded",

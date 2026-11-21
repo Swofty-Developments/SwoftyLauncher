@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-PLAYERSET",
+  "evidence": "decomp:re/decomp/1431088e0.c;pat:log-channel-PLAYERSET;xref:0x1430ee561,0x143109b9a",
   "notes": "named from its log messages (channel PLAYERSET): 'Adding AI player(%s)... | [PlayerSetEntry(%s, %s)] : isLocal = %s. | [PlayerSetEntry(%s, %s)] : playerIx = %d. | [PlayerSetEntry(%s, %s)] : userIx = %d. | [PlayerSetEntry(%s, %s)] : isPlaying = %s. | '"
  },
  "signature": {

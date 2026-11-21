@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a41120",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "uint64_t(GarageSystem*, Message*)",
-  "evidence": "decomp:re/decomp/142a41120.c;xref:0x142a3f760",
-  "notes": "MessageRequestVehicleExitGarage handler of GarageSystem (vtable 0x1457b9bc0, type record 0x146079b08): message +0x10 u8 vehicle (participant +0xe8), +0x14 request (0 drive out, 1 other 0x142a3a560); for 0: finds the garage of the car (GarageSystem+0x1f8..+0x200, slots +0x58/+0x68), calls Game_PitLane_VehicleWantsToLeaveGarage_Thunk(pit, vehicle, 0), the pit limit zone entry 0x1434d0340 and resets garage UI counters."
+  "evidence": "decomp:re/decomp/142a41120.c;xref:0x142a3f752,0x142a409d8",
+  "notes": "MessageRequestVehicleExitGarage handler: msg+0x10 vehicle, +0x14 request (1 -> 0x142a3a560, 0 -> drive out): clears slot+0x14/+0x19, local human may restart garage UI (0x1438acea0), 0x1434d1350(pit,vehicle,0), pit limit zone 0x1434d0340, resets HUD counter +0x10f4, forwards to the matching participant (0x140c11550). Handler (lea) in 0x142a3f710, 0x142a409b0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.garage_system_on_request_exit_garage",

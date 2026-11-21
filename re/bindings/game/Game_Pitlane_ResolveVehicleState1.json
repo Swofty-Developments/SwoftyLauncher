@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1434c0fb0.c;xref:0x1434b7dec",
-  "notes": "State 1 handler of Game_Pitlane_ApplyVehicleResetState (see 0x1434c0600): placement via Sess_VehiclePlacement_ResolveTransform + memcpy. 1989 bytes. Also called by Game_PitLane_HandleEnterPitBox (0x1434b7dec). Hypothesis. | engine-re 2026-11-17 track round C2 (static): per-car pit SPLINE builder for box ENTRY 'pull in normal' / queue (logs ePullInToQueue, handleEnterPitBoxPullInNormal; caller 0x1434b7dec passes mgr+0xc24 box-row orientation flags); knots into car record +0x118, finalised at 0x1434c170e. Chosen when Game_PitLane_IsBoxSafeToCross says the neighbour box is busy."
+  "evidence": "decomp:re/decomp/1434c0fb0.c;xref:0x1434b7dec,0x1434c0445",
+  "notes": "Spline builder type 1 of Game_PitLane_BuildPitSplineByType (0x1434c0445); also Game_PitLane_HandleEnterPitBox 0x1434b7dec (mgr+0xc24 orientation); ends in Ne_Spline_ComputeLengths. Earlier static round (C2): normal box entry / queue, knots into car record +0x118. Better name: Game_PitLane_BuildEntrySplineNormal (bound record keeps its name)."
  },
  "signature": {
   "id": "game.pitlane_resolve_vehicle_state1",

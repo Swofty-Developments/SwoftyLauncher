@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=SplashTransitionViewModel::onScreenActivated; log channel SMOKETEST_DEBUG: 'SplashTransitionViewModel::onScreenActivated'"
+  "evidence": "decomp:re/decomp/141e9b9f0.c;pat:log-message-cxx;xref:0x145757d08",
+  "notes": "Vtable cell 0x145757d08; pdata 0x1277 bytes. Strings: ftue_transition, ui_menu_data.show_user_name, lng_custom_control_scheme, UI.skipFirstTimeBoot, settings.current_settings.saved_at_least_once, Renderer.UI.forcePeakNitAdjustment, HDR mode warning, options_colour_correction, ftue_container."
  },
  "signature": {
   "id": "game.splash_transition_view_model_on_screen_activated",

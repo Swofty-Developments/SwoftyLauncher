@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e67d80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_GameTransactionSystem_RequestPurchaseVIP;xref:0x142e67e00",
-  "notes": "cxx=game::GameTransactionSystem::requestPurchaseVIP; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/142e67d80.c;str:s_GameTransactionSystem_RequestPurchaseVIP;xref:0x1419e48f2",
+  "notes": "requestPurchaseVIP(sys,delegate): logs pretty-function, stores delegate sys+0x98/+0xa0, runs the VIP request 0x142e67e80(sys+0x40) and releases the returned handle. Caller 0x1419e48a0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_transaction_system_request_purchase_v_i_p",

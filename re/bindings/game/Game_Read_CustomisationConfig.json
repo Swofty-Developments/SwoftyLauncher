@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: customisation.cstm_badge_large.bg, customisation.cstm_badge_large.bg_style, customisation.cstm_badge_large.emblem, customisation.cstm_badge_large.emblem_style'"
+  "evidence": "decomp:re/decomp/141d723e0.c;pat:log-channel--;xref:0x145749e90",
+  "notes": "Vt cell 0x145749e90. Logs the game's own 'virtual void game::RenderBadgeViewModel::initJob(const IRenderTargetJobData *)' (0x145749eb0) as %s; also RenderBadgeJobData and preLoadBadgeTextures strings. Not a DB config read. Better name: Game_RenderBadgeViewModel_InitJob (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_customisation_config",

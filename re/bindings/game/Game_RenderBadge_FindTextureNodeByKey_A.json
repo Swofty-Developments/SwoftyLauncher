@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140feecc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140feecc0.c;xref:0x140feeb34,0x1416e56f0",
-  "notes": "Map RB-tree lower_bound on key at this+0x250 over tree this+0x218; throws invalid map<K, T> key when absent. Callers Game_RenderBadgeViewModel_InitJob/SetTexture."
+  "evidence": "decomp:re/decomp/140feecc0.c;xref:0x140feeb34,0x1416e56f0,0x141d74350,0x141d75864,0x141df383e,0x141fce52f,0x1420569f0,0x1422664a9,0x14257387b,0x142ea9b64",
+  "notes": "(obj): map at obj+0x218 keyed by u32, lower_bound on obj+0x250; throws 'invalid map<K, T> key' (0x1456bd3f1) when absent. Copies the entry's inner map<u8,ptr> (alloc +0x30, head +0x38, size +0x40) with 0x1410c59c0, returns the value of inner key 7 (0 if absent/null), destroys the copy. Callers incl. Game_Read_CustomisationConfig(_2), Game_MyTeamSetup_Complete. (lane owner review requested) Better name: Game_CustomisationMap_GetCurrentEntryKey7 (bound record keeps its name)."
  },
  "signature": {
   "id": "game.render_badge_find_texture_node_by_key_a",

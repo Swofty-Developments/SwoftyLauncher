@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "career",
   "proto": "void (uint64_t setup)",
-  "evidence": "decomp:re/decomp/1411118a0.c;xref:0x142276976;xref:0x14228404a",
-  "notes": "myteam-g2: Applies the My Team customisation (livery, car decals) from the setup record to the entrants: uses Game_Customisation_FindPackedEntry, Game_CarDecals_FilterListByLod, Game_CustomisationSet_Dtor and Ent_EntrantsSystem_ReplaceVehicleCustomisation (entrants at +0x290). Called from CorporateSetupVM_OnAction and SetupVM_FocusSelection when the livery choice changes."
+  "evidence": "decomp:re/decomp/1411118a0.c;xref:0x142276977,0x14228404b",
+  "notes": "Disasm: searches sponsor defs c+0x500..+0x508 for id +0x28 == word 0x14606d43c of a lazily initialised static setup record (0x14606d340, init 0x142268640) and tail-jumps (0x141111911) to 0x1410f5b90(c, def); returns if none. The decomp inlines 0x1410f5b90. Callers 0x142276540 / 0x142282c00."
  },
  "signature": {
   "id": "career.my_team_setup_commit_customisation",

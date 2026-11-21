@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143040b70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionBandwidthManager::onSessionConnectionArrived; log channel NETWORK-BANDWIDTH: 'GameSessionBandwidthManager::onSessionConnectionArrived(%d)'"
+  "evidence": "decomp:re/decomp/143040b70.c;pat:log-message-cxx;xref:0x145807678",
+  "notes": "Vtable cell 0x145807678 (next cell 0x145807680 = OnSessionConnectionLeft). Logs NETWORK-BANDWIDTH 'GameSessionBandwidthManager::onSessionConnectionArrived(%d)' with connection id byte p2, then adds it to the bandwidth tracker [[[p1+8]+0xd8]+0x140] via 0x144055f20(tracker,&id). (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_session_bandwidth_manager_on_session_connection_arrived",

@@ -110,6 +110,17 @@ pub(super) const ANIM_CLIP_NAN: [&str; 12] = [
     "F1_25.exe+0x3a2b61f ",
 ];
 
+/// Where F1 25 faults matching a track's marshal lights to its marshal light zones at a session enter or restart:
+/// `Sess_MarshalLights_AssignToZones` erased the first light of its list, which is in no zone, and stores the lap
+/// fraction through the 8 bytes before the list (`vmovss [rax+0x34],xmm7`). On Steam build 26566308 (1.0.145), the KB
+/// build, EA 1.0.141 and EA 1.0.145.
+pub(super) const MARSHAL_LIGHTS_WALK: [&str; 4] = [
+    "F1_25.exe+0x2c794d2 ",
+    "F1_25.exe+0x2c76f42 ",
+    "F1_25.exe+0x2c6ac92 ",
+    "F1_25.exe+0x2c6d222 ",
+];
+
 /// How long before the crash Manual Pit Lane's lines count, and after it.
 pub(super) const PITLANE_SECS: f64 = 1.5;
 
@@ -170,6 +181,12 @@ pub(super) fn tyre_curve_crash(e: &Evidence, f: &Fatal) -> bool {
 /// is in [`ANIM_CLIP_NAN`].
 pub(super) fn anim_clip_crash(e: &Evidence, f: &Fatal) -> bool {
     game_fault_at(e, f, &ANIM_CLIP_NAN)
+}
+
+/// Whether F1 25 faulted matching a track's marshal lights to its zones: the unhandled exception's address or the
+/// crash's nearest frame is in [`MARSHAL_LIGHTS_WALK`].
+pub(super) fn marshal_lights_crash(e: &Evidence, f: &Fatal) -> bool {
+    game_fault_at(e, f, &MARSHAL_LIGHTS_WALK)
 }
 
 /// Whether F1 25 faulted in its own tyre curve lookup less than [`TD_WHEEL_OFF_SECS`] after Terminal Damage tore a
@@ -245,55 +262,102 @@ pub(super) fn session_track(e: &Evidence, f: &Fatal) -> Option<String> {
         .filter(|t| t != "none")
 }
 
-pub(super) fn unloaded_ai_line(e: &Evidence, f: &Fatal) -> Diagnosis {
+/// The name of the addon track the crashed session ran: the addon of the track on the core's last [`FACTS`] line
+/// before the crash, or the one track addon on in the profile when there is no such line. None for a stock track and
+/// when it can't be told.
+fn session_track_name(e: &Evidence, f: &Fatal) -> Option<String> {
     let track = session_track(e, f);
     let addon = match track.as_deref().and_then(|t| t.rsplit_once('/')) {
         Some(("game", _)) => None,
         Some((id, _)) => Some(id.to_owned()),
         None => (track.is_none() && e.tracks.len() == 1).then(|| e.tracks[0].clone()),
     };
+    addon.map(|id| name(e, &id))
+}
+
+/// The step that turns the crashed session's track off: `track` by name, else the track addons on in the profile,
+/// else `stock` for a stock track.
+fn track_off_step(e: &Evidence, track: Option<&str>, stock: &str) -> String {
+    if let Some(track) = track {
+        return format!(
+            "Turn {track} off in your profile, and set any race weekend that uses it back to another track."
+        );
+    }
+    let names: Vec<String> = e.tracks.iter().map(|id| name(e, id)).collect();
+    match names.as_slice() {
+        [] => stock.to_owned(),
+        _ => format!(
+            "Turn off the track you raced on ({} {} on in your profile), and set any race weekend that uses it back \
+             to another track.",
+            list(&names),
+            if names.len() == 1 { "is" } else { "are" }
+        ),
+    }
+}
+
+pub(super) fn unloaded_ai_line(e: &Evidence, f: &Fatal) -> Diagnosis {
+    let track = session_track_name(e, f);
     let author = "Ask its author to fix the AI data: a corner start can't be at gate 0, the first gate of the lap, \
                   and every brake line, corner end, retire line and link has to point at a gate the track has.";
-    let (title, what, steps) = match addon.map(|id| name(e, &id)) {
+    let off = track_off_step(
+        e,
+        track.as_deref(),
+        "Race on another track, or turn off the addon that changes this track's AI data.",
+    );
+    let (title, what) = match &track {
         Some(track) => (
             format!("{track}'s AI data crashed F1 25 as the session started"),
             format!(
                 "F1 25 crashed as the session on {track} started, while it put the AI cars on the racing line. The \
                  game could not load {track}'s AI data, so the track had no racing line to put them on."
             ),
-            vec![
-                format!(
-                    "Turn {track} off in your profile, and set any race weekend that uses it back to another track."
-                ),
-                author.to_owned(),
-            ],
         ),
-        None => {
-            let names: Vec<String> = e.tracks.iter().map(|id| name(e, id)).collect();
-            let off = match names.as_slice() {
-                [] => "Race on another track, or turn off the addon that changes this track's AI data."
-                    .to_owned(),
-                _ => format!(
-                    "Turn off the track you raced on ({} {} on in your profile), and set any race weekend that uses \
-                     it back to another track.",
-                    list(&names),
-                    if names.len() == 1 { "is" } else { "are" }
-                ),
-            };
-            (
-                "A track's AI data crashed F1 25 as the session started".to_owned(),
-                "F1 25 crashed as the session started, while it put the AI cars on the racing line. The game could \
-                 not load the track's AI data, so the track had no racing line to put them on."
-                    .to_owned(),
-                vec![off, author.to_owned()],
-            )
-        }
+        None => (
+            "A track's AI data crashed F1 25 as the session started".to_owned(),
+            "F1 25 crashed as the session started, while it put the AI cars on the racing line. The game could not \
+             load the track's AI data, so the track had no racing line to put them on."
+                .to_owned(),
+        ),
     };
     Diagnosis {
         id: "track_ai_data_unloaded",
         title,
         what,
-        steps,
+        steps: vec![off, author.to_owned()],
+    }
+}
+
+pub(super) fn marshal_lights(e: &Evidence, f: &Fatal) -> Diagnosis {
+    let track = session_track_name(e, f);
+    let author = "Ask its author to give the track a marshal light zone (marshal_light_zone in its track markup) for \
+                  every part of the lap that has marshal lights.";
+    let off = track_off_step(
+        e,
+        track.as_deref(),
+        "Race on another track, or turn off the addon that changes this track's marshal lights.",
+    );
+    let (title, what) = match &track {
+        Some(track) => (
+            format!("{track}'s marshal lights crashed F1 25 as the session started"),
+            format!(
+                "F1 25 crashed as the session on {track} started, while it matched the track's marshal lights to its \
+                 marshal light zones. {track} has marshal lights outside every marshal light zone, and the game's own \
+                 code crashes on them."
+            ),
+        ),
+        None => (
+            "A track's marshal lights crashed F1 25 as the session started".to_owned(),
+            "F1 25 crashed as the session started, while it matched the track's marshal lights to its marshal light \
+             zones. The track has marshal lights outside every marshal light zone, and the game's own code crashes \
+             on them."
+                .to_owned(),
+        ),
+    };
+    Diagnosis {
+        id: "track_marshal_lights",
+        title,
+        what,
+        steps: vec![off, author.to_owned()],
     }
 }
 

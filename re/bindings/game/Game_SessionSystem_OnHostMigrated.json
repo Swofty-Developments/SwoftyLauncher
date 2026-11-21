@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142cf17d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=SessionSystem::onHostMigrated; log channel NETWORK/T: 'SessionSystem::onHostMigrated() checking results for authority'"
+  "evidence": "decomp:re/decomp/142cf17d0.c;pat:log-message-cxx;xref:0x1457d8b10",
+  "notes": "Vtable cell 0x1457d8b10 (secondary base, this-0x20). Logs NETWORK/T \"...onHostMigrated() checking results for authority\"; for each result in +0xe8..+0xf0 decides authority (id < 0x20: owner byte [x+0x101+id*2] == local id, else [x+0x28] < 2) and, if authoritative, posts message {0x1457e5d00,4,0xe} with the vehicle result (0x142c7c1e0) via 0x14402e500 on +0x248, logging \"Sending result data for vehicle %d, status is %s\". (lane owner review requested)"
  },
  "signature": {
   "id": "game.session_system_on_host_migrated",

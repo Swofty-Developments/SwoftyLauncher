@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142cd5d80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142cd5d80.c;xref:0x142cd7144,0x142d60116",
-  "notes": "(startLights, bool) when +0xbbd set: Game_StartLights_Reset, walks hashed listener set +0xa68..+0xa78 and sets their VM holder to 'start' (Vm_Holder_SetCStr) when entry+0x84 == 0, then rebuilds light state; called from Sess_FormationLapStartLights_OnStateEnter and MP start-lights paths (MOX count, skipping lights)."
+  "evidence": "decomp:re/decomp/142cd5d80.c;xref:0x142cd7144,0x142d60116,0x142d8fe26",
+  "notes": "(lights, mode) only when +0xbbd: +0x28 = mode, Game_StartLights_Reset; listeners set to \"start\" (Vm_Holder_SetCStr) unless entry+0x84; +0xa4d = (global 0x14604e900 == 0), 0x142cd6fd0(+0xa50,+0xa4e && that); state +0x29 = 1; queues job vt 0x1457e4b88 and posts message vt 0x1457e4b98 carrying +0x7c (0x142dd1d90). Callers Game_StartLights_SetSequenceState, Sess_FormationLapStartLights_OnStateEnter 0x142d5fd60, Game_Network_SkippingLightsMPReasons 0x142d8fcc0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.start_lights_reset_sequence",

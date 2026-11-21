@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a3c0f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name returnVehicleToGarage (class from the log channel); log channel GARAGE: '%s: vehicleId: %d, virtualiseData: %d, sessionSkipped: %d'"
+  "evidence": "decomp:re/decomp/142a3c0f0.c;pat:log-message-method;xref:0x142a4096b,0x142a40991,0x14d958d1b",
+  "notes": "returnVehicleToGarage(slot,vehicle,virtualise): logs vehicleId/virtualiseData/sessionSkipped; local human: fade out (FADE_REQUESTS 'Garage'), removes HUD hide reason 2, may call 0x142f6d1f0; unless pit state 9 puts the car in the garage (0x142f343d0, 0x1434bc540(.,9)), posts msg vt 0x145624020 (vehicle,5), fuel via 0x1436ae7b0; sets bit3 in the [0x146cc3a80]+0x60 entry. Callers 0x142a40800, 0x14d958ba0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.garage_return_vehicle_to_garage",

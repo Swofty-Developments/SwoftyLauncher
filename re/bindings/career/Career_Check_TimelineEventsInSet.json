@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14126f3c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "bool Career_Check_TimelineEventsInSet(void *vm, void *day_key)",
-  "evidence": "decomp:re/decomp/14126f3c0.c;xref:0x14126f39a;xref:0x1422c5242;xref:0x1422cafc0",
-  "notes": "myteam-g2: Collects the day's events (FUN_1407c6380) and checks each event id (short at ->+0x10 +8) against the team hash set at vm+0x20; returns true when none is missing (starts as true). Level 1, exact predicate not proven; used by TeamHqAdvance OnTimer/AdvanceOneDay to decide whether time may continue."
+  "evidence": "decomp:re/decomp/14126f3c0.c;xref:0x14126f39a,0x1422c5242,0x1422cafc0,0x1423311cd",
+  "notes": "Collects day param_2's entries (0x1407c6380, allocator +8); for each resolves the activity in the table +0x20 and returns false when its type (< 0x23) has its bit set in mask 0x7ffffbebb and entry byte +0xc == 0; true otherwise. Callers include Team HQ advance (0x1422c3540, 0x1422caed0). (lane owner review requested) Better name: Career_Schedule_Check_DayHasNoBlockingActivity (bound record keeps its name)."
  },
  "signature": {
   "id": "career.check_timeline_events_in_set",

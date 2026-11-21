@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14018eca0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14018eca0.c;xref:0x140240945",
-  "notes": "Same as Game_CutSceneScript_FlushPendingSpawnsA but for the second list set (+8..+0x10 -> +0x48, allocator +0x40); 144 callers. Hypothesis."
+  "evidence": "decomp:re/decomp/14018eca0.c;xref:0x140240945,0x1402507dc,0x140254990,0x14025512a,0x140256b40,0x14025c527,0x14026111c,0x140261f5c,0x1402624e0,0x1402629c0,0x140263200,0x140263530,0x140263860,0x1402654e0,0x140265675,0x140267e50,0x140269710,0x140269ae0,0x140269ed0,0x14026a290",
+  "notes": "Twin of 0x14018eb70 for the second vector pair: pending [p1+8,+0x10) appended to active p1+0x48/+0x50/+0x58 (allocator [p1+0x40]), same CriticalSection [p1+0xc8]; pending emptied. (lane owner review requested)"
  },
  "signature": {
   "id": "game.cut_scene_script_flush_pending_spawns_b",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NEOS_WS",
-  "notes": "named from its log messages (channel NEOS_WS): 'Starting web socket connection to %s'"
+  "evidence": "decomp:re/decomp/1444474c0.c;pat:log-channel-NEOS_WS;xref:0x145a8e938",
+  "notes": "Cell 0x145a8e938. Logs 'Starting web socket connection to %s', registers the transport in a hash map and opens the WinHttp connection."
  },
  "signature": {
   "id": "game.neos_ws_starting_web_socket_connection",

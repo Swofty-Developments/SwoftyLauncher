@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1436dff80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-FADE_REQUESTS",
-  "notes": "named from its log messages (channel FADE_REQUESTS): '[makeTyreAllocationExitDecision] is playing %s, areAnyLocalSpectators %s, should show screen %s, showing screen %s'"
+  "evidence": "decomp:re/decomp/1436dff80.c;pat:log-channel-FADE_REQUESTS;xref:0x14585c610",
+  "notes": "Vtable cell 0x14585c610. Picks the loading screen id by load type (loading_track / next_session_same/different_track / back_to_frontend / back_to_f1cg, *_preloaded), starts telemetry 'loading', stamps +0xe00, clears all fade reasons (inline ClearAllReasons on [+0xde8]), decides the tyre allocation screen (NETWORK [makeTyreAllocationExitDecision] log) and network quality message. (lane owner review requested) Better name: Game_LoadingScreen_Start (bound record keeps its name)."
  },
  "signature": {
   "id": "game.fade_requests_playing_are_any_local_spectators_should",

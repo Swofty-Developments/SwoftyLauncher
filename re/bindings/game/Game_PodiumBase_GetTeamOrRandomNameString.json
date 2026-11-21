@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14036fe30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14036fe30.c;xref:0x14035b076",
-  "notes": "Resolves the current team/driver record via session and copies its name string (+0xe8->+0x10) into buffer param_2 (len param_3). Callers Game_Podium2019CutSceneScript_MakeTrophySeq01/02. vp0-verify partial"
+  "evidence": "decomp:re/decomp/14036fe30.c;xref:0x14035b076,0x14035d530,0x14035dc9b,0x14035e2f0,0x14035eb60,0x14035f3d0",
+  "notes": "(this, buf, len, keepTeam): copies the current session record name (record+0xe8 -> +0x10, record from 0x142e60e00) into buf; when keepTeam==0 and the list from 0x14022a8c0([0x14601f5c8+0xa8], this+0x1b2) is non-empty, overwrites buf with a random entry (QPC-seeded RNG 0x143929b90). Called from 0x14035b076 (SpawnSceneTrophy) and 0x14035d530..0x14035f3d0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.podium_base_cut_scene_script_get_team_name_string",

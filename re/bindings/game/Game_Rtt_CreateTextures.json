@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name createTextures (class from the log channel); log channel RTT: '%s: Re-creating textures'"
+  "evidence": "decomp:re/decomp/143d7f030.c;pat:log-message-method;xref:0x143d8440c",
+  "notes": "Log RTT '%s: Re-creating textures'; 12 KB body; calls Game_Rtt_RebuildTextureViews. Caller Ne_RttRenderer_CreateSceneJob."
  },
  "signature": {
   "id": "game.rtt_create_textures",

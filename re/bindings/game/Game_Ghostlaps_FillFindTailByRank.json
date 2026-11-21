@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f84fe0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name fillFindTailByRank (class from the log channel); log channel GHOSTLAPS: '%s()'"
+  "evidence": "decomp:re/decomp/142f84fe0.c;pat:log-message-method;xref:0x142f9959d",
+  "notes": "GHOSTLAPS '%s()' fillFindTailByRank(this, rank). Gate 0x142f89800; +0xc0=1, +0x140=rank (caller passes this+0x9d0), +0x148=1, +0x290=1, +0x291 flag. Case 3 of 0x142f98320, completion 0x142f85a30. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ghostlaps_fill_find_tail_by_rank",

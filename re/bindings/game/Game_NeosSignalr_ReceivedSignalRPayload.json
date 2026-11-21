@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NEOS_SIGNALR/V",
-  "notes": "named from its log messages (channel NEOS_SIGNALR/V): 'Received SignalR payload'"
+  "evidence": "decomp:re/decomp/144441070.c;pat:log-channel-NEOS_SIGNALR/V;xref:0x1444409ae",
+  "notes": "lea 0x1444409ae. Parses the received JSON payload and dispatches on 'type' (Invocation, Completion -> 0x1444450e0, Ping, Close -> 'Server closed connection'); 'Error in payload'. Decomp polluted. Better name: Game_NeosSignalr_OnPayload (bound record keeps its name)."
  },
  "signature": {
   "id": "game.neos_signalr_received_signal_r_payload",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14307b3b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionMatchingCustom::onCustomCreateComplete; log channel NETWORK-SESSION: 'GameSessionMatchingCustom::onCustomCreateComplete(%s)'"
+  "evidence": "decomp:re/decomp/14307b3b0.c;pat:log-message-cxx;xref:0x143076df3",
+  "notes": "Caller: Game_GameSessionMatchingCustom_Cancel (0x143076df3). Logs NETWORK-SESSION 'GameSessionMatchingCustom::onCustomCreateComplete(%s)' (success/failed from p2). Restarts the timer +0x60/+0x68, clears +0xdc; if a create delegate (fn +0xe8, ctx +0xf0) is set, fills result {+0xf8 = +0xe0, ok +0xfc = p2, code +0x100 = p3}, calls it and clears the delegate. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_session_matching_custom_on_custom_create_complete",

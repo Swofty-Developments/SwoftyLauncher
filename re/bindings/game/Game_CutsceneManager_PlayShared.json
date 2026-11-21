@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140227d10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140227d10.c;xref:0x142d83468",
-  "notes": "(mgr, sharedPtr<cutscene>) Takes cutscene's vcall +0x28 and +0x48 values (ids), copies the shared_ptr (atomic ref++), calls Game_CutsceneManager_PlayInternal(mgr, &sp, v48, v28) and releases. Called from Sess_PreRace_Update."
+  "notes": "(mgr, sharedPtr<script>*): takes the script vcalls +0x28 and +0x48, copies the shared_ptr (atomic ref +8 ++), calls Game_CutsceneManager_PlayInternal(mgr,&sp,v48,v28), then releases the copy and the param shared_ptr control block (+8/+0xc dec, vcalls 0/8). Caller 0x142d831e0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.cutscene_manager_play_shared",

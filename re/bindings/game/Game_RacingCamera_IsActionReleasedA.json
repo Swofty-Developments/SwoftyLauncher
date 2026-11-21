@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1445412a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1445412a0.c;xref:0x144540801",
-  "notes": "Per-player racing-camera input predicate: checks camera slot param_2 (20-byte entries at this+0x60) idle, resolves the player input mapper [g_146cc1cb8+0x1c0+idx*8] (fallback per-player sub-structs at 0x146cc1db0 stride 0x148) and returns Ne_InputMapper_IsActionReleased for a fixed action. Caller Game_RacingCamera_ProcessCameraInput. Twin of ..B. Hypothesis on which action."
+  "evidence": "decomp:re/decomp/1445412a0.c;xref:0x144540801,0x1445409f1",
+  "notes": "(cam, slot, player): true when slot entry (cam+0x60, stride 0x14) +8 == 0 (or slot out of range) and Ne_InputMapper_IsActionReleased 0x1441165b0(mapper [0x146cc1cb8]+0x198/+0x1a0, action desc 0x146cc1cd0+player*0x148 with active mapper [0x146cc1cb8+0x1c0+p*8], else 0x146cc1db0+player*0x148) for player <= 1. Callers in 0x144540050. (lane owner review requested)"
  },
  "signature": {
   "id": "game.racing_camera_is_action_released_a",

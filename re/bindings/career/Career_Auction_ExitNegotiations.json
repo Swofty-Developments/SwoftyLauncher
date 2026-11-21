@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140d9cbe0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-AUCTION",
-  "notes": "named from its log messages (channel AUCTION): 'Driver exited negotiations. Cant re-negotiate until next transfer window. Driver %s - Team %s | Driver attempted to exit negotiations but cant because he's on no team, or is already on this team. Driv'"
+  "evidence": "decomp:re/decomp/140d9cbe0.c;pat:log-channel-AUCTION;xref:0x140c4c08a",
+  "notes": "Driver param_2 exits negotiations with team param_3: if driver has no team (+0x5a==0x3fff) or is already on that team logs AUCTION 'attempted to exit negotiations' and returns 0; else logs 'Driver exited negotiations' and appends the team to the driver record's exit list (comp+0x368 +0x30) or, with gate 0x1484f1570, the driver to the team record's list (comp+0x348 +0x30); returns 1. (lane owner review requested)"
  },
  "signature": {
   "id": "career.auction_exit_negotiations",

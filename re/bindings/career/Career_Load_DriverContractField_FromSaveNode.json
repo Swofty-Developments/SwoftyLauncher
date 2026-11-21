@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c999d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "int Career_Load_DriverContractField_FromSaveNode(void *comp, void *save_node)",
-  "evidence": "decomp:re/decomp/140c999d0.c;xref:0x140da7192;xref:0x1410f9c41",
-  "notes": "myteam-g2: Reads typed fields from a save node (FUN_143931730 name tags, type check against the u32 class) into comp+0xa70 and neighbours, writing error codes 0x57 / 0x58 into the TLS result when types mismatch. Shared by Load_DriverContractsComponent and Sponsors_Remove, so it is a save-load helper, not logic."
+  "evidence": "decomp:re/decomp/140c999d0.c;xref:0x140da7193,0x1410f9c41",
+  "notes": "Reader for 0x140c996a0's format: random_seed -> +0xa70, reroll_count -> +0x98, default_contract -> [+0x20] and fallback_contract -> new object at +0x50/+0x58 via 0x140c943f0, counteroffers rebuilt into +0x38..+0x40, then 0x140c993c0(this+0x30); TLS errors 0x57/0x58. (lane owner review requested) Better name: Career_ContractOffer_ReadSaveData (bound record keeps its name)."
  },
  "signature": {
   "id": "career.load_driver_contract_field_from_save_node",

@@ -9,7 +9,7 @@
   "subsystem": "career",
   "proto": "void *vm",
   "evidence": "decomp:re/decomp/141ae6cb0.c;xref:0x141ae6c6b",
-  "notes": "myteam-g1: Builds the contract hub lists: lng_rnd_head_contract_slot / lng_sponsor_contract_slot rows and headers (R&D head contracts and sponsor contracts) for the contract hub screen."
+  "notes": "F1 World loadout/card list refresh: equipped, new, contract_icon_texture_large, rarity_gradient_texture, loadout_rarity_bullet_points, sort lng_sort_rarity/lng_sort_newest; Vm_Build_UpgradeCardScreenNodes, Vm_Init_UpgradeLoadoutSlot, Vm_Update_UpgradeCardSelectionState. Better name: Career_F1World_RefreshLoadoutCards (bound record keeps its name)."
  },
  "signature": {
   "id": "career.contract_hub_vm_refresh_slots",

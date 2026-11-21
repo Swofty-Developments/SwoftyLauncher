@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141d9ca70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_SettingsTabbingBaseViewModel_UpdateFilterLevel;xref:0x141d9cae7",
-  "notes": "cxx=game::SettingsTabbingBaseViewModel::updateFilterLevel; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/141d9ca70.c;str:s_SettingsTabbingBaseViewModel_UpdateFilterLevel;xref:0x141d9b95a,0x141d9f6b3",
+  "notes": "Logs OPTIONS-UI updateFilterLevel \"to [%d]\" (filter level 0x14606aa34); vcall +0xe0(1); bool = level 0 and view node +0x970 not set; pushes it to view node +0x8d0 and fires \"update_filter\" (0x144320fe0). Callers jmp at 0x141d9b95a and Game_SettingsControlsScreenViewModel_OnDataChanged (0x141d9f6b3). (lane owner review requested)"
  },
  "signature": {
   "id": "game.settings_tabbing_base_view_model_update_filter_level",
