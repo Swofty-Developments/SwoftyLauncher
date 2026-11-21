@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143074e10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): '%s: error fetching the latest career members'"
+  "evidence": "decomp:re/decomp/143074e10.c;pat:log-channel-NETWORK;xref:0x1430706b6",
+  "notes": "Only ref: the lea at 0x1430706b6 in 0x14306f770 (callback). Cxx string void network::GameSessionMatchingCareer::onCareerMembersRetrieved(NEint32, const GetCareerOperationResult &). Success: 0x143074060(this+0x10, callback 0x143073ca0); retry: inlined setupRetryJoinSession (+0xb8=1, +0xe0=3, logs the delay); error: logs 'error fetching the latest career members' and calls the +0xe8 result callback. (lane owner review requested) Better name: Game_GameSessionMatchingCareer_OnCareerMembersRetrieved (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_fetching_latest_career_members",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140754920",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: f1w current event completed and sent %s'"
+  "evidence": "decomp:re/decomp/140754920.c;pat:log-channel-TELEMETRY;xref:0x1406f0bf8,0x14070c1c1",
+  "notes": "Bus handler(this,msg); subscribed 0x1406f0bf8 (0x1406d8470), unregistered 0x14070c1c1. 0x88-byte record: returns 0 if msg+0x168 == 0; optional list msg+0x178..+0x180 (flag msg+400); log arg with rewards / without rewards. Tag 'f1w_current_event_completed_record' via 0x14077a240, GUID+seq, 64-entry queue; logs 'f1w current event completed and sent %s' (TELEMETRY). (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_f1w_current_event_completed_and_sent",

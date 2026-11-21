@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1412d3c30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-CHAMPIONSHIPS",
-  "notes": "named from its log messages (channel CHAMPIONSHIPS): 'Driver: %s, Position: %d has Been Awarded a %s Medal for %d points!'"
+  "evidence": "decomp:re/decomp/1412d3c30.c;pat:log-channel-CHAMPIONSHIPS;xref:0x1456d1af0",
+  "notes": "Vtable cell 0x1456d1af0. Gated by +0x7a1. Walks the classification of the player's group: per position tier 1-3 from thresholds +0x764/+0x768/+0x76c (entrant byte +0xceb); for the local entrant keeps best tier +0x290 (+0x294 changed) and best position +0x298, logs 'Driver: %s ... Medal', queues a 0x78-byte message (vtable 0x1456de6a8) with points to [0x14618b3b8]+8. (lane owner review requested)"
  },
  "signature": {
   "id": "game.championship_award_medal",

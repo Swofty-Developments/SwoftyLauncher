@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14403eba0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name userLeftNetwork (class from the log channel); log channel NETWORK-VOICE: '%s: connection id %llu, user %llu'"
+  "evidence": "decomp:re/decomp/14403eba0.c;pat:log-message-method;xref:0x145a4a1c0",
+  "notes": "Logs '%s: connection id %llu, user %llu' with its own name userLeftNetwork and removes the user entry. Only reference is vtable cell 0x145a4a1c0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_voice_user_left_network",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430f3940",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onSessionInCareerHub (class from the log channel); log channel NETWORK: '%s, matching context: %s'"
+  "evidence": "decomp:re/decomp/1430f3940.c;pat:log-message-method;xref:0x142d517f1",
+  "notes": "Caller 0x142d50db0 (SessionStateCareerHub onStateEnter per vt_Sess_CareerHub). Logs 'onSessionInCareerHub, matching context' and tail-jumps 0x143092b20, whose body (after the label) logs cxx=void network::GameSessionRaceStatus::setMyRaceStatus(ERaceStatus) and broadcasts the status. (lane owner review requested) Better name: Game_NetworkSubsystem_OnSessionInCareerHub (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_on_session_in_career_hub",

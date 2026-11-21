@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14405b330",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name addConnectionToStoreClient (class from the log channel); log channel NETWORK-TRANSPORT: '%s(%02d, %s, %u players) : new connection registered.'"
+  "evidence": "decomp:re/decomp/14405b330.c;pat:log-message-method;xref:0x1440793e1,0x1440946cd,0x14409b998,0x1440a1233",
+  "notes": "Logs 'addConnectionToStoreClient': allocates id p2 via AllocConnectionID 0x14405b670 and registers the connection, or 'Couldn't find free registration slot.' (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_transport_add_connection_to_store_client",

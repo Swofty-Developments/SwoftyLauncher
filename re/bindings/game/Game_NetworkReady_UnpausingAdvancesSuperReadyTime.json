@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143227920",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-READY",
-  "notes": "named from its log messages (channel NETWORK-READY): '%s(%s) : Unpausing advances the super-ready time (+%.3f).'"
+  "evidence": "decomp:re/decomp/143227920.c;pat:log-channel-NETWORK-READY;xref:0x150f917a1",
+  "notes": "Logs '%s(%s)...' with method string 'setIsPaused'; compares the flag with [this+0xb8], recomputes the super-ready countdown ([this+0x88]/[this+0x90]) from the QPC clock, stores [this+0xb8] and sends the super-ready packet via 0x14402e500 (log 'sendSuperReady'). Only direct caller found is in the protector section. (lane owner review requested) Better name: Game_NetworkReady_SetIsPaused (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_ready_unpausing_advances_super_ready_time",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143c06e60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143c06e60.c;xref:0x143b1b61c,0x143b636cd",
-  "notes": "Fills per-material texture/param slot records for param_3 entries from a material instance (renderer ctx +0x158/+0x160 slot arrays). Strings: me_diffuseMap, me_diffuseTex, me_baseDiffuseTex, me_logoMap, me_logoDiffuseTex, me_effectMap, me_baseNormalTex = the me_ (material-effect) sampler names used by livery/logo materials. Hypothesis on exact role; 412 lines. Addon: me_* names are the material parameter keys to override for custom liveries."
+  "evidence": "decomp:re/decomp/143c06e60.c;xref:0x143b1b61c,0x143b636cd,0x143b72f1f,0x143c2fcc4,0x143c398bf,0x143c41ba4",
+  "notes": "Counts texture records (type 2 at +0x10), resizes material vectors +0x160 (u64) and +0x180 (float), pushes per texture param a float by name: me_diffuseMap 2.25, me_diffuseTex 2.125, me_baseDiffuseTex 2.0, me_logoMap 2.5, me_logoDiffuseTex 2.125, me_effectMap 2.0, me_baseNormalTex 2.0, else 1.0; 0x143c5ff80 passes it as priority to Render_TexStream_UpdateEntryDemand. Callers incl 0x143b1b61c, Ne_Gfx2Renderer_Initialise 0x143b636cd. (lane owner review requested)"
  },
  "signature": {
   "id": "render.material_fill_me_texture_slots",

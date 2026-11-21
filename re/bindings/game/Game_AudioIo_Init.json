@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143fb9f80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-AUDIO_IO",
-  "notes": "named from its log messages (channel AUDIO_IO): '[thread=0x%08I64x] max low level concurrent IO operations: %u'"
+  "evidence": "decomp:re/decomp/143fb9f80.c;pat:log-channel-AUDIO_IO;xref:0x145a43bd8",
+  "notes": "AudioIo init (vtable cell 0x145a43bd8): stores device io+0x380 (null -> vt+0x40), max concurrent ops = device vt+0x10 -> io+0x388 (logged), grows the request pool (0x143fca220); 0x14391dde0, GetSystemInfo, Suspend/SetThreadAffinityMask/Resume, then tail-jumps to 0x14391da30 (decomp merges that tail; thread proc 0x143fba180). (lane owner review requested)"
  },
  "signature": {
   "id": "game.audio_io_init",

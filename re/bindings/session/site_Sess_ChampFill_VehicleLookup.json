@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "site_Sess_ChampFill_VehicleLookup",
+ "table": "globals",
+ "author": "vmknolle",
+ "row": {
+  "addr": "0x1407b86ac",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "session",
+  "evidence": "decomp:own capstone disasm 0x1407b86a5-0x1407b86c8;xref:0x14243fd10",
+  "notes": "In Game_ChampionshipGameMode_BuildSessionSettings: mov rdx,[r14]; add rdx,0x5c; call Sess_ResolveEntityHandle; test rax,rax; je 0x1407b868c. r14 walks the entrant pointers of the current championship session (Session +0x20..+0x28, 0x88 records); rsi = the descriptor (participants +0xad8/+0xae0). A null vehicle skips the entrant (no participant). The first read of the session entrant's vehicle ref (+0x5c) on the way to the car assets; the record is re-read by Sess_Build_SessionParticipant (0x1407b882f), so a swap has to write the record's +0x5c (and +0x64) before this site, not only rdx. Research: re/research/session_vehicle_swap.md"
+ },
+ "signature": {
+  "id": "session.champ_fill_vehicle_lookup",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 85 C0 74 D6 8B 86 E0 0A 00 00",
+  "match": "0x1407b86ac",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407b86ac",
+  "kind": "mid",
+  "expect": "E8",
+  "names": [
+   "site_Sess_ChampFill_VehicleLookup"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-20",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vmknolle",
+   "date": "2026-11-20",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1407b86ac",
+    "target": "0x1407b86ac"
+   },
+   "sigcheck": "passed",
+   "digest": "92e56a6e02500cf3fce051932ee238bc961597bf18bde6321b23f0825f9a4179"
+  }
+ ]
+}

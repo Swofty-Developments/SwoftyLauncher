@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c80d00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name stopWorldNotification (class from the log channel); log channel CareerEventResourceManager: 'stopWorldNotification %s m_watingforWorldToShutdown %d m_isWorldShutdownComplete %d'"
+  "evidence": "decomp:re/decomp/140c80d00.c;pat:log-message-method;xref:0x140c7d203",
+  "notes": "Decrements the counter byte (bits 24..31) of +0x70 and bumps bits 8..15, logs 'stopWorldNotification %s ...'; removes the entries named param_2 from the 0x98-byte vector +0x38..+0x40 (compact + memmove); posts message 0x145689ab0 via 0x140d46cd0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.career_event_resource_manager_stop_world_notification",

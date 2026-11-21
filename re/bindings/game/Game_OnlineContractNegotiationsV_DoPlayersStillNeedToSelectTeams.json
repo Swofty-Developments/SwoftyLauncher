@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140ffc7b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name doPlayersStillNeedToSelectTeams (class from the log channel); log channel ONLINE_CONTRACT_NEGOTIATIONS/V: 'doPlayersStillNeedToSelectTeams() - %s'"
+  "evidence": "decomp:re/decomp/140ffc7b0.c;pat:log-message-method;xref:0x140ffe419,0x1436c573b,0x1436c5782",
+  "notes": "Uses Game_OnlineContractNegotiationsV_IsOnlyOnePlayerParticipating and logs ONLINE_CONTRACT_NEGOTIATIONS/V 'doPlayersStillNeedToSelectTeams() - %s'; returns the bool. Called from Game_OnlineContract_ProgressNegotiations and Game_ContractTeamSelect_OnUpdate. (lane owner review requested)"
  },
  "signature": {
   "id": "game.online_contract_negotiations_v_do_players_still_need_to_select_teams",

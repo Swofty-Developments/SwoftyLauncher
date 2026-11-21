@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14408e6e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-LAN",
-  "notes": "named from its log messages (channel NETWORK-LAN): 'DiscoveryServer received LAN search request, but failed to find query definition requested, name '%s'.'"
+  "evidence": "decomp:re/decomp/14408e6e0.c;pat:log-channel-NETWORK-LAN;xref:0x145a54330",
+  "notes": "LAN discovery server: for a search request deserialises the query, looks up the query definition by name, applies the search filter and the free-slot check, then sends the reply ('Replying magic number ..., title id, Nonce, game version', 'Reply to %s - size of reply', 'Reply sent successfully' / 'Reply failed to send'). Only ref: vtable cell 0x145a54330. (lane owner review requested) Better name: Game_NetworkLan_DiscoveryServerHandleSearch (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_lan_discovery_server_received_lan_search",

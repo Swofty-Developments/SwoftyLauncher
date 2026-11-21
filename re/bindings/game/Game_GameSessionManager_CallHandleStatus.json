@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143060fb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionManager::callHandleStatus; log channel NETWORK: 'GameSessionManager::callHandleStatus(%s).'"
+  "evidence": "decomp:re/decomp/143060fb0.c;pat:log-message-cxx;xref:0x143058457,0x14305aca9,0x14305bb30",
+  "notes": "Logs 'GameSessionManager::callHandleStatus(%s).' (NETWORK) with the status text for param_2. Callers 0x143057720 (0x143058457), 0x14305abe0, 0x14305af60, 0x143062f90, 0x1430647a0 (0x1430649f0, 0x143064be1). (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_session_manager_call_handle_status",

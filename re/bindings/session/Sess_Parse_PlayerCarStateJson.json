@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1427bc450",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
   "proto": "-",
   "evidence": "decomp:re/decomp/1427bc450.c;xref:0x1427bc169,0x1427bc185",
-  "notes": "Sub-parser of Sess_Parse_PlayerDescription (0x1427b8db0) for a player's car state JSON (param_1[0] = player description obj, param_2 = JSON): strategy {compound, tyreSetIndex, expectedLaps, maximumLaps, stopWindowEarliestLap, stopWindowIdealLap, stopWindowLatestLap} -> obj+0x1c8 (0x14136b330); engineWear {wearICE, wearTC, wearES, wearMGUH, wearMGUK, wearCE}; detailedTyreWear {perTyreWear, perTyrePunctured -> +0x1b0, perTyreBurst -> +0x1b8}, flag +0x1a0; fastestLap; wingDamage, bodyDamage, detailedBodyDamage. Called twice (default desc and override when flags&2). Addon: start a session with preset tyre strategy, engine wear and damage (scenario/challenge setups, mid-race starts)."
+  "notes": "Called twice by Sess_Parse_PlayerDescription 0x1427b8db0. param_1[0]=desc obj, param_2=JSON. 0x1427b7a40 result -> obj+0x120..+0x188; 'strategy' -> 0x14136b330(obj+0x1c8); 'engineWear' wearICE/TC/ES/MGUH/MGUK -> +0xc0..+0xd0 (wearCE read too); 'fastestLap' -> +0x1c0 (+0x1c4=1); 'detailedTyreWear': perTyreWear +0x190, perTyrePunctured +0x1b0, perTyreBurst +0x1b8, flag +0x1a0; wingDamage, bodyDamage; 'detailedBodyDamage' array (0x60 stride) -> +0xe0, flag +0x100."
  },
  "signature": {
   "id": "session.parse_player_car_state_json",

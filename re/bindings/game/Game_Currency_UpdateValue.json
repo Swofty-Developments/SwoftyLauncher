@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142b96ce0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-CURRENCY",
-  "notes": "named from its log messages (channel CURRENCY): 'Currency Transaction System : Updating currency value from (%d) to (%d)'"
+  "evidence": "decomp:re/decomp/142b96ce0.c;pat:log-channel-CURRENCY;xref:0x142b927e4,0x142b940de",
+  "notes": "Bus handler bound by lea 0x142b927e4/0x142b940de. Logs old/new value, +0x7918 = msg+0x10, queues a 0x18-byte message (vtable 0x1457cadf0) to [0x14618b3b8]+8. (lane owner review requested)"
  },
  "signature": {
   "id": "game.currency_update_value",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430fc4e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-OS-SESSION",
-  "notes": "named from its log messages (channel NETWORK-OS-SESSION): '[MESSAGE] received Session Message from %d: (Ver %d, Changing %s)'"
+  "evidence": "decomp:re/decomp/1430fc4e0.c;pat:log-channel-NETWORK-OS-SESSION;xref:0x1430fcf0a",
+  "notes": "Logs '[MESSAGE] received Session Message from %d: (Ver %d, Changing %s)', caches the version (call 0x1430fc6e7 to 0x1430ff4e0) and logs 'Activating service on session %s with version %d'; tail jumps to 0x1430fe110 and 0x1430fe320 (the decomp inlines a cache fetch-rule body from the latter). Caller 0x1430fcd70. (lane owner review requested) Better name: Game_NetworkOSSession_OnSessionMessage (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_os_session_received_session_message",

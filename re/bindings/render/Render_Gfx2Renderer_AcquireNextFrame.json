@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b7f890",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143b7f890.c;xref:0x143b799a8,0x143c792f7",
-  "notes": "Triple-buffer step: frame index at ctx+0x70 advances modulo 3, picks swapchain slot (+0x10 + idx*8), calls Render_Gfx2_AcquireBackbuffer, records error code into TLS error list and the 10-entry error ring (0x146107830) with caller address; sets ok flag +0x28. Callers Ne_Gfx2Renderer_RenderFrame, Render_DDGISystem_Render."
+  "notes": "Advances the triple-buffer index ctx+0x70 (mod 3), takes slot ctx+0x10+idx*8; when flag +0x89 is set calls Render_Gfx2_AcquireBackbuffer(device, desc, ctx+0x28+idx*0x18) and stores ok in +0x88, else error 0x16 unless +0x88; errors to TLS + ring 0x146107830. Same layout as built by 0x143bc4b30 ('<name>.srv0..2' buffers), so not a swapchain. (lane owner review requested) Better name: Render_Gfx2_TripleBuffer_Advance (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_renderer_acquire_next_frame",

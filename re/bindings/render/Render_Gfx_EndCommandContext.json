@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a00140",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143a00140.c;xref:0x143b5a7f4,0x143b5a6f2",
-  "notes": "Ends recording on a Gfx2 context: stores the frame stamp into the native list (+0x4c), resets the slot-cache arrays at ctx+0x1724..0x1814 to 0xFF, clears the TLS current-context (TlsSetValue(index, 0)) and updates the TLS error ring on failure. Pair of Render_Gfx_BeginCommandContext."
+  "evidence": "decomp:re/decomp/143a00140.c;xref:0x143b5a6f2,0x143b5a7f4",
+  "notes": "Stores device+0xa38 into list+0x4c, fills ctx+0x1724..+0x1814 with 0xFF, clears the TLS current context (error ring on failure), list vcall +0x188, appends a closing node (Render_Gfx2CmdContext_ReserveNodeSlot 0x1439b9040, flag +0x3c = 1) to the list node chain (+0x28/+0x30), list vcall +0x50, clears ctx+0x60 and +0x58. Pair of Render_Gfx_BeginCommandContext (same callers 0x143b5a680, 0x143b5a770). (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx_end_command_context",

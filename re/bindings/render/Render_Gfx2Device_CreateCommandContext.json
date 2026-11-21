@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439c8bb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439c8bb0.c;xref:0x140151e7e",
-  "notes": "Registers a resource into set +0x4ae0 via 0x1439d8b40 and copies descriptors into arrays at +0xbc0..+0xbd8. Called from Render_Gfx2Device_Initialise and Game_Read_RendererGfxConfig. Hypothesis (view/sampler descriptor registration). vp2-verify partial/disagree"
+  "evidence": "decomp:re/decomp/1439c8bb0.c;xref:0x140151e7e,0x1439c32ec,0x1439c3389,0x1439c348f",
+  "notes": "Under CS +0x2668 allocates 0x40220 bytes from allocator +0x150, inits them with Render_Gfx2Device_InitCommandContext 0x1439d8b40(param_2), appends to vector +0xbc0..+0xbd8, registers via 0x143a1e350(+0x3aa8, ctx, +0x4ae0), returns the context. Callers Game_Read_RendererGfxConfig, Render_Gfx2Device_Initialise. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx2_device_track_resource_set4ae0",

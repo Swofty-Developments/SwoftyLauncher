@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143128410",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=BadgeReplicationManager::reconcileBadgeInfo; log channel NETWORK-ENTRANTS: 'void network::BadgeReplicationManager::reconcileBadgeInfo(const PlayerDescription &, const game::BadgeStatId::PackedStatId, game::BadgeInfo &&) | %s : Badge Info update was unsuccessful!'"
+  "evidence": "decomp:re/decomp/143128410.c;pat:log-message-cxx;xref:0x143129671,0x14312a3c1,0x14312b323",
+  "notes": "reconcileBadgeInfo(desc, packedId, info): gets badge by packed id (0x14246d820); missing -> log; if info differs (0x142471640) writes it (0x1424710e0) and posts a bus message; failure code logged. Callers 0x143129300, 0x143129d90, 0x14312b130. (lane owner review requested)"
  },
  "signature": {
   "id": "game.badge_replication_manager_reconcile_badge_info",

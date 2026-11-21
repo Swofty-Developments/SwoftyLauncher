@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK/F",
-  "notes": "named from its log messages (channel NETWORK/F): 'network::SOCGuid::deserialiseSaveDataContainer() at %p'"
+  "evidence": "decomp:re/decomp/14322f650.c;pat:log-channel-NETWORK/F;xref:0x140fe258e,0x1456bcae8",
+  "notes": "Slot 3 (+0x18) of vtable 0x1456bcad0 and called from 0x140fe2470. Entry log 'SavedOnlineChampionship::deserialiseSaveDataContainer() at %p'; inlined SOCGuid deserialise (SOCID_* fields, success string spelled 'SOCGui2d'), then championship name/code/lastModified/teamName, binary data (weekends, current weekend/session) and entrants (Game_Read_BadgeInfoJson). Better name: Game_SavedOnlineChampionship_Deserialise (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_network_soc_guid_2",

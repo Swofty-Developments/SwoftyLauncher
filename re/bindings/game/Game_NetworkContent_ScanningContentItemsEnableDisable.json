@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14303cf10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-CONTENT",
-  "notes": "named from its log messages (channel NETWORK-CONTENT): 'Scanning content items for enable/disable state. Mask: %016llX'"
+  "evidence": "decomp:re/decomp/14303cf10.c;pat:log-channel-NETWORK-CONTENT;xref:0x14305f52b,0x14305f79f",
+  "notes": "If flag this+299: logs \"Scanning content items for enable/disable state. Mask\"; for each item (this+0x30..0x38) updates the own bit in its mask from item vtable+8, compares with the required mask this+0x118 and logs \"ContentItem %s is now enabled/DISABLED\". (lane owner review requested) Better name: Game_NetworkContent_RescanContentItems (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_content_scanning_content_items_enable_disable",

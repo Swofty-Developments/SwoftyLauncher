@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140740f60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: Driver Move processed for %s'"
+  "evidence": "decomp:re/decomp/140740f60.c;pat:log-channel-TELEMETRY;xref:0x1406e9c44,0x14070765f",
+  "notes": "Bus handler(this,msg); subscribed 0x1406e9c44 (0x1406d8470), unregistered 0x14070765f. 0x78-byte record: five packed ids msg+0x10..+0x22; flag msg+0x24 picks log arg the player team / an ai team. Tag 'my_team_driver_moves_record' via 0x14077a240, GUID+seq, 64-entry queue; logs 'Driver Move processed for %s' (TELEMETRY). (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_driver_move_processed_for",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1442bba60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1442bba60.c;xref:0x14079da54",
-  "notes": "Unlinks a node (prev +8 / next +0x10 in list head param_1) when *param_2==0 and fixes head +0x28; 1244 callers (UI view model population). Hypothesis: intrusive list handle release. vp4-verify partial/disagree"
+  "evidence": "decomp:re/decomp/1442bba60.c;xref:0x14079da54,0x140b98e5a,0x140c15fb1,0x140c17d64,0x141478a9e",
+  "notes": "Handle assignment (holder+8 = target, +0x10/+0x18 next/prev in the target's handle list [target+0x28]): new null -> unlink, Vm_Release_Node 0x1442b3d70 old, clear. New non-null and vcall +0x28 true and different -> unlink/release old, link holder at head of new target's list, then atomically ++target+0x24. 1283 sites (VM property code). Better name: Ne_NodeHandle_Assign (bound record keeps its name)."
  },
  "signature": {
   "id": "core.intrusive_node_unlink",

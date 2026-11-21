@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1457e36d0",
-  "type": "vtable[11]",
+  "type": "vtable[21]",
   "level": "L2",
   "subsystem": "session",
-  "evidence": "pat:flow-state-type-record;xref:0x14607ef38;decomp:re/decomp/142db6ea0.c",
-  "notes": "cxx=SessionStateVideo; neon flow state (slot 2 = NeFlowState base 0x1436aef00, slot 0 returns type record 0x14607ef38 whose +8 names the class); onStateEnter 0x142d9a7a0, onStateUpdate 0x142d9acd0, onStateExit 0x142d9b5b0 (slots 8/9/10). (vmknolle session-flow map)"
+  "evidence": "decomp:re/decomp/142d99f10.c;pat:flow-state-type-record;decomp:re/decomp/142db6ea0.c;xref:0x142d99fd1,0x142db6eab,0x142dca748,0x14f525c8b,0x14f53d16b",
+  "notes": "cxx=SessionStateVideo; 21 slots (class-name string follows). Slot 0 -> type record 0x14607ef38, +8=name set by static init 0x142df1ca0 at 0x142df4227. Slot 2 NeFlowState base 0x1436aef00; slots 8/9/10 onStateEnter/Update/Exit 0x142d9a7a0/0x142d9acd0/0x142d9b5b0. Ctor 0x142d99f10 (lea 0x142d99fd1; mov [rsi],rax). Also loaded by 0x142db6ea0,0x14f525c80 (dtor, [rcx])."
  },
  "signature": {
   "id": "session.video",

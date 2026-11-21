@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439fe5e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439fe5e0.c;xref:0x143c2cf5d",
-  "notes": "FNV-1a 64 hash of a name string, linear search of the shader resource table (40-byte entries, hash at +8, table at *(*(this+0x20)+0x20)+0x678), stores param_3 into this+0xc0[idx] and clears dirty byte this+0xc8[idx]. Addon: names a pass uses to bind SRVs (ASSAO etc.). Twin of _B (likely another binding class)."
+  "evidence": "decomp:re/decomp/1439fe5e0.c;xref:0x143c2cf5d,0x143c2cf74,0x143c2cf8b",
+  "notes": "FNV-1a 64 of a name, linear search of the 40-byte binding table [[this+0x20]+0x20]+0x678 (hash at +8); on hit stores param_3 into this+0xc0[idx] and clears dirty byte this+0xc8[idx] (arrays allocated by Render_Gfx_CreateDrawPacket 0x1439d8970). Callers Game_Rtt_CreateAssaoPass 0x143c2cda0, Game_Rtt_CreateCmaa2Bindings 0x143c3f6d0. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx_bind_shader_resource_by_name_a",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143f13020",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143f13020.c;xref:0x1401067d3",
-  "notes": "Releases member at +0x8c via 143992080 (ref-counted resource). 77 callers incl. Render_Gfx_BuildConfigObject. vq1-verify partial/disagree"
+  "evidence": "decomp:re/decomp/143f13020.c;xref:0x1401067d3,0x140106a80,0x14012dd9d,0x1424caa83,0x142b0cecd",
+  "notes": "Base-class destructor: restores vtbl 0x1458bc310 (the vtbl the base ctor 0x143b5ad80 stores at 0x143b5adf9), frees the owned object +0x540 via allocator [+8], calls Ne_LinkResolver_RegisterLinkable 0x143992080([+0x18]) when [+0x20] is set, destroys the callable at +0x498 (inline buffer +0x460), releases shared_ptrs +0x430/+0x420/+0x410. Called from many derived destructors, e.g. 0x1401067d3/0x140106a80 (Render_Gfx_BuildConfigObject). (lane owner review requested) Better name: Render_Gfx_ConfigObjectBase_Destroy (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx_release_config_member",

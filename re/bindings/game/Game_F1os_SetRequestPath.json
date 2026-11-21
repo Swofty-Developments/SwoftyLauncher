@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143293380",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143293380.c;xref:0x140824f13",
-  "notes": "Compares/assigns request path (param_3 vs [param_4+0x10]) with Ne_Get_CStrLen and a length-limited byte loop (param_4+8 = max len); 101 call sites, every Game_F1os_OnStart_* handler (UpdateSession, GetCalendar, GetCCLeaderboard...). Hypothesis: online request URL/path builder."
+  "evidence": "decomp:re/decomp/143293380.c;xref:0x140824f13,0x140835d30,0x140b16d97",
+  "notes": "Builds the request URL into buffer param_4 (cap +8, data +0x10): copies base string this+0x10, appends the service path from table 0x145839d18[param_2] (param_2 < 0x20: 'Services/AccountGameService/', 'ServerStatus/', 'Services/CalendarGameService/', ...), then method name param_3. Callers every Game_F1os_OnStart_* e.g. 0x140824650, 0x140835470, 0x140b165a0. (lane owner review requested) Better name: Game_F1os_BuildServiceMethodUrl (bound record keeps its name)."
  },
  "signature": {
   "id": "game.f1os_set_request_path",

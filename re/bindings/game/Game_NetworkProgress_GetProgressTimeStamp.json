@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432e2560",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name getProgressTimeStamp (class from the log channel); log channel NETWORK-PROGRESS: '%s() : progress index(%d) invalid. empty history.'"
+  "evidence": "decomp:re/decomp/1432e2560.c;pat:log-message-method;xref:0x14582da38,0x145836d28",
+  "notes": "Writes the time stamp (+0xe0) of history record param_2 (ring index (param_2 + start) % capacity, 0xf0-byte records) to *param_3 and returns 1; on empty history or bad index logs 'getProgressTimeStamp() : progress index(%d) invalid. empty history.' and returns 0. Vtable cells 0x14582da38, 0x145836d28. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_progress_get_progress_time_stamp",

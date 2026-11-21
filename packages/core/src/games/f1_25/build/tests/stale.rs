@@ -1,15 +1,48 @@
 use super::*;
 
 const TILES_ERP: &str = "ui/tiles.erp";
+const DATABASES_ERP: &str = "2025_asset_groups/ui_package/databases.erp";
+
+fn obj(pairs: Vec<(&str, swofty_formats::pkg::Node)>) -> swofty_formats::pkg::Node {
+    use swofty_formats::pkg::{Node, Obj, Val};
+    Node::Obj(Obj::new(
+        pairs.into_iter().map(|(k, v)| (Val::str(k), v)).collect(),
+    ))
+}
+
+fn uidb_archive(name: &str, root: swofty_formats::pkg::Node) -> Vec<u8> {
+    use swofty_formats::erp::{Erp, Fragment, HEADER_LEN, MAGIC, Resource, STORED};
+    use swofty_formats::pkg::Pkg;
+    let raw = Pkg {
+        name: *b"UIDB",
+        root,
+        vca: Vec::new(),
+        layout: None,
+    }
+    .to_bytes()
+    .unwrap();
+    let mut header = [0u8; HEADER_LEN];
+    header[..4].copy_from_slice(MAGIC);
+    header[4..8].copy_from_slice(&3u32.to_le_bytes());
+    let mut res = Resource {
+        name: name.into(),
+        kind: swofty_formats::erp::kind("UIDB").unwrap(),
+        unk: vec![0; 4],
+        fragments: vec![Fragment::new(*b"temp", raw.len() as u64, 0, STORED, raw)],
+        hash: [0; 16],
+    };
+    res.hash = res.content_hash().unwrap();
+    Erp {
+        header,
+        version: 3,
+        resources: vec![res],
+    }
+    .to_bytes()
+    .unwrap()
+}
 
 fn tiles_archive(names: &[&str]) -> Vec<u8> {
-    use swofty_formats::erp::{Erp, Fragment, HEADER_LEN, MAGIC, Resource, STORED};
-    use swofty_formats::pkg::{Arr, Node, Obj, Pkg, Val};
-    let obj = |pairs: Vec<(&str, Node)>| {
-        Node::Obj(Obj::new(
-            pairs.into_iter().map(|(k, v)| (Val::str(k), v)).collect(),
-        ))
-    };
+    use swofty_formats::pkg::{Arr, Node, Val};
     let tiles = names
         .iter()
         .map(|n| obj(vec![("Name", Node::Val(Val::str(*n)))]))
@@ -24,32 +57,23 @@ fn tiles_archive(names: &[&str]) -> Vec<u8> {
             )]),
         )]),
     )]);
-    let raw = Pkg {
-        name: *b"UIDB",
-        root,
-        vca: Vec::new(),
-        layout: None,
-    }
-    .to_bytes()
-    .unwrap();
-    let mut header = [0u8; HEADER_LEN];
-    header[..4].copy_from_slice(MAGIC);
-    header[4..8].copy_from_slice(&3u32.to_le_bytes());
-    let mut res = Resource {
-        name: "eaid://ui_package/databases/overrides.uidb".into(),
-        kind: swofty_formats::erp::kind("UIDB").unwrap(),
-        unk: vec![0; 4],
-        fragments: vec![Fragment::new(*b"temp", raw.len() as u64, 0, STORED, raw)],
-        hash: [0; 16],
-    };
-    res.hash = res.content_hash().unwrap();
-    Erp {
-        header,
-        version: 3,
-        resources: vec![res],
-    }
-    .to_bytes()
-    .unwrap()
+    uidb_archive("eaid://ui_package/databases/overrides.uidb", root)
+}
+
+fn databases_archive(tooltips: &[&str]) -> Vec<u8> {
+    use swofty_formats::pkg::{Node, Val};
+    let dict = tooltips
+        .iter()
+        .map(|n| (*n, obj(vec![("Name", Node::Val(Val::str(*n)))])))
+        .collect();
+    let root = obj(vec![(
+        "tool_tips",
+        obj(vec![(
+            "Contents",
+            obj(vec![("tooltips_dictionary", obj(vec![("Contents", obj(dict))]))]),
+        )]),
+    )]);
+    uidb_archive("eaid://ui_package/databases/tool_tips.uidb", root)
 }
 
 fn tile_names(path: &Path) -> Vec<String> {
@@ -130,8 +154,12 @@ impl Seasons {
     }
 
     fn back_up_for_build_1(&self, names: &[&str]) {
+        self.back_up_for_build_1_as(TILES_ERP, &tiles_archive(names));
+    }
+
+    fn back_up_for_build_1_as(&self, rel: &str, data: &[u8]) {
         let clean = self.root.join("clean.erp");
-        std::fs::write(&clean, tiles_archive(names)).unwrap();
+        std::fs::write(&clean, data).unwrap();
         let objects = Objects {
             root: self.store.root.join("baseline/objects"),
         };
@@ -142,7 +170,7 @@ impl Seasons {
         };
         let mut b = Baseline::new(&old);
         b.files.insert(
-            TILES_ERP.into(),
+            rel.into(),
             crate::game_folder::baseline::FileRecord {
                 size: std::fs::metadata(&clean).unwrap().len(),
                 sha256,
@@ -235,4 +263,98 @@ fn two_addons_adding_the_same_entry_refuse_and_name_both() {
     );
     assert!(text.contains("turn one of them off"), "{text}");
     assert_eq!(tile_names(&s.game.dir.join(TILES_ERP)), ["stock"]);
+}
+
+impl Seasons {
+    fn databases_in_game(&self, tooltips: &[&str]) -> PathBuf {
+        let path = self.game.dir.join(DATABASES_ERP);
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::fs::write(&path, databases_archive(tooltips)).unwrap();
+        path
+    }
+}
+
+#[test]
+fn a_game_databases_erp_holding_the_launchers_own_tooltip_gets_its_original_back() {
+    let s = Seasons::new("menus-healed", &["stock"]);
+    let path = s.databases_in_game(&["settings_fe_home", "mod_menu", "swofty_adjust"]);
+    s.back_up_for_build_1_as(DATABASES_ERP, &databases_archive(&["settings_fe_home"]));
+    let original = |rel: &str| original(&s.store.root, &s.game, rel);
+    let Err(Error::StaleInput { rel, detail }) = check_menu_originals(&original) else {
+        panic!("the launcher's own tooltips in the game's databases.erp are a stale input");
+    };
+    assert_eq!(rel, DATABASES_ERP);
+    assert_eq!(
+        detail,
+        "menus: the game's databases.erp already holds the tooltip mod_menu, the tooltip swofty_adjust"
+    );
+    let note = heal_stale(&s.store.root, &s.game, &rel).unwrap().unwrap();
+    assert_eq!(
+        note,
+        format!(
+            "{DATABASES_ERP} in the game folder still held the launcher's changes from an earlier session; put back \
+             its original backed up for game build 1"
+        )
+    );
+    assert_eq!(
+        std::fs::read(&path).unwrap(),
+        databases_archive(&["settings_fe_home"])
+    );
+    check_menu_originals(&original).unwrap();
+}
+
+#[test]
+fn a_game_databases_erp_with_only_the_games_own_tooltips_is_no_stale_input() {
+    let s = Seasons::new("menus-clean", &["stock"]);
+    s.databases_in_game(&["settings_fe_home", "delete", "change_driver"]);
+    check_menu_originals(&|rel: &str| original(&s.store.root, &s.game, rel)).unwrap();
+}
+
+#[test]
+fn a_recorded_original_holding_the_launchers_own_tooltip_is_a_stale_input_too() {
+    let s = Seasons::new("menus-recorded", &["stock"]);
+    let stale = databases_archive(&["settings_fe_home", "mod_menu"]);
+    s.databases_in_game(&["settings_fe_home"]);
+    let objects = Objects {
+        root: s.store.root.join("baseline/objects"),
+    };
+    let staged = s.root.join("stale.erp");
+    std::fs::write(&staged, &stale).unwrap();
+    let mut b = Baseline::new(&s.game.identity);
+    b.files.insert(
+        DATABASES_ERP.into(),
+        crate::game_folder::baseline::FileRecord {
+            size: stale.len() as u64,
+            sha256: objects.put_file(&staged).unwrap(),
+            source: crate::game_folder::baseline::Source::FirstSight,
+        },
+    );
+    b.save(&s.store.root).unwrap();
+    let original = |rel: &str| original(&s.store.root, &s.game, rel);
+    let Err(Error::StaleInput { rel, .. }) = check_menu_originals(&original) else {
+        panic!("a recorded original holding the launcher's tooltip is a stale input");
+    };
+    let note = heal_stale(&s.store.root, &s.game, &rel).unwrap().unwrap();
+    assert!(note.starts_with(&format!(
+        "the recorded original of {DATABASES_ERP} held the launcher's changes"
+    )));
+    check_menu_originals(&original).unwrap();
+}
+
+#[test]
+fn a_stale_databases_erp_with_no_clean_copy_on_record_says_to_repair_the_game() {
+    let s = Seasons::new("menus-unhealed", &["stock"]);
+    s.databases_in_game(&["settings_fe_home", "mod_menu"]);
+    let original = |rel: &str| original(&s.store.root, &s.game, rel);
+    let Err(Error::StaleInput { rel, detail }) = check_menu_originals(&original) else {
+        panic!("the launcher's own tooltip in the game's databases.erp is a stale input");
+    };
+    assert_eq!(heal_stale(&s.store.root, &s.game, &rel).unwrap(), None);
+    let text = stale_text(&detail, &rel, false);
+    assert!(
+        text.starts_with("menus: the game's databases.erp already holds the tooltip mod_menu. ")
+            && text.contains("the launcher has no clean copy of it on record")
+            && text.contains("repair F1 25 in the EA app"),
+        "{text}"
+    );
 }

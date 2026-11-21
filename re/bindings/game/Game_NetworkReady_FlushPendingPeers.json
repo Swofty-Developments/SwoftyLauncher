@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144074da0.c;xref:0x14305fe35,0x143237a44",
-  "notes": "(sys, flag) Walks hashed set +0x20..+0x30 of peers, for each calls 0x1440b4340(sys+0xc0, peer, &out) and 0x1440b4940, computing a timeout ((n+0x48d)/0x48e*0x42). Callers Sess_StartLights_HandleReady, Game_NetworkReady_UpdateSpectatorSkip. Hypothesis."
+  "evidence": "decomp:re/decomp/144074da0.c;xref:0x14305fe35,0x143237a44,0x1436ea5fe",
+  "notes": "Sums [entry+0xf0] over hash-set entries (+0x20..+0x30) whose key byte == p2, adds overhead ((n+0x48d)/0x48e*0x42), divides by max(0x1238,[this+0x50]>>3) and keeps the maximum ratio/bytes/count in the map at +0xc0 (0x1440b4340). No flushing seen. Better name: Game_NetworkTraffic_UpdatePeakRateForKey (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_ready_flush_pending_peers",

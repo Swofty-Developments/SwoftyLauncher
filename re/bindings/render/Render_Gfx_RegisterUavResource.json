@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143c00360",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143c00360.c;xref:0x140148c38",
-  "notes": "Registers a named UAV resource (string GfxUAVResource) with interned name hash (Ne_StringPool_InternByHash) and a thread-local init guard; 13 callers inside renderer init (0x1401456e0, 0x140149ae0, 0x14014b860...)."
+  "evidence": "decomp:re/decomp/143c00360.c;xref:0x140148c38,0x140149bb8,0x14014c299,0x140154b52,0x143c00647,0x143ce2530",
+  "notes": "Constructor (vtable 0x1458c2050) of a named UAV object: stores device param_3 and name param_2; if param_4 is null interns the name (FNV-1a, Ne_StringPool_InternByHash) and creates its bind layout with Render_Gfx2_BindLayout_Create(device, 1, cb 0x143c00530, name, type 'GfxUAVResource', param_5); else copies fields from param_4. Callers incl 0x140148c38, Render_Rtt_CreateTextureViews 0x143d7b8cc, 0x143ce2530. (lane owner review requested) Better name: Render_Gfx_UavResource_Construct (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx_register_uav_resource",

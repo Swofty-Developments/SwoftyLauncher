@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b58b10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/143b58b10.c;xref:0x143b5aaf7,0x143b7ee13",
-  "notes": "Hypothesis: hash map lookup (ne_hash_map.h) with strcmp on names; used by RenderFrame. Named callers: Ne_Gfx2Renderer_RenderFrame. vp3-verify partial/disagree"
+  "notes": "Walks the entry list from cursor this[5] to graph+0x70: type 0 creates a fence (Render_Gfx2Device_CreateFence) and inserts name->fence into the FNV-1a name map this[4] (inline insert, rehash 0x143ebf960); type 1 looks the name up and calls [queue+0x30] vt+0x78(fence,value) under device CS +0x2668 after FlushResourceBarriers; type 3 calls this vt+8. Callers Ne_Gfx2Renderer_FrameStartEnd, RenderFrame. Better name: Ne_Gfx2Renderer_ProcessNamedFenceEntries (bound record keeps its name)."
  },
  "signature": {
   "id": "core.gfx2_renderer_find_resource_by_name",

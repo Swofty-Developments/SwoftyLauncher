@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140760c50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: Matchmaking resolved'"
+  "evidence": "decomp:re/decomp/140760c50.c;pat:log-channel-TELEMETRY;xref:0x1406f5a24,0x14070e0a3",
+  "notes": "Bus handler(this,msg); subscribed 0x1406f5a24 (0x1406d8470), unregistered 0x14070e0a3. 0x140-byte record: fields from msg+0x10..+0x69 (strings, signed bytes, flags). Tag 'multiplayer_telemetry_record' via 0x14077a240, GUID+seq, 64-entry queue; logs 'Matchmaking resolved' (TELEMETRY). (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_matchmaking_resolved",

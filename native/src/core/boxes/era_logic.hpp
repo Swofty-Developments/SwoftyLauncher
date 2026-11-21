@@ -10,6 +10,7 @@
 #include "core/boxes/era/continue_pick.hpp"
 #include "core/boxes/era/drs.hpp"
 #include "core/boxes/era/warmers.hpp"
+#include "core/boxes/era/rev_lights.hpp"
 #include "core/boxes/era/time_limit.hpp"
 #include "core/boxes/era/weekend.hpp"
 #include "core/boxes/era/points.hpp"

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a03140",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143a03140.c;xref:0x143a0154a",
-  "notes": "Twin of Render_Gfx_DrawIndirect using the signature stored at [0x14618caa8+0x2588] (indexed-draw indirect). Hypothesis."
+  "notes": "Same as Render_Gfx_DrawIndirect with the command signature at device+0x2588. Caller Render_Gfx_SubmitDraw 0x143a007e0. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx_draw_indexed_indirect",

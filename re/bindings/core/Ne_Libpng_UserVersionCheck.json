@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14390e0a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/14390e0a0.c;xref:0x14390e3f4",
-  "notes": "614-byte libpng helper using Ne_Libpng_Warning; caller Render_Png_EncodeContextInit (0x14390e3f4). Hypothesis (png_create_write_struct area). vq0-verify partial/disagree"
+  "notes": "(png, const char *ver): libpng png_user_version_check: compares ver with '1.6.37', sets bit 2 of png+0x16a on mismatch or null; then builds 'Application built with libpng-<ver> but running with 1.6.37' and calls Ne_Libpng_Warning 0x1447a0590; returns 1 ok / 0. Only caller Render_Png_EncodeContextInit 0x14390e3f4."
  },
  "signature": {
   "id": "core.libpng_write_struct_init_14390e0a0",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141459660",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141459660.c;xref:0x141434ae5,0x141434b2a",
-  "notes": "Sets capacity of a block pool/arena object (size param_2 min 1; equal-size shortcut; TLS-guarded allocator singleton). Callers Game_DecalFileDeleteOp_DoJob, Game_Http_CrackUri and others. Hypothesis. vp0-verify partial"
+  "evidence": "decomp:re/decomp/141459660.c;xref:0x141434ae5,0x141434b2a,0x141f1455e",
+  "notes": "(wstr, n): set capacity of a wide string: cap (chars) +8, buffer +0x10, inline buffer +0x20, allocator +0x18. n=0 counts as 1; same cap -> 0. No allocator -> errno 0xe. From inline: alloc n*2 (vt+0x18), fail -> 0xc. Shrink: realloc vt+0x30 (n<2 frees vt+0x38, back to inline). Grow: alloc, copy chars, NUL, free old. Returns 0 or the errno. call sites."
  },
  "signature": {
   "id": "core.block_pool_set_capacity",

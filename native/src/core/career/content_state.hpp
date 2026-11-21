@@ -83,6 +83,8 @@ bool ready(const Slot &s);
 Slot *by_vtable(const void *item);
 std::string suffix_of_group(const std::string &group);
 std::string group_of_mode(const std::string &mode);
+content::Cars cars_of_group(const std::string &group);
+bool select_cars_of_group(const std::string &group, uint32_t &was, content::Pick &pick);
 int64_t mode_stat_of(const std::string &save);
 void shown_from_records();
 void resolve(Slot &s, bool now, bool building = false);
@@ -93,6 +95,18 @@ bool bind_all(std::string &why);
 Action *route_entry(HomeItem *item, Action *out);
 bool gate_entry(const void *championship);
 bool predicate_entry(void *self, void *championship);
+
+inline void car_entries(uintptr_t customisation, const uint8_t *&begin, const uint8_t *&end)
+{
+    begin = end = nullptr;
+    auto *system = customisation ? *reinterpret_cast<const uint8_t *const *>(customisation) : nullptr;
+    if (!system || !mem::readable(system + content::SYSTEM_ENTRIES_BEGIN, 0x10))
+        return;
+    begin = content::at<const uint8_t *>(system, content::SYSTEM_ENTRIES_BEGIN);
+    end = content::at<const uint8_t *>(system, content::SYSTEM_ENTRIES_END);
+    if (!begin || end < begin || !mem::readable(begin, size_t(end - begin)))
+        begin = end = nullptr;
+}
 
 inline const char *nestr(const NeStr *s)
 {

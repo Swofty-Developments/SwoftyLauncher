@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143d1e6a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143d1e6a0.c;xref:0x1445b3116",
-  "notes": "Hbcn light generation, log 'generate: Total lights %u'. Hbcn = baked probe/cubemap lighting compress (from Render_Hbcn_OnCompressRequest). Named callers: Render_Hbcn_OnCompressRequest."
+  "notes": "Hbcn all-lights generation (channel IBL): logs 'generate: Total lights %u' and loops the lights through Render_Hbcn_ComputeLightUpdateFlags (call 0x143d1ebad). Only caller Render_Hbcn_OnCompressRequest 0x1445b3116. (lane owner review requested)"
  },
  "signature": {
   "id": "render.hbcn_generate_all_lights",

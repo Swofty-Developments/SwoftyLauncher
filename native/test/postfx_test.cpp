@@ -556,6 +556,13 @@ int main()
     CHECK(!ineligible(no_pause, UNKNOWN, PAUSED, false));
     CHECK(ineligible(no_pause, OTHER, PAUSED, true));
 
+    When trackside{view_bit("trackside"), 0};
+    When rear{view_bit("reverse_pod"), 0};
+    CHECK(!ineligible(trackside, TRACKSIDE, REPLAY, true));
+    CHECK(ineligible(trackside, REVERSE_POD, REPLAY, true));
+    CHECK(!ineligible(rear, REVERSE_POD, REPLAY, true));
+    CHECK(ineligible(rear, TRACKSIDE, REPLAY, true));
+
     CHECK(view_bit("nope") == 0 && flag_bit("nope") == 0 && view_bit("unknown") == 0);
     CHECK(flag_text(0) == "-" && flag_text(PAUSED | MENU) == "paused+menu");
     CHECK(view_text(TCAM) == "tcam" && view_text(99) == "?");

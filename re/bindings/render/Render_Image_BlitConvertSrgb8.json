@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14379d710",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14379d710.c;xref:0x14379c88f",
-  "notes": "Copies/converts an RGBA8 image (src param_2, dst param_1) per pixel with optional linear to sRGB encode (0.0031308, 12.92, 1/2.4 = 0x3ed55555, -0.055). Caller Game_ThumbnailSystem_RequestAndWriteScreenshot (3 sites). Addon: screenshot/thumbnail colour path."
+  "evidence": "decomp:re/decomp/14379d710.c;xref:0x14379c88f,0x14379c8a7,0x14379c8d6",
+  "notes": "Per pixel of dst param_1 (w +0x18, h +0x1c, bpp +0x24, data +0x10): reads src param_2 (data +0x10, pitch +0x20, bpp +0x24, alpha from src if 4 bpp), optional linear->sRGB encode of src (param_3; 0.0031308, 12.92, 1/2.4, 1.055/-0.055), writes dst = src*a + dst*(1-a), dst alpha 0xff. Callers in 0x14379c250 (thumbnail writer). (lane owner review requested) Better name: Render_Image_AlphaBlendSrgb8 (bound record keeps its name)."
  },
  "signature": {
   "id": "render.image_blit_convert_srgb8",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1445aff00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1445aff00.c;xref:0x14014dba6",
-  "notes": "String-keyed map (this+0x38/+0x50) find-or-create of a 0x48-byte entry with small inline string (cap 0x20) at +0x18. Called ~20 times from Game_Read_RendererGfxConfig (renderer gfx config keys). Hypothesis."
+  "evidence": "decomp:re/decomp/1445aff00.c;xref:0x14014dba6,0x14014dbc8,0x14014dbf1,0x14014dc1a",
+  "notes": "Rename (returns nothing): if C-string key param_2 is not in the map at this+0x38 (0x1445bc580), allocates a 0x48-byte entry from allocator [this+8] (vtbl 0x145612ea8, inline name cap 0x20 at +0x18, 16-byte value param_3 at +0x38) and inserts it via 0x1445bc6d0, abort stub 0x1445bcca0 on failure. Game_Read_RendererGfxConfig calls it with keys main, in_race, garage, career_hub, fullscreen_hub, carmonitor, frontend, fullscreenvideo, frontend3d (0x14014dba6, 0x14014dbc8, ...). (lane owner review requested) Better name: Render_Config_ProgramMap_InsertIfAbsent (bound record keeps its name)."
  },
  "signature": {
   "id": "render.config_program_map_find_or_create",

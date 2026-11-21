@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14360bf30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onPlayerDriverChanged (class from the log channel); log channel NETWORK_SAFETY_CAR_TETHER: 'onPlayerDriverChanged() for vehicle %d'"
+  "evidence": "decomp:re/decomp/14360bf30.c;pat:log-message-method;xref:0x14360bed7,0x14360c468",
+  "notes": "Callback (lea'd in 0x14360bca0 and 0x14360c3b0): logs 'onPlayerDriverChanged() for vehicle %d' with [p2+0x10], then for state <5 logs 'Sending Safety Car Tether Message For Vehicle...'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_safety_car_tether_on_player_driver_changed",

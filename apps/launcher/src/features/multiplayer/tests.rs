@@ -12,8 +12,8 @@ use super::model::{
     restart_ok_text, room_meta,
 };
 use super::model::{
-    RoomFocus, StepCard, StepRow, card_rooms, default_room_name, fix_lines, leaves_on_exit, lobby_hint,
-    room_focus, shows_ad, starting, step_title,
+    RoomFocus, StepCard, StepRow, card_rooms, closed_subtitle, default_room_name, fix_lines, game_after_room,
+    leaves_on_exit, lobby_hint, repeats, room_focus, shows_ad, starting, step_title,
 };
 use super::state::{Lobby, room_sizes, unasked};
 use swofty_core::online::multiplayer::types::RoomContent;
@@ -54,6 +54,7 @@ fn addon(id: &str, name: &str) -> RoomAddon {
     RoomAddon {
         id: id.into(),
         name: name.into(),
+        ..RoomAddon::default()
     }
 }
 
@@ -78,6 +79,7 @@ fn room(members: u32, max: u32, digest: Option<&str>) -> RoomSummary {
                 addon("b.cars", "2026 Cars"),
                 addon("c.hud", "Timing HUD"),
             ],
+            ..RoomAddons::default()
         }),
         created_at: 0,
     }
@@ -142,8 +144,9 @@ fn names_where_the_game_is() {
 
 fn own(digest: &str, addons: &[(&str, &str)]) -> OwnPrint {
     OwnPrint {
-        digest: digest.into(),
+        digest: Some(digest.into()),
         addons: addons.iter().map(|(id, name)| addon(id, name)).collect(),
+        matching: None,
     }
 }
 
@@ -205,6 +208,7 @@ fn a_room_differs_in_its_list_only_where_its_view_shows_a_difference() {
         count: hosts.len() as u32,
         tracks: Vec::new(),
         list: hosts.iter().map(|(id, name)| addon(id, name)).collect(),
+        ..RoomAddons::default()
     });
     let mine = own("sha256:b860077ab11537ec", &hosts);
     assert_eq!(
@@ -600,7 +604,6 @@ fn the_steps_show_in_order_with_the_active_ones_detail_only() {
         ],
     );
     let card = StepCard::of(&s, false).unwrap();
-    assert!(!card.banner);
     let ids: Vec<&str> = card.rows.iter().map(|r| r.id.as_str()).collect();
     assert_eq!(
         ids,
@@ -647,10 +650,6 @@ fn a_failed_step_carries_its_problem_and_dims_the_steps_after_it() {
         detail: None,
     });
     let card = StepCard::of(&s, false).unwrap();
-    assert!(
-        !card.banner,
-        "the failed step shows the problem, not the headline"
-    );
     let failed = row(&card, "network");
     assert_eq!(failed.state, StepState::Failed);
     let problem = failed.problem.as_ref().unwrap();
@@ -683,10 +682,16 @@ fn a_failed_step_carries_its_problem_and_dims_the_steps_after_it() {
 
 #[test]
 fn the_headline_shows_above_the_steps_only_for_what_no_step_says() {
+    use super::tracker::{Banner, banner};
     let steps = || vec![step("account", "done"), step("room", "active")];
     let working = stepped(Phase::Connecting("joining".into()), false, steps());
-    assert!(!StepCard::of(&working, false).unwrap().banner);
-    assert!(StepCard::of(&working, true).unwrap().banner, "leaving");
+    let card = StepCard::of(&working, false).unwrap();
+    assert_eq!(banner(&card, &working, false, "Joining", ""), None);
+    assert_eq!(
+        banner(&card, &working, true, "Joining", ""),
+        Some(Banner::Leaving),
+        "leaving"
+    );
 
     let mut stray = working.clone();
     stray.problem = Some(Problem {
@@ -694,11 +699,20 @@ fn the_headline_shows_above_the_steps_only_for_what_no_step_says() {
         retry: true,
         detail: None,
     });
-    assert!(StepCard::of(&stray, false).unwrap().banner);
+    let card = StepCard::of(&stray, false).unwrap();
+    assert_eq!(
+        banner(&card, &stray, false, "The room server is slow.", ""),
+        None,
+        "a problem no step carries shows beside the active step"
+    );
 
     let ended = stepped(Phase::Ended("the host closed the room".into()), false, steps());
     let card = StepCard::of(&ended, false).unwrap();
-    assert!(card.banner && card.rows.is_empty());
+    assert!(card.rows.is_empty());
+    assert_eq!(
+        banner(&card, &ended, false, "The host closed the room", "Room closed"),
+        Some(Banner::Over("The host closed the room".into()))
+    );
 
     let failed = stepped(
         Phase::Failed("the room is full".into()),
@@ -712,10 +726,64 @@ fn the_headline_shows_above_the_steps_only_for_what_no_step_says() {
         ],
     );
     let card = StepCard::of(&failed, false).unwrap();
-    assert!(
-        !card.banner && card.rows.len() == 2,
+    assert_eq!(
+        card.rows.len(),
+        2,
         "an ended session still shows where it stopped"
     );
+    assert_eq!(
+        banner(&card, &failed, false, "The room is full.", "The room didn't open"),
+        None
+    );
+}
+
+#[test]
+fn a_failed_steps_detail_that_repeats_its_problem_is_left_out() {
+    assert!(repeats("The room closed", "The room closed."));
+    assert!(repeats("the room closed.", "The Room Closed"));
+    assert!(!repeats("The room closed after being idle", "The room closed."));
+    let closed = |detail: &str| {
+        let room: SessionStep = serde_json::from_value(serde_json::json!({
+            "id": "room", "state": "failed", "detail": detail,
+            "problem": {"code": "room_closed", "text": "The room closed.", "retry": false,
+                        "detail": "the room closed"},
+        }))
+        .unwrap();
+        stepped(
+            Phase::Ended("the room closed".into()),
+            true,
+            vec![step("account", "done"), room, step("addons", "pending")],
+        )
+    };
+    let card = StepCard::of(&closed("the room closed"), false).unwrap();
+    let failed = row(&card, "room");
+    assert_eq!(failed.problem.as_ref().unwrap().text, "The room closed.");
+    assert_eq!(failed.detail, None, "the detail says what the problem says");
+    assert_eq!(failed.problem.as_ref().unwrap().detail, None);
+    let card = StepCard::of(&closed("lobby: refused with HTTP 404"), false).unwrap();
+    assert_eq!(
+        row(&card, "room").detail.as_deref(),
+        Some("Lobby: refused with HTTP 404"),
+        "a detail that adds something stays"
+    );
+}
+
+#[test]
+fn a_closed_room_says_so_in_place_of_its_live_details() {
+    assert_eq!(closed_subtitle(true, true), "Room closed");
+    assert_eq!(closed_subtitle(true, false), "Room closed");
+    assert_eq!(closed_subtitle(false, true), "The room didn't open");
+    assert_eq!(closed_subtitle(false, false), "You didn't join the room");
+}
+
+#[test]
+fn a_game_still_starting_when_the_room_ends_keeps_starting_without_it() {
+    assert_eq!(
+        game_after_room(true, true),
+        Some("F1 25 keeps starting without the room.")
+    );
+    assert_eq!(game_after_room(true, false), None);
+    assert_eq!(game_after_room(false, true), None, "a live room says nothing");
 }
 
 #[test]
@@ -774,7 +842,6 @@ fn a_warning_shows_its_problem_and_fix_plan_without_stopping_the_steps_after_it(
         detail: None,
     });
     let card = StepCard::of(&s, false).unwrap();
-    assert!(!card.banner, "the warning carries the session's problem");
     let row = row(&card, "addons");
     assert!(row.warning);
     assert_eq!(row.state, StepState::Done);
@@ -840,4 +907,397 @@ fn the_rooms_card_lists_the_first_three_rooms() {
     assert_eq!(card_rooms(0), 0);
     assert_eq!(card_rooms(2), 2);
     assert_eq!(card_rooms(9), 3);
+}
+
+mod room_fit {
+    use std::collections::HashSet;
+    use std::time::{Duration, Instant};
+
+    use swofty_core::catalog::{Addon, Version};
+    use swofty_core::online::multiplayer::matching::{Have, Own, Progress};
+    use swofty_core::online::multiplayer::types::{
+        HostPrint, Phase, RoomAddon, RoomAddons, SessionStep, StepState,
+    };
+
+    use super::super::fix::{FixView, RoomFix, SETTLE, patch};
+    use super::super::model::{Fit, Mark, OwnPrint, RoomStatus, StepCard, room_fit, room_line, view_addons};
+    use super::{room, stepped};
+
+    fn sha(c: char) -> String {
+        c.to_string().repeat(64)
+    }
+
+    fn version(v: &str, sha256: &str) -> Version {
+        serde_json::from_value(serde_json::json!({
+            "version": v, "size": 3 << 20, "sha256": sha256, "url": format!("http://localhost/{v}"),
+        }))
+        .unwrap()
+    }
+
+    fn listed(id: &str, name: &str, versions: Vec<Version>) -> Addon {
+        serde_json::from_value(serde_json::json!({
+            "id": id, "name": name, "author": "a", "versions": versions, "latest": versions.first(),
+        }))
+        .unwrap()
+    }
+
+    fn entry(id: &str, name: &str, v: &str, registry: Option<char>) -> RoomAddon {
+        RoomAddon {
+            id: id.into(),
+            name: name.into(),
+            version: Some(v.into()),
+            registry: registry.map(sha),
+            order: None,
+            builtin: false,
+        }
+    }
+
+    fn hosting(list: Vec<RoomAddon>) -> swofty_core::online::multiplayer::types::RoomSummary {
+        let mut r = room(2, 8, Some("sha256:host"));
+        r.addons = Some(RoomAddons {
+            count: list.len() as u32,
+            list,
+            launcher: Some("1.10.14".into()),
+            game: Some(sha('e')),
+            ..RoomAddons::default()
+        });
+        r
+    }
+
+    fn mine(digest: Option<&str>, have: &[(&str, &str, Option<char>)], catalog: Vec<Addon>) -> OwnPrint {
+        OwnPrint {
+            digest: digest.map(str::to_owned),
+            addons: Vec::new(),
+            matching: Some(Own {
+                launcher: "1.10.14".into(),
+                exe_sha256: Some(sha('e')),
+                dlc: None,
+                have: have
+                    .iter()
+                    .map(|(id, v, from)| {
+                        let h = Have {
+                            version: semver::Version::parse(v).unwrap(),
+                            from: from.map(sha),
+                        };
+                        ((*id).to_owned(), h)
+                    })
+                    .collect(),
+                catalog,
+            }),
+        }
+    }
+
+    fn status(room: &swofty_core::online::multiplayer::types::RoomSummary, me: &OwnPrint) -> RoomStatus {
+        RoomStatus::of(room, &HashSet::new(), Some(me))
+    }
+
+    #[test]
+    fn the_same_digest_matches_and_joins() {
+        let r = hosting(vec![entry("x.a", "A", "1.0.0", Some('a'))]);
+        let me = mine(Some("sha256:host"), &[("x.a", "1.0.0", Some('a'))], Vec::new());
+        assert_eq!(status(&r, &me), RoomStatus::Match);
+        assert!(status(&r, &me).joinable());
+    }
+
+    #[test]
+    fn a_profile_that_fails_its_own_dependency_check_still_gets_a_status_and_can_join() {
+        let seasons = listed("x.s12", "SWOFTY 2012", vec![version("1.0.6", &sha('b'))]);
+        let r = hosting(vec![
+            entry("x.pc", "Progressive Career", "1.0.0", Some('a')),
+            entry("x.s12", "SWOFTY 2012", "1.0.6", Some('b')),
+        ]);
+        let me = mine(
+            None,
+            &[("x.pc", "1.0.0", Some('a')), ("x.s12", "1.0.6", Some('b'))],
+            vec![seasons],
+        );
+        assert_eq!(status(&r, &me), RoomStatus::Fixable);
+        assert_eq!(
+            room_line(&r, RoomStatus::Fixable, Some(&me)),
+            "Joining matches the host's addons"
+        );
+        assert!(status(&r, &me).joinable());
+    }
+
+    #[test]
+    fn differences_the_addon_browser_fixes_say_how_many_addons_joining_installs() {
+        let catalog = vec![
+            listed("x.a", "A", vec![version("1.0.0", &sha('a'))]),
+            listed("x.b", "B", vec![version("2.0.0", &sha('b'))]),
+            listed(
+                "x.dm",
+                "Driver Manager",
+                vec![version("0.1.4", &sha('d')), version("0.1.3", &sha('c'))],
+            ),
+        ];
+        let r = hosting(vec![
+            entry("x.a", "A", "1.0.0", Some('a')),
+            entry("x.b", "B", "2.0.0", Some('b')),
+            entry("x.dm", "Driver Manager", "0.1.3", Some('c')),
+        ]);
+        let me = mine(
+            Some("sha256:mine"),
+            &[("x.dm", "0.1.4", Some('d')), ("x.extra", "1.0.0", None)],
+            catalog,
+        );
+        assert_eq!(status(&r, &me), RoomStatus::Fixable);
+        assert_eq!(
+            room_line(&r, RoomStatus::Fixable, Some(&me)),
+            "Joining installs 3 addons from the Addon Browser"
+        );
+        let Fit::Joins { installs, replaces } = room_fit(&r, Some(&me)) else {
+            panic!("joins");
+        };
+        assert_eq!(installs, 3);
+        assert_eq!(replaces, ["Installs Driver Manager 0.1.3, replacing your 0.1.4"]);
+    }
+
+    #[test]
+    fn something_the_launcher_cannot_fix_blocks_the_join_and_names_it() {
+        let r = hosting(vec![entry("x.private", "Private Pack", "1.0.0", None)]);
+        let me = mine(Some("sha256:mine"), &[], Vec::new());
+        assert_eq!(status(&r, &me), RoomStatus::Blocked);
+        assert!(!status(&r, &me).joinable());
+        assert_eq!(
+            room_line(&r, RoomStatus::Blocked, Some(&me)),
+            "Can't join: Private Pack 1.0.0 isn't on the Addon Browser"
+        );
+        let mut other_game = hosting(Vec::new());
+        other_game.addons.as_mut().unwrap().game = Some(sha('f'));
+        other_game.addons.as_mut().unwrap().count = 0;
+        other_game.addons.as_mut().unwrap().list = vec![entry("x.a", "A", "1.0.0", Some('a'))];
+        let me = mine(Some("sha256:mine"), &[("x.a", "1.0.0", Some('a'))], Vec::new());
+        assert_eq!(
+            room_line(&other_game, RoomStatus::Blocked, Some(&me)),
+            "Can't join: Your F1 25 is another version than the host's"
+        );
+        let mut other_launcher = hosting(vec![entry("x.a", "A", "1.0.0", Some('a'))]);
+        other_launcher.addons.as_mut().unwrap().launcher = Some("1.10.12".into());
+        assert_eq!(status(&other_launcher, &me), RoomStatus::Blocked);
+    }
+
+    #[test]
+    fn a_listing_without_versions_keeps_the_old_status_and_a_full_room_cannot_be_joined() {
+        let mut old = hosting(vec![RoomAddon {
+            id: "x.a".into(),
+            name: "A".into(),
+            ..RoomAddon::default()
+        }]);
+        let me = mine(None, &[], Vec::new());
+        assert_eq!(room_fit(&old, Some(&me)), Fit::Unknown);
+        assert_eq!(status(&old, &me), RoomStatus::Unknown);
+        assert!(status(&old, &me).joinable(), "as before, Join stays");
+        old.members = 8;
+        assert_eq!(status(&old, &me), RoomStatus::Full);
+        assert!(!RoomStatus::Full.joinable());
+    }
+
+    fn print(digest: &str) -> HostPrint {
+        HostPrint {
+            digest: digest.into(),
+            ..HostPrint::default()
+        }
+    }
+
+    #[test]
+    fn the_room_launch_waits_for_the_match_and_a_failure_waits_for_retry() {
+        let t0 = Instant::now();
+        let mut fix = RoomFix::default();
+        let host = print("sha256:h1");
+        assert!(!fix.holds(None, t0), "an older module sends no host print");
+        assert!(!fix.due(None, false));
+        assert!(fix.holds(Some(&host), t0));
+        assert!(fix.due(Some(&host), false));
+        assert!(!fix.due(Some(&host), true), "not once the room's game started");
+        let progress = fix.begin(&host.digest);
+        assert!(!fix.due(Some(&host), false), "one runs");
+        *progress.lock().unwrap() = Progress {
+            done: 1,
+            total: 3,
+            bytes: 5 << 20,
+            total_bytes: 12 << 20,
+            name: "SWOFTY 2012".into(),
+            version: "1.0.6".into(),
+            replacing: None,
+        };
+        let Some(FixView::Running(p)) = fix.view() else {
+            panic!("running");
+        };
+        assert_eq!(p.done, 1);
+        fix.finish(Err("the download's SHA-256 is not the listed one".into()), t0);
+        assert!(fix.holds(Some(&host), t0 + SETTLE));
+        assert!(!fix.due(Some(&host), false), "a failure waits for Retry");
+        assert_eq!(
+            fix.view(),
+            Some(FixView::Failed(
+                "the download's SHA-256 is not the listed one".into()
+            ))
+        );
+        assert!(fix.retry());
+        assert!(!fix.retry());
+        assert!(fix.due(Some(&host), false));
+        fix.begin(&host.digest);
+        fix.finish(Ok(()), t0);
+        assert!(
+            fix.holds(Some(&host), t0),
+            "the session takes the room profile first"
+        );
+        assert!(!fix.holds(Some(&host), t0 + SETTLE));
+        assert!(
+            fix.holds(Some(&print("sha256:h2")), t0 + Duration::from_secs(5)),
+            "the host changed"
+        );
+        assert!(fix.due(Some(&print("sha256:h2")), false));
+        assert_eq!(fix.view(), None, "nothing to show once it is done");
+    }
+
+    #[test]
+    fn the_addons_step_shows_the_match_progress_and_a_failure_with_retry() {
+        let steps = vec![
+            serde_json::from_value::<SessionStep>(serde_json::json!({"id": "room", "state": "done"}))
+                .unwrap(),
+            serde_json::from_value::<SessionStep>(serde_json::json!({
+                "id": "addons", "state": "done", "warning": true,
+                "problem": {"code": "addons_differ", "text": "3 addons differ.", "retry": false}}))
+            .unwrap(),
+            serde_json::from_value::<SessionStep>(serde_json::json!({"id": "build", "state": "pending"}))
+                .unwrap(),
+        ];
+        let state = stepped(Phase::Connecting("joining".into()), false, steps);
+        let progress = Progress {
+            done: 1,
+            total: 3,
+            bytes: 5 << 20,
+            total_bytes: 12 << 20,
+            name: "Driver Manager".into(),
+            version: "0.1.3".into(),
+            replacing: Some("0.1.4".into()),
+        };
+        let mut running = state.clone();
+        patch(&mut running, &FixView::Running(progress.clone()));
+        let card = StepCard::of(&running, false).unwrap();
+        let row = card.rows.iter().find(|r| r.id == "addons").unwrap();
+        assert_eq!(row.state, StepState::Active);
+        assert!(row.problem.is_none() && !row.warning);
+        assert_eq!(
+            row.detail.as_deref(),
+            Some("Installs Driver Manager 0.1.3, replacing your 0.1.4: 1 of 3 addons, 5 of 12 MB")
+        );
+        let fresh = Progress {
+            replacing: None,
+            name: "SWOFTY 2012".into(),
+            version: "1.0.6".into(),
+            ..progress
+        };
+        let mut running = state.clone();
+        patch(&mut running, &FixView::Running(fresh));
+        let card = StepCard::of(&running, false).unwrap();
+        let row = card.rows.iter().find(|r| r.id == "addons").unwrap();
+        assert_eq!(
+            row.detail.as_deref(),
+            Some("Installing SWOFTY 2012 1.0.6: 1 of 3 addons, 5 of 12 MB")
+        );
+        let mut failed = state;
+        patch(
+            &mut failed,
+            &FixView::Failed("SWOFTY 2012 1.0.6: no space left".into()),
+        );
+        let card = StepCard::of(&failed, false).unwrap();
+        let row = card.rows.iter().find(|r| r.id == "addons").unwrap();
+        assert_eq!(row.state, StepState::Failed);
+        let problem = row.problem.as_ref().unwrap();
+        assert!(problem.retry);
+        assert_eq!(
+            problem.text,
+            "Couldn't match the host's addons: SWOFTY 2012 1.0.6: no space left"
+        );
+        assert!(card.rows.iter().find(|r| r.id == "build").unwrap().dimmed);
+    }
+
+    #[test]
+    fn the_view_marks_each_host_addon_by_what_joining_does_about_it() {
+        let catalog = vec![
+            listed("x.s12", "SWOFTY 2012", vec![version("1.0.6", &sha('b'))]),
+            listed(
+                "x.dm",
+                "Driver Manager",
+                vec![version("0.1.4", &sha('d')), version("0.1.3", &sha('c'))],
+            ),
+        ];
+        let r = hosting(vec![
+            entry("x.pc", "Progressive Career", "1.0.0", Some('a')),
+            entry("x.s12", "SWOFTY 2012", "1.0.6", Some('b')),
+            entry("x.dm", "Driver Manager", "0.1.3", Some('c')),
+        ]);
+        let me = mine(
+            None,
+            &[("x.pc", "1.0.0", Some('a')), ("x.dm", "0.1.4", Some('d'))],
+            catalog,
+        );
+        let view = view_addons(&r, &HashSet::new(), Some(&me));
+        assert_eq!(view.summary, "Joining installs 2 addons from the Addon Browser.");
+        let rows: Vec<(&str, Mark, &str)> = view
+            .rows
+            .iter()
+            .map(|r| (r.name.as_str(), r.mark, r.note.as_str()))
+            .collect();
+        assert_eq!(
+            rows,
+            [
+                ("Progressive Career", Mark::Have, "You have it"),
+                (
+                    "SWOFTY 2012",
+                    Mark::Installs,
+                    "Joining installs 1.0.6 from the Addon Browser"
+                ),
+                (
+                    "Driver Manager",
+                    Mark::Installs,
+                    "Joining installs 0.1.3, replacing your 0.1.4"
+                ),
+            ]
+        );
+
+        let blocked = hosting(vec![
+            entry("x.pc", "Progressive Career", "1.0.0", Some('a')),
+            entry("x.private", "Private Pack", "1.0.0", None),
+        ]);
+        let view = view_addons(&blocked, &HashSet::new(), Some(&me));
+        assert_eq!(
+            view.summary,
+            "Can't join: Private Pack 1.0.0 isn't on the Addon Browser"
+        );
+        assert_eq!(
+            view.rows[0].mark,
+            Mark::Have,
+            "off in the own profile, on in the room's"
+        );
+        assert_eq!(view.rows[1].mark, Mark::Lacks);
+        assert_eq!(view.rows[1].note, "1.0.0 isn't on the Addon Browser");
+
+        let all = hosting(vec![entry("x.pc", "Progressive Career", "1.0.0", Some('a'))]);
+        let view = view_addons(&all, &HashSet::new(), Some(&me));
+        assert_eq!(view.summary, "You have every addon the host has.");
+    }
+
+    #[test]
+    fn a_view_without_versions_checks_the_addons_on_in_the_profile_as_before() {
+        let old = hosting(vec![
+            RoomAddon {
+                id: "x.a".into(),
+                name: "A".into(),
+                ..RoomAddon::default()
+            },
+            RoomAddon {
+                id: "x.b".into(),
+                name: "B".into(),
+                ..RoomAddon::default()
+            },
+        ]);
+        let on: HashSet<String> = ["x.a".to_owned()].into();
+        let view = view_addons(&old, &on, None);
+        assert_eq!(view.summary, "You are missing or have off 1 of 2 addons.");
+        let marks: Vec<Mark> = view.rows.iter().map(|r| r.mark).collect();
+        assert_eq!(marks, [Mark::Have, Mark::Lacks]);
+    }
 }

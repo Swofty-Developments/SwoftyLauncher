@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14463da30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "pat:log-channel-PARTICLES",
-  "notes": "named from its log messages (channel PARTICLES): 'tyre burst | LOOK OUT - veh index not same as array index, should be OK, but may need testing %d %d | - | unknown surface '%s' | I expected a null handle but got %p | KILL EFFECTS at start of fast rew'"
+  "evidence": "decomp:re/decomp/14463da30.c;pat:log-channel-PARTICLES;xref:0x14463ce49",
+  "notes": "Rename (per-frame update, not an event handler): callback stored by Game_RacingVehicles_Initialise (lea 0x14463ce49, written to [obj+0xd8]+0x58/+0x60). Takes dt from *param_2, accumulates +0x384, flips the frame buffer index (1 - [ctx+0x87b650]); on rewind kills emitters per vehicle via 0x144704b30 and clears the 0xf70 frame block; logs tyre burst, unknown surface %s, KILL EFFECTS at start of fast rew (PARTICLES); calls 0x144705d80 and 0x1444721b0. (lane owner review requested) Better name: Render_Particles_UpdateVehicleEffects (bound record keeps its name)."
  },
  "signature": {
   "id": "render.particles_on_vehicle_event",

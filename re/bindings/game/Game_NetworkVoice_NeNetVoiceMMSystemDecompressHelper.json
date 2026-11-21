@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144038ea0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-VOICE",
-  "notes": "named from its log messages (channel NETWORK-VOICE): 'NeNetVoiceMMSystem: decompress helper thread %d is running.'"
+  "evidence": "decomp:re/decomp/144038ea0.c;pat:log-channel-NETWORK-VOICE;xref:0x1440324ab",
+  "notes": "Thread body of the MMSystem backend: logs 'NeNetVoiceMMSystem: decompress helper thread %d is running.', then loops decompressing remote voice packets into play buffers (strings decompressHelperThreadMain, decompressVoicePacket). Address taken (lea) in Game_NetworkVoice_CreateNetVoiceObject, where the 'voice_chat_decompress_helper_%d' threads are started. (lane owner review requested) Better name: Game_NetworkVoice_MMSystemDecompressHelperThreadMain (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_voice_ne_net_voice_mm_system_decompress_helper",

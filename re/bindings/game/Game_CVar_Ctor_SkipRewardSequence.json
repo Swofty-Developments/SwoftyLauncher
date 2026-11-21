@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142c747f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142c747f0.c;xref:0x142d8a440",
-  "notes": "Constructs the console variable 'Game.SkipRewardSequence' (vtable 0x145613548, inline name buffer 0x40, flags 0x3fff000000000001) and registers it with the cvar registry ([g 0x146ca5e28]+0x18, 0x143a43b90). Caller: Sess_RetirementSequence_Update. Addon: cvar to skip reward sequences."
+  "evidence": "decomp:re/decomp/142c747f0.c;xref:0x140af400b,0x140af54f4,0x142d865fd,0x142d868bd,0x142d8af96,0x142d8afd8,0x142d8b01a,0x142d8b05c,0x142d8bd87,0x142d8c40b,0x142d8c7bb,0x14eb7e98a",
+  "notes": "Initialises a setting holder: SSO name string (cap 0x40, vtable 0x145613548), +0x58 = 0x3fff000000000001, zeroed fields, then reads bool setting Game.SkipRewardSequence via 0x143a43b90 into +0x318. call sites (xref list), not only the retirement sequence. (lane owner review requested)"
  },
  "signature": {
   "id": "game.c_var_ctor_skip_reward_sequence",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14323da80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name updateDropInResults (class from the log channel); log channel NETWORK: '%s: isLocal: %d, vehicleId: %d'"
+  "evidence": "decomp:re/decomp/14323da80.c;pat:log-message-method;xref:0x1430e4fbb",
+  "notes": "Caller 0x1430e0560. Walks the result list this+0xc0 (filled by HandleDropInResultMessage): waits while the vehicle record is not ready (logs 'must wait for status change before confirming'), else logs 'broadcasting confirmation', applies it via Game_Network_ApplyDropIn (0x14323e25e), logs 'isLocal, vehicleId', posts 0x1439876c0 and frees the node (count +0xd0). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_update_drop_in_results",

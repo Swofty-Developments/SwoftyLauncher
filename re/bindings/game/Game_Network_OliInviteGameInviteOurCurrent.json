@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'Oli/Invite: Game invite is to our current session. Ignoring invite.'"
+  "evidence": "decomp:re/decomp/143165750.c;pat:log-channel-NETWORK;xref:0x14581f2a0",
+  "notes": "Slot 6 (+0x30) of vtable 0x14581f270. Compares the invite's session with the current one via vt+0x68 and logs 'Oli/Invite: Game invite is to our current session. Ignoring invite.'; returns param 2's low 32 bits. Better name: Game_Network_FilterInviteToCurrentSession (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_oli_invite_game_invite_our_current",

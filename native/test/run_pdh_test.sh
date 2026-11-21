@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# Builds src/core/diagnostics/perf/pdh.cpp and src/core/hooks/guard.cpp as native/build.sh does and runs each
+# pdh_test.cpp case in its own process: under Wine on Linux, natively on Windows (Git Bash).
+set -uo pipefail
+SELF=$(readlink -f "$0")
+cd "$(dirname "$SELF")"
+case "$(uname -s)" in
+MINGW* | MSYS* | CYGWIN*) NATIVE=1 ;;
+*) NATIVE=0 ;;
+esac
+NEEDS=zig
+[[ $NATIVE == 0 ]] && NEEDS="zig wine"
+. "$(dirname "$SELF")/lib/env.sh"
+export ZIG_GLOBAL_CACHE_DIR=$PWD/../build/zig-cache ZIG_LOCAL_CACHE_DIR=$PWD/../build/zig-cache
+OUT=${1:-$PWD/../build/pdh-test}
+if [[ $NATIVE == 1 ]]; then
+    PIN=()
+    RUN=()
+else
+    RUN=(wine)
+fi
+SDK=../../packages/sdk/include
+CXX=(zig c++ -target x86_64-windows-gnu -I../src -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness -fms-extensions -I$SDK)
+mkdir -p "$OUT"
+set -e
+"${PIN[@]}" "${CXX[@]}" -c ../src/core/hooks/guard.cpp -o "$OUT/hooks_guard.o"
+"${PIN[@]}" "${CXX[@]}" -c ../src/core/diagnostics/perf/pdh.cpp -o "$OUT/perf_pdh.o"
+"${PIN[@]}" "${CXX[@]}" -o "$OUT/pdh_test.exe" pdh_test.cpp "$OUT/perf_pdh.o" "$OUT/hooks_guard.o"
+set +e
+if [[ $NATIVE == 0 ]]; then
+    export WINEPREFIX=${WINEPREFIX:-$OUT/prefix} WINEDEBUG=-all
+    timeout 300 wineboot -i >/dev/null 2>&1
+fi
+status=0
+for c in pinned borrowed unmapped faulting passthrough real; do
+    out=$(timeout 120 "${PIN[@]}" "${RUN[@]}" "$OUT/pdh_test.exe" "$c" 2>/dev/null)
+    r=$?
+    echo "$out"
+    if [[ $r -ne 0 ]]; then
+        grep -q "^ok  \|^FAIL" <<<"$out" || printf 'FAIL: %s: the process died (exit %d, 0x%08x) before reporting\n' "$c" "$r" "$((r & 0xffffffff))"
+        status=1
+    fi
+done
+echo "pdh test: $([[ $status -eq 0 ]] && echo passed || echo FAILED)"
+exit $status

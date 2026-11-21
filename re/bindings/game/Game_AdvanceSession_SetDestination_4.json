@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14121c3b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-ADVANCE_SESSION",
-  "notes": "named from its log messages (channel ADVANCE_SESSION): 'Setting the destination to %s for sessionId: %s'"
+  "evidence": "decomp:re/decomp/14121c3b0.c;pat:log-channel-ADVANCE_SESSION;xref:0x142d878a4",
+  "notes": "Quick-practice skip: 0x14121ab50(), posts bus messages vt 0x1456cf480 and 0x14568dad0, sets a mode value (2 when +0x2b4 > 0, else 1) on the session object, posts 0x14568d968 in state 4/2, logs 'Setting the destination to QuickPracticeSkip for sessionId: not_set' and sets AdvanceSession (+0x2a8) +0x310 = 6, +0x314 = 0. (lane owner review requested) Better name: Game_AdvanceSession_SetQuickPracticeSkipDestination (bound record keeps its name)."
  },
  "signature": {
   "id": "game.advance_session_set_destination_4",

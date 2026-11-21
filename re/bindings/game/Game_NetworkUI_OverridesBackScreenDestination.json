@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14328d0b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-UI",
-  "notes": "named from its log messages (channel NETWORK-UI): '%s: overrides back screen destination to %s'"
+  "evidence": "decomp:re/decomp/14328d0b0.c;pat:log-channel-NETWORK-UI;xref:0x14328c9cb,0x14328d053,0x14328d4fe,0x14328d57f",
+  "notes": "__FUNCTION__ 'network::MultiplayerTransitionViewModel::advance(const NeUIString &)': for 'back' may override the back destination (log) and set VMF1WorldEntryHelper entry point 4, then dispatches UI event 'advance'. (lane owner review requested) Better name: Game_MultiplayerTransitionViewModel_Advance (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_ui_overrides_back_screen_destination",

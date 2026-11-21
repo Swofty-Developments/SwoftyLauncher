@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14443c1c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14443c1c0.c;xref:0x140826c8f",
-  "notes": "Releases the owned buffer object at param_1[0x14]: allocator vcall +0x38 twice (free payload, free object), nulls the field. 310 call sites (Game_F1os_OnResult_*)."
+  "evidence": "decomp:re/decomp/14443c1c0.c;xref:0x140826c8f,0x14082953b,0x14082b030",
+  "notes": "Dtor of the response record: frees the buffer object at +0xa0 (data, then object via its allocator vcall +0x38) and nulls it, sets vtable 0x145660038, and if byte +0x88 is set destroys the string objects at +0x60, +0x38 and +0x10. Callers include 0x140826b70, 0x1408294b0, 0x140b19c00 (OnResult_GetCalendar). (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1os_result_record_destruct",

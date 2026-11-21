@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439d55d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439d55d0.c;xref:0x14014f548",
-  "notes": "Under device CS (+0x2668) allocates a 0x2c0-byte wrapper (Render_Gfx2Buffer_Construct 0x1439d1b90), clamps width/height (+0x18/+0x1c) to >=4 for block-compressed format codes (format byte +0x30), registers it in the live set (+0x3aa8/+0x3f50) and calls 0x1439cadd0. Callers: Game_PhotoModeHelper_CaptureFrame, Game_ThumbnailSystem_RequestAndWriteScreenshot, Game_PostFx_CreateMotionBloomLensFlare, Game_Read_RendererGfxConfig."
+  "evidence": "decomp:re/decomp/1439d55d0.c;xref:0x14014f548,0x142bcfe43,0x14379c422",
+  "notes": "Under device CS (+0x2668): clamps desc width/height (+0x18/+0x1c) to >=4 for block-compressed format bytes (+0x30), allocates 0x2c0 bytes from allocator +0x150, runs Render_Gfx2Surface_Construct 0x1439d1b90, inserts it into the surface set (Ne_Gfx2_TrackResourceInsert_A on +0x3aa8/+0x3f50), calls Render_Gfx2Device_QueryVideoMemoryInfo. Callers 0x14014d230, 0x142bcfc30, 0x14379c250, 0x143bc2ff0. (lane owner review requested) Better name: Render_Gfx2Device_CreateSurface (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_device_create_resource",

@@ -688,6 +688,22 @@ Totals Scheduler::career_season(int year)
     return t;
 }
 
+bool Scheduler::career_dated(int year)
+{
+    Lock g(mu_);
+    if (!year || year == career_year_ || ctx_.career.empty())
+        return false;
+    career_year_ = year;
+    if (active_.empty()) {
+        ctx_.year = year;
+        ctx_.has_year = true;
+    }
+    publish(g);
+    log("[apply] career " + ctx_.career + ": season " + std::to_string(year) + ", which already started");
+    log_facts();
+    return true;
+}
+
 Totals Scheduler::career_unloaded()
 {
     Lock g(mu_);

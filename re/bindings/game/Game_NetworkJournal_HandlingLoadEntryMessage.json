@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143148670",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-JOURNAL",
-  "notes": "named from its log messages (channel NETWORK-JOURNAL): 'Handling load entry message'"
+  "evidence": "decomp:re/decomp/143148670.c;pat:log-channel-NETWORK-JOURNAL;xref:0x14fe3e844",
+  "notes": "Logs 'Handling load entry message', stores the requested entry (msg+0x10) at this+0x40 and sets the pending-load flag this+0x38 = 1. Handler stored by lea 0x14fe3e844 in 0x14fe3e6b0 (.data1). (lane owner review requested) Better name: Game_NetworkJournal_HandleLoadEntryMessage (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_journal_handling_load_entry_message",

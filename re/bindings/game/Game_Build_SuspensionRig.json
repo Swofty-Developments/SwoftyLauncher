@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14462d090",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14462d090.c;xref:0x1428ab1c3,0x14462b054",
-  "notes": "per corner (stride 0x164): plain arms suspension..suspension9 (both part and x0_..._fixed needed), spring set suspension_spring{,2,3} (all three), multiarm pairs (1,2),(3,4), steeringarm, fin{,2,3} (part only), driveshaft_boot_in/driveshaft/driveshaft_boot_out else driveshaft{,2,3}; incomplete sets are skipped silently"
+  "evidence": "decomp:re/decomp/14462d090.c;xref:0x1428ab1c2,0x14462b053",
+  "notes": "Per corner (stride 0x164): arm/spring/multiarm/steering parts via 0x14475c9a0 (type ids 0..8 loop, then groups of 3, 2+2 and 3), driveshaft parts by name \"%s%s_%s\" (driveshaft_boot_in, driveshaft, driveshaft_boot_out) resolved with 0x143a3df70 / 0x143cfc8f0. Arm part names live in 0x14475c9a0 (not read). Callers 0x1428aa870, 0x144628190. (lane owner review requested)"
  },
  "signature": {
   "id": "game.build_suspension_rig",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140197cd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name processVisibilityRequest (class from the log channel); log channel CAMERA_ACTOR_VISIBLE: 'processVisibilityRequest owner is disabled so request forced to hidden %p %s'"
+  "evidence": "decomp:re/decomp/140197cd0.c;pat:log-message-method;xref:0x140190071,0x140190961,0x140197bbc,0x140240070,0x140247fd9,0x14024ae51,0x140267801,0x140267a62,0x1472a66c0,0x1472bcc14,0x1472c7c22",
+  "notes": "CameraActorVisible::processVisibilityRequest(this,force). Owner = this+0x30 (none -> return). Wanted = OR of request bytes +0xf0..+0xf3, forced 0 when owner+0x561 (disabled) or owner+0x560 == 0 (not enabled), each logged on CAMERA_ACTOR_VISIBLE. If wanted != +0xf4 or force: under CS 0x14601db48 moves the owner pointer between global vectors 0x14601db78/0x14601db80 (logs enable/disable %p %s), stores +0xf4. (lane owner review requested)"
  },
  "signature": {
   "id": "game.camera_actor_visible_process_visibility_request",

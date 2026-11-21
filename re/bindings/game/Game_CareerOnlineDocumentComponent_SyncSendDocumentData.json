@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140fce030",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_Championship_CareerOnlineDocumentComponent_SyncSendDocumentData;xref:0x140fce0b0,0x140fce130",
-  "notes": "cxx=game::championship::CareerOnlineDocumentComponent::syncSendDocumentData; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/140fce030.c;str:s_Championship_CareerOnlineDocumentComponent_SyncSendDocumentData;xref:0x140fcd7a3",
+  "notes": "DataSynchroniser send callback (lea at 0x140fcd7a3): logs, returns 0x140fd0990(this, keys param_4, connection param_3), logs '%s completed'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.career_online_document_component_sync_send_document_data",

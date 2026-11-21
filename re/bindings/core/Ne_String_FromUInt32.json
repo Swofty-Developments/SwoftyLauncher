@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140827dc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140827dc0.c;xref:0x14082390d",
-  "notes": "Converts uint param_2 to decimal into a 12-byte stack buffer (loop %10 | 0x30 from the end) and builds the result string, falls back to 'unknown' on empty; Ne_Crt_Memcpy and function-static init. 621 call sites (e.g. Game_F1os_BuildUrlArgs_UpdateSession). Hypothesis."
+  "evidence": "decomp:re/decomp/140827dc0.c;xref:0x14082390d,0x1408239f5,0x1408273c1",
+  "notes": "(out std::string, u32 v): writes the decimal digits of v backwards into a stack buffer (v%10|0x30), then builds the string: SSO (cap 0xf) when short, else heap via the default allocator 0x14618b130 (alloc tag 'unknown'), Ne_Crt_Memcpy, NUL; throws string too long 0x14030f950. Returns out. 621 call sites."
  },
  "signature": {
   "id": "core.string_from_u_int32",

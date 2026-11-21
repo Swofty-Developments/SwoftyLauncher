@@ -356,6 +356,25 @@ inline Pick pick(const uint8_t *begin, const uint8_t *end, int32_t car_group, ui
     return fallback;
 }
 
+struct Cars {
+    bool known = false;
+    int32_t car_group = -1;
+    uint32_t model = MODEL_2026;
+};
+
+// pick()'s arguments for the tile that writes data group `group` into the career wizard: the stock 2025 and
+// 2026 tiles' own, else those of the registered content with that data group.
+inline Cars cars_of(const std::string &group, const Desc *content)
+{
+    if (group == "f1_career_2025")
+        return {true, -1, MODEL_2025};
+    if (group == "f1_career_2026")
+        return {true, -1, MODEL_2026};
+    if (content && content->data_group == group)
+        return {true, content->car_group, content->model};
+    return {};
+}
+
 struct Db {
     bool (*text)(const std::string &key, std::string &out, void *user);
     bool (*integer)(const std::string &key, int64_t &out, void *user);

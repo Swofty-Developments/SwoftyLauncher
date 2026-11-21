@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432c03c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_OnlineSubsystemTaskBase_StopTask;xref:0x1432c0447",
-  "notes": "cxx=game::OnlineSubsystemTaskBase::stopTask; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1432c03c0.c;str:s_OnlineSubsystemTaskBase_StopTask;xref:0x1419654c9,0x141cba3e1,0x1432bffad,0x1432c0367,0x1432c7276,0x1432ddc14",
+  "notes": "Logs '%s() for %s' with game::OnlineSubsystemTaskBase::stopTask and 'setting finished on %s : %s' (OK!/with error); contains an inlined part of endTask ('%s() wasn't ended, ending') and tail-jumps to Game_OnlineSubsystemTaskBase_EndTask. Called from Game_TaskSchedulerSystem_StopTask and several task error paths. (lane owner review requested)"
  },
  "signature": {
   "id": "game.online_subsystem_task_base_stop_task",

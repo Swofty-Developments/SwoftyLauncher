@@ -94,8 +94,8 @@ pub enum Error {
         entry: String,
         earlier: String,
     },
-    /// The game's own copy of the archive `rel` already holds an entry an addon adds: the launcher's output of
-    /// an earlier session left in the game folder in place of the original.
+    /// The game's own copy of the archive `rel` already holds an entry an addon or the launcher's menus add: the
+    /// launcher's output of an earlier session left in the game folder in place of the original.
     #[error("{detail}")]
     StaleInput { rel: String, detail: String },
     #[error("{0}")]

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=CareerEventsSequencer::isWarmingTextures; log channel CUTSCENE_TEXTURE_CONTROL_VERBOSE: '>>>>CareerEventsSequencer::isWarmingTextures FALSE timeout > 30.0f'"
+  "evidence": "decomp:re/decomp/140c74070.c;pat:log-message-cxx;xref:0x1456838c8",
+  "notes": "Vt cell 0x1456838c8. Strings of the CareerEventsSequencer update loop: 'update m_loadingEnabled', 'update if (!loadData())', 'update m_spawningEnabled', 'update if (m_playbackEnabled)', loadIdleEvents, spawnRequestedEvents, fadeUpIntoHub; isWarmingTextures is one inlined part. Calls 0x140c7a820 (0x140c7525a, 0x140c76fb0). Better name: Game_CareerEventsSequencer_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.career_events_sequencer_is_warming_textures",

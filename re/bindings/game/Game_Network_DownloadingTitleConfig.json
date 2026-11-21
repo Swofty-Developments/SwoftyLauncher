@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430f5a10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): '[CONFIG] downloading title config (%s).'"
+  "evidence": "decomp:re/decomp/1430f5a10.c;pat:log-channel-NETWORK;xref:0x1430e69aa,0x1430e6a13",
+  "notes": "Callers in 0x1430e0560. (this, domain): copies the domain's config name (string pool 0x1460be900), frees the previous pending record this[0x10] (0x1430fa830) and allocates a new 0x58-byte one with that name, logs '[CONFIG] downloading title config (%s).', then starts the download through [[this]+0x528] vt+8 with completion callback 0x1430f5ec0 (lea 0x1430f5d87) and stores the task id at this+0x118. (lane owner review requested) Better name: Game_NetworkSubsystem_DownloadTitleConfig (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_downloading_title_config",

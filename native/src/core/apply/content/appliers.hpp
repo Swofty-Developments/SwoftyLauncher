@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/apply/content/box_options.hpp"
+#include "core/apply/content/career_rules.hpp"
 #include "core/apply/content/race_fuel.hpp"
 
 #include <cstdint>
@@ -17,13 +18,16 @@ void register_appliers();
 // Starts the boot expansion ahead on a worker once the database load is hooked; SWOFTY_BOOT_AHEAD=0 turns it off.
 void start_boot_ahead();
 void undress_teams(const char *why);
+// The team.identity id the loaded team record of this stat id wears in the current career (a dressed slot), or "".
+std::string worn_team(uint16_t stat);
 
 // The DRS group the box with this entrant list runs: the label of its content.package's rules.drs group if the
-// boot apply added it (empty otherwise), and the line to log.
+// boot apply added it (empty otherwise), and the line to log. host names the setup mode the rules go into in that line,
+// here and in the other box lookups that take it.
 struct DrsBox {
     std::string label, line;
 };
-DrsBox drs_for_box(const std::string &entrant_list);
+DrsBox drs_for_box(const std::string &entrant_list, const std::string &host = "swofty_f1");
 
 // The fuel rules of the box with this entrant list (race_fuel.hpp): its content.package's rules.refuelling,
 // race_fuel_kg, refuel_stint_kg, quali_fuel_kg and race_start_fuel_from_quali, and the line to log.
@@ -35,7 +39,14 @@ struct WarmersBox {
     std::optional<bool> warmers;
     std::string line;
 };
-WarmersBox tyre_warmers_for_box(const std::string &entrant_list);
+WarmersBox tyre_warmers_for_box(const std::string &entrant_list, const std::string &host = "swofty_f1");
+
+// The engine whose rev lights the box with this entrant list shows in equal-performance sessions (rev_lights.hpp): the
+// entrants.engines label most of its content.package's vehicles name (empty when none does), and the line to log.
+struct RevLightsBox {
+    std::string engine, line;
+};
+RevLightsBox rev_lights_for_box(const std::string &entrant_list);
 
 // The mandatory tyre change rule the box with this entrant list runs: its content.package's
 // rules.mandatory_tyre_change (none when the package has no rule), and the line to log.
@@ -43,7 +54,7 @@ struct TyreChangeBox {
     std::optional<bool> required;
     std::string line;
 };
-TyreChangeBox tyre_change_for_box(const std::string &entrant_list);
+TyreChangeBox tyre_change_for_box(const std::string &entrant_list, const std::string &host = "swofty_f1");
 
 // The race time limit and weekend the box with this entrant list runs: its content.package's rules.race_time_limit_s
 // and rules.weekend_mode (a setup mode name; empty when the package has none), and the line to log.
@@ -51,7 +62,7 @@ struct WeekendBox {
     std::optional<uint32_t> time_limit_s;
     std::string weekend_mode, line;
 };
-WeekendBox weekend_for_box(const std::string &entrant_list);
+WeekendBox weekend_for_box(const std::string &entrant_list, const std::string &host = "swofty_f1");
 // The option rules the box with this entrant list runs (box_options.hpp): its content.package's rules.safety_car,
 // rules.formation_lap, rules.penalties and rules.corner_cutting (none where the package has no rule), and the line to
 // log.
@@ -86,6 +97,9 @@ struct PointsBox {
     uint8_t rule = 0;
     std::string line;
 };
-PointsBox points_for_box(const std::string &entrant_list);
+PointsBox points_for_box(const std::string &entrant_list, const std::string &host = "swofty_f1");
+
+// The box of the loaded career's season (career_rules.hpp) in this context, read from the registry store.
+CareerBox career_box_now(const registry::Context &ctx);
 
 }

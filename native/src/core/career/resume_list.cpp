@@ -17,7 +17,10 @@
 // The Resume Career list screen (on unless SWOFTY_RESUME_LIST=0). The launcher builds the screen swofty_resume_list at Play, with literal
 // text, and writes `resume_list` into settings.json (resume_list_logic.hpp). The Career menu's Resume Career press (route
 // solo_career_continue_driver or _my_team) is rewritten to the route swofty_resume_list (content_hooks.cpp). A row press
-// raises `swofty_resume:<index>` to this view model, which maps the row to its save slot and keeps it as the target; the same
+// raises `swofty_resume:<index>` to this view model, which sets the selected career content (g_FeTile_SelectedCareerContent)
+// to the customisation car group of the row's data group, as the game's 2025 and 2026 content tiles do before they route
+// (the frontend starts it at 0x3fff0000, no group, and the car customisation screens list only the cars of the selected
+// group), maps the row to its save slot and keeps it as the target; the same
 // press routes the screen to the stock continue screen of the row's mode, and when that screen finishes its transition in
 // the resume gate (resume_gate_guard.cpp) rewrites card 0 to the target and loads it, after a Load Anyway / Back question
 // for a row that is not ready. A row that cannot load (its own team, car or driver row is missing) has no route in the
@@ -67,6 +70,24 @@ public:
 
 SWOFTY_VIEW_MODEL("swofty_resume_", ResumePage)
 
+void select_content(size_t index, const std::string &group)
+{
+    uint32_t was = 0;
+    career::content::Pick p;
+    if (!career::content::select_cars_of_group(group, was, p))
+        swofty::log("[career] resume screen: row %zu: g_FeTile_SelectedCareerContent does not resolve; the selected career "
+                    "content is left as it is",
+                    index);
+    else if (p.kind == career::content::Pick::none)
+        swofty::log("[career] resume screen: row %zu: data group %s selects no customisation car group; the selected career "
+                    "content stays %08x",
+                    index, group_text(group).c_str(), was);
+    else
+        swofty::log("[career] resume screen: row %zu: the selected career content was %08x, set to %08x, the car group the "
+                    "%s tile selects",
+                    index, was, p.id, group_text(group).c_str());
+}
+
 }
 
 bool wanted()
@@ -102,6 +123,9 @@ bool pressed(size_t index)
         runtime::popup_show(REFUSE_TITLE, refuse_text(*e), "swofty_core");
         return false;
     }
+    std::string group =
+        group_choice(e->group, career::content::group_of_mode(e->game_mode), runtime::career_saves_content_for_slot(e->key));
+    select_content(index, group);
     Selection sel;
     if (!select(runtime::career_listed_slots(), *e, sel)) {
         swofty::log("[career] resume screen: row %zu (%s, key %s): no such career in the save slots the core listed; the stock "
@@ -111,8 +135,6 @@ bool pressed(size_t index)
     }
     target_on = true;
     target_at = GetTickCount64();
-    std::string group =
-        group_choice(e->group, career::content::group_of_mode(e->game_mode), runtime::career_saves_content_for_slot(e->key));
     target_ = {sel,
                e->my_team,
                press(*e) == Action::Ask,

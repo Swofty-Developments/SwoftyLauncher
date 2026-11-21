@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143fdb010",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-EadpSDK",
-  "notes": "named from its log messages (channel EadpSDK): 'User no longer logged in, clearing subscriptions'"
+  "evidence": "decomp:re/decomp/143fdb010.c;pat:log-channel-EadpSDK;xref:0x145a45468",
+  "notes": "Virtual (vtable cell 0x145a45468): not logged in -> 'User no longer logged in, clearing subscriptions'; else builds an 'Authorization' header ('eadp.identity.proxy'), logs 'Requesting EA subscriptions via web api: %s', registers 0x143fdc380 as response callback (lea 0x143fdbb17); may add 'a synthesized EA_ACCESS subscription'. (lane owner review requested) Better name: Game_EadpSDK_RequestSubscriptions (bound record keeps its name)."
  },
  "signature": {
   "id": "game.eadp_sdk_user_longer_logged_clearing",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143ecc110",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143ecc110.c;xref:0x143bafc0f",
-  "notes": "Builds the tonemap shader binding table: g_scene, toneMapSettings, vignetteParams, lutSCurve00/10/01/11, lutSCurve, histogramSRV, photoModeLUT, inputRT, inputBloom, inputLensStreaks, inputGodRays, lut3DTextureSRV, toneMapSCurve, g_sceneLuminanceAndExposure, lutUAV, lut3DUAV, avgLumUAV, g_sceneLuminanceAndExposureUAV (name hashes as 64-bit constants). Addon: full list of tonemap/exposure/LUT shader inputs. Callers Render_Tonemap_Execute, Render_Tonemap_SetupEyeAdaptation."
+  "evidence": "decomp:re/decomp/143ecc110.c;xref:0x143bafc0f,0x143bbf410,0x143bbf5bf,0x143bbf6ef",
+  "notes": "Fills 0x28-byte binding descriptors (interned name via 0x14392a0c0 + 64-bit hash, 0xc0, -1): g_scene, toneMapSettings, vignetteParams, lutSCurve00/10/01/11, lutSCurve, histogramSRV, photoModeLUT, inputRT, inputBloom, inputLensStreaks, inputGodRays, lut3DTextureSRV, toneMapSCurve, g_sceneLuminanceAndExposure, lutUAV, lut3DUAV, avgLumUAV, g_sceneLuminanceAndExposureUAV. Callers 0x143bafc0f (Render_Tonemap_SetupEyeAdaptation), 0x143bbf410.. (Render_Tonemap_Execute). (lane owner review requested)"
  },
  "signature": {
   "id": "render.tonemap_build_shader_param_descriptors",

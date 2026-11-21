@@ -34,6 +34,7 @@ const QUIET: &[&str] = &[
     "eprintln!",
     "note(",
     "log::",
+    "diag::line(",
     "tracing::",
     "assert",
     "panic!",
@@ -166,6 +167,10 @@ fn it_counts_text_outside_tr_and_leaves_the_rest() {
                 .child(trn(n, "{count} thing", "{count} things"))
                 .child("single");
             println!("a log line here");
+            diag::line(format!("a session log line: {e}"));
+            diag::line(format!(
+                "a session log line over {n} lines"
+            ));
             let path = format!("{dir}/some file.json");
         }
         #[cfg(test)]

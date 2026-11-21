@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-CAREER_ONLINE_MANAGER",
-  "notes": "named from its log messages (channel CAREER_ONLINE_MANAGER): '%s - reconciling with new list of members.'"
+  "evidence": "decomp:re/decomp/140fdd630.c;pat:log-channel-CAREER_ONLINE_MANAGER;xref:0x140fdd59f",
+  "notes": "Own pretty string 'CareerOnlineManagerComponent::updateCurrentCareerEntrantsWithSubstitutes(CareerConfig &, const CareerMembers *)'; logs 'reconciling with new list of members', 'is a new member who will substitute', 'substitutionOfAPlayer'. Calls 0x14096e580 (0x140fe0b25). Better name: Game_CareerOnlineManagerComponent_UpdateEntrantsWithSubstitutes (bound record keeps its name)."
  },
  "signature": {
   "id": "game.career_online_manager_reconciling_new_list_members",

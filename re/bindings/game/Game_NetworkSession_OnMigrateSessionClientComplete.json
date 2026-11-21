@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14406a480",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onMigrateSessionClientComplete (class from the log channel); log channel NETWORK-SESSION: '%s: success: %s'"
+  "evidence": "decomp:re/decomp/14406a480.c;pat:log-message-method;xref:0x14406a5c2",
+  "notes": "Logs 'onMigrateSessionClientComplete' success/failed and forwards the result to the delegate at +0x88/+0x90. lea'd as callback in 0x14406a540. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_session_on_migrate_session_client_complete",

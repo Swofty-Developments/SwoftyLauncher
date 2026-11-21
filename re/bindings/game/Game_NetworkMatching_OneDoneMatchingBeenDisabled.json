@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1431588e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-MATCHING",
-  "notes": "named from its log messages (channel NETWORK-MATCHING): 'One-And-Done Matching has been disabled'"
+  "evidence": "decomp:re/decomp/1431588e0.c;pat:log-channel-NETWORK-MATCHING;xref:0x14581c898,0x14581cd98,0x14581d6e8",
+  "notes": "If One-And-Done is off (+0x40 == 0) logs 'has been disabled'; else gets the active weekend ([this+0x10]+0x4f8, vtbl+0x80), compares the current session index with the last, logs 'sees more sessions in the weekend. %d of %d' or 'sees the end of the last session' (then sets +0x41), or 'could not find an active weekend'. Vtable cells 0x14581c898, 0x14581cd98, 0x14581d6e8, 0x14581d9d8, 0x145824b48. (lane owner review requested) Better name: Game_NetworkMatching_OneAndDoneCheckWeekend (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_matching_one_done_matching_been_disabled",

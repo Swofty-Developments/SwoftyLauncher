@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143d6d320",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143d6d320.c;xref:0x143d6d218",
-  "notes": "Parses one entry of the rain/weather materials file (keys name, weather_sequence_id): reads size via Ne_Config_ReadSize, hashes name (Ne_HashedName_FromString), stores 16-byte {hash,value} slot into table param_3[idx]; when all slots filled and param_5 set copies the table into the RainFile object at +0x80.. and sets +0x75c8c. Callers Render_RainFile_ParseMaterials, Render_RainFile_Load. Addon: rain material table layout."
+  "evidence": "decomp:re/decomp/143d6d320.c;xref:0x143d6d218,0x143d6db9e",
+  "notes": "Reads weather_sequence_id (Ne_Config_ReadSize) as slot index; if empty reads 'name', hashes it (Ne_HashedName_FromString) and stores {hash, value} in param_3[idx]; once all counted slots are filled copies the table into the RainFile at +0x80 (count +0x75c8c) when param_5, else at +0 (count +0x75c88). Callers Render_RainFile_ParseMaterials 0x143d6d218, Render_RainFile_Load 0x143d6db9e. (lane owner review requested)"
  },
  "signature": {
   "id": "render.rain_file_parse_material_entry",

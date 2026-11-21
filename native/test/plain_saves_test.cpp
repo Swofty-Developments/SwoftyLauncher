@@ -82,6 +82,19 @@ static void settings()
     expect(!ps::parse_settings(R"({"plain_saves":{"schema":1}})").ok, "settings: no root is refused");
     expect(!ps::parse_settings(R"({"plain_saves":{"root":"Z:\\a\\..\\b","schema":1}})").ok, "settings: a .. part is refused");
     expect(!ps::parse_settings(R"({"plain_saves":"yes"})").ok, "settings: a non-object is refused");
+
+    const char *beside = R"({"launcher_saves":{"profile":"default","remote":"Z:\\data\\saves\\default\\remote"},)"
+                         R"("plain_saves":{"root":"Z:\\data\\saves\\default\\plain","schema":1}})";
+    const char *own = R"({"plain_saves":{"root":"Z:\\data\\plain\\steam-1","schema":1}})";
+    expect(ps::off_for_session(beside, "").empty(), "session: a session on launcher saves writes their plain store");
+    expect(!ps::off_for_session(beside, "off").empty(),
+           "session: a session run once on the copy's own save leaves the launcher saves' plain store alone");
+    expect(ps::off_for_session(beside, "on").empty() && ps::off_for_session(beside, "OFF").empty(),
+           "session: only \"off\" turns launcher saves off, as the save sandbox reads it");
+    expect(ps::off_for_session(own, "off").empty(),
+           "session: a profile without launcher saves writes the copy's own plain store whatever the variable says");
+    expect(ps::off_for_session("", "off").empty() && ps::off_for_session("not json", "off").empty(),
+           "session: no readable settings, nothing to leave alone");
 }
 
 static void generations(const fs::path &tmp)

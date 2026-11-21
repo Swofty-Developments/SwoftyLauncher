@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143de4e40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143de4e40.c;xref:0x1414380f0",
-  "notes": "Constructor of a GPU read-back request (vtbl 0x1459b8160): copies a 16-byte descriptor and registers it with the 0x146c621e0 manager. Caller Game_DecalGeneration_ReadBackCompressed. Hypothesis."
+  "notes": "Ctor (vtbl 0x1459b8160) of the 0x30-byte object the caller allocates: copies the 16-byte {resource,name} descriptor to +0x20, creates a manual-reset CreateEventW holder (vtbl 0x14588fd00) in a shared_ptr (+0x10/+0x18), and via manager 0x146c621e0 (vcalls +0x18/+0x28/+0x38) registers a 0x28-byte record {descriptor, param_3, shared ptr}. Caller 0x1414380f0 (Game_DecalGeneration_ReadBackCompressed) passes 0xc0 after logging Reading back compressed data %s. (lane owner review requested)"
  },
  "signature": {
   "id": "render.rtt_readback_request_construct",

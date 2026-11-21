@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143705f60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_Championship_CareerOnlineTimeAdvancementControllerComponent_AllowTimeA;xref:0x1437061d0",
-  "notes": "cxx=game::championship::CareerOnlineTimeAdvancementControllerComponent::allowTimeAdvancment; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/143705f60.c;str:s_Championship_CareerOnlineTimeAdvancementControllerComponent_AllowTimeA;xref:0x14585f930",
+  "notes": "Flow-state slot 8 (cell 0x14585f930) of vt_Sess_TeamHQTimeAdvance 0x14585f8f0: +0xc88 = 1; with an online session (0x14605b128, 0x14077c790) sets flag 0x2000 in 0x14604ed68 and runs inlined allowTimeAdvancment (time-advance comp 0x146060868 state 1 -> 2, log, posts message 6), +0xc88 = 0. Returns 1. (lane owner review requested) Better name: Game_StateTeamHQTimeAdvance_OnStateEnter (bound record keeps its name)."
  },
  "signature": {
   "id": "game.career_online_time_advancement_ctrl_comp_allow_time_advancment",

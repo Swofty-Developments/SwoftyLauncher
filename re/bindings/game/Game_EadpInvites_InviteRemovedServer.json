@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143ff7210",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-EADP_INVITES",
-  "notes": "named from its log messages (channel EADP_INVITES): 'Invite Removed from server'"
+  "evidence": "decomp:re/decomp/143ff7210.c;pat:log-channel-EADP_INVITES;xref:0x145a46400",
+  "notes": "Invite stream read callback (vtable cell 0x145a46400): no payload -> 'Stream empty' / 'Stream error'; else per invite 'Added: %s,  %s' / 'Existing: %s,  %s', 'Invite Removed from server', 'Revoked/unspecified' and an ACTIVE/EXPIRED age check ('Time Now: %d seconds, time invite %d seconds...') (EADP_INVITES). (lane owner review requested) Better name: Game_EadpInvites_OnInviteStreamMessage (bound record keeps its name)."
  },
  "signature": {
   "id": "game.eadp_invites_invite_removed_server",

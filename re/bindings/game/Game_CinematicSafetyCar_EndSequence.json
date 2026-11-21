@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143610c50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143610c50.c;xref:0x142d844ce,0x142d6e9b3",
-  "notes": "(this) If VR transition object this+0x110 exists and not done (+0x49): allocates a callback (0x143610da0, this) and runs Game_Vr_ExecuteTransition(...,1,...); else restores racing camera (0x144533ed0 on [this+0x20], +0x98), shows HUD again (Game_CinematicSafetyCar_HideHud counterpart), may request crossfade. Callers Sess_PreRace_OnStateExit, Sess_IntroVideo_OnVideoDoneFadeIn. Hypothesis: end of cinematic sequence (grid / SC intro)."
+  "evidence": "decomp:re/decomp/143610c50.c;xref:0x142d6e9b3,0x142d844ce",
+  "notes": "pdata 0x143610c50-0x143610d92 (decomp tail is callback 0x143610da0). No transition +0x110: tail jmp 0x143610da0 (restores racing camera and HUD). Transition not done (+0x49 == 0): Game_Vr_ExecuteTransition with callback object (vtable 0x1457552f0 -> 0x143610da0, this). Both transition cases set [+0x110]+0xb1 = 1 and return. (lane owner review requested)"
  },
  "signature": {
   "id": "game.cinematic_safety_car_end_sequence",

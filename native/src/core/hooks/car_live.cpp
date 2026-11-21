@@ -4,16 +4,21 @@
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
 
+#include <algorithm>
 #include <atomic>
 #include <cstring>
+#include <map>
 #include <memory>
 #include <string>
 #include <unordered_set>
 #include <vector>
 
+#include "core/apply/content/appliers.hpp"
 #include "core/apply/content/race_fuel.hpp"
+#include "core/career/ops/tables.hpp"
 #include "core/diagnostics/perf.hpp"
 #include "core/registry/table.hpp"
+#include "core/hooks/car_identity.hpp"
 #include "core/hooks/car_live.hpp"
 #include "core/hooks/car_proofs.hpp"
 #include "core/hooks/car_profile.hpp"
@@ -25,6 +30,7 @@
 #include "core/frontend/view_state.hpp"
 #include "core/hooks/session_points.hpp"
 #include "core/runtime/loader/core_rank.hpp"
+#include "core/live/entrant_ids.hpp"
 
 // The live car operations on the running game (car_live.hpp): g_Sess_VehicleTable and g_Sess_VehicleCount
 // resolve once the code is ready, memory reads and writes are checked (swofty::mem), writes run only on the
@@ -290,6 +296,7 @@ std::vector<car_profile::Entry> profile_entries()
             continue;
         car_profile::Entry e;
         e.id = id;
+        e.owner = rec.owner.empty() ? id.substr(0, id.find('/')) : rec.owner;
         std::string why;
         if (!car_profile::parse(rec.value, e.profile, &why)) {
             swofty::log("[cars] car.profile %s skipped: %s", id.c_str(), why.c_str());
@@ -300,24 +307,207 @@ std::vector<car_profile::Entry> profile_entries()
     return out;
 }
 
-bool within(const car_profile::Entry &e)
+std::unordered_set<std::string> g_logged;
+
+std::map<std::string, car_profile::OwnerContent> g_owned;
+uint64_t g_owned_gen = ~uint64_t(0);
+
+const car_profile::OwnerContent &owned(const std::string &owner)
 {
-    if (e.profile.within.is_null())
-        return true;
-    swofty::json::Value arr = e.profile.within.is_array() ? e.profile.within : swofty::json::Value::array();
-    if (!e.profile.within.is_array())
-        arr.push_back(e.profile.within);
-    Selectors sel;
-    std::string why;
-    if (!Selectors::compile(swofty::json::dump(arr), sel, &why)) {
-        swofty::log("[cars] car.profile %s: within does not compile: %s", e.id.c_str(), why.c_str());
-        return false;
+    auto &store = swofty_core::registry::store();
+    uint64_t gen = store.generation();
+    if (gen != g_owned_gen) {
+        g_owned.clear();
+        g_owned_gen = gen;
     }
-    auto facts = core().current();
-    return facts && sel.match(*facts);
+    auto it = g_owned.find(owner);
+    if (it != g_owned.end())
+        return it->second;
+    car_profile::OwnerContent o;
+    if (!owner.empty()) {
+        o.boxes = !store.list("content.package", owner + "/").empty();
+        for (const char *registry : {"career.mode", "career.content"})
+            for (const std::string &id : store.list(registry, owner + "/")) {
+                auto rec = store.get(registry, id);
+                const swofty::json::Value &group = rec.value["data_group"];
+                if (rec.status == swofty_core::registry::Status::ok && group.is_string() && !group.as_string().empty())
+                    o.groups.emplace_back(group.as_string());
+            }
+    }
+    return g_owned[owner] = std::move(o);
 }
 
-std::unordered_set<std::string> g_logged;
+bool within(const car_profile::Entry &e)
+{
+    auto facts = core().current();
+    if (e.profile.within.is_null()) {
+        const auto &own = owned(e.owner);
+        if (own.any() && e.profile.scope == swofty::cars::ProfileScope::automatic && g_logged.insert("scope:" + e.id).second)
+            swofty::log("[cars] car.profile %s: no within, so it applies only in %s's own boxes and careers (\"scope\": "
+                        "\"global\" applies it everywhere)",
+                        e.id.c_str(), e.owner.c_str());
+        return car_profile::in_scope(e, own, facts.get());
+    }
+    if (!facts)
+        return false;
+    std::string why;
+    bool hit = car_profile::within_matches(e.profile, *facts, &why);
+    if (!why.empty() && g_logged.insert("compile:" + e.id).second)
+        swofty::log("[cars] car.profile %s: within does not compile: %s%s", e.id.c_str(), why.c_str(),
+                    car_profile::within_hint(why).c_str());
+    return hit;
+}
+
+namespace ids = swofty_core::live::entrant_ids;
+
+car_identity::Source registry_source()
+{
+    car_identity::Source s;
+    s.list = [](const char *registry) { return swofty_core::registry::store().list(registry, ""); };
+    s.get = [](const char *registry, const std::string &id) -> std::optional<swofty::json::Value> {
+        auto rec = swofty_core::registry::store().get(registry, id);
+        if (rec.status != swofty_core::registry::Status::ok)
+            return std::nullopt;
+        return rec.value;
+    };
+    s.row = [](const char *what, const std::string &label) { return career::ops::live::has_label(what, label); };
+    return s;
+}
+
+car_identity::Index &identity_index()
+{
+    static car_identity::Index index;
+    static uint64_t index_gen = ~uint64_t(0);
+    uint64_t gen = swofty_core::registry::store().generation();
+    if (gen != index_gen) {
+        index = car_identity::build(registry_source());
+        index_gen = gen;
+    }
+    return index;
+}
+
+// The refs each car answers to, read from its session entrant once per session and car object. A car whose entrant
+// isn't readable yet is read again at most once a second while a profile waits for it.
+struct Identity {
+    uint64_t epoch = 0, tried = 0, gen = 0;
+    uintptr_t car = 0;
+    bool known = false;
+    car_identity::Refs refs;
+};
+
+Identity g_identity[car_live::MAX_CARS];
+uint32_t g_waiting = 0;
+
+const car_identity::Refs *identity_of(uint32_t index, uintptr_t car)
+{
+    if (index >= car_live::MAX_CARS)
+        return nullptr;
+    auto facts = core().current();
+    uint64_t epoch = facts ? facts->epoch : 0, gen = swofty_core::registry::store().generation();
+    Identity &id = g_identity[index];
+    if (id.epoch != epoch || id.car != car || (id.known && id.gen != gen)) {
+        id = Identity{};
+        id.epoch = epoch;
+        id.car = car;
+    }
+    if (id.known)
+        return &id.refs;
+    uint64_t now = GetTickCount64();
+    if (id.tried && now - id.tried < 1000)
+        return nullptr;
+    id.tried = now;
+    ids::Ids e;
+    std::string why;
+    ids::Read r = ids::read_car(index, e, &why);
+    if (r == ids::Read::ok && !career::ops::live::labels()) {
+        r = ids::Read::not_ready;
+        why = "the game database's labels are not loaded";
+    }
+    if (r == ids::Read::no_entrant) {
+        if (g_logged.insert("no entrant:" + std::to_string(epoch) + ":" + std::to_string(index)).second)
+            swofty::log("[cars] car %u: no session entrant has this car's vehicle index (the safety car has none), so no "
+                        "car.profile team, vehicle or driver selector picks it",
+                        index);
+        id.refs = {};
+        id.known = true;
+        id.gen = gen;
+        return &id.refs;
+    }
+    if (r != ids::Read::ok) {
+        std::string once =
+            r == ids::Read::off ? "identity off:" + why : "identity:" + std::to_string(epoch) + ":" + std::to_string(index) + why;
+        if (g_logged.insert(once).second) {
+            if (r == ids::Read::off)
+                swofty::log("[cars] the cars' team, vehicle and driver are not read: %s; a car.profile that names them "
+                            "applies to no car",
+                            why.c_str());
+            else
+                swofty::log("[cars] car %u: its team, vehicle and driver are not read yet: %s", index, why.c_str());
+        }
+        return nullptr;
+    }
+    namespace rows = career::ops::live;
+    car_identity::Seen seen;
+    if (e.team_kind == ids::TEAM_TABLE && e.team != ids::NONE) {
+        seen.team = rows::team_label(e.team);
+        seen.worn = apply::content::worn_team(e.team);
+    }
+    if (e.vehicle != ids::NONE) {
+        seen.vehicle = rows::vehicle_label(e.vehicle);
+        seen.package = rows::vehicle_package_label(seen.vehicle);
+    }
+    if (e.driver_read && e.driver_domain == 0 && e.driver != ids::NONE)
+        seen.driver = rows::driver_label(e.driver);
+    static const std::vector<std::string> no_chain;
+    id.refs = car_identity::refs_of(seen, facts ? facts->chain : no_chain, identity_index(), registry_source());
+    id.known = true;
+    id.gen = gen;
+    std::string kind = e.team_kind == ids::MY_TEAM      ? " (a My Team car)"
+                       : e.team_kind != ids::TEAM_TABLE ? " (team table " + std::to_string(e.team_kind) + ")"
+                       : !e.driver_read                 ? " (the driver is not read on this build)"
+                                                        : "";
+    std::string line = car_identity::describe(id.refs) + kind;
+    if (g_logged.insert("car:" + std::to_string(epoch) + ":" + std::to_string(index) + ":" + line).second)
+        swofty::log("[cars] car %u: %s", index, line.c_str());
+    return &id.refs;
+}
+
+void check_names(const std::vector<car_profile::Entry> &entries)
+{
+    car_identity::Source src = registry_source();
+    car_identity::Index &ix = identity_index();
+    for (const auto &e : entries) {
+        if (!car_identity::needs(e.profile.cars))
+            continue;
+        for (const auto &line : car_identity::unknown(e.profile.cars, ix, src))
+            if (g_logged.insert("name:" + e.id + ":" + line).second)
+                swofty::log("[cars] car.profile %s: %s; that entry matches no car", e.id.c_str(), line.c_str());
+    }
+}
+
+std::vector<std::vector<std::string>> box_chains()
+{
+    std::vector<std::vector<std::string>> out;
+    auto &store = swofty_core::registry::store();
+    for (const std::string &id : store.list("content.package", "")) {
+        auto chain = store.chain("content.package", id);
+        if (chain.empty())
+            chain.push_back(id);
+        out.push_back(std::move(chain));
+    }
+    return out;
+}
+
+void check_within(const std::vector<car_profile::Entry> &entries)
+{
+    for (const auto &e : entries) {
+        if (!g_logged.insert("within:" + e.id).second)
+            continue;
+        std::string why = car_profile::unreachable(e.profile.within, box_chains);
+        if (!why.empty())
+            swofty::log("[cars] car.profile %s never matches: %s", e.id.c_str(), why.c_str());
+    }
+}
 
 car_profile::Memo g_profiled;
 
@@ -338,7 +528,8 @@ void apply_profiles(uint32_t index, bool force = false)
     static const uint32_t probe = perf::probe("core", "car_live profiles");
     perf::Scope scope(probe);
     uint32_t is_ai = 1;
-    Ops::op_car(index, nullptr, &is_ai);
+    void *handle = nullptr;
+    Ops::op_car(index, &handle, &is_ai);
     auto key = profile_key(is_ai != 0);
     if (force)
         g_profiled.forget(index);
@@ -346,11 +537,27 @@ void apply_profiles(uint32_t index, bool force = false)
         return;
     g_profiled.note(index, key);
     auto entries = profile_entries();
-    auto report = car_profile::Applier<Ops>::evaluate(entries, session_type(), within, index, is_ai != 0);
-    for (const auto &id : report.needs_identity)
-        if (g_logged.insert("identity:" + id).second)
-            swofty::log("[cars] car.profile %s skipped: its cars selector needs the car's vehicle, team or driver (T121)",
-                        id.c_str());
+    check_within(entries);
+    bool wants = std::any_of(entries.begin(), entries.end(),
+                             [](const car_profile::Entry &e) { return car_identity::needs(e.profile.cars); });
+    car_profile::Car car{index, is_ai != 0, nullptr};
+    if (wants) {
+        check_names(entries);
+        car.refs = identity_of(index, reinterpret_cast<uintptr_t>(handle));
+    }
+    auto report = car_profile::Applier<Ops>::evaluate(entries, session_type(), within, car);
+    if (index < 32)
+        g_waiting = report.waiting.empty() ? g_waiting & ~(1u << index) : g_waiting | (1u << index);
+    uint64_t epoch = core().current() ? core().current()->epoch : 0;
+    for (const auto &id : report.waiting)
+        if (g_logged.insert("waits:" + std::to_string(epoch) + ":" + id).second)
+            swofty::log("[cars] car.profile %s waits for car %u's team, vehicle and driver, and applies to it once they are "
+                        "read",
+                        id.c_str(), index);
+    for (const auto &why : report.misplaced)
+        if (g_logged.insert("misplaced:" + why).second)
+            swofty::log("[cars] car.profile %s refused: %s", why.substr(0, why.find(": ")).c_str(),
+                        why.substr(why.find(": ") + 2).c_str());
     for (const auto &why : report.refused)
         if (g_logged.insert("refused:" + why).second)
             swofty::log("[cars] car.profile layer refused: %s (the field is off or unknown)", why.c_str());
@@ -360,6 +567,35 @@ void apply_profiles(uint32_t index, bool force = false)
     if (report.matched && g_logged.insert("applied:" + std::to_string(index) + session_type()).second)
         swofty::log("[cars] car %u: %zu car.profile layer(s) from %zu profile(s) in a %s session", index, report.layers,
                     report.matched, session_type().c_str());
+    if (wants && g_logged.insert("picked:" + std::to_string(epoch) + ":" + std::to_string(index)).second) {
+        std::string picked;
+        for (const auto &id : report.applied)
+            for (const auto &e : entries)
+                if (e.id == id && car_identity::needs(e.profile.cars))
+                    picked += (picked.empty() ? "" : ", ") + id;
+        if (!picked.empty())
+            swofty::log("[cars] car %u: picked by its team, vehicle or driver: %s", index, picked.c_str());
+    }
+}
+
+void retry_waiting()
+{
+    if (!g_waiting)
+        return;
+    uint32_t n = 0;
+    if (Ops::op_count(&n) != SWOFTY_ASSET_OK)
+        return;
+    for (uint32_t i = 0; i < n && i < 32; i++) {
+        if (!(g_waiting & (1u << i)))
+            continue;
+        void *handle = nullptr;
+        if (Ops::op_car(i, &handle, nullptr) != SWOFTY_ASSET_OK) {
+            g_waiting &= ~(1u << i);
+            continue;
+        }
+        if (identity_of(i, reinterpret_cast<uintptr_t>(handle)))
+            apply_profiles(i, true);
+    }
 }
 
 uint64_t g_epoch = 0;
@@ -513,6 +749,8 @@ void frame(double, void *)
             break;
         }
     }
+    if (!in_replay)
+        retry_waiting();
     mem::Trust trust(runtime::HEAP_TRUST_MS);
     perf::Scope scope(flush_probe);
     Ops::flush();

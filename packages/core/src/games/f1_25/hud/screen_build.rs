@@ -45,9 +45,6 @@ pub const CAP_FACTS: DialFacts = DialFacts {
     quad_size: Some(screens::CAP_MESH_SIZE),
 };
 
-/// A stock board instances the host scene once and the composer adds one more beside it.
-const HOST_INSTANCES: usize = 2;
-
 /// What the screen records added, per archive.
 #[derive(Debug, Default)]
 pub struct Out {
@@ -646,6 +643,47 @@ fn claims(stock: &dyn Stock, recs: &[Rec], race: &Pkg, spectator: &Pkg) -> Resul
     Ok(())
 }
 
+/// The refusal of a board past the UI tree's slot limit: every addon with a screen record grows the
+/// host scene, so all of them are named, and the ones that bring the board back inside the limit on
+/// their own are the ones to turn off.
+fn too_big(
+    screen: &str,
+    facts: &ScreenFacts,
+    board: walk::Board,
+    recs: &[Rec],
+    members: &[usize],
+    own_slots: &[usize],
+) -> Error {
+    let ours = conflict::addons_of(recs.iter().map(|r| r.input.addon.as_str()));
+    let off = ours
+        .iter()
+        .filter(|a| {
+            let slots = recs
+                .iter()
+                .zip(own_slots)
+                .filter(|(r, _)| r.input.addon == **a)
+                .map(|(_, s)| s)
+                .sum();
+            let here = members.iter().filter(|i| recs[**i].input.addon == **a).count();
+            !board.without(slots, here).over()
+        })
+        .cloned()
+        .collect();
+    conflict::by(
+        conflict::Conflict::error(
+            &facts.instance.scene,
+            conflict::Kind::Walk {
+                screen: screen.to_owned(),
+                host: board.host,
+                instances: board.instances(),
+                slots: board.tree(),
+                off,
+            },
+        ),
+        &ours,
+    )
+}
+
 /// Composes every `screen` record of `inputs` into the race template, the spectator template and
 /// the archives of [`Out`].
 #[allow(clippy::too_many_arguments)]
@@ -705,9 +743,12 @@ pub fn compose_screens(
     if recs.iter().any(|r| units::used(&r.input.record.elements)) {
         cap.units = units::load(stock, screens::FLOW_RACE)?;
     }
+    let end = super::composer::anim_end(stock, &CAP_FACTS);
     let mut plans: Vec<Plan> = Vec::new();
     let mut previews: Vec<Plan> = Vec::new();
     for r in &recs {
+        cap.anim =
+            super::composer::anim_of(end.as_deref(), &CAP_FACTS, &r.pfx, &r.input.addon, &mut out.lines)?;
         let plan = cap.add_scene_record(&r.input.record, &r.pfx, &r.sprites)?;
         let root = scene_root_mut(&mut cap.pkg)?;
         let mine =
@@ -724,18 +765,18 @@ pub fn compose_screens(
         previews.push(cap.add_scene_record_in(&r.input.record, &r.pfx, &r.sprites, Mode::Preview(&state))?);
     }
     let host = cap.finish(None)?;
+    let mut host_slots = 0;
+    let mut own_slots = vec![0; recs.len()];
     if let Ok(host_pkg) = Pkg::parse(&host)
         && let Ok(host_root) = stock_edit::scene_root(&host_pkg)
     {
-        for r in &recs {
+        host_slots = walk::cost(host_root).slots;
+        for (r, own) in recs.iter().zip(&mut own_slots) {
             let cost = |name: &str| idf::find(host_root, name).map(walk::cost).unwrap_or_default();
-            out.lines.extend(walk::lines(
-                &r.input.addon,
-                &r.pfx,
-                cost(&r.pfx),
-                cost(&preview_root(&r.pfx)),
-                HOST_INSTANCES,
-            ));
+            let (live, preview) = (cost(&r.pfx), cost(&preview_root(&r.pfx)));
+            *own = live.slots + preview.slots;
+            out.lines
+                .extend(walk::lines(&r.input.addon, &r.pfx, live, preview));
         }
     }
     out.scene.push((screens::CAP.to_owned(), "UILayout", vec![host]));
@@ -758,6 +799,16 @@ pub fn compose_screens(
                 )));
             }
             e.1.push(ri);
+        }
+    }
+    for (key, (facts, members)) in &by_screen {
+        let board = walk::Board {
+            host: host_slots,
+            records: members.len(),
+        };
+        out.lines.extend(walk::board_lines(key, board));
+        if board.over() {
+            return Err(too_big(key, facts, board, &recs, members, &own_slots));
         }
     }
     let all_pfx: Vec<String> = recs.iter().map(|r| r.pfx.clone()).collect();

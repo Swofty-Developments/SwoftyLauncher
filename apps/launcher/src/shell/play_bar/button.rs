@@ -10,6 +10,7 @@ use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_i18n::{tr, trf};
 
+use crate::features::multiplayer::PlayWord;
 use crate::shell::{Page, PlayState, Shell};
 use crate::ui::theme::Palette;
 use swofty_core::install::Source;
@@ -137,11 +138,18 @@ impl Shell {
             return self.addon_update_button(p, cx);
         }
         let vr = self.launch_mode().is_vr();
-        let starting = self.room_starting_label();
+        let starting = self.room_play_word();
         let (icon, label, bg, fg, enabled) = match state {
+            PlayState::Ready | PlayState::Crashed(_) if starting == Some(PlayWord::Needed) => (
+                IconName::CircleAlert,
+                PlayWord::Needed.label(),
+                p.elevated,
+                p.warning,
+                true,
+            ),
             PlayState::Ready | PlayState::Crashed(_) if starting.is_some() => (
                 IconName::LoaderCircle,
-                starting.unwrap_or_default(),
+                starting.map(PlayWord::label).unwrap_or_default(),
                 p.elevated,
                 p.accent,
                 false,
@@ -202,6 +210,8 @@ impl Shell {
             PlayState::Elsewhere(_) => (IconName::Play, tr("Play"), p.elevated, p.text_muted, false),
         };
         let ready = matches!(state, PlayState::Ready | PlayState::Crashed(_)) && starting.is_none();
+        let needed =
+            matches!(state, PlayState::Ready | PlayState::Crashed(_)) && starting == Some(PlayWord::Needed);
         let missing = matches!(state, PlayState::NotInstalled);
         let running = matches!(state, PlayState::Running);
         let building = matches!(state, PlayState::Building);
@@ -223,6 +233,7 @@ impl Shell {
             .when(missing, |d| d.hover(move |s| s.bg(p.selected)))
             .when(enabled, |d| d.cursor_pointer())
             .when(building && enabled, |d| d.hover(move |s| s.bg(p.selected)))
+            .when(needed, |d| d.hover(move |s| s.bg(p.selected)))
             .map(|d| match icon {
                 IconName::LoaderCircle => d.child(Spinner::new().icon(icon).with_size(px(18.))),
                 _ => d.child(Icon::new(icon).size(px(18.))),
@@ -237,6 +248,8 @@ impl Shell {
                 d.on_click(cx.listener(move |this, _, window, cx| {
                     if running {
                         this.confirm_stop(window, cx);
+                    } else if needed {
+                        this.room_step_in(cx);
                     } else if building {
                         this.cancel_build(window, cx);
                     } else if missing {

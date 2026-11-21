@@ -58,7 +58,7 @@ pub fn session_saves(
     Option<crate::addons::settings::SessionSaves>,
     Option<crate::addons::settings::SessionPlainSaves>,
 ) {
-    let redirect = launcher_saves && !steam_save_pending(data, profile);
+    let redirect = redirected(data, profile, launcher_saves);
     let saves = redirect.then(|| crate::addons::settings::SessionSaves {
         profile: profile.to_owned(),
         remote: crate::data::paths::game_folder_view(&remote_dir(data, profile)),
@@ -71,6 +71,12 @@ pub fn session_saves(
             schema: super::plain::SCHEMA,
         });
     (saves, plain)
+}
+
+/// Whether a session of `profile` has the core serve the game's profile save from the profile's launcher store:
+/// the profile uses launcher saves and its store is not waiting for the first-start import.
+pub fn redirected(data: &Path, profile: &str, launcher_saves: bool) -> bool {
+    launcher_saves && !steam_save_pending(data, profile)
 }
 
 pub fn location(data: &Path, profile: &str) -> Location {

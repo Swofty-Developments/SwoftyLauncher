@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a2d430",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/143a2d430.c;xref:0x1439be569,0x1439be598",
-  "notes": "Constructs a list container: stores allocator, allocates 0x18-byte sentinel node (self-linked). Callers Render_Gfx2Device_Initialise. vp5-verify partial/disagree"
+  "notes": "MSVC std::unordered_map ctor: +0 max load 1.0f, +8 allocator; allocates the 0x18-byte self-linked list sentinel (alloc vt+0x18) at +0x10, allocator copy +0x20; bucket vector +0x28/+0x30/+0x38 = 0x80 bytes (8 buckets x 2 ptrs) all set to the sentinel; mask +0x40 = 7, bucket count +0x48 = 8. Returns this. Two calls from Render_Gfx2Device_Initialise (maps at dev+0x3320 and +0x3370)."
  },
  "signature": {
   "id": "core.list_construct_with_sentinel",
