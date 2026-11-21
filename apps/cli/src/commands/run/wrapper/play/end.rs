@@ -78,6 +78,7 @@ fn note_known_problem(store: &Store, game: &Path, dir: &Path, crashed: bool) {
             .or_else(|| swofty_core::diagnostics::known_problems::stuck(&record, Some(game), store))
             .or_else(|| swofty_core::diagnostics::known_problems::tyres(&record, Some(game), store))
             .or_else(|| swofty_core::diagnostics::known_problems::logos(&record, Some(game), store))
+            .or_else(|| swofty_core::diagnostics::known_problems::saves(&record, Some(game), store))
         {
             say("warning", &format!("known problem {}: {}", d.id, d.title));
         }

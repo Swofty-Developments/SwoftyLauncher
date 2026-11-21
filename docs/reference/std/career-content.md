@@ -227,7 +227,7 @@ The F1 1990 addon's `tools/career.py` and `tools/grid.py` write a complete set o
 
 ## Saves when the addon is off
 
-A content whose `game_modes.ModeChampionship` row has its own `save_data.name` keeps its careers in a save container of that name in the profile save. In a game run without the addon, the core keeps that container and writes it back unchanged with each profile save, so the careers are there again once the addon is back on; the game shows them nowhere while the addon is off. `loader.log` names each kept container:
+A content whose `game_modes.ModeChampionship` row has its own `save_data.name` keeps its careers in a save container of that name in the profile save. In a game run without the addon, the core keeps that container and writes it back unchanged with each profile save, so the careers are there again once the addon is back on; the game shows them nowhere while the addon is off. Only the profile save carries kept containers: the race highlights save (`savegame@highlights000`) and the game's other saves have a root of their own and get none. `loader.log` names each kept container:
 
 ```text
 [saves] profile load 1: kept gm_driver_career_progressive (2162004 bytes), which no loaded game mode claims

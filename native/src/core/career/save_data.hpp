@@ -25,7 +25,8 @@ using Id_t = int (*)(void *self);
 
 // The function at offset in obj's vtable, or null when the vtable or the slot does not read inside the image.
 void *method(const void *obj, size_t offset);
-// Whether self is the profile save's root container.
+// Whether self is a save's root container: the profile's or another save's (the race highlights), which share the class.
+// save_splice.cpp tells the profile's apart (career::save_splice::ProfileRoot).
 bool is_root(uintptr_t self);
 // A child's key hash and bag value; false with why when it is not a readable bag.
 template <class PV = swofty::game::NePropertyVtbl, class TV = swofty::game::NePropertyTypeVtbl>
