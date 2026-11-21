@@ -4685,6 +4685,7 @@ pub type Gdb_HashMap_Rehash_t = unsafe extern "C" fn(map: *mut GdbValueMap, num_
 pub type Gdb_Load_GameDatabase_t =
     unsafe extern "C" fn(db: *mut GdbDatabase, cfg: *mut c_void) -> *mut GdbDatabase;
 pub type Gdb_Lookup_Key_t = unsafe extern "C" fn(path: *const c_char) -> *mut *mut c_void;
+pub type Ne_AnimClipPlayer_Sample_Thunk_t = unsafe extern "C" fn(player: *mut c_void, time: f32);
 pub type Ne_Compare_StringNoCase_t = unsafe extern "C" fn(a: *const c_char, b: *const c_char) -> i32;
 pub type Ne_Crt_FloatToInt32Checked_t = unsafe extern "C" fn(bits: u32) -> c_int;
 pub type Ne_Crt_InvalidParameterAbortStub_140e0fd20_t = unsafe extern "C" fn();
@@ -13680,6 +13681,11 @@ pub mod bindings {
     };
     pub const Ne_ActorSceneDataResource_DestroyScenes: Binding = Binding {
         id: "Ne_ActorSceneDataResource_DestroyScenes",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_AnimClipPlayer_Sample_Thunk: Binding = Binding {
+        id: "Ne_AnimClipPlayer_Sample_Thunk",
         kind: "func",
         status: Status::Experimental,
     };

@@ -304,3 +304,34 @@ mod zombie_tests {
         assert!(!is_dead(Path::new("/proc/self")));
     }
 }
+
+#[cfg(target_os = "linux")]
+mod exe_name_tests {
+    use super::*;
+
+    #[test]
+    fn a_wine_process_is_named_by_the_windows_path_in_its_first_argument() {
+        let ea = b"C:\\Program Files\\Electronic Arts\\EA Desktop\\13.827.2.6342-1794830247\\EA Desktop\\EADesktop.exe\0-updater_call\0";
+        assert!(runs_exe(ea, "EADesktop.exe"));
+        assert!(runs_exe(ea, "eadesktop.exe"));
+        assert!(runs_exe(b"Z:\\home\\swofty\\game-link\\F1_25.exe\0", "F1_25.exe"));
+        assert!(runs_exe(
+            b"/usr/bin/EABackgroundService.exe",
+            "EABackgroundService.exe"
+        ));
+    }
+
+    #[test]
+    fn only_the_first_argument_names_the_process() {
+        assert!(!runs_exe(
+            b"/opt/swofty\0run\0--\0/games/F1 25/F1_25.exe\0",
+            "F1_25.exe"
+        ));
+        assert!(!runs_exe(
+            b"c:\\windows\\system32\\steam.exe\0C:\\EA\\EALauncher.exe\0",
+            "EALauncher.exe"
+        ));
+        assert!(!runs_exe(b"", "F1_25.exe"));
+        assert!(!runs_exe(b"C:\\Games\\\0", "F1_25.exe"));
+    }
+}

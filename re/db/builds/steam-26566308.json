@@ -99,6 +99,10 @@
    "pattern": "E9 ?? ?? ?? ?? 0F 88 D2 3B ?? ?? ?? ?? 5C DB 96 00 E9",
    "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
   },
+  "Ne_AnimClipPlayer_Sample_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 8F 96 D0 E9 AD DD 02 00 A6 0F",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk follows the same epilogue as on the KB build, jumps to the body 0x147c36b40 (the KB body with a few protector-decoded constants written another way) and its callers are the KB callers moved with their functions."
+  },
   "Ne_Container_AbortNoReturn_1435d82f0": {
    "pattern": "E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC E9",
    "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
@@ -5747,6 +5751,9 @@
   },
   "Ne_ActorSceneDataResource_DestroyScenes": {
    "match": "0x2918b0"
+  },
+  "Ne_AnimClipPlayer_Sample_Thunk": {
+   "match": "0x3a6440"
   },
   "Ne_AnimClipResourceFactory_CreateResource": {
    "match": "0x43b7e50"
