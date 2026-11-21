@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144435180",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144435180.c;xref:0x1434e1e8e",
-  "notes": "JSON helper: member param_1 must be an object (type 3); returns its value body (+0x10) in *param_2; logs Unable to find object for %s in JSON."
+  "evidence": "decomp:re/decomp/144435180.c;xref:0x1434e1e8d",
+  "notes": "(name, void** out, obj*): member must be an object (type 3 @+0x1e); *out = value+0x10, returns 1; else logs 'Unable to find object for %s in JSON', returns 0. Caller Game_Trophies_ParseAwardEntry."
  },
  "signature": {
   "id": "core.json_get_object",

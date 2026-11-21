@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c7a820",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=CareerEventResourceManager::deactivatePrimaryWorld; log channel CUTSCENE_TEXTURE_CONTROL: 'CareerEventResourceManager::deactivatePrimaryWorld'"
+  "evidence": "decomp:re/decomp/140c7a820.c;pat:log-message-cxx;xref:0x140c7525a,0x140c76fb0",
+  "notes": "Logs 'activateExtraWorld %s', finds the world named param_1 in [[0x14601f5c8+0x30]+0xf0], then inlined deactivatePrimaryWorld (log, notifyInvalidateCrowdData, deactivates primary + 'primary_livery' worlds), activates the extra world (0x1444bcd80), prewarm log (CUTSCENE_TEXTURE_CONTROL), 0x144478ce0, and tail-jumps to 0x140177020 with [[0x14601f5c8+0x20]+0x208]. (lane owner review requested) Better name: Game_CareerEventResourceManager_ActivateExtraWorld (bound record keeps its name)."
  },
  "signature": {
   "id": "game.career_event_resource_manager_deactivate_primary_world",

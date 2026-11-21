@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d02be0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142d02be0.c;xref:0x142cf8abd,0x142d02aeb",
-  "notes": "UDP telemetry (state with +0xd2a0 = UDP output): for every car (cap 0x18) refreshes per-car data (0x142cfe4f0), runs Game_TelemetryUdp_UpdateRace, then for up to 22 cars builds and sends a 0x5b4-byte (1460) packet id 0xb = PacketSessionHistoryData via sender vcall +0x68(sender,0xb,1,..,buf,0x5b4) for each UDP target in [+0xd2a0]+0x78..+0x80; per-car history kept at this+0x283a + i*0x5b4. Callers Sess_InGameRace_OnStateExit, Sess_StoryStartLights enter, MP skip-lights. Addon: forces a full session history flush."
+  "evidence": "decomp:re/decomp/142d02be0.c;xref:0x142cf8abd,0x142d02aeb,0x142d5f68a,0x142d924b4,0x142d928a5,0x142d946c4",
+  "notes": "For every car (cap 0x18) calls Game_TelemetryUdp_UpdateCarSessionHistory, runs Game_TelemetryUdp_UpdateRace, then for up to 0x16 cars copies the 0x5b4-byte record into a buffer and calls vslot +0x68(output, 0xb, 1, .., buf, 0x5b4) on each output in [state+0xd2a0]+0x78..+0x80 (packet id 11 = session history). Called from Sess_InGameRace_OnStateExit and others (see xref). (lane owner review requested)"
  },
  "signature": {
   "id": "game.telemetry_udp_send_all_session_history",

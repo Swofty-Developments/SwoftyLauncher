@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1449a3530",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1449a3530.c;xref:0x143fd501a,0x143fd9d7c",
-  "notes": "Constructs an empty eadp.common.v2.PlayerId protobuf message. Callers Ne_PresenceEadp_ProcessPlayerCardList, Game_EadpNotifications_SubscribeToNotifications, Game_EadpInvites_StartGameInvitesServiceWaiting and others."
+  "evidence": "decomp:re/decomp/1449a3530.c;xref:0x143fd501a,0x143fd9d7c,0x143fda99a",
+  "notes": "Protobuf message ctor: base ctor 0x1449351e0(this, 0x145392f48 = type-name string 'eadp.common.v2.PlayerId'), vtable 0x1453938a0, std::string at +0x50 emptied (cap +0x68 = 0xf). Callers include 0x143fd4860 (Ne_PresenceEadp_ProcessPlayerCardList), 0x143fd99c0, 0x143fe0480, 0x143fe0c90. (lane owner review requested)"
  },
  "signature": {
   "id": "game.eadp_player_id_message_construct",

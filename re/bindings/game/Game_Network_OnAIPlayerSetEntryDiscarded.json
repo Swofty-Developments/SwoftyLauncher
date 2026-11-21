@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14323a7f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14323a7f0.c;xref:0x14582aef8",
-  "notes": "onPlayerSetEntryDiscarded: for AI entries (flags +0x58 & 0x30000000 rules) logs removing AI and calls Game_Network_RemoveAIPlayer(this-0x38, entry+0x10); ORs the result into +0x64 (dirty). Addon: AI car removal when the lobby changes. d8-verify correction: condition (flags+0x58 & 0x30000000) == 0, or flag 0x10000000 with byte +0x66 set, then 0x14323a4d0; AI/human meaning of the bits unverified (maybe OnPlayerSetEntryDiscarded)"
+  "notes": "Slot 1 (+0x8) of vtable 0x14582aef0; only that cell. (this, entry): if (entry+0x58 & 0x30000000) == 0, or bit 0x10000000 with byte entry+0x66 set: logs 'onPlayerSetEntryDiscarded: removing AI %s', calls Game_Network_RemoveAIPlayer(this-0x38, entry+0x10) and ORs the result into byte this+0x64. Meaning of the flag bits not decoded. (lane owner review requested) Better name: Game_Network_OnPlayerSetEntryDiscarded (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_on_a_i_player_set_entry_discarded",

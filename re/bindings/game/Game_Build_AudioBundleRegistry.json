@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1409f1b50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1409f1b50.c;imm:0x14566e107",
-  "notes": "walks every audio.audio_bundle_settings row (table cursor row_count): bundle_name, era, engine/exhaust/cabin flags; appends .bdl when missing and keys the entry by FNV-1a 64 of the lowered name, the key Game_AudioF1Car_Setup matches"
+  "evidence": "decomp:re/decomp/1409f1b50.c;imm:0x14566e107;xref:0x14080a9e5",
+  "notes": "Walks every row of audio.audio_bundle_settings: bundle_name (\".bdl\" appended when missing), era, bools engine/exhaust/cabin -> flags 1/2/4; key = FNV-1a64 of the lowered name; registers via 0x1443e5f60(param_1, key, name, era, flags); failure logs. Caller 0x14080a720. (lane owner review requested)"
  },
  "signature": {
   "id": "game.build_audio_bundle_registry",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143c21350",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143c21350.c;xref:0x1400fe126",
-  "notes": "Same list as the DollarFlag push but fixed kind 3: entry {this+0x50, 3, this+0xe0}. Hypothesis: binding-kind 3 (UAV/buffer) entry."
+  "evidence": "decomp:re/decomp/143c21350.c;xref:0x1400fe126,0x1400fe13b,0x1400fe1aa,0x1400fe1bf,0x1400fe1d2,0x1400fe1e7",
+  "notes": "Sibling of Render_Gfx_KeyValueWriter_AddString: appends entry {u32 +0x50, kind 3, u32 +0xe0}, writes key param_2 + NUL into stream +0x60 and the u32 value param_3 (byte-swapped unless +0xf8 == 1) into stream +0xf0. Kind 3 = 32-bit integer value, not UAV. Call sites all in 0x1400fd6d0 (0x1400fe126, 0x1400fe13b ...). (lane owner review requested) Better name: Render_Gfx_KeyValueWriter_AddU32 (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx_param_list_push_entry_kind3",

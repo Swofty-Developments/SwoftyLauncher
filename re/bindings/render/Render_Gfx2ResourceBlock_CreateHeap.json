@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439bbd20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439bbd20.c;xref:0x1439fe3bb,0x142faf89a",
-  "notes": "Constructor/initialiser of a NeGfx2ResourceBlock (strings 'NeGfx2ResourceBlock', 'CreateHeap'): copies a descriptor (memcpy), creates the heap via vtable calls and names it with Render_Gfx2_SetD3DObjectName. Hypothesis: heap-backed placed-resource block."
+  "evidence": "decomp:re/decomp/1439bbd20.c;xref:0x1439bbc22,0x1439fe3bb",
+  "notes": "Allocates a 200-byte NeGfx2ResourceBlock, heap size max(param_2, 128 MiB), align 4 MiB or 64 KiB (param_1+9), heap flags 0xc0 or 0x44/0x84, CreateHeap (+0xe0) named NeGfx2ResourceBlock, QI device + vcall +0x170 with 0xa0010000/0x78000000, block allocator of 0x2000 nodes, appends to vector param_1[3..5]. Callers 0x1439bba90, Render_Gfx2Device_CreateCommittedResource. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx2_resource_block_create_heap",

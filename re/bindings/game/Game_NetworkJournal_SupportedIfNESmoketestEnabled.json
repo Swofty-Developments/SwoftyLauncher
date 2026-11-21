@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1431491f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-JOURNAL",
-  "notes": "named from its log messages (channel NETWORK-JOURNAL): 'Not supported if NE_SMOKETEST_ENABLED is not defined. There are horrible reason. Lewis H'"
+  "evidence": "decomp:re/decomp/1431491f0.c;pat:log-channel-NETWORK-JOURNAL;xref:0x14314861f,0x1430ea42b",
+  "notes": "Takes slot this+0x48 (reset to 0 when > 4; 0x250 bytes per slot at +0x280), releases the slot's previous objects, creates a 'journal_guid' entry named by a %04d%02d%02d_%02d%02d%02d timestamp, logs 'Entry in slot %u has guid %llu' and 'send create entry message' or 'Unable to create journal entry'; the NE_SMOKETEST text is one branch. Tail jump from 0x143148590, call from 0x1430e0560. (lane owner review requested) Better name: Game_NetworkJournal_CreateEntry (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_journal_supported_if_ne_smoketest_enabled",

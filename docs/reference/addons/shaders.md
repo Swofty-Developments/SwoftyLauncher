@@ -508,7 +508,7 @@ car.wetness         number   0-1 water under the car's wheels: the wettest of th
 session.wetness     number   0 dry to 1 soaked: how wet the track is
 
 not read in game yet (works in the Preview)
-view.camera         name     cockpit tcam tcam_offset chase_near chase_far other
+view.camera         name     cockpit tcam tcam_offset chase_near chase_far other trackside reverse_pod
 car.impact          event    collision g
 car.damage          event    part damage increase, 0-1
 car.in_pit_lane     yes/no

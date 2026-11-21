@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432bb360",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_OnlineServer_ResetLoginData;xref:0x1432bb3de",
-  "notes": "cxx=game::OnlineServer::resetLoginData; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1432bb360.c;str:s_OnlineServer_ResetLoginData;xref:0x141bb454a,0x14273ae2a,0x14273dad5,0x14273e1ca,0x14273e3aa,0x1427a03ca",
+  "notes": "Logs F1OS with its own pretty name game::OnlineServer::resetLoginData and clears the login data (memset / copy of default blocks). Called from Game_OnlineServer_TriggerLogout, Game_OnlineServer_InternalOnLoginFinished, Game_F1os_F1WorldTask_* and Game_F1os_F1CGTask_* logout paths. (lane owner review requested)"
  },
  "signature": {
   "id": "game.online_server_reset_login_data",

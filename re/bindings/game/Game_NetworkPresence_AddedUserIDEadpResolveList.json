@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-PRESENCE",
-  "notes": "named from its log messages (channel NETWORK-PRESENCE): '%s: Added userID '%s' to EADP to-resolve list'"
+  "evidence": "decomp:re/decomp/144125280.c;pat:log-channel-NETWORK-PRESENCE;xref:0x145a5b9d8",
+  "notes": "neon::NePresenceNameResolverEADP: tries active presence ('Integrating name %s from active presence'), the EADP friends cache ('... from EADP friends cache') and the player card service (adds the user to the to-resolve list at this+0x70 and returns 2; 'already in to-resolve or in-transmit list' returns 1). Only ref: vtable cell 0x145a5b9d8. Better name: Game_NetworkPresence_EadpAttemptNameResolution (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_presence_added_user_id_eadp_resolve_list",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'StateSynchroniseCloseDocument - detects host migration!'"
+  "evidence": "decomp:re/decomp/1436fe500.c;pat:log-channel-NETWORK;xref:0x14585f358",
+  "notes": "State update: detects host migration; as host closes the entrants document (Game_NetworkEntrants_FinaliseEntrants at 0x1436fe760, setRemoveDepartedPlayers), then the season document; datasync start/finish; logs \"Documents are all closed\"; returns the next state id. Better name: Game_StateSynchroniseCloseDocument_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_state_synchronise_close_document",

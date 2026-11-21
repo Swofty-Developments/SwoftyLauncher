@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401408f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1401408f0.c;xref:0x14014147f",
-  "notes": "1435-byte builder with function-static TLS init; called by Render_Gfx_RegisterNamedResourceViews (0x140145788) and 0x14014147f / 0x14016df0f. Hypothesis: constructs the table of named resource views from a declaration. vq0-verify partial/disagree"
+  "evidence": "decomp:re/decomp/1401408f0.c;xref:0x14014147f,0x140145788,0x14016df0f,0x1401708e1",
+  "notes": "Out float[4]: [1]=1, [2]=param_4, [3] clamp term. Output size from display profile [0x14618caa8]+0x1d40/+0x1d78 (+0x20/+0x24). Scale [0] = render/output width from upscaler param_2 (0x143c8e6c0) or param_3 (0x143dfb340, mode values 0.4/0.5/0.58/0.66), else fixed quality ratios (0.6667, 0.8333, 0.5 above 3840 px) or table 0x145613828. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx_build_named_resource_view_table",

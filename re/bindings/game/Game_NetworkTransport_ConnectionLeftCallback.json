@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144070210",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name connectionLeftCallback (class from the log channel); log channel NETWORK-TRANSPORT: 'connectionLeftCallback available'"
+  "evidence": "decomp:re/decomp/144070210.c;pat:log-message-method;xref:0x144068342,0x14406c2c8,0x1440700c8",
+  "notes": "Logs 'handleClientDisconnection', setLocalConnectivity off for the id, removes it from the RTT list 0x144070890, logs 'SERVER: Connection left' and invokes the connectionLeft callback if set. Old name was the last log line. (lane owner review requested) Better name: Game_NetworkTransport_HandleClientDisconnection (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_transport_connection_left_callback",

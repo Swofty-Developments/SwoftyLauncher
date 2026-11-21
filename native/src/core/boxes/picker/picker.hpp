@@ -126,6 +126,9 @@ struct BoxRules {
     runtime::LogChanged weekend_log{"[weekend] %s"};
     runtime::LogChanged box_options_log{"[box-rules] %s"};
     runtime::LogChanged grid_log{"[grid] %s"};
+    runtime::LogChanged career_log{"[career-rules] %s"};
+    // The setup mode the swaps above were last made in: swofty_f1 for a box press, the career's own for its season.
+    std::string host{logic::HOST};
 };
 
 extern BoxRules box_rules;
@@ -235,18 +238,41 @@ int64_t cars_of(void *mode, const std::string &list);
 logic::ListCars list_cars(const void *list);
 std::vector<logic::ListCars> lists_of(const uint8_t *entrant_setup, std::vector<void *> &ptrs);
 
-void apply_drs(void *mode, const char *list);
-void apply_warmers(void *mode, const char *list);
+// The setup modes a box's rules go into: every swofty_f1 mode for a box press (host_target), the career's current game
+// setup mode for a career season (career_rules.cpp). host names them in the lines, prefix leads each line, and weekend
+// false keeps the modes' own weekends.
+struct RuleTarget {
+    std::vector<uint8_t *> modes;
+    std::string host, prefix;
+    bool weekend = true;
+};
+
+RuleTarget host_target(void *mode);
+void apply_drs(const RuleTarget &t, const char *list);
+void apply_warmers(const RuleTarget &t, const char *list);
 void apply_rev_lights(void *mode, const char *list);
-void apply_fuel(const char *list);
+void apply_fuel(const RuleTarget &t, const char *list);
 void clear_fuel();
-void apply_weekend(void *mode, const char *list);
+void apply_weekend(const RuleTarget &t, void *mode, const char *list);
 void apply_box_options(const char *list);
-void apply_grid(const char *list);
-void apply_quali_tyres(const char *list);
-void apply_points(void *mode, const char *list);
-void apply_tyre_change(void *mode, const char *list);
+void apply_grid(const RuleTarget &t, const char *list);
+void apply_quali_tyres(const RuleTarget &t, const char *list);
+void apply_points(const RuleTarget &t, const char *list);
+void apply_tyre_change(const RuleTarget &t, const char *list);
 void put_back_drs();
+
+// Career season rules (career_rules.cpp). career_session reads, at a session load, whether the session is a career's and
+// whether the rules applied at its last load still hold (the same career, season, box and setup mode); apply_career_rules
+// then puts the season's box rules into the career's setup mode. put_back_career_rules undoes them when the career
+// unloads; forget_career_rules drops them with the setup modes.
+struct CareerSession {
+    bool career = false, kept = false;
+};
+CareerSession career_session(uintptr_t ctx);
+std::string mode_label(uintptr_t ctx);
+void apply_career_rules();
+void put_back_career_rules(const char *why);
+void forget_career_rules();
 void put_back_failed(const Narrowed &n);
 
 void parse_list_entry(int *ordinal, const void *row_key, void *list, void *registry);

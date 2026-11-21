@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1435c2bb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): '[SAFETY_CAR_EMERGENCY_GHOSTING] Received Message for vehicle: %d'"
+  "evidence": "decomp:re/decomp/1435c2bb0.c;pat:log-channel-NETWORK;xref:0x1435c2994",
+  "notes": "Stores the 0x14-byte ghosting state from msg+0x14..+0x24 into this+0x68[vehicle msg+0x10]; builds the local-vehicle mask from the player set and logs WARN \"Received Message For Local Vehicle: %d\" when the target is local. (lane owner review requested) Better name: Game_Network_SafetyCarGhosting_OnMessage (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_received_message_vehicle",

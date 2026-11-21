@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a03620",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143a03620.c;xref:0x143a015f7",
-  "notes": "Indirect execute with a command signature looked up per pipeline key: FNV-1a over the 8 key bytes at ctx+0x12e0 -> hash map (param_2+0x18..0x48) -> signature handle, then context vcall +0x148(signature, maxCount, argBuf, argOff, countBuf, countOff). Hypothesis (ExecuteIndirect with count buffer)."
+  "notes": "Same flush, then FNV-1a over the 8 key bytes at ctx+0x12e0, probes the robin-hood map param_2+0x20..+0x4c for the command signature and calls list vcall +0x148(signature, maxCount param_3, argument buffer, offset, count buffer, count offset). Caller Render_Gfx_SubmitDraw 0x143a007e0. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx_execute_indirect_keyed",

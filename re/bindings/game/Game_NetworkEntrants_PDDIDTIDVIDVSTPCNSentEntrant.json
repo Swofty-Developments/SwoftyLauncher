@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143114250",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-ENTRANTS",
-  "notes": "named from its log messages (channel NETWORK-ENTRANTS): 'PD: %s DID : %s TID : %s VID : %s VS : %u TP : %u CN : %u - Sent Entrant -'"
+  "evidence": "decomp:re/decomp/143114250.c;pat:log-channel-NETWORK-ENTRANTS;xref:0x143109ace,0x1436d921c",
+  "notes": "Host only (this[1] < 2): sends a header message (vtable 0x145824350) via 0x14402e500, then for each 0x88-byte entrant in [[this[5]]+0x4f8]+0x2e0 builds an entrant message and sends it; logs \"PD..CN - Sent Entrant -\". (lane owner review requested) Better name: Game_NetworkEntrants_SendEntrants (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_entrants_pddidtidvidvstpcn_sent_entrant",

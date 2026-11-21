@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143aeef80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143aeef80.c;xref:0x143af842d",
-  "notes": "Destroys all emitter instances of effect param_2 (vector +0x10..+0x18): logs 'Destroy effect %p' and 'effect %s being destroyed' on log channel 'PARTICLES' (channel check via hash table 0x14604b4f0, id 0xde2ce642) and Ne_Crt_Memset-clears the slots in param_1. Callers Game_Particles_UpdateManager, 0x143af7ff0. Addon: PARTICLES log channel shows effect destruction."
+  "evidence": "decomp:re/decomp/143aeef80.c;xref:0x143af842d,0x143b08e07",
+  "notes": "For every element of vector param_2+0x10..0x18: logs 'Destroy effect %p' on channel PARTICLES (when enabled, id 0xde2ce642), memsets each 0xc70-byte emitter def in [+0x28,+0x30), frees vectors +0x48/+0x28 and the element; then frees the vector storage and param_2 via allocator vcall +0x38. (lane owner review requested) Better name: Render_Particles_DestroyEffectDefList (bound record keeps its name)."
  },
  "signature": {
   "id": "render.particles_destroy_effect_emitters",

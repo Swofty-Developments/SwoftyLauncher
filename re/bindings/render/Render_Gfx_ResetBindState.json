@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439ff280",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/1439ff280.c;xref:0x1439ff7f8,0x1439ffb03,0x143c8fae5",
-  "notes": "Hypothesis: zeroes input state blocks (+0x7c0 0x400, +0x78 0x548, +0xdc0 0x4c8) and sets defaults of 4; part of XeSS_PrepareInputs chain. Named callers: Render_XeSS_PrepareInputs. vp2-verify partial/disagree"
+  "notes": "Resets the command-context state cache: memsets +0x7c0 (0x400), +0x78 (0x548), +0xdc0 (0x4c8), sets the u32 array from +0x5c0 to 4, fills +0x1440.. with 0x7e967699 patterns, sets +0x1468 = 1, +0x1308/+0x1310 defaults and zeroes +0x1470..+0x16e8. Callers Render_Gfx_BeginCommandContext 0x1439ff780, Render_Gfx_SetRenderTargets 0x1439ffae0, 0x143c8ef90. (lane owner review requested)"
  },
  "signature": {
   "id": "render.xe_s_s_reset_state",

@@ -204,6 +204,19 @@ inline Settings parse_settings(std::string_view text)
     return s;
 }
 
+// The root settings.json names beside a launcher_saves block is the plain store of the profile's launcher saves. A session
+// run once on the copy's own save (SWOFTY_LAUNCHER_SAVES=off) plays another save and leaves that store alone: why, or ""
+// when the root is the session's.
+inline std::string off_for_session(std::string_view settings_text, std::string_view launcher_saves)
+{
+    json::Value doc;
+    if (launcher_saves != "off" || settings_text.empty() || !json::parse(std::string(settings_text), doc) ||
+        doc.type != json::Value::Obj || doc["launcher_saves"].type == json::Value::Null)
+        return {};
+    return "this session runs on the copy's own save (SWOFTY_LAUNCHER_SAVES=off), and the root is the plain store of the "
+           "profile's launcher saves";
+}
+
 // ---- manifests ----
 
 struct Slot {

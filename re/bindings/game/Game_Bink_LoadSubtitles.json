@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-AUDIO_BINK",
-  "notes": "named from its log messages (channel AUDIO_BINK): '%s subtitles file '%s'.'"
+  "evidence": "decomp:re/decomp/143f82d40.c;pat:log-channel-AUDIO_BINK;xref:0x145a41a18",
+  "notes": "NeVideoDecoderBink open (vtable cell 0x145a41a18): logs onOpen, opens .bk2/.bik, createRenderingResources (Y/cR/cB/A planes, eaid://video/Plane*), resolve context, content category (2025_cinematic, 2025_recap, tutorials, track_map, ui_wipes), loads subtitles (AUDIO_BINK log), creates external_bink_sfx/music/speech/motion emitters. Better name: Game_VideoDecoderBink_OnOpen (bound record keeps its name)."
  },
  "signature": {
   "id": "game.bink_load_subtitles",

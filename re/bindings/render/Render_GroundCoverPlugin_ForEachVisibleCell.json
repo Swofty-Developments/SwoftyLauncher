@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143c5ff80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143c5ff80.c;xref:0x143c578a7",
-  "notes": "Walks a 64-bit bitmap (param_2+0x28/+0x30, 0x40 stride) with trailing-zero scans and processes each set bit via 0x143bf38d0; 5 sites in Render_GroundCoverPlugin_Render. Hypothesis."
+  "evidence": "decomp:re/decomp/143c5ff80.c;xref:0x143c578a7,0x143cdcfc5,0x143cdcfdf,0x143cdcff9,0x143cdd013,0x143cdd02d",
+  "notes": "Iterates the occupied slots of a hash set (control words param_2+0x30, entries +0x28); for each entry's material (+8) walks its texture slot vector +0x160 and float vector +0x180 (from Render_Material_FillMeTextureSlots) calling Render_TexStream_UpdateEntryDemand(0x146c621e8, slot tex +0x1c8, demand param_1, slot float). Callers 0x143c53cb0 (0x143c578a7), Render_GroundCoverPlugin_Render 0x143cdcfc5. (lane owner review requested) Better name: Render_MaterialSet_UpdateTextureDemand (bound record keeps its name)."
  },
  "signature": {
   "id": "render.ground_cover_plugin_for_each_visible_cell",

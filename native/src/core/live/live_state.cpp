@@ -1,3 +1,4 @@
+#include "core/live/entrant_ids.hpp"
 #include "core/live/live_bus.hpp"
 #include "core/live/live_rows.hpp"
 #include "core/live/live_snapshot.hpp"
@@ -525,6 +526,57 @@ std::vector<LiveEvent> live_take_events()
                        e.a, e.b});
     g_events.clear();
     return out;
+}
+
+}
+
+namespace swofty_core::live::entrant_ids {
+
+Read read_car(uint32_t vehicle, Ids &out, std::string *why)
+{
+    static std::mutex lock;
+    static lv::Sites sites;
+    static SystemSlot mode_slot;
+    static const lv::BuildProof *build = nullptr;
+    static bool looked = false;
+    std::lock_guard<std::mutex> g(lock);
+    if (!looked) {
+        looked = true;
+        build = runtime::same_build() ? &lv::KB_BUILD : lv::proof_for(module_stamp());
+    }
+    if (!build) {
+        if (why)
+            *why = "this game build has no proven entrant layout";
+        return Read::off;
+    }
+    if (!sites.game_manager || !sites.key_game_mode || !sites.key_team_tables || !sites.key_session_component)
+        for (const Named &n : SITE_NAMES)
+            if (n.slot == &lv::Sites::game_manager || n.slot == &lv::Sites::key_game_mode ||
+                n.slot == &lv::Sites::key_team_tables || n.slot == &lv::Sites::key_session_component)
+                sites.*n.slot = swofty::api && swofty::api->resolve ? swofty::api->resolve(n.name) : 0;
+    lv::Decision d = lv::decide(sites, *build, false);
+    if (!d.gates[lv::G_BADGES]) {
+        const lv::Verdict &v = d.verdict[lv::G_BADGES];
+        if (why)
+            *why = v.why == lv::Why::site
+                       ? std::string(unresolved_name(v.missing)) + " does not resolve on the " + build->name + " build"
+                       : std::string("the entrant chain is not proven on the ") + build->name + " build";
+        return Read::off;
+    }
+    lv::Mem mem;
+    mem.fn = kernel_copy;
+    uintptr_t system = system_by_key(mem, sites.game_manager, sites.key_game_mode, mode_slot);
+    if (!system) {
+        if (why)
+            *why = "the game mode system is not in the game manager's registry yet";
+        return Read::not_ready;
+    }
+    Read r = entrant(mem, system, vehicle, d.gates[lv::G_DRIVER_NAMES], out);
+    if (why && r == Read::not_ready)
+        *why = "the session entrant list is not built yet";
+    else if (why && r == Read::no_entrant)
+        *why = "no session entrant has this car's vehicle index";
+    return r;
 }
 
 }

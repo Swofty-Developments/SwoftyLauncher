@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140401280",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "void FUN(void *card, void *json_writer)",
-  "evidence": "decomp:re/decomp/140401280.c;xref:0x1404011ba;xref:0x14047efa0;xref:0x140480dc8",
-  "notes": "myteam-g1: JSON writer for card_upgrade_level: three strings (+0x50/+0x70/+0x90), floats +0xb0/+0xb4/+0xb8, int +0xbc and an array of {name,int,float} at +0xc0..+0xc8. Card upgrade telemetry."
+  "evidence": "decomp:re/decomp/140401280.c;xref:0x14047efa1,0x140480dc8,0x140482a21,0x14049bfda",
+  "notes": "Writes a whole card sub-object (not only upgrade level): strings card_type/card_name/card_rarity rec+0x50/0x70/0x90, floats card_tech_level/current_wear/max_wear 0xb0-0xb8, int card_upgrade_level 0xbc, array card_mods (vec 0xc0: mod_description/mod_stat_id/mod_magnitude). (lane owner review requested) Better name: Game_Analytics_CardData_WriteJson (bound record keeps its name)."
  },
  "signature": {
   "id": "game.analytics_write_card_upgrade_level",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14535f420",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14535f420.c;xref:0x140194330,0x1401943f7,0x140194427",
-  "notes": "Hypothesis: (byte* a, byte* b, long* out) string/path helper with null checks; 275 callers (livery/outfit asset paths in cutscene script). Named callers: Game_CutSceneScript_AddRaceCrewLiveryToAssetGroupPaths, Game_CutSceneScript_ResolveDriverOutfitAssets, Game_CutSceneScript_SpawnDynamicDriverActor, Game_DataDrivenCutSceneScript_CreateComponents. vp4-verify partial/disagree"
+  "evidence": "decomp:re/decomp/14535f420.c;xref:0x140194330,0x1401943f7,0x140194427,0x1401944b0,0x140194524",
+  "notes": "strtok_s(str, delim, context): pdata 0x14535f420-0x14535f458 only checks args (context or delim NULL, or str NULL with *context NULL -> errno 0x16 via 0x145348244, invalid-param 0x145349d08, return 0) and jumps to 0x14535f458: 256-bit delimiter bitmap, skip leading delimiters, NUL-terminate the token, *context = rest. 281 sites (cutscene asset path parsing)."
  },
  "signature": {
   "id": "core.string_append_resolved_path",

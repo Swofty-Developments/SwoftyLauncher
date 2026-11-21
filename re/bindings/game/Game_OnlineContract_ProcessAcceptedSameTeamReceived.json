@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141003320",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-ONLINE_CONTRACT_NEGOTIATIONS",
-  "notes": "named from its log messages (channel ONLINE_CONTRACT_NEGOTIATIONS): 'Process accepted same team received'"
+  "evidence": "decomp:re/decomp/141003320.c;pat:log-channel-ONLINE_CONTRACT_NEGOTIATIONS;xref:0x141000d9d",
+  "notes": "Logs ONLINE_CONTRACT_NEGOTIATIONS 'Process accepted same team received' and posts a bus message (Ne_Post_BusMessage). Address registered (lea) as a message handler in Career_OnlineNegotiationsB_RegisterMessageHandlers. (lane owner review requested)"
  },
  "signature": {
   "id": "game.online_contract_process_accepted_same_team_received",

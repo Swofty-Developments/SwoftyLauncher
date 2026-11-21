@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14310e1e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name requestRegisterEntrant (class from the log channel); log channel NETWORK-ENTRANTS: '%s(%s, %s, %d).'"
+  "evidence": "decomp:re/decomp/14310e1e0.c;pat:log-message-method;xref:0x14310a9c8,0x143113d65,0x1432b27cb",
+  "notes": "Logs requestRegisterEntrant(player, team, index); finds the requesting player in the player set (user id match) and needs flag +0x5b bit 4; builds a request message (vtable 0x145824410); host (this+8 < 2) handles it directly via 0x143110b90, client sends it via 0x14402e500. Returns 1. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_entrants_request_register_entrant",

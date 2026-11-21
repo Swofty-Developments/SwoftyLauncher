@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143225040",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-READY",
-  "notes": "named from its log messages (channel NETWORK-READY): 'Exiting super ready state as not enough human players.'"
+  "evidence": "decomp:re/decomp/143225040.c;pat:log-channel-NETWORK-READY;xref:0x1458294a8",
+  "notes": "Ready system update (method name update in its log): policy-triggered super-ready ('Policy triggers super-ready for time ...'), clearing it with no players, advancing the super time, 'Exiting super ready state as not enough human players.', sending super-ready messages (sendSuperReady logs). Only ref: vtable cell 0x1458294a8. (lane owner review requested) Better name: Game_NetworkReady_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_ready_exiting_super_ready_state_as_enough",

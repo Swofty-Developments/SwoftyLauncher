@@ -37,5 +37,5 @@ not_installed [car] tyre curve guard did not install (see the [core] lines)
 [anim_clip_time]
 off [anim] clip time guard off (SWOFTY_ANIM_CLIP_TIME_GUARD=%s)
 unresolved [anim] clip time guard off: needs Ne_AnimClipPlayer_Sample_Thunk, which this build does not resolve
-armed [anim] clip time guard armed: an animation clip sampled at a time that is not a number shows its first frame instead of faulting
+armed [anim] clip time guard armed: an animation clip sampled at a time that is not a finite number shows its first frame instead of faulting
 not_installed [anim] clip time guard did not install (see the [core] lines)

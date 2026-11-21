@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432d2330",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-OnlineSystemEADPAsyncTask",
-  "notes": "named from its log messages (channel OnlineSystemEADPAsyncTask): 'Async request has been finished: requestID = %I64u, err = %d'"
+  "evidence": "decomp:re/decomp/1432d2330.c;pat:log-channel-OnlineSystemEADPAsyncTask;xref:0x1432d216f",
+  "notes": "Callback (this, requestId, err): logs 'Async request has been finished: requestID = %I64u, err = %d' and under lock [this+0x138] stores err at this+0x168. Address taken (lea) in Game_OnlineSystemEADPAsyncTask_OnStart. (lane owner review requested) Better name: Game_OnlineSystemEADPAsyncTask_OnAsyncRequestFinishedId (bound record keeps its name)."
  },
  "signature": {
   "id": "game.online_system_eadp_async_t_async_request_been_finished_request_id",

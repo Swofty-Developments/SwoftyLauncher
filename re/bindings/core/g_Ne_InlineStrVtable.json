@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x145612ea8",
-  "type": "void",
-  "level": "L1",
+  "type": "vtable[4]",
+  "level": "L2",
   "subsystem": "core",
-  "evidence": "decomp:re/decomp/14172c840.c",
-  "notes": "Vtable of the inline name string the LAN tile builds on its stack for the game mode name index (Game_GameModes_IndexByName): +0 this vtable, +8 capacity 0x20, +0x10 pointer to the characters, the characters (NUL-terminated) inline after them."
+  "evidence": "decomp:re/decomp/14172c840.c;xref:0x140153dd7,0x14016301f,0x1401781a6,0x140178df1,0x1401a6074,0x1401a948f,0x1401aa280,0x1401b0c23",
+  "notes": "Vtable (4 code slots 0x14030eb40, 0x14030ebf0, 0x1402acc90, 0x1402acd60) of the inline name string objects built on the stack, 1431 lea sites; e.g. 0x14172c840 builds one at rsp+0x28 with the characters written inline at +0x20 for Game_GameModes_IndexByName. Better name: vt_Ne_InlineStr (bound record keeps its name)."
  },
  "signature": {
   "id": "core.ne_inline_str_vtable",

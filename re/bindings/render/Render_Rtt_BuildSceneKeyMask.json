@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b5e820",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143b5e820.c;xref:0x143b5d745",
-  "notes": "Iterates 16-byte entries (param_2) with non-null name pointers, ORs a 128-bit key from 0x143b81e10(param_3) and FNV-1a hashes each name string (0xcbf29ce484222325, prime 0x100000001b3); builds scene/RTT lookup key. Caller Game_Rtt_CreateScenes (also 0x143b5c740). Hypothesis."
+  "evidence": "decomp:re/decomp/143b5e820.c;xref:0x143b5d745,0x143d85e60,0x143d882e4",
+  "notes": "For up to 8 16-byte entries with a name: ORs the 128-bit one-hot mask from Render_PassTable_FindOrAddBitByName, interns the name (FNV-1a 64, string pool) and stores the hash; then finds the 128-bit mask in the global table [0x146c62030] (count +0x4a54) or appends it (0x143e93e10); writes mask and index to param_1. (lane owner review requested)"
  },
  "signature": {
   "id": "render.rtt_build_scene_key_mask",

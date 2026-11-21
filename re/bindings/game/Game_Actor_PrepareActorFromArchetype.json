@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name prepareActorFromArchetype (class from the log channel); log channel ACTOR: 'prepareActorFromArchetype failed to valid neon::NeModelProxyResource from inProxyResourceID %s'"
+  "evidence": "decomp:re/decomp/1401c7850.c;pat:log-message-method;xref:0x140390d65,0x1403c321c,0x147a83b1f,0x147a8779b,0x147a96dcf,0x147a9ea10,0x147a9fcf5,0x147aa304b,0x147d476cc,0x147df777c,0x147e1e1de",
+  "notes": "prepareActorFromArchetype: logs ACTOR model/material/AnimationSet lines, Bip01 bone list (Groin, Head, Armpit ...), ACTOR_FAIL 'failed to valid neon::NeModelProxyResource from inProxyResourceID %s'. Most callers are .data1 sites."
  },
  "signature": {
   "id": "game.actor_prepare_actor_from_archetype",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439917c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439917c0.c;xref:0x14014c7d7",
-  "notes": "Under CS param_1[0x19] allocates a 0x68-byte object plus an array of param_2 records of 0x28 bytes; used by Game_Read_RendererGfxConfig (16+ sites) and 0x14014c530. Hypothesis: shader binding layout of N slots."
+  "evidence": "decomp:re/decomp/1439917c0.c;xref:0x14014c7d7,0x14014ddba,0x14018c8ac,0x143b14ca4",
+  "notes": "Under CS param_1[0x19] allocates a 0x68 object with param_2 slots of 0x28 (0x143990c70), stores name pair param_4, owner pair param_3, callback 0x1439918e0 + ctx param_1, flag bit1 = (param_6==1), queues it with Ne_LinkResolver_PushPending 0x143991f20. Callers incl. Render_Gfx2_SrvResource_Construct, Render_Gfx_RegisterUavResource, Render_GeometryPass_Parse. (lane owner review requested) Better name: Render_Gfx2_LinkResolver_CreateLinkSet (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_bind_layout_create",

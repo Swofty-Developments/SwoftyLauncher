@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143161ce0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-INVITE",
-  "notes": "named from its log messages (channel NETWORK-INVITE): '%s: Invite completed as %s.'"
+  "evidence": "decomp:re/decomp/143161ce0.c;pat:log-channel-NETWORK-INVITE;xref:0x143162408,0x1431625b8,0x143165bed,0x143165cae",
+  "notes": "cxx=network::InviteManager::onJoinCompleted(NEbool, NeNetError): logs '%s(%s, %d)' onJoinCompleted. On failure calls Game_InviteManager_Fail 0x143161f50; on success logs 'Invite completed as Host/Client', changes state (eConnecting) and enters the session (0x1430647a0). Tail jumps from 0x1431622c0, 0x143162480, 0x143162850, 0x143162a10 and thunks 0x143165bd0, 0x143165c90; lea in 0x143165d50. (lane owner review requested) Better name: Game_NetworkInvite_OnJoinCompleted (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_invite_invite_completed_as",

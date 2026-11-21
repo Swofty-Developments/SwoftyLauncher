@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143be2500",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143be2500.c;xref:0x143be24e5",
-  "notes": "Constructor filling a default parameter object (vtable 0x14560e200): floats 1.0, 0.2, 1000.0, 0.5625, many unit vectors/identity quats. Called from Render_Gfx_InitFrameStateBlock and GroundCover mesh code. Hypothesis: default light/camera-like parameter block."
+  "evidence": "decomp:re/decomp/143be2500.c;xref:0x143be24e5,0x143ce5705,0x143d4f4ff,0x143d4f539,0x143d4f56e,0x143d4f5a3",
+  "notes": "Constructor of the 0x810-byte scene-view params object: vtable 0x14560e200, defaults 1.0, 0.2, 1000.0 (far), 0.5625 (9/16), identity matrices. Callers allocate 0x810 bytes first: 0x143be24c0 (alloc+ctor helper, 0x143be24e5), Render_GroundCover_CreateCameraView 0x143ce5705, Render_Gfx_InitFrameStateBlock 0x143d4f4ff; Render_SceneView_BuildViewParams then fills it. (lane owner review requested) Better name: Render_SceneViewParams_Construct (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx_init_default_param_object",

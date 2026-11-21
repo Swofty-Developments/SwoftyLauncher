@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c17250",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140c17250.c;xref:0x140c1c265,0x140c1ed7e",
-  "notes": "Car setup VM: clears the selected flag of the 6 category nodes (0x120-byte blocks at this+0x168..+0x828, setter 0x140973e20) and selects category param_2 (this+0x68+idx*0x120). Callers Game_CarSetupVm_ShowParcFerme, Car_Setup_OnValueChanged."
+  "evidence": "decomp:re/decomp/140c17250.c;xref:0x140c1b90f,0x140c1c265,0x140c1c74f,0x140c1ed7e,0x140c1ef18,0x149a3b507",
+  "notes": "Clears the selected bool (setter 0x140973e20) of the 6 category nodes (0x120 stride, +0x168..+0x828), binds the chosen category's (param_2) +0x68 node (or the default list when empty) to +0x48 (0x140977b20) and sets the chosen category's +0x168 selected = 1. (lane owner review requested)"
  },
  "signature": {
   "id": "game.car_setup_vm_select_category",

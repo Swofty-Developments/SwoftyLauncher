@@ -189,6 +189,7 @@ UNITS = [
     Unit('bag_scan', 'Bag scan and read stream unit test', 'zig'),
     Unit('entitlements', 'Entitlement check unit test', 'zig'),
     Unit('room_cover', 'Loading cover unit test', 'zig'),
+    Unit('session_env', 'Loader session environment file unit test', 'zig'),
     Unit('testagent', 'Test agent logic unit test', 'zig'),
     Unit('storage_logic', 'Storage library path unit test', 'zig'),
     Unit('crash_dir', 'Crash report folder unit test', 'zig'),
@@ -237,7 +238,8 @@ CONTENT = [
     Program('rows_test', [Objects(['test/content/rows_test.cpp', 'test/content/rows_test_packages.cpp',
                                    'test/content/rows_test_teams.cpp', 'test/content/rows_test_slots.cpp',
                                    'test/content/rows_test_career.cpp', 'test/content/rows_test_plan.cpp',
-                                   'src/core/apply/scheduler.cpp'], CONTENT_FLAGS + [SDK]),
+                                   'test/content/rows_test_career_rules.cpp', 'src/core/apply/scheduler.cpp'],
+                                  CONTENT_FLAGS + [SDK]),
                           CONTENT_IDS, CONTENT_ENGINE]),
     *[Program(test, [Objects([f'test/content/{test}.cpp'], CONTENT_FLAGS + [SDK]), CONTENT_IDS, CONTENT_ENGINE])
       for test in ('vehicle_tower_test', 'package_id_test', 'id_pool_test', 'wear_test', 'box_world_test')],
@@ -319,9 +321,9 @@ SNAPSHOTS = [Program('snapshots_test', [
              'src/core/career/snapshots/freeze.cpp', 'src/core/registry/store.cpp', 'src/core/registry/validate.cpp',
              'src/core/registry/schema.cpp'], SNAPSHOTS_FLAGS), ZSTD])]
 
-CAR_LIVE = [Program(t, [Objects([f'test/hooks/{t}.cpp'], ['-Isrc', '-std=c++23', '-O1', '-Wall', '-Wextra', '-Werror',
+CAR_LIVE = [Program(t, [Objects([f'test/hooks/{t}.cpp'], ['-Isrc', '-Iinclude', '-std=c++23', '-O1', '-Wall', '-Wextra', '-Werror',
                                                           '-Wno-nullability-completeness', SDK])])
-            for t in ('car_live_test', 'car_profile_test', 'ai_racecraft_test')]
+            for t in ('car_live_test', 'car_profile_test', 'car_identity_test', 'ai_racecraft_test')]
 
 FAST_FAIL = [Program('fast_fail_test', [Objects(['test/fast_fail_test.cpp'], ['-Isrc', '-std=c++23', '-O2', '-Wall', '-Wextra',
                                                                               '-Wno-nullability-completeness'])])]
@@ -374,6 +376,8 @@ SCRIPTS = [
     Script('fast_fail', 'Fast-fail crash reports (fast-fail codes, reasons, exit statuses, byte patterns, cached prologue addresses)', ['{out}/fast_fail_test'],
            cwd='test', programs=FAST_FAIL),
     Script('log_fallback', 'Loader log fallback Wine test', ['bash', 'native/test/run_log_fallback_test.sh'], wine=True),
+    Script('session_env_wine', 'Loader session environment Wine test', ['bash', 'native/test/run_session_env_test.sh'],
+           wine=True),
     Script('lang_override', 'String override Wine test', ['bash', 'native/test/run_lang_override_test.sh'], wine=True),
     Script('toolkit', 'Overlay toolkit Wine test', ['bash', 'native/test/run_toolkit_test.sh'], wine=True),
     Script('hud', 'Overlay draw-list unit test', ['bash', 'native/test/run_hud_test.sh']),
@@ -389,7 +393,7 @@ SCRIPTS = [
     Script('game_points', 'Game hook points host test', ['{out}/game_points_test'], cwd='test', programs=[hook_test('game_points')]),
     Script('session_points', 'Session control, AI controller and spectator points host test', ['{out}/session_points_test'],
            cwd='test', programs=[hook_test('session_points')]),
-    Script('car_live', 'Live car operations host test', each('car_live_test', 'car_profile_test', 'ai_racecraft_test'), cwd='test',
+    Script('car_live', 'Live car operations host test', each('car_live_test', 'car_profile_test', 'car_identity_test', 'ai_racecraft_test'), cwd='test',
            programs=CAR_LIVE),
     Script('w5_review', 'Hook points review test', ['{out}/w5_review_test'], cwd='test',
            programs=[Program('w5_review_test', [Objects(['test/hooks/w5_review_test.cpp'], HOOK_FLAGS)])]),

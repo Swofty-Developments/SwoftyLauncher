@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143707cc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_Championship_CareerOnlineTimeAdvancementControllerComponent_SetStopped;xref:0x143707e87",
-  "notes": "cxx=game::championship::CareerOnlineTimeAdvancementControllerComponent::setStopped; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/143707cc0.c;str:s_Championship_CareerOnlineTimeAdvancementControllerComponent_SetStopped;xref:0x14585fa90",
+  "notes": "Flow-state slot 8 (cell 0x14585fa90, vtable 0x14585fa50) with own log 'StateTeamHQUpdate::onStateEnter marking that time advancment stopped': clears comp(0x1460616c8)+0x2aa; inlined setStopped (time-advance comp 0x146060868 state 3 -> 4, posts message 7); resets +0xd28..+0xde8, clears bit 0x10 / sets 0x2000 in 0x14604ed68; 0x1437083c0, 0x143706ae0(1). (lane owner review requested) Better name: Game_StateTeamHQUpdate_OnStateEnter (bound record keeps its name)."
  },
  "signature": {
   "id": "game.career_online_time_advancement_controller_component_set_stopped",

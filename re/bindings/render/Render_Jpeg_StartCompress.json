@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1449d463c",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1449d463c.c;xref:0x14379cf7e",
-  "notes": "libjpeg jpeg_start_compress(cinfo, write_all_tables): state check 100, optional table suppress reset, dest init (vcall +0x20/+0x10), master prep, next_scanline (+0x144) = 0, state 0x65/0x66. Caller Game_ThumbnailSystem_RequestAndWriteScreenshot."
+  "evidence": "decomp:re/decomp/1449d463c.c;xref:0x14379cf7e,0x144bd9037",
+  "notes": "libjpeg jpeg_start_compress(cinfo, write_all_tables): error 0x15 unless state 100, optional jpeg_suppress_tables(FALSE) (0x1449d45c4), err reset (vcall +0x20), dest init_destination (+0x10), jinit_compress_master (0x1449d4e2c), master prepare_for_pass, next_scanline (+0x144) = 0, state 0x65 or 0x66 (raw data). Callers 0x14379cf7e (0x14379c250), 0x144bd9037 (0x144bd8ea0). (lane owner review requested)"
  },
  "signature": {
   "id": "render.jpeg_start_compress",

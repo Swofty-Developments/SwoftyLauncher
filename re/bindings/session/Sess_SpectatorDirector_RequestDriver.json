@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e19950",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
   "proto": "void(SpectatorDirector*, uint32_t driver)",
-  "evidence": "decomp:re/decomp/142e19950.c;xref:0x142e19950",
-  "notes": "DISPUTE(V1535): not a general request. Steps the director off a driver that became unwatchable: when its argument equals the current driver [dir+0xd6] it stores the next eligible driver in race order (FUN_142e19bd0, state 2) into [dir+0xdc] and calls Update; otherwise only fade bookkeeping. Callers: ghost-fade check 0x142f35060 and two .data1 message thunks (0x14f2efe11, 0x14f2f1767; msg type 5, driver byte at msg+0x10). To make the director follow a car, store the byte in [dir+0xdc] as the HUD next/previous commands do (0x141c24c63, 0x141c26725) after requiring entrant state byte [+0x18]&0xfe==2. Old claim kept for history: 'stores the argument when it differs from the current driver'."
+  "evidence": "decomp:re/decomp/142e19950.c;xref:0x142f35060,0x14f2efe11,0x14f2f1767",
+  "notes": "(dir, u8 car); only when dir+0xd1 set and dir+0xd2 clear. If car is the current camera target: flag 0x40 in g 0x146cc3a80 lists and 0x142a890d0(dir+0x98, dir+0x120); clears the matching slot [[dir+0x30]+0x80][dir+0x140] and bit 8 of [dir+0x30]+0x54. If dir+0xd6 == car: dir+0xdc = 0x142e19bd0(dir,car,1,0) (next driver) and Sess_SpectatorDirector_Update 0x142e18dd0. Callers ghost-fade 0x142f35060 and two .data1 bodies. Better name: Sess_SpectatorDirector_SkipDriver (bound record keeps its name)."
  },
  "signature": {
   "id": "session.spectator_director_request_driver",

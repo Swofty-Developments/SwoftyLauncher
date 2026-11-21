@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143061550",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name sendInitialDataSizeMessage (class from the log channel); log channel NETWORK-DATA: '%s(%d), initial data size: %d'"
+  "evidence": "decomp:re/decomp/143061550.c;pat:log-message-method;xref:0x140997b40",
+  "notes": "If transport state +0x4b4 == 1: stores the data size for conn param_2 (Game_NetworkThrottle_GetDataSent) in the map this+0xf0 and sends a 3-byte type 0x30 message (transport vtable+8); logs \"%s(%d), initial data size: %d\". Returns state == 1. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_data_send_initial_data_size_message",

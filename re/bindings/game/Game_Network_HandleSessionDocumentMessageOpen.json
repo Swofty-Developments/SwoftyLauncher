@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143097c10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name handleSessionDocumentMessageOpen (class from the log channel); log channel NETWORK: '%s(%d)'"
+  "evidence": "decomp:re/decomp/143097c10.c;pat:log-message-method;xref:0x143095e2d",
+  "notes": "Registered by the lea at 0x143095e2d in 0x143095910. Logs 'handleSessionDocumentMessageOpen(%d)'; if [[this+0x420]+0xd8] vt+0x10 equals the arg byte sets +0x765=1 (document open) and tail-jumps 0x14309d6a0 (0x143097cc5). The decomp also prints 0x14309d6a0's body (clearDataCaches). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_handle_session_document_message_open",

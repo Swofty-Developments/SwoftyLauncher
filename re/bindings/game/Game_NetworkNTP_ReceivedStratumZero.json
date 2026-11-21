@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143291870",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-NTP",
-  "notes": "named from its log messages (channel NETWORK-NTP): 'Received from %d.%d.%d.%d, stratum ZERO'"
+  "evidence": "decomp:re/decomp/143291870.c;pat:log-channel-NETWORK-NTP;xref:0x1432925bf",
+  "notes": "NTP receive loop: recvfrom on socket param_2+0x150 (0x546-byte buffer); logs 'Received from %d.%d.%d.%d, stratum %d' / 'stratum ZERO' with KISS code, stratum-1 RefID, odd latency, reference date, inserts the record; ends with 'Receive: got %08X. Terminating the receive thread.'. Entry passed by lea 0x1432925bf in 0x143292290. (lane owner review requested) Better name: Game_NetworkNtp_ReceiveThread (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_ntp_received_stratum_zero",

@@ -10,6 +10,8 @@ use super::state::{EXIT_WAIT, RoomLaunch};
 /// What the room's game asks of the room's session.
 pub(crate) trait RoomSession {
     fn launch_ask(&self) -> Option<LaunchAsk>;
+    /// The session still asks for a launch: it has an ask out and is not over.
+    fn still_asks(&self) -> bool;
     fn launched(&self);
     fn launch_failed(&self, why: &str);
 }
@@ -19,6 +21,11 @@ impl RoomSession for Session {
         self.state().launch
     }
 
+    fn still_asks(&self) -> bool {
+        let state = self.state();
+        state.launch.is_some() && !state.phase.is_over()
+    }
+
     fn launched(&self) {
         Session::launched(self);
     }
@@ -26,6 +33,15 @@ impl RoomSession for Session {
     fn launch_failed(&self, why: &str) {
         Session::launch_failed(self, why);
     }
+}
+
+/// What a withdrawn room launch was waiting on, which the caller stops.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum Withdrawn {
+    /// Its Play checks, still running.
+    Checks,
+    /// The prompt its Play opened.
+    Prompt,
 }
 
 /// The room's game: starting it when the session asks, and following it until it exits.
@@ -39,6 +55,9 @@ pub(crate) struct RoomGame {
     pub(super) ask_seq: u32,
     /// A launch the room started is under way.
     pub(super) launching: bool,
+    /// The launch taken up waits on its Play checks or a prompt: the session is not told yet whether it
+    /// started.
+    pub(super) pending: bool,
     /// A prompt Play opened holds the room launch: its Play goes on with it through `Shell::play`.
     pub(super) held: Option<RoomLaunch>,
     /// When the room's game was first seen gone, while the room waits for the session to write how it ended.
@@ -80,8 +99,10 @@ impl RoomGame {
         self.ask_seq = ask.seq;
         self.seen = false;
         self.launching = true;
+        self.pending = true;
         Some(RoomLaunch {
             row_ids,
+            profile: None,
             direct_start: ask.direct_start,
         })
     }
@@ -100,6 +121,7 @@ impl RoomGame {
             return false;
         }
         self.launching = false;
+        self.pending = false;
         if let Some(session) = session {
             session.launch_failed("Play was cancelled");
         }
@@ -107,6 +129,7 @@ impl RoomGame {
     }
 
     pub(crate) fn launch_result(&mut self, session: Option<&impl RoomSession>, started: bool) {
+        self.pending = false;
         let Some(session) = session else {
             return;
         };
@@ -116,6 +139,25 @@ impl RoomGame {
             self.launching = false;
             session.launch_failed("see the notice, finish what it asks, then try again");
         }
+    }
+
+    /// Drops the launch taken up while it waits on its Play checks or a prompt once the session no longer
+    /// asks for it: the session is gone, being left or over, or its ask went. The session is not told, as it
+    /// withdrew the ask itself. Says what the launch waited on, for the caller to stop.
+    pub(crate) fn withdraw(
+        &mut self,
+        session: Option<&impl RoomSession>,
+        leaving: bool,
+    ) -> Option<Withdrawn> {
+        if !self.pending || (!leaving && session.is_some_and(|s| s.still_asks())) {
+            return None;
+        }
+        self.pending = false;
+        self.launching = false;
+        Some(match self.held.take() {
+            Some(_) => Withdrawn::Prompt,
+            None => Withdrawn::Checks,
+        })
     }
 
     /// The launch `begin` armed ended without the game: `why` says what stopped it.
@@ -165,12 +207,13 @@ mod tests {
     use swofty_core::online::multiplayer::types::LaunchAsk;
     use swofty_core::row_ids::Overrides;
 
-    use super::{RoomGame, RoomSession};
+    use super::{RoomGame, RoomSession, Withdrawn};
     use crate::features::multiplayer::RoomLaunch;
 
     #[derive(Default)]
     struct Told {
         ask: Option<LaunchAsk>,
+        over: bool,
         said: RefCell<Vec<String>>,
     }
 
@@ -200,6 +243,10 @@ mod tests {
             self.ask.clone()
         }
 
+        fn still_asks(&self) -> bool {
+            self.ask.is_some() && !self.over
+        }
+
         fn launched(&self) {
             self.said.borrow_mut().push("launched".into());
         }
@@ -219,6 +266,7 @@ mod tests {
     fn held() -> RoomLaunch {
         RoomLaunch {
             row_ids: None,
+            profile: None,
             direct_start: "lobby".into(),
         }
     }
@@ -291,6 +339,80 @@ mod tests {
         assert_eq!(session.said(), ["failed: Play was cancelled"]);
         game.hold(held());
         assert!(game.drop_held(None::<&Told>));
+    }
+
+    fn taken_up(session: &Told) -> RoomGame {
+        let mut game = RoomGame::default();
+        let ask = game.due(session, false).unwrap();
+        game.begin(session, ask, Path::new("unused")).unwrap();
+        assert!(game.pending && game.launching);
+        game
+    }
+
+    #[test]
+    fn a_launch_the_session_withdrew_is_dropped_without_telling_it() {
+        let asking = Told::asking(5, None);
+        let gone = Told::default();
+        let over = Told {
+            over: true,
+            ..Told::asking(5, None)
+        };
+        assert_eq!(
+            RoomGame::default().withdraw(Some(&gone), true),
+            None,
+            "nothing taken up"
+        );
+
+        let mut game = taken_up(&asking);
+        assert_eq!(game.withdraw(Some(&asking), false), None, "the ask still holds");
+        assert_eq!(
+            game.withdraw(Some(&gone), false),
+            Some(Withdrawn::Checks),
+            "the ask went"
+        );
+        assert!(!game.pending && !game.launching);
+        assert_eq!(game.withdraw(Some(&gone), false), None, "once");
+        assert!(
+            game.due(&asking, false).is_none(),
+            "the withdrawn ask is not taken up again"
+        );
+
+        let mut game = taken_up(&asking);
+        game.hold(held());
+        assert_eq!(
+            game.withdraw(Some(&over), false),
+            Some(Withdrawn::Prompt),
+            "the room is over"
+        );
+        assert!(game.held.is_none() && !game.launching);
+        assert!(
+            !game.drop_held(Some(&over)),
+            "its closed prompt tells nothing more"
+        );
+
+        let mut game = taken_up(&asking);
+        assert_eq!(
+            game.withdraw(Some(&asking), true),
+            Some(Withdrawn::Checks),
+            "the room is left"
+        );
+        let mut game = taken_up(&asking);
+        assert_eq!(
+            game.withdraw(None::<&Told>, false),
+            Some(Withdrawn::Checks),
+            "the session is gone"
+        );
+
+        let mut game = taken_up(&asking);
+        game.launch_result(Some(&asking), true);
+        assert_eq!(
+            game.withdraw(Some(&gone), false),
+            None,
+            "a launch the session was told of is its own"
+        );
+        assert!(game.launching);
+        assert_eq!(asking.said(), ["launched"]);
+        assert!(gone.said().is_empty() && over.said().is_empty());
     }
 
     #[test]

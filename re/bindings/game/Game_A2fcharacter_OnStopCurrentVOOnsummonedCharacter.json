@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14025d0b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onStopCurrentVOOnsummonedCharacter (class from the log channel); log channel A2FCharacter: 'onStopCurrentVOOnsummonedCharacter() - VO [%s] - on Character [%s] state [%s] canInterrupt [%s]'"
+  "evidence": "decomp:re/decomp/14025d0b0.c;pat:log-message-method;xref:0x14025b7cd,0x14025d43b",
+  "notes": "Bus handler for MessageStopCurrentVOForCurrentFacilityHead (subscribed in 0x14025aeb0 lea 0x14025b7cd, unsubscribed in 0x14025d1f0 lea 0x14025d43b). If active (+0x400), VO name +0x2e0 non-empty and state +0x588 in {0,3,4}: logs, 0x14025fe70(this,1) stops the VO, state = 0, posts bus message vt 0x14560b5f8 (Ne_Post_BusMessage). Returns 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.a2fcharacter_on_stop_current_vo_onsummoned_character",

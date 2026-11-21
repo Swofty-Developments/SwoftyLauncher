@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a91720",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-CUSTOMISATION_DECALS",
-  "notes": "named from its log messages (channel CUSTOMISATION_DECALS): 'initialise CustomDecalModelComponent component for vehicle instance %d, vehicle stat id index %d and decal set %d'"
+  "evidence": "decomp:re/decomp/142a91720.c;pat:log-channel-CUSTOMISATION_DECALS;xref:0x1457bdd08",
+  "notes": "Vtable cell 0x1457bdd08. Resolved params into param_2+0xe0..+0xf8, services +0x40..+0x70, components +0x28/+0x30/+0x38/+0x78, Renderer.Gfx.enableCustomisationDecals -> +0x80, init params vehicleIndex -> +0x81, packedVehicleStatId -> +0x82 (rotated), decalSetId -> +0x88; logs 'initialise CustomDecalModelComponent'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.custom_decal_model_init",

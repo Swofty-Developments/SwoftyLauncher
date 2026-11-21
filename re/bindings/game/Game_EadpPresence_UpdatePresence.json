@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144000e30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name updatePresence (class from the log channel); log channel EADP_PRESENCE: 'updatePresence: Successfully updated user presence '"
+  "evidence": "decomp:re/decomp/144000e30.c;pat:log-message-method;xref:0x145a46ae0",
+  "notes": "Callback (vtable cell 0x145a46ae0): no result -> stores error code (+0x28) at owner +0x74; result -> logs 'updatePresence: Successfully updated user presence ' and calls result vcall +0x28(1) (EADP_PRESENCE). (lane owner review requested) Better name: Game_EadpPresence_OnUpdatePresenceResult (bound record keeps its name)."
  },
  "signature": {
   "id": "game.eadp_presence_update_presence",

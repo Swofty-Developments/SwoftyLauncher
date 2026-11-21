@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430c81f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name removeListener (class from the log channel); log channel NETWORK: '%s(%p).'"
+  "evidence": "decomp:re/decomp/1430c81f0.c;pat:log-message-method;xref:0x1421d4693",
+  "notes": "Caller 0x1421d45a0. Logs 'removeListener(%p).', finds the pointer in the vector [+0x30,+0x38), erases it with memmove (0x1453784c0) and decrements the end at +0x38. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_remove_listener",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14412e9e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-AVATARS",
-  "notes": "named from its log messages (channel AVATARS): 'Comparing %llu vs %llu %u vs %u'"
+  "evidence": "decomp:re/decomp/14412e9e0.c;pat:log-channel-AVATARS;xref:0x145a5c118",
+  "notes": "Get avatar image (vtable cell 0x145a5c118): cache lookup (0x144134120 on +0x220); if not cached and not in pending list +0x470 (12-byte {steamId,size}) calls ISteamFriends vt+0x128 (RequestUserInformation); false -> fetch now (0x144134250) and return the cache entry, else add to pending; already pending -> status 0x23. (lane owner review requested) Better name: Game_Avatars_GetOrRequestAvatarImage (bound record keeps its name)."
  },
  "signature": {
   "id": "game.avatars_comparing_vs_vs",

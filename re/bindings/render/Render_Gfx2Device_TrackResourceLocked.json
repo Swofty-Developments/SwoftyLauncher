@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439db490",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439db490.c;xref:0x143c89845,0x143a1297b",
-  "notes": "Under the device critical section (+0x2668) registers a resource (param_2) in the device tracking vector at +0xd48 (16-byte entries, allocator +0xd40, 1.5x growth), sets the res+0x140 link and the lookup map +0x528. Callers Game_Rtt_CreateDeferredLighting and 0x143a12920/0x143bd8b80/0x143dccc60/0x143ea08b0. Hypothesis."
+  "evidence": "decomp:re/decomp/1439db490.c;xref:0x143a1297b,0x143c89845,0x143bd9362",
+  "notes": "Under device CS erases *param_2 from the set +0x4518 (filled by Render_Gfx2Device_CreateTrackedObject 0x1439d7570), bumps +0x4628, removes it from the map +0x350 keyed by obj+0x28, then appends {serial 0x14618c160, obj} to the release vector +0xd48..+0xd58 (allocator +0xd40). Callers 0x143a12920, 0x143bd8b80, 0x143c89460. (lane owner review requested) Better name: Render_Gfx2Device_ReleaseTrackedDeferred (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_device_track_resource_locked",

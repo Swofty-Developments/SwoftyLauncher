@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143083c40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onSessionSearchComplete (class from the log channel); log channel NETWORK-SESSION: '%s(%s, %d sessions).'"
+  "evidence": "decomp:re/decomp/143083c40.c;pat:log-message-method;xref:0x14308149a,0x1430815fa",
+  "notes": "Search callback lea'd twice in 0x143081160 (findGame, quickfindGame): logs 'onSessionSearchComplete', reads GameState, ProgressionPercentage, Region, MatchingClusterID, SafetyRating, MinimumSafetyRating, RaceLength, Privacy attributes (buildEnumeratedGame). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_session_on_session_search_complete",

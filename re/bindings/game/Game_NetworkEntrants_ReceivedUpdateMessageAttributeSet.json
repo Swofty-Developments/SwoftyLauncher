@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-ENTRANTS",
-  "notes": "named from its log messages (channel NETWORK-ENTRANTS): '%s: Received an update message for attribute set with key %u.'"
+  "evidence": "decomp:re/decomp/1431239f0.c;pat:log-channel-NETWORK-ENTRANTS;xref:0x14febcec0",
+  "notes": "AttributeSetReplicationManager::handleAttributeSetUpdate (per __FUNCTION__): logs the key; ignores lead-player messages; findOrGet the attribute set, matches serialisable attributes (emplaceAttributes) and replaces values that differ (\"Replaced its value (%f) with the network value (%f)\"). Better name: Game_AttributeSetRepl_HandleAttributeSetUpdate (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_entrants_received_update_message_attribute_set",

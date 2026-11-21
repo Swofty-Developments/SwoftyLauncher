@@ -79,7 +79,7 @@ fn a_v2_postfx_graph_is_checked_before_it_installs() {
             r#"[
                 { "shader": "fx/b.hlsl", "entry": "down", "name": "down", "inputs": ["original", "dirt"], "output": "half" },
                 { "shader": "fx/b.hlsl", "entry": "up", "options": ["{{amount}}"], "inputs": ["half", "previous"],
-                  "when": { "views": ["cockpit"], "skip": ["paused", "menu"] }, "enabled": "{{on}}" },
+                  "when": { "views": ["cockpit", "trackside", "reverse_pod"], "skip": ["paused", "menu"] }, "enabled": "{{on}}" },
                 { "shader": "fx/c.hlsl", "raw": true, "threads": [16, 16], "output": "accum" }
             ]"#,
         )
@@ -126,7 +126,9 @@ fn a_v2_postfx_graph_is_checked_before_it_installs() {
     );
     assert_eq!(
         pass(r#"{ "shader": "a.hlsl", "when": { "views": ["sky"] } }"#),
-        at("when.views \"sky\" is not one of cockpit, tcam, tcam_offset, chase_near, chase_far, other")
+        at(
+            "when.views \"sky\" is not one of cockpit, tcam, tcam_offset, chase_near, chase_far, other, trackside, reverse_pod"
+        )
     );
     assert_eq!(
         pass(r#"{ "shader": "a.hlsl", "when": { "skip": ["lunch"] } }"#),

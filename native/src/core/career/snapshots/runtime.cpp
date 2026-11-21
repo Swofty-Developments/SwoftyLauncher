@@ -278,6 +278,8 @@ void season_start(const sn::Moment &m)
 {
     if (m.fire)
         hk::events::career_season_start(m.year, m.index);
+    else if (m.dated)
+        swofty_core::apply::moments::career_dated(m.year);
 }
 
 snap::format::Freeze freeze_of(const std::string &data_group)

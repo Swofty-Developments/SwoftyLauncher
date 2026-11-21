@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143ebddd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143ebddd0.c;xref:0x143ce0a68",
-  "notes": "Destructor: DeleteCriticalSection([this+0x1420]) and releases ~20 owned sub-objects (allocator/object pairs at +0x11f8..+0x1418: vcall obj+8 dtor then allocator vcall +0x38 free), then tail 0x143ebe380. Callers Render_GroundCover_Construct (cleanup) and 0x143ce4850. Hypothesis."
+  "evidence": "decomp:re/decomp/143ebddd0.c;xref:0x143ce0a68,0x143ce0ad2,0x143ce4bd1,0x143ce4bfd",
+  "notes": "Destructor of the 0x14e0-byte ground-cover state built by Render_GroundCover_InitState (0x143cee760): DeleteCriticalSection([+0x1420]), owned {allocator,object} pairs +0x13d0..+0x1418, +0x11f8..+0x1250, +0x10a0.. (object vcall +8, allocator +0x38), callable at +0xe58, then 0x143ebe380 on +0x920 and +0x420. Callers 0x143ce0a68/0x143ce0ad2 (Render_GroundCover_Construct, replacing +0x998/+0x9a8), 0x143ce4bd1/0x143ce4bfd (0x143ce4850). (lane owner review requested) Better name: Render_GroundCover_State_Destroy (bound record keeps its name)."
  },
  "signature": {
   "id": "render.ground_cover_destroy",

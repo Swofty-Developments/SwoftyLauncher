@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1435e8920",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1435e8920.c;xref:0x143514c15,0x14351523d",
-  "notes": "(first, last, depth): std::sort introsort loop over 8-byte elements (recursive, memmove insertion). Callers: Car_Fit_UpgradesToRating, Sess_Misconduct_CheckWallRiding."
+  "evidence": "decomp:re/decomp/1435e8920.c;xref:0x143514c15,0x14351523d,0x1435156ec",
+  "notes": "(T **first, T **last, depth): std::sort introsort loop over pointers keyed by int elem+0x78: insertion sort below 0x108 bytes (memmove), heap sort at depth 0, partition and self-recursion. Callers Car_Fit_UpgradesToRating (2), 0x143515360."
  },
  "signature": {
   "id": "core.std_intro_sort_loop",

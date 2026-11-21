@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144030710",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-VOICE",
-  "notes": "named from its log messages (channel NETWORK-VOICE): '%s: Failed to create local device: %hs'"
+  "evidence": "decomp:re/decomp/144030710.c;pat:log-channel-NETWORK-VOICE;xref:0x1430cc259",
+  "notes": "Logs '%s: STUB/MMSYSTEM/SONY VOICE/GAMECHAT2/PLAYFAB PARTY/BLAZE' with method createNetVoiceObject and builds the matching NeNetVoice backend: MMSystem path starts 'voice_chat_decompress_helper_%d' threads, PlayFab path (setupPlayFabPartyChat inlined) creates local device, chat control, connects network, sets audio in/out, TTS profiles. Called from 0x1430cc080. (lane owner review requested) Better name: Game_NetworkVoice_CreateNetVoiceObject (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_voice_create_local_device",

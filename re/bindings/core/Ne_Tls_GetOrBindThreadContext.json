@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b5a390",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/143b5a390.c;xref:0x143b5a78c,0x143b7eb90",
-  "notes": "Hypothesis: two TLS-guarded statics, called from Ne_Gfx2Renderer_GetCommandList path in RenderFrame. Named callers: Ne_Gfx2Renderer_RenderFrame. vp3-verify partial/disagree"
+  "notes": "(pool): TLS index at +4; returns TlsGetValue when set; otherwise lock-decrements the free count +0x108, takes slot [pool+8+(n-1)*8] and binds it with TlsSetValue, returning it. Index -1 or TlsSetValue failure records TLS error 1. Callers Ne_Gfx2Renderer_GetCommandList, Ne_Gfx2Renderer_RenderFrame."
  },
  "signature": {
   "id": "core.gfx2_renderer_init_frame_statics",

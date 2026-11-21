@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1408f1510",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1408f1510.c;xref:0x140750192,0x140750215",
-  "notes": "Clone of the 24-byte vector push (see 0x1408fbc70) for PlayerFinishedDecalEditorSession event."
+  "evidence": "decomp:re/decomp/1408f1510.c;xref:0x140750192,0x140750215,0x1408f0a7e",
+  "notes": "Move push_back on vector {alloc*,begin,end,cap(count)} of 24-byte elements {u64,u32,owned ptr}: grows x1.5 via alloc vcall +0x18, moves elements, releases old owned ptrs (vcall +0x28(p,1)), frees old block (alloc vcall +0x38). Decomp identical to the other 6 clones in this batch. (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_event_param_vec_push_decal_editor_finish",

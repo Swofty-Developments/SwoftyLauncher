@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143ecbad0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143ecbad0.c;xref:0x143bc98bf",
-  "notes": "swiss-style hash map (ne_hash_map.h assert string) grow/rehash of a hash map owned by the tonemapper (Render_PostFx_InitTonemapper); fatal stub 0x143ecb9e0."
+  "notes": "Rehash(bucket_count, flag) of a robin-hood style hash map (info-byte array, max load 80 percent via *0x50/100, info clamp 0xff), allocation through the map allocator with the ne_hash_map.h source string, abort stub 0x143ecb9e0 on failure. Caller 0x143bc98bf in Render_PostFx_InitTonemapper. Not swiss-table as noted before. (lane owner review requested)"
  },
  "signature": {
   "id": "render.post_fx_tonemapper_map_rehash",

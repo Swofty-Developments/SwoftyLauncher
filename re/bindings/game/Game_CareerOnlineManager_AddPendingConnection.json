@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140fe3b30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name addPendingConnection (class from the log channel); log channel CAREER_ONLINE_MANAGER: '%s: connection: %d'"
+  "evidence": "decomp:re/decomp/140fe3b30.c;pat:log-message-method;xref:0x1456b3a88",
+  "notes": "addPendingConnection(id) on the manager sub-object at manager+0x290 (cell 0x1456b3a88): ignored when state +8 > 1; logs, inserts the byte id into the set +0xd0 (alloc +200, 0x1410c68e0); if +0x70 sends message 0x1456bb510 to the peer, and when the session reports 0 (vt+0x78) clears [+0x28]+0x488 and calls owner vt+0x60 and [+0x38] vt+0x270(0). (lane owner review requested)"
  },
  "signature": {
   "id": "game.career_online_manager_add_pending_connection",

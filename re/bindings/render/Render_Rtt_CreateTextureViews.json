@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143d7b320",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143d7b320.c;xref:0x143d81ded",
-  "notes": "Creates a render-target texture and its named views using Ne_StrBuf_Printf formats '%s.rtv', '%s.dsv', '%s.dsv_ro', '%s.dsv_roZ', '%s.uav' (RTV, depth DSV, read-only DSV, read-only-Z DSV, UAV). Caller Game_Rtt_CreateTextures. Addon: names of RTT views."
+  "evidence": "decomp:re/decomp/143d7b320.c;xref:0x143d81ded,0x143d81e1a,0x143d81ea2,0x143d81ef0,0x143d81f34,0x143d81f78",
+  "notes": "Formats '%s.rtv', '%s.dsv', '%s.dsv_ro', '%s.dsv_roZ', '%s.uav' (Ne_StrBuf_Printf), hashes them (Ne_HashedName_FromString) and builds the SRV/RTV/DSV/UAV objects (Render_Gfx2_SrvResource_Construct, 0x143bec970, 0x143bec540, Render_Gfx_UavResource_Construct), each registered with Render_Gfx2_RegisterResourceNotify. Callers Game_Rtt_CreateTextures 0x143d81ded, 0x143d81e1a. (lane owner review requested)"
  },
  "signature": {
   "id": "render.rtt_create_texture_views",

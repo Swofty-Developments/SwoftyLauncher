@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144704b30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144704b30.c;xref:0x14462daf9",
-  "notes": "For each of up to 8 emitter slots at param_3+0x80 pushes {emitter, slot ptr, param_2*0x100, 0} into a per-frame job array (+0x83f7f0, 0x18 stride, max 0x400, frame buffer index +0x87b650, 0x6000 stride). Caller Render_Particles_UpdateVehicleEffects (8+ sites)."
+  "evidence": "decomp:re/decomp/144704b30.c;xref:0x14462daf9,0x14463dd37,0x144640710,0x144641087",
+  "notes": "Rename: for each of 8 slot groups at param_3+0x80 (three emitter pointers per group) pushes {emitter, &slot, vehicle*0x100 + i, kind} into the per-frame list ctx+0x83f7f0 (0x18 stride, max 0x400, buffer index ctx+0x87b650, 0x6000 per buffer), adds op 3 to the command list ctx+0x853810 and nulls the slot. Used on the rewind kill path of Render_Particles_UpdateVehicleEffects (0x14463dd37) and at 0x14462daf9 (0x14462da20). (lane owner review requested) Better name: Render_Particles_QueueVehicleEmitterKill (bound record keeps its name)."
  },
  "signature": {
   "id": "render.particles_queue_vehicle_emitters",

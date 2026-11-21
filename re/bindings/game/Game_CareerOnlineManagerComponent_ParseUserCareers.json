@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_Championship_CareerOnlineManagerComponent_ParseUserCareers;xref:0x1410099f2,0x141009d7c,0x141009eb8,0x14100a06e,0x14100a1be",
-  "notes": "cxx=game::championship::CareerOnlineManagerComponent::parseUserCareers; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/141008bf0.c;str:s_Championship_CareerOnlineManagerComponent_ParseUserCareers;xref:0x1456b7428",
+  "notes": "Not parseUserCareers itself: vt cell 0x1456b7428 (vtable 0x1456b73f0, slot +0x38) of an async operation; switch on state +0x154 (copied to +0x150): request, receive, case 3 = inlined parseUserCareers (CUSTOMISATION logs) + cleanSaveSlotData 0x140fe5900 (0x14100a1e8); 'Career_Online_FailedRetrieveCareers', 'Career_Online_RecoverBackup'. Better name: Game_CareerOnlineRetrieveCareersOp_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.career_online_manager_component_parse_user_careers",

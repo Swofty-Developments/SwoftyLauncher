@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439b9a90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439b9a90.c;xref:0x142433f11",
-  "notes": "Wraps ID3D12Device::CreatePlacedResource (string 'CreatePlacedResource'): validates heap (+0x88/+0xe8/+0x128), fatal-aborts on failure (Ne_FatalAbort), sets debug name with 0x1439b8890. Callers 0x142433b80, 0x142a46250, 0x1439ada80. vp2-verify partial/disagree"
+  "evidence": "decomp:re/decomp/1439b9a90.c;xref:0x142433f11,0x142a46524,0x1439b11f1,0x1439e6187",
+  "notes": "Lock-free bump allocation (CAS on +0x18) aligned 0x10000/0x100/4 by desc flags; past +0x20 -> fatal abort; returns CPU ptr (+0x28 base) and GPU address (+0x30 base). If flags & 0x8000048 creates a placed resource (device vcall +0xe8; +0x128 on 0x887a0005), checks HRESULT (CreatePlacedResource), names it, records it at +0x90. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx2_device_create_placed_resource",

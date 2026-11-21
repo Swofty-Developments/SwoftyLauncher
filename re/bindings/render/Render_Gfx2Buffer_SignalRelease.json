@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439bc250",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439bc250.c;xref:0x143a0f3dc",
-  "notes": "Calls 0x1439e7170 and signals an event (Ne_Event_Set) during release of param_2 (+0x100/+0x110). Called from Render_Gfx2Buffer_Destroy (3 sites). Hypothesis."
+  "evidence": "decomp:re/decomp/1439bc250.c;xref:0x143a0f3dc,0x143a0f633,0x143a131ee",
+  "notes": "Under CS +0x110: releases resource *param_2, frees block param_2[3] to the block allocator of resource block param_2[2] (+0x60, CS +0x10), zeroes param_2[1..3], then Ne_Event_Set(param_1+0x100). Callers in Render_Gfx2Buffer_Destroy and 0x143a12920. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx2_buffer_signal_release",

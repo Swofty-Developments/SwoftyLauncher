@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432266d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name handlePlayerMessage (class from the log channel); log channel NETWORK-READY: '%s: Host sets m_currentPolicyType to [%d] because of client ready monitor.'"
+  "evidence": "decomp:re/decomp/1432266d0.c;pat:log-message-method;xref:0x14ff56328",
+  "notes": "Method name handlePlayerMessage: logs 'MESSAGE Player IX %d monitor %d ready %d at time ..., apocalypse time'; host updates m_currentPolicyType 'because of client ready monitor'. Handler stored by lea 0x14ff56328 in 0x14ff562b0 (.data1), next to HandleSuperMessage and HandleReadyMonitorMessage. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_ready_handle_player_message",

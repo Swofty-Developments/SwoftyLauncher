@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143edb740",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143edb740.c;xref:0x143bf8272",
-  "notes": "FNV-1a 64 name lookup (same layout as FindByFnv1a_B). Callers Render_TerrainPlugin_UpdateVisibility. vq2-verify partial"
+  "evidence": "decomp:re/decomp/143edb740.c;xref:0x143bf8272,0x143c3696f,0x143c36cf7",
+  "notes": "Byte-identical copy of 0x143ec4ff0: FNV-1a over an 8-byte key * seed +0x10, swiss probe ctrl +0x20, 16-byte entries +0x18 compared on the u64; returns slot index or end. Callers 0x143bf4b30 (0x143bf8272) and Render_TerrainPlugin_UpdateVisibility (0x143c3696f, 0x143c36cf7). Better name: Ne_FlatHashMap_FindSlotU64Key_Elem16_D (bound record keeps its name)."
  },
  "signature": {
   "id": "core.name_table_find_by_fnv1a_d",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1424596a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
   "proto": "-",
   "evidence": "decomp:re/decomp/1424596a0.c;xref:0x1424595f8,0x1424a3620",
-  "notes": "vector<EntrantFilter>::push_back for 0x88-byte filter objects (vtable 0x145612e20 header + copied fields). Callers Career_Build_LineupChanges, Sess_Select_Entrants."
+  "notes": "vector<0x88-byte element>::push_back (vector {alloc, begin, end, cap}): on full grows 1.5x via alloc vcall +0x18, copy-constructs elements (vtable 0x145612e20 header, sub-objects 0x145612ef0/0x145612ed0) and the new item, frees the old buffer. Callers Ent_Deserialise_EntrantVector and Sess_Select_Entrants (not Career_Build_LineupChanges); element looks like an entrant record, not a filter. Better name: Sess_EntrantVec_PushBack (bound record keeps its name)."
  },
  "signature": {
   "id": "session.entrant_filter_vec_push_back",

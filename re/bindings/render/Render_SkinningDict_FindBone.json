@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b35af0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143b35af0.c;xref:0x143b1f3a1,0x14465cc40,0x14465e2ef",
-  "notes": "Name id -> string (lock 0x14618ce18), robin_hood lookup in the skinning dictionary; logs 'The skinning dictionary does not contain \"%s\".' / 'key not found' (PARAMETER_STUDIO). Callers: tyre deformation, 0x143b1eb40. (4 xref site(s), fb.py callers.)"
+  "evidence": "decomp:re/decomp/143b35af0.c;xref:0x143b1f3a1,0x14465cc40,0x14465e2ef,0x14465e38d",
+  "notes": "Maps name id *param_2 to its hash via the name table (lock 0x14618ce18, entries 0x10 at [0x14618ce08]+8), robin_hood lookup (info bytes +0x20, 0x18-byte entries at +0x18); on miss logs 'The skinning dictionary does not contain \"%s\".' (PARAMETER_STUDIO), repeats the lookup and throws 'key not found'. Callers incl. Car_TyreDeformation_SetTyre/CreateTyreBody. (lane owner review requested)"
  },
  "signature": {
   "id": "render.skinning_dict_find_bone",

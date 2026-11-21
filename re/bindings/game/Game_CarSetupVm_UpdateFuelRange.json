@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c1cf30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140c1cf30.c;xref:0x140c1cbb5,0x140c1ed86",
-  "notes": "Car setup VM: formats the fuel load range text (lng_cs_fuel_range, '%.1f', lng_num_laps). Callers Game_CarSetupVm_ShowParcFerme, Car_Setup_OnValueChanged."
+  "evidence": "decomp:re/decomp/140c1cf30.c;xref:0x140c1b917,0x140c1cbb5,0x140c1ed86,0x140c1eea2",
+  "notes": "Fuel range text: fraction = player setup +0xd8 (+idx*0x550) / steps tunable 0x14605a798 clamped 0..1, value = lerp(tunables 0x14605a648..0x14605a4f8) / +0x7e40 as '%.1f', min/max ints; builds 'lng_cs_fuel_range (N lng_num_laps)' into node +0x4c60, bool +0x4c80 = 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.car_setup_vm_update_fuel_range",

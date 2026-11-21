@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144049e30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name addPacketToBuilder (class from the log channel); log channel NETWORK-TRANSPORT: '%s: Failed to add packet to [%s] after dispatch!'"
+  "evidence": "decomp:re/decomp/144049e30.c;pat:log-message-method;xref:0x144077073,0x144093bd6",
+  "notes": "Appends a message to the channel's packet builder: header = len&0x7ff | reliability<<11 | flags<<13/<<14, flushes via sendToSocket when over 0x48e/0x492, logs 'addPacketToBuilder' and 'Failed to add packet ... after dispatch!'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_transport_add_packet_to_builder",

@@ -395,6 +395,7 @@ impl Library {
             .profile_names()
             .unwrap_or_default()
             .into_iter()
+            .filter(|name| !swofty_core::online::multiplayer::matching::is_room_profile(name))
             .map(|name| {
                 let p = store.profile(&name).unwrap_or_else(|_| Profile::new(&name));
                 ProfileItem {

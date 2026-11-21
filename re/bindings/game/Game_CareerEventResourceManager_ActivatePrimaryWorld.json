@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c7d310",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=CareerEventResourceManager::activatePrimaryWorld; log channel CareerEventResourceManager: 'CareerEventResourceManager::activatePrimaryWorld'"
+  "evidence": "decomp:re/decomp/140c7d310.c;pat:log-message-cxx;xref:0x140c7a666",
+  "notes": "Logs 'CareerEventResourceManager::activatePrimaryWorld'; under CS [[0x14601db08+0x60]+0x9d0] activates the primary world ([[0x14601f5c8+0x20]+0xf0]+0xe8 via 0x1444bcd80, layer 'podium-crowd.layer') and the 'primary_livery' world; then logs notifyCrowdDataReady and writes the world ids (+0x70/+0x78) to render resource 0x1464d2520 slot 7. (lane owner review requested)"
  },
  "signature": {
   "id": "game.career_event_resource_manager_activate_primary_world",

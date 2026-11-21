@@ -124,6 +124,7 @@ addr	name
 0x1401de400	Game_SceneManager_IsValidModifier
 0x1401df1e0	Game_SceneManager_AddSceneObjects
 0x1401e7aa0	Game_Scene_UpdateInstanceTransformsBatch
+0x1401e8c50	Game_SceneManager_FormatMaterialContexts_Thunk
 0x1401e9150	Game_SceneManager_BuildMaterialActorForScene
 0x1401ed220	Game_SceneManager_ResolveMaterialActorIds
 0x1401ee140	Game_ActorManager_ResetUsageMap
@@ -1060,6 +1061,7 @@ addr	name
 0x140794a00	Game_RetrieveConsumableEntitlementsTask_CollatePackageData
 0x140796010	Game_Steam_ParsePriceOverview
 0x1407972c0	Game_Read_VteEnabled
+0x1407a0eb0	Sess_ParticipantDescVec_PushBack
 0x1407a1310	Game_GameMode_AddTrackLayerWorlds
 0x1407a1870	Game_GameModeBenchmark_OnStartLightsComplete
 0x1407a2250	Sess_Benchmark_InitFromCmdline
@@ -1095,6 +1097,7 @@ addr	name
 0x1407c6380	Career_Collect_ActiveEntriesAt
 0x1407cae80	Game_GameModes_BuildMode
 0x1407d07a0	Game_Game_SetCurrentGameMode
+0x1407d11a0	Sess_Loader_FillSessionDescriptor
 0x1407d18b0	Game_CareerInvitationalFlow_GameModeSystemGameModeDetailsSet
 0x1407d22d0	Career_Find_CareerSaveByPredicate
 0x1407d2820	Game_ModeChampionship_Build
@@ -2369,7 +2372,7 @@ addr	name
 0x1413558e0	Game_StoryScenarios_LoadJson
 0x141356920	Game_StoryScenarios_JumpToChapter
 0x141361440	Career_DeptEvent_ReadConfigEntry
-0x1413663c0	Team_Format_BadgeBroadcastKey
+0x1413663c0	Team_StrVector_CopyAssign
 0x14136ad80	Ne_Vector96_Resize
 0x14136b330	Ne_OptionalVector56_CopyAssign
 0x14136c800	Game_F1os_Create_CompleteStory
@@ -2710,7 +2713,7 @@ addr	name
 0x1417344e0	Ui_HomescreenMyTeamCareer_Init
 0x141734890	Ui_CareerWizardMyTeam_Init
 0x141738eb0	FeTile_Get_ListFirstEntrantId
-0x141739090	FeTile_Unk_141739090
+0x141739090	FeTile_Set_Showroom2026Strings
 0x14173cd40	Ui_PresetEventItem_Populate
 0x14173da20	FeTile_ItemGeneric_Populate
 0x14173da50	FeTile_ItemGeneric_GetAction
@@ -4981,6 +4984,7 @@ addr	name
 0x142d4c140	Sess_Loader_PrepareGridThumbnails
 0x142d4c6a0	Sess_Loader_PlayGridPlayerShotCutscene
 0x142d4d040	Sess_Loader_RequestLoadThumbnails
+0x142d4d890	Sess_Loader_StartTrackWorldTask
 0x142d4e170	Ne_SharedPtr_MoveAssign
 0x142d4e1c0	Ne_SharedPtr_Release
 0x142d4e8c0	Game_Garage_SendVehicleStatusChange
@@ -5132,6 +5136,7 @@ addr	name
 0x142e09950	Game_SessionSettingsData_Dtor
 0x142e0a530	Game_SceneSpawnParams_CopyConstruct
 0x142e0b390	Game_SceneSpawnParams_ResolveAssets
+0x142e0c700	Sess_Build_SessionParticipant
 0x142e0dd20	Team_Load_ShowroomData
 0x142e0e280	Team_Parse_ShowroomHistoryRow
 0x142e106f0	Render_SkyState_BindTodCurves
@@ -7606,6 +7611,7 @@ addr	name
 0x143925e20	Ne_BitStream_ReadQuantisedFloat
 0x143926600	Ne_BitStream_ReadQuantizedFloat
 0x1439268a0	Ne_BitStream_WriteQuantizedFloat
+0x1439272e0	Vm_Pkg_ResolveValueTables
 0x143927510	Vm_Open_Pkg
 0x143927f90	Vm_Find_PkgObjectKey_Thunk
 0x143928e00	Ne_Hash_Md5UpdateLowercased
@@ -7617,6 +7623,7 @@ addr	name
 0x14392a0c0	Ne_StringPool_InternByHash
 0x14392a8b0	Ne_StringTable_Lookup
 0x14392d3a0	Ne_Timer_ConstructQpcDeadline
+0x14392f6e0	Vm_Pkg_ResolveObjectChunk
 0x143930760	Ne_Bag_Clear
 0x143931730	Ne_StringPool_FindObjectByCStr
 0x143931910	Gdb_Find_ReflectedFieldA
@@ -7659,6 +7666,7 @@ addr	name
 0x14396d1a0	Ne_Pool_ComputeBlockRange
 0x14396e9d0	Ne_MemoryMap_CreateHeap
 0x143971e20	Ne_MemoryMap_CreateHeapInternal
+0x143982a20	Ne_MemoryMap_CreateRedirect
 0x143985820	Game_NetworkAsync_AsyncJobQueueSecondsLength
 0x143985c10	Ne_Network_Init
 0x143986470	Ne_Network_StartAsync
@@ -7688,7 +7696,9 @@ addr	name
 0x143995650	Ne_ActorManager_RegisterEntry
 0x143995ae0	Ne_UnorderedMap_RehashBuckets
 0x143995e20	Ne_HashMap_Rehash_Gfx2Renderer
+0x143996af0	Ne_RobinHoodMap_Rehash
 0x1439970c0	Ne_HashMap16_FindSlot
+0x143997250	Ne_RobinHoodMap_GrowForInsert
 0x143997960	Ne_ActorManager_InsertEntryNode
 0x143998930	Ne_NameTable_FindByKey128_Fnv1a
 0x143998b80	Render_FileStream_OpenWrite
@@ -8320,7 +8330,7 @@ addr	name
 0x143f13020	Render_Gfx_ConfigObject_Destroy
 0x143f13130	Render_StaticInit_ResourceTypeDescriptors
 0x143f31280	Game_Ramdisc_Found
-0x143f35a20	Team_Build_TeamLogoKey
+0x143f35a20	Team_Unk_143f35a20
 0x143f393a0	Ne_FileSystem_OpenStream
 0x143f3e5e0	Render_Texture_QueueLoadRequest
 0x143f42110	Ne_PathBuf_Construct
@@ -8811,6 +8821,11 @@ addr	name
 0x144160980	Game_NeUgc_StopPlaytimeTrackingCallbackResult
 0x1441630f0	Ne_Format_String
 0x144165860	Ne_Ref_AssignIntrusiveRc16
+0x144166780	Ui_LayoutTrees_RemoveRoot
+0x144167460	Ui_LayoutTrees_WalkAll
+0x144167620	Ui_LayoutTree_Walk
+0x14416ac00	Ui_LayoutTree_CountSlots
+0x14416ac60	Ui_LayoutTree_FlattenNode
 0x14416b220	Ne_IntrusivePtr_Assign
 0x14416bc70	Vm_Find_NodeFactory
 0x14416c1c0	Ne_UIFlow_UnloadAssetsGroups
@@ -8947,6 +8962,7 @@ addr	name
 0x144321a70	Vm_ViewModel_IsBound
 0x1443379f0	Ne_Make_StrFromBuffer
 0x144343aa0	Ui_Find_NodeByName
+0x144344970	Ui_LayoutTrees_WalkJob
 0x144348a20	Ne_StringMap_EmplaceNode
 0x144349300	Vm_Remap_InstanceSignals
 0x144353880	Game_Read_SubtitlesDataConfig_2
@@ -9010,6 +9026,8 @@ addr	name
 0x144428030	FeFlow_Parse_StateElement
 0x144429640	Ne_AssetGroupSubTask_OnComplete
 0x14442a090	Ne_WorldLoadTask_Update
+0x14442a4f0	Ne_WorldModule_StartPrimaryWorld
+0x14442b4c0	Ne_WorldModule_StartSecondaryWorld
 0x14442d470	Ne_PlayerInputProvider_BindToDeviceNode
 0x14442e3f0	Ne_PlayerInputProvider_SetDeviceBound
 0x14442f0c0	Ne_InputSystem_Init
@@ -9088,6 +9106,7 @@ addr	name
 0x14449e140	Vm_Load_UidfResource
 0x14449f5f0	Game_Read_EDynamicLayoutConfig
 0x1444a1b30	Game_Read_UIConfig
+0x1444a3060	Ui_EngineModule_Update
 0x1444a4b70	Game_Read_RendererGfxConfig_5
 0x1444a56f0	Game_HardwareSettings_FindGraphicsDetailConfig
 0x1444a7290	Game_HardwareSettings_GetOptionsNode
@@ -9639,11 +9658,14 @@ addr	name
 0x144779fd0	Render_SkyRenderer_BindTodCurves
 0x14477d170	Render_SkyRenderer_Update
 0x14477d2d0	Game_Particles_RegisterInstance
+0x14477dbf0	Game_TrackInfoBin_LoadHeightTiles
 0x14477e240	Game_TrackInformation_ParseTrackInfoXml
 0x1447889a0	Render_Gfx_CreateTrackConstantsAndPuddleBuffers
 0x14478c050	Game_WetMap_CreateResources
 0x14478e440	Game_WetMap_PlaceCamera
+0x14478ef10	Game_TrackInformationSystem_Ctor
 0x144790c60	Game_Read_RendererTrackInformationSystemConfig
+0x1447918d0	Game_TrackInformationSystem_SampleHeightTiles
 0x1447921a0	Game_TrackInformationSystem_BindWeatherCurves
 0x144792f50	Game_TrackInfo_SampleWheelSurface
 0x1447942a0	Game_TrackInfoSystem_CreateResourceListeners
@@ -9762,6 +9784,7 @@ addr	name
 0x145378b60	Ne_Crt_Memset
 0x14537eff0	Prot_WinVerifyTrust_Thunk
 0x1473d0fa0	Ui_NoyearCustomMyTeam_Thunk_Body
+0x14741deb0	Game_SceneManager_FormatMaterialContexts_Body
 0x1474fbd30	Game_Cutscene_ResolveTeamStatId
 0x147db8390	Game_PitStopActionObserver_GetLongestStopSequenceLength_Body
 0x147de5cd0	Game_PitstopSystem_FindShowPitstopZone_Body

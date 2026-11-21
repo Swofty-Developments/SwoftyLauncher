@@ -19,11 +19,15 @@ use super::probe::GameWatch;
 use super::{PlayState, Seen, Shell};
 use swofty_i18n::{tr, trf, trn};
 
+/// The profile a launch plays: the room's when the room names one, else the active one.
+pub(crate) fn played_profile<'a>(room: Option<&'a RoomLaunch>, active: &'a str) -> &'a str {
+    room.and_then(|r| r.profile.as_deref()).unwrap_or(active)
+}
+
 #[derive(Default)]
 pub(crate) struct Launching {
     pub(crate) launch: Option<Launch>,
     pub(crate) notice: Option<String>,
-    pub(crate) play_anyway: bool,
     pub(crate) play_pending: play_checks::Pending,
     pub(crate) restoring: bool,
     pub(crate) cancelling: bool,
@@ -205,7 +209,6 @@ pub(crate) enum Step {
     ConfirmOffline,
     FirstLaunch,
     Stop(String),
-    ConfirmRows(String),
     Launch,
 }
 
@@ -229,7 +232,6 @@ impl Step {
         match verdict {
             play_checks::Verdict::Go => Self::Launch,
             play_checks::Verdict::Stop(stop) => Self::Stop(stop),
-            play_checks::Verdict::Confirm(text) => Self::ConfirmRows(text),
         }
     }
 
@@ -237,7 +239,7 @@ impl Step {
     pub(crate) fn played(&self) -> Option<Played> {
         match self {
             Self::Dropped | Self::AdminNeeded | Self::Setup | Self::Stop(_) => Some(Played::Stopped),
-            Self::ConfirmOffline | Self::FirstLaunch | Self::ConfirmRows(_) => Some(Played::Asking),
+            Self::ConfirmOffline | Self::FirstLaunch => Some(Played::Asking),
             Self::Launch => None,
         }
     }
@@ -245,7 +247,7 @@ impl Step {
     /// Past the gate: the last launch's notice, blocked files and crash are cleared and the checks'
     /// notes shown.
     pub(crate) fn clears(&self) -> bool {
-        matches!(self, Self::Stop(_) | Self::ConfirmRows(_) | Self::Launch)
+        matches!(self, Self::Stop(_) | Self::Launch)
     }
 }
 
@@ -257,7 +259,6 @@ pub(crate) enum Prompt {
     Setup,
     ConfirmOffline,
     FirstLaunch,
-    ConfirmRows(String),
     Notice(Notification),
     Damaged(Damaged),
 }
@@ -334,7 +335,6 @@ impl PromptHost<Launching> for Shell {
             Prompt::Setup => self.open_setup(window, cx),
             Prompt::ConfirmOffline => self.confirm_offline_play(window, cx),
             Prompt::FirstLaunch => self.first_launch_notice(window, cx),
-            Prompt::ConfirmRows(text) => self.confirm_missing_rows(text, window, cx),
             Prompt::Notice(note) => window.notify(note, cx),
             Prompt::Damaged(d) => {
                 let note = self.damaged_notification(&d, cx);
@@ -381,12 +381,12 @@ impl Launching {
         let Some(generation) = launching.play_pending.begin() else {
             return false;
         };
+        let profile = played_profile(room.as_ref(), needs.profile);
         let inputs = play_checks::Inputs {
             store: needs.store.clone(),
-            profile: needs.profile.to_owned(),
+            profile: profile.to_owned(),
             game: install.dir.clone(),
             build_id: install.build_id,
-            anyway: std::mem::take(&mut launching.play_anyway),
         };
         // This press's ask only: a dialog, a cancel or a stale result must not hand it to the next Play.
         let steam_saves_once = std::mem::take(&mut launching.steam_saves_once);
@@ -426,7 +426,7 @@ impl Launching {
             crate::app::app_log::note(line);
         }
         let (launching, needs) = host.split();
-        let stale = needs.profile != checked.profile
+        let stale = played_profile(room.as_ref(), needs.profile) != checked.profile
             || needs.game.install.as_ref().map(|i| &i.dir) != Some(&checked.game);
         let step = Step::of(stale, checked.gate, checked.verdict);
         let Some(install) = needs.game.install.clone().filter(|_| step != Step::Dropped) else {
@@ -454,7 +454,6 @@ impl Launching {
                 launching.notice = Some(stop);
                 None
             }
-            Step::ConfirmRows(text) => Some(Prompt::ConfirmRows(text)),
             Step::Dropped | Step::Launch => None,
         };
         for note in &notes {
@@ -496,7 +495,7 @@ impl Launching {
         });
         match Launch::start(
             needs.store,
-            needs.profile,
+            played_profile(room.as_ref(), needs.profile),
             &install,
             needs.mode,
             armed.as_deref(),
@@ -624,6 +623,23 @@ mod tests {
     use swofty_core::install::Source;
 
     use super::{Launching, Played, Press, Step};
+
+    #[test]
+    fn a_room_launch_plays_the_room_profile_and_others_the_active_one() {
+        use crate::features::multiplayer::RoomLaunch;
+        let room = RoomLaunch {
+            row_ids: None,
+            profile: Some("-room".into()),
+            direct_start: "lobby".into(),
+        };
+        assert_eq!(super::played_profile(Some(&room), "mine"), "-room");
+        let hosting = RoomLaunch {
+            profile: None,
+            ..room
+        };
+        assert_eq!(super::played_profile(Some(&hosting), "mine"), "mine");
+        assert_eq!(super::played_profile(None, "mine"), "mine");
+    }
     use crate::services::game::{Copies, Install, Owner};
     use crate::services::play_checks::{Gate, Verdict};
     use crate::shell::PlayState;
@@ -798,14 +814,6 @@ mod tests {
         let step = Step::of(false, PASSED, Verdict::Stop("a mod is broken".into()));
         assert_eq!(step, Step::Stop("a mod is broken".into()));
         assert_eq!(step.played(), Some(Played::Stopped));
-        assert!(step.clears());
-    }
-
-    #[test]
-    fn missing_rows_ask_before_launching() {
-        let step = Step::of(false, PASSED, Verdict::Confirm("2 rows are missing".into()));
-        assert_eq!(step, Step::ConfirmRows("2 rows are missing".into()));
-        assert_eq!(step.played(), Some(Played::Asking));
         assert!(step.clears());
     }
 

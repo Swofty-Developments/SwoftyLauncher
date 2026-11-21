@@ -3,7 +3,6 @@ use crate::shell::notices::{Notification, Notify};
 use crate::ui::scale::px;
 use crate::ui::theme::palette;
 use gpui_kit::component::WindowExt;
-use gpui_kit::component::button::ButtonVariant;
 use gpui_kit::*;
 use swofty_core::platform::process::stop_game_in;
 
@@ -14,30 +13,6 @@ use swofty_i18n::tr;
 impl Shell {
     /// First launch: the offline play terms, shown as a dialog on Play.
     /// Accepting records consent and launches; declining changes nothing.
-    pub(super) fn confirm_missing_rows(&mut self, text: String, window: &mut Window, cx: &mut Context<Self>) {
-        let shell = cx.entity().downgrade();
-        window.open_alert_dialog(cx, move |alert, _, _| {
-            let shell = shell.clone();
-            alert
-                .width(px(520.))
-                .title(tr("Careers that need addons"))
-                .description(text.clone())
-                .ok_text(tr("Play anyway"))
-                .ok_variant(ButtonVariant::Danger)
-                .show_cancel(true)
-                .on_ok(move |_, window, cx| {
-                    window.close_dialog(cx);
-                    shell
-                        .update(cx, |s, cx| {
-                            s.launching.play_anyway = true;
-                            s.play(window, cx);
-                        })
-                        .ok();
-                    false
-                })
-        });
-    }
-
     pub(crate) fn confirm_offline_play(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         let shell = cx.entity().downgrade();
         let store = self.store.clone();
