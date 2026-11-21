@@ -9,7 +9,7 @@
   "subsystem": "career",
   "proto": "-",
   "evidence": "decomp:re/decomp/140d8df10.c;pat:log-channel-CONTRACT_RENEWAL;xref:0x140d8c169,0x140d8c239,0x140d8c33b,0x140d8c3c9",
-  "notes": "Returns 1 if any entrant row with +0x4b&0x10 has its driver key in the list +0x308..+0x310 (u16 packed byte<<14|key), logging 'Human driver available: %s'. 18 callers. (lane owner review requested)"
+  "notes": "Returns 1 if any entrant row with +0x4b&0x10 has its driver key in the list +0x308..+0x310 (u16 packed byte<<14|key), logging 'Human driver available: %s'. callers. (lane owner review requested)"
  },
  "signature": {
   "id": "career.contract_renewal_human_driver_available",

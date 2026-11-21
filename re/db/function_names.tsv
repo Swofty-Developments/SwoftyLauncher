@@ -561,6 +561,7 @@ addr	name
 0x1403a06b0	Car_Visual_UpdateSlotBlend
 0x1403a1790	Game_Update_CockpitHaloNode
 0x1403a33a0	Game_InCarDriver_EvaluateAnimLayers
+0x1403a6400	Ne_AnimClipPlayer_Sample_Thunk
 0x1403a7040	Game_InCarDriverComponent_Spawn
 0x1403ad360	Game_PitStops_SetupCrew
 0x1403b36a0	Game_PitStopInstance_PlaySequence
