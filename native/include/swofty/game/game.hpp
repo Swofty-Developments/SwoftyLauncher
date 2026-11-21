@@ -670,6 +670,8 @@ inline constexpr address<"Game_FanZoneStandingsVM_OnSkip"> Game_FanZoneStandings
 inline constexpr address<"Game_FanZone_BuildStandingsDriverList"> Game_FanZone_BuildStandingsDriverList{}; // L2 experimental
 inline constexpr address<"Game_FanzonesOnboardingVM_FadeIn"> Game_FanzonesOnboardingVM_FadeIn{}; // L2 experimental
 inline constexpr address<"Game_FeaturedEventModeComponent_SetupStartingGrid"> Game_FeaturedEventModeComponent_SetupStartingGrid{}; // L2 experimental, FeaturedEventModeComponent::setupStartingGrid
+using Game_FfbThrustmaster_ConfigureEffects_t = int32_t(void *effect, const float *lanes);
+inline constexpr fn<"Game_FfbThrustmaster_ConfigureEffects", Game_FfbThrustmaster_ConfigureEffects_t> Game_FfbThrustmaster_ConfigureEffects{}; // L2 experimental
 using Game_Fill_PerformanceComparison_t = void(void *comparison);
 inline constexpr fn<"Game_Fill_PerformanceComparison", Game_Fill_PerformanceComparison_t> Game_Fill_PerformanceComparison{}; // L2 experimental
 inline constexpr address<"Game_FlowState_EnterBootLogout"> Game_FlowState_EnterBootLogout{}; // L2 experimental
@@ -1114,6 +1116,8 @@ inline constexpr fn<"Game_RaceMarshalSystem_Update", Game_RaceMarshalSystem_Upda
 inline constexpr address<"Game_RaceSession_FinaliseAndSetLapsPct"> Game_RaceSession_FinaliseAndSetLapsPct{}; // L2 experimental
 using Game_RaceStrategyVm_Populate_t = void(void *vm);
 inline constexpr fn<"Game_RaceStrategyVm_Populate", Game_RaceStrategyVm_Populate_t> Game_RaceStrategyVm_Populate{}; // L2 experimental
+using Game_RacingFFBEffectDirectInput_UpdateDeviceEffects_t = int32_t(void *effect, const float *lanes);
+inline constexpr fn<"Game_RacingFFBEffectDirectInput_UpdateDeviceEffects", Game_RacingFFBEffectDirectInput_UpdateDeviceEffects_t> Game_RacingFFBEffectDirectInput_UpdateDeviceEffects{}; // L2 experimental
 inline constexpr address<"Game_RacingVehicles_Initialise"> Game_RacingVehicles_Initialise{}; // L2 experimental
 inline constexpr address<"Game_RainfallSystem_Initialise"> Game_RainfallSystem_Initialise{}; // L2 experimental
 inline constexpr address<"Game_RankedDivision_StartSearch"> Game_RankedDivision_StartSearch{}; // L2 experimental

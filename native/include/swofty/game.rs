@@ -3877,6 +3877,7 @@ pub type Car_Create_DetachablePart_t = unsafe extern "C" fn(
     k: f32,
 ) -> *mut c_void;
 pub type Car_DetachablePart_Update_t = unsafe extern "C" fn(part: *mut c_void, dt: f32) -> bool;
+pub type Car_Engine_UpdateWear_t = unsafe extern "C" fn(engine: *mut c_void, dt: f32);
 pub type Car_FrontWing_Init_t = unsafe extern "C" fn(front_wing: *mut c_void, reset: c_char);
 pub type Car_GearBox_UpdateShiftTimersAndFaults_t = unsafe extern "C" fn(gearbox: *mut c_void, dt: f32);
 pub type Car_PitStop_ApplyTyreAndWingVisuals_t =
@@ -4459,6 +4460,8 @@ pub type Game_F1World_AssignDefaultFanzoneChoices_t = unsafe extern "C" fn(self_
 pub type Game_FEHomeViewModel_OnUpdate_t = unsafe extern "C" fn(vm: *mut FEHomeViewModel, dt: f32);
 pub type Game_Failure_Apply_t =
     unsafe extern "C" fn(fail_sys: *mut c_void, fault_rec: *mut c_void, silent: bool);
+pub type Game_FfbThrustmaster_ConfigureEffects_t =
+    unsafe extern "C" fn(effect: *mut c_void, lanes: *const f32) -> i32;
 pub type Game_Fill_PerformanceComparison_t = unsafe extern "C" fn(comparison: *mut c_void);
 pub type Game_FrontendTransitionVM_OnScreenActivated_t = unsafe extern "C" fn(vm: *mut c_void);
 pub type Game_FullRaceReplaySystem_Init_t = unsafe extern "C" fn(
@@ -4572,6 +4575,8 @@ pub type Game_Predict_StrategyWetness_t =
     unsafe extern "C" fn(self_: *mut c_void, window3: *const f32) -> f32;
 pub type Game_RaceMarshalSystem_Update_t = unsafe extern "C" fn(system: *mut c_void, dt: *mut f64);
 pub type Game_RaceStrategyVm_Populate_t = unsafe extern "C" fn(vm: *mut c_void);
+pub type Game_RacingFFBEffectDirectInput_UpdateDeviceEffects_t =
+    unsafe extern "C" fn(effect: *mut c_void, lanes: *const f32) -> i32;
 pub type Game_Read_GridConfig_t = unsafe extern "C" fn(placement: *mut c_void);
 pub type Game_Read_QualifyingConfig_t = unsafe extern "C" fn(track_data_system: *mut c_void);
 pub type Game_Read_StoryForcedTitleUpdateValueSetting_t = unsafe extern "C" fn(ctx: *mut c_void) -> bool;
@@ -5628,6 +5633,11 @@ pub mod bindings {
     };
     pub const Car_Engine_ComputeDerived_Thunk: Binding = Binding {
         id: "Car_Engine_ComputeDerived_Thunk",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Car_Engine_UpdateWear: Binding = Binding {
+        id: "Car_Engine_UpdateWear",
         kind: "func",
         status: Status::Experimental,
     };
@@ -10386,6 +10396,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_FfbThrustmaster_ConfigureEffects: Binding = Binding {
+        id: "Game_FfbThrustmaster_ConfigureEffects",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_Fill_PerformanceComparison: Binding = Binding {
         id: "Game_Fill_PerformanceComparison",
         kind: "func",
@@ -12388,6 +12403,11 @@ pub mod bindings {
     };
     pub const Game_RaceStrategyVm_Populate: Binding = Binding {
         id: "Game_RaceStrategyVm_Populate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_RacingFFBEffectDirectInput_UpdateDeviceEffects: Binding = Binding {
+        id: "Game_RacingFFBEffectDirectInput_UpdateDeviceEffects",
         kind: "func",
         status: Status::Experimental,
     };
