@@ -720,6 +720,7 @@ export default defineConfigWithTheme<DocsThemeConfig>({
                       { text: "Standings", link: "/reference/std/standings", icon: "file" },
                       { text: "Database", link: "/reference/std/db", icon: "file" },
                       { text: "Storage", link: "/reference/std/storage", icon: "file" },
+                      { text: "Game assets", link: "/reference/std/game-assets", icon: "file" },
                       { text: "Career", link: "/reference/std/career", icon: "file" },
                       { text: "Popup", link: "/reference/std/popup", icon: "file" },
                       { text: "Race HUD", link: "/reference/std/hud", icon: "file" },

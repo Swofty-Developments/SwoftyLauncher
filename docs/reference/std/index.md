@@ -136,6 +136,7 @@ Each entry names the header, the `SwoftyApi` member and its API version, the fea
   - **[Weather setup](./weather)** (`swofty/systems/weather.hpp`): the `session.weather.setup` event, the session's seed and a scripted forecast per dataset. The hooks table, API 9; feature `events` (stable) and `SWOFTY_WEATHER_CHAIN=1`; the thread that sets up the session.
   - **[Standings](./standings)** (`swofty/systems/career.hpp`): the loaded career's drivers' championship in the game's order, with each driver's points and finishes per round. The career operations table, version 8; feature `career`; the flow thread.
   - **[Telemetry](./telemetry)** (`swofty/telemetry.hpp`): live car, session and participant reads. `telemetry`, API 5; feature `telemetry` (experimental); the flow thread.
+  - **[Game assets](./game-assets)** (`swofty/game_assets.hpp`): the game's own resources by `eaid://` URI, textures decoded to RGBA8 and UI image catalogue entries. The core export `SwoftyCoreGameAssets`, any API version; no feature; a thread of your own.
   - **[Database read](./db)** (`swofty/db.hpp`): read values and walk tables of the game database. `db`, API 5; feature `db` (stable); the caller's thread.
   - **[Career](./career)** (`swofty/career.hpp`): flow states, the running career, its components, the game bus and career-mode blocks. `career`, API 6 (`block` and `unblock` 7); feature `career` (stable); the flow thread.
 - **What the player sees**
@@ -170,6 +171,7 @@ packages/sdk/include/
   swofty/systems/race_control.hpp  flag, safety car, red flag, sector and result status events
   swofty/db.hpp             game-database reads
   swofty/storage.hpp        addon storage
+  swofty/game_assets.hpp    the game's resources, textures and UI image catalogues
   swofty/career.hpp         flow states, the running career, its components, the game bus and career-mode blocks
   swofty/popup.hpp          the game's message popup with your text
   swofty/lang.hpp           runtime string overrides
