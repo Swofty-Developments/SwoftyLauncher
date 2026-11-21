@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143a04490.c;xref:0x1401293f4",
-  "notes": "Looks up the per-frame resource copy (+0x2a8 + frame*8, frame index at device+0x148), size = width(+0x22c) * height(+0x22e) * (1 or 2 by format +0x230) and issues command-list vcall +0x158 (copy region) on param_1+0x60. Callers 0x1401290e0, 0x143c2e240. Hypothesis."
+  "evidence": "decomp:re/decomp/143a04490.c;xref:0x1401293f4,0x143c2e2d1,0x143c3b15c",
+  "notes": "Residency insert of param_2 per-frame object (+0x2a8+frame*8), picks the GPU object (+0x1c0+frame*0x20 or the +0x200 per-frame table), size = +0x22c * +0x22e * (2 for format ids 0x13, 0x14, 0x2c, 0x2d else 1) and calls list vcall +0x158 with (object, param_5, size, param_3, param_4, param_2+0x10, param_6). Callers 0x1401290e0, 0x143c2e240, 0x143c3afd0."
  },
  "signature": {
   "id": "render.gfx2_upload_texture_subresource",

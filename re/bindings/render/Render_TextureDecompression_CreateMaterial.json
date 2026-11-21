@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143df22c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143df22c0.c;xref:0x14010a112",
-  "notes": "Creates the GPU texture-decompression material: 'texture_decompression_new.material' from eaid://shader_package/texture_decompression/..., name 'HBCN', 'Construct generator %p'; BindLayout_Create + FillMeTextureSlots + resource notify. 1985 bytes, 1 caller in the Render_Gfx config build."
+  "notes": "Creates the GPU texture-decompression material: texture_decompression_new.material from eaid://shader_package/texture_decompression/texture_decompression.nefx2, name HBCN, log Construct generator %p; Render_Gfx2_BindLayout_Create, Render_Material_FillMeTextureSlots, Render_Material_CountResourceSlots, Render_Gfx2_RegisterResourceNotify. Caller 0x14010a112 in Render_Gfx_BuildConfigObject (0x140104f70). (lane owner review requested)"
  },
  "signature": {
   "id": "render.texture_decompression_create_material",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143114aa0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name dropInToEntrant (class from the log channel); log channel NETWORK-ENTRANTS: '%s: sending EntrantsDocumentMessageDropIn message'"
+  "evidence": "decomp:re/decomp/143114aa0.c;pat:log-message-method;xref:0x140fe1244,0x1431156f5,0x14323c8b5",
+  "notes": "Logs dropInToEntrant new player; finds the entrant for param_2 and the dropping-in player param_3 in the player set (user id), takes team position and car number (Ent_Get_Driver_Thunk), replaces the entry (0x142456df0); host sends EntrantsDocumentMessageDropIn via 0x14402e500 and calls 0x143114790 for new players. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_entrants_drop_in_to_entrant",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143255110",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'MOX/Mechanical: New connection %02d'"
+  "evidence": "decomp:re/decomp/143255110.c;pat:log-channel-NETWORK;xref:0x14582ce08",
+  "notes": "Logs \"MOX/Mechanical: New connection %02d\" (NETWORK) then tail-jumps (jmp 0x143255191) to 0x143254b60 Game_Network_OLIMechanicalSendSessionData with the same this/conn id. Decomp shows the jumped-to body inline. (lane owner review requested) Better name: Game_Network_MOXMechanical_OnNewConnection (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_mox_mechanical_new_connection",

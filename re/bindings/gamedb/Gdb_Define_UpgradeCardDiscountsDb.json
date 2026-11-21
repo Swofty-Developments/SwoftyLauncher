@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142726590",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "gamedb",
   "proto": "void Gdb_Define_UpgradeCardDiscountsDb(void * self)",
   "evidence": "decomp:re/decomp/142726590.c;xref:0x1425bcd0d",
-  "notes": "myteam-g1: Defines tables Upgrade_CarPart and Upgrade_TeamMember of f1_world.upgrade_cards.discounts.db (DiscountInfo schema, two sub-tables at +0 and +0x48)."
+  "notes": "Defines four DiscountInfo tables of 'f1_world.upgrade_cards.discounts' (inline name) through 0x142725e80: Upgrade_CarPart at +0, Upgrade_TeamMember +0x48, Dismantle_CarPart +0x90, Dismantle_TeamMember +0xd8. Called from 0x1425bacf0."
  },
  "signature": {
   "id": "gamedb.define_upgrade_card_discounts_db",

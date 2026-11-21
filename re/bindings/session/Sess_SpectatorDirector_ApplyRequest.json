@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e1a0f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
   "proto": "void(SpectatorDirector*)",
-  "evidence": "decomp:re/decomp/142e1a0f0.c;xref:0x142e1a0f0",
-  "notes": "Validates the requested driver/camera through 0x142e19220 (camera out value 1 or 2 is valid), applies them with Sess_SpectatorDirector_SetCurrent when active, then requests a fade in."
+  "evidence": "decomp:re/decomp/142e1a0f0.c;xref:0x142e18f52",
+  "notes": "Deferred callback: Sess_SpectatorDirector_Update stores it at dir+0x108 (ctx +0x110) via lea 0x142e18f52. Reads requested driver dir+0xdc / camera dir+0xe0, validates via 0x142e19220; inactive (dir+0xd1==0) -> dir+0xd6=0xff, +0xd8=-1, else Sess_SpectatorDirector_SetCurrent. If dir+0xd4/+0xd5: callback 0x142e1a3b0 at +0xf8/+0x100, FADE_REQUESTS log 'Spectate requested a fade in', clears bit 0x80 of [dir+0x80]+0x7b8, queues via 0x140317be0."
  },
  "signature": {
   "id": "session.spectator_director_apply_request",

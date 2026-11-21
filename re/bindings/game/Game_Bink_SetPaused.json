@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143f893b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-AUDIO_BINK",
-  "notes": "named from its log messages (channel AUDIO_BINK): '*** UNPAUSING BINK '%s' *** | *** PAUSING BINK '%s' ***'"
+  "evidence": "decomp:re/decomp/143f893b0.c;pat:log-channel-AUDIO_BINK;xref:0x145a41a40",
+  "notes": "Not only pause: NeVideoDecoderBink per-frame update (vtable cell 0x145a41a40). Pause edge (+0x111 bit0 vs bit1): logs, posts pause_/resume_bink_(cinematic_)sfx/music/speech/motion, BinkPause; then BinkWait/DoFrameAsync/ShouldSkip/NextFrame or BinkGoto, audio sync, BinkCurrentSubtitle -> subtitle callback, rotates 3 plane texture sets, smoothed frame time. (lane owner review requested) Better name: Game_VideoDecoderBink_UpdateFrame (bound record keeps its name)."
  },
  "signature": {
   "id": "game.bink_set_paused",

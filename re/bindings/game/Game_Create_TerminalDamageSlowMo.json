@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f47480",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "void Game_Create_TerminalDamageSlowMo(void *self, uint8_t vehicle, uint32_t arg)",
-  "evidence": "decomp:re/decomp/142f47480.c",
-  "notes": "creates the terminal-damage 'red slow-mo' object (0x70 bytes, vtable 0x1457f9100) for a vehicle: max duration from setting terminal_damage.red_slowmo.max_duration (default 5.0 s), time multiplier from terminal_damage.red_slowmo.time_multiplier (default 0.5, +0.0001), both read through the settings node lookup 0x1445a22f0; skipped for a vehicle whose state is 5; sends a time-scale message (0x1457c9270) when [[+0x38]+0x88]+0x260 +0xe2d is set."
+  "evidence": "decomp:re/decomp/142f47480.c;xref:0x142d9128e,0x142d97bdf,0x14eb1d356",
+  "notes": "(mgr, vehicle idx, arg): 0x70 bytes (vtable 0x1457f9100); enable byte +0x11 cleared when the vehicle state (+0x60/+0x68 of entry idx*0x70) is 5; +0x60 terminal_damage.red_slowmo.max_duration (default 5.0), +0x68 ...time_multiplier + 0.0001 (default 0.5001); 0x142f50e70 on [mgr+0x38]; time-scale message 0x1457c9270 when [[[mgr+0x28]+0x88]+0x260]+0xe2d; appended to list +0x60. (lane owner review requested)"
  },
  "signature": {
   "id": "game.create_terminal_damage_slow_mo",

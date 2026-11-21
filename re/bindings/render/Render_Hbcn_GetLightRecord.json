@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143d1dd20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143d1dd20.c;xref:0x143d1e645",
-  "notes": "Under critical section copies one 0x1e0-byte light record (position, direction, flags) and logs \"generate: light %u/%u update=%u slot=%u\". Callers Render_Hbcn_GenerateSingleLight, Render_Hbcn_GenerateAllLights."
+  "evidence": "decomp:re/decomp/143d1dd20.c;xref:0x143d1e645,0x143d1ebad",
+  "notes": "Under the critical section of [+0xb0] reads light record param_3 (stride 0x1e0, flags +0x98/+0xa8), ANDs its mask with the masks of the four resources +0x210..+0x228 (if active +0x6c), logs 'generate: light %u/%u update=%u slot=%u' (channel IBL), stores the mask at record+0xad, returns two bools (mask>1, mask&1). Callers Render_Hbcn_GenerateSingleLight 0x143d1e645, Render_Hbcn_GenerateAllLights 0x143d1ebad. (lane owner review requested) Better name: Render_Hbcn_ComputeLightUpdateFlags (bound record keeps its name)."
  },
  "signature": {
   "id": "render.hbcn_get_light_record",

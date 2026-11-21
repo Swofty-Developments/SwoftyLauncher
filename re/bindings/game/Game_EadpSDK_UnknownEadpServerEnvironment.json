@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-EadpSDK",
-  "notes": "named from its log messages (channel EadpSDK): 'Unknown EADP server environment: %s. Defaulting to PROD'"
+  "evidence": "decomp:re/decomp/143fd16b0.c;pat:log-channel-EadpSDK;xref:0x145a44cc8",
+  "notes": "Virtual (vtable cell 0x145a44cc8). Seen: server environment by string compares ('Unknown EADP server environment: %s. Defaulting to PROD'), client 'fone' with redirect 'fone://success' and channel 'eadp.adept.v1.core.grpc', 'New signed in state: %s', 'Cleared Friends cache', 'Updating presence for user Id %I64u to %d'. Better name: Game_EadpSDK_InitClient (bound record keeps its name)."
  },
  "signature": {
   "id": "game.eadp_sdk_unknown_eadp_server_environment",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144711290",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "pat:log-channel-SKIDMARKS",
-  "notes": "trackinfo parser for skid marks and the wetness section: SKIDMARKS, SKIDMARKS_BLEED, TYRE_RESIDUE, SKIDMARKS_CONFIG, WETNESS (wet_range, duration_no_rain, duration_full_rain, puddle_range), CAR_MARKS_ENABLE. The car marks are what dries the racing line in the wetness map."
+  "evidence": "decomp:re/decomp/144711290.c;pat:log-channel-SKIDMARKS;xref:0x144711124",
+  "notes": "Parses the skid-mark trackinfo sections: SKIDMARKS (depthBias, depthSlopeBias, SURFACE, TREAD, SKID/SIDESKID, StartU/EndU/WidthScale/Fade*/Tint), SKIDMARKS_BLEED, TYRE_RESIDUE (residueID, bleed*), SKIDMARKS_CONFIG (ALBEDO, NORMAL, DEPTH, LOD_DISTANCE, FADE_DURATION, EFFECT_MATERIAL), WETNESS (wet_range, duration_no_rain, duration_full_rain, puddle_range), CAR_MARKS_ENABLE, SAMPLE_RHS_WHEEL_V_OFFSET. Caller 0x144711124 in 0x1447110e0 (allocates the 8-byte owner; vtable cell 0x145c019b0). (lane owner review requested)"
  },
  "signature": {
   "id": "render.skidmarks_init",

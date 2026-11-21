@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143609c50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): '[SAFETY_CAR] received Teleport message for safety car index: %d'"
+  "evidence": "decomp:re/decomp/143609c50.c;pat:log-channel-NETWORK;xref:0x143607868",
+  "notes": "Logs \"[SAFETY_CAR] received Teleport message for safety car index: %d\" (msg+0x10) when this+8 < 2, then tail-jumps (jmp 0x143609ce6) to 0x143609cf0 with msg+0x14 as payload. Decomp shows the jumped-to body inline. (lane owner review requested) Better name: Game_Network_SafetyCar_OnTeleportMessage (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_received_teleport_message_safety_car",

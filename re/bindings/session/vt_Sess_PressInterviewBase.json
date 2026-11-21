@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1457e8a80",
-  "type": "vtable[11]",
+  "type": "vtable[21]",
   "level": "L2",
   "subsystem": "session",
-  "evidence": "pat:flow-state-type-record;xref:0x14607f738;decomp:re/decomp/142df8d40.c",
-  "notes": "cxx=SessionStatePressInterviewBase; neon flow state (slot 2 = NeFlowState base 0x1436aef00, slot 0 returns type record 0x14607f738 whose +8 names the class); onStateEnter 0x1436af570, onStateUpdate 0x1436af580, onStateExit 0x1436af590 (slots 8/9/10). (vmknolle session-flow map)"
+  "evidence": "pat:flow-state-type-record;decomp:re/decomp/142df8d40.c;xref:0x142df8e01,0x142ecb9ee,0x14ef4a15f,0x14ef4cdd8,0x14f4e85b4,0x14f4ff5de",
+  "notes": "cxx=SessionStatePressInterviewBase; 21 slots (next vtable at +0xa8, lea 0x142efc866). Slot 0 -> type record 0x14607f738, +8=name set by static init 0x142efc190 at 0x142efc840. Slot 2 NeFlowState base 0x1436aef00; slots 8/9/10 onStateEnter/Update/Exit 0x1436af570/0x1436af580/0x1436af590. Ctor 0x142df8d40 (lea 0x142df8e01; mov [rsi],rax). Also loaded by 0x142ecb9e0,0x14f4ff5d0 (dtor, [rcx])."
  },
  "signature": {
   "id": "session.press_interview_base",

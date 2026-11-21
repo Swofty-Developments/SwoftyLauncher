@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432bb6d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_OnlineServer_InternalOnLoginFinished;xref:0x1432bb849,0x1432bb8b9,0x1432bbc38",
-  "notes": "cxx=game::OnlineServer::internalOnLoginFinished; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1432bb6d0.c;str:s_OnlineServer_InternalOnLoginFinished;xref:0x145834550",
+  "notes": "Logs its pretty name game::OnlineServer::internalOnLoginFinished(shared_ptr<OnlineServerLogInTask>): 'Log in status = %s', 'Resetting log in data first' (Game_OnlineServer_ResetLoginData), 'Attempting to set log in data...', then posts a bus message. Only reference: vtable cell 0x145834550 (vtable 0x145834540 after the string OnlineServer, slot 2). (lane owner review requested)"
  },
  "signature": {
   "id": "game.online_server_internal_on_login_finished",

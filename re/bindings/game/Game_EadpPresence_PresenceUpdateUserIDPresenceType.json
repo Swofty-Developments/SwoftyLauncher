@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143fd71f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-EADP_PRESENCE",
-  "notes": "named from its log messages (channel EADP_PRESENCE): 'On presence update (Friends Cache) - User ID = %I64u presence type = %d, platform = %d'"
+  "evidence": "decomp:re/decomp/143fd71f0.c;pat:log-channel-EADP_PRESENCE;xref:0x143fd0232,0x143fd027d,0x143fd1310",
+  "notes": "Handler fn ptr (lea 0x143fd0232/0x143fd027d in 0x143fcd400, 0x143fd1310 in 0x143fd0fa0). Logs 'On presence update (Friends Cache) - User ID...' (id param_2[2], type +0x18, platform +0x48); if +0x81 set updates the matching friend in vector +0x50..+0x58 (stride 0xa8) or logs 'Presence updated: adding new friend' and queues batch get player cards. (lane owner review requested) Better name: Game_EadpPresence_FriendsCache_OnPresenceUpdate (bound record keeps its name)."
  },
  "signature": {
   "id": "game.eadp_presence_presence_update_user_id_presence_type",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=AutoTestSearcher::onCustomSearchCompletedDelegate; log channel NETWORK-INVITE: 'AutoTestSearcher::onCustomSearchCompletedDelegate(success=%d, neterr=%d)'"
+  "evidence": "decomp:re/decomp/143160580.c;pat:log-message-cxx",
+  "notes": "AutoTestSearcher::onCustomSearchCompletedDelegate (own log strings in the body)."
  },
  "signature": {
   "id": "game.auto_test_searcher_on_custom_search_completed_delegate",

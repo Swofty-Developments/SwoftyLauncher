@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439e8cf0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439e8cf0.c;xref:0x151fbc6c7,0x15571825e,0x1591d44c7",
-  "notes": "Writes a packet header field sequence through a stream object (vtable +0x30); no direct callers (vtable use). Hypothesis. vp2-verify partial/disagree"
+  "evidence": "decomp:re/decomp/1439e8cf0.c;xref:0x151fbc6c7,0x15571825e",
+  "notes": "(memStream{data,size},...): reads a TGA header: id length, skip 1, image type, skip 9, width u16, height u16, bpp, descriptor, skips the id field; pixel start = stream pos; if bpp/8*w*h fits, returns Ne_Tga_ConvertToRgba8Buffer(type,w,h,bpp,desc,pixels,p2,p3,p4), else 0. Old note (packet header writer, callers) wrong. Callers in .data1: 0x151fbc660, Game_TrackInfo_LoadPhysicsMap_Body."
  },
  "signature": {
   "id": "core.net_packet_write_header",

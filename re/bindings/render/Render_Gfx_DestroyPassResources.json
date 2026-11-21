@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b5ea10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143b5ea10.c;xref:0x1400fe223",
-  "notes": "Destructor-style release of a pass object: releases objects at idx 0xa6/0x85/0x91 via vtable +0x38/+0x20, ref-count drop at idx 0x84 and frees view set (1439d9450). 179 calls from the 0x1400fe... pass tear-down code."
+  "evidence": "decomp:re/decomp/143b5ea10.c;xref:0x1400fe223,0x1400fe5c8,0x1400fe92a,0x1400feccc",
+  "notes": "Release routine: object at qword idx 0xa6 (vcall +8, then freed), views at idx 0x18 via Render_Gfx2Device_DestroyAndTrackResource_3ce8, idx 0x85 freed, Ne_LinkResolver_RegisterLinkable(idx 1, idx 2), idx 0x91 vcall +0x20, then shared refs at idx 0x84/0x82/0x80 dropped. Called from many tear-down paths (0x1400fd6d0, ...). Owner type not proven. (lane owner review requested) Better name: Render_Gfx_ReleaseOwnedResources (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx_destroy_pass_resources",

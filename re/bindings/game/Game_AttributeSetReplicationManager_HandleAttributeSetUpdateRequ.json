@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=AttributeSetReplicationManager::handleAttributeSetUpdateRequest; log channel NETWORK-ENTRANTS: 'void network::AttributeSetReplicationManager::handleAttributeSetUpdateRequest(neon::NeNetMessage &, neon::NeNetConnectionID) | %s: Sent an update message to the server.'"
+  "evidence": "decomp:re/decomp/1431248f0.c;pat:log-message-cxx",
+  "notes": "handleAttributeSetUpdateRequest (own pretty-function string in the body)."
  },
  "signature": {
   "id": "game.attribute_set_replication_manager_handle_attribute_set_update_requ",

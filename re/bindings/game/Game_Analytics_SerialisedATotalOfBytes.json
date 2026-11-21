@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: serialised a total of %d bytes | Requesting auth given endpoint %s'"
+  "evidence": "decomp:re/decomp/1407622c0.c;pat:log-channel-TELEMETRY;xref:0x145642120",
+  "notes": "vtable[8] of the telemetry manager (cell 0x145642120). Calls 0x140761f40 on presence change, serialises queues ('serialised a total of %d bytes'), ElasticSearch url/auth states ('Got auth!', auth retry, 'X-Steam-AppID', json content type). Better name: Game_Analytics_Update_SerialiseAndPostToElastic (bound record keeps its name)."
  },
  "signature": {
   "id": "game.analytics_serialised_a_total_of_bytes",

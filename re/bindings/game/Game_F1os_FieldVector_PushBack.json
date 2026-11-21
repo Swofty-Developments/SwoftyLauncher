@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1444f3c60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1444f3c60.c;xref:0x1408251cf",
-  "notes": "push_back of a 0x40-byte field record (u32 id + refcounted string at +0x10, atomic inc at +8) into vector param_1 (begin +8, end +0x10, cap +0x18, growth with Ne_String_Reserve moves). 106 call sites in Game_F1os_OnStart_*. Hypothesis."
+  "evidence": "decomp:re/decomp/1444f3c60.c;xref:0x1408251cf,0x140835fec,0x140b17053",
+  "notes": "push_back of a 0x40-byte field record (u32 id, shared_ptr +8/+0x10 with atomic inc, string object +0x18 deep-copied) into vector param_1 (begin +8, end +0x10, cap +0x18; reallocating path when full). Callers include 0x14443fd40, 0x144440020 and Game_F1os_OnStart_* e.g. 0x140824650 (0x1408251cf). (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1os_field_vector_push_back",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14403f140",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name isRemoteUserChatting (class from the log channel); log channel NETWORK-VOICE: '%s: Failed to get remote chat indicator: %hs'"
+  "evidence": "decomp:re/decomp/14403f140.c;pat:log-message-method;xref:0x145a4a1f0",
+  "notes": "Queries the remote chat indicator of a user; on failure logs '%s: Failed to get remote chat indicator: %hs' with its own name isRemoteUserChatting. Only reference is vtable cell 0x145a4a1f0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_voice_is_remote_user_chatting",

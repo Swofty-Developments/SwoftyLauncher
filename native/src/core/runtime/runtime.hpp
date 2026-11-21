@@ -174,6 +174,8 @@ void era_session_load();
 bool era_session_unlisted(std::string &list);
 void era_session_trace(const char *state, int to);
 void era_session_unloaded(const char *state, int to);
+// Puts the career season's box rules back into the career's setup mode (boxes/picker/career_rules.cpp).
+void era_career_unloaded();
 // Career saves (career_saves.cpp): the career index and per-career addon data.
 void career_saves_start();
 void career_saves_saving();

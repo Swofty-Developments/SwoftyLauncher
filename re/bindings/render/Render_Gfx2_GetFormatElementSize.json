@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a0dec0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143a0dec0.c;xref:0x1439ba6b1",
-  "notes": "switch over Gfx2 format id returning bytes per element: ids 1-4, 0x49-0x4e, 0x52-0x54, 0x5e-0x63 = 16, ids 5-8 = 12, others smaller; unknown ids go to 143919b50/143919c90 (assert). Addon: format table. Callers Render_Gfx2Device_BeginSurfaceTransfer, Render_Texture_CreateFromResourceCore."
+  "evidence": "decomp:re/decomp/143a0dec0.c;xref:0x1439ba6b1,0x1439dc4bb,0x143befcb6",
+  "notes": "Switch over DXGI_FORMAT ids returning bytes per element or per 4x4 block: 1-4 (R32G32B32A32) and BC2/3/5/6H/7 ids 16, 5-8 (R32G32B32) 12, 9-0x15 and BC1/BC4 ids 8, other groups smaller; unknown ids push error 0x16 (Ne_ErrorTrace_PushRing) and return 0. Callers 0x1439ba070, Render_Gfx2Device_MapSurface 0x1439dc210, Render_Texture_CreateFromResource 0x143bef360. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx2_get_format_element_size",

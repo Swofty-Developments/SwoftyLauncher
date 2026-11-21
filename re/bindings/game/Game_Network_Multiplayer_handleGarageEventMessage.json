@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a427e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name multiplayer_handleGarageEventMessage (class from the log channel); log channel NETWORK: '%s(%s(%d, %d), %d).'"
+  "evidence": "decomp:re/decomp/142a427e0.c;pat:log-message-method;xref:0x143252214",
+  "notes": "Logs '%s(%s(%d, %d), %d).' with method name 'multiplayer_handleGarageEventMessage' (NETWORK). Reached by tail jmp at 0x143252214 from thunk 0x143252210 (mov rcx,[rcx+0x78]; jmp; the thunk has no pdata). (lane owner review requested) Better name: Game_Network_Multiplayer_HandleGarageEventMessage (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_multiplayer_handle_garage_event_message",

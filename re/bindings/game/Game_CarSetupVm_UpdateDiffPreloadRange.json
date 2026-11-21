@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c1def0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140c1def0.c;xref:0x140c1cbde,0x140c1edb7",
-  "notes": "Car setup VM: formats the differential preload range text (lng_cs_diff_range_preload, '%.1f', lng_unit_nm). Callers Game_CarSetupVm_ShowParcFerme, Car_Setup_OnValueChanged."
+  "evidence": "decomp:re/decomp/140c1def0.c;xref:0x140c1b940,0x140c1cbde,0x140c1edb7,0x140c1eecb",
+  "notes": "Formats the diff preload value ('%.1f' of [[[+0x268]+0x28]+0x590]+0x2a4) with min/max from the handling block (vt+0x38: +0x38/+0x3c) into 'lng_cs_diff_range_preload (... lng_unit_nm)' on node +0x1560, bool +0x1580. Twin of 0x140c1d750. (lane owner review requested)"
  },
  "signature": {
   "id": "game.car_setup_vm_update_diff_preload_range",

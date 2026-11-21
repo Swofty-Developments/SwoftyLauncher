@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143128730",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=BadgeReplicationManager::replacePlayerBadge; log channel NETWORK-ENTRANTS: 'void network::BadgeReplicationManager::replacePlayerBadge(const PlayerDescription &, const game::BadgeStatId::PackedStatId, const game::BadgeInfo &) | %s : Attempt to replace a new network replicated '"
+  "evidence": "decomp:re/decomp/143128730.c;pat:log-message-cxx;xref:0x143128f8f,0x143129495,0x14312987e,0x143129a7f,0x14312b4f6,0x1431bf3c8",
+  "notes": "replacePlayerBadge(desc, packedId, info): writes info (0x1424710e0), logs failure, posts a bus msg when changed, adds the player (0x143128d60); non-host path builds a request and calls 0x14253b4e0. Callers 0x143128e40, 0x143129300 (jmp), 0x143129690, 0x143129890, 0x14312b130, 0x1431bf380. (lane owner review requested)"
  },
  "signature": {
   "id": "game.badge_replication_manager_replace_player_badge",

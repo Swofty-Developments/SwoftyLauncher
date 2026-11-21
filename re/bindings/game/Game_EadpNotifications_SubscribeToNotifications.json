@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143fd99c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name subscribeToNotifications (class from the log channel); log channel EADP_NOTIFICATIONS: 'subscribeToNotifications completed'"
+  "evidence": "decomp:re/decomp/143fd99c0.c;pat:log-message-method;xref:0x145a45228",
+  "notes": "Virtual (vtable cell 0x145a45228); returns if +0x68 null. Logs 'Notifications Disconnected Error: code %u' (+0x8c), 'Notification service waiting for connect', 'Starting notification service after connect and %u seconds', allocates holders (vtables 0x145a45fb0/0x145a45fd0), builds a PlayerId (0x1449a3530), logs 'subscribeToNotifications completed'. (lane owner review requested) Better name: Game_EadpNotifications_StartNotificationService (bound record keeps its name)."
  },
  "signature": {
   "id": "game.eadp_notifications_subscribe_to_notifications",

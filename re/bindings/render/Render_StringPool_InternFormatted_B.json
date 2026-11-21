@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b58600",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143b58600.c;xref:0x143b5ab96,0x143b809aa,0x143bd8291",
-  "notes": "Hypothesis: builds a closure (lambda 0x143b58636/0x143b58660) and runs it via 0x14029b190; 45 callers of Render_ModelComponent_Load. Named callers: Render_ModelComponent_Load. vp5-verify partial/disagree"
+  "evidence": "decomp:re/decomp/143b58600.c;xref:0x143b5ab96,0x143b809aa,0x143bd8291,0x143bd859a",
+  "notes": "printf-style format (0x14532e54c with 0x14029b190 stdio options): length pass, stack buffer, second pass; FNV-1a 64 of the result and Ne_StringPool_InternByHash on pool 0x146129740; writes {interned ptr, hash} to param_1. No closure/lambda. (lane owner review requested)"
  },
  "signature": {
   "id": "render.model_component_load_async",

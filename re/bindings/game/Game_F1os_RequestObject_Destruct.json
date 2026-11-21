@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1408265b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1408265b0.c;xref:0x140822aa1",
-  "notes": "Destructor of a F1os request object (vtable 0x14565f730): iterates its field vector (param_1[0x50..0x51], 0x38-byte entries), runs element dtors (vtable 0x145612ec0) and frees. 116 call sites (Game_F1os_Create_*, popups)."
+  "evidence": "decomp:re/decomp/1408265b0.c;xref:0x140822aa1,0x14082686b,0x1408338f1",
+  "notes": "Dtor body of an F1os request object: vtable 0x14565f730, destroys the 0x40-byte field records in vector +0x280..+0x288 (string obj reset to 0x145612ec0, shared_ptr release), frees storage via allocator +0x278 vcall +0x38, then string members +0x10 and +0x38. Callers include 0x1408225a0, 0x140826860, 0x140b14610 (Game_F1os_Create_GetCalendar). (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1os_request_object_destruct",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1440e27e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1440e27e0.c;xref:0x1440c7d27,0x1440c77fc",
-  "notes": "Broad-phase build: job label 'createBroadPhaseForRigidBodies', parallelForEach over rigid bodies (0x1440e3260 per body, 0x1441109b0 merge) filling the uniform grid used by Ne_PhysWorld_CollectBroadphasePairsForBody. Callers Ne_PhysWorld_RunStepPipeline and Ne_PhysWorld_AdvanceStepState."
+  "evidence": "decomp:re/decomp/1440e27e0.c;xref:0x1440c77fc,0x1440c7d27",
+  "notes": "(world): 0x1440e3260([world+0x1138], world+0xf80), then under CS [world+0x10e8] resets counter +0xf30 and recomputes body AABBs, inserting them into the caches [world+0x1130]/[world+0x1138] via 0x1440e1b90; large counts go through a job vcall +0x10 with worker 0x1441109b0 and label 'createBroadPhaseForRigidBodies', waited with 'WAIT:parallelForEach' (0x143ac0100). Clears bitset [world+0xf28] and byte +0x1160. Callers Ne_PhysWorld_RunStepPipeline, Ne_PhysWorld_AdvanceStepState."
  },
  "signature": {
   "id": "core.phys_world_create_broad_phase_for_rigid_bodies",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a74f20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143a74f20.c;xref:0x143a59f28,0x143a5a81b",
-  "notes": "swiss-style hash map (ne_hash_map.h assert string) grow/rehash of the AssetGroupRegistry id->record map walked by Game_AssetGroupRegistry_LookupById (calls its fatal stub on overflow)."
+  "notes": "Rehash of a u64->ptr robin-hood map (ne_hash_map.h): new size param_2, alloc (n+min(0xff,80%))*0x11+8, re-inserts each 16-byte entry with displacement bytes, halves the probe step / bumps the shift on overflow (fatal 0x143a74f10 when step < 3), frees the old block unless it is the inline sentinel. Callers 0x143a59cd0, 0x143a5a550 (map at registry+0x78). (lane owner review requested)"
  },
  "signature": {
   "id": "game.asset_group_registry_map_rehash",

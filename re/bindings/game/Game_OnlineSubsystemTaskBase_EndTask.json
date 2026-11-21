@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432c0a20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_OnlineSubsystemTaskBase_EndTask;xref:0x1432c0aad,0x1432c0b30",
-  "notes": "cxx=game::OnlineSubsystemTaskBase::endTask; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1432c0a20.c;str:s_OnlineSubsystemTaskBase_EndTask;xref:0x1432c050c,0x1432da203",
+  "notes": "Logs F1OS-TASKSYSTEM '%s() %s' / '%s() wasn't ended, ending' with game::OnlineSubsystemTaskBase::endTask and ends the task. Tail-jumped from Game_OnlineSubsystemTaskBase_StopTask and called from Game_F1osTasksystem_InternalStartTask. (lane owner review requested)"
  },
  "signature": {
   "id": "game.online_subsystem_task_base_end_task",

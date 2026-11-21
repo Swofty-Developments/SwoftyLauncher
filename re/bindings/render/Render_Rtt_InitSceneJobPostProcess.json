@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143d7bcb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143d7bcb0.c;xref:0x143d84381",
-  "notes": "Constructor body of the RTT scene job (0x8c8 bytes, from Ne_RttRenderer_CreateSceneJob): opens and keeps resource handles for assao_new.material, deferred_render_new.material, aid://shader_package/post_process_tonemap/tonemap.nefx2, post_process_crossfade/crossfade.nefx2, ego_package/postprocess.psplines, histogram.buffer, lut.image and lutCube.image (each tried under aid://, id://, d://, eaid:// prefixes, hashed with MD5). Addon: shows the post-process / tonemap / LUT asset paths the renderer loads."
+  "notes": "Constructor body of the RTT scene job (Ne_RttRenderer_CreateSceneJob 0x143d84381): opens resource handles (MD5 ids) for assao_new, deferred_render_new, tiled_lighting_new, cmaa2_new .material, post_process_tonemap/tonemap.nefx2, post_process_crossfade/crossfade.nefx2, ego_package/postprocess.psplines, assao/histogram/lut images, g_skyShadowMaskTex; bind layouts via Render_Gfx2_BindLayout_Create. (lane owner review requested)"
  },
  "signature": {
   "id": "render.rtt_init_scene_job_post_process",

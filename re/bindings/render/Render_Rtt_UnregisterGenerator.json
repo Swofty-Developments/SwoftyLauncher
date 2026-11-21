@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b34120",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143b34120.c;xref:0x14015f7db,0x14015f7f6",
-  "notes": "Removes generator pointer param_2 from vector at renderer+0xf0d20 (memmove tail). Called from Ne_Rtt_UnregisterGenerators. Pair of Render_Rtt_RegisterGenerator."
+  "notes": "Removes param_2 from the vector at renderer+0xf0d20 and param_3 from the vector at +0xf0d30 (memmove tail, end -= 8); missing entry -> TLS error 2. Counterpart of 0x143b33ca0; called twice from Ne_Rtt_UnregisterGenerators (0x14015f750). (lane owner review requested) Better name: Render_Rtt_UnregisterGeneratorAndTarget (bound record keeps its name)."
  },
  "signature": {
   "id": "render.rtt_unregister_generator",

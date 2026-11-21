@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1457e0920",
-  "type": "vtable[11]",
+  "type": "vtable[20]",
   "level": "L2",
   "subsystem": "session",
-  "evidence": "pat:flow-state-type-record;xref:0x14607d998;decomp:re/decomp/142db4e30.c",
-  "notes": "cxx=SessionStatePlayCutScene; neon flow state (slot 2 = NeFlowState base 0x1436aef00, slot 0 returns type record 0x14607d998 whose +8 names the class); onStateEnter 0x142d78f80, onStateUpdate 0x142d799b0, onStateExit 0x142d7a060 (slots 8/9/10). (vmknolle session-flow map)"
+  "evidence": "decomp:re/decomp/142dc19a0.c;pat:flow-state-type-record;decomp:re/decomp/142db4e30.c;xref:0x142db4e3c,0x142dc1a88",
+  "notes": "cxx=SessionStatePlayCutScene; 20 slots (next vtable at +0xa0, lea 0x142d78d20). Slot 0 -> type record 0x14607d998, +8=name set by static init 0x142df1ca0 at 0x142df3bfc. Slot 2 NeFlowState base 0x1436aef00; slots 8/9/10 onStateEnter/Update/Exit 0x142d78f80/0x142d799b0/0x142d7a060. Ctor 0x142dc19a0 (lea 0x142dc1a88; mov [rsi],rax). Also loaded by 0x142db4e30 (dtor, [rcx])."
  },
  "signature": {
   "id": "session.play_cut_scene",

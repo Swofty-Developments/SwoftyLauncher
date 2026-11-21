@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439e7170",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439e7170.c;xref:0x1439bb546",
-  "notes": "Free of a block in a boundary-tag style allocator: nodes of 0x38 bytes (+0x31 flag 0x20 = free, +0x24 size, +0x28 neighbour offset), merges with free neighbours using a free list at +0x38; function-static TLS error list. 19 call sites in the graphics memory pools (0x1439cb4f0 etc.). Hypothesis."
+  "evidence": "decomp:re/decomp/1439e7170.c;xref:0x1439bb546,0x1439cb811,0x1439bb76b",
+  "notes": "Frees a 0x38-byte block node: if flag 0x20 at +0x31 is clear, sets it and links the node into the free list (+0x38); merges with the neighbour nodes reached through the index deltas at +0x24 and +0x20 when they are free, adding sizes (+0x28); errors go to the TLS error list. Callers 0x1439bb4d0, 0x1439cb4f0, 0x1439bb6b0, Render_Gfx2Device_FreeDescriptorSlot 0x1439fdd40. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx2_block_allocator_free",

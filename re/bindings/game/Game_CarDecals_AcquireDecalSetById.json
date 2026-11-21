@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14385b6a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14385b6a0.c;xref:0x1420006e6",
-  "notes": "Looks up id param_2+0xdc in the table at global 0x146080c20 (+0x128..+0x130, 16-byte {int* key, refcounted obj}); if found atomically bumps refcount (+0xc) and returns a handle built with Ne_Make_StrFromCStr + 0x1441974e0. Only caller Game_CarDecals_BuildList. Hypothesis."
+  "notes": "Looks up id param_2+0xdc in the {int* key, weak ref} table [0x146080c20+0x128..+0x130]; locks the weak ref (CAS on use count +8, weak count +0xc), takes the C string at key+0x10 and returns it as a string handle in param_1 (0x1441974e0); empty string on miss/expired. Returns a name, not the decal set. (lane owner review requested) Better name: Game_CarDecals_GetDecalSetNameById (bound record keeps its name)."
  },
  "signature": {
   "id": "game.car_decals_acquire_decal_set_by_id",

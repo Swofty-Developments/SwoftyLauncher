@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1443dca90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'MOX/Entitlement: reporting pending entitlement change through delegate.'"
+  "evidence": "decomp:re/decomp/1443dca90.c;pat:log-channel-NETWORK;xref:0x145a89278",
+  "notes": "Entitlement update: fires pending delegates - entitlement change (this+0x118/+0x120, log \"reporting pending entitlement change through delegate\") and service entitlement change (this+0x130/+0x138); then processes the request list under critical section this+0x158. (lane owner review requested) Better name: Game_Network_MOXEntitlement_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_mox_entitlement_reporting_pending",

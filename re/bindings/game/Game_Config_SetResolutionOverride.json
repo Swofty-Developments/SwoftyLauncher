@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144012de0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=Config::setResolutionOverride; log channel HARDWARE_SETTINGS: 'Config::setResolutionOverride'"
+  "evidence": "decomp:re/decomp/144012de0.c;pat:log-message-cxx;xref:0x1443c6e68",
+  "notes": "Own log. Reads rating, override_width/height, outputMonitor index, resolution width/height, refreshRate numerator/denominator; logs, adjusts for display aspect or overrides, closest mode via 0x144012370, applied with 0x144011050. (lane owner review requested)"
  },
  "signature": {
   "id": "game.config_set_resolution_override",

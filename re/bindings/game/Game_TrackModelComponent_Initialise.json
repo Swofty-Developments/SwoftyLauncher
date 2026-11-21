@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142aa0330.c;xref:0x1457bf188",
-  "notes": "TrackModelComponent::initialise: resolves the track model and applies material overrides by context (SEASON, TRACK, Game.Context.overrideTrackName / Game.Context.TrackName), log 'replace [%s] with [%s]', WARN 'Error material override [%s] doesn't exist for model [%s] using default.'. Addon/track mods: season/track material swaps on track models; missing override materials fall back silently. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2833)"
+  "notes": "TrackModelComponent::initialise: resolves the track model and applies material overrides by context (SEASON, TRACK, Game.Context.overrideTrackName / Game.Context.TrackName), logs 'replace [%s]' and 'with [%s]', WARN 'Error material override [%s] doesn't exist for model [%s] using default.'. Addon/track mods: season/track material swaps on track models; for a missing override material nothing is overridden and only the WARN is logged. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2833) | 2026-11-19 engine-re (corrected 2026-11-21 after V11908 and a second check): works on a local copy of the +0xe0 char* of the component that 0x143f9b3c0 finds by type 0x146cb7da0; the text up to and including '=' goes to a 0x400 stack buffer and the part after '=' is set to 'default'. A scenario gate ([0x14604c2c8]+0x30 map key 0x14604ed28, +8 +0x88 +0x260 +0xe18, word +0xb0 >= 0x100, low byte matched against the 16-byte entries [0x146079b28]+0x108..+0x110, g_Game_Scenarios) selects the SEASON/TRACK template instead: SEASON = the matched entry +8, TRACK = [[[[0x14601f5c8]+0x30]+0xe8]+0xa0]. With the bool setting Game.Context.overrideTrackName (Ne_Get_SettingBool 0x143a43b90 on [[[0x14601f5c8]+0x18]+0x18]) the part after '=' becomes Game.Context.TrackName (read into 0x1460790f0, cap 0x40), read every call for every track model (global, not per track). Logs 'replace [%s]' on the raw string and 'with [%s]' on the final buffer (two calls). The buffer is looked up via 0x143993660 in [[[[0x14601db08]+0x78]+0x20]+0x2268]; on a hit comp+0x58/+0x60 are written (0x142aa074f), on a miss (null or [res+0x28]==0) nothing is written and the WARN is logged when its channel is enabled (0x14604bac4). raised by engine-re with --force 2026-11-19 at user request (lane owner review requested)"
  },
  "signature": {
   "id": "game.track_model_component_initialise",
@@ -45,7 +45,47 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/142aa0330.c;xref:0x142aa0330",
    "notes": "V2833 strings/calls/offsets checked in decomp+disasm; role and name hold"
+  },
+  {
+   "date": "2026-11-19",
+   "verifier": "track-flag-verify",
+   "kind": "func",
+   "item": "0x142aa0330",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x142aa0330-0x142aa0b8c;decomp:re/decomp/142aa0330.c;str:0x14560f4f7;str:0x14560f516;str:0x1456e6bc0",
+   "notes": "V11908 C7 core confirmed: source char* = [comp+0xe0] where comp = component of type 0x146cb7da0 (type desc named 'Model'); text up to and incl '=' copied to a 0x400 stack buffer; bool setting 'Game.Context.overrideTrackName' (0x143a43b90) true -> string setting 'Game.Context.TrackName' read into global 0x1460790f0 (cap 0x40) and copied after '='; result used for a lookup via 0x143993660 (local copy, not in place). CORRECTIONS: 'mat binding' identity of the +0xe0 string is not shown in this function (string 0x1456e6bc0 not referenced here); before the override the text after '=' is first set to 'default', or for a matching car/livery case to a SEASON/TRACK template expansion where TRACK = [[[0x14601f5c8]+0x30]+0xe8]+0xa0 (0x142aa0936)"
+  },
+  {
+   "date": "2026-11-21",
+   "verifier": "vogtmarcel07-cloud",
+   "kind": "func",
+   "item": "Game_TrackModelComponent_Initialise",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142aa0330.c;xref:0x1457bf188,0x142aa03c9,0x142aa03d0,0x142aa03f1,0x142aa044f,0x142aa04d6,0x142aa04e1,0x142aa0543,0x142aa05ed,0x142aa060b,0x142aa0646,0x142aa067d,0x142aa06df,0x142aa070f,0x142aa072d,0x142aa074f,0x142aa0756,0x142aa07bf,0x142aa0921,0x142aa0925,0x142aa0936,0x142aa094d,0x142aa09a9",
+   "notes": "gh:vogtmarcel07-cloud independent re-check after the V11908 corrections: own capstone disasm, every RIP target recomputed; offsets, load counts, globals, strings, callees, scenario gate, hit/miss paths and the 3 log calls match the notes"
   }
  ],
- "proofs": []
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142aa0330",
+    "target": "0x142aa0330"
+   },
+   "sigcheck": "passed",
+   "digest": "53ffe6cb9152e615b2ea90bb14f99ed0d11c410bef09fe2415b7dfbd43c6806d"
+  }
+ ]
 }

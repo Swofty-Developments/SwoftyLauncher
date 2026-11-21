@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14405ac50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-TRANSPORT",
-  "notes": "named from its log messages (channel NETWORK-TRANSPORT): '%s(%s, %u players) : Couldn't find free allocation slot.'"
+  "evidence": "decomp:re/decomp/14405ac50.c;pat:log-channel-NETWORK-TRANSPORT;xref:0x14407aaad,0x14407adec",
+  "notes": "Logs 'addConnectionToStore' and 'newConnectionID': allocates a free connection id ('connection id [%02d] is now allocated') or logs 'Couldn't find free allocation slot.' (lane owner review requested) Better name: Game_NetworkTransport_AddConnectionToStore (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_transport_couldn_find_free_allocation_slot",

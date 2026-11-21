@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142df9fd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onSessionInPressInterview (class from the log channel); log channel NETWORK: '%s, matching context: %s'"
+  "evidence": "decomp:re/decomp/142df9fd0.c;pat:log-message-method;xref:0x1457e8c60",
+  "notes": "Slot 8 (+0x40, onStateEnter) of vtable 0x1457e8c20 (name SessionStatePressInterviewFlowSelector precedes). Resolves the game-mode object [[this+0xca0]+0x88]+0x260 (RTTI walk 0x146129ca0), stores its +0x206 table lookup (key 0x1460608c8) at +0xdb0, then inlined onSessionInPressInterview: logs and 0x143092b20([NetSub+0x3c0]+0xa8, 0xc); returns 1. (lane owner review requested) Better name: Game_SessionStatePressInterviewFlowSelector_OnStateEnter (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_on_session_in_press_interview",

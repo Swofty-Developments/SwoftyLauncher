@@ -535,6 +535,27 @@ A season's box supplies its cars, liveries, sounds and session rules. The box ea
 [registry] career season 2019: box swofty.classic-seasons-2019/f1_2019 is off (cars and looks only); using game/f1_2025
 ```
 
+### The season's rules
+
+At each session load of a Driver Career or My Team career, the core puts the rules of the season's box into the career's own setup mode, the same way a press of that box puts them into `swofty_f1` ([Rules per box](./sessions#rules-per-box)). The season is the career's `career.season` record for the career's year, of its data group. Its box is the first alternative of the record's `box` that is an installed `content.package`.
+
+| The box's rules | In the career |
+|---|---|
+| `drs`, `tyre_warmers`, `mandatory_tyre_change`, `race_time_limit_s`, `points` | written into the career's setup mode |
+| `refuelling`, `race_fuel_kg`, `refuel_stint_kg`, `quali_fuel_kg`, `race_start_fuel_from_quali`, `race_tyre_change`, `grid`, `qualifying_tyres` | handed to the session hooks, as for a box press |
+| `weekend_mode`, `safety_car`, `formation_lap`, `penalties`, `corner_cutting` | left out: the career keeps its own weekends and the player's race settings |
+
+A season whose box is a stock box, whose pack is off, or a career whose year isn't known yet races under the game's rules. The rules stay in the setup mode while the career's season and box stay the same, and the career's unload puts the game's rules back. A career of another data group never reads them. `SWOFTY_CAREER_RULES=0` turns it off.
+
+```text
+[career-rules] career f1_career_sw_progressive.driver_career:3f0a season 2010 (swofty.swofty-seasons-progressive/2010): box sw_f1_2010 (swofty.swofty-seasons-2010/sw_2010), rules drs; into <setup mode>
+[drs] career season 2010: box sw_f1_2010 (swofty.swofty-seasons-2010/sw_2010): <setup mode> DRS group swofty_drs_sw10_no_drs_5c1e9a20 (rules.drs swofty.swofty-seasons-2010/sw10_no_drs: race start lap 200, red flag restart 200, safety car end 200)
+[career-rules] career f1_career_sw_progressive.driver_career:3f0a season 2011 (swofty.swofty-seasons-progressive/2011): box sw_f1_2011 (swofty.swofty-seasons-2011/sw_2011), no rule a career runs
+[career-rules] the career unloaded: the career season's rules put back
+```
+
+Experimental: tested on the host only.
+
 ## Standings
 
 A season starts with every team on 0 points, listed in a start order. Progressive's start order is the real previous year's final constructors' order, then the slots that year doesn't list in slot order. A slot closed that year is left out.
@@ -622,9 +643,16 @@ The season's year comes from one of two places:
 - **The core works it out.** For a career no addon owns, such as the stock 2025 and 2026 careers, the core reads the Championship's `season_index` at an idle Team HQ once the season has its race weekends and a current weekend. The effective `career.season` records of the career's data group, sorted by year, give the year: index 0 is the first year, index 1 the second. With no records, two records for one year or a gap between years, nothing fires and the log says why.
 
 ```cpp
-// Progressive, at the first idle Team HQ of a season it hasn't applied, once the season has its weekends:
-// year is the career's first year plus season_index and its test seasons
+// Progressive, at the first idle Team HQ after each career load and of each new season, once the season has its
+// weekends: year is the career's first year plus season_index and its test seasons
 career::report_season(year, season_index);
+```
+
+A career loaded in a season that already started fires nothing, but the core still needs its year, for the [season's rules](#the-season-s-rules) among others. An owner's report for that season, or the idle Team HQ of a career no addon owns, dates the career: the core takes the year without a `career.season.start`. An owner reports at the first idle Team HQ after each career load, as well as at each season's start:
+
+```text
+[registry] career::report_season(2010, 0) from swofty.swofty-seasons-progressive: ok, 2010 already started in career f1_career_sw_progressive.driver_career:3f0a
+[apply] career f1_career_sw_progressive.driver_career:3f0a: season 2010, which already started
 ```
 
 ```text

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143d1ec50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143d1ec50.c;xref:0x1445b2fac",
-  "notes": "Hypothesis: sets six uint ranges if all four resources at +0x210..0x228 are idle (+0x6c==0) and +0x175==0; Hbcn compress. Named callers: Render_Hbcn_OnCompressRequest."
+  "notes": "Only when +0x175 == 0 and the four resources +0x210..+0x228 are idle (+0x6c == 0): +0x1c0 = max of their mip counts (+0x54); clamps params 2..5 to count-1 into +0x1c4..+0x1d0, params 6/7 to [0,1] into +0x1d4/+0x1d8, and sets each resource's target mip +0x58. Only caller Render_Hbcn_OnCompressRequest 0x1445b2fac. (lane owner review requested) Better name: Render_Hbcn_SetMipRanges (bound record keeps its name)."
  },
  "signature": {
   "id": "render.hbcn_set_ranges",

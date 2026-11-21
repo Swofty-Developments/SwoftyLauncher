@@ -178,6 +178,8 @@ impl Preview {
             "chase_near" => 4,
             "chase_far" => 5,
             "other" => 6,
+            "trackside" => 7,
+            "reverse_pod" => 8,
             _ => 0,
         };
         self.last_frame = None;

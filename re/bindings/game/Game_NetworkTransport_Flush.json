@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144093dd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name Flush (class from the log channel); log channel NETWORK-TRANSPORT/V: '%s: to address: %s'"
+  "evidence": "decomp:re/decomp/144093dd0.c;pat:log-message-method;xref:0x145a54668",
+  "notes": "Vtable cell: logs 'Flush' address, gets the channel and writes pending reliable data into the builder, then sendToSocket. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_transport_flush",

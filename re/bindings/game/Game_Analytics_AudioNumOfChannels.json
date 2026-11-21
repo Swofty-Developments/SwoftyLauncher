@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140751bf0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: audio num of channels %u'"
+  "evidence": "decomp:re/decomp/140751bf0.c;pat:log-channel-TELEMETRY;xref:0x1406ef7f4,0x140707fdd",
+  "notes": "TELEMETRY bus handler (bound by lea in 0x1406d8470/0x1406fd6c0): only when channel count msg+0x10 differs from cached +0x208b8; allocates a 0x68 record (0x1403ecbd0), +0x60 = count, serialises via 0x14077a240(this,rec,'audio_num_of_channels_record'), enqueues it (static queue, max 0x40), updates +0x208b8, logs 'audio num of channels %u'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_audio_num_of_channels",

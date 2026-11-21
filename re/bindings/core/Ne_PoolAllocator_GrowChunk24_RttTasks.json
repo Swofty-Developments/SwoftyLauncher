@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1435d8300",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/1435d8300.c;xref:0x1434f31d6",
-  "notes": "ne_hash_map.h helper walking a singly linked chain of segment blocks (sizes 4,8,..,0x2000 entries of 0x18 bytes) to release/size them; Ne_Crt_InvalidParameter on bad state. Caller Game_RttTaskManager_QueueTask. Hypothesis. vp5-verify partial/disagree"
+  "notes": "(pool): node-pool chunk allocator for 24-byte nodes: walks the chunk chain pool+8 (4,8,..,0x2000 nodes), allocates n*0x18|8 bytes via allocator pool[2] vt+0x10 (containers file line 0x34), links the chunk and threads the nodes into the free list pool[0]. Fatal 0x1403139f0 on alloc failure. Only caller Game_RttTaskManager_QueueTask 0x1434f2eb0."
  },
  "signature": {
   "id": "core.hash_map_free_bucket_chain",

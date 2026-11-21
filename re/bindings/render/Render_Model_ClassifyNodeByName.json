@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143d4a730",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143d4a730.c;xref:0x14069c729,0x1429ab8a0,0x14446b4b4",
-  "notes": "Classifies a model/node by name strings: SkinnedActor, wheel, LoosePart, front, nosecone, 'Layer car', 'Layer safe', TrackInformationSystem; returns layer/flag mask (e.g. 0x10000). Callers: Game_ModelProxyList_Resolve, Game_TimeAttackGates_CreateGateModel, Game_TrackInformationSystem_Update, Render_ModelComponent_Load. Addon: how models are put on car/safe render layers. Named callers: Game_ModelProxyList_Resolve, Game_TimeAttackGates_CreateGateModel, Game_TrackInformationSystem_Update, Render_ModelComponent_Load."
+  "evidence": "decomp:re/decomp/143d4a730.c;xref:0x14069c729,0x1429ab8a0,0x14446b4b4,0x144797421",
+  "notes": "Node name prefixes wheel, LoosePart, front, nosecone, 'Layer car' give 0x10000, 'TrackInformationSystem' gives 1, type name SkinnedActor (param_3) gives 0x10000; otherwise (incl. 'Layer safe' path) returns vcall +8 of [param_1+0x118](param_3). Callers Game_ModelProxyList_Resolve 0x14069c729, Game_TimeAttackGates_CreateGateModel 0x1429ab8a0, Render_ModelComponent_Load 0x14446b4b4, Game_TrackInformationSystem_Update 0x144797421. (lane owner review requested)"
  },
  "signature": {
   "id": "render.model_classify_node_by_name",

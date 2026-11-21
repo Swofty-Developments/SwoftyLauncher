@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143369180",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_OnlineSystems_Tasks_CheckPrivilegeTask_SetPrivilegeCheckRequest;xref:0x143369200",
-  "notes": "cxx=game::online_systems::tasks::CheckPrivilegeTask::setPrivilegeCheckRequest; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/143369180.c;str:s_OnlineSystems_Tasks_CheckPrivilegeTask_SetPrivilegeCheckRequest;xref:0x14142ede0,0x14172c1a8,0x141739bf8,0x141a0a83f,0x141a790c3,0x141b1b3c3,0x141fd6e91,0x141fe889d,0x14206cfa1,0x14207f189,0x14208e48c,0x143367446,0x14336a060,0x1438232a5,0x1438233c9",
+  "notes": "Own pretty-function log. Privilege id param_2 -> +0x148; takes handler pair param_3 into +0x160/+0x168, creating a default 0x208-byte handler (0x1433715b0) when param_3[1] is null; releases the previous one. (lane owner review requested)"
  },
  "signature": {
   "id": "game.check_privilege_task_set_privilege_check_request",

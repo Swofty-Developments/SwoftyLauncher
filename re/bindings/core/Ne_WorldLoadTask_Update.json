@@ -9,7 +9,7 @@
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/14442a090.c;xref:0x1457e6a78,0x145a8d4e8",
-  "notes": "World load/activate task tick (vtable slots 0x1457e6a78, 0x145a8d4e8): state +200 = 0 -> if world (+0x60)+0xe8 already set mark done (+0x88=1), else send crowd invalidate (msg 6) and start loading world named +0xa0 (0x14442a4f0); state 1 -> find world by name in (+0x60)+0xf0 list and create the instance with identity transform (0x14442b4c0). Errors go to Ne errno. Addon: world name at +0xa0 for extra-world loads."
+  "notes": "World load/activate task tick (vtable slots 0x1457e6a78, 0x145a8d4e8): state +200 = 0 -> if world (+0x60)+0xe8 already set mark done (+0x88=1), else send crowd invalidate (msg 6) and start loading world named +0xa0 (0x14442a4f0); state 1 -> find world by name in (+0x60)+0xf0 list and create the instance with identity transform (0x14442b4c0). Errors go to Ne errno. Addon: world name at +0xa0 for extra-world loads. | 2026-11-19 engine-re: for the race track the task is made by Sess_Loader_StartTrackWorldTask 0x142d4d890 and +0xa0 holds the tracks.Track instanceName, which Ne_WorldModule_StartPrimaryWorld 0x14442a4f0 (call 0x14442a347) stores as the primary NeWorldInstance name (+0x90/+0xa0)."
  },
  "signature": {
   "id": "core.world_load_task_update",

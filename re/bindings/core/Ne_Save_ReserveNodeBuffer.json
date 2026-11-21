@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143935a40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "uint64_t Ne_Save_ReserveNodeBuffer(void *node, uint64_t size)",
-  "evidence": "decomp:re/decomp/143935a40.c;xref:0x140afb624;xref:0x140afb930;xref:0x140afb93b",
-  "notes": "myteam-g2: Save-tree helper that allocates/copies a size-byte buffer with Ne_Crt_Memcpy for a node write. Shared by driver contracts, MyTeam stages and relationship config."
+  "evidence": "decomp:re/decomp/143935a40.c;xref:0x140afb624,0x140afb931,0x140afb93c",
+  "notes": "(list, n): reserve the child pointer array of a property list: when n > u16 cap list+0x12, allocates n*8 via allocator list[0] vt+0x18, copies u16 count list+0x10 entries from list[1], frees the old array vt+0x38, sets cap; alloc failure returns 0xc, else 0. call sites. Better name: Ne_PropList_ReserveChildren (bound record keeps its name)."
  },
  "signature": {
   "id": "core.save_reserve_node_buffer",
