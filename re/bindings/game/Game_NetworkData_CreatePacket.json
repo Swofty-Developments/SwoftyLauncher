@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name createPacket (class from the log channel); log channel NETWORK-DATA/U: '%s(conn=%d, actors=%d, %d/%d bits)'"
+  "evidence": "decomp:re/decomp/143268620.c;pat:log-message-method;xref:0x1430e57ba",
+  "notes": "createPacket (logged name): builds the per-connection vehicle sync packet, logs \"Creating packet for %02d at %1.3f\" and createPacket(conn, actors, bits); writes actors with Ne_BitStream_WriteBits and calls Game_Network_SendVehicleLodUpdates (0x143268c87)."
  },
  "signature": {
   "id": "game.network_data_create_packet",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143bbec20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143bbec20.c;xref:0x143bae3ca,0x143d8d777",
-  "notes": "Tonemapping/LUT passes (strings PPXTonemap::BlendLUT, UpdateLUT, UpdateLUTDavinci, UpdateAcesLUT, UpdateAcesSdrLUT, ClearOutput, Tonemap, LUTBlendResults, CBVignetteParams). Addon: ACES / Davinci LUT paths and vignette params live here. Named callers: Render_SceneView_SubmitCamera."
+  "notes": "Tonemap pass chain with names PPXTonemap::BlendLUT/UpdateLUT/UpdateLUTDavinci/UpdateAcesLUT/UpdateAcesSdrLUT/ClearOutput/Tonemap, 'eaid://ego_package/LUTBlendResults', CBVignetteParams, FSQ; resolves views via 0x143bc0c40, adds pass nodes via 0x143bdd920 and CBParams via 0x143bc74c0. Callers 0x143bab0a0, Render_SceneView_SubmitCamera. (lane owner review requested)"
  },
  "signature": {
   "id": "render.tonemap_execute",

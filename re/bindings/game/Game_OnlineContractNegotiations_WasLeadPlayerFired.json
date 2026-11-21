@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140fef8e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name wasLeadPlayerFired (class from the log channel); log channel ONLINE_CONTRACT_NEGOTIATIONS: 'wasLeadPlayerFired() - %s'"
+  "evidence": "decomp:re/decomp/140fef8e0.c;pat:log-message-method;xref:0x140ff0ecd,0x140ff10f6",
+  "notes": "Resolves the lead player entrant (Sess_Match_EntrantIdentity_Thunk), computes whether he was fired and logs 'wasLeadPlayerFired() - %s'. Called from Career_OnlineNegotiations_ShouldShowFiredState and Career_OnlineNegotiations_IsLeadPlayerParticipating. (lane owner review requested)"
  },
  "signature": {
   "id": "game.online_contract_negotiations_was_lead_player_fired",

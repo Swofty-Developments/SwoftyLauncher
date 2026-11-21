@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143129ac0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=BadgeReplicationManager::removePackedPlayerBadgeStatId; log channel NETWORK-ENTRANTS: 'void network::BadgeReplicationManager::removePackedPlayerBadgeStatId(const PlayerDescription &, const game::BadgeStatId::PackedStatId) | %s : Badge removal was unsuccessful!'"
+  "evidence": "decomp:re/decomp/143129ac0.c;pat:log-message-cxx;xref:0x143129ab9,0x14312a71c",
+  "notes": "removePackedPlayerBadgeStatId(desc, packedId): finds the player entry; if its packed id matches removes the badge from the store (0x142470be0, failure logged) and the player from map +0x30 (0x143211340). Callers: jmp 0x143129ab9, 0x14312a530. (lane owner review requested)"
  },
  "signature": {
   "id": "game.badge_replication_manager_remove_packed_player_badge_stat_id",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439b8490",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439b8490.c;xref:0x1439ad586",
-  "notes": "Pure thunk to 0x1439b8510, sibling of PlacedResourceForward_A/B."
+  "evidence": "decomp:re/decomp/1439b8490.c;xref:0x1439ad586,0x1439b9546,0x1439b9dc6",
+  "notes": "Forwards (device, hr, label) to Render_Check_GfxResult 0x1439b8510 (dead stack constant 0x14e8ac29). Chosen when vendor id device+0x880 == 0x10de. (lane owner review requested) Better name: Render_Check_GfxResult_Nvidia (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_placed_resource_forward_c",

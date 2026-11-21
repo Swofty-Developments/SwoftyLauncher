@@ -157,7 +157,9 @@ impl Pipeline<'_, '_> {
         let (store, game) = (run.store, run.game);
         let packer = self.run.eager_packer();
         let Self { built, session, .. } = self;
-        let hud_inputs = &inputs.hud_inputs;
+        let (hud_inputs, shared) = crate::hud::shared_records(inputs.hud_inputs.clone())?;
+        built.lines.extend(shared.iter().map(|l| format!("hud: {l}")));
+        let hud_inputs = &hud_inputs;
         let stock = crate::hud::GameStock::with_baseline(&game.dir, &store.root)
             .unwrap_or_else(|_| crate::hud::GameStock::new(&game.dir));
         let base = |rel: &str| bases.path(rel);

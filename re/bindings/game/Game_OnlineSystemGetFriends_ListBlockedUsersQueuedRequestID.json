@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432c8100",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-OnlineSystemGetFriendsListTask",
-  "notes": "named from its log messages (channel OnlineSystemGetFriendsListTask): 'List blocked users queued, requestID = %I64u, error = %d'"
+  "evidence": "decomp:re/decomp/1432c8100.c;pat:log-channel-OnlineSystemGetFriendsListTask;xref:0x145835100",
+  "notes": "Vtable cell 0x145835100 (same slot as the other task OnStart methods). Checks NetworkSubsystem and online presence (eLogicError + StopTask), queues the EADP blocked-users list with its finished callback, logs 'List blocked users queued, requestID = %I64u, error = %d'; on failure 'Failed to get list of blocked EA players'. (lane owner review requested) Better name: Game_OnlineSystemGetFriendsListTask_OnStart (bound record keeps its name)."
  },
  "signature": {
   "id": "game.online_system_get_friends_list_blocked_users_queued_request_id",

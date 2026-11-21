@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143bd9e40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143bd9e40.c;xref:0x143bdb186,0x143bd7dde",
-  "notes": "Texture twin of Render_RenderGraph_FindOrCreateBufferDesc: builds the texture desc via Ne_Gfx2Texture_ClampBlockMinAndGetAllocInfo and caches it in the same map. Callers Render_RenderGraph_CreateResourceDesc and 0x143bd44f0."
+  "evidence": "decomp:re/decomp/143bd9e40.c;xref:0x143bd7dde,0x143bdb186",
+  "notes": "Texture twin of 0x143bd9b30: the name in the desc copy is replaced by the interned empty string, FNV-1a 64 key, same map this+0x338; on miss Ne_Gfx2Texture_ClampBlockMinAndGetAllocInfo and insert (0x143ed0570). Callers 0x143bd44f0, 0x143bdada0 (0x143bdb186). (lane owner review requested)"
  },
  "signature": {
   "id": "render.render_graph_find_or_create_texture_desc",

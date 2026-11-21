@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432b0f00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name broadcastCoordinationPoint (class from the log channel); log channel NETWORK: '%s, coordination point type: %d'"
+  "evidence": "decomp:re/decomp/1432b0f00.c;pat:log-message-method;xref:0x1412199d7,0x14315601e",
+  "notes": "Logs broadcastCoordinationPoint(type *param_2); releases the shared_ptr list at this+0x38..0x40 (refcount dec + dtor), stores the type at this+0x60 and calls 0x1432b1010(this, point, param_3) to send it. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_broadcast_coordination_point",

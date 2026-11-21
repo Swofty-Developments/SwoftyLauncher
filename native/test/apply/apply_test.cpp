@@ -593,6 +593,10 @@ void test_scheduler()
               st.context().mode == "driver_career",
           "the career's context reaches the store");
     calls.clear();
+    check(!st.context().has_year && s.career_dated(2016) && st.context().has_year && st.context().year == 2016 && calls.empty(),
+          "a career loaded in a season that already started takes its year without running an applier");
+    check(!s.career_dated(2016) && !s.career_dated(0), "the same year again, or no year, changes nothing");
+    calls.clear();
     s.career_season(2017);
     check(st.context().has_year && st.context().year == 2017, "a season start sets the year");
     check(joined(calls) == "t.content.deactivate | t.content.activate -", "a season start re-applies content");
@@ -618,6 +622,7 @@ void test_scheduler()
           "a career unload leaves the mode unknown");
     check(st.context().career.empty() && !st.context().has_year && st.context().content.empty(),
           "the career's context is cleared");
+    check(!s.career_dated(2018) && !st.context().has_year, "no career loaded: a year dates nothing");
     calls.clear();
     s.install_read();
     s.install_read();

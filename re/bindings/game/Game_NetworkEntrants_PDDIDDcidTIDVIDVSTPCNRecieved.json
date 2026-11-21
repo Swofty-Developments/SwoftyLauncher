@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143115710",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-ENTRANTS",
-  "notes": "named from its log messages (channel NETWORK-ENTRANTS): 'PD: %s DID : %s DCID : %s TID : %s VID : %s VS : %s TP : %u CN : %u - Recieved Entrant -'"
+  "evidence": "decomp:re/decomp/143115710.c;pat:log-channel-NETWORK-ENTRANTS;xref:0x1430d8cc1",
+  "notes": "Client only (this+8 > 1): logs \"PD..CN - Recieved Entrant -\" with ids from msg+0x68..+0x90 and registers the entrant locally via 0x14310c1d0 (registerEntrant). (lane owner review requested) Better name: Game_NetworkEntrants_HandleEntrantMessage (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_entrants_pddid_dcid_tidvidvstpcn_recieved",

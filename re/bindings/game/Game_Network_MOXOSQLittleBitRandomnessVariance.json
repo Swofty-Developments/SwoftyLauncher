@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f6a010",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK/VX",
-  "notes": "named from its log messages (channel NETWORK/VX): 'MOX/OSQ:     a little bit of randomness variance is %1.3f'"
+  "evidence": "decomp:re/decomp/142f6a010.c;pat:log-channel-NETWORK/VX;xref:0x142f69482,0x142f6bafa",
+  "notes": "Callers 0x142f68b80, 0x142f6b170. Once reads virtual_session.human_difficulty_modifier (default 1.0) into 0x146095ee0; draws a factor in [g 0x146095ec4, g 0x146095ec0] with the RNG 0x143929b90 on this+0x158 and logs it; adds up to three random-event variances (0x146095ecc/ed4/edc) when the RNG modulo 0x146095ec8/ed0/ed8 hits; param 3 switches the lower clamp; returns the float multiplier. (lane owner review requested) Better name: Game_VirtualSession_GetRandomLapVariance (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_moxosq_little_bit_randomness_variance",

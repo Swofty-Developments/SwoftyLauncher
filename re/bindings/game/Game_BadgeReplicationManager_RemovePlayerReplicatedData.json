@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14312a530",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=BadgeReplicationManager::removePlayerReplicatedData; log channel NETWORK-ENTRANTS: 'void network::BadgeReplicationManager::removePlayerReplicatedData(const PlayerDescription &) | %s : Attempted to remove player %s badge but one could not be found.'"
+  "evidence": "decomp:re/decomp/14312a530.c;pat:log-message-cxx;xref:0x14312b165,0x1431bddb4",
+  "notes": "removePlayerReplicatedData(desc): host only; finds the player entry and calls 0x143129ac0 with its packed id; not found -> log. Callers 0x14312b130, jmp 0x1431bddb4. (lane owner review requested)"
  },
  "signature": {
   "id": "game.badge_replication_manager_remove_player_replicated_data",

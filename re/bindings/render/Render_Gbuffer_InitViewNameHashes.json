@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143db7700",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143db7700.c;xref:0x140101078",
-  "notes": "Hashes the G-buffer view name set with Ne_HashedName_FromString: depthDSV, depthSRV, main, albedo, normal, surface, surface2, vrsImage. 2 callers (0x140101078, Render_Gfx_BuildConfigObject 0x14010c9ed). Addon-relevant: deferred G-buffer layout names."
+  "evidence": "decomp:re/decomp/143db7700.c;xref:0x140101078,0x14010c9ed",
+  "notes": "Constructor (rename: it builds the object, not only hashes): base ctor 0x143b5ad80, vtbl 0x1459b69e0, param_5 to +0x550, then sets view slots 0..7 via vcall +0x30 on [this+0x20] with Ne_HashedName_FromString names depthDSV, depthSRV, main, albedo, normal, surface, surface2, vrsImage (slots 2..7 only when found in map [param_4]+0x88, else empty). Callers 0x140101078 (in 0x140100f00), 0x14010c9ed (Render_Gfx_BuildConfigObject). (lane owner review requested) Better name: Render_Gbuffer_Construct (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gbuffer_init_view_name_hashes",

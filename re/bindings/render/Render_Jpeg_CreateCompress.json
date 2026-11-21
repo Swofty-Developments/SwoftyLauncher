@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1449d3d20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1449d3d20.c;xref:0x14379cf1b",
-  "notes": "libjpeg jpeg_CreateCompress(cinfo, version, structsize): checks version == 0x50 (80, libjpeg 8) and sizeof(jpeg_compress_struct) == 0x238 (error codes 0xd/0x16), memsets the struct. Caller Game_ThumbnailSystem_RequestAndWriteScreenshot. Addon: screenshots/thumbnails are written as JPEG by an embedded libjpeg 8."
+  "evidence": "decomp:re/decomp/1449d3d20.c;xref:0x14379cf1b,0x144bd8ff9",
+  "notes": "libjpeg jpeg_CreateCompress(cinfo, version, structsize): error 0xd if version != 0x50 (libjpeg 8), 0x16 if structsize != 0x238; memset keeping err/client_data, jinit_memory_mgr (0x1449d55c8), clears table pointers, input_gamma 1.0, block_size 8, natural_order 0x14539a7e0, lim_Se 63, global_state 100. Callers 0x14379cf1b (0x14379c250 Game_ThumbnailSystem_WritingOutJpegTookMicroseconds), 0x144bd8ff9 (0x144bd8ea0). (lane owner review requested)"
  },
  "signature": {
   "id": "render.jpeg_create_compress",

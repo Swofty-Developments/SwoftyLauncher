@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432495e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-MECHANICAL",
-  "notes": "named from its log messages (channel NETWORK-MECHANICAL): '%s: Vehicle %s has no racing::vehicle::car.'"
+  "evidence": "decomp:re/decomp/1432495e0.c;pat:log-channel-NETWORK-MECHANICAL;xref:0x14305f981",
+  "notes": "cxx=network::VehicleMechanicalManager::update() (one parameter, this). Per-vehicle loop with attachVehicle(Id) inlined (logs has no entrant / ghost component / F1WingDamage / F1SuspensionDamage / RearWing / TyreComponent / sessionResult / cachedCarData / driver orders / racing::vehicle::car), applies received state, front-wing damage, Anti Stall check, logs 'Generated %d bits'. Caller 0x14305c1f0. (lane owner review requested) Better name: Game_NetworkMechanical_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_mechanical_vehicle_racing_vehicle_car",

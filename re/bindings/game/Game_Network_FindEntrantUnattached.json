@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143240b80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name findEntrantUnattached (class from the log channel); log channel NETWORK: '%s(%s). find a unclaimed driver with vehicle(%d) to drop into.'"
+  "evidence": "decomp:re/decomp/143240b80.c;pat:log-message-method;xref:0x143240398",
+  "notes": "Caller FindEntrantToDropIn 0x14323fcb0. Scans the entrants [[this+0x20]+0x4f8]+0x2e0..+0x2e8 (0x88-byte records) for one with flag +0x4b & 0x20, vehicle +0x82 < 0x1b, a live vehicle record ([[this+0x20]+0x80]+0x148)[v]+0x18 == 1 and status 9 at [[this+0x50]+0x68+v*0x10]+4; logs 'findEntrantUnattached ... vehicle(%d)' and returns it, else 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_find_entrant_unattached",

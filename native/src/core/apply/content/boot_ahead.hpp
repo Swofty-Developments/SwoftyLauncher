@@ -56,9 +56,9 @@ inline std::map<std::string, PoolScan> boot_ids(registry::Store &st, ids::Store 
                         " (" + scan.table + " holds ids to " + std::to_string(scan.lo - 1) + ")");
         scans[scan.registry] = std::move(scan);
     }
-    if (box_worlds)
-        lines.push_back("box worlds on (SWOFTY_BOX_WORLDS=1): a box with more teams than its world has garages "
-                        "gets a season and a track layer of its own");
+    lines.push_back(box_worlds ? "box worlds on: a box with more teams than its world has garages gets a season and a "
+                                 "track layer of its own (SWOFTY_BOX_WORLDS=0 turns them off)"
+                               : "box worlds off (SWOFTY_BOX_WORLDS=0): every box keeps the world its list's layers load");
     for (auto &line : settle_ids(ids, st, scans, day))
         log(line);
     for (const char *registry : {"vehicle", "vehicle.package", "content.package", "team.identity"})

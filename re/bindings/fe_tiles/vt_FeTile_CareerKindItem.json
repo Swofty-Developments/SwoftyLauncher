@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x145703eb0",
-  "type": "vtable[19]",
-  "level": "L1",
+  "type": "vtable[22]",
+  "level": "L2",
   "subsystem": "fe_tiles",
-  "evidence": "decomp:re/decomp/141725620.c;xref:0x14172557d,0x14179e02f",
-  "notes": "ts-v1: the career tile item class of fe_career (derived from vt_FeHome_CareerItem 0x145703de0); slot 5 = FeTile_Route_CareerItem (read from the exe); kind NeStr at item+0x178"
+  "evidence": "decomp:re/decomp/141725380.c;xref:0x14172557a,0x14179e02c,0x14179e24c,0x14179e4c5",
+  "notes": "Career tile item vtable of fe_career: installed by ctor 0x141725380 (lea 0x14172557a) and dtor/slot 0 0x14179e020. 22 code slots: shares most slots with vt_FeHome_CareerItem 0x145703de0, own slots 3-5 (slot 5 = FeTile_Route_CareerItem 0x141725620) and 13, plus slots 19-21 (0x141726150, 0x141726160, 0x141726e30). Kind NeStr at item+0x178 per the old note."
  },
  "signature": {
   "id": "fe_tiles.career_kind_item",

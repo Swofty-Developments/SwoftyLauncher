@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14405b7b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-TRANSPORT",
-  "notes": "named from its log messages (channel NETWORK-TRANSPORT): 'connection id [%02d] is now free.'"
+  "evidence": "decomp:re/decomp/14405b7b0.c;pat:log-channel-NETWORK-TRANSPORT;xref:0x14405bc5b,0x14407b232,0x1440932c2,0x14409a5b0",
+  "notes": "Logs 'removeConnectionFromStore(%02d, %s)', then 'freeConnectionID' and 'connection id [%02d] is now free.', clearing the entry. (lane owner review requested) Better name: Game_NetworkTransport_RemoveConnectionFromStore (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_transport_connection_id_now_free",

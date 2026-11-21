@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1440a0c80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-TRANSPORT",
-  "notes": "named from its log messages (channel NETWORK-TRANSPORT): '%s: Start handshaking with the server'"
+  "evidence": "decomp:re/decomp/1440a0c80.c;pat:log-channel-NETWORK-TRANSPORT;xref:0x145a55190",
+  "notes": "Vtable cell: logs 'startHandshaking', InitialiseInternal 0x14409f370 if needed, deserializes the target network descriptor ('connectToNetwork') and connects; 'Target network is not defined' otherwise. (lane owner review requested) Better name: Game_NetworkTransportPlayFab_StartHandshaking (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_transport_start_handshaking_server_2",

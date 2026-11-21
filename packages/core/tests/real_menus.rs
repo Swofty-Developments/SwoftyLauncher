@@ -258,6 +258,52 @@ fn menus_and_a_map_patch_one_databases_erp() {
 }
 
 #[test]
+fn a_menu_build_on_a_databases_erp_an_earlier_build_wrote_stops_as_a_stale_input() {
+    use swofty_core::build::{Built, build_menus};
+
+    let Some(game) = std::env::var_os("F1_25_DIR").map(PathBuf::from) else {
+        eprintln!("F1_25_DIR is not set; skipping");
+        return;
+    };
+    let out = std::env::temp_dir().join(format!("swofty-menus-stale-{}", std::process::id()));
+    std::fs::remove_dir_all(&out).ok();
+    let packer = swofty_formats::erp::Packer::default();
+    let archives = swofty_core::ui::ArchiveWriter::new(&packer);
+    let rel = "2025_asset_groups/ui_package/databases.erp";
+    let mut built = Built {
+        overlay: out.join("first"),
+        ..Built::default()
+    };
+    let (mut first, mut second) = (session(), session());
+    build_menus(
+        &mut built,
+        &mut first,
+        &|r| game.join(r),
+        &|_, _| None,
+        true,
+        &archives,
+    )
+    .unwrap();
+    let written = built.plan.data[rel].clone();
+    let resolve = |r: &str| match r == rel {
+        true => written.clone(),
+        false => game.join(r),
+    };
+    let mut again = Built {
+        overlay: out.join("again"),
+        ..Built::default()
+    };
+    match build_menus(&mut again, &mut second, &resolve, &|_, _| None, true, &archives) {
+        Err(swofty_core::Error::StaleInput { rel: stale, detail }) => {
+            assert_eq!(stale, rel);
+            assert!(detail.contains("the tooltip mod_menu"), "{detail}");
+        }
+        other => panic!("{:?}", other.map(|_| ())),
+    }
+    std::fs::remove_dir_all(&out).ok();
+}
+
+#[test]
 fn stock_dialogs_keep_their_text() {
     use swofty_core::ui::check::stock_kept;
     use swofty_core::ui::patch::{POPUP_BODY, POPUP_TITLE};

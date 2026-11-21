@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14036eee0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=CelebrateParcferme02_script::starting; log channel CUTSCENE_PODIUM: 'CelebrateParcferme02_script::starting'"
+  "evidence": "decomp:re/decomp/14036eee0.c;pat:log-message-cxx;xref:0x1455f6570",
+  "notes": "Vtable cell 0x1455f6570. Same as the 01 Starting without the render-message block: base 0x140237f40, driver-slot flags, 0x146ce89d8=1, vt+0x2f0 for +0x840..+0x870, mask +0x520=0xbfffffff ghost/unghost. (lane owner review requested)"
  },
  "signature": {
   "id": "game.celebrate_parcferme02_script_starting",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name sendToConnection (class from the log channel); log channel NETWORK-DATA: '%s: destination: %d, dataType: %d, size: %d'"
+  "evidence": "decomp:re/decomp/14406ed50.c;pat:log-message-method;xref:0x1409977ce,0x1430566b0,0x14305c1cf",
+  "notes": "Logs \"Transport is null\" / \"Not connected to destination\" errors, else \"%s: destination, dataType, size\"; queues the packet (Game_NetworkTraffic_QueuedPacketSizeConnectionId) and logs the traffic kbits (NETWORK-TRAFFIC)."
  },
  "signature": {
   "id": "game.network_data_send_to_connection",

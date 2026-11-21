@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430ca1b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): '[HOST] practice session going into extra time(%.3f secs).'"
+  "evidence": "decomp:re/decomp/1430ca1b0.c;pat:log-channel-NETWORK;xref:0x1430e1b13",
+  "notes": "Caller 0x1430e0560. Host only ([[this+0x20]+0x418]+8 == 1): if the practice session object is not finished (vt+0xf8) and has >= 5.0 s left (vt+0xd8), sets 5.0 (vt+0xe8), logs '[HOST] practice session going into extra time', broadcasts via 0x14402e500, sets +0xc2=1 and appends a 0x48-byte event at this+0x3b0 + index*0x48 (index +0x950, incremented). (lane owner review requested) Better name: Game_Network_HostExtendPracticeSession (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_practice_session_going_into_extra_time",

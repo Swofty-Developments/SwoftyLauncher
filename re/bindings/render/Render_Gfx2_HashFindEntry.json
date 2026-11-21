@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143993660",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143993660.c;xref:0x1401878b4",
-  "notes": "Hash-table find helper behind 0x143993770: fills an iterator (param_2) for key param_3 in the table at param_1 (entry fields +0x10..+0x50). Hypothesis (small helper)."
+  "evidence": "decomp:re/decomp/143993660.c;xref:0x1401878b4,0x140187935,0x140187c63",
+  "notes": "Locked (param_1+0x50) open-addressing lookup of 64-bit key *param_3 (multiplier +0x18, control bytes +0x28, entries +0x20 stride 0x10); on hit writes the entry value to *param_2 and increments its refcount (+0x18), else 0. Callers incl. Game_Actor_LoadModelResources and 0x143993770. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx2_hash_find_entry",

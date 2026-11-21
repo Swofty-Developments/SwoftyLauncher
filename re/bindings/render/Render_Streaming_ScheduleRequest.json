@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143ac1260",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143ac1260.c;xref:0x143abd8d5",
-  "notes": "Streaming request scheduling (calls 143abf420 and 143acb7d0); callers Render_Streaming_ProcessRequest, Ne_JobQueue_TryAcquireJob."
+  "evidence": "decomp:re/decomp/143ac1260.c;xref:0x143abd8d5,0x143abeac4,0x143abf225,0x143ac0cc4",
+  "notes": "Walks the pending batch queue (param_1+0xc0, count +0xd0): batches of type 1 that hold the barrier functions 0x143ac07a0/0x143acbcd0 are retired (optional out flag param_3), others are dispatched with 0x143abf420; each processed batch is moved to the list at +0x58/+0x78 (0x143acb7d0). Called by Ne_JobQueue_TryAcquireJob (0x143ac0cc4). (lane owner review requested) Better name: Render_JobSystem_DispatchPendingBatches (bound record keeps its name)."
  },
  "signature": {
   "id": "render.streaming_schedule_request",

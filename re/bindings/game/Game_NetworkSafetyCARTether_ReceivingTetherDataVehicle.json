@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14360d4d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK_SAFETY_CAR_TETHER",
-  "notes": "named from its log messages (channel NETWORK_SAFETY_CAR_TETHER): 'Receiving Tether Data for Vehicle %d Deployment Time %f Message State %s'"
+  "evidence": "decomp:re/decomp/14360d4d0.c;pat:log-channel-NETWORK_SAFETY_CAR_TETHER;xref:0x14360d088",
+  "notes": "Message handler (lea'd as callback in 0x14360cde0): logs 'Receiving Tether Data for Vehicle %d Deployment Time %f Message State %s' and uses VehicleProgressSystem lap progress (0x1446046a0) for the tethered vehicles. Casing of 'CAR' fixed. (lane owner review requested) Better name: Game_NetworkSafetyCarTether_ReceiveTetherData (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_safety_car_tether_receiving_tether_data_vehicle",

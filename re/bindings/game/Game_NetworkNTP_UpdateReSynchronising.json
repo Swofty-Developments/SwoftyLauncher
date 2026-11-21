@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143293140",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-NTP",
-  "notes": "named from its log messages (channel NETWORK-NTP): 'Update: re-synchronising.'"
+  "evidence": "decomp:re/decomp/143293140.c;pat:log-channel-NETWORK-NTP;xref:0x1430e0704",
+  "notes": "NTP synchronised state: a pending resync request (+5) logs 'Update: responding to a resync request.' and restarts the timer (+0x20/+0x28); when the elapsed time exceeds param_1[5] logs 'Update: re-synchronising.' and changes state to Resolving. Caller 0x1430e0560. (lane owner review requested) Better name: Game_NetworkNtp_UpdateSynchronised (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_ntp_update_re_synchronising",

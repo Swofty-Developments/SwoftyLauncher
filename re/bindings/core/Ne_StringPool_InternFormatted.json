@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140129660",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/140129660.c;xref:0x14010585d,0x1401058ee,0x140106458",
-  "notes": "Hypothesis: small helper (stack check + InitThreadHeader + StringPool_InternByHash) that returns a cached interned name; 287 callers (driver config reader, decal baker, mip tail). Named callers: Game_Read_DevSessionDataContractDriversConfig, Ne_CustomisationDecalRenderer_BakePasses, Ne_MipTailGenerator_Record. vp4-verify partial/disagree"
+  "notes": "(out{ptr,hash}, fmt, ...): vsnprintf (0x14532e54c) into a stack buffer (max 255 chars, empty on error), FNV-1a 64 of the text, interns it in the global pool 0x146129740 (lazy init) via Ne_StringPool_InternByHash 0x14392a0c0; writes out[0]=pooled ptr, out[1]=hash, returns out. call sites (163 in Render_Gfx_BuildConfigObject 0x140104f70)."
  },
  "signature": {
   "id": "core.string_pool_intern_cached_name",

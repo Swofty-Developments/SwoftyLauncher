@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144705d80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144705d80.c;xref:0x14463f24d",
-  "notes": "Packs per-vehicle emitter parameters (flag bits in byte 0, vehicle floats at +0x1fc and +0x3f*8, camera-relative values from camera+0x558/+0x1a0..+0x1bc) into a compact record. Caller Render_Particles_UpdateVehicleEffects (4 sites). Hypothesis on fields."
+  "evidence": "decomp:re/decomp/144705d80.c;xref:0x14463f24d,0x14463f2b4,0x14463f308,0x14463f35c",
+  "notes": "Packs one emitter record: byte 0 flags from param_3+0x20 bits and the slot byte +0x38 of [[*param_3]+0x5d0]+0xe8; rotated basis rows (+0x10/+0x20/+0x30) from the angle pair at param_3+0x1f8/+0x1fc and the 3x3 at [param_2+0x558]+0x190..+0x1bc; world position (+0x40) from local offsets param_3+0x300..+0x31c through the 4x4 at [[*param_3]+0x558]+0x1d0..+0x20c; ints at +0x60/+0x6c. Callers in Render_Particles_UpdateVehicleEffects. Not camera-relative. (lane owner review requested)"
  },
  "signature": {
   "id": "render.particles_pack_vehicle_emitter_params",

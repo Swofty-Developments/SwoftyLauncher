@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a04350",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143a04350.c;xref:0x143a06606",
-  "notes": "Writes header constants 0x100000001 / 0x200000002 into +0x60 depending on a flag. Caller Render_Gfx2CmdContext_AllocCommandNodeB. vq0-verify partial/disagree"
+  "evidence": "decomp:re/decomp/143a04350.c;xref:0x143a06606,0x143a06642",
+  "notes": "Same gate and ID3D12GraphicsCommandList2 QueryInterface as 0x143a04230, then WriteBufferImmediate (vcall +0x210) of 4 values to list+0x70..+0x7c with modes {MARKER_IN, MARKER_IN, MARKER_OUT, MARKER_OUT}. Caller Render_Gfx2CmdContext_EndGpuMarker 0x143a06580. (lane owner review requested) Better name: Render_Gfx2CmdContext_WriteBreadcrumbEnd (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_cmd_node_init_header_b",

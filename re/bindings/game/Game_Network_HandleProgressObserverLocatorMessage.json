@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14325bf30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name handleProgressObserverLocatorMessage (class from the log channel); log channel NETWORK: '%s(conn=%d) : channel(%d/%d) locationType(%d) locationHash(%d).'"
+  "evidence": "decomp:re/decomp/14325bf30.c;pat:log-message-method;xref:0x14325db32",
+  "notes": "Logs handleProgressObserverLocatorMessage(conn, channel, locationType, locationHash); finds observer msg+0x10 in map at this+0x20 (0x24-byte entries), inserts a new channel entry when missing (log \"- New Channel for Observer %d\") and stores the location data. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_handle_progress_observer_locator_message",

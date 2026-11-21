@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143567ff0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'Received rule message'"
+  "evidence": "decomp:re/decomp/143567ff0.c;pat:log-channel-NETWORK;xref:0x14356799e",
+  "notes": "Rule message handler: logs \"Received rule message\"; merges masked rule flags: this+0x1d08/+0x1d0c = (old & ~mask msg+0x10) | msg+0x14/+0x18, same per rule entry at this+0x1d28 from the msg+0x30 array, then calls 0x1435756d0(this). (lane owner review requested) Better name: Game_Network_OnRuleMessage (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_received_rule_message",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-DATA",
-  "notes": "named from its log messages (channel NETWORK-DATA): 'Send NetVoiceMessage to %d of %d bytes, with voice data %d bytes'"
+  "evidence": "decomp:re/decomp/143061c20.c;pat:log-channel-NETWORK-DATA;xref:0x1430568da,0x143058eaf",
+  "notes": "Builds a NetVoiceMessage packet (header + voice payload memcpy) and sends it via Game_NetworkData_SendToConnection; logs \"Send NetVoiceMessage to %d of %d bytes, with voice data %d bytes\". Better name: Game_NetworkData_SendNetVoiceMessage (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_data_send_net_voice_message_bytes_voice_data",

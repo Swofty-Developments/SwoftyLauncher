@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430ac780",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onViewProfileRequested (class from the log channel); log channel NETWORK-UI: '%s(%d).'"
+  "evidence": "decomp:re/decomp/1430ac780.c;pat:log-message-method;xref:0x1430aaedd,0x1430df701",
+  "notes": "UI command handler lea'd in 0x1430aa810: logs 'onViewProfileRequested(%d)' / 'onViewProfileRequestedByPlayerDescription', shows 'no_view_profile_privilege' if not allowed. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_ui_on_view_profile_requested",

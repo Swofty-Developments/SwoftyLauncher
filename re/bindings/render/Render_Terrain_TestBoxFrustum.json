@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14395e1b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/14395e1b0.c;xref:0x143c35518,0x143df0a6c",
-  "notes": "Hypothesis: SSE plane tests (vsubps) of a box against 4x16B planes; returns bitmask; used by terrain plugin. Named callers: Render_TerrainPlugin_Render."
+  "notes": "Batch sphere culling: for each set bit of bitset param_4 (param_3 bits) loads sphere param_2[i] (xyz, w radius), tests it against 6 planes param_1, writes index + plane-crossing masks (<<16, <<20) to param_5 and advances only if not fully outside; returns entries written. Callers in 0x143c34bf0 and Render_TerrainPlugin_Render. (lane owner review requested) Better name: Render_Frustum_CullSpheresBitset (bound record keeps its name)."
  },
  "signature": {
   "id": "render.terrain_test_box_frustum",

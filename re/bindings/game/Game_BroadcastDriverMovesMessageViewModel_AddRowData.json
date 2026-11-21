@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=BroadcastDriverMovesMessageViewModel::addRowData; log channel TRACE: 'BroadcastDriverMovesMessageViewModel::addRowData: Already added %d rows - this has been capped.'"
+  "evidence": "decomp:re/decomp/1419d2030.c;pat:log-message-cxx;xref:0x145724460",
+  "notes": "BroadcastDriverMovesMessageViewModel row builder (vtable cell 0x145724460): title/rows, driver_name, old/new team name and nub colour, row_visible, lng_free_agent; row cap log."
  },
  "signature": {
   "id": "game.broadcast_driver_moves_message_view_model_add_row_data",

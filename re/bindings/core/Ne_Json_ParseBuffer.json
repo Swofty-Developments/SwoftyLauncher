@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144435250",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144435250.c;xref:0x140796074,0x143b2a2c3",
-  "notes": "Creates a JSON document wrapper param_1 from buffer param_3 {ptr,?,len}: parses via 0x140b5e130 into param_1+9 qwords, sets param_1[0]=root and byte +8 = 1 on success; logs Unable to parse JSON in buffer, ParseErrorCode %d. Addon: parse JSON with the game's own parser."
+  "evidence": "decomp:re/decomp/144435250.c;xref:0x140796073",
+  "notes": "(doc*, allocator, buf {ptr,?,len}): inits the document (allocator +0x10/+0x18, stack cap 0x400 @+0x90, error @+0x98); if ptr and len non-zero parses via 0x140b5e130 into doc+0x48; success -> doc[0]=doc+0x48 (root), byte +8=1; failure logs 'Unable to parse JSON in buffer, ParseErrorCode %d', byte +8=0. Returns doc. Caller Game_Steam_ParsePriceOverview."
  },
  "signature": {
   "id": "core.json_parse_buffer",

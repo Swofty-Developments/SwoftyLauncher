@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1445dae90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1445dae90.c;xref:0x1434b684e,0x144594200",
-  "notes": "SIMD 3x3 matrix helper: from rows param_2[0..2] computes cofactors and reciprocal determinant and writes the inverse matrix to param_1. Used by tyre deformation particle checks. Callers: Car_TyreDeformation_CheckParticles. cv3-verify: rotation matrix to quaternion (trace+1, sqrt), not an inverse"
+  "evidence": "decomp:re/decomp/1445dae90.c;xref:0x1434b684e,0x144594200,0x14470cec8,0x14470cf3e,0x14470d0a5",
+  "notes": "(out, mat4 rows): rotation rows 0..2 -> quaternion by the trace/largest-diagonal method (sqrt(1+...), *0.5/sqrt), clamped to [-1,1], stored as int16 x32767 at out+0xc/+0xe/+0x10/+0x12; translation row 3 xyz -> floats out+0/+4/+8. Not an inverse. Callers Car_TyreDeformation_CheckParticles (4), 0x1434b6830, 0x144593f60, .data1 0x154e0ff63. Better name: Ne_Math_PackTransformPosQuat16 (bound record keeps its name)."
  },
  "signature": {
   "id": "core.math_mat3_inverse",

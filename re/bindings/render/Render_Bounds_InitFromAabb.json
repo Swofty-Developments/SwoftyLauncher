@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143c60480",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143c60480.c;xref:0x143b02ac6",
-  "notes": "Initialises a render bounds/culling node from AABB param_2 (min,max rows) and matrix param_3: logs 'odd dims - all zero on %s' (log channel ANDREW_WRIGHT) when the box has zero size, clamps extents to +-999999.0 (0x497423f0 / 0xc97423f0), sets flags byte +0x8f (4 when +0x8e&1 clear), computes derived centre/extent floats. Callers Game_Particles_CreateEffectNode, Ne_CrowdZoneInstance_Initialise, 0x143d3e970. Addon: a zero-size AABB on an effect or crowd zone prints a log line; bounds are clamped to 1e6."
+  "evidence": "decomp:re/decomp/143c60480.c;xref:0x143b02ac6,0x143c5d4a4,0x143d3ebc1,0x1523483fe,0x1527e8a3d",
+  "notes": "Lazily (when +0x84 == -1) initialises a bounds node from AABB param_2 and matrix param_3: extents clamped to +-999999.0, centre/radius terms, shape class byte +0x8f (1..4; 4 when +0x8e bit0 clear), +0x84 = 1/size scaled by +0x88/256; logs 'odd dims - all zero on %s' (channel ANDREW_WRIGHT) for zero-size boxes. Callers Game_Particles_CreateEffectNode 0x143b02ac6, Ne_CrowdZoneInstance_Initialise 0x143c5d4a4, 0x143d3ebc1. (lane owner review requested)"
  },
  "signature": {
   "id": "render.bounds_init_from_aabb",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143bda160",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143bda160.c;xref:0x14014054c,0x14014075f",
-  "notes": "unordered_map find-or-insert keyed by u64 using FNV-1a 64 (basis 0xcbf29ce484222325); key 0 returns -1; throws invalid hash bucket count / unordered_map/set too long; interns via StringPool. Used from many render setup functions (0x143bab0a0, 0x143bafd80, 0x143bcbb30...). Hypothesis: render resource/pipeline name-hash to handle map."
+  "evidence": "decomp:re/decomp/143bda160.c;xref:0x14014054c,0x14014075f,0x143bae6e1,0x143bae854",
+  "notes": "Render-graph import of an external buffer object param_3: key = FNV-1a of the pointer, lookup in map +0x3d8 (end +0x3c0); key 0 -> -1; on miss gets alloc info via 0x143bd9b30, appends a 0x180-byte resource entry to +0x28 (Ne_Vector_GrowEmplace_Elem384, name interned) and inserts the index into the map (rehash, 'unordered_map/set too long'). (lane owner review requested) Better name: Render_RenderGraph_ImportBuffer (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_handle_map_find_or_add",

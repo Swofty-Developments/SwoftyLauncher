@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a14d50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143a14d50.c;xref:0x142437310",
-  "notes": "Sibling of 0x143a181d0 using probe 0x143a14de0 and rehash 0x143a15410 (same set layout). Hypothesis (second tracked-resource set)."
+  "evidence": "decomp:re/decomp/143a14d50.c;xref:0x142437310,0x142a48be9,0x143b5e692,0x143bec0c6",
+  "notes": "Same body as 0x143a181d0 with probe 0x143a14de0 and rehash 0x143a15410: under lock param_1 (0x1449e2290/0x1449e22b4) inserts a 16-byte (ptr,1) record into the open-addressing set param_3 (array +0x18), bumps +0x108/+0x110. Purpose of the tracked set not proven. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx2_ptr_flag_set_insert_b",

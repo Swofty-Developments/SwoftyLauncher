@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144070f00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name sendPacket (class from the log channel); log channel NETWORK-THROTTLE: '%s: failed to send packet, error %s, data(%02x.%02x.%02x.%02x...) size(%d bytes) connectionId(%d).'"
+  "evidence": "decomp:re/decomp/144070f00.c;pat:log-message-method;xref:0x144065b36",
+  "notes": "Throttle flush: for each queued packet sends via HandleSendToConnection 0x14406f800, logs 'unqueued packet...' and on error '%s: failed to send packet...' with 'sendPacket'. Called from 0x144065aa0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_throttle_send_packet",

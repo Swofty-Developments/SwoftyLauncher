@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143aca640",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143aca640.c;xref:0x143abdd3e",
-  "notes": "Exception-cleanup funclet style helper of Render_Streaming_ProcessRequest (calls 143abcbd0). Hypothesis. vq2-verify partial"
+  "evidence": "decomp:re/decomp/143aca640.c;xref:0x143abdd3e,0x143abe850,0x143abeb11,0x143abfa4c",
+  "notes": "Pooled linked-list insert-before: when count +0x30 == capacity +0x38 grows the pool 1.5x up to max +0x40 (0x143abcbd0, error 0xc if full) and re-finds the position by index; takes a node from the free list +0x18, copies a 4-qword+u16 payload from param_3 and links it before param_2. A real function, not a funclet. (lane owner review requested)"
  },
  "signature": {
   "id": "render.streaming_process_request_catch_cleanup_a",

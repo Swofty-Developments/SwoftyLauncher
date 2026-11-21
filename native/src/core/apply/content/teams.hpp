@@ -672,10 +672,19 @@ inline void write_holder(uint8_t *record, std::size_t at, const std::string &tex
     ptr[n] = 0;
 }
 
+// A loaded record holds what Gdb_HashMap_Insert (0x1445a12d0) makes of a colour row's ARGB text: 0xAABBGGRR.
+inline int32_t loaded_colour(int32_t text_value)
+{
+    uint32_t n = uint32_t(text_value);
+    return int32_t((n & 0xff00ff00u) | ((n >> 16) & 0xffu) | ((n & 0xffu) << 16));
+}
+
 inline void write_colour(uint8_t *record, std::size_t at, const std::optional<int32_t> &v)
 {
-    if (v)
-        std::memcpy(record + at, &*v, sizeof(int32_t));
+    if (!v)
+        return;
+    int32_t n = loaded_colour(*v);
+    std::memcpy(record + at, &n, sizeof n);
 }
 
 inline void write_dress(uint8_t *record, const Dress &d, int64_t boss = -1)

@@ -8,8 +8,8 @@
   "level": "L2",
   "subsystem": "car",
   "proto": "void (void *ecu, uint32_t flags)",
-  "evidence": "decomp:re/decomp/14468e550.c;decomp:re/decomp/1553fdf60.c;xref:0x145bfa888",
-  "notes": "FuelECU system vtable +0x18 (Reset). body=Car_FuelEcu_Reset_Body"
+  "evidence": "decomp:re/decomp/14468e550.c;decomp:re/decomp/1553fdf60.c;xref:0x145bfa888;doc:re/research/fuel_mix_five.md#sites",
+  "notes": "FuelECU system vtable +0x18 (Reset). body=Car_FuelEcu_Reset_Body | engine-re fuel-mix-5 2026-11-20 (static): Reset re-copies the scales of fuel_mode (+0x128, movsxd 0x1553fdf6c) with the same unbounded mode*0x10 index as SetMode, so a Reset undoes any direct write to the active pairs. edited by engine-re with --force 2026-11-20 at user request (lane owner review requested)"
  },
  "signature": {
   "id": "car.fuel_ecu_reset",

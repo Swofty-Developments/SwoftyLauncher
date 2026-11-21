@@ -1,5 +1,6 @@
 use std::path::Path;
 use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, Instant};
 
 use crate::shell::notices::{Notification, Notify};
@@ -8,12 +9,16 @@ use gpui_kit::component::WindowExt;
 use gpui_kit::*;
 use swofty_core::catalog;
 use swofty_core::online::multiplayer::client::{self as diag, Session, Setup};
+use swofty_core::online::multiplayer::matching::{self, ROOM_PROFILE};
 use swofty_core::online::multiplayer::types::{RoomSettings, RoomSummary};
 use swofty_i18n::{tr, trf};
 
+use super::fix;
 use super::model::*;
+use super::room_game::Withdrawn;
 use super::state::*;
 use super::steward;
+use super::tracker::{PlayWord, play_word};
 use crate::shell::Launching;
 use crate::shell::host::Host;
 use crate::shell::host::PromptHost;
@@ -85,26 +90,24 @@ impl Shell {
         self.rooms.lobby.rooms.iter().find(|r| r.code == code)
     }
 
-    /// The play button's word while a shared session starts and F1 25 isn't building or running yet, so it
-    /// can't be pressed as a second Play.
-    pub(crate) fn room_starting_label(&self) -> Option<&'static str> {
+    /// The play button while a shared session runs and F1 25 isn't building or running yet, so it can't be
+    /// pressed as a second Play.
+    pub(crate) fn room_play_word(&self) -> Option<PlayWord> {
         let m = &self.rooms;
-        if !m.busy() {
-            return None;
-        }
-        let hosting = m.starting.as_deref() == Some("create") || m.state.as_ref().is_some_and(|s| s.host);
-        Some(if hosting {
-            tr("Opening room…")
-        } else {
-            tr("Joining…")
-        })
+        play_word(m.busy(), m.leaving, m.state.as_ref())
+    }
+
+    pub(crate) fn room_starting_label(&self) -> Option<&'static str> {
+        self.room_play_word().map(PlayWord::label)
     }
 
     pub(crate) fn room_can_play(&self) -> bool {
         self.navigation.page == Page::Multiplayer
             && self.account.allowed()
             && !self.rooms.busy()
-            && self.room_viewed().is_some()
+            && self.room_viewed().is_some_and(|room| {
+                RoomStatus::of(room, &self.room_enabled_addons(), self.rooms.lobby.print.as_ref()).joinable()
+            })
     }
 
     pub(crate) fn face(&self, name: &str, url: Option<&str>, size: f32, p: Palette) -> Div {
@@ -175,6 +178,10 @@ impl Shell {
     }
 
     pub(super) fn room_retry(&mut self, cx: &mut Context<Self>) {
+        if self.rooms.fix.retry() {
+            cx.notify();
+            return;
+        }
         if let Some(session) = &self.rooms.session {
             session.retry();
         }
@@ -201,7 +208,7 @@ impl Shell {
         cx.notify();
     }
 
-    pub(super) fn room_step_in(&mut self, cx: &mut Context<Self>) {
+    pub(crate) fn room_step_in(&mut self, cx: &mut Context<Self>) {
         self.rooms.away = false;
         self.open_page(Page::Multiplayer, cx);
     }
@@ -330,7 +337,7 @@ impl Multiplayer {
         cx.spawn(async move |this, cx| {
             let print = cx
                 .background_executor()
-                .spawn(async move { read_local(&store, &profile, &dir).map(|l| OwnPrint::of(&l)) })
+                .spawn(async move { read_own(&store, &profile, &dir) })
                 .await;
             this.update(cx, |host, cx| {
                 host.split().0.lobby.took_print(print);
@@ -356,24 +363,51 @@ impl Multiplayer {
             return;
         };
         let (store, profile) = (needs.store.clone(), needs.profile.to_owned());
+        let listed = match &start {
+            Start::Join(code) => m
+                .lobby
+                .rooms
+                .iter()
+                .find(|r| r.code == *code)
+                .and_then(|r| r.addons.as_ref())
+                .and_then(matching::listed_addons),
+            Start::Create(_) => None,
+        };
         m.starting = Some(starting(&start));
         m.error = None;
+        let flag = Arc::new(AtomicBool::new(false));
+        m.roomed = flag.clone();
         cx.spawn(async move |this, cx| {
             let result = cx
                 .background_executor()
                 .spawn(async move {
                     diag::load(&store.root, Some(&token)).map_err(|e| e.to_string())?;
-                    let local = read_local(&store, &profile, &dir)
+                    let joining = matches!(start, Start::Join(_));
+                    let (read, roomed) = match (&listed, joining) {
+                        (Some(addons), true) => (room_local(&store, &profile, &dir, addons), true),
+                        (_, false) => (read_local(&store, &profile, &dir), false),
+                        (None, true) => match read_local(&store, &profile, &dir) {
+                            Ok(local) => (Ok(local), false),
+                            Err(_) => (room_local(&store, &profile, &dir, &[]), true),
+                        },
+                    };
+                    let local = read
                         .inspect_err(|e| {
                             diag::line(format!("session not started: couldn't read the addons: {e}"));
                         })
                         .map_err(|e| trf!("Couldn't read your addons: {e}", e = e).to_string())?;
                     let mut setup = Setup::new(&token, &dir, local);
                     setup.room_launch = true;
+                    flag.store(roomed, Ordering::Relaxed);
                     let (refresh_store, refresh_profile, refresh_dir) =
                         (store.clone(), profile.clone(), dir.clone());
                     setup.refresh = Some(Arc::new(move || {
-                        read_local(&refresh_store, &refresh_profile, &refresh_dir).ok()
+                        let played = if flag.load(Ordering::Relaxed) {
+                            ROOM_PROFILE
+                        } else {
+                            refresh_profile.as_str()
+                        };
+                        read_local(&refresh_store, played, &refresh_dir).ok()
                     }));
                     match start {
                         Start::Create(settings) => Session::create(setup, &settings),
@@ -408,7 +442,9 @@ impl Multiplayer {
         window: &mut Window,
         cx: &mut Context<H>,
     ) {
+        Self::withdraw(host, window, cx);
         Self::launch(host, window, cx);
+        Self::match_host(host, cx);
         let dialog = window.has_active_dialog(cx);
         let (m, needs) = <H as Host<Self>>::split(host);
         let mut changed = !dialog && m.drop_held();
@@ -443,7 +479,10 @@ impl Multiplayer {
             changed = true;
         }
         if let Some(session) = &m.session {
-            let state = session.state();
+            let mut state = session.state();
+            if let Some(fix) = m.fix.view() {
+                fix::patch(&mut state, &fix);
+            }
             if m.state.as_ref() != Some(&state) {
                 m.state = Some(state);
                 changed = true;
@@ -478,6 +517,60 @@ impl Multiplayer {
             Self::read_print(host, cx);
         }
         Self::load_shown_faces(host, cx);
+    }
+
+    /// Matches the host's addons once the session has them: installs from the Addon Browser, then the room
+    /// profile, off the UI thread. The room launch waits for it ([`super::fix::RoomFix::holds`]).
+    pub(super) fn match_host<H: Host<Self>>(host: &mut H, cx: &mut Context<H>) {
+        let (m, needs) = host.split();
+        let Some(session) = &m.session else {
+            return;
+        };
+        m.host_print = session.host_print();
+        let launched = m.game.launching || needs.running;
+        let joiner = m.state.as_ref().is_some_and(|s| !s.host);
+        if !joiner || !m.fix.due(m.host_print.as_ref(), launched) {
+            return;
+        }
+        let (Some(print), Some(dir)) = (m.host_print.clone(), needs.game_dir.map(Path::to_path_buf)) else {
+            return;
+        };
+        let progress = m.fix.begin(&print.digest);
+        diag::line(format!(
+            "launcher: matching the host's {} addon(s) for the room",
+            print.addons.len()
+        ));
+        let (store, profile) = (needs.store.clone(), needs.profile.to_owned());
+        cx.spawn(async move |this, cx| {
+            let result = cx
+                .background_executor()
+                .spawn(async move { fix::run(&store, &profile, &dir, &print, &progress) })
+                .await;
+            this.update(cx, |host, cx| {
+                let m = host.split().0;
+                let result = match result {
+                    Ok((local, replaces)) => {
+                        diag::line("launcher: the room profile has the host's addons");
+                        for line in &replaces {
+                            diag::line(format!("launcher: {line}"));
+                        }
+                        m.roomed.store(true, Ordering::Relaxed);
+                        if let Some(session) = &m.session {
+                            session.update_local(&local);
+                        }
+                        Ok(())
+                    }
+                    Err(why) => {
+                        diag::line(format!("launcher: couldn't match the host's addons: {why}"));
+                        Err(why)
+                    }
+                };
+                m.fix.finish(result, Instant::now());
+                cx.notify();
+            })
+            .ok();
+        })
+        .detach();
     }
 
     /// Reads the League Stewarding page the host's game names, off the UI thread.
@@ -533,6 +626,26 @@ impl Multiplayer {
         true
     }
 
+    /// Cancels the room's Play while it waits on its checks or a prompt once the session no longer asks for
+    /// it: the room ended, is being left, or the session withdrew its ask.
+    fn withdraw<H: Host<Self> + PromptHost<Launching>>(
+        host: &mut H,
+        window: &mut Window,
+        cx: &mut Context<H>,
+    ) {
+        let m = <H as Host<Self>>::split(host).0;
+        let Some(withdrawn) = m.game.withdraw(m.session.as_ref(), m.leaving) else {
+            return;
+        };
+        diag::line("launch: the session no longer asks for F1 25; the room's Play is cancelled");
+        match withdrawn {
+            Withdrawn::Checks => <H as Host<Launching>>::split(host).0.play_pending.cancel(),
+            Withdrawn::Prompt if window.has_active_dialog(cx) => window.close_dialog(cx),
+            Withdrawn::Prompt => {}
+        }
+        cx.notify();
+    }
+
     /// Starts F1 25 for the room when the session asks, the game is closed and the launcher has put the
     /// game folder back.
     pub(super) fn launch<H: Host<Self> + PromptHost<Launching>>(
@@ -544,15 +657,21 @@ impl Multiplayer {
         let Some(session) = &m.session else {
             return;
         };
+        if m.fix.holds(m.host_print.as_ref(), Instant::now()) {
+            return;
+        }
         let Some(ask) = m.game.due(session, needs.busy || needs.running) else {
             return;
         };
         if let Some(dir) = needs.game_dir {
             diag::forget_status(dir);
         }
-        let Some(room) = m.game.begin(session, ask, &needs.store.root) else {
+        let Some(mut room) = m.game.begin(session, ask, &needs.store.root) else {
             return;
         };
+        if m.roomed.load(Ordering::Relaxed) {
+            room.profile = Some(ROOM_PROFILE.to_owned());
+        }
         let started = Launching::play_for(host, Some(room), window, cx);
         if !started {
             <H as Host<Self>>::split(host).0.launch_result(false);

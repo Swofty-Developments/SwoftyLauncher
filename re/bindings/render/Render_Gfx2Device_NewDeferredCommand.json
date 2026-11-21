@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439d7370",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439d7370.c;xref:0x1439d3564",
-  "notes": "Under device lock (CriticalSection [param_1+0x2668]) allocates a 0x168-byte command object (vtable 0x14589f448, serial from 0x14618c680) from allocator [param_1+0x150] and copies 3 payload qwords from param_2; hands it to the device queue. 25 call sites in buffer/texture creation (Render_Gfx2Buffer_Construct, 0x143bd2df0, 0x143c00530...). Hypothesis."
+  "evidence": "decomp:re/decomp/1439d7370.c;xref:0x1439d3564,0x1439d5daa,0x143bd3af6",
+  "notes": "Under device CS allocates 0x168 bytes, vtable 0x14589f448, copies an 8-qword view desc, inits four slots (5, -1), calls Render_Gfx2Device_AllocViewDescriptor_B 0x143a0e5b0, inserts into set +0x43f0 and registers it in a per-resource map keyed by desc+0x20 (+0x440 when desc+0x1c is 7 or 1, else +0x3a0); those maps are walked by 0x1439dd170. Callers 0x1439d1b90, 0x1439d5710, 0x143bd2df0. (lane owner review requested) Better name: Render_Gfx2Device_CreateViewObject_B (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_device_new_deferred_command",

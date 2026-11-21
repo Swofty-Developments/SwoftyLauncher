@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140ade4b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_ChallengeCareerLeaderboardReader_RequestNextBlock;xref:0x140ade52e,0x140ade7de,0x140ade86f",
-  "notes": "cxx=game::ChallengeCareerLeaderboardReader::requestNextBlock; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/140ade4b0.c;str:s_ChallengeCareerLeaderboardReader_RequestNextBlock;xref:0x14566a598",
+  "notes": "Vtable cell 0x14566a598. Own pretty-function log. If user matches, not busy (vt+0x28) and entries remain: +0xe8 = 0, +0xf0/+0xf8 = delegate, startIndex after the last read rank, request via 0x140b69920 with callback 0x140add940; returns handle +0x80 != 0, else logs 'aborted' and returns 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.challenge_career_leaderboard_reader_request_next_block",

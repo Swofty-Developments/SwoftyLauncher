@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143090ca0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name sendOptions (class from the log channel); log channel NETWORK: '%s(%d).'"
+  "evidence": "decomp:re/decomp/143090ca0.c;pat:log-message-method;xref:0x143090c57,0x143091079",
+  "notes": "Callers 0x14308f6c0, 0x143091060. Logs 'sendOptions(%d).', allocates and fills a 0x30-byte-per-option buffer and sends it with 0x14402e500([[this+0x20]+0x3d0], ...). (lane owner review requested) Better name: Game_NetworkVoting_SendOptions (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_send_options",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a0e340",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143a0e340.c;xref:0x1439d69e4",
-  "notes": "617 bytes: Render_Gfx2Device_AllocDescriptorSlot + Ne_BitAllocator_AllocBit + Render_Gfx2_QueueDeferredRelease. Callers Render_Gfx2Device_CreateResourceObject (0x1439d69e4), 0x1439e06f6. Twin of 0x143a0e5b0. Hypothesis. | engine-re 2026-11-17 render round 3 (static): per view i it allocates a bindless id from the device bit allocator (Ne_BitAllocator_AllocBit on device+0x1cc0, capacity 0x40000 set in Render_Gfx2Device_Initialise next to the NeGfx2BindlessResourcesLookupSystem::m_idAllocator string), stores it at tex+0x160+i*4, writes the descriptor-heap index of the view into the u32 lookup table device+0x1d28[id] and sets the dirty byte device+0x1ca8. The shader reads it as g_bindlessResourcesLookupTable[id] -> CreateHandleFromHeap. Same pattern in Render_Gfx2Device_AllocViewDescriptor_B 0x143a0e5b0 and Render_Gfx2Buffer_Construct 0x1439d5710; Render_Gfx2Buffer_Destroy resets the entry to 0xffffffff."
+  "evidence": "decomp:re/decomp/143a0e340.c;xref:0x1439d69e4,0x1439e06f6,0x1439e0767",
+  "notes": "Per view slot frees old descriptor records (Render_Gfx2Device_FreeDescriptorSlot 0x1439fdd40), allocates new ones (Render_Gfx2Device_AllocDescriptorSlot), takes a bindless id (Ne_BitAllocator_AllocBit on device+0x1cc0) into view+0x160+i*4, writes the heap index to device+0x1d28[id], dirty byte +0x1ca8, creates the descriptor with ID3D12Device CreateConstantBufferView (+0x88) / CreateShaderResourceView (+0x90). Callers Render_Gfx2Device_CreateViewObject_A 0x1439d6880, 0x1439dffa0. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx2_device_alloc_view_descriptor_a",

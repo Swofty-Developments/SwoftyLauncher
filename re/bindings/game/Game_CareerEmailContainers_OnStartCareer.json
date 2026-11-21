@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140dd41d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_Championship_CareerEmailContainers_OnStartCareer;xref:0x140dd424e",
-  "notes": "cxx=game::championship::CareerEmailContainers::onStartCareer; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/140dd41d0.c;str:s_Championship_CareerEmailContainers_OnStartCareer;xref:0x1456943f0",
+  "notes": "Component vfunc (cell 0x1456943f0) whose body is CareerEmailContainers::onStartCareer on this+0x2e0: logs, resets the containers (0x140dd3340); with no session (+0x300 == 0) adds the local player id via 0x140dd93d0, else for each session player (+0x308 -> +0x100 list +0x58..+0x60) with bit 0x10000000 and +0x90 set calls 0x140dd93d0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.career_email_containers_on_start_career",

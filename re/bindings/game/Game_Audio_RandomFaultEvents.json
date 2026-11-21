@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140a1d610.c",
-  "notes": "Registers the audio events randomfault_brakes, _electrical, _fuel, _cooling, _lubricant, _sensors (radio calls for random car faults)."
+  "notes": "Not a registration: car fault message handler: if msg car (+0x10) is the player car, plays a radio event via vt+0x120 by fault bits msg+0x14: 0x8 randomfault_brakes, 0x10 _electrical, 0x20 _fuel, 0x40 _cooling, 0x80 _lubricant, 0x100 _sensors; 0 -> gar_enter_garage, other -> gar_car_repairs."
  },
  "signature": {
   "id": "game.audio_random_fault_events",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1440214f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1440214f0.c;xref:0x142b720c9",
-  "notes": "Linear search over a pointer list (this+0x50..0x58) comparing the 0x1f-char name at entry+0x18 with Ne_Crt_Strnicmp (0x14534da24); if not found allocates a 0xa8-byte entry (vtable 0x145a47a20, name buffer cap 0x20) from allocator this+0x40. Callers 0x142b71fa0, 0x142b726e0, 0x142b72d50 (many). Hypothesis (named render/vfx parameter set)."
+  "evidence": "decomp:re/decomp/1440214f0.c;xref:0x142b720c9,0x142b727a9,0x142b72e19,0x142c8d49b",
+  "notes": "Rename: linear search of the pointer vector [this+0x50..0x58] comparing the name at entry+0x18 with Ne_Crt_Strnicmp (max 0x1f); on miss allocates a 0xa8-byte entry from allocator [this+0x40] (vtbl 0x145a47a20, name string cap 0x20, second string cap 0x50 at +0x48) and appends it (grow x1.5 via allocator [this+0x48]). Callers pass section names next to hardware_settings_config: 0x142b720c9 (motion, dbox), 0x142b727a9 (led_display), 0x142c8d49b (bloom, godRays). (lane owner review requested) Better name: Render_HwSettingsConfig_FindOrAddNode (bound record keeps its name)."
  },
  "signature": {
   "id": "render.named_entry_find_or_create",

@@ -19,6 +19,16 @@ const WAYPOINT_TYPES: [&str; 9] = [
     "left_run_off",
     "right_run_off",
 ];
+const ROUTE_KINDS: [&str; 2] = ["track", "pit"];
+// The lines the game's AISplineData loader reads after its routes, in its order: the section, the element, how a
+// message names one, and the lowest gate it may stand at. Every gate reference has to be below the gate count.
+const LINES: [(&str, &str, &str, i64); 4] = [
+    ("brake_lines", "brake_line", "brake line", 0),
+    ("corner_start_lines", "corner_start_line", "corner start", 1),
+    ("corner_end_lines", "corner_end_line", "corner end", 0),
+    ("retire_lines", "retire_line", "retire line", 0),
+];
+const RETIRE_KEYS: [&str; 4] = ["x", "y", "z", "side"];
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Spacing {
@@ -294,6 +304,137 @@ pub fn unfixable_message(who: &str, routes: &[String], fix: &str) -> String {
     )
 }
 
+fn label(e: &Element, kind: &str) -> String {
+    match e.attr(b"id") {
+        Some(id) => format!("{kind} {}", String::from_utf8_lossy(id)),
+        None => format!("a {kind} without an id"),
+    }
+}
+
+fn needs_id(e: &Element, kind: &str, bad: &mut Vec<String>) {
+    if e.attr(b"id").is_none() {
+        bad.push(format!("a {kind} has no id"));
+    }
+}
+
+fn gate_in(e: &Element, what: &str, key: &str, low: i64, gates: usize, bad: &mut Vec<String>) {
+    if e.attr(key.as_bytes()).is_none() {
+        bad.push(format!("{what} has no {key}"));
+        return;
+    }
+    let Some(gate) = num::<i64>(e, key.as_bytes()) else {
+        return;
+    };
+    let high = gates as i64 - 1;
+    if (low..=high).contains(&gate) {
+        return;
+    }
+    bad.push(match (key, low, gate) {
+        ("gate_id", 1, 0) => {
+            format!("{what} starts at gate 0, the first gate of the lap, where no corner can start")
+        }
+        _ if high < low => format!("{what} has {key} {gate}, and the track has {gates} gates"),
+        _ => format!("{what} has {key} {gate}, outside gates {low} to {high}"),
+    });
+}
+
+fn section<'a>(root: &'a Element, name: &str, bad: &mut Vec<String>) -> Option<&'a Element> {
+    let found = root.child(name.as_bytes());
+    if found.is_none() {
+        bad.push(format!("it has no <{name}> list"));
+    }
+    found
+}
+
+pub fn loadable(doc: &Document) -> Result<(), Vec<String>> {
+    let root = &doc.root;
+    let mut bad = Vec::new();
+    if root.name != b"track" {
+        bad.push(format!(
+            "its top element is <{}>, not <track>",
+            String::from_utf8_lossy(&root.name)
+        ));
+    }
+    let gates = section(root, "gates", &mut bad).map_or(0, |g| g.children_named(b"gate").count());
+    let mut links = Vec::new();
+    for link in section(root, "links", &mut bad)
+        .into_iter()
+        .flat_map(|l| l.children_named(b"link"))
+    {
+        needs_id(link, "link", &mut bad);
+        links.extend(num::<i64>(link, b"id"));
+        let what = label(link, "link");
+        for key in ["from_gate", "to_gate"] {
+            gate_in(link, &what, key, 0, gates, &mut bad);
+        }
+    }
+    for route in section(root, "routes", &mut bad)
+        .into_iter()
+        .flat_map(|r| r.children_named(b"route"))
+    {
+        let what = label(route, "route");
+        for key in ["type", "from_route", "to_route"] {
+            match route.attr(key.as_bytes()) {
+                None => bad.push(format!("{what} has no {key}")),
+                Some(v) if !ROUTE_KINDS.iter().any(|k| k.as_bytes() == v) => bad.push(format!(
+                    "{what} has {key} \"{}\", where the game reads only track or pit",
+                    String::from_utf8_lossy(v)
+                )),
+                Some(_) => {}
+            }
+        }
+        for key in ["from_link", "to_link"] {
+            if route.attr(key.as_bytes()).is_none() {
+                bad.push(format!("{what} has no {key}"));
+            }
+        }
+        if let (Some(from), Some(to)) = (num::<i64>(route, b"from_link"), num::<i64>(route, b"to_link"))
+            && !links.iter().any(|id| (from..=to).contains(id))
+        {
+            bad.push(format!(
+                "{what} runs over links {from} to {to}, and no link has an id in that range"
+            ));
+        }
+    }
+    for (name, element, kind, low) in LINES {
+        for line in section(root, name, &mut bad)
+            .into_iter()
+            .flat_map(|s| s.children_named(element.as_bytes()))
+        {
+            needs_id(line, kind, &mut bad);
+            let what = label(line, kind);
+            gate_in(line, &what, "gate_id", low, gates, &mut bad);
+            if element == "corner_start_line" && line.attr(b"pair_id").is_some() {
+                gate_in(line, &what, "pair_id", low, gates, &mut bad);
+            }
+            if element == "retire_line" {
+                for key in RETIRE_KEYS {
+                    if line.attr(key.as_bytes()).is_none() {
+                        bad.push(format!("{what} has no {key}"));
+                    }
+                }
+            }
+        }
+    }
+    match bad.is_empty() {
+        true => Ok(()),
+        false => Err(bad),
+    }
+}
+
+pub fn unloadable_message(who: &str, defects: &[String], fix: &str) -> String {
+    let more = match defects.len().saturating_sub(1) {
+        0 => String::new(),
+        1 => " (and 1 more problem)".to_owned(),
+        n => format!(" (and {n} more problems)"),
+    };
+    format!(
+        "{who} would crash F1 25 when a session on it starts: the game can't load its AI data, because {}{more}. \
+         Ask the track's author to fix it. {fix}",
+        defects.first().map_or("", String::as_str)
+    )
+}
+
 #[cfg(test)]
 pub(crate) mod tests {
     use super::*;
@@ -395,6 +536,8 @@ pub(crate) mod tests {
                 &[
                     ("id", "0".into()),
                     ("type", "track".into()),
+                    ("from_route", "track".into()),
+                    ("to_route", "track".into()),
                     ("from_link", "0".into()),
                     ("to_link", "39".into()),
                 ],
@@ -405,12 +548,27 @@ pub(crate) mod tests {
                 &[
                     ("id", "1".into()),
                     ("type", "pit".into()),
+                    ("from_route", "track".into()),
+                    ("to_route", "track".into()),
                     ("from_link", "40".into()),
                     ("to_link", "52".into()),
                 ],
                 Vec::new(),
             ),
         ];
+        let lines = |section: &str, element: &str, at: &[&[(&str, &str)]]| {
+            let items = at
+                .iter()
+                .enumerate()
+                .map(|(id, attrs)| {
+                    let mut attrs: Vec<(&str, String)> =
+                        attrs.iter().map(|(k, v)| (*k, v.to_string())).collect();
+                    attrs.insert(0, ("id", id.to_string()));
+                    el(element, &attrs, Vec::new())
+                })
+                .collect();
+            el(section, &[], items)
+        };
         Document {
             root: el(
                 "track",
@@ -418,11 +576,192 @@ pub(crate) mod tests {
                 vec![
                     el("gates", &[("num_gates", "52".into())], gates),
                     el("links", &[("num_links", "53".into())], links),
+                    lines(
+                        "corner_start_lines",
+                        "corner_start_line",
+                        &[&[("gate_id", "10")], &[("gate_id", "30"), ("pair_id", "44")]],
+                    ),
+                    lines(
+                        "corner_end_lines",
+                        "corner_end_line",
+                        &[&[("gate_id", "14")], &[("gate_id", "34")]],
+                    ),
+                    lines(
+                        "brake_lines",
+                        "brake_line",
+                        &[&[("gate_id", "8")], &[("gate_id", "28")]],
+                    ),
+                    lines(
+                        "retire_lines",
+                        "retire_line",
+                        &[&[
+                            ("gate_id", "20"),
+                            ("x", "12.5"),
+                            ("y", "0.4"),
+                            ("z", "-80.25"),
+                            ("side", "left"),
+                        ]],
+                    ),
                     el("routes", &[("num_routes", "2".into())], routes),
                 ],
             ),
             tail: Vec::new(),
         }
+    }
+
+    fn line_mut<'a>(doc: &'a mut Document, section: &str, n: usize) -> &'a mut Element {
+        let s = doc.root.child_mut(section.as_bytes()).unwrap();
+        s.children
+            .iter_mut()
+            .filter(|c| c.kind == Kind::Element)
+            .nth(n)
+            .unwrap()
+    }
+
+    fn without(doc: &mut Document, section: &str, n: usize, key: &str) {
+        line_mut(doc, section, n)
+            .attrs
+            .retain(|(k, _)| k != key.as_bytes());
+    }
+
+    #[test]
+    fn a_line_like_the_stock_ones_loads() {
+        let doc = aispline(|_| (-4.1, 3.0), 9);
+        assert_eq!(loadable(&doc), Ok(()));
+        assert_eq!(loadable(&Document::parse(&doc.to_bytes()).unwrap()), Ok(()));
+    }
+
+    #[test]
+    fn a_corner_starting_at_gate_0_is_named() {
+        let mut doc = aispline(|_| (-4.1, 3.0), 9);
+        let start = line_mut(&mut doc, "corner_start_lines", 0);
+        start.set_attr(b"id", b"12");
+        start.set_attr(b"gate_id", b"0");
+        let defects = loadable(&doc).unwrap_err();
+        assert_eq!(
+            defects,
+            ["corner start 12 starts at gate 0, the first gate of the lap, where no corner can start"]
+        );
+        assert_eq!(
+            unloadable_message(
+                "Circuit de Ølstykke",
+                &defects,
+                "Turn Circuit de Ølstykke off in this profile."
+            ),
+            "Circuit de Ølstykke would crash F1 25 when a session on it starts: the game can't load its AI data, \
+             because corner start 12 starts at gate 0, the first gate of the lap, where no corner can start. Ask the \
+             track's author to fix it. Turn Circuit de Ølstykke off in this profile."
+        );
+        line_mut(&mut doc, "corner_start_lines", 0).set_attr(b"gate_id", b"52");
+        assert_eq!(
+            loadable(&doc).unwrap_err(),
+            ["corner start 12 has gate_id 52, outside gates 1 to 51"]
+        );
+    }
+
+    #[test]
+    fn a_corner_pair_outside_the_gates_is_named() {
+        let mut doc = aispline(|_| (-4.1, 3.0), 9);
+        for (pair, want) in [
+            ("0", "corner start 1 has pair_id 0, outside gates 1 to 51"),
+            ("52", "corner start 1 has pair_id 52, outside gates 1 to 51"),
+            ("-3", "corner start 1 has pair_id -3, outside gates 1 to 51"),
+        ] {
+            line_mut(&mut doc, "corner_start_lines", 1).set_attr(b"pair_id", pair.as_bytes());
+            assert_eq!(loadable(&doc).unwrap_err(), [want], "{pair}");
+        }
+        line_mut(&mut doc, "corner_start_lines", 1).set_attr(b"pair_id", b"51");
+        assert_eq!(loadable(&doc), Ok(()));
+    }
+
+    #[test]
+    fn a_missing_list_is_named() {
+        for section in [
+            "gates",
+            "links",
+            "routes",
+            "brake_lines",
+            "corner_start_lines",
+            "corner_end_lines",
+            "retire_lines",
+        ] {
+            let mut doc = aispline(|_| (-4.1, 3.0), 9);
+            doc.root.children.retain(|c| c.name != section.as_bytes());
+            let defects = loadable(&doc).unwrap_err();
+            assert_eq!(defects[0], format!("it has no <{section}> list"));
+            if section != "gates" && section != "links" {
+                assert_eq!(defects.len(), 1, "{section}: {defects:?}");
+            }
+        }
+        let mut doc = aispline(|_| (-4.1, 3.0), 9);
+        doc.root.name = b"spline".to_vec();
+        assert_eq!(
+            loadable(&doc).unwrap_err(),
+            ["its top element is <spline>, not <track>"]
+        );
+    }
+
+    #[test]
+    fn every_loader_rule_names_the_line_that_breaks_it() {
+        type Edit = fn(&mut Document);
+        let cases: [(Edit, &str); 10] = [
+            (
+                |d| line_mut(d, "links", 5).set_attr(b"to_gate", b"60"),
+                "link 5 has to_gate 60, outside gates 0 to 51",
+            ),
+            (
+                |d| line_mut(d, "brake_lines", 1).set_attr(b"gate_id", b"-1"),
+                "brake line 1 has gate_id -1, outside gates 0 to 51",
+            ),
+            (
+                |d| without(d, "corner_end_lines", 0, "gate_id"),
+                "corner end 0 has no gate_id",
+            ),
+            (
+                |d| without(d, "retire_lines", 0, "side"),
+                "retire line 0 has no side",
+            ),
+            (|d| without(d, "retire_lines", 0, "y"), "retire line 0 has no y"),
+            (
+                |d| line_mut(d, "routes", 1).set_attr(b"type", b"pitlane"),
+                "route 1 has type \"pitlane\", where the game reads only track or pit",
+            ),
+            (|d| without(d, "routes", 0, "to_route"), "route 0 has no to_route"),
+            (
+                |d| without(d, "routes", 0, "from_link"),
+                "route 0 has no from_link",
+            ),
+            (|d| without(d, "brake_lines", 0, "id"), "a brake line has no id"),
+            (
+                |d| {
+                    let r = line_mut(d, "routes", 1);
+                    r.set_attr(b"from_link", b"60");
+                    r.set_attr(b"to_link", b"70");
+                },
+                "route 1 runs over links 60 to 70, and no link has an id in that range",
+            ),
+        ];
+        for (edit, want) in cases {
+            let mut doc = aispline(|_| (-4.1, 3.0), 9);
+            edit(&mut doc);
+            assert_eq!(loadable(&doc).unwrap_err(), [want]);
+        }
+        let mut doc = aispline(|_| (-4.1, 3.0), 9);
+        line_mut(&mut doc, "links", 0).set_attr(b"from_gate", b"x");
+        line_mut(&mut doc, "brake_lines", 0).set_attr(b"gate_id", b"60");
+        line_mut(&mut doc, "corner_start_lines", 0).set_attr(b"gate_id", b"0");
+        let defects = loadable(&doc).unwrap_err();
+        assert_eq!(
+            defects,
+            [
+                "brake line 0 has gate_id 60, outside gates 0 to 51",
+                "corner start 0 starts at gate 0, the first gate of the lap, where no corner can start",
+            ]
+        );
+        assert!(
+            unloadable_message("Test Ring", &defects, "")
+                .contains("because brake line 0 has gate_id 60, outside gates 0 to 51 (and 1 more problem).")
+        );
     }
 
     #[test]

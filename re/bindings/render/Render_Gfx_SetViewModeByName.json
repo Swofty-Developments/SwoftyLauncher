@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140152640",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140152640.c;xref:0x14014db7d",
-  "notes": "Switches renderer view/scene mode by name: strcmp of param_3 against UI/render modes (strings in_race_uiblur, main, loading, garage), toggles flags at this+0xc20..0xc30 and 0x8f0/0x8f9, bumps use counter +0xbf4; first call lazily builds a 4-flag state struct and a settings record via the 0x146c621e0 manager. Caller Game_Read_RendererGfxConfig. Hypothesis."
+  "evidence": "decomp:re/decomp/140152640.c;xref:0x14014db48,0x14014db7d",
+  "notes": "UI-state callback (from param_2, to param_3): strcmp against in_race, garage, loading, fullscreen_hub, main, in_race_uiblur; bumps +0xbf4 of views at this+0xc20/+0xc28/+0xc30, float +0x640 (3.0 garage, else 5.0), byte +0xa5be23 of a scene sub-object on loading, +0xc0c, +0x8f9, [+0x98]+0x44f80. Installed by lea 0x14014db48 as fn [obj+0xd8]/ctx [obj+0xe0], called once at 0x14014db7d. (lane owner review requested) Better name: Render_Gfx_OnUiStateChanged (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx_set_view_mode_by_name",

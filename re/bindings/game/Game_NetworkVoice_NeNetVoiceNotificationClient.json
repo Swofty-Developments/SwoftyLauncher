@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144038730",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-VOICE",
-  "notes": "named from its log messages (channel NETWORK-VOICE): 'NeNetVoiceNotificationClient::waveInStop has failed, err = %d!'"
+  "evidence": "decomp:re/decomp/144038730.c;pat:log-channel-NETWORK-VOICE;xref:0x144038a55,0x144039a28,0x14403bbf4,0x14403bc31,0x1440421d5,0x14404233e",
+  "notes": "Under lock [this+0x48]: if capture is open (+0x79) calls waveInStop, waveInReset, waveInUnprepareHeader for buffers 1 and 2 and waveInClose on handle +0x80 (failures logged 'NeNetVoiceNotificationClient::... has failed'), then clears +0x80 and +0x79. Called from 0x144038a40, 0x144039a20, Game_Audio_CompressDataHelper, 0x1440421c0, 0x144042310. (lane owner review requested) Better name: Game_NetworkVoice_CloseWaveInDevice (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_voice_ne_net_voice_notification_client",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144085e20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-SESSION",
-  "notes": "named from its log messages (channel NETWORK-SESSION): '%s: NeNetSessionPS5 InRoom - room has become invalidated.'"
+  "evidence": "decomp:re/decomp/144085e20.c;pat:log-channel-NETWORK-SESSION;xref:0x145a52f50",
+  "notes": "Vtable cell; NeNetSessionF1OS state update: update_Online / update_Creating / joining branches ('NeNetSessionF1OS::changeState' logs, setSearchable, CallSessionBrowserCreateSession 0x144084170); the PS5 'InRoom - room has become invalidated' text is one branch only. (lane owner review requested) Better name: Game_NetSessionF1OS_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_session_ne_net_session_ps5_in_room_room_become",

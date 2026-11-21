@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143bc5fb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143bc5fb0.c;xref:0x143bc47c3,0x143bc4844",
-  "notes": "Initialises the final-copy postfx generator: looks up shader permutations via 0x1439b33a0(shaderset,\"default\",name): sdr2hdr, apply_unsharp_mask, crossfade_grab, crossfade_blend, and *_with_aces_transform / *_with_aces_optimised_transform variants, generate_alphamask, copy_2d_opaque_ps, copy_2d_alphamask_ps, copy_2d_opaque_srgb_ps, copy_2d_alphamask_srgb_ps. Defaults: sharpen 0.1 (0x3dcccccd), 1.2 (0x3f99999a). param_2[2] = HDR flag (sdr2hdr vs unsharp). Callers Game_PostFx_CreateMotionBloomLensFlare, Game_Rtt_CreateScenes. Addon: names of final image sharpen/ACES/crossfade shaders."
+  "evidence": "decomp:re/decomp/143bc5fb0.c;xref:0x143bc47c3,0x143bc4844,0x143d854fa",
+  "notes": "Looks up shader permutations via 0x1439b33a0(shaderset,'default',name): sdr2hdr, apply_unsharp_mask, crossfade_grab/_blend and their _with_aces_transform / _with_aces_optimised_transform variants, generate_alphamask, copy_2d_opaque_ps/alphamask_ps/opaque_srgb_ps/alphamask_srgb_ps ('rtt' set). Callers Game_Read_RendererGfxConfig_2, Game_Rtt_RttGenerator. (lane owner review requested)"
  },
  "signature": {
   "id": "render.post_fx_init_copy_sharpen_shaders",

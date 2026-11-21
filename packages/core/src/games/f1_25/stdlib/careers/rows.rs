@@ -120,31 +120,3 @@ pub fn settle_rows(
     }
     changed
 }
-
-/// Takes off each career of `list` the addons recorded as owners of its team, car or driver
-/// ([`OWN_WHY`]) that own none of them now in load order `on` ([`owners_now`]): a record
-/// [`settle_rows`] wrote from an id another addon holds since. A career none of whose ids has an
-/// owner keeps its records. Returns whether any career changed.
-pub fn drop_former_owners(
-    list: &mut [Career],
-    owners: &IdOwners,
-    installed: &BTreeMap<String, AddonManifest>,
-    on: &[String],
-) -> bool {
-    let mut changed = false;
-    for c in list.iter_mut().filter(|c| !c.is_gone()) {
-        let now: BTreeSet<&String> = SAVE_IDS
-            .iter()
-            .filter_map(|(field, table)| Some((*table, c.extra.get(*field).and_then(Value::as_i64)?)))
-            .flat_map(|at| owners_now(c, at, owners, installed, Some(on)))
-            .collect();
-        if now.is_empty() {
-            continue;
-        }
-        let before = c.addons.len();
-        c.addons
-            .retain(|a| a.why.as_deref() != Some(OWN_WHY) || now.contains(&a.id));
-        changed |= c.addons.len() != before;
-    }
-    changed
-}

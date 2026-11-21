@@ -3,6 +3,7 @@ rva	calls	callers	sections	thunks	thunk_calls	thunk_callers	jumps	lea	pointers
 0x241c80	4	4	.xtls:4	0	0	0	0	0	0
 0x29b020	404	404	.data1:24,.xtls:380	0	0	0	0	0	0
 0x382500	5	3	.xtls:5	0	0	0	0	0	0
+0x3a6400	20	6	.data1:2,.xtls:18	0	0	0	0	0	0
 0x3c8cf0	0	0	-	0	0	0	2	0	0
 0x63e370	0	0	-	0	0	0	0	1	0
 0x7b7b90	0	0	-	0	0	0	0	0	1
@@ -10,6 +11,10 @@ rva	calls	callers	sections	thunks	thunk_calls	thunk_callers	jumps	lea	pointers
 0xc01c30	6	4	.xtls:6	0	0	0	0	0	0
 0xc71e80	0	0	-	0	0	0	0	0	1
 0x1600d80	807	188	.data1:286,.xtls:521	3	3	2	0	0	0
+0x17888e0	1	1	.xtls:1	0	0	0	0	0	0
+0x1788d40	1	1	.xtls:1	0	0	0	0	0	0
+0x17891f0	2	2	.xtls:2	0	0	0	0	0	0
+0x1789520	4	1	.xtls:4	0	0	0	0	0	0
 0x197a5b0	3	3	.xtls:3	0	0	0	0	0	0
 0x1a1db90	0	0	-	0	0	0	0	0	3
 0x1a79ee0	0	0	-	0	0	0	0	1	0
@@ -33,6 +38,8 @@ rva	calls	callers	sections	thunks	thunk_calls	thunk_callers	jumps	lea	pointers
 0x2d6cfc0	0	0	-	0	0	0	0	0	1
 0x2d6d3b0	4	4	.data1:1,.xtls:3	0	0	0	0	0	0
 0x2e18650	9	8	.xtls:9	0	0	0	0	0	0
+0x2e7bd50	2	2	.xtls:2	0	0	0	0	0	0
+0x2e7c1c0	4	2	.xtls:4	0	0	0	0	0	0
 0x2f28c10	10	5	.data1:1,.xtls:9	0	0	0	0	0	0
 0x2f29820	3	3	.xtls:3	0	0	0	1	0	0
 0x2f343d0	15	14	.data1:5,.xtls:10	0	0	0	0	0	0
@@ -59,4 +66,5 @@ rva	calls	callers	sections	thunks	thunk_calls	thunk_callers	jumps	lea	pointers
 0x465fdc0	0	0	-	0	0	0	0	1	0
 0x4676d40	0	0	-	0	0	0	0	0	1
 0x46a4c20	0	0	-	0	0	0	0	0	1
+0x470bd80	1	1	.xtls:1	0	0	0	0	0	0
 0x4742c70	1	1	.data1:1	0	0	0	1	0	0

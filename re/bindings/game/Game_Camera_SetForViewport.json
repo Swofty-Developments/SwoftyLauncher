@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144536880",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-CAMERA",
-  "notes": "named from its log messages (channel CAMERA): 'Setting camera '%s' for viewport %d'"
+  "evidence": "decomp:re/decomp/144536880.c;pat:log-channel-CAMERA;xref:0x14453673c,0x144536ecd,0x14453839b",
+  "notes": "Sets camera param_2 for viewport param_4: null camera pushes the default this+0x60 and notifies listeners +0xf0 (vt+8); else logs 'Setting camera '%s' for viewport %d', removes the old camera (0x144402840), sets slot +0x98+idx*0x28, records param_3 in the camera, caches components 0x146cc2168/0x146cb78b8, maps id hash +0x70 to type 0..8, calls 0x144402400 and 0x144401ae0, notifies +0xf0/+0x110. (lane owner review requested)"
  },
  "signature": {
   "id": "game.camera_set_for_viewport",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143bfb790",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143bfb790.c;xref:0x143eb94ac,0x143ebb630",
-  "notes": "Hypothesis: iterates the streaming list (+0x300) computing density/deficit; from AdjustQualityFactor. Named callers: Game_TextureStreaming_AdjustQualityFactor."
+  "notes": "Sums the bytes of in-flight mip requests on list +0x300 (type 5: size table tex+0xd8 at current mip; else the mip-chain size from +0x38..+0x39), then runs Render_TextureStreaming_IssueMipRequests on queue +0x250 (limit +0x240) and +0x298 (limit +0x248) with that total. Callers Game_TextureStreamingVerbose_Clearing 0x143eb94ac, 0x143eb9ca0 (0x143ebb630). (lane owner review requested) Better name: Render_TextureStreaming_ProcessRequestQueues (bound record keeps its name)."
  },
  "signature": {
   "id": "render.texture_streaming_compute_deficits",

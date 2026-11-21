@@ -54,6 +54,8 @@ public:
 
     Totals career_loaded(const std::string &career, const std::string &mode, const std::string &data_group);
     Totals career_season(int year);
+    // The year of a career loaded in a season that already started: the context takes it, no applier runs.
+    bool career_dated(int year);
     Totals career_unloaded();
     Totals content_picked(const std::string &entrant_list);
     Totals content_picked(const std::string &entrant_list, const std::string &mode);

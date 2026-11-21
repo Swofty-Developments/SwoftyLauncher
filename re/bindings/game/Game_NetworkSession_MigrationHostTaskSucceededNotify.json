@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144065920",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-SESSION",
-  "notes": "named from its log messages (channel NETWORK-SESSION): '%s: migration host task succeeded, notify peers about the migration result'"
+  "evidence": "decomp:re/decomp/144065920.c;pat:log-channel-NETWORK-SESSION;xref:0x1430e4f06",
+  "notes": "Update: vcall +0x30 on +0x768/+0x770/+0x778, calls 0x144065aa0, then migration-task handling with method string 'update' ('migration host task succeeded/failed') and inlined notifyPeersMigrationResult. Only ref is a call in 0x1430e0560. (lane owner review requested) Better name: Game_NetSystemClassicMatchmaking_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_session_migration_host_task_succeeded_notify",

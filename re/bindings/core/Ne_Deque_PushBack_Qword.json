@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14332fc10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14332fc10.c;xref:0x1432b3e5c",
-  "notes": "std::deque-like push_back of a 16-byte value: when ((start+size)&1)==0 and capacity condition grows via 0x14332fce0 (map reallocation), block size 2, writes at (start+size) & (mapsize-1). Caller Game_F1os_StartTask (task queue). vp5-verify partial/disagree"
+  "evidence": "decomp:re/decomp/14332fc10.c;xref:0x1432b3e5c,0x14332ff85",
+  "notes": "(deque, const u64 *v): std::deque-style push_back of an 8-byte value, block size 2: alloc [0], block map [2], map size [3], start [4], size [5]; grows the map via Ne_Deque_Grow_Qword 0x14332fce0 when needed, allocates a missing 0x10-byte block via alloc vt+0x18, stores at (start+size), size++. Callers Game_F1os_StartTask 0x1432b3e5c, 0x14332ff85."
  },
  "signature": {
   "id": "core.deque_push_back_pair",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1444404b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1444404b0.c;xref:0x14443ff70,0x1432b691d",
-  "notes": "Small-string helper: measures a C string (Ne_Get_CStrLen), reserves len+1 (Ne_String_Reserve) and copies it; used when appending to the F1 OS request body (Game_F1os_RequestBody_Append, also 0x1432b67a0). Hypothesis. vq1-verify partial/disagree"
+  "evidence": "decomp:re/decomp/1444404b0.c;xref:0x1432b691d,0x14443ff70",
+  "notes": "Constructs the 0x40-byte field record: +0 u32 param_4, +8/+0x10 shared_ptr copied from param_3 (atomic inc; param_3 released at the end), +0x18 string object (allocator param_2, inline buffer +0x38) from C string param_5. Same layout 0x1444f3c60 pushes and 0x140826200 copies. Callers 0x14443fd40 (0x14443ff70), 0x1432b67a0 (0x1432b691d). (lane owner review requested) Better name: Game_F1os_RequestField_Construct (bound record keeps its name)."
  },
  "signature": {
   "id": "game.f1os_request_body_reserve_append",

@@ -1684,3 +1684,114 @@ fn resume_routes_fail_when_the_main_menu_has_no_career_route() {
     .unwrap_err();
     assert!(e.to_string().contains("career"), "{e}");
 }
+
+fn tooltip(name: &str, action: &str, text: &str) -> Node {
+    obj(vec![
+        ("Name", s(name)),
+        (
+            "Contents",
+            obj(vec![
+                ("action_path", obj(vec![("Value", s(action))])),
+                ("text", obj(vec![("Value", s(text))])),
+                ("priority", obj(vec![("Value", s("1"))])),
+            ]),
+        ),
+    ])
+}
+
+fn stock_tooltips() -> Vec<u8> {
+    let dict = obj(vec![
+        (
+            "settings_fe_home",
+            tooltip("settings_fe_home", "#a.settings", "Settings"),
+        ),
+        ("delete", tooltip("delete", "#a.delete", "Delete")),
+        (
+            "change_driver",
+            tooltip("change_driver", "#a.driver", "Change Driver"),
+        ),
+    ]);
+    Pkg {
+        name: *b"UIDB",
+        root: obj(vec![(
+            "tool_tips",
+            obj(vec![(
+                "Contents",
+                obj(vec![("tooltips_dictionary", obj(vec![("Contents", dict)]))]),
+            )]),
+        )]),
+        vca: Vec::new(),
+        layout: None,
+    }
+    .to_bytes()
+    .unwrap()
+}
+
+fn tooltip_text(data: &[u8], name: &str) -> String {
+    let p = Pkg::parse(data).unwrap();
+    crate::content::pkg_edit::value_text(
+        &p.root,
+        &format!("tool_tips.Contents.tooltips_dictionary.Contents.{name}.Contents.text.Value"),
+    )
+    .unwrap()
+}
+
+#[test]
+fn the_launcher_tooltips_go_in_once_and_a_second_build_on_its_own_output_writes_the_same() {
+    let once = tooltips(&stock_tooltips(), "swofty_adjust").unwrap();
+    assert_eq!(tooltip_text(&once, MOD_MENU), PROMPT_LABEL);
+    assert_eq!(tooltip_text(&once, MOD_MENU_OFFLINE), OFFLINE_PROMPT);
+    assert_eq!(tooltip_text(&once, "swofty_adjust"), "Adjust");
+    assert_eq!(tooltip_text(&once, "delete"), "Delete");
+    assert_eq!(tooltips(&once, "swofty_adjust").unwrap(), once);
+}
+
+#[test]
+fn an_earlier_builds_tooltips_are_written_again_as_a_clean_build_writes_them() {
+    let once = tooltips(&stock_tooltips(), "swofty_adjust").unwrap();
+    let mut p = Pkg::parse(&once).unwrap();
+    let dict = super::tooltips::tooltip_dict(&mut p).unwrap();
+    set_str(
+        dict.at_mut(MOD_MENU)
+            .unwrap()
+            .o_mut()
+            .unwrap()
+            .at_mut("Contents")
+            .unwrap()
+            .o_mut()
+            .unwrap()
+            .at_mut("text")
+            .unwrap()
+            .o_mut()
+            .unwrap(),
+        "Value",
+        "Mods",
+    )
+    .unwrap();
+    let earlier = p.to_bytes().unwrap();
+    assert_eq!(tooltip_text(&earlier, MOD_MENU), "Mods");
+    let tree = |data: &[u8]| canonical(&Pkg::parse(data).unwrap().root);
+    assert_eq!(tree(&tooltips(&earlier, "swofty_adjust").unwrap()), tree(&once));
+}
+
+#[test]
+fn an_earlier_builds_ui_data_is_written_again_in_place() {
+    let stock = Pkg {
+        name: *b"UIDB",
+        root: obj(vec![(
+            "ui_menu_data",
+            obj(vec![(
+                "Contents",
+                obj(vec![("stock", uidb_dict("stock", Vec::new()))]),
+            )]),
+        )]),
+        vca: Vec::new(),
+        layout: None,
+    }
+    .to_bytes()
+    .unwrap();
+    let state = || vec![("page".to_owned(), s("home"))];
+    let once = ui_data(&stock, state()).unwrap();
+    assert_ne!(once, stock);
+    assert_eq!(ui_data(&once, state()).unwrap(), once);
+}

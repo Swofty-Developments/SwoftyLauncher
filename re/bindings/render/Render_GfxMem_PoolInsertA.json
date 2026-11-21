@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a2fd60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143a2fd60.c;xref:0x1439e6e90",
-  "notes": "Pool vector insert/grow (element size via 0x49249249 divide, max 0x7ffffff) with 1439e6470 realloc and 143a302f0/143a30f90 helpers. Caller Render_GfxMem_Allocate."
+  "evidence": "decomp:re/decomp/143a2fd60.c;xref:0x1439e6e90,0x1439e6ef4",
+  "notes": "Carves an allocation out of free block param_3: aligned start = align_up(offset,param_5) (or param_6), removes the block via 0x143a302f0, creates front/back remainder nodes from the node free-stack (+0x28/+0x30), marks them free (+0x31 bit 0x20), inserts them with 0x143a30f90, links them (0x1439e6760/0x1439e6470) and returns the allocated node (size param_4, flag cleared). (lane owner review requested) Better name: Render_GfxMem_SplitFreeBlock (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx_mem_pool_insert_a",

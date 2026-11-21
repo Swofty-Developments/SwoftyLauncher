@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143867700",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_ActivitiesUIDeeplinkManager_ReportStoryActivityResume;xref:0x143867934,0x143867a89,0x143867ab2,0x143867f40",
-  "notes": "cxx=game::ActivitiesUIDeeplinkManager::reportStoryActivityResume; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/143867700.c;str:s_ActivitiesUIDeeplinkManager_ReportStoryActivityResume;xref:0x1438634ce,0x14386376e",
+  "notes": "Own pretty string reportStoryActivityResume. Reads act/chapter progress (logs 'act %d, chapter %d, next chapter %d, story completed %d'), marks storymode_act_1..3 available/unavailable (0x14386a5e0), then builds a storymode_act_%d + act_%d_chapter_%d resume request (0x14386a960) and submits it (0x144134d70). Callers OnSaveSlotLoaded, OnSaveSlotCreated. (lane owner review requested)"
  },
  "signature": {
   "id": "game.activities_u_i_deeplink_manager_report_story_activity_resume",

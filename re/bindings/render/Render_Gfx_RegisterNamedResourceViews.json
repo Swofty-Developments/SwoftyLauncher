@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401456e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1401456e0.c;xref:0x14014e5eb",
-  "notes": "15 KB initialiser registering named textures/SRV/UAV slots: sss_diffusion_profiles_tex, g_carMonitorSRV, ui_package/steeringScreenMip0 (car dash/steering screen RTT), mirror_gbuffer_surface_v (mirror G-buffer). Callers Game_Read_RendererGfxConfig, 0x140163960, 0x1401707a0. Addon: names of car monitor / mirror / SSS textures."
+  "evidence": "decomp:re/decomp/1401456e0.c;xref:0x14014e5eb,0x140163a06,0x140170851",
+  "notes": "Second declaration pass: 0x14014b860, 0x14014b430, 0x14014c530, SRV/UAV wrappers 0x1401494b0/0x140149ae0, Render_Gfx2_RegisterResourceNotify; names incl. ui_package carMonitor/steeringScreen (.rtv, Mip0), mirror_backBufferL/R/V, mirror_gbuffer_*_v, cubemap_face_%d_%d.*, g_carMonitorSRV, g_mirrorLeftSRV, g_SSSProfilesBuffer. Calls 0x140141420. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx_register_named_resource_views",

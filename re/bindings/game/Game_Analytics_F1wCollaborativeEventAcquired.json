@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14075b850",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: f1w collaborative event acquired'"
+  "evidence": "decomp:re/decomp/14075b850.c;pat:log-channel-TELEMETRY;xref:0x1406f33f4,0x14070da89",
+  "notes": "Bus handler(this,msg); subscribed 0x1406f33f4 (0x1406d8470), unregistered 0x14070da89. 0xc0-byte record: msg+0x10/+0x20 and three 0x18-strided triples msg+0x28..+0x68 as sub-records. Tag 'collaborative_event_acquired_record' via 0x14077a240, GUID+seq, 64-entry queue; logs 'f1w collaborative event acquired' (TELEMETRY). (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_f1w_collaborative_event_acquired",

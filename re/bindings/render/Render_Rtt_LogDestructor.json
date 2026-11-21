@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1434f5790",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1434f5790.c;xref:0x1434f2d79",
-  "notes": "Logs \"~RenderToTargetTexture %p %s %s\" using fields +0x30/+0x88 and 0x138/0x140/0x148. Caller Game_ThumbnailSystem_DrainPendingBitset."
+  "evidence": "decomp:re/decomp/1434f5790.c;xref:0x1434f2d79,0x1434f522e,0x1435cb5b0,0x1435d933b",
+  "notes": "RenderToTargetTexture destructor: logs ~RenderToTargetTexture %p %s %s (this, +0x30, +0x88) on channel RenderToTargetTexture, releases handle +0x10 through manager 0x146c621e0 vcall +0x20 (ops 4 then 1), atomically decrements refcounts (+0x18) of objects at +0x138/+0x140/+0x148, resets sub-vtable +8 to 0x1458c14a8. Callers incl. Game_ThumbnailSystem_DrainPendingBitset. (lane owner review requested) Better name: Render_Rtt_Destruct (bound record keeps its name)."
  },
  "signature": {
   "id": "render.rtt_log_destructor",
