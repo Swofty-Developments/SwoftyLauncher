@@ -908,6 +908,8 @@ inline constexpr call<"site_Sess_InGamePlayerFinishedAiCall"> site_Sess_InGamePl
 inline constexpr site<"site_Sess_InGameRaceRetirementDriver"> site_Sess_InGameRaceRetirementDriver{}; // L2 experimental
 inline constexpr site<"site_Sess_InGameRaceRetirementDriverJoin"> site_Sess_InGameRaceRetirementDriverJoin{}; // L2 experimental
 inline constexpr call<"site_Sess_InGameSessionCompleteAiCall"> site_Sess_InGameSessionCompleteAiCall{}; // L2 experimental
+inline constexpr site<"site_Sess_MarshalLights_PrevLightLoad"> site_Sess_MarshalLights_PrevLightLoad{}; // L2 experimental
+inline constexpr site<"site_Sess_MarshalLights_WalkDone"> site_Sess_MarshalLights_WalkDone{}; // L2 experimental
 inline constexpr site<"site_Sess_PitEvalListNext"> site_Sess_PitEvalListNext{}; // L2 experimental
 inline constexpr site<"site_Sess_PitEvalListSlot"> site_Sess_PitEvalListSlot{}; // L2 experimental
 inline constexpr site<"site_Sess_PitEvalOwnSlot"> site_Sess_PitEvalOwnSlot{}; // L2 experimental

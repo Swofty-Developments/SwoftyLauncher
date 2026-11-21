@@ -23129,6 +23129,16 @@ pub mod bindings {
         kind: "call",
         status: Status::Experimental,
     };
+    pub const site_Sess_MarshalLights_PrevLightLoad: Binding = Binding {
+        id: "site_Sess_MarshalLights_PrevLightLoad",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_MarshalLights_WalkDone: Binding = Binding {
+        id: "site_Sess_MarshalLights_WalkDone",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Sess_PitEvalListNext: Binding = Binding {
         id: "site_Sess_PitEvalListNext",
         kind: "site",
