@@ -138,6 +138,8 @@ static void decision()
     expect(!ml::walk_ends(SYSTEM, BEGIN + 8, read_word, &memory),
            "the step after the first light got a zone (rbp = begin + 8) runs the game's code");
     expect(!ml::walk_ends(SYSTEM, BEGIN + 7 * 8, read_word, &memory), "a step in the middle of the list runs the game's code");
+    expect(!ml::walk_ends(SYSTEM, BEGIN - 8, read_word, &memory),
+           "a slot below the list, which the game's walk never has at its step, runs the game's code");
 
     Memory ashton;
     ashton.words[0x78311e0 + ml::LIST_BEGIN] = 0x25ca0000;

@@ -17,7 +17,7 @@ using Read = bool(uint64_t address, void *out, size_t n, void *ctx);
 
 // The light walk's slot at its step is one past a light that got a zone, or the slot of a light it erased. The walk
 // then loads the light before the slot, so a slot at the list's start has no light before it to load.
-inline bool at_list_start(uint64_t slot, uint64_t begin) { return begin != 0 && slot <= begin; }
+inline bool at_list_start(uint64_t slot, uint64_t begin) { return begin != 0 && slot == begin; }
 
 inline bool list_start(uint64_t system, Read *read, void *ctx, uint64_t &begin)
 {
