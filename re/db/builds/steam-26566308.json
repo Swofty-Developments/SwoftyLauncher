@@ -71,6 +71,10 @@
    "pattern": "E9 ?? ?? ?? 0C EC 84 E6 0B 00 E9 C2 1C 10 01 E9 FF 90 E2 FF 5A CC 7A 13",
    "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
   },
+  "Game_PitLane_VehicleWantsToLeaveGarage_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? A5 E9 ?? ?? ?? ?? AF AE 33 5C",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. On this build the thunk is 0x1434d38e0 (jmp to the .trace body 0x14ff0e730), the address the race-start family's own pattern resolves to; its rel32 callers 0x142a3cb0f/0x142a3f47c sit in the moved twins of the KB build's callers."
+  },
   "Game_SaveMgr_RequestProfileSave_Thunk": {
    "pattern": "E9 ?? ?? ?? ?? 95 3F 47 6D CE D5 88",
    "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
@@ -259,6 +263,10 @@
   "Vm_Set_TabEnabled": {
    "pattern": "E9 ?? ?? ?? ?? 6D AA 5D F3 EE 61 88",
    "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "Vm_TabViewModel_RequestSelect_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 3A 9E 0F 8E ?? ?? ?? ?? E9",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. On this build the thunk is 0x1414bff10; its jmp target 0x14ab90e10 starts with the same body as the KB build's 0x14aed9000 (movzx eax,byte [rcx+0x628]; or dl,2; test al,1) and it fills the same shared vtable slot (cells 0x1456e3448, 0x1456e8e68, ...)."
   },
   "site_Car_VehicleTableRemove": {
    "pattern": "74 07 41 88 89 E8 00 00 00 FE C8 88 05",
