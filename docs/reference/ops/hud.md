@@ -68,6 +68,31 @@ A Halo-like dial: a base, a speed text, a boost lamp, a level bar, a battery gau
 
 `swofty hud compose <addon folder> registry/hud.json` writes the archives to a folder and exits 1 when a stock archive that carries a composed resource is left out. `swofty hud check` asserts the stock facts below against the game's original files, with the archives that carry each resource the composer writes and that they all hold the same copy.
 
+## A HUD file behind a setting
+
+A `when` at the top of a HUD file composes its records only while it holds, with the same keys as an [op file's `when`](/reference/addons/settings#content-that-needs-another-addon): option values and `addon`. A file whose `when` does not hold adds nothing to the HUD, and the build lists it as off. The composition is made when the profile builds, so the option binds `db` and a change applies at the next launch.
+
+```jsonc [swofty.json]
+{
+  "compat": { "game": "f1_25", "launcher": ">=1.10.14" },   // older launchers ignore the when and always compose the file
+  "options": [
+    { "id": "season_hud", "type": "toggle", "label": "Season HUD", "default": true, "binds": "db" }
+  ],
+  "operations": { "hud": ["hud/season.json"] }
+}
+```
+
+```jsonc [hud/season.json]
+{
+  "when": { "season_hud": true },        // off: the game's own HUD, with nothing composed
+  "hud.element": {
+    "season": { "dial": "f1_26", "sprites": { … }, "elements": [ … ] }
+  }
+}
+```
+
+The core loads every file in `registry/` as registry data and refuses a top-level `when` there, so a HUD file with a `when` sits outside `registry/`. The build warns about one inside it.
+
 ## Units and placement
 
 One HUD unit is one pixel of a 640x360 frame, the origin is the dial centre and `v` points down. A record written in Project Halo's tower unit (1/3 px at 1080p) says `"units": "tower"`; the composer reads every `at`, `bounds`, `box`, `pitch`, `gap`, `size` and `cap_height` in that unit (0.03 scene units) and the default `hud` stays 0.018. A sprite's `bounds` is where it sits in that frame, so a sprite's art lines up with the others without an `at`. The record's root sits where the bottom of its box lands on the stock bottom customisation point; the box is `box`, else the bounds of the sprite named `base`, else the bounds of every sprite. That point differs by a few hundred-thousandths between the dials, so a record that must land on one exact spot in every dial sets `root_y`, in its own units, `v` down from the dial centre; a variant's `root_y` overrides it for that dial. The selection box follows the root either way.
