@@ -25,6 +25,45 @@ pub(super) fn first(v: Vec<Vec<u8>>, what: &str) -> Result<Vec<u8>> {
         .ok_or_else(|| err(format!("{what} has no data")))
 }
 
+/// The game's own race and spectator templates, read the first time a decision looks up its stock
+/// MVCD: the copies the composer starts from carry other addons' nodes.
+struct GameTemplates<'a> {
+    stock: &'a dyn Stock,
+    race: std::cell::OnceCell<Pkg>,
+    spectator: std::cell::OnceCell<Pkg>,
+}
+
+impl<'a> GameTemplates<'a> {
+    fn new(stock: &'a dyn Stock) -> Self {
+        Self {
+            stock,
+            race: std::cell::OnceCell::new(),
+            spectator: std::cell::OnceCell::new(),
+        }
+    }
+
+    fn read(&self, name: &str) -> Result<Pkg> {
+        Ok(Pkg::parse(&first(
+            self.stock.game_copy(dials::STOCK_ERP, name)?,
+            name,
+        )?)?)
+    }
+
+    fn race(&self) -> Result<&Pkg> {
+        if self.race.get().is_none() {
+            let _ = self.race.set(self.read(dials::TEMPLATE)?);
+        }
+        Ok(self.race.get().expect("set above"))
+    }
+
+    fn spectator(&self) -> Result<&Pkg> {
+        if self.spectator.get().is_none() {
+            let _ = self.spectator.set(self.read(dials::SPECTATOR)?);
+        }
+        Ok(self.spectator.get().expect("set above"))
+    }
+}
+
 /// Composes `inputs` against the stock files into the overlay archives.
 pub fn compose(stock: &dyn Stock, inputs: &[Input]) -> Result<Output> {
     compose_with(stock, inputs, None, &Packer::default())
@@ -139,6 +178,7 @@ pub fn compose_with(
     };
     let mut spectator = spec_stock.clone();
     let race_tags = StockTags::race(&race_stock.root);
+    let game_templates = GameTemplates::new(stock);
 
     let mut spectator_used = false;
     let mut preview_hides: Vec<String> = Vec::new();
@@ -293,9 +333,14 @@ pub fn compose_with(
             vec![std::mem::take(&mut new_scene)],
         ));
         for (e, plan) in &plans {
+            let mvcd = plan.decisions.iter().any(|d| d.kind == "mvcd");
             template::attach(
                 &mut template.root,
                 &race_stock.root,
+                match mvcd {
+                    true => &game_templates.race()?.root,
+                    false => &race_stock.root,
+                },
                 &race_tags,
                 facts.race_parent,
                 plan,
@@ -311,6 +356,10 @@ pub fn compose_with(
                 template::attach(
                     &mut spectator.root,
                     &spec_stock.root,
+                    match mvcd {
+                        true => &game_templates.spectator()?.root,
+                        false => &spec_stock.root,
+                    },
                     &tags,
                     facts.spectator_parent,
                     plan,

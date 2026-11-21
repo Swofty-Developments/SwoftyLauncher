@@ -369,8 +369,17 @@ fn event_names(n: &Node) -> Vec<String> {
 }
 
 /// The decision node `d` of a plan: its events, from the stock MVCD (every state of it, the ones
-/// the record doesn't list hiding everything) or the SVCD's yes and no.
-fn decision_node(d: &Decision, plan: &Plan, stock_root: &Node, parent: &str, base: &str) -> Result<Node> {
+/// the record doesn't list hiding everything) or the SVCD's yes and no. The stock MVCD is the one in
+/// `game_root`, the game's own template: another addon's copy can carry its own MVCD on the same
+/// value beside it (Project Halo's `halo_ctl.drs_state`).
+fn decision_node(
+    d: &Decision,
+    plan: &Plan,
+    stock_root: &Node,
+    game_root: &Node,
+    parent: &str,
+    base: &str,
+) -> Result<Node> {
     let v = dials::game_value(&d.game)
         .ok_or_else(|| err(format!("decision {}: no game value {}", d.id, d.game)))?;
     if v.usage != Use::DecisionOnly {
@@ -391,7 +400,7 @@ fn decision_node(d: &Decision, plan: &Plan, stock_root: &Node, parent: &str, bas
     let name = format!("d_{}", d.id);
     if d.kind == "mvcd" {
         let mut paths = Vec::new();
-        node::node_paths_of(stock_root, "", &mut paths);
+        node::node_paths_of(game_root, "", &mut paths);
         let same: Vec<&Node> = paths
             .iter()
             .filter(|(p, n)| {
@@ -646,7 +655,7 @@ fn tex_facts(plan: &Plan, hud_template: &Node) -> Result<Option<TexFacts>> {
 
 /// The `<prefix>_ctl` group of one record's plan: the root's switch, the bound nodes and the
 /// decision nodes, with the `trigger` and `untrigger` commands.
-pub fn group(plan: &Plan, stock_root: &Node, parent: &str) -> Result<Node> {
+pub fn group(plan: &Plan, stock_root: &Node, game_root: &Node, parent: &str) -> Result<Node> {
     let base = format!("{parent}.{}", plan.ctl_name());
     let plan = &with_clock_output(plan);
     let mut kids = bound_nodes(plan, tex_facts(plan, stock_root)?.as_ref())?;
@@ -658,7 +667,7 @@ pub fn group(plan: &Plan, stock_root: &Node, parent: &str) -> Result<Node> {
     }
     let mut decision_names = Vec::new();
     for d in &plan.decisions {
-        let n = decision_node(d, plan, stock_root, parent, &base)?;
+        let n = decision_node(d, plan, stock_root, game_root, parent, &base)?;
         decision_names.push(n.name().to_owned());
         kids.push(n);
     }
@@ -686,6 +695,7 @@ pub fn group(plan: &Plan, stock_root: &Node, parent: &str) -> Result<Node> {
 pub fn attach(
     template: &mut Node,
     stock_root: &Node,
+    game_root: &Node,
     stock: &StockTags,
     parent: &str,
     plan: &Plan,
@@ -709,7 +719,7 @@ pub fn attach(
     {
         return Err(err(format!("{parent} already has a {ctl}")));
     }
-    let mut grp = group(plan, stock_root, parent)?;
+    let mut grp = group(plan, stock_root, game_root, parent)?;
     let kids: Vec<Node> = grp.slot(node::CHILDREN)?.clone();
     let checked = check_types(stock, &kids, &table_of(plan))?;
     node::fix_ids(&mut grp, Some(parent));
@@ -1022,5 +1032,70 @@ mod tests {
         assert!(e.contains("stri, the value is ui32"), "{e}");
         let unknown = node::label_node("a", "e", *b"stri", Some("#session.other"), "", None);
         assert!(check_types(&stock, &[unknown], &table).is_err());
+    }
+
+    const DIAL: &str = "hud_f1_dial.osd_visibility_option.f1_dial_child";
+
+    fn drs_mvcd(name: &str) -> Node {
+        let events = ["invalid", "drs_live", "pit_live", "pit_active"]
+            .into_iter()
+            .map(|e| node::event(e, vec![]))
+            .collect();
+        node::mvcd_node(name, "drs_pit_state", events)
+    }
+
+    /// The dial's `f1_dial_child` with the game's own `drs_and_pit_distance.ers_state` and `extra`
+    /// beside it.
+    fn dial(extra: Vec<Node>) -> Node {
+        let mut kids = vec![node::group_node(
+            "drs_and_pit_distance",
+            vec![],
+            &[],
+            vec![drs_mvcd("ers_state")],
+        )];
+        kids.extend(extra);
+        let mut t = node::group_node(
+            "hud_f1_dial",
+            vec![],
+            &[],
+            vec![node::group_node(
+                "osd_visibility_option",
+                vec![],
+                &[],
+                vec![node::group_node("f1_dial_child", vec![], &[], kids)],
+            )],
+        );
+        node::fix_ids(&mut t, None);
+        node::arr(vec![t])
+    }
+
+    /// SWOFTY 2010's onboard `drs` decision under Project Halo 0.2.4's template, which adds
+    /// `halo_ctl.drs_state` on `drs_pit_state` beside the game's MVCD whether the halo dial is on or off.
+    #[test]
+    fn a_decision_takes_the_games_mvcd_when_another_addon_adds_one_on_the_same_value() {
+        let d: Decision = serde_json::from_value(serde_json::json!({
+            "id": "drs", "type": "mvcd", "game": "drs_pit_state", "initial": "invalid",
+            "states": { "invalid": [], "drs_live": [], "pit_live": [], "pit_active": [] }
+        }))
+        .unwrap();
+        let game = dial(vec![]);
+        let halo = dial(vec![node::group_node(
+            "halo_ctl",
+            vec![],
+            &[],
+            vec![drs_mvcd("drs_state")],
+        )]);
+        let base = format!("{DIAL}.s10_onboard_ctl");
+        let plan = Plan::default();
+        let n = decision_node(&d, &plan, &halo, &game, DIAL, &base).unwrap();
+        assert_eq!(n.name(), "d_drs");
+        assert_eq!(event_names(&n), ["invalid", "drs_live", "pit_live", "pit_active"]);
+        let e = decision_node(&d, &plan, &halo, &halo, DIAL, &base)
+            .unwrap_err()
+            .to_string();
+        assert!(
+            e.contains("decision drs: 2 stock MVCDs on drs_pit_state under hud_f1_dial.osd_visibility_option.f1_dial_child"),
+            "{e}"
+        );
     }
 }

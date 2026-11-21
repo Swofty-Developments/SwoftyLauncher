@@ -410,6 +410,8 @@ The other side is the addon whose archive change put the node or setter there. W
 
 The anim nodes a gauge or sweep adds are named `zh_<element>...`, which sorts after every stock name in the scene's anim string table.
 
+A decision on a game value reads its states from the stock MVCD on that value under the dial's parent in the game's own template. Another addon's template can carry an MVCD of its own on the same value beside it (Project Halo's `halo_ctl.drs_state` on `drs_pit_state`), and the decision still takes the game's.
+
 ::: info Credit
 The element templates, the placement maths, the clip keys and the binding rules follow Project Halo by nyannoying (https://github.com/nyannoying1337/f1-25-project-halo). Uses work from Project Halo by nyannoying.
 :::
