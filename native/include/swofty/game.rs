@@ -13209,6 +13209,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_TrackModelComponent_Initialise: Binding = Binding {
+        id: "Game_TrackModelComponent_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_TrackSelectVM_OnScreenActivated: Binding = Binding {
         id: "Game_TrackSelectVM_OnScreenActivated",
         kind: "func",
