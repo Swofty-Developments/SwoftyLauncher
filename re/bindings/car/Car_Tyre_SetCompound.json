@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446b18e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "void Car_Tyre_SetCompound(void *ctx, void *compound, bool fit_new)",
-  "evidence": "doc:re/db/subsystems/car.md",
-  "notes": "Body 0x155436e70: wheel+0xc0 = compound; +0xc8/+0xcc optimum carcass/tread temperature (plateau mid of TemperatureGrip splines); fit_new: T = PitReleaseTemperature compound+0x688 (> 0, else ambient) -> ctx+0x64/+0x6c/+0x68 = wheel+0x6c/+0x74/+0x70 = tyre blankets (70 C slicks, 60 C 2025 inters, ambient for wets) (agent car-tyre, static)"
+  "evidence": "decomp:re/decomp/1446b18e0.c;doc:re/db/subsystems/car.md;xref:0x142ea2637,0x1446b1824,0x1446b1841,0x1446b1861,0x1446b1881,0x14f459553",
+  "notes": "5-byte thunk to 0x155436e70; arg w = wheel+8 (KB wheel offsets = these +8). (w,compound,fitNew): if fitNew or w+0xb8 != compound: rebuilds 16-byte list w+0xa0..+0xb0 from compound+0x1418, w+0xb8 = compound, w+0xc0/+0xc4 = mid of XOR-coded plateau of splines compound+0x978/+0x6d0; fitNew: T = compound+0x688 if > 0 else ambient+273.15 -> w+0x64/+0x6c/+0x68. Callers in 0x142ea2300, 0x1446b1460, 0x14f459320. (lane owner review requested)"
  },
  "signature": {
   "id": "car.tyre_set_compound",

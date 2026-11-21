@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446a8870",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1446a8870.c",
-  "notes": "Vehicle physics section for SuspensionSystem: brake types (handbrake, temperature, damage brake loss), tyre types (mass, dimensions, grip) and punctures: PunctureWearMin/Max, Puncture Spring/Damping/Radius/Grip/Resistance multipliers, DebrisPunctureMin/MaxSpeed, DebrisPunctureProbabilityAtMin/MaxSpeed, DebrisPunctureInvulnerabilityPeriod, DebrisNextGenPunctureProbabilityMultiplier, PunctureSpeedTyreDamageRateSpline. Correction: this is the serialiser (component data vtable slot 3): it writes the section back as XML through the writer object's vtable (+0x28 begin element, +0x68 attribute, +0x78 end, +0x98 comment); the field list above is what it writes. The reader is slot 2 (Game_Read_VtfFloat by name, values stored XOR-obfuscated)."
+  "evidence": "decomp:re/decomp/1446a8870.c;xref:0x145bfba28",
+  "notes": "SuspensionSystem serialiser: num Tyre/Brake/Suspension types (+0x10/+0x14/+0x18); per brake type (array +0x30): handbrake, TempEfficiencySpline, thermal, damage loss; per tyre type (array +0x20): mass, size, grip, slip, springs, puncture/blowout/debris, Upgrade*Factor...; XML writer (vcalls +0x28 begin, +0x58/+0x68/+0x70 value, +0x78 end, +0x98 comment). Only ref: vtable cell 0x145bfba28. (lane owner review requested)"
  },
  "signature": {
   "id": "car.parse_suspension_system",

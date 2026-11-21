@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1442b2770",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "vm",
   "proto": "void **Vm_Resolve_NodePath_Thunk(void *registry, void *root_handle, const char *path)",
-  "evidence": "decomp:re/decomp/1442b2770.c;xref:0x1442c07bb,0x1414a0474,0x1414a0855+17;doc:research/ui-native.md#12",
-  "notes": "jmp to a .data1 body (callable, never hook); get-or-create the registry node at a dotted path below root ((*g_Vm_Registry)+8 -> node, +8 = handle); Vm_Apply_BindingEvent uses it to build a screen's data context"
+  "evidence": "decomp:re/decomp/1442b2770.c;doc:research/ui-native.md#12;xref:0x1414a0474,0x1414a0855,0x1414a6cc7,0x1414a6d58,0x1414d7de7,0x142925509,0x142a7ca4d,0x142a7ca82",
+  "notes": "jmp to .data1 0x153a66b60 (body read). (reg,NeStr *path,root): root null or path == sentinel -> empty handle 0x146ca0e90; Vm_Resolve_RegistryNode(0,root,path,&out); found -> node unless vt+0x28 says dead; not found -> parent-chain walk (<=0x62), djb2 of name (+9), creates via 0x1442b2a50(*reg,&h,&hash,0,-1). Get-or-create node at a path. (lane owner review requested)"
  },
  "signature": {
   "id": "vm.resolve_node_path_thunk",

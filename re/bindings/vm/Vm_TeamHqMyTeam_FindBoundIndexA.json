@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141993310",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "vm",
   "proto": "uint64_t Vm_TeamHqMyTeam_FindBoundIndexA(void *vm)",
-  "evidence": "decomp:re/decomp/141993310.c;xref:0x1419935ce;xref:0x141993884;xref:0x1419938e4",
-  "notes": "myteam-g2: Walks the linked bound-property chain at vm+0x68 (max 0x62 hops) to find a typed index value, resolves it and returns it; used when initialising and handling commands on the My Team VM."
+  "evidence": "decomp:re/decomp/141993310.c;xref:0x1419935ce,0x141993884,0x1419938e4,0x141993962,0x142326df0,0x142326e17,0x142327386,0x142327a0d",
+  "notes": "Walks the node at [vm+0x68]+8 up its parent chain (vt+0x30 / node+0x58 vt+0x38, <=0x62 hops) to a handle, then Career_Ui_FindChildIndex 0x14420b270(g_reg,path [vm+0x48]+8,&h,&idx); found -> returns qword [[vm+0x108]+8+idx*0x10]+0xd0, else 0. Temp handle released. (lane owner review requested)"
  },
  "signature": {
   "id": "vm.team_hq_my_team_find_bound_index_a",

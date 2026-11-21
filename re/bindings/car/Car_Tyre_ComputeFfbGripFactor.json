@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446b76f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1446b76f0.c;xref:0x1446dc097,0x144700981",
-  "notes": "(tyre, contact) -> float: grip multiplier = product of curves (0x142e88290) for temperature, pressure, wear, surface (+0x138/+0x970/+0x6c8/+0x3e0/+0xec0 of tyre model), contact patch +0x2a0, wet/surface factors and per-surface overrides (car+0x580 +0xc0/+0xc4); 0 if load ratio +0x1a4 < 0.7; override path returns fixed value (+0xb0^+0xb8).  FFB-side sibling of Car_Tyre_ComputeGripMultiplier (0x1446b7390). Caller: Car_Ffb_TyreForceReal_Update."
+  "evidence": "decomp:re/decomp/1446b76f0.c;xref:0x1409d61a0,0x1446b3517,0x1446dc097,0x144700981",
+  "notes": "(w=wheel+8,contact)->float: override [car+0x580]+0xa8 bit0 != +0xa0 -> XOR +0xb0^+0xb8; 0 if [car+0x558]+0x1a4 < 0.7; else contact+0x2a0 x curves 0x142e88290 of [w+0xb8]: +0x138, +0x970 (car+0x133 bits 2+3), +0x6c8 (temp), +0x3e0 (w+0x8c), +0xec0 (w+0x84*w+0x88), list +0xa0, puncture/burst, contact+0x1f0, per-surface [car+0x580]+0xc4; clamped TT+0x24..+0x28. FFB label from caller KB names only. (lane owner review requested)"
  },
  "signature": {
   "id": "car.tyre_compute_ffb_grip_factor",

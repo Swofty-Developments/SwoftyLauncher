@@ -5659,6 +5659,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Car_PadAssist_DriftAssist: Binding = Binding {
+        id: "Car_PadAssist_DriftAssist",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Car_Physics_AdvanceCar: Binding = Binding {
         id: "Car_Physics_AdvanceCar",
         kind: "func",

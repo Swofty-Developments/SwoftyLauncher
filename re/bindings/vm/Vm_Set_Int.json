@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140d38fd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "vm",
   "proto": "void *Vm_Set_Int(void *registry, void *parent, const char *name, int64_t *value, int overwrite)",
-  "evidence": "decomp:re/decomp/140d38fd0.c;xref:0x141698223,0x140c1f905,0x1414a1353+370;doc:research/ui-native.md#12",
-  "notes": "same template as Vm_Set_Bool/Vm_Set_String (node set 0x140972de0); 308 named call sites incl. value x8, min x2, max x4, index x34, notification_type (base populate 0x141698223); used for UISL value/min/max (UISL reads them as int)"
+  "evidence": "decomp:re/decomp/140d38fd0.c;doc:research/ui-native.md#12;xref:0x140c1f905,0x1414a1353,0x1414a1446,0x1414ad275,0x1414ad3ac,0x1414adbb4,0x1414b5fda,0x1414c2407",
+  "notes": "(reg,parent*,cstr name,value,mode): name null or containing '#', '.', '[' -> empty int handle 0x146054810; finds child (parent vt+0x28 / vt+0x10 paths); found: type must be int 0x146129d40, mode==1 -> Ne_Property_SetS32IfChanged(node,value,0,1); not found: djb2(name), allocs 0x68 node, ctor 0x140d392d0(node,alloc,0,&hash,value), attaches (0x1442b32b0/0x1442b3770); returns node+8 handle. (lane owner review requested)"
  },
  "signature": {
   "id": "vm.set_int",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "vm",
   "proto": "-",
-  "evidence": "decomp:work/exe/decomp/141b012b0_uses_desc_loc.c;xref:0x141b00f63;pat:exe-agent-label",
-  "notes": "exe-agent label uses_desc_loc (113 KB decompile)"
+  "evidence": "decomp:re/decomp/141b012b0.c;pat:exe-agent-label;xref:0x141b00f62",
+  "notes": "Strings: esports_event, has_reward_boost, reward_boost_icon/type/level, show_vehicle_type, vehicle_type_icon, track_title, continent, info_1..3, background_texture, spawn_markers, tyre_wear; callees FeTile_Construct_Tile, Vm_Set_*, Vm_GetOrCreate_ListChild. Only caller 0x141b00f62 in 0x141b004d0. Decomp at re/decomp/141b012b0.c (input path missing). Better name: Vm_Bind_F1WorldEventTileNodes (bound record keeps its name)."
  },
  "signature": {
   "id": "vm.unk_141b012b0",

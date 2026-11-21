@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144632740",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144632740.c;xref:0x1403c969c,0x1403cf057",
-  "notes": "(carPhys, outMatrix4, x, z, fwdDir*, dropY, mode): computes a resting car pose on the ground at (x,z) dropping from dropY (callers pass slotY+3.0); uses gravity 9.81, suspension/ride-height data at carPhys+0x558/+0x580 (wheel bodies +0x70..+0x98, +0x1598), ground query 0x1440e3cb0 on phys world +0x1130; mode==1 writes the 4x4 result into outMatrix rows. Callers: Sess_VehiclePlacement_PlaceOnSlot (grid/garage slot placement), Game_PitBoxCarActor_Update, Game_PitLane_UpdateMovement, Sess_DoughnutSequence_Enter."
+  "evidence": "decomp:re/decomp/144632740.c;xref:0x1403c969c,0x1403cf057,0x142d5a03b,0x142f3458a,0x142f377d0,0x142f378c9,0x142f3795a,0x142f63c7d,0x142f63f19,0x142f72607,0x142f7298d,0x142f729e2,0x1434bb0cb,0x1434bda2d,0x1434be226,0x1434bee6f,0x144606657,0x144606b94,0x144606bd4,0x1552b3c60",
+  "notes": "(car, out4x4, x, z, fwd*, dropY, mode): ride offset from Car_Physics_ComputeStaticWheelLoads (static travel) and tyre deflection (load/(+0x10c+0x110)); ray (x,dropY,z)->(x,-2000,z) via Ne_Phys_GridSegmentTraverse on [0x146ca0108]+0x1130, then one ray per wheel; basis from normalised fwd and ground; returns 1 on hit; mode==1 refines via 0x14473d3e0; fallback chassis +0x1a0/+0x1c4. (lane owner review requested)"
  },
  "signature": {
   "id": "car.physics_compute_grounded_pose",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1418c7020",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "ui",
   "proto": "void FUN(void *view, void *ctx)",
   "evidence": "decomp:re/decomp/1418c7020.c;xref:0x141cae3c5",
-  "notes": "myteam-g1: UI binding code; lng_upgrade_card. Static, string-key driven."
+  "notes": "(out,item*): switch on item+8: 0 -> table 0x14571be28[item+0xc0] (< 0xb); 1 lng_currency_reward, 2 lng_xp, 3 lng_xp_booster, 4 lng_event, 5/6 lng_upgrade_card, 7 lng_collectable_card, 8 lng_leagues_mail_rewards, 9 lng_leagues_mail_trophy, 10 lng_pitcoin, 11 lng_fp, 12 lng_collaborative_event_item_type; interned key to out. (lane owner review requested) Better name: Ui_Reward_GetTypeLabelKey (bound record keeps its name)."
  },
  "signature": {
   "id": "ui.rnd_set_upgrade_card_label",

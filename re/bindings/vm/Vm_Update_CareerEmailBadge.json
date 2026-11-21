@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14166d4e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "vm",
   "proto": "uint8_t Vm_Update_CareerEmailBadge(void *vm)",
-  "evidence": "decomp:re/decomp/14166d4e0.c;xref:0x141ee5914;xref:0x141eea2d4;xref:0x142329f81",
-  "notes": "myteam-g2: Resolves the My Team component (+0x88 -> +0x260 type check), gets the career email store (+0x208 sub-object) and the global game-state clock (_DAT_14604c2c8+0x140) to set whether unread emails exist. UI only."
+  "evidence": "decomp:re/decomp/14166d4e0.c;xref:0x141ee5914,0x141eea2d4,0x142329f81",
+  "notes": "Returns bool, writes nothing: component [[vm+0x88]+0x260] (not root type), sub [+0x1058], lookup +0x208 vt+0x10(0x14605b2a8,1); date from [[0x14604c2c8+0x140]+0x198]+0x1c0; entrant list (+0x278)+0x1030 vt+0x1c8, local identity match (Sess_Match_EntrantIdentity_Thunk), key +0x58 -> Career_Find_EntryByStatKey_388; true if any entry (stride 0xa8) has byte +0x90. Email link unproven: renamed. (lane owner review requested) Better name: Vm_Check_PlayerEntryHasFlaggedItem (bound record keeps its name)."
  },
  "signature": {
   "id": "vm.update_career_email_badge",

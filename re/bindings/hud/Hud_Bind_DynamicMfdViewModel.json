@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1414f5970",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "hud",
   "proto": "-",
-  "evidence": "pat:view model property strings mfd_name,mfd_visible,car_settings_panel_enabled,mods_panel_enabled,#mfds.%s,osd_mfd;xref:0x1414f5f56,0x1414f6361,0x1414f641c,0x1414f6759,0x1414f687f",
-  "notes": "HudDynamicMFDViewModel binding setup: creates bool leaves mfd_visible and <panel>_enabled for car_settings, pit_settings, car_damage, car_engine, car_temp and mods panels under the MFD VM node via 0x140975db0 (g_Vm_Registry, parent, name, &value, overwrite 1) and keeps their holders in the VM (+0x3e0..); also formats #mfds.%s and reads osd_mfd. L1 (disx only)"
+  "evidence": "decomp:re/decomp/1414f5970.c;pat:view model property strings mfd_name,mfd_visible,car_settings_panel_enabled,mods_panel_enabled,#mfds.%s,osd_mfd;xref:0x1456eb058",
+  "notes": "Vtable cell 0x1456eb058. If bound (+0x500) releases holders; creates under the VM node: mfd_name +0x360, player_index +0x380, mfd_ref +0x3a0, settings_ref +0x3c0, osd_available +0x3e0, mfd_visible +0x400, child 'mfd' +0x420 with bools car_settings +0x440, pit_settings +0x460, car_damage +0x480, car_engine +0x4a0, car_temp +0x4c0, mods +0x4e0; refs #mfds.%s (osd_mfd / ss_osd_mfd), settings; calls Hud_MfdVm_RefreshPanelAvailability. (lane owner review requested)"
  },
  "signature": {
   "id": "hud.bind_dynamic_mfd_view_model",
