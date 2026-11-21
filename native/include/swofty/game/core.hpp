@@ -129,6 +129,8 @@ inline constexpr address<"Ne_ActorManager_InsertEntryNode"> Ne_ActorManager_Inse
 inline constexpr address<"Ne_ActorManager_RegisterEntry"> Ne_ActorManager_RegisterEntry{}; // L2 experimental
 inline constexpr address<"Ne_ActorSceneDataResourceFactory_DestroyResource"> Ne_ActorSceneDataResourceFactory_DestroyResource{}; // L2 experimental
 inline constexpr address<"Ne_ActorSceneDataResource_DestroyScenes"> Ne_ActorSceneDataResource_DestroyScenes{}; // L2 experimental
+using Ne_AnimClipPlayer_Sample_Thunk_t = void(void *player, float time);
+inline constexpr fn<"Ne_AnimClipPlayer_Sample_Thunk", Ne_AnimClipPlayer_Sample_Thunk_t> Ne_AnimClipPlayer_Sample_Thunk{}; // L2 experimental
 inline constexpr address<"Ne_AnimClipResourceFactory_CreateResource"> Ne_AnimClipResourceFactory_CreateResource{}; // L2 experimental, NeAnimClipResourceFactory::createResource
 inline constexpr address<"Ne_AnimLayer_ApplyChannels"> Ne_AnimLayer_ApplyChannels{}; // L2 experimental
 inline constexpr address<"Ne_AnimSetResourceFactory_CreateResource"> Ne_AnimSetResourceFactory_CreateResource{}; // L2 experimental, NeAnimSetResource::NeAnimSetResource
