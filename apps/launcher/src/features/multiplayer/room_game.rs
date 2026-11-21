@@ -82,6 +82,7 @@ impl RoomGame {
         self.launching = true;
         Some(RoomLaunch {
             row_ids,
+            profile: None,
             direct_start: ask.direct_start,
         })
     }
@@ -219,6 +220,7 @@ mod tests {
     fn held() -> RoomLaunch {
         RoomLaunch {
             row_ids: None,
+            profile: None,
             direct_start: "lobby".into(),
         }
     }

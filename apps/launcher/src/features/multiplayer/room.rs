@@ -8,7 +8,7 @@ use gpui_kit::*;
 use swofty_core::online::multiplayer::types::{
     MemberState, Phase, Problem, RoomContent, RoomSummary, SessionState, StepState,
 };
-use swofty_i18n::{fill, tr, trf, trn};
+use swofty_i18n::{tr, trf};
 
 use super::model::*;
 use crate::shell::Shell;
@@ -19,16 +19,7 @@ use crate::ui::tokens::space::GUTTER;
 impl Shell {
     pub(super) fn room_view(&mut self, room: &RoomSummary, p: Palette, cx: &mut Context<Self>) -> AnyElement {
         let on = self.room_enabled_addons();
-        let listed = room.addons.as_ref().filter(|a| !a.list.is_empty());
-        let checks = listed.map(|a| addon_checks(&a.list, &on)).unwrap_or_default();
-        let lacking = missing(&checks);
-        let extra = self
-            .rooms
-            .lobby
-            .print
-            .as_ref()
-            .map(|mine| extra_addons(room, mine))
-            .unwrap_or_default();
+        let view = view_addons(room, &on, self.rooms.lobby.print.as_ref());
         let subtitle = room_meta(room);
         let actions = h_flex().gap(px(8.)).items_center().child(
             Button::new("mp-view-back")
@@ -37,87 +28,35 @@ impl Shell {
                 .label(tr("Back to rooms"))
                 .on_click(cx.listener(|this, _, _, cx| this.room_close_view(cx))),
         );
-        let summary = if checks.is_empty() {
-            tr("The host's launcher hasn't listed its addons.").to_owned()
-        } else if lacking == 0 && extra.is_empty() {
-            tr("You have every addon the host has on.").to_owned()
-        } else if lacking == 0 {
-            trn(
-                extra.len(),
-                "You have {count} addon on that the host doesn't have.",
-                "You have {count} addons on that the host doesn't have.",
-            )
-        } else {
-            fill(
-                &trn(
-                    checks.len(),
-                    "You are missing or have off {lacking} of {count} addon.",
-                    "You are missing or have off {lacking} of {count} addons.",
-                ),
-                &[("lacking", lacking.to_string())],
-            )
-        };
-        let rows: Vec<AnyElement> = checks
-            .iter()
+        let summary = view.summary;
+        let rows: Vec<AnyElement> = view
+            .rows
+            .into_iter()
             .enumerate()
-            .map(|(i, c)| {
+            .map(|(i, row)| {
+                let (icon, tone) = match row.mark {
+                    Mark::Have => (IconName::Check, p.success),
+                    Mark::Installs => (IconName::Download, p.text_muted),
+                    Mark::Lacks => (IconName::X, p.error),
+                };
                 h_flex()
                     .px(px(16.))
                     .py(px(10.))
                     .gap(px(12.))
                     .items_center()
                     .when(i > 0, |d| d.border_t_1().border_color(p.border_variant))
-                    .child(
-                        Icon::new(if c.have { IconName::Check } else { IconName::X })
-                            .size(px(16.))
-                            .text_color(if c.have { p.success } else { p.error }),
-                    )
+                    .child(Icon::new(icon).size(px(16.)).text_color(tone))
                     .child(
                         div()
                             .flex_1()
                             .min_w_0()
                             .truncate()
                             .text_size(px(14.))
-                            .child(c.name.clone()),
+                            .child(row.name),
                     )
-                    .child(
-                        div()
-                            .text_size(px(13.))
-                            .text_color(p.text_muted)
-                            .child(if c.have {
-                                tr("You have it")
-                            } else {
-                                tr("You don't have it on")
-                            }),
-                    )
+                    .child(div().text_size(px(13.)).text_color(p.text_muted).child(row.note))
                     .into_any_element()
             })
-            .chain(extra.iter().enumerate().map(|(i, name)| {
-                h_flex()
-                    .px(px(16.))
-                    .py(px(10.))
-                    .gap(px(12.))
-                    .items_center()
-                    .when(i > 0 || !checks.is_empty(), |d| {
-                        d.border_t_1().border_color(p.border_variant)
-                    })
-                    .child(Icon::new(IconName::X).size(px(16.)).text_color(p.error))
-                    .child(
-                        div()
-                            .flex_1()
-                            .min_w_0()
-                            .truncate()
-                            .text_size(px(14.))
-                            .child(name.clone()),
-                    )
-                    .child(
-                        div()
-                            .text_size(px(13.))
-                            .text_color(p.text_muted)
-                            .child(tr("The host doesn't have it")),
-                    )
-                    .into_any_element()
-            }))
             .collect();
         let ad = self.page_ad(false, self.layout.content_width - 2. * GUTTER, p);
         v_flex()

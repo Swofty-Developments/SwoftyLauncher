@@ -10,11 +10,15 @@ use gpui_kit::*;
 use swofty_core::diagnostics::send_logs::RoomRun;
 use swofty_core::install::Game;
 use swofty_core::online::multiplayer::client::{self as diag, Local, Session};
-use swofty_core::online::multiplayer::types::{GameStatus, RoomSettings, RoomSummary, SessionState};
+use swofty_core::online::multiplayer::matching::{self, Own, ROOM_PROFILE};
+use swofty_core::online::multiplayer::types::{
+    GameStatus, HostAddon, HostPrint, RoomSettings, RoomSummary, SessionState,
+};
 use swofty_core::platform::process::GameProcess;
 use swofty_core::store::Store;
 use swofty_i18n::tr;
 
+use super::fix::RoomFix;
 use super::model::{OwnPrint, RoomFocus, exit_notice, leaves_on_exit, room_focus};
 use super::preview::{self, RoomPreview};
 use super::room_game::RoomGame;
@@ -42,6 +46,32 @@ pub(super) fn read_local(store: &Store, profile: &str, dir: &Path) -> Result<Loc
     Local::read(store, &profile, &game.identity).map_err(|e| e.to_string())
 }
 
+/// This player's side for the room list: what the player has to match a host with, and the own profile's
+/// fingerprint when that profile reads. A profile that fails its own checks leaves only the digest out.
+pub(super) fn read_own(store: &Store, profile: &str, dir: &Path) -> Result<OwnPrint, String> {
+    let game = Game::locate(&store.root, dir.to_path_buf()).map_err(|e| e.to_string())?;
+    let own = Own::read(store, Some(game.identity.exe_sha256.clone())).ok();
+    let local = store
+        .profile(profile)
+        .map_err(|e| e.to_string())
+        .and_then(|p| Local::read(store, &p, &game.identity).map_err(|e| e.to_string()))
+        .inspect_err(|e| eprintln!("swofty-launcher: this profile's addons don't read as a whole: {e}"))
+        .ok();
+    Ok(OwnPrint::of(local.as_ref(), own))
+}
+
+/// The room profile for `addons` (the host's, from the room list, or none yet), and its fingerprint. The
+/// player's own profile gives only its cosmetic addons.
+pub(super) fn room_local(
+    store: &Store,
+    profile: &str,
+    dir: &Path,
+    addons: &[HostAddon],
+) -> Result<Local, String> {
+    matching::write_room_profile(store, addons, &Default::default(), profile).map_err(|e| e.to_string())?;
+    read_local(store, ROOM_PROFILE, dir)
+}
+
 pub(super) fn read_game(dir: &Path, running: bool) -> Option<GameStatus> {
     diag::game_status(dir, running)
 }
@@ -55,6 +85,8 @@ pub(super) fn session_ended(store: &Store) -> bool {
 
 pub(crate) struct RoomLaunch {
     pub(crate) row_ids: Option<PathBuf>,
+    /// The profile the room's game plays: the room profile for a joiner, the player's own for the host.
+    pub(crate) profile: Option<String>,
     /// The direct start request the game reads at boot, as `swofty\direct_start.json`: the room target, this
     /// player's role, the host's address and the room configuration (`LaunchAsk::direct_start`).
     pub(crate) direct_start: String,
@@ -78,6 +110,11 @@ pub(crate) struct Multiplayer {
     pub(super) error: Option<String>,
     pub(super) copied: Option<Instant>,
     pub(crate) game: RoomGame,
+    pub(super) fix: RoomFix,
+    /// The session plays the room profile: it started with that profile's fingerprint, or the match built it.
+    pub(super) roomed: Arc<std::sync::atomic::AtomicBool>,
+    /// The host's addons once the session has them, for a joiner.
+    pub(super) host_print: Option<HostPrint>,
     pub(super) faces: HashMap<String, Arc<Image>>,
     pub(super) faces_asked: HashSet<String>,
     pub(super) _inputs: [Subscription; 2],
@@ -123,6 +160,9 @@ impl Multiplayer {
             error: None,
             copied: None,
             game: RoomGame::default(),
+            fix: RoomFix::default(),
+            roomed: Arc::default(),
+            host_print: None,
             faces: HashMap::new(),
             faces_asked: HashSet::new(),
             _inputs: inputs,
@@ -174,6 +214,9 @@ impl Multiplayer {
     pub(super) fn finish_leaving(&mut self) {
         self.session = None;
         self.game = RoomGame::default();
+        self.fix = RoomFix::default();
+        self.roomed = Arc::default();
+        self.host_print = None;
         self.state = None;
         self.leaving = false;
         self.viewing = None;

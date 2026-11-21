@@ -1,12 +1,13 @@
 use std::collections::HashSet;
 
 use swofty_core::online::multiplayer::client::Local;
+use swofty_core::online::multiplayer::matching::{self, Blocker, Need, Own, Plan, Unlisted};
 use swofty_core::online::multiplayer::types::FixStep;
 use swofty_core::online::multiplayer::types::{
     GameStatus, MemberStage, MemberState, Phase, Problem, Progress, RoomAddon, RoomContent, RoomSettings,
     RoomSummary, Screen, SessionState, SessionStep, Step, StepState,
 };
-use swofty_i18n::{tr, trf};
+use swofty_i18n::{fill, tr, trf, trn};
 
 /// Where the game is, in the page header.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -48,28 +49,130 @@ pub(crate) fn room_meta_players(room: &RoomSummary) -> String {
     format!("{}/{} players", room.members, room.max_members)
 }
 
-/// This player's fingerprint as a room's status reads it: its digest and its gameplay addons.
-#[derive(Debug, Clone, PartialEq, Eq)]
+/// This player's side as a room's status reads it: the own profile's digest and gameplay addons when that
+/// profile reads, and what the player has to match a host with, which needs no profile.
+#[derive(Debug, Clone, PartialEq)]
 pub(crate) struct OwnPrint {
-    pub(crate) digest: String,
+    pub(crate) digest: Option<String>,
     pub(crate) addons: Vec<RoomAddon>,
+    pub(crate) matching: Option<Own>,
 }
 
 impl OwnPrint {
-    pub(crate) fn of(local: &Local) -> Self {
+    pub(crate) fn of(local: Option<&Local>, matching: Option<Own>) -> Self {
         Self {
-            digest: local.digest(),
+            digest: local.map(Local::digest),
             addons: local
-                .fingerprint
-                .addons
                 .iter()
+                .flat_map(|l| &l.fingerprint.addons)
                 .map(|a| RoomAddon {
                     id: a.id.clone(),
                     name: a.name.clone(),
+                    ..RoomAddon::default()
                 })
                 .collect(),
+            matching,
         }
     }
+}
+
+/// What joining a room takes, from a listing that names the host's versions.
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) enum Fit {
+    /// The listing or this player's side doesn't say enough.
+    Unknown,
+    /// Joining installs `installs` addons from the Addon Browser and plays the host's addons, in the host's
+    /// order, with the host's settings.
+    Joins { installs: usize, replaces: Vec<String> },
+    /// What stops the join, as the row and the View say it.
+    Blocked(String),
+}
+
+pub(crate) fn room_fit(room: &RoomSummary, mine: Option<&OwnPrint>) -> Fit {
+    let (Some(listing), Some(own)) = (room.addons.as_ref(), mine.and_then(|m| m.matching.as_ref())) else {
+        return Fit::Unknown;
+    };
+    let Some(addons) = matching::listed_addons(listing) else {
+        return Fit::Unknown;
+    };
+    let plan = matching::plan(
+        &addons,
+        listing.launcher.as_deref(),
+        listing.game.as_deref(),
+        listing.dlc,
+        own,
+    );
+    fit_of(&plan)
+}
+
+pub(crate) fn fit_of(plan: &Plan) -> Fit {
+    if let Some(first) = plan.blockers.first() {
+        return Fit::Blocked(blocker_line(first));
+    }
+    Fit::Joins {
+        installs: plan.installs.len(),
+        replaces: replace_lines(plan),
+    }
+}
+
+/// What stops a join, one sentence.
+pub(crate) fn blocker_line(b: &Blocker) -> String {
+    match b {
+        Blocker::Launcher { host } => trf!(
+            "The host plays on Swofty Launcher {version}; update to the same version to join",
+            version = host
+        ),
+        Blocker::Game => tr("Your F1 25 is another version than the host's").to_owned(),
+        Blocker::Dlc => tr("Your F1 25 content differs from the host's").to_owned(),
+        Blocker::Builtin { name, version } => trf!(
+            "The host's launcher has {name} {version} built in; update to the same version to join",
+            name = name,
+            version = version
+        ),
+        Blocker::Addon {
+            name,
+            version,
+            why: Unlisted::NotListed,
+        } => trf!(
+            "{name} {version} isn't on the Addon Browser",
+            name = name,
+            version = version
+        ),
+        Blocker::Addon {
+            name,
+            version,
+            why: Unlisted::OtherCopy,
+        } => trf!(
+            "The Addon Browser's {name} {version} isn't the host's copy",
+            name = name,
+            version = version
+        ),
+        Blocker::Addon {
+            name,
+            version,
+            why: Unlisted::NeedsLauncher,
+        } => trf!(
+            "{name} {version} needs another Swofty Launcher",
+            name = name,
+            version = version
+        ),
+    }
+}
+
+/// One line per install that replaces a copy the player has.
+pub(crate) fn replace_lines(plan: &Plan) -> Vec<String> {
+    plan.installs
+        .iter()
+        .filter_map(|i| {
+            let mine = i.replaces.as_ref()?;
+            Some(trf!(
+                "Installs {name} {version}, replacing your {mine}",
+                name = i.name(),
+                version = i.version.version,
+                mine = mine
+            ))
+        })
+        .collect()
 }
 
 /// What a room's one status line says, and whether it needs the player's attention.
@@ -78,24 +181,38 @@ pub(crate) enum RoomStatus {
     Full,
     Differ,
     Match,
+    /// Joining installs or turns on what differs.
+    Fixable,
+    /// Something the launcher can't change stops the join.
+    Blocked,
     Unknown,
 }
 
 impl RoomStatus {
-    /// `on` is the addons this player has on. With the host's addons listed, a room differs when one of them
-    /// is off here or the host lacks one of this player's gameplay addons, as the room's View shows; the
-    /// load order, option values, stat ids and builds the digests also cover come from the host in a room
-    /// launch. A room whose host lists no addons differs when the digests do.
+    /// `on` is the addons this player has on. A listing that names the host's versions decides by
+    /// [`room_fit`]; without one, a room differs when one of the host's addons is off here or the host lacks
+    /// one of this player's gameplay addons, as the room's View shows. A room whose host lists no addons
+    /// differs when the digests do.
     pub(crate) fn of(room: &RoomSummary, on: &HashSet<String>, mine: Option<&OwnPrint>) -> Self {
         if room.members >= room.max_members {
             return Self::Full;
         }
-        let (Some(host), Some(mine)) = (room.digest.as_deref(), mine) else {
-            return Self::Unknown;
-        };
-        if host.eq_ignore_ascii_case(&mine.digest) {
+        let same = room
+            .digest
+            .as_deref()
+            .zip(mine.and_then(|m| m.digest.as_deref()))
+            .is_some_and(|(h, m)| h.eq_ignore_ascii_case(m));
+        if same {
             return Self::Match;
         }
+        match room_fit(room, mine) {
+            Fit::Blocked(_) => return Self::Blocked,
+            Fit::Joins { .. } => return Self::Fixable,
+            Fit::Unknown => {}
+        }
+        let (Some(_), Some(mine)) = (room.digest.as_deref(), mine.filter(|m| m.digest.is_some())) else {
+            return Self::Unknown;
+        };
         let Some(listed) = room.addons.as_ref().filter(|a| !a.list.is_empty()) else {
             return Self::Differ;
         };
@@ -111,8 +228,170 @@ impl RoomStatus {
             Self::Full => "Full",
             Self::Differ => "Your addons differ",
             Self::Match => "Your addons match",
+            Self::Fixable => "Joining matches the host's addons",
+            Self::Blocked => "Can't join",
             Self::Unknown => "",
         }
+    }
+
+    /// Whether a join can start: not for a full room or one something blocks.
+    pub(crate) fn joinable(self) -> bool {
+        !matches!(self, Self::Full | Self::Blocked)
+    }
+}
+
+/// The room's status line: what joining installs, or what stops it, when the listing says.
+pub(crate) fn room_line(room: &RoomSummary, status: RoomStatus, mine: Option<&OwnPrint>) -> String {
+    match (status, room_fit(room, mine)) {
+        (RoomStatus::Blocked, Fit::Blocked(why)) => trf!("Can't join: {why}", why = why),
+        (RoomStatus::Fixable, Fit::Joins { installs, .. }) if installs > 0 => trn(
+            installs,
+            "Joining installs {count} addon from the Addon Browser",
+            "Joining installs {count} addons from the Addon Browser",
+        ),
+        (status, _) => tr(status.text()).to_owned(),
+    }
+}
+
+/// How a row of a room's View marks an addon.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum Mark {
+    Have,
+    /// Joining installs it from the Addon Browser.
+    Installs,
+    Lacks,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct ViewRow {
+    pub(crate) name: String,
+    pub(crate) mark: Mark,
+    pub(crate) note: String,
+}
+
+/// A room's View: one sentence on the addons, and a row per addon.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct ViewAddons {
+    pub(crate) summary: String,
+    pub(crate) rows: Vec<ViewRow>,
+}
+
+/// The View's addons. A listing that names the host's versions shows what joining does about each of the
+/// host's addons, as [`room_fit`] judges them; without one, each addon is checked against the ones `on` in
+/// the player's profile, with the player's addons the host lacks after them.
+pub(crate) fn view_addons(room: &RoomSummary, on: &HashSet<String>, mine: Option<&OwnPrint>) -> ViewAddons {
+    if let Some(view) = fit_view(room, mine) {
+        return view;
+    }
+    let listed = room.addons.as_ref().filter(|a| !a.list.is_empty());
+    let checks = listed.map(|a| addon_checks(&a.list, on)).unwrap_or_default();
+    let lacking = missing(&checks);
+    let extra = mine.map(|m| extra_addons(room, m)).unwrap_or_default();
+    let summary = if checks.is_empty() {
+        tr("The host's launcher hasn't listed its addons.").to_owned()
+    } else if lacking == 0 && extra.is_empty() {
+        tr("You have every addon the host has on.").to_owned()
+    } else if lacking == 0 {
+        trn(
+            extra.len(),
+            "You have {count} addon on that the host doesn't have.",
+            "You have {count} addons on that the host doesn't have.",
+        )
+    } else {
+        fill(
+            &trn(
+                checks.len(),
+                "You are missing or have off {lacking} of {count} addon.",
+                "You are missing or have off {lacking} of {count} addons.",
+            ),
+            &[("lacking", lacking.to_string())],
+        )
+    };
+    let rows = checks
+        .into_iter()
+        .map(|c| ViewRow {
+            note: if c.have {
+                tr("You have it")
+            } else {
+                tr("You don't have it on")
+            }
+            .to_owned(),
+            mark: if c.have { Mark::Have } else { Mark::Lacks },
+            name: c.name,
+        })
+        .chain(extra.into_iter().map(|name| ViewRow {
+            name,
+            mark: Mark::Lacks,
+            note: tr("The host doesn't have it").to_owned(),
+        }))
+        .collect();
+    ViewAddons { summary, rows }
+}
+
+fn fit_view(room: &RoomSummary, mine: Option<&OwnPrint>) -> Option<ViewAddons> {
+    let listing = room.addons.as_ref()?;
+    let own = mine?.matching.as_ref()?;
+    let addons = matching::listed_addons(listing)?;
+    let needs = matching::needs(&addons, listing.launcher.as_deref(), own);
+    let rows: Vec<ViewRow> = addons
+        .iter()
+        .zip(&needs)
+        .map(|(h, need)| {
+            let (mark, note) = match need {
+                Need::Have => (Mark::Have, tr("You have it").to_owned()),
+                Need::Install(i) => (
+                    Mark::Installs,
+                    match &i.replaces {
+                        Some(mine) => trf!(
+                            "Joining installs {version}, replacing your {mine}",
+                            version = i.version.version,
+                            mine = mine
+                        ),
+                        None => trf!(
+                            "Joining installs {version} from the Addon Browser",
+                            version = i.version.version
+                        ),
+                    },
+                ),
+                Need::Blocked(b) => (Mark::Lacks, addon_blocker(b)),
+            };
+            ViewRow {
+                name: h.name.clone(),
+                mark,
+                note,
+            }
+        })
+        .collect();
+    let installs = rows.iter().filter(|r| r.mark == Mark::Installs).count();
+    let summary = match room_fit(room, mine) {
+        Fit::Blocked(why) => trf!("Can't join: {why}", why = why),
+        _ if installs > 0 => trn(
+            installs,
+            "Joining installs {count} addon from the Addon Browser.",
+            "Joining installs {count} addons from the Addon Browser.",
+        ),
+        _ => tr("You have every addon the host has.").to_owned(),
+    };
+    Some(ViewAddons { summary, rows })
+}
+
+/// What stops one addon, as its row in the View says it.
+fn addon_blocker(b: &Blocker) -> String {
+    match b {
+        Blocker::Addon {
+            version,
+            why: Unlisted::NotListed,
+            ..
+        } => trf!("{version} isn't on the Addon Browser", version = version),
+        Blocker::Addon {
+            why: Unlisted::OtherCopy,
+            ..
+        } => tr("The Addon Browser's copy isn't the host's").to_owned(),
+        Blocker::Addon {
+            why: Unlisted::NeedsLauncher,
+            ..
+        } => tr("Needs another Swofty Launcher").to_owned(),
+        other => blocker_line(other),
     }
 }
 

@@ -221,6 +221,7 @@ impl Shell {
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let status = RoomStatus::of(room, &self.room_enabled_addons(), self.rooms.lobby.print.as_ref());
+        let line = room_line(room, status, self.rooms.lobby.print.as_ref());
         let code = room.code.clone();
         let names = card_addons(room);
         h_flex()
@@ -271,12 +272,14 @@ impl Shell {
                 div()
                     .flex_shrink_0()
                     .text_size(px(13.))
-                    .text_color(if status == RoomStatus::Differ {
-                        p.warning
-                    } else {
-                        p.text_muted
+                    .max_w(px(320.))
+                    .truncate()
+                    .text_color(match status {
+                        RoomStatus::Differ => p.warning,
+                        RoomStatus::Blocked => p.error,
+                        _ => p.text_muted,
                     })
-                    .child(status.text()),
+                    .child(line),
             )
             .child(
                 Button::new(SharedString::from(format!("mp-view-{}", room.code)))
