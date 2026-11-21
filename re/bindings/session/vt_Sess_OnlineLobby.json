@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14585cad0",
-  "type": "vtable[11]",
+  "type": "vtable[16]",
   "level": "L2",
   "subsystem": "session",
-  "evidence": "pat:flow-state-type-record;xref:0x146102098;decomp:re/decomp/1408409e0.c",
-  "notes": "cxx=StateOnlineLobby; neon flow state (slot 2 = NeFlowState base 0x1436aef00, slot 0 returns type record 0x146102098 whose +8 names the class); onStateEnter 0x1436e4880, onStateUpdate 0x1436e4c30, onStateExit 0x1436e4e00 (slots 8/9/10). (vmknolle session-flow map)"
+  "evidence": "pat:flow-state-type-record;decomp:re/decomp/1408409e0.c;xref:0x140840a6e",
+  "notes": "cxx=StateOnlineLobby; 16 slots (next vtable at +0x80, lea 0x1436e490b). Slot 0 -> type record 0x146102098, +8=name set by static init 0x1437c1990 at 0x1437c2620. Slot 2 NeFlowState base 0x1436aef00; slots 8/9/10 onStateEnter/Update/Exit 0x1436e4880/0x1436e4c30/0x1436e4e00. Ctor 0x1408409e0 (lea 0x140840a6e; mov [rsi],rax)."
  },
  "signature": {
   "id": "session.online_lobby",

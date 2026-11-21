@@ -18,7 +18,7 @@ live	Live	osd-l1	open	in-process live game state for the std lib osd work: the c
 loc	Loc	-	open	localisation: NeLocaleModule, per-language table sets, .lng path build, load, parse and key lookup
 protection	Prot	-	open	Denuvo stubs and .data1 bodies, signature/cert checks, VirtualProtect callers
 render	Render	overlay	open	D3D12/DXGI present path, swapchain overlay hooks, in-game immediate-mode HUD rendering
-session	Sess	-	open	entrants, setup modes, participant selection, weekend/session start, garages (grid size work)
+session	Sess	engine-re	open	entrants, setup modes, participant selection, weekend/session start, garages (grid size work)
 teams	Team	-	open	team identity for new teams: entrants.teams rows and the side data found by team label, the loaded team record, team colours, team logos and badges per context (uidb logo arrays, texarrays, the registry-path format sites), team-count limits
 tracks	Trk	trk-t5	open	track select screens (Grand Prix, Time Trial, career wizard) and their view models, the track list nodes they read, the TRACK_DATA record store and set query (track system 1.6.x: the guard and ui.track_select.build sites)
 ui	Ui	ui-idf	open	authored UI formats (!pkg .ui/UIDF node grammar, .uidb/.uir/scene .idf) + ERP UI packaging + the view-model binding runtime + how to edit/add menus and widgets
