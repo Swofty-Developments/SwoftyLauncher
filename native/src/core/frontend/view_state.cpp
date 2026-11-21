@@ -91,9 +91,8 @@ private:
     uint32_t groups_active();
     void recompute();
     void recompute_locked();
-    uintptr_t active_primary_record() const;
-    void recover_replay_view();
-    Kind classify_fallback_camera(const safetyhook::Context &ctx) const;
+    void recover_driving_view();
+    Kind classify_fallback_camera(uintptr_t viewport, uintptr_t expected_camera) const;
 
     safetyhook::MidHook h_photo_on, h_photo_off, h_camera_setting, h_pause, h_viewport_camera;
     std::atomic<uint64_t> packed{0};
@@ -253,12 +252,11 @@ void ViewState::camera(safetyhook::Context &ctx)
     recompute();
 }
 
-Kind ViewState::classify_fallback_camera(const safetyhook::Context &ctx) const
+Kind ViewState::classify_fallback_camera(uintptr_t viewport, uintptr_t expected_camera) const
 {
-    // The same verified viewport record holds the selected object and definition before the type write.
-    const uintptr_t viewport = ctx.rbp + ctx.r13 * 8;
+    // The verified viewport record holds both the selected object and its definition.
     uintptr_t camera = 0;
-    if (!swofty::mem::read(viewport, camera) || !camera || camera != ctx.r14)
+    if (!swofty::mem::read(viewport, camera) || !camera || camera != expected_camera)
         return OTHER;
 
     // The game's UID accessor copies the 16 bytes at camera +0x70 on this build.
@@ -300,7 +298,7 @@ void ViewState::viewport_camera(safetyhook::Context &ctx)
     if (!(groups_active() & G_SESSION))
         return;
     const auto type = uint8_t(ctx.rax);
-    const Kind fallback = type == 8 ? classify_fallback_camera(ctx) : OTHER;
+    const Kind fallback = type == 8 ? classify_fallback_camera(ctx.rbp + ctx.r13 * 8, ctx.r14) : OTHER;
     if (assigned_camera.observe(viewport, type, fallback))
         recompute_locked();
 }
@@ -342,24 +340,21 @@ safetyhook::MidHook install(const runtime::Sig &sig, safetyhook::MidHookFn fn)
     return std::move(*h);
 }
 
-uintptr_t ViewState::active_primary_record() const
-{
-    uintptr_t owner = 0, current_camera = 0;
-    if (!viewport_owner_slot || !swofty::mem::read(viewport_owner_slot, owner) || !owner ||
-        !swofty::mem::read(owner + 0x98, current_camera) || !swofty::mem::object_like(current_camera))
-        return 0;
-    return owner + 0x98;
-}
-
-void ViewState::recover_replay_view()
+void ViewState::recover_driving_view()
 {
     if (!h_viewport_camera || assigned_camera.kind() != UNKNOWN)
         return;
-    const auto record = active_primary_record();
-    uint8_t type = 255;
-    const bool readable = record && swofty::mem::read(record + 0x20, type);
-    if (readable && type >= 3 && type <= 5 && assigned_camera.observe(0, type))
-        swofty::log("[view] recovered %s from the current primary viewport", kind_text(assigned_camera.kind()));
+
+    uintptr_t owner = 0, camera = 0;
+    uint8_t type = 0;
+    if (!viewport_owner_slot || !swofty::mem::read(viewport_owner_slot, owner) || !owner ||
+        !swofty::mem::read(owner + 0x98, camera) || !swofty::mem::object_like(camera) || !swofty::mem::read(owner + 0xb8, type))
+        return;
+
+    const Kind fallback = type == 8 ? classify_fallback_camera(owner + 0x98, camera) : OTHER;
+    if (assigned_camera.recover(type, fallback))
+        swofty::log("[view] recovered %s from the current primary viewport (native type %u)", kind_text(assigned_camera.kind()),
+                    unsigned(type));
 }
 
 void ViewState::flow(uint32_t hash, uint32_t to)
@@ -380,7 +375,7 @@ void ViewState::flow(uint32_t hash, uint32_t to)
         if (group == G_DRIVING && to == 2) {
             const auto groups = groups_active();
             if ((groups & (G_SESSION | G_REPLAY | G_CUTSCENE | G_SPECTATE)) == G_SESSION)
-                recover_replay_view();
+                recover_driving_view();
         }
         if (TRACKED[i].group == G_REPLAY && (to == 0 || to == 3) && photo.exchange(false))
             swofty::log("[view] photo mode cleared by the replay state leaving");
