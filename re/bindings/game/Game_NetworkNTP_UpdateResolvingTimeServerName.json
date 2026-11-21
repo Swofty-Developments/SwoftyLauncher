@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143292290",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-NTP",
-  "notes": "named from its log messages (channel NETWORK-NTP): 'Update: resolving time server name %s'"
+  "evidence": "decomp:re/decomp/143292290.c;pat:log-channel-NETWORK-NTP;xref:0x1430e070b",
+  "notes": "NTP Resolving state: logs 'Update: resolving time server name %s', resolves server addresses ('got IP address ... for a time server', 'resolved time servers: %d'), opens the socket, starts the receive thread (lea 0x1432925bf to 0x143291870) and changes state to Requesting or Offline ('State: change from %s to %s'). Caller 0x1430e0560. (lane owner review requested) Better name: Game_NetworkNtp_UpdateResolving (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_ntp_update_resolving_time_server_name",

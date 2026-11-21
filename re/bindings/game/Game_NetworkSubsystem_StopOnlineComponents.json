@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430b2db0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=NetworkSubsystem::stopOnlineComponents; log channel NETWORK: 'void network::NetworkSubsystem::stopOnlineComponents() | %s'"
+  "evidence": "decomp:re/decomp/1430b2db0.c;pat:log-message-cxx;xref:0x1407c3501,0x1407c3611,0x1407c95cd,0x1407e2d58",
+  "notes": "__FUNCTION__ 'NetworkSubsystem::stopOnlineComponents': Leave 0x1430605c0, cancels Custom/Hopper/Career/F1WSocialGP matching (0xb), InviteManager::cancel, MatchingProcessor_Complete, SingleSessionSet(0,1). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_subsystem_stop_online_components",

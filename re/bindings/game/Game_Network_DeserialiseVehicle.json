@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name deserialiseVehicle (class from the log channel); log channel NETWORK: '%s() : vehicleIx(%d) not registered.'"
+  "evidence": "decomp:re/decomp/14326a9c0.c;pat:log-message-method;xref:0x14326666f",
+  "notes": "Reads one vehicle record from bitstream param_5 (Ne_BitStream_ReadRangedInt/ReadRangedUInt/ReadQuantisedFloat); logs deserialiseVehicle \"vehicleIx not in range / not registered\"; inlined VehicleProgressSync::addRemoteProgress (teleport detection, out-of-order checks) and applies chassis state (Game_VehicleProgress_ApplyChassisState)."
  },
  "signature": {
   "id": "game.network_deserialise_vehicle",

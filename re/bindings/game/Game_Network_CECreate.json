@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430b2190",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name CECreate (class from the log channel); log channel NETWORK: '%s failed : Banned'"
+  "evidence": "decomp:re/decomp/1430b2190.c;pat:log-message-method;xref:0x14258d47c",
+  "notes": "Caller 0x14258d060. If 0x1430af1a0() is false: 0x1430af5a0([this+8]+0x220), stores the 16-byte arg at +0x448; with no pending ops at [[this+8]+0x3f0] and the account check ([this+0x4a8] vt+0x130) passing shows session_list_create_collaborative_event_lobby_msg (0x1430b00a0, button_2_enabled), failing it shows network_invite_join_error_banned and logs 'CECreate failed : Banned'; pending ops show network_create_custom_cancel_hopper (DisplayMessage 0x143062630). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_ce_create",

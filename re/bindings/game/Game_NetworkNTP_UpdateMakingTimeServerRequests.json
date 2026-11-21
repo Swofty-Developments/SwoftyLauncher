@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432928b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-NTP",
-  "notes": "named from its log messages (channel NETWORK-NTP): 'Update: making time server requests.'"
+  "evidence": "decomp:re/decomp/1432928b0.c;pat:log-channel-NETWORK-NTP;xref:0x1430e06fd",
+  "notes": "NTP Requesting state: logs 'Update: making time server requests.', sends requests (0x143aed830); when done ('request process completed. Terminating socket.') averages the records ('%d time records, averaged current time') or reports too few, then changes state to Synchronised or Offline. Caller 0x1430e0560. (lane owner review requested) Better name: Game_NetworkNtp_UpdateRequesting (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_ntp_update_making_time_server_requests",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143110b90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-ENTRANTS",
-  "notes": "named from its log messages (channel NETWORK-ENTRANTS): 'Entrant %s cannot change teams - we're not the host.'"
+  "evidence": "decomp:re/decomp/143110b90.c;pat:log-channel-NETWORK-ENTRANTS;xref:0x1430d8d5b,0x14310e586",
+  "notes": "Logs handleEntrantsDocumentMessageRequest(conn) / handleEntrantRegisterRequest(player, team, index); host side (this+8 < 2, document open): team change, free entrant claim (Game_EntrantsManager_ClaimFreeEntrant), moving AI, (un)registering entrants; logs refusals; answers with a response (0x143112950 locally or 0x14402e500). (lane owner review requested) Better name: Game_NetworkEntrants_HandleEntrantsDocumentMessageRequest (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_entrants_entrant_change_teams_re_host",

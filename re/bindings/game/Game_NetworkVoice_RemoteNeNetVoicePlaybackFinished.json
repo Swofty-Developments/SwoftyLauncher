@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14403fb10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-VOICE",
-  "notes": "named from its log messages (channel NETWORK-VOICE): 'REMOTE *** NeNetVoicePlayback #%d (user 0x%x) finished playing ***'"
+  "evidence": "decomp:re/decomp/14403fb10.c;pat:log-channel-NETWORK-VOICE;xref:0x145a4a270",
+  "notes": "Update of a remote NeNetVoicePlayback (logs with method name 'update'): pulls voice stream buffers from the user connection, calls Game_NetworkVoice_RemotePlaybackTryStart, logs 'stopped playing' / 'finished playing' and posts 'stop_external_input_voice_chat'. Old name covered only the finished log. Only reference is vtable cell 0x145a4a270. (lane owner review requested) Better name: Game_NetworkVoice_RemotePlaybackUpdate (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_voice_remote_ne_net_voice_playback_finished",

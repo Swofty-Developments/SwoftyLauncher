@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432cbb20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-OnlineSystemGetFriendsListTask",
-  "notes": "named from its log messages (channel OnlineSystemGetFriendsListTask): 'List blocked users has finished: requestID = %I64u, err = %d, num = %d'"
+  "evidence": "decomp:re/decomp/1432cbb20.c;pat:log-channel-OnlineSystemGetFriendsListTask;xref:0x1432c8286",
+  "notes": "Callback: logs 'List blocked users has finished: requestID = %I64u, err = %d, num = %d' and 'EADP blocked users request status: %d', copies the blocked user ids. Address taken (lea) in Game_OnlineSystemGetFriendsListTask_OnStart. (lane owner review requested) Better name: Game_OnlineSystemGetFriendsListTask_OnBlockedUsersFinished (bound record keeps its name)."
  },
  "signature": {
   "id": "game.online_system_get_friends_list_blocked_users_finished_request_id",

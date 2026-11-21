@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-PARTY-TRANSPORT",
-  "notes": "named from its log messages (channel NETWORK-PARTY-TRANSPORT): '? Peer Index %d is not present (%zu connections)'"
+  "evidence": "decomp:re/decomp/1440bcbf0.c;pat:log-channel-NETWORK-PARTY-TRANSPORT;xref:0x145a596f8",
+  "notes": "Only when transport state +0x18 == 2: param_2 < 0 uses the endpoint at this+0x20, else maps peer index param_2 through the table at this+0x38 ('? Peer Index %d is not present (%zu connections)' / 'has departed') with endpoint this+0x28, then calls 0x1440b01e0 with param_3 data. Only ref: vtable cell 0x145a596f8. Better name: Game_NetworkPartyTransport_SendToPeer (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_party_transport_peer_index_present",

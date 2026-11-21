@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14323a180",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name addAIPlayer (class from the log channel); log channel NETWORK: '%s: added AI %s'"
+  "evidence": "decomp:re/decomp/14323a180.c;pat:log-message-method;xref:0x14323a4af,0x14ff9dc5a",
+  "notes": "Callers 0x14323a480, 0x14ff9dba0. (this, identity): if no entry of the vector this+0xa8..+0xb0 (0x58-byte records) matches (Sess_Match_EntrantIdentity_Thunk) appends one (grows via the allocator +0xa0), sets the dirty byte +0x9c=1, logs 'addAIPlayer: added AI %s' and returns 1. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_add_ai_player",

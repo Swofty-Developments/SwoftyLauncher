@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143240cb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name findEntrantAttachedToPlayer (class from the log channel); log channel NETWORK/V: '%s: player: %s, driver: %s'"
+  "evidence": "decomp:re/decomp/143240cb0.c;pat:log-message-method;xref:0x14323fed8,0x142e18a78",
+  "notes": "Callers FindEntrantToDropIn 0x14323fcb0 and 0x142e18650. (this, player): returns the first entrant of [[this+0x20]+0x4f8]+0x2e0..+0x2e8 (0x88 stride) whose identity matches the player (Sess_Match_EntrantIdentity_Thunk), else 0; logs NETWORK/V 'findEntrantAttachedToPlayer: player, driver' (driver text '%s %u' from +0x50/+0x52 or nullptr). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_find_entrant_attached_to_player",

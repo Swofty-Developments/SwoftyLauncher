@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432c43e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_OnlineServer_ClearPlayersData;xref:0x1432c45ba",
-  "notes": "cxx=game::OnlineServer::clearPlayersData; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1432c43e0.c;str:s_OnlineServer_ClearPlayersData;xref:0x1430f0287",
+  "notes": "Logs F1OS with its own pretty name game::OnlineServer::clearPlayersData and memsets the players data. Called from Game_Network_DeclareActivePresence. (lane owner review requested)"
  },
  "signature": {
   "id": "game.online_server_clear_players_data",

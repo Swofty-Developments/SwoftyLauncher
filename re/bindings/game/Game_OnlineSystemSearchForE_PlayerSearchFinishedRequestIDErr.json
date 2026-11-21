@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432cd2b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-OnlineSystemSearchForEADPFriendTask",
-  "notes": "named from its log messages (channel OnlineSystemSearchForEADPFriendTask): 'Player search has finished: requestID = %I64u, err = %d, num = %d'"
+  "evidence": "decomp:re/decomp/1432cd2b0.c;pat:log-channel-OnlineSystemSearchForEADPFriendTask;xref:0x1432cd10f",
+  "notes": "Callback: logs 'Player search has finished: requestID = %I64u, err = %d, num = %d' and copies the found personas (ids formatted '%llu'). Address taken (lea) in Game_OnlineSystemSearchForEADPFriendTask_OnStart. (lane owner review requested) Better name: Game_OnlineSystemSearchForEADPFriendTask_OnSearchFinished (bound record keeps its name)."
  },
  "signature": {
   "id": "game.online_system_search_for_e_player_search_finished_request_id_err",

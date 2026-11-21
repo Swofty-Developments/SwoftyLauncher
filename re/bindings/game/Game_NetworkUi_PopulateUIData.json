@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14309ac00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name populateUIData (class from the log channel); log channel NETWORK-UI/V: '%s()'"
+  "evidence": "decomp:re/decomp/14309ac00.c;pat:log-message-method;xref:0x143039707,0x143065988,0x143099408,0x14309d002",
+  "notes": "Logs 'populateUIData'; reads track info 0x14309e400 and writes settings.return_to_garage and #settings.current_settings.time_of_day.custom.* start_time/progression VM nodes. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_ui_populate_ui_data",

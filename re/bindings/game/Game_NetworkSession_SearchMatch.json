@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14307fd70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name searchMatch (class from the log channel); log channel NETWORK-SESSION: '%s: Safety rating: %s, race length: %d'"
+  "evidence": "decomp:re/decomp/14307fd70.c;pat:log-message-method;xref:0x1430afd9c,0x1430b001e,0x1430b0893",
+  "notes": "Logs '%s: Safety rating: %s, race length: %d' with 'searchMatch', reports StartedHopperSearch (0x140770de0) and on failure calls GameSessionMatchingHopper_OnMatchSearchComplete 0x14307f900(this,0,0x1e,2). Called by handleHopperSearch 0x1430af6f0. (lane owner review requested) Better name: Game_GameSessionMatchingHopper_SearchMatch (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_session_search_match",

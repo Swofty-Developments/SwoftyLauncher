@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142742670",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-F1OS",
-  "notes": "named from its log messages (channel F1OS): 'sending a change for favourite team %d and driver %d'"
+  "evidence": "decomp:re/decomp/142742670.c;pat:log-channel-F1OS;xref:0x14170cc47,0x1421b004e",
+  "notes": "Logs 'sending a change for favourite team %d and driver %d' (F1OS) and issues the F1W-OS update request (state check 'eBlock'). Callers 0x14170c8c0 (0x14170cc47), 0x1421affc0 (0x1421b004e). (lane owner review requested) Better name: Game_F1os_SendFavouriteTeamAndDriver (bound record keeps its name)."
  },
  "signature": {
   "id": "game.f1os_sending_change_favourite_team_driver",

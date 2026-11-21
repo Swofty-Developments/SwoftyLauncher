@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14307c2c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-SESSION",
-  "notes": "named from its log messages (channel NETWORK-SESSION): '%s: found a session with %d players, %s'"
+  "evidence": "decomp:re/decomp/14307c2c0.c;pat:log-channel-NETWORK-SESSION;xref:0x14307c2a0,0x14307dbb4,0x1430e4057",
+  "notes": "__FUNCTION__ 'GameSessionMatchingF1WSocialGP::onSearchSessionComplete'; filters sessions by DeveloperCode, Track, SafetyRating, LobbyMaxPlayers ('found a session with %d players' / 'full -> ignoring') and notifies the search delegate. (lane owner review requested) Better name: Game_GameSessionMatchingF1WSocialGP_OnSearchSessionComplete (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_session_found_session_players",

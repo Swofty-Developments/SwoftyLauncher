@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430fdfb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-OS-SESSION",
-  "notes": "named from its log messages (channel NETWORK-OS-SESSION): '[PUBLISH] Host migrated. We are now HOST while a session is active -> re-publishing session'"
+  "evidence": "decomp:re/decomp/1430fdfb0.c;pat:log-channel-NETWORK-OS-SESSION;xref:0x1458156c8",
+  "notes": "With an active OS session and the local peer now host ([[this+0x10]+0x3c0]+0x1a8 == 1) logs '[PUBLISH] Host migrated. We are now HOST while a session is active -> re-publishing session' and tail jumps to 0x1430fd3c0 (republish). Only ref: vtable cell 0x1458156c8. (lane owner review requested) Better name: Game_NetworkOSSession_OnHostMigrated (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_os_session_host_migrated_now_host_while_session",

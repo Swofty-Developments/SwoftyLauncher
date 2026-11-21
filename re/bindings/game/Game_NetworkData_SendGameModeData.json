@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name sendGameModeData (class from the log channel); log channel NETWORK-DATA: '%s(%d)'"
+  "evidence": "decomp:re/decomp/143060be0.c;pat:log-message-method;xref:0x140996e0d",
+  "notes": "Logs sendGameModeData(conn); serialises the current game mode data (0x142a83020, 0x140998830) into a buffer and sends it via Game_NetworkData_SendToConnection."
  },
  "signature": {
   "id": "game.network_data_send_game_mode_data",

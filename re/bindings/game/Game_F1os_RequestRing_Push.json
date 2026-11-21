@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1408293d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1408293d0.c;xref:0x1408254d9,0x140825854",
-  "notes": "Pushes a request object into a ring-deque (+0x90 blocks, size +0x98/+0xa0/+0xa8) after allocating via 0x14443d270 and calling vcall +8. Callers Game_F1os_OnStart_*. Hypothesis."
+  "evidence": "decomp:re/decomp/1408293d0.c;xref:0x1408254d9,0x140825854,0x1408362f9",
+  "notes": "Creates an entry via 0x14443d270(param_3, alloc this+8), pushes it into the deque at this+0x80 (0x14082aaf0; blocks +0x90, mask +0x98, head +0xa0, size +0xa8), takes the back element, vcall +0x18(1) when +0x32 set, vcall +0x10(this+0x38), returns a handle from 0x14082abc0. Callers Game_F1os_OnStart_* (0x140824650, 0x140835470, 0x140b165a0). (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1os_request_ring_push",

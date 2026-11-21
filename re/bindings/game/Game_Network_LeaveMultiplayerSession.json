@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name leaveMultiplayerSession (class from the log channel); log channel NETWORK: '%s: change the session to closed, so it won't be found in matchmaking'"
+  "evidence": "decomp:re/decomp/142767670.c;pat:log-message-method;xref:0x14258fc0a",
+  "notes": "Log '%s: change the session to closed, so it won't be found in matchmaking' with 'leaveMultiplayerSession' only at 0x1427693ce near the end of an 8 KB body that also formats safety-rating strings ('eGood', 'eExcellent', 'lng_invalid'). Only caller 0x14258eca0 at 0x14258fc0a."
  },
  "signature": {
   "id": "game.network_leave_multiplayer_session",

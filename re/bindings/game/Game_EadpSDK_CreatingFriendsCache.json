@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143fd7d60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-EadpSDK",
-  "notes": "named from its log messages (channel EadpSDK): 'Creating Friends cache of %d'"
+  "evidence": "decomp:re/decomp/143fd7d60.c;pat:log-channel-EadpSDK;xref:0x143fd31f4",
+  "notes": "Callback (fn ptr lea'd at 0x143fd31f4 in 0x143fd16b0 into a request block +0x28): returns unless param_2 == pending request id this[0xe]; on error param_3 clears +0x70/+0x78/+0x7c; then logs 'Creating Friends cache of %d' and fills the friends cache from the returned list (EadpSDK). (lane owner review requested)"
  },
  "signature": {
   "id": "game.eadp_sdk_creating_friends_cache",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK/T",
-  "notes": "named from its log messages (channel NETWORK/T): 'Found netresult ID %d, %s'"
+  "evidence": "decomp:re/decomp/142cec430.c;pat:log-channel-NETWORK/T;xref:0x1457d8a10",
+  "notes": "Virtual (vtable cell 0x1457d8a10). Marker 'GAME' / 'Create Session', picks the flow file by mode ('game/flow_race.xml', 'flow_practice', 'flow_timetrial', 'flow_benchmark', 'flow_story_mode_*', 'flow_dev'), reads 'session.number_of_laps'; 'Found netresult ID %d, %s' (NETWORK/T) is one late log. Better name: Game_GameSession_Create (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_found_netresult_id",

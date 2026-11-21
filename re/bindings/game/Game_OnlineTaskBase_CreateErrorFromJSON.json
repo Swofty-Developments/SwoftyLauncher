@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143297080",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=OnlineTaskBase::createErrorFromJSON; log channel F1OS: 'NEbool online_services::OnlineTaskBase::createErrorFromJSON(const neon::NeJSONDocument &) | %s: error message %s'"
+  "evidence": "decomp:re/decomp/143297080.c;pat:log-message-cxx;xref:0x14582fd68",
+  "notes": "Returns if +0x4d8 == 0; ticks 32 sub-objects at +0x4e0 (vslot +0x18); takes the head request of the global F1os queue (Game_F1os_FindRequestId) and in state 5 logs 'HTTPRequest: service %s method: %s -> received result' / ERROR and payload, parses JSON (createErrorFromJSON inlined), then Game_F1os_StartTask. Old name was the inlined callee. Only ref: vtable cell 0x14582fd68. (lane owner review requested) Better name: Game_F1os_UpdateProcessHttpResponse (bound record keeps its name)."
  },
  "signature": {
   "id": "game.online_task_base_create_error_from_json",
