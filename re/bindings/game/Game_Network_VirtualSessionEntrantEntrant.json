@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142f6b170.c;pat:log-channel-NETWORK/VX;xref:0x142f662cb,0x142f6669f,0x142f66b7e,0x142f671c4,0x142f6738c,0x142f6770c",
-  "notes": "Body read except the switch at 0x142f6bd54 (jmp rax, table 0x145804394): its case targets are not recovered in the decomp. Read part: logs VIRTUAL-SESSION completing a virtual lap and setUnmodifiedProgressLap, per-sector MOX/OSQ time deltas (0x142f6c8e0, 0x1436938a0, variance 0x142f6a010), speed-trap record (0x1438a9d10/0x1438a8550), lap broadcast via 0x142f2e520, ends in 0x142f69b80."
+  "notes": "Logs VIRTUAL-SESSION 'VirtualSessionEntrant: ... completing a virtual lap from progress', PROGRESS setUnmodifiedProgressLap; sets +0x40=+0x48^lap; per sector MOX/OSQ time deltas via 0x142f6c8e0, 0x1436938a0, 0x142f6a010, stores +0xb54; per sector 0x14098c7a0; speed trap via 0x1438a9d10/0x1438a8550 ('virtualised a speed trap'); 'completed a virtual lap with time'; 0x142f2e520; tail 0x142f69b80. Better name: Game_VirtualSessionEntrant_CompleteVirtualLap (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_virtual_session_entrant_entrant",

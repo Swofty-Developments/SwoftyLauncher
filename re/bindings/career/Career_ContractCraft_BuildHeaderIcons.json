@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141ad2dc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void *vm",
   "evidence": "decomp:re/decomp/141ad2dc0.c;xref:0x14572e550",
-  "notes": "F1 World craft inventory view (vtable cell 0x14572e550): slot captions lng_sponsor/principal/rnd_head/strategist/wing/engine/gearbox/brakes(_contract)_slot with #overrides.f1_world.craft_header_icons[...], lng_upgrade_card, CARD_TYPE, lng_crafting_inventory_full."
+  "notes": "F1 World craft inventory: gets items (0x141ac21a0), sorts (0x141b8a8a0, cmp 0x14256c810). Per item card type = byte +0x10 (kind 6) / +0x11 (kind 5) / 0xc upgrade card. Id < 0xf4865700 reuses a slot; else header 0x141ad49d0, created if missing with caption lng_*_slot / lng_*_contract_slot / lng_upgrade_card and icon #overrides.f1_world.craft_header_icons[..]. Card via 0x141ac6480/0x141ac0ad0/0x141ac0f30, count map param+0x1bb; count > 0xd -> lng_crafting_inventory_full (CARD_TYPE = slot name). Then vcall +0xe8. (lane owner review requested) Better name: Career_CraftInventory_PopulateCardList (bound record keeps its name)."
  },
  "signature": {
   "id": "career.contract_craft_build_header_icons",

@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141475da0.c;pat:log-channel--;xref:0x1414ad01d,0x1414b1f41,0x1414b2f71,0x1414b3060",
-  "notes": "Per-car OSD entries car%u: nub_colour, team names, pit_state/timers/penalty, mp icons (overrides.osd.car_online_icons.*), platform icon."
+  "notes": "Init of one per-car OSD data-model entry (not a config reader): snprintf \"car%u\" (0x1456e7900), idx->*p1, p2->+0x2b8, p3 fields->+0x10..+0x50; creates node +0x60 and values index, nub_colour, driver/team/display_team_name(+0x128/_short +0x148), pit_state(+0x88), pit timers/penalty(+0xa8..+0x108), valid, is_story_mode, mp_enable/mp_icon(+0x1e8), platform_icon(+0x208/+0x228); car_online_icons.* -> +0x240..+0x2a0. Better name: Game_OsdCarEntry_InitDataModel (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_overrides_osd_config",
