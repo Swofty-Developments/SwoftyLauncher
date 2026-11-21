@@ -126,7 +126,9 @@ fn a_v2_postfx_graph_is_checked_before_it_installs() {
     );
     assert_eq!(
         pass(r#"{ "shader": "a.hlsl", "when": { "views": ["sky"] } }"#),
-        at("when.views \"sky\" is not one of cockpit, tcam, tcam_offset, chase_near, chase_far, other, trackside, reverse_pod")
+        at(
+            "when.views \"sky\" is not one of cockpit, tcam, tcam_offset, chase_near, chase_far, other, trackside, reverse_pod"
+        )
     );
     assert_eq!(
         pass(r#"{ "shader": "a.hlsl", "when": { "skip": ["lunch"] } }"#),
