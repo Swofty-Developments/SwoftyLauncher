@@ -2293,6 +2293,24 @@
   },
   "site_Sess_MarshalLights_WalkDone": {
    "match": "0x2c6af93"
+  },
+  "Ne_AnimPacketB1_Sample": {
+   "match": "0x3a267c0"
+  },
+  "Ne_AnimPacketB4_Sample": {
+   "match": "0x3a26e0e"
+  },
+  "Ne_AnimPacketL1_Sample": {
+   "match": "0x3a27540"
+  },
+  "Ne_AnimPacketL3_SampleTrack": {
+   "match": "0x3a27ec0"
+  },
+  "Ne_AnimPacketL4_SampleTrack": {
+   "match": "0x3a28b20"
+  },
+  "Ne_AnimPacketS4_SampleTrack": {
+   "match": "0x3a28f50"
   }
  },
  "unresolvable": {

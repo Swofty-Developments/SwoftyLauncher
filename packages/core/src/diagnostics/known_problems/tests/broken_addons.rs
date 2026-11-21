@@ -526,7 +526,13 @@ const ANIM_CLIP_STEAM: [&str; 4] = [
     "F1_25.exe+0x7c2f80a .trace fn base+0x7c2f720+0xea",
 ];
 
-const ANIM_CLIP_FAULTS: [&str; 12] = [
+const ANIM_CLIP_UI_STEAM: [&str; 3] = [
+    "F1_25.exe+0x3a3bfaa .tls$ fn base+0x3a3bd80+0x22a",
+    "F1_25.exe+0x41fb7f6 .tls$ fn base+0x41fb320+0x4d6",
+    "F1_25.exe+0x41deb52 .tls$ fn base+0x41dd740+0x1412",
+];
+
+const ANIM_CLIP_FAULTS: [&str; 24] = [
     "F1_25.exe+0x3a3d54b .tls$ fn base+0x3a3d470+0xdb",
     "F1_25.exe+0x3a3e1a2 .tls$ fn base+0x3a3e0d0+0xd2",
     "F1_25.exe+0x3a3e5ff .tls$ fn base+0x3a3e500+0xff",
@@ -539,6 +545,18 @@ const ANIM_CLIP_FAULTS: [&str; 12] = [
     "F1_25.exe+0x3a2a56b .arch fn base+0x3a2a490+0xdb",
     "F1_25.exe+0x3a2b1c2 .arch fn base+0x3a2b0f0+0xd2",
     "F1_25.exe+0x3a2b61f .arch fn base+0x3a2b520+0xff",
+    "F1_25.exe+0x3a3bfaa .tls$ fn base+0x3a3bd80+0x22a",
+    "F1_25.exe+0x3a3c5da .tls$ fn base+0x3a3c3c0+0x21a",
+    "F1_25.exe+0x3a3cc48 .tls$ fn base+0x3a3caf0+0x158",
+    "F1_25.exe+0x3a399da .xtls fn base+0x3a397b0+0x22a",
+    "F1_25.exe+0x3a3a00a .xtls fn base+0x3a39df0+0x21a",
+    "F1_25.exe+0x3a3a678 .xtls fn base+0x3a3a520+0x158",
+    "F1_25.exe+0x3a269fa .rdata fn base+0x3a267d0+0x22a",
+    "F1_25.exe+0x3a2702a .rdata fn base+0x3a26e10+0x21a",
+    "F1_25.exe+0x3a27698 .rdata fn base+0x3a27540+0x158",
+    "F1_25.exe+0x3a28fca .arch fn base+0x3a28da0+0x22a",
+    "F1_25.exe+0x3a295fa .arch fn base+0x3a293e0+0x21a",
+    "F1_25.exe+0x3a29c68 .arch fn base+0x3a29b10+0x158",
 ];
 
 fn td_wheel_off_line(at: &str) -> String {
@@ -714,7 +732,10 @@ fn a_keyframe_sampler_crash_is_the_games_own() {
         ["Press Send Logs in the launcher so this reaches the developers."]
     );
     assert_eq!(diagnose(&ev(&frames_log(&ANIM_CLIP_STEAM), &[])).unwrap(), d);
-    generic(&(td_wheel_off_line("13:13:09.664") + &frames_log(&ANIM_CLIP_STEAM)));
+    assert_eq!(diagnose(&ev(&frames_log(&ANIM_CLIP_UI_STEAM), &[])).unwrap(), d);
+    generic(&(td_wheel_off_line("13:13:00.664") + &frames_log(&ANIM_CLIP_STEAM)));
+    generic(&(td_wheel_off_line("13:12:58.100") + &frames_log(&ANIM_CLIP_UI_STEAM)));
+    generic(&(frames_log(&ANIM_CLIP_UI_STEAM) + &td_wheel_off_line("13:13:10.900")));
     for fault in ANIM_CLIP_FAULTS {
         generic(&frames_log(&[fault, ANIM_CLIP_STEAM[1]]));
     }
@@ -735,4 +756,55 @@ fn only_a_fault_at_the_keyframe_sampler_read_is_named_for_it() {
         ANIM_CLIP_STEAM[1],
     ]);
     assert_eq!(diagnose(&ev(&near, &[])), None);
+    let near_ui = frames_log(&[
+        "F1_25.exe+0x3a3bfab .tls$ fn base+0x3a3bd80+0x22b",
+        ANIM_CLIP_UI_STEAM[1],
+    ]);
+    assert_eq!(diagnose(&ev(&near_ui, &[])), None);
+}
+
+#[test]
+fn a_keyframe_sampler_crash_shortly_after_terminal_damage_tore_a_wheel_off_says_so() {
+    let named = |log: &str| {
+        let d = diagnose(&td_on(log)).unwrap();
+        assert_eq!(d.id, "terminal_damage_wheel_off_anim", "{log}");
+        d
+    };
+    let d = named(&(td_wheel_off_line("13:13:05.837") + &frames_log(&ANIM_CLIP_UI_STEAM)));
+    assert_eq!(
+        d.title,
+        "F1 25 crashed in its own animation code after Terminal Damage tore a wheel off your car"
+    );
+    assert_eq!(
+        d.what,
+        "Terminal Damage's experimental suspension damage tore a wheel off your car, and shortly after F1 25's own \
+         animation code hit an invalid number and the game crashed. The fault is in the game's code."
+    );
+    assert_eq!(
+        d.steps,
+        [
+            "Press Send Logs in the launcher so this reaches the developers.",
+            "If it happens again, turn off Suspension damage from hits (experimental) and Suspension damage for AI \
+             cars (experimental) in Terminal Damage's options on the Addons page, then press Play.",
+        ]
+    );
+    assert_eq!(
+        named(&(td_wheel_off_line("13:13:10.621") + &frames_log(&ANIM_CLIP_UI_STEAM))),
+        d
+    );
+    named(&(td_wheel_off_line("13:13:01.000") + &frames_log(&ANIM_CLIP_STEAM)));
+    for fault in ANIM_CLIP_FAULTS {
+        named(&(td_wheel_off_line("13:13:08.000") + &frames_log(&[fault, ANIM_CLIP_UI_STEAM[1]])));
+    }
+    let unnamed = diagnose(&ev(
+        &(td_wheel_off_line("13:13:05.837") + &frames_log(&ANIM_CLIP_UI_STEAM)),
+        &[],
+    ))
+    .unwrap();
+    assert_eq!(unnamed, d);
+    let tyre = diagnose(&td_on(
+        &(td_wheel_off_line("13:13:05.837") + &frames_log(&TYRE_CURVE_STEAM)),
+    ))
+    .unwrap();
+    assert_eq!(tyre.id, "tyre_curve_nan");
 }

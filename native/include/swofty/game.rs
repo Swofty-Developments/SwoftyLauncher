@@ -4686,6 +4686,18 @@ pub type Gdb_Load_GameDatabase_t =
     unsafe extern "C" fn(db: *mut GdbDatabase, cfg: *mut c_void) -> *mut GdbDatabase;
 pub type Gdb_Lookup_Key_t = unsafe extern "C" fn(path: *const c_char) -> *mut *mut c_void;
 pub type Ne_AnimClipPlayer_Sample_Thunk_t = unsafe extern "C" fn(player: *mut c_void, time: f32);
+pub type Ne_AnimPacketB1_Sample_t =
+    unsafe extern "C" fn(packet: *mut c_void, binding: *mut c_void, time: f32, out: *mut c_void);
+pub type Ne_AnimPacketB4_Sample_t =
+    unsafe extern "C" fn(packet: *mut c_void, binding: *mut c_void, time: f32, out: *mut c_void);
+pub type Ne_AnimPacketL1_Sample_t =
+    unsafe extern "C" fn(packet: *mut c_void, binding: *mut c_void, time: f32, out: *mut c_void);
+pub type Ne_AnimPacketL3_SampleTrack_t =
+    unsafe extern "C" fn(packet: *mut c_void, track: *mut c_void, index: u32, time: f32, out: *mut c_void);
+pub type Ne_AnimPacketL4_SampleTrack_t =
+    unsafe extern "C" fn(packet: *mut c_void, track: *mut c_void, index: u32, time: f32, out: *mut c_void);
+pub type Ne_AnimPacketS4_SampleTrack_t =
+    unsafe extern "C" fn(packet: *mut c_void, track: *mut c_void, index: u32, time: f32, out: *mut c_void);
 pub type Ne_Compare_StringNoCase_t = unsafe extern "C" fn(a: *const c_char, b: *const c_char) -> i32;
 pub type Ne_Crt_FloatToInt32Checked_t = unsafe extern "C" fn(bits: u32) -> c_int;
 pub type Ne_Crt_InvalidParameterAbortStub_140e0fd20_t = unsafe extern "C" fn();
@@ -13701,6 +13713,36 @@ pub mod bindings {
     };
     pub const Ne_AnimLayer_ApplyChannels: Binding = Binding {
         id: "Ne_AnimLayer_ApplyChannels",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_AnimPacketB1_Sample: Binding = Binding {
+        id: "Ne_AnimPacketB1_Sample",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_AnimPacketB4_Sample: Binding = Binding {
+        id: "Ne_AnimPacketB4_Sample",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_AnimPacketL1_Sample: Binding = Binding {
+        id: "Ne_AnimPacketL1_Sample",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_AnimPacketL3_SampleTrack: Binding = Binding {
+        id: "Ne_AnimPacketL3_SampleTrack",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_AnimPacketL4_SampleTrack: Binding = Binding {
+        id: "Ne_AnimPacketL4_SampleTrack",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_AnimPacketS4_SampleTrack: Binding = Binding {
+        id: "Ne_AnimPacketS4_SampleTrack",
         kind: "func",
         status: Status::Experimental,
     };

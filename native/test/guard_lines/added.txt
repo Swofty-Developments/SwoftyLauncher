@@ -45,3 +45,9 @@ off [session] marshal lights guard off (SWOFTY_MARSHAL_LIGHTS_GUARD=%s)
 unresolved [session] marshal lights guard off: needs site_Sess_MarshalLights_PrevLightLoad and site_Sess_MarshalLights_WalkDone, which this build does not resolve
 armed [session] marshal lights guard armed: a track whose first marshal light is in no marshal light zone ends the zone walk at the start of the light list instead of faulting
 not_installed [session] marshal lights guard did not install (see the [core] lines)
+
+[anim_packet_time]
+off [anim] packet time guard off (SWOFTY_ANIM_PACKET_TIME_GUARD=%s)
+unresolved [anim] packet time guard off: needs Ne_AnimPacketB1_Sample, Ne_AnimPacketB4_Sample, Ne_AnimPacketL1_Sample, Ne_AnimPacketL3_SampleTrack, Ne_AnimPacketL4_SampleTrack and Ne_AnimPacketS4_SampleTrack, which this build does not resolve
+armed [anim] packet time guard armed: an animation packet sampled at a time that is not a finite number shows its first key instead of faulting
+not_installed [anim] packet time guard did not install (see the [core] lines)

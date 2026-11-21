@@ -6591,6 +6591,24 @@
   "Ne_AnimLayer_ApplyChannels": {
    "match": "0x1f9998"
   },
+  "Ne_AnimPacketB1_Sample": {
+   "match": "0x3a28d90"
+  },
+  "Ne_AnimPacketB4_Sample": {
+   "match": "0x3a293de"
+  },
+  "Ne_AnimPacketL1_Sample": {
+   "match": "0x3a29b10"
+  },
+  "Ne_AnimPacketL3_SampleTrack": {
+   "match": "0x3a2a490"
+  },
+  "Ne_AnimPacketL4_SampleTrack": {
+   "match": "0x3a2b0f0"
+  },
+  "Ne_AnimPacketS4_SampleTrack": {
+   "match": "0x3a2b520"
+  },
   "Ne_AnimSetResourceFactory_CreateResource": {
    "match": "0x43b28e0"
   },

@@ -170,6 +170,7 @@ UNITS = [
     Unit('tyre_curve', 'Tyre curve guard unit test'),
     Unit('anim_clip_time', 'Anim clip time guard unit test'),
     Unit('marshal_lights', 'Marshal lights guard unit test'),
+    Unit('anim_packet_time', 'Anim packet time guard unit test'),
     Unit('tyre_models', 'Tyre model check unit test'),
     Unit('tyre_slots', 'Tyre slot guard unit test'),
     Unit('ui_registry_walk', 'UI registry walk unit test'),
