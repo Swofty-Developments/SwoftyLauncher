@@ -396,7 +396,30 @@ The core writes the launcher's own copy of every save container from inside the 
   pins.json                       generations the launcher keeps
 ```
 
-The root is `$DATA/saves/<profile>/plain/` for a session on launcher saves and `$DATA/plain/<vault source>/` (`steam-<id3>`, `ea-<user>`) for a session on the copy's own save. A session run once on the copy's own save with launcher saves on writes neither. A profile without `plain_saves` in its settings writes and injects nothing.
+The root follows the save the session plays:
+
+| Session | Plain root | Vault source |
+|---|---|---|
+| **Use launcher saves** on, Steam copy | `$DATA/saves/<profile>/plain/` | `launcher-<profile>` |
+| **Use launcher saves** on, EA app copy | `$DATA/saves/<profile>/ea-plain/` | `launcher-ea.<profile>` |
+| **Use launcher saves** off, Steam copy | `$DATA/plain/steam-<id3>/` | `steam-<id3>` |
+| **Use launcher saves** off, EA app copy | `$DATA/plain/ea-<user>/` | `ea-<user>` |
+
+The EA app copy's root sits beside `$DATA/saves/<profile>/ea`, the title folder its save device reads, not inside it. The Steam and EA app copies of one profile never share a root: what one copy wrote is never put back into the other's save and never counts as a career the other lost. A session on the copy's own save names the root of the copy save the launcher found last, and no root while that save is the other copy's. A session run once on the copy's own save with launcher saves on writes none. A profile without `plain_saves` in its settings writes and injects nothing.
+
+#### Splitting a shared store
+
+Before launcher 1.10.15, a session on either copy wrote `$DATA/saves/<profile>/plain/`. Each manifest names the exe that wrote it in `exe_sha256`, and every build a core runs on is in `re/db/builds/` (`ea.json` and `ea-1-0-145.json` for the EA app copy). Once per profile, at launcher start and before a Play, with F1 25 closed and the session lock held, the launcher splits that store:
+
+1. Each complete generation an EA app build wrote is copied into `$DATA/saves/<profile>/ea-plain/generations/`, under the same number. A copy goes to `ea-plain/split.copying/` first and is renamed into place whole. `ea-plain/CURRENT` then names the newest one.
+2. Each of them then moves out of `plain/generations/` to `plain/split-ea/generations/`, where no reader looks. The Steam layout's store keeps its `CURRENT`, so the next generation's number is still above every earlier one.
+3. `plain/split.json` records the split: the EA app generations, whether the EA layout's store got a copy, and the generations no known build wrote.
+
+```text
+saves: split the plain store of profile default: 1 generation(s) the EA app copy wrote (40) are set aside in /home/you/.local/share/swofty/saves/default/plain/split-ea; /home/you/.local/share/swofty/saves/default/ea-plain has a copy of each
+```
+
+Nothing is deleted. A generation no known build wrote, and a torn one, stays in `plain/`, the Steam layout's store. An `ea-plain/` that a core wrote before the split gets no copy: its own generations are newer than any copy would be, and the set-aside ones stay in `plain/split-ea/`. A split that stops part way runs again from where it stopped at the next launcher start or Play; `split.json` is written last.
 
 The core writes a generation after every profile load the game finishes (`event: "load"`) and after every profile save the game reports done (`event: "save"`). `packages/core/src/games/f1_25/saves/plain/` reads it:
 
