@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-INPUT",
-  "notes": "named from its log messages (channel INPUT): 'Deserialising control scheme: name=\"%s\" | Found action: deviceType=\"%s\" action=\"%s\" axisId=\"%s\" | Found required device type \"%s\"'"
+  "evidence": "decomp:re/decomp/142a63340.c;pat:log-channel-INPUT;xref:0x142a6a276,0x142a6ee19",
+  "notes": "INPUT 'Deserialising control scheme: name=' (log string)."
  },
  "signature": {
   "id": "game.input_deserialise_control_scheme",

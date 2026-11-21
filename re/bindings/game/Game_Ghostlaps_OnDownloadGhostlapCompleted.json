@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f89530",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onDownloadGhostlapCompleted (class from the log channel); log channel GHOSTLAPS: '%s(%s, %s, %d)'"
+  "evidence": "decomp:re/decomp/142f89530.c;pat:log-message-method;xref:0x142f9c4d3",
+  "notes": "GHOSTLAPS onDownloadGhostlapCompleted(this,_,req,res) '%s(%s, %s, %d)'. Clears +0x378, restarts timer +0x58. res+4==0: optional filter cb +0xa8; copies 0xd4-byte entry +0x388 -> +0x890, 0x142ff88f0(+0x968,+0x460), +0x9c0=+0x4b8, Finish(2). Other non-2 status: Finish(4). Status 2 or no data: setState PickRival (+0xa0=8). (lane owner review requested)"
  },
  "signature": {
   "id": "game.ghostlaps_on_download_ghostlap_completed",

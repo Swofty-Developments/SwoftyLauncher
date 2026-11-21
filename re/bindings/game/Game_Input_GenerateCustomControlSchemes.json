@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a5c7f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-SPLITSCREEN_INPUT",
-  "notes": "named from its log messages (channel SPLITSCREEN_INPUT): 'refreshCustomControlSchemes | generateCustomControlSchemes:: Prepare to deal with player %d | generateCustomControlSchemes:: Adding Control Scheme %s to player %d | generateCustomControlSchemes:: Cont'"
+  "evidence": "decomp:re/decomp/142a5c7f0.c;pat:log-channel-SPLITSCREEN_INPUT;xref:0x142a69b6d,0x142a784b3,0x1434d63fd",
+  "notes": "generateCustomControlSchemes: refresh counter +0x210; snapshots schemes +0x1a8/+0x1c8 (0x142b38850), refreshCustomControlSchemes 0x142a59670 x2, per local player (+0x40+0x140 slots +0x1c0/+0x1c8) adds schemes 0x142a5d5f0 or binds existing ones; 0x142a5b910; then 0x142a5d050 per player and deferred callbacks +0x1f8. (lane owner review requested)"
  },
  "signature": {
   "id": "game.input_generate_custom_control_schemes",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f86fc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onFindMidCompleted (class from the log channel); log channel GHOSTLAPS: '%s(%d, %s, %s, %d)'"
+  "evidence": "decomp:re/decomp/142f86fc0.c;pat:log-message-method;xref:0x142f99706",
+  "notes": "GHOSTLAPS onFindMidCompleted '%s(%d, %s, %s, %d)'. Clears +0xb8. Stores the row in the lower (+0x4d0) or upper (+0x610) bracket by rank vs +0x9e0; 0x142f89ef0 true -> SetState 7, else bisects the rank between the brackets (fraction clamped 0.1..0.9, +-10) into +0x9e8 and setState FindMid (+0xa0=6). Failure: Finish 3/4. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ghostlaps_on_find_mid_completed",

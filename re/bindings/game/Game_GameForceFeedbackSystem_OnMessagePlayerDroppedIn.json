@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428847f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameForceFeedbackSystem::onMessagePlayerDroppedIn; log channel NETWORK: 'GameForceFeedbackSystem::onMessagePlayerDroppedIn(%d).'"
+  "evidence": "decomp:re/decomp/1428847f0.c;pat:log-message-cxx;xref:0x14d20a101,0x14d210eb7",
+  "notes": "Refs: lea at 0x14d20a101 and 0x14d210eb7 (handler registration in protected sections). Logs NETWORK 'GameForceFeedbackSystem::onMessagePlayerDroppedIn(%d).' with player index byte msg p2+0x10; if that index is inside the player vector [p1[7]+0x30..+0x38] and the player's +0x20 is set, calls own vt+0x70 then vt+0x58. Returns 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_force_feedback_system_on_message_player_dropped_in",

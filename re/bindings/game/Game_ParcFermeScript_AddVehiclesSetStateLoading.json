@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140276200",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140276200.c;xref:0x1455f7868,0x1455f7b78",
-  "notes": "setStateLoading slot (vt+0xb8): FUN_1402360f0 (start asset group load) then state this+0x40 = 1 (LOADING). Shared by 4 parc ferme script vtables (0x1455f77b0, 0x1455f7ac0, 0x145601850, 0x145601be0; init 0x140276310 ParcFerme). Addon: earliest per-class hook to swap asset groups or cancel this cutscene before it loads. d13-verify: first adds up to 4 vehicle asset groups (0x140248f90, then 0x140234750), then 0x1402360f0 and state +0x40 = 1"
+  "evidence": "decomp:re/decomp/140276200.c;xref:0x1455f7868,0x1455f7b78,0x145601908,0x145601c98,0x145602028",
+  "notes": "setStateLoading slot: up to 4 vehicle asset entries from 0x140248f90 are added with 0x140234750(this, id, 1), logs 'setStateLoading %p %s' (CUTSCENE_SCRIPT_VERBOSE, name from vcall +0x28), starts the asset group load 0x1402360f0 and sets state this+0x40 = 1. Vtable cells listed in xref (5 cells: 0x1455f7868, 0x1455f7b78, 0x145601908, 0x145601c98, 0x145602028). (lane owner review requested)"
  },
  "signature": {
   "id": "game.parc_ferme_script_set_state_loading",

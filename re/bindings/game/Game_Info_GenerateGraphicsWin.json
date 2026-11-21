@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=Info::generateGraphicsWin; log channel -: 'Info::generateGraphicsWin - display modes supported=%d unsupported=%d (adapterIdx=%d)'"
+  "evidence": "decomp:re/decomp/144014f90.c;pat:log-message-cxx;xref:0x1443c6081",
+  "notes": "'Info::generateGraphicsWin - display modes supported=%d unsupported=%d' (log string)."
  },
  "signature": {
   "id": "game.info_generate_graphics_win",

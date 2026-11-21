@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142fbbc80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=JSONLeaderboardReader::operationGlobalCompleted; log channel LEADERBOARD: 'game::JSONLeaderboardReader::operationGlobalCompleted() with error %s: %s'"
+  "evidence": "decomp:re/decomp/142fbbc80.c;pat:log-message-cxx;xref:0x142fbab07",
+  "notes": "Same body as OperationFriendsCompleted (0x142fbb880) except the mode check (+0x3c == 0) and its own strings ('operationGlobalCompleted() with %d results...' / 'with error %s: %s'). Fn ptr lea'd at 0x142fbab07 in StartOperation 0x142fba740 as the callback of the ranked (non-friends) request. (lane owner review requested)"
  },
  "signature": {
   "id": "game.json_leaderboard_reader_operation_global_completed",

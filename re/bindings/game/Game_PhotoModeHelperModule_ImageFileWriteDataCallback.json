@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142bd1ae0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=PhotoModeHelperModule::imageFileWriteDataCallback; log channel PHOTO-MODE: ' - (%d%%) PhotoModeHelperModule::imageFileWriteDataCallback - writing %I64u bytes, total = %I64u'"
+  "evidence": "decomp:re/decomp/142bd1ae0.c;pat:log-message-cxx;xref:0x142bd29bb,0x142bd2a37",
+  "notes": "File write progress callback (lea twice in 0x142bd27a0): adds bytes to +0x12d8, progress = min(1, written / predicted +0x12e0) scaled by +0x12c0 plus base +0x12bc into +0x12d4 (atomic), logs ' - (%d%%) PhotoModeHelperModule::imageFileWriteDataCallback'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.photo_mode_helper_module_image_file_write_data_callback",

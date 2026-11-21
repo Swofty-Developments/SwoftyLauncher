@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1437a4590",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name handleSurfaceOwnershipTransfer (class from the log channel); log channel GameSurfacePack: 'handleSurfaceOwnershipTransfer resource ID mismatch (%s versus %s)'"
+  "evidence": "decomp:re/decomp/1437a4590.c;pat:log-message-method;xref:0x1437a6276,0x1437a9c24,0x1437a9e1a,0x1437aa2f9,0x1437aa4c7",
+  "notes": "handleSurfaceOwnershipTransfer(pack,surf): surf={[0]id,[1]name,[2]resource,[7]flag byte}. Scans placed table pack+0x18 (stride 0x40, count pack+0x18020) for id==surf[0] (prefers an entry with resource +0x10 set), moves surf[2] into entry+0x10, copies the flag byte into entry+0x38 unless it is already 1, clears surf[2]. 'resource ID mismatch' log on id mismatch. Callers 0x1437a5c40, 0x1437a9180. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_surface_pack_handle_surface_ownership_transfer",

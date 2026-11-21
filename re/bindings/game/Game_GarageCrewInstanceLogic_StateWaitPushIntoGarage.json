@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140386720",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GarageCrewInstanceLogic::StateWaitPushIntoGarage; log channel GARAGECREW: 'GarageCrewInstanceLogic::StateWaitPushIntoGarage::processEvent unexpected %d %s'"
+  "evidence": "decomp:re/decomp/140386720.c;pat:log-message-cxx;xref:0x145622f28",
+  "notes": "StateWaitPushIntoGarage::processEvent: only while logic+0x90 set; event 7 -> state 5 (logic+0x38) and posts bus msg vt 0x145623208 (garage +0x120, 3); event 5 -> state 1 (self); else 'unexpected' log; pops the event. Vtable cell 0x145622f28. (lane owner review requested)"
  },
  "signature": {
   "id": "game.garage_crew_instance_logic_state_wait_push_into_garage",

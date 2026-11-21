@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-HUD_CUSTOMISATION",
-  "notes": "named from its log messages (channel HUD_CUSTOMISATION): '[this=%p,editorMode=%d] copyUIDataToInitialCustomisationData | [this=%p,editorMode=%d] copyUIDataToCustomisationData - failed to find element '%hs' | [this=%p,editorMode=%d] handleSignal - calling reg'"
+  "evidence": "decomp:re/decomp/14380e200.c;pat:log-channel-HUD_CUSTOMISATION;xref:0x1458781f0",
+  "notes": "HUD_CUSTOMISATION copyUIDataToInitialCustomisationData / copyUIDataToCustomisationData (log strings); vtable cell 0x1458781f0."
  },
  "signature": {
   "id": "game.hud_customisation_copy_ui_data",

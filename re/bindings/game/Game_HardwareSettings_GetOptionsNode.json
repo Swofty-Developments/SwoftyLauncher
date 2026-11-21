@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1444a7290",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1444a7290.c;xref:0x141f108c3",
-  "notes": "Function-static lookup of 'hardware_settings_options' (graphicsDetail / category / name). Caller Game_VideoExport_GatherSlotHandles (0x141f108c3). Hypothesis."
+  "notes": "(category, caps) -> bool. Finds 'hardware_settings_options' node category/name (name from table 0x145f98380, 200 = graphicsDetail) via 0x1440216f0; true when any child passes the caps check 0x1444a5aa0; 0 if the node is missing. (lane owner review requested) Better name: Game_HardwareSettings_AnyOptionSupported (bound record keeps its name)."
  },
  "signature": {
   "id": "game.hardware_settings_get_options_node",

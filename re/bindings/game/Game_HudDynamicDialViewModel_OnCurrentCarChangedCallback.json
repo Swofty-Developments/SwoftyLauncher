@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1414f1740",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=HudDynamicDialViewModel::onCurrentCarChangedCallback; log channel DISC_BUILD_DEBUG: 'HudDynamicDialViewModel::onCurrentCarChangedCallback DBRef is valid'"
+  "evidence": "decomp:re/decomp/1414f1740.c;pat:log-message-cxx;xref:0x1414f1360,0x14af99bbd",
+  "notes": "DISC_BUILD_DEBUG 'onCurrentCarChangedCallback DBRef is valid / Vehicle Index is %u'. If msg+8 != 2: DBRef from msg+0x38 vt+0x30, property 'index' (0x1442b1b60), u8 value (default 0xff) -> (this+0x320) vt+0x80. Address loaded by lea in 0x1414f0f50 and 0x14af99bb0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.hud_dynamic_dial_view_model_on_current_car_changed_callback",

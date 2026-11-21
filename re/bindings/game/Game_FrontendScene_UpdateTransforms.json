@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428869a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1428869a0.c;xref:0x14288d918",
-  "notes": "256-line per-frame update of frontend scene objects (offsets +0x61/+0x62/+0x128/+0x230). Callers Game_FrontendSceneCustomObject_Update (3 sites), Game_FrontendSceneDriver_Update. Hypothesis."
+  "evidence": "decomp:re/decomp/1428869a0.c;xref:0x14288d918,0x14288dff7,0x14288e2ab,0x142898d27,0x142898daf,0x14289ac93,0x14289b15c,0x1428a5d68,0x1428a5e07,0x1428a601c,0x1428bb396,0x1428bb3b3,0x1428bd4f4,0x1428bd7ca,0x1428c1e4c,0x1428c2e32,0x1428c3194,0x1437a81b7,0x1437a9176,0x1437ab692,0x14d291920,0x14d29553a,0x14d3371ab,0x1513bd50f",
+  "notes": "Not a transform update. State byte p1+0x61 (0 unloaded, 1 loading, 2 loaded, 3 unloading) vs target p1+0x62 (2 load / 0 unload). Entries of set p1+0x30..+0x40 carry status +0x238: on load each 0/3 entry -> 1 and loader [*p1] vt+8(entry+0x128, cb 0x142887270, entry+0x230, p1+0x60); on unload 1/2 -> 3 via vt+0x10 (cb 0x142887330). Advances when no entry still 1 / 3. Game_FrontendSceneWorld_Update sets world+0xa2 (= this+0x62) before calling it. (lane owner review requested) Better name: Game_FrontendScene_UpdateAssetGroupLoadState (bound record keeps its name)."
  },
  "signature": {
   "id": "game.frontend_scene_update_transforms",

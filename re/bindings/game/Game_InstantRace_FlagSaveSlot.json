@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-INSTANT_RACE decomp:re/decomp/1429cec50.c",
-  "notes": "named from its log messages (channel INSTANT_RACE): 'Adding instant race flag to slotInfo with ID = %d'. w4r: (manager-side object, SaveSlotInfo *slot, flag); logs *slot (SaveSlotInfo.slot_id) so rdx is the slot info it refreshes before a save (laneT: 20+ save sites); SaveSlotInfo.slot_guid is [rdx+8] there."
+  "evidence": "decomp:re/decomp/1429cec50.c;pat:log-channel-INSTANT_RACE decomp:re/decomp/1429cec50.c;xref:0x140ba2086,0x140ba212b,0x140ba2377,0x140c8fb22,0x140cb063c,0x140fe2850,0x14100985f,0x1410bf140,0x1416b9844,0x1416c34ea,0x1416c3a2a,0x1416c3f6a,0x1416c44aa,0x141727073,0x141728921,0x141728db6,0x14172e89c,0x1417351d9,0x14173a69d,0x14173b95e,0x1417ca35e,0x1417ca3d7,0x1417ca491,0x1417ca508,0x1417ca6c1,0x1417ca737,0x1417ca7c1,0x1417ca848,0x1417ca901,0x1417ca97a,0x1417caa11,0x1417caa9a,0x1417cab31,0x1417cabab,0x1417cac41,0x1417cacbb,0x1417cadd1,0x1417cae4b,0x1417caee1,0x1417caf5b,0x1417cb204,0x1417cb287,0x1417cb351,0x1417cb3ca,0x1417cb490,0x1417cb4fd,0x1417cb56f,0x1417cb5dc,0x1417cb64f,0x1417cb6bc,0x1418a04e9,0x1418a2742,0x1418a2c51,0x141a0808f,0x141a201a1,0x141a2020e,0x141a20341,0x141a20bc5,0x141a78fbb,0x141bce756,0x141edbb4f,0x141fb4132,0x141fb68e0,0x141ff2f86,0x1429ce948,0x1429d2992,0x142bfc724,0x142bfc984,0x142bff672,0x143859429,0x143859601,0x14385b2cf,0x143864461,0x1438648ce,0x14a48a59c,0x14d7018b3,0x1518f3aca,0x1518f53d9",
+  "notes": "INSTANT_RACE 'Adding instant race flag to slotInfo with ID = %d' (log string)."
  },
  "signature": {
   "id": "game.instant_race_flag_save_slot",

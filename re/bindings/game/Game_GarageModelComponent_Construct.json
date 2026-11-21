@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142b165f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GarageModelComponent::GarageModelComponent; log channel GarageModelComponent: 'GarageModelComponent::GarageModelComponent | GarageModelComponent::bindMessages [m_garageId %d]'"
+  "evidence": "decomp:re/decomp/142b165f0.c;pat:log-message-cxx;xref:0x1457c2e18",
+  "notes": "GarageModelComponent factory/ctor: allocates the 0x40 component (vt 0x1457bebd0, garageId +0x18=-1), adds it to global table 0x146078f50 (40 slots, CS 0x146078f20), subscribes GaragesAssignedMessage -> 0x142a9e9d0 and GaragesHiddenMessage -> 0x142a9f080 (0x143987810). Factory vtable cell 0x1457c2e18. (lane owner review requested)"
  },
  "signature": {
   "id": "game.garage_model_component_construct",

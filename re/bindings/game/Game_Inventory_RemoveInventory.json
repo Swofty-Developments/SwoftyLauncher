@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a7e0b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-INVENTORY",
-  "notes": "named from its log messages (channel INVENTORY): 'Removing inventory [%s] | Removed inventory [%s] | Inventory [%s] not found.'"
+  "evidence": "decomp:re/decomp/142a7e0b0.c;pat:log-channel-INVENTORY;xref:0x1425b07f5,0x14279df35",
+  "notes": "(inv, inventoryId*): inventory map (+0x40..+0x74); not found: 'Inventory [%s] not found.'; else releases ref +0x68, node to free list +0x28, backward-shift delete, count +0x58 -1, logs 'Removed inventory [%s]', id reset to -1. (lane owner review requested)"
  },
  "signature": {
   "id": "game.inventory_remove_inventory",

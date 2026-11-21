@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401c56a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=MorphModifier::MorphModifier; log channel MorphModifier: 'MorphModifier::MorphModifier %p %p'"
+  "evidence": "decomp:re/decomp/1401c56a0.c;pat:log-message-cxx;xref:0x1401c6617,0x1473348ad",
+  "notes": "MorphModifier::MorphModifier(this, p2, actor): vt 0x1455e3200, +0x10 actor, +0x90 p2. Model name from the name table (actor+0x1f0 index), path '%s.idf?context=animset' (logs 'modelDB %s', 'idstr %s', 'createSkinnedActorAnimationDataForModifier %s'), hashed -> 0x1401f44f0(actor+0x240); anim data found in actor+0x3a0..+0x3a8 by hash -> +0x88 (else 'failed to find % p % s'). (lane owner review requested)"
  },
  "signature": {
   "id": "game.morph_modifier_construct",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141643830",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name finaliseAssignments (class from the log channel); log channel GameSurfacePackSystem: 'finaliseAssignments'"
+  "evidence": "decomp:re/decomp/141643830.c;pat:log-message-method;xref:0x1456fa0b0",
+  "notes": "Vtable cell 0x1456fa0b0. Logs GameSurfacePackSystem 'finaliseAssignments' / 'requesting to unload source assets', sets [p1+0x308]+0x180f2 = 1, posts bus message 0x145708ad0 with the ui_menu_data.customisation.context value and +0x310 (Ne_Post_BusMessage), unsubscribes its handlers from CustomisationTextureQueueLoadRequest/ProcessLoadRequests/UnloadRequests and MyTeamSetupScene messages (0x143988350), releases the UI node refs +0x2a8/+0x2c8/+0x2e8 when +0x300, calls 0x1428daa30, Game_FrontendSceneSystem_UnloadAllUnlockedCustomisation([p1+0x320]), releases texture entries +0x338..+0x340 (stride 0x30) and frees +0x358. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_surface_pack_system_finalise_assignments",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142fbd450",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_ILeaderboardReader_DeleteCachedEntries;xref:0x142fbd4e2",
-  "notes": "cxx=game::ILeaderboardReader::deleteCachedEntries; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/142fbd450.c;str:s_ILeaderboardReader_DeleteCachedEntries;xref:0x140adc41c,0x140b0ab4c,0x142fbb7ae",
+  "notes": "'void game::ILeaderboardReader::deleteCachedEntries(NEbool)' (LEADERBOARD, keeping/deleting). Destroys and frees each cached entry (+0x20..+0x28); with arg 0 the player entry (+0x10) is kept; then end=begin, storage freed via +0x18, +0x30=0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.i_leaderboard_reader_delete_cached_entries",

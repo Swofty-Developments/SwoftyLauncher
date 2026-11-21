@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name setAdditionalMips (class from the log channel); log channel HBCN: 'setAdditionalMips would be OOM for %s -> %d %I64d'"
+  "evidence": "decomp:re/decomp/143bf3fc0.c;pat:log-message-method;xref:0x143bfd6d6,0x143bfd8ce,0x143bfe356",
+  "notes": "HBCN log 'setAdditionalMips would be OOM for %s -> %d %I64d' (log string)."
  },
  "signature": {
   "id": "game.hbcn_set_additional_mips",

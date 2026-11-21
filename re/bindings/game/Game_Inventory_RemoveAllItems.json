@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a7f430",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-INVENTORY",
-  "notes": "named from its log messages (channel INVENTORY): 'Accessing inventory [%s] | --removing all items'"
+  "evidence": "decomp:re/decomp/142a7f430.c;pat:log-channel-INVENTORY;xref:0x14255c639,0x14279c258,0x14279d129",
+  "notes": "(inv, inventoryId*): inventory map (+0x40..+0x74); logs, releases every item of its item map (+0x30/+0x38, refs +0x10) and resets the map (+0x40=0, ctrl bytes, +0x58=0x20). (lane owner review requested)"
  },
  "signature": {
   "id": "game.inventory_remove_all_items",

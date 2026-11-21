@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14380fe20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-HUD_CUSTOMISATION",
-  "notes": "named from its log messages (channel HUD_CUSTOMISATION): '[this=%p,editorMode=%d] applyCurrentCustomisationDataToUIData'"
+  "evidence": "decomp:re/decomp/14380fe20.c;pat:log-channel-HUD_CUSTOMISATION;xref:0x14380ab8c,0x14380e84d,0x1438106f8,0x15161ce30",
+  "notes": "HUD_CUSTOMISATION '[this=%p,editorMode=%d] applyCurrentCustomisationDataToUIData'. For each element (stride 0xf0) of the current config set not excluded by the set/page lists applies it via 0x143810c70; in editor mode (+0x8a) posts a UI message (0x14588bd10) with the element count. (lane owner review requested)"
  },
  "signature": {
   "id": "game.hud_customisation_apply_data",

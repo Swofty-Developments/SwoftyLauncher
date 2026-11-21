@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1434de7a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GamePlayerManager::anyKeyCallbackForAddSecondaryPlayer; log channel INPUT: 'GamePlayerManager::anyKeyCallbackForAddSecondaryPlayer - calling forceRefresh()'"
+  "evidence": "decomp:re/decomp/1434de7a0.c;pat:log-message-cxx;xref:0x1434de66c,0x1434de7bc",
+  "notes": "Refs: lea at 0x1434de66c (in 0x1434de660, registration) and 0x1434de7bc (itself, passed to 0x1434df6e0 to re-arm). Returns if 0x1434df6e0 handles it or no lead player [p1+0x198]. Compares the pressed device p2 with the lead player's device; reads button state (0x1442da2e0 ..,5): cancel -> 0x1442aad70(p1+0x508) and UI sound play_ui_cancel; else, if device is new and 0x14411bcf0 accepts it, refreshes input maps and calls own vt+0x60(ok, second player [p1+0x1a0], p2), sound play_ui_confirm. Logs INPUT '...anyKeyCallbackForAddSecondaryPlayer - calling forceRefresh()', sets [p1+0x538]+0x72 = 1. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_player_manager_any_key_callback_for_add_secondary_player",

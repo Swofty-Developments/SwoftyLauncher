@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1412f1070",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-OBJECTIVES",
-  "notes": "named from its log messages (channel OBJECTIVES): 'Attempting to deactivate an objective that's already inactive.'"
+  "evidence": "decomp:re/decomp/1412f1070.c;pat:log-channel-OBJECTIVES;xref:0x1456d26d0,0x1456d2930,0x1456d2b10,0x1456d2c90,0x1456d2e00,0x1456d3010,0x1456d31a0,0x1456d33c0,0x1456d35c0,0x1456d3780,0x1456d3930,0x1456d3af0,0x1456d3cd0,0x1456d3e40,0x1456d4050,0x1456d4210,0x1456d43d0,0x1456d4550,0x1456d4740,0x1456d48e0,0x1456d4b20,0x1456d4d10,0x1456d4eb0,0x1456d50a0,0x1456d5220,0x1456d5420,0x1456d5630,0x1456d5800,0x1456d59b0,0x1456d5bb0,0x1456d5dc0,0x1456d5f40,0x1456d6130,0x1456d6320,0x1456d6490,0x1456d66c0,0x1456d6870,0x1456d6a80",
+  "notes": "Shared slot of the objective vtables (cells listed). Returns whether state byte +0x18 was non-zero and clears it; when already 0 logs 'Attempting to deactivate an objective that's already inactive.' (OBJECTIVES). (lane owner review requested)"
  },
  "signature": {
   "id": "game.objectives_deactivate",

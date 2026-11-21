@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "void *vm",
   "evidence": "decomp:re/decomp/142260f10.c;xref:0x145776f18",
-  "notes": "myteam-g1: My Team customisation scene update: applies title_sponsor and lng_sponsor_%s livery (noyear-custom-myteam livery) to the car; calls Game_MyTeamCustomisation_SpawnScene."
+  "notes": "vt cell 0x145776f18. 19 KB body; strings c_focus_livery/driver/details/colours/badge/appearance, nationality, name_code, car_number, invoice_data, engine, display_name. Sponsor-livery claim not traced."
  },
  "signature": {
   "id": "game.my_team_customisation_apply_sponsor_livery",

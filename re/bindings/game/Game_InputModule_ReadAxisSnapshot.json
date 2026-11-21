@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-INPUT",
-  "notes": "named from its log messages (channel INPUT): 'Can't find axis snapshot from ID | Snapshot unavailable reverting to 0 value. | Snapshot good %s is pressed %f. | couldn't find axis in DB looking for directional entries.'"
+  "evidence": "decomp:re/decomp/142a577d0.c;pat:log-channel-INPUT;xref:0x141dcb8f1",
+  "notes": "INPUT axis snapshot read ('Can't find axis snapshot from ID', 'Snapshot good %s is pressed %f') (log strings)."
  },
  "signature": {
   "id": "game.input_module_read_axis_snapshot",

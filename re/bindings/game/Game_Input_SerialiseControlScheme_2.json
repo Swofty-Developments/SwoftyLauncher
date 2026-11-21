@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-INPUT",
-  "notes": "named from its log messages (channel INPUT): 'serialised control scheme rawId=%08x name=\"%s\" is %I64u bytes'"
+  "evidence": "decomp:re/decomp/142a6bdd0.c;pat:log-channel-INPUT;xref:0x141da9e65",
+  "notes": "INPUT 'serialised control scheme rawId=%08x name=\"%s\" is %I64u bytes' (log string)."
  },
  "signature": {
   "id": "game.input_serialise_control_scheme_2",

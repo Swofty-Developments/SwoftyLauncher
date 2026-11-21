@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=Info::resolutionRestrictionRequired; log channel WINDOW: 'Info::resolutionRestrictionRequired: desired resolution %dx%d fullscreen=%d, restrictionRequired=%d'"
+  "evidence": "decomp:re/decomp/14401b2a0.c;pat:log-message-cxx;xref:0x14401b25c,0x1443c61f5",
+  "notes": "WINDOW 'Info::resolutionRestrictionRequired' (log string)."
  },
  "signature": {
   "id": "game.info_resolution_restriction_required",

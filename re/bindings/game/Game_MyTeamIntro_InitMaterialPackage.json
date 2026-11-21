@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140265930",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "void f(void)",
   "evidence": "decomp:re/decomp/140265930.c;xref:0x1455efe08",
-  "notes": "myteam-g1: Static one-time init of the f1_my_team_int* cinematic material package (eaid environment_package path), guarded by a TLS init flag."
+  "notes": "Not a material-package init. vt cell 0x1455efe08 = vt 0x1455efd20 +0xe8, whose base slot 0x140238af0 logs 'setStateFinished' and is called first. Then service 'VideoModuleQueue' from lazy registry 0x14604e098: main_front_end loop_01/loop_02, main menu screen material, video_cloth -> 0x140263f10; car_reveal_ies_a, my_team intro material, car_reveal_generic_reveal, fullscreen_video_overlay -> 0x140263ba0. (lane owner review requested) Better name: Game_MyTeamIntroScript_SetStateFinished (bound record keeps its name)."
  },
  "signature": {
   "id": "game.my_team_intro_init_material_package",

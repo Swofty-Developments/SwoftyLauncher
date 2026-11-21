@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1407bdf00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameModeChampionship::abort; log channel FLOW: 'GameModeChampionship::abort() sets SessionExit to %s because ABORT!'"
+  "evidence": "decomp:re/decomp/1407bdf00.c;pat:log-message-cxx;xref:0x145646ce8",
+  "notes": "Vtable cell 0x145646ce8 (secondary-base slot: uses p1-0xf0). Calls [p1+0x28]+0x208 vt+0x38 (championship state object), then 0x142c76810([p1-0xf0]+0x1fc, 1, 0) to set the session exit, and logs FLOW 'GameModeChampionship::abort() sets SessionExit to %s because ABORT!' with 'eFRONT_END'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_mode_championship_abort",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142bb3370",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "bool Game_PauseAvailability_Rebuild(uint8_t *avail24, ...)",
-  "evidence": "doc:re/db/subsystems/game.md",
-  "notes": "Zeroes and rebuilds 24 availability bytes (0x142bb338f/393), one per pause option (0 restart_lap, 1 instant_replay, 2 reset_to_track, 3 return_to_garage, 4 checkpoint, 5 restart, 6 ?, 7 osq ghost, 8 use_rivals_setup, 9 race_director, 10 driver_view, 11 new_settings, 12 tutorials, 13 reset_vr_position, 14 skip_formation_lap, 15-17 invites, 18 hot_load, 19 simulate, 20 end_session, 21 retire, 22 mid_session_save, 23 quit); caller 0x142bbd14c passes VM+0x278, callers 0x142bb724d / 0x142bb74a6 pass obj+0x18; context from 0x142bb40f0 (agent garage-ui, cg-verify claim 8)"
+  "evidence": "decomp:re/decomp/142bb3370.c;doc:re/db/subsystems/game.md;xref:0x142bb724d,0x142bb74a6,0x142bbd14c,0x14e36edef",
+  "notes": "(ctx): zeroes the 16+8 availability bytes (ctx[0], ctx[1]), gathers state via 0x142bb40f0 and computes each byte from session/mode/garage/replay/multiplayer flags, then compares with the previous copy ctx[2] and returns 1 only when something changed (copies new state). Callers 0x142bb7020, 0x142bb73e0 (jmp), 0x142bb74b0, 0x14e36ede0. Index-to-option names in the KB (game.md) not re-verified here. (lane owner review requested)"
  },
  "signature": {
   "id": "game.pause_availability_rebuild",

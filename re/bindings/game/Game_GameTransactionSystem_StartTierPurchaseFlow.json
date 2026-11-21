@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e65740",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_GameTransactionSystem_StartTierPurchaseFlow;xref:0x142e657c0",
-  "notes": "cxx=game::GameTransactionSystem::startTierPurchaseFlow; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/142e65740.c;str:s_GameTransactionSystem_StartTierPurchaseFlow;xref:0x141d1ebd1",
+  "notes": "startTierPurchaseFlow(sys,delegate,tier): stores delegate sys+0xa8/+0xb0; offline -> 'customisation_confirm_reconnect'; else 'transaction_confirm_purchase' (callback 0x142e654e0) with purchase_type=PPTier and selected_tier. Caller 0x141d1e1d0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_transaction_system_start_tier_purchase_flow",

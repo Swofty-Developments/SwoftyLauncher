@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-OPTIONS-UI",
-  "notes": "named from its log messages (channel OPTIONS-UI): 'Exiting view or updating filter level, command [%s] is ignored'"
+  "evidence": "decomp:re/decomp/141da11d0.c;pat:log-channel-OPTIONS-UI;xref:0x141d9fad2,0x141daf08f,0x141daf813,0x141dd00a5,0x141ddb0a3,0x141ddfcf6,0x141de3857,0x141de98a6,0x1457520d0",
+  "notes": "Cell 0x1457520d0 plus jmp/call sites in several options VMs. Command handler (open, back_pressed, race_style_selected) that ignores commands while exiting or updating the filter level."
  },
  "signature": {
   "id": "game.options_ui_exiting_view_updating_filter_level",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143aa3680",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-LOGITECH",
-  "notes": "named from its log messages (channel LOGITECH): 'Updating logi lights %f. | Speed:%d || RPM%d'"
+  "evidence": "decomp:re/decomp/143aa3680.c;pat:log-channel-LOGITECH;xref:0x1458a7390",
+  "notes": "Virtual (cell 0x1458a7390). (sys, device name, telemetry): finds the entry (map +0x60) whose +0x178 == name; SDK handle +0x2a8 -> RPM LED call 0x1449e8cd0(h, telem+0x2c, 0.001, 1.0) (model names C29/C24/C26/C27), LOGITECH 'Updating logi lights %f.'. If +0x2d9: speed display +0x2e0 vcall +0x48(round(telem+0x24)), flag LEDs +0x2f8 coloured from telem bytes +0x4c..+0x53, RPM bars +0x2e8/+0x2f0 up to telem+0x2c; WHEEL_LIGHTS 'Speed:%d || RPM%d'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.logitech_lights_update",

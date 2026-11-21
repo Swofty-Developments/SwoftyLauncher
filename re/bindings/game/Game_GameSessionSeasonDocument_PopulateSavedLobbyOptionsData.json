@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430350d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionSeasonDocument::populateSavedLobbyOptionsData; log channel NETWORK/F: 'network::GameSessionSeasonDocument::populateSavedLobbyOptionsData(%s)'"
+  "evidence": "decomp:re/decomp/1430350d0.c;pat:log-message-cxx;xref:0x143034fb1,0x143035e7e",
+  "notes": "Logs NETWORK/F 'network::GameSessionSeasonDocument::populateSavedLobbyOptionsData(%s)' (name p2+0x10). Runs Game_GameSessionSeasonDocument_PackChampionship (0x143035159), copies the packed header p1+0x80..+0x1f0 into the saved-options record p2+0xa0..+0x210 (0x1431a2fb0 for the grid at +0x1f0), builds a 256-bit mask from the options table [0x146079258]+0x340 (entry key -0x5275b53, cached in 0x1460792d8) and stores data via 0x142ad5660([p1+0x498], p2+0x218, mask), then frees the pack buffer +0x618. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_session_season_document_populate_saved_lobby_options_data",

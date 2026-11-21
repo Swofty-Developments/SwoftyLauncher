@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1407b2c60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1407b2c60.c",
-  "notes": "reads game_modes.ModeChampionship_N flags: flying_lap_allowed, return_to_garage_allowed, simulation_allowed, terminal_damage_enabled, allowPause, allowReplay, AllowFlashbackFromTerminal, allowSlowMo, allowMidSessionSimulation (false in all 29 modes), allowCheckpoints, allowSingleRaceStandings, allowTutorialNotifications, local_multiplayer_enabled, allowAIAutoReset, allow_player_custom_pose, usesAlternateSafetyRating, show_mode_intro_cutscene, optionRestrictions, usesChampionships, return_to_fe_between_weekends, event_list."
+  "evidence": "decomp:re/decomp/1407b2c60.c;xref:0x145646ac0",
+  "notes": "Mode parser (vtable cell 0x145646ac0). flying_lap/return_to_garage/simulation_allowed are OPTION lookups (this+0xf90 map) -> +0xe40/+0xe48/+0xe50, not JSON flags. JSON bools: terminal_damage +0xe39, Pause +0xe2c, SlowMo +0xe2d, Replay +0xe2e, FlashbackFromTerminal +0xe2f, MidSessionSim +0xe31, Checkpoints +0xe32 ... show_mode_intro_cutscene +0xe3a, usesChampionships +0x10c8; optionRestrictions -> +0x1018; event_list / ChampionshipSetupList -> map +0x1090. (lane owner review requested)"
  },
  "signature": {
   "id": "game.parse_mode_championship",

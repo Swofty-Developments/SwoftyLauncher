@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-LEADERBOARDS",
-  "notes": "named from its log messages (channel LEADERBOARDS): 'Loading leaderboard: name=%s, id=%d, sort type=%d, NP service label=%d'"
+  "evidence": "decomp:re/decomp/144024e20.c;pat:log-channel-LEADERBOARDS;xref:0x1430db013",
+  "notes": "Data-tree parser for leaderboard definitions: 'version' ('Loading leaderboards definition: version = %d'), per 'leaderboard' node id/name/sort ('ascending'/'descending')/np_service_label/version/name_pc, 'column' nodes (type/name/stat/platform, exactly one rating column), 'reset' history; logs 'Finished loading leaderboard, success = %d.' Only caller 0x1430db013. Old name was a log fragment. Better name: Game_Leaderboards_LoadDefinitions (bound record keeps its name)."
  },
  "signature": {
   "id": "game.leaderboards_loading_leaderboard_name_id_sort_type_np",

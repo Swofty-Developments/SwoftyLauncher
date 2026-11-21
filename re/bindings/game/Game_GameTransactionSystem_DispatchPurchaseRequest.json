@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e65590",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142e65590.c;xref:0x142e579a2",
-  "notes": "If param_1[1] and param_1[0] valid: looks up the handler for id *param_1[1] in registry 0x146129d40 (vcall +8) and calls handler vcall +0x40 with a record built from param_3 (Ne_Make_StrFromCStr item name). Callers Game_GameTransactionSystem_StartItemPurchaseFlow, StartTierPurchaseFlow, StartPremiumItemPurchaseFlow."
+  "evidence": "decomp:re/decomp/142e65590.c;xref:0x142e653fb,0x142e659f5,0x142e669b7",
+  "notes": "Not a purchase dispatch: sets an int parameter on a popup request. (popup, key cstr, int value, p4, p5): allocates an int value object of value type 0x146129d40 (vt+8) with the params allocator, stores the value (vcall +0x40), inserts it under key into popup[1] (0x1442cbab0), notifies [popup[0]+0x378] vt+0x30 on success, frees the temp. Keys item_ID / selected_tier / selected_productId from 0x142e65060, 0x142e65740, 0x142e66770. (lane owner review requested) Better name: Game_PopupParams_SetInt (bound record keeps its name)."
  },
  "signature": {
   "id": "game.game_transaction_system_dispatch_purchase_request",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name processHeaders (class from the log channel); log channel HTTP/V: 'processHeaders'"
+  "evidence": "decomp:re/decomp/144050490.c;pat:log-message-method;xref:0x14404f3aa",
+  "notes": "HTTP/V 'processHeaders' (log string). Called from 0x14404e260."
  },
  "signature": {
   "id": "game.http_v_process_headers",

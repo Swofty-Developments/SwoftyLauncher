@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428e5d60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1428e5d60.c;xref:0x1428e5b9c,0x1428e6a93",
-  "notes": "Hash map (FNV-1a 64 on 2-byte key, bucket mask this+0x40) find-or-insert; throws invalid hash bucket count. Callers Game_FrontendSceneManager_SetupCarInternal, Game_FrontendSceneComponentCar_SetCarLivery, SetCarPersonalSticker."
+  "evidence": "decomp:re/decomp/1428e5d60.c;xref:0x1428e5b9c,0x1428e6a93,0x1428e719b,0x1428e7bc6,0x1428e8598,0x1428e8ba3,0x1428e979e,0x1428ea11b",
+  "notes": "unordered_map try-emplace keyed by the u16 at p3 (FNV-1a over 2 bytes, buckets [p1+0x28], mask p1+0x40). Hit -> {node,0}. Miss: allocates a 0x68f0 node via allocator [p1+8] vt+0x18, key at node+0x10, value copy-built by 0x1417a96f0(node+0x20, p3+0x10) and fields +0x68b0..+0x68d0 moved from p3, rehashes when load factor p1+0 exceeded (throws 'invalid hash bucket count'/'too long'), links node; returns {node,1} in p2. (lane owner review requested)"
  },
  "signature": {
   "id": "game.frontend_scene_key_map_find_or_insert",

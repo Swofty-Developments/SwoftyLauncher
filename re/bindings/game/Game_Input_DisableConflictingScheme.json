@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a5d050",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-INPUT",
-  "notes": "named from its log messages (channel INPUT): 'Disable control scheme \"%s\" for player %d, it's conflicting with \"%s\"'"
+  "evidence": "decomp:re/decomp/142a5d050.c;pat:log-channel-INPUT;xref:0x142a5d00a,0x142a5f02e,0x142a61700,0x142a617e0,0x142a6ad65,0x142a6e857,0x142af2890,0x14da295cb",
+  "notes": "(input, playerDevices, schemeId*): for each device of the player finds custom schemes using it (+0x168 list, per-player slots +0xd0/+0xd8, +0xc0); for an active conflicting scheme (0x142a59560) logs INPUT 'Disable control scheme \"%s\" for player %d, it's conflicting with \"%s\"' and disables it (0x142a5e9a0); may re-enable via 0x142a5e2d0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.input_disable_conflicting_scheme",

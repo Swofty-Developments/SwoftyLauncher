@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430982e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionSeasonDocument::onMessageMultiplayerScenarioChanged; log channel NETWORK: '<<< GameSessionSeasonDocument::onMessageMultiplayerScenarioChanged() >>>'"
+  "evidence": "decomp:re/decomp/1430982e0.c;pat:log-message-cxx;xref:0x143095fea,0x1430ddcc8",
+  "notes": "Refs: lea 0x143095fea (in 0x143095910) and 0x1430ddcc8 (in 0x1430dda70). Logs NETWORK '<<< GameSessionSeasonDocument::onMessageMultiplayerScenarioChanged() >>>'. As host (state < 2, +0x765): clears the entry vector +0x748..+0x750 (stride 0x50), optional 0x143227630, sets +0x766/+0x768, 0x143099420, then sets the track-set name +0x3a8 to 'custom' (then 0x1430a34b0) or 'AllTracks' (then 0x143099350) depending on the scenario type check, logs 'MOX/Season: Change TRACK SET NAME to %s', +0x400 = 1; finally 0x14309f970([[p1+0x420]+0x428]). Returns 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_session_season_document_on_message_multiplayer_scenario_chang",

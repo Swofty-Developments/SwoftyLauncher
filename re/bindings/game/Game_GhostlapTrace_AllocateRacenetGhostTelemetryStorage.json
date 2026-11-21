@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f9efb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name allocateRacenetGhostTelemetryStorage (class from the log channel); log channel GHOSTLAP-TRACE: '%s'"
+  "evidence": "decomp:re/decomp/142f9efb0.c;pat:log-message-method;xref:0x142f9c00a",
+  "notes": "allocateRacenetGhostTelemetryStorage(sys): allocates once 0xC800 bytes align 0x10 into sys[0xa5], sys[0xa6]=0xC800, zero-fills; returns 0 on alloc failure. Caller 0x142f98320. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ghostlap_trace_allocate_racenet_ghost_telemetry_storage",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f9eef0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name allocateSessionRivalStorage (class from the log channel); log channel GHOSTLAP-TRACE: '%s(#%d)'"
+  "evidence": "decomp:re/decomp/142f9eef0.c;pat:log-message-method;xref:0x142f9edf9",
+  "notes": "allocateSessionRivalStorage(h): allocates once 0xC800 bytes into h+0x320 and sets h+0x328 = 0xC800. Caller 0x142f9d860. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ghostlap_trace_allocate_session_rival_storage",

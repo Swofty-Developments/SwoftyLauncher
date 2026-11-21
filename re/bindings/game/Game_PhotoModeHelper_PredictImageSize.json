@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142bd27a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-PHOTO-MODE",
-  "notes": "named from its log messages (channel PHOTO-MODE): 'Predicted size for (%d x %d) image = %I64u'"
+  "evidence": "decomp:re/decomp/142bd27a0.c;pat:log-channel-PHOTO-MODE;xref:0x142bcefca,0x142bd2407,0x142bd3bac,0x142bd3ee4",
+  "notes": "(mod, fmt 2=png/3=exr, name, stride, pixels, w, h, ...): builds '<docs>\\\\photos' dir and '%s\\\\%s.png/.exr' path into +0x1d8, opens file (0x143999260), predicts size (types 2/3: h*0xe10, 6: w*h*3/2) -> +0x12e0, logs 'Predicted size', resets progress, writes EXR (0x143a7e110) or PNG (0x142bd41a0 with write callback 0x142bd1ae0, optional XMLPacket). Callers listed. Old name described only the log line. (lane owner review requested) Better name: Game_PhotoModeHelper_WriteImageFile (bound record keeps its name)."
  },
  "signature": {
   "id": "game.photo_mode_helper_predict_image_size",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142fc06e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_LeaderboardReader_OnPlayerCompleted;xref:0x142fc0791",
-  "notes": "cxx=game::LeaderboardReader::onPlayerCompleted; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/142fc06e0.c;str:s_LeaderboardReader_OnPlayerCompleted;xref:0x142fbecdc,0x142fbf1aa",
+  "notes": "onPlayerCompleted(TaskId, TaskParams, TaskResult) (fn ptr lea 0x142fbecdc and call 0x142fbf1aa, both in 0x142fbdd50). Logs '%s: [%s] player read completed %s', clears +0xcc. On success with >0 entries builds the player row (entry vcall +0x48) -> +0x10, appends it to rows +0x20..+0x30 and sorts (0x1430300c0). Calls delegate +0xb8/+0xc0 with status (result+0x10 if no rows) and total +0x38. (lane owner review requested)"
  },
  "signature": {
   "id": "game.leaderboard_reader_on_player_completed",

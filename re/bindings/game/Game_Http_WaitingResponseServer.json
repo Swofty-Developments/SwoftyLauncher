@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-HTTP",
-  "notes": "named from its log messages (channel HTTP): '[%u] Waiting for Response from server'"
+  "evidence": "decomp:re/decomp/14404e260.c;pat:log-channel-HTTP;xref:0x145a4d628",
+  "notes": "HTTP '[%u] Waiting for Response from server' (log string); vtable cell 0x145a4d628; calls 0x144050130 and 0x144050490."
  },
  "signature": {
   "id": "game.http_waiting_response_server",

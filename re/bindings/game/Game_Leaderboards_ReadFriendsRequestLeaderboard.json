@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144027470",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-LEADERBOARDS",
-  "notes": "named from its log messages (channel LEADERBOARDS): 'Read friends request for leaderboard %s, maxNumEntriesToRead = %d'"
+  "evidence": "decomp:re/decomp/144027470.c;pat:log-channel-LEADERBOARDS;xref:0x1430e7c7c",
+  "notes": "(mgr, user, definition, max, .., delegate, out id): logs 'Read friends request for leaderboard %s, maxNumEntriesToRead = %d', max clamped to 0xfb. Invalid user -> 1, queue full (+0x40..+0x48 vs cap +0x50) -> 0x10. Else allocates a 0x298 request (vtables 0x145a48aa8/bb0/bd0/bf0), id = ++(+0x30) -> *out, queues it: count +0x180, kind +0x28c = 2, state +0xf0 = 8; logs 'Leaderboard request Id ... queued'. Returns 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.leaderboards_read_friends_request_leaderboard",

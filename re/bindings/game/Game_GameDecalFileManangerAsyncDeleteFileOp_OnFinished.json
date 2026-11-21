@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141434c30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_GameDecalFileMananger_AsyncDeleteFileOp_OnFinished;xref:0x141434ca0",
-  "notes": "cxx=game::GameDecalFileMananger::AsyncDeleteFileOp::onFinished; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/141434c30.c;str:s_GameDecalFileMananger_AsyncDeleteFileOp_OnFinished;xref:0x1456e41a0",
+  "notes": "Vtable cell 0x1456e41a0. Whole body: when logging is on and channel CUSTOMISATION_DECALS is enabled, logs '%s' with pretty-function 0x1456e41df 'virtual void game::GameDecalFileMananger::AsyncDeleteFileOp::onFinished()'. No other effect. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_decal_file_mananger_async_delete_file_op_on_finished",

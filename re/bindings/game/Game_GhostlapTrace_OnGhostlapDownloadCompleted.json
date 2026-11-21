@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141484aa0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onGhostlapDownloadCompleted (class from the log channel); log channel GHOSTLAP-TRACE: '%s() success: %d, errorCode: %u'"
+  "evidence": "decomp:re/decomp/141484aa0.c;pat:log-message-method;xref:0x141482fef",
+  "notes": "onGhostlapDownloadCompleted(ui,..,res): res[0] success, res+4 error code; failure -> 0x14147c0f0(ui,0) and popup 'failed_to_download_rival' kept at ui[0x40eb]; success -> ui[0x401f]=res+0x10, copies res+8 to ui+0xf5, ui[0x4021]=1. Callback (lea) in 0x141482d60. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ghostlap_trace_on_ghostlap_download_completed",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NEOS_WS/V",
-  "notes": "named from its log messages (channel NEOS_WS/V): 'Callback asyncWebSocketCallback internetStatus: %x, infoLength: %d'"
+  "evidence": "decomp:re/decomp/1440517b0.c;pat:log-channel-NEOS_WS/V;xref:0x14404e523",
+  "notes": "lea 0x14404e523. WinHttp websocket status callback: logs bytes written/read, unexpected shutdown/close, handle closing, operation errors."
  },
  "signature": {
   "id": "game.neos_ws_callback_async_web_socket_callback",

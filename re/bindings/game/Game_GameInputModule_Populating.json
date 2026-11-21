@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a7b130",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameInputModule::Populating; log channel INPUT: 'GameInputModule::Populating UIDB for device:%s / %s'"
+  "evidence": "decomp:re/decomp/142a7b130.c;pat:log-message-cxx;xref:0x14da3acdb",
+  "notes": "Only caller 0x14da3acdb (in 0x14da3abb0). UI node p1: if its 'axis' list is missing/empty (walks up to 0x62 children), copies the default '#input_device.di_device_default.axis' list into p1.axis (0x14083d100 + 0x140977b20); if p3 is non-empty and display_text is unset/empty, sets display_text = p3 (0x140971220/0x140828440). Logs INPUT 'GameInputModule::Populating UIDB for device:%s / %s' (p3, *p2). Renamed from the log fragment 'Populating'. (lane owner review requested) Better name: Game_GameInputModule_PopulateDeviceUIDB (bound record keeps its name)."
  },
  "signature": {
   "id": "game.game_input_module_populating",

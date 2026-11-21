@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1407b5c40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameModeChampionship::begin; log channel GAME: 'GameModeChampionship::begin() completion status (%s)'"
+  "evidence": "decomp:re/decomp/1407b5c40.c;pat:log-message-cxx;xref:0x1407b5a3d,0x140bc96ee,0x140bef164,0x14126beee,0x14309dd9c,0x14309e0b8,0x14309e29b,0x1485fd465,0x1486a0279",
+  "notes": "Status = progress object p1+0x1030 vt+0x78 (2 = done -> skip). Otherwise runs begin hooks of the listeners p1+0x12e8..+0x12f0 and of each sub-mode p1+0x1040.. (+0x4e8 lists): first-time/season/event start (0x1407b9e80..0x1407b9ef0), filters entrants p2 (or p1+0x2d8; stride 0x88, skip id 0x3fff) and starts the event via 0x140ae35a0([p1+0x1058],...), posts bus messages 0x14564afc0/0x14564afd0 and queues 0x14564afe0 work (Ne_Post_BusMessage). Finally writes 'done' (state==1) into UI node p1+0x13d8 and logs GAME 'GameModeChampionship::begin() completion status (%s)'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_mode_championship_begin",

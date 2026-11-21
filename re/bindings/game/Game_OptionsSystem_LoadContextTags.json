@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_OptionsSystem_LoadContextTags;xref:0x142acfe48",
-  "notes": "cxx=game::OptionsSystem::loadContextTags; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/142ace510.c;str:s_OptionsSystem_LoadContextTags;xref:0x1413e5267",
+  "notes": "Only caller 0x1413e5267. 23 KB; pretty function OptionsSystem::loadContextTags(), options_system.* keys."
  },
  "signature": {
   "id": "game.options_system_load_context_tags",

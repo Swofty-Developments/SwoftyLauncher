@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14307c000",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionMatchingF1WSocialGP::enterSession; log channel NETWORK-SESSION: 'NEbool network::GameSessionMatchingF1WSocialGP::enterSession(SessionSelectionDelegate, SearchDelegate, EnterSessionDelegate) | %s'"
+  "evidence": "decomp:re/decomp/14307c000.c;pat:log-message-cxx;xref:0x1430aeb16,0x1430b257f,0x1430b29e7",
+  "notes": "Own pretty-function string 0x14580cee5 'NEbool ...F1WSocialGP::enterSession(SessionSelectionDelegate, SearchDelegate, EnterSessionDelegate)'. Stores selection delegate p2 at +0x158/+0x160 and enter delegate p4 at +0x148/+0x150; only when idle (+0x58 == 0, no pending +0x100/+0xe8) and search delegate p3 set: copies p3 to +0x88..+0xa0, +0x80 = 1, restarts timers, +0x58 = 1, sets peer list from [[p1+8]+0x390] (0x1431fe880), resets selection +0xa8/+0xb0 and calls the selection delegate, then Game_..._SearchSession; on failure 0x14307c2c0(p1,0,0,0). Returns success. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_session_matching_f1_w_social_gp_enter_session",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143aede50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143aede50.c;xref:0x143af26e9",
-  "notes": "Copies param_4 key times/values into +0xd0 and +0xa0 arrays (count +0x134, param_5 at +0x130) and precomputes per-segment values. Callers Game_Particles_BuildEmitterDefs, Asset_Load_ParticleResourcePack (2 sites)."
+  "evidence": "decomp:re/decomp/143aede50.c;xref:0x143af26e9,0x143b13cfc,0x143b13ebf",
+  "notes": "(curve, times, values, count, scale): count -> +0x134, scale -> +0x130, copies key times to +0xd0 and values to +0xa0, precomputes per-key tangent factors (+0x30/+0x34 pairs) and inverse segment lengths (+0x100..) used by Game_Particles_EvalLifeCurve. Callers 0x143aef1b0, 0x143b13710. (lane owner review requested)"
  },
  "signature": {
   "id": "game.particles_set_emitter_curve_keys",

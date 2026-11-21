@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=HudCustomisationViewModel::onScreenActivated; log channel HUD_CUSTOMISATION: 'HudCustomisationViewModel::onScreenActivated - Calling setHudScreenActive(true)'"
+  "evidence": "decomp:re/decomp/141c0e650.c;pat:log-message-cxx;xref:0x14573be38",
+  "notes": "HudCustomisationViewModel::onScreenActivated (log string); vtable cell 0x14573be38."
  },
  "signature": {
   "id": "game.hud_customisation_view_model_on_screen_activated",

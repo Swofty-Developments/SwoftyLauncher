@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1406d3150",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_GameEadpModule_OnFriendRequestReceived;xref:0x1406d32b5",
-  "notes": "cxx=game::GameEadpModule::onFriendRequestReceived; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1406d3150.c;str:s_GameEadpModule_OnFriendRequestReceived;xref:0x1406d38be,0x1406d41a9",
+  "notes": "Own pretty-function string 0x145641d5b 'void game::GameEadpModule::onFriendRequestReceived(NEuint64, const NEchar *)' (EadpSDK log 'EA user id: %llu, player name: %s'). Refs are lea sites 0x1406d38be/0x1406d41a9 (handler setup). If no request pending (p1+0xc0 == 0) and p1+0x30 == 0: stores service 0x1460c2238 at +0xb0, creates a handle via 0x1432c56e0([svc+0x48]) into +0xc0/+0xc8 (releases old), stores user id p2 at +0x20 and name p3 into string +0x28 (0x1441974e0). (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_eadp_module_on_friend_request_received",

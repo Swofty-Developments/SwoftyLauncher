@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142a4eef0.c;xref:0x142a502a1",
-  "notes": "Builds a hud queue message with keys infringement / incident_points / hide_sub_message / is_neutral / #session.penalty_data.drive_through_counter, queues hud_main_queue and hud_main_queue2. Callers Game_Hud_QueueMessage, Game_HeatMap_PostTyreInfringementMessage."
+  "evidence": "decomp:re/decomp/142a4eef0.c;xref:0x142a502a1,0x142a50548,0x1505a0a0b",
+  "notes": "HUD infringement queue message builder (keys infringement / incident_points / hide_sub_message / is_neutral from strings)."
  },
  "signature": {
   "id": "game.hud_build_infringement_message",

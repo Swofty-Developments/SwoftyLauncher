@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143161f50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=InviteManager::fail; log channel NETWORK-INVITE: 'InviteManager::fail(%d)'"
+  "evidence": "decomp:re/decomp/143161f50.c;pat:log-message-cxx;xref:0x1430e9dda,0x1430ecddf,0x1430ece68,0x1430ecf8b,0x143161e3e,0x143161e4b,0x1431626ab,0x143164732,0x1431651d9,0x1431652e7,0x143165c7d,0x143165d3d",
+  "notes": "InviteManager::fail(err): callback +0xb88, clears hud handle +0x388 of [+8]+0x460, +0xb70=0, timer +0xba0/+0xba8 restarted, bool prop +0x2e8=false, callback +0x148(err), invite fields reset, 0x143163200(this,0); if state +0x10 != 0 logs changeState, posts msg 0x143214f20, state=0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.invite_manager_fail",

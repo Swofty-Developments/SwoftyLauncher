@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=MultipartActor::addPart; log channel ACTOR_REGEX: 'MultipartActor::addPart %s'"
+  "evidence": "decomp:re/decomp/1401cb030.c;pat:log-message-cxx;xref:0x1401a6845,0x1401ec5b6",
+  "notes": "MultipartActor::addPart (strings 'MultipartActor::addPart %s', ACTOR_REGEX 'addPart srcString %s [%s%s] %s', 'unable to find a part to determine regex replacement logic', 'connectionParent was null, check above for MISSING RESOURCE'). Callers 0x1401a6845, 0x1401ec5b6."
  },
  "signature": {
   "id": "game.multipart_actor_add_part",

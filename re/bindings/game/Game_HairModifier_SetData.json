@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401bc130",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=HairModifier::setData; log channel HairModifier: 'HairModifier::setData failed to find head'"
+  "evidence": "decomp:re/decomp/1401bc130.c;pat:log-message-cxx;xref:0x1455e28b0",
+  "notes": "HairModifier vt cell 0x1455e28b0, logs 'onParentActorDisabled %d'. enabled: active count (+0x48, global 0x14601dd34), needs head (+0x10, else 'setData failed to find head'), builds 0x70 strand render object at +0x30 from head+0x228, visible = strand flag 0x145f8d26e && actor flag, queues 0x143d00900. disabled: releases +0x30. (lane owner review requested) Better name: Game_HairModifier_OnParentActorDisabled (bound record keeps its name)."
  },
  "signature": {
   "id": "game.hair_modifier_set_data",

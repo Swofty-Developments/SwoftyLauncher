@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142abfb20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142abfb20.c;xref:0x140bf0554,0x14254f0a3",
-  "notes": "(binding) If option system g 0x146079258 exists: removes binding from owner list [+0x10]+0x108..+0x110, reads its value (vcall +0x60), clamps index (Game_Option_ClampValueIndex) and re-applies (0x142abc3d0). 20 callers (WeeklyGP sim, FrontendSceneCar, Session_SetLapsCompleted)."
+  "evidence": "decomp:re/decomp/142abfb20.c;xref:0x140bf0554,0x14254f0a3,0x14254f543,0x14254f713,0x142584193,0x142587c52,0x142587dd8,0x1427b4523,0x1427b6828,0x1427b6b78,0x1427b6ea8,0x142df6bc3,0x142df7e03,0x142df8063,0x14315ce33,0x14315ceb3,0x14315cef3,0x14315cf33,0x14315cf73,0x1432d4b80,0x148ca78e5,0x14992d843,0x149943303",
+  "notes": "If option system 0x146079258 exists: removes the binding from owner [+0x10] list +0x108..+0x110, reads the value (vcall +0x60), clamps it (0x142abb3a0) and either fires listeners +0xe8..+0xf0 (flag 2) or re-applies (0x142abc3d0), then tail-jumps 0x142abdb60; without the system pushes error 2. (lane owner review requested)"
  },
  "signature": {
   "id": "game.option_binding_detach",

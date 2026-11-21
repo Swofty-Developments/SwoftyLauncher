@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14307fbd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionMatchingHopper::onMatchJoinComplete; log channel NETWORK-SESSION: 'GameSessionMatchingHopper::onMatchJoinComplete(%s, %s)'"
+  "evidence": "decomp:re/decomp/14307fbd0.c;pat:log-message-cxx;xref:0x143061327,0x143081a2d,0x143081c64,0x1430e3cad,0x14316680f",
+  "notes": "Logs NETWORK-SESSION 'GameSessionMatchingHopper::onMatchJoinComplete(%s, %s)' (success/failed p2, error name p3). Restarts the timer +0x140/+0x148, sets +0x159 once, clears +0xf0; if the join delegate (fn +0xf8, ctx +0x100) is set fills the result at +0x108 (session id +0x110..+0x126 from +0x28..+0x3e, ok +0x129 = p2, error +0x134 = p3), calls it and clears the delegate. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_session_matching_hopper_on_match_join_complete",

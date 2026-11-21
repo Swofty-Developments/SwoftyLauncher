@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_MailSystem_UploadDebugSavedGameDataOperation;xref:0x143359640",
-  "notes": "cxx=game::MailSystem::uploadDebugSavedGameDataOperation; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/143359540.c;str:s_MailSystem_UploadDebugSavedGameDataOperation;xref:0x141cb2f3e",
+  "notes": "Pretty-function 'neon::NeOSOperationHandlePtr game::MailSystem::uploadDebugSavedGameDataOperation(MessageId, const UploadDebugSavedGameDataOperationCompletionCallback &)'; uses SAVE_TEMP_ALLOC/_HUGE and 'SaveGame', logs 'Largest free block: %u'. Only caller 0x141cb2f3e."
  },
  "signature": {
   "id": "game.mail_system_upload_debug_saved_game_data_operation",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141c13460",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=HudCustomisationViewModel::prepareOptionsUI; log channel HUD_CUSTOMISATION: 'HudCustomisationViewModel::prepareOptionsUI - selectedEditableElementIndex=%d'"
+  "evidence": "decomp:re/decomp/141c13460.c;pat:log-message-cxx;xref:0x141c10c43,0x141c10c9c",
+  "notes": "HUD_CUSTOMISATION 'prepareOptionsUI - selectedEditableElementIndex=%d'. Element 0x141c13280(vm); if found: 0x141c137a0(vm+0x770, el+0xc), bool props +0xa78/+0xa98 = el+0xc, float props +0x878 = el+0x10*100 and +0x958 = el+0x14*100, bool +0xa58 = 0. Callers in 0x141c10810. (lane owner review requested)"
  },
  "signature": {
   "id": "game.hud_customisation_view_model_prepare_options_ui",

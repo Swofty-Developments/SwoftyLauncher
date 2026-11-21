@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141442820",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141442820.c;xref:0x1401aec4b",
-  "notes": "Hash lookup (multiplicative hash, flat table at +0x1d8/+0x1e0) keyed on a u16 derived from Game_Entrant_LookupPackedValue. 26 callers incl. Game_F1WLoadout_Initialise (0x14026d2bb). Hypothesis on key meaning."
+  "evidence": "decomp:re/decomp/141442820.c;xref:0x1401aec4b,0x14026d2bb,0x140270009,0x140270984,0x140271fd4,0x140c24d6d,0x140fe5ac1,0x141400e07,0x141401d67,0x14142dafd,0x1417e3859,0x1417e7216,0x141a49c65,0x141beefbc,0x141fd8f61,0x14200594e,0x1420073a7,0x1420096d1,0x14200d57d,0x142011b0e,0x142046a8b,0x14208952b,0x142514fd5,0x14252ae34,0x14253870b,0x1425489f5",
+  "notes": "(owner, out): key {type, idx} = Game_Entrant_LookupPackedValue([+0x270]); u16 = type<<14 | idx; robin-hood lookup in the map at +0x1d0 (multiplier +0x1d0, buckets +0x1d8/+0x1e0, mask +0x1f0, shift +0x204) with 6-byte entries {u16 key, u32 value}; out = value or 0x3fff0000 when absent. Returns out. (lane owner review requested)"
  },
  "signature": {
   "id": "game.loadout_find_by_packed_key",

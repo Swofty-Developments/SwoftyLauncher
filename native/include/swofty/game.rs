@@ -10944,6 +10944,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_Game_RetireLocalPlayer: Binding = Binding {
+        id: "Game_Game_RetireLocalPlayer",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_Game_SetCurrentGameMode: Binding = Binding {
         id: "Game_Game_SetCurrentGameMode",
         kind: "func",

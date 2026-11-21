@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141d08280",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=PhotoModeViewModel::onTargetDriverChanged; log channel PHOTO-MODE: 'PhotoModeViewModel::onTargetDriverChanged: New vehicle Id = %d'"
+  "evidence": "decomp:re/decomp/141d08280.c;pat:log-message-cxx;xref:0x141cefd93",
+  "notes": "PhotoModeViewModel handler (this, cmd): acts only when cmd+8 == 10, reads \"value\" from cmd+0x10 (int or float by type check), logs PHOTO-MODE; registered by lea in 0x141cef700. int vehicle -> 0x142bdc8a0(system, v, 1); resets camera_roll 0 and dof_focal_length to the default (system+0x310 table), FOV recomputed into +0x2d78/+0x2d7c and camera +0x160; reapplies camera selection when this+0x490 != 0; this+0x48c = v; sets 'tyres' item to per-car tyre this+0x308[v]. (lane owner review requested)"
  },
  "signature": {
   "id": "game.photo_mode_view_model_on_target_driver_changed",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143150520",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onDiscoverFinished (class from the log channel); log channel LEADERBOARDS: '%s() : current leaderboard entry(#%d, %d ms) not matching rating(%d ms). Search again.'"
+  "evidence": "decomp:re/decomp/143150520.c;pat:log-message-method;xref:0x1430e6cef",
+  "notes": "onDiscoverFinished callback (fn ptr lea 0x1430e6cef). (ctx, .., status, .., result): clears +0x10. status 0: entry [[result+8]]; time +0x10 != wanted rating +0x290 -> logs '...not matching rating(%d ms). Search again.' and takes the retry path; match -> logs 'discovered', rank entry+8 -> +0x218, +0x1c=1, +0x210=1, +0x220=0. status 1 (retry): QPC -> +0x270 (+0x278), +0x288=1 (old value returned). Other: +0x218=0, done. (lane owner review requested)"
  },
  "signature": {
   "id": "game.leaderboards_on_discover_finished",

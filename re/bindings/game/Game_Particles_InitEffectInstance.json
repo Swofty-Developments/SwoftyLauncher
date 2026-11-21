@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143af7160",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143af7160.c;xref:0x143af5d93,0x143b02efd",
-  "notes": "Initialises a particle effect instance from spawn params (8 qwords: position, velocity/orientation, scale) at node+0xc0; uses Ne_Crt_Sqrtf for direction normalisation. Callers Render_Particles_CreateCarEffect, Game_Particles_CreateEffectNode, 0x143adaf50. Hypothesis."
+  "evidence": "decomp:re/decomp/143af7160.c;xref:0x143af5d93,0x143b02efd,0x143b02f08",
+  "notes": "(node, mat[8 qwords]): effect = node+0xc0; stores the 4x4 at effect +0x10..+0x48; per emitter (stride 0x180) keeps previous transform at +0x50..+0x88 and copies the new one; for emitters with +0x178 bit3 extracts scale (stored +0x124..+0x12c, length +0x150) when not ~1; then tail-jumps (0x143af7453) into 0x143af7870 bounds. Callers 0x143af5620 (jmp), 0x143b02910. (lane owner review requested) Better name: Game_Particles_SetEffectTransform (bound record keeps its name)."
  },
  "signature": {
   "id": "game.particles_init_effect_instance",

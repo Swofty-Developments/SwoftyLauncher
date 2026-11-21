@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b0e370",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143b0e370.c;xref:0x143b08f84",
-  "notes": "Iterates emitter groups (+0x858e90..98) and resets every emitter (0x180 stride: +0x158, +0xe0, +0xe8, +0x104) returning its slot to a lock-free free list (global 0x146294210). Called from Game_Particles_UpdateManager (3 sites)."
+  "evidence": "decomp:re/decomp/143b0e370.c;xref:0x143b08f84,0x143b09773,0x143b0de4c",
+  "notes": "For every effect in mgr+0x858e90..98 resets each emitter (stride 0x180): +0x158 = 1, +0xe8/+0x104/+0xe0 = 0, particle chunk list +0xf0/+0xf8 returned to free list 0x146294210, +0x158 = 0; then clears global 0x146c62038. Callers in 0x143b06d90. (lane owner review requested)"
  },
  "signature": {
   "id": "game.particles_reset_emitter_states",
