@@ -6,10 +6,10 @@
  "row": {
   "addr": "0x1436abcaa",
   "type": "code",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
-  "evidence": "decomp:re/decomp/1436abb70.c;decomp:re/decomp/1436b36f0.c;xref:0x1436abca4,0x1436abcaa,0x1436abcf4",
-  "notes": "cmp r13,0x10 (4 bytes) then jb rel32 to 0x1436abd80 (10-byte window; no branch lands inside) in Sess_Strategy_UpdateTeammatePairs, in the per-team loop after 0x1424abd60 returns the team car vector: r12 = vector begin, rbp = end, r13 = rbp - r12 (bytes, 8 per car record pointer), r14 = pointer to the team entry in the participant list (team id dword at [[r14]+0x28]), rsi = the session. Below 0x10 bytes the team has no pair and the code goes to 0x1436abd80. Otherwise, when the +0x81 bytes of records 0 and 1 are both set it calls the introsort 0x1436b36f0 (sorts by byte +0x80; every compare throws through Ne_Std_ThrowBadOptionalAccess when a record has +0x81 == 0), both clear it calls 0x1436b3e00, different it skips the sort. After the sort only records 0 and 1 are read (0x1436abd80). A team with a third car (garage third car in the garage crew guard) has a record with +0x81 == 0, so the sort throws as the session is entered: FatalExceptionTerminate, FAST_FAIL_INVALID_ARG (Panzerfaust_975, 1.7.16, 24 participants on 23 vehicles). Core sets rbp = r12 + 0x10 and r13 = 0x10 for a vector of more than two cars, so only the first two are sorted and paired. L1: the site is found by byte scan."
+  "evidence": "decomp:re/decomp/1436abb70.c;decomp:re/decomp/1436b36f0.c;xref:0x1436abca4,0x1436abcaa,0x1436abcae",
+  "notes": "cmp r13,0x10; jb 0x1436abd80 in Sess_Strategy_UpdateTeammatePairs 0x1436abb70, per-team loop after 0x1424abd60 returns the car vector (r12 begin, rbp end, r13 bytes, 8 per record). cmp r13,9; jb 0x1436abc60 just before sends 0 or 1 car to the free/next-team path. 2+ cars: +0x81 of records 0/1 both set -> introsort 0x1436b36f0 (throws via Ne_Std_ThrowBadOptionalAccess on a record with +0x81 == 0), both clear -> 0x1436b3e00; only records 0/1 paired."
  },
  "signature": {
   "id": "session.strategy_teammate_pair_sort",

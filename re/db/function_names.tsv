@@ -561,6 +561,7 @@ addr	name
 0x1403a06b0	Car_Visual_UpdateSlotBlend
 0x1403a1790	Game_Update_CockpitHaloNode
 0x1403a33a0	Game_InCarDriver_EvaluateAnimLayers
+0x1403a6400	Ne_AnimClipPlayer_Sample_Thunk
 0x1403a7040	Game_InCarDriverComponent_Spawn
 0x1403ad360	Game_PitStops_SetupCrew
 0x1403b36a0	Game_PitStopInstance_PlaySequence
@@ -2368,7 +2369,7 @@ addr	name
 0x1413558e0	Game_StoryScenarios_LoadJson
 0x141356920	Game_StoryScenarios_JumpToChapter
 0x141361440	Career_DeptEvent_ReadConfigEntry
-0x1413663c0	Team_Format_BadgeBroadcastKey
+0x1413663c0	Team_StrVector_CopyAssign
 0x14136ad80	Ne_Vector96_Resize
 0x14136b330	Ne_OptionalVector56_CopyAssign
 0x14136c800	Game_F1os_Create_CompleteStory
@@ -2709,7 +2710,7 @@ addr	name
 0x1417344e0	Ui_HomescreenMyTeamCareer_Init
 0x141734890	Ui_CareerWizardMyTeam_Init
 0x141738eb0	FeTile_Get_ListFirstEntrantId
-0x141739090	FeTile_Unk_141739090
+0x141739090	FeTile_Set_Showroom2026Strings
 0x14173cd40	Ui_PresetEventItem_Populate
 0x14173da20	FeTile_ItemGeneric_Populate
 0x14173da50	FeTile_ItemGeneric_GetAction
@@ -7510,6 +7511,7 @@ addr	name
 0x14386d890	Game_CareerWizard_PushNextStep
 0x14386e590	Career_MyTeamEntryPoint_ChosenText
 0x143875010	Ui_CareerWizard_ReleaseItemWidgets
+0x14387d100	Game_CareerWizard_SetDataGroup
 0x1438831d0	Game_UIConnectionManager_ShowConnectionLostPopup
 0x143883f60	Game_TOPLevelUI_ThereOngoingReconnectingIgnore
 0x143884c00	Game_UIConnectionManager_ForceOfflineMode
@@ -8318,7 +8320,7 @@ addr	name
 0x143f13020	Render_Gfx_ConfigObject_Destroy
 0x143f13130	Render_StaticInit_ResourceTypeDescriptors
 0x143f31280	Game_Ramdisc_Found
-0x143f35a20	Team_Build_TeamLogoKey
+0x143f35a20	Team_Unk_143f35a20
 0x143f393a0	Ne_FileSystem_OpenStream
 0x143f3e5e0	Render_Texture_QueueLoadRequest
 0x143f42110	Ne_PathBuf_Construct

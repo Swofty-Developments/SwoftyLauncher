@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143932a40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "gamedb",
   "proto": "uint64_t Write(void *writer, uint8_t *key, void *value, void *out)",
-  "evidence": "decomp:re/decomp/143932a40.c;xref:0x1402ad838;xref:0x1402ad8b1;xref:0x1402ad91b",
-  "notes": "myteam-g2: Save-data writer helper: finds the reflected class (Ne_StringPool_FindObjectByCStr / InternByHash), builds the field list with TLS-cached type info and writes one record. Generic serialisation used by Bank/ContractRenewal/CostCap WriteSaveData."
+  "evidence": "decomp:re/decomp/143932a40.c;xref:0x1402ad838,0x1402ad8b1,0x1402ad91b,0x1402ad98b,0x1402afc78,0x1402afcf1,0x1402afd5b,0x1402afdcb",
+  "notes": "Adds a named field object to a container: fails with 0x11 when the name already exists (0x143931730), grows the u16-counted pointer array, allocates the type's size/align (type vtbl+0x20/+0x30) + 8 bytes, stores the FNV-1a 64 hash of the name after the object (string pool 0x14392a0c0) and returns it in *param_4. call sites (save writers). Better name: Gdb_Add_ReflectedField (bound record keeps its name)."
  },
  "signature": {
   "id": "gamedb.write_reflected_field_a",
