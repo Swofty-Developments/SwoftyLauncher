@@ -167,6 +167,7 @@ UNITS = [
     Unit('core_rank', 'Core mixin list rank order unit test'),
     Unit('picker_log_caps', 'Era picker log caps unit test'),
     Unit('tt_loaded', 'Time Trial loaded list board and team label unit test'),
+    Unit('tyre_curve', 'Tyre curve guard unit test'),
     Unit('tyre_models', 'Tyre model check unit test'),
     Unit('tyre_slots', 'Tyre slot guard unit test'),
     Unit('ui_registry_walk', 'UI registry walk unit test'),

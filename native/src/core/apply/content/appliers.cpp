@@ -13,6 +13,7 @@
 #include "core/apply/content/gvdb.hpp"
 #include "core/apply/content/logos.hpp"
 #include "core/apply/content/race_fuel.hpp"
+#include "core/apply/content/rev_lights.hpp"
 #include "core/apply/content/quali_tyres.hpp"
 #include "core/apply/content/teams.hpp"
 #include "core/apply/content/box_options.hpp"
@@ -1024,6 +1025,18 @@ WarmersBox tyre_warmers_for_box(const std::string &entrant_list)
         packages.push_back({id, lookup("content.package", id)});
     WarmersPick pick = tyre_warmers_pick(entrant_list, packages);
     return {pick.warmers, pick.line};
+}
+
+RevLightsBox rev_lights_for_box(const std::string &entrant_list)
+{
+    Store &st = registry::store();
+    std::map<std::string, Value> keep;
+    Lookup lookup = store_lookup(st, keep);
+    std::vector<std::pair<std::string, const Value *>> packages;
+    for (auto &id : in_load_order(st, "content.package"))
+        packages.push_back({id, lookup("content.package", id)});
+    RevLightsPick pick = rev_lights_pick(entrant_list, packages, lookup);
+    return {pick.engine, pick.line};
 }
 
 FuelRules fuel_rules_for_box(const std::string &entrant_list)

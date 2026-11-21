@@ -214,7 +214,7 @@ impl Inputs {
                 &store.root,
                 p,
                 game,
-                crate::stdlib::careers::resume_list_wanted(),
+                crate::stdlib::careers::resume_list_wanted(&store.config().launch.env),
             )?;
         }
         let db_src = run.original(GVDB);

@@ -75,9 +75,6 @@ pub fn ui_data(data: &[u8], entries: Vec<(String, Node)>) -> Result<Vec<u8>> {
             .o_mut()?
             .at_mut("Contents")?
             .o_mut()?;
-        if c.get("swofty").is_some() {
-            return Err(err("ui_menu_data has swofty already"));
-        }
         c.set("swofty", uidb_dict("swofty", entries));
         Ok(())
     })

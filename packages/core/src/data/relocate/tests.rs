@@ -844,6 +844,7 @@ mod windows {
 
 mod adopt;
 mod find;
+mod install;
 
 #[test]
 fn the_real_folder_is_where_the_default_path_links() {

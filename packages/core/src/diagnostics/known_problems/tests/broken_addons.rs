@@ -373,3 +373,123 @@ fn only_the_unloaded_racing_line_fault_is_named_for_it() {
     let mixed = unloaded_ai_line_log(LONG_BEACH_FACTS, mixed, "reading 0x88");
     assert_eq!(diagnose(&tracks_on(&mixed, &[LONG_BEACH])), None);
 }
+
+const TYRE_CURVE_STEAM: [&str; 3] = [
+    "F1_25.exe+0x2e7e5ec .tls$ fn base+0x2e7e530+0xbc",
+    "F1_25.exe+0xf5d41d6 .trace fn base+0xf5d3eb0+0x326",
+    "F1_25.exe+0x1187bde .tls$ fn base+0x1187970+0x26e",
+];
+
+const TYRE_CURVE_FAULTS: [&str; 6] = [
+    "F1_25.exe+0x2e7e5ec .tls$ fn base+0x2e7e530+0xbc",
+    "F1_25.exe+0x2e7ec21 .tls$ fn base+0x2e7eb80+0xa1",
+    "F1_25.exe+0x2e7c05c .xtls Car_Tyre_SampleCurveSet2KeyLerp+0xbc",
+    "F1_25.exe+0x2e7c691 .xtls Car_Tyre_SampleWearCurve2DAlt+0xa1",
+    "F1_25.exe+0x2e721ec .rdata fn base+0x2e72130+0xbc",
+    "F1_25.exe+0x2e72821 .rdata fn base+0x2e72780+0xa1",
+];
+
+fn td_wheel_off_line(at: &str) -> String {
+    format!(
+        "2026-11-15 {at} [11132] [td-probe] suspension: your car FR wheel torn off: the game's damage 0.00 -> 1.02 \
+         (detach limit 1.00), state now 0x600\n"
+    )
+}
+
+fn td_on(loader: &str) -> Evidence {
+    with_names(ev(loader, &[]), &[(TERMINAL_DAMAGE, "Terminal Damage")])
+}
+
+#[test]
+fn a_tyre_curve_crash_just_after_terminal_damage_tore_a_wheel_off_names_it() {
+    let log = td_wheel_off_line("13:13:10.623") + &frames_log(&TYRE_CURVE_STEAM);
+    let d = diagnose(&td_on(&log)).unwrap();
+    assert_eq!(d.id, "terminal_damage_wheel_off");
+    assert_eq!(
+        d.title,
+        "F1 25 crashed right after Terminal Damage tore a wheel off your car"
+    );
+    assert_eq!(
+        d.what,
+        "Terminal Damage's experimental suspension damage tore a wheel off your car, and F1 25 crashed a moment \
+         later in its own tyre wear estimate for that car."
+    );
+    assert_eq!(
+        d.steps,
+        [
+            "On the Addons page, turn off Suspension damage from hits (experimental) and Suspension damage for AI cars \
+          (experimental) in Terminal Damage's options, or turn Terminal Damage off, then press Play."
+        ]
+    );
+    assert_eq!(diagnose(&ev(&log, &[])).unwrap(), d);
+    for fault in TYRE_CURVE_FAULTS {
+        let log = td_wheel_off_line("13:13:10.623") + &frames_log(&[fault, TYRE_CURVE_STEAM[1]]);
+        assert_eq!(
+            diagnose(&td_on(&log)).map(|d| d.id),
+            Some("terminal_damage_wheel_off"),
+            "{fault}"
+        );
+    }
+}
+
+#[test]
+fn a_tyre_curve_crash_without_a_wheel_torn_off_just_before_is_the_games_own() {
+    let generic = |log: &str| {
+        let d = diagnose(&td_on(log)).unwrap();
+        assert_eq!(d.id, "tyre_curve_nan", "{log}");
+        d
+    };
+    let d = generic(&frames_log(&TYRE_CURVE_STEAM));
+    assert_eq!(d.title, "F1 25 crashed in its own tyre wear estimate");
+    assert_eq!(
+        d.what,
+        "F1 25's own tyre wear estimate for a car hit an invalid number, and the game crashed. This is a fault in \
+         the game, and no setting of yours fixes it."
+    );
+    assert_eq!(
+        d.steps,
+        ["Press Send Logs in the launcher so this reaches the developers."]
+    );
+    generic(&(td_wheel_off_line("13:13:07.664") + &frames_log(&TYRE_CURVE_STEAM)));
+    generic(&(td_wheel_off_line("13:13:09.664") + &frames_log(&TYRE_CURVE_STEAM)));
+    generic(&(frames_log(&TYRE_CURVE_STEAM) + &td_wheel_off_line("13:13:10.900")));
+    for fault in TYRE_CURVE_FAULTS {
+        generic(&frames_log(&[fault, TYRE_CURVE_STEAM[1]]));
+    }
+}
+
+#[test]
+fn a_tyre_curve_crash_the_game_closed_on_without_the_top_level_filter_is_named() {
+    let unhandled = frames_log(&[
+        TYRE_CURVE_STEAM[0],
+        "F1_25.exe+0x2f6f119 .tls$ fn base+0x2f6ee70+0x2a9",
+        "F1_25.exe+0x3989d2c .tls$ fn base+0x3989c50+0xdc",
+        "race_broadcast.dll+0x3956",
+    ]);
+    let first_chance: String = unhandled
+        .lines()
+        .filter(|l| !l.contains("[crash] unhandled "))
+        .map(|l| format!("{l}\n"))
+        .collect();
+    let mut e = ev(&first_chance, &[]);
+    e.code = Some(0xc000_0005);
+    assert_eq!(diagnose(&e).map(|d| d.id), Some("tyre_curve_nan"));
+}
+
+#[test]
+fn only_a_fault_at_the_tyre_curve_read_is_named_for_it() {
+    let deeper = frames_log(&[
+        "F1_25.exe+0x2e7e2f4 .tls$ fn base+0x2e7e2e0+0x14",
+        TYRE_CURVE_STEAM[0],
+        TYRE_CURVE_STEAM[2],
+    ]);
+    let wheel_off = td_wheel_off_line("13:13:10.623");
+    assert_eq!(diagnose(&td_on(&(wheel_off.clone() + &deeper))), None);
+    let other_module = frames_log(&["race_broadcast.dll+0x2e7e5ec", TYRE_CURVE_STEAM[1]]);
+    assert_eq!(diagnose(&td_on(&(wheel_off.clone() + &other_module))), None);
+    let near = frames_log(&[
+        "F1_25.exe+0x2e7e5ed .tls$ fn base+0x2e7e530+0xbd",
+        TYRE_CURVE_STEAM[1],
+    ]);
+    assert_eq!(diagnose(&td_on(&(wheel_off + &near))), None);
+}

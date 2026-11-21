@@ -577,6 +577,18 @@ handling swofty.swofty-seasons-2013/sw_2013_vehicle_package equal performance ->
 handling mclaren-carmodel.layer: CarPhysics2/baseVtfAsset: eaid://sw_2013_vehicle_package/teams/fom_car/handling/fom_car.vtf, so equal performance drives the season's base car
 ```
 
+### Rev lights
+
+The steering wheel LEDs and the HUD rev bar take their thresholds from an `entrants.engines` row. With equal performance off, each car takes its vehicle's `engine`. With equal performance on, as in Time Trial, every car takes the setup mode's `equal_performance_engine`, which is the F1 2025 Mercedes row (9,800 to 12,200 rpm) in every stock mode.
+
+Every box shares the `swofty_f1` setup mode. Pressing a box writes the engine most of its vehicles name into `swofty_f1`'s `equal_performance_engine`. A stock box, or a box whose vehicles name no engine, puts the mode's own engine back. A SWOFTY 2012 Time Trial then lights 13,000 to 18,000 rpm, the V8 rows' values:
+
+```text
+[rev-lights] box sw_f1_2012_tt (swofty.swofty-seasons-2012/sw_2012_tt): equal-performance sessions show the rev lights of engine Renault_F1_V8_2009-2013 (4 of 12 vehicle engine(s)) (stat id 27)
+```
+
+`SWOFTY_REV_LIGHTS=0` turns it off: every box keeps the mode's own engine.
+
 ### A livery's archive
 
 A livery record's `archive` replaces the whole car archive in game, its handling file and car layer included. The build changes the copy the core routes:
@@ -708,7 +720,7 @@ A vehicle record sets three more things:
 ```
 
 - `drs_capable` is written into the vehicle row at boot. Absent keeps the donor's.
-- `engine` is the vehicle row's engine, an `entrants.engines` label. A `power::Supplier` record (`power.supplier`) can name its donor and limiter; the core writes no engine row from it yet, so rev lights stay the donor's.
+- `engine` is the vehicle row's engine, an `entrants.engines` label. The row's `revLightsStart`, `revLightsRedStart`, `revLightsPurpleStart`, `revLightsEnd` and `revLightWarning` are the car's rev lights on the steering wheel and the HUD rev bar; with equal performance on, the box's engine sets them ([Rev lights](#rev-lights)). A `power::Supplier` record (`power.supplier`) can name its donor and limiter; the core writes no engine row from it yet.
 - `tyre_group` is the Chassis `TyrePhysicsGroup` of the car's handling file, one group per team. The group's compounds are the tyre files' work.
 
 ### Tyres

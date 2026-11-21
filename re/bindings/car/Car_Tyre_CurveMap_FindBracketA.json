@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e7c1c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
-  "proto": "-",
-  "evidence": "decomp:re/decomp/142e7c1c0.c;xref:0x142e7c077",
-  "notes": "std::map-style upper_bound walk on a curve key tree (container at this+8, size this+0x10, key float at node+0x20): writes [lower,upper] node pair to param_3. Callers Car_Tyre_SampleCurveSet2KeyLerp and Car_Tyre_SampleWearCurve2DAlt."
+  "proto": "void Car_Tyre_CurveMap_FindBracketA(void *curves, float key, void **bracket)",
+  "evidence": "decomp:re/decomp/142e7c1c0.c;xref:0x142e7c077,0x142e7c0f9,0x142e7c6ac,0x142e7c72e",
+  "notes": "Inner-tree bracket search of the 2-D tyre curve sets: each outer node's value at +0x28 is a std::map<float,...> with head value+8, size value+0x10; node left +0, parent +8, right +0x10, isnil byte +0x19, key float +0x20. Writes the lower and upper node to bracket[0] and bracket[1]; void (every caller reads the pair from the stack and overwrites rax). Size 1: both begin. begin.key > key (vucomiss 0x142e7c1ea; ja): both begin. Walks size-1 steps to the last node; key > last.key (vucomiss 0x142e7c253; ja): both last. Otherwise upper = upper_bound over [begin, last), so at most last (key == last.key gives last and its predecessor) that goes left on jb (0x142e7c304), lower = its predecessor (MSVC tree decrement, 0x142e7c3b1-0x142e7c40d). With two or more nodes, a NaN key fails both ja tests and takes jb at every compare (unordered sets CF), so upper = begin and lower = the predecessor of begin, which is the tree's head (isnil 1, value never constructed); a number or an infinity always brackets two real nodes. Ghidra prints the two range tests as param_2 < key and param_2 <= key, which hides the unordered case; the disassembly is the reference. Leaf: no calls, no RIP-relative operands, first instructions push rsi / mov rax,[rcx+8] (5 bytes). Same instruction stream as Car_Tyre_CurveMap_FindBracketB apart from the container offsets, and the same stream on Steam 26566308 0x142e7e750 and EA 1.0.145 0x142e72350 (branch targets masked). callers: census steam 0x2e7c1c0 (Car_Tyre_SampleCurveSet2KeyLerp 0x142e7c077/0x142e7c0f9, Car_Tyre_SampleWearCurve2DAlt 0x142e7c6ac/0x142e7c72e). Core's tyre curve guard wraps it and passes the lowest float for a NaN key."
  },
  "signature": {
   "id": "car.tyre_curve_map_find_bracket_a",
@@ -33,7 +33,9 @@
     "how": "static"
    }
   ],
-  "used_by": []
+  "used_by": [
+   "native/src/core/guards/cars/tyre_curve_guard.cpp"
+  ]
  },
  "verify": [
   {
@@ -45,7 +47,66 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/142e7c1c0.c;xref:0x142e7c077",
    "notes": "V8466 same walk with container +8/size +0x10; callers SampleCurveSet2KeyLerp, SampleWearCurve2DAlt"
+  },
+  {
+   "date": "2026-11-21",
+   "verifier": "native-guards-tyre-curve-blind",
+   "kind": "func",
+   "item": "Car_Tyre_CurveMap_FindBracketA",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142e7c1c0-0x142e7c40f (re/tools/disx.py);xref:0x142e7c077,0x142e7c0f9,0x142e7c6ac,0x142e7c72e;sig:car.tyre_curve_map_find_bracket_a",
+   "notes": "V120001 Blind re-derivation on d873a1c8. Leaf in .xtls, .pdata 0x142e7c1c0-0x142e7c40f. The instruction stream is identical to 0x142e7bd50 (168 instructions, same relative branch targets) except the 4 container loads: head [rcx+8] at 0x142e7c1c1/0x142e7c1cb/0x142e7c25e, size [rcx+0x10] at 0x142e7c1d6. Args rcx/xmm1/r8 as in B; rax is garbage at ret and the callers ignore it (the next instruction loads from the stack, then calls 0x142e7c410/0x142e7c800 with no rax read), so void. rcx at every call is lea [outer_node+0x28] (0x142e7c054, 0x142e7c081, 0x142e7c0db, 0x142e7c689, 0x142e7c710), the mapped value of the outer map. The callers read its head at node+0x30 and size at node+0x38 (0x142e7bfe3), which agrees with head +8 and size +0x10. Key compares: vucomiss begin.key,key at 0x142e7c1ea + ja (both begin); vucomiss key,last.key at 0x142e7c253 + ja (both last); jb left at 0x142e7c304 in the upper_bound over [begin,last); predecessor 0x142e7c3b5-0x142e7c40d. NaN: both ja fall through on unordered and jb is taken at every compare, which gives upper=begin and lower=--begin=head (isnil). A number or infinity always brackets two real nodes. Same imprecisions as B: NaN->head needs size>=2 (je 0x142e7c1de returns begin twice when size is 1); key==last.key gives upper=last, not end(); size 0 is outside the contract. The samplers check only the first outer node's inner size (0x142e7bfe3/0x142e7c633), not the inner sizes of the lower and upper nodes passed here. Callers (census steam 0x2e7c1c0): 0x142e7c077 and 0x142e7c0f9 in 0x142e7bfa0, 0x142e7c6ac and 0x142e7c72e in 0x142e7c5f0; 0 thunks, 0 jumps, 0 lea, 0 pointers. Steam 26566308 0x142e7e750 and EA 1.0.145 0x142e72350 have the same stream, and their callers sit at the same sampler offsets. Blindness caveat: my record dump printed the row's notes field before I derived anything (I filtered only the top-level notes key); every fact below I re-derived from the disassembly and the census myself."
+  },
+  {
+   "date": "2026-11-21",
+   "verifier": "native-guards-tyre-curve-blind",
+   "kind": "sig",
+   "item": "car.tyre_curve_map_find_bracket_a",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "sig:car.tyre_curve_map_find_bracket_a;decomp:own capstone disasm 0x142e7c1c0-0x142e7c40f (re/tools/disx.py);xref:0x142e7c077,0x142e7c0f9,0x142e7c6ac,0x142e7c72e",
+   "notes": "V120003 Blind re-derivation on d873a1c8. sigcheck (--only and --sigs) OK with hits=1, match=target=0x142e7c1c0, the start of .pdata entry 0x142e7c1c0-0x142e7c40f in .xtls (func_start). Pattern: 16 bytes, no wildcards. The first 5 bytes are push rsi (1) + mov rax,[rcx+8] (4), so +5 is an instruction boundary. The lowest internal branch target is 0x142e7c200, the neighbouring functions have no branch into the window, and no rel32 or absolute pointer reaches 0x142e7c1c1-0x142e7c1cf. Steam 26566308: exactly 1 hit at 0x142e7e750 (KB +0x2590), identical stream with function-relative branch targets, census 4 callers 0x142e7e607/0x142e7e689/0x142e7ec3c/0x142e7ecbe. EA 1.0.145 flat dump: exactly 1 hit at 0x142e72350 (KB -0x9e70), identical stream, callers 0x142e72207/0x142e72289/0x142e7283c/0x142e728be. Blindness caveat: the row notes were visible to me before derivation (see the func row); I checked the signature myself."
   }
  ],
- "proofs": []
+ "proofs": [
+  {
+   "by": "native-guards-tyre-curve",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142e7c1c0",
+    "target": "0x142e7c1c0"
+   },
+   "sigcheck": "passed",
+   "digest": "6706a0e3908185da4766c4cee4bcd050ab0a2f46e58d2b3a7ca8ed7f466f315e"
+  },
+  {
+   "by": "native-guards-tyre-curve",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142e7e750",
+    "target": "0x142e7e750"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1eb6beb3b7948ecb872e641061f420d97fdb0d7208117562dfa8f4be83afadaa"
+  }
+ ]
 }

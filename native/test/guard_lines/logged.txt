@@ -153,6 +153,9 @@
 [log cars/ers_newlap.cpp]
 [ers] vehicle_newlap for vehicle %u: participant %lld of %lld has no vehicle (entry 0x%llx, vehicle 0x%llx); skipped%s
 
+[log cars/tyre_curve_guard.cpp]
+[car] a tyre curve lookup got a key that is not a number, so it uses the curve's first point%s
+
 [log cars/tyre_slots.cpp]
 [tyres] slot guard (%s): vehicle %u's fitted option %u has no usable slot in its class's table (count %llu, options %s); refit skipped%s
 [tyres] slot guard (%s): vehicle %u's fitted option %u has no usable slot in its class's table (count %llu, options %s); slot %d %s with the compounds of option %u's slot%s
