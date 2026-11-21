@@ -600,7 +600,6 @@ fn the_steps_show_in_order_with_the_active_ones_detail_only() {
         ],
     );
     let card = StepCard::of(&s, false).unwrap();
-    assert!(!card.banner);
     let ids: Vec<&str> = card.rows.iter().map(|r| r.id.as_str()).collect();
     assert_eq!(
         ids,
@@ -647,10 +646,6 @@ fn a_failed_step_carries_its_problem_and_dims_the_steps_after_it() {
         detail: None,
     });
     let card = StepCard::of(&s, false).unwrap();
-    assert!(
-        !card.banner,
-        "the failed step shows the problem, not the headline"
-    );
     let failed = row(&card, "network");
     assert_eq!(failed.state, StepState::Failed);
     let problem = failed.problem.as_ref().unwrap();
@@ -683,10 +678,16 @@ fn a_failed_step_carries_its_problem_and_dims_the_steps_after_it() {
 
 #[test]
 fn the_headline_shows_above_the_steps_only_for_what_no_step_says() {
+    use super::tracker::{Banner, banner};
     let steps = || vec![step("account", "done"), step("room", "active")];
     let working = stepped(Phase::Connecting("joining".into()), false, steps());
-    assert!(!StepCard::of(&working, false).unwrap().banner);
-    assert!(StepCard::of(&working, true).unwrap().banner, "leaving");
+    let card = StepCard::of(&working, false).unwrap();
+    assert_eq!(banner(&card, &working, false, "Joining", ""), None);
+    assert_eq!(
+        banner(&card, &working, true, "Joining", ""),
+        Some(Banner::Leaving),
+        "leaving"
+    );
 
     let mut stray = working.clone();
     stray.problem = Some(Problem {
@@ -694,11 +695,20 @@ fn the_headline_shows_above_the_steps_only_for_what_no_step_says() {
         retry: true,
         detail: None,
     });
-    assert!(StepCard::of(&stray, false).unwrap().banner);
+    let card = StepCard::of(&stray, false).unwrap();
+    assert_eq!(
+        banner(&card, &stray, false, "The room server is slow.", ""),
+        None,
+        "a problem no step carries shows beside the active step"
+    );
 
     let ended = stepped(Phase::Ended("the host closed the room".into()), false, steps());
     let card = StepCard::of(&ended, false).unwrap();
-    assert!(card.banner && card.rows.is_empty());
+    assert!(card.rows.is_empty());
+    assert_eq!(
+        banner(&card, &ended, false, "The host closed the room", "Room closed"),
+        Some(Banner::Over("The host closed the room".into()))
+    );
 
     let failed = stepped(
         Phase::Failed("the room is full".into()),
@@ -712,9 +722,14 @@ fn the_headline_shows_above_the_steps_only_for_what_no_step_says() {
         ],
     );
     let card = StepCard::of(&failed, false).unwrap();
-    assert!(
-        !card.banner && card.rows.len() == 2,
+    assert_eq!(
+        card.rows.len(),
+        2,
         "an ended session still shows where it stopped"
+    );
+    assert_eq!(
+        banner(&card, &failed, false, "The room is full.", "The room didn't open"),
+        None
     );
 }
 
@@ -831,7 +846,6 @@ fn a_warning_shows_its_problem_and_fix_plan_without_stopping_the_steps_after_it(
         detail: None,
     });
     let card = StepCard::of(&s, false).unwrap();
-    assert!(!card.banner, "the warning carries the session's problem");
     let row = row(&card, "addons");
     assert!(row.warning);
     assert_eq!(row.state, StepState::Done);

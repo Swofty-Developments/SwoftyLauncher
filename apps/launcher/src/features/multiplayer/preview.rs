@@ -7,7 +7,10 @@ use serde_json::Value;
 use swofty_core::online::multiplayer::client::state_of;
 use swofty_core::online::multiplayer::types::{RoomSummary, SessionState};
 
-/// Names a saved `session.state` answer. A `steward_url` beside its state stands for League Stewarding's page.
+use super::tracker::Here;
+
+/// Names a saved `session.state` answer. A `steward_url` beside its state stands for League Stewarding's page,
+/// and a `launcher` object for what the launcher itself knows ([`Here`]).
 pub(super) const ROOM_ENV: &str = "SWOFTY_ROOM_PREVIEW";
 /// Names a saved room list, as the room server lists rooms, for the room browser.
 pub(super) const ROOMS_ENV: &str = "SWOFTY_ROOMS_PREVIEW";
@@ -15,6 +18,7 @@ pub(super) const ROOMS_ENV: &str = "SWOFTY_ROOMS_PREVIEW";
 /// What a previewed room shows beyond its state.
 pub(crate) struct RoomPreview {
     pub(super) steward: Option<String>,
+    pub(super) here: Option<Here>,
 }
 
 /// The room the answer in `file` holds, in a `debug` build.
@@ -25,7 +29,25 @@ pub(super) fn room(debug: bool, file: Option<&OsStr>) -> Option<(SessionState, R
     let text = std::fs::read_to_string(file?).ok()?;
     let doc: Value = serde_json::from_str(&text).ok()?;
     let steward = doc.get("steward_url").and_then(Value::as_str).map(str::to_owned);
-    Some((state_of(doc)?, RoomPreview { steward }))
+    let here = doc.get("launcher").map(here_of);
+    Some((state_of(doc)?, RoomPreview { steward, here }))
+}
+
+fn here_of(v: &Value) -> Here {
+    let flag = |key: &str| v.get(key).and_then(Value::as_bool).unwrap_or(false);
+    Here {
+        leaving: flag("leaving"),
+        running: flag("running"),
+        closing: flag("closing"),
+        building: flag("building"),
+        launching: flag("launching"),
+        held: flag("held"),
+        taken: v
+            .get("taken")
+            .and_then(Value::as_u64)
+            .and_then(|n| u32::try_from(n).ok())
+            .unwrap_or(0),
+    }
 }
 
 /// The rooms the list in `file` holds, in a `debug` build.

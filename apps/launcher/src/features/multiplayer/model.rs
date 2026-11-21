@@ -234,13 +234,9 @@ pub(crate) struct StepRow {
     pub(crate) hint: Option<&'static str>,
 }
 
-/// The status card of a module that reports steps: the step list, and whether the session's headline shows
-/// above it.
+/// The steps of a module that reports them. The room page draws them as one row ([`super::tracker::Tracker`]).
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct StepCard {
-    /// While leaving, once the session ended without a step failing, or for a problem no step carries. A
-    /// warning carries the session's problem as well as a failure does.
-    pub(crate) banner: bool,
     /// Empty once the session ended without a step failing.
     pub(crate) rows: Vec<StepRow>,
 }
@@ -268,10 +264,7 @@ impl StepCard {
                 .map(|(i, step)| StepRow::of(step, state, failed.is_some_and(|f| i > f), hint))
                 .collect()
         };
-        Some(Self {
-            banner: leaving || stray || (over && failed.is_none()),
-            rows,
-        })
+        Some(Self { rows })
     }
 }
 

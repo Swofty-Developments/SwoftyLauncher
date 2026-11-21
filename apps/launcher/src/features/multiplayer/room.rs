@@ -6,7 +6,7 @@ use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::online::multiplayer::types::{
-    MemberState, Phase, Problem, RoomContent, RoomSummary, SessionState, StepState,
+    MemberState, Phase, Problem, RoomContent, RoomSummary, SessionState,
 };
 use swofty_i18n::{fill, tr, trf, trn};
 
@@ -156,24 +156,23 @@ impl Shell {
         &self,
         st: &Status,
         state: &SessionState,
+        subtitle: &str,
         p: Palette,
         cx: &mut Context<Self>,
-    ) -> Div {
+    ) -> Option<Div> {
         let starting =
             self.rooms.game.launching || self.launching.launch.is_some() || self.game.build.is_some();
         let after = game_after_room(state.phase.is_over(), starting)
             .map(|text| div().text_size(px(13.)).text_color(p.text_muted).child(text));
         if let Some(card) = StepCard::of(state, self.rooms.leaving) {
-            return self
-                .room_card(p)
-                .gap(px(14.))
-                .when(card.banner, |d| {
-                    d.child(self.status_head(st, state, false, p, cx))
-                })
-                .when(!card.rows.is_empty(), |d| {
-                    d.child(self.step_list(&card.rows, state, p, cx))
-                })
-                .children(after);
+            let headline = st
+                .problem
+                .as_ref()
+                .map_or(st.progress.label.as_str(), |problem| problem.text.as_str());
+            return match self.step_card(&card, headline, state, subtitle, p, cx) {
+                Some(card) => Some(card.children(after)),
+                None => after.map(|after| self.room_card(p).child(after)),
+            };
         }
         let over = state.phase.is_over();
         let current = step_number(st.progress.step);
@@ -210,23 +209,18 @@ impl Shell {
                         p.accent
                     }),
             );
-        self.room_card(p)
-            .gap(px(14.))
-            .child(self.status_head(st, state, true, p, cx))
-            .when(!over, |d| d.child(bar).child(steps))
-            .children(after)
+        Some(
+            self.room_card(p)
+                .gap(px(14.))
+                .child(self.status_head(st, state, p, cx))
+                .when(!over, |d| d.child(bar).child(steps))
+                .children(after),
+        )
     }
 
-    /// The card's headline row: the session's state, its hint or problem, and the buttons for them. `race` puts
-    /// the host's race button here; the step list puts it on the race step instead.
-    fn status_head(
-        &self,
-        st: &Status,
-        state: &SessionState,
-        race: bool,
-        p: Palette,
-        cx: &mut Context<Self>,
-    ) -> Div {
+    /// The headline row of a module that reports no steps: the session's state, its hint or problem, and the
+    /// buttons for them.
+    fn status_head(&self, st: &Status, state: &SessionState, p: Palette, cx: &mut Context<Self>) -> Div {
         let m = &self.rooms;
         let (icon, color) = match st.tone {
             Tone::Working => (IconName::LoaderCircle, p.accent),
@@ -274,7 +268,7 @@ impl Shell {
                     )
                     .children(reopened.then(|| reopen_note(p))),
             )
-            .children(race.then(|| self.race_button(state, cx)).flatten())
+            .children(self.race_button(state, cx))
             .children(fixes.reopen)
             .children(fixes.retry_or_leave)
     }
@@ -329,7 +323,7 @@ impl Shell {
     }
 
     /// The host's button that hides the room from the list while they race, and shows it again after.
-    fn race_button(&self, state: &SessionState, cx: &mut Context<Self>) -> Option<Button> {
+    pub(super) fn race_button(&self, state: &SessionState, cx: &mut Context<Self>) -> Option<Button> {
         let over = state.phase.is_over();
         let shown = state.host
             && !over
@@ -360,102 +354,17 @@ impl Shell {
         })
     }
 
-    fn step_list(&self, rows: &[StepRow], state: &SessionState, p: Palette, cx: &mut Context<Self>) -> Div {
-        v_flex()
-            .gap(px(12.))
-            .children(rows.iter().map(|row| self.step_row(row, state, p, cx)))
-    }
-
-    fn step_row(
-        &self,
-        row: &StepRow,
-        state: &SessionState,
-        p: Palette,
-        cx: &mut Context<Self>,
-    ) -> AnyElement {
-        let (icon, color) = match row.state {
-            _ if row.warning => (IconName::CircleAlert, p.warning),
-            StepState::Done => (IconName::CircleCheck, p.success),
-            StepState::Active => (IconName::LoaderCircle, p.accent),
-            StepState::Failed => (IconName::CircleX, p.error),
-            StepState::Skipped => (IconName::CircleMinus, p.text_placeholder),
-            StepState::Pending | StepState::Unknown => (IconName::Circle, p.text_placeholder),
-        };
-        let title_color = match row.state {
-            _ if row.dimmed => p.text_placeholder,
-            _ if row.warning => p.warning,
-            StepState::Failed => p.error,
-            StepState::Done | StepState::Active => p.text,
-            StepState::Skipped | StepState::Pending | StepState::Unknown => p.text_muted,
-        };
-        let line = |text: String| div().text_size(px(13.)).text_color(p.text_muted).child(text);
-        let failure = row.problem.as_ref().filter(|_| row.state == StepState::Failed);
-        let fixes = self.problem_buttons(failure, state, cx);
-        let reopened = fixes.reopen.is_some();
-        let buttons: Vec<Button> = fixes.reopen.into_iter().chain(fixes.retry_or_leave).collect();
-        let race = (row.id == "race").then(|| self.race_button(state, cx)).flatten();
-        h_flex()
-            .gap(px(12.))
-            .items_start()
-            .child(div().flex_shrink_0().pt(px(1.)).map(|d| match row.state {
-                StepState::Active => d.child(Spinner::new().icon(icon).with_size(px(18.)).color(color)),
-                _ => d.child(Icon::new(icon).size(px(18.)).text_color(color)),
-            }))
-            .child(
-                v_flex()
-                    .flex_1()
-                    .min_w_0()
-                    .gap(px(3.))
-                    .child(
-                        div()
-                            .text_size(px(14.))
-                            .text_color(title_color)
-                            .when(
-                                row.warning || matches!(row.state, StepState::Active | StepState::Failed),
-                                |d| d.font_weight(FontWeight::SEMIBOLD),
-                            )
-                            .child(row.title.clone()),
-                    )
-                    .children(
-                        row.problem
-                            .as_ref()
-                            .map(|problem| div().text_size(px(13.)).child(problem.text.clone())),
-                    )
-                    .children(
-                        row.problem
-                            .as_ref()
-                            .and_then(|problem| problem.detail.clone())
-                            .map(line),
-                    )
-                    .children(row.detail.clone().map(line))
-                    .children(row.fixes.iter().map(|fix| {
-                        h_flex()
-                            .gap(px(6.))
-                            .items_start()
-                            .text_size(px(13.))
-                            .text_color(p.text_muted)
-                            .child(div().flex_shrink_0().child("\u{2022}"))
-                            .child(div().flex_1().min_w_0().child(fix.clone()))
-                    }))
-                    .children(row.hint.map(|h| line(h.to_owned())))
-                    .children(reopened.then(|| reopen_note(p)))
-                    .when(!buttons.is_empty(), |d| {
-                        d.child(h_flex().pt(px(6.)).gap(px(8.)).children(buttons))
-                    }),
-            )
-            .children(race)
-            .into_any_element()
-    }
-
     pub(super) fn room(&mut self, state: &SessionState, p: Palette, cx: &mut Context<Self>) -> AnyElement {
         let m = &self.rooms;
         let over = state.phase.is_over();
+        let closed = super::tracker::shows_closed(state, StepCard::of(state, m.leaving).as_ref());
+        let listed = super::tracker::shows_players(state);
         let room = state.room.clone();
         let title = room
             .as_ref()
             .map_or_else(|| "Multiplayer".to_owned(), |r| r.name.clone());
         let subtitle = match room.as_ref() {
-            _ if over => closed_subtitle(room.is_some(), state.host).to_owned(),
+            _ if closed => closed_subtitle(room.is_some(), state.host).to_owned(),
             None => tr("Setting up the room\u{2026}").to_owned(),
             Some(r) => {
                 let mut parts = vec![
@@ -473,7 +382,7 @@ impl Shell {
                 parts.join(" \u{00b7} ")
             }
         };
-        let code = room.as_ref().map(|r| r.code.clone());
+        let code = room.as_ref().filter(|_| !over).map(|r| r.code.clone());
         let actions = h_flex()
             .gap(px(8.))
             .items_center()
@@ -521,14 +430,14 @@ impl Shell {
                     .on_click(cx.listener(|this, _, _, cx| this.room_leave(cx))),
             );
         let st = room_status(state);
-        let status = self.status_card(&st, state, p, cx);
+        let status = self.status_card(&st, state, &subtitle, p, cx);
         let players: Vec<AnyElement> = state
             .members
             .iter()
             .enumerate()
             .map(|(i, member)| self.member_row(member, &state.content, i == 0, p))
             .collect();
-        let cars = content_check(state).map(|(owns, text)| {
+        let cars = content_check(state).filter(|_| listed).map(|(owns, text)| {
             v_flex()
                 .gap(px(8.))
                 .child(self.section_head("CARS".to_owned(), p))
@@ -578,31 +487,33 @@ impl Shell {
                     .pt(px(4.))
                     .pb(px(24.))
                     .gap(px(24.))
-                    .child(status)
+                    .children(status)
                     .children(cars)
-                    .child(
-                        v_flex()
-                            .gap(px(8.))
-                            .child(self.section_head(
-                                trf!("PLAYERS \u{00b7} {count}", count = state.members.len()),
-                                p,
-                            ))
-                            .child(if players.is_empty() {
-                                div()
-                                    .text_size(px(13.))
-                                    .text_color(p.text_muted)
-                                    .child(tr("Nobody is here yet."))
-                                    .into_any_element()
-                            } else {
-                                v_flex()
-                                    .rounded(px(6.))
-                                    .border_1()
-                                    .border_color(p.border)
-                                    .overflow_hidden()
-                                    .children(players)
-                                    .into_any_element()
-                            }),
-                    )
+                    .when(listed, |d| {
+                        d.child(
+                            v_flex()
+                                .gap(px(8.))
+                                .child(self.section_head(
+                                    trf!("PLAYERS \u{00b7} {count}", count = state.members.len()),
+                                    p,
+                                ))
+                                .child(if players.is_empty() {
+                                    div()
+                                        .text_size(px(13.))
+                                        .text_color(p.text_muted)
+                                        .child(tr("Nobody is here yet."))
+                                        .into_any_element()
+                                } else {
+                                    v_flex()
+                                        .rounded(px(6.))
+                                        .border_1()
+                                        .border_color(p.border)
+                                        .overflow_hidden()
+                                        .children(players)
+                                        .into_any_element()
+                                }),
+                        )
+                    })
                     .children(ad),
             )
             .into_any_element()

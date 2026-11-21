@@ -62,7 +62,7 @@ impl Shell {
             .room
             .as_ref()
             .map_or_else(|| tr("Room").to_owned(), |r| r.name.clone());
-        let status = room_status(state);
+        let line = self.room_strip_line(state);
         Some(
             h_flex()
                 .px(px(16.))
@@ -91,7 +91,7 @@ impl Shell {
                                 .text_size(px(13.))
                                 .text_color(p.text_muted)
                                 .truncate()
-                                .child(status.progress.label.clone()),
+                                .child(line),
                         ),
                 )
                 .child(
