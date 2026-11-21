@@ -38,7 +38,18 @@
    "native/src/core/guards/session/marshal_lights_guard.cpp"
   ]
  },
- "verify": [],
+ "verify": [
+  {
+   "date": "2026-11-21",
+   "verifier": "marshal-lights-blind",
+   "kind": "global",
+   "item": "site_Sess_MarshalLights_WalkDone",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142c76da0-0x142c772c9;xref:0x142c76f4b,0x142c76f37",
+   "notes": "gh:marshal-lights-blind Own capstone disasm of the whole function on the KB exe. 0x142c77248 = +0x4a8 mov rax,[rsi+0x70]; sub rax,r13 (the 7 expect bytes), reached only by the je at +0x1ab (0x142c76f4b) when r13 == [rsi+0x68]; the jmp before it (+0x4a3) is unconditional, so no fall-through, and no other rel32, abs64 or rva32 reference to it exists in the image. From here: n = (end - r13)/8, exit when 0, then a bubble sort with outer count n-1 whose inner step re-reads [rsi+0x68] and compares the int32 at light+0 of entries i and i+1, swapping when greater (signed jle); then xmm6/xmm7 restored from [rsp+0x40]/[rsp+0x50], add rsp,0x68, 8 pops, ret. Registers read: rsi, r13 and rsp only; rax, rcx, rdx, r8-r11 and flags are written before any read, rbp is only popped. rsp is the same at +0x197 and +0x4a8 (no push or rsp change in the body). So rip = here from +0x197 with r13 = [rsi+0x68] matches the game exit (rbp differs, begin there and begin+8 on the game path, but is never read; what it skips is the rax load and the [rax+0x34] store). Pattern unique in KB .xtls (sigcheck OK) and whole-file unique on Steam 26566308 (0x2c797d3), EA 1.0.145 dump (0x2c6d523) and EA 1.0.141 dump (0x2c6af93), equal to the overlay hints; same code at +0x4a8 in all four."
+  }
+ ],
  "proofs": [
   {
    "by": "marshal-lights",
@@ -77,6 +88,25 @@
    },
    "sigcheck": "skipped (not the KB build)",
    "digest": "a62f1936af21603ae49c7693841f7ac7387be7fbb7e5270b3ffdce08dbecf30b"
+  },
+  {
+   "by": "marshal-lights-blind",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142c77243",
+    "target": "0x142c77248"
+   },
+   "sigcheck": "passed",
+   "digest": "8364754208f8ec96777ade7c842151af1a90e322a5457a99443eea2ca5662775"
   }
  ]
 }
