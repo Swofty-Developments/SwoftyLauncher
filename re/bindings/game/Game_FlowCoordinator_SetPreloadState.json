@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143855af0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=FlowCoordinator::setPreloadState; log channel FLOW/V: 'TEMP_LOG: FlowCoordinator::setPreloadState() CURRENT:%d -> NEW:%d NEXT:%d LOADED:%d'"
+  "evidence": "decomp:re/decomp/143855af0.c;pat:log-message-cxx;xref:0x142d47bfb,0x142d4d028,0x142d514f3,0x142d52b03,0x1436fb6ac,0x14370e69d,0x15115dd9a,0x15116c889",
+  "notes": "Logs FLOW/V setPreloadState CURRENT(+0x40) NEW(param_2) NEXT(+0x3c) LOADED(+0x44). Same state + same byte +0x48 -> calls callback param_3 and returns. Else stores state +0x3c, callback +0x70; state 0 queues unload tasks (0x1438fac00) for 0x2a entries of table 0x146103990 (stride 0xc8), states 2..7 load (0x1438fa8c0) per flag bytes; table 0x146105a10 type-4 tasks; ends with processNextPreload 0x143854570(this,0,0). (lane owner review requested)"
  },
  "signature": {
   "id": "game.flow_coordinator_set_preload_state",

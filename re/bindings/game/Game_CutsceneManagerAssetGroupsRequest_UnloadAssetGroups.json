@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140229cf0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name unloadAssetGroups (class from the log channel); log channel CUTSCENE_MANAGER_ASSET_GROUPS_REQUEST: 'unloadAssetGroups unexpected ref-- less than 0 %d %s'"
+  "evidence": "decomp:re/decomp/140229cf0.c;pat:log-message-method;xref:0x140252403,0x140c7d5da,0x140cd71d4,0x14759b84b",
+  "notes": "(requests, sharedRef *batch, caller): under CriticalSection *p1 finds the batch entry in p1[0x17..0x18] (0x20 stride); ref (+0x1c) > 0 -> decrement and log the new count; ref already 0 -> logs 'unloadAssetGroups unexpected ref-- less than 0 %d %s'. Does not remove the entry itself. (lane owner review requested)"
  },
  "signature": {
   "id": "game.cutscene_manager_asset_groups_request_unload_asset_groups",

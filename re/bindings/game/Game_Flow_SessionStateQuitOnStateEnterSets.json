@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d87a30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-FLOW",
-  "notes": "named from its log messages (channel FLOW): 'SessionStateQuit::onStateEnter() sets SessionExit to SessionExit::eFRONT_END_DISCONNECT because that's what the state does.'"
+  "evidence": "decomp:re/decomp/142d87a30.c;pat:log-channel-FLOW;xref:0x1457e56a0",
+  "notes": "Slot 4 (+0x20, onStateEnter) of state vtable 0x1457e5680 (cell 0x1457e56a0). Logs 'SessionStateQuit::onStateEnter() sets SessionExit to eFRONT_END_DISCONNECT' (FLOW); if net queue ([0x14618b3b8+8]+0x68) active posts a 0x10-byte message (vtable 0x1457e6620) under its CS and signals +0x88, else sets TLS error 0x58; then 0x142c76810(+0xc98+0x1fc, 4, 0); returns 1. (lane owner review requested) Better name: Game_SessionStateQuit_OnStateEnter (bound record keeps its name)."
  },
  "signature": {
   "id": "game.flow_session_state_quit_on_state_enter_sets",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "xref:0x141feea20;doc:re/research/sponsors.md#catalogue",
-  "notes": "Decal type carousel (bindings decal_types/selected_decal_type): obtains CareerSponsorsComponent in team_hq/my_team_setup (reads +0x298..+0x2a0, 0x88 stride), walks a decal tree and builds one VM row per entry (texture/show_texture/locked/loyalty_required) from provider 0x1416d4910; keeps only entries whose item +0x40 byte / +0x42 u16 equal the key at 0x146066bf0 (sponsor-category decals). locked/loyalty_required come only from unreached loyalty levels (loyalty_required = level index + 1); a decal only in default_decals is unlocked. Tree loop site 0x1416d2f83 (rax entry, [rax+0xc8] item, *(*(item+0x30)+0x10) texture); rsi = 0 takes skip path 0x1416d40e0 (in-order tree successor via rbp); shown-entry counter only advances for built rows."
+  "evidence": "decomp:re/decomp/1416d2790.c;doc:re/research/sponsors.md#catalogue;xref:0x1416d21a6,0x141feee97",
+  "notes": "Referenced at 0x1416d21a6 (vmovups, in 0x1416d1960) and called from Game_DecalCatalogue_PlaceOrSwap."
  },
  "signature": {
   "id": "game.decal_editor_build_decal_type_carousel",

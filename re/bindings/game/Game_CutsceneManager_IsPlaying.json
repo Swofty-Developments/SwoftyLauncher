@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140228f80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140228f80.c;xref:0x142d79c47,0x142d8387c",
-  "notes": "(mgr, sharedPtr<cutscene>) Under CS mgr[0]: if mgr+0xeb set, scans active list mgr[0xf]..mgr[0x10] (stride 0x10) for an entry whose vcall +0x138 (is active) is true and pointer equals the cutscene; returns bool; releases the shared_ptr argument. Callers Sess_PreRace_Update, Sess_PlayCutScene_OnStateEnter."
+  "notes": "(mgr, shared_ptr<cutscene> by value): under CriticalSection *mgr, if mgr+0xeb is set scans the active list mgr[0xf]..mgr[0x10] (0x10 stride) for an entry whose vt+0x138 returns true and whose pointer equals the argument; returns that bool, then releases the shared_ptr argument (strong +8 / weak +0xc counts). (lane owner review requested)"
  },
  "signature": {
   "id": "game.cutscene_manager_is_playing",

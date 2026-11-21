@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1414377b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1414377b0.c;xref:0x141436461",
-  "notes": "FNV-1a over a 32-bit id (from 0x143a3d780) mixed with an object key at [..+0x30]+0x20 and a multiplicative finaliser (>>0x21) giving the hash used to look up decal generation results. Caller Game_DecalGeneration_UpdateService (string \"body\"). vp0-verify partial"
+  "notes": "(service): when the map [[service+0x1e8]+0x28]+0x30 exists, hashes the string id of 'body' (0x143a3d780) with FNV-1a bytes, multiplies by the map key +0x20, >>0x21 finaliser; probes the table (+0x28 slots, +0x30 meta, +0x40 mask) for an entry whose u32 matches and returns entry+8, else 0. Caller 0x141435170. (lane owner review requested)"
  },
  "signature": {
   "id": "game.decal_generation_hash_request_key",

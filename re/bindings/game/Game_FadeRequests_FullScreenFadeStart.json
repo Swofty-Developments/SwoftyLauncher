@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141e72110",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-FADE_REQUESTS",
-  "notes": "named from its log messages (channel FADE_REQUESTS): 'Full Screen Fade start'"
+  "evidence": "decomp:re/decomp/141e72110.c;pat:log-channel-FADE_REQUESTS;xref:0x145752cd0",
+  "notes": "Vtable cell 0x145752cd0. Copies callback functor (param_2+0x38), logs RESULTS_CONTAINER 'Full Screen Fade start', stores it via 0x1417dfb80(owner+0x1138), then requests a fade out on fade manager [owner+0x298]: sets reason bit0 in +0x7b8, starts fade (+0x7bc..), callback 0x141d7efa0 via 0x140317be0; logs FADE_REQUESTS. (lane owner review requested) Better name: Game_ResultsContainer_FullScreenFadeStart (bound record keeps its name)."
  },
  "signature": {
   "id": "game.fade_requests_full_screen_fade_start",

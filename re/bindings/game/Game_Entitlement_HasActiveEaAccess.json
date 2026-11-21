@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143fdf4e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143fdf4e0.c;xref:0x140765422",
-  "notes": "Compares a string with ORIGIN_ACCESS / EA_ACCESS / 'Origin Access' / 'EA Access' via Ne_Crt_Strcmp. 12 callers incl. Game_ElasticSearch_SendReportBatch and Game_Entitlement_IsNonEaPlayTrial. No gameplay relevance. vq1-verify partial/disagree"
+  "evidence": "decomp:re/decomp/143fdf4e0.c;xref:0x140765422,0x14078e233,0x14078e5f7,0x140799a27,0x1416879d3,0x1417e04d7,0x1419df043,0x141d499d3,0x141f4c9ab,0x143883a47,0x143883b23,0x1485181f3",
+  "notes": "(subscriptions obj): walks the 0xa0-byte records +0x168..+0x170; returns 1 when a record's name (+0x60) is 'ORIGIN_ACCESS', 'EA_ACCESS', 'Origin Access' or 'EA Access' and its state (+0x88) is 'ACTIVE' (strcmp 0x14535d850); also 1 when byte +0x14c is set; else 0. Called e.g. by 0x14078e1a0, 0x1407622c0, 0x143883960. (lane owner review requested)"
  },
  "signature": {
   "id": "game.entitlement_is_ea_access_name",

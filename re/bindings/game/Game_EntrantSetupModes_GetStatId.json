@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1424a09e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1424a09e0.c;xref:0x1407ce2b4,0x1407ce3e4",
-  "notes": "Gdb lookup in table entrants.entrant_setup_modes for row label param_1; returns byte field stat_id. Callers: Game_Parse_GameModeDefinition, Sess_Apply_ContentAvailability."
+  "evidence": "decomp:re/decomp/1424a09e0.c;xref:0x1407ce2b4,0x1407ce3e4,0x141125fe4,0x1413c7c62,0x1413e718b,0x1413e74f4,0x142a16f43",
+  "notes": "(row label): builds the gdb path 'entrants.entrant_setup_modes' / 'entrant_setup_mode' on the stack, opens the row for param_1 (0x1445a2bd0) and reads field 'stat_id' (0x1445a2cf0); returns its byte (+8) or 0 when absent. Called e.g. from 0x1407cae80, 0x141125e80, 0x1413c58c0, 0x1413e4cf0, 0x142a14f20 (0x1424a08a9 in the scan is a lea rdx,[rdi+0x130], not a ref). (lane owner review requested)"
  },
  "signature": {
   "id": "game.entrant_setup_modes_get_stat_id",

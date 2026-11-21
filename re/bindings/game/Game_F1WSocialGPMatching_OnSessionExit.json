@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1431584e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=F1WSocialGPMatching::onSessionExit; log channel NETWORK-MATCHING: 'virtual void network::F1WSocialGPMatching::onSessionExit() | %s: updating transition state to (custom_lobby). It was (%s)'"
+  "evidence": "decomp:re/decomp/1431584e0.c;pat:log-message-cxx;xref:0x14581cdc8",
+  "notes": "Own pretty-function 'virtual void network::F1WSocialGPMatching::onSessionExit()'. If session +0x80 exists, exit type ([this+0x10]+0x40)+0x1fc is 1 or 4 and 0x1407c13f0 false: reads '#ui_menu_data.frontend_transition_state'; sets it to 'custom_lobby' when the lobby has >1 members and +0x333 set, else 'f1_world' plus 0x1430605c0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1_w_social_gp_matching_on_session_exit",

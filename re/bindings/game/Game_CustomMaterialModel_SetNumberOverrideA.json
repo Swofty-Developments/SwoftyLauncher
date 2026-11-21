@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a90740",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142a90740.c;xref:0x142a903b9,0x142a9047d",
-  "notes": "Prepares override-material params for the race number: lazily interns number and carbon number names, uses Game_Get_ModelNodeId, me_logoMap / me_albedoMap slots. Called by Game_CustomMaterialModelComponent_CreateOverrideMaterial. Addon: car number material keys."
+  "evidence": "decomp:re/decomp/142a90740.c;xref:0x142a903b9,0x142a9047d,0x14dafe7f8",
+  "notes": "Lazily interns 'number' and 'carbon number' (0x143a3d780) and the keys me_logoMap / me_albedoMap (0x142a474b0) in function statics, then posts a 0x30-byte type-0x14 record to render node [[p1+0x20]+0x80] = {number id, carbon number id, logoMap key, albedoMap key, flags 0x10}. Called before the old override is released. (lane owner review requested)"
  },
  "signature": {
   "id": "game.custom_material_model_set_number_override_a",

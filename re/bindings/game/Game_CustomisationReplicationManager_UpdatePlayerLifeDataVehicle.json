@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=CustomisationReplicationManager::updatePlayerLifeDataVehicleCustomisations; log channel NETWORK-CUSTOMISATION-REPLICATION: 'void network::CustomisationReplicationManager::updatePlayerLifeDataVehicleCustomisations(const PlayerDescription &, const game::F1LifeVehicleCustomisationsGroup | %s: Updated player (%s) life data veh'"
+  "evidence": "decomp:re/decomp/14318b770.c;pat:log-message-cxx;xref:0x14318d247,0x14318d387",
+  "notes": "Own pretty-function 0x1458221d5 = updatePlayerLifeDataVehicleCustomisations(const PlayerDescription&, const game::F1LifeVehicleCustomisationsGroupData&); logs 'Updating/Updated player (%s) life data vehicle customisations'; posts EnqueueMessage_A at 0x14318ba51. Callers = handleF1LifeDataVehicleCustomisationsAdd/Update."
  },
  "signature": {
   "id": "game.customisation_replication_manager_update_player_life_data_vehicle",

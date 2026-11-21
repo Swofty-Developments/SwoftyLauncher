@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143aa9e10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-FFB_PLUGIN",
-  "notes": "named from its log messages (channel FFB_PLUGIN): 'leftMotor(%.3f) rightMotor(%.3f)'"
+  "evidence": "decomp:re/decomp/143aa9e10.c;pat:log-channel-FFB_PLUGIN;xref:0x1458a7768",
+  "notes": "Vtable cell 0x1458a7768 (neighbours code). Hash-map lookup (+0x40..+0x74) of device key param_2+0x18 -> slot byte; logs 'leftMotor rightMotor' (FFB_PLUGIN) and sends clamped 0..255 motor bytes from param_3[0..1] via 0x14491dfd0 with pad handle this+0xf8+slot*0xa0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ffb_pad_set_motors_2",

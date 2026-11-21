@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446f20e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-LOGITECH",
-  "notes": "named from its log messages (channel LOGITECH): 'STOPPING TRUEFORCE at address: %p |  - Stop constant at address: %p |  - Failed to stop spring at address: %p, error %d |  - Failed to stop friction at address: %p, error %d'"
+  "evidence": "decomp:re/decomp/1446f20e0.c;pat:log-channel-LOGITECH;xref:0x145bff980",
+  "notes": "Slot 2 of effect vtable 0x145bff970 (cell 0x145bff980). Trueforce device (vcall +0x38 true): logs 'STOPPING TRUEFORCE', calls vcall +0x228(0). Else under CS +0x228 Stop (vcall +0x40) constant/spring/friction +0x1e8/+0x1f0/+0x1f8, logs failures; HRESULT 0x8007000c/0x8007001e on any -> device +0x10 vcall +0x38 and sets lost flag +0x220. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ffb_logitech_stop_trueforce",

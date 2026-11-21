@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14451dfb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-FFB_DEBUG",
-  "notes": "named from its log messages (channel FFB_DEBUG): 'Called removeAudioMotionController %s'"
+  "evidence": "decomp:re/decomp/14451dfb0.c;pat:log-channel-FFB_DEBUG;xref:0x1446f7e1a,0x14476493e,0x144764b7e",
+  "notes": "(mgr,controller*). Under CS mgr+0x168 erases from set mgr+0x58 (0x144530a50), logs 'Called removeAudioMotionController %s'; if it is the active controller +0x108 or +0x140, stops its channel (0x14451f660 slot 0/1) and resets +0x18/+0x20/+0x28 or +0x38/+0x40/+0x48. Callers 0x1446f7a20, 0x144764900, 0x144764b40. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ffb_remove_audio_motion_controller",

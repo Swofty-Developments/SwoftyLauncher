@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143137af0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=CustomDriverNetworkMessageHandler::handleCustomDriverMessageInfoUpdate; log channel NETWORK-ENTRANTS: 'void network::CustomDriverNetworkMessageHandler::handleCustomDriverMessageInfoUpdate(neon::NeNetMessage &, neon::NeNetConnectionID) | %s : Driver Info Update %s for driver with stat id (%s)'"
+  "evidence": "decomp:re/decomp/143137af0.c;pat:log-message-cxx;xref:0x14312f431",
+  "notes": "Pretty-function 0x1458194f9 = handleCustomDriverMessageInfoUpdate(NeNetMessage&, NeNetConnectionID); registered by lea at 0x14312f431 (in 0x14312f230). If msg+0x5e0 != 0 and stat id u16 msg+0x1a != 0x3fff: copies the DriverInfo from msg+0x28.. and calls 0x14246e3a0([p1+0x28], statId msg+0x18, &info, 0); result 0 + session [[p1+0x58]+0x88]+0x260 of the right type -> component 0x14605ade0, 0x140c00580; logs 'Driver Info Update %s' (result names 0x145827478). (lane owner review requested)"
  },
  "signature": {
   "id": "game.custom_driver_network_message_handler_handle_custom_driver_mess_2",

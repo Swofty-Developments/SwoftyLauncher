@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14318b430",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=CustomisationReplicationManager::updatePlayerLifeDataStandardVehicleWithoutDecals; log channel NETWORK-CUSTOMISATION-REPLICATION: 'void network::CustomisationReplicationManager::updatePlayerLifeDataStandardVehicleWithoutDecals(const PlayerDescription &, const game::F1LifeStandardVehicleCust | %s: Updated player (%s) life data sta'"
+  "evidence": "decomp:re/decomp/14318b430.c;pat:log-message-cxx;xref:0x14318cfc7,0x14318d4c7",
+  "notes": "Pretty-function 0x145821f64 = updatePlayerLifeDataStandardVehicleWithoutDecals. Looks up the player record by PlayerDescription hash in the map p1+0x88/+0xa0/+0xb8 (type 7/3 compares, 0x144121bc0); on hit copies the standard-vehicle groups p3+0x10 -> rec+0xd60 and p3+0x130 -> rec+0xe80 (0x141935da0) and posts message vt 0x14579adf8 with the description via EnqueueMessage_A on bus [0x14618b3b8]+8; logs 'Updating/Updated player (%s) life data standard vehicle'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.customisation_replication_manager_update_player_life_data_standar",

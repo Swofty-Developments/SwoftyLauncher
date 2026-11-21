@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140dbbc40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_Championship_DriverContractsMyTeamComponent_OnMeetingComplete;xref:0x140dbbe7f",
-  "notes": "cxx=game::championship::DriverContractsMyTeamComponent::onMeetingComplete; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/140dbbc40.c;str:s_Championship_DriverContractsMyTeamComponent_OnMeetingComplete;xref:0x1423d5ceb",
+  "notes": "(comp, driver key), called from 0x1423d5050 (0x1423d5ceb). Finds the driver in meeting array comp+0x480 (0x68 bytes, count +0x6f0); needs pending +0x48 != -1 (cleared) and a progression entry (hash comp+0x710) whose float +4 equals int comp+0x340+bracket*4 (bracket +0x65). Logs DRIVER_CONTRACTS with its own pretty-function 0x145692cdf, runs the bracket action 0x140dbac50 / 0x140dbae10 / 0x140dbb120 (bracket 0/1/2), bumps the bracket (max 3), records it in set comp+0x748; for the local player's own team driver posts bus message 0x145696fd0 {driver, team, progression, day}. (lane owner review requested)"
  },
  "signature": {
   "id": "game.driver_contracts_my_team_component_on_meeting_complete",

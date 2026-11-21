@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14146dd40.c;xref:0x141431c2d,0x1414327b3",
-  "notes": "Second hash map emplace variant (64-bit key + shared ptr, node growth 0x14146e330). Caller Game_DecalCustomisation_LinkFileToPlayer."
+  "notes": "Called from Game_DecalCustomisation_LinkFileToPlayer."
  },
  "signature": {
   "id": "game.decal_files_hash_map_emplace_b",

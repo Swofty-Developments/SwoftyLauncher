@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14288e9e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name changeObject (class from the log channel); log channel FRONTEND_SCENE_CUSTOM_OBJECT: 'changeObject()'"
+  "evidence": "decomp:re/decomp/14288e9e0.c;pat:log-message-method;xref:0x1428cb124,0x1428eccc6,0x1428f2d9a,0x1428f2e7d",
+  "notes": "(objMgr,id*,cfg,xform). Hash lookup u16 id in map +0x120..+0x154; logs 'changeObject()' (FRONTEND_SCENE_CUSTOM_OBJECT); if object state +0x48 == 3 and no change pending (+0x310): sets +0x310, copies cfg (vector +0x250 count +0x260, bytes +0x270/+0x311) and 64-byte transform +0x2b0..+0x2e8, then tail vcall +0x98(0) on [+0x288]. Callers 0x1428c9060, 0x1428ec620, 0x1428f2d40, 0x1428f2e20. (lane owner review requested)"
  },
  "signature": {
   "id": "game.frontend_scene_custom_object_change_object",

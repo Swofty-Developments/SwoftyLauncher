@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=CustomisationReplicationManager::updatePlayerLifeData; log channel NETWORK-CUSTOMISATION-REPLICATION: 'void network::CustomisationReplicationManager::updatePlayerLifeData(const PlayerDescription &, game::F1LifeData &) | %s: Updated player (%s) life data!'"
+  "evidence": "decomp:re/decomp/143188a40.c;pat:log-message-cxx;xref:0x143187035,0x14318b3dc,0x14318cab9,0x14318ce87,0x14318d107",
+  "notes": "Own pretty-function 0x145821ea8 = updatePlayerLifeData(const PlayerDescription&, game::F1LifeData&), logs 'Updating/Updated player (%s) life data' (NETWORK-CUSTOMISATION-REPLICATION). Posts EnqueueMessage_A (0x143188cfb) and _B (0x143189327) on bus [0x14618b3b8]+8. Callers include handleF1LifeDataAdd/Update/Request."
  },
  "signature": {
   "id": "game.customisation_replication_manager_update_player_life_data",

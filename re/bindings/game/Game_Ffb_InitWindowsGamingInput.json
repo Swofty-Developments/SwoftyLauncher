@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446f6ad0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-FFB",
-  "notes": "named from its log messages (channel FFB): 'isWindows10=%d | Failed to load \"%s\" | Failed find function \"%s\" in \"%s\" | Failed to get WindowsGamingInput interface pointer'"
+  "evidence": "decomp:re/decomp/1446f6ad0.c;pat:log-channel-FFB;xref:0x145c00778",
+  "notes": "Slot 3 of vtable 0x145c00760 (string 'EgoRacingFFBSubsystem' before it). Adds deviceConnected cb 0x1446f7a20 to input listener vector if absent; allocates +0x160..+0x178 and 8 plugin factories +0x180..+0x1b8 (vtables 0x145c051c0..0x145c05220) into map +0x160; logs isWindows10; Win10: loads CM.Windows.Gaming.Input.dll, UwpWrapper_WindowsGamingInput_GetInterface, iface init; fail -> 0x1446f9200. (lane owner review requested) Better name: Game_RacingFfbSubsystem_Init (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ffb_init_windows_gaming_input",

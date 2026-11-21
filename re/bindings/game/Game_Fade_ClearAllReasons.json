@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1437f08c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1437f08c0.c;xref:0x142d52192,0x142da2965",
-  "notes": "(fadeMgr) Logs FADE_REQUESTS 'Clearing fade reasons' and for every fade reason bit 0..31 set in mask this+0x7b8 (except bits 0,15,23,31 = mask 0x80108001) releases it via 0x1437f07c0(this, bit, 0xd47eb226, 0). Callers Sess_ViewInstantReplay_Update, CareerDataSync exit, TeamHq enter."
+  "evidence": "decomp:re/decomp/1437f08c0.c;xref:0x142d52192,0x142da2965,0x142da4878,0x142da4883,0x143701a2a",
+  "notes": "Logs FADE_REQUESTS 'Clearing fade reasons'; for bits 0..31 set in this+0x7b8 except mask 0x80108001 (bits 0,15,20,31) calls 0x1437f07c0(this, bit, 0xd47eb226, zero). Returns void. (lane owner review requested)"
  },
  "signature": {
   "id": "game.fade_clear_all_reasons",

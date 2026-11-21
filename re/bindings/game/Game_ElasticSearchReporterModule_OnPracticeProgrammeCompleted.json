@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140718290",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=ElasticSearchReporterModule::onPracticeProgrammeCompleted; log channel TELEMETRY: 'ElasticSearchReporterModule::onPracticeProgrammeCompleted(%s, %s)'"
+  "evidence": "decomp:re/decomp/140718290.c;pat:log-message-cxx;xref:0x1406d98f4,0x1406fd8d5",
+  "notes": "Bus handler: local player (0x1400f9fd0(msg+0x10)) and msg+0x1e == 0: logs TELEMETRY 'onPracticeProgrammeCompleted(%s, %s)' (programme name table 0x145660570[msg+0x18 + 1] < 9, result table 0x145649f90[msg+0x1c]); refreshes [+0x20a58]+0x168 vcall +0x40; builds a 0xc0 event (0x14056ab40, kind string 0x14565f05e, programme 0x14056c100, result 0x14056c6a0) and submits it via 0x1407774f0. Returns 0. Fn ptr taken by lea in 0x1406d8470, 0x1406fd6c0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.elastic_search_reporter_module_on_practice_programme_completed",

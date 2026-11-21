@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428e8d90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_FrontendSceneComponentCar_SetCarCustomDriverNumbers;xref:0x1428e98d4",
-  "notes": "cxx=game::FrontendSceneComponentCar::setCarCustomDriverNumbers; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1428e8d90.c;str:s_FrontendSceneComponentCar_SetCarCustomDriverNumbers;xref:0x141cc0c76,0x141fdf92a,0x141fdf975,0x1420129cc,0x14207e8f7,0x14207eca1,0x1428e8d3a",
+  "notes": "p1=scene manager (pending map +0x70b8, FNV key car id u16 p2+0xb8), p2=car comp, p3=list (0x30 B entries, count p3[0xc]). Car ready (vcall +0x28): logs 'Changing Car [%u] Custom Driver Numbers' (MANAGER/CAR), inlined component setCarCustomDriverNumbers calls 0x1428b3100 (p2[0x13]+0xe10, p2+0xc0) and stores list at p2+0x68d0... Not ready: store into pending entry +0x6820/+0x6880/+0x6890 or insert new via 0x1428e5d60. Clears p3. (lane owner review requested) Better name: Game_FrontendSceneComponentManager_SetCarCustomDriverNumbers (bound record keeps its name)."
  },
  "signature": {
   "id": "game.frontend_scene_component_car_set_car_custom_driver_numbers",

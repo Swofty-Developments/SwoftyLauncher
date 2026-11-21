@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d27ee0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142d27ee0.c;xref:0x1457dbb08",
-  "notes": "F1AMPRuleset (vt 0x1457db930) slot +0x1d8, log F1-ARCADE-MP. Same flow as Sess_RaceRuleset_FinaliseResultsInternal: 'Removing laps for lapped drivers...', eDidNotFinish for cars not finished, sort, positions, leader laps, 'Expected all vehicles to have finished!'. (game lane like Game_F1AMPRuleset_Reset; session concept) d1-verify-a correction: DNF only for cars below 90 % of their CLASS leader's laps"
+  "notes": "Logs F1-ARCADE-MP 'Finalising results for race.'; if 0x142f6db50: 'Removing laps for lapped drivers...' (drops laps beyond the leader's time, lap records via 0x142f2bc90/0x142f0c7f0, rewrites protected lap/time fields); 'Sorting results...' (vcall +0x118), positions 0x142c7bce0, laps clamped to vcall +0x170; cars below 90 % of the leader's laps -> eDidNotFinish; RULES 'Expected all vehicles to have finished!...'. Ref: vtable cell 0x1457dbb08. (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1_a_m_p_ruleset_finalise_results",

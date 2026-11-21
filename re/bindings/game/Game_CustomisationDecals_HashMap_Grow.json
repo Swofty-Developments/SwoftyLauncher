@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14146b6e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14146b6e0.c;xref:0x1414212c7,0x141421560",
-  "notes": "Hash map grow/rehash: new capacity from count+1 at 80 percent max load (x0x50/100), capped at 0xff buckets, rebuilds bucket chains. Called by Game_CustomisationDecals_LoadConfig. ne_hash_map.h."
+  "notes": "robin_hood-style map rehash(map, new bucket count p2, bool freeOld): new slot array (8-byte node ptrs) + info bytes allocated in one block (count*9+8, allocator [map+0x18] vt+0x10), max load 80 % (x0x50/100), overflow area min(0xff, 80 %); re-inserts every old node by hash (u32 key * [map+0x20], >>33 xor) with info-byte shifting and halving info (+0x50/+0x54) on overflow; old block freed (vt+0x38) or, when freeOld == 0 and large enough, chained into the node free list (+0x10/+8). The 0xff limit is the overflow, not the bucket count. (lane owner review requested)"
  },
  "signature": {
   "id": "game.customisation_decals_hash_map_grow",

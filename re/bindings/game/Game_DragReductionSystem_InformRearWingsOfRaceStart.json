@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142becf90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=DragReductionSystem::informRearWingsOfRaceStart; log channel GAME: 'DragReductionSystem::informRearWingsOfRaceStart() - Calling onNonFormationLapStartLightsComplete() for all rear wings!'"
+  "evidence": "decomp:re/decomp/142becf90.c;pat:log-message-cxx;xref:0x142bebcd5,0x142bebd65",
+  "notes": "Runs when neither Sess_FormationLapLogic_IsActiveType0 0x1436183e0 nor IsActiveOtherType 0x1436184e0 is true for [this+0x108] or byte [this+0x108]+0x42 is set: logs GAME 0x1457cdb9e, then per wing in this+0x30..+0x38 sets byte 0x14607a566=1 and, if w+0xa7 and int 0x14607a560-15 < 3, sets +0xb=1 on every 12-byte record in [w+0x28,w+0x30) whose +8 byte is set. Callers: OnStartLightsComplete 0x142bebc60, OnRollingStartCutsceneFinished 0x142bebcf0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.drag_reduction_system_inform_rear_wings_of_race_start",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141434260",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-CUSTOMISATION_DECALS",
-  "notes": "named from its log messages (channel CUSTOMISATION_DECALS): 'Deleting all files'"
+  "evidence": "decomp:re/decomp/141434260.c;pat:log-channel-CUSTOMISATION_DECALS;xref:0x143713460",
+  "notes": "Builds a refcounted file list (control block vtable 0x1456e6380) from every entry of the hash set this+0x30..+0x40 (each entry +0x60/+0x68 shared_ptr through 0x141432ca0, merged with 0x1414333d0); non-empty -> logs CUSTOMISATION_DECALS 'Deleting all files' and queues Game_DecalFileOp_CreateDeleteJob; then frees all set entries (ref at +0x68) and resets the set (+0x40 = 0, +0x58 = 0x20). Caller 0x1437133e0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.decal_customisation_delete_all_files",

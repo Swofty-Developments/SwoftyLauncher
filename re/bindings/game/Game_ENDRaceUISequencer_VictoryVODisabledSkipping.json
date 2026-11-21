@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142ea4410",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-END_RACE_UI_SEQUENCER",
-  "notes": "named from its log messages (channel END_RACE_UI_SEQUENCER): 'Victory VO is disabled. Skipping'"
+  "evidence": "decomp:re/decomp/142ea4410.c;pat:log-channel-END_RACE_UI_SEQUENCER;xref:0x1457f0078",
+  "notes": "Update(dt): timer +0x78 -= dt; state machine cur +0x58 / next +0x59, logs END_RACE_UI_SEQUENCER 'Changed state: %s to %s'. 0 victory VO enabled? (else 'Victory VO is disabled. Skipping'), 1 play victory VO (bus 0x14565e950 id 299), 2 wait playback, 3 -> 0x142ea5630 engineer VO or 9, 4..10 timed UI msgs (0x1457f1970.. 'Driver of the day', ids 0x12d/0x115), 0xb..0xe finish. Ref: vtable cell. Old name was a log fragment. (lane owner review requested) Better name: Game_EndRaceUiSequencer_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.end_race_ui_sequencer_victory_vo_disabled_skipping",

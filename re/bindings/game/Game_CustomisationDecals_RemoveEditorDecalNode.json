@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14142c330",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name removeEditorDecalNode (class from the log channel); log channel CUSTOMISATION_DECALS: 'removeEditorDecalNode(%I64u)'"
+  "evidence": "decomp:re/decomp/14142c330.c;pat:log-message-method;xref:0x141ffdc74,0x141ffe682,0x141ffeb00",
+  "notes": "Logs 'removeEditorDecalNode(%I64u)'. Erases the node with uniqueId *p2 (searched from the back) from the editor list system+0x178..+0x180 (shared_ptr shift + release), dirty +0x168 = 1, then CreateServiceForEditorNode(system, 0). Linked mode (0x146064623 bit7): also erases the linked partner (id = node+0x68): queues a request with its id on 0x1414290f0(system)+0x188 (0x142b525b0) and removes it from the list; when 0x146064624 bit0, same area and partner+0x64 set it clears partner+0x68 first, else sets dirty. (lane owner review requested)"
  },
  "signature": {
   "id": "game.customisation_decals_remove_editor_decal_node",

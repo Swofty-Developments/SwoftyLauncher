@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446fab00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-FFB",
-  "notes": "named from its log messages (channel FFB): 'RoInitialize failed on FFB thread (hr=0x%08x) | No Plugins for effect at address: %p, for device %s' | 2026-10-28 wx: adds 8 plugins via 0x1446f1880 (1446fae42..af23) with id descriptors 0x146ce7f78..7fe8: centre_spring, wave_player, surface, tyre_force_real, collision, slip_ratio, slip_angle, race_start (tyre_force_stm 0x146ce7ff8 not added); 0x1446f1880 = AddPlugin (creates plugin via factory, Init, logs scale +0x50), name SetPluginScale is misleading (wx-verify claim 14) | findings from PR #472 by vogtmarcel07-cloud; independent check 2026-10-28 by wx-verify: agree"
+  "evidence": "decomp:re/decomp/1446fab00.c;pat:log-channel-FFB;xref:0x1446f8487",
+  "notes": "Thread proc (lea at 0x1446f8487 in 0x1446f83f0). RoInitialize(1) (logs failure), loops on wait 0x14391e3b0 until stop: if enabled (+0x2c0, not paused +0x2c9/+0x2ca) under CS +0x1d8 for each device controller (+0x50..0x58, vcall +0x18) bound in map +0x110: with no plugins logs 'No Plugins for effect', resets (0x1446f0e00), adds 8 plugins via 0x1446f1880 (ids 0x146ce7f78..7ff0), sets scale +0x178; then update vcall +0x20(dt). RoUninitialize. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ffb_thread_run",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1402676d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1402676d0.c;xref:0x1402fd4ef,0x1402fe00f",
-  "notes": "Shared helper (6 call sites 0x1402fd4ef..): enables 'Camera' actors (CAMERA_ACTOR_ENABLE), releases previous scene script[0x109], takes scene from vslot 0x310 (first) or 0x318 (next): stores length at +0x860, end time +0x864 = length + start offset +0x53c, sets the next scene window (+0x58/+0x5c start, +0x64 offset, +0x68 end, +0x74|=4). Addon: change camera / scene chaining timing. d13-verify: +0x860 is the scene start (scene+0x58), not the length; +0x864 = start + the +0x53c offset"
+  "evidence": "decomp:re/decomp/1402676d0.c;xref:0x1402fd4ec,0x1402fe00c,0x1402feb2c,0x1402ff64c,0x14030014c,0x140300c4c,0x1403014e0",
+  "notes": "(script, event), registered by lea (see xref). Event byte +0x10 == 0: start offset +0x53c = 0, first scene (vslot +0x310) spawned into this[0x109], +0x860 = scene+0x58, +0x864 = +0x860 + offset. Event 3: CameraActor::enable(false) on all actors, destroys this[0x109], re-enables actors named 'Camera', next scene (vslot +0x318) into this[0x10a] with its time window (+0x58/+0x5c/+0x64/+0x68, +0x74|4), 'end' scene into this[0x10b]. Then FlushPendingSpawnsA/B. (lane owner review requested)"
  },
  "signature": {
   "id": "game.cut_scene_script_enable_camera_and_chain_scene",

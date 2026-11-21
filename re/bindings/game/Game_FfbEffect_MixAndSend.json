@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446edf40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "void Game_FfbEffect_MixAndSend(void *effect, float dt)",
-  "evidence": "decomp:re/decomp/1446edf40.c;doc:re/db/subsystems/game.md",
-  "notes": "FFB mixer: sums plugin vt+8 outputs (enabled +0x54); S = 0x144773160(subsys+0x110, veh) settings record: lane3 *= k(+0x178)*S[0x14] wheelweight*S[4] fade, lanes0-2 *= k*S[0] strength*S[4] (1446ee494-4ae); soft-lock torque; clamp; per-lane curve 0x1446f0cc0; backend vt+0x28 (DI 0x1446f2690, XInput 0x1446f5a60). S: +8 ontrack, +0xc rumble (RMBO/RMBL), +0x10 offtrack, +0x18 enabled, +0x19 TriggerRumble, +0x1c trueforce (wx-verify claim 13) | findings from PR #472 by vogtmarcel07-cloud; independent check 2026-10-28 by wx-verify: agree | engine-re 2026-11-17 track round C (surface): per wheel the MECHANICS fourCC (+0x50 of wheel+0x200, 'N0NE' 0x454e304e when airborne) picks the strength lane: SDT\\0, SDT*, SDT+, PDT+, DTAC, DDTC, MKNG -> S+8 OnTrackSuspension; RMBO, RMBL -> S+0xc RumbleStrips; any other code (grass, gravel, BUMP, RMBC, N0NE) -> S+0x10 OffTrackSurface (compares 0x1446ee2f2..0x1446ee355). Lane factor per wheel from a name lookup (0x1444f6890). So FFB rumble on a kerb needs material code RMBL or RMBO."
+  "evidence": "decomp:re/decomp/1446edf40.c;doc:re/db/subsystems/game.md;xref:0x145bff6f0,0x145bff720,0x145bff810,0x145bff840,0x145bff870",
+  "notes": "Vtable cells listed. For the effect's vehicle reads 4 lane ids and per-lane gains; settings S=0x144773160(subsys+0x110): kerb/rumble lane ids use S+0xc, others S+8 or S+0x10; sums plugin outputs (vt+8, enabled +0x54); scales by S[0]*S[1]*k(+0x178), lane 3 by S[5]; 3 s fade-in (+0x36); clamp [-1,1]; per-lane curve EvalWaveform 0x1446f0cc0; sends via backend vt+0x28. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ffb_effect_mix_and_send",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142c31e10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=F1DataFeedStream::setStreamPosition; log channel F1-DATA-FEED: 'F1DataFeedStream::setStreamPosition called, setting position %I64u'"
+  "evidence": "decomp:re/decomp/142c31e10.c;pat:log-message-cxx;xref:0x142c2b271,0x142c2b33d,0x142c2b52e,0x142c2b5c4,0x142c2b99d,0x142c2bf53,0x142c2d5b7,0x142c2e19e,0x142c313f5,0x142c31558,0x142c31a52,0x142c324fc,0x142c36c45",
+  "notes": "Own log 'F1DataFeedStream::setStreamPosition'. Sets position +0xa8; if outside the loaded block (+0xb0, block size +0x2d8) seeks file +200 to the block start and reads one block into a new buffer (+0x98, size +0xa0), logs 'Accessing disc' time; returns 0 ok, 5 or 0x2d on errors. (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1_data_feed_stream_set_stream_position",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428e64b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_FrontendSceneComponentCar_SetCarLivery;xref:0x1428e6b83",
-  "notes": "cxx=game::FrontendSceneComponentCar::setCarLivery; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1428e64b0.c;str:s_FrontendSceneComponentCar_SetCarLivery;xref:0x141cc09e8,0x141fdf68b,0x14200e37d,0x14200ed28,0x14200f94f,0x142011c67,0x142012709,0x1428ebac2",
+  "notes": "Manager-level (pending map this+0x70b8, channel FRONTEND_SCENE_MANAGER/CAR): car ready -> log 'Changing Car [%u] Livery', inlined FrontendSceneComponentCar::setCarLivery stores livery (param_3 +0x10/+0x18/+0x20/+0x28/+0x2c) in car optional (+0xcf0.., valid +0xcf6), dirty byte car+0x10; not ready -> updates pending entry +0x67a0..+0x67d0 or copies setup and inserts via 0x1428e5d60. Old name = inlined callee. (lane owner review requested) Better name: Game_FrontendSceneComponentManager_SetCarLivery (bound record keeps its name)."
  },
  "signature": {
   "id": "game.frontend_scene_component_car_set_car_livery",

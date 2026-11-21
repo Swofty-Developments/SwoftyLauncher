@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141432f00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141432f00.c;xref:0x141432e4e",
-  "notes": "Allocates a 0x20-byte block via allocator and builds a decal file entry list (vector of 16-byte records, copy of param_3), optional flag param_4. Callers 0x141432ca0, Game_CustomisationDecals_OpenFile. Hypothesis."
+  "evidence": "decomp:re/decomp/141432f00.c;xref:0x141432e4e,0x141433abf",
+  "notes": "Renamed. (alloc holder, out shared_ptr, in shared_ptr set, u8 kind): allocates a 0x20-byte vector {allocator, begin, end, cap} with shared control block (vt 0x1456e6380) into out; walks the open-addressing set of *in (ctrl bytes +0x30, slots +0x28, count +0x38) and, for entries whose kind byte +0 == kind (kind 0 = all), push_backs the 16-byte shared_ptr at entry+8 unless already present (1.5x growth); releases in. (lane owner review requested) Better name: Game_CustomisationDecals_CollectFilesByType (bound record keeps its name)."
  },
  "signature": {
   "id": "game.customisation_decals_build_file_entry",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143105150",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-DATASYNC",
-  "notes": "named from its log messages (channel DATASYNC): '[%s] Sync with cookie 0x%08x : peer %d ignored as we have reached max attempts'"
+  "evidence": "decomp:re/decomp/143105150.c;pat:log-channel-DATASYNC;xref:0x1430e8606,0x14310429c,0x143104784,0x143104804,0x143104d50,0x143104eb1",
+  "notes": "(session, peer u8): no peers ([[+8]+0x3c0]+0x130 empty) -> 'not synchronised as we are playing alone', 0; peer in attempt tree +0x138 (key byte +0x1a) -> 'ignored as we have reached max attempts', 0; else 1 for the local id ([[+8]+0xd8] vcall +0x10) or when filter callback +0x110/+0x118 returns 0 (true -> 'ignored', 0). Callers 0x1430e0560, Game_Datasync_FinishingSyncImmediatelyAsOffline. (lane owner review requested) Better name: Game_Datasync_ShouldSyncWithPeer (bound record keeps its name)."
  },
  "signature": {
   "id": "game.datasync_sync_cookie_peer_ignored_as_reached_max",

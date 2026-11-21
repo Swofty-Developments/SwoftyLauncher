@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446f9200",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-FFB",
-  "notes": "named from its log messages (channel FFB): 'Failed to shutdown WindowsGamingInput | Failed to unload WindowsGamingInput wrapper DLL'"
+  "evidence": "decomp:re/decomp/1446f9200.c;pat:log-channel-FFB;xref:0x1406cdc06,0x1406cdcbc,0x1446f7840,0x1446f8d90",
+  "notes": "(wgi{dll,iface}). If iface [1]: calls iface+8 (shutdown), logs 'Failed to shutdown WindowsGamingInput' on HRESULT<0, clears. If DLL [0]: FreeLibrary, logs 'Failed to unload WindowsGamingInput wrapper DLL' on failure, clears (channel FFB). Callers in 0x1406cdb80, 0x1406cdc30, 0x1446f6ad0, 0x1446f8890. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ffb_shutdown_windows_gaming_input",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14313baf0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=DriverCustomisationReplicationManager::replacePlayerDriverCustomisation; log channel NETWORK-ENTRANTS: 'void network::DriverCustomisationReplicationManager::replacePlayerDriverCustomisation(const PlayerDescription &, const game::DriverCustomisationStatId::PackedSt | %s : Attempt to replace a new network'"
+  "evidence": "decomp:re/decomp/14313baf0.c;pat:log-message-cxx;xref:0x14313cd42,0x14313d197,0x14313d499,0x14313d51a,0x1431c2878",
+  "notes": "(mgr, player, packed id, record): id = low 14 bits, type = bits 14-15; logs 'Attempting to replace driver customisation info for id (%s)' with its own pretty-function 0x14581a069; copies the record (Wear_Copy_DriverCustomisationRecord 0x14248efc0), calls Ent_EntrantsSystem_ReplaceDriverCustomisation 0x14246fde0([mgr+0x28], id<<16|type, copy); result outside {0,2,4} logs 'unsuccessful'; then AddReplicatedPlayer 0x14313c580. Callers 0x14313c810, 0x14313cfa0, 0x14313d2f0, 0x14313d4e0, 0x1431c2830. (lane owner review requested)"
  },
  "signature": {
   "id": "game.driver_customisation_replication_manager_replace_player_driver_cu",

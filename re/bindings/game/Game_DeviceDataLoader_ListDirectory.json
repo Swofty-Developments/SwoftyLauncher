@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a71420",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-INPUT",
-  "notes": "named from its log messages (channel INPUT): 'GameDeviceDataLoader - Listing directory \"%s\" | GameDeviceDataLoader - Found %I64u files. | GameDeviceDataLoader - Reading file \"%s\" | GameDeviceDataLoader - Parsing file \"%s\" | GameDeviceDataLoader -'"
+  "evidence": "decomp:re/decomp/142a71420.c;pat:log-channel-INPUT;xref:0x142a778af",
+  "notes": "Called at 0x142a778af (in 0x142a76ae0). Lists 'actionmaps/' (0x143f34900), opens each file (Ne_FileSystem_OpenStream 0x143f393a0), parses it, reads 'typeid', interns it (0x143a860a0) and compares with [this+0xd0]; on match keeps file buffer at this+0xe8/+0xf0, else frees it. Result code (0, error or 2 = none found) stored at this+0xf8. Old name covered only the first log line. (lane owner review requested) Better name: Game_DeviceDataLoader_FindActionMapForDevice (bound record keeps its name)."
  },
  "signature": {
   "id": "game.device_data_loader_list_directory",

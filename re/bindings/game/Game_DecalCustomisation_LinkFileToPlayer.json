@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-CUSTOMISATION_DECALS",
-  "notes": "named from its log messages (channel CUSTOMISATION_DECALS): 'Overwriting file name for type %s with file %s for player %s | Trying to link a file to player (%s) for a different decal list. Case not supported (yet) - game will continue to run but we should fix t'"
+  "evidence": "decomp:re/decomp/1414317f0.c;pat:log-channel-CUSTOMISATION_DECALS;xref:0x141435aee,0x141436c81",
+  "notes": "Called from 0x141435170 (generation service update)."
  },
  "signature": {
   "id": "game.decal_customisation_link_file_to_player",

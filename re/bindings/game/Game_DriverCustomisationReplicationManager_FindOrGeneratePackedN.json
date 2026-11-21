@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14313b680",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=DriverCustomisationReplicationManager::findOrGeneratePackedNetStatId; log channel NETWORK-ENTRANTS: 'game::DriverCustomisationStatId::PackedStatId network::DriverCustomisationReplicationManager::findOrGeneratePackedNetStatId(const PlayerDescription &, game::Dri | %s : Attempt to add a new network rep'"
+  "evidence": "decomp:re/decomp/14313b680.c;pat:log-message-cxx;xref:0x140fe0986,0x140fee342,0x1431c2203,0x1431c2420",
+  "notes": "(mgr, player desc, record) -> packed id. Returns invalid id (u16 0x1460605b8) when int [mgr+0x10]+8 > 1. Looks the player up in map mgr+0x58/+0x70; known id: if record differs from the default 0x14609aa70 (0x1424701a0) calls ReconcileDriverCustom 0x14313c2e0, returns it. Unknown: adds the record via 0x142470900([mgr+0x28], rec, &result); id = byte +0xc540 << 14 | u16 +0xc542, AddReplicatedPlayer 0x14313c580, and on result 0/2/4 broadcasts net message 0x145824820 with id + record (0x14402e500([mgr+0x20])); failures log 'unsuccessful' / 'returned nullptr' (own pretty-function 0x145819bd6). (lane owner review requested)"
  },
  "signature": {
   "id": "game.driver_customisation_replication_manager_find_or_generate_packed_n",

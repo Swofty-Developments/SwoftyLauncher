@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c0f930",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=F1CarSetupDataManagerBase::sendNetMessage; log channel NETWORK/T: 'F1CarSetupDataManagerBase::sendNetMessage(%s)'"
+  "evidence": "decomp:re/decomp/140c0f930.c;pat:log-message-cxx;xref:0x145672ac0,0x14568d7f0,0x1457afd40,0x1457b0d60",
+  "notes": "Vtable slot. Walks bindings +0x38..+0x40; picks the first one dirty (+0x38) or pending (+0x39) for >0.6 s whose driver is present and session flag (+100) set; writes its 16-bit id and calls binding serialize 0x140c0e770, clears +0x38, returns 1; logs NETWORK/T 'sendNetMessage(%s)'. Returns 0 when nothing to send. (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1_car_setup_data_manager_base_send_net_message",

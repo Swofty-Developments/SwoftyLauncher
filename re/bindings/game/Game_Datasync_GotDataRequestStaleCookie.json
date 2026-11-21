@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1431033e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-DATASYNC",
-  "notes": "named from its log messages (channel DATASYNC): '[%s] Got data request with stale cookie 0x%08x from %d - broadcasting finished message'"
+  "evidence": "decomp:re/decomp/1431033e0.c;pat:log-channel-DATASYNC;xref:0x14fe71edb",
+  "notes": "Handler (lea at 0x14fe71edb in 0x14fe71e00). Finds the sync session by msg+0x10 in list this+0x48; stale cookie (msg+0x14 == +0x20) -> logs and broadcasts finished (msg 0x73, 0x14402e500). Else needs cookie +0x1c and state 2 (Syncing): sender (+0x30 == 1) starts sending to the peer (entry 0x1431053e0, +0x50 = 5); receiver confirms when the peer is host (msg 0x72), else logs ignore. (lane owner review requested) Better name: Game_Datasync_OnDataRequestMessage (bound record keeps its name)."
  },
  "signature": {
   "id": "game.datasync_got_data_request_stale_cookie",

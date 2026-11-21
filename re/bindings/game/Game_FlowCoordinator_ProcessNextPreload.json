@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143854570",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=FlowCoordinator::processNextPreload; log channel FLOW/V: 'TEMP_LOG: FlowCoordinator::processNextPreload() STATUS:%d PRELOAD_TASKS:%I64u ADDITIONAL_PRELOADS:%d'"
+  "evidence": "decomp:re/decomp/143854570.c;pat:log-message-cxx;xref:0x143857137,0x151879e2d,0x15187f50d",
+  "notes": "Own strings 'TEMP_LOG: FlowCoordinator::processNextPreload() ...' (FLOW/V). If this+0x4c counter >0 decrements; queue empty (this+0x58/0x60) -> runs completion callbacks this+0x78..0x80, state +0x40=+0x44=+0x3c. Else pops 0x30-byte task, switch type 0 eLoad/2 eUnload (flow table 0x1461038e0 stride 200, re-registers itself as callback), 1/3 Load/UnloadElements, 4 FunctionCallback, 5/6 Region(Un)load. (lane owner review requested)"
  },
  "signature": {
   "id": "game.flow_coordinator_process_next_preload",

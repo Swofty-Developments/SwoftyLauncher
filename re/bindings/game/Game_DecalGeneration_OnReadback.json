@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141435170",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-CUSTOMISATION_DECALS",
-  "notes": "named from its log messages (channel CUSTOMISATION_DECALS): 'GenerationService: vehicle %d, surface readback returned %s | GenerationService: vehicle %d, abuseImageData readback returned %s | GenerationService: vehicle %d, Asset groups are unloaded | Generation'"
+  "evidence": "decomp:re/decomp/141435170.c;pat:log-channel-CUSTOMISATION_DECALS;xref:0x14142f143,0x14142f15d,0x14142f17a,0x14142f195,0x14142f1b3",
+  "notes": "Not a readback handler: switch on state byte +0xd8 (names table 0x1456e5980). 1: request/identity checks, 0x141427840, preload asset batch ->2 ePreloadingDecals; 2: wait batch ->3/9; 3: SetDecalComponent 0x141437290, 0x141437320, CacheMaterialHandle, call Generate 0x1414378f0 at 0x141436e79, jmp ReleaseResources at 0x141436ee7; 4: ReadBackCompressed; 5/7: surface/abuseImage readback waits ->6/8/9; 6/7: LinkFileToPlayer 0x1414317f0; 10: jmp BeginGeneration 0x141434cb0. (lane owner review requested) Better name: Game_DecalGeneration_UpdateStateMachine (bound record keeps its name)."
  },
  "signature": {
   "id": "game.decal_generation_on_readback",

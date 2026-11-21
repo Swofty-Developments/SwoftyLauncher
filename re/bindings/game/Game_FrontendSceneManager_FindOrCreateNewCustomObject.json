@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428ebaf0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name findOrCreateNewCustomObject (class from the log channel); log channel FRONTEND_SCENE_MANAGER/OBJECT: '%s()'"
+  "evidence": "decomp:re/decomp/1428ebaf0.c;pat:log-message-method;xref:0x14254809e,0x1425480c6,0x1428cb8a4",
+  "notes": "Logs findOrCreateNewCustomObject (FRONTEND_SCENE_MANAGER/OBJECT). Searches object vector this+0x6ff8..0x7000 (stride 0x130, ushort id +0xb8) for param_2; else logs 'Failed to find Custom Object Component Id %d' (id != 0xffff) and appends a new object component (vtable 0x1457b6780, id from counter 0x145f94280, this+0x40..0x50 copied) and returns its id. (lane owner review requested)"
  },
  "signature": {
   "id": "game.frontend_scene_manager_find_or_create_new_custom_object",

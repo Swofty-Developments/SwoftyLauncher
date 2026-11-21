@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14313cfa0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=DriverCustomisationReplicationManager::handleDriverCustomisationIdAllocated; log channel NETWORK-ENTRANTS: 'void network::DriverCustomisationReplicationManager::handleDriverCustomisationIdAllocated(neon::NeNetMessage &, neon::NeNetConnectionID) | %s There is no driver customisation assigned to the standard '"
+  "evidence": "decomp:re/decomp/14313cfa0.c;pat:log-message-cxx;xref:0x14febeea4",
+  "notes": "Net-message handler lea'd at 0x14febeea4 (in 0x14febed10). Logs 'DriverCustomisationIdAllocatedNetMessage received' (own pretty-function 0x14581a1cf = handleDriverCustomisationIdAllocated). Only when int [mgr+0x10]+8 > 1 and the sender equals [[mgr+8]+0xd8] vcall +0x10: takes the local customisation ([mgr+0x80]+0x268/+0x1b4 key, store +0x280; missing -> 'no driver customisation assigned to the standard slot'), calls ReplacePlayerDriverCu 0x14313baf0(mgr, local player, id msg+0x60, record) and broadcasts net message 0x1458247e0 with id + record copy via 0x14402e500([mgr+0x20]). (lane owner review requested)"
  },
  "signature": {
   "id": "game.driver_customisation_replication_manager_handle_driver_custom_2",

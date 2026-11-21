@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141fe5a10.c;doc:re/research/sponsors.md#catalogue",
-  "notes": "My Team decal catalogue screen VM (CustomisationCarDecalCatalogueViewModel) builds its tiles here, not in carousel 0x1416d2790. Career branch (thunk 0x14b52b6e0() == 2): CareerSponsorsComponent+0x500..+0x508 sponsor list -> sorted 32-byte entries -> per sponsor (+0xdc group id) search of the decal tree (param_1+0x340) for an item with +0x38 == group id; match -> tile via 0x141fe9600 + push 0x142149410; no match -> 0x141fe6d70, no tile. Sites 0x141fe6e8e (tile search, mov rbx,[rax+0xc8]) and 0x141fe637a (non-career per-design branch, mov rbp,[rax+0xc8]). Entry builder 0x141feb380; tile loyalty_level = top-down scan. [static L2 evidence in the doc; added at L1 for the lane owner to raise]"
+  "evidence": "decomp:re/decomp/141fe5a10.c;doc:re/research/sponsors.md#catalogue;xref:0x141fe593f,0x141fe59f6",
+  "notes": "Called from 0x141fe5520 and 0x141fe59e0."
  },
  "signature": {
   "id": "game.decal_catalogue_vm_build_tiles",
