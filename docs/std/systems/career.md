@@ -1005,7 +1005,7 @@ swofty::events::on<career::events::Missing>().after(
 | `career.saved` | notify | after the containers block was written with no error (`site_Game_SaveData_ContainersDone`) |
 | `career.missing` | notify | after a profile load, a career the index knew has no slot in any mode (see below) |
 
-`career.saving` and `career.saved` fire only while the save splice is armed, on the thread that writes the profile. A handler stays short and uses no game calls. Both carry no payload: `saves::current()` names the career.
+`career.saving` and `career.saved` fire only while the save splice is armed, on the thread that writes the profile, and only for the profile save: the race highlights save (`savegame@highlights000`) and the game's other saves fire neither. A handler stays short and uses no game calls. Both carry no payload: `saves::current()` names the career.
 
 `career.missing` fires at the end of a good profile load, on the loading thread, when a career of the index has no slot in the `SaveSlotManager` of any mode after `Game_SaveSlotManager_Deserialise`. The core marks those careers missing in the index and `saves::missing()` lists them. A career is matched by its slot guid, or its slot id when the slot has no guid.
 

@@ -64,12 +64,21 @@ pub struct Container {
 
 pub const SLOT_SUFFIX: &str = "_SaveSlotGameModeComponent";
 
+/// The container only the profile save's root registers (native/src/core/career/save_splice_logic.hpp `PROFILE_CHILD`).
+pub const PROFILE_CHILD: &str = "options_options";
+
 /// The mode a container belongs to: `gm_<mode>` and `<mode>_SaveSlotGameModeComponent` are its two halves.
 pub fn mode_of(name: &str) -> String {
     name.strip_prefix("gm_")
         .or_else(|| name.strip_suffix(SLOT_SUFFIX))
         .unwrap_or(name)
         .to_owned()
+}
+
+/// Whether a container is either half of a game mode's pair, `gm_<mode>` or `<mode>_SaveSlotGameModeComponent`.
+pub fn is_mode_half(name: &str) -> bool {
+    name.strip_prefix("gm_").is_some_and(|m| !m.is_empty())
+        || name.strip_suffix(SLOT_SUFFIX).is_some_and(|m| !m.is_empty())
 }
 
 impl Container {
@@ -130,7 +139,17 @@ impl Manifest {
         self.containers.iter().find(|c| c.name == name)
     }
 
+    /// A save a session with the core wrote of the profile: the core puts containers back from the newest one.
     pub fn is_session_save(&self) -> bool {
-        self.event == Event::Save && self.session.is_some()
+        self.event == Event::Save && self.session.is_some() && self.is_profile()
+    }
+
+    /// Whether the generation is of the profile save. An older core also wrote one at the race highlights save, whose
+    /// registered container is its own replay container and none of the profile's, which always has the options
+    /// container and the game modes' pairs. A generation that lists no registered container (the EA app copy's) counts
+    /// (native/src/core/career/plain_saves_logic.hpp `profile_generation`).
+    pub fn is_profile(&self) -> bool {
+        let mut registered = self.containers.iter().filter(|c| c.registered).peekable();
+        registered.peek().is_none() || registered.any(|c| c.name == PROFILE_CHILD || is_mode_half(&c.name))
     }
 }
