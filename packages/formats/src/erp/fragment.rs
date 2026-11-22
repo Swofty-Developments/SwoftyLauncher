@@ -9,6 +9,15 @@ pub struct Fragment {
     pub flags: u32,
     pub compression: u8,
     pub(super) payload: Payload,
+    /// The archive and resource the stored bytes were read from, which a decode error names.
+    pub(super) from: Option<std::sync::Arc<ReadFrom>>,
+}
+
+/// The archive file, when there is one, and the resource a fragment's stored bytes were read from.
+#[derive(Debug)]
+pub(super) struct ReadFrom {
+    pub(super) path: Option<std::path::PathBuf>,
+    pub(super) resource: String,
 }
 
 /// A fragment's bytes: as its archive stores them, or its data waiting for a [`Packer::settle`] that
@@ -40,6 +49,7 @@ impl Fragment {
                 packed: raw.len() as u64,
                 raw,
             },
+            from: None,
         }
     }
 
@@ -101,7 +111,15 @@ impl Fragment {
     pub(crate) fn data_cow(&self) -> Result<std::borrow::Cow<'_, [u8]>> {
         match &self.payload {
             Payload::Pending { data, .. } => Ok(std::borrow::Cow::Borrowed(data)),
-            Payload::Stored { raw, .. } if self.is_zstd() => Ok(zstd::decode_all(raw.as_slice())?.into()),
+            Payload::Stored { raw, .. } if self.is_zstd() => zstd::decode_all(raw.as_slice())
+                .map(Into::into)
+                .map_err(|e| Error::Frame {
+                    path: self.from.as_ref().and_then(|f| f.path.clone()),
+                    resource: self.from.as_ref().map(|f| f.resource.clone()),
+                    fragment: self.name(),
+                    packed: raw.len(),
+                    reason: e.to_string(),
+                }),
             Payload::Stored { raw, .. } => Ok(std::borrow::Cow::Borrowed(raw)),
         }
     }

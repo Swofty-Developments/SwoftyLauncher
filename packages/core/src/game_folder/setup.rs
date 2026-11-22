@@ -27,14 +27,24 @@ pub const NEEDED: &str = "Swofty needs a one-time setup before modded play: open
 /// What stops a build whose record of original game files names backups
 /// that are gone from the data folder.
 pub fn backups_missing(files: &[String]) -> String {
+    backups_unusable(files, "missing from its data folder")
+}
+
+/// What stops a build that read a backup of an original game file that does not decode; `detail` says what
+/// in it does not.
+pub fn backups_damaged(files: &[String], detail: &str) -> String {
+    backups_unusable(files, &format!("damaged ({detail})"))
+}
+
+fn backups_unusable(files: &[String], state: &str) -> String {
     let (backups, are) = match files.len() {
         1 => ("backup", "is"),
         _ => ("backups", "are"),
     };
     format!(
-        "Swofty's {backups} of the original {} {are} missing from its data folder. Run the one-time setup again: \
-         open Swofty Launcher and press Play, or run `swofty setup reset`, repair the game in the EA app or verify \
-         the game files in Steam, then run `swofty setup done`",
+        "Swofty's {backups} of the original {} {are} {state}. Run the one-time setup again: open Swofty Launcher \
+         and press Play, or run `swofty setup reset`, repair the game in the EA app or verify the game files in \
+         Steam, then run `swofty setup done`",
         crate::game_folder::stock::names(files)
     )
 }

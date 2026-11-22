@@ -34,6 +34,76 @@ fn a_cut_short_archive_names_its_file() {
     std::fs::remove_dir_all(&dir).ok();
 }
 
+fn not_a_frame() -> Erp {
+    let mut erp = sample();
+    erp.resources[0].fragments[0] = Fragment::new(*b"temp", 21, 0, ZSTD, b"!pkg not a zstd frame".to_vec());
+    erp
+}
+
+#[test]
+fn a_fragment_marked_zstd_that_does_not_decode_names_its_archive_resource_and_fragment() {
+    let dir = std::env::temp_dir().join(format!("swofty-erp-frame-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let path = dir.join("cars.erp");
+    std::fs::write(&path, not_a_frame().to_bytes().unwrap()).unwrap();
+    let file = ErpFile::open(&path).unwrap();
+    let res = file.load(&file.erp.resources[0]).unwrap();
+    let err = res.fragments[0].data().unwrap_err();
+    assert!(
+        matches!(&err, Error::Frame { fragment, packed: 21, reason, .. } if fragment == "temp" && reason == "Unknown frame descriptor"),
+        "{err:?}"
+    );
+    assert_eq!(
+        err.to_string(),
+        format!(
+            "{}: eaid://ui_package/screens/sample.ui: fragment temp: its 21 byte(s) are marked as zstd but do not decode (Unknown frame descriptor), so the archive is damaged or was written wrong",
+            path.display()
+        )
+    );
+    assert_eq!(res.fragments[1].data().unwrap(), b"abc");
+    std::fs::remove_dir_all(&dir).ok();
+}
+
+#[test]
+fn a_fragment_parsed_from_memory_names_its_resource_and_one_made_here_names_only_itself() {
+    let bytes = not_a_frame().to_bytes().unwrap();
+    let parsed = Erp::parse(&bytes).unwrap();
+    assert_eq!(
+        parsed.resources[0].fragments[0].data().unwrap_err().to_string(),
+        "eaid://ui_package/screens/sample.ui: fragment temp: its 21 byte(s) are marked as zstd but do not decode (Unknown frame descriptor), so the archive is damaged or was written wrong"
+    );
+    let made = Fragment::new(*b"data", 4, 0, ZSTD, b"\0\0\0\0".to_vec());
+    assert!(
+        made.data()
+            .unwrap_err()
+            .to_string()
+            .starts_with("fragment data: its 4 byte(s) are marked as zstd but do not decode ("),
+    );
+}
+
+#[test]
+fn a_fragment_a_packer_fills_again_drops_the_archive_it_was_read_from() {
+    let mut parsed = Erp::parse(&not_a_frame().to_bytes().unwrap()).unwrap();
+    let res = &mut parsed.resources[0];
+    res.set_fragment(0, b"!pkg a payload of its own").unwrap();
+    assert_eq!(res.fragments[0].data().unwrap(), b"!pkg a payload of its own");
+    assert!(res.fragments[0].from.is_none());
+    assert!(res.fragments[1].from.is_some());
+}
+
+#[test]
+fn bytes_after_a_whole_zstd_frame_do_not_decode_either() {
+    let mut erp = sample();
+    let mut raw = compress(b"!pkg a whole frame").unwrap();
+    raw.extend_from_slice(&[0; 8]);
+    erp.resources[0].fragments[0] = Fragment::new(*b"temp", 18, 0, ZSTD, raw);
+    let parsed = Erp::parse(&erp.to_bytes().unwrap()).unwrap();
+    assert!(matches!(
+        parsed.resources[0].fragments[0].data(),
+        Err(Error::Frame { packed, .. }) if packed > 8
+    ));
+}
+
 #[test]
 fn a_bad_data_offset_or_count_is_an_error_not_a_panic() {
     let dir = std::env::temp_dir().join(format!("swofty-erp-bad-{}", std::process::id()));

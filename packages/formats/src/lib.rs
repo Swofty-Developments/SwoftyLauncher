@@ -35,6 +35,27 @@ pub enum Error {
         #[source]
         source: std::io::Error,
     },
+    /// A fragment marked as zstd whose bytes do not decode, with the archive file and the resource it was read
+    /// from when it came from one.
+    #[error(
+        "{}fragment {fragment}: its {packed} byte(s) are marked as zstd but do not decode ({reason}), so the archive is damaged or was written wrong",
+        frame_at(.path.as_deref(), .resource.as_deref())
+    )]
+    Frame {
+        path: Option<std::path::PathBuf>,
+        resource: Option<String>,
+        fragment: String,
+        packed: usize,
+        reason: String,
+    },
+}
+
+fn frame_at(path: Option<&std::path::Path>, resource: Option<&str>) -> String {
+    let path = path.map(|p| p.display().to_string());
+    path.into_iter()
+        .chain(resource.map(str::to_owned))
+        .map(|part| format!("{part}: "))
+        .collect()
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

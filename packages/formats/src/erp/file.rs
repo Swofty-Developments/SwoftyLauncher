@@ -2,7 +2,7 @@ use std::io::{Read, Seek, SeekFrom};
 use std::path::Path;
 use std::time::Duration;
 
-use crate::erp::fragment::Payload;
+use crate::erp::fragment::{Payload, ReadFrom};
 use crate::erp::packer::{Packer, worked};
 use crate::erp::resource::Resource;
 use crate::erp::{BACKOFF_MS, Erp, HEADER_LEN, MAGIC};
@@ -56,6 +56,10 @@ impl ErpFile {
         let mut file = open(&self.path)?;
         let len = file.metadata().map_err(crate::io_at(&self.path))?.len();
         let mut out = res.clone();
+        let from = std::sync::Arc::new(ReadFrom {
+            path: Some(self.path.clone()),
+            resource: res.name.clone(),
+        });
         for f in &mut out.fragments {
             let (packed, _) = f.stored()?;
             let end = self
@@ -70,6 +74,7 @@ impl ErpFile {
             let mut raw = vec![0; packed as usize];
             file.read_exact(&mut raw).map_err(crate::io_at(&self.path))?;
             f.payload = Payload::Stored { packed, raw };
+            f.from = Some(from.clone());
         }
         Ok(out)
     }

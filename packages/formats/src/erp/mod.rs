@@ -7,7 +7,7 @@ mod resource;
 
 use std::path::Path;
 
-use self::fragment::Payload;
+use self::fragment::{Payload, ReadFrom};
 use crate::bytes::Reader;
 use crate::{Error, Result};
 
@@ -46,12 +46,17 @@ impl Erp {
     pub fn parse(data: &[u8]) -> Result<Self> {
         let (mut erp, data_off) = Self::parse_index(data)?;
         for res in &mut erp.resources {
+            let from = std::sync::Arc::new(ReadFrom {
+                path: None,
+                resource: res.name.clone(),
+            });
             for f in &mut res.fragments {
                 let (packed, _) = f.stored()?;
                 let raw = Reader::new(data, data_off.saturating_add(f.offset as usize))
                     .take(packed as usize)?
                     .to_vec();
                 f.payload = Payload::Stored { packed, raw };
+                f.from = Some(from.clone());
             }
         }
         Ok(erp)
@@ -103,6 +108,7 @@ impl Erp {
                         packed: r.u64()?,
                         raw: Vec::new(),
                     },
+                    from: None,
                 });
             }
             resources.push(Resource {

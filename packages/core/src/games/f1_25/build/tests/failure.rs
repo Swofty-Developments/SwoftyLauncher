@@ -115,6 +115,132 @@ fn a_missing_or_cut_short_file_names_its_addon_or_the_game() {
     std::fs::remove_dir_all(&root).ok();
 }
 
+fn broken_archive(path: &Path) -> swofty_formats::Error {
+    use swofty_formats::erp::{Erp, ErpFile, Fragment, HEADER_LEN, MAGIC, Resource, ZSTD};
+    let mut header = [0u8; HEADER_LEN];
+    header[..4].copy_from_slice(MAGIC);
+    header[4..8].copy_from_slice(&3u32.to_le_bytes());
+    let bytes = Erp {
+        header,
+        version: 3,
+        resources: vec![Resource {
+            name: "eaid://track/adelaide/adelaide.vtf".into(),
+            kind: swofty_formats::erp::kind("VTF").unwrap(),
+            unk: vec![0; 4],
+            fragments: vec![Fragment::new(*b"temp", 8, 0x10, ZSTD, vec![0; 8])],
+            hash: [0; 16],
+        }],
+    }
+    .to_bytes()
+    .unwrap();
+    std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+    std::fs::write(path, bytes).unwrap();
+    let file = ErpFile::open(path).unwrap();
+    file.load(&file.erp.resources[0]).unwrap().fragments[0]
+        .data()
+        .unwrap_err()
+}
+
+#[test]
+fn an_archive_that_does_not_decode_names_its_addon_or_the_game_file() {
+    let root = std::env::temp_dir().join(format!("swofty-named-frame-{}", std::process::id()));
+    std::fs::remove_dir_all(&root).ok();
+    let store = Store::new(root.join("data"));
+    let game = root.join("game");
+    let addon = store.addons_dir().join("mod.adelaid");
+    std::fs::create_dir_all(&addon).unwrap();
+    std::fs::write(
+        addon.join("swofty.json"),
+        r#"{"schema_version":1,"id":"mod.adelaid","name":"Adelaide","version":"1.0.0","author":"t","compat":{"game":"f1_25"}}"#,
+    )
+    .unwrap();
+    let detail =
+        "eaid://track/adelaide/adelaide.vtf: fragment temp does not decode: Unknown frame descriptor";
+    let theirs = named(
+        &store,
+        &game,
+        Error::Formats(broken_archive(&addon.join("track/adelaide.erp"))),
+    );
+    assert_eq!(
+        theirs.to_string(),
+        format!(
+            "Adelaide (mod.adelaid) has a damaged track/adelaide.erp ({detail}). Turn Adelaide off in this profile, \
+             or remove it on the Addons page and install or import it again."
+        )
+    );
+    let stock = named(
+        &store,
+        &game,
+        Error::Formats(broken_archive(&game.join("2025_asset_groups/adelaide.erp"))),
+    );
+    assert!(
+        stock.to_string().starts_with(&format!(
+            "2025_asset_groups/adelaide.erp in the game folder is damaged ({detail}); verify the game files in Steam"
+        )),
+        "{stock}"
+    );
+    let elsewhere = broken_archive(&root.join("cache/ers/adelaide.erp"));
+    let text = elsewhere.to_string();
+    assert_eq!(named(&store, &game, Error::Formats(elsewhere)).to_string(), text);
+    let unnamed = swofty_formats::Error::Frame {
+        path: None,
+        resource: None,
+        fragment: "temp".into(),
+        packed: 8,
+        reason: "Unknown frame descriptor".into(),
+    };
+    assert_eq!(
+        named(&store, &game, Error::Formats(unnamed)).to_string(),
+        "fragment temp: its 8 byte(s) are marked as zstd but do not decode (Unknown frame descriptor), so the \
+         archive is damaged or was written wrong"
+    );
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
+fn a_damaged_backup_that_does_not_decode_sends_the_player_through_the_setup_again() {
+    let root = std::env::temp_dir().join(format!("swofty-named-backup-{}", std::process::id()));
+    std::fs::remove_dir_all(&root).ok();
+    let dir = root.join("game");
+    let rel = "2025_asset_groups/f1_2026_vehicle_package/teams/williams/williams.erp";
+    std::fs::create_dir_all(dir.join(rel).parent().unwrap()).unwrap();
+    std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
+    std::fs::write(dir.join(rel), "stock").unwrap();
+    let game = Game {
+        identity: Identity::detect(&dir, Some(1)).unwrap(),
+        dir: dir.clone(),
+        user_reg: None,
+    };
+    let store = Store::new(root.join("data"));
+    crate::game_folder::setup::reset(&store.root, &game, false).unwrap();
+    crate::game_folder::setup::finish(&store.root).unwrap();
+    let objects = Objects {
+        root: store.root.join("baseline/objects"),
+    };
+    let mut baseline = Baseline::new(&game.identity);
+    let sha = baseline.record(&objects, &dir, rel, &()).unwrap().sha256.clone();
+    baseline.save(&store.root).unwrap();
+    let backup = objects.path(&sha);
+    assert!(crate::game_folder::setup::done(&store.root));
+
+    let damaged = swofty_formats::Error::Frame {
+        path: Some(backup),
+        resource: Some("eaid://p/williams.vtf".into()),
+        fragment: "temp".into(),
+        packed: 5,
+        reason: "Unknown frame descriptor".into(),
+    };
+    assert_eq!(
+        named(&store, &dir, Error::Formats(damaged)).to_string(),
+        "Swofty's backup of the original williams.erp is damaged (eaid://p/williams.vtf: fragment temp does not \
+         decode: Unknown frame descriptor). Run the one-time setup again: open Swofty Launcher and press Play, or \
+         run `swofty setup reset`, repair the game in the EA app or verify the game files in Steam, then run \
+         `swofty setup done`"
+    );
+    assert!(!crate::game_folder::setup::done(&store.root));
+    std::fs::remove_dir_all(&root).ok();
+}
+
 #[test]
 fn a_missing_backup_stops_the_build_and_sends_the_player_through_the_setup_again() {
     let _pin = crate::addons::builtin::LoaderPin::none();

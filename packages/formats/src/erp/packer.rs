@@ -111,6 +111,7 @@ impl Packer {
             }
         };
         f.size = data.len() as u64;
+        f.from = None;
         Ok(())
     }
 
