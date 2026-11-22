@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141a58720",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "ui",
   "proto": "void FUN(void *view, void *ctx)",
   "evidence": "decomp:re/decomp/141a58720.c;xref:0x141a560a1",
-  "notes": "myteam-g1: UI binding code; open_rnd_challengers. Static, string-key driven."
+  "notes": "Callback (lea 0x141a560a1). Flag 0x14605ab9c and state+0x182 and !state+0x1e2 -> route open_rnd_challengers. Else component 0x14605b128 present, 0x14077c790 true and !state+0x182 -> tail-jmp 0x1416d8fa0(this). Else 0x14386f530(this+0x318) and fire close. (lane owner review requested) Better name: Ui_RnDScreen_CloseOrOpenChallengers (bound record keeps its name)."
  },
  "signature": {
   "id": "ui.rnd_open_challengers",

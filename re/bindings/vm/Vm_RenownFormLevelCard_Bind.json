@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1420b6d90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "vm",
   "proto": "void* (void *out, void *data, void *ctx)",
-  "evidence": "decomp:re/decomp/1420b6d90.c;xref:0x14209a166;xref:0x14209b22a;xref:0x14209b728",
-  "notes": "myteam-g2: Binds the node references of a renown/form level card (Vm_Set_NodeRef, Vm_Set_Bool, Ne_IntrusiveNode_Reassign, helper 1420b5f20). Used by RenownFormDetails_BuildPills and RenownFormVM_Init/Refresh."
+  "evidence": "decomp:re/decomp/1420b6d90.c;xref:0x14209a166,0x14209b22a,0x14209b728,0x1420a60e8,0x1420b7ba5,0x1420c93c7,0x1420cc3fa",
+  "notes": "(card,parent,alloc): holder +0 relinked to the parent node (Ne_IntrusiveNode_Reassign); list 'panels' at +0x20 (0x1442a1810); +0x40=alloc; Vm_Set_NodeRef selected_panel, Vm_Set_Bool can_tab_left/can_tab_right; list 'pips' at +0xc0 with 5x Vm_List_AppendChild + temp pip binder 0x1420b5f20. A panel carousel; the level-card meaning comes from callers only. (lane owner review requested)"
  },
  "signature": {
   "id": "vm.renown_form_level_card_bind",

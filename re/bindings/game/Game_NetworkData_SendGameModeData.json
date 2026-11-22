@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143060be0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143060be0.c;pat:log-message-method;xref:0x140996e0d",
-  "notes": "Logs sendGameModeData(conn); serialises the current game mode data (0x142a83020, 0x140998830) into a buffer and sends it via Game_NetworkData_SendToConnection."
+  "notes": "(this, conn): only if [[this+8]+0xd8]+0x4b4 == 1; logs NETWORK-DATA '%s(%d)' 'sendGameModeData'; header via [[+0x4d8]+0x28] vcall +0x120, game mode data (0x142a83020 on [+8]+0x78) into a 0x80-byte bitstream copied into the record, serialised by 0x140998830 into a 0x400-byte stream; if size < 0x48e prefixes type byte 0x1b and sends via 0x14406ed50(transport, conn, 0, buf, len+1). Caller 0x140996e0d (0x140996b60). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_data_send_game_mode_data",

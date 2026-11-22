@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144651f90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144651f90.c;xref:0x14462afd1;doc:re/db/subsystems/car.md",
-  "notes": "(agent plank) thunk -> 0x155339950 (.data1): AddListener(listenerList, {fn, ctx}); used by Car_Chassis_Build for 0x144705380; route for addon contact listeners"
+  "evidence": "decomp:re/decomp/144651f90.c;doc:re/db/subsystems/car.md;xref:0x142f1b5a1,0x1445aaf7b,0x14462afd1,0x144650b77,0x144653bf6,0x14465f6a9,0x1446fc745,0x148de03f1,0x1554d3b9a",
+  "notes": "Thunk jmp 0x155339950. Body: under CS [car+0xf0] stores the 16-byte pair {fn, ctx} (*param_2) into the first empty of the 15 listener slots car+0x9db8..+0x9ea8 (stride 0x10); all full -> nothing stored. The slots are called by Car_Collision_Dispatch 0x14473f8e0. (lane owner review requested)"
  },
  "signature": {
   "id": "car.collision_add_listener",

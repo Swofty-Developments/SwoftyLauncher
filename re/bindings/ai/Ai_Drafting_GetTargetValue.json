@@ -9,7 +9,7 @@
   "subsystem": "ai",
   "proto": "float Ai_Drafting_GetTargetValue(void *ai_car, void *other_car, void *rec)",
   "evidence": "decomp:re/decomp/14060e920.c;xref:0x1406480a3,0x1406678e9",
-  "notes": "x = (ai_car+0x40 route)+(0x10 or 0x60 by +0x58 flag)+0x44 if +0x4b set else 0. Selector 0x14060eaf0(?, other_car): 0 if other+0x500 set, else a session-type test. Curve = *(ai_car+0x3d8) if selector else *(ai_car+0x400): baked 64-sample byte curve (x-offset +0x14, x-scale +0x10, step +0x18, base +0x24, last +0x1c, LUT +0x2c). If curve(x) < rec+0x1c (r8 arg, read at 0x14060e956) return 0; margin = [*(ai_car+0x3c8 or +0x3f0)+8]; returns [*(ai_car+0x4e8)+0x70]+8 if curve-margin >= rec+0x1c else [*(ai_car+0x4e8)+0x78]+8. Ai_Drafting_Evaluate compares the result with [*(ai_car+0x4e8)+0x78]+8 -> reason 0x16. Second caller Ai_Unk_1406663d0. KEPT L1 2026-11-14 (engine-re AI round): data flow decoded, but the meaning of the curve input, the +0x3c8..+0x4e8 DB slots and the selector are not proven; 'target value' is a guess. edited by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+  "notes": "x = route(+0x40)+(0x10 or 0x60 by +0x58)+0x44 if +0x4b else 0. Selector 0x14060eaf0 picks curve *(+0x3d8) else *(+0x400) (64-sample byte LUT). If curve(x) < rec+0x1c (r8) -> 0; margin = [*(+0x3c8 or +0x3f0)]+8; returns [[+0x4e8]+0x70]+8 if curve-margin >= rec+0x1c else [[+0x4e8]+0x78]+8."
  },
  "signature": {
   "id": "ai.drafting_get_target_value",

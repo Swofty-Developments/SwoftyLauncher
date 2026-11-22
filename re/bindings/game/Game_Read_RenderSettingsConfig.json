@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d15520",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142d15520.c;pat:log-channel--;xref:0x1457da598",
-  "notes": "Autocross settings GDB reader: lap proportions, cone/gate penalties, render_settings.* gate geometry, physics_objects/render idf paths."
+  "notes": "Whole body read: builds '<ctx>.Autocross_Settings_0' (stack literal) and reads start/end_proportion_round_lap, start_proportion_to_place_vehicle, start_challenge_lap, hit_cone_time_added, missed_gate_time_added, num_gates_visible(_alpha), num_laps (vfunc +0x168); then render_settings.* (default_gate_size, cone_object_string -> 3 idf/emb paths via 0x14016d400, per-gate left/right_position, orientation_col_0..2 -> 0x80-byte gates in this+0x438 vector, gate height/depth, colour_alpha, near_fade, gate_y_offset); ends 0x1429a25e0, 0x142d13a80. Old name too generic. (lane owner review requested) Better name: Game_Autocross_LoadSettings (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_render_settings_config",

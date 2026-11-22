@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14076d090",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14076d090.c;xref:0x14323805b",
-  "notes": "Notifies [this+0x20a58]+0x168 vcall +0x40 (holding a ref to +0x170), allocates 0x68 bytes, Game_Analytics_BuildStartLightsEventPayload 0x1404f6c40, +0x60 = param_2, +0x64 = local player id (from [this+0x209d8]+0xd8), then Game_Analytics_BuildNetDelayedStartEvent 0x14076d230(this,&evt,0xff). Called at 0x14323805b in Sess_StartLights_HandleSequenceStartTime."
+  "notes": "Vcall +0x40 on [[this+0x20a58]+0x168] (ref held on +0x170), allocates 0x68 bytes from the global allocator, 0x1404f6c40 fills the event, +0x60 = param_2 (start time), +0x64 = local player net id ([[this+0x209d8]+0xd8] vcalls, cached +0x14/+0x18), then 0x14076d230(this,&evt,0xff). Caller 0x14323805b in 0x143237c40 (Sess_StartLights_HandleSequenceStartTime). (lane owner review requested)"
  },
  "signature": {
   "id": "game.start_lights_set_sequence_start_time",

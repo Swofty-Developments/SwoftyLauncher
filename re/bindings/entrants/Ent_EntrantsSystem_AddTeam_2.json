@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142475600",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "entrants",
   "proto": "-",
-  "evidence": "pat:log-channel-ENTRANTS_SYSTEM",
-  "notes": "named from its log messages (channel ENTRANTS_SYSTEM): 'Team added with stat id %s | Couldn't find array to add team with type %s | Failed to add team with stat id %s'"
+  "evidence": "decomp:re/decomp/142475600.c;pat:log-channel-ENTRANTS_SYSTEM;xref:0x14276d35b,0x143158018",
+  "notes": "AddTeam for type 2 eNetworkReplicated: array this+0x2e8; ENTRANTS_SYSTEM: id = (first free slot of the array's 16-byte entries << 16) | type; result *p3 = 0 ok / 1 no array / 3 insert failed; logs added/failed with stat id. Same body as Ent_EntrantsSystem_AddTeam (0x142474a60) except array and type. (lane owner review requested) Better name: Ent_EntrantsSystem_AddTeam_NetReplicated (bound record keeps its name)."
  },
  "signature": {
   "id": "entrants.entrants_system_add_team_2",

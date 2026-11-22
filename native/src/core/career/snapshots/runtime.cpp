@@ -525,6 +525,8 @@ std::string snapshots_career_id(const char *key)
     return key && committed_key == key && !committed_id.empty() ? committed_id : std::string(key ? key : "");
 }
 
+std::string snapshots_career_now() { return facts_career(); }
+
 int snapshots_report_season(const std::string &caller, int year, int season_index)
 {
     if (!the_book) {

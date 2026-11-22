@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140227510",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140227510.c;pat:log-message-cxx;xref:0x14749d829",
-  "notes": "Called from 0x14749d810."
+  "notes": "Called at 0x14749d829 (in .data1 0x14749d810). CutsceneManager::preload(name, ctx) -> shared_ptr in param_2: reuses a script from list +0x58 matching name and vt+0x58(ctx), else creates from factory list +0x38..+0x40 by name (vt+8; vt+0x1b8/+0xb0/+0x230) and appends to +0x70; links next/prev hints with current +0x118; unknown name -> WARN 'not registered'; vt+0x110 false -> CUTSCENE_MANAGER_ERROR log, else vt+0x50(ctx), vt+0xb8; logs 'preload returned in %.3fms'. Was Game_CutsceneManager_Loading. (lane owner review requested) Better name: Game_CutsceneManager_Preload (bound record keeps its name)."
  },
  "signature": {
   "id": "game.cutscene_manager_loading",

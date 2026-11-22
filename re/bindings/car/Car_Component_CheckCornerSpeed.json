@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "pat:log-channel-VEHICLE_COMPONENT",
+  "evidence": "decomp:re/decomp/142f2a0d0.c;pat:log-channel-VEHICLE_COMPONENT;xref:0x142f2d185,0x142f2d205",
   "notes": "named from its log messages (channel VEHICLE_COMPONENT): 'We have somehow calculated an impossible speed for a corner, delta time is: %f'"
  },
  "signature": {

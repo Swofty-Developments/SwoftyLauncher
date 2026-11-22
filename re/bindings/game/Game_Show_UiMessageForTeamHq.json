@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e72b40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "void Show(void *ctx, ... , void *msg, char a, uint8_t b, char c)",
   "evidence": "decomp:re/decomp/142e72b40.c;xref:0x1414d7169,0x1414d9440,0x1419de295,0x1419e2c8c,0x141a55693,0x141a84535,0x141a917b9,0x141ab5b89,0x141ab6770,0x141acd315,0x141ad703c,0x141aeea18,0x141afc2f8,0x141b08403,0x141b0e62b,0x141b11f7c,0x141b1df0d,0x141b24405,0x141b2c58c,0x141bc5701,0x141be0c49,0x141c3b9a4,0x141c6774c,0x141ce8b70,0x141ce9176,0x141d1efee,0x141d449ee,0x141d48ea8,0x141d6c1de,0x141dcfecd,0x141df5a0e,0x141df5cc9,0x141dfeedf,0x141dff72a,0x141e9a718,0x141ef0c77,0x141efe704,0x141f1183e,0x141f137c1,0x141f31d33,0x141f45e3d,0x141f4ad2f,0x141f57dc0,0x141f8f3a9,0x141fb23d4,0x141fb51e8,0x141fb5a6e,0x141fb98c4,0x141fbe4b6,0x142182a0b,0x142182e4c,0x1421ae0e5,0x1421af416,0x1421b416b,0x1421b446c,0x1421b8198,0x1421c6846,0x1421c6db6,0x1421c78b2,0x1421c79fe,0x142269eb8,0x142283b00,0x1422c3673,0x1422e5a22,0x1422fa488,0x142fb7275,0x142fb7af3,0x14bc7a966,0x14bcff6eb,0x14be48e6c,0x14beb5e4d,0x14c129604,0x14c52bc6e,0x14c5a8dab",
-  "notes": "Finds an entry by id param_3 in table this+0x270 (stride 0x330, count +0x15120, id at entry+0x320); queues a job (vt 0x1457f16d0); if gates (+0x15138, +0x15131, param_6, param_4, entry+0x324) pass, Game_UiMessage_DisplayMessage 0x1442d9bf0 with name entry+0x2b8, fields TutorialID (entry+0x10) and AudioEnabled, completion callback 0x142e72b00. Strings point to a tutorial popup, not team HQ; callers are many UI view models (xref)."
+  "notes": "Finds entry id param_3 in this+0x270 (stride 0x330, count +0x15120, id entry+0x320); queues 0x20 job vt 0x1457f16d0 {entry, !entry+0x324} on bus [0x14618b3b8]+8; if gates (+0x258 fade < 1.0, +0x15138/+0x15131, param_6, param_4, entry+0x324) pass: Game_UiMessage_DisplayMessage 0x1442d9bf0 with name entry+0x2b8, sets 'TutorialID' (entry+0x10) and 'AudioEnabled', completion cb 0x142e72b00 (param_8). Old TeamHq name not supported by the ... (lane owner review requested) Better name: Game_Tutorial_ShowPopupById (bound record keeps its name)."
  },
  "signature": {
   "id": "game.show_ui_message_for_team_hq",

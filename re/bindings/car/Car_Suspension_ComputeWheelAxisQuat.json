@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446b8fc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1446b8fc0.c;xref:0x1446b8e2d",
-  "notes": "Quaternion for a wheel angle about axis param_3: angle=(base*sign[side]+offset(this+0x2f))*0.5, base=this+0x2c or (vehicle gen>=7 at [*this+0x9f40]) chassis+0x1654 plus curve lookup (+0x5a0 via 0x142e88290, +0x1668); side sign table 0x1455d8b30 selected by this+0x2b4==2; sin/cos polynomial. Callers Car_Suspension_ComputeWheelTransform / ComputeWheelPose. Hypothesis: toe/camber/steer rotation."
+  "evidence": "decomp:re/decomp/1446b8fc0.c;xref:0x1446b8e2d,0x1446b9317,0x1446b9954",
+  "notes": "(wheel, outQuat, axis*): angle = this+0x160 (HV<7) or [+0x140]+0x1654 + [+0x140]+0x1668 + curve [+0x140]+0x5a0 at travel (xmm3, -999 -> +0x168); a = (angle*sign 0x1455d8b30[side+0x2b4==2] + this+0x178)*0.5, wrapped; out = (axis*sin a, cos a). Callers ComputeWheelTransform, BuildWheelStaticRotation, ComputeWheelPose. (lane owner review requested)"
  },
  "signature": {
   "id": "car.suspension_compute_wheel_axis_quat",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1433afe50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "void Game_Vfx_ScreenWaterdrop_Update(void *state, float elapsed, float delta)",
   "evidence": "decomp:re/decomp/1433afe50.c;pat:game.vfx_screen_waterdrop_update;xref:0x14337f37e,0x14337f3e3",
-  "notes": "Refs: call 0x14337f37e and lea 0x14337f3e3 in registration fn 0x14337bc60. Head read: pool update - zeroes outputs, rate from slot 0x26 of 0x1460fb6f0 (minus 0x1460ccda8, capped 25.0), gated by VFX enable 0x145f95c74, spawns 0x950-byte particle blocks. Waterdrop identity not checked here."
+  "notes": "Whole body read: zeroes outputs; spawn rate = weather slot 0x26 of 0x1460fb6f0 minus 0x1460ccda8, x 0x145f958e0, capped 25.0, gated 0x145f95c74; accumulates this+0x28, allocates 0x950-byte blocks of 16 drops (pool this+8, init y=-100000), spawns via 0x1434a5e90; per live drop projects with per-view 0x30 matrix (0x1460fb6b0), slides/ages it, merges nearby drops by radius; frees fully dead blocks, count -> this+0x2c. lea 0x14337f3e3 = job fn ptr, call 0x14337f37e. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vfx_screen_waterdrop_update",

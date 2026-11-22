@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141d7bce0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141d7bce0.c;pat:log-message-cxx;xref:0x14574a9b8",
-  "notes": "Vtable slot (cell 0x14574a9b8). Log GARAGE_BOARD_DEBUG 'RenderDriverNameViewModel::createDriverRoot garage %d slot %d entrant %s', strings garage_%u_slot_%u, driverName %s, car_number %d, complete_sync_point; calls 0x141d7cff0. 4 KB body."
+  "notes": "Clears root vector +0x280..+0x288 (0xc0 entries); if [+0x2b0]+0x88->+0x260->+0x2b0 byte +0x20b, per entrant ([+0x2a0]+0x1d8..+0x1e0, 0x98 stride) marks garage(<12)/slot(<2), adds root 'garage_%u_slot_%u' (0x141d7cff0), sets driverName/car_number fields (log GARAGE_BOARD_DEBUG createDriverRoot); then empty roots for unused garage/slot pairs; fires 'complete_sync_point' (0x144320fe0). (lane owner review requested)"
  },
  "signature": {
   "id": "game.render_driver_name_view_model_create_driver_root",

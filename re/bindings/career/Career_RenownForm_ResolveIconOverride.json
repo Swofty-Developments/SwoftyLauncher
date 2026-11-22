@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1419c3ea0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void *data, uint32_t *a, uint32_t *b, void *c",
   "evidence": "decomp:re/decomp/1419c3ea0.c;xref:0x142349f2d,0x1423d6099",
-  "notes": "Sets a driver card: amount from 0x140f71ac0 (Ui_Format_ResourcePointsAmountText), value from Career_Calc_DriverContractValueCurve (compact number), renown icon renown_icon_0%d_large / _10_large from 0x140f72070, and three up/down arrow overrides (career_driver_rating_update_*_arrow) from 0x140db8d30/0x140db8f00/0x140db8b60. Better name: Career_Bind_DriverCardValueAndArrows (bound record keeps its name)."
+  "notes": "Read in full. Driver card: 0x140f71ac0 value -> text (0x1441ebbd0) into [this+0x28]; 0x140f71610 -> compact number (0x1441e7290) into [+0x68]; 0x140f72070 clamped 1..10 -> 'renown_icon_10_large' or 'renown_icon_0%d_large' (+0x40/+0x48); deltas 0x140db8d30/0x140db8f00/0x140db8b60 -> visible (delta!=0 & param_6) into [+0x88]/[+200]/[+0x108] and up/down arrow override +0xa0/+0xe0/+0x120. Callers Career_MyTeamDriverDetails_RefreshOffer, 0x1423d5050. Better name: Career_Bind_DriverCardValueAndArrows (bound record keeps its name). (lane owner review requested)"
  },
  "signature": {
   "id": "career.renown_form_resolve_icon_override",

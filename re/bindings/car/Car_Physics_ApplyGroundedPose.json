@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144632350",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144632350.c;xref:0x142f347f7,0x142f43bf3",
-  "notes": "(rig) After 0x144632590(rig[0xb]): copies the stored pose rig[0x158..0x15f] to the chassis phys body ([[veh+0x558]+0x340]+0x18) via Ne_PhysBody_SetTransform, zeros linear and angular velocity, updates model node matrices (Ne_ModelInstance_SetNodeMatrices) and wheel bodies (0x144631a50). Callers Sess_VehiclePlacement_PlaceOnSlot, Sess_Set_SessionDefaultFuelErs, Car_Physics_ComputeGroundedPose. Addon: teleport car to a resting pose."
+  "evidence": "decomp:re/decomp/144632350.c;xref:0x142f347f7,0x142f43bf3,0x14462d8e5,0x144633db8,0x144633e78,0x150ae8268",
+  "notes": "(rig): 0x144632590(rig[0xb]); copies pose rig+0xac0..+0xaf8 into chassis +0x190..+0x1c8 and phys body ([[veh+0x558]+0x340]+0x18) +0x2b0/+0x270, Ne_PhysBody_SetTransform, zeros veh+0x558 +0x170/+0x180 and phys angular/linear velocity, Car_Chassis_UpdateWheelVisibility(rig); if model ready Ne_ModelInstance_SetNodeMatrices(rig+0xdb0, 0x1c) and vcalls +0x98/+0xa0. (lane owner review requested)"
  },
  "signature": {
   "id": "car.physics_apply_grounded_pose",

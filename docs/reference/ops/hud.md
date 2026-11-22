@@ -348,6 +348,18 @@ The scene a scene target grows is read after every other addon's whole replaceme
 
 A record is not bound to the dials. With `screen` in place of `dial` its elements go on the standings board, the replay screen's drivers list or the spectator tower, with `show` and `also` naming the leaf that shows them on each screen, `stock_nodes` hiding the game's own parts while they show and `restyle` reshaping the Race Control banner: [HUD screens](/reference/ops/hud-screens). Team logos, the series logo and colour bars come from the game's own textures through the `unit` kind, `texture` bindings and stock-texture sprites: [HUD textures and units](/reference/ops/hud-textures). The rows of a timing tower are the `repeat`, `stack` and `centre` fields above. A group that slides or fades on a bool leaf carries a `motion`: [HUD motion](/reference/ops/hud-motion).
 
+## An editor entry of your own
+
+A `hud.slot` record in the same files adds an entry to the HUD editor with its own selection box, which the player moves, resizes and switches off. Native code reads the placement with `swofty/hud_slot.hpp` and draws there with the overlay: [HUD slots](/reference/std/hud-slots).
+
+```jsonc [registry/hud.json]
+{
+  "hud.slot": {
+    "radio": { "name": "Team radio", "rect": [0.02, 0.55, 0.28, 0.12], "anchor": "left" }
+  }
+}
+```
+
 ## Bridge addons
 
 Two addons that each replace `hud_dynamic_templates.ui` whole used to leave the later one the winner, and a third addon spliced their copies together by hand (Project Halo + Planked + Brake Check Panel does that). The build now merges whole replacements of the template and of the scenes node by node, and a `hud.element` composition starts from the merged result, so that bridge is no longer needed. See [two addons replacing one UI resource](/reference/ops/erp#two-addons-replacing-one-ui-resource) for the rules and the build lines and warnings.

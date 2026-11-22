@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142fe10a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142fe10a0.c;pat:log-channel-MidSessionDataSaveDataContainer;xref:0x14111ec38,0x142c13e0e,0x142c14551,0x142d725f8,0x1458008d8",
-  "notes": "Counterpart virtual (cell 0x1458008d8; callers 0x14111ec38, 0x142c13e0e, 0x142c14551, 0x142d725f8): same keys plus 'data', 'position', 'file_size' and 'Failed to validate checksum'."
+  "notes": "Load side, not just validate. MidSessionDataSaveDataContainer: +0x218 null -> 'replay system not yet initalised' ret 0x58; 0x1439338e0 hash vs +0x210 +0x4b0..+0x4cf else 'Failed to validate checksum' ret 0x50. Reads jump_in_time (-> +0x218 +0x34), instant_replay_rewind_bound_time (+0x4c), streams[]: stream_name lookup in +0x218 +0x110, full_buffer/key_buffer (stream +0xc0/+0xd0) file_size/data/position (0x1439320e0, 0x142fdfb90); session_guid -> *(+0x210 +0x278)+0xf28. Posts bus msg 0x1458032d8 via 0x1439876c0. (lane owner review requested) Better name: Game_MidSessionSave_RestoreReplayBuffers (bound record keeps its name)."
  },
  "signature": {
   "id": "game.mid_session_save_validate",

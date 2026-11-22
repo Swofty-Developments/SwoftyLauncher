@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142ccff50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142ccff50.c;xref:0x1407f7bb7,0x142d48339,0x1436f87e8",
-  "notes": "SessionSettings constructor: ruleset +0 = 0x10, sessionId +4 = 0, +8 = 0, allocator +0x10, data sub-object +0x20 (vtable 0x1457ea868), 0xcf000-byte arena at +0xad8 (cap 0x20). Callers Sess_Loader_UnloadSession, Game_StateSession_OnStateExit, Game_Read_GameConfig."
+  "notes": "Ctor(this, allocator): byte +0 = 0x10, u32 +4 = 0, byte +8 = 0, allocator stored +0x10/+0xad0/+0xaf0, vtable 0x1457ea868 at +0x20, arena = allocator vtbl+0x18(0xcf000, align 0x10) at +0xad8/+0xae0 with cap 0x20 at +0xae8; 8 records 0xb28..0xb60 = 0x3f80000000000003; sub-init 0x142e4b440(+0xd98). Eight XOR-obfuscated values +0xdf0..+0xe58 (key from QPC-seeded MT RNG 0x146108c00 via 0x143929b90): int 1, int 0, 1.0f x4, 600.0f (0x44160000). (lane owner review requested)"
  },
  "signature": {
   "id": "game.session_settings_ctor",

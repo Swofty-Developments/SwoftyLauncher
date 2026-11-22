@@ -10,6 +10,9 @@ use crate::{Error, Result};
 pub struct HudFile {
     #[serde(default, rename = "hud.element")]
     pub elements: BTreeMap<String, serde_json::Value>,
+    /// `hud.slot` records: an addon's own entries in the game's HUD editor, keyed by slot id.
+    #[serde(default, rename = "hud.slot", skip_serializing_if = "BTreeMap::is_empty")]
+    pub slots: BTreeMap<String, serde_json::Value>,
     /// The option values and `addon` the file's records are built for, as an operations file's `when`;
     /// with none they always are.
     #[serde(default, skip_serializing_if = "Option::is_none")]

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430e0560",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1430e0560.c;pat:log-channel-NETWORK;xref:0x145814118",
-  "notes": "Slot 25 (+0xc8) of the NetworkSubsystem vtable 0x145814050; only that cell refers to it. 52 KB body: platform events (network cable plugged/unplugged, online service lost/restored, CrossPlay switch), matchmaking timeouts, leaderboard cache; calls Game_Network_SelectChampionshipByCode, the drop-in updates, Game_Network_HostExtendPracticeSession, SkipCurrentWeekend. Better name: Game_NetworkSubsystem_SlotC8 (bound record keeps its name)."
+  "notes": "NetworkSubsystem vtable 0x145814050 slot +0xc8 (cell 0x145814118) per-frame tick, dt from param_2+8 (two helpers, overlapping halves): CrossPlay switch (+0x10f0, ChangeMPMode 0x1430ed330), NTP, '[EVENT] network cable unplugged/plugged', online service lost/restored, voting manager, GameSessionMatching Custom/Hopper/Career/F1WSocialGP + MatchingProcessor, GameSessionManager drop-in/vehicle registration, kick-reason UI msgs, OnlineTitl... (lane owner review requested) Better name: Game_NetworkSubsystem_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_attempting_switch_into_cross_play_mode",

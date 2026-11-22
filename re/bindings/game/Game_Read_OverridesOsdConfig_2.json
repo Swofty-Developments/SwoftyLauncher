@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14151fcc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14151fcc0.c;pat:log-channel--;xref:0x1456ecab0",
-  "notes": "Practice target VM: score/tyre/fuel/ers target icons with good/perfect lng strings, abovePar, bestInSession, reset_targets."
+  "notes": "Vtable slot (cells 0x1456ecaa0..ac8 code ptrs). Returns if this+0x458==0; switch on global practice program type 0x14604e9c0 (0..6, change/dirty +0x4a0/+0x4a4 triggers reset): sets icon from overrides.osd.practice_target_icons.score/tyre/fuel/ers_icon into binding +0x390, labels abovePar/bestInSession, lng_good/perfect_wear/fuel_management/ers_management, targets as ms; case 0 bool +0x288 -> posts reset_targets (0x144320fe0), sets +0x4a4, calls 0x1414f0b00. Old name was a log-string fragment. (lane owner review requested) Better name: Game_PracticeTargetVm_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_overrides_osd_config_2",

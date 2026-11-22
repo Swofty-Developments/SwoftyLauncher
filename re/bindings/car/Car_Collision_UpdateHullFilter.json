@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14464dbe0.c;xref:0x14464c65d,0x15532f6c3",
-  "notes": "Selects collision filter values (statics 0x146ce8994/0x146ce8998) from car state (+0x120, +0x124, +0x9f0c, +0x9f10, +0x9f29) and applies them to the hull bodies (Ne_PhysWorld_UpdateBodyBroadphase / CommitBody). Hypothesis. Caller: Car_Collision_BuildHullShapes. (2 xref site(s), fb.py callers.)"
+  "evidence": "decomp:re/decomp/14464dbe0.c;xref:0x14464c65d,0x15532f6c1",
+  "notes": "Selects collision filter values (statics 0x146ce8994/0x146ce8998) from car state (+0x120, +0x124, +0x9f0c, +0x9f10, +0x9f29) and applies them to the hull bodies (Ne_PhysWorld_UpdateBodyBroadphase / CommitBody). Hypothesis. Caller: Car_Collision_BuildHullShapes."
  },
  "signature": {
   "id": "car.collision_update_hull_filter",

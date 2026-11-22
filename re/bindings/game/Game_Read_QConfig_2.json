@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1444fa1e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1444fa1e0.c;pat:log-channel--;xref:0x145d32780",
-  "notes": "0x6600-byte static initializer (192 atexit registrations) of engine type descriptors (Anim*, Audio*, Camera*, World*) and audio/camera name ids; q.world.* is a small part (engine-re 2026-11-17 note agrees)."
+  "notes": "CRT dynamic initialiser (init table cell 0x145d32780, pdata 0x1444fa1e0-0x1445007e0). Fills SIMD consts at 0x146ca57f0.., type descriptors {0x145890940,name,hash,parent}: NeAchievementsXmlResource, AnimClip/Anim*/AnimSet, Audio*, Camera*, Trigger, FlowSystem, PhysicsTerrain, CoreRenderer, VideoModule, WorldLayerModule, World; audio/camera name strings; atexit via 0x1449e071c. No q.world config read. (lane owner review requested) Better name: Game_StaticInit_AnimAudioCameraWorldTypes (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_q_config_2",

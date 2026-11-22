@@ -7,7 +7,7 @@
   "addr": "0x1446f4b80",
   "level": "L2",
   "subsystem": "game",
-  "proto": "-",
+  "proto": "int32_t Game_FfbThrustmaster_ConfigureEffects(void *effect, const float *lanes)",
   "evidence": "decomp:re/decomp/1446f4b80.c;pat:log-channel-TM_FFB;xref:0x1446f4af3,0x1446f4fab,0x145bfff38",
   "notes": "Slot 5 of TM effect vtable 0x145bfff10 (cell 0x145bfff38); also called by stop 0x1446f4aa0 and release 0x1446f4ee0 with zero forces. If device handle (+0x1e0)+0xa00 != 0: tm_api_force_config_effect slot 0 constant (-param_2[0]), slot 1 spring if +0x2ac, slot 2 friction (|param_2[3]|), logging each failure (TM_FFB). Returns 0, or 0xe without handle. (lane owner review requested)"
  },
@@ -45,7 +45,37 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/1446f4b80.c;xref:0x1446f4af3",
    "notes": "V6849 Configure strings for 3 effects confirmed."
+  },
+  {
+   "date": "2026-11-21",
+   "verifier": "vogtmarcel07-cloud",
+   "kind": "func",
+   "item": "Game_FfbThrustmaster_ConfigureEffects",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446f4b80.c;decomp:own capstone disasm 0x1446f4aa0-0x1446f4b77;xref:0x145bfff38,0x1446f4af3,0x1446f4fab",
+   "notes": "gh:vogtmarcel07-cloud independent re-check 2026-11-21: slot 5 (+0x28) of the Thrustmaster effect vtable 0x145bfff10 (cell 0x145bfff38), the slot that holds Game_RacingFFBEffectDirectInput_UpdateDeviceEffects in the DirectInput table 0x145bff970; also called from slot 2 0x1446f4aa0 (0x1446f4af3) and slot 3 0x1446f4ee0 (0x1446f4fab) with a zeroed lane block. Returns 0xe when [effect+0x1e0] or its +0xa00 handle is 0; else tm_api_force_config_effect slot 0 constant force (-lanes[0]), slot 1 spring when +0x2ac is set, slot 2 friction (|lanes[3]|), logging each failure; returns 0. Proto int32_t (void *effect, const float *lanes). Better name: Game_FfbThrustmaster_UpdateDeviceEffects (same vtable slot as the DirectInput one)."
   }
  ],
- "proofs": []
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1446f4b80",
+    "target": "0x1446f4b80"
+   },
+   "sigcheck": "passed",
+   "digest": "726962c26a3f7795052fb75145353d61e252ea9c41055f70116e69a34f24fee7"
+  }
+ ]
 }

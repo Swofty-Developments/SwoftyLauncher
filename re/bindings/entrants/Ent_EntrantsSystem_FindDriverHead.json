@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14246d700",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "entrants",
   "proto": "-",
-  "evidence": "pat:log-channel-ENTRANTS_SYSTEM",
-  "notes": "named from its log messages (channel ENTRANTS_SYSTEM): 'Driver head with stat id %s not found'"
+  "evidence": "decomp:re/decomp/14246d700.c;pat:log-channel-ENTRANTS_SYSTEM;xref:0x1401a120f,0x1401a4241,0x1401aafd7,0x1401b4be0,0x1401b6cd3,0x14022dc28,0x140230fce,0x14023195e,0x140234c21,0x140234cda,0x140243262,0x1402432fd,0x140244ad3,0x140244c61,0x1402460b3,0x14026084d,0x140364822,0x14039a4ed,0x1409a9594,0x1409a96ec,0x140aa995d,0x140c7bffc,0x140c80968,0x1416e5df3,0x14196f8c9,0x1419951d2,0x141a0bcc9,0x141a1f3b8,0x14201d80d,0x142034a9f,0x142034ba3,0x142060245,0x1427af76c,0x14288a56a,0x14288b65f,0x14288b676,0x142890996,0x142890a78,0x142890f9e,0x142890fc2,0x14289322b,0x14289324c,0x142896feb,0x142897002,0x14289eb5e,0x1428e05e0,0x1428e05f7,0x142d47794,0x142e3e162,0x142e3e175,0x1474e2913,0x1474e29b9,0x14909b839,0x14933846c,0x14cae4802,0x14d24faae,0x14d24fadc,0x14d250506,0x14d25051d,0x1527ed179",
+  "notes": "(entrants, u32 key): kind = key&0xff (<3), index = key>>16; list [entrants+0x4b0+kind*0x10] (+8 begin, +0x10 end, 16-byte entries, record at +8); returns record or 0. Invalid kind/no list logs 'Driver head with stat id %s not found' (ENTRANTS_SYSTEM); out-of-range index returns 0 silently. Head list is filled by Ent_EntrantsSystem_Construct. (lane owner review requested)"
  },
  "signature": {
   "id": "entrants.entrants_system_find_driver_head",

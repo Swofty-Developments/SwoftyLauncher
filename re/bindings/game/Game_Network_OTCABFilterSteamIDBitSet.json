@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430f8dc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1430f8dc0.c;pat:log-channel-NETWORK;xref:0x1430f8abe,0x1430f8f43",
-  "notes": "Called from 0x1430f8110 and recursively from itself (0x1430f8f43). Evaluates a filter node: AND/NOT recurse; type userlist (users), date_range (time_begin/time_end), changelist-lte, platforms (win/steam), eadp-env (prod/dev/cert/test), testGroup with the OTC AB filter on SteamID bit 8 or EAUserId bit 21 (GroupA/GroupB); ends with 0x1430ee9a0. Better name: Game_Network_EvaluateTitleConfigFilter (bound record keeps its name)."
+  "notes": "JSON filter evaluator (caller 0x1430f8110, self 0x1430f8f43): AND/OR/NOT, arrays recurse; type userlist (users vs local ids), date_range (time 0x1430ee9a0 in [time_begin,time_end)), changelist-* (cl vs 0x15a289), platforms win/steam, eadp-env prod/dev/lt/cert/test vs [0x146c64520]+0x214, testGroup SteamID bit8/EAUserId bit21 -> [0x14604bbc8]+0x40 1 A/2 B. Better: Game_Network_EvaluateOTCFilter. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_otcab_filter_steam_id_bit_set",

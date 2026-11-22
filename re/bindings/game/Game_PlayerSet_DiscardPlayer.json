@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14316c790",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14316c790.c;pat:log-channel-PLAYERSET;xref:0x14581f898",
-  "notes": "named from its log messages (channel PLAYERSET): '%s: Player %s at Player IX %d being discarded | %s(%s). | %s(%s, %d). | [PlayerSetEntry(%s, %s)] : DESTROYED. info(%s). | %s: Player %s at Player IX %d has an invalid connection ID'"
+  "notes": "Body read in full; own pretty string 'updatePlayerSetIDs'. When mode +0x28 < 2: walks entries +0x58..+0x60, discards entries flagged for removal (logs 'being discarded' / 'has an invalid connection ID', listeners +0x78 vt+8, 0x14316e8a0 discarded message, free via +0x10 vt+0x38, vector erase), marks used Player IX; then gives entries without one (+0x60<0) a free Player IX (<0xff), logs 'assigned Player IX %d', listeners vt+0x10. Only ref vt cell 0x14581f898. Renamed from DiscardPlayer. (lane owner review requested) Better name: Game_PlayerSet_UpdatePlayerSetIds (bound record keeps its name)."
  },
  "signature": {
   "id": "game.player_set_discard_player",

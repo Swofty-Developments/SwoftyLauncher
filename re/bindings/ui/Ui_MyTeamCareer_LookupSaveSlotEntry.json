@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1437d1ce0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "ui",
   "proto": "uint64_t Ui_MyTeamCareer_LookupSaveSlotEntry(void *self, void *slot_obj, uint64_t flag)",
-  "evidence": "decomp:re/decomp/1437d1ce0.c;xref:0x14173387c;xref:0x141733d68;xref:0x141734568",
-  "notes": "myteam-g2: Hashes the int at slot_obj+0x55*8 into the map at self+0x68 and resolves the career slot entry; used when entering My Team career and initialising the homescreen. Level 1."
+  "evidence": "decomp:re/decomp/1437d1ce0.c;xref:0x14173387c,0x141733d68,0x141734568,0x14173553c,0x141edb830,0x142e03862,0x1436f89a1,0x143703df1,0x151049d81",
+  "notes": "(tbl,obj,mask): robin-hood lookup of s32 key obj+0x2a8 in tbl (+0x68 mult, +0x70 slots, +0x78 ctrl, +0x88 mask); entry has up to 3 optional conditions (flags +0x18/+0x78/+0x88) evaluated on obj+0x1030 components; a failed condition counts only if its bit (+0x14/+0x74/+0x84) in mask is clear. Returns AND of the three. (lane owner review requested) Better name: Ui_MyTeamCareer_CheckEntryConditions (bound record keeps its name)."
  },
  "signature": {
   "id": "ui.my_team_career_lookup_save_slot_entry",
