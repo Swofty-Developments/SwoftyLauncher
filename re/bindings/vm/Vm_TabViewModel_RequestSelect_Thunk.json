@@ -1,0 +1,80 @@
+{
+ "schema": 1,
+ "name": "Vm_TabViewModel_RequestSelect_Thunk",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1414bf730",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_TabViewModel_RequestSelect_Thunk(void *tab_vm)",
+  "evidence": "decomp:own capstone disasm 0x1414bf730-0x1414bf735, body 0x14aed9000-0x14aed901b and 0x14aecd5f0-0x14aecd794 (re/tools/disx.py);xref:0x1457497f8,0x1456e1328,0x1456e6d48",
+  "notes": "Shared base view-model vtable slot 23 (cell 0x1457497f8 = 0x145749740+0xb8 in the race strategy panel garage_monitor_panel_race_stratergy, and the same slot in dozens of other panel/tab vtables from 0x1456e1328 to 0x145746528). 5-byte E9 jmp to the .data1 body 0x14aed9000: sets bit 1 of byte vm+0x628 and, when bit 0 is set, tail-jumps 0x1414bf4e0 (thunk to 0x14aecd5f0), which acts only when (flags & 0xc) == 8: sets bit 2, dispatches 'enable' (when bit 4 is set), 'goto_already_open' and 'selected' through Ne_UiEvent_DispatchByName, then vcall +0xc0 (slot 24). So it requests the select/open step of a tab view model; the red-flag-pit addon sets flags (x & ~4) | 9 on the strategy panel and calls it to force the panel to re-select. One argument (rcx), no return value. Class name from the shared base slot (Vm_Construct_TabViewModel 0x1414bdac0 is the neighbouring constructor). Signature: E9 + filler bytes after the protector thunk (build-specific, as other *_Thunk records); make's 96-byte search stops at the undecodable filler byte 1E, so the 16-byte pattern was written by hand and checked unique with sigcheck.find_all. Strings: enable 0x14565f10f, goto_already_open 0x1456e9a3d, selected 0x1456f8a36."
+ },
+ "signature": {
+  "id": "vm.tab_view_model_request_select_thunk",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 0F 83 ?? ?? ?? ?? 1E 43 3E 77 E8",
+  "match": "0x1414bf730",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1414bf730",
+  "kind": "func_start",
+  "func_start": "0x14aed9000",
+  "names": [
+   "Vm_TabViewModel_RequestSelect_Thunk"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-21",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1414bf730",
+    "target": "0x1414bf730"
+   },
+   "sigcheck": "passed",
+   "digest": "be74918d2b4faec81c8a086d50172249b9a56ee3a9cc00a932af595b34d97fd3"
+  },
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1414bff10",
+    "target": "0x1414bff10"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5c87392222fc12f06f904f35f4a69e25c7db822718a14338722e4c8620986b53"
+  }
+ ]
+}

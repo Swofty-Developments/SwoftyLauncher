@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14014d230",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14014d230.c;pat:log-channel--;xref:0x1455ddc90",
-  "notes": "GameRendererModule init (slot 3 of vtable 0x1455ddc70 per KB): GAME_RENDERER, ~25 Renderer.Gfx.* / RearViewMirrors.* settings, view names, RTT cameras."
+  "notes": "GameRendererModule vtable cell 0x1455ddc90 (0x1455ddc70+0x20). Gets 'GAME_RENDERER' allocator (+0x90; returns 0xe if missing), reads ~40 Renderer.Gfx.*/RearViewMirrors.*/RayTracing.ao config keys into this/globals, creates ego_package light/atlas buffers, 20 rttGenerator%d/rttShadowGen%d/rttCamera%d, subscribes DynamicResolutionMinimumScaleChange/MessageVehicleEnteredGarage/NeApplicationVisibilityChangedMessage via 0x143987810, returns 0. (lane owner review requested) Better name: Game_GameRendererModule_Init (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_renderer_gfx_config",

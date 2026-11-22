@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144743900.c",
-  "notes": "parses the VTF tyre model: Wetness, WetnessGrip, WetnessWear, WetnessTarget, WearGrip, TemperatureGrip, Blister*, Pressure*, RollingResistance*, Camber, … (physics wetness is one value for the whole track)."
+  "evidence": "decomp:re/decomp/144743900.c;xref:0x144747958",
+  "notes": "VTF tyre model reader (Wetness*, WearGrip, TemperatureGrip, Blister*, Pressure*, ...); builds ObfSplines (Car_ObfSpline_Ctor/AddVertex); caller 0x144747958 (fn 0x144747790)."
  },
  "signature": {
   "id": "car.parse_tyre_model",

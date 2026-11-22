@@ -556,6 +556,14 @@ static void schemas()
     CHECK(swofty::to_json(garage_rec).find("\"root\":\"eaid://environment_package/core_assets/objects/textures/\"") !=
               std::string::npos &&
           garage_rec.srgb);
+    std::string boards = tracks::sponsors.schema();
+    CHECK(boards.find("\"x-registry\":\"track.sponsors\"") != std::string::npos &&
+          boards.find("\"x-applies\":\"boot\"") != std::string::npos);
+    CHECK(boards.find("\"x-ref\":\"content.package\"") != std::string::npos && tracks::sponsors.at_major() == "track.sponsors@1");
+    tracks::Sponsors boards_rec;
+    CHECK(swofty::to_json(boards_rec).find("\"root\":\"eaid://environment_package/core_assets/shared_textures/sponsors/\"") !=
+              std::string::npos &&
+          boards_rec.srgb);
     std::string box_ui = content::package_ui.schema();
     CHECK(box_ui.find("\"x-registry\":\"ui.per_package\"") != std::string::npos &&
           box_ui.find("\"x-applies\":\"content\"") != std::string::npos);

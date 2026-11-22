@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1407f7320",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1407f7320.c;pat:log-channel--;xref:0x145648700",
-  "notes": "Vt cell 0x145648700. Body 0x5ce5 bytes."
+  "notes": "Vfunc(this), log GAME '%s: register application event delegates' arg postConnectStartup. Config via 0x143a43b90 (VTE.enabled->+0x233, Game.EnableSaveGame, Steam.cloudEnabled); 4 app delegates 0x1407fd010/fd310/fd470/fd8d0; Ne_Subscribe_BusMessage exitNow (0x1407fde10), SaveDialogueDisplayed, Acm176; replay dir + replay*.pbf, CreateDirectoryW; save path to 0x14604c2d0. (lane owner review requested) Better name: Game_PostConnectStartup (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_game_config",

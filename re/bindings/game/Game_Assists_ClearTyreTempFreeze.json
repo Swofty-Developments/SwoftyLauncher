@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1424237b0.c;doc:re/db/subsystems/game.md",
-  "notes": "jmp thunk (no pdata) to body 0x14c9fc800: finds the vehicle index of param_3 in [sys+0xf8]+0x28, resolves component 0x146ce8b00 and clears bit 6 of [comp+0x58]+0x134."
+  "evidence": "decomp:re/decomp/1424237b0.c;doc:re/db/subsystems/game.md;xref:0x142421cd7",
+  "notes": "jmp thunk (no pdata) to 0x14c9fc800, body read: index of param_3 in [[this+0xf8]+0x28..+0x30] (0xff if none), entity [[[[this+0x100]+0x48]+0x28]+idx*8]+0x10, component 0x146ce8b00 via 0x143f9b3c0 when the type walk hits 0x146129ca8, clears bit 6 (&0xbf) of [[comp+0x58]+0x134]. Ref: lea r14 at 0x142421cd7 in 0x142421440 (callback pointer)."
  },
  "signature": {
   "id": "game.assists_clear_tyre_temp_freeze",

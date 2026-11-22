@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1440dfa30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1440dfa30.c;pat:log-message-cxx;xref:0x1440c4d4e,0x1440c77f4,0x1440c7d1f",
-  "notes": "cxx=PhysicsCollisionSystem::PhysicsCollisionSystem; log channel PHYSICS: 'PhysicsCollisionSystem::PhysicsCollisionSystem m_numIntersectionUnits = %d'"
+  "notes": "Not the ctor body: wanted count = (+0x1118)+0x24 if +0x1118 set and (+0x10e0)+0x130, else 1; returns if equal to +0xf58. Frees old units array +0xf50 (0x1440f1ce0 each) and job array +0x1120, stores count, logs PHYSICS 'PhysicsCollisionSystem::PhysicsCollisionSystem m_numIntersectionUnits = %d', allocates new 0x68-byte units (sizes from +0xfa4..+0xfb8 divided by count, 0x1440e09d0 init) and, if count>1, 0x28-byte jobs (vt 0x145a5a740). Callers in 0x1440c3940,0x1440c7710,0x1440c7ae0. (lane owner review requested) Better name: Game_PhysicsCollisionSystem_ResizeIntersectionUnits (bound record keeps its name)."
  },
  "signature": {
   "id": "game.physics_collision_system_construct",

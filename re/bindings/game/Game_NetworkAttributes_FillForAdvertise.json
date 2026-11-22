@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14407df30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14407df30.c;pat:log-message-method;xref:0x144087920,0x144089958",
-  "notes": "Logs fillForAdvertise(count); for each attribute def copies its value into the advertise buffer, logs \"Attribute %s(%d) is missing a value.\" / \"has value %d.\" (NETWORK-ATTRIBUTES/V)."
+  "notes": "Body read in full. Grows/clears slot buffer +0x20, logs 'fillForAdvertise(%d attrib defs)'; maps each param_4 entry (stride 0x10) to a value from param_3 (stride 0x18); for each attribute def (param_2+0x30, stride 0x30; skipped when +0x10 and def+0x2c set) writes its value into buffer +0x40 as 1/2/4/8 bytes by def+0x20, logging 'Attribute %s(%d) is missing a value.' / 'has value %d.'; appends marker 0xde000001. Callers in 0x144085e20, 0x144089620. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_attributes_fill_for_advertise",

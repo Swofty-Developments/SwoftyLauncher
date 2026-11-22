@@ -639,16 +639,23 @@ void apply_logos(Expansion &x, Report &report)
                            std::to_string(made.built) + " slice(s) built, " + std::to_string(made.refused) + " refused");
 }
 
-void apply_garages(Expansion &x, Report &report)
+// team.garage and track.sponsors: each record's textures packed into one archive and listed in its cars' groups.
+void apply_garages(Expansion &x, Report &report, std::string_view reg = "team.garage")
 {
-    if (x.garages.empty())
+    bool sponsors = reg == "track.sponsors";
+    bool any = false;
+    for (auto &g : x.garages)
+        any = any || g.registry == reg;
+    if (!any)
         return;
-    constexpr const char *CACHE_ADDON = "swofty.garage";
+    const char *CACHE_ADDON = sponsors ? "swofty.sponsors" : "swofty.garage";
+    const std::string prefix = sponsors ? "sponsors_" : "garage_";
+    const std::string tag(reg);
     char art[8] = {};
-    DWORD art_len = GetEnvironmentVariableA("SWOFTY_GARAGE_ART", art, sizeof art);
-    bool art_on = art_len && art_len < sizeof art && garage_art_enabled(art);
+    DWORD art_len = GetEnvironmentVariableA(sponsors ? "SWOFTY_BOX_SPONSORS" : "SWOFTY_GARAGE_ART", art, sizeof art);
+    bool art_on = art_len && art_len < sizeof art && (sponsors ? box_sponsors_enabled(art) : garage_art_enabled(art));
     if (!art_on)
-        report.lines.push_back(GARAGE_FENCE_LINE);
+        report.lines.push_back(sponsors ? SPONSORS_FENCE_LINE : GARAGE_FENCE_LINE);
     char desc[8] = {};
     DWORD desc_len = GetEnvironmentVariableA("SWOFTY_GARAGE_DESC", desc, sizeof desc);
     bool descriptor = !(desc_len && desc_len < sizeof desc && desc[0] == '0');
@@ -659,6 +666,8 @@ void apply_garages(Expansion &x, Report &report)
     for (auto &g : x.garages) {
         if (!art_on)
             break;
+        if (g.registry != reg)
+            continue;
         std::filesystem::path root(runtime::under_swofty("addons/" + g.addon + "/" + g.folder));
         std::vector<garage::Input> inputs;
         std::error_code ec;
@@ -672,7 +681,7 @@ void apply_garages(Expansion &x, Report &report)
         std::sort(inputs.begin(), inputs.end(), [](const garage::Input &a, const garage::Input &b) { return a.rel < b.rel; });
         if (inputs.empty()) {
             report.refused++;
-            report.lines.push_back("team.garage " + g.id + ": " + g.folder + " holds no .dds or .png file in swofty/addons/" +
+            report.lines.push_back(tag + " " + g.id + ": " + g.folder + " holds no .dds or .png file in swofty/addons/" +
                                    g.addon + "/");
             continue;
         }
@@ -692,7 +701,7 @@ void apply_garages(Expansion &x, Report &report)
             mix(in.rel);
             mix(in.bytes);
         }
-        std::string file = "garage_" + runtime::hex16(key).substr(2) + ".erp";
+        std::string file = prefix + runtime::hex16(key).substr(2) + ".erp";
         std::wstring path = runtime::under_swofty(dir + file);
         uint64_t have = 0;
         bool reused = runtime::file_size(path, &have) && have > 0;
@@ -700,22 +709,22 @@ void apply_garages(Expansion &x, Report &report)
         if (!reused) {
             garage::Built built = garage::build(inputs, g.root, g.srgb, descriptor);
             for (auto &l : built.lines)
-                report.lines.push_back("team.garage " + g.id + ": " + l);
+                report.lines.push_back(tag + " " + g.id + ": " + l);
             report.refused += built.refused;
             if (built.erp.empty()) {
                 report.refused++;
-                report.lines.push_back("team.garage " + g.id + ": no texture could be packed; nothing applied");
+                report.lines.push_back(tag + " " + g.id + ": no texture could be packed; nothing applied");
                 continue;
             }
             if (!runtime::write_file(path, built.erp)) {
                 report.refused++;
-                report.lines.push_back("team.garage " + g.id + ": " + file + " could not be written");
+                report.lines.push_back(tag + " " + g.id + ": " + file + " could not be written");
                 continue;
             }
             have = built.erp.size();
         }
         keep.insert(file);
-        files::Outcome o = files::redirect(g.game_path, CACHE_ADDON, file, "team.garage", g.id, "boot");
+        files::Outcome o = files::redirect(g.game_path, CACHE_ADDON, file, tag, g.id, "boot");
         if (o.refused()) {
             report.refused++;
             report.lines.push_back(o.line);
@@ -725,20 +734,20 @@ void apply_garages(Expansion &x, Report &report)
         for (auto &group : g.groups) {
             int rc = runtime::group_extend(group, g.game_path);
             report.lines.push_back(
-                "team.garage " + g.id + ": " + group +
+                tag + " " + g.id + ": " + group +
                 (rc == SWOFTY_ASSET_OK ? " lists " + g.game_path : " not extended (the manifest is already parsed)"));
             attached += rc == SWOFTY_ASSET_OK;
         }
         if (!attached)
             report.refused++;
-        report.lines.push_back("team.garage " + g.id + ": " + std::to_string(inputs.size()) + " texture file(s) of " + g.folder +
+        report.lines.push_back(tag + " " + g.id + ": " + std::to_string(inputs.size()) + " texture file(s) of " + g.folder +
                                " in " + file + " (" + std::to_string(have >> 20) + " MB, " +
                                (reused ? "cached archive reused" : "built") + " in " + std::to_string(GetTickCount() - t0) +
                                " ms), " + g.game_path + " -> swofty/addons/" + CACHE_ADDON + "/" + file + ", " +
                                std::to_string(attached) + " of " + std::to_string(g.groups.size()) + " group(s) extended");
     }
     WIN32_FIND_DATAW fd;
-    HANDLE h = FindFirstFileW((runtime::under_swofty(dir) + L"garage_*").c_str(), &fd);
+    HANDLE h = FindFirstFileW((runtime::under_swofty(dir) + runtime::wide(prefix + "*")).c_str(), &fd);
     if (h != INVALID_HANDLE_VALUE) {
         do {
             std::string n = runtime::narrow(fd.cFileName);
@@ -872,8 +881,8 @@ public:
         apply_texts(x, registry_, report);
         if (std::string_view(registry_) == "team.identity")
             apply_logos(x, report);
-        if (std::string_view(registry_) == "team.garage")
-            apply_garages(x, report);
+        if (std::string_view(registry_) == "team.garage" || std::string_view(registry_) == "track.sponsors")
+            apply_garages(x, report, registry_);
         if (std::string_view(registry_) == "rules.drs")
             publish_drs(st, x);
         if (std::string_view(registry_) == "session.points")

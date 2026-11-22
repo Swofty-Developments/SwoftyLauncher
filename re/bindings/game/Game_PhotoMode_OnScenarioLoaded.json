@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141cfe090",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141cfe090.c;pat:log-channel-PHOTO-MODE;xref:0x141ceffc4",
-  "notes": "named from its log messages (channel PHOTO-MODE): 'Scenario loaded'"
+  "notes": "Body 0x141cfe090-0x141cfe392 read (decomp merges tail-jump target 0x141d05010). Logs PHOTO-MODE 'Scenario loaded', then pushes scenario record param_2 into photo-mode options: time_of_day (+0x70 rounded to 5), colour_grade (+0x54), +0x50..+0x74, +0x30/+0x34, FOV from +0x2c, roll from +0x28, +0x48, dof_fstop index nearest +0x38, shutter_speed index nearest +0x44 (tail call 0x141d05010). Only ref: lea 0x141ceffc4 in 0x141cef700. (lane owner review requested)"
  },
  "signature": {
   "id": "game.photo_mode_on_scenario_loaded",

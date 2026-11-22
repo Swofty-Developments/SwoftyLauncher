@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430f3cb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1430f3cb0.c;pat:log-channel-NETWORK;xref:0x1458140c0",
-  "notes": "Slot 14 (+0x70) of the NetworkSubsystem vtable 0x145814050. Unsubscribes a bus message (0x143988350), logs 'onSessionExit', clears registered vehicles from the ProgressVehicleManager (0x1432625b0) and VehicleMechanicalManager (0x143242790), NETWORK-MATCHING log, inlined GameSessionMigrationManager::setHaveResults(FALSE), onLoadingTeamHQ branch (setMyRaceStatus 0x143092b20). Better name: Game_NetworkSubsystem_OnSessionExit (bound record keeps its name)."
+  "notes": "NetworkSubsystem vtable 0x145814050 slot +0x70. Unsubscribes MessageSessionResultsFinalised (0x143988350), logs NETWORK onSessionExit, resets session/vehicle state, MOX/Session clears ProgressVehicleManager (0x1432625b0) and VehicleMechanicalManager (0x143242790), NETWORK-MATCHING log + vt+0xe8, re-posts pending entries (FUN_143218150), inlined setHaveResults(FALSE), setMyRaceStatus 0x143092b20 (3/5/0xd, onLoadingTeamHQ log), clears +0x4f2. (lane owner review requested) Better name: Game_NetworkSubsystem_OnSessionExit (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_mox_session_clearing_registered",

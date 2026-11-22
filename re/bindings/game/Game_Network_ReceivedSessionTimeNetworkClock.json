@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142cf24b0.c;pat:log-channel-NETWORK",
-  "notes": "If mode +0x28 == 2 copies phase-base fields param_2+0x10..+0x30 to +0x70..+0x9c and logs 'Received session time network clock phase base %+1.3fs', else 'Received session time network clock phase base in mode %s' ('Offline'/'Local'). Better name: Game_Network_SessionTime_OnPhaseBaseReceived (bound record keeps its name)."
+  "notes": "If mode +0x28 == 2: copies p2+0x10->+0x70, +0x18->+0x78 (+0x80=0), +0x20->+0x88, +0x28->+0x90, +0x30(u32)->+0x9c and logs NETWORK 'Received session time network clock phase base %+1.3fs'; else logs '... phase base in mode %s' with 'Offline' (mode 0) / 'Local'. Better name: Game_Network_SessionTime_OnPhaseBaseReceived (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_received_session_time_network_clock",

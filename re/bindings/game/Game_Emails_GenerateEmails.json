@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140ddfb70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140ddfb70.c;pat:log-message-method;xref:0x140dd4914,0x140dd4e10,0x140dd51f7",
-  "notes": "3029-line decomp with merged code fragments; pdata 0x140ddfb70-0x140de3d6e; callers 0x140dd4870, 0x140dd5060. Name from the EMAILS log 'generateEmails(%s)'."
+  "notes": "pdata 0x140ddfb70-0x140de3d6e, read in full. param_2 = trigger idx 0..8 (>8 return) into name table 0x145697160 (practice_1..driver_moves_finalised); logs EMAILS 'generateEmails(%s)'. Walks emails.triggers.<t>.group entries, checks receiver/conditions per team/driver (0x140f67480, Passed/Failed), picks random message (QPC-seeded RNG), reads subject/message_body/rivalry_type/attachment etc, posts CareerEmailTriggerMessage (vt 0x1456971e8) via 0x1439876c0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.emails_generate_emails",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446b8210",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
   "evidence": "decomp:re/decomp/1446b8210.c;xref:0x1446b7cfd,0x1446b7e5b",
-  "notes": "(ffbTyre, wheel, a, b, scale, flag): from suspension compression ratio (wheel+0x3c rest vs +0x248-+0x168) computes load term (acos poly, *2e6 stiffness at +0x650) into +0x70 and a torque contribution (600 and 1.2e6 gains). Caller: Car_Ffb_TyreForceReal_Update."
+  "notes": "(tyre, wheel, heat, k, dt, flag): contact angle from compression ((w+0x3c-(w+0x248-w+0x168))/w+0x3c, acos poly); +0x70 = max(R*|w+0x188|*dt*k0, patch term)*[*tyre+0x650]*2e6; +0x6c = +0x64 + heat*dt/+0x70, then cooled toward ambient (vcall +0x10 +273.15, or 403.15 K if flag) with 600 and 1.2e6 gains, capped 623.15 K. Both callers in Car_Tyre_UpdateTemperature, not FFB. (lane owner review requested) Better name: Car_Tyre_IntegrateContactTemp (bound record keeps its name)."
  },
  "signature": {
   "id": "car.ffb_compute_suspension_load_torque",

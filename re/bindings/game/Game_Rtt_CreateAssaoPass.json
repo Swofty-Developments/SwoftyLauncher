@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143c2cda0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143c2cda0.c;xref:0x143c3073d,0x143d853c2",
-  "notes": "Strings ASSAO DepthOutputArrayUAV, compute/prepare_depths_merged/p0, ASSAO_PrepareDepths, ASSAO_GenerateQuad, ASSAOConstantsBuffer; 5 KB body. Callers 0x143c2fee0, Game_Rtt_RttGenerator."
+  "notes": "Stores params at +0x48..+0x58,+0x248,+0x258,+0x280,+0x288; creates 'ASSAO DepthOutputArrayUAV' mips +0x260..; finds compute techniques by name in [+0x248]+0x140 list and creates dispatches (0x1439e5610) ASSAO_PrepareDepths/GenerateQuad/SmartBlur/NonSmartBlur/Apply/ApplyNonSmart with SRV/UAV/ASSAOConstantsBuffer bindings; if param_9: CACAO_LoadCounter, cacao_normal_output_array and CACAO_* passes. (lane owner review requested)"
  },
  "signature": {
   "id": "game.rtt_create_assao_pass",

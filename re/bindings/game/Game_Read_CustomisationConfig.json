@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141d723e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141d723e0.c;pat:log-channel--;xref:0x145749e90",
-  "notes": "Vt cell 0x145749e90. Logs the game's own 'virtual void game::RenderBadgeViewModel::initJob(const IRenderTargetJobData *)' (0x145749eb0) as %s; also RenderBadgeJobData and preLoadBadgeTextures strings. Not a DB config read. Better name: Game_RenderBadgeViewModel_InitJob (bound record keeps its name)."
+  "notes": "Own string 'virtual void game::RenderBadgeViewModel::initJob(const IRenderTargetJobData *)' (0x145749eb0), RENDER_BADGE '[%s] - InitJob for job [%s]'; checks job 'RenderBadgeJobData'; pushes badge statIds into vector this+0x110 (env/custom, slot this+0xa0->+0x3c8, preloaded +0x3b8, network); inlined preLoadBadgeTextures (cstm_badge_large bg/emblem_style); pass types into this+0xf0. (lane owner review requested) Better name: Game_RenderBadgeViewModel_InitJob (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_customisation_config",

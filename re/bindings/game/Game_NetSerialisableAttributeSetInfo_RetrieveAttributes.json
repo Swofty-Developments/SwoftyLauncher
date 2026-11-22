@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143124fb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143124fb0.c;pat:log-message-cxx;xref:0x143124adb,0x143125ef0,0x143126748,0x1431bcfc9",
-  "notes": "Callers 0x143124adb, 0x143125ef0, 0x143126748, 0x1431bcfc9. Clears own array (+0x10 count, +0x18, +0x20 alloc), +0x28 = set+0x40 -> +0xb0, collects attributes of set +0x28..+0x30 whose def +0x2c flag is set; logs 'Loaded net info, with %u elements'."
+  "notes": "Read in full; own pretty string network::NetSerialisableAttributeSetInfo::retrieveAttributes(NeIAllocPool*, const AttributeSet&). Frees old array (+0x10 count, +0x18 data, +0x20 pool); +0x28 = [set+0x40]+0xb0, logs 'Loading net info from %s (%d)'; keeps attributes of set +0x28..+0x30 whose def byte +0x2c set; 16-byte entries (vt 0x145818060): +8 = def+0x28 id, +0xc = value +0x7c clamped to def min/max (+0xc/+0x10 if +0x14/+0x15); logs 'Loaded net info, with %u elements'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.net_serialisable_attribute_set_info_retrieve_attributes",

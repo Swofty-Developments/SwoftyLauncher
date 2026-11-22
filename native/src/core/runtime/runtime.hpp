@@ -211,6 +211,8 @@ bool test_run_live();
 void snapshots_start(bool splice_live);
 // career::report_season from caller (an addon id): SWOFTY_ASSET_OK, _LATE, _INVALID or SWOFTY_REFUSED.
 int snapshots_report_season(const std::string &caller, int year, int season_index);
+// The loaded career's id as the career snapshots know it (empty with none loaded); safe from any thread.
+std::string snapshots_career_now();
 
 // Dropped scores (standings_drop.cpp): while the loaded career is filed under data_group, the drivers' championship counts
 // each driver's best N results; 0 counts every result.
@@ -236,6 +238,8 @@ void load_stall_screen(const char *name);
 void load_stall_signal(uint32_t trigger, uint64_t detail_ms);
 void load_stall_game_line(const char *line);
 void load_stall_setup();
+// The session loader entry probes behind the load-stall report's session loader section (session_loader.cpp).
+void session_loader_setup();
 void tyre_models_tick();
 void tyre_models_drop();
 void garage_placement_reset();

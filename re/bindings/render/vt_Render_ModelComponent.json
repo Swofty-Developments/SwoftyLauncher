@@ -6,10 +6,10 @@
  "row": {
   "addr": "0x145a908a0",
   "type": "vtable",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
-  "evidence": "xref:0x1444e0243,0x1444d118c;decomp:re/decomp/1444e0210.c",
-  "notes": "Render model component vtable: slot 0 0x1444d1180, slot 3 = Render_ModelComponent_Load 0x14446a6d0, slot 4 0x14446b640 (slot count not proven). NOT 0x145a90b10, which is vt_Ne_ParticleEffectComponent. Stored at 0x1444e0243 and by the ctor family 0x1444d118c, 0x1444d131c, 0x1444d145c, 0x1444d158c. Used by the wet-track addon (slot 3)."
+  "evidence": "xref:0x1444e0243,0x1444d118c;decomp:re/decomp/1444e0210.c;decomp:own disasm 0x1444e0210-0x1444e02c2,0x1444d1180-0x1444d121b",
+  "notes": "Primary vtable of the Render model component (0x118 bytes, align 8): the factory 0x1444e0210 allocates it via [alloc+8] vt+0x18 (0x118, 8), stores this vtable at +0x0 (lea 0x1444e0243) and the interface vtables 0x145a90930 at +0x18, 0x145a90940 at +0x20, 0x145a90950 at +0x28; slot 0 0x1444d1180 is the destructor (re-stores the same vtables at 0x1444d118c, flag in edx), slot 3 = Render_ModelComponent_Load 0x14446a6d0, slot 4 0x14446b640, slots 6/7 0x14446e0e0/0x14446e8c0. Interface 0x145a90930 slot 1 = Render_ModelComponent_OnTransform. Slot count not proven (table runs on with code pointers past slot 13). NOT 0x145a90b10 (vt_Ne_ParticleEffectComponent). Re-read 2026-11-21 by vogtmarcel07-cloud (own capstone disasm on d873a1c8). Used by vmknolle wet-track (slot 3). (lane owner review requested)"
  },
  "signature": {
   "id": "render.model_component_vtable",
@@ -81,5 +81,25 @@
    "notes": "V7508 name/class, slots and refs match"
   }
  ],
- "proofs": []
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1444e0243",
+    "target": "0x145a908a0"
+   },
+   "sigcheck": "passed",
+   "digest": "e0fe9884a6718879416e42d88b65cdf0a9dfa5cbe7555f68c7e5b271397e8975"
+  }
+ ]
 }

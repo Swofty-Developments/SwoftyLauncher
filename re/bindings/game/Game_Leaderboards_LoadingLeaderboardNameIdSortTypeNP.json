@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144024e20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/144024e20.c;pat:log-channel-LEADERBOARDS;xref:0x1430db013",
-  "notes": "Data-tree parser for leaderboard definitions: 'version' ('Loading leaderboards definition: version = %d'), per 'leaderboard' node id/name/sort ('ascending'/'descending')/np_service_label/version/name_pc, 'column' nodes (type/name/stat/platform, exactly one rating column), 'reset' history; logs 'Finished loading leaderboard, success = %d.' Only caller 0x1430db013. Old name was a log fragment. Better name: Game_Leaderboards_LoadDefinitions (bound record keeps its name)."
+  "notes": "Data-tree parser, 'version' must be 1. Per 'leaderboard' a 0xb0 record: id +0x28, version +0x88, name_pc|name +0x30, name +0x58, sort ascending=0/descending=1 +0x80, np_service_label +0x84; 'column' (type rating=0 max one/int=1/uint64=2, name, stat; platform must contain 'win') -> 0x58-byte vector +0x8; 'reset' -> +0x98. Pushed to param_1+0x18 or freed via 0x144029020. Caller 0x1430db013. (lane owner review requested) Better name: Game_Leaderboards_LoadDefinitions (bound record keeps its name)."
  },
  "signature": {
   "id": "game.leaderboards_loading_leaderboard_name_id_sort_type_np",

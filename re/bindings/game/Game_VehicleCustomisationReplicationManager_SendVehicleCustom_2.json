@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143143860",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143143860.c;pat:log-message-cxx;xref:0x14313fd4a",
-  "notes": "Logs 'Sent VehicleCustomisationSegmentedDecalsAddNetMessage ... %zu vehicle decal nodes.%s' (' LAST' marker) or '... with 0 vehicle decal nodes.'; checks slot flag 5 via Game_VehicleCustomisation_TestSlotFlag 0x1432be130(this+0x38); posts message 0x1458249d0 to *dest via 0x14402e500 in a loop over node chunks. Caller 0x14313f270 (0x14313fd4a)."
+  "notes": "Method string: VehicleCustomisationReplicationManager::sendVehicleCustomisationSegmentedDecals(dest,PlayerVehicleKey,PackedStatId,VehicleDecalNodeList,connId). Empty list / 0x141427840(this+200)!=0 / key filtered -> one msg 0x1458249d0 with 0 nodes via 0x14402e500(this+0x20,*dest,msg,0,conn). Else if 0x1432be130(this+0x38,key,5)==0: nodes sent in chunks of 10 (0x14313d600), ' LAST' on final chunk. (lane owner review requested) Better name: Game_VehCustomisationReplMgr_SendSegmentedDecals (bound record keeps its name)."
  },
  "signature": {
   "id": "game.vehicle_customisation_replication_manager_send_vehicle_custom_2",

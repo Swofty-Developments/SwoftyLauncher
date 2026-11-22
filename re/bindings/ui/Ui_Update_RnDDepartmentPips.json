@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14174de70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "ui",
   "proto": "void *Update(void *vm)",
   "evidence": "decomp:re/decomp/14174de70.c;xref:0x141c603da",
-  "notes": "myteam-g2: Sets 12 department pip colours (offsets 0x20..0xf00 step 0x1a0) via Ui_Rnd_SetDepartmentPipColourB. UI only."
+  "notes": "Ctor: joins base path, then for driver1 (this+0x20) and driver2 (this+0x860) builds 0x1a0-byte sub-bindings (0x1417abe90) overall, aero, chassis, engine, duration. Not a pip-colour update. (lane owner review requested) Better name: Ui_DriverStatsBinding_Construct (bound record keeps its name)."
  },
  "signature": {
   "id": "ui.update_rn_ddepartment_pips",

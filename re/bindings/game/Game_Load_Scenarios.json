@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a224f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "void Game_Load_Scenarios(void *registry, void *alloc)",
   "evidence": "decomp:re/decomp/142a224f0.c;xref:0x14d83faea",
-  "notes": "Scenario table loader (strings statId, display_name, game_setup_mode, entrant_list, race_class, use_custom_vehicle_spec; GAME 'Scenario %s not available as entrant list %s is not, which is probably fine'). Only caller 0x14d83faea."
+  "notes": "Whole body read: opens GDB table 'game_setup.scenarios'/'scenarios' (stack literals) via 0x1445a25c0, iterates rows (0x1445a28f0); reads game_setup_mode, statId, display_name, race_class, use_custom_vehicle_spec, entrant_list and '<row>.<sub>.fill_remaining_entrants'; checks entrant list exists in 0x146079b28 list, else logs GAME 0x1457b95c7; appends 0x50-byte entries to vector param_1[1..3] (grow x1.5) built by 0x142a33aa0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.load_scenarios",

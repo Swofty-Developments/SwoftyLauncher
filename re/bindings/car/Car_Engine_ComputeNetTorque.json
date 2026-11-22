@@ -9,7 +9,7 @@
   "subsystem": "car",
   "proto": "-",
   "evidence": "decomp:re/decomp/144688ff0.c;xref:0x14450e22f,0x14468ef3b",
-  "notes": "(tank, ?, rate) fuel flow/consumption step: curve +0x5d8, config +0x538 (+0x680, +0x698), +0x8c0/+0x8c8, +0x252c, obfuscated capacity [+0x548]+0x150^+0x158. Hypothesis. Caller: Car_FuelTank_Step. (2 xref site(s), fb.py callers.) lb23-verify partial"
+  "notes": "param_1 = Engine (+0x252c, car at +8): a = curve(+0x5d8); b from curve +0x28 at xmm1/([cfg+0x150]^[+0x158]) * ([+0x140]^[+0x148]); blended with +0x8c0^+0x8c8 by cfg+0x698 and clamp((cfg+0x680-2)/2,0,1)*+0x252c; returns v*clamp(1 - param_3/(v/(v+b)),0,1)."
  },
  "signature": {
   "id": "car.fuel_tank_compute_flow",

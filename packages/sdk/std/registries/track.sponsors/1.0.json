@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "track.sponsors 1.0",
+  "x-registry": "track.sponsors",
+  "x-version": "1.0",
+  "x-applies": "boot",
+  "x-snapshot": false,
+  "description": "tracks::Sponsors: the trackside sponsor boards of one box. The textures folder holds one .dds or .png per stock shared sponsor texture, at the path of the stock resource below root. The core packs them into an archive and adds it to the asset groups of every car of that box only.",
+  "type": "object",
+  "properties": {
+    "package": {
+      "description": "The box's content package.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-ref": "content.package"
+    },
+    "textures": {
+      "$ref": "#/$defs/path",
+      "description": "A folder in the addon holding .dds and .png files. A file at signage/sp_american_express_d.dds is the resource root + signage/sp_american_express_d.tif.image."
+    },
+    "root": {
+      "description": "The resource name every file path is appended to.",
+      "type": "string",
+      "pattern": "^eaid://.*/$"
+    },
+    "srgb": {
+      "description": "A .png file is encoded as sRGB BC7 when true, linear BC7 when false. A .dds file keeps its own format.",
+      "type": "boolean"
+    },
+    "extends": {
+      "description": "Data files only: this record is a variant of that record, and its value is a merge patch on the base.",
+      "type": "string",
+      "x-ref": "track.sponsors",
+      "x-missing": {
+        "default": "required",
+        "allow": [
+          "required"
+        ]
+      }
+    }
+  },
+  "required": [
+    "package",
+    "textures"
+  ],
+  "additionalProperties": true,
+  "$defs": {
+    "path": {
+      "description": "A folder in the addon's folder, with / between folders.",
+      "type": "string",
+      "pattern": "^[^/\\\\][^\\\\]*$"
+    }
+  }
+}

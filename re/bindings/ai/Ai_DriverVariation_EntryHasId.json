@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141147da0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "ai",
   "proto": "bool Ai_DriverVariation_EntryHasId(void *obj, void *table, const uint8_t *key, const int16_t *id)",
   "evidence": "decomp:re/decomp/141147da0.c;xref:0x1409b1343",
-  "notes": "Pure lookup, no writes: finds the 0x50-byte entry in table+0x68..+0x70 whose byte +0 and u16 +2 match key; gets 4 state bytes from [obj+0x278] vtbl +0xc8 (idx0, flag0, idx1, flag1); walks conditional sub-entries (0x38 stride, entry+0x38..+0x40) and picks the first whose mask +0x28 has bit idx0 (when flag0) and mask +0x2c has bit idx1 (when flag1), default entry+8; returns true if its list (+0x10..+0x18, 0x140-byte records) has a record with u16 +0x10 == *id. Bit index > 31 -> fatal 0x1411c04f0. Caller (F1-World branch of Ai_DriverVariationInRaceSystem_Setup): obj = [x+0x40], table = obj+0x2a8, key = participant entry +0x50, id = u16 +0x11c of entries in obj+0x2f0..+0x2f8; true -> vtbl +0x278 call and rating ratio. (corrected 2026-11-14: it does not apply anything and evaluates bitmasks, not a condition list at +0x38..+0x40 against session state.) (renamed 2026-11-14 from Ai_DriverVariation_ApplyEntry: the code contradicts the old name) KEPT L1 2026-11-14 (engine-re AI round): mechanics proven but what the tables and ids are (F1 World entries?) is unknown; \"ApplyEntry\" contradicts the code - candidate name Ai_DriverVariation_EntryHasId. edited by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+  "notes": "(obj, table, key, id*) pure lookup: 0x50-byte entry in table+0x68..+0x70 with byte +0 and u16 +2 == key; 4 bytes from [obj+0x278] vcall +0xc8 (idx0,flag0,idx1,flag1); first sub-entry (stride 0x38, entry+0x38..+0x40) whose mask +0x28 has bit idx0 (if flag0) and +0x2c bit idx1 (if flag1), default entry+8; true if its list +0x10..+0x18 (0x140 records) has u16 +0x10 == *id. idx > 31 -> fatal 0x1411c04f0. (lane owner review requested)"
  },
  "signature": {
   "id": "ai.driver_variation_entry_has_id",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1417dacc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1417dacc0.c;pat:log-channel--;xref:0x1417d9f5f,0x1417dd612",
-  "notes": "News hub VM: news_first_boot, lng_news, news_hub.bg_images/qr_codes/fe_images, overrides.fe_world news panels, 'key not found'."
+  "notes": "Sets flag 'news_first_boot' (0x1458814c2) via 0x14096b1e0 on [[this+0x128]+0x60]+0x228 if absent. Collects news items (0x158 stride) from [[[this+0x128]+0x30]+0x68]+0x28/+0x10, fills one 0x2a8 entry each in vector this+0x1a8 (copies item strings, id +0xf0); sets news_hub.bg_images/qr_codes/fe_images, 'lng_news_num_unclaimed' with NUM, panel '#overrides.fe_world.news_panel.default/trial' or 'fe_news.default'; binds display_name/subtitle; picks index this+0x178. (lane owner review requested) Better name: Game_NewsHub_PopulateItems (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_news_hub_config",

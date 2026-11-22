@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143d4e990",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143d4e990.c;xref:0x1401503f7",
-  "notes": "Constructor body of a 0x5c0-byte renderer object (stored at GameRendererModule+0x8c8 by Game_Read_RendererGfxConfig 0x1401503f7): allocator/context to +0xa0/+0xa8, SIMD constants, 0x1c0-byte objects (vtable 0x145a3b540) and eight scene-view params objects (+0x110..+0x128, +0x320..+0x338) via Render_SceneViewParams_Construct + Render_SceneView_BuildViewParams, callback 0x143d50b40."
+  "notes": "Ctor: +0xa0 alloc,+0xa8 ctx; 2x0x210 blocks (1.0,0.2,1000,0.5625); 8 0x1c0 objs (wrapper vtbl 0x145a3b540) +0x130..+0x370; +0x578=15,30,+0x590=20,20; look-at+ortho proj(2/w,2/h,+-10); 8 0x810 objs 0x143be2500+Render_SceneView_BuildViewParams at +0x110..+0x128,+0x320..+0x338; 0x1439917c0(2,cb 0x143d4f860)->+0xb0; cb 0x143d50b40. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx_init_frame_state_block",

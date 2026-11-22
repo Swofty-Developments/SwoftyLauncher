@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142473f80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "entrants",
   "proto": "-",
-  "evidence": "pat:log-channel-ENTRANTS_SYSTEM",
-  "notes": "named from its log messages (channel ENTRANTS_SYSTEM): 'Team replaced with stat id %s, existing entry? %s | Couldn't find array to replace driver with stat id %s | Failed to add team with stat id %s whilst replacing'"
+  "evidence": "decomp:re/decomp/142473f80.c;pat:log-channel-ENTRANTS_SYSTEM;xref:0x141401ce7,0x142ea9fc8",
+  "notes": "Renamed: works on the team-customisation list [entrants+0x2f8+kind*0x10] (same list and remover 0x142473da0 as Ent_EntrantsSystem_RemoveTeamCustomisation), compares record fields +0x10..+0xfc, re-adds a copy via 0x1424746e0. The log strings are copies of the team-replace texts, which misled the old name. Returns 5/1/3, else 0 (existed)/2. (lane owner review requested) Better name: Ent_EntrantsSystem_ReplaceTeamCustomisation (bound record keeps its name)."
  },
  "signature": {
   "id": "entrants.entrants_system_replace_team_2",

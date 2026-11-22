@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14147c2d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14147c2d0.c;pat:log-channel-GAME;xref:0x1414a1e03,0x1414a39f8",
-  "notes": "0x2469-byte handler (lea refs): '[TIME TRIALS] Leaving a time trial game mode', GHOSTLAP-TRACE, vehicle_newlap."
+  "evidence": "decomp:re/decomp/14147c2d0.c;pat:log-channel-GAME;xref:0x1414a1e02,0x1414a39f7",
+  "notes": "Datastore delegate (lea in 0x1414a0270 registers, 0x1414a3960 removes); logs onGameModeChanged. If evt+0x18==1: new mode node == [+0x20508] -> +0x3c=-1, subscribe via 0x14147e870 (+0x39=1), [+0x10] vt+0x138; else logs '[TIME TRIALS] Leaving a time trial game mode.', frees +0x20758/+0x20768, vt+0x140, unsubscribes 18 TT msgs (0x143988350), +0x39=0. Then 0x14147c0f0, 0x14147b720. (lane owner review requested) Better name: Game_TimeTrial_OnGameModeChanged (bound record keeps its name)."
  },
  "signature": {
   "id": "game.time_trial_leave",

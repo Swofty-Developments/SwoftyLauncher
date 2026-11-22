@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1446b97d0.c;xref:0x144689747,0x1446db1e7,0x1446e4c4a",
-  "notes": "Wheel world position = suspension offsets (+0x300..+0x31c) + body offset [+0x558]+0x2d0; for +0x9f40 >= 7 uses Car_Suspension_ComputeWheelTransform. Callers: Car_Engine_UpdateTemperature, Car_Physics_SubstepTyreUpdate, Car_Suspension_PublishWheelState. (3 xref site(s), fb.py callers.)"
+  "evidence": "decomp:re/decomp/1446b97d0.c;xref:0x1446db1e7,0x1446e4c4a",
+  "notes": "Wheel pose (position from suspension offsets +0x300/+0x310 + body +0x2d0, HV>=7 via 0x1446b8ce0 and quaternions incl. curve +0x848); callers 0x1446db1e7 and 0x1446e4c4a."
  },
  "signature": {
   "id": "car.suspension_compute_wheel_pose",

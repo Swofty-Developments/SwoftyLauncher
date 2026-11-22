@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14080a720",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14080a720.c;pat:log-channel--;xref:0x1436c8799",
-  "notes": "lea 0x1436c8799 in 0x1436c7af0 (delegate)."
+  "notes": "One-shot (+0x1a0 set at end), gated by 0x146cc4278+0xf0. Binds DB seasons.current_season to seasons.2019 (0x140977b20), vfuncs +0x20/+0x28 on items at +0x18. If 0x14604ea28+0x38: beta.driver_heads (driver_head ids -> +0x90), beta.livery_colours (colour -> +0xb8), beta.team_colours (colour1-4 keyed by entrants.teams stat_id -> map +0xe0), override_colours -> +0x130/+0x158. Old name too narrow. (lane owner review requested) Better name: Game_Init_CurrentSeasonAndBetaOverrides (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_beta_config",

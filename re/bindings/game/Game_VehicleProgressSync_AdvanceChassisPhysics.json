@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143274180",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143274180.c;pat:log-message-cxx;xref:0x143261fe6",
-  "notes": "Pretty-function string advanceChassisPhysics(racing::dynamics::Chassis *, racing::dynamics::NetworkProgress &, NEfloat) and teleport / 'no ground-height' / 'history too old' logs are in the body. Address taken by lea 0x143261fe6 in 0x143261250."
+  "notes": "Read in full. Address taken by lea 0x143261fe6 in 0x143261250. Needs flags +0x7c bits 0+1: target time = clock [[+0x58]+8] + clamped offset (+/-0.05 s, cfg 0x1460bff80+0x718) - delay +0x298; history lag limit cfg +0x734; 0x143271400 samples history into a NetworkProgress (0xd2 B copied to +0xd8); if far from the chassis (cfg +0x728/+0x72c/+0x730 * speed) teleports via 0x14473d810 with logs; fills param_3 (pos/orient/vel, scaled gains cfg +0x748..+0x75c), returns 1; failure logs, resets state, returns 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_progress_sync_advance_chassis_physics",

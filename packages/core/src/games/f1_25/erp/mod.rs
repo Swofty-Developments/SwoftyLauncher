@@ -16,6 +16,7 @@ pub(crate) mod pack;
 mod place;
 mod slices;
 mod stats;
+mod templates;
 mod ui_merge;
 mod view;
 mod write;

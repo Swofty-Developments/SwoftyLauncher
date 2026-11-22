@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143c4a8e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143c4a8e0.c;xref:0x143b134ee,0x143b40880,0x152562b6e,0x152562bbc,0x152562cbe,0x1526f39e9",
-  "notes": "Teardown (obj, allocator): *obj sub-object: ushort count +0x4e entries released via 0x1439dbea0(global 0x14618caa8) when +0x20 == 0 else +0x20 freed; frees +0x18 and the sub-object; releases handles obj[6] (0x1439da200) and obj[5] (0x1439da070); destroys vector obj[10..0xc] (0x1403118b0); clears hash map obj[0xe..0x16]. Particle/mesh context not shown by the body; callers 0x143b133f0, 0x143b40820 and others."
+  "notes": "Teardown (obj, allocator): sub *obj: if +0x20 == 0 the u16 count +0x4e handles at +0x18 go to Render_Gfx2Device_DestroyAndTrackResource_4ac8 0x1439dbea0(global 0x14618caa8), else +0x20 freed; frees +0x18 and sub; obj[6] 0x1439da200, obj[5] 0x1439da070 (deferred release); destroys vector obj[10..0xb] (0x1403118b0); clears FNV-1a hash map obj[0xe..0x16] (tail 0x143f0f4e0). Counterpart of Game_Particles_BindMeshModel 0x143b133f0 (caller). (lane owner review requested)"
  },
  "signature": {
   "id": "game.particles_release_mesh_model_binding",
