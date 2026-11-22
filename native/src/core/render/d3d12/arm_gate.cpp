@@ -11,8 +11,14 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cstdlib>
 #include <cstring>
 #include <string>
+
+namespace safetyhook {
+extern thread_local unsigned trap_stall_ms;
+extern HANDLE trap_stalled;
+}
 
 namespace render::d3d12 {
 
@@ -64,6 +70,13 @@ struct CallerScope {
     explicit CallerScope(void *caller) : was(gate_caller) { gate_caller = caller; }
     ~CallerScope() { gate_caller = was; }
 };
+
+unsigned test_stall_ms()
+{
+    char v[16] = {};
+    DWORD n = GetEnvironmentVariableA("SWOFTY_TEST_TRAP_STALL_MS", v, sizeof v);
+    return n && n < sizeof v ? unsigned(std::strtoul(v, nullptr, 10)) : 0;
+}
 
 bool holds_loader_lock()
 {
@@ -248,8 +261,10 @@ struct Platform {
 
     void unhook_factories()
     {
+        safetyhook::trap_stall_ms = test_stall_ms();
         for (int i = FACTORY; i < EXPORTS; i++)
             d3d12::unhook(exports[i]);
+        safetyhook::trap_stall_ms = 0;
     }
 };
 
@@ -276,7 +291,7 @@ bool Platform::make_thread(uint32_t &id)
 
 void *creation_caller(void *ret) { return gate_caller ? gate_caller : ret; }
 
-void wait_arm_before_exit()
+static void wait_arm_inner()
 {
     uint32_t me = GetCurrentThreadId();
     if (!gate.working() || gate.is_worker(me) || holds_loader_lock())
@@ -287,8 +302,21 @@ void wait_arm_before_exit()
                 p == arm_gate::Pass::timed_out ? "it exits without it" : "the arm finished", waited);
 }
 
+void wait_arm_before_exit()
+{
+    wait_arm_inner();
+    if (!safetyhook::trap_stalled)
+        return;
+    DWORD from = GetTickCount();
+    DWORD r = WaitForSingleObject(safetyhook::trap_stalled, 3000);
+    swofty::log("[d3d12] test: the exit waited %lu ms for the worker to stall inside its factory unhook (%s)",
+                GetTickCount() - from, r == WAIT_OBJECT_0 ? "it did" : "it did not");
+}
+
 bool arm_on_worker(void (*block)(), bool early)
 {
+    if (test_stall_ms() && !safetyhook::trap_stalled)
+        safetyhook::trap_stalled = CreateEventW(nullptr, TRUE, FALSE, nullptr);
     if (!hooks.gate.offer())
         return false;
     char v[8] = {};
