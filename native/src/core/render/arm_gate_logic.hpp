@@ -103,6 +103,11 @@ inline bool system_module(std::wstring_view module_path, std::wstring_view windo
 
 // Open until schedule() and again from finish(). In between, a call from the worker or an exempt one passes and any
 // other waits for finish(), for at most the cap it is given; one that waits that long goes on (timed_out).
+//
+// The worker still takes the factory hooks out after finish(), and retire() marks the end of that. The exit waits
+// for retire() (wait_retired): ExitProcess ends every other thread, and a worker ended inside a hook removal leaves
+// the page it was patching without execute access or one of the hook library's locks held, so the exiting thread
+// faults on that page without end or waits on that lock for good when the DLLs detach.
 class Gate {
 public:
     void schedule(uint32_t worker)
@@ -121,7 +126,22 @@ public:
         done_.notify_all();
     }
 
+    void retire()
+    {
+        {
+            std::lock_guard<std::mutex> g(lock_);
+            state_.store(RETIRED);
+        }
+        done_.notify_all();
+    }
+
     bool running() const { return state_.load() == RUNNING; }
+
+    bool working() const
+    {
+        int s = state_.load();
+        return s == RUNNING || s == DONE;
+    }
 
     // Read after running() was true: the worker's id is written before the state turns to running.
     bool is_worker(uint32_t thread) const { return state_.load() != IDLE && thread == worker_; }
@@ -148,8 +168,26 @@ public:
         return done ? Pass::waited : Pass::timed_out;
     }
 
+    Pass wait_retired(uint32_t thread, std::chrono::milliseconds cap, double *waited_ms = nullptr)
+    {
+        if (waited_ms)
+            *waited_ms = 0;
+        if (!working())
+            return Pass::open;
+        std::unique_lock<std::mutex> g(lock_);
+        if (!working())
+            return Pass::open;
+        if (thread == worker_)
+            return Pass::worker;
+        auto from = std::chrono::steady_clock::now();
+        bool done = done_.wait_for(g, cap, [&] { return !working(); });
+        if (waited_ms)
+            *waited_ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - from).count();
+        return done ? Pass::waited : Pass::timed_out;
+    }
+
 private:
-    static constexpr int IDLE = 0, RUNNING = 1, DONE = 2;
+    static constexpr int IDLE = 0, RUNNING = 1, DONE = 2, RETIRED = 3;
     std::mutex lock_;
     std::condition_variable done_;
     std::atomic<int> state_{IDLE};
@@ -183,12 +221,13 @@ template <class Platform> Choice begin(Inputs in, Gate &gate, Platform &p)
 }
 
 // The worker: the block, with the probe device made and released inside it, then the gate opens and the factory
-// export hooks come out (the device export's stays until the game's first call through it).
+// export hooks come out (the device export's stays until the game's first call through it), then it retires.
 template <class Platform> void run_worker(Gate &gate, void (*block)(), Platform &p)
 {
     block();
     gate.finish();
     p.unhook_factories();
+    gate.retire();
 }
 
 }

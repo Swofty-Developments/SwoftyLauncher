@@ -279,10 +279,10 @@ void *creation_caller(void *ret) { return gate_caller ? gate_caller : ret; }
 void wait_arm_before_exit()
 {
     uint32_t me = GetCurrentThreadId();
-    if (!gate.running() || gate.is_worker(me) || holds_loader_lock())
+    if (!gate.working() || gate.is_worker(me) || holds_loader_lock())
         return;
     double waited = 0;
-    arm_gate::Pass p = gate.wait(me, arm_gate::Exempt::none, arm_gate::WAIT_CAP, &waited);
+    arm_gate::Pass p = gate.wait_retired(me, arm_gate::WAIT_CAP, &waited);
     swofty::log("[d3d12] the game exits while the D3D12 arm runs on its worker; %s after %.0f ms",
                 p == arm_gate::Pass::timed_out ? "it exits without it" : "the arm finished", waited);
 }

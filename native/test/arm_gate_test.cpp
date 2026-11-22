@@ -72,6 +72,8 @@ struct Export {
 struct FakePlatform {
     bool hooks_take = true, thread_starts = true;
     int hooked = 0, unhooked = 0, factories_unhooked = 0, made = 0, resumed = 0;
+    std::chrono::milliseconds unhook_takes{0};
+    std::atomic<bool> factories_out{false};
     std::thread worker;
     std::atomic<bool> go{false};
     std::function<void()> body;
@@ -108,7 +110,12 @@ struct FakePlatform {
     }
 
     void unhook() { unhooked++; }
-    void unhook_factories() { factories_unhooked++; }
+    void unhook_factories()
+    {
+        std::this_thread::sleep_for(unhook_takes);
+        factories_unhooked++;
+        factories_out.store(true);
+    }
 };
 
 ag::Gate *the_gate;
@@ -245,6 +252,30 @@ void test_game_after_worker()
            "a game that reaches its device after the worker is done does not wait");
 }
 
+void quick_block() { the_trace->add("block done"); }
+
+void test_exit_waits_for_unhook()
+{
+    ag::Gate gate;
+    Trace trace;
+    FakePlatform platform;
+    the_gate = &gate, the_trace = &trace, the_platform = &platform;
+    platform.unhook_takes = 300ms;
+    platform.body = [&] { ag::run_worker(gate, quick_block, platform); };
+    expect(ag::begin(ready(), gate, platform).worker, "the worker starts");
+    while (gate.running())
+        std::this_thread::yield();
+    expect(gate.working() && !platform.factories_out.load(),
+           "the gate is open while the worker still takes the factory hooks out");
+    double waited = 0;
+    ag::Pass p = gate.wait_retired(thread_key(), ag::WAIT_CAP, &waited);
+    expect(p == ag::Pass::waited && platform.factories_out.load() && waited >= 100,
+           "the exit waits until the worker has taken the factory hooks out");
+    platform.worker.join();
+    expect(!gate.working() && gate.wait_retired(thread_key(), ag::WAIT_CAP) == ag::Pass::open,
+           "once the worker has retired the exit does not wait");
+}
+
 void test_arm_inputs()
 {
     ag::Gate gate;
@@ -272,6 +303,15 @@ void test_cap()
     gate.finish();
     expect(gate.wait(thread_key(), ag::Exempt::none, 80ms, &waited) == ag::Pass::open && waited == 0,
            "after finish nothing waits");
+    from = std::chrono::steady_clock::now();
+    p = gate.wait_retired(thread_key(), 80ms, &waited);
+    took = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - from).count();
+    expect(p == ag::Pass::timed_out && waited >= 75 && took < 2000,
+           "an exit wait for a worker that does not retire stops at its cap");
+    expect(gate.wait_retired(thread_key() + 2, 80ms) == ag::Pass::worker, "the worker does not wait for itself");
+    gate.retire();
+    expect(gate.wait_retired(thread_key(), 80ms, &waited) == ag::Pass::open && waited == 0,
+           "after retire the exit does not wait");
 }
 
 void test_fallback()
@@ -319,6 +359,7 @@ int main()
     test_system_module();
     test_gate_waits();
     test_game_after_worker();
+    test_exit_waits_for_unhook();
     test_arm_inputs();
     test_cap();
     test_fallback();
