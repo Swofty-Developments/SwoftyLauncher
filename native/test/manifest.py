@@ -424,6 +424,8 @@ SCRIPTS = [
     Script('pin', 'CPU pin plan (CI, taskset, affinity, job count)', ['bash', 'native/test/pin_test.sh']),
     Script('wineserver', 'Wine test wineserver lookup (beside wine, lib folders, versions)',
            ['bash', 'native/test/wineserver_test.sh']),
+    Script('game_run', 'Wine test game runs (wineserver settle, cmd /c exit code, one retry for a Wine start failure)',
+           ['bash', 'native/test/game_run_test.sh']),
     Script('std_templates', 'Standard library templates', ['python3', 'tools/std/templates.py']),
     Script('loading_report', 'Loading report on synthetic loader.log runs', ['python3', '-I', 'native/test/loading_report_test.py']),
     Script('sigverify', 'Core signatures on the KB build and Steam 1.0.145 (skipped without both executables)',

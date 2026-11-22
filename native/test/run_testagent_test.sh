@@ -11,6 +11,7 @@ SELF=$(readlink -f "$0")
 cd "$(dirname "$SELF")"
 NEEDS="zig wine xvfb-run"
 . "$(dirname "$SELF")/lib/env.sh"
+. "$(dirname "$SELF")/lib/game_run.sh"
 . ./game_lock.sh
 DIST=${DIST:-dist}
 OUT=${1:-$PWD/../build/wine-testagent}
@@ -62,7 +63,7 @@ EOC
 run() {
     rm -f "$LOG"
     local code=0
-    (cd "$OUT/game" && T_SECONDS=${T_SECONDS:-8} timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe") || code=$?
+    (cd "$OUT/game" && T_SECONDS=${T_SECONDS:-8} game_run "$OUT/game/F1_25.exe") || code=$?
     echo "$code"
 }
 for mode in armed refused retired off; do

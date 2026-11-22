@@ -4,6 +4,7 @@ SELF=$(readlink -f "$0")
 cd "$(dirname "$SELF")"
 NEEDS="zig wine xvfb-run"
 . "$(dirname "$SELF")/lib/env.sh"
+. "$(dirname "$SELF")/lib/game_run.sh"
 . ./game_lock.sh
 DIST=${DIST:-dist}
 OUT=${1:-$PWD/../build/wine-lang-override}
@@ -16,7 +17,7 @@ cp -r "../$DIST/." "$OUT/game/"
     -o "$OUT/game/swofty/addons/t_lang.dll" lang/t_lang.cpp
 export WINEPREFIX="$OUT/prefix" WINEDLLOVERRIDES="version=n,b;mscoree,mshtml=;winemenubuilder.exe,winedbg.exe=d" WINEDEBUG=-all
 status=0
-timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" || status=1
+game_run "$OUT/game/F1_25.exe" || { echo "FAIL: the game exited with $?"; status=1; }
 LOG=$OUT/game/swofty/loader.log
 check() {
     if grep -qE "$2" "$LOG"; then echo "ok  : $1"; else echo "FAIL: $1"; status=1; fi

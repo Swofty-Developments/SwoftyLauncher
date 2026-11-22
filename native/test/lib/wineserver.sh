@@ -1,4 +1,4 @@
-# Sourced by run_wine_test.sh. swofty_wineserver prints the wineserver of the Wine build that `wine` on PATH
+# Sourced by the Wine tests. swofty_wineserver prints the wineserver of the Wine build that `wine` on PATH
 # runs, or returns 1 when there is none. Distributions keep it off PATH (Debian and Ubuntu under /usr/lib/wine as
 # wineserver or wineserver64), so it looks beside the binary `wine` resolves to through symlinks, beside `wine`
 # itself, in SWOFTY_WINE_LIB_DIRS and on PATH, and takes the first whose version is the one `wine --version`
