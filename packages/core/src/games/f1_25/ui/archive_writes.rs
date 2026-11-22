@@ -13,8 +13,9 @@ use super::pages::{ADJUST_TOOLTIP, Screens};
 use super::{
     ANCHOR, CUSTOMISATION_ROUTES, ERPS, F1_WORLD_ROUTES, FE_HOME, FLOW, FLOWS, FRONTEND_TRANSITION,
     GAME_ROUTES, HUD_MESSAGES, LEADERBOARD_UI, MESSAGES, MenuBuild, MfdRow, OPTIONS_FLOW, OVERRIDES,
-    PERSISTENT_UI, Patch, REGIONS, ROUTES, TOOLTIPS, UI_DATA, WIZARD_ROUTES, Writer, car_category,
-    career_row, career_select, check, era, home_rows, icons, mfd, mfd_page_rows, patch, rows, ui_file,
+    PERSISTENT_UI, Patch, PitRow, REGIONS, ROUTES, TOOLTIPS, UI_DATA, WIZARD_ROUTES, Writer, car_category,
+    career_row, career_select, check, era, home_rows, icons, mfd, mfd_page_rows, mfd_templates, patch, rows,
+    ui_file,
 };
 use crate::addons::settings::{SessionScreen, UI_DIR, screen_file};
 use crate::{Error, Result, io_err};
@@ -422,12 +423,13 @@ pub(super) fn write_flags(out: &Path, build: &mut MenuBuild, p: Persistent, rows
     Ok(())
 }
 
-/// Writes the MFD page's rows into each archive that holds its templates, and logs which addons show
-/// rows there.
+/// Writes the ADDONS MFD page's rows and the pit page's addon rows into each archive that holds their
+/// templates, and logs which addons show rows there.
 pub(super) fn write_mfd_templates(
     input: &dyn Fn(&str) -> PathBuf,
     out: &Path,
     mfd_rows: &[MfdRow],
+    pit_rows: &[PitRow],
     build: &mut MenuBuild,
     archives: &ArchiveWriter,
 ) -> Result<()> {
@@ -437,22 +439,29 @@ pub(super) fn write_mfd_templates(
         write_erp(
             &src,
             &dst,
-            vec![(mfd::TEMPLATES, Box::new(|d| mfd::templates(d, &rows)))],
+            vec![(mfd::TEMPLATES, Box::new(|d| mfd_templates(d, &rows, pit_rows)))],
             archives,
         )?;
         build.erps.insert(ui_file(rel), dst);
     }
-    build.lines.push(format!(
-        "ADDONS MFD page: {} row(s) from {}",
-        mfd_rows.len(),
-        mfd_rows
+    if !mfd_rows.is_empty() {
+        build.lines.push(format!(
+            "ADDONS MFD page: {} row(s) from {}",
+            mfd_rows.len(),
+            mfd_rows
+                .iter()
+                .map(|r| r.addon.as_str())
+                .collect::<std::collections::BTreeSet<_>>()
+                .into_iter()
+                .collect::<Vec<_>>()
+                .join(", ")
+        ));
+    }
+    build.lines.extend(
+        pit_rows
             .iter()
-            .map(|r| r.addon.as_str())
-            .collect::<std::collections::BTreeSet<_>>()
-            .into_iter()
-            .collect::<Vec<_>>()
-            .join(", ")
-    ));
+            .map(|r| format!("MFD pit page: {} is row {} of {}", r.name, r.id, r.addon)),
+    );
     Ok(())
 }
 

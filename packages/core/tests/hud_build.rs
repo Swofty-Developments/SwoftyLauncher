@@ -159,6 +159,16 @@ impl Fixture {
         );
     }
 
+    fn pit_addon(&self) {
+        self.install(
+            "e.pit",
+            serde_json::json!({
+                "hud": { "pit_rows": [{ "id": "serve_penalty", "label": "SERVE PENALTY" }] }
+            }),
+            vec![],
+        );
+    }
+
     fn planked(&self, real: &Path) {
         let originals = GameStock::with_baseline(real, &Store::open_default().root).unwrap();
         let stock = ErpFile::open(&originals.original(FLOW_RACE)).unwrap();
@@ -254,6 +264,48 @@ fn two_hud_addons_the_mfd_page_and_a_replaced_template_compose_into_one() {
             .unwrap();
     assert!(scene.resources.iter().any(|r| r.name.contains("one_hud_base")));
     assert!(scene.resources.iter().any(|r| r.name.contains("two_hud_base")));
+}
+
+const PIT_ROW: &str = "hud_mfd_dynamic.mfd.attacher.pit_settings_panel.settings_list.swofty_pit_0";
+
+#[test]
+fn the_pit_rows_go_into_the_menu_templates_and_the_composed_hud() {
+    let Some(game) = real() else { return };
+    let f = Fixture::new("pit", &game);
+    f.pit_addon();
+    let built = build(&f.store, "default", &f.game).unwrap();
+    for rel in swofty_core::ui::mfd::TEMPLATE_ERPS {
+        let t = template_of(&built.plan.data[&swofty_core::ui::ui_file(rel)]);
+        assert!(has(&t, PIT_ROW), "{rel}: the pit row");
+        assert!(!has(&t, PANEL), "{rel}: no ADDONS page without MFD rows");
+    }
+    assert_eq!(
+        built
+            .lines
+            .iter()
+            .filter(|l| l.starts_with("MFD pit page:"))
+            .collect::<Vec<_>>(),
+        ["MFD pit page: swofty_pit_0 is row serve_penalty of e.pit"]
+    );
+
+    f.hud_addon("one.hud");
+    f.mfd_addon();
+    let built = build(&f.store, "default", &f.game).unwrap();
+    let cached = f.store.addon_cache_dir("one.hud").join("hud/hud_template.erp");
+    for (what, t) in [
+        ("the composed overlay archive", template_of(&cached)),
+        (
+            "the built flow_race.erp",
+            template_of(&built.plan.data[FLOW_RACE]),
+        ),
+    ] {
+        assert!(has(&t, PIT_ROW), "{what}: the pit row");
+        assert!(has(&t, PANEL), "{what}: the MFD page");
+        assert!(
+            has(&t, &format!("{}.one_hud_ctl", dials::F126.race_parent)),
+            "{what}: one.hud"
+        );
+    }
 }
 
 #[test]
