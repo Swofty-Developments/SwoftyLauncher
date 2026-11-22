@@ -187,6 +187,12 @@ Only the worker makes DXGI factories while it runs. Steam's overlay (`GameOverla
 
 So the game sees what it sees with the block in the stage, in the same order: the same hooks, and the probe device made and released before its own device and factory exist. The factory hooks come out when the worker is done. The device hook stays until the game's first `D3D12CreateDevice`, which it times, and then comes out. A hook that something patched over meanwhile stays in. DRED's own `D3D12CreateDevice` hook sits behind the gate's and asks `render::d3d12::creation_caller` for the real caller, so it still tells the game's devices from the core's.
 
+When the game calls `ExitProcess` while the worker runs, the `ExitProcess` hook waits, for at most 30 s, until the worker has finished and has taken the factory hooks out (`wait_arm_before_exit`, `Gate::wait_retired`). The wait is logged:
+
+```
+[d3d12] the game exits while the D3D12 arm runs on its worker; the arm finished after 147 ms
+```
+
 The block runs in the stage, with one line that says why, when any of these holds:
 
 - `SWOFTY_ARM_SYNC=1` is set.
