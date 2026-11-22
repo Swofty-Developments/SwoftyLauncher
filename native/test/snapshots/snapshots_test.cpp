@@ -4,8 +4,10 @@
 // input, and the entry spliced into a profile save's containers block with the save splice's own
 // logic; the season clock (clock.hpp): the year of a season index from the career.season records, the
 // owner-only career::report_season, career.created after a new-career route, career.season.start once per
-// career and year, and the dry save default. --generate DIR writes the fixture entries of packages/sdk/std/fixtures; --fixtures DIR checks
+// career and year, and the dry save default; a report made off the flow thread (career/ops/report_queue.hpp),
+// queued and run at the next flow tick, before the session loads. --generate DIR writes the fixture entries of packages/sdk/std/fixtures; --fixtures DIR checks
 // every fixture there loads and reads as its .json says. run_snapshots_test.sh builds and runs it.
+#include "core/career/ops/report_queue.hpp"
 #include "core/career/save_splice_logic.hpp"
 #include "core/career/snapshots/clock.hpp"
 #include "core/career/snapshots/snapshots.hpp"
@@ -16,6 +18,7 @@
 #include <fstream>
 #include <random>
 #include <sstream>
+#include <thread>
 
 namespace snap = career::snapshots;
 namespace fmt = career::snapshots::format;
@@ -649,6 +652,111 @@ static void clock_tests()
     expect(!sn::SAVE_BY_DEFAULT, "the entry is not written by default");
 }
 
+static void queued_report_tests()
+{
+    namespace rq = career::ops::reports;
+    const std::string owner = "swofty.swofty-seasons-progressive", group = "f1_career_sw_progressive";
+    const std::string career = "driver_career_sw_progressive:7d8bffb65642b0ea";
+    reg::Store st;
+    st.set_log([](const std::string &) {});
+    declare(st, "career.season", true);
+    for (int y = 2010; y <= 2026; y++)
+        add_season(st, owner, std::to_string(y), group, y);
+    sn::YearMap map = sn::year_map(st, group);
+
+    sn::Clock clock;
+    clock.set_started([&](const std::string &c, int y) { return c == career && y == 2010; });
+    int scope_year = 0;
+    bool season_started = false;
+    sn::Moment last;
+    auto run = [&](const std::string &caller, int year, int index) {
+        sn::Report r = clock.report(caller, sn::Season{career, group, owner, index, true, ""}, year, map, last);
+        if (last.fire)
+            season_started = true;
+        if (last.dated)
+            scope_year = last.year;
+        return r == sn::Report::ok ? 0 : r == sn::Report::late ? 1 : r == sn::Report::refused ? 5 : 3;
+    };
+
+    rq::Queue q;
+    expect(!q.pending() && rq::drain(q, career, run).empty(), "queued reports: an empty queue runs nothing");
+    rq::Queued made;
+    std::thread loaded([&] {
+        made = rq::Queued{owner, career, 2010, 0, 15076};
+        q.put(made);
+    });
+    loaded.join();
+    expect(q.pending(), "queued reports: a report from the career.loaded handler's thread is queued");
+    expect(rq::queued_line(made) ==
+               "[career-ops] report_season(2010, 0) from swofty.swofty-seasons-progressive: called off the flow thread "
+               "(thread 15076); queued, the next flow tick runs it",
+           "queued reports: the queue line names the report and its thread");
+    expect(scope_year == 0, "queued reports: until the next flow tick the career's year is not known");
+
+    auto ran = rq::drain(q, career, run);
+    expect(ran.size() == 1 && !ran[0].dropped && ran[0].result == 0, "queued reports: the next flow tick runs the report: ok");
+    expect(said(last, "ok, 2010 already started in career " + career) && last.dated && !last.fire && !season_started,
+           "queued reports: a resumed season dates the career without a second career.season.start");
+    expect(scope_year == 2010, "queued reports: the session that loads after the tick runs in 2010");
+    expect(rq::ran_line(ran[0], "ok") ==
+               "[career-ops] report_season(2010, 0) from swofty.swofty-seasons-progressive, queued off the flow thread: run "
+               "at the flow tick: ok",
+           "queued reports: the run line gives the core's answer");
+    expect(!q.pending() && rq::drain(q, career, run).empty(), "queued reports: a report runs once");
+
+    std::thread next([&] { q.put(rq::Queued{owner, career, 2011, 1, 7}); });
+    next.join();
+    ran = rq::drain(q, career, run);
+    expect(ran.size() == 1 && ran[0].result == 0 && season_started && scope_year == 2011,
+           "queued reports: a new season reported off the flow thread starts at the next flow tick");
+
+    q.put(rq::Queued{owner, career, 2012, 2, 7});
+    q.put(rq::Queued{owner, career, 2013, 3, 7});
+    ran = rq::drain(q, career, run);
+    expect(ran.size() == 1 && ran[0].report.year == 2013 && scope_year == 2013, "queued reports: a caller's latest report wins");
+
+    int runs = 0;
+    auto count = [&](const std::string &, int, int) { return ++runs, 0; };
+    q.put(rq::Queued{owner, "driver_career_sw_progressive:0001", 2010, 0, 7});
+    ran = rq::drain(q, career, count);
+    expect(ran.size() == 1 && ran[0].dropped && runs == 0, "queued reports: a report for a career no longer loaded is dropped");
+    expect(rq::ran_line(ran[0], "ok").find("dropped, that career is no longer loaded") != std::string::npos,
+           "queued reports: and the log says so");
+    q.put(rq::Queued{owner, "", 2010, 0, 7});
+    ran = rq::drain(q, career, count);
+    expect(ran.size() == 1 && !ran[0].dropped && runs == 1, "queued reports: a report made before the career had an id runs");
+
+    bool room = true;
+    for (size_t i = 0; i < rq::Queue::MAX; i++)
+        room = q.put(rq::Queued{"addon." + std::to_string(i), career, 2010, 0, 7}) && room;
+    expect(room, "queued reports: room for one report from each of 8 callers");
+    rq::Queued extra{"addon.extra", career, 2010, 0, 7};
+    expect(!q.put(extra) && rq::full_line(extra).find("late: 8 other callers' reports are already queued") != std::string::npos,
+           "queued reports: a full queue answers late");
+    expect(q.put(rq::Queued{"addon.0", career, 2011, 1, 7}), "queued reports: a queued caller still replaces its report");
+    expect(rq::drain(q, career, count).size() == rq::Queue::MAX, "queued reports: every queued caller runs");
+
+    std::vector<int> latest(4, 0);
+    std::vector<std::thread> threads;
+    for (int t = 0; t < 4; t++)
+        threads.emplace_back([&, t] {
+            for (int y = 1950; y <= 2100; y++)
+                q.put(rq::Queued{"addon." + std::to_string(t), career, y, 0, uint32_t(t)});
+        });
+    auto record = [&](const std::string &caller, int year, int) {
+        int t = caller.back() - '0';
+        if (year > latest[t])
+            latest[t] = year;
+        return 0;
+    };
+    for (int i = 0; i < 200; i++)
+        rq::drain(q, career, record);
+    for (auto &t : threads)
+        t.join();
+    rq::drain(q, career, record);
+    expect(latest == std::vector<int>(4, 2100) && !q.pending(), "queued reports: reports from four threads at once all arrive");
+}
+
 static void career_id_tests()
 {
     expect(sn::career_id(sn::mode_part("", "f1_career_2026", "driver_career"), 3, 0x00ab12cd34ef5678ull) ==
@@ -1000,6 +1108,7 @@ int main(int argc, char **argv)
     creation_tests();
     year_map_tests();
     clock_tests();
+    queued_report_tests();
     career_id_tests();
     fuzz_tests();
     splice_tests();

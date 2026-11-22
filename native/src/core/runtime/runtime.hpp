@@ -211,6 +211,8 @@ bool test_run_live();
 void snapshots_start(bool splice_live);
 // career::report_season from caller (an addon id): SWOFTY_ASSET_OK, _LATE, _INVALID or SWOFTY_REFUSED.
 int snapshots_report_season(const std::string &caller, int year, int season_index);
+// The loaded career's id as the career snapshots know it (empty with none loaded); safe from any thread.
+std::string snapshots_career_now();
 
 // Dropped scores (standings_drop.cpp): while the loaded career is filed under data_group, the drivers' championship counts
 // each driver's best N results; 0 counts every result.
