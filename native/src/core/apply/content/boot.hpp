@@ -300,6 +300,11 @@ struct Expansion {
     // A box with more teams than its world has garages gets a world of its own (box_world.hpp). The core turns it on
     // unless SWOFTY_BOX_WORLDS=0; host tools pass it.
     bool box_worlds = false;
+    // A box whose content.package names a world gets that one (box_world.hpp, choose_named) when box worlds are on
+    // and SWOFTY_BOX_OWN_WORLDS=1; world_tracks lists the track folders that hold a world (unset in host tools: not
+    // looked at).
+    bool own_worlds = false;
+    box_world::WorldTracks world_tracks;
 };
 
 // The runtime twin of the build's virtual-list step (packages/core/src/games/f1_25/game_db/virtual_lists.rs) for content.package lists
@@ -757,7 +762,7 @@ inline void expand(registry::Store &st, Expansion &x, const StatIds &stat, const
                 lower_market(id, *rec, lookup, read, refs, plan);
             else
                 lower_package(id, *rec, lookup, plan, stat, &wear.person_driver, read, &refs.constructor_team, &dropped,
-                              x.box_worlds);
+                              x.box_worlds, x.own_worlds, x.world_tracks ? &x.world_tracks : nullptr);
             if (std::string full = r == "content.package" ? setup_mode_full(x.engine, plan, hosts) : std::string();
                 !full.empty()) {
                 x.refused[reg]++;

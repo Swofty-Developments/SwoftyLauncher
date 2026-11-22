@@ -1,0 +1,15 @@
+{
+  "content.package": {
+    "f5_1950": {
+      "$comment": "1950: the box loads <code>_e1950 worlds the addon ships and shows its own lap counter logo",
+      "title": { "literal": "F1 1950" },
+      "entrant_list": "f5_1950",
+      "season": 1950,
+      "world": {
+        "name": "e1950",
+        "season": "e1950s",
+        "branding": { "timing_tower_logo": "lc_f1_1950_logo", "broadcast_show_f1_logo": false }
+      }
+    }
+  }
+}

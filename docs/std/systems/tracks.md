@@ -512,6 +512,23 @@ and the box's entrant list row gets `"season": "swofty_box_sw_f1_2013"`. The boo
 - **The track list** leaves out a track whose box world has fewer garages or pit boxes than the box's teams (the garages rule), with the guard's popup "Its pit lane holds 10 teams. SWOFTY 2013 runs 11."
 - **When:** worlds are picked at each session's settings build, from the database the core edits at boot. The boot's stat-id lines say `box worlds on: …`, or `box worlds off (SWOFTY_BOX_WORLDS=0): every box keeps the world its list's layers load`.
 
+### A world the box names
+
+Experimental, off unless `SWOFTY_BOX_OWN_WORLDS=1` is in the game's environment (and box worlds are on). A `content.package` 1.7 record can name the world its sessions load, whatever its team count, so a season box can race on its own version of each track: period buildings, its own trackside boards, its sponsors moved away.
+
+```jsonc
+{ "content.package": { "f5_1950": {
+    "entrant_list": "f5_1950", "season": 1950,
+    "world": { "name": "e1950", "season": "e1950s",
+               "branding": { "timing_tower_logo": "lc_f1_1950_logo", "broadcast_show_f1_logo": false } } } } }
+```
+
+- **The world** is `[FILENAME]_<name>` at every track: the layer row's `worldAssetGroup` is `asset_groups/environment_package/tracks/[FILENAME]/wep/[FILENAME]_e1950` and its `worldEri` `eaid://environment_package/tracks/[FILENAME]/wep/[FILENAME]_e1950.wep`. The addon ships one archive per track, `2025_asset_groups/environment_package/tracks/<code>/wep/<code>_e1950.erp`, whose World resource has that eaid (a copy of the track's `<code>_f1_26.erp` with the World and its event graph renamed works: the names have the same length), and registers its group (`file.put` and `group.register`, with `<code>_f1_26.assetgroup` as the template). The garages and grid slots are the archive's own: a copy of an `f1_26` world has 11.
+- **The rows:** a season `swofty_world_<season>` copied from the list's season, on every seasons list that holds that season (as for a garage world), a layer row `swofty_world_<season>_world` for the box's setup mode and that season, copied from `from` (`f1_26`, or `myteam_26` for 12 teams), and the season on the list row. With `branding`, a row `swofty_world_<season>_branding` copied from `branding.from` (`f1_26`) for the setup mode and season, with `timing_tower_logo_texture_path` (a slice key of `overrides.osd.timing_tower.timing_tower_logos`, the lap counter's F1 logo, which the addon appends with its `overrides.uidb` key) and `broadcast_show_f1_logo`; the season then stays off the stock branding rows, so that row is the only one its sessions match. The branding id comes from the `content.package.branding` pool (above the highest stock `stat_id`).
+- **Shared by an era:** a season id is a bit of the layer's u32 season mask (0 to 31), and with the SWOFTY seasons installed about seven are free. `world.season` names the season the box shares: the first box in load order that names it makes the season, the layer and the branding row, and every later one (its Time Trial list, the other years of the era) only takes the season. Its rows follow the first box's list season and branding.
+- **Tracks without the archive:** a layer row has no track criterion (`Trk_TrackData_CollectLayersForQuery` matches the setup mode, season and weekend format masks), so the box's sessions ask for its world at every track, and a group whose archive is missing hangs the session load. At boot the core lists the track folders that hold `<code>/wep/<code>_<name>.erp` (`[content] box world e1950: 7 track folder(s) hold <code>_e1950.erp`). The box's track list leaves out every other track (the world rule: "It has no e1950 world, the one F1 1950 loads."), and a world no folder holds leaves the box on the world its list's layers load. The track does not fall back to its `f1_26` world inside the box: that needs a stand-in archive per track, as an installed track gets.
+- **Lines:** `[content] content.package vmknolle.season-1950/f5_1950: world e1950: season swofty_world_e1950s (statId 25, 41 season lists), layer swofty_world_e1950s_world (from f1_26, statId 30, eaid://…_e1950.wep), branding swofty_world_e1950s_branding (from f1_26, stat_id 13); 7 track(s) hold it (austria, melbourne, monaco, monza, silverstone, spa_francorchamps, zandvoort); the box's track list leaves out the rest`. A full season pool leaves the box's world as it is, with a line.
+
 ## A box's own track data
 
 <Split>

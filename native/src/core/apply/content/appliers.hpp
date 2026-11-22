@@ -15,11 +15,17 @@
 namespace swofty_core::apply::content {
 
 void register_appliers();
+// ui.per_package (box_ui.cpp): the box's own UI textures, routed while the box is pressed.
+void register_box_ui();
 // Starts the boot expansion ahead on a worker once the database load is hooked; SWOFTY_BOOT_AHEAD=0 turns it off.
 void start_boot_ahead();
 void undress_teams(const char *why);
 // The team.identity id the loaded team record of this stat id wears in the current career (a dressed slot), or "".
 std::string worn_team(uint16_t stat);
+
+// The track codes whose folder in the game holds environment_package/tracks/<code>/wep/<code>_<name>.erp, the world a
+// content.package names (box_world.hpp); nullopt while box worlds or SWOFTY_BOX_OWN_WORLDS are off.
+std::optional<std::vector<std::string>> box_world_tracks(const std::string &name);
 
 // The DRS group the box with this entrant list runs: the label of its content.package's rules.drs group if the
 // boot apply added it (empty otherwise), and the line to log. host names the setup mode the rules go into in that line,
@@ -102,7 +108,8 @@ struct PointsBox {
 };
 PointsBox points_for_box(const std::string &entrant_list, const std::string &host = "swofty_f1");
 
-// The box of the loaded career's season (career_rules.hpp) in this context, read from the registry store.
-CareerBox career_box_now(const registry::Context &ctx);
+// The box of the loaded career's season (career_rules.hpp) in this context, read from the registry store; safety_car
+// runs the season's rules.safety_car too (SWOFTY_CAREER_SAFETY_CAR=1).
+CareerBox career_box_now(const registry::Context &ctx, bool safety_car = false);
 
 }

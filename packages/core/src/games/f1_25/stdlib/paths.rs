@@ -65,7 +65,7 @@ const SCHEMAS: &[(&str, &str)] = &[
     ),
     (
         "content.package",
-        include_str!("../../../../../sdk/std/registries/content.package/1.6.json"),
+        include_str!("../../../../../sdk/std/registries/content.package/1.7.json"),
     ),
     (
         "driver.head",
@@ -174,6 +174,10 @@ const SCHEMAS: &[(&str, &str)] = &[
     (
         "track.venue",
         include_str!("../../../../../sdk/std/registries/track.venue/1.0.json"),
+    ),
+    (
+        "ui.per_package",
+        include_str!("../../../../../sdk/std/registries/ui.per_package/1.0.json"),
     ),
     (
         "vehicle",
@@ -422,6 +426,8 @@ mod tests {
               "driver.head": { "senna": { "archive": "heads/senna/", "rig_from": "game/male_ls222" } },
               "team.garage": { "renault_2020": { "package": "swofty.classic-seasons-2020/f1_2020", "entry": "lotus", "textures": "garage/renault_2020" } },
               "track.sponsors": { "boards_1950": { "package": "mod.s/f1_1950", "textures": "sponsors/f1_1950" } },
+              "ui.per_package": { "f1_1950_ui": { "package": "mod.s/f1_1950", "textures": { "erp": "ui/f1_1950.erp", "resources": ["eaid://x"] },
+                                                  "archives": ["2025_asset_groups/ui_package/flow_race.erp"] } },
               "someone.own": { "x": { "file": "not/a/schema/path.bin" } },
               "career.season": { "y": { "name": "sounds/v10_screamer.bdl" } }
             }"#,
@@ -438,7 +444,8 @@ mod tests {
                 "helmets/hamilton_2017.erp",
                 "logos/williams_hud.png",
                 "sounds/v10_screamer.bdl",
-                "sponsors/f1_1950"
+                "sponsors/f1_1950",
+                "ui/f1_1950.erp"
             ]
         );
     }

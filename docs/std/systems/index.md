@@ -64,6 +64,10 @@ Added in 1.10.0:
 - **[Weather setup](/reference/std/weather)** `swofty/systems/weather.hpp`: the `session.weather.setup` payload, `weather::set_seed` and `weather::script`.
 - **[Standings](/reference/std/standings)** `swofty/systems/career.hpp`: the loaded career's drivers' championship, `career::standings`, `Standings::find` and `StandingsDriver::points_in`.
 
+Added in 1.10.25 (experimental, `SWOFTY_BOX_UI=1`):
+
+- **[Box UI textures](./box-ui)** `swofty/systems/content.hpp`: `content::package_ui`, a box's own UI textures swapped into ui_package archives while the box is pressed.
+
 Described on their pages, in headers that come later:
 
 - **[Cars](./cars)**: `vehicle.damage_model`, `vehicle.parts`.

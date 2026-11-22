@@ -1,4 +1,5 @@
 #include "core/apply/tracks/box.hpp"
+#include "core/apply/content/appliers.hpp"
 
 #include "core/boxes/era_logic.hpp"
 #include "core/apply/content/gvdb.hpp"
@@ -182,7 +183,7 @@ BoxInfo box_info(registry::Store &store, const std::string &package, const std::
             return nullptr;
         return &keep.emplace(key, std::move(rec.value)).first->second;
     };
-    return box_from_package(package, r.value, lookup, db_read());
+    return box_from_package(package, r.value, lookup, db_read(), content::box_world_tracks);
 }
 
 Entries box_entries(registry::Store &store, const std::vector<std::string> &chain)
