@@ -428,10 +428,10 @@ fn turning_kinds(list: &[Element], what: &str) -> Result<()> {
     Ok(())
 }
 
-/// The name of the holder null a motion targets, in the scene's anim string table order
-/// (`zh_` sorts after every stock name).
-pub fn holder_name(element: &str, m: &Motion) -> String {
-    format!("zh_{element}_{}", m.id)
+/// The name of the holder null a motion targets, in the scene's anim string table order: `anim` is
+/// the record's anim prefix (`scene::anim_prefix`), which sorts after the table's last name.
+pub fn holder_name(anim: &str, element: &str, m: &Motion) -> String {
+    format!("{anim}{element}_{}", m.id)
 }
 
 /// What one motion put in a scene, for the template.

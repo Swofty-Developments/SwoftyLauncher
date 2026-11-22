@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b00e70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143b00e70.c;xref:0x143b0d955,0x143b0dcb0",
-  "notes": "Runs and waits for the particle update job queue (WARN The signal timed out path, Ne_Sync_WaitObject); reads job counts at manager+0x87b648 and pointers +0x87b638. Called by Game_Particles_UpdateManager."
+  "notes": "Splits the emitter list mgr+0x87b638 (count +0x87b648) into jobs by particle budget mgr+0xa5b874 (emitter +0x110 counts), allocates 0x40-byte job records (allocator mgr+0xa5b740, template mgr+0x87b6b0..+0x87b6e0); single job runs inline via callback mgr+0xa5b848(+0xa5b850), else queued to mgr+0xa5b748 and waited on (event, 'WAIT:waitForFinish', deadlock WARN). Callers in 0x143b06d90. (lane owner review requested)"
  },
  "signature": {
   "id": "game.particles_run_update_jobs_wait",

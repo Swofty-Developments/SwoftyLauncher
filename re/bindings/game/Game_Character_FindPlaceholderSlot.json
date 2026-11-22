@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14080edc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14080edc0.c;xref:0x14080eb6d",
-  "notes": "Checks four 0x10-int slots (strcmp via 14535d850 on names at +0xc/+0x28/+0x44...) against a name, then copies the 0x3f-byte name; returns the slot. Callers Game_Character_ExpandPackagePlaceholders. Hypothesis on slot meaning."
+  "evidence": "decomp:re/decomp/14080edc0.c;xref:0x14080eb6d,0x14080eb95,0x14080ebbd,0x14080f63d,0x14080f665,0x14080f68d,0x14080f99d,0x14080f9c5,0x14080f9ed,0x140c1d257,0x140c1da00,0x140c1e1a0,0x141678431,0x14248b76e,0x14248b784,0x14248b7b3,0x1428a4495,0x1428a44c4,0x1428a44f3,0x14f36a0d5,0x14f36a0eb,0x14f36a101",
+  "notes": "(table, key, value): picks the slot whose key (+0x30) equals key, else the first empty one of 3 slots of 0x70 bytes (first int == 0); copies the 63-char key to +0x30, stores value as ref-string at +0x10, slot tag +0 = 9. Generic table, old name FindPlaceholderSlot hid the write. (lane owner review requested) Better name: Game_TextPlaceholders_SetString (bound record keeps its name)."
  },
  "signature": {
   "id": "game.character_find_placeholder_slot",

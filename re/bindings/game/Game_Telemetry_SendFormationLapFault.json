@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1409b25b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1409b25b0.c;xref:0x1409bd1a0,0x1409be0cb",
-  "notes": "Builds and sends the telemetry event fault_or_failure_on_formation_lap for car param_2. Callers: Ai_CannedEvents_PerformAccident."
+  "notes": "Analytics: Game_Analytics_FillSessionContext 'fault_or_failure_on_formation_lap', event id GUID+counter (+0x208a8), queues record into reporter ring (max 64) via 0x140b3f8a0. Callers Ai_CannedEvents_Update. (lane owner review requested)"
  },
  "signature": {
   "id": "game.telemetry_send_formation_lap_fault",

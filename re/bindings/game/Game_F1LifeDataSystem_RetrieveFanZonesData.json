@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142533fa0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=F1LifeDataSystem::retrieveFanZonesData; log channel WARN: 'F1LifeDataSystem::retrieveFanZonesData FAILED -> Attempted to get life data for a user %s that could not be found.'"
+  "evidence": "decomp:re/decomp/142533fa0.c;pat:log-message-cxx;xref:0x14252ebe5,0x14252ef73",
+  "notes": "Handler of 'MessageF1WFanZonesUpdated' (subscribe lea 0x14252ebe5 in 0x14252e950, unsubscribe in 0x14252ef10). If msg+0x10 set, finds the active life data source, builds two lists of (name, value +0x90) for fan zone entry types 1 and 2 and stores them at this+0x80/+0x88; WARN log when a user's life data is missing. (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1_life_data_system_retrieve_fan_zones_data",

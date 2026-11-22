@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446f1cb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-LOGITECH",
-  "notes": "named from its log messages (channel LOGITECH): 'Preparing to start FFB | STARTING TRUEFORCE at address: %p |  - m_constantForce->Start( 1, 0 ); with result %X |  - m_springForce->Start( 1, 0 ); with result %X |  - m_frictionForce->Start( 1, 0 ); wi'"
+  "evidence": "decomp:re/decomp/1446f1cb0.c;pat:log-channel-LOGITECH;xref:0x145bff978",
+  "notes": "Slot 1 of effect vtable 0x145bff970 (cell 0x145bff978; slot 2 = 0x1446f20e0 stop). Resets +0x1b0, stamps QPC time +0x1c0/+0x1c8. If device vcall +0x38 (trueforce) false: under CS +0x228 Start(1,0) on DirectInput constant/spring/friction effects +0x1e8/+0x1f0/+0x1f8, logs results (RACING[FFB]). Else: reads device +0x2a8 values into +0x200/+0x208, logs 'STARTING TRUEFORCE' and calls vcall +0x228(1) on the trueforce object. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ffb_logitech_start_trueforce",

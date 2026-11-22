@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d86f00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-FLOW_VERBOSE",
-  "notes": "named from its log messages (channel FLOW_VERBOSE): 'SessionStatePurgeTextureStreaming - pause texture streaming'"
+  "evidence": "decomp:re/decomp/142d86f00.c;pat:log-channel-FLOW_VERBOSE;xref:0x1457e15c0",
+  "notes": "Slot 4 (+0x20, onStateEnter, polled bool) of state vtable 0x1457e15a0 (cell 0x1457e15c0). First call (+0xdb0==0): logs pause/on-demand/purge (FLOW_VERBOSE), sets +0xdb0/+0xdb1; streaming mgr 0x146c621e8: clears on-demand bit +0x21c&~8, if active under lock +0x590 requests purgeAll (+0x21d|=8, +0x220=0xff). While +0xdb1: returns 0 while 0x143bf3780 reports purge in progress, else logs complete, returns 1. (lane owner review requested) Better name: Game_SessionStatePurgeTextureStreaming_OnStateEnter (bound record keeps its name)."
  },
  "signature": {
   "id": "game.flow_verbose_session_state_purge_texture_streaming",

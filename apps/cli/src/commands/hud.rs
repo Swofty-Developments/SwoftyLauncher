@@ -65,7 +65,8 @@ pub fn command(store: &Store, cmd: HudCommand) -> Result<ExitCode> {
                     .file_name()
                     .map_or_else(|| "addon".into(), |n| n.to_string_lossy().into_owned())
             });
-            let inputs = hud::inputs_of(&id, &addon, &file).with_context(|| file.clone())?;
+            let (_, doc) = hud::read(&addon, &file).with_context(|| file.clone())?;
+            let inputs = hud::inputs_of(&id, &addon, &file, doc).with_context(|| file.clone())?;
             let stock = stock(store)?;
             let built = hud::compose(&stock, &inputs)?;
             built.write(&out)?;

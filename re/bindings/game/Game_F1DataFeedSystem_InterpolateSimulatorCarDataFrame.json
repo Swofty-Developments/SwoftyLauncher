@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142c31280",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=F1DataFeedSystem::interpolateSimulatorCarDataFrame; log channel F1-DATA-FEED: 'F1DataFeedSystem::interpolateSimulatorCarDataFrame called, time = %s, fileOffset1 = %I64u, fileOffset2 = %I64u, fract = %f'"
+  "evidence": "decomp:re/decomp/142c31280.c;pat:log-message-cxx;xref:0x142c1b69f",
+  "notes": "Own log string. Mode 2 of FetchCarDataFrame 0x142c1b630. Finds two lines around time (0x142c36820), seeks each via SetStreamPosition 0x142c31e10, reads a text line into this+0x65a and parses it (0x142c34e50), then lerps position, rotation and velocities into the output frame param_3. (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1_data_feed_system_interpolate_simulator_car_data_frame",

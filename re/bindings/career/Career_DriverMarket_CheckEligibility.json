@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140dccd30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-DRIVER_MARKET",
-  "notes": "named from its log messages (channel DRIVER_MARKET): 'Team cannot afford driver. Driver %s - Team %s | Team doesnt have required constructors championship level. Driver %s - Team %s | Team doesnt have required previous best finishing position. Driver %s '"
+  "evidence": "decomp:re/decomp/140dccd30.c;pat:log-channel-DRIVER_MARKET;xref:0x1456939d0,0x140d8ddcf",
+  "notes": "Full eligibility check (vtable cell 0x1456939d0), flags in param_4: cannot afford (|=2, budget vs 0x140dbb690 cost), constructors championship level (vt+0x298 vs 0x140f46030, |=8), previous best finishing position (vt+0x2a0, |=0x10), performance index (vt+0x290 vs 0x1407c45d0, |=0x20), add-on cap 0x140dcbde0 (|=0x80); each logged on DRIVER_MARKET. Returns flags==0. (lane owner review requested)"
  },
  "signature": {
   "id": "career.driver_market_check_eligibility",

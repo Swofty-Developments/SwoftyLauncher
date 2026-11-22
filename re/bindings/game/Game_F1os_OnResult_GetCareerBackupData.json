@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1410a9310",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1410a9310.c;xref:0x1410a680f,0x1410a5a90",
-  "notes": "F1OS ServerMethodOperation result callback for method 'GetCareerBackupData' (method name ptr this+0x118, service this+0x110; lea-registered at 0x1410a680f in onStart/send 0x1410a5a90). Resp param_2: +0x88 flag / +8 transport error text -> fail 0x14443acd0; +0x98==0 success: JSON-parse body +0xa0 (0x140b5e130), log 'received result (%u)' with HTTP status +0x9c, result JSON keys {CareerSummaryDataBase64,CareerFullDataBase64} -> result obj this+0x1c8 (raw body also to hook 0x1410a9f00); else ERROR/UNKNOWNERROR: {Message,Data} -> error obj this+0x1b8, Message 'InvalidSessionToken' / 'UpgradeRequired' special-cased. Addon: server career backup blobs (base64); could dump/restore online career backup."
+  "evidence": "decomp:re/decomp/1410a9310.c;xref:0x1410a680f,0x1410a6b8a",
+  "notes": "F1OS result callback for 'GetCareerBackupData'. Chain: Create 0x1410a3c00 sets method global 0x1460c4850 (Init stores 'GetCareerBackupData' at 0x14334bdbe), vtable 0x1456bb3b0 slot 8 = OnStart 0x1410a5a90, which lea's this fn at 0x1410a680f/0x1410a6b8a. Body parses JSON {CareerSummaryDataBase64, CareerFullDataBase64}; errors {Message,Data}. (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1os_on_result_get_career_backup_data",

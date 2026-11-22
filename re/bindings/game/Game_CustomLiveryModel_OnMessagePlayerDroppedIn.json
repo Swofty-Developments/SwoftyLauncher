@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a992f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onMessagePlayerDroppedIn (class from the log channel); log channel CUSTOM_LIVERY_MODEL: 'onMessagePlayerDroppedIn: setting up the custom livery on vehicle index %d'"
+  "evidence": "decomp:re/decomp/142a992f0.c;pat:log-message-method;xref:0x14db375a6,0x14db3a5eb",
+  "notes": "Registered by lea at 0x14db375a6 and 0x14db3a5eb. Returns 0; if msg byte +0x10 equals this component's vehicle index ([[p1+0x48]+0x58]+0xe8, -1 without vehicle) logs 'onMessagePlayerDroppedIn: setting up the custom livery on vehicle index %d' (CUSTOM_LIVERY_MODEL) and calls SetupVehicleLivery 0x142a99780(p1). (lane owner review requested)"
  },
  "signature": {
   "id": "game.custom_livery_model_on_message_player_dropped_in",

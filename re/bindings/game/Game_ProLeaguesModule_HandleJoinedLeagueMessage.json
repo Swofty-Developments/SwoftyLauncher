@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14317c6b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=ProLeaguesModule::handleJoinedLeagueMessage; log channel NETWORK-LEAGUES: 'void network::pro_leagues::ProLeaguesModule::handleJoinedLeagueMessage(neon::NeNetMessage &, neon::NeNetConnectionID) | %s: Notified of League name %s'"
+  "evidence": "decomp:re/decomp/14317c6b0.c;pat:log-message-cxx;xref:0x143179864",
+  "notes": "Network message handler (lea 0x143179864 in 0x1431717c0): if no active league (this+0xb0 == 0) replaces the cached league-name string this+0xc0 with msg+0x10 (allocator this+0x98) and logs 'Notified of League name %s'; else logs 'Already in an active League.' (lane owner review requested)"
  },
  "signature": {
   "id": "game.pro_leagues_module_handle_joined_league_message",

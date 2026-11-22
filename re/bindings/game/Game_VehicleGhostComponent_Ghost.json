@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f1be60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_VehicleGhostComponent_Ghost;xref:0x142f1bf39",
-  "notes": "cxx=game::VehicleGhostComponent::ghost; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/142f1be60.c;str:s_VehicleGhostComponent_Ghost;xref:0x1407c38e6,0x14293c18b,0x14293c195,0x142941415,0x142afe1b8,0x142bdc860,0x142c2159a,0x142d67c6a,0x142d9580a,0x142daa6ca,0x142f1de56,0x142f1e0a5",
+  "notes": "Read in full (comp, reason): returns if bit reason is already set in comp+0x518 or masked by +0x530; calls 0x142f1bd50, logs 'GHOSTED REASON(%s)' with pretty name game::VehicleGhostComponent::ghost (GAME_GHOST), sets the bit in +0x518, updates vehicle+0x130 bits 4/5 from 0x142f1cb00, recomputes byte +0x684 from masks +0x4d0..+0x4e8. 0x1407c38e6 is a jmp. Xref list truncated. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_ghost_component_ghost",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142cea230",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name setLocalPlayersStatuses (class from the log channel); log channel GAME: '%s: sending MessageVehicleStatusRequest: vehicle instance Id: %d'"
+  "evidence": "decomp:re/decomp/142cea230.c;pat:log-message-method;xref:0x142cea220,0x142cea63e,0x142ceba5f,0x1430736e9",
+  "notes": "setLocalPlayersStatuses(game,status,all,reason,idx): for each local player slot (1 or 2, [game+0x220]+0x140 +0x1c0/+0x1c8) matching idx or all, finds its participant by user id in session list +0x2e0..+0x2e8 (stride 0x88) and posts MessageVehicleStatusRequest (vt 0x1456de3d0) = vehicle(+0x82) | status<<8 | reason<<16 | 1<<24. Callers 0x142cea190, 0x142cea5b0, 0x142ceb9c0, 0x143073200. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_set_local_players_statuses",

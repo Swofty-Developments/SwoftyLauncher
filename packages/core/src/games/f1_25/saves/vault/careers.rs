@@ -337,6 +337,20 @@ pub fn read_listing(data: &std::path::Path, profile: Option<&str>) -> Vec<Listed
     )
 }
 
+/// Forget a career that is gone from the save: every vault that has seen it dismisses it, then its record
+/// goes from the index in the launcher's data folder. No save, version or addon data is deleted. Returns
+/// false, changing nothing, when the index has no such career or holds it in the save.
+pub fn forget(data: &std::path::Path, career: &str) -> crate::Result<bool> {
+    let index = crate::stdlib::careers::read(&crate::stdlib::careers::data_path(data));
+    if !index.iter().any(|c| c.career == career && c.is_gone()) {
+        return Ok(false);
+    }
+    for source in super::Vault::sources(data) {
+        super::Vault::open(data, &source)?.forget_career(career)?;
+    }
+    crate::stdlib::careers::forget(data, career)
+}
+
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct Careers {
     #[serde(default = "one")]
@@ -384,6 +398,21 @@ impl Careers {
             any = true;
         }
         any
+    }
+
+    /// Dismiss the one career the player took off the list. A row still present becomes deleted in game,
+    /// so an index without the career does not report it missing; the row is present again, and no longer
+    /// dismissed, when an index holds the career again.
+    pub fn forget(&mut self, id: &str) -> bool {
+        let Some(r) = self.careers.iter_mut().find(|r| r.career == id) else {
+            return false;
+        };
+        let before = (r.status.clone(), r.dismissed);
+        if r.status == Status::Present {
+            r.status = Status::DeletedInGame;
+        }
+        r.dismissed = true;
+        before != (r.status.clone(), r.dismissed)
     }
 
     pub fn archive(&mut self, id: &str) -> bool {
@@ -766,6 +795,43 @@ mod tests {
         let dropped = t.observe("s2", 2, &table(&[other.to_owned()]));
         assert_eq!(dropped, [("mt-1-a".to_owned(), "s1".to_owned())]);
         assert!(t.find("mt-1-a").unwrap().status.is_missing());
+    }
+
+    fn dc(id: &str, status: &str) -> String {
+        format!(
+            r#"{{"career":"{id}","profile":"p","label":"L {id}","mode":"driver_career","status":"{status}"}}"#
+        )
+    }
+
+    #[test]
+    fn a_forgotten_career_raises_no_drop_and_is_back_when_an_index_holds_it_again() {
+        let mut t = Careers::default();
+        t.observe("s1", 1, &table(&[dc("a", "present"), dc("b", "present")]));
+        assert!(t.forget("a"));
+        assert!(!t.forget("a"));
+        assert!(!t.forget("nope"));
+        let a = t.find("a").unwrap();
+        assert_eq!((a.status.clone(), a.dismissed), (Status::DeletedInGame, true));
+        assert!(t.observe("s2", 2, &table(&[dc("b", "present")])).is_empty());
+        assert!(t.drop_to_show().is_empty());
+        assert_eq!(t.find("a").unwrap().status, Status::DeletedInGame);
+
+        t.observe("s3", 3, &table(&[dc("a", "present"), dc("b", "present")]));
+        let a = t.find("a").unwrap();
+        assert_eq!((a.status.clone(), a.dismissed), (Status::Present, false));
+        assert_eq!(a.last_seen, "s3");
+    }
+
+    #[test]
+    fn forgetting_a_missing_career_dismisses_only_it() {
+        let mut t = Careers::default();
+        t.observe("s1", 1, &table(&[dc("a", "present"), dc("b", "present")]));
+        t.observe("s2", 2, &table(&[dc("c", "present")]));
+        assert_eq!(t.drop_to_show().len(), 2);
+        assert!(t.forget("a"));
+        let shown: Vec<_> = t.drop_to_show().iter().map(|r| r.career.clone()).collect();
+        assert_eq!(shown, ["b"]);
+        assert!(t.find("a").unwrap().status.is_missing());
     }
 
     #[test]

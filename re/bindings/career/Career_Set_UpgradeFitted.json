@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1435157d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:cmp-byte-rcx+0x72-3-ja-ret@0x1435157e0;xref:0x1412469db,0x141248497,0x1412486d1,0x143517e90;kb:subsystems/rnd_ui.md#instances",
-  "notes": "Sets the fitted flag (+9) of the current state entry. Returns at once for department > 3 (cmp byte [rcx+0x72],3 ; ja @0x1435157e0), so a dept-4 (ENUM A Fake) instance never leaves the init sentinel."
+  "evidence": "decomp:re/decomp/1435157d0.c;pat:cmp-byte-rcx+0x72-3-ja-ret@0x1435157e0;kb:subsystems/rnd_ui.md#instances;xref:0x1412469db,0x141248497,0x1412486d1,0x143517e90",
+  "notes": "Returns at once if dept byte +0x72 > 3 or the last entry fitted byte already equals the value. History vector +0xc0..+0xc8 (cap +0xd0, alloc +0xb8, 16-byte entries; empty -> sentinel {0xffff3fff0000, state 5}). If last entry day (+4) differs, pushes a copy; writes day +4, fitted byte +9, byte +0xb, owner key +0 (unless 0x3fff), and inst +0xae/+0xb0. (lane owner review requested)"
  },
  "signature": {
   "id": "career.set_upgrade_fitted",

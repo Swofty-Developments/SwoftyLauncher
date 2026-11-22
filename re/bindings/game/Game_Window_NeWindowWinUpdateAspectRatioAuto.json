@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439f14f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-WINDOW",
-  "notes": "named from its log messages (channel WINDOW): 'NeWindowWin::updateAspectRatio: auto=%d'"
+  "evidence": "decomp:re/decomp/1439f14f0.c;pat:log-channel-WINDOW;xref:0x142c93e37,0x1439eff03,0x1439f70c2,0x1439f897d,0x1439fa398,0x1439fc993",
+  "notes": "Read in full: NeWindowWin::updateAspectRatio(settings) - 'auto=%d' is only its first log arg. Manual (settings+0x180 == 0): aspect = +0x184/+0x188; auto and mode +0x15c != 1: desktop size 0x1460446ec; else MonitorFromWindow(hwnd +0x278), finds the monitor in list +0x8a0 (stride 0x18), divides width by the multi-monitor grid X ([0x14618caa8]+0xa00, only if Y == 1 and +0xa19); writes aspect 0x1460446f4 and 1/aspect 0x1460446f8. (lane owner review requested) Better name: Game_Window_NeWindowWinUpdateAspectRatio (bound record keeps its name)."
  },
  "signature": {
   "id": "game.window_ne_window_win_update_aspect_ratio_auto",

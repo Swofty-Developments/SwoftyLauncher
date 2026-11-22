@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140d97750",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-CONTRACT_RENEWAL",
-  "notes": "named from its log messages (channel CONTRACT_RENEWAL): 'Team is no longer available: %s - Team : %s  | Team exited auction, cannot reapproach until next window: %s - Team : %s  | Driver is no longer available: %s - Team : %s '"
+  "evidence": "decomp:re/decomp/140d97750.c;pat:log-channel-CONTRACT_RENEWAL;xref:0x140d8e946,0x140d95893",
+  "notes": "Returns team_ok & driver_ok & not_exited: team param_4 available (0x140d8c8f0, else log 'Team is no longer available'), team not in the driver approach record's exit list (param_2+0x30..+0x38, else 'Team exited auction'), driver param_3 present in comp+0x308 (else 'Driver is no longer available'). Called from 0x140d94f10. (lane owner review requested) Better name: Career_ContractRenewal_IsPairStillAvailable (bound record keeps its name)."
  },
  "signature": {
   "id": "career.contract_renewal_team_exit_auction",

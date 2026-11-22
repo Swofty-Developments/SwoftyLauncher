@@ -92,6 +92,25 @@ pub(super) fn loader_line(exe_dir: Option<&Path>, loader: Option<&Path>) -> Stri
     format!("loader: {}; swofty.exe in {}", show(loader), show(exe_dir))
 }
 
+/// Stops a menu build when the game's original of a menu archive already holds the launcher's own entries, as a
+/// stale input of that archive: the build then puts a clean original back and runs again.
+pub(super) fn check_menu_originals(original: &dyn Fn(&str) -> PathBuf) -> Result<()> {
+    for archive in crate::ui::marks::MARKED {
+        let rel = crate::ui::ui_file(archive);
+        let path = original(&rel);
+        let Ok(found) = crate::ui::marks::launcher_entries(archive, &path) else {
+            continue;
+        };
+        if !found.is_empty() {
+            return Err(Error::StaleInput {
+                detail: format!("menus: the game's {archive} already holds {}", found.join(", ")),
+                rel,
+            });
+        }
+    }
+    Ok(())
+}
+
 pub fn build_menus(
     built: &mut Built,
     session: &mut SessionSettings,
@@ -100,6 +119,7 @@ pub fn build_menus(
     lang: bool,
     archives: &crate::ui::ArchiveWriter,
 ) -> Result<Vec<(String, String)>> {
+    check_menu_originals(original)?;
     let input = |rel: &str| built.plan.data.get(rel).cloned().unwrap_or_else(|| original(rel));
     let writer = |erp: &str, res: &str| {
         built
@@ -215,13 +235,21 @@ impl Pipeline<'_, '_> {
                     built.plan.loader.len(),
                     dir.display()
                 ));
-                if menus && crate::stdlib::careers::resume_list_wanted() {
+                if menus && crate::stdlib::careers::resume_list_wanted(&store.config().launch.env) {
                     let aliases = edits.id_aliases.clone();
                     let pending = pending_english(store, planner);
+                    let saved = inputs.resume_save.clone().unwrap_or_else(|| {
+                        crate::stdlib::careers::list_save(
+                            &store.root,
+                            run.profile,
+                            run.settings.launcher_saves && !run.settings.is_vanilla(),
+                            run.game,
+                        )
+                    });
                     match crate::stdlib::careers::resume_list_for(
                         store,
                         run.game,
-                        run.profile,
+                        &saved,
                         &built.overlay,
                         order.as_slice(),
                         aliases,
@@ -233,6 +261,7 @@ impl Pipeline<'_, '_> {
                                 rows.len(),
                                 rows.iter().filter(|r| !r.ready).count()
                             ));
+                            built.lines.push(format!("ui: the Resume Career list reads {}", saved.source));
                             for r in rows.iter().filter(|r| r.driver.is_empty() || r.team.is_empty()) {
                                 built.warnings.push(format!(
                                     "ui: career {} on the Career list has no {} name; its saved ids name no row in this build",
@@ -331,6 +360,7 @@ impl Pipeline<'_, '_> {
                             &store.root,
                             run.profile,
                             session.launcher_saves.is_some(),
+                            crate::install::Source::detect(&run.game.dir),
                             id_aliases,
                             now,
                         ));

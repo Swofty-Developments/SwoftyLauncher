@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142ea1180",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=TyreComponent::createTyreModels; log channel CompoundModelSet: 'TyreComponent::createTyreModels %p'"
+  "evidence": "decomp:re/decomp/142ea1180.c;pat:log-message-cxx;xref:0x1457efbd8",
+  "notes": "TyreComponent::createTyreModels (vtable cell 0x1457efbd8; log CompoundModelSet): per tyre set (count +0x98d0, stride 0xde0 from +0x30) builds three model sets (+0, +0x4a0, +0x940) via 0x142e82640 with the lists +0x9968/+0x9a00/+0x9a98/+0x9b30; for the last two sets +0x522/+0x9c2 = 1 and the model [+0x518/+0x9b8]+0x80 gets +0x138 = index of 'x1_tyre_bl' (default 0x13), +0x134 = 5.0, refresh job 0x143d3ce20, +0x12c |= 0x10. Then 0x142ea1620(this). (lane owner review requested)"
  },
  "signature": {
   "id": "game.tyre_component_create_tyre_models",

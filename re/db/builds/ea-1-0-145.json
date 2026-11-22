@@ -113,6 +113,10 @@
    "pattern": "E9 ?? ?? ?? ?? C9 1D A9 0F 87 78 62 8D 01 3B 0F",
    "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
+  "Ne_AnimClipPlayer_Sample_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 0F 85 65 2F 60 FD F4 0F 83 15",
+   "note": "The bytes after the 5-byte jmp are not code and differ on EA (thunk 0x1403a6b80 to the body 0x147c23100, the KB body with the output offset, the packet-loop stride and the log probe start written another way)."
+  },
   "Ne_Container_AbortNoReturn_1435d82f0": {
    "pattern": "FF 50 08 48 8B 4C 24 48 48 8B 01 49 89 06 4C 89 31 E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? CC",
    "note": "The pattern is the EA 1.0.145 code of this function, found by whole-function comparison with the Steam 1.0.145 and EA 1.0.141 builds; the loader's own jump patches in the decrypted dump are wildcarded.",
@@ -1354,6 +1358,82 @@
   "Sess_Rules_InvalidateLap_Thunk": {
    "pattern": "E9 ?? ?? ?? ?? DB 8D 6A B4 84 2A 0F 84",
    "note": "The pattern is anchored on the EA image (the decrypted dump with the core's patches restored from its loader.log): it matches once, at the thunk 0x143567460; the rules update calls it at the same place (0x14355e2f4), and its jmp target 0x14efc1eb0 is the KB body's twin."
+  },
+  "site_Game_CrewWorkingOnCar_TeamRecord": {
+   "pattern": "81 E1 00 00 FF FF 81 F9 00 00 FF 3F 74 3E 89 C1 C1 E9 10 48 8B 15 ?? ?? ?? ?? 48 8B 92 60 02 00 00 0F B6 C0 48 C1 E0 04 48 8B 84 02 C8 02 00 00 48 8B 40 08 48 C1 E1 04 48 8B 44 08 08 48 8B 50 18 4C 89 F1 45 31 C0 E8 ?? ?? ?? ?? 48 89 F1 4C 89 F2 41 B0 01 E8 ?? ?? ?? ?? 48 C7 84 24 E0 0C 00 00 00 00 00 00",
+   "note": "The base pattern loads the entrants system from g_Game_Manager as mov rdx,[rdx+0x290]; EA's game manager keeps it at +0x260, its tail 0x30 lower (native/src/core/runtime/game_manager_layout.hpp). The pattern is the base pattern with that read at +0x260. It matches once in the EA dump, where the code from the 0x3fff0000 test to the no-team join disassembles as Steam's does, and it matches no Steam build."
+  },
+  "site_Game_CutsceneAt354530_TeamRecord": {
+   "pattern": "81 E1 00 00 FF FF 81 F9 00 00 FF 3F 74 3E 89 C1 C1 E9 10 48 8B 15 ?? ?? ?? ?? 48 8B 92 60 02 00 00 0F B6 C0 48 C1 E0 04 48 8B 84 02 C8 02 00 00 48 8B 40 08 48 C1 E1 04 48 8B 44 08 08 48 8B 50 18 48 89 F9 45 31 C0 E8 ?? ?? ?? ?? 44 0F B6 86 B0 01 00 00",
+   "note": "The base pattern loads the entrants system from g_Game_Manager as mov rdx,[rdx+0x290]; EA's game manager keeps it at +0x260, its tail 0x30 lower (native/src/core/runtime/game_manager_layout.hpp). The pattern is the base pattern with that read at +0x260. It matches once in the EA dump, where the code from the 0x3fff0000 test to the no-team join disassembles as Steam's does, and it matches no Steam build."
+  },
+  "site_Game_DriverGettingReady01_TeamRecord": {
+   "pattern": "81 E1 00 00 FF FF 81 F9 00 00 FF 3F 74 3E 89 C1 C1 E9 10 48 8B 15 ?? ?? ?? ?? 48 8B 92 60 02 00 00 0F B6 C0 48 C1 E0 04 48 8B 84 02 C8 02 00 00 48 8B 40 08 48 C1 E1 04 48 8B 44 08 08 48 8B 50 18 48 89 F9 45 31 C0 E8 ?? ?? ?? ?? 48 89 F1 48 89 FA 41 B0 01 E8 ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 48 89 F1 41 B0 01 E8 ?? ?? ?? ?? 48 89 C7 0F B6 40 74 A8 04 75 1B 48 8B 4F 08 C5 FA 10 41 50 0C 04 88 47 74 C7 47 64 00 00 00 00 C5 F0 57 C9 EB 1B C5 FA 10 4F 64 C5 FA 10 47 68 C5 FA 5C C1 C5 E8 57 D2 C5 F2 58 CA C5 FA 11 4F 64 C5 FA 58 C1 C5 FA 11 47 68 48 C7 47 58 00 00 00 00 48 89 F9 E8 ?? ?? ?? ?? F6 47 74 04",
+   "note": "The base pattern loads the entrants system from g_Game_Manager as mov rdx,[rdx+0x290]; EA's game manager keeps it at +0x260, its tail 0x30 lower (native/src/core/runtime/game_manager_layout.hpp). The pattern is the base pattern with that read at +0x260. It matches once in the EA dump, where the code from the 0x3fff0000 test to the no-team join disassembles as Steam's does, and it matches no Steam build."
+  },
+  "site_Game_DriverGettingWeighed01_TeamRecordA": {
+   "pattern": "48 89 9E 10 09 00 00 8B 86 1A 03 00 00 89 C1 81 E1 00 00 FF FF 81 F9 00 00 FF 3F 0F 84 ?? ?? ?? ?? 89 C1 C1 E9 10 48 8B 15 ?? ?? ?? ?? 48 8B 92 60 02 00 00 0F B6 C0 48 C1 E0 04 48 8B 84 02 C8 02 00 00 48 8B 40 08 48 C1 E1 04 48 8B 44 08 08 48 8B 58 18 48 C7 84 24 B0 00 00 00 00 00 00 00",
+   "note": "The base pattern loads the entrants system from g_Game_Manager as mov rdx,[rdx+0x290]; EA's game manager keeps it at +0x260, its tail 0x30 lower (native/src/core/runtime/game_manager_layout.hpp). The pattern is the base pattern with that read at +0x260. It matches once in the EA dump, where the code from the 0x3fff0000 test to the no-team join disassembles as Steam's does, and it matches no Steam build."
+  },
+  "site_Game_DriverGettingWeighed01_TeamRecordB": {
+   "pattern": "81 F9 00 00 FF 3F 0F 84 ?? ?? ?? ?? 89 C1 C1 E9 10 48 8B 15 ?? ?? ?? ?? 48 8B 92 60 02 00 00 0F B6 C0 48 C1 E0 04 48 8B 84 02 C8 02 00 00 48 8B 40 08 48 C1 E1 04 48 8B 44 08 08 48 8B 58 18 48 C7 84 24 B0 00 00 00 00 00 00 00 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 89 84 24 A0 00 00 00 48 8D 94 24 A0 00 00 00 4C 8D 84 24 B0 00 00 00 48 89 F9 45 31 C9 E8 ?? ?? ?? ?? 48 8B 8C 24 B0 00 00 00 48 89 DA 45 31 C0 E8 ?? ?? ?? ?? 48 89 F9 31 D2",
+   "note": "The base pattern loads the entrants system from g_Game_Manager as mov rdx,[rdx+0x290]; EA's game manager keeps it at +0x260, its tail 0x30 lower (native/src/core/runtime/game_manager_layout.hpp). The pattern is the base pattern with that read at +0x260. It matches once in the EA dump, where the code from the 0x3fff0000 test to the no-team join disassembles as Steam's does, and it matches no Steam build."
+  },
+  "site_Game_DriverInCarIdle02_TeamRecord": {
+   "pattern": "81 E1 00 00 FF FF 81 F9 00 00 FF 3F 74 3E 89 C1 C1 E9 10 48 8B 15 ?? ?? ?? ?? 48 8B 92 60 02 00 00 0F B6 C0 48 C1 E0 04 48 8B 84 02 C8 02 00 00 48 8B 40 08 48 C1 E1 04 48 8B 44 08 08 48 8B 50 18 4C 89 E9 45 31 C0 E8 ?? ?? ?? ?? 48 89 F1 4C 89 EA 45 31 C0 E8 ?? ?? ?? ?? 48 8B 05",
+   "note": "The base pattern loads the entrants system from g_Game_Manager as mov rdx,[rdx+0x290]; EA's game manager keeps it at +0x260, its tail 0x30 lower (native/src/core/runtime/game_manager_layout.hpp). The pattern is the base pattern with that read at +0x260. It matches once in the EA dump, where the code from the 0x3fff0000 test to the no-team join disassembles as Steam's does, and it matches no Steam build."
+  },
+  "site_Game_DriverInCarIdle03_TeamRecordA": {
+   "pattern": "40 88 AE 99 08 00 00 4C 89 B6 A0 08 00 00 48 89 F9 31 D2 E8 ?? ?? ?? ?? 8B 86 1A 03 00 00 89 C1 81 E1 00 00 FF FF 81 F9 00 00 FF 3F 74 3E 89 C1 C1 E9 10 48 8B 15 ?? ?? ?? ?? 48 8B 92 60 02 00 00 0F B6 C0 48 C1 E0 04 48 8B 84 02 C8 02 00 00 48 8B 40 08 48 C1 E1 04 48 8B 44 08 08 48 8B 50 18 48 89 F9",
+   "note": "The base pattern loads the entrants system from g_Game_Manager as mov rdx,[rdx+0x290]; EA's game manager keeps it at +0x260, its tail 0x30 lower (native/src/core/runtime/game_manager_layout.hpp). The pattern is the base pattern with that read at +0x260. It matches once in the EA dump, where the code from the 0x3fff0000 test to the no-team join disassembles as Steam's does, and it matches no Steam build."
+  },
+  "site_Game_DriverInCarIdle03_TeamRecordB": {
+   "pattern": "81 E1 00 00 FF FF 81 F9 00 00 FF 3F 74 3E 89 C1 C1 E9 10 48 8B 15 ?? ?? ?? ?? 48 8B 92 60 02 00 00 0F B6 C0 48 C1 E0 04 48 8B 84 02 C8 02 00 00 48 8B 40 08 48 C1 E1 04 48 8B 44 08 08 48 8B 50 18 4C 89 F1 45 31 C0 E8 ?? ?? ?? ?? 48 89 F1 4C 89 F2 41 B0 01 E8 ?? ?? ?? ?? 48 8D 15",
+   "note": "The base pattern loads the entrants system from g_Game_Manager as mov rdx,[rdx+0x290]; EA's game manager keeps it at +0x260, its tail 0x30 lower (native/src/core/runtime/game_manager_layout.hpp). The pattern is the base pattern with that read at +0x260. It matches once in the EA dump, where the code from the 0x3fff0000 test to the no-team join disassembles as Steam's does, and it matches no Steam build."
+  },
+  "site_Game_DriverInCarIdle04_TeamRecord": {
+   "pattern": "88 9E 99 08 00 00 4C 89 B6 A0 08 00 00 48 89 F9 31 D2 E8 ?? ?? ?? ?? 8B 86 1A 03 00 00 89 C1 81 E1 00 00 FF FF 81 F9 00 00 FF 3F 74 3E 89 C1 C1 E9 10 48 8B 15 ?? ?? ?? ?? 48 8B 92 60 02 00 00 0F B6 C0 48 C1 E0 04 48 8B 84 02 C8 02 00 00 48 8B 40 08 48 C1 E1 04 48 8B 44 08 08 48 8B 50 18 48 89 F9 45 31 C0 E8 ?? ?? ?? ?? 48 89 F1 48 89 FA 41 B0 01 E8 ?? ?? ?? ?? 0F B6 86 1A 03 00 00",
+   "note": "The base pattern loads the entrants system from g_Game_Manager as mov rdx,[rdx+0x290]; EA's game manager keeps it at +0x260, its tail 0x30 lower (native/src/core/runtime/game_manager_layout.hpp). The pattern is the base pattern with that read at +0x260. It matches once in the EA dump, where the code from the 0x3fff0000 test to the no-team join disassembles as Steam's does, and it matches no Steam build."
+  },
+  "site_Game_DriverInCarIdle05_TeamRecordA": {
+   "pattern": "81 E1 00 00 FF FF 81 F9 00 00 FF 3F 74 3E 89 C1 C1 E9 10 48 8B 15 ?? ?? ?? ?? 48 8B 92 60 02 00 00 0F B6 C0 48 C1 E0 04 48 8B 84 02 C8 02 00 00 48 8B 40 08 48 C1 E1 04 48 8B 44 08 08 48 8B 50 18 4C 89 F9",
+   "note": "The base pattern loads the entrants system from g_Game_Manager as mov rdx,[rdx+0x290]; EA's game manager keeps it at +0x260, its tail 0x30 lower (native/src/core/runtime/game_manager_layout.hpp). The pattern is the base pattern with that read at +0x260. It matches once in the EA dump, where the code from the 0x3fff0000 test to the no-team join disassembles as Steam's does, and it matches no Steam build."
+  },
+  "site_Game_DriverInCarIdle05_TeamRecordB": {
+   "pattern": "81 E1 00 00 FF FF 81 F9 00 00 FF 3F 74 3E 89 C1 C1 E9 10 48 8B 15 ?? ?? ?? ?? 48 8B 92 60 02 00 00 0F B6 C0 48 C1 E0 04 48 8B 84 02 C8 02 00 00 48 8B 40 08 48 C1 E1 04 48 8B 44 08 08 48 8B 50 18 48 89 F9 45 31 C0 E8 ?? ?? ?? ?? 48 89 F1 48 89 FA 41 B0 01 E8 ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 48 89 F1 41 B0 01 E8 ?? ?? ?? ?? 48 89 F1 48 89 FA",
+   "note": "The base pattern loads the entrants system from g_Game_Manager as mov rdx,[rdx+0x290]; EA's game manager keeps it at +0x260, its tail 0x30 lower (native/src/core/runtime/game_manager_layout.hpp). The pattern is the base pattern with that read at +0x260. It matches once in the EA dump, where the code from the 0x3fff0000 test to the no-team join disassembles as Steam's does, and it matches no Steam build."
+  },
+  "site_Game_DriverSatInCar06_TeamRecord": {
+   "pattern": "81 E1 00 00 FF FF 81 F9 00 00 FF 3F 74 3E 89 C1 C1 E9 10 48 8B 15 ?? ?? ?? ?? 48 8B 92 60 02 00 00 0F B6 C0 48 C1 E0 04 48 8B 84 02 C8 02 00 00 48 8B 40 08 48 C1 E1 04 48 8B 44 08 08 48 8B 50 18 4C 89 E9 45 31 C0 E8 ?? ?? ?? ?? 48 89 F1 4C 89 EA 45 31 C0 E8 ?? ?? ?? ?? 48 8D 15",
+   "note": "The base pattern loads the entrants system from g_Game_Manager as mov rdx,[rdx+0x290]; EA's game manager keeps it at +0x260, its tail 0x30 lower (native/src/core/runtime/game_manager_layout.hpp). The pattern is the base pattern with that read at +0x260. It matches once in the EA dump, where the code from the 0x3fff0000 test to the no-team join disassembles as Steam's does, and it matches no Steam build."
+  },
+  "site_Game_DriverTalkToEngineer01_TeamRecordA": {
+   "pattern": "E8 ?? ?? ?? ?? 8B 86 1A 03 00 00 89 C1 81 E1 00 00 FF FF 81 F9 00 00 FF 3F 0F 84 ?? ?? ?? ?? 89 C1 C1 E9 10 48 8B 15 ?? ?? ?? ?? 48 8B 92 60 02 00 00 0F B6 C0 48 C1 E0 04 48 8B 84 02 C8 02 00 00 48 8B 40 08 48 C1 E1 04 48 8B 44 08 08 48 8B 58 18 48 C7 84 24 B0 00 00 00 00 00 00 00 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 89 84 24 A0 00 00 00 48 8D 94 24 A0 00 00 00 4C 8D 84 24 B0 00 00 00 48 89 F9 45 31 C9 E8 ?? ?? ?? ?? 48 8B 8C 24 B0 00 00 00 48 89 DA 45 31 C0 E8 ?? ?? ?? ?? 8B 86 1A 03 00 00",
+   "note": "The base pattern loads the entrants system from g_Game_Manager as mov rdx,[rdx+0x290]; EA's game manager keeps it at +0x260, its tail 0x30 lower (native/src/core/runtime/game_manager_layout.hpp). The pattern is the base pattern with that read at +0x260. It matches once in the EA dump, where the code from the 0x3fff0000 test to the no-team join disassembles as Steam's does, and it matches no Steam build."
+  },
+  "site_Game_DriverTalkToEngineer01_TeamRecordB": {
+   "pattern": "81 F9 00 00 FF 3F 0F 84 ?? ?? ?? ?? 89 C1 C1 E9 10 48 8B 15 ?? ?? ?? ?? 48 8B 92 60 02 00 00 0F B6 C0 48 C1 E0 04 48 8B 84 02 C8 02 00 00 48 8B 40 08 48 C1 E1 04 48 8B 44 08 08 48 8B 58 18 48 C7 84 24 B0 00 00 00 00 00 00 00 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 89 84 24 A0 00 00 00 48 8D 94 24 A0 00 00 00 4C 8D 84 24 B0 00 00 00 48 89 F9 45 31 C9 E8 ?? ?? ?? ?? 48 8B 8C 24 B0 00 00 00 48 89 DA 45 31 C0 E8 ?? ?? ?? ?? 48 8D 15",
+   "note": "The base pattern loads the entrants system from g_Game_Manager as mov rdx,[rdx+0x290]; EA's game manager keeps it at +0x260, its tail 0x30 lower (native/src/core/runtime/game_manager_layout.hpp). The pattern is the base pattern with that read at +0x260. It matches once in the EA dump, where the code from the 0x3fff0000 test to the no-team join disassembles as Steam's does, and it matches no Steam build."
+  },
+  "site_Game_DriverTalksToCrew01_TeamRecord": {
+   "pattern": "81 E1 00 00 FF FF 81 F9 00 00 FF 3F 74 3E 89 C1 C1 E9 10 48 8B 15 ?? ?? ?? ?? 48 8B 92 60 02 00 00 0F B6 C0 48 C1 E0 04 48 8B 84 02 C8 02 00 00 48 8B 40 08 48 C1 E1 04 48 8B 44 08 08 48 8B 50 18 48 89 F9 45 31 C0 E8 ?? ?? ?? ?? 48 89 F1 48 89 FA 41 B0 01 E8 ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 48 89 F1 41 B0 01 E8 ?? ?? ?? ?? 48 89 C7 0F B6 40 74 A8 04 75 1B 48 8B 4F 08 C5 FA 10 41 50 0C 04 88 47 74 C7 47 64 00 00 00 00 C5 F0 57 C9 EB 1B C5 FA 10 4F 64 C5 FA 10 47 68 C5 FA 5C C1 C5 E8 57 D2 C5 F2 58 CA C5 FA 11 4F 64 C5 FA 58 C1 C5 FA 11 47 68 48 C7 47 58 00 00 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 89 F1",
+   "note": "The base pattern loads the entrants system from g_Game_Manager as mov rdx,[rdx+0x290]; EA's game manager keeps it at +0x260, its tail 0x30 lower (native/src/core/runtime/game_manager_layout.hpp). The pattern is the base pattern with that read at +0x260. It matches once in the EA dump, where the code from the 0x3fff0000 test to the no-team join disassembles as Steam's does, and it matches no Steam build."
+  },
+  "site_Game_GettingReadyToRaceIdle01_TeamRecord": {
+   "pattern": "81 E1 00 00 FF FF 81 F9 00 00 FF 3F 74 3E 89 C1 C1 E9 10 48 8B 15 ?? ?? ?? ?? 48 8B 92 60 02 00 00 0F B6 C0 48 C1 E0 04 48 8B 84 02 C8 02 00 00 48 8B 40 08 48 C1 E1 04 48 8B 44 08 08 48 8B 50 18 4C 89 E9 45 31 C0 E8 ?? ?? ?? ?? 48 89 F1 4C 89 EA 41 B0 01",
+   "note": "The base pattern loads the entrants system from g_Game_Manager as mov rdx,[rdx+0x290]; EA's game manager keeps it at +0x260, its tail 0x30 lower (native/src/core/runtime/game_manager_layout.hpp). The pattern is the base pattern with that read at +0x260. It matches once in the EA dump, where the code from the 0x3fff0000 test to the no-team join disassembles as Steam's does, and it matches no Steam build."
+  },
+  "site_Game_GettingReadyToRace_TeamRecordA": {
+   "pattern": "81 E1 00 00 FF FF 81 F9 00 00 FF 3F 74 3E 89 C1 C1 E9 10 48 8B 15 ?? ?? ?? ?? 48 8B 92 60 02 00 00 0F B6 C0 48 C1 E0 04 48 8B 84 02 C8 02 00 00 48 8B 40 08 48 C1 E1 04 48 8B 44 08 08 48 8B 50 18 4C 89 E1",
+   "note": "The base pattern loads the entrants system from g_Game_Manager as mov rdx,[rdx+0x290]; EA's game manager keeps it at +0x260, its tail 0x30 lower (native/src/core/runtime/game_manager_layout.hpp). The pattern is the base pattern with that read at +0x260. It matches once in the EA dump, where the code from the 0x3fff0000 test to the no-team join disassembles as Steam's does, and it matches no Steam build."
+  },
+  "site_Game_GettingReadyToRace_TeamRecordB": {
+   "pattern": "81 E1 00 00 FF FF 81 F9 00 00 FF 3F 74 3E 89 C1 C1 E9 10 48 8B 15 ?? ?? ?? ?? 48 8B 92 60 02 00 00 0F B6 C0 48 C1 E0 04 48 8B 84 02 C8 02 00 00 48 8B 40 08 48 C1 E1 04 48 8B 44 08 08 48 8B 50 18 48 89 E9",
+   "note": "The base pattern loads the entrants system from g_Game_Manager as mov rdx,[rdx+0x290]; EA's game manager keeps it at +0x260, its tail 0x30 lower (native/src/core/runtime/game_manager_layout.hpp). The pattern is the base pattern with that read at +0x260. It matches once in the EA dump, where the code from the 0x3fff0000 test to the no-team join disassembles as Steam's does, and it matches no Steam build."
+  },
+  "site_Game_SwapTyres_TeamRecord": {
+   "pattern": "81 E1 00 00 FF FF 81 F9 00 00 FF 3F 74 3E 89 C1 C1 E9 10 48 8B 15 ?? ?? ?? ?? 48 8B 92 60 02 00 00 0F B6 C0 48 C1 E0 04 48 8B 84 02 C8 02 00 00 48 8B 40 08 48 C1 E1 04 48 8B 44 08 08 48 8B 50 18 48 89 F9 45 31 C0 E8 ?? ?? ?? ?? 48 89 F1 48 89 FA 41 B0 01 E8 ?? ?? ?? ?? 48 8D 05",
+   "note": "The base pattern loads the entrants system from g_Game_Manager as mov rdx,[rdx+0x290]; EA's game manager keeps it at +0x260, its tail 0x30 lower (native/src/core/runtime/game_manager_layout.hpp). The pattern is the base pattern with that read at +0x260. It matches once in the EA dump, where the code from the 0x3fff0000 test to the no-team join disassembles as Steam's does, and it matches no Steam build."
   }
  },
  "hints": {
@@ -1785,6 +1865,12 @@
   },
   "Car_Tyre_ComputeGripMultiplier": {
    "match": "0x46afe90"
+  },
+  "Car_Tyre_CurveMap_FindBracketA": {
+   "match": "0x2e72350"
+  },
+  "Car_Tyre_CurveMap_FindBracketB": {
+   "match": "0x2e71ee0"
   },
   "Car_Tyre_GripScale": {
    "match": "0x46afd40"
@@ -6496,11 +6582,32 @@
   "Ne_ActorSceneDataResource_DestroyScenes": {
    "match": "0x292040"
   },
+  "Ne_AnimClipPlayer_Sample_Thunk": {
+   "match": "0x3a6b80"
+  },
   "Ne_AnimClipResourceFactory_CreateResource": {
    "match": "0x43ac450"
   },
   "Ne_AnimLayer_ApplyChannels": {
    "match": "0x1f9998"
+  },
+  "Ne_AnimPacketB1_Sample": {
+   "match": "0x3a28d90"
+  },
+  "Ne_AnimPacketB4_Sample": {
+   "match": "0x3a293de"
+  },
+  "Ne_AnimPacketL1_Sample": {
+   "match": "0x3a29b10"
+  },
+  "Ne_AnimPacketL3_SampleTrack": {
+   "match": "0x3a2a490"
+  },
+  "Ne_AnimPacketL4_SampleTrack": {
+   "match": "0x3a2b0f0"
+  },
+  "Ne_AnimPacketS4_SampleTrack": {
+   "match": "0x3a2b520"
   },
   "Ne_AnimSetResourceFactory_CreateResource": {
    "match": "0x43b28e0"
@@ -11761,6 +11868,42 @@
   "site_Game_CareerWizard_BackRoute": {
    "match": "0xb0421e4"
   },
+  "site_Game_CrewWorkingOnCar_TeamRecord": {
+   "match": "0x27af90"
+  },
+  "site_Game_CutsceneAt354530_TeamRecord": {
+   "match": "0x3550e1"
+  },
+  "site_Game_DriverGettingReady01_TeamRecord": {
+   "match": "0x28a033"
+  },
+  "site_Game_DriverGettingWeighed01_TeamRecordA": {
+   "match": "0x28b420"
+  },
+  "site_Game_DriverGettingWeighed01_TeamRecordB": {
+   "match": "0x28b4cf"
+  },
+  "site_Game_DriverInCarIdle02_TeamRecord": {
+   "match": "0x285e2f"
+  },
+  "site_Game_DriverInCarIdle03_TeamRecordA": {
+   "match": "0x2844c3"
+  },
+  "site_Game_DriverInCarIdle03_TeamRecordB": {
+   "match": "0x284bbc"
+  },
+  "site_Game_DriverInCarIdle04_TeamRecord": {
+   "match": "0x287124"
+  },
+  "site_Game_DriverInCarIdle05_TeamRecordA": {
+   "match": "0x288542"
+  },
+  "site_Game_DriverInCarIdle05_TeamRecordB": {
+   "match": "0x288e7e"
+  },
+  "site_Game_DriverSatInCar06_TeamRecord": {
+   "match": "0x2802b6"
+  },
   "site_Game_DriverSelectHeader_BuildTabs": {
    "match": "0x1a54ec2"
   },
@@ -11775,6 +11918,15 @@
   },
   "site_Game_DriverSelect_TeamLogoFormat": {
    "match": "0x169f4a9"
+  },
+  "site_Game_DriverTalkToEngineer01_TeamRecordA": {
+   "match": "0x28cac2"
+  },
+  "site_Game_DriverTalkToEngineer01_TeamRecordB": {
+   "match": "0x28cb6f"
+  },
+  "site_Game_DriverTalksToCrew01_TeamRecord": {
+   "match": "0x3397df"
   },
   "site_Game_ErsNewLap_NextVehicle": {
    "match": "0x2513380"
@@ -11796,6 +11948,15 @@
   },
   "site_Game_GarageSetups_NotFound": {
    "match": "0xc2122f"
+  },
+  "site_Game_GettingReadyToRaceIdle01_TeamRecord": {
+   "match": "0x283313"
+  },
+  "site_Game_GettingReadyToRace_TeamRecordA": {
+   "match": "0x281619"
+  },
+  "site_Game_GettingReadyToRace_TeamRecordB": {
+   "match": "0x282013"
   },
   "site_Game_GhostlapTrace_RivalLogBoard": {
    "match": "0x147db66"
@@ -11844,6 +12005,9 @@
   },
   "site_Game_SaveSlot_Selected": {
    "match": "0x29cc380"
+  },
+  "site_Game_SwapTyres_TeamRecord": {
+   "match": "0x27df1a"
   },
   "site_Game_TeamSelect_NumberResult": {
    "match": "0x1875a22"
@@ -12042,6 +12206,12 @@
   },
   "site_Sess_InGameSessionCompleteAiCall": {
    "match": "0x2d4ca55"
+  },
+  "site_Sess_MarshalLights_PrevLightLoad": {
+   "match": "0x2c6d212"
+  },
+  "site_Sess_MarshalLights_WalkDone": {
+   "match": "0x2c6d523"
   },
   "site_Sess_PitEvalListNext": {
    "match": "0x36848f9"

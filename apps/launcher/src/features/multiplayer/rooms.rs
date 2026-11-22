@@ -30,7 +30,7 @@ impl Shell {
             .flex_wrap()
             .child(div().flex_1())
             .when(width >= 900., |d| d.child(self.game_status(p)))
-            .child(self.code_join("mp-join-code", false, p, cx))
+            .child(self.code_join(cx))
             .child(
                 Button::new("mp-create-open")
                     .outline()
@@ -55,14 +55,14 @@ impl Shell {
             .into_any_element()
     }
 
-    /// The room this launcher is in, while its player is on the list of rooms or on Time Trial.
-    pub(crate) fn room_strip(&self, p: Palette, cx: &mut Context<Self>) -> Option<AnyElement> {
+    /// The room this launcher is in, while its player is on the list of rooms.
+    fn room_strip(&self, p: Palette, cx: &mut Context<Self>) -> Option<AnyElement> {
         let state = self.rooms.state.as_ref().filter(|_| self.rooms.in_room())?;
         let name = state
             .room
             .as_ref()
             .map_or_else(|| tr("Room").to_owned(), |r| r.name.clone());
-        let status = room_status(state);
+        let line = self.room_strip_line(state);
         Some(
             h_flex()
                 .px(px(16.))
@@ -91,7 +91,7 @@ impl Shell {
                                 .text_size(px(13.))
                                 .text_color(p.text_muted)
                                 .truncate()
-                                .child(status.progress.label.clone()),
+                                .child(line),
                         ),
                 )
                 .child(
@@ -181,8 +181,8 @@ impl Shell {
             .into_any_element()
     }
 
-    /// The invite code box and its join button. From the rooms card, `card` joins on the Multiplayer page.
-    pub(super) fn code_join(&self, id: &'static str, card: bool, _p: Palette, cx: &mut Context<Self>) -> Div {
+    /// The invite code box and its join button.
+    fn code_join(&self, cx: &mut Context<Self>) -> Div {
         let typed = !self.rooms.code.read(cx).value().trim().is_empty();
         let joining = self
             .rooms
@@ -197,19 +197,13 @@ impl Shell {
                     .child(Input::new(&self.rooms.code).tap_sm().disabled(self.rooms.busy())),
             )
             .child(
-                Button::new(id)
+                Button::new("mp-join-code")
                     .outline()
                     .tap_sm()
                     .label(tr("Join with code"))
                     .loading(joining && typed)
                     .disabled(!typed || self.rooms.busy())
-                    .on_click(cx.listener(move |this, _, window, cx| {
-                        if card {
-                            this.room_join_code_from_card(window, cx);
-                        } else {
-                            this.room_join_code(window, cx);
-                        }
-                    })),
+                    .on_click(cx.listener(|this, _, window, cx| this.room_join_code(window, cx))),
             )
     }
 
@@ -221,6 +215,7 @@ impl Shell {
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let status = RoomStatus::of(room, &self.room_enabled_addons(), self.rooms.lobby.print.as_ref());
+        let line = room_line(room, status, self.rooms.lobby.print.as_ref());
         let code = room.code.clone();
         let names = card_addons(room);
         h_flex()
@@ -271,12 +266,14 @@ impl Shell {
                 div()
                     .flex_shrink_0()
                     .text_size(px(13.))
-                    .text_color(if status == RoomStatus::Differ {
-                        p.warning
-                    } else {
-                        p.text_muted
+                    .max_w(px(320.))
+                    .truncate()
+                    .text_color(match status {
+                        RoomStatus::Differ => p.warning,
+                        RoomStatus::Blocked => p.error,
+                        _ => p.text_muted,
                     })
-                    .child(status.text()),
+                    .child(line),
             )
             .child(
                 Button::new(SharedString::from(format!("mp-view-{}", room.code)))

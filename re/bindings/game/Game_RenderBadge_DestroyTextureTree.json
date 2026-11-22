@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1410c5a70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1410c5a70.c;xref:0x140feee19",
-  "notes": "Recursive rb-tree destroy (frees each node via allocator vtable +0x38). Callers Game_RenderBadge_FindTextureNodeByKey_A/B."
+  "evidence": "decomp:re/decomp/1410c5a70.c;xref:0x140feee19,0x140feefc9,0x1410c5ab4,0x1411073cc,0x141403dee,0x141403ffe,0x14140420e,0x14140441e,0x14140459e,0x14140471d,0x141404ade,0x141404cee,0x141404f0e,0x14140512e,0x14140533d,0x14141b0dc,0x1414751a8,0x142ea9345,0x14ac5e499,0x14ac5f1d9",
+  "notes": "Generic recursive red-black-tree subtree destroy: recurse right (+0x10), keep left (+0), free node via allocator vcall +0x38, loop until nil (byte +0x19). Twin of Game_StdMap_CloneSubtreeNode30; many map destructors call it. (lane owner review requested) Better name: Game_StdMap_DestroySubtreeNode30 (bound record keeps its name)."
  },
  "signature": {
   "id": "game.render_badge_destroy_texture_tree",

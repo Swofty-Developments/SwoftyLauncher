@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142abe3e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-OPTIONS/P",
-  "notes": "named from its log messages (channel OPTIONS/P): 'Restrictions not required, setting changed, possible invalid state due to race condition'"
+  "evidence": "decomp:re/decomp/142abe3e0.c;pat:log-channel-OPTIONS/P;xref:0x142abe312,0x142abedcf",
+  "notes": "Preset restriction callback (lea in 0x142abe240, 0x142abed90). If active (+0x68) and preset value (vcall +0x10) != required +0x60: logs 'race condition', removes restrictions (0x142abefe0). Else checks the changed value against its restriction (list +0x20 stride 0x38, range kind 1 / bitmask kind 0) and other restrictions on that option; if none allows it: clears active, reapplies others (vcall +0x18), removes restrictions, sets preset fallback +0x64. (lane owner review requested) Better name: Game_OptionsPreset_OnRestrictedOptionChanged (bound record keeps its name)."
  },
  "signature": {
   "id": "game.options_restrictions_required_setting_changed",

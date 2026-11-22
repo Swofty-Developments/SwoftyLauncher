@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b34f10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143b34f10.c;xref:0x1445a8dff",
-  "notes": "vector grow-and-append for 0xf0-byte tyre shred events; caller Game_Vfx_TyreShredImpactEvent."
+  "evidence": "decomp:re/decomp/143b34f10.c;xref:0x1445a8dff,0x1445a8e1a,0x1445ad49e,0x1445ad4b9,0x144707090,0x1447074ae",
+  "notes": "Read in full: vector<0xf0-byte record>::push_back (grow x1.5 via allocator vcall +0x18 align 0x10, free old +0x38); each record holds two 64-char inline strings (vt 0x145613550 -> 0x145613548) at +0x20 and +0x78 plus 4 qwords +0 and +0xd0..+0xe0; returns 0. Generic template: also called from 0x144706f40, not only the shred path. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vfx_vector_grow_shred_event",

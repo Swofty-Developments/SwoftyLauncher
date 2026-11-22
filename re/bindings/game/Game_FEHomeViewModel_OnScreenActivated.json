@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141bb17f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_FEHomeViewModel_OnScreenActivated;xref:0x141bb19c5,0x141bb1a7d,0x141bb1c65",
-  "notes": "cxx=game::FEHomeViewModel::onScreenActivated; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/141bb17f0.c;str:s_FEHomeViewModel_OnScreenActivated;xref:0x145738ac8",
+  "notes": "Pretty-function 0x145738b30 'virtual void game::FEHomeViewModel::onScreenActivated()' (TOP_LEVEL_UI). Sets m_currentState this+0x380 (enum names table 0x145751670: eNormal/eBeta/eStreamInstall/ePreview/eDemo/eTrial/ePQITest/eVTE/eMovie) from config flags, override via 'UI.overrideMainMenuState' (FNV hash switch); sets show_tutorial_prompt, contextual_decision, offline_description, story_logo, news, customisation_item_lost popup (then FUN_142542680), ui_menu_data.show_user_name, beta_panel_visible; posts bus msg via 0x1439876c0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.f_e_home_view_model_on_screen_activated",

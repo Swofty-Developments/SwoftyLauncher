@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1405029b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1405029b0.c;xref:0x140be95c7",
-  "notes": "Lazily creates a 400-byte ref-counted object (vtable 0x145623f90) from this+0x40, caches it at +0x50/+0x58 and returns a shared_ptr copy in param_2. Caller Sess_WeekendOptions_OnRaceLengthChanged (2 sites)."
+  "evidence": "decomp:re/decomp/1405029b0.c;xref:0x140be95c7,0x140d3350e",
+  "notes": "Body read in full. If obj+0x50 null: lazily inits the allocator singleton (0x14618b130), allocates 400 bytes (counts 0x100000001, vtable 0x145623f90), constructs the payload 0x1403f7cd0(block+0x10, obj+0x40), stores +0x50 payload / +0x58 control block and releases the old block. Returns shared_ptr {+0x50, +0x58 ref++} in out. Callers in 0x140be9370 and 0x140d334f0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.proto_recursion_option_error_record_get_shared",

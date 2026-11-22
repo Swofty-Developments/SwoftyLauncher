@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432b90e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1432b90e0.c;xref:0x140829e05,0x14082a022",
-  "notes": "Unlinks a node from a double list (+0x10/+0x20), clears its fields and frees. Callers Game_F1os_OnResult_* handlers. vp1-verify partial/disagree"
+  "evidence": "decomp:re/decomp/1432b90e0.c;xref:0x140829e05,0x14082a022,0x140839603",
+  "notes": "(alloc*, node): null-safe; node[0] = allocator: clears node[4..5] when node[5]!=0, frees every non-null entry of the pointer array node[2] (count node[3]) and the array, frees buffer node[1] (all via node[0] vt+0x38), zeroes the fields, then frees node via alloc vt+0x38 (tail jump). No list unlink. call sites (Game_F1os_OnResult_* ...)."
  },
  "signature": {
   "id": "core.intrusive_node_unlink_and_free",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1413f8f30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1413f8f30.c;xref:0x1410f6aec",
-  "notes": "485-byte lookup using Game_Entrant_LookupPackedValue. Callers Game_Customisation_ConstructWithTimestamp (0x1413fffaa), 0x1410f6aec, 0x142572ef2. Hypothesis."
+  "evidence": "decomp:re/decomp/1413f8f30.c;xref:0x1410f6aec,0x1413fffaa,0x142572ef2",
+  "notes": "(table, out, u32 *key): 0x1413f8e30([table+0x10], &k, *key) gives a byte + u16; packed (byte<<14 | u16) is looked up in the robin-hood map table+0x50 (mul) / +0x58 (16-byte slots) / +0x60 (info) / +0x70 (mask). Hit: out = typed handle (vt 0x145612fa0/0x145612fe0), id = record+0x18 at out+0x10, and when the id resolves through its registry (vt+8) the 16-byte value at +0x34 -> out+0x18 and u32 +0x50 -> out+0x28. Miss: id 0xffff0000, value all-ones. (lane owner review requested)"
  },
  "signature": {
   "id": "game.customisation_find_packed_entry",

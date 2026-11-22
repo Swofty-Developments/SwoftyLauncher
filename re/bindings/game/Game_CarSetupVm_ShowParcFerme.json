@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c1bf00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "void Game_CarSetupVm_ShowParcFerme(void *vm, ...)",
-  "evidence": "doc:re/db/subsystems/game.md",
-  "notes": "Car setup screen parc ferme view: per-player slot record 0x120 at +0x76d8, title lng_cs_parc_ferme_title (ref 0x140c1c0df), description, icon #overrides.tablet.cs_preset_icons.%s_parc_ferme_icon; +0x7da0 = 0 (displaying_presets), +0x7dc0 = 1; refresh 0x140c17250 (agent garage-ui, cg-verify claim 10)"
+  "evidence": "decomp:re/decomp/140c1bf00.c;doc:re/db/subsystems/game.md;xref:0x140c1b819,0x140c1bec9,0x140c1eba7",
+  "notes": "Parc ferme view: refreshes nodes +0x7680/+0x76a0/+0x76c0, rebuilds presets (0x140c15e10, category [[+0x268]+1]), sets the slot record (+0x76d8 + idx*0x120) title 'lng_cs_parc_ferme_title', description 'lng_cs_parc_ferme_desciption', icon '#overrides.tablet.cs_preset_icons.%s_parc_ferme_icon'; bool +0x7da0 = 0, +0x7dc0 = 1; then 0x140c17250. (lane owner review requested)"
  },
  "signature": {
   "id": "game.car_setup_vm_show_parc_ferme",

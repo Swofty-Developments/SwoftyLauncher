@@ -103,6 +103,39 @@ static void warmer_swap_tests()
            "GameSetupMode +0x1c8 has_tyre_warmers (re/db structs/GameSetupMode.h)");
 }
 
+static void rev_lights_swap_tests()
+{
+    era::EngineSwaps swaps;
+    Mode a("f1_2024"), b("f1_2024"), c("f1_2024");
+    a.mem[era::MODE_EQUAL_ENGINE] = 2;
+    a.mem[era::MODE_EQUAL_ENGINE_SET] = 1;
+    b.mem[era::MODE_EQUAL_ENGINE] = 2;
+    b.mem[era::MODE_EQUAL_ENGINE_SET] = 1;
+    expect(swaps.swap(a.mem, 27) && swaps.swap(b.mem, 27) && a.mem[era::MODE_EQUAL_ENGINE] == 27 &&
+               b.mem[era::MODE_EQUAL_ENGINE] == 27 && a.mem[era::MODE_EQUAL_ENGINE_SET] == 1 && swaps.active() == 2,
+           "a press writes the box's engine stat id into every host mode's equal_performance_engine");
+    expect(!swaps.swap(c.mem, 27) && c.mem[era::MODE_EQUAL_ENGINE] == 0 && swaps.active() == 2,
+           "a mode without an equal_performance_engine is left alone (each car shows its own engine)");
+    swaps.swap(a.mem, 25);
+    expect(a.mem[era::MODE_EQUAL_ENGINE] == 25 && swaps.active() == 2,
+           "a second press without a put back keeps the game's engine once");
+    expect(swaps.put_back() == 2 && a.mem[era::MODE_EQUAL_ENGINE] == 2 && b.mem[era::MODE_EQUAL_ENGINE] == 2 &&
+               swaps.active() == 0,
+           "put back restores the game's engine in every swapped mode");
+
+    swaps.swap(a.mem, 27);
+    a.mem[era::MODE_EQUAL_ENGINE] = 3; // the game reloaded the mode since the press
+    expect(swaps.put_back() == 0 && a.mem[era::MODE_EQUAL_ENGINE] == 3,
+           "put back leaves an engine the game changed since the swap");
+
+    swaps.swap(a.mem, 27);
+    expect(swaps.forget() == 1 && swaps.active() == 0 && a.mem[era::MODE_EQUAL_ENGINE] == 27 && swaps.put_back() == 0,
+           "forget drops the swaps and writes nothing into the modes");
+    expect(!swaps.swap(nullptr, 27) && swaps.active() == 0, "no mode: nothing is swapped");
+    expect(era::MODE_EQUAL_ENGINE == 0xfa && era::MODE_EQUAL_ENGINE_SET == 0xfb,
+           "GameSetupMode +0xfa equal_performance_engine stat id, +0xfb its set flag (re/db structs/GameSetupMode.h)");
+}
+
 static void time_limit_swap_tests()
 {
     era::TimeLimitSwaps swaps;
@@ -835,6 +868,57 @@ static void grid_limit_tests()
     expect(resume.get() == 21 && line.find("20 -> 21") != std::string::npos, "a new raise first puts the earlier one back");
     load.restore();
     expect(resume.get() == 20, "the Continue path's put-back restores max_entrants to 20");
+
+    expect(era::grid_raise_cap(0) == 22 && era::grid_raise_cap(20) == 22 && era::grid_raise_cap(22) == 22 &&
+               era::grid_raise_cap(23) == 23 && era::grid_raise_cap(24) == 24 && era::grid_raise_cap(26) == 24,
+           "a package past 22 seats raises the cap to its seats, at most the 24 of My Team's stock grid");
+
+    GridSetup after_2013(22);
+    era::GridLimit sw2010;
+    line = sw2010.raise(after_2013.mem, 24, 24);
+    expect(after_2013.get() == 24 && line.find("22 -> 24 for a list of 24 cars") != std::string::npos &&
+               line.find("clamped") == std::string::npos,
+           "a 24-seat package box raises the 22 a 22-seat package left at boot to 24 (" + line + ")");
+    sw2010.restore();
+    expect(after_2013.get() == 22, "its put-back restores the boot's 22");
+
+    GridSetup boot_24(24);
+    era::GridLimit sw2011;
+    expect(sw2011.raise(boot_24.mem, 24, 24).empty() && boot_24.get() == 24,
+           "a 24-seat package box leaves a boot limit of 24 alone");
+    GridSetup boot_20(20);
+    line = sw2011.raise(boot_20.mem, 24, 24);
+    expect(boot_20.get() == 24 && line.find("20 -> 24") != std::string::npos, "from 20 too");
+    sw2011.restore();
+
+    GridSetup raw(22);
+    era::GridLimit raw_list;
+    expect(raw_list.raise(raw.mem, 24).empty() && raw.get() == 22,
+           "a 24-car list with no content.package stays at the stock 22 cars");
+    GridSetup raw_20(20);
+    line = raw_list.raise(raw_20.mem, 24, 0);
+    expect(raw_20.get() == 22 && line.find("clamped to 22 cars, the stock grid") != std::string::npos,
+           "and is clamped to 22 from 20 (" + line + ")");
+    raw_list.restore();
+
+    GridSetup sw2013(20);
+    era::GridLimit eleven;
+    line = eleven.raise(sw2013.mem, 22, 22);
+    expect(sw2013.get() == 22 && line.find("clamped") == std::string::npos, "a 22-seat package box races its 22 cars");
+    eleven.restore();
+    GridSetup grown(20);
+    line = eleven.raise(grown.mem, 24, 22);
+    expect(grown.get() == 22 && line.find("clamped to 22 cars") != std::string::npos,
+           "a list grown past its 22-seat package keeps the stock 22");
+    eleven.restore();
+
+    GridSetup wide(20);
+    era::GridLimit big;
+    line = big.raise(wide.mem, 26, 26);
+    expect(wide.get() == 24 && line.find("clamped to 24 cars, the stock My Team grid") != std::string::npos,
+           "a 26-seat package box is clamped to the 24 cars of My Team's stock grid (" + line + ")");
+    big.restore();
+    expect(wide.get() == 20, "its put-back restores 20");
 }
 
 static void front_end_leak_tests()
@@ -1385,6 +1469,7 @@ int main()
 
     drs_swap_tests();
     warmer_swap_tests();
+    rev_lights_swap_tests();
     points_tests();
     tyre_change_tests();
     time_limit_swap_tests();

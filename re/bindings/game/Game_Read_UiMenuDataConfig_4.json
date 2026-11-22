@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d9dfe0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: ui_menu_data.photo_mode_available, ui_menu_data.photo_mode_enabled, ui_menu_data.start_photo_mode'"
+  "evidence": "decomp:re/decomp/142d9dfe0.c;pat:log-channel--;xref:0x1457e37e8",
+  "notes": "Flow sub-task update (vtable cell 0x1457e37e8), next state id in *param_2 (0x19306425 or [0x146cb2280]). Sets ui_menu_data.photo_mode_available/enabled, replay pause and fade clearing; on ui_menu_data.start_photo_mode calls Game_PhotoModeSystem_SetEnabled(+0xdc0,1); on exit Game_Flow_StateDeactivatingSubTask. (lane owner review requested) Better name: Game_ReplayFlow_UpdatePhotoModeRequest (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_ui_menu_data_config_4",

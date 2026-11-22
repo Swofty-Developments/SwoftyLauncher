@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142dab950",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142dab950.c;xref:0x1457e4030,0x1457ea730",
-  "notes": "Session state update (vtable slots 0x1457e4030, 0x1457ea730): resets replay (0x1445d5c40 under replay CS), once per state requests full texture purgeAll (texmgr+0x21d mode 1, +0x220 = 0xff) and waits for it, then post race flow: Game_EndRaceUiSequencer_StopSequence, Ne_Post_BusMessage, Ne_Replay_SetState. Addon: point where end-of-race texture purge happens. d5-verify: bool state update: resets replay via 0x1445d5c40; once per state texture purgeAll (+0x21d bits 3-4 = 1, +0x220 = 0xff); waits on texmgr busy check 0x143bf3780; EndRaceUiSequencer/Post/SetState not visible here (unverified)"
+  "notes": "Vtable cells 0x1457e4030, 0x1457ea730. Resets replay [+0xd60] (0x1445d5c40(1,1) under CS). If +0xe28 set: waits on vcalls +0x70/+0x78 (0x146053e88), 0x14453f760(i,0x13) per entry of 0x146cc3a80, bus message 0x14565e950 with +0xe73 if +0xe74, 0x142ea5800([+0xdf8]). Then once (+0xe68) texture purgeAll on [0x146c621e8]: +0x21d bits 3-4 = 1, +0x220 = 0xff, logs \"purgeAll %x %s\"; waits on 0x143bf3780; returns 1 when done. (lane owner review requested)"
  },
  "signature": {
   "id": "game.session_state_end_race_update",

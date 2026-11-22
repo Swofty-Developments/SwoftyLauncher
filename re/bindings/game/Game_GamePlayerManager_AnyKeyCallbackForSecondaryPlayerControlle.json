@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1434df850",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GamePlayerManager::anyKeyCallbackForSecondaryPlayerControllerReconnection; log channel INPUT: 'GamePlayerManager::anyKeyCallbackForSecondaryPlayerControllerReconnection - calling forceRefresh()'"
+  "evidence": "decomp:re/decomp/1434df850.c;pat:log-message-cxx;xref:0x1434df86c,0x1434e0133,0x1434e01eb,0x1434e0adb",
+  "notes": "Refs: lea at 0x1434df86c (itself, re-arm), 0x1434e0133/0x1434e01eb (in 0x1434dfef0), 0x1434e0adb (in 0x1434e0560). For the second player [p1+0x1a0]: cancel button -> drops the second player (0x1442aad70, devices reset, 0x14411ac60(p1,0)), posts to InterruptQueue, sound play_ui_cancel; else if the device p2 matches a known controller and 0x14411bcf0 accepts it, calls own vt+0x60 and plays play_ui_confirm. Logs INPUT '...anyKeyCallbackForSecondaryPlayerControllerReconnection - calling forceRefresh()', sets [p1+0x538]+0x72 = 1. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_player_manager_any_key_callback_for_secondary_player_controlle",

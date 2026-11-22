@@ -58,6 +58,10 @@ pub enum Error {
     InsideInstall(PathBuf),
     #[error("Choose a folder that does not contain the launcher folder {}.", .0.display())]
     ContainsInstall(PathBuf),
+    #[error("Your addons and saves are in the launcher's own folder, {}. To separate them, run the installer and install to a new, empty folder: it moves only the launcher's files there, and your addons and saves stay where they are.", .0.display())]
+    IsInstall(PathBuf),
+    #[error("The launcher is installed in {}, inside {}, where your addons and saves are. To separate them, run the installer and install to a new, empty folder outside {}: it moves the launcher there, and your addons and saves stay where they are.", .install.display(), .data.display(), .data.display())]
+    HoldsInstall { data: PathBuf, install: PathBuf },
     #[error("Choose a folder outside the F1 25 folder {}.", .0.display())]
     InsideGame(PathBuf),
     #[error("Choose a folder that does not contain the F1 25 folder {}.", .0.display())]
@@ -218,7 +222,7 @@ pub fn journal_pending(default: &Path) -> bool {
     Journal::path(default).exists()
 }
 
-fn resolved(path: &Path) -> PathBuf {
+pub(crate) fn resolved(path: &Path) -> PathBuf {
     let mut rest = Vec::new();
     let mut at = path;
     loop {
@@ -232,6 +236,21 @@ fn resolved(path: &Path) -> PathBuf {
             }
             _ => return path.to_path_buf(),
         }
+    }
+}
+
+/// `path` with every link followed, written the way File Explorer shows it.
+pub fn real_path(path: &Path) -> PathBuf {
+    let real = resolved(path);
+    let Some(text) = real.to_str() else {
+        return real;
+    };
+    if let Some(share) = text.strip_prefix(r"\\?\UNC\") {
+        PathBuf::from(format!(r"\\{share}"))
+    } else if let Some(plain) = text.strip_prefix(r"\\?\") {
+        PathBuf::from(plain)
+    } else {
+        real
     }
 }
 
@@ -312,6 +331,17 @@ pub fn plan(loc: &Location, to: &Path, ops: &Ops) -> Result<Plan, Error> {
     }
     if from.symlink_metadata().is_err() {
         return Err(Error::NothingToMove);
+    }
+    if let Some(install) = &loc.install
+        && within(install, &from)
+    {
+        let data = real_path(&from);
+        let install = real_path(install);
+        return Err(if same_path(&install, &data) {
+            Error::IsInstall(data)
+        } else {
+            Error::HoldsInstall { data, install }
+        });
     }
     if within(to, &from) {
         return Err(Error::InsideCurrent(from));

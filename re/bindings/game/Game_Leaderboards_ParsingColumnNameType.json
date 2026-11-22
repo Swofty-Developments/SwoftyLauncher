@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144028680",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-LEADERBOARDS",
-  "notes": "named from its log messages (channel LEADERBOARDS): 'Parsing: Column %d, name = %s, type = %d'"
+  "evidence": "decomp:re/decomp/144028680.c;pat:log-channel-LEADERBOARDS;xref:0x144028448",
+  "notes": "Steam call-result handler (fn ptr stored at 0x144028448 in 0x144027dd0). For each entry i < count (result+0x10) and < rows: SteamUserStats vcall +0xf0 (64 details) -> row ids (0x14411fa90), rank +8, score +0x10, then per definition column (stride 0x58, type +0x50: 1 = 32-bit, 2 = 64-bit) row vcall +0x20(name, value) ('Parsing: Column...'). Total via vcall +0xc8 -> +0xc8, count -> +0xc4, state +0x128 = 6. Old name was a log fragment. (lane owner review requested) Better name: Game_SteamLeaderboards_OnScoresDownloaded (bound record keeps its name)."
  },
  "signature": {
   "id": "game.leaderboards_parsing_column_name_type",

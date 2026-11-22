@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14199a0d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
   "evidence": "decomp:re/decomp/14199a0d0.c;xref:0x14199a2bd",
-  "notes": "Parses a config for the HQ driver render: keys current_event, has_event, events, copying the name string and arrays. Caller Career_TeamHqDriverRender_Init."
+  "notes": "Binds VM nodes under path param_2: 'events' node ref kept as handle at +0x28 (Vm_Set_NodeRef), bool handles 'has_event'/'current_event' from +0x40 (Vm_Set_Bool); no config parsing. Caller 0x14199a2a0 (0x14199a2bd). (lane owner review requested) Better name: Career_TeamHqDriverRender_BindEventNodes (bound record keeps its name)."
  },
  "signature": {
   "id": "career.team_hq_driver_render_parse_event_config",

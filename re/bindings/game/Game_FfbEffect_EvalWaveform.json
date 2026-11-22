@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446f0cc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1446f0cc0.c;xref:0x1446ee84d,0x1446ee8bb",
-  "notes": "(effect, t) -> float: wraps t by period +0xa0, evaluates piecewise-linear curve +0x60..+0x68 (x,y pairs) and multiplies by envelope curve +0x80..+0x88. Callers: Game_FfbEffect_MixAndSend, Car_Ffb_SlipAngleInput."
+  "evidence": "decomp:re/decomp/1446f0cc0.c;xref:0x1446ee84d,0x1446ee8bb,0x1446ee905,0x1446ee94b,0x1446fdb10,0x1446fdb21,0x1446fe7eb,0x1447001eb,0x14470022a,0x15551e5eb",
+  "notes": "(effect, t) -> float: subtracts period +0xa0 until t <= period, evaluates the piecewise-linear curve +0x60..+0x68 ((x,y) float pairs) and multiplies by the envelope curve +0x80..+0x88 when present. Callers include MixAndSend 0x1446edf40. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ffb_effect_eval_waveform",

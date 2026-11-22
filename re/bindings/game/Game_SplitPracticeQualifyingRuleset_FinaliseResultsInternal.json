@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d3f2c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=SplitPracticeQualifyingRuleset::finaliseResultsInternal; log channel VIRTUAL-SESSION: 'SplitPracticeQualifyingRuleset::finaliseResultsInternal: Simulating results for vehicles with inactive ids. List to follow:'"
+  "evidence": "decomp:re/decomp/142d3f2c0.c;pat:log-message-cxx;xref:0x1457dd018",
+  "notes": "Vtable cell 0x1457dd018. Logs (VIRTUAL-SESSION) start, +0x364=1, 0x142f6db50([this+0x300],this) simulates the inactive-id vehicles, +0x364=0, logs, 0x142d32570(this,param_2) finishes the active session, logs \"Simulation for all vehicles complete\". (lane owner review requested)"
  },
  "signature": {
   "id": "game.split_practice_qualifying_ruleset_finalise_results_internal",

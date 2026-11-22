@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14316e8a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name sendPlayerSetInfoMessageInternal (class from the log channel); log channel PLAYERSET: '%s(%s, %d).'"
+  "evidence": "decomp:re/decomp/14316e8a0.c;pat:log-message-method;xref:0x14316cbbb,0x14316ceb7,0x14316d31c,0x14316e7fc,0x14316f9bc",
+  "notes": "this+0x28 == 0: only clears entry dirty +0x69. this+0x28 == 1: copies entry fields (+0x18..+0x67, +0x90) plus arg4 into message 0x14581f6f0 and sends it with 0x14402e500([this+0x48]): mode 1 (all) when connection arg3 == 0 (then clears +0x69), else mode 2 to arg3. (lane owner review requested)"
  },
  "signature": {
   "id": "game.playerset_send_player_set_info_message_internal",

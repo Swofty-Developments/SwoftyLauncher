@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1440a9d20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-PLAYFAB-PARTY",
-  "notes": "named from its log messages (channel NETWORK-PLAYFAB-PARTY): 'Failed to initialize the PlayFabParty manager: %hs'"
+  "evidence": "decomp:re/decomp/1440a9d20.c;pat:log-channel-NETWORK-PLAYFAB-PARTY;xref:0x145a55fe0",
+  "notes": "Logs 'NeNetPlayfabPartyCoordinator::%s(%s)' with initialize, initialises the PlayFab Party manager (0x14409e650) and logs 'Failed to initialize the PlayFabParty manager: %hs' on error. Only ref: vtable cell 0x145a55fe0. (lane owner review requested) Better name: Game_NetworkPlayfabParty_Initialize (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_playfab_party_initialize_play_fab_party_manager",

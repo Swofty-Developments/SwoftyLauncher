@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143218a60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143218a60.c;xref:0x143188cfb",
-  "notes": "Customisation replication manager message post: if flag +0x68 clear, reserves a 0x58-byte typed message via function-static TLS (Ne_Tls_GetValue 0x1461089d0) then fills and enqueues it. Callers Game_CustomisationReplicationManager_UpdatePlayerLifeData, UpdatePlayerLifeDataStandard, UpdatePlayerLifeDataVehicle, Game_CustomisationRepl_HandleSegmentedDecalsAdd. Hypothesis (livery / decal sync online). vp5-verify partial/disagree"
+  "evidence": "decomp:re/decomp/143218a60.c;xref:0x143188cfb,0x14318b6c8,0x14318ba51,0x14318d964",
+  "notes": "Queued bus post of one message type: every caller passes the message bus [0x14618b3b8]+8 as p1 (e.g. 0x143188ce8). Bus closed (p1+0x68 == 0) -> TLS error 0x58. Else under CriticalSection [p1+0x98] allocates a 0x60-byte message (allocator [p1+0x70], fail -> error 0xc), vtable 0x14579adf8, copies p2+8 and the PlayerDescription p2+0x18..+0x58, appends to the list +0x58/+0x60 and SetEvent([p1+0x90]) (error 6 -> 3). (lane owner review requested)"
  },
  "signature": {
   "id": "game.customisation_repl_post_message_a",

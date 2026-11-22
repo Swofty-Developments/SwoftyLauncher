@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143082ae0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name platformSearch (class from the log channel); log channel NETWORK-SESSION: '%s: Search started.'"
+  "evidence": "decomp:re/decomp/143082ae0.c;pat:log-message-method;xref:0x14580dac0",
+  "notes": "Hopper vtable cell: computes search params, may cancel ('GameSessionMatchingHopperCommon::cancel()' + Leave), changeState Unset->SearchRequested and logs '%s: Search started.' with 'platformSearch'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_session_platform_search",

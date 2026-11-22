@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144076cd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name initialiseAsyncSocket (class from the log channel); log channel NETWORK-TRANSPORT: '%s, state: %s'"
+  "evidence": "decomp:re/decomp/144076cd0.c;pat:log-message-method;xref:0x144092ea1,0x144094615",
+  "notes": "Logs 'initialiseAsyncSocket' state, restarts the socket (0x144047480) and runs one update 0x144047600. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_transport_initialise_async_socket",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1413be750",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-STORY_OBJECTIVES",
-  "notes": "named from its log messages (channel STORY_OBJECTIVES): 'Here are the results | %s | Failing objective %s in onSessionResultsFinalised because of reason %s'"
+  "evidence": "decomp:re/decomp/1413be750.c;pat:log-channel-STORY_OBJECTIVES;xref:0x1456e0758",
+  "notes": "onSessionResultsFinalised (vt cell 0x1456e0758): if active logs each result (0x142c7b1f0), evaluates 0x1413be250(this,results,&reason,1); on failure logs, vcall +0x70(this,reason) and +0x68. (lane owner review requested)"
  },
  "signature": {
   "id": "game.story_objectives_on_results_finalised",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140acae40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140acae40.c;xref:0x142d956e7,0x142d96c26",
-  "notes": "Talking-points shutdown: resets speech VO delegates ('resetSpeechVOFinishedDelegate', 'resetSpeechVOResumedDelegate'), logs '[CAMERA][STOP]: [%s]', '[UI][CLOSE]', '[MISC][CROSS-FADES]: Enabled' on channel TalkingPoints, stops the cutscene (Game_TalkingPoints_StopCutscene), posts a bus message. Callers Sess_StateTalkingPoints_OnStateEnter, TalkingPoints OnStateUpdate."
+  "notes": "Sets state +0x2c=4, closes UI (msg 0x14565e950), resets video, posts 0x14566cc70, stops cutscene (Game_TalkingPoints_StopCutscene) and camera (msg 0x14566eed0), clears +0x80, resets speech VO finished/resumed delegates, re-enables cross-fades. (lane owner review requested)"
  },
  "signature": {
   "id": "game.talking_points_stop",

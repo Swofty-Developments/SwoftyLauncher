@@ -107,7 +107,11 @@ Your addons, mods, profiles, backups and session logs live here, apart from the 
 
 ### Moving your addons and saves
 
-Keep your addons and saves outside the launcher's folder, and not on a whole drive. The installer refuses a folder that is, contains or is inside the launcher's folder, and a launcher whose folder holds your addons and saves cannot install updates. If yours does, move them out in Settings, or run the installer again and pick a folder outside it under **Advanced**.
+Keep your addons and saves outside the launcher's folder, and not on a whole drive. The installer refuses a folder that is, contains or is inside the launcher's folder, and a launcher whose folder holds your addons and saves cannot install updates: the update bar says **Your addons and saves are in the launcher's folder, so updates cannot install**.
+
+Older installers allowed this layout. To separate them, close the launcher and F1 25, run the [installer](#install-with-the-installer), choose a new, empty folder under **Install to** and select **Install**. The installer moves only the launcher's files (`bin/`, `loader/`, `dxc/`, `share/`, `LICENSE`, `README.md` and `THIRD_PARTY.md`) to the new folder, as in [Update or move an existing install](#update-or-move-an-existing-install), and installs the latest release there. Your addons and saves, with the `addons` folder, stay where they are, at the same path. After that, **Move…** in Settings moves them anywhere else.
+
+**Move…** in Settings refuses to move a folder that is the launcher's folder or holds it, names the folder your addons and saves are in (the folder a junction or link resolves to) and points to the installer. When your addons and saves are in a folder of their own inside the launcher's folder, such as `Swofty`, **Move…** moves that folder out and leaves the launcher's files where they are.
 
 In the launcher, open **Settings**, select **Move…** next to **Your addons and saves** and choose a folder; see [Moving your addons and saves](/using/settings#moving-your-addons-and-saves). You don't need the installer for it.
 

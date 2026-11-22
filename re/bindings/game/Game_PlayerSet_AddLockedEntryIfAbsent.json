@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14310f2e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14310f2e0.c;xref:0x140fe11a0,0x140fed538,0x1430ee6d1",
-  "notes": "Finds the PlayerSetEntry matching player id param_2 (id bits +0x48, type +8, user ids +0x10..+0x28, +0x40/+0x41) or adds it (0x14316ad80 / Game_PlayerSet_AddPlayer), sets isLocked=true (0x1431684a0), logs isLocked + ReportPlayerSetEntryChanged. Callers incl. Game_CareerOnlineManager_ReconcilingNewListMembers. d4-verify-b: returns 0 and does nothing when the player id is already in +0x58..+0x60; only when absent (and this+0x28 < 2) adds via 0x14316ad80, sets isLocked, returns 1"
+  "notes": "Returns 0 when this+0x28 >= 2 or the id (+0x48, type +8, user ids) is already in this+0x58..+0x60; else adds via Game_PlayerSet_AddPlayer 0x14316ad80, sets isLocked (0x1431684a0(e,1)); if e+0x90 was clear sets it and dirty +0x69 and logs; notifies listeners this+0x78..+0x80 (vfunc +0x18); returns 1. (lane owner review requested)"
  },
  "signature": {
   "id": "game.player_set_find_or_add_locked_entry",

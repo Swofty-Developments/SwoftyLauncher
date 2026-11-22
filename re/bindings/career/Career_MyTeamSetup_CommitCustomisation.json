@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1411118a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void (uint64_t setup)",
-  "evidence": "decomp:re/decomp/1411118a0.c;xref:0x142276976;xref:0x14228404a",
-  "notes": "myteam-g2: Applies the My Team customisation (livery, car decals) from the setup record to the entrants: uses Game_Customisation_FindPackedEntry, Game_CarDecals_FilterListByLod, Game_CustomisationSet_Dtor and Ent_EntrantsSystem_ReplaceVehicleCustomisation (entrants at +0x290). Called from CorporateSetupVM_OnAction and SetupVM_FocusSelection when the livery choice changes."
+  "evidence": "decomp:re/decomp/1411118a0.c;xref:0x142276976,0x14228404a",
+  "notes": "Disasm (pdata 0x1411118a0-0x141111a50): lazily inits static record 0x14606d340 (guard 0x14606d5b0, init 0x142268640), scans def ptrs c+0x500..+0x508 for word +0x28 == 0x14606d43c, on hit tail-jumps 0x141111911 to 0x1410f5b90(c) (decomp inlines that body), else returns. Callers 0x142276540/0x142282c00 hold my_team_setup_advance / my_team_career_select_* strings. Old xrefs were off by one. (lane owner review requested)"
  },
  "signature": {
   "id": "career.my_team_setup_commit_customisation",

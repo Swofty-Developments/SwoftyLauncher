@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439eb250",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name supersampleScale (class from the log channel); log channel VR: 'supersampleScale = %f'"
+  "evidence": "decomp:re/decomp/1439eb250.c;pat:log-message-method;xref:0x1439ea39e,0x1439ec799",
+  "notes": "Read in full: refreshes cached OpenVR interfaces when VR_GetInitToken changed, gets 'IVRSettings_003' (VR_GetGenericInterface), returns GetFloat('steamvr','supersampleScale') (vcall +0x38), logs 'supersampleScale = %f'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vr_supersample_scale",

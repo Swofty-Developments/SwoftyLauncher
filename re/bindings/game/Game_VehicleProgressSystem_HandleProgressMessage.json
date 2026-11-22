@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f07330",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142f07330.c;xref:0x14f608b89",
-  "notes": "VehicleProgressSystem::handleVehicleProgressMessage(connId): payload msg+0x10 {u8 vehicleId, s16 progressLap +0x12, ..., +0x17 reset flag}; tracks max progress lap +0x11c; ignores cars owned by this machine; until the session is entered queues it in the pending list +0x100..+0x110 (8-byte entries; ADDED/REPLACED/IGNORED logs on PROGRESS). Only reference from .data1 0x14f608b89. d4-verify-b correction: IGNORED (haven't entered session yet) when +0x119 == 0 and no qualifying local entry exists; ADDED/REPLACED in pending list +0x100.. when +0x119 != 0 or a qualifying entry exists"
+  "evidence": "decomp:re/decomp/142f07330.c;xref:0x14f608b86",
+  "notes": "Read in full (this, msg, conn): msg+0x17 reset -> +0x11c = -1, else max progress lap +0x11c = max(+0x11c, s16 msg+0x12); returns for cars owned by this machine; if +0x119 == 0 and no qualifying local session entry exists: logs IGNORED (haven't entered session yet); else replaces the pending 8-byte entry with the same vehicle in +0x100..+0x108 (REPLACED, keeps flag byte 6 sticky) or appends it (ADDED, grows by 1.5x via allocator +0xf8). lea ref 0x14f608b86 in .data1 (the old 0x14f608b89 is not an instruction start). (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_progress_system_handle_progress_message",

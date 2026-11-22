@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142c29190",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-F1-DATA-FEED-REAL-WORLD",
-  "notes": "Log channel F1-DATA-FEED-REAL-WORLD: 'F1DataFeedSystem::skipStreamDataLine called, streamOffset = %d, m_carPosDataCurrentAbsoluteStreamPosition = %d, m_carPosDataLoadedStreamDataOffset = %d' | 'Adding first entry %d - timestamp = %s - %s' | 'Adding entry %d - timestamp = %s - %s, nextOffset = %I64u, allCarsStationary = %s' | 'Pa"
+  "evidence": "decomp:re/decomp/142c29190.c;pat:log-channel-F1-DATA-FEED-REAL-WORLD;xref:0x142c290f7",
+  "notes": "Logs 'F1DataFeedSystem::requestLoadReplay - STARTING TO LOAD'/'FINISHED LOADING %I64d microseconds' (QPC). Builds '%s\\replays' paths, FUN_142c22cb0 load; entrants loop ('stat_id', 'ENTRANTS - writable entrants'); sets time_of_day/weather #settings; mode +0x1bd0: 0=UDP file (+0x178, 'Adding entry'), 1=real-world (+0x180, PDM_AccX/SDR_Gear/F1DATA, 20 cars stationary, pit in/out, EM lap timestamps). In pdata bounds. (lane owner review requested) Better name: Game_F1DataFeedSystem_RequestLoadReplay (bound record keeps its name)."
  },
  "signature": {
   "id": "game.f1_data_feed_skip_stream_line",

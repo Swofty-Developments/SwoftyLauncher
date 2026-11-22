@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140998090",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140998090.c;xref:0x145658660",
-  "notes": "OnlineRole listener virtual (vt slot before Game_OnlineRole_OnConnectionArrived): logs 'onSessionStateChange: status: %d' (param_2) and updates role state (+0x30/+0x38). Addon: hook online session state transitions. d4-verify-a: does not update role state; walks listener vector this+0x30..+0x38, calls each listener vslot +8 with the state (kind check entry+0xc)"
+  "notes": "Logs PLAYERSET '%s: status: %d' (onSessionStateChange, param_2). Walks listeners this+0x30..+0x38: kind +0xc == 1 -> tri-state 0/1/2, kind 0 -> bool (state != 0); calls listener vslot +8 only when the cached value at listener+8 changes, then stores it. Role state itself not modified. Only reference: vtable cell 0x145658660. (lane owner review requested)"
  },
  "signature": {
   "id": "game.online_role_on_session_state_change",

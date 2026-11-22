@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144047600",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name destroyDisconnectingAndTimedOutConnectingChannels (class from the log channel); log channel NETWORK-TRANSPORT: '%s: remove channel: %d, %s, %s, time: %.1f'"
+  "evidence": "decomp:re/decomp/144047600.c;pat:log-message-method;xref:0x144076d96,0x144094662,0x14409470e,0x144094ba4",
+  "notes": "NeNetReliableAsyncSocket state machine: update_Offline/RecreateSocket (create, bind, blocking, start RECV thread 0x144048650), update_ComponentStartup/Active/Shutdown with setState logs, then destroyDisconnectingAndTimedOutConnectingChannels (inlined). (lane owner review requested) Better name: Game_NetReliableAsyncSocket_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_transport_destroy_disconnecting_and_timed_out_connecting_c",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1425069b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "entrants",
   "proto": "void Ent_Pack_VehicleRef(uint32_t *out)",
-  "evidence": "decomp:re/decomp/142452e60.c;pat:called-at-0x142452fef",
-  "notes": "packs the entrant 'vehicle' label into EntrantRecord.vehicle_ref (+0x5c); vehicle stat id in high word, 0x3fff0000 when empty. Also called by Sess_Load_VehicleAiConfig path."
+  "evidence": "decomp:re/decomp/1425069b0.c;pat:called-at-0x142452fef;xref:0x140bab8fb,0x140babe70,0x140c32785,0x1411281e3,0x141128d89,0x141129b0d,0x1413cc237,0x1413f84a9,0x1413f8ced,0x14141725e,0x14141b719,0x14141ba71,0x14143c48c,0x14143c62a,0x141780859,0x141cbf9ca,0x142453253,0x1424a2036,0x1427736b0,0x1427b9ddb,0x142c29dbc,0x142e0d539,0x142e0d5b7,0x142e0df3d,0x142e0f41e,0x142e47bd8,0x142ec370e,0x143539a47,0x14379df57,0x14379df86,0x143870d07,0x143870e67,0x143870fc7,0x143871757,0x1438718b7,0x143871a17,0x143873a17,0x1438741f7,0x14389e88e",
+  "notes": "Thunk -> 0x14cca2c10 (out u32*, label): looks the label up in 'entrants.vehicles' (stat_id); out = {kind 0, u16 stat_id} (0 when missing). Caller 0x142452e60 (site 0x142453253) uses 0x3fff0000 for an empty label and stores the key at EntrantRecord+0x5c (0x142453717). (lane owner review requested)"
  },
  "signature": {
   "id": "entrants.pack_vehicle_ref",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143087000",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=MatchingProcessor::prepare; log channel NETWORK-MATCHING: 'MatchingProcessor::prepare(%s)'"
+  "evidence": "decomp:re/decomp/143087000.c;pat:log-message-cxx;xref:0x142226405,0x142226428,0x143150d2b,0x143159aa0",
+  "notes": "MatchingProcessor::prepare(type, keep): logs; replaces search request +0x30 (0x18 bytes, 0x1430711b0(type)), filter +0x1c8 (0x143072d50, user [[+0x28]+0x390]), user list +0x170..+0x180, +0x100 = user, +0x160 = [[+0x28]+0x3e8]+0xa8; max players +0x188 by context type (2; 0x14 or [[+0x4f8]+0xe10]+0x268; 0x1430dc620; else [+0x3c8]+0x48 or 0x10); user descriptor -> +0x80; clears results; keep==0 also resets +0x1a8..+0x1c5; then 0x143065250(.., type, 0). (lane owner review requested)"
  },
  "signature": {
   "id": "game.matching_processor_prepare",

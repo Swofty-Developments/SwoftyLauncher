@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140ac94b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TalkingPoints",
-  "notes": "named from its log messages (channel TalkingPoints): '[CAMERA][PLAY]: [%s] | [CUTSCENE][PLAY]: [%s] for [%fs] | [SFX][PLAY]: [%s] at [%f] | [VO][PLAY]: Empty VO | [VO][PLAY]: [%s] with id[%d] at [%f] | [VO][PLAY]: Failed to play because %s'"
+  "evidence": "decomp:re/decomp/140ac94b0.c;pat:log-channel-TalkingPoints;xref:0x140acbb04,0x140acbbb0",
+  "notes": "Plays one timeline item by type byte: 0 camera (bus msg 0x14566eed0 with name), 1 cutscene with duration (CUTSCENE_PARAMS, Game_CutsceneManager_PlayInternal, post 0x14566cc70), 2 fade, 3 video on layer 4 (Ne_UIVideo_*), 4 SFX, 5 VO resume (0x140a2a950). Sets item state +0x20 (1 playing, 2 done). (lane owner review requested)"
  },
  "signature": {
   "id": "game.talking_points_play_item",

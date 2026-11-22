@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432c0610",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1432c0610.c;xref:0x1432d98b4",
-  "notes": "Stores param_2 at +0x28, queries interface id 0x146cb8258 (vcall +0x28 of param_3) into +0x88; on null uses TLS function-static error list and Ne_RobinHoodMap_U64_FindIndex. Callers Game_F1osTasksystem_InternalStartTask, Game_F1osTasksystem_AddTask. Hypothesis."
+  "evidence": "decomp:re/decomp/1432c0610.c;xref:0x1432d98b4,0x1432dd5f1",
+  "notes": "Stores param_2 at +0x28, queries interface 0x146cb8258 via param_3 vcall +0x28 into +0x88; null -> marks the TLS error list with 0x16. Else looks up keys 0x1460bed80 / 0x1460c48f8 in map param_4 (0x14030ffd0) into +0x38 / +0x30, finds the child of type 0x1460c4918, stores child+0x58 at +0x108, then vcall +0x30 and +0x28. Callers 0x1432d9780 (0x1432d98b4), 0x1432dd060 (0x1432dd5f1). (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1os_tasksystem_init_task_context",

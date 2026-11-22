@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f8ac70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-GHOSTLAP",
-  "notes": "named from its log messages (channel GHOSTLAP): '%s(%d bytes) : failed to read data header. | %s(%d bytes) : applied telemetry data.'"
+  "evidence": "decomp:re/decomp/142f8ac70.c;pat:log-channel-GHOSTLAP;xref:0x1407e2ab9,0x1407e2c2e,0x141484d45",
+  "notes": "readTelemetryHeader(out,stream,ctx) per its log name: ReadAndValidate 0x142f8a730, reads an 8-byte field, requires >= 0x6c bytes and reads 0x6c bytes into out, clamps out+0x20 to <=1, sets out+0x60 bit0 from header flag 0x40; returns 1. Callers 0x1407e2140 (two), 0x141484d00. (lane owner review requested) Better name: Game_GhostLap_ReadTelemetryHeader (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ghost_lap_apply_telemetry",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1440226c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=Options::applyNode; log channel HARDWARE_SETTINGS: '[hardwareSettings::Options::applyNode] 1 Setting attribute '%s:%s=%s''"
+  "evidence": "decomp:re/decomp/1440226c0.c;pat:log-message-cxx;xref:0x144021e0b,0x144022978",
+  "notes": "hardwareSettings::Options::applyNode (own log string). (optNode, xmlNode): finds child option by name (+0x70..+0x78, strncmp 0x1f) or creates it (0x14401b070); for each xml attribute (+0x50..+0x58) copies value (<=0x50 chars) into the attribute entry from 0x1440214f0 (+0x58, len +0x48), logs HARDWARE_SETTINGS; recurses on child nodes (+0x70..+0x78). Callers 0x1440217f0 and itself. (lane owner review requested)"
  },
  "signature": {
   "id": "game.options_apply_node",

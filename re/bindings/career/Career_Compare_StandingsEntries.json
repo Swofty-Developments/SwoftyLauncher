@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140b317a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "bool Career_Compare_StandingsEntries(void *ctx, const int *a, const int *b)",
-  "evidence": "decomp:re/decomp/140b317a0.c;decomp:re/decomp/140b31170.c;decomp:re/decomp/1413cdb00.c;xref:0x140b31170",
-  "notes": "drivers standings sort predicate (a ranks before b): ctx {standings, u64* packed}; compares entries {u32 key, i32 total}: higher total first, then the countback (standings vt+0x10 0x1413cdb00 counts finishes per position 0..28 over the results up to packed, first differing position with more finishes wins), then the lower key. Used by std::sort 0x140b31170 on the cumulative table sessions"
+  "evidence": "decomp:re/decomp/140b317a0.c;decomp:re/decomp/140b31170.c;decomp:re/decomp/1413cdb00.c;xref:0x140b311ea,0x140b3121a,0x140b31245,0x140b31391",
+  "notes": "Drivers standings sort predicate: entries {u32 key,i32 total}. Different totals -> higher first. Equal -> standings vt+0x10 countback (29 per-position counts up to the packed ctx) for both, first differing position with more finishes wins; full tie -> lower packed key (byte<<14|u16 +2). Used by std::sort 0x140b31170. (lane owner review requested)"
  },
  "signature": {
   "id": "career.compare_standings_entries",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14379eba0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: streamed_install.install_progress_fract, streamed_install.install_progress_percentage, streamed_install.is_available'"
+  "evidence": "decomp:re/decomp/14379eba0.c;pat:log-channel--;xref:0x14079da18",
+  "notes": "Ctor of 3 VM bindings: streamed_install.is_available (bool, default 1) at +0, install_progress_percentage (default 100) at +0x20, install_progress_fract (default 0) at +0x40; vtables 0x14565f670/0x1456604b8/0x145670ca8. (lane owner review requested) Better name: Game_StreamedInstall_BindVmProperties (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_streamed_install_config",

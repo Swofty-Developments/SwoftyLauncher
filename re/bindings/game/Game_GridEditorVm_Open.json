@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_GridEditorVm_Open",
+ "table": "functions",
+ "author": "msyeett",
+ "row": {
+  "addr": "0x142218f20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_GridEditorVm_Open(void *vm, void *first, void *second, void *third)",
+  "evidence": "decomp:own disasm 0x14221ab20-0x14221be2a,0x14221a1be-0x14221a1c5;xref:0x145777948",
+  "notes": "starting grid editor view model (vtable stored at 0x14221a1be), slot 19: runs when the editor opens; its only reference is the vtable cell"
+ },
+ "signature": {
+  "id": "game.grid_editor_vm_open",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 0F B6 81 28 06 00 00",
+  "match": "0x142218f20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142218f20",
+  "kind": "func_start",
+  "names": [
+   "Game_GridEditorVm_Open"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-22",
+    "by": "msyeett",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14221ab20",
+  "made_on_target": "0x14221ab20",
+  "twin": "made on steam-26566308; the target 0x14221ab20 is KB 0x142218f20: Game_DataGathererPlayers_Update (0x21f3000) and Career_MyTeamSetupVM_ResetStepSelection (0x22684b0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "msyeett",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14221ab20",
+    "target": "0x14221ab20"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "88d8b345deee465beff9913ca5d89b786bd743ee43bfe19cf5401b48ee2ef35c"
+  }
+ ]
+}

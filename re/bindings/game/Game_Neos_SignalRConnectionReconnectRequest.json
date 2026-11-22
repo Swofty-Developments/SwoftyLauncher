@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144446600",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NEOS",
-  "notes": "named from its log messages (channel NEOS): 'SignalRConnection Reconnect request: %s'"
+  "evidence": "decomp:re/decomp/144446600.c;pat:log-channel-NEOS;xref:0x144444bad,0x144444f3c",
+  "notes": "Callers 0x144444bad, 0x144444f3c. Mode byte 2: one invocation via 0x144446120 pushed to vector +0x80. Classic: T (reconnect, logged), G (groups token) -> +0x30, C (message id) -> +0x8, S (state) -> +0x58, array M -> each element parsed by 0x144446120 and pushed (0x1444f5620), count logged. (lane owner review requested) Better name: Game_Neos_SignalRParseServerMessage (bound record keeps its name)."
  },
  "signature": {
   "id": "game.neos_signal_r_connection_reconnect_request",

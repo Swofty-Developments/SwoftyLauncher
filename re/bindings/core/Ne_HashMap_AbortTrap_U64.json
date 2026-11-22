@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1435d9a50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1435d9a50.c;xref:0x1434f4ea8",
-  "notes": "10-byte length-error stub. Callers Ne_HashMap_U64_Insert (0x1434f4ea8), 0x1435da280. vq0-verify partial/disagree"
+  "evidence": "decomp:re/decomp/1435d9a50.c;xref:0x1434f4ea8,0x1435da280",
+  "notes": "Noreturn 10-byte stub: calls Ne_Crt_InvalidParameterAbort 0x145351784 then int3; error path of its callers' hash map code. Callers Ne_HashMap_U64_Insert 0x1434f4170, Ne_HashMap_U64_Grow 0x1435d9bb0. Not a length-error throw."
  },
  "signature": {
   "id": "core.hash_map_throw_length_error_u64",

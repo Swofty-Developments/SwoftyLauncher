@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e305b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142e305b0.c;xref:0x142e35404",
-  "notes": "Constructs a thumbnail request record (vtables 0x145613480/0x1456134c0, 0xffff init, fields +0x18..+0x30) from the owning system param_1 (+0x28 data, global u16 0x3fff check). Callers Game_ThumbnailSystem_AddingPendingHelmetThumbnail_2, 0x142e35404, 0x142e378f9, 0x142e39931. Hypothesis."
+  "evidence": "decomp:re/decomp/142e305b0.c;xref:0x142e35404,0x142e36ec9,0x142e378f9,0x142e39931",
+  "notes": "Fills helmet request: driver customisation (Wear_Get_DriverCustomisation_Thunk on override 0x146066bdc, player driver, or entrant fallback map), copies helmet ids +0x18..+0x34, flag +0x30 from Ui_Get_CustomisationContext (4->0, 2->MyTeam check, else 1). (lane owner review requested)"
  },
  "signature": {
   "id": "game.thumbnails_construct_helmet_request",

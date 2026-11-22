@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432c0ea0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_OnlineSubsystemTaskBase_RetryTask;xref:0x1432c0f1d",
-  "notes": "cxx=game::OnlineSubsystemTaskBase::retryTask; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1432c0ea0.c;str:s_OnlineSubsystemTaskBase_RetryTask;xref:0x1432c1c52,0x1432da144,0x1432da29c,0x14336b88c,0x14336e2b8",
+  "notes": "Logs '%s() for %s' with game::OnlineSubsystemTaskBase::retryTask and re-arms the task. Called from Game_F1osTasksystem_InternalStartTask, Game_F1osTasksystem_RefreshingSessionTokenReceived, 0x1432c1ac0 and 0x14336e220. (lane owner review requested)"
  },
  "signature": {
   "id": "game.online_subsystem_task_base_retry_task",

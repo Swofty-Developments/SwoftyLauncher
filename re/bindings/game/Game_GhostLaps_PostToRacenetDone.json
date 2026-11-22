@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f8f3c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-GHOSTLAPS",
-  "notes": "named from its log messages (channel GHOSTLAPS): 'Post ghost to racenet http transaction {%d} complete, statusCode %d.'"
+  "evidence": "decomp:re/decomp/142f8f3c0.c;pat:log-channel-GHOSTLAPS;xref:0x142f8dc89",
+  "notes": "Racenet ghost POST completion(sys,txId,isError,..): logs complete/error statusCode, under CS sys+0x18 erases txId from the pending red-black map sys+0x50 (count sys+0x58), frees its buffer and node (allocator sys+0x48). Registered (lea) in 0x142f8d030. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ghost_laps_post_to_racenet_done",

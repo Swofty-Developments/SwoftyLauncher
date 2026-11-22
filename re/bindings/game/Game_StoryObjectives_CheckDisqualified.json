@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1413bef40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-STORY_OBJECTIVES",
-  "notes": "named from its log messages (channel STORY_OBJECTIVES): 'Objective failed: Disqualified. Vehicle ID %d, Result status %s, result reason %s, virtualised %s | Objective failed. Vehicle ID %d, Result status %s, result reason %s, virtualised %s'"
+  "evidence": "decomp:re/decomp/1413bef40.c;pat:log-channel-STORY_OBJECTIVES;xref:0x1456e0b48",
+  "notes": "Objective results handler (vt cell 0x1456e0b48): when active (+0x68==1) finds the tracked vehicle (0x1400fa760) in results param_2+8..+0x10; result status !=3 logs \"Objective failed\" and fails vcall +0x70(this,0); reason ==2 (disqualified) logs Disqualified and fails with 1 (or vcall +0x68). (lane owner review requested)"
  },
  "signature": {
   "id": "game.story_objectives_check_disqualified",

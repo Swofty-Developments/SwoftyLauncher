@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439ee9e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-VR",
-  "notes": "named from its log messages (channel VR): 'Vr interrupt state = %i'"
+  "evidence": "decomp:re/decomp/1439ee9e0.c;pat:log-channel-VR;xref:0x1439ecab1,0x1439ecad4,0x1439ecd88,0x1439ece34",
+  "notes": "Read in full: (vr, push) ref-counts interrupts in +0x168: first push sends event 8 to queue 'InterruptQueue' (0x140799d20) and msg 0xd {1} to [0x146ca5e28+0x50] vcall +0x30; last pop sends event 9 and {0}; clamps at 0; logs 'Vr interrupt state = %i'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vr_set_interrupt_state",

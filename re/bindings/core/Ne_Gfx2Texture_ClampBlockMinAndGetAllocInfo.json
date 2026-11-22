@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439dcd00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439dcd00.c;xref:0x1439d20be",
-  "notes": "For certain message type bytes (+0x30 in 0x3d..0x46 or bitmask 0x2d0000000000000) forces +0x1c and +0x18 size fields to at least 4. Vtable use. Hypothesis. vp2-verify partial/disagree"
+  "evidence": "decomp:re/decomp/1439dcd00.c;xref:0x1439d20be,0x1439e80d4,0x143bda0e6",
+  "notes": "(dev,out16,texDesc): for block formats (desc+0x30 in 0x3d..0x46 or mask 0x2d0000000000000) clamps width +0x18 / height +0x1c to >=4; builds a D3D12 resource desc (dimension +0x2c, array/depth, mips +0x24, samples 1<<+0x34, flags +0x38) and writes {size,align} from [dev+0x508] vt+0xc8, or for flag bit35 via a QI (0x14589ae00) interface vt+0x220. Callers Render_Gfx2Device_CreateResourceInternal, Ne_Tga_ConvertToRgba8Buffer, Render_RenderGraph_FindOrCreateTextureDesc."
  },
  "signature": {
   "id": "core.net_channel_apply_min_buffer_sizes",

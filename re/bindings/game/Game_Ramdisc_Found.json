@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143f31280",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name Found (class from the log channel); log channel RAMDISC: '%s '%s''"
+  "evidence": "decomp:re/decomp/143f31280.c;pat:log-message-method;xref:0x143f314e3,0x143f3160a,0x143f31d4a,0x143f322d2",
+  "notes": "(this, req, outNode): lower-cases the name at req+0x18 (0x104 bytes), looks it up in the ordered tree this+0x18 (key node+0x30, strcmp 0x14535d850), writes node (or end) to outNode, logs RAMDISC \"Found '%s'\" or \"Did not find '%s'\", returns found. Callers 0x143f314e3, 0x143f3160a, 0x143f31d4a, 0x143f322d2. Old name was a log fragment. (lane owner review requested) Better name: Game_Ramdisc_FindEntry (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ramdisc_found",

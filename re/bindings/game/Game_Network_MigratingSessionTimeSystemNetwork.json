@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142cf32b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'Migrating SessionTimeSystem: network clock phase base %+1.3fs'"
+  "evidence": "decomp:re/decomp/142cf32b0.c;pat:log-channel-NETWORK;xref:0x1457d9138",
+  "notes": "Virtual (vtable cell 0x1457d9138): +0x78 = (param_2 != 0); for param_2 == 1 in mode 2 moves pending phase base +0x60 to +0x58, logs 'Migrating SessionTimeSystem: network clock phase base %+1.3fs' and tail-jumps to 0x142cf2f80 (send phase base; jmp at 0x142cf3367). (lane owner review requested) Better name: Game_Network_SessionTime_OnMigration (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_migrating_session_time_system_network",

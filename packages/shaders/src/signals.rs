@@ -47,6 +47,8 @@ const CAMERAS: &[&str] = &[
     "chase_near",
     "chase_far",
     "other",
+    "trackside",
+    "reverse_pod",
 ];
 const SURFACES: &[&str] = &["tarmac", "kerb", "rumble", "grass", "gravel", "sand"];
 const FLAGS: &[&str] = &["none", "green", "blue", "yellow", "red"];
@@ -135,7 +137,7 @@ pub static SIGNALS: [Signal; 31] = [
         "view.camera",
         CAMERAS,
         false,
-        "The camera view: cockpit, tcam, tcam_offset, chase_near, chase_far or other.",
+        "The camera view: cockpit, tcam, tcam_offset, chase_near, chase_far, other, trackside or reverse_pod.",
     ),
     flag("view.replay", true, "On while a replay plays."),
     flag("view.paused", true, "On while the game is paused."),

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430b2360",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionUI::triggerSocialGP; log channel NETWORK-UI: 'void network::GameSessionUI::triggerSocialGP(SocialGPEventSetupDelegate) | %s: already joining an event, ignore the duplicate request'"
+  "evidence": "decomp:re/decomp/1430b2360.c;pat:log-message-cxx;xref:0x14258d271",
+  "notes": "Only caller 0x14258d271 (in 0x14258d060). Own pretty-function string 0x145811719 'void network::GameSessionUI::triggerSocialGP(SocialGPEventSetupDelegate)'. Unless busy (0x1430af1a0) or already joining (+0x431, logs 'already joining an event, ignore the duplicate request'): +0x431 = 1, resets [p1+8]+0x220, retry count +0x42c = 0, stores delegate p2 at +0x438/+0x440; if the hopper [[p1+8]+0x3f0] is idle starts F1WSocialGP_EnterSession (search/join delegates 0x1430b2a70/0x1430b2890) and the network_search_servers popup, else shows network_create_custom_cancel_hopper. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_session_ui_trigger_social_gp",

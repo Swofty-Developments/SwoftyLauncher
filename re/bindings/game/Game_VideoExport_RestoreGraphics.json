@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141f0a230",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-Video_Export",
-  "notes": "named from its log messages (channel Video_Export): 'reinstate graphics::%d'"
+  "evidence": "decomp:re/decomp/141f0a230.c;pat:log-channel-Video_Export;xref:0x14575bef0",
+  "notes": "Read in full; ref vt cell 0x14575bef0. Binds VM nodes 'current_row', 'last_focussed_save', list views 'theatre_recent_highlights_row' / 'theatre_saved_highlights_row'; when back from an export (0x146cb7b68): SetExportName 'highlights_export_left', 0x141f10870(saved 0x145f98b48) + 'reinstate graphics::%d', clears highlight_exporting; then 0x141f0eeb0 and '#ui_menu_data.theatre'. (lane owner review requested) Better name: Game_HighlightsTheatre_SetupScreen (bound record keeps its name)."
  },
  "signature": {
   "id": "game.video_export_restore_graphics",

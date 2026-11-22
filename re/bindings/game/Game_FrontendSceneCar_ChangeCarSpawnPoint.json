@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428c3ef0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name changeCarSpawnPoint (class from the log channel); log channel FRONTEND_SCENE_CAR: 'changeCarSpawnPoint() - with vehicle placement'"
+  "evidence": "decomp:re/decomp/1428c3ef0.c;pat:log-message-method;xref:0x1428ced5b,0x1428e5562",
+  "notes": "Own pretty-fn string 0x1457ac685 'FrontendSceneComponentCar::doesCarNeedRespawn(config,FrontendSpawnPointInfo)' (ch FRONTEND_SCENE_COMPONENT/CAR). Compares stored config (this+0xd0+...) vs param_2 livery +0x6790..0x67b0, decals +0x67b8, sticker +0x6888, number +0x67f9, driver numbers +0x6810 (x0x30); copies, sets this+0x10. Inlined changeCarSpawnPoint (str 0x1457ac6fe) and setCarAsDecalEditorVehicle (calls 0x1428b1750). Returns respawn bool. (lane owner review requested) Better name: Game_FrontendSceneComponentCar_DoesCarNeedRespawn (bound record keeps its name)."
  },
  "signature": {
   "id": "game.frontend_scene_car_change_car_spawn_point",

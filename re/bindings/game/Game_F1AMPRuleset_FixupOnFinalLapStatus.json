@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d29c60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=F1AMPRuleset::fixupOnFinalLapStatus; log channel F1-ARCADE-MP: 'F1AMPRuleset::fixupOnFinalLapStatus()'"
+  "evidence": "decomp:re/decomp/142d29c60.c;pat:log-message-cxx;xref:0x1457db9f0",
+  "notes": "Logs F1-ARCADE-MP 'F1AMPRuleset::fixupOnFinalLapStatus()'; unless vcall +0xf8, for each racing participant (+0x18 == 2) in [+0x2e0]: laps 0x1446046a0([+0x338], id); final lap = total (vcall +0x170) - 1 == lap + offset; logs '  %02d: Vehicle Id %d still active on lap %d ... - %s' ('FINAL LAP'); byte this+id*0x18+8 = (final xor +0x10) & 1. Ref: vtable cell 0x1457db9f0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1_amp_ruleset_fixup_on_final_lap_status",

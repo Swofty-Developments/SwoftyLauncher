@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1444b2c30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name encodeVP9Frame (class from the log channel); log channel VIDEO_EXPORT: 'encodeVP9Frame: No packets returned'"
+  "evidence": "decomp:re/decomp/1444b2c30.c;pat:log-message-method;xref:0x142bd35a3,0x1444b1d1e",
+  "notes": "Read in full: pts = counter +0x290 * 1e9/fps(+0x25c); SendFrame 0x1444b6340(codec+8, image +0x1c0) - none: 'encodeVP9Frame: No packets returned'; each packet -> video track +0x280 via 0x144c80000 (keyframe bit pkt+0x24); every 250 ms cue 0x144c7ff10; then vorbis packets from audio source +0x298 between pts and pts+frame ('Looking for vorbis packet...') to track +0x288; counter++; returns 0 ok / 1..5 error codes. (lane owner review requested)"
  },
  "signature": {
   "id": "game.video_export_encode_vp9_frame",

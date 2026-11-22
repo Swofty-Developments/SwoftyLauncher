@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143c3ea10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143c3ea10.c;xref:0x143d85178",
-  "notes": "Creates CMAA2 anti-aliasing working buffers (eaid://ego_package/CMAA2.WorkingControlBuffer, IndirectArgumentsBuffer, WorkingEdges, WorkingShapeCandidates, DeferredBlend lists). Named callers: Game_Rtt_CreateScenes."
+  "evidence": "decomp:re/decomp/143c3ea10.c;xref:0x143d85178,0x15255dbb4",
+  "notes": "(cmaa): from target dims [[+200]+0x48]+0x20/+0x24 (w, h) creates CMAA2.WorkingControlBuffer +0x90 and IndirectArgumentsBuffer +0x98 (both cleared, 0x143a07b70), WorkingEdges texture +0xa8 ((w+1)/2 x h), WorkingShapeCandidates +0xa0 (w*h/4), DeferredBlendItemListHeads +0xb0 (half res), DeferredBlendLocationList +0xb8 ((w*h+3)/6), DeferredBlendItemList +0xc0 (w*h/2, 8-byte); old objects queue-released. Callers RttGenerator, 0x15255da10. (lane owner review requested)"
  },
  "signature": {
   "id": "game.rtt_create_cmaa2_buffers",

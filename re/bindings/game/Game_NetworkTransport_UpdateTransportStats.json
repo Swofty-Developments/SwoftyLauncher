@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14404ac50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name updateTransportStats (class from the log channel); log channel NETWORK-TRANSPORT: '%s'"
+  "evidence": "decomp:re/decomp/14404ac50.c;pat:log-message-method;xref:0x1440775f8,0x1440791ef",
+  "notes": "Logs method string 'updateTransportStats'; under the lock at +0x30 copies each channel's stat block into the map at +0x1f8. Called from ReportTransportStats 0x1440775c0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_transport_update_transport_stats",

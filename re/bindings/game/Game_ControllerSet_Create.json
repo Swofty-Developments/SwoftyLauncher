@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1438968e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-CONTROLLER_SET",
-  "notes": "named from its log messages (channel CONTROLLER_SET): 'ControllerSet(%d / %s) : created%s%s.'"
+  "evidence": "decomp:re/decomp/1438968e0.c;pat:log-channel-CONTROLLER_SET;xref:0x14389be41,0x14389c003",
+  "notes": "Constructor (fills and returns param_1): +0 heap, +8=1, id param_7 XOR random key (+0x10, key +0x18), +0x34 index, +0x38..+0x58 args; optional HUMAN controller (0x40 bytes, vtable 0x145882170) at +0x20, AI controller (0x28 bytes, vtable 0x145882150) at +0x28; logs 'created'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.controller_set_create",

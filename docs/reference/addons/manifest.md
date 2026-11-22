@@ -304,9 +304,9 @@ Careers that use its drivers won't load without it.
 | `binds` | Read by | A change applies |
 |---|---|---|
 | `native` | the [engine plugin](./native-plugins#settings), while the game runs | at once |
-| `db` | the build, through <span v-pre>`{{id}}`</span> and `when` in op files | after a rebuild |
+| `db` | the build, through <span v-pre>`{{id}}`</span> and `when` in op files and HUD files | after a rebuild |
 
-An op's `when` can also name addons: `"when": { "addon": "track.istanbul_park" }` keeps the op only while that addon is on, and a `when` at the top of an op file applies to the whole file. See [Database operations](/reference/ops/database#settings).
+An op's `when` can also name addons: `"when": { "addon": "track.istanbul_park" }` keeps the op only while that addon is on, and a `when` at the top of an op file applies to the whole file. See [Database operations](/reference/ops/database#settings). A HUD file takes a top-level `when` from launcher 1.10.14: [A HUD file behind a setting](/reference/ops/hud#a-hud-file-behind-a-setting).
 
 ### career_setup
 

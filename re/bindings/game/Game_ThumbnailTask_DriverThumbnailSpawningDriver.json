@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e3dfa0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-THUMBNAIL_TASK",
-  "notes": "named from its log messages (channel THUMBNAIL_TASK): 'Driver Thumbnail: Spawning driver with handle %d (RTT Task ID %d)'"
+  "evidence": "decomp:re/decomp/142e3dfa0.c;pat:log-channel-THUMBNAIL_TASK;xref:0x1457eca90",
+  "notes": "vtable cell 0x1457eca90. Builds asset group list from param_2 ids: resolves character package (male/female by head), Game_Character_ExpandPackagePlaceholders, Game_AssetGroupRegistry_LookupById (fatal if missing), spawns via 0x1409a6930 into +0x558/+0x560, logs handle. (lane owner review requested)"
  },
  "signature": {
   "id": "game.thumbnail_task_driver_thumbnail_spawning_driver",

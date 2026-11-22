@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1426cdec0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1426cdec0.c;xref:0x1426cb54f,0x1426ca7d0",
-  "notes": "F1OS ServerMethodOperation result callback for method 'GetCompendiumRewards' (method name ptr this+0x118, service this+0x110; lea-registered at 0x1426cb54f in onStart/send 0x1426ca7d0). Resp param_2: +0x88 flag / +8 transport error text -> fail 0x14443acd0; +0x98==0 success: JSON-parse body +0xa0 (0x140b5e130), log 'received result (%u)' with HTTP status +0x9c, result JSON keys {PitcoinPurchaseCost,PurchaseCost,Chapters,Rewards,StatId,Categories,Entries} -> result obj this+0x1c8 (raw body also to hook 0x1426d0660); else ERROR/UNKNOWNERROR: {Message,Data} -> error obj this+0x1b8, Message 'InvalidSessionToken' / 'UpgradeRequired' special-cased. Addon: compendium reward tree (chapters/categories/entries/stat ids)."
+  "evidence": "decomp:re/decomp/1426cdec0.c;xref:0x1426cb54f,0x1426cb8ca",
+  "notes": "F1OS result callback for 'GetCompendiumRewards'. Chain: Create 0x1426c8980 sets method global 0x1460c3898 (Init stores 'GetCompendiumRewards' at 0x14334c153), vtable 0x145796e10 slot 8 = OnStart 0x1426ca7d0, which lea's this fn at 0x1426cb54f/0x1426cb8ca. Body parses JSON {Chapters, Categories, Entries, Rewards, StatId, PurchaseCost, PitcoinPurchaseCost}. (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1os_on_result_get_compendium_rewards",

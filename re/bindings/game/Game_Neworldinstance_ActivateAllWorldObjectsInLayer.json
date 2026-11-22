@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1444bca80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name activateAllWorldObjectsInLayer (class from the log channel); log channel NeWorldInstance_Spam: 'activateAllWorldObjectsInLayer %p %s %s %s %s layerResourceId %s'"
+  "evidence": "decomp:re/decomp/1444bca80.c;pat:log-message-method;xref:0x1402485bc,0x1402489dc,0x1425133e8,0x1444bec30",
+  "notes": "Under CS [+0x140]: logs on NeWorldInstance_Spam, finds the layer in +0x150..+0x158 by resource id (*param_2 vs entry+0 or +0x10), activates (0x1443aa2e0) each object whose flag byte +0x20 bit 2 is clear. (lane owner review requested)"
  },
  "signature": {
   "id": "game.neworldinstance_activate_all_world_objects_in_layer",

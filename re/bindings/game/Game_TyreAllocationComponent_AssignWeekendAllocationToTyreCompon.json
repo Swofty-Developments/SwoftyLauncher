@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140bcd390",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=TyreAllocationComponent::assignWeekendAllocationToTyreComponents; log channel TYRES/V: 'TyreAllocationComponent::assignWeekendAllocationToTyreComponents()'"
+  "evidence": "decomp:re/decomp/140bcd390.c;pat:log-message-cxx;xref:0x140bcc3c7,0x140bcda6f,0x140bd229a,0x1498deb16",
+  "notes": "TyreAllocationComponent::assignWeekendAllocationToTyreComponents() (entry log TYRES/V): for every allocation in this+0x2b0..+0x2b8 finds the driver in [this+0x278]+0x2e0 (stride 0x88, id +0x52/+0x50), vehicle index +0x82 into [this+0x2d8]+0x28, tyre component (0x143f9b3c0 type 0x146080cc8); sets comp+0x9c68 = allocation (logs duplicate when already set), logs 'V%02d assigned' / 'allocation type %s' or 'NO COMPONENT?' / 'NO VEHICLE?'. Callers 0x140bcc3c7, 0x140bcda6f, 0x140bd229a, 0x1498deb16. (lane owner review requested)"
  },
  "signature": {
   "id": "game.tyre_allocation_component_assign_weekend_allocation_to_tyre_compon",

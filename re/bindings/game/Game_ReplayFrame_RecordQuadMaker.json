@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14471be60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=ReplayFrame::recordQuadMaker; log channel SKIDMARKS: 'ReplayFrame::recordQuadMaker (%p)'"
+  "evidence": "decomp:re/decomp/14471be60.c;pat:log-message-cxx;xref:0x14471fefc,0x144721ae1",
+  "notes": "recordQuadMaker(frame, maker): if quad count byte +0xc < 0x7f appends a 0x88-byte record at +0x14: maker id +0x217d, wheel +0x2170, three packed coords (13-bit delta of maker+0x2110 - +0x2100 | pos*32 << 13), wheel data via 0x14471d320; then type code 0 into stream +0x46428 (count +4); else logs 'c_maxQuadsMade needs to be increased?'. Callers Render_Skidmarks_Update. (lane owner review requested)"
  },
  "signature": {
   "id": "game.replay_frame_record_quad_maker",

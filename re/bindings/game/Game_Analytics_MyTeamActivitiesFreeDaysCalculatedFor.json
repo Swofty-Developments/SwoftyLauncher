@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14073ec90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: MyTeam Activities Free Days Calculated for all tracks'"
+  "evidence": "decomp:re/decomp/14073ec90.c;pat:log-channel-TELEMETRY;xref:0x1406e8df4,0x1407071a6",
+  "notes": "Bus handler(this,msg); subscribed 0x1406e8df4 (0x1406d8470), unregistered 0x1407071a6. 0x70-byte record: u32s msg+0x10..+0x1c. Tag 'my_team_career_activities_free_days_calculated_record' via 0x14077a240, GUID+seq, 64-entry queue; logs 'MyTeam Activities Free Days Calculated for all tracks' (TELEMETRY). (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_my_team_activities_free_days_calculated_for",

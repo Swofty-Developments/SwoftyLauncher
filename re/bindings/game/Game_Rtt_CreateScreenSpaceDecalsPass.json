@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143db37a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143db37a0.c;xref:0x143d8528a,0x143db7ef9",
-  "notes": "Constructor of screen space decal passes (ScreenSpaceDecals_ANS / _N / _Main .ContextSetup, applyTrackConstants). Addon: track decals are rendered here. Named callers: Game_Rtt_CreateScenes."
+  "notes": "Constructor (vt 0x1459b6860, CS init) of the screen-space decal generator: stores args at +0x60..+0x90, registers resource param_8 in the 12-slot table param_9+0x128 (refcount +0x188, index -> +0x98); with param_3 creates contexts ScreenSpaceDecals_ANS.ContextSetup (+0x48) and _N (+0x50), else _Main (+0x58); looks up 'applyTrackConstants' via param_11 vcall +0x98 into +0x80/+0x88. Callers RttGenerator, 0x143db7a90. (lane owner review requested)"
  },
  "signature": {
   "id": "game.rtt_create_screen_space_decals_pass",

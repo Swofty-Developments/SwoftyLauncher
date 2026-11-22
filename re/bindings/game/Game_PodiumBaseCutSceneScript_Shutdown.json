@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140358270",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=PodiumBaseCutSceneScript::shutdown; log channel CUTSCENE_PODIUM: 'PodiumBaseCutSceneScript::shutdown'"
+  "evidence": "decomp:re/decomp/140358270.c;pat:log-message-cxx;xref:0x1455f7550",
+  "notes": "shutdown override (vt cell 0x1455f7550), pdata 0x7f bytes: logs CUTSCENE_PODIUM 'PodiumBaseCutSceneScript::shutdown' then tail-jumps to base 0x140239270. The decomp body after the log (vt+0x1d0, unbind loop +0x600..+0x838, setShuttingdown, state 0xb) belongs to 0x140239270. (lane owner review requested)"
  },
  "signature": {
   "id": "game.podium_base_cut_scene_script_shutdown",

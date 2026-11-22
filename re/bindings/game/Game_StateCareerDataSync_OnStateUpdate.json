@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1436b0700",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_StateCareerDataSync_OnStateUpdate;xref:0x1436b0927",
-  "notes": "cxx=game::StateCareerDataSync::onStateUpdate; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1436b0700.c;str:s_StateCareerDataSync_OnStateUpdate;xref:0x145859608",
+  "notes": "onStateUpdate (vt cell 0x145859608): when +0xca8 clear, gets systems 0x1460609a8/0x14605b068; returns route 0xfdfe29d (log \"Disconnected, returning to lobby\") when network mode dropped to 0; otherwise waits on 0x140ff7cf0([+0xc88]); stay route [0x146cb2280], done [0x146cb2284]. (lane owner review requested)"
  },
  "signature": {
   "id": "game.state_career_data_sync_on_state_update",

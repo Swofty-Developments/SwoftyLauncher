@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141f49bc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:cmp-cl-3-ja@0x141f49c23,cmp-ebx-3-ja@0x141f49c28;imm:0x220;xref:0x141f4785c,0x141f4a4f1,0x141f4a94d;kb:subsystems/rnd_ui.md#tile-counts",
-  "notes": "(this=rdi, query=rsi) Writes each R&D>Performance tile's total_upgrades (results with +0x72 == code), upgrades_fitted (last state Completed) and upgrades_fitted_percent into the pie slot handles at [this+0x670]+0x88/0xa8/0xc8/0xe8+idx*0x220. Fixed to 4 by the code guard cmp cl,3 @0x141f49c23 and the slot-index guard cmp ebx,3 @0x141f49c28 (exit 0x141f49f5b). Called after the populate + query by the pie builder, 0x141f4a2e0 and the 0x141f4a760 callback."
+  "evidence": "decomp:re/decomp/141f49bc0.c;pat:cmp-cl-3-ja@0x141f49c23,cmp-ebx-3-ja@0x141f49c28;imm:0x220;kb:subsystems/rnd_ui.md#tile-counts;xref:0x141f4785c,0x141f4a4f1,0x141f4a94d",
+  "notes": "(this, query) For each dept code<4 and idx<=3: total = results in query (+0xc00 count) with +0x72 == code, fitted = those whose state byte ([+200]-8) == 2, percent = fitted/total; writes into handles at [this+0x670]+0x88/0xa8/...+idx*0x220. Callers: Career_Build_RnDPieOverview, 0x141f4a2e0, 0x141f4a760. (lane owner review requested)"
  },
  "signature": {
   "id": "career.write_rn_d_pie_tile_counts",

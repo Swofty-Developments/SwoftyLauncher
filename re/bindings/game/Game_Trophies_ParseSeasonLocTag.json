@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1434ef600",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1434ef600.c;xref:0x145846420",
-  "notes": "Virtual JSON reader (pointer in data at 0x145846420, trophies/logo string pool): reads seasonId (uint8, value flag 0x40) into param_1+8 and string locTag into NeString param_1+0x10 via 0x144435020. Addon: season-tagged trophy/logo entries."
+  "notes": "JSON object reader (code pointer cell 0x145846420): scans the members (stride 0x20) for 'seasonId' (8 chars); found -> this+8 = byte value when the value flag 0x40 is set, then reads string 'locTag' into this+0x10 via 0x144435020. Missing -> logs JSON 'Unable to find value for %s in JSON'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.trophies_parse_season_loc_tag",

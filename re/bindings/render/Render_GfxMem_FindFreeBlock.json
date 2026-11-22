@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a2fbc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143a2fbc0.c;xref:0x1439e6eb9",
-  "notes": "Skip-list style search (stack array of up to 0x20 node ptrs, key at node+0x2c) for a free memory block >= param_3; initialises result {0, 0xffffffff}. 412 bytes. Callers Render_GfxMem_Allocate (0x1439e6eb9), 0x143a2fb38. Hypothesis."
+  "evidence": "decomp:re/decomp/143a2fbc0.c;xref:0x1439e6eb9,0x143a2fb38",
+  "notes": "Searches the free-block tree rooted at param_1+0x38 (left +0, right +8, subtree max free size +0x2c, block offset +0x10, size +0x28) with an explicit 32-entry stack for a block where align_up(offset,param_4)+param_3 fits; returns {node, index=(node-base[+0x18])/0x38} or {0,0xffffffff}. Binary tree walk, not a skip list. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx_mem_find_free_block",

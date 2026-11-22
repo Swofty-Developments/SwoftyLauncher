@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1444b0b70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-VIDEO_EXPORT",
-  "notes": "named from its log messages (channel VIDEO_EXPORT): 'Cannot add video frame | Finalise [%d], counter = %d, timeStamp = %I64u, size = %I64u, PTS = %d, keyframe = %s | Cannot init muxer | Processed %d frames | Finalization of segment failed'"
+  "evidence": "decomp:re/decomp/1444b0b70.c;pat:log-channel-VIDEO_EXPORT;xref:0x142bcf440,0x1444b0a9d",
+  "notes": "Read in full: flush loop - SendFrame 0x1444b6340(this+8, NULL img, -1, vec) until no packets; each packet: log 'Finalise [%d], counter...', builds a frame (0x144c7a210/0x144c7a350 from pkt+8/+0x10, keyframe = pkt+0x24 bit0, ts = counter +0x290 * 1e9/fps +0x25c), adds it to segment [this+0x270] via 0x144c80000 ('Cannot add video frame'); then logs 'Processed %d frames' and finalizes the segment 0x144c804e0. Not a per-frame add. (lane owner review requested) Better name: Game_VideoExport_Finalise (bound record keeps its name)."
  },
  "signature": {
   "id": "game.video_export_add_frame",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a97190",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142a97190.c;xref:0x1428aa5f4",
-  "notes": "Logs 'Vehicle %d: Apply Livery' on log channel 'CUSTOMISATION_DECALS/V' (channel enabled test through hash table 0x14604b4f0, id 0xd3dbae2b) using the vehicle index byte at param_1+0x81, then calls 0x142a92460 (destroy previous surface+proxy). Caller Game_FrontendSceneCar_SetCustomDecalNodes. Addon: per-vehicle livery apply entry."
+  "notes": "Logs 'Vehicle %d: Apply Livery' (CUSTOMISATION_DECALS/V, vehicle byte p1+0x81); 0x142a98a80([p1+0x78],0,1) and 0x142a968c0([p1+0x78], p1+0x130, 1) re-apply the base customisation, clears p1+0x1a8/+0x1d5, DestroySurfaceAndProxy 0x142a92460(p1), clears p1+0x1d4. Same sequence as the empty-list branch of ApplyVehicleDecalNodeList. Caller Game_FrontendSceneCar_SetCustomDecalNodes. (lane owner review requested)"
  },
  "signature": {
   "id": "game.customisation_decals_begin_apply_livery",

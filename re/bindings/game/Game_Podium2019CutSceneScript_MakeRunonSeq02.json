@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14035a8b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=Podium2019CutSceneScript::makeRunonSeq02; log channel CUTSCENE_PODIUM: 'Podium2019CutSceneScript::makeRunonSeq02 | PodiumBaseCutSceneScript::spawnPodiumSceneDriverWithResultInRace | getIsLeadEngineerLoaded m_leadEngineerAssetGroupPath %s'"
+  "evidence": "decomp:re/decomp/14035a8b0.c;pat:log-message-cxx;xref:0x140365264,0x140375bcf",
+  "notes": "Logs; Game_CutSceneScript_SetLocation 'pod_pl' (fallback 'test'), SpawnTVScreens(this+0x8f8, +0x8f9), champagne_bottles, drivers for slots this+0x840/+0x848/+0x850 (Game_CutScene_SpawnCarForSlot, kept at this+0x890+slot*8) with nodes 'runon2driver_placed_first/second/third', lead engineer 'runon2ENG' when this+0x338 set, scene 'runon_seq02' + SpawnSceneTrophy(0,1), Game_Podium2019_ShiftSceneTimingsByName 'podium_runon_seq02', binds. (lane owner review requested)"
  },
  "signature": {
   "id": "game.podium2019_cut_scene_script_make_runon_seq02",

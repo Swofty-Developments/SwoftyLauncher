@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14454e8e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NeCheckEventChainUid",
-  "notes": "named from its log messages (channel NeCheckEventChainUid): 'BroadcastCameraGetFocusObjectEventNode: inputPin %u with uid%, outputPin %u with uid %u, vp %u'"
+  "evidence": "decomp:re/decomp/14454e8e0.c;pat:log-channel-NeCheckEventChainUid;xref:0x14454e87a",
+  "notes": "Input-pin handler stored by binder 0x14454e840 (lea 0x14454e87a). Maps viewport id (r8>>32) through hash map 0x146cc3ab8 to vp index, optional NeCheckEventChainUid log, copies the focus entity data of camera manager 0x146cc3ab0 (+0x80[vp] -> +8 -> +0x88, 16 bytes) to data pin this+0x18, fires output this+0x10 via 0x14400c680. Decomp polluted; disassembly read. (lane owner review requested) Better name: Game_EventNode_BroadcastCameraGetFocusObject_OnInput (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ne_check_event_chain_uid_broadcast_camera_get_focus_object_event",

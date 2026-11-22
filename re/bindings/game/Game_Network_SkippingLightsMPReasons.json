@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d8fcc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'Skipping lights MP reasons'"
+  "evidence": "decomp:re/decomp/142d8fcc0.c;pat:log-channel-NETWORK;xref:0x1457e25c8,0x1457e2ac8",
+  "notes": "Slot 9 (+0x48, onStateUpdate) of vtable 0x1457e2580 (name SessionStateStartLights precedes) and of 0x1457e2a80 (SessionStateStoryStartLights); no direct calls. Logs ReplaySystem reset, NETWORK 'Skipping lights MP reasons', adds and later removes HUD hide reasons (HIDE_REASONS, 0x142c74200), logs 'StartLights skipped' / 'StartLights Complete at time', posts via 0x1439876c0. (lane owner review requested) Better name: Game_SessionStateStartLights_OnStateUpdate (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_skipping_lights_mp_reasons",

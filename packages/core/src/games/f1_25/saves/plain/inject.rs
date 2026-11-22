@@ -87,6 +87,36 @@ pub fn withdraw_unanswered(root: &Path) -> Result<Vec<Request>> {
     Ok(requests)
 }
 
+/// The requests `file` of `root` holds: [`INJECT`] or [`APPLYING`].
+pub(super) fn held(root: &Path, file: &str) -> Vec<Request> {
+    read_json::<Requests>(&root.join(file)).map_or_else(|_| Vec::new(), |r| r.requests)
+}
+
+/// Write `requests` as `file` of `root` whole, or remove the file when there are none.
+pub(super) fn hold(root: &Path, file: &str, requests: Vec<Request>) -> Result<()> {
+    let path = root.join(file);
+    if requests.is_empty() {
+        return match std::fs::remove_file(&path) {
+            Err(e) if e.kind() != std::io::ErrorKind::NotFound => Err(crate::io_err(&path)(e)),
+            _ => Ok(()),
+        };
+    }
+    std::fs::create_dir_all(root).map_err(crate::io_err(root))?;
+    write_json(&path, &Requests { schema: 1, requests })
+}
+
+/// Add `more` to the answers in [`INJECTED`], each id once.
+pub(super) fn answer(root: &Path, more: Vec<Answer>) -> Result<()> {
+    let mut results = answers(root);
+    for a in more {
+        if !results.iter().any(|r| r.id == a.id) {
+            results.push(a);
+        }
+    }
+    std::fs::create_dir_all(root).map_err(crate::io_err(root))?;
+    write_json(&root.join(INJECTED), &Answers { schema: 1, results })
+}
+
 pub fn ask(root: &Path, generation: u64, container: &str, replace: bool, now: i64) -> Result<Request> {
     ask_based(root, generation, container, replace, None, now)
 }

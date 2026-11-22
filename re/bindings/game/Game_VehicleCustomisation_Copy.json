@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1416c7420",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1416c7420.c;xref:0x1416c6ba0",
-  "notes": "Copy of the same 0x67xx-byte customisation bundle (optional members flagged at +0x67b0, +0x67f0; vtables 0x145612fa0 / 0x145612fe0). Callers 0x1416c6b50, 0x1416c76f0, 0x1416c8280, 0x1416c84a0. Hypothesis."
+  "evidence": "decomp:re/decomp/1416c7420.c;xref:0x1416c6ba0,0x1416c6bd7,0x1416c79e9,0x1416c82d6,0x1416c830d,0x1416c850a,0x1416c8541,0x1416c8955,0x1416c8996,0x1416ca4d7,0x1416ca521,0x1416caa6a",
+  "notes": "Read in full (dst, src): calls 0x14096ccf0 for the main part, then copies the optional tail members: +0x6780 block when src+0x67b0 (vtables 0x145612fa0 / 0x145612fe0), shared-pointer vector +0x67b8..+0x67e8 with addrefs when src+0x67f0, bytes +0x67f8/+0x67fa, up to +0x6860 0x30-byte items from +0x6800 (vtables 0x14565f560 / 0x14565f5a0) when +0x6870, +0x6880 when +0x6890, +0x6898/+0x689a. Returns dst. Xref list truncated. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_customisation_copy",

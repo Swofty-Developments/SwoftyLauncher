@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14045e2a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14045e2a0.c;xref:0x14074f936",
-  "notes": "Analytics payload B for PlayerFinishedDecalEditorSessionOf. Telemetry only."
+  "notes": "Constructor of protobuf message 'f1.proto.DecalSlotWorkedOn': base ctor 0x144935190(this, type name built on the stack), vtable 0x145626190, zeroes the fields. Called right after the allocation in 0x14074f320 (decal editor finished handler). (lane owner review requested) Better name: Game_Analytics_DecalSlotWorkedOn_Ctor (bound record keeps its name)."
  },
  "signature": {
   "id": "game.analytics_build_decal_editor_finish_event_b",

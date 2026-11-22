@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e93560",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142e93560.c;xref:0x142da8e45",
-  "notes": "(tyreSys) For every pending vehicle (+0x110..+0x118) 0x142e93a70; then if the session ([[+0x68]+0xd0]+0x88 +0x260) is of the expected type, runs a parallel job ('WAIT:parallelForEach', 'createSessionDataForVehicle') creating per-vehicle tyre session data. Called from Sess_Loader_RequestTrackUnload."
+  "notes": "(tyreSys) real body 0x142e93560-0x142e93643 (decomp merges the tail target): 0x142e93a70(this, e) for every entry of this+0x110..+0x118; then session object [[[this+0x68]+0xd0]+0x88]+0x260 - when present and its type chain does not reach 0x146129ca0, weekend = [obj+0x1030] vt+0xa0 and, if non-null, tail-jumps to 0x1436aaf70(this+0x68 object, weekend, weekend+0x18) (the per-vehicle session data creation). Caller 0x142da8e45. (lane owner review requested)"
  },
  "signature": {
   "id": "game.tyre_system_create_session_data_for_vehicles",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141427840",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141427840.c;xref:0x14143539e",
-  "notes": "Builds a decal-generation request state: if flag +0x418 is clear creates temp buffers via 0x1441207d0 and templates (tag 0x145612e20), flags 0x10. Callers Game_DecalGeneration_UpdateService, Game_NetworkSubsystem_Update, 0x14313f270. Hypothesis."
+  "evidence": "decomp:re/decomp/141427840.c;xref:0x14143539e,0x1430e2b94,0x14313f29a,0x1431438b0",
+  "notes": "State byte this+0x418: 0 -> resets the id record +0x428..+0x480 (0x1441207d0), copies the first local player id ([[g 0x14604c2c8+0x140]+0x198]+0x1c0 vcall +0x38), +0x468 = 0x10000000, +0x481 = ([[this+0x288]+0x3c0]+0x1a8 != 0), state 1, returns 0x10; state 3 -> returns +0x480 != 1; else 0x10. Callers 0x141435170, 0x1430e0560, 0x14313f270, 0x143143860. (lane owner review requested) Better name: Game_DecalCustomisation_EnsureLocalPlayerId (bound record keeps its name)."
  },
  "signature": {
   "id": "game.decal_generation_build_request_state",

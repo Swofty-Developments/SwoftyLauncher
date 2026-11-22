@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430a4b60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionSeasonDocument::sendSessionDocumentMessageDocument; log channel NETWORK: 'GameSessionSeasonDocument::sendSessionDocumentMessageDocument()'"
+  "evidence": "decomp:re/decomp/1430a4b60.c;pat:log-message-cxx;xref:0x1430957a1,0x14309d25f,0x1430a58b1",
+  "notes": "Logs NETWORK/F 'GameSessionSeasonDocument::sendSessionDocumentMessageDocument()'. Packs the championship (0x1430a4bec), sends the header message (0x145826cf0, type 7/0x13, fields p1+0x80..+0x1f0) via [[p1+0x420]+0x3d0] 0x14402e500 with mode 2-(p2==0), then streams every block of the pack buffer [p1+0x618] (+0x18 chain) in 0x400-byte segments (message 0x145817380, type 0x15, logs 'SeasonDocument: Segment of %d bytes', total 'Total of %d block data'), finally frees the buffer and the temporary grid list. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_session_season_document_send_session_document_message_documen",

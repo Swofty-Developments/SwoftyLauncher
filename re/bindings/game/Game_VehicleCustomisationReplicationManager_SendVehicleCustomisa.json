@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1431430e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VehicleCustomisationReplicationManager::sendVehicleCustomisationWithoutDecals; log channel NETWORK-ENTRANTS-MESSAGES: 'void network::VehicleCustomisationReplicationManager::sendVehicleCustomisationWithoutDecals(const neon::NeNetMessageDestination &, const PlayerVehicleKey &, con | %s : Sent VehicleCustomisationInfoUpd'"
+  "evidence": "decomp:re/decomp/1431430e0.c;pat:log-message-cxx;xref:0x14314155d",
+  "notes": "Read in full (this, dest, key, u16 *id, customisation, flag, int *kind, old key): copies the customisation and drops its decal node refs (no decals); kind 0 posts VehicleCustomisationAddNetMessage 0x145824950 (0x7700000007), 1 InfoUpdate 0x145824990 (0x7600000007), 2 Replace 0x1458249b0 (0x7800000007, carries the old key) via 0x14402e500(this+0x20, *dest) and logs the matching 'Sent ...NetMessage for player'. Caller 0x143141520 (0x14314155d). (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_customisation_replication_manager_send_vehicle_customisa",

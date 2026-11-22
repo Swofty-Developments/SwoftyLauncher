@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1443c49b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: MemoryTracker.MemoryMetricsPools.CsvFile.poolName%d, MemoryTracker.MemoryMetricsPools.CsvFile.writeMemoryMapPerFrame, MemoryTracker.MemoryMetricsPools.CsvFile.writeMemoryMapStride, MemoryTracker.MemoryMetricsPools.CsvFile.writePerFrameStride, MemoryTracker.MemoryMetricsP'"
+  "evidence": "decomp:re/decomp/1443c49b0.c;pat:log-channel--;xref:0x1443c0791",
+  "notes": "Reads engine settings store 0x14604e8d8: TraceFile.enable, MemoryTracker.MemoryMetricsPools.CsvFile.writePoolsPerFrame/writePerFrameStride(1)/writeMemoryMapPerFrame/writeMemoryMapStride(100000), TraceFile.enable; warns if pool EGO_MEMORY_METRICS missing; if writePoolsPerFrame, loops CsvFile.poolName%d until the string read fails. Values stay in locals in the decomp. (lane owner review requested)"
  },
  "signature": {
   "id": "game.read_memory_tracker_config",

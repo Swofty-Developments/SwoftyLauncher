@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143141710",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VehicleCustomisationReplicationManager::replacePlayerNetworkReplicatedCustomisation; log channel NETWORK-ENTRANTS: 'game::VehicleCustomisationStatId::PackedStatId network::VehicleCustomisationReplicationManager::replacePlayerNetworkReplicatedCustomisation(const PlayerDescript | %s : Failed to find the network repli'"
+  "evidence": "decomp:re/decomp/143141710.c;pat:log-message-cxx;xref:0x140fe0bdf,0x140fee9d4",
+  "notes": "Read in full: only when [this+0x10]+8 < 2; optional removePlayerReplicatedData 0x1431402a0 when param_5; builds the player key, finds it in map this+0x40 (0x143141940), id = node+0x70; missing -> logs 'Failed to find the network replicated vehicle customisation to replace!'; else if the new info differs from a static empty one (0x1424f9da0) calls reconcile 0x143141190. Returns id. Callers 0x140fdd630, 0x140fee8e0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_customisation_replication_manager_replace_player_network",

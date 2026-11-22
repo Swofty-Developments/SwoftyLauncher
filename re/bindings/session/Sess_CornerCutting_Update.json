@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14356bb00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14356bb00.c;xref:0x14356bcc0,0x14356bf29,0x14356c953,0x14356d886",
-  "notes": "corner-cutting monitor ('Corner_Cutting: Invalidate Current Lap!'): invalidates laps through Sess_Invalidate_Lap_Thunk and warns through Sess_Issue_Warning; time gained is measured in 0x1435a4de0 / 0x14359e5a0 ('Corner Cutting Time Lost …'). | sb3-verify-b (replaces the corner-cutting reading): 1152-line dispatcher over the infringement queue, switch on infringement type record+0x11 (~60 cases); 'Corner_Cutting: Invalidate Current Lap!' is case 0x22 (invalidates through Sess_Invalidate_Lap_Thunk, warns through Sess_Issue_Warning); also post-race penalties, parked-too-long OSD, tyre and drive-thru reminders. Corner-cutting time gained is measured in 0x1435a4de0 / 0x14359e5a0. | #545 proposed the name Sess_Infringement_ProcessQueue"
+  "evidence": "decomp:re/decomp/14356bb00.c;xref:0x1411d57a7,0x1411d59a7,0x14356b4cf",
+  "notes": "(rm): clears rm+0x1ce0, drains the queue [rm+0x1bf8] (+0x58 head under CS +0xd8), resolves the car (+0x10) via [rm+0x1c30], switch on record +0x11 (~60 cases): case 0x22 'Corner_Cutting: Invalidate Current Lap!', post-race penalty, strict grid drops, parked-too-long OSD, tyre regulation reminders, drive-thru reminder, SC collision reset; calls Sess_Infringement_SubmitLogRecord 0x143572400. Callers Game_EngineMgmt_ClearRaceGridPenalties, Game_EngineMgmt_OnRaceSessionEnded, Sess_Rules_DisqualifyForPenaltyPoints. Better name: Sess_Infringement_ProcessQueue (bound record keeps its name)."
  },
  "signature": {
   "id": "session.corner_cutting_update",

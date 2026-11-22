@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143bdc9f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143bdc9f0.c;xref:0x14029d21d",
-  "notes": "729-byte builder of a render-graph resource/handle descriptor (large stack descriptor struct copied to param_2). 19 callers incl. Ne_RenderGraph_ResolveHandleFlag20 (0x14029d21d). Hypothesis. vq1-verify partial/disagree"
+  "evidence": "decomp:re/decomp/143bdc9f0.c;xref:0x14029d21d,0x14243577c,0x142a47372,0x143bccb6f",
+  "notes": "Appends a 0x160-byte entry of kind 1 (+8) to vector graph+0x50/+0x58/+0x60 (the resource table indexed by Ne_RenderGraph_RegisterHandleUsage), copying the 11-qword desc param_3 to entry+0x60, other sub-descs default (1,0,1,0,1); grows via 0x143ecda30; returns index = count-1 in *param_2. call sites. Old name (PassDesc) not supported by the table use. Better name: Ne_RenderGraph_AppendResourceEntryA (bound record keeps its name)."
  },
  "signature": {
   "id": "core.render_graph_build_handle_desc_143bdc9f0",

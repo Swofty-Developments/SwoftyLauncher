@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144055340",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-SSL/V",
-  "notes": "named from its log messages (channel SSL/V): '[OpenSSL] [%u] Encrypt Message Buffersize %d'"
+  "evidence": "decomp:re/decomp/144055340.c;pat:log-channel-SSL/V;xref:0x145a4e748",
+  "notes": "Vtable slot (cell 0x145a4e748). (peer, data, size): only when the handshake is done (+0x15 == 2): logs SSL/V 'Encrypt Message Buffersize %d', writes data into the SSL object +0xd8 (0x144c60940), drains the output BIO +0xe8 (0x144c64850, 0x578-byte chunks) into send callback +0x50 vcall +0x10(peer id +0x10, buf, len); returns 1, else 0. (lane owner review requested) Better name: Game_SslPeer_EncryptAndSend (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ssl_encrypt_message_buffersize",

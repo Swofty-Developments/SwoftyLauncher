@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c63eb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-BANK_BUDGET_VERBOSE",
-  "notes": "named from its log messages (channel BANK_BUDGET_VERBOSE): 'Received incoming cash of $%d. | - |  - Splitting $%d into %u parts - $%d each, remainder of $%d. |    - Assigning $%d to %s. $%d -> $%d. ($%d allocated for %u part(s).) |  - Assigning $%d to %s. $%d '"
+  "evidence": "decomp:re/decomp/140c63eb0.c;pat:log-channel-BANK_BUDGET_VERBOSE;xref:0x140c6623a,0x140c66d5d",
+  "notes": "BANK_BUDGET_VERBOSE. Income param_2>0: first zeroes negative balances of the 5 byte-keyed budget categories (keys at 0x145683582, map entries 0x14, balance +4, via 0x140d45570), then splits the rest into parts per category and logs each assignment. Callers 0x140c6623a, 0x140c66d5d (jmp). (lane owner review requested)"
  },
  "signature": {
   "id": "career.bank_split_income",

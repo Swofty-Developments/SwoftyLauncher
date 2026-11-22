@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14058ec00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14058ec00.c;xref:0x14071e6ed",
-  "notes": "Analytics event payload C (twin) for the part-upgrade analytics events. Telemetry only. vp5-verify partial/disagree"
+  "evidence": "decomp:re/decomp/14058ec00.c;xref:0x14071e6ed,0x14071e981",
+  "notes": "Same body as 0x14058e930 but std::string at rec+0x80; callers pass UNK_14564a0b8[part+0x71]. (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_build_part_upgrade_event_c",

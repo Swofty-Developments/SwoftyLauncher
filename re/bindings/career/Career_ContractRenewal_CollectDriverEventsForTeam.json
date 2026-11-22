@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140d8c8f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "uint64_t Career_ContractRenewal_CollectDriverEventsForTeam(void *comp, uint32_t team_key)",
-  "evidence": "decomp:re/decomp/140d8c8f0.c;xref:0x140d8c158;xref:0x140d8c228;xref:0x140d8c32a",
-  "notes": "myteam-g2: Iterates the driver events at (comp+0x278)+0x2e0..0x2e8 (0x58-byte records, team key u8@+0x58 / u16@+0x5a) and builds a growing vector of pointers to those whose team matches team_key, then filters by availability. Returns 1 when none exist. Core of AI contract renewal bookkeeping."
+  "evidence": "decomp:re/decomp/140d8c8f0.c;xref:0x140d8c158,0x140d8c228,0x140d8c32a,0x140d8c3b8,0x140d8c5d6,0x140d8d7ea,0x140d8e658,0x140d8e833,0x140d8fc28,0x140d94988,0x140d955a2,0x140d96628,0x140d9777e,0x140d97e1e,0x140d9909a,0x140d99288,0x140d99328,0x140d993c8,0x140d996a9,0x140d997b6,0x140d9b3ba,0x140d9b458,0x140d9c508,0x140d9d26a,0x140d9d308,0x1436bf9ca",
+  "notes": "Body read fully. Collects rows (stride 0x88) of [this+0x278]+0x2e0..+0x2e8 whose team key matches param_2 (+0x58 byte, +0x5a short); none -> 1. For rows with +0x81 set: notes seat +0x80 0/1 present and counts list this+0x308..+0x310 u16 entries (v>>14 == +0x50, v&0x3fff == +0x52) when seat < 2. Returns count != 0 or seat 0 / seat 1 missing. Better name: Career_ContractRenewal_TeamHasOpenRaceSeat (bound record keeps its name). (lane owner review requested)"
  },
  "signature": {
   "id": "career.contract_renewal_collect_driver_events_for_team",

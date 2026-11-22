@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a0ddb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142a0ddb0.c;xref:0x140b9c475",
-  "notes": "Reads a game_setup_modes / seasons / weekend_formats / statId entry from the json db node. 11 callers (Game_Read_QualifyingConfig, Sess_Load_TrackDatabase...)."
+  "evidence": "decomp:re/decomp/142a0ddb0.c;xref:0x140b9c475,0x141149abe,0x14128093b,0x141280ee7,0x1424a705d,0x142a1294e,0x142a13343,0x142e44f31,0x142e58803,0x142e5bee6,0x142e9b190",
+  "notes": "GDB row reader. is_invalid set -> returns zeroed entry. game_setup_modes list: each label looked up in game_setup.game_setup_modes, stat_id (<32) sets bit in u32 +0. seasons list: game_setup.seasons row statId sets bit in u32 +4. weekend_formats: u32 +8 |= 1<<(FNV-1a lower hash==0xb4d8c10d825b055). Strings XOR-decoded with key 0x145890978. (lane owner review requested)"
  },
  "signature": {
   "id": "game.read_game_setup_mode_entry",

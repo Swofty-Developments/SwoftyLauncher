@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a9c4a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-FFB_PLUGIN",
-  "notes": "named from its log messages (channel FFB_PLUGIN): 'leftMotor(%.3f) rightMotor(%.3f)'"
+  "evidence": "decomp:re/decomp/143a9c4a0.c;pat:log-channel-FFB_PLUGIN;xref:0x143aa9df1",
+  "notes": "(pad,_,_,leftTrig,rightTrig,setMotors). If param_6: logs 'leftMotor rightMotor' (FFB_PLUGIN), clamps xmm1/xmm2 0..1 to 0..255 bytes and sends via 0x14491dfd0(handle +0x80). If pad type +0x98 == 2: builds trigger-effect block (mode 1/3 per trigger from param_4/param_5 bytes) and sends via 0x14491daf0 after 0x14491dbb0. Caller 0x143aa9cc0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ffb_pad_set_motors",

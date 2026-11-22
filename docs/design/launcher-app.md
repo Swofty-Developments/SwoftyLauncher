@@ -180,7 +180,7 @@ assert_eq!(tt.barred_in(&library.read()).len(), 1);
 
 ## A host that opens prompts
 
-Play stops on a prompt: the setup dialog, the offline terms, the missing rows, a notice. A state whose work opens prompts names them as its `Prompt` type, and the shell opens them through `PromptHost` in `shell/host.rs`:
+Play stops on a prompt: the setup dialog, the offline terms, a notice. A state whose work opens prompts names them as its `Prompt` type, and the shell opens them through `PromptHost` in `shell/host.rs`:
 
 ```rust
 pub(crate) trait Prompted: Hosted {

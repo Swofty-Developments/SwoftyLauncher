@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143848840",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onInitialisationEventChanged (class from the log channel); log channel ONBOARDING: 'onInitialisationEventChanged %d %d'"
+  "evidence": "decomp:re/decomp/143848840.c;pat:log-message-method;xref:0x1438479f0",
+  "notes": "Only caller 0x1438479f0 (in 0x143847410). Logs 'onInitialisationEventChanged %d %d' (+0x283, +0x282); when +0x282 and +0x283 are both set tail-jumps 0x14384a5d0. Decomp polluted; disassembly read. (lane owner review requested)"
  },
  "signature": {
   "id": "game.onboarding_on_initialisation_event_changed",

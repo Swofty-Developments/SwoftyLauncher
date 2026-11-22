@@ -249,4 +249,151 @@ inline Choice choose(const std::string &list, const std::string &mode, std::size
     return c;
 }
 
+// A box that names its world (content.package 1.7 "world", on with SWOFTY_BOX_OWN_WORLDS=1): its sessions load
+// [FILENAME]_<name> at every track, the archive environment_package/tracks/<code>/wep/<code>_<name>.erp an addon
+// ships, whatever its team count. The box gets a season and a layer row like a garage world, but the layer row's
+// worldAssetGroup and worldEri name the box's world, and the season, the layer (and the branding row, when the record
+// has one) are shared by every box that names the same season: a season id is a bit of a u32 mask (0 to 31, and
+// with SWOFTY seasons installed about seven are free), so an era's boxes share one season, one world and one branding.
+// A layer row has no track criterion (Trk_TrackData_CollectLayersForQuery matches the setup mode, season and weekend
+// format masks only), so the box's sessions load its world at every track: at boot the core lists the track folders
+// that hold the archive, a box whose world no track holds keeps the world its list's layers load, and the box's track
+// list leaves out the tracks that lack it (tracks/fits.hpp, the world rule), so no session asks for a world that is
+// not there.
+inline constexpr const char *OWN_ENV = "SWOFTY_BOX_OWN_WORLDS";
+
+inline bool own_enabled(std::string_view env) { return env == "1"; }
+
+inline constexpr const char *BRANDING = "game_setup.branding";
+inline constexpr const char *BRANDING_ROW = "game_setup_branding";
+inline constexpr const char *BRANDING_LIST = "game_setup.branding.game_setup_branding_N";
+inline constexpr const char *BRANDING_IDS = "content.package.branding";
+// Stock branding rows hold stat ids 0 to 12; what keeps the id is not read (HYPOTHESIS: a byte, like the scenarios').
+inline constexpr int64_t BRANDING_ID_MAX = 254;
+// The stock rows a box's own layer and branding copy when its record names none.
+inline constexpr const char *OWN_FROM_LAYER = "f1_26";
+inline constexpr const char *OWN_FROM_LAYER_12 = "myteam_26";
+inline constexpr const char *OWN_FROM_BRANDING = "f1_26";
+inline constexpr const char *TRACKS_FOLDER = "2025_asset_groups/environment_package/tracks/";
+inline constexpr std::size_t WORLD_NAME_MAX = 24;
+
+inline bool name_ok(std::string_view s)
+{
+    if (s.empty() || s.size() > WORLD_NAME_MAX)
+        return false;
+    for (char c : s)
+        if (!((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_'))
+            return false;
+    return true;
+}
+
+inline std::string world_group(const std::string &name)
+{
+    return "asset_groups/environment_package/tracks/[FILENAME]/wep/[FILENAME]_" + name;
+}
+
+inline std::string world_eri(const std::string &name)
+{
+    return "eaid://environment_package/tracks/[FILENAME]/wep/[FILENAME]_" + name + ".wep";
+}
+
+// The archive a track needs for the world, relative to the game folder.
+inline std::string world_file(const std::string &code, const std::string &name)
+{
+    return std::string(TRACKS_FOLDER) + code + "/wep/" + code + "_" + name + ".erp";
+}
+
+inline std::string share_season(const std::string &share) { return "swofty_world_" + share; }
+
+inline std::string share_layer(const std::string &share) { return "swofty_world_" + share + "_world"; }
+
+inline std::string share_branding(const std::string &share) { return "swofty_world_" + share + "_branding"; }
+
+// The track codes whose folder holds <code>_<name>.erp; nullopt when the caller cannot look (host tools).
+using WorldTracks = std::function<std::optional<std::vector<std::string>>(const std::string &name)>;
+
+struct Own {
+    std::string name, share, from_layer, from_branding;
+    bool branding = false;
+};
+
+struct Named {
+    bool apply = false;
+    std::string name, share, season, from_season, layer, from_layer, branding, from_branding;
+    // false: another box that names the same season made the row first
+    bool new_season = false, new_layer = false, new_branding = false;
+    std::vector<std::string> appends, tracks;
+    bool checked = false;
+    std::string line;
+};
+
+inline bool has_row(const Read &read, const char *table, const char *row, const std::string &label)
+{
+    return read && read(std::string(table) + "." + row + "[_metadata_=" + label + "]._metadata_").has_value();
+}
+
+// season: the box's list's season (empty when it sets none).
+inline Named choose_named(std::size_t teams, const std::string &season, const Own &own, const Read &read,
+                          const WorldTracks &tracks)
+{
+    Named c;
+    c.name = own.name;
+    c.share = own.share.empty() ? own.name : own.share;
+    const std::string keeps = "; the box keeps the world its list's layers load";
+    if (!name_ok(c.name) || !name_ok(c.share)) {
+        c.line = "world " + c.name + " (season " + c.share + "): a name is not 1 to 24 of a-z, 0-9 and _" + keeps;
+        return c;
+    }
+    if (!read)
+        return c;
+    if (auto t = tracks ? tracks(c.name) : std::nullopt) {
+        c.checked = true;
+        c.tracks = *t;
+        std::sort(c.tracks.begin(), c.tracks.end());
+        if (c.tracks.empty()) {
+            c.line = "world " + c.name + ": no track folder holds " + world_file("<code>", c.name) + keeps;
+            return c;
+        }
+    }
+    c.from_layer = !own.from_layer.empty() ? own.from_layer : teams >= 12 ? OWN_FROM_LAYER_12 : OWN_FROM_LAYER;
+    c.season = share_season(c.share);
+    c.layer = share_layer(c.share);
+    c.from_season = season.empty() ? DEFAULT_SEASON : season;
+    c.new_season = !has_row(read, SEASONS, SEASON_ROW, c.season);
+    c.new_layer = !has_row(read, LAYERS, LAYER_ROW, c.layer);
+    if (c.new_layer && !has_row(read, LAYERS, LAYER_ROW, c.from_layer)) {
+        c.line = "world " + c.name + ": no " + c.from_layer + " track layer row to copy" + keeps;
+        return c;
+    }
+    if (c.new_season && !has_row(read, SEASONS, SEASON_ROW, c.from_season)) {
+        c.line = "world " + c.name + ": no " + c.from_season + " season row to copy" + keeps;
+        return c;
+    }
+    if (own.branding) {
+        c.branding = share_branding(c.share);
+        c.from_branding = own.from_branding.empty() ? OWN_FROM_BRANDING : own.from_branding;
+        c.new_branding = !has_row(read, BRANDING, BRANDING_ROW, c.branding);
+        if (c.new_branding && !has_row(read, BRANDING, BRANDING_ROW, c.from_branding)) {
+            c.line = "world " + c.name + ": no " + c.from_branding + " branding row to copy; the box keeps the branding of " +
+                     c.from_season;
+            c.branding.clear();
+            c.new_branding = false;
+        }
+    }
+    c.apply = true;
+    if (!c.new_season)
+        return c;
+    for (const char *pattern : SEASON_LISTS) {
+        // A box with a branding row of its own keeps its season off the stock branding rows, so one row matches.
+        if (!c.branding.empty() && std::string_view(pattern) == BRANDING_LIST)
+            continue;
+        std::vector<std::string> rows;
+        expand_rows(read, "", pattern, rows);
+        for (auto &r : rows)
+            if (auto v = read(r + ".seasons"); v && holds(*v, c.from_season) && !holds(*v, c.season))
+                c.appends.push_back(r);
+    }
+    return c;
+}
+
 }

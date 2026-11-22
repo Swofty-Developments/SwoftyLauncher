@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1449d4e2c",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/1449d4e2c.c;xref:0x1449d4690",
-  "notes": "libjpeg-style compress submodule init chaining 0x1449d4ed8, 0x1449d5130, 0x1449d5340, 0x1449d504c, 0x1449d5514, 0x144d93a54 ... Caller Render_Jpeg_StartCompress. Hypothesis (jinit forward-DCT / entropy / coef modules)."
+  "notes": "Rename: libjpeg jinit_compress_master: master control 0x1449d4ed8; unless raw data in: color converter 0x1449d5130, downsampler 0x1449d5340, prep controller 0x1449d504c; forward DCT 0x1449d5514, Huffman 0x144d93a54 or arithmetic 0x1449d5564 encoder, coef controller 0x144d92648 (full buffer for multiscan/optimize), main controller 0x144d9399c, marker writer 0x144d92750, mem realize_virt_arrays (+0x30), write_file_header. Caller 0x1449d4690 (Render_Jpeg_StartCompress). (lane owner review requested) Better name: Render_Jpeg_InitCompressMaster (bound record keeps its name)."
  },
  "signature": {
   "id": "render.jpeg_init_compress_dct_modules",

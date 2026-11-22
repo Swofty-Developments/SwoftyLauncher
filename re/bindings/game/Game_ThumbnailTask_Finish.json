@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e3a4d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142e3a4d0.c;xref:0x142e24c18",
-  "notes": "Completes a thumbnail RTT task (state +0x20/+0x78/+0x80/+0x188). Callers Game_ThumbnailTask_Update, Game_ThumbnailTask_OnRTTTaskComplete. Hypothesis."
+  "evidence": "decomp:re/decomp/142e3a4d0.c;xref:0x142e24c18,0x142e265f6,0x142e3a8f6,0x142e3b3b6",
+  "notes": "For each model in +0x188..+0x190: sets GPU param 0x11 to 0 and rebinds model to scene +0x20->+0x78 via 0x143d3e260. Callers task state functions. (lane owner review requested)"
  },
  "signature": {
   "id": "game.thumbnail_task_finish",

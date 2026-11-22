@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401b0540",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "vm",
   "proto": "void (void *vm)",
-  "evidence": "decomp:re/decomp/1401b0540.c;xref:0x1401aeba7;xref:0x1402bb35b;xref:0x1409a8d72",
-  "notes": "myteam-g2: Destructor body of a very large view model (fields up to roughly +0xC530; resets sub-array vtables at +0x0/+0x4B88/+0xAD20 and destroys the 0x30-byte element arrays). Used by the sponsor toggle refresh and My Team setup fade out. Generic cleanup."
+  "evidence": "decomp:re/decomp/1401b0540.c;xref:0x1401aeba7,0x1402bb35b,0x1409a8d72,0x140bc255d,0x140bc25dd,0x140cdddce,0x140d67b8f,0x140fe099e",
+  "notes": "Destructor: vtables at +0x0 (0x1456130a0), +0x4ba0, +0xad20; for 8 inline arrays of 0x30-byte elements (sub-vtables +0xad20 ... +0x340, counts +0xc530 ... +0x1b50) calls elem vt[0](elem,0) and zeroes the count; then base vt 0x1456134e0 and two 0x28-byte arrays at +0x260 (count +0x328) and +0x190 (count +0x258). No VM node calls; caller 0x1401aeba7 is in Wear_Spawner_ResolveDriverSetup: renamed. (lane owner review requested) Better name: Vm_InlineArrayBlock_Dtor_1401b0540 (bound record keeps its name)."
  },
  "signature": {
   "id": "vm.big_view_model_dtor_1401b0540",

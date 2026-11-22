@@ -90,6 +90,7 @@ public:
     bool set_path(const std::string &path, int type, const void *value) const;
     uintptr_t node_token(const std::string &path) const;
     void *message_system() const;
+    void **ui_system_global() const { return ui_system; }
 
 private:
     bool build_vtables();
@@ -465,5 +466,7 @@ uintptr_t ui_vm_epoch()
 }
 
 void *ui_vm_message_system() { return host.message_system(); }
+
+void **ui_vm_ui_system() { return host.ui_system_global(); }
 
 }

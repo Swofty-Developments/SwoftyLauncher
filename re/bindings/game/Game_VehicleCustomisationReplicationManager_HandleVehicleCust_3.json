@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143145920",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VehicleCustomisationReplicationManager::handleVehicleCustomisationSegmentedDecalsAdd; log channel NETWORK-ENTRANTS-MESSAGES: 'void network::VehicleCustomisationReplicationManager::handleVehicleCustomisationSegmentedDecalsAdd(neon::NeNetMessage &, neon::NeNetConnectionID) | %s : Manager is ready to apply decals for player '%s'"
+  "evidence": "decomp:re/decomp/143145920.c;pat:log-message-cxx;xref:0x14313f1b8",
+  "notes": "Read in full: decodes the decal node list from msg+0x78 (0x14313dbd0, list id lStack_138, complete flag msg+0xa8), logs 'Received ...SegmentedDecalsAddNetMessage ... %zu vehicle decal nodes'; if the player in tree this+0xa8 is ready (node+0x88): logs 'ready to apply decals ... will be applied', addPlayerVehicleSegmentedDecalNodeList 0x143142e80, and when complete 0x143144f50 + ready = 0 (0x143144370). Not ready: logs 'will store these %zu decals for when ready' and appends the nodes to the stored list with that id (or creates it via 0x1431445b0 / tree insert 0x143211920). Registered by lea 0x14313f1b8 in 0x14313f030. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_customisation_replication_manager_handle_vehicle_cust_3",

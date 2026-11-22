@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14082a4b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14082a4b0.c;xref:0x140828a18,0x1408384a8",
-  "notes": "Percent-encodes a string (hex digit table 0123456789ABCDEF) into a request URL buffer. Callers all Game_F1os_BuildUrlArgs_* (UpdateSession, GetAttestationToken, GetCalendar, ...). Network, not graphics."
+  "evidence": "decomp:re/decomp/14082a4b0.c;xref:0x140828a18,0x1408384a8,0x140b19258",
+  "notes": "Percent-encodes C string param_1 into growable buffer param_2 (allocator param_3 vcall +0x18/+0x38): alnum bytes copied, others as '%' + hex digits from '0123456789ABCDEF'. Callers Game_F1os_BuildUrlArgs_* e.g. 0x140828990, 0x140838420, 0x140b191d0 (Game_F1os_BuildUrlArgs_GetCalendar). (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1os_url_encode_string",

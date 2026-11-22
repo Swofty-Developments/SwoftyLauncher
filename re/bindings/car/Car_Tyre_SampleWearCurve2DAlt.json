@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e7c5f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142e7c5f0.c;xref:0x1414dc63d",
-  "notes": "Variant using the alternate point sampler 0x142e7c800 (16-byte value) with the same bracket+lerp scheme. Callers Car_Tyre_LerpPredictedWear, Game_VirtualSessionEntrant_UpdateVirtualProgress, Sess_Virtual*."
+  "evidence": "decomp:re/decomp/142e7c5f0.c;xref:0x1414dc63d,0x14155519e,0x141555a3a,0x141558ac7,0x141558f48,0x14155a8e2,0x141d7066e,0x142e7ca04,0x142f6cb93,0x142f73a75,0x142f73aeb,0x14368ee5f,0x14368eefa,0x143691975,0x1436a0e64,0x1436a1182,0x1436a55db,0x1436a5692,0x1436a6716,0x1436a6915,0x1436aed25,0x14fa9a53a",
+  "notes": "(set, x in xmm1, key*): same two-key bracket + lerp as Car_Tyre_SampleCurveSet2KeyLerp but samples with Car_Tyre_Curve2D_SampleByBinarySearchX and no clamp of x; 0 if the set is empty. Callers listed in xref. (lane owner review requested)"
  },
  "signature": {
   "id": "car.tyre_sample_wear_curve2_d_alt",

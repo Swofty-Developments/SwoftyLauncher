@@ -44,6 +44,7 @@ type: CategoryHooks
 type: DeviceHooks
 type: ListHooks
 type: SwapchainHooks
+type: SrvHooks
 type: EntrantCapHooks
 type: FirstReadHooks
 type: safetyhook::InlineHook
@@ -60,6 +61,7 @@ type: std::unordered_set
 # runtime/loader/core_sets.cpp, from the unit's own mixin table and commit function. The loader reads the sets in
 # CoreSetId order, whatever order their units initialize in. clang does not report them: CoreSet's destructor is a
 # defaulted virtual one.
+src/core/apply/content/vehicle_override.cpp: static loader::FunctionSet vehicle_override_core_set{loader::CoreSetId::vehicle_override, vehicle_override_mixins,
 src/core/boxes/box_grid.cpp: static loader::FunctionSet box_grid_core_set{loader::CoreSetId::box_grid, box_grid_mixins, box_grid_commit};
 src/core/boxes/car_category.cpp: static loader::FunctionSet car_category_core_set{loader::CoreSetId::car_category, car_category_mixins, car_category_commit};
 src/core/boxes/era_picker.cpp: static loader::FunctionSet career_alias_core_set{loader::CoreSetId::career_alias, career_alias_mixins, career_alias_commit};
@@ -81,7 +83,10 @@ src/core/guards/career/standings_guard.cpp: StandingsGuard guard;
 src/core/guards/cars/chassis_registry.cpp: guards::SiteGuard guard{guards::CoreSetId::chassis_registry,
 src/core/guards/cars/ers_mode.cpp: guards::SiteGuard guard{guards::CoreSetId::ers_mode,
 src/core/guards/cars/ers_newlap.cpp: guards::SiteGuard guard{guards::CoreSetId::ers_newlap,
+src/core/guards/cars/tyre_curve_guard.cpp: guards::SiteGuard guard{guards::CoreSetId::tyre_curve,
 src/core/guards/cars/tyre_slots.cpp: guards::SiteGuard guard{
+src/core/guards/engine/anim_clip_time_guard.cpp: guards::SiteGuard guard{guards::CoreSetId::anim_clip_time,
+src/core/guards/engine/anim_packet_time_guard.cpp: guards::SiteGuard guard{guards::CoreSetId::anim_packet_time,
 src/core/guards/engine/audio_queue.cpp: guards::SiteGuard guard{
 src/core/guards/engine/heap_sizes.cpp: HeapSizes guard;
 src/core/guards/engine/watchdog_grace.cpp: guards::SiteGuard guard{
@@ -96,6 +101,7 @@ src/core/guards/garage/garage_slots.cpp: guards::SiteGuard guard{guards::CoreSet
 src/core/guards/garage/pit_box.cpp: PitBoxGuard guard;
 src/core/guards/garage/pit_slots.cpp: guards::SiteGuard guard{
 src/core/guards/session/estimate_laptime_guard.cpp: guards::SiteGuard guard{guards::CoreSetId::estimate_laptime,
+src/core/guards/session/marshal_lights_guard.cpp: guards::SiteGuard guard{guards::CoreSetId::marshal_lights,
 src/core/guards/session/quali_tyres_guard.cpp: QualiTyresGuard guard;
 src/core/guards/session/red_flag_recompute_guard.cpp: guards::SiteGuard guard{guards::CoreSetId::red_flag_recompute,
 src/core/guards/session/session_enter.cpp: guards::SiteGuard guard{guards::CoreSetId::session_enter,
@@ -109,6 +115,7 @@ src/core/loading/game_settings.cpp: static loader::FunctionSet loading_core_set{
 src/core/services/lap_host.cpp: static loader::FunctionSet lap_host_core_set{loader::CoreSetId::lap_host, lap_host_mixins, lap_host_commit};
 src/core/testing/save_sandbox.cpp: static loader::FunctionSet save_sandbox_core_set{loader::CoreSetId::save_sandbox, save_sandbox_mixins, save_sandbox_commit};
 src/core/weather/setup.cpp: runtime::loader::FunctionSet weather_core_set{runtime::loader::CoreSetId::weather_chain, weather_mixins, weather_commit};
+src/core/audio/speech.cpp: runtime::loader::FunctionSet speech_core_set{runtime::loader::CoreSetId::speech, speech_mixins, speech_commit};
 
 # Default-constructed objects of the unit's own types, whose members are hooks, containers, mutexes, atomics and
 # constants of their own; their constructors read no other unit's object.

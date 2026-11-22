@@ -8,16 +8,19 @@
 #include "core/apply/scheduler.hpp"
 #include "core/apply/content/boot.hpp"
 #include "core/apply/content/boot_ahead.hpp"
+#include "core/apply/content/career_rules.hpp"
 #include "core/apply/content/garage_build.hpp"
 #include "core/apply/content/grid_rules.hpp"
 #include "core/apply/content/gvdb.hpp"
 #include "core/apply/content/logos.hpp"
 #include "core/apply/content/race_fuel.hpp"
+#include "core/apply/content/rev_lights.hpp"
 #include "core/apply/content/quali_tyres.hpp"
 #include "core/apply/content/teams.hpp"
 #include "core/apply/content/box_options.hpp"
 #include "core/apply/content/tyre_change.hpp"
 #include "core/apply/content/tyre_warmers.hpp"
+#include "core/apply/content/vehicle_override.hpp"
 #include "core/apply/content/weekend.hpp"
 #include "core/apply/tracks/boot.hpp"
 #include "core/apply/tracks/box.hpp"
@@ -67,6 +70,44 @@ bool box_worlds_on()
     char v[8] = {};
     DWORD n = GetEnvironmentVariableA(box_world::ENV, v, sizeof v);
     return box_world::enabled(n && n < sizeof v ? std::string_view(v, n) : std::string_view());
+}
+
+// Boxes whose content.package names a world get it (box_world.hpp, choose_named) only with SWOFTY_BOX_OWN_WORLDS=1.
+bool own_worlds_on()
+{
+    char v[8] = {};
+    DWORD n = GetEnvironmentVariableA(box_world::OWN_ENV, v, sizeof v);
+    return box_world::own_enabled(n && n < sizeof v ? std::string_view(v, n) : std::string_view());
+}
+
+// The track folders under the game's 2025_asset_groups/environment_package/tracks that hold <code>/wep/<code>_<name>.erp,
+// read once per name; a folder the core cannot list gives an empty list (the box keeps its world).
+std::optional<std::vector<std::string>> world_tracks_on_disk(const std::string &name)
+{
+    static std::mutex m;
+    static std::map<std::string, std::vector<std::string>> seen;
+    std::lock_guard g(m);
+    if (auto it = seen.find(name); it != seen.end())
+        return it->second;
+    std::vector<std::string> out;
+    std::error_code ec;
+    std::filesystem::path root(runtime::game_root() + L"\\" + runtime::wide(box_world::TRACKS_FOLDER));
+    for (std::filesystem::directory_iterator it(root, ec), end; !ec && it != end; it.increment(ec)) {
+        std::error_code dir_ec;
+        if (!it->is_directory(dir_ec) || dir_ec)
+            continue;
+        std::string code = it->path().filename().string();
+        if (!box_world::name_ok(code))
+            continue;
+        std::error_code file_ec;
+        if (std::filesystem::is_regular_file(it->path() / "wep" / (code + "_" + name + ".erp"), file_ec) && !file_ec)
+            out.push_back(code);
+    }
+    std::sort(out.begin(), out.end());
+    swofty::log("[content] box world %s: %zu track folder(s) hold <code>_%s.erp%s", name.c_str(), out.size(), name.c_str(),
+                ec ? " (the tracks folder could not be read)" : "");
+    seen[name] = out;
+    return out;
 }
 
 void publish_drs(Store &st, Expansion &x)
@@ -181,6 +222,8 @@ std::unique_ptr<Expansion> expansion(Database &d)
 {
     auto x = std::make_unique<Expansion>(base_of(d));
     x->box_worlds = box_worlds_on();
+    x->own_worlds = own_worlds_on();
+    x->world_tracks = world_tracks_on_disk;
     return x;
 }
 
@@ -304,6 +347,8 @@ void run_ahead(const std::shared_ptr<AheadJob> &job)
         if (file) {
             job->work.edits = std::make_shared<const OlderEdits>(older_edits(*file));
             job->work.box_worlds = box_worlds_on();
+            job->work.own_worlds = own_worlds_on();
+            job->work.world_tracks = world_tracks_on_disk;
             job->work.day = today();
             boot_ahead(st, ids::store(), base_over(*file, job->work.edits), job->work);
         }
@@ -344,6 +389,7 @@ bool boot_from_ahead(Store &st, Database &d, Expansion &plan, uint64_t room, Ahe
         AheadNow now;
         now.store_generation = scheduler().boot_generation();
         now.box_worlds = box_worlds_on();
+        now.own_worlds = own_worlds_on();
         now.day = today();
         now.edits = &d.edits;
         now.order = st.order();
@@ -377,6 +423,11 @@ void report_left_out(const Expansion &x)
                     n("team.identity"), n("vehicle"), n("content.package"));
         moments::left_out(addon, n("team.identity"), n("vehicle"), n("content.package"));
     }
+    for (auto &[addon, lines] : x.status)
+        for (auto &line : lines) {
+            swofty::log("[registry] left out: %s: %s", addon.c_str(), line.c_str());
+            moments::status(addon, line);
+        }
 }
 
 void run_boot(Store &st)
@@ -632,16 +683,92 @@ void apply_logos(Expansion &x, Report &report)
                            std::to_string(made.built) + " slice(s) built, " + std::to_string(made.refused) + " refused");
 }
 
-void apply_garages(Expansion &x, Report &report)
+// The per-box archive routes: team.garage, track.sponsors and content.box_assets. Each has its own env fence, cache
+// folder and file prefix, so one registry's cleanup never removes another's archives.
+struct BoxRoute {
+    const char *registry, *env, *cache_addon, *prefix, *fence;
+};
+
+constexpr BoxRoute BOX_ROUTES[] = {
+    {"team.garage", "SWOFTY_GARAGE_ART", "swofty.garage", "garage_", GARAGE_FENCE_LINE},
+    {"track.sponsors", "SWOFTY_BOX_SPONSORS", "swofty.sponsors", "sponsors_", SPONSORS_FENCE_LINE},
+    {"content.box_assets", "SWOFTY_BOX_ASSETS", "swofty.box_assets", "box_", BOX_ASSETS_FENCE_LINE},
+};
+
+const BoxRoute *box_route(std::string_view reg)
 {
-    if (x.garages.empty())
+    for (auto &r : BOX_ROUTES)
+        if (reg == r.registry)
+            return &r;
+    return nullptr;
+}
+
+// A ready archive of a content.box_assets record: its index is read and checked against the record's prefixes. The
+// caller then redirects its game path to the addon's own file (no cache copy). False when the record is refused.
+bool box_archive_checked(const GarageArt &g, const std::string &tag, Report &report)
+{
+    std::wstring path = runtime::under_swofty("addons/" + g.addon + "/" + g.archive);
+    HANDLE h = CreateFileW(path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, nullptr);
+    LARGE_INTEGER size{};
+    if (h == INVALID_HANDLE_VALUE || !GetFileSizeEx(h, &size)) {
+        if (h != INVALID_HANDLE_VALUE)
+            CloseHandle(h);
+        report.refused++;
+        report.lines.push_back(tag + " " + g.id + ": " + g.archive + " is not in swofty/addons/" + g.addon + "/");
+        return false;
+    }
+    erpfile::Source src;
+    src.size = uint64_t(size.QuadPart);
+    src.read = [h](uint64_t off, size_t n, char *out) {
+        LARGE_INTEGER at;
+        at.QuadPart = LONGLONG(off);
+        DWORD got = 0;
+        return SetFilePointerEx(h, at, nullptr, FILE_BEGIN) && ReadFile(h, out, DWORD(n), &got, nullptr) && got == n;
+    };
+    erpfile::Archive a;
+    std::string why;
+    bool opened = erpfile::open(src, a, why);
+    CloseHandle(h);
+    if (!opened) {
+        report.refused++;
+        report.lines.push_back(tag + " " + g.id + ": " + g.archive + ": " + why);
+        return false;
+    }
+    std::vector<BoxArchiveEntry> entries;
+    for (auto &e : a.entries)
+        entries.push_back(
+            {e.name, std::string(e.mid.data(), strnlen(e.mid.data(), std::min<size_t>(16, e.mid.size()))), e.frags.size()});
+    BoxArchiveCheck c = check_box_archive(entries, g.prefixes);
+    if (c.outside) {
+        report.refused++;
+        report.lines.push_back(tag + " " + g.id + ": " + g.archive + " holds " + std::to_string(c.outside) +
+                               " resource(s) outside its resources prefixes (first " + c.first_outside + ")");
+        return false;
+    }
+    report.lines.push_back(tag + " " + g.id + ": " + g.archive + " holds " + std::to_string(c.resources) + " resource(s), " +
+                           std::to_string(c.streamed) + " texture surface(s) with a streaming descriptor (3 fragments)");
+    return true;
+}
+
+// Each record's textures packed into one archive (or its ready archive) and listed first in its cars' groups.
+void apply_garages(Expansion &x, Report &report, std::string_view reg = "team.garage")
+{
+    const BoxRoute *route = box_route(reg);
+    if (!route)
         return;
-    constexpr const char *CACHE_ADDON = "swofty.garage";
+    bool any = false;
+    for (auto &g : x.garages)
+        any = any || g.registry == reg;
+    if (!any)
+        return;
+    const char *CACHE_ADDON = route->cache_addon;
+    const std::string prefix = route->prefix;
+    const std::string tag(reg);
     char art[8] = {};
-    DWORD art_len = GetEnvironmentVariableA("SWOFTY_GARAGE_ART", art, sizeof art);
+    DWORD art_len = GetEnvironmentVariableA(route->env, art, sizeof art);
     bool art_on = art_len && art_len < sizeof art && garage_art_enabled(art);
     if (!art_on)
-        report.lines.push_back(GARAGE_FENCE_LINE);
+        report.lines.push_back(route->fence);
     char desc[8] = {};
     DWORD desc_len = GetEnvironmentVariableA("SWOFTY_GARAGE_DESC", desc, sizeof desc);
     bool descriptor = !(desc_len && desc_len < sizeof desc && desc[0] == '0');
@@ -652,6 +779,32 @@ void apply_garages(Expansion &x, Report &report)
     for (auto &g : x.garages) {
         if (!art_on)
             break;
+        if (g.registry != reg)
+            continue;
+        if (!g.archive.empty()) {
+            if (!box_archive_checked(g, tag, report))
+                continue;
+            files::Outcome o = files::redirect(g.game_path, g.addon, g.archive, tag, g.id, "boot");
+            if (o.refused()) {
+                report.refused++;
+                report.lines.push_back(o.line);
+                continue;
+            }
+            std::size_t attached = 0;
+            for (auto &group : g.groups) {
+                int rc = runtime::group_extend(group, g.game_path);
+                report.lines.push_back(
+                    tag + " " + g.id + ": " + group +
+                    (rc == SWOFTY_ASSET_OK ? " lists " + g.game_path : " not extended (the manifest is already parsed)"));
+                attached += rc == SWOFTY_ASSET_OK;
+            }
+            if (!attached)
+                report.refused++;
+            report.lines.push_back(tag + " " + g.id + ": " + g.game_path + " -> swofty/addons/" + g.addon + "/" + g.archive +
+                                   ", " + std::to_string(attached) + " of " + std::to_string(g.groups.size()) +
+                                   " group(s) extended");
+            continue;
+        }
         std::filesystem::path root(runtime::under_swofty("addons/" + g.addon + "/" + g.folder));
         std::vector<garage::Input> inputs;
         std::error_code ec;
@@ -665,8 +818,18 @@ void apply_garages(Expansion &x, Report &report)
         std::sort(inputs.begin(), inputs.end(), [](const garage::Input &a, const garage::Input &b) { return a.rel < b.rel; });
         if (inputs.empty()) {
             report.refused++;
-            report.lines.push_back("team.garage " + g.id + ": " + g.folder + " holds no .dds or .png file in swofty/addons/" +
+            report.lines.push_back(tag + " " + g.id + ": " + g.folder + " holds no .dds or .png file in swofty/addons/" +
                                    g.addon + "/");
+            continue;
+        }
+        std::string outside;
+        for (auto &in : inputs)
+            if (outside.empty() &&
+                !box_name_allowed(g.root + in.rel.substr(0, in.rel.size() - garage::extension_of(in.rel).size()), g.prefixes))
+                outside = in.rel;
+        if (!outside.empty()) {
+            report.refused++;
+            report.lines.push_back(tag + " " + g.id + ": " + outside + " would name a resource outside its resources prefixes");
             continue;
         }
         uint64_t key = 0xcbf29ce484222325ull;
@@ -685,7 +848,7 @@ void apply_garages(Expansion &x, Report &report)
             mix(in.rel);
             mix(in.bytes);
         }
-        std::string file = "garage_" + runtime::hex16(key).substr(2) + ".erp";
+        std::string file = prefix + runtime::hex16(key).substr(2) + ".erp";
         std::wstring path = runtime::under_swofty(dir + file);
         uint64_t have = 0;
         bool reused = runtime::file_size(path, &have) && have > 0;
@@ -693,22 +856,22 @@ void apply_garages(Expansion &x, Report &report)
         if (!reused) {
             garage::Built built = garage::build(inputs, g.root, g.srgb, descriptor);
             for (auto &l : built.lines)
-                report.lines.push_back("team.garage " + g.id + ": " + l);
+                report.lines.push_back(tag + " " + g.id + ": " + l);
             report.refused += built.refused;
             if (built.erp.empty()) {
                 report.refused++;
-                report.lines.push_back("team.garage " + g.id + ": no texture could be packed; nothing applied");
+                report.lines.push_back(tag + " " + g.id + ": no texture could be packed; nothing applied");
                 continue;
             }
             if (!runtime::write_file(path, built.erp)) {
                 report.refused++;
-                report.lines.push_back("team.garage " + g.id + ": " + file + " could not be written");
+                report.lines.push_back(tag + " " + g.id + ": " + file + " could not be written");
                 continue;
             }
             have = built.erp.size();
         }
         keep.insert(file);
-        files::Outcome o = files::redirect(g.game_path, CACHE_ADDON, file, "team.garage", g.id, "boot");
+        files::Outcome o = files::redirect(g.game_path, CACHE_ADDON, file, tag, g.id, "boot");
         if (o.refused()) {
             report.refused++;
             report.lines.push_back(o.line);
@@ -718,20 +881,20 @@ void apply_garages(Expansion &x, Report &report)
         for (auto &group : g.groups) {
             int rc = runtime::group_extend(group, g.game_path);
             report.lines.push_back(
-                "team.garage " + g.id + ": " + group +
+                tag + " " + g.id + ": " + group +
                 (rc == SWOFTY_ASSET_OK ? " lists " + g.game_path : " not extended (the manifest is already parsed)"));
             attached += rc == SWOFTY_ASSET_OK;
         }
         if (!attached)
             report.refused++;
-        report.lines.push_back("team.garage " + g.id + ": " + std::to_string(inputs.size()) + " texture file(s) of " + g.folder +
+        report.lines.push_back(tag + " " + g.id + ": " + std::to_string(inputs.size()) + " texture file(s) of " + g.folder +
                                " in " + file + " (" + std::to_string(have >> 20) + " MB, " +
                                (reused ? "cached archive reused" : "built") + " in " + std::to_string(GetTickCount() - t0) +
                                " ms), " + g.game_path + " -> swofty/addons/" + CACHE_ADDON + "/" + file + ", " +
                                std::to_string(attached) + " of " + std::to_string(g.groups.size()) + " group(s) extended");
     }
     WIN32_FIND_DATAW fd;
-    HANDLE h = FindFirstFileW((runtime::under_swofty(dir) + L"garage_*").c_str(), &fd);
+    HANDLE h = FindFirstFileW((runtime::under_swofty(dir) + runtime::wide(prefix + "*")).c_str(), &fd);
     if (h != INVALID_HANDLE_VALUE) {
         do {
             std::string n = runtime::narrow(fd.cFileName);
@@ -865,8 +1028,8 @@ public:
         apply_texts(x, registry_, report);
         if (std::string_view(registry_) == "team.identity")
             apply_logos(x, report);
-        if (std::string_view(registry_) == "team.garage")
-            apply_garages(x, report);
+        if (box_route(registry_))
+            apply_garages(x, report, registry_);
         if (std::string_view(registry_) == "rules.drs")
             publish_drs(st, x);
         if (std::string_view(registry_) == "session.points")
@@ -998,129 +1161,140 @@ void undress_teams(const char *why)
                     why ? why : "");
 }
 
-DrsBox drs_for_box(const std::string &entrant_list)
+std::string worn_team(uint16_t stat)
+{
+    std::lock_guard g(live_mutex());
+    auto it = live().wears.find(stat);
+    return it == live().wears.end() ? std::string() : it->second;
+}
+
+namespace {
+
+struct Packages {
+    std::map<std::string, Value> keep;
+    Lookup lookup;
+    std::vector<std::pair<std::string, const Value *>> list;
+};
+
+void collect_packages(Packages &p)
 {
     Store &st = registry::store();
-    std::map<std::string, Value> keep;
-    Lookup lookup = store_lookup(st, keep);
-    std::vector<std::pair<std::string, const Value *>> packages;
+    p.lookup = store_lookup(st, p.keep);
     for (auto &id : in_load_order(st, "content.package"))
-        packages.push_back({id, lookup("content.package", id)});
+        p.list.push_back({id, p.lookup("content.package", id)});
+}
+
+}
+
+std::optional<std::vector<std::string>> box_world_tracks(const std::string &name)
+{
+    if (!box_worlds_on() || !own_worlds_on())
+        return std::nullopt;
+    return world_tracks_on_disk(name);
+}
+
+DrsBox drs_for_box(const std::string &entrant_list, const std::string &host)
+{
+    Packages p;
+    collect_packages(p);
     DrsPick pick;
     {
         std::lock_guard g(drs_mu);
-        pick = drs_pick(entrant_list, packages, drs_groups);
+        pick = drs_pick(entrant_list, p.list, drs_groups, host);
     }
     return {pick.group ? pick.group->label : std::string(), pick.line};
 }
 
-WarmersBox tyre_warmers_for_box(const std::string &entrant_list)
+WarmersBox tyre_warmers_for_box(const std::string &entrant_list, const std::string &host)
 {
-    Store &st = registry::store();
-    std::map<std::string, Value> keep;
-    Lookup lookup = store_lookup(st, keep);
-    std::vector<std::pair<std::string, const Value *>> packages;
-    for (auto &id : in_load_order(st, "content.package"))
-        packages.push_back({id, lookup("content.package", id)});
-    WarmersPick pick = tyre_warmers_pick(entrant_list, packages);
+    Packages p;
+    collect_packages(p);
+    WarmersPick pick = tyre_warmers_pick(entrant_list, p.list, host);
     return {pick.warmers, pick.line};
+}
+
+RevLightsBox rev_lights_for_box(const std::string &entrant_list)
+{
+    Packages p;
+    collect_packages(p);
+    RevLightsPick pick = rev_lights_pick(entrant_list, p.list, p.lookup);
+    return {pick.engine, pick.line};
 }
 
 FuelRules fuel_rules_for_box(const std::string &entrant_list)
 {
-    Store &st = registry::store();
-    std::map<std::string, Value> keep;
-    Lookup lookup = store_lookup(st, keep);
-    std::vector<std::pair<std::string, const Value *>> packages;
-    for (auto &id : in_load_order(st, "content.package"))
-        packages.push_back({id, lookup("content.package", id)});
-    return fuel_rules_pick(entrant_list, packages);
+    Packages p;
+    collect_packages(p);
+    return fuel_rules_pick(entrant_list, p.list);
 }
 
-WeekendBox weekend_for_box(const std::string &entrant_list)
+WeekendBox weekend_for_box(const std::string &entrant_list, const std::string &host)
 {
-    Store &st = registry::store();
-    std::map<std::string, Value> keep;
-    Lookup lookup = store_lookup(st, keep);
-    std::vector<std::pair<std::string, const Value *>> packages;
-    for (auto &id : in_load_order(st, "content.package"))
-        packages.push_back({id, lookup("content.package", id)});
-    WeekendPick pick = weekend_pick(entrant_list, packages);
+    Packages p;
+    collect_packages(p);
+    WeekendPick pick = weekend_pick(entrant_list, p.list, host.c_str());
     return {pick.time_limit_s, pick.weekend_mode, pick.line};
 }
 
 BoxOptionsPick box_options_for_box(const std::string &entrant_list)
 {
-    Store &st = registry::store();
-    std::map<std::string, Value> keep;
-    Lookup lookup = store_lookup(st, keep);
-    std::vector<std::pair<std::string, const Value *>> packages;
-    for (auto &id : in_load_order(st, "content.package"))
-        packages.push_back({id, lookup("content.package", id)});
-    return box_options_pick(entrant_list, packages);
+    Packages p;
+    collect_packages(p);
+    return box_options_pick(entrant_list, p.list);
 }
 
 GridBox grid_for_box(const std::string &entrant_list)
 {
-    Store &st = registry::store();
-    std::map<std::string, Value> keep;
-    Lookup lookup = store_lookup(st, keep);
-    std::vector<std::pair<std::string, const Value *>> packages;
-    for (auto &id : in_load_order(st, "content.package"))
-        packages.push_back({id, lookup("content.package", id)});
-    GridPick pick = grid_pick(entrant_list, packages);
+    Packages p;
+    collect_packages(p);
+    GridPick pick = grid_pick(entrant_list, p.list);
     return {pick.rule, pick.line};
+}
+
+size_t seats_for_box(const std::string &entrant_list)
+{
+    Packages p;
+    collect_packages(p);
+    return package_seats(entrant_list, p.list);
 }
 
 bool any_grid_rule()
 {
-    Store &st = registry::store();
-    std::map<std::string, Value> keep;
-    Lookup lookup = store_lookup(st, keep);
-    for (auto &id : in_load_order(st, "content.package"))
-        if (const Value *rec = lookup("content.package", id); rec && (*rec)["rules"]["grid"].is_object())
+    Packages p;
+    collect_packages(p);
+    for (auto &[id, rec] : p.list)
+        if (rec && (*rec)["rules"]["grid"].is_object())
             return true;
     return false;
 }
 
 QualiTyresBox quali_tyres_for_box(const std::string &entrant_list)
 {
-    Store &st = registry::store();
-    std::map<std::string, Value> keep;
-    Lookup lookup = store_lookup(st, keep);
-    std::vector<std::pair<std::string, const Value *>> packages;
-    for (auto &id : in_load_order(st, "content.package"))
-        packages.push_back({id, lookup("content.package", id)});
-    QualiTyresPick pick = quali_tyres_pick(entrant_list, packages);
+    Packages p;
+    collect_packages(p);
+    QualiTyresPick pick = quali_tyres_pick(entrant_list, p.list);
     return {pick.mask, pick.line};
 }
 
 bool any_quali_tyres()
 {
-    Store &st = registry::store();
-    std::map<std::string, Value> keep;
-    Lookup lookup = store_lookup(st, keep);
-    for (auto &id : in_load_order(st, "content.package")) {
-        const Value *rec = lookup("content.package", id);
+    Packages p;
+    collect_packages(p);
+    for (auto &[id, rec] : p.list)
         if (rec && (*rec)["entrant_list"].is_string() &&
             quali_tyres_pick(std::string((*rec)["entrant_list"].as_string()), {{id, rec}}).mask)
             return true;
-    }
     return false;
 }
 
-PointsBox points_for_box(const std::string &entrant_list)
+PointsBox points_for_box(const std::string &entrant_list, const std::string &host)
 {
-    Store &st = registry::store();
-    std::map<std::string, Value> keep;
-    Lookup lookup = store_lookup(st, keep);
-    std::vector<std::pair<std::string, const Value *>> packages;
-    for (auto &id : in_load_order(st, "content.package"))
-        packages.push_back({id, lookup("content.package", id)});
+    Packages p;
+    collect_packages(p);
     PointsPick pick;
     {
         std::lock_guard g(points_mu);
-        pick = points_pick(entrant_list, packages, points_systems);
+        pick = points_pick(entrant_list, p.list, points_systems, host);
     }
     PointsBox box;
     box.line = pick.line;
@@ -1135,17 +1309,15 @@ PointsBox points_for_box(const std::string &entrant_list)
     return box;
 }
 
-TyreChangeBox tyre_change_for_box(const std::string &entrant_list)
+TyreChangeBox tyre_change_for_box(const std::string &entrant_list, const std::string &host)
 {
-    Store &st = registry::store();
-    std::map<std::string, Value> keep;
-    Lookup lookup = store_lookup(st, keep);
-    std::vector<std::pair<std::string, const Value *>> packages;
-    for (auto &id : in_load_order(st, "content.package"))
-        packages.push_back({id, lookup("content.package", id)});
-    TyreChangePick pick = tyre_change_pick(entrant_list, packages);
+    Packages p;
+    collect_packages(p);
+    TyreChangePick pick = tyre_change_pick(entrant_list, p.list, host);
     return {pick.required, pick.line};
 }
+
+CareerBox career_box_now(const registry::Context &ctx, bool safety_car) { return career_box(registry::store(), ctx, safety_car); }
 
 void start_boot_ahead()
 {
@@ -1179,8 +1351,10 @@ void register_appliers()
         make<Boxes>();
         make<Constructors>();
         make<Logos>();
+        register_box_ui();
         tracks::register_appliers();
         tracks::register_box_appliers();
+        register_vehicle_override();
         set_up_dresser();
     });
 }

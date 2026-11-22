@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a69e90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name tryAllocTempSection (class from the log channel); log channel EGO_ERP_LOADER_VERBOSE: 'tryAllocTempSection - waiting for temp memory to be free (size=%I64u,alignment=%I64u).'"
+  "evidence": "decomp:re/decomp/143a69e90.c;pat:log-message-method;xref:0x143a65ede,0x143a683a6;kb:subsystems/core.md#track-erp-size-limits",
+  "notes": "For each fragment (+0x38, 32 bytes, count +0x20) tagged 'tmp0'/'temp'/'tmp1': size +0x40, align +0x4c; allocator vcalls +0xd0 lock, +0x40 check, +0x18 alloc, +0xd8 unlock. Result 0x23 -> logs EGO_ERP_LOADER_VERBOSE 'tryAllocTempSection - waiting for temp memory to be free (size=%I64u,alignment=%I64u).', frees allocated ones, returns 0; else 1. Callers 0x143a65bd0, 0x143a68380. (lane owner review requested) | 2026-11-20 engine-re (track ERP size limits): per resource: every fragment whose tag is 'temp', 'tmp0' or 'tmp1' (dwords 0x706d6574/0x30706d74/0x31706d74) is allocated from the loader's temp heap (EGO_ERP_TEMP, 250M win, virtual -> 500 MiB with the inherited 100 % expand) through heap vt+0x40 (can-alloc) / vt+0x18; on failure the already-taken temp blocks of that resource are freed and the function returns 0, so the loader waits and retries ('waiting for temp memory to be free'): a full EGO_ERP_TEMP slows the load, it does not limit the archive size. Stock ERPs: all model/texture payload is 'temp' (spa_francorchamps_common 12095 temp fragments, 335 MiB, largest 7.0 MiB; 'syst' only 15 fragments). The AVUS_95b fatal in this function (user crash 2026-10-25) was 'useAddressSpace failed / Out of physical memory' = Windows commit exhausted, not heap capacity.  | 2026-11-20 CORRECTION (verifier V12105, own disasm): the free-and-return-0 retry only happens for a can-alloc status (vt+0x40) other than 0 and 0xc (caller 0x143a683a6 then returns 2). Status 0xc (out of memory) or a NULL from vt+0x18 goes to 0x1439182a0 (writes 0xdeaddead to address 1, no return): a resource whose temp fragments do not fit the largest free block of EGO_ERP_TEMP is a hard crash, not a wait."
  },
  "signature": {
   "id": "game.ego_erp_loader_try_alloc_temp_section",
@@ -45,6 +45,16 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/143a69e90.c;xref:0x143a65ede",
    "notes": "V6435 name/purpose and quoted strings/cxx confirmed in body"
+  },
+  {
+   "date": "2026-11-20",
+   "verifier": "size-verify",
+   "kind": "func",
+   "item": "0x143a69e90",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "pat:disasm-0x143a69e90;xref:0x143a69eec,0x143a69f28,0x143a69f4d,0x143a69f56,0x143a6a0da,0x143a6a1bb,0x143a6a328,0x1439182a0,0x143a65ede,0x143a683a6,0x143a60bef",
+   "notes": "V12105 Partial: tags 'tmp0'/'temp'/'tmp1' and heap [this+0] = loader temp heap (ctor 0x143a60bef) confirmed. Per fragment it first calls heap vt+0x40(size); status!=0 and !=0xc -> frees that resource's temp blocks taken so far (vt+0x38) and returns 0 (0x143a683a6 caller then returns 2). BUT status 0xc, or a NULL from the real alloc vt+0x18 (0x143a69f56 -> 0x143a6a31b), goes to 0x1439182a0 = write 0xdeaddead to [1] + noreturn fatal, i.e. hard crash, no free/retry."
   }
  ],
  "proofs": []

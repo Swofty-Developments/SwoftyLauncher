@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143769e70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-STATEVENT",
-  "notes": "named from its log messages (channel STATEVENT): 'Executing EventWriteSetFastestLapInSession with [%d] StatisticDataProviders registered.'"
+  "evidence": "decomp:re/decomp/143769e70.c;pat:log-channel-STATEVENT;xref:0x1437916aa",
+  "notes": "Direct writer (stat, info, isValidMode, netCtx): 15 keys SetFastestLapInSession[.GameplayModeId/.SessionType/.SectionId/.WeeklyEventType/.NetworkMatchingContext/.F1WEventMode/.IsValidGameplayMode combos] + FastestLapEverSetInSession.TimeTrial.%d.SectionId.%d; ids from info +8/+0xc/+0x20/+0x34; value 1.0. Caller 0x143790310. (lane owner review requested)"
  },
  "signature": {
   "id": "game.stat_event_write_set_fastest_lap_in_session",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142ea66d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142ea66d0.c;xref:0x142ebdb15,0x142ebcc89",
-  "notes": "(key,type,row): +0 type, label copy, +0xa4 statId, +0xa0 = djb2(sprintf(%s%s, k_TypeNames[type] at 0x14565bd48, row _metadata_)); type 0x18 = eSELivery"
+  "evidence": "decomp:re/decomp/142ea66d0.c;xref:0x142eabbcc,0x142eacad4,0x142ead80e,0x142eae6aa,0x142eaf53f,0x142eb038a,0x142eb11e9,0x142eb2039,0x142eb2e8f,0x142eb3cea,0x142eb4b3a,0x142eb59c5,0x142eb6805,0x142eb7665,0x142eb84b4,0x142eb92e4,0x142eba12f,0x142ebaf9f,0x142ebbe0f,0x142ebcc89,0x142ebdb15,0x142ebe95f,0x142ebf7fa,0x142ec0624,0x142ec33d1",
+  "notes": "(key, type, row): +0 type; label from the row (decoded with XOR table 0x145890978) into the +0x18 buffer; +0xa4 = row 'statId'; +0xa0 = djb2('%s%s', typeName[0x14565bd48+type*8], label). (lane owner review requested)"
  },
  "signature": {
   "id": "game.init_unlockable_item_key",

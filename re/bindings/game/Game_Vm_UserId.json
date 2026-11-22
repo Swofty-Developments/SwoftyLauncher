@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14328ec60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name userId (class from the log channel); log channel VM: 'userId %s has *RGB* gamerPic - converting to RGBA. dataSize %u resource %s'"
+  "evidence": "decomp:re/decomp/14328ec60.c;pat:log-message-method;xref:0x1408167cb,0x141697692",
+  "notes": "Read in full: once per request (+0x48): fetches picture (vcall +0x18); w*h*4 (size table 0x14582f230[idx]) RGBA copied, w*h*3 RGB expanded with alpha 0xff, else zeroed placeholder; logs VM 'userId %s has ... gamerPic ...'; texture name '%s%llu_%llu' (prefix, decoded user id, counter 0x1460c0810); queues a 0x68-byte create command on 0x146c621e0. Old name was a log fragment. (lane owner review requested) Better name: Game_Vm_LoadUserGamerPicTexture (bound record keeps its name)."
  },
  "signature": {
   "id": "game.vm_user_id",

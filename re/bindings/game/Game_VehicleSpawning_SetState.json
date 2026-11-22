@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f3d970",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-VEHICLE_SPAWNING_SYSTEM",
-  "notes": "named from its log messages (channel VEHICLE_SPAWNING_SYSTEM): 'Setting spawn state for vehicle %d to %s. This vehicle %s expect decals. | Spawning vehicle %d took %.2fs'"
+  "evidence": "decomp:re/decomp/142f3d970.c;pat:log-channel-VEHICLE_SPAWNING_SYSTEM;xref:0x142f3afd8,0x142f3bdd1,0x142f3c343,0x142f3c37a,0x142f3e90f,0x14f7fbbae",
+  "notes": "Read in full: (req, state) logs 'Setting spawn state for vehicle %d to %s...' (names 0x145801700), writes req+0 = state, timestamp +0x68c0 (QPC + 0x1461089f8), also +0x68c8 if set; state 3 logs 'Spawning vehicle %d took %.2fs' from +0x68e0 / freq +0x68f0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_spawning_set_state",

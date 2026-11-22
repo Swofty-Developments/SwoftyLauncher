@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a39b80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onPitStateChanged (class from the log channel); log channel GARAGE: '%s: m_vehicleId: %d, m_nextPitState: %d'"
+  "evidence": "decomp:re/decomp/142a39b80.c;pat:log-message-method;xref:0x142a3ff63,0x142a40b01",
+  "notes": "onPitStateChanged(slot,msg): for the local human garage car (vehicle msg+0x10): next state +0x18 0xe with current +0x14 0xd -> 0x142a3a300; next 8, or 9 in race sessions 15..17 when 0x142cd2390 and current != 8 -> 0x142a39dd0. Handler (lea) in 0x142a3f710, 0x142a409b0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.garage_on_pit_state_changed",

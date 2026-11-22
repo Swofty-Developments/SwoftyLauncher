@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14461cd20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14461cd20.c;xref:0x140c772b6,0x142d5263c",
-  "notes": "Time-of-day system (SRW lock this+0x2108): maps session type param_3 through table 0x14588c605 to a slot (stride 0x288 at +0x530); mode param_2 == 7 sets duration 7200.0 (+0x34c+slot, +0xb350+slot*4); applies via 0x14461b3d0 and bumps counter +0x538. Callers Sess_GameWeatherSystem_SetActiveSessionType, Sess_Loader_RequestCareerHubUnload."
+  "evidence": "decomp:re/decomp/14461cd20.c;xref:0x140c772b6,0x142d5263c,0x1438bb85c",
+  "notes": "(tod, mode, sessionFilter u16) under SRW lock this+0x2108: loops the 10 slot bytes at 0x14588c605; filter < 0x100 -> every slot, else only slots whose byte == low byte of filter. Per slot (lock this+0x530+slot*0x288): mode 7 -> 7200.0 at this+0xb350+slot*4 and this+0x34c+slot*0x288; 0x14461b3d0(this, mode, slot, 1); ++this+0x538+slot*0x288. Then ++this+0x2110. (lane owner review requested)"
  },
  "signature": {
   "id": "game.tod_set_slot_playback_mode",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d95b90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=SessionStateTalkingPoints::onStateUpdate; log channel TalkingPoints/V: 'virtual neon::NeFlowStateBase::LinkRoute game::SessionStateTalkingPoints::onStateUpdate(const NEdouble) | %s: suspended, return eLinkNone'"
+  "evidence": "decomp:re/decomp/142d95b90.c;pat:log-message-cxx;xref:0x1457e2d08",
+  "notes": "Vtable cell 0x1457e2d08. Suspended (+0xea3) -> logs \"%s: suspended, return eLinkNone\". Else counts down +0xeac, registers fade callbacks (0x1437f07c0, 0x142d961d0), advances the sequence [+0xe88], fires \"CutsceneSkipped\" with Pre/PostSessionTalkingPoints, logs fade completion; returns link 0x996c4495 / 0x9b3bfc35 / 0x7c9b1ec4 or none. (lane owner review requested)"
  },
  "signature": {
   "id": "game.session_state_talking_points_on_state_update",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144217490",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-UI_latency",
-  "notes": "named from its log messages (channel UI_latency): '***** Frame:%I64u Signal UI List c_scrollPageDecrementId Node:%hs'"
+  "evidence": "decomp:re/decomp/144217490.c;pat:log-channel-UI_latency;xref:0x143816e61,0x14382b936,0x1442173f6,0x14588b2e0,0x145a67630,0x145a67910,0x145a6b2d0",
+  "notes": "UI list signal handler (vtable cells 0x14588b2e0, 0x145a67630, 0x145a67910, 0x145a6b2d0): 0x144209cf0, then by signal id msg+8 (0x146ca2590..0x146ca25f0): focus/scroll vcalls (+0x1e0/+0x288/+0x290/+0x240; page dec/inc log UI_latency), entry flags +0x5a/+0x5b/+0x5c/+0xb1, 'scrollV'/'scrollH', 'forceUpdate', 'index' -> 0x14423f400, then vt+0x298. (lane owner review requested) Better name: Game_UIList_HandleSignal (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ui_latency_frame_signal_ui_list",

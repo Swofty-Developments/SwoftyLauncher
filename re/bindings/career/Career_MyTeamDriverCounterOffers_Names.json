@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142343bf0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void f(void *self)",
   "evidence": "decomp:re/decomp/142343bf0.c;xref:0x145780ec8",
-  "notes": "myteam-g1: Driver contract counter-offer UI: my_team_driver_counter_offers_forename/_surname."
+  "notes": "Vtable slot (cell 0x145780ec8). Builds the driver counter-offer screen: selected_contract_index, driver_ref, current_contract, first/second_name (+_style), contract_option_%d (0x142345950), card data (Career_Build_UpgradeCardData, Game_Build_TeamHqCards_C), driver thumbnail request, name keys my_team_driver_counter_offers_forename/_surname. (lane owner review requested) Better name: Career_MyTeamDriverCounterOffersVM_Build (bound record keeps its name)."
  },
  "signature": {
   "id": "career.my_team_driver_counter_offers_names",

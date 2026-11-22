@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f89ef0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-GHOSTLAPS",
-  "notes": "named from its log messages (channel GHOSTLAPS): '%s() : tail(#%d, %d ms) faster than desired rival time (%d ms), which is unexpected!'"
+  "evidence": "decomp:re/decomp/142f89ef0.c;pat:log-channel-GHOSTLAPS;xref:0x142f86d2a,0x142f872ff",
+  "notes": "evaluateRivalEnumerator(sys,timeMs) per its log name: page start: time <= +0x4d8 -> max(+0x4d0,21)-20; time < +0x618 -> +0x4d0 unless the gap +0x610-+0x4d0 > 20 (returns 0); else max(1,+0x610), logging 'tail faster than desired rival time' when time > +0x618. Writes +0x9f0 start, +0x9f4 = 20. Callers 0x142f869f0, 0x142f86fc0. (lane owner review requested) Better name: Game_Ghostlaps_EvaluateRivalEnumerator (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ghost_laps_check_rival_tail",

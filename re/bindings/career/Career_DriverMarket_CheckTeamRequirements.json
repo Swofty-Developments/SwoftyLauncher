@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140d7e8d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-DRIVER_MARKET",
-  "notes": "named from its log messages (channel DRIVER_MARKET): 'Team doesnt have required constructors championship level. Driver %s - Team %s | Team doesnt have required previous best finishing position. Driver %s - Team %s | Team doesnt have required performance'"
+  "evidence": "decomp:re/decomp/140d7e8d0.c;pat:log-channel-DRIVER_MARKET;xref:0x140d7e0f7,0x145693f68",
+  "notes": "DRIVER_MARKET bool: the team must meet the driver's required constructors championship level, previous best finish and performance index; Add-on driver cap for non-player teams (logs each failure). (lane owner review requested)"
  },
  "signature": {
   "id": "career.driver_market_check_team_requirements",

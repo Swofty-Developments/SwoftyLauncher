@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141790a20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "void Game_Mfd_Ers_Refresh(void *ers_sub, uint8_t veh)",
-  "evidence": "doc:re/db/subsystems/game.md",
-  "notes": "mask bit i = EngineModeAvail [0x14606ec28]+0x38+veh*0x20+i*4 == 0; editable sub+0x50 = (session != 0x12 Time Trial, 0x141790aec) && ctrlSys ERS-auto +0xd6 == 0 (0x141790b07); options thunk 0x141791140 (body 0x14b815840) (fuel-mix, static) | findings from PR #474 by vogtmarcel07-cloud"
+  "evidence": "decomp:re/decomp/141790a20.c;doc:re/db/subsystems/game.md;xref:0x1415361ba,0x141790622",
+  "notes": "(mfd, car idx): +0x1d0 = idx; vehicle = component 0x146ce8b00 of [[+0xb8]+0x28][idx] -> +0x58 -> +0x1d8. Two bools: session [[+0xc8]+0x1a8]+4 != 0x12 and [+0xd8]+0xd6+idx*0x14 ^ 1, both cleared without ERS block [veh+0x5a8]; with it the mode mask from [+0xc0]+0x38..+0x44+idx*0x20 -> 0x141791140, +0x1e4 = [ers]+0x1a6c != 5. Bools written to nodes +0x50/+0x30. Callers: jmp 0x1415361ba, call 0x141790622. (lane owner review requested)"
  },
  "signature": {
   "id": "game.mfd_ers_refresh",

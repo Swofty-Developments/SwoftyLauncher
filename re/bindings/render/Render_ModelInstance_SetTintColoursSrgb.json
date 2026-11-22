@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14024a370",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14024a370.c;xref:0x14024023a",
-  "notes": "Takes a packed 8-bit RGBA colour (param_2), converts each channel sRGB to linear (c<=0.04045 ? c/12.92 : ((c+0.055)/1.055)^2.4) and applies it to a model instance (calls Ne_ModelInstance_SetNodeMatrices 0x143d3d8e0 and 0x140194930). 23 callers (Game_CameraActorEnable_SpawnScene, 0x1402474e0 x2...). Addon: tint colour on cutscene model instances. Hypothesis on exact target. vp0-verify partial"
+  "evidence": "decomp:re/decomp/14024a370.c;xref:0x14024023a,0x1402480e0,0x14025448d",
+  "notes": "Converts three packed colours param_2[0..2] (channels at bits 16/8/0) from sRGB to linear (0.04045, 12.92, ((c+0.055)/1.055)^2.4 via Ne_Crt_Powf) into vec4s, then for each node of the scene list (param_1+0x78, count [param_1+0xa0]+0x100) and for the node named param_3 (Game_Scene_FindNodeByName) calls 0x143d3d8e0(model+0x228, vec4s, 6, 4, -1, 0). Callers incl. Game_CameraActorEnable_SpawnScene. (lane owner review requested) Better name: Render_Scene_SetTintColoursSrgb (bound record keeps its name)."
  },
  "signature": {
   "id": "render.model_instance_set_tint_colour_srgb",

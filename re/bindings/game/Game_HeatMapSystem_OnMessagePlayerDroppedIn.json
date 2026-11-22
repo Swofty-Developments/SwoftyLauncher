@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a4a6c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=HeatMapSystem::onMessagePlayerDroppedIn; log channel NETWORK: 'HeatMapSystem::onMessagePlayerDroppedIn(vehicle=%d, local=%d)'"
+  "evidence": "decomp:re/decomp/142a4a6c0.c;pat:log-message-cxx;xref:0x142a4a3d2",
+  "notes": "NETWORK 'HeatMapSystem::onMessagePlayerDroppedIn(vehicle=%d, local=%d)' from msg+0x10 u16. If high byte set (local): 0x142a4a7d0(this), then for each entry (+0x38..+0x40 stride 0x18) releases +0x20, clears +0x38 and re-inits via 0x142a44480. Handler address loaded by lea in 0x142a49e20. Returns 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.heat_map_system_on_message_player_dropped_in",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401d0040",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=SkinnedActor::requestDelete; log channel ACTOR_SET_BINDING: 'SkinnedActor::requestDelete %p'"
+  "evidence": "decomp:re/decomp/1401d0040.c;pat:log-message-cxx;xref:0x1455e5bc8",
+  "notes": "Vtable cell 0x1455e5bc8. Body is only the ACTOR_SET_BINDING log \"SkinnedActor::requestDelete %p\"; no state change. (lane owner review requested)"
  },
  "signature": {
   "id": "game.skinned_actor_request_delete",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141884d50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void *out, void *src, const char *key, void *ctx",
-  "evidence": "decomp:re/decomp/141884d50.c;xref:0x141d3d1b3;xref:0x141d3dca9",
-  "notes": "myteam-g1: Loc token filler adding SPONSORNAME, SPONSORNAME_SECONDARY, SPONSORNAME_TITLE (lng_sponsor_%s) to a text-format context."
+  "evidence": "decomp:re/decomp/141884d50.c;xref:0x141d3d1b3,0x141d3dca9",
+  "notes": "Fills text tokens of a narrative/news string: DRIVERNAME, RIVALNAME, CURRENTTEAMNAME, RANDOMTEAMNAME, BOTTOMFOURTEAMNAME, TRACKNAME (track_title), CHAMPIONSHIPLEADER, SPONSORNAME/_TITLE/_SECONDARY (lng_sponsor_%s), TEAMMATE, TEAMMATE_NAME_FIR...; token match via Ne_Crt_Strncmp/Strcmp, values via Ne_Format_String. Sponsor tokens are only part of it. (lane owner review requested) Better name: Career_Format_NarrativeTextTokens (bound record keeps its name)."
  },
  "signature": {
   "id": "career.format_sponsor_name_tokens",

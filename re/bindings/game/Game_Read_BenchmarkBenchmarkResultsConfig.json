@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1407acba0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: GameVersionNumber.display_cl, benchmark.benchmark_results, benchmark.benchmark_results.antialiasing.value, benchmark.benchmark_results.average_fps.value, benchmark.benchmark_results.average_frame_time.value, benchmark.benchmark_results.cpu.value, benchmark.benchmark_resu'"
+  "evidence": "decomp:re/decomp/1407acba0.c;pat:log-channel--;xref:0x1407ab4f1",
+  "notes": "Not a config read: sets UI data-model nodes 'benchmark.benchmark_results.*.value' (version, number_of_tests, cpu, gpu, ram, hmd_name, resolution '{o:mixed}%d x %d{/o}', graphics_detail_preset, antialiasing, total/avg/min/max fps, min/max/avg frame_time) via FUN_1442b1b60/FUN_140828440 from hardware_settings_info, hardware_settings_config and this+0x10f0..0x110c; benchmark_xml_help_text. (lane owner review requested) Better name: Game_Benchmark_FillResultsDataModel (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_benchmark_benchmark_results_config",

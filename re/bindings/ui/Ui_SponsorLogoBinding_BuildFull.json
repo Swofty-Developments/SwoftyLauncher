@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14200c080",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "ui",
   "proto": "void *vm, void *a, void *out",
-  "evidence": "decomp:re/decomp/14200c080.c;xref:0x142007308;xref:0x14200c76b",
-  "notes": "myteam-g1: Binds show_sponsor_logo / sponsor_logo_path with resolution of the logo asset path (longer variant)."
+  "evidence": "decomp:re/decomp/14200c080.c;xref:0x142007308,0x14200c76b",
+  "notes": "Ctor: base 0x14423ec70(this,parent,name); node refs display_name, is_new_slot, display_index, is_equipped, loadout_name, show_f1_shadow (1), show_sponsor_logo, sponsor_logo_path; this+0x120 = 0xffffffff3fff0000 (invalid handle). (lane owner review requested) Better name: Ui_LoadoutSlotBinding_Construct (bound record keeps its name)."
  },
  "signature": {
   "id": "ui.sponsor_logo_binding_build_full",

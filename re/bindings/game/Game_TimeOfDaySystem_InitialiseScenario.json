@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14461ac50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name initialiseScenario (class from the log channel); log channel TimeOfDaySystem: 'initialiseScenario %p %s %s'"
+  "evidence": "decomp:re/decomp/14461ac50.c;pat:log-message-method;xref:0x14461e671,0x14462020b,0x14462065f,0x144620df8,0x144620e23,0x1552445ff,0x15524461e,0x155255847",
+  "notes": "initialiseScenario(type, name, ...): selects tod data slot (+0x1c18+type*0x288, type 1 uses +0x2c8 slot param_7), finds scenario by djb2 hash or name, toggles enable flag, Game_TodData_SetScenario_Thunk, notifies callback +0xb2f8; optional random start_%u selection seeded by +0xb33c. (lane owner review requested)"
  },
  "signature": {
   "id": "game.time_of_day_system_initialise_scenario",

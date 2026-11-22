@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430727e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-SESSION",
-  "notes": "named from its log messages (channel NETWORK-SESSION): '%s: failed because the career session does not exist anymore, delay the retry for %f seconds'"
+  "evidence": "decomp:re/decomp/1430727e0.c;pat:log-channel-NETWORK-SESSION;xref:0x143072c85,0x1430765b4,0x1430e3dc9,0x143166750",
+  "notes": "__FUNCTION__ 'GameSessionMatchingCareer::onJoinSessionComplete(NEbool, NeNetError)': on failure Leave (0x1430605c0) and either schedules a retry ('career session does not exist anymore, delay the retry') or reports via notifyJoinCareerSessionResult. (lane owner review requested) Better name: Game_GameSessionMatchingCareer_OnJoinSessionComplete (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_session_because_career_session_does_exist",

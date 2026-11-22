@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401d0740",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1401d0740.c;xref:0x14018d9fc",
-  "notes": "Recursive: stores a 16-byte value (param_2) at node+0x568/+0x570 and repeats for each child pointer in the vector node+0x550..0x558. 4 callers incl. Game_Scene_RegisterPartCallbackAndTrack and Game_GarageCrewModule_SpawnGarageCrew. Hypothesis: propagates a tint/transform/visibility value through a scene part tree."
+  "evidence": "decomp:re/decomp/1401d0740.c;xref:0x14018d9fc,0x1401d0786,0x14038bedc,0x140c7610a",
+  "notes": "Recursive: stores the 16-byte value param_2 at node+0x568/+0x570, then repeats for every child in node+0x550..+0x558. From Game_Scene_RegisterPartCallbackAndTrack the value is a callback pair {0x14018d620, manager}; other callers in Game_GarageCrewModule_SpawnGarageCrew (0x14038bedc) and 0x140c74070 (0x140c7610a). (lane owner review requested)"
  },
  "signature": {
   "id": "game.scene_node_propagate_value_to_children",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d9d480",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onStateEnter (class from the log channel); log channel SessionStateViewReplay: 'onStateEnter'"
+  "evidence": "decomp:re/decomp/142d9d480.c;pat:log-message-method;xref:0x142d9d461,0x142da018f,0x142da26a2,0x142da51c6,0x142da628e,0x1457e3cb0",
+  "notes": "Logs SessionStateViewReplay \"onStateEnter\"; once (+0xf40 bit0), or +0xed4 = 1 when 0x1407c13f0 fails; keeps [+0xc98]+0x1e8 in +0xed0 and sets mode 8; frees [+0xd8] tasks; mode +0xed8 < 5 -> [+0xdb8]+0x140 from table 0x1457e7b48; posts replay task 0x1457e66b8; mode 2 adds the event_mode_details_close handler 0x142da4090 and audio state \"in_race\", else \"main\". Called by derived state enters and vtable 0x1457e3cb0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.session_state_view_replay_on_state_enter",

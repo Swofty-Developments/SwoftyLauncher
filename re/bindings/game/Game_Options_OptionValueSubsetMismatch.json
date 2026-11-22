@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a1a0b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-OPTIONS",
-  "notes": "named from its log messages (channel OPTIONS): 'Option '%s' - value subset '%s' mismatch '"
+  "evidence": "decomp:re/decomp/142a1a0b0.c;pat:log-channel-OPTIONS;xref:0x142910fe7,0x142a18611,0x142ab6358,0x142ad2f19,0x142ad327c,0x142ada2e6",
+  "notes": "Parses one value_subset JSON object: 'values' array strings XOR-decoded with key 0x145890978, option looked up by name in param_2+0x270 map; for enum options (type 1, values +0x80 stride 0x50) builds a 64-bit mask of matching value names, stores mask ^ -param_5 (invert flag) through 0x142ad89b0, result valid flag at param_1+0x38. Logs 'Failed to find option' / 'value subset mismatch' (OPTIONS). Called by 0x142ab60b0 and others listed. (lane owner review requested) Better name: Game_Options_ParseValueSubset (bound record keeps its name)."
  },
  "signature": {
   "id": "game.options_option_value_subset_mismatch",

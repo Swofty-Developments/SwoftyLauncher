@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142fa31e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-GHOSTLAP-TRACE",
-  "notes": "named from its log messages (channel GHOSTLAP-TRACE): '%s(#%d) : failed to serialise personal best. | %s(#%d, %d) | %s(#%d, %d) : performanceState is (%s). | %s(#%d) : personal best laptime (%d ms) is not better than current(%d ms). | %s(#%d) : memory sto'"
+  "evidence": "decomp:re/decomp/142fa31e0.c;pat:log-channel-GHOSTLAP-TRACE;xref:0x142f98c89",
+  "notes": "writePersonalBestDataSetSetWithDescription per its log name: lap ms (+ invalid bit<<30); skipped if not better than h+0x300; serialises telemetry into the h+0x278 buffer, builds the description (vehicle/team/customisation ids, date, carSetup, assists, tyre, sectors +0x26c..+0x274 must sum to the lap +-10 ms), writes it (0x142f8a0c0), caches at h+0x280..+0x318, h+0x66=1; upload 0x142fa3de0 when global 0x1460960d0. Caller 0x142f98320. (lane owner review requested) Better name: Game_GhostLaps_WritePersonalBestDataSetWithDescription (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ghost_laps_save_personal_best",

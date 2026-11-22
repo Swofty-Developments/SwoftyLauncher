@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140d94f10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-CONTRACT_RENEWAL",
-  "notes": "named from its log messages (channel CONTRACT_RENEWAL): 'Driver exited auction, cannot reapproach until next window: %s - Team : %s  | Driver is no longer available: %s - Team : %s  | Team is no longer available: %s - Team : %s  | Already approached this dr'"
+  "evidence": "decomp:re/decomp/140d94f10.c;pat:log-channel-CONTRACT_RENEWAL;xref:0x140d8dec7,0x140d9815f,0x140d9b019",
+  "notes": "Returns true when team param_3 may approach driver param_2 (0x3fff0000 = none): checks the per-driver approach record (comp+0x368, key +4) or per-team record (comp+0x348) +0x10 list (already approached today) and +0x30 list (exited auction), driver present in comp+0x308, team available (0x140d8c8f0), plus 0x140d97750; logs each CONTRACT_RENEWAL reject reason. (lane owner review requested) Better name: Career_ContractRenewal_CanApproachDriver (bound record keeps its name)."
  },
  "signature": {
   "id": "career.contract_renewal_driver_exit_auction",

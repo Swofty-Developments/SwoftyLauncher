@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144729da0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-WHEEL_LIGHTS",
-  "notes": "named from its log messages (channel WHEEL_LIGHTS): 'Speed (%d) = %.2f | Player%d car Index: %d | AI control sync check %d'"
+  "evidence": "decomp:re/decomp/144729da0.c;pat:log-channel-WHEEL_LIGHTS;xref:0x155579581,0x1555795a7",
+  "notes": "Read in full: (sys, out, telemetry, player, carIdx, aiCtl) fills 0x6c-byte record out+player*0x6c from per-car telemetry (stride 0x3b/0x39/0x2e/0x5b4): rev % /100, gear, speed km/h or mph (/1.609344 by unit flags +0x311/+0x313) logged 'Speed (%d) = %.2f', rpm ratio, flag states 1..4, DRS, pit/limiter, lap time ms, sector data; logs 'Player%d car Index: %d' and 'AI control sync check %d'; sets *out = 1. Only refs are calls from 0x155579420. (lane owner review requested) Better name: Game_WheelLights_FillPlayerRecord (bound record keeps its name)."
  },
  "signature": {
   "id": "game.wheel_lights_update",

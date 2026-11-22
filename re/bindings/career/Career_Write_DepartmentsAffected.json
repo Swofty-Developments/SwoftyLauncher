@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143527400",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "int Career_Write_DepartmentsAffected(void * self,int64_t *a2)",
-  "evidence": "decomp:re/decomp/143527400.c;xref:0x14a6f1556",
-  "notes": "myteam-g1: Writes department and departments_affected."
+  "evidence": "decomp:re/decomp/143527400.c;xref:0x14a6f1557",
+  "notes": "Save writer 'schedule': for each entry of vector this+0x60..+0x68 writes name, season_index (+0), rumour_start_weekend (+4), confirmation_weekend (+8), departments_affected[] of department (list +0x10, count +0x18) and types_affected[] of type (count +0x38). Caller in .data1 fn 0x14a6f13a0. (lane owner review requested) Better name: Career_Write_DepartmentsAffectedSchedule (bound record keeps its name)."
  },
  "signature": {
   "id": "career.write_departments_affected",

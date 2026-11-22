@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1445e4e90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1445e4e90.c;xref:0x1445dbdc2",
-  "notes": "Lookup by 16-byte key (FNV-1a 64 over the 16 key bytes, multiplier at +0x20) in the track-camera shot map; returns the slot index. Caller Game_TrackCameraShots_FindShotByName. Hypothesis that the key is the hashed shot name."
+  "notes": "Robin-hood hash lookup with a 16-byte key: FNV-1a 64 over the 16 bytes, times map+0x20, folded (h>>33 ^ h); info bytes map+0x30 (shift +0x54, increment +0x50), mask +0x40, entry pointers map+0x28 compared as two qwords. Returns slot index + 1 of the hit; ends at the table end when absent. Key = zero-padded shot name (<= 15 chars) built by the caller 0x1445dbdc2 (in 0x1445db910). (lane owner review requested)"
  },
  "signature": {
   "id": "game.track_camera_shots_shot_map_find",

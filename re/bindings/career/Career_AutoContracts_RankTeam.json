@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c57df0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-AUTOMATIC_CONTRACTS",
-  "notes": "named from its log messages (channel AUTOMATIC_CONTRACTS): 'Calculating rankings for team %s'"
+  "evidence": "decomp:re/decomp/140c57df0.c;pat:log-channel-AUTOMATIC_CONTRACTS;xref:0x140c570b3,0x140c579df",
+  "notes": "AUTOMATIC_CONTRACTS log 'Calculating rankings for team %s' (team key param_1[0]). Reads Career_Get_BankTeamBalance, clears ranking containers +0x58..+0xb0, walks entrant rows [param_1+0x10]+0x2e0 with filters (0x140db7e30, 0x140dca800, 0x140d82400), scores drivers with stat 0x14113d120 and weights [param_1+0x28]+0x30/+0x38. (lane owner review requested)"
  },
  "signature": {
   "id": "career.auto_contracts_rank_team",

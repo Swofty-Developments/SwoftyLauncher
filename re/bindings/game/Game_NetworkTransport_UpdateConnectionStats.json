@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1440a1aa0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name updateConnectionStats (class from the log channel); log channel NETWORK-TRANSPORT: '%s: Error retriving endpoint statistics for entity Id %s, error: %s'"
+  "evidence": "decomp:re/decomp/1440a1aa0.c;pat:log-message-method;xref:0x145a552b8",
+  "notes": "Vtable cell: clears the stats array (+0x550), lists connected endpoints, gets entity ids and endpoint statistics, logs errors with 'updateConnectionStats'. (lane owner review requested) Better name: Game_NetworkTransportPlayFab_UpdateConnectionStats (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_transport_update_connection_stats",

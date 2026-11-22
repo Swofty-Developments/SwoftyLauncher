@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1437a46f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name handleUnassignedSurfaceOwnershipTransfer (class from the log channel); log channel GameSurfacePack: 'handleUnassignedSurfaceOwnershipTransfer resource ID mismatch (%s versus %s)'"
+  "evidence": "decomp:re/decomp/1437a46f0.c;pat:log-message-method;xref:0x1437a61a6,0x1437a6492,0x1437a9c31,0x1437a9e2c,0x1437aa30b,0x1437aa4d2",
+  "notes": "handleUnassignedSurfaceOwnershipTransfer(pack,surf): same move as 0x1437a4590 on the unassigned table pack+0xc018 (count pack+0x18024): entry+0x10=surf[2], flag +0x38, surf[2]=0; returns 1 when an entry took the resource, else 0. Callers 0x1437a5c40, 0x1437a9180. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_surface_pack_handle_unassigned_surface_ownership_transfer",

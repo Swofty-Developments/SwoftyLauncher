@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143038620",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=ChampionshipStoreManager::onSaveRequest; log channel NETWORK/F: 'network::ChampionshipStoreManager::onSaveRequest()'"
+  "evidence": "decomp:re/decomp/143038620.c;pat:log-message-cxx;xref:0x140bb4cd9,0x141de960b,0x141de9a94,0x143098212,0x1430ac6b1,0x1430ecbb1,0x1436dd5a6,0x1436dd687,0x1436fec37,0x1436fed28",
+  "notes": "Own log onSaveRequest. Picks or creates the target save +0x60: unnamed when +0x18 == 0, else named; new ones via Game_SavedOnlineChampionshipContainer_Create... with the first free slot id (+0x210); copies GUID +0x48..+0x58 into save +0x220..+0x230, 0x143038bd0(this, save, param_3), and if param_2 Game_SaveMgr_RequestProfileSave_Thunk. (lane owner review requested)"
  },
  "signature": {
   "id": "game.championship_store_manager_on_save_request",

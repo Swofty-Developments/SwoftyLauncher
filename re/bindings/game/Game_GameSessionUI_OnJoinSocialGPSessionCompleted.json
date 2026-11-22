@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430b2890",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionUI::onJoinSocialGPSessionCompleted; log channel NETWORK-UI: 'void network::GameSessionUI::onJoinSocialGPSessionCompleted(NEbool, neon::NeNetError, NEbool) | %s: success: %d, error code: %d, retry: %d'"
+  "evidence": "decomp:re/decomp/1430b2890.c;pat:log-message-cxx;xref:0x1430aeacd,0x1430b2536,0x1430b299e",
+  "notes": "Refs: lea 0x1430aeacd, 0x1430b2536 (TriggerSocialGP) and 0x1430b299e (itself, re-passed on retry). Logs 'onJoinSocialGPSessionCompleted(NEbool, NeNetError, NEbool)'. If the searching popup is shown, closes it (0x1442aad70). Failure: without retry or after 3 retries (+0x42c > 2) clears +0x431, 0x142ad41c0([p1+0x4f8],0) and shows the 'F1WorldSocial' error popup (0x143065b00, done-callback OnJoinSocialGPSessionFailedPopupCompleted); with retry +0x42c++, 0x143065250([p1+8],5,0) and restarts F1WSocialGP_EnterSession plus the network_search_servers popup. Success clears +0x431. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_session_ui_on_join_social_gp_session_completed",

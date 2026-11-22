@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140791ee0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-DLC",
-  "notes": "named from its log messages (channel DLC): 'MOX/Entitlement: DlcInstalled. I could process the specific item, but eh.'"
+  "evidence": "decomp:re/decomp/140791ee0.c;pat:log-channel-DLC;xref:0x14078f0e1",
+  "notes": "Callback (lea at 0x14078f0e1 in 0x14078eb40): logs DLC 'MOX/Entitlement: DlcInstalled. I could process the specific item, but eh.' and sets this+0x518 = 1 (the rescan request read by Game_DLC_UpdateEntitlementScan). (lane owner review requested)"
  },
  "signature": {
   "id": "game.dlc_mox_entitlement_dlc_installed_process",

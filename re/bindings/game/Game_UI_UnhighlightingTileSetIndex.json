@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1418e0290",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-UI",
-  "notes": "named from its log messages (channel UI): 'Unhighlighting tile set at index: %d'"
+  "evidence": "decomp:re/decomp/1418e0290.c;pat:log-channel-UI;xref:0x1419e2d5d",
+  "notes": "(screen): idx = 0x1418df680; logs 'Unhighlighting tile set at index: %d' (idx+1) and the spawned count; for set[idx+1] of screen+0xb30 (+0x50..+0x58) writes bool 0 into every tile's nodes +0x400 / +0x150 and the set node [+0x150]+0x190, then 1 into the +0x400 / +0x150 nodes of set[idx]. Out of range -> 0x1419514d0 + int3. Caller jmp 0x1419e2d5d. (lane owner review requested) Better name: Game_UI_UnhighlightTileSet (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ui_unhighlighting_tile_set_index",

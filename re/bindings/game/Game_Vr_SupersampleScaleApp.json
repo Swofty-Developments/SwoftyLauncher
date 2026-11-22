@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439eb3a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name supersampleScaleApp (class from the log channel); log channel VR: 'supersampleScaleApp = %f'"
+  "evidence": "decomp:re/decomp/1439eb3a0.c;pat:log-message-method;xref:0x1439ea3ab,0x1439ec790",
+  "notes": "Read in full: builds section 'steam.app.%u' from the app id ([0x146129760] vcall +0x20), IVRSettings_003 GetFloat(section,'resolutionScale') / 100, returns 1.0 on error; logs 'supersampleScaleApp = %f'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vr_supersample_scale_app",

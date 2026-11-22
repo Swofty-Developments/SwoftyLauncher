@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1440404b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name textReceivedHelper (class from the log channel); log channel NETWORK-VOICE: '%s: Received text message, but we're not in the list of receiverss!'"
+  "evidence": "decomp:re/decomp/1440404b0.c;pat:log-message-method;xref:0x14403d978",
+  "notes": "Handles a received text chat message: checks the local user is in the receiver list, else logs '%s: Received text message, but we're not in the list of receiverss!' with its own name textReceivedHelper; copies the text out. Called from Game_NetworkVoice_HandlePlayFabPartyStateChange. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_voice_text_received_helper",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144447d60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NEOS_WS",
-  "notes": "named from its log messages (channel NEOS_WS): 'WebSocketTransportWinHttp::cbHttpResponse - Status code = %d, dataSize=%d'"
+  "evidence": "decomp:re/decomp/144447d60.c;pat:log-channel-NEOS_WS;xref:0x144447635",
+  "notes": "lea 0x144447635. cbHttpResponse: finds the transport by request id in map this+0x1180.. under CS; status 101 in state 3 -> upgraded (buffers set); 200 logs 'Upgrade failed'; state 4 appends body chunks, queues the buffer on the last chunk; other status -> vslot +0x28 and error 'FailedToReceiveBadStatus'; removes the id when final. (lane owner review requested) Better name: Game_NeosWS_WinHttpOnHttpResponse (bound record keeps its name)."
  },
  "signature": {
   "id": "game.neos_ws_web_socket_transport_win_http",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1445d3640",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=ReplayStream::interpolateBackwards; log channel REPLAY: 'ReplayStream::interpolateBackwards m_fastRewind'"
+  "evidence": "decomp:re/decomp/1445d3640.c;pat:log-message-cxx;xref:0x1445d42f6,0x1445d6f98,0x1445d71df,0x1445d7413,0x1445d74ac,0x1445d781b,0x1445d7999",
+  "notes": "ReplayStream::rewind(dt) (log REPLAY '%p rewind(%f) m_time = %f'; 'interpolateBackwards' is only a log inside). m_time +0xd8 += dt, clamped to the buffer [+0xc0]+0x2d8 minimum time (vcall +0x40) or limit +0x100; peeks frames and steps back via Ne_ReplayRecordable_ReadFrom until frame time <= m_time; sets interpolation factor +0xdc, prev time +0xf0, delta +0xf8; logs when the replay start is reached. Callers 0x1445d6ce0, jmp 0x1445d42f6. (lane owner review requested) Better name: Game_ReplayStream_Rewind (bound record keeps its name)."
  },
  "signature": {
   "id": "game.replay_stream_interpolate_backwards",

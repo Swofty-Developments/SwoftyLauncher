@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14073ce00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TELEMETRY",
-  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: Facility Upgrade purchased for %s'"
+  "evidence": "decomp:re/decomp/14073ce00.c;pat:log-channel-TELEMETRY;xref:0x1406e8398,0x140706c58",
+  "notes": "Bus handler(this,msg); subscribed 0x1406e8398 (0x1406d8470), unregistered 0x140706c58. 0xd0-byte record: string msg+0x10 (log arg), msg+0x28, u32s msg+0xb0..+0xc0, optional 16-byte list msg+0xd0..+0xd8 (flag msg+0xe8) -> 0x98 sub-records. Tag 'my_team_facility_upgrade_purchased_record' via 0x14077a240, GUID+seq, 64-entry queue; logs 'Facility Upgrade purchased for %s' (TELEMETRY). (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_facility_upgrade_purchased_for",

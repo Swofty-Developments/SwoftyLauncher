@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1422ca8a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_TeamHQAdvanceViewModel_AnimateOnNotifications;xref:0x1422cace4,0x1422cad20",
-  "notes": "cxx=game::TeamHQAdvanceViewModel::animateOnNotifications; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1422ca8a0.c;str:s_TeamHQAdvanceViewModel_AnimateOnNotifications;xref:0x1422bf886,0x1422c0efc,0x1422c18eb,0x1422c755e,0x1422cbdc2",
+  "notes": "TeamHQAdvanceViewModel::animateOnNotifications: dispatches UI events animate_on_event_card(_instant), animate_on_notification_set/animate_on_card_instant, animate_off_timeline_card/popup/entire_day by timeline day flags (Vm_TeamHqTimeline_IsCurrentDayBool*), and allow/disallow_card_buttons when online (+0x767) by sync state +0x290. (lane owner review requested)"
  },
  "signature": {
   "id": "game.team_h_q_advance_view_model_animate_on_notifications",

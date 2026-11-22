@@ -31,6 +31,7 @@ template <class Declare> std::size_t declare_system_registries(Declare &&declare
     one(teams::logos);
     one(teams::pit_times);
     one(teams::garages);
+    one(teams::vehicle_overrides);
     one(wearables::helmets);
     one(wearables::suits);
     one(wearables::gloves);
@@ -48,6 +49,8 @@ template <class Declare> std::size_t declare_system_registries(Declare &&declare
     one(sounds::engine_sounds);
     one(content::packages);
     one(content::era_boxes);
+    one(content::package_ui);
+    one(content::box_assets);
     one(power::drs_rules);
     one(swofty::career::modes);
     one(swofty::career::seasons);
@@ -58,6 +61,7 @@ template <class Declare> std::size_t declare_system_registries(Declare &&declare
     one(tracks::tracks);
     one(tracks::venues);
     one(tracks::data);
+    one(tracks::sponsors);
     one(tracks::per_package);
     one(sessions::points);
     return count;

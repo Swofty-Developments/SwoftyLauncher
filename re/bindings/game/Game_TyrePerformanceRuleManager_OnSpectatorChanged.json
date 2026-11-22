@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1415291c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_TyrePerformanceRuleManager_OnSpectatorChanged;xref:0x141529240",
-  "notes": "cxx=game::TyrePerformanceRuleManager::onSpectatorChanged; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1415291c0.c;str:s_TyrePerformanceRuleManager_OnSpectatorChanged;xref:0x1456ed280",
+  "notes": "game::TyrePerformanceRuleManager::onSpectatorChanged(vehicleInstance::Id) (own pretty-function string 0x1456ed455, channel AWS_TYRE_PERF). If this+0x714 != id: logs, this+0x710 = clamp(this+0x710, 10, 0x6e) - 10, this+0x714 = id. Always this+0x270 = id. Called through vtable cell 0x1456ed280. (lane owner review requested)"
  },
  "signature": {
   "id": "game.tyre_performance_rule_manager_on_spectator_changed",

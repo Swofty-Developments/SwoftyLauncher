@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401758d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1401758d0.c;xref:0x1436f6772,0x1436f7458",
-  "notes": "(state, bool): stores flag at +0xc15 and writes byte (flag && !+0xe50 && !+0xc14) into the global render parameter block 0x146c621e0 key 0x146cc4a60 (lock/write/unlock via vtbl +0x18/+0x20/+0x30). Caller: Game_StateSession_OnStateExit."
+  "evidence": "decomp:re/decomp/1401758d0.c;xref:0x1436f6772,0x1436f7458,0x1436f836b",
+  "notes": "(state, bool): stores flag +0xc15; writes byte (flag && !+0xe50 && !+0xc14) to render parameter block 0x146c621e0 key 0x146cc4a60 via vt +0x18/+0x20/+0x30. Callers in 0x1436f6740 and 0x1436f8340. (lane owner review requested)"
  },
  "signature": {
   "id": "game.state_session_set_render_override_flag",

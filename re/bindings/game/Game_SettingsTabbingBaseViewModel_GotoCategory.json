@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141ded550",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_SettingsTabbingBaseViewModel_GotoCategory;xref:0x141ded700,0x141ded740",
-  "notes": "cxx=game::SettingsTabbingBaseViewModel::gotoCategory; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/141ded550.c;str:s_SettingsTabbingBaseViewModel_GotoCategory;xref:0x14574cc60,0x14574d5f0,0x14574e890,0x14574eec0,0x14574f0c0,0x14574f300,0x14574f550,0x1457521a0",
+  "notes": "Vtable cells in the settings view-model vtables (0x14574cc60 ...). Needs param_2 and +0x8a0; clears +0x8b1; looks up category param_2 by name in +0x670 (count +0x870), stores the name in +0x948 (0x1407b10c0); category with a non-empty command -> logs OPTIONS-UI \"nav through to category [%s] with command [%s]\" and vcall +0x128(command), else logs \"nav through to category [%s]\" and vcall +0x128(\"settings_edit\"). (lane owner review requested)"
  },
  "signature": {
   "id": "game.settings_tabbing_base_view_model_goto_category",

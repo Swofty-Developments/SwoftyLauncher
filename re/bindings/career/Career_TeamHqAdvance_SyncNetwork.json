@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140ffa300",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-TEAMHQ_ADVANCE",
-  "notes": "named from its log messages (channel TEAMHQ ADVANCE): '%s received event: %s, day %d, continue %d | %s sending network message: %s, day: %d, continue %d'"
+  "evidence": "decomp:re/decomp/140ffa300.c;pat:log-channel-TEAMHQ_ADVANCE;xref:0x140ffa00c,0x140ffa81e",
+  "notes": "CareerOnlineTimeAdvancementControllerComponent::onTeamHQAdvanceTime (log fn name, channel TEAMHQ ADVANCE): logs event msg+0x10, day +0x12, continue +0x14; maps event 0 FinishedDay -> 1, 2 CanStartDay -> 3, 4 StopAdvancing -> 5 (else return 0) and sends net message 0x98 (desc 0x1456b7680) via 0x14402e500 on [this+0x298]+0x3d0 (sendNetworkMessage). Returns 0. (lane owner review requested) Better name: Career_OnlineTimeAdvance_OnTeamHqAdvanceTime (bound record keeps its name)."
  },
  "signature": {
   "id": "career.team_hq_advance_sync_network",

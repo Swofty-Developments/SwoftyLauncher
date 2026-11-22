@@ -9,7 +9,7 @@
   "subsystem": "session",
   "proto": "-",
   "evidence": "pat:log-channel-LAPTIMES;decomp:re/decomp/142f31d10.c",
-  "notes": "named from its log messages (channel LAPTIMES): 'received sector %d, on lap %d, to vehicle %d, and session time was %f'"
+  "notes": "Logs LAPTIMES 'received sector %d, on lap %d, to vehicle %d, and session time was %f'. No call/jmp/lea or absolute pointer reference to 0x142f31d10 in any section (rip-relative and 8-byte scans)."
  },
  "signature": {
   "id": "session.lap_times_on_sector_received",

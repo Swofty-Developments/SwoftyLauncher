@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144434ca0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144434ca0.c;xref:0x1427b7b86",
-  "notes": "JSON helper: member param_1 is an array of arrays (type 4) of numbers -> floats into param_2 (matrix rows). Used by the rigid-body state reader 0x1427b7a40 (values)."
+  "evidence": "decomp:re/decomp/144434ca0.c;xref:0x1427b7b85",
+  "notes": "(name, float* out, obj*): member must be an array (type 4) of arrays of numbers; reads up to 4 rows x 4 floats into out (row stride 16 bytes); returns true only when 4 rows were read. Missing logs 'Unable to find value for %s in JSON'. Caller Sess_Parse_CarStateTransform 0x1427b7a40. Better name: Ne_Json_GetMatrix4x4 (bound record keeps its name)."
  },
  "signature": {
   "id": "core.json_get_float_array_nested",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140f8d8d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140f8d8d0.c;xref:0x1456af488;doc:addons/career-editor/protocol/facilities.md#engine-paths",
-  "notes": "Facility node vtable (0x1456af450) slot +0x38, called from Career_Complete_PerkTreeNode: logs MY_TEAM_REWARDS 'Claiming rewards for facility perk %s' (node+0x88 name), applies the reward set (+0x70), stamps day_completed (+0xd8) and posts MessageFacilityUpgradeComplete (message vtable 0x1456b06b8, name getter 0x140fa7720). Design 9 proposed name MyTeamRewards_ClaimFacilityPerk."
+  "evidence": "decomp:re/decomp/140f8d8d0.c;doc:addons/career-editor/protocol/facilities.md#engine-paths;xref:0x1456af488",
+  "notes": "Facility node vtable cell 0x1456af488: logs MY_TEAM_REWARDS 'Claiming rewards for facility perk' (name +0x88), claims each reward of set +0x70 via 0x140fc6000, stamps +0xd8, gathers rewards with 0x140fc6740, computes value 0x140f8e5f0 and posts message vtable 0x1456b06b8 through 0x1439876c0; returns 1. (lane owner review requested)"
  },
  "signature": {
   "id": "career.claim_facility_perk_rewards",

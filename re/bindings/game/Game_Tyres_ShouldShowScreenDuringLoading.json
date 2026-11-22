@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140bcf610",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name shouldShowScreenDuringLoading (class from the log channel); log channel TYRES/V: '%s'"
+  "evidence": "decomp:re/decomp/140bcf610.c;pat:log-message-method;xref:0x1436e04a6",
+  "notes": "TyreAllocationComponent shouldShowScreenDuringLoading (log TYRES/V) -> bool. False with a logged reason: no weekend, tyre allocation locked, not multiplayer, online career, elimination ruleset ([this+0x2d0]+0x1a8 == 0xc), highlight session, not in weekly event, invalid race length / race too short (race length from 0x140bcff00), no local players. Else returns weekend+0x238 == 0 and logs 'Race Length %s, localPlayers %s, isFirstSession %s'. Caller 0x1436e04a6. (lane owner review requested) Better name: Game_TyreAllocation_ShouldShowScreenDuringLoading (bound record keeps its name)."
  },
  "signature": {
   "id": "game.tyres_should_show_screen_during_loading",

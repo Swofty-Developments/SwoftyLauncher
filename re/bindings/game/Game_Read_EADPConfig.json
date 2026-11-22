@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143fcd060",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: EADP.blockListCacheEnabled, EADP.friendCacheEnabled, EADP.logLevel'"
+  "evidence": "decomp:re/decomp/143fcd060.c;pat:log-channel--;xref:0x145a44c98",
+  "notes": "EADP component init (vt cell 0x145a44c98): service 0x146cb8278 -> +0x1f8 (error 0x16 if missing), 0x146c9fee0 -> +0x208; EADP.logLevel (dbg 2, info 4, verbose 1, warn 8, err 0x10, fatal 0x20, else 0xff) -> +0x128, EADP.friendCacheEnabled -> +0x129, EADP.blockListCacheEnabled -> +0x12a; EGO_APPLICATION allocator +0x120/+0x158, wrapper +0x160, 0x20-byte object +0x228. (lane owner review requested)"
  },
  "signature": {
   "id": "game.read_eadp_config",

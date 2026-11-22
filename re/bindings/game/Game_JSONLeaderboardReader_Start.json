@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142fba5b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_JSONLeaderboardReader_Start;xref:0x142fba652",
-  "notes": "cxx=game::JSONLeaderboardReader::start; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/142fba5b0.c;str:s_JSONLeaderboardReader_Start;xref:0x1457feee8",
+  "notes": "Vtable slot +0x8 (cell 0x1457feee8). (reader, ctx, mode, start, count, delegate): logs 'start(%s, %s, %llu, +%d)'; vcall +0x30(changed), changed = name/version/byte +0xec differ from ctx; copies the ctx name block (+0x18..+0x30) to +0xc8, ver +0xe8, mode +0x3c, start +0xf8, end +0x100, count +0x108, delegate +0x110/+0x118; then StartOperation(this, ctx, mode, start, start+count). (lane owner review requested)"
  },
  "signature": {
   "id": "game.j_s_o_n_leaderboard_reader_start",

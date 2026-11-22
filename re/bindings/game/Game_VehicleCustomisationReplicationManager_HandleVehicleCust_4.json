@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143146160",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VehicleCustomisationReplicationManager::handleVehicleCustomisationAdd; log channel NETWORK-ENTRANTS-MESSAGES: 'void network::VehicleCustomisationReplicationManager::handleVehicleCustomisationAdd(neon::NeNetMessage &, neon::NeNetConnectionID) | %s : Manager is now applying the decals stored for player '%s'.'"
+  "evidence": "decomp:re/decomp/143146160.c;pat:log-message-cxx;xref:0x14313f05e",
+  "notes": "Read in full: logs 'Received VehicleCustomisationAddNetMessage for player'; copies msg+0x90 and calls replacePlayerVehicleCustomisation 0x1431400c0(this, msg+0x10, u16 msg+0x70); builds the player key; if a stored decal list for id msg+0x190 exists and is non-empty or complete: logs 'now applying the decals stored', applyPlayerVehicleCustomisationStoredDecals 0x1431448e0 and 0x143144f50, ready = 0; else logs 'now waiting for decals', ready = 1; then setIsPlayerVehicleCustomisationReadyToApplyDecals 0x143144370. Registered by lea 0x14313f05e in 0x14313f030. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_customisation_replication_manager_handle_vehicle_cust_4",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141008bf0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_Championship_CareerOnlineManagerComponent_ParseUserCareers;xref:0x1410099f2,0x141009d7c,0x141009eb8,0x14100a06e,0x14100a1be",
-  "notes": "cxx=game::championship::CareerOnlineManagerComponent::parseUserCareers; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/141008bf0.c;str:s_Championship_CareerOnlineManagerComponent_ParseUserCareers;xref:0x1456b7428",
+  "notes": "Vtable cell 0x1456b7428 (slot +0x38 of vtable 0x1456b73f0, code neighbours). Copies state +0x154 to +0x150, jump table on it: 1 start request (cb 0x14100a410), 2 receive (+0x120 result), 3 inlined CareerOnlineManagerComponent::parseUserCareers (CAREER_ONLINE_MANAGER CUSTOMISATION logs, clean slot call 0x140fe5900 at 0x14100a1e8) then state 4; 4/10 'Career_Online_FailedRetrieveCareers', 5 'Career_Online_RecoverBackup' via 0x14100aa00; 6 queue pop; 9/0xb vcalls +0x58/+0x60. (lane owner review requested) Better name: Game_CareerOnlineRetrieveCareersOp_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.career_online_manager_component_parse_user_careers",

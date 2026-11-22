@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14307d7b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionMatchingF1WSocialGP::searchSession; log channel NETWORK-SESSION/V: 'NEbool network::GameSessionMatchingF1WSocialGP::searchSession() | %s : still waiting download or session is busy'"
+  "evidence": "decomp:re/decomp/14307d7b0.c;pat:log-message-cxx;xref:0x14307c287,0x1430e4043",
+  "notes": "Own pretty-function string 0x14580d0a1 'NEbool ...F1WSocialGP::searchSession()'. If no download/busy state ([p1+8]+0x338/+0x33c zero and [[..+0xd8]+0x148] vt+0x38 false): +0x58 = 2, builds search attribs (0x1430711b0, type 5), overrides MatchingClusterID (+0xa8), Track (+0xac), SafetyRating (+0xb0) via 0x14407dbe0, 0x1430715b0, pushes rating to three filters ([..+0xd8]+0x768/+0x770/+0x778 vt+0x38), starts the search 0x144064f50 with callback 0x14307c2c0. Else logs NETWORK-SESSION/V 'still waiting download or session is busy' and returns 1. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_session_matching_f1_w_social_gp_search_session",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401a7e40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1401a7e40.c;xref:0x1401a8974",
-  "notes": "Applies per-driver skin/material to a driver actor: looks up customisation key (actor+0x228 -> +0xf0) through 0x143929a10, compares with cached [this+0x5a0], builds a NeMultiSubMaterialResourceFactory request (sub-materials \"skin,arm\"). Callers 0x1401a8570, Game_DriverCustomiser_ApplySuitDecals, Game_CutSceneScript_SpawnDynamicDriverActor. Addon: driver skin/arm material swap hook. Hypothesis."
+  "evidence": "decomp:re/decomp/1401a7e40.c;xref:0x1401a8974,0x1401a97e3,0x140245137,0x1402467b7",
+  "notes": "(actor, customisation owner): needs material slot actor[0x45] and [owner+0x228]; key = Ne_Hash_Md5Digest 0x143929a10(slot[0x1e], [[owner+0x228]+0xf0], 8). Returns early when it equals cached actor[0xb4]; else logs NeMultiSubMaterialResourceFactory with sub-materials 'skin,arm', posts the request record (key, names slot[0x1e]/[0x1f], +0xf0/+0xf8, 'skin,arm') via global 0x146c621e0, calls actor vfuncs +0x170/+0x180 around a 0x40-byte material record and releases the previous key actor[0xb4]/[0xb5]. Callers 0x1401a8570, 0x1401a9390, 0x140244660. (lane owner review requested)"
  },
  "signature": {
   "id": "game.driver_actor_apply_driver_materials",

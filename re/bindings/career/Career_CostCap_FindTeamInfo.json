@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c99fa0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-COST_CAP",
-  "notes": "named from its log messages (channel COST CAP): 'Team %s has no cost cap info in any season. | Team %s has no cost cap info for season %d.'"
+  "evidence": "decomp:re/decomp/140c99fa0.c;pat:log-channel-COST_CAP;xref:0x140a8fd8b,0x140a98e35,0x140a99165,0x140a99485",
+  "notes": "COST CAP log. Looks the team (packed key param_3) up in the hash map comp+0x2d0..+0x304, then season param_4 in the team's map (+0x28..+0x5c); copies the record (+8, +0x10, allocator +0x18, u32 vector +0x20..+0x28) into out param_2; logs 'no cost cap info' when missing. callers. (lane owner review requested)"
  },
  "signature": {
   "id": "career.cost_cap_find_team_info",

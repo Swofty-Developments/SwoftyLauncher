@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144735cf0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144735cf0.c",
-  "notes": "Sends the 2025-format packets. UDP telemetry, format index [[this+0xe0]+0xc] (0 = 2024, 1 = 2025, 2 = 2026) chosen in Game_TelemetryOutputUDPUpdateable_Update 0x1447311a0 and 0x144738050."
+  "evidence": "decomp:re/decomp/144735cf0.c;xref:0x144731382,0x144738156",
+  "notes": "Sends the 2025-format packet buffers, each gated by Game_TelemetryUdp_RateLimitTick, via 0x144737d30. Tail-jumped from Game_TelemetryOutputUDPUpdateable_Update and called from Game_TelemetryUdp_HandleEvent (format index 1). (lane owner review requested)"
  },
  "signature": {
   "id": "game.telemetry_udp_send2025",

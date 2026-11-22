@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140d9afe0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-CONTRACT_RENEWAL",
-  "notes": "named from its log messages (channel CONTRACT_RENEWAL): 'No valid driver found to approach: %s - Team : %s '"
+  "evidence": "decomp:re/decomp/140d9afe0.c;pat:log-channel-CONTRACT_RENEWAL;xref:0x140d9aa47,0x140d9ac04",
+  "notes": "Iterates candidate driver keys (param_4+8..+0x10, u32) and writes the first for which 0x140d94f10(comp, driver, *team) is true to *param_2; if none writes 0x3fff0000 and logs CONTRACT_RENEWAL 'No valid driver found to approach'. Returns param_2. (lane owner review requested) Better name: Career_ContractRenewal_FindFirstApproachableDriver (bound record keeps its name)."
  },
  "signature": {
   "id": "career.contract_renewal_no_driver_found",

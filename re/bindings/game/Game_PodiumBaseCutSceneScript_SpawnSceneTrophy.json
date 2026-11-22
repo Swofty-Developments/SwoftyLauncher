@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14035afe0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=PodiumBaseCutSceneScript::spawnSceneTrophy; log channel CUTSCENE_PODIUM: 'PodiumBaseCutSceneScript::spawnSceneTrophy'"
+  "evidence": "decomp:re/decomp/14035afe0.c;pat:log-message-cxx;xref:0x14035aef0,0x14035bea0,0x14035c5d0,0x14035cd00,0x14035d4d6,0x14035d4e6,0x14035d4f3,0x14035dc41,0x14035dc51,0x14035dc5e,0x14035e296,0x14035e2a6,0x14035e2b3,0x14035eb06,0x14035eb16,0x14035eb23,0x14035f376,0x14035f386,0x14035f393,0x14036046d,0x140360489,0x140360499,0x1403604a9,0x14036107d,0x140361099,0x1403610a9,0x1403610b9",
+  "notes": "(this, position 0..3, p3): logs class string, Game_PodiumBase_GetTeamOrRandomNameString 0x14036fe30 into a 256-byte buffer, spawns the scene (name + '2019') via 0x14023f920; on the first actor shows only trophy_1st/2nd/3rd/ENG for param_2 (vt+0xc0), node id (0x143a3d780) at actor+0x248 and sub-actors +0x550..+0x558, IK_target_trophy at +0x540; default hides all four. (lane owner review requested)"
  },
  "signature": {
   "id": "game.podium_base_cut_scene_script_spawn_scene_trophy",

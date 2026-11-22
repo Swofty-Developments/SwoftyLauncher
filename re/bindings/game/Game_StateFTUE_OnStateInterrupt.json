@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1436d8150",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=StateFTUE::onStateInterrupt; log channel FADE_REQUESTS: 'TEMP_LOG: StateFTUE::onStateInterrupt:%d CONSUMING: %d'"
+  "evidence": "decomp:re/decomp/1436d8150.c;pat:log-message-cxx;xref:0x14585bbc8",
+  "notes": "onStateInterrupt (this,out,intr) vt cell 0x14585bbc8: if +0xc90 clear and type <0x14: type 0xe requests UI fade out (fader [+0xc80], callback 0x1436d8360); types in 0x8006 call 0x14416cf60; mask 0x82300 only consumes; sets +0xc90, logs CONSUMING, 0x144426530([+0xbf8]); out = [0x146cb2280]. (lane owner review requested)"
  },
  "signature": {
   "id": "game.state_ftue_on_state_interrupt",

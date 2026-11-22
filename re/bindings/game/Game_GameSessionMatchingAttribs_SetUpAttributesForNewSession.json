@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14306dc50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionMatchingAttribs::setUpAttributesForNewSession; log channel NETWORK-ATTRIBUTES: 'neon::NeNetSessionAttribs *network::GameSessionMatchingAttribs::setUpAttributesForNewSession(const CoreValues &) | %s: cluster id: %08x-%08x'"
+  "evidence": "decomp:re/decomp/14306dc50.c;pat:log-message-cxx;xref:0x143072545,0x14307f0ab,0x143080111,0x143150f68,0x143159ce6,0x14315c9ab,0x143162d72",
+  "notes": "Own pretty-function string 0x14580be00 'NeNetSessionAttribs *...::setUpAttributesForNewSession(const CoreValues &)'. Clears the attrib list p1+0xa8, copies CoreValues p2 (cluster ids, flags) to +0xac8..+0xae4, 0x143069c40(p1,1), then sets via 0x14407dbe0(p1+0xa8,p1+0x40,name,value): DeveloperCode, MatchingContext, LobbyMaxPlayers (by context type 0..7), Region, SessionToken, ScenarioStatId, usingDLC, AutoTestUID, GameState=2, MatchingClusterID/Ext (logged), race count range +0xb38/+0xb3c (updateRaceCount), Skill=0 and QuickMatch=0 if defined. Returns p1+0xa8. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_session_matching_attribs_set_up_attributes_for_new_session",

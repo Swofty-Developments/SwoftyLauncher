@@ -175,9 +175,15 @@ Before the worker starts, `arm_on_worker` hooks the four creation exports the ga
 |---|---|
 | The worker | Goes straight through: the probe device and factory |
 | A thread that holds the loader lock | Goes straight through: the worker may need the lock to load the driver |
-| The core's own code on another thread (the profiler's adapter walk) | Goes straight through |
 | A module under the Windows folder or the game's `D3D12` folder (the D3D12 and DXGI runtimes, the driver) | Goes straight through: the worker's device may wait for its threads |
+| The core's own code on another thread (the profiler's adapter walk) | Waits for the worker, for at most 30 s |
 | Anything else (the game, `sl.interposer.dll`, an overlay) | Waits for the worker, for at most 30 s |
+
+Only the worker makes DXGI factories while it runs. Steam's overlay (`GameOverlayRenderer64.dll`) hooks the vtable of each new factory in its `CreateDXGIFactory` detours, and two threads that make their first factories at once both install that hook: its saved original can stay 0 or point back into its own detour, and the next `CreateSwapChainForHwnd` through it then calls address 0 or recurses until the stack runs out. The core's own waits are logged apart from the game's first call:
+
+```
+[d3d12] CreateDXGIFactory1 from the core's own code (thread 9124) while the D3D12 arm runs: waited for the arm, 486 ms
+```
 
 So the game sees what it sees with the block in the stage, in the same order: the same hooks, and the probe device made and released before its own device and factory exist. The factory hooks come out when the worker is done. The device hook stays until the game's first `D3D12CreateDevice`, which it times, and then comes out. A hook that something patched over meanwhile stays in. DRED's own `D3D12CreateDevice` hook sits behind the gate's and asks `render::d3d12::creation_caller` for the real caller, so it still tells the game's devices from the core's.
 

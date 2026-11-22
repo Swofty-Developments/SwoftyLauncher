@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1444fa1e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--;xref:0x1445006cc,0x1445007a4",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: loc.chgrqst, loc.cstate, q.world.create, q.world.delete, q.world.list, q.world.select'  | 2026-11-17 engine-re: the body is mainly the engine static init that fills about 230 type descriptors {name pointer, djb2 at +8}: resources WOInstances 0x146cb7990, WOTypes 0x146cb7a30, World 0x146cb7a50, WorldLayerModule 0x146cb7968, NeEditorWorldResource/LayerResource; components AudioEmitter, AudioMultiEmitter, AudioRoom, AudioPortal, AudioSpeaker, AudioZone, AudioCameraListener, Trigger, StaticPhysics, CrowdPlacement, CrowdZone, Camera, CameraBehaviour, CameraModifier and others. The q.world.* DB key name comes from the bulk pattern and covers only a small part."
+  "evidence": "decomp:re/decomp/1444fa1e0.c;pat:log-channel--;xref:0x145d32780",
+  "notes": "CRT dynamic initialiser (init table cell 0x145d32780, pdata 0x1444fa1e0-0x1445007e0). Fills SIMD consts at 0x146ca57f0.., type descriptors {0x145890940,name,hash,parent}: NeAchievementsXmlResource, AnimClip/Anim*/AnimSet, Audio*, Camera*, Trigger, FlowSystem, PhysicsTerrain, CoreRenderer, VideoModule, WorldLayerModule, World; audio/camera name strings; atexit via 0x1449e071c. No q.world config read. (lane owner review requested) Better name: Game_StaticInit_AnimAudioCameraWorldTypes (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_q_config_2",

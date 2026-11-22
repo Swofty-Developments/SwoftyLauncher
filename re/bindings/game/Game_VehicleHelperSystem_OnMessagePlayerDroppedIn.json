@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f27870",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VehicleHelperSystem::onMessagePlayerDroppedIn; log channel NETWORK/F: 'VehicleHelperSystem::onMessagePlayerDroppedIn().'"
+  "evidence": "decomp:re/decomp/142f27870.c;pat:log-message-cxx;xref:0x14f6fcd79,0x14f717d4f",
+  "notes": "Read in full: logs 'VehicleHelperSystem::onMessagePlayerDroppedIn().' (NETWORK/F); takes lobby table [[[[this+0x190]+0x88]+0x260]+0xf88]; for vehicle msg+0x10 < 0x20 requires its owner byte (+0x101+id*2) to equal the local machine id (vcall +0x18), for other ids requires table+0x28 <= 1; then calls 0x142f27950(this). lea refs from .data1 0x14f6fcd79, 0x14f717d4f. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_helper_system_on_message_player_dropped_in",

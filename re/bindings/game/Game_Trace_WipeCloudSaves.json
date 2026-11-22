@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14413a6d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name wipeCloudSaves (class from the log channel); log channel TRACE: 'wipeCloudSaves() - storing in cloud, not wiping local saves in %S'"
+  "evidence": "decomp:re/decomp/14413a6d0.c;pat:log-message-method;xref:0x145a5c6b8",
+  "notes": "wipeCloudSaves(this, arg) (vtable cell 0x145a5c6b8; log TRACE): path = [this+0x18]+0x70; if the cloud file list [this+0x30]+0x108 has entries, builds prefix '%S\\' and deletes (vt+0x30) every file whose name starts with it, logging 'Deleting file'. this+1000 == 0: job 0x14413a340(new 0x110, arg, path, 7), 0x14413ac70 wipes the local folder, CreateDirectoryW(path), logs the result; else logs 'storing in cloud, not wiping local saves'. (lane owner review requested) Better name: Game_SaveSystem_WipeCloudSaves (bound record keeps its name)."
  },
  "signature": {
   "id": "game.trace_wipe_cloud_saves",

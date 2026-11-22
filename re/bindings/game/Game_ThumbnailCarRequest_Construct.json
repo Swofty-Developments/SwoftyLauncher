@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428bf4c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1428bf4c0.c;xref:0x141bfd4d7",
-  "notes": "Constructs a car thumbnail request in place: calls 0x14096ccf0, sets +0x67b0=0, if param_3+0x30 set initialises vtables 0x145612fa0/0x145612fe0 and 0xffff-filled fields at +0x6780..+0x67a8. 9 call sites incl Game_Thumbnails_BuildCarRequests. Hypothesis."
+  "evidence": "decomp:re/decomp/1428bf4c0.c;xref:0x141bfd4d7,0x141bffc19,0x141df1d87,0x1421b16be,0x142e3309d,0x142e33aba,0x14379e4a8,0x14c363cb3",
+  "notes": "Copy-constructs request (Ne_Struct_CopyConstructInlineStrings), optional livery override from param_3 when +0x30 (+0x6780..+0x67b0), optional shared-ptr vector from param_6 (+0x67b8..+0x67f0, moved out), flags +0x67f8, +0x6898..+0x689a. (lane owner review requested)"
  },
  "signature": {
   "id": "game.thumbnail_car_request_construct",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140149ae0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140149ae0.c;xref:0x1401480ab",
-  "notes": "\"%s.image\" surface wrapper variant calling 143c00360 (compact resource creation)."
+  "evidence": "decomp:re/decomp/140149ae0.c;xref:0x1401480ab,0x1401480e4,0x140148791",
+  "notes": "Same as 0x1401494b0 but 0x78 object via Render_Gfx_RegisterUavResource 0x143c00360, kind 4, format remapped by a switch (0x36->0x34, 0x39->0x37, 0x3e->0x3d, 0x46->0x45, 0x52->0x51, 0x55->0x53, 0x0f->0x0e), vector param_1[0x13..0x15]. Callers in Render_Gfx_RegisterNamedResourceViews. (lane owner review requested) Better name: Render_Gfx_CreateNamedImageUav (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx_create_image_surface_resource_small",

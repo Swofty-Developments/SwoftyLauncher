@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f1c000",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_VehicleGhostComponent_Unghost;xref:0x142f1c0c9",
-  "notes": "cxx=game::VehicleGhostComponent::unghost; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/142f1c000.c;str:s_VehicleGhostComponent_Unghost;xref:0x142afde21,0x142afde48,0x142afdffd,0x142bdc1c4,0x142c1fc91,0x142c21460,0x142d686a5,0x142d96d5a,0x142daa6f0,0x142daa716,0x142f1db3d,0x142f1db47",
+  "notes": "Read in full (comp, reason): if bit reason is set in comp+0x518: 0x142f1bd50, log 'UNGHOSTED REASON(%s)' with pretty name game::VehicleGhostComponent::unghost, clears the bit, recomputes byte +0x684 from masks +0x4d0..+0x4e8 (or 1 when vehicle+0x130 bit4). Xref list truncated. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_ghost_component_unghost",

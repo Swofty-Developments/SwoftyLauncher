@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1445e2300",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name setPosition (class from the log channel); log channel REPLAY_VERBOSE: 'setPosition [%zu] [%zu]'"
+  "evidence": "decomp:re/decomp/1445e2300.c;pat:log-message-method;xref:0x145befca8,0x145befe38",
+  "notes": "ReplayBuffer vtable slot (cells 0x145befca8/0x145befe38, this = buffer+0x2d8): Game_PagedBuffer_UsePageAt(this-0x2d8, pos in rdx), then logs REPLAY_VERBOSE 'setPosition [%zu] [%zu]' with vcalls +0x30/+0x20. Class is ReplayBuffer. (lane owner review requested) Better name: Game_ReplayBuffer_SetPosition (bound record keeps its name)."
  },
  "signature": {
   "id": "game.replay_set_position",

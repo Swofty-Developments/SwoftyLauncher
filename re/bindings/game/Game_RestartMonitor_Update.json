@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143228f50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=RestartMonitor::update; log channel NETWORK: 'void network::RestartMonitor::update() | %s forceSessionRestartTransition processing'"
+  "evidence": "decomp:re/decomp/143228f50.c;pat:log-message-cxx;xref:0x14305f96b",
+  "notes": "(mon): role +8 == 1 and request flag +0x18: logs 'requestSessionRestart processing', clears it, sends net message {vt 0x145836380, 7, 0x31} via 0x14402e500([+0x20]+0x3d0, 1, ...). Else if +0x19 (set by the handler): logs 'forceSessionRestartTransition processing', clears it, posts bus message vt 0x145755240 via 0x141e79b60 on [0x14618b3b8]+8. Caller 0x14305f96b. (lane owner review requested)"
  },
  "signature": {
   "id": "game.restart_monitor_update",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1422c86e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_TeamHQAdvanceViewModel_LockToOverviewTab;xref:0x1422c8760",
-  "notes": "cxx=game::TeamHQAdvanceViewModel::lockToOverviewTab; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1422c86e0.c;str:s_TeamHQAdvanceViewModel_LockToOverviewTab;xref:0x1422c476b,0x1422c656e,0x1422c8227,0x1422c84c5,0x1422c9af7,0x1422cdcd7",
+  "notes": "Sends 'enable_navigation'/'disable_navigation' with 'overview' to view +0x620 (vt+0x80), posts 0x1457825f8 with flag and, if not online (+0x767==0), 0x145782628. (lane owner review requested)"
  },
  "signature": {
   "id": "game.team_h_q_advance_view_model_lock_to_overview_tab",

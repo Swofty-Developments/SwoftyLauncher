@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428eb470",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name setCustomCarPersonalSticker (class from the log channel); log channel FRONTEND_SCENE_MANAGER/CAR: '%s() Car [%u]'"
+  "evidence": "decomp:re/decomp/1428eb470.c;pat:log-message-method;xref:0x1417e38e9",
+  "notes": "(mgr,id,sticker). Logs '%s() Car [%u]' setCustomCarPersonalSticker (FRONTEND_SCENE_MANAGER/CAR); scans car vector +0x6fd8..+0x6fe0 (stride 0x6990, id +0xb8); hit -> calls 0x1428e6c30(mgr,car,{vt 0x14565f540,id=sticker+8}); miss and id != -1 -> 'Failed to find Car Component Id'. Caller 0x1417e2f90 (Game_FrontendScenePreview_Refresh). (lane owner review requested)"
  },
  "signature": {
   "id": "game.frontend_scene_manager_set_custom_car_personal_sticker",

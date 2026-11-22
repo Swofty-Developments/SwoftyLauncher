@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144619760",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=TimeOfDaySystem::connect; log channel WEATHER_SEED_EXTENDED: 'TimeOfDaySystem::connect set seed to %u'"
+  "evidence": "decomp:re/decomp/144619760.c;pat:log-message-cxx;xref:0x145bf4810",
+  "notes": "vtable cell 0x145bf4810. Resolves 3 services (+0x290 required, else returns 0x16), seeds weather RNG from QPC ms (+0xb33c), reads Renderer.TimeOfDay.* settings (scenario, time, timeOfDay, randomSeed...), maps timeOfDay name dawn..midnight to 0..7 (+0xb308), calls 0x144619cf0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.time_of_day_system_connect",

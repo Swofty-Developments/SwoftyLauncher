@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401cf780",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=SkinnedActor::postBuild; log channel ACTOR_SET_BINDING: 'SkinnedActor::postBuild %p'"
+  "evidence": "decomp:re/decomp/1401cf780.c;pat:log-message-cxx;xref:0x1455e5bb0",
+  "notes": "Vtable cell 0x1455e5bb0. Logs, vcall +0x78(this,*(this+0x4c)); once (flag +0x44 bit 8): 0x1401f47e0(this+0x240) and vcall +0xa8 on each component +0x68..+0x70, then sets the bit; returns true only the first time. (lane owner review requested)"
  },
  "signature": {
   "id": "game.skinned_actor_post_build",

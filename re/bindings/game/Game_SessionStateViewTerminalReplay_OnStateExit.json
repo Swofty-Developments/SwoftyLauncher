@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142da6d10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onStateExit (class from the log channel); log channel SessionStateViewTerminalReplay: 'onStateExit'"
+  "evidence": "decomp:re/decomp/142da6d10.c;pat:log-message-method;xref:0x1457e3e70",
+  "notes": "Vtable cell 0x1457e3e70. Logs SessionStateViewTerminalReplay \"onStateExit\", posts bus message 0x1457c92a0; checks fade / flashed-back / flow-handle conditions (each logged as \"onStateExit <cond>\"), stops the replay (0x1445c74b0, 0x1445cafc0 mode 3, track \"pr\" reset), posts 0x1457e66d8, then Game_SessionStateViewReplay_OnStateExit (0x142d9f2a0) once vcall +0x78 passes; returns 1 when done. (lane owner review requested)"
  },
  "signature": {
   "id": "game.session_state_view_terminal_replay_on_state_exit",

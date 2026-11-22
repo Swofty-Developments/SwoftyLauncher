@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1445e3a00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1445e3a00.c;xref:0x142c00d18,0x142d60168",
-  "notes": "Recursive red-black tree node destroy (std::map _Erase pattern, isnil flag node+0x19): recurses left (+0x10), releases value object node[5] (vcall +0x38) and clears node[6..8], frees node via allocator param_2 vcall +0x38. Twin of 0x1445e3960 (different value type). Called from Sess_FormationLapStartLights_OnStateEnter, Game_Replay_SetPosition, MP skip-lights."
+  "evidence": "decomp:re/decomp/1445e3a00.c;xref:0x142c00d18,0x142d60168,0x142d8fec9,0x1445dde94,0x1445e1b58",
+  "notes": "Twin of 0x1445e3960 (same body): recursive std::map node erase, right subtree first (node[2]), then left chain (node[0]), value buffer node[6..8] freed via node[5] vcall +0x38, node freed via allocator param_2 vcall +0x38. Callers incl. Sess_FormationLapStartLights_OnStateEnter, Game_Network_SkippingLightsMPReasons."
  },
  "signature": {
   "id": "core.rb_tree_destroy_subtree_a",

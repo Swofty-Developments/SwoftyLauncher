@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a69b20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameControlSchemeManager::deserialiseSaveDataContainer; log channel INPUT: 'GameControlSchemeManager::deserialiseSaveDataContainer - \"control_schemes\" list is missing, must be old format save data, continue anyway'"
+  "evidence": "decomp:re/decomp/142a69b20.c;pat:log-message-cxx;xref:0x1457bb748",
+  "notes": "Vtable cell 0x1457bb748 (secondary base, this-8). Resets state (0x142a59670/0x142a598c0/0x142a5c7f0, deferred callbacks +0x1f0..+0x1f8), reads list 'control_schemes' from container p2 (0x143931730, type check vs 0x146129cf0): each entry parsed by 0x142a63340 into vector +0x160, type 3 also into +0x1c0, else +0x1a0; missing -> error 0x57/0x58 and INPUT log 'control_schemes list is missing, old format'. Then for i 0..1 reads 'control_schemes_player_index_%d' into per-player sets +0x218+i*0x50; finally 0x142a6a560 per player and 0x142a5b910. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_control_scheme_manager_deserialise_save_data_container",

@@ -39,7 +39,7 @@ description: Settings holds the launcher's own options in five categories, shows
 
 **Display mode** switches between **PC mode**, the normal layout, and **TV mode**, which scales the whole launcher up by 30% and widens the scrollbars, for handhelds and couch play. The welcome wizard asks for it, with your language, the first time the launcher opens and once after an update that changes the wizard. Each choice applies as you pick it, Esc or **Skip** closes the wizard, and you can change both here at any time.
 
-**Interface scale** makes the whole launcher larger or smaller on top of the display mode. **Auto** is the default and keeps the size the display mode gives. The slider runs from 1% to 400% in steps of 1%, and the percentage multiplies the display mode's size: TV mode at 75% is about 98% of the PC layout. The change applies when you let go of the slider, and the launcher keeps it for next time. **Reset to automatic** returns to Auto. Below 60% a **Reset interface scale** button stays in the bottom right corner at a fixed size. On a Steam Deck in gaming mode, TV mode with **90%** or **75%** fits the 1280x800 screen with room to spare.
+**Interface scale** makes the whole launcher larger or smaller on top of the display mode. **Auto** is the default and keeps the size the display mode gives. The slider runs from 1% to 400% in steps of 1%, and the percentage multiplies the display mode's size: TV mode at 75% is about 98% of the PC layout. The change applies when you let go of the slider, and the launcher keeps it for next time. **Reset to automatic** returns to Auto, and so does **Ctrl+0** on any page. A **Reset interface scale** button also shows at a fixed size in the bottom right corner, just above the play bar, when the scale is below 60%, or above 100% with the window narrower than 1024 pixels at that scale (on a window 1920 pixels wide, from 188% in PC mode). On a Steam Deck in gaming mode, TV mode with **90%** or **75%** fits the 1280x800 screen with room to spare.
 
 ## Storage
 
@@ -78,6 +78,8 @@ Every game session leaves its logs in `sessions` in the data folder, and nothing
 On the same drive the folder is renamed and nothing is copied. A copy is checked by size, and by content for the small files. The launcher's own logs under `state` and `logs` grow while it copies; for those the copy has to match the start of the original, and the restart copies the rest.
 
 The launcher refuses to start the move while F1 25 is open, a build is running or downloads are queued. It refuses a whole drive, a folder inside or around the launcher's own folder, inside or around the F1 25 folder, inside the folder they are in now, one that isn't empty, one it can't write to, and one on a drive without room for the data plus a margin. When `SWOFTY_DATA_DIR` sets the folder, it refuses and says so: change the variable instead.
+
+When your addons and saves are in the launcher's own folder, or the launcher is installed inside theirs, **Move…** moves nothing. It names the folder they are in, the one a junction or link resolves to, and points to the installer: install to a new, empty folder and the installer moves only the launcher's files there; see [Moving your addons and saves](/guide/installation#moving-your-addons-and-saves). A folder of their own inside the launcher's folder moves out as usual, without the launcher's files.
 
 If the launcher or the computer stops during a move, the next start finishes it or puts everything back. When the old copy can't be deleted, the message names it so you can delete it yourself.
 

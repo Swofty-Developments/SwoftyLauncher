@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14365fcb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-GameSaveSystemUserInterface",
-  "notes": "named from its log messages (channel GameSaveSystemUserInterface): 'Set Serialiser Error Codes '%s - %s - %s''"
+  "evidence": "decomp:re/decomp/14365fcb0.c;pat:log-channel-GameSaveSystemUserInterface;xref:0x14365e92b,0x14365eba2,0x14366029e",
+  "notes": "Takes the serialiser result (u64 +0x20, u64 +0x18, u32 +0x28), CRC32s each (table 0x1458904d0), formats \"%08X\" and writes them to ui_menu_data.save.error_code_1/_2/_3 (registry 0x146ca54f8 via 0x140971220 + 0x140828440), then logs \"Set Serialiser Error Codes '%s - %s - %s'\". Callers in 0x14365e360 and 0x143660220. (lane owner review requested)"
  },
  "signature": {
   "id": "game.save_ui_set_error_codes",

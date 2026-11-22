@@ -110,6 +110,25 @@ A file in the way of an install counts as the launcher's own when `placed.json` 
 
 At start, files that `placed.json` records and no open journal covers are cleared the same way.
 
+## The launcher's menus in a game original
+
+Before the menu build patches the game's menu archives, it reads the original of each of these (the original backed up for the game build, else the game folder's file) for the entries only the launcher's menus add:
+
+| Archive | Entries |
+|---|---|
+| `databases.erp` | the tooltips `mod_menu`, `mod_menu_offline` and `swofty_adjust`, `ui_menu_data.swofty`, `settings.swofty_addons` |
+| `persistent.erp` | the resources `swofty_o_row.idf` and `swofty_o_career_row.idf` |
+| `flow_persistent.erp` | messages with a `swofty_` id |
+
+An original that holds one of them is a menu build's output that an earlier session left in place of the game's file. The build stops with `menus: the game's <archive> already holds <entries>`, and Play puts a clean original back the way it does for an addon's entry:
+
+- When the recorded original holds the entries and the game folder's file differs, the game folder's file becomes the recorded original.
+- Otherwise the newest original of the file backed up for another game build goes back into the game folder.
+
+The build then runs again, and the log starts with `stale: <file> in the game folder still held the launcher's changes from an earlier session; ...`. With no clean original on record, Play stops with the same message, `the launcher has no clean copy of it on record`, and the repair steps for Steam and the EA app. A check before Play, such as **Check conflicts**, says that Play puts the backed-up original back.
+
+The menu build writes its tooltips, `ui_menu_data.swofty`, `settings.swofty_addons` and the F1 World flow entries `swofty_enter_time_trial`, `swofty_enter_grand_prix` and `swofty_enter_return` in place of the ones the archive it reads already holds. A menu build of `databases.erp` from its own output writes the same archive.
+
 ## Damaged state files
 
 State files are written to a temporary file, flushed to disk and renamed over the old one. Backups in `baseline/objects` and restored originals are flushed before they take their name.

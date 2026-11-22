@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140d99210",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-CONTRACT_RENEWAL",
-  "notes": "named from its log messages (channel CONTRACT_RENEWAL): 'Team has no seats. %s | Team has no approaches. %s | Simulate approaches for team %s, Number of approaches : %u | No valid drivers left to approach | Team is interested in. Driver : %s - Team : %s | T'"
+  "evidence": "decomp:re/decomp/140d99210.c;pat:log-channel-CONTRACT_RENEWAL;xref:0x140c4ae7f,0x140d8c29d,0x140d96db2,0x140d990eb",
+  "notes": "Approach simulation of the contract-renewal component (gates comp+0x3a0/+0x2f0/+0x3e9/+0x3a1): sorts team records comp+0x348 (0x140e0da70), per team with seats (0x140d8c8f0) logs 'Simulate approaches for team', picks drivers with 0x140d9a7b0, records ids via 0x140d9dac0, logs interested/officially approached (CONTRACT_RENEWAL, _ADVANCED). (lane owner review requested)"
  },
  "signature": {
   "id": "career.contract_renewal_simulate_approaches",

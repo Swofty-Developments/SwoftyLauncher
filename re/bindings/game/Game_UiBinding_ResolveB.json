@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14160d0a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14160d0a0.c;xref:0x141489440,0x141abd180",
-  "notes": "Second instantiation of UI data-binding resolve (default 0x146065080). Callers: Sess_Bind_SessionCarsVm, Game_F1WorldHub_RestoreLastActivity."
+  "evidence": "decomp:re/decomp/14160d0a0.c;xref:0x141489b58,0x141489c05,0x141489ca7,0x141489d4d,0x1416af4a8,0x1416af5ee,0x1416b21a9,0x141abd2fa,0x142f7f042,0x1430c4c42,0x1430c4ceb,0x1436e8db2",
+  "notes": "Read in full: same template as Game_UiBinding_FindOrCreateA 0x14083d100 (diffed line by line) for another value type: type id 0x146129f38, default 0x146065080, mode-1 writer 0x140971e50, node ctor 0x140974850. Xref list truncated. (lane owner review requested) Better name: Game_UiBinding_FindOrCreateB (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ui_binding_resolve_b",

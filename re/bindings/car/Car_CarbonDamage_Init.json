@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f1a700",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "pat:log-channel-CARBON_DAMAGE",
-  "notes": "Log channel CARBON_DAMAGE: 'Number of drivers = %d' | 'Renderer.Gfx.CarDamage.DamageMask.width = %d' | 'Renderer.Gfx.CarDamage.DamageMask.height = %d' | 'Renderer.Gfx.CarDamage.maxCollisionsPerVehicle = %d'"
+  "evidence": "decomp:re/decomp/142f1a700.c;pat:log-channel-CARBON_DAMAGE;xref:0x1457f5990",
+  "notes": "Slot 2 of vtable 0x1457f5980 (string 'VehicleDamageSystem' precedes it). Systems 0x146cb8278/0x146cb8158/0x14604ec98 (vcall +0x28) -> +0x48/+0x50/+0x58, services 0x14604ed28/0x146096948 -> +0x60/+0x68; logs 'Number of drivers = %d' (+0xa8); reads Renderer.Gfx.CarDamage.DamageMask.width (+0x70, def 0x40), .height (+0x74, 0x80), maxCollisionsPerVehicle (+0xac, 0x80); CollisionGroups Chassis/FrontWing/RearWing via 0x142f19ad0 (CARB/CARF/CARR). (lane owner review requested)"
  },
  "signature": {
   "id": "car.carbon_damage_init",

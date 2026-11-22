@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1427d1350",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "gamedb",
   "proto": "void Gdb_Define_UpgradeDiscountTables(uint64_t self,int64_t *a2)",
   "evidence": "decomp:re/decomp/1427d1350.c;xref:0x1427d0d45",
-  "notes": "myteam-g1: Huge schema registrar for UpgradeDiscount_CarPart / UpgradeDiscount_TeamMember tables (6452 lines of column bindings)."
+  "notes": "Binder for the F1OS online service response data (6452 lines): EventServiceData, InventoryServiceData, GoalsServiceData, RankedServiceData, BlueprintData, UpgradeDiscount_/DismantleBonus_CarPart/TeamMember, FanZoneServiceData, VotesServiceData and their columns. Only caller 0x1427d0550 (F1OS HTTP response / JSON parse). Better name: Gdb_Bind_F1OsServiceData (bound record keeps its name)."
  },
  "signature": {
   "id": "gamedb.define_upgrade_discount_tables",

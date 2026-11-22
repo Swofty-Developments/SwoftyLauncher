@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140ac93a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TalkingPoints",
-  "notes": "named from its log messages (channel TalkingPoints): '[CUTSCENE][STOP]: [%s]'"
+  "evidence": "decomp:re/decomp/140ac93a0.c;pat:log-channel-TalkingPoints;xref:0x140ac9f0f,0x140aca587,0x140acafd9,0x1493ac2f1",
+  "notes": "If cutscene ptr set: logs [CUTSCENE][STOP] and calls Game_CutsceneManager_StopInternal(global+0xc0, shared ptr); then releases the shared_ptr ref (+8). (lane owner review requested)"
  },
  "signature": {
   "id": "game.talking_points_stop_cutscene",

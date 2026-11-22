@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143ab0800",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-HEADTRACKING",
-  "notes": "named from its log messages (channel HEADTRACKING): 'NP_QueryVersion : Error querying NaturalPoint software version!! (result=%d) | NaturalPoint software version is %d.%02d | NP_RegisterProgramProfileID : Error!! Check for game list update. (developerId'"
+  "evidence": "decomp:re/decomp/143ab0800.c;pat:log-channel-HEADTRACKING;xref:0x143ab17dc,0x152283334",
+  "notes": "TrackIR (NaturalPoint) start through fn pointers: 0x146292158 NP_QueryVersion (logs version or error), 0x146292160 called with flags remapped from this+0xa8, 0x146292150 NP_RegisterProgramProfileID(this+0xac), 0x146292180 NP_StopCursor, 0x146292190 NP_StartDataTransmission; this+0xd2 = 1 only on success. Missing pointer -> result 4 logged. Callers 0x143ab17dc (in 0x143ab0cb0), 0x152283334. (lane owner review requested)"
  },
  "signature": {
   "id": "game.track_ir_init",

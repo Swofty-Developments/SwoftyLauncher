@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1445db910",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1445db910.c;xref:0x142c4de18",
-  "notes": "Builds inline SSO copies of two C strings (param_2, param_3) and processes them with char scanning (372 lines). Only caller Game_TrackCameraShots_StopShot. Hypothesis: shot/camera name compare or parse. vp4-verify partial/disagree"
+  "notes": "(shots, group, shot): copies group (<= 31 chars) into a 32-byte inline string and finds it with 0x1445e4d60(shots+8, key) in the pointer array shots+0x30 (end +0x38); then copies shot (<= 15 chars, zero-padded) into a 16-byte key and looks it up with 0x1445e4e90(group+0x38, key) in group+0x60 (end +0x68). Returns entry+0x10, null when either is missing. Caller 0x142c4de18. (lane owner review requested)"
  },
  "signature": {
   "id": "game.track_camera_shots_parse_shot_names",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140acb490",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TalkingPoints",
-  "notes": "named from its log messages (channel TalkingPoints): '[FADE][START]: Starting fade to black'"
+  "evidence": "decomp:re/decomp/140acb490.c;pat:log-channel-TalkingPoints;xref:0x142d95fbc",
+  "notes": "Per-frame TalkingPoints timeline tick (caller Game_SessionStateTalkingPoints_OnStateUpdate): QPC delta, plays items whose start time reached (Game_TalkingPoints_PlayItem) and finishes elapsed ones (0x140aca320) for segment and global tracks, starts fade-to-black callback +0x60 near end, advances phase (0x140acb290) or sets state 4. Old name was a log fragment. (lane owner review requested) Better name: Game_TalkingPoints_UpdateTimeline (bound record keeps its name)."
  },
  "signature": {
   "id": "game.talking_points_start_fade",

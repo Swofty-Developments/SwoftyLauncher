@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142fc41b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_LeaderboardViewModelBase_RequestNextDataBlock;xref:0x142fc422e,0x142fc436e,0x142fc448f,0x142fc4531",
-  "notes": "cxx=game::LeaderboardViewModelBase::requestNextDataBlock; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/142fc41b0.c;str:s_LeaderboardViewModelBase_RequestNextDataBlock;xref:0x142fb8060,0x142fc3e88,0x142fc402c",
+  "notes": "void LeaderboardViewModelBase::requestNextDataBlock(NEint dir). Reader [+0x340] not complete and rows < total: index of displayed rank +0x3b0+1, logs 'requesting block: suggestedDirection[up/down/invalid]...'; previous (reader vcall +0x20) when dir != 0, index <= 0x28 and first rank != 0, else next (vcall +0x18) when index + +0x3a8 >= rows-0x28; delegate 0x142fc4860. On success sets bit 0x20 in the dirty flags of global 0x14604ed68 (+0x34). (lane owner review requested)"
  },
  "signature": {
   "id": "game.leaderboard_view_model_base_request_next_data_block",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14318c8c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=CustomisationReplicationManager::handleF1LifeDataRequest; log channel NETWORK-CUSTOMISATION-REPLICATION: 'void network::CustomisationReplicationManager::handleF1LifeDataRequest(neon::NeNetMessage &, neon::NeNetConnectionID) | %s: F1 Life Data Request handled!'"
+  "evidence": "decomp:re/decomp/14318c8c0.c;pat:log-message-cxx;xref:0x14318460e",
+  "notes": "Pretty-function 0x1458222f4 = handleF1LifeDataRequest; registered by lea at 0x14318460e. Needs state p1+8 >= 2 and [p1+0x50]; takes the local PlayerDescription ([[[0x14604c2c8]+0x140]+0x198]+0x1c0 vt+0x38); if the request (msg+0x18..) names it: builds local F1LifeData (0x14252ae70, 0x142537320 [p1+0x50]), UpdatePlayerLifeData, sends a reply (vt 0x145825110, 0x14402e500 on [p1+0x38], flag p3), 0x1431872e0, logs 'handled!'; else 'was not for the lead player'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.customisation_replication_manager_handle_f1_life_data_request",

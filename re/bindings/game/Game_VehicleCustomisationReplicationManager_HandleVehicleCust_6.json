@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143146890",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VehicleCustomisationReplicationManager::handleVehicleCustomisationRemove; log channel NETWORK-ENTRANTS-MESSAGES: 'void network::VehicleCustomisationReplicationManager::handleVehicleCustomisationRemove(neon::NeNetMessage &, neon::NeNetConnectionID) | %s : Received VehicleCustomisationRemoveNetMessage for player '%'"
+  "evidence": "decomp:re/decomp/143146890.c;pat:log-message-cxx;xref:0x14313f142",
+  "notes": "Read in full: logs 'Received VehicleCustomisationRemoveNetMessage for player' with pretty name handleVehicleCustomisationRemove (NETWORK-ENTRANTS-MESSAGES), then calls removePlayerVehicleCustomisationStatId 0x1431407d0(this, msg+0x10, u16 msg+0x70). Registered by lea at 0x14313f142 in 0x14313f030. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_customisation_replication_manager_handle_vehicle_cust_6",

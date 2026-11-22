@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140502200",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140502200.c;xref:0x140be95a4",
-  "notes": "Returns std::string 'f1.proto.OptionsSystem.RecursionOptionErrorRecord' (protobuf full type name from inline qword constants). Caller Sess_WeekendOptions_OnRaceLengthChanged. cv4-verify: proto message ctor, not GetTypeName"
+  "notes": "Proto message ctor: builds std::string 'f1.proto.OptionsSystem.RecursionOptionErrorRecord', base ctor 0x144935190(this, name), sets vtable 0x14562b970, zeroes +0x48..+0x78 and sets +0x78 = 0xf (empty SSO string at +0x60). Caller 0x140be95a4 (0x140be9370). (lane owner review requested)"
  },
  "signature": {
   "id": "game.proto_recursion_option_error_record_type_name",

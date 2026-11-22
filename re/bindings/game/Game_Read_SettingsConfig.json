@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141cef700",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: settings.bloom.selected_option, settings.brightness.selected_option, settings.camera_roll.selected_option, settings.camera_select.selected_option, settings.capture_size.selected_option, settings.capture_type.selected_option, settings.colour_grade.selected_option, setting'"
+  "evidence": "decomp:re/decomp/141cef700.c;pat:log-channel--;xref:0x145744b88",
+  "notes": "Photo mode VM setup (vtable cell): binds tabs.current_tab(.selected_option) and 29 settings.*.selected_option selectors via 0x14420ea40 with Game_PhotoModeViewModel_On*Changed callbacks; callbacks on [+0x290]+0xc8 (0x141d09660) and [+0x288]+0x3fa0 (Game_PhotoMode_OnScenarioLoaded); timer +0x7e8; +0x8a9=1. (lane owner review requested) Better name: Game_PhotoModeViewModel_BindOptions (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_settings_config",

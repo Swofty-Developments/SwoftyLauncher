@@ -5,6 +5,7 @@
 #include "core/apply/content/box_options.hpp"
 #include "core/apply/content/grid_rules.hpp"
 #include "core/apply/content/quali_tyres.hpp"
+#include "core/apply/content/rev_lights.hpp"
 #include "core/apply/content/tyre_change.hpp"
 #include "core/apply/content/tyre_warmers.hpp"
 #include "core/apply/content/weekend.hpp"
@@ -114,6 +115,8 @@ void twelve_team_tests(const std::string &regs);
 void short_list_tests(const std::string &regs);
 void package_team_row_tests();
 void garage_tests();
+void sponsors_tests();
+void box_assets_tests();
 void livery_tests();
 void stock_team_rows(Db &db);
 void team_tests(const std::string &regs);
@@ -129,5 +132,7 @@ void shared_switch_tests(const std::string &regs);
 void id_clash_tests(const std::string &regs);
 void stock_only_tests(const std::string &regs);
 void virtual_list_tests(const std::string &regs);
+void setup_mode_cap_tests(const std::string &regs);
 void late_write_tests(const std::string &regs);
 void ahead_tests(const std::string &regs);
+void career_rules_tests();

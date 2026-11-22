@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14146d340",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14146d340.c;xref:0x1414324a4,0x1414324ce",
-  "notes": "Allocates a doubling node pool (4 .. 0x2000 nodes of 0x18 bytes) from ne_hash_map.h (source path string under external/ego/source/base/types/containers/ne_hash_map.h, line 0x34)."
+  "evidence": "decomp:re/decomp/14146d340.c;xref:0x1414324a4,0x1414324ce,0x14146cc29",
+  "notes": "Node pool grow: size = 4 doubled per existing block in chain this+8, up to 0x2000; allocates size*0x18 (|8) via allocator this+0x10 vcall +0x10 with file ne_hash_map.h line 0x34, links the block into this+8 and threads the 0x18-byte nodes into a free list prepended to this+0; allocation failure traps. Callers Game_DecalCustomisation_LinkFileToPlayer, Game_DecalFiles_HashMap_Emplace_A. (lane owner review requested)"
  },
  "signature": {
   "id": "game.decal_files_hash_map_grow_node_pool",

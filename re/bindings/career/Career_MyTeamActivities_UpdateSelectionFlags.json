@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14231b0e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "uint64_t (void *menu)",
-  "evidence": "decomp:re/decomp/14231b0e0.c;xref:0x14231a646;xref:0x14231bf48;xref:0x14231f971",
-  "notes": "myteam-g2: Walks the slot list at menu+0x400->+0x130..0x138 comparing each slot index (+0x1f0 int) with the selected one (+0x210 int) and sets the VM bool node at +0x170 for every slot (true on the selected one), then dispatches UI event UNK_14577f3c1 via Ne_UiEvent_DispatchByName. Pure UI."
+  "evidence": "decomp:re/decomp/14231b0e0.c;xref:0x14231a646,0x14231bf48,0x14231f971,0x142321c7d",
+  "notes": "Reads start day int node [menu+0x898]+0x210 and span [menu+0x898]+0x1f0; walks calendar blocks [menu+0x400]+0x130..0x138 (16-byte), block day int at entry+0x190; sets bool node +0x170 true for the span starting at the matching day, false elsewhere; fires trigger_calendar_children (Ne_UiEvent_DispatchByName). (lane owner review requested)"
  },
  "signature": {
   "id": "career.my_team_activities_update_selection_flags",

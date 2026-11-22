@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141f10870",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141f10870.c;xref:0x141f0aa52",
-  "notes": "Loops slot index 0..N: if 0x1444a7290(slot,ctx) valid, queries 0x1444a7040 and 0x1444a56f0 and stores the returned u64 handle into a zeroed 128-byte stack array, then Ne_Crt_Memcpy out. Callers Game_VideoExport_FinishExportRestoreUi, StartHighlightExport. Hypothesis: collects per-slot handles to restore after export."
+  "evidence": "decomp:re/decomp/141f10870.c;xref:0x141f0aa52,0x141f1005d",
+  "notes": "Read in full: (arg, ctx) for slot 0..0x1d: if 0x1444a7290(slot,ctx): handle = 0x1444a56f0(slot, 0x1444a7040(arg,slot,ctx)) stored in a zeroed 0x130-byte payload, then a command (type 0x146c39770) is allocated on global 0x146c621e0 (vcall +0x18/+0x20), filled with mask 1<<slot + payload (memcpy 0x130) and submitted (+0x30). Not a gather-and-return. (lane owner review requested) Better name: Game_VideoExport_PushSlotHandleCommands (bound record keeps its name)."
  },
  "signature": {
   "id": "game.video_export_gather_slot_handles",

@@ -1,5 +1,7 @@
 #include "core/apply/moments.hpp"
 
+#include "core/frontend/view_state.hpp"
+
 #include "core/hooks/hooks.hpp"
 #include "core/diagnostics/perf.hpp"
 #include "core/registry/table.hpp"
@@ -690,6 +692,12 @@ void career_season(int year)
     scheduler().career_season(year);
 }
 
+void career_dated(int year)
+{
+    attach();
+    scheduler().career_dated(year);
+}
+
 void box_picked(const char *entrant_list) { box_picked(entrant_list, nullptr); }
 
 void box_picked(const char *entrant_list, const void *mode_context)
@@ -765,6 +773,8 @@ void session_load(const char *source)
     if (facts::ModeKind k = facts::mode_kind(true, true, f.mode); k != facts::ModeKind::unknown)
         note_mode(k, "the session load");
     scheduler().session_load(f);
+    if (flow)
+        frontend::view::load_trackside_cameras(f.track);
     std::call_once(report_writer_once, [] { std::thread(report_writer_main).detach(); });
     report_queue.want(from);
 }
@@ -797,6 +807,28 @@ bool career_weekend(CareerWeekend &out)
     out.complete = w.complete;
     out.session = facts::session_of(w.session, w.sprint).session;
     out.track = w.track < 0 ? std::string() : facts::track_of(w.track, game::cached_track_label(w.track), game::track_records());
+    return true;
+}
+
+bool session_entrants(SessionEntrants &out)
+{
+    constexpr uintptr_t RECORD = 0x88, MAX_RECORDS = 64;
+    uintptr_t holder = game::holder_of(game::current_context());
+    game::Weekend w;
+    if (!holder || !game::weekend(holder, w) || !w.at || w.current >= w.sessions)
+        return false;
+    uintptr_t sb = 0, b = 0, e = 0;
+    if (!game::rd(w.at + offsetof(swofty::game::Weekend, sessions_begin), sb) || !sb)
+        return false;
+    uintptr_t s = sb + uintptr_t(w.current) * game::SESSION_STRIDE;
+    if (!game::rd(s + offsetof(swofty::game::Session, participants_begin), b) ||
+        !game::rd(s + offsetof(swofty::game::Session, participants_end), e) || e < b || (e - b) % RECORD ||
+        (e - b) / RECORD > MAX_RECORDS)
+        return false;
+    out.session = s;
+    out.begin = b;
+    out.end = e;
+    out.session_id = w.session;
     return true;
 }
 

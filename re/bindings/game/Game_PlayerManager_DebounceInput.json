@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1434df6e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-INPUT",
-  "notes": "named from its log messages (channel INPUT): 'GamePlayerManager::debounceInputForControllerManagement - blacklisted input for reconnection or similar. | GameInputModule::addNextUnfilteredAxisCallback'"
+  "evidence": "decomp:re/decomp/1434df6e0.c;pat:log-channel-INPUT;xref:0x1434de7d8,0x1434df07c,0x1434df888",
+  "notes": "(this, input id*, callback): if *id is one of the four ids at 0x1460fb580..0x1460fb598, logs 'blacklisted input for reconnection or similar.' and re-arms: Game_InputModule_TakeSnapshot([this+0x538]), clears the callback vector, adds the callback (0x141e67270); returns that bool. Called by the three Game_GamePlayerManager_AnyKeyCallbackFor* functions. (lane owner review requested)"
  },
  "signature": {
   "id": "game.player_manager_debounce_input",

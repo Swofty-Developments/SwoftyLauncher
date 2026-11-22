@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14065aec0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "ai",
   "proto": "void Ai_Parse_DriverParameterMap(void *out, int idx, const char *pkg_path)",
-  "evidence": "doc:re/db/subsystems/game.md",
-  "notes": "Called 11x by Ai_Parse_DriverParameterMaps 0x140683ce0 (idx 0..10, name table 0x145639210: alongside_awareness, alongside_space_factor, braking_distance_factor, brake_off_time, corner_curvature_factor, follow_speed_factor, slide_confidence, throttle_confidence, throttle_exit_fallibility, throttle_on_time, wet_weather_ability); each = bilinear map of difficulty x driver characteristic (aggression, control, mistakes, reaction_speed, speed_in, speed_out). Stock wet_weather_ability = 1 everywhere (no effect) (agent ai_race, aaa-verify claim 11)"
+  "evidence": "decomp:re/decomp/14065aec0.c;doc:re/db/subsystems/game.md;xref:0x140683cf1,0x140683d02,0x140683d13,0x140683d24,0x140683d38,0x140683d4c,0x140683d60,0x140683d74,0x140683d88,0x140683d9c,0x140683db9",
+  "notes": "(out, idx, path): name = table 0x145639210[idx] (idx < 11, else 'invalid'), formatted 'driver_parameter_maps.%s'; key path = path + '.' + (path+0x100); out+0x20 = enum of child 'characteristic' (0x14065aa60); out[0..3] = 0x1445a2cf0 handles of high_difficulty_high/high_difficulty_low/low_difficulty_high/low_difficulty_low_characteristic_mapping. Table runs alongside_awareness .. wet_weather_ability. (lane owner review requested)"
  },
  "signature": {
   "id": "ai.parse_driver_parameter_map",

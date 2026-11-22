@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d864c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=SessionStatePreloadRewardSequence::onStateEnter; log channel FLOW_VERBOSE: 'SessionStatePreloadRewardSequence::onStateEnter rewardCsMonitor.preloadRewardCustcene'"
+  "evidence": "decomp:re/decomp/142d864c0.c;pat:log-message-cxx;xref:0x1457e1460",
+  "notes": "Vtable cell 0x1457e1460. Stores QPC time at +0xdc0 (and +0xdc8 if set); lazy-inits the monitor 0x146053ee8 and feeds it [+0xdd8] (0x142c75340); +0xdb0 = pending count 0x146053f40 > 0; if > 0 logs FLOW_VERBOSE \"...rewardCsMonitor.preloadRewardCustcene\", sets 0x146053f4a = 1 and 0x142c75060(monitor). Returns 1. (lane owner review requested)"
  },
  "signature": {
   "id": "game.session_state_preload_reward_sequence_on_state_enter",

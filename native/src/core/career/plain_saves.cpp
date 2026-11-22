@@ -12,6 +12,7 @@
 #include "core/runtime/build.hpp"
 #include "core/runtime/files.hpp"
 #include "core/runtime/runtime.hpp"
+#include "core/testing/save_sandbox_logic.hpp"
 
 #ifndef SWOFTY_CORE_VERSION
 #define SWOFTY_CORE_VERSION ""
@@ -30,6 +31,13 @@ struct Config {
 
 std::mutex write_lock;
 
+std::string env_text(const char *name)
+{
+    char v[16] = {};
+    DWORD n = GetEnvironmentVariableA(name, v, sizeof v);
+    return n && n < sizeof v ? std::string(v, n) : std::string();
+}
+
 const Config &config()
 {
     static const Config cfg = [] {
@@ -39,6 +47,11 @@ const Config &config()
             return c;
         if (!s.ok) {
             swofty::log("[saves] plain store off: %s", s.why.c_str());
+            return c;
+        }
+        std::string other = off_for_session(runtime::settings_json_text(), env_text(runtime::save_sandbox::OFF_ENV));
+        if (!other.empty()) {
+            swofty::log("[saves] plain store off: %s (%s); nothing is written or put back", other.c_str(), s.root.c_str());
             return c;
         }
         c.on = true;
@@ -84,7 +97,12 @@ Plan make_plan()
         return p;
     p.on = true;
     Root root(c.root);
-    p.newest = newest_core_save(root);
+    std::vector<uint64_t> other;
+    p.newest = newest_core_save(root, &other);
+    for (uint64_t n : other)
+        swofty::log("[saves] plain store: generation %llu was written at another save than the profile's (such as the race "
+                    "highlights); nothing is put back from it",
+                    (unsigned long long)n);
     Taken t = take_requests(root);
     if (!t.why.empty())
         swofty::log("[saves] inject requests not taken: %s; they wait for the next profile load", t.why.c_str());

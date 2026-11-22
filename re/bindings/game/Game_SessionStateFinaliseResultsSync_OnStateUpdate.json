@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d5c9b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_SessionStateFinaliseResultsSync_OnStateUpdate;xref:0x142d5ccbe,0x142d5cdbb",
-  "notes": "cxx=game::SessionStateFinaliseResultsSync::onStateUpdate; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/142d5c9b0.c;str:s_SessionStateFinaliseResultsSync_OnStateUpdate;xref:0x1457e4ff8",
+  "notes": "Vtable cell 0x1457e4ff8. When the session result state (vcall +0xa0)+0x10 == 2: clears component 0x14605b048 +0x1a48, 0x140c77d00 on 0x14605b088, sets +0xdc0. Then: not online -> logs \"leaving as we aren't online\"; host (mode 1) -> openDocument message once and \"we are host and started resolving promotions\" once (0x140bb36a0); waits on vcall +0x138, else link 0x14079c940(...,6,-1.0); returns the link id. (lane owner review requested)"
  },
  "signature": {
   "id": "game.session_state_finalise_results_sync_on_state_update",

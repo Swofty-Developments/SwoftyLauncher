@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446f1880",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-FFB_DEBUG",
-  "notes": "named from its log messages (channel FFB_DEBUG): 'Setting device %s's plugin %s to have scale %f.'"
+  "evidence": "decomp:re/decomp/1446f1880.c;pat:log-channel-FFB_DEBUG;xref:0x1446fae42,0x1446fae63,0x1446fae84,0x1446faea5,0x1446faec6,0x1446faee7,0x1446faf08,0x1446faf23",
+  "notes": "(device,pluginId16). Returns 0x16 if id not in device's supported list ([+0xe0]+0x30..0x38); skips if disabled or already in +0xf0..0xf8. Else creates plugin via factory map +0xd8 (vcall +8), appends to +0xf0 vector, copies +0xc8 to plugin +0x55, Init vcall +0x10, logs 'Setting device %s's plugin %s to have scale %f' (+0x50). Result into TLS error slot. Only caller 0x1446fab00. Renamed from SetPluginScale (log text only). (lane owner review requested) Better name: Game_Ffb_AddPlugin (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ffb_set_plugin_scale",

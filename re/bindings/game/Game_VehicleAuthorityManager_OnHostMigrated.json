@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143239d30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VehicleAuthorityManager::onHostMigrated; log channel NETWORK: 'VehicleAuthorityManager::onHostMigrated'"
+  "evidence": "decomp:re/decomp/143239d30.c;pat:log-message-cxx;xref:0x14582aec0",
+  "notes": "Read in full: logs 'VehicleAuthorityManager::onHostMigrated' on channel NETWORK, then sets byte this+0x7c = 1 (flag for a later pass). Only reference is the vtable cell 0x14582aec0 (neighbour cells not code; slot check weak). (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_authority_manager_on_host_migrated",

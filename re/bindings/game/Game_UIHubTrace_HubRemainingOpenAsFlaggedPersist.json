@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1438060f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-UIHubTrace",
-  "notes": "named from its log messages (channel UIHubTrace): '%zu [AUTO CLOSE] Hub is remaining open as it was flagged to persist.'"
+  "evidence": "decomp:re/decomp/1438060f0.c;pat:log-channel-UIHubTrace;xref:0x143806e45,0x143806f9e",
+  "notes": "(hub, comm): logs '[COMMS] Communicator unregistered [%s]' (name via comm vt+0x20, 'UNKNWOWN' when null). If comm == hub+0x78: [comm+0x50]+0x90 = 0, hub+0x78 = 0, logs the persist / 'flagged to close on the next Update' lines; when hub+0x99 == 0 writes 2 to hub+0x9c. Callers 0x143806e45, 0x143806f9e. (lane owner review requested) Better name: Game_UIHub_UnregisterCommunicator (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ui_hub_trace_hub_remaining_open_as_flagged_persist",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d501e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_SessionStateCareerDataSync_OnStateEnter;xref:0x142d50545,0x142d50561",
-  "notes": "cxx=game::SessionStateCareerDataSync::onStateEnter; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/142d501e0.c;str:s_SessionStateCareerDataSync_OnStateEnter;xref:0x1457ddc90",
+  "notes": "Vtable cell 0x1457ddc90. +0xdc4 = [[+0xcb8]+0x3c0]+0x1a8 (network mode); if component 0x14605b068 exists, 0x140c8d430 on it (unless +0x318). Mode 0: logs \"Not a network game, exiting state\", +0xdc8 = 1. Else needs component 0x14605b128 and 0x14077c790(...,1) (else logs \"Not an online career, exiting state\"); posts bus message 0x1457e6358, copies +0xdc0 to [+0xdb8]+0x44, returns 0x140ff7320([+0xdb8]). (lane owner review requested)"
  },
  "signature": {
   "id": "game.session_state_career_data_sync_on_state_enter",

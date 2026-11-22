@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14292a560",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_FrontendSceneComponentCar_Despawn;xref:0x14292a658",
-  "notes": "cxx=game::FrontendSceneComponentCar::despawn; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/14292a560.c;str:s_FrontendSceneComponentCar_Despawn;xref:0x142929cf7",
+  "notes": "Callback: lea at 0x142929cf7 stored with the object into a functor in Game_PitDriveThrough_OnNoAnimFadeOut 0x142929b70. For objects +0x298 and +0x290: builds a key (0x1441207d0, replaced by [[0x14604c2c8+0x140]+0x198]+0x1c0 vcall +0x38), finds the entrant in [+0x2d8]+0x2e0..0x2e8 (stride 0x88, match 0x1431146d0) and passes entrant byte +0x82 to 0x142a3f330 and 0x142f0c6a0 (Game_VehicleProgressSystem_OnGarageEntered). (lane owner review requested) Better name: Game_PitDriveThrough_FadeOutCb_UpdateEntrant (bound record keeps its name)."
  },
  "signature": {
   "id": "game.frontend_scene_component_car_despawn",

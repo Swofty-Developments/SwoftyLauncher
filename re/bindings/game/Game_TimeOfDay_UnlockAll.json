@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14460ea80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14460ea80.c;xref:0x141cf04b9,0x141cf06c9,0x141cf08d9",
-  "notes": "Releases the locks taken by Game_TimeOfDay_LockAll (0x1449e22b4), clearing guard slots. Hypothesis. (12 xref site(s), fb.py callers.)"
+  "evidence": "decomp:re/decomp/14460ea80.c;xref:0x141cf04b9,0x141cf06c9,0x141cf08d9,0x141d00d2b,0x142e13ece,0x1438b5c4e,0x1438c331d,0x1438c3537,0x1438c487c,0x14477d06e,0x144792d0a,0x14479c39b",
+  "notes": "Releases each held lock of the LockAll set in ascending slot order (+0x8,+0x18,+0x38..+0xe8): if slot set, clears pair and ReleaseSRWLockExclusive (0x1449e22b4). Decomp shows nested ifs; disasm is sequential. (lane owner review requested)"
  },
  "signature": {
   "id": "game.time_of_day_unlock_all",

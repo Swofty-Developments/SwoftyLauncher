@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d8b5f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-FLOW_VERBOSE",
-  "notes": "named from its log messages (channel FLOW_VERBOSE): 'SessionStateRewardSequence::SessionStateRewardSequence isFullyFadedIn'"
+  "evidence": "decomp:re/decomp/142d8b5f0.c;pat:log-channel-FLOW_VERBOSE;xref:0x1457e1fd0",
+  "notes": "Slot 4 (+0x20, onStateEnter) of state vtable 0x1457e1fb0 (cell 0x1457e1fd0). If fade (+0xc88+0x790) state 0: requests full-screen fade out Broadcast/BroadcastFull (flags 4/8 at +0x7b8, FADE_REQUESTS log). When state 2 (faded out): iterates +0xda8 list (0x1519eb350), m_hasCutsceneToPlay -> +0xdb5; playRewardCutscene 0x142c74860 fail -> +0xdb0=1; else bus post 0x14565e950 code 0x11f (Screen::LiveFeed). Returns done flag. (lane owner review requested) Better name: Game_SessionStateRewardSequence_OnStateEnter (bound record keeps its name)."
  },
  "signature": {
   "id": "game.flow_verbose_session_state_reward_sequence",

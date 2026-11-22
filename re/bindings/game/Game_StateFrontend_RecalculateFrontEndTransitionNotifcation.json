@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1436d1430",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=StateFrontend::recalculateFrontEndTransitionNotifcation; log channel GAME: 'void game::StateFrontend::recalculateFrontEndTransitionNotifcation(NEuint) | %s: interrupt: %d'"
+  "evidence": "decomp:re/decomp/1436d1430.c;pat:log-message-cxx;xref:0x1436ce710,0x1436d2bb2,0x1436d405b",
+  "notes": "Small entry (pdata 0x1436d1430-0x1436d14f8): logs GAME \"%s: interrupt: %d\" with own pretty-function and the top interrupt of [+0xbf8], then tail-jumps 0x1436d1500(this, interrupt). Address taken by lea at 0x1436ce710, 0x1436d2bb2, 0x1436d405b. (lane owner review requested)"
  },
  "signature": {
   "id": "game.state_frontend_recalculate_front_end_transition_notifcation",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14376cb90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-STATEVENT",
-  "notes": "named from its log messages (channel STATEVENT): 'Executing EventWriteWonRaceV2 with [%d] StatisticDataProviders registered.'"
+  "evidence": "decomp:re/decomp/14376cb90.c;pat:log-channel-STATEVENT;xref:0x143792b6a,0x14379364b",
+  "notes": "Direct writer: key \"RaceWins\" value 1.0. Called from 0x143790310. (lane owner review requested)"
  },
  "signature": {
   "id": "game.stat_event_write_won_race_v2",

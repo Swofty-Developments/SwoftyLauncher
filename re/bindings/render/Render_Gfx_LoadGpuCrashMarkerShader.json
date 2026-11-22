@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143cda2f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143cda2f0.c;xref:0x14010589f",
-  "notes": "References aid://shader_package/gpu_crash_producer/gpu_crash_marker.nef(x/x2) shader package ids: diagnostic GPU-crash marker shader. Callers Render_Gfx_BuildConfigObject, Ne_Gfx2Renderer_RenderFrame. Debug feature only."
+  "evidence": "decomp:re/decomp/143cda2f0.c;xref:0x14010589f,0x14010592f",
+  "notes": "Constructor (vtable 0x145a3aee0 then 0x1459adee8): stores the name pair from *param_4, param_2, param_3, creates a bind layout (Render_Gfx2_BindLayout_Create, cb 0x143eee9c0), then MD5-hashes the lower-cased id eaid://shader_package/gpu_crash_producer/gpu_crash_marker.nefx2 to reference that package. Callers Render_Gfx_BuildConfigObject 0x14010589f, 0x14010592f (no RenderFrame call found). (lane owner review requested) Better name: Render_GpuCrashMarker_Construct (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx_load_gpu_crash_marker_shader",

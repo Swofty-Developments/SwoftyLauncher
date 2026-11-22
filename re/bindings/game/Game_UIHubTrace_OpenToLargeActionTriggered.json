@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1438043a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-UIHubTrace",
-  "notes": "named from its log messages (channel UIHubTrace): '[ACTION] OpenToLarge Action Triggered'"
+  "evidence": "decomp:re/decomp/1438043a0.c;pat:log-channel-UIHubTrace;xref:0x143803442,0x143803b41,0x1516196ca",
+  "notes": "Logs '[ACTION] OpenToLarge Action Triggered'. State +0x64 == 2 and +0x74 != 0: +0x70/+0x74 = 2/1, vt+0xd0(1, 0), 0x143805e20, posts vt 0x14588bcd0 hash 0x754a7bb4, event 0x1461030a0. +0x64 == 1 and +0x74 != 0: event 0x146103098 then 0x1438057d0. +0x64 == 0: +0x70/+0x74 = 1/1, hash 0xe4afac6c, event 0x14610309c; then per communicator mode [+0x78]+0x4c posts vt 0x14588bc90 messages for +0x5c / +0x60; +0x74 = 1; UI signal 0x519/0x1505. Callers 0x143803442, 0x143803b41, 0x1516196ca. (lane owner review requested) Better name: Game_UIHub_OpenToLarge (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ui_hub_trace_open_to_large_action_triggered",

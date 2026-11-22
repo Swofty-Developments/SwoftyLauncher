@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142ee45a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142ee45a0.c;xref:0x142e2da39",
-  "notes": "ne_hash_map find-or-insert for thumbnail requests (throws via Ne_Std_ThrowMapSetTooLong when full). Callers Game_ThumbnailSystem_AddingPendingDriverThumbnail, AddingPendingCarThumbnail, AddingPendingHelmetThumbnail, AddPendingCustomObjectThumbnail."
+  "evidence": "decomp:re/decomp/142ee45a0.c;xref:0x142e2da39,0x142e2df92,0x142e2e9e7,0x142e380be",
+  "notes": "std::map<u32,...> try_emplace: searches red-black tree (key at node+0x20), else allocates 0x60 node, moves value from param_3, rebalances; returns {node, inserted}. Not a hash map. (lane owner review requested) Better name: Game_Thumbnail_SetMap_Emplace (bound record keeps its name)."
  },
  "signature": {
   "id": "game.thumbnail_hash_map_find_or_insert",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140fdad10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void *Career_Find_EventsAtDay(void *comp, int64_t day, int64_t unused, char flag)",
-  "evidence": "decomp:re/decomp/140fdad10.c;xref:0x140fdaf4c;xref:0x141729148;xref:0x1417292d6",
-  "notes": "myteam-g2: Finds the first entry >= day in the day-keyed tree at comp+0x330 and walks its event list (entry+0x178) to collect the contract negotiation events of that day. Used by contract negotiation / HQ contracts view."
+  "evidence": "decomp:re/decomp/140fdad10.c;xref:0x140fdaf4d,0x141729149,0x1417292d7,0x141a0c36d,0x141a0c621,0x141a083c4",
+  "notes": "Exact-day lookup in the ordered tree at comp+0x330 (key node+0x20, lower bound then equality), then walks the set at value+0x178: for each element calls Sess_Match_EntrantIdentity 0x1431146d0(elem+0x20, 0x40-byte identity key, vtable 0x145612e20) and returns elem+0x70 of the first whose match result != param_4; null if day or element missing. No event list is collected. (lane owner review requested) Better name: Career_Find_DayEventByEntrant (bound record keeps its name)."
  },
  "signature": {
   "id": "career.find_events_at_day",

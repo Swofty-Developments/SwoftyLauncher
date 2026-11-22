@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14246ec30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "entrants",
   "proto": "-",
-  "evidence": "pat:log-channel-ENTRANTS_SYSTEM",
-  "notes": "named from its log messages (channel ENTRANTS_SYSTEM): 'Driver added with stat id %s | Couldn't find array to add driver with type %s | Failed to add driver with stat id %s'"
+  "evidence": "decomp:re/decomp/14246ec30.c;pat:log-channel-ENTRANTS_SYSTEM;xref:0x140fe90cf,0x141443509,0x1414459c9,0x1416e4893,0x1416e503b,0x1416e5e79",
+  "notes": "AddDriver for type 1 eUserDefined: array this+0x278; ENTRANTS_SYSTEM: id = (first free slot of the array's 16-byte entries << 16) | type; result *p3 = 0 ok / 1 no array / 3 insert failed; logs added/failed with stat id. Inserts via 0x140cdb2c0, then 0x1423dbcf0 lookup and bus msg 0x14578d658 {id, not-found flag} via 0x1439876c0. (lane owner review requested)"
  },
  "signature": {
   "id": "entrants.entrants_system_add_driver",

@@ -40,6 +40,7 @@ pub(super) struct Inputs {
     /// The Driver Manager drivers each DB Editor package picks, by the package's name.
     pub driver_picks: Vec<(String, Vec<String>)>,
     pub hud_inputs: Vec<crate::hud::Input>,
+    pub hud_slots: Vec<crate::hud::slots::SlotInput>,
     pub shader_files: BuildFiles,
     pub std_index: Option<crate::stdlib::index::Placed>,
     /// The record room a standard library addon asks the database for.
@@ -50,6 +51,8 @@ pub(super) struct Inputs {
     pub db_src: PathBuf,
     /// The in-game loader is there, so the launcher's menus are built.
     pub menus: bool,
+    /// The careers the Resume Career list shows, when the list is on.
+    pub resume_save: Option<crate::stdlib::careers::ListSave>,
     /// How many lines and warnings the build had before the ones a saved build keeps.
     pub saved_from: (usize, usize),
 }
@@ -57,13 +60,13 @@ pub(super) struct Inputs {
 pub(super) fn stamp_resume_list(
     hash: &mut BuildHash,
     data: &std::path::Path,
-    profile: &str,
+    profile: &crate::profile::Profile,
     game: &crate::install::Game,
     wanted: bool,
-) -> Result<()> {
+) -> Result<Option<crate::stdlib::careers::ListSave>> {
     if !wanted {
         hash.update("resume list|off;");
-        return Ok(());
+        return Ok(None);
     }
     let careers = crate::stdlib::careers::data_path(data);
     let stamp = match careers.is_file() {
@@ -74,11 +77,10 @@ pub(super) fn stamp_resume_list(
         Some(p) => sha256_file(&p)?,
         None => "absent".to_owned(),
     };
-    hash.update(format!(
-        "resume list|{stamp}|{ids}|{};",
-        crate::stdlib::careers::save_state(data, profile, game)
-    ));
-    Ok(())
+    let launcher_saves = profile.launcher_saves && !profile.is_vanilla();
+    let saved = crate::stdlib::careers::list_save(data, &profile.name, launcher_saves, game);
+    hash.update(format!("resume list|{stamp}|{ids}|{};", saved.state()));
+    Ok(Some(saved))
 }
 
 impl Inputs {
@@ -188,9 +190,10 @@ impl Inputs {
         }
         let record_ui = record_ui_lists(&ui_maps, &fitted, &resolve, &mut built.warnings);
         let caches = Vec::new();
+        let copy = crate::install::Source::detect(&game.dir);
         let mut session = match lent {
-            true => store.session_settings_of(p)?,
-            false => store.session_settings(profile)?,
+            true => store.session_settings_on(p, copy)?,
+            false => store.session_settings_on(&store.profile(profile)?, copy)?,
         };
         session.set_maps(
             fitted
@@ -201,18 +204,19 @@ impl Inputs {
         session.set_mods(mods.into_iter());
         hash.json(&session);
         let menus = loader_dir().is_some();
+        let mut resume_save = None;
         if menus {
             for rel in MENU_ERPS.iter().chain(MENU_READS) {
                 let p = resolve(&ui_file(rel));
                 let meta = std::fs::metadata(&p).map_err(io_err(&p))?;
                 hash.update(format!("{rel}|{}|{:?}", meta.len(), meta.modified().ok()));
             }
-            stamp_resume_list(
+            resume_save = stamp_resume_list(
                 &mut hash,
                 &store.root,
-                profile,
+                p,
                 game,
-                crate::stdlib::careers::resume_list_wanted(),
+                crate::stdlib::careers::resume_list_wanted(&store.config().launch.env),
             )?;
         }
         let db_src = run.original(GVDB);
@@ -273,6 +277,7 @@ impl Inputs {
             outputs,
             driver_picks,
             hud_inputs,
+            hud_slots,
             ..
         } = gathered_rest;
         let inputs = Self {
@@ -283,12 +288,14 @@ impl Inputs {
             outputs,
             driver_picks,
             hud_inputs,
+            hud_slots,
             shader_files,
             std_index,
             room_asked,
             lent_ids,
             db_src,
             menus,
+            resume_save,
             saved_from,
         };
         let pipeline = Pipeline {

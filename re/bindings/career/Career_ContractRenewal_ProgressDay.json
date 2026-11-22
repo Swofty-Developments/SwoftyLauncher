@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140d8c2b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-CONTRACT_RENEWAL",
-  "notes": "named from its log messages (channel CONTRACT_RENEWAL): 'Can't progress day'"
+  "evidence": "decomp:re/decomp/140d8c2b0.c;pat:log-channel-CONTRACT_RENEWAL;xref:0x142df4779,0x1436bf9f9,0x145690c60",
+  "notes": "Bool slot (vtable ptr 0x145690c60), CONTRACT_RENEWAL logs: returns 1 early when +0x2f0==0 or +0x3ee set; checks human availability (0x140d8df10, or per team 0x140d8c8f0 when 0x1484f1570), record states [+0x2b0]+0x418 (+0x34), 0x140d8d150(day+1,2); 0x140d8c590 false -> logs 'Can't progress day, getApproachesAndAuctionsFinished returned false' and returns 0. (lane owner review requested) Better name: Career_ContractRenewal_CheckProgressDay (bound record keeps its name)."
  },
  "signature": {
   "id": "career.contract_renewal_progress_day",

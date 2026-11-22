@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143802f80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-UIHubTrace",
-  "notes": "named from its log messages (channel UIHubTrace): '%zu [Animation Event] Carousel Open Anim Completed.'"
+  "evidence": "decomp:re/decomp/143802f80.c;pat:log-channel-UIHubTrace;xref:0x145888ff8",
+  "notes": "Hub UI event handler (vtable cell 0x145888ff8): type 0x3f (alpha anim done) on content (+0x58) / header (+0x54) sets +0x6c / +0x68 from pending +0x70, logs 'Content/Header Faded Up/Down', sends follow-up events, runs Close/OpenToCarousel/OpenToLarge by +0x74. Type 0x35 by hash +0x20: close done -> +0x70 = +0x64 = 0; carousel open -> +0x64 = 2; large open -> +0x64 = 1. (lane owner review requested) Better name: Game_UIHub_HandleUIEvent (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ui_hub_trace_carousel_open_anim_completed",

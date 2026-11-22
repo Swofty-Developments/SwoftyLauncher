@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141d58df0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: broadcast_ui.enable_grid_engineer, ui_menu_data.current_game_state, ui_menu_data.intros_and_outros.grid_engineer_tooltips_available'"
+  "evidence": "decomp:re/decomp/141d58df0.c;pat:log-channel--;xref:0x141d58045,0x141d5889a",
+  "notes": "Handler (lea refs only): sets VM bools broadcast_ui.enable_grid_engineer and ui_menu_data.intros_and_outros.grid_engineer_tooltips_available from param_2+0x10, then writes string intros to ui_menu_data.current_game_state. Returns 0. (lane owner review requested) Better name: Game_Intros_SetGridEngineerUiState (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_ui_menu_data_config_2",

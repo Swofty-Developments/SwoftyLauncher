@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a317e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-WINDOW",
-  "notes": "named from its log messages (channel WINDOW): 'WebView created URL = %s'"
+  "evidence": "decomp:re/decomp/143a317e0.c;pat:log-channel-WINDOW;xref:0x1458a0068",
+  "notes": "Read in full; ref vt cell (COM Invoke). (handler, HRESULT, controller): failure releases [this+0x10]+0/+8; success gets the CoreWebView2 (vcall +200), stores controller/webview (AddRef/Release), enables three settings, navigates to URL [this+0x10]+0x40 (vcall +0x28), sets bounds/visibility, logs 'WebView created URL = %s'. (lane owner review requested) Better name: Game_Window_OnWebView2ControllerCreated (bound record keeps its name)."
  },
  "signature": {
   "id": "game.window_web_view_created_url",

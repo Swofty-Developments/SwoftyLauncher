@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a7e110",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name writeOutEXR (class from the log channel); log channel TRACE: 'writeOutEXR malloc %dMiB'"
+  "evidence": "decomp:re/decomp/143a7e110.c;pat:log-message-method;xref:0x142bd2a30,0x1444936d1",
+  "notes": "writeOutEXR(stream, pitch, pixels, w, h, format, alloc) (TRACE 'writeOutEXR malloc %dMiB'): 3-channel float EXR header; per pixel converts format '#' (0x143a85970), 'J' (11/11/10 float) or 'M' (10/10/10/2) into three float planes, inverse PQ (0.8359375/18.8515625/18.6875, x100) when HDR is on ([0x14618caa8]+0x70); encodes 0x143a79520, writes stream vt+0x48. Callers 0x142bd2a30, 0x1444936d1. (lane owner review requested) Better name: Game_Screenshot_WriteOutEXR (bound record keeps its name)."
  },
  "signature": {
   "id": "game.trace_write_out_exr",

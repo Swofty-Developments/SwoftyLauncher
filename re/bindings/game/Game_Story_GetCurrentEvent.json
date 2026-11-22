@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1413301b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1413301b0.c;xref:0x140374dd4,0x141324405",
-  "notes": "(storyMgr) -> event*: walks chapters at story+0x278->+0x1040 (16-byte entries, obj+0x208 vtable) accumulating event counts (+0x288..+0x290) until progress +0x514 is reached; for mode +0x518 in 6..9 or no active event creates a candidate list and picks the first match. 46 call sites incl. Game_StoryTeamHub_Initialise, Game_StoryCarPlacement_LogPlacements, Sess_StoryRollingStart_OnStateEnter."
+  "evidence": "decomp:re/decomp/1413301b0.c;xref:0x140374dd4,0x141324405,0x14132585f,0x1413265df,0x14132677f,0x141326939,0x141327150,0x141327250,0x141327349,0x141327c35,0x141328fa7,0x14132901b,0x14132908b,0x141331a27,0x141331a88,0x141331c8f,0x141331e2f,0x141331f80,0x141332506,0x14133921f,0x14139d334,0x1413aec20,0x1413b76d6,0x1413ba76e,0x1413bb4c9,0x141c9abf0,0x141c9acd2,0x141c9ff24,0x141ca0232,0x141ea831f,0x142c75510,0x142df5169,0x142df543d,0x142e00500,0x142e00572,0x142e006c8,0x142e00dbe,0x142e059f3,0x142e0600d,0x142e069dd,0x142e079a0,0x142e082bb,0x142e084e7,0x14362b3d0,0x14362b68f,0x143636176,0x1470ddcc4,0x14a037012,0x14a264c7c,0x14a264d03,0x14a7fd863,0x14a7fd8c4,0x14a7ff374,0x14a80249c,0x14a802511,0x14a802570,0x14a8137c9,0x14a813856,0x14a814495,0x14a8144fa,0x14a83ddd7,0x14a8e9e8c,0x14aa953c2,0x14f234557,0x14f249a68,0x14f249af5,0x14f2ac1d6,0x14f2af1c4",
+  "notes": "(storyMgr) -> event*: walks chapters [+0x278]+0x1040 (16-byte entries, obj+0x208 vtable) summing event counts until progress +0x514; mode +0x518 in 6..9 or no vt+0xa0 result: vt+0xb0, else vt+0x1c8 list searched by the current-player key (0x1431146d0); otherwise searches result+0x20..+0x28 (stride 0x88). (lane owner review requested)"
  },
  "signature": {
   "id": "game.story_get_current_event",

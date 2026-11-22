@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144604120",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "xref:0x144604430",
-  "notes": "engine-re round 10b: calls Game_VehProgress_UpdatePoint for 5 points (body + 4 wheels); VehProgress component type 0x146ce6690 (static init 0x14460c9b0, VehicleProgressSystem), filled into TrackSurface sys+0xe28[vehicle] at 0x1437cc2ff..0x1437cc324 via Ne_Entity_FindComponent"
+  "evidence": "decomp:re/decomp/144604120.c;xref:0x144603537,0x15512007a",
+  "notes": "Read in full (P, vols): without a vehicle (+0x28 == 0) copies the previous point values (+0xd0 -> +0xc8 ... +0x2a0 -> +0x298) and evaluates only point 0 at the spline/fallback position of [P+0x18]; with a vehicle evaluates Game_VehProgress_UpdatePoint for body (k 0, pos [[+0x558]+0x340]+0x18 +0x378) and the four wheels k 3,4,1,2 (wheel +0x2f0 of [+0x580]+0x70..+0x88). Callers 0x1446034b0, 0x15511ff90. (lane owner review requested)"
  },
  "signature": {
   "id": "game.veh_progress_update_points",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142aa1db0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=TeamColourModelComponent::setColoursFromTeamColours; log channel TeamColourModelComponent: 'TeamColourModelComponent::setColoursFromTeamColours'"
+  "evidence": "decomp:re/decomp/142aa1db0.c;pat:log-message-cxx;xref:0x142514ba1,0x142514cf1,0x142514e11,0x142515036,0x14251541e,0x14251559b,0x142a9ebfc,0x14db9efc0",
+  "notes": "Converts 3 packed RGB u32 (param_2[0..2]) from sRGB to linear (x/12.92 or ((x+0.055)/1.055)^2.4), builds 3 float4 + white row and calls Game_TeamColourModelComponent_SetColours. (lane owner review requested)"
  },
  "signature": {
   "id": "game.team_colour_model_component_set_colours_from_team_colours",

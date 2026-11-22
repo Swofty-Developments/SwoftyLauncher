@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c996a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "int (void *contract, void *json)",
-  "evidence": "decomp:re/decomp/140c996a0.c;xref:0x140da4b20;xref:0x1410ffeea",
-  "notes": "myteam-g2: Save writer of a contract record: writes two scalar fields (+0xa70 and +0x98, named UNK_14565f19b / UNK_14568633f) and then two child objects via FUN_140c94130 (contract+0x20 and, if present, contract+0x50). Used by the driver contracts component and the sponsors writer (contract_provider / active_contract / next_contract)."
+  "evidence": "decomp:re/decomp/140c996a0.c;xref:0x140da4b20,0x1410ffeea",
+  "notes": "Writer of a contract offer: random_seed +0xa70, reroll_count +0x98, default_contract (+0x20) and fallback_contract (+0x50 if set) via 0x140c94130, counteroffers vector +0x38..+0x40 (0x10 stride). Callers 0x140da4b20, 0x1410ffeea (Career_Sponsors_WriteSaveData). (lane owner review requested) Better name: Career_ContractOffer_WriteSaveData (bound record keeps its name)."
  },
  "signature": {
   "id": "career.contract_write_save_data",

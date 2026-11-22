@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f11ad0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=RollingStartSystem::onMessagePlayerDroppedIn; log channel NETWORK: 'RollingStartSystem::onMessagePlayerDroppedIn()'"
+  "evidence": "decomp:re/decomp/142f11ad0.c;pat:log-message-cxx;xref:0x142f0dab4,0x142f0e910",
+  "notes": "Bus handler (lea'd at 0x142f0dab4 and 0x142f0e910). Logs its name; +0x490 = Sess_Get_PlayerVehicleIndex(0x146044988, 0); only if msg+0x11: calls 0x142cf3980 on every value of the set +0x4b0 (count +0x4c0) and Ne_RobinHoodMap_ClearDestroy(+0x498); returns 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.rolling_start_system_on_message_player_dropped_in",

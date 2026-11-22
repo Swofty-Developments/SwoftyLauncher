@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140381f40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140381f40.c;xref:0x14027a847",
-  "notes": "Logs \"GarageCrewInstance::setMonitorStand %s\" on channel GARAGECREWINSTANCE and attaches the monitor stand model. 19 callers (garage cutscene Initialise functions)."
+  "evidence": "decomp:re/decomp/140381f40.c;xref:0x14027a847,0x14027d7d1,0x14027fb6d,0x140280ed0,0x1402818ca,0x140282bca,0x140283d9a,0x140284473,0x1402856e6,0x1402869fa,0x140287df9,0x140288735,0x1402898ea,0x1403390e6,0x14033a5c9,0x14033c889,0x1403549a8,0x14038a8e1",
+  "notes": "setMonitorStand(world,teamName,mirrored): logs the team; finds actors of types 'CarMonitor' and 'DualCarMonitor' (hashes cached in 0x146045a28/0x146045a30) in world via 0x14018d840 and calls Game_GarageCrewInstance_SetMonitorStand 0x140384f70 on each. Called from the garage cutscene initialisers and 0x140388cf0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.garage_crew_set_monitor_stand",

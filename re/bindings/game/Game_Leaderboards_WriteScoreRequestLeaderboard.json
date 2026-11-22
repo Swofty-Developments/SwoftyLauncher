@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144027880",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-LEADERBOARDS",
-  "notes": "named from its log messages (channel LEADERBOARDS): 'Write score request for leaderboard %s'"
+  "evidence": "decomp:re/decomp/144027880.c;pat:log-channel-LEADERBOARDS;xref:0x1430e7cb9",
+  "notes": "(mgr, user, def, score source, delegate, out id): logs 'Write score request for leaderboard %s'; errors 1/0x10 as the read calls. Queues a 0x298 request: method +0x288 = source[2]; per definition column (stride 0x58, type +0x50) logs 'Filling: Column...' and reads the value via source vcall +0x18(name): type 1 one dword, type 2 two dwords into +0x184 (count +0x284, max 0x40). kind +0x28c = 4, state +0xf0 = 8. Returns 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.leaderboards_write_score_request_leaderboard",

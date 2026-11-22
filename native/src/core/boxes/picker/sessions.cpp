@@ -2,6 +2,7 @@
 
 #include "core/runtime/runtime.hpp"
 
+#include "core/apply/content/appliers.hpp"
 #include "core/apply/moments.hpp"
 #include "core/apply/scheduler.hpp"
 #include "core/boxes/box_grid.hpp"
@@ -111,7 +112,7 @@ std::string mode_label(uintptr_t ctx)
     return {};
 }
 
-void leave_front_end(uintptr_t ctx)
+void leave_front_end(uintptr_t ctx, bool career_kept)
 {
     std::string label = mode_label(ctx);
     if (label.empty())
@@ -124,9 +125,11 @@ void leave_front_end(uintptr_t ctx)
             selected = n;
     bool box = !selected.empty() && (box_list(selected) || is_ours(selected.c_str()));
     logic::FrontEndLeave leave = logic::leaving_front_end(label, box);
-    if (leave.restore)
+    if (leave.restore && career_kept)
+        restore_lists();
+    else if (leave.restore)
         restore();
-    if (!box)
+    if (!box && !career_kept)
         clear_fuel();
     if (leave.clear_selected)
         ref<uintptr_t>(reinterpret_cast<void *>(setup), SELECTED_LIST) = 0;
@@ -227,7 +230,8 @@ std::string grand_prix_load(uintptr_t ctx, std::string &what)
             chosen = cars[size_t(pick.index)].name;
             if (lines.grand_prix.note())
                 swofty::log("[era] Grand Prix load: %s", pick.line.c_str());
-            std::string grid = continue_grid.raise(reinterpret_cast<uint8_t *>(entrant_setup), cars[size_t(pick.index)].cars);
+            std::string grid = continue_grid.raise(reinterpret_cast<uint8_t *>(entrant_setup), cars[size_t(pick.index)].cars,
+                                                   swofty_core::apply::content::seats_for_box(chosen));
             if (!grid.empty())
                 swofty::log("[era] Grand Prix load: %s", grid.c_str());
         }
@@ -317,10 +321,13 @@ void session_load_held(LoadSeen &seen)
         !ctx)
         return;
     if (!time_trial(reinterpret_cast<void *>(ctx))) {
-        leave_front_end(ctx);
+        CareerSession career = career_session(ctx);
+        leave_front_end(ctx, career.kept);
         seen.ctx = ctx;
         seen.list = grand_prix_load(ctx, seen.what);
         seen.virtual_label = filled.label;
+        if (career.career)
+            apply_career_rules();
         return;
     }
     seen.time_trial = true;
@@ -424,18 +431,22 @@ void drop_setup_pointers()
     }
     p.drs = box_rules.drs.forget();
     box_rules.warmers.forget();
+    box_rules.rev_lights.forget();
     box_rules.tyre_change.forget();
     box_rules.time_limits.forget();
     box_rules.weekends.forget();
     box_rules.points.forget();
     box_rules.drs_log.forget();
     box_rules.warmers_log.forget();
+    box_rules.rev_lights_log.forget();
     box_rules.points_log.forget();
     box_rules.tyre_change_log.forget();
     box_rules.weekend_log.forget();
     runtime::box_options_forget();
     box_rules.box_options_log.forget();
     box_rules.grid_log.forget();
+    box_rules.career_log.forget();
+    forget_career_rules();
     std::string line = logic::availability_drop_line(p);
     if (!line.empty() && !availability_guard.logged_dropped.exchange(true))
         swofty::log("[era] %s", line.c_str());

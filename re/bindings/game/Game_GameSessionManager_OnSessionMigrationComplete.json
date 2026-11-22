@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143058580",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionManager::onSessionMigrationComplete; log channel NETWORK: 'GameSessionManager::onSessionMigrationComplete(%s).'"
+  "evidence": "decomp:re/decomp/143058580.c;pat:log-message-cxx;xref:0x143056ba4",
+  "notes": "Logs 'GameSessionManager::onSessionMigrationComplete(%s).' (NETWORK) with param_2 bool text. Fn ptr lea'd at 0x143056ba4 in 0x143056b10 (handler table). (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_session_manager_on_session_migration_complete",

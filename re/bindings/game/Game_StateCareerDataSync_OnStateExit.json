@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1436b0940",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_StateCareerDataSync_OnStateExit;xref:0x1436b09c0",
-  "notes": "cxx=game::StateCareerDataSync::onStateExit; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1436b0940.c;str:s_StateCareerDataSync_OnStateExit;xref:0x145859610",
+  "notes": "onStateExit (vt cell 0x145859610): clears +0xca8, 0x140ff8bb0([+0xc88]), logs CAREER_DATA_SYNC \"%s Exited state\", returns 1. (lane owner review requested)"
  },
  "signature": {
   "id": "game.state_career_data_sync_on_state_exit",

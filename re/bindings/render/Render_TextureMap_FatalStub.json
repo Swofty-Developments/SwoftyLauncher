@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143ed51b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143ed51b0.c;xref:0x143bf04ce,0x143ed579e",
-  "notes": "13-byte noreturn fatal stub for the ne_hash_map.h assert of a hash map used by Render_Texture_CreateFromResourceCore (rehash at 0x143ed51c0). Name only."
+  "notes": "10-byte noreturn stub: call Ne_Crt_InvalidParameterAbort (0x145351784); int3. Cold-path callers 0x143bf04ce (Render_Texture_CreateFromResourceCore) and 0x143ed579e (0x143ed51c0: KB name Ne_Container_GrowVectorChecked, but its body carries the ne_hash_map.h string and a (map, size) rehash signature). (lane owner review requested)"
  },
  "signature": {
   "id": "render.texture_map_fatal_stub",

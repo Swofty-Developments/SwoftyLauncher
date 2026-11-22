@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c981f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void Career_AttributeSet_RecomputeStatValues(void *attr_set)",
-  "evidence": "decomp:re/decomp/140c981f0.c;xref:0x140db0926;xref:0x140db6c9b;xref:0x140dbb668",
-  "notes": "myteam-g2: Rebuilds the cached stat values of a My Team attribute set: collects active stat records (0x78-byte, active flag at +0x70) from set+8..+0x10, drops released effect refs (+0x38..+0x40), re-sums effect contributions per stat id (8-byte id/float pairs, clamped via vmaxss/vminss), and runs the change callbacks (FUN_140c993c0). Called after contracts link/progress, i.e. sponsor and driver contract effects feed stats through here. Hook: after calling it, modified stat floats take effect. DISPUTE(V9017) role per verifier: Not a deterministic recompute. The object holds a seeded RNG (counter +0x98, seed words from +0xa8, state size 0x270): it filters candidate effect templates by requirements, then loops up to param_1+0x80 times picking a random candidate (rng modulo count), applying it via FUN_140c95990 and adding per-stat id/float pairs clamped to [-1,1], then fires callbacks FUN_140c993c0. Better role: random effect-roll/regenerate for a stat set; the +0x70 active flag, 0x78 stride and +0x38..0x40 ref release parts of the claim do exist."
+  "evidence": "decomp:re/decomp/140c981f0.c;xref:0x140db0926,0x140db6c9b,0x140dbb668,0x1410f8545",
+  "notes": "Regenerates a contract offer: increments reroll_count +0x98, seeds MT +0xa8 with reroll*0xca + random_seed +0xa70 (same fields as writer 0x140c996a0), filters candidate templates of +0x20 by requirements, picks up to +0x80 at random and applies them via 0x140c95990, sums per-stat id/float pairs, then callbacks 0x140c993c0(this+0x30). Callers in driver contracts (0x140db0926..) and sponsors (0x1410f8545..). (lane owner review requested) Better name: Career_ContractOffer_Reroll (bound record keeps its name)."
  },
  "signature": {
   "id": "career.attribute_set_roll_random_effects",

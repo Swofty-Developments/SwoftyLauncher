@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14475ce00.c;xref:0x1428a9c93",
-  "notes": "Per-wheel (param stride 0x164, wheel state stride 0xfc) resolution of suspension link points: for up to 4 link groups (counts at +0x94,+0x10c,+200,+0x120,+0x154) reads bone indices, fetches 0x30-byte bone transforms from the skeleton ([param_4+0x28]) and builds link vectors/lengths with quaternion polynomials and 4-lane constant 0x146108bf0. 2084 lines. Caller Car_Chassis_ReadAxleWheelParams. Addon: where wishbone/pushrod geometry derives from the car model bones."
+  "evidence": "decomp:re/decomp/14475ce00.c;xref:0x1428a9c93,0x1446335e0",
+  "notes": "Per-wheel suspension link geometry from skeleton bones (2084 lines); callers 0x1428a9c93 (fn 0x1428a9620) and Car_Chassis_ReadAxleWheelParams 0x1446335e0."
  },
  "signature": {
   "id": "car.suspension_resolve_link_geometry_from_bones",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e88c30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-TYRES",
-  "notes": "named from its log messages (channel NETWORK-TYRES): 'TyreSet serialize start'"
+  "evidence": "decomp:re/decomp/142e88c30.c;pat:log-channel-NETWORK-TYRES;xref:0x142e8dcea,0x142ea03c2",
+  "notes": "Logs 'TyreSet serialize start', writes recommendedSession/flags with Ne_BitStream_WriteBits 0x143924390 and per wheel wear/blistering/punctured values with WriteFloatByPrecision 0x143924c30. (lane owner review requested) Better name: Game_NetworkTyres_SerializeTyreSet (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_tyres_tyre_set_serialize_start",

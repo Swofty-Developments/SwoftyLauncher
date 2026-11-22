@@ -1059,7 +1059,15 @@ mod game_tests {
         let stock_tpl = Pkg::parse(&template_bytes).unwrap();
         let mut tpl = Pkg::parse(&template_bytes).unwrap();
         let tags = StockTags::race(&stock_tpl.root);
-        template::attach(&mut tpl.root, &stock_tpl.root, &tags, f.race_parent, &plan).unwrap();
+        template::attach(
+            &mut tpl.root,
+            &stock_tpl.root,
+            &stock_tpl.root,
+            &tags,
+            f.race_parent,
+            &plan,
+        )
+        .unwrap();
         let at = node::find_path(&tpl.root, &format!("{}.{}", f.race_parent, plan.ctl_name())).unwrap();
         let ctl = node::node_at(&tpl.root, &at).unwrap();
         let kid = |name: &str| {

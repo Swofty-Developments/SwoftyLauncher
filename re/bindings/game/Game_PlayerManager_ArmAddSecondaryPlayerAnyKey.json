@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1434de660",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1434de660.c;xref:0x1434de71d,0x1434decca",
-  "notes": "GamePlayerManager: arms 'press any key' capture for adding a secondary (split-screen) player: resets the input module [this+0x538] snapshot (Game_InputModule_TakeSnapshot), registers Game_GamePlayerManager_AnyKeyCallbackForAddSecondaryPlayer via addNextUnfilteredAxisCallback, subscribes itself to 'message_open' on [this+0x528]+0x68+0x1d0. Re-arms itself. d4-verify-b correction: bus message is message_opened"
+  "evidence": "decomp:re/decomp/1434de660.c;xref:0x1434de71b,0x1434decc8",
+  "notes": "Logs INPUT addNextUnfilteredAxisCallback; input module [this+0x538]: Game_InputModule_TakeSnapshot, clears callback vector [+0x68]+8..+0x10, adds Game_GamePlayerManager_AnyKeyCallbackForAddSecondaryPlayer 0x1434de7a0 (0x141e67270); subscribes itself to bus message 'message_opened' on [[this+0x528]+0x68]+0x1d0 (0x14417bfb0). Self re-arm lea 0x1434de71b; also lea in 0x1434deba0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.player_manager_arm_add_secondary_player_any_key",

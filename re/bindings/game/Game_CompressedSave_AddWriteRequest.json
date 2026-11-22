@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14364a730",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-CompressedSaveDataSerialiser",
-  "notes": "named from its log messages (channel CompressedSaveDataSerialiser): 'Unexpected state | Adding write request for file '%s' with size %u'"
+  "evidence": "decomp:re/decomp/14364a730.c;pat:log-channel-CompressedSaveDataSerialiser;xref:0x145855750",
+  "notes": "Vtable cell 0x145855750; result tagged with hash of 'getNextAction'. Mode +0x254 1 (read): state 0 queues a read of '<+0x4f8>.com' (0x1436823b0), +0x250 = 2. Mode 0 (write): SAVE_PROPERTY_BAG_TEMP pool, buffer +0x4d0 >= max(0xe00000, cfg+0xa8), header {5, 0x10, 4, compressed}, serialise (worker events +0x260/+0x270), 'Adding write request ...', 0x1436825a0, +0x250 = 3. Out float progress 0/0.5/1. Renamed: also issues reads. (lane owner review requested) Better name: Game_CompressedSave_GetNextAction (bound record keeps its name)."
  },
  "signature": {
   "id": "game.compressed_save_add_write_request",

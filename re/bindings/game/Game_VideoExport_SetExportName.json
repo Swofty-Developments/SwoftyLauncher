@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141f10a40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141f10a40.c;xref:0x141f0aa32",
-  "notes": "If ctx+0x9a0 (export job) set: copies up to 63 chars of C string param_2 into a stack buffer (3-char unrolled loop), looks up via 0x1449087e0 and stores into the export job. Callers Game_VideoExport_FinishExportRestoreUi, StartHighlightExport. Hypothesis: highlight/video file name setter."
+  "evidence": "decomp:re/decomp/141f10a40.c;xref:0x141f0aa32,0x141f1006c",
+  "notes": "Read in full: if job [this+0x9a0]: hashes (0x1449087e0) and copies up to 63 chars of param_2 into a 64-byte inline string (vt 0x145613548), gets object via [[job+0x18]] vcall +0x28, then vcall +0xd8(hash, string). Called with 'highlights_export_entered' from 0x141f0fed0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.video_export_set_export_name",

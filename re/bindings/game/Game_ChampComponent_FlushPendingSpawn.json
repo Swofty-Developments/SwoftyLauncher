@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140b7a8c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140b7a8c0.c;xref:0x142d52b99,0x142dad7aa",
-  "notes": "For eligible session types (type < 0x11, mask 0x1e73e) spawns the pending entity (+0x2a0 world, +0x2b0 prefab, +0x2b8 slot) with its transform components (0x146cc20a8/0x146cc39d8) via 0x144534390, clears +0x2a8, stops async job +0x2d0 and posts message 0x145688bc8. Callers Sess_Loader_RequestCareerHubUnload, Sess_StartLightsSync_MustAdvance."
+  "notes": "When the session info (vcall +0xa0 of [+0x278]+0x1030) has type < 0x11 in mask 0x1e73e and +0x2a8/+0x2b0 are set: reads components 0x146cc20a8/0x146cc39d8 of prefab +0x2b0, 0x144534390(+0x2a0, prefab, +0x2a8, +0x2b8, 2,0,2), clears +0x2a8/+0x2b0. Then stops async job +0x2d0 if set and posts message 0x145688bc8 via 0x140cfce30. (lane owner review requested)"
  },
  "signature": {
   "id": "game.champ_component_flush_pending_spawn",

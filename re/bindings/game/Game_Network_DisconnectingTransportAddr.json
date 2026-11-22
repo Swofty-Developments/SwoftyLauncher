@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144092f10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'Disconnecting from transport addr %s'"
+  "evidence": "decomp:re/decomp/144092f10.c;pat:log-channel-NETWORK;xref:0x145a54648",
+  "notes": "Logs migrateConnections(host msg+0x10, dropped count msg+0x11); stores the new host at this+0x70; for each dropped id msg+0x12[i] logs \"Drop connection to %d\", finds its transport address and disconnects (Game_NetworkTransport_Disconnect, log \"Disconnecting from transport addr\"). (lane owner review requested) Better name: Game_Network_MigrateConnections (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_disconnecting_transport_addr",

@@ -1,0 +1,13 @@
+{
+  "content.box_assets": {
+    "crowd_1950": {
+      "package": "vmknolle.season-1950/f5_1950",
+      "kind": "crowd",
+      "archive": "box_assets/crowd_1950.erp",
+      "resources": [
+        "eaid://character_package_shared/crowd/",
+        "eaid://character_package/crowd/"
+      ]
+    }
+  }
+}

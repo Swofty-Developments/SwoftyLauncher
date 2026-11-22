@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143162480",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onCareerJoinedSessionComplete (class from the log channel); log channel NETWORK-INVITE: '%s: success: %d, error: %d, retry: %d'"
+  "evidence": "decomp:re/decomp/143162480.c;pat:log-message-method;xref:0x143166933",
+  "notes": "Logs '%s: success: %d, error: %d, retry: %d' with onCareerJoinedSessionComplete; on retry/failure changes state to eIdle, else tail jumps to Game_NetworkInvite_OnJoinCompleted 0x143161ce0 (decomp inlines that body). Callback stored by lea 0x143166933 in 0x143165d50. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_invite_on_career_joined_session_complete",

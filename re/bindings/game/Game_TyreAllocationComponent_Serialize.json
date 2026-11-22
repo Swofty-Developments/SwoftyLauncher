@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140bd1290",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=TyreAllocationComponent::serialize; log channel TYRES/V: '  TyreAllocationComponent::serialize(%s) v%03d'"
+  "evidence": "decomp:re/decomp/140bd1290.c;pat:log-message-cxx;xref:0x14567a9b0",
+  "notes": "TyreAllocationComponent::serialize(index, bitstream) (vtable cell 0x14567a9b0): optional debug tag 3 (stream+0x29), writes an 8-bit version 0; index < (this+0x28 - this+0x20)/0x10 -> logs 'serialize(%s) v%03d', writes the 16-bit driver key (14-bit stat id | 2-bit type << 14) and the allocation via 0x142e8da20; else writes 0x3fff (none). (lane owner review requested)"
  },
  "signature": {
   "id": "game.tyre_allocation_component_serialize",

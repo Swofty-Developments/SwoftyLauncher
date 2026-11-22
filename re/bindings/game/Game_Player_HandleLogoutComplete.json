@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1434d6a40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_Player_HandleLogoutComplete;xref:0x1434d6aad",
-  "notes": "cxx=game::Player::handleLogoutComplete; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1434d6a40.c;str:s_Player_HandleLogoutComplete;xref:0x145844988",
+  "notes": "vt cell 0x145844988. Logs INPUT 'game::Player::handleLogoutComplete - playerId=%d' (this+0x18); gets 'lng_player' from the loc table [this+0x570] (vfunc +0x18) and stores it as VM string 'gamertag' under [this+0x1f0] into node this+0x210 (Vm_Set_String, Vm_MoveAssign_NodeHandle); then 0x1434d65f0(this). Own log, not an inlined callee. (lane owner review requested)"
  },
  "signature": {
   "id": "game.player_handle_logout_complete",

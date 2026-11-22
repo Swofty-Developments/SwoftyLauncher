@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143054030",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionConnectionQualityManager::handleCongestionUpdate; log channel NETWORK-CONNECTION-QUALITY/V: 'void network::GameSessionConnectionQualityManager::handleCongestionUpdate(neon::NeBitBuffer &) | %s: connectionId: %d, new congestion status: %s'"
+  "evidence": "decomp:re/decomp/143054030.c;pat:log-message-cxx;xref:0x143058b89",
+  "notes": "Own pretty-function string 0x14580a5bc 'void ...::handleCongestionUpdate(neon::NeBitBuffer &)'. Reads two u8 values (connection id, status) from bit buffer p2 (+0x10 data, +0x1c bytes, +0x20 bits, +0x24 pos, +0x28 error, +0x29 typed mode via 0x143925660 tag checks). Ignores the message when the id is the local connection ([[p1+8]+0xd8] vt+0x18); otherwise logs 'connectionId: %d, new congestion status: %s' and tail-jumps to ChangeCongestionStatusMap (0x143053e90, inlined in the decomp). (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_session_connection_quality_manager_handle_congestion_update",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e3dd60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142e3dd60.c;xref:0x142e2d9d8,0x142e32120",
-  "notes": "Clone of 0x142e3db20 for the second AddingPendingDriverThumbnail variant."
+  "notes": "Driver thumbnail task ctor variant B: same base as _A (vtable 0x1457eca60) but copies data via 0x1416d2400 into +0x388, +0x548=1. Used for request type 1. (lane owner review requested)"
  },
  "signature": {
   "id": "game.thumbnail_system_driver_thumbnail_task_construct_b",

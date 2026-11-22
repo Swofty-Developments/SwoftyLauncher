@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142540070",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-F1LifeSystem",
-  "notes": "named from its log messages (channel F1LifeSystem): 'Going into the F1 life lobby | Data Mode Changed Prev - [%s] To Curr [%s] | Trying to swap to the F1 life lobby before it is spawned | Going from F1Life Lobby to the following race status: %s'"
+  "evidence": "decomp:re/decomp/142540070.c;pat:log-channel-F1LifeSystem;xref:0x14253e6a5,0x142540c13",
+  "notes": "Handler of 'GameSessionMyRaceStatusChanged' (subscribe lea 0x14253e6a5 in 0x14253c7a0, unsubscribe in 0x1425405b0); status msg+0x10. Outside lobby + status 2 -> mode +0x1b08=0 (eLobby), spawn, SetupScene 0x142542680; in lobby + status 0 -> post msg, mode 1 (eFrontend), SetupScene; status 5 -> despawn, mode 1. Old name EnterLobby covered one branch. (lane owner review requested) Better name: Game_F1Life_OnMyRaceStatusChanged (bound record keeps its name)."
  },
  "signature": {
   "id": "game.f1_life_enter_lobby",

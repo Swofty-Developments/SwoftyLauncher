@@ -12,9 +12,11 @@
 #include "pe_exports.h"
 #include "data_folder.h"
 #include "alog.h"
+#include "stack_room.h"
 #include "supported_builds.h"
 #include "build_gate.h"
 #include "pe_imports.h"
+#include "session_env.h"
 
 #define HOST_EXE L"F1_25.exe"
 #define EXPECTED_SIZE 408063872ULL
@@ -1193,10 +1195,8 @@ static void crash_where(uintptr_t a, char *out, size_t cap)
     }
 }
 
-static void crash_backtrace(CONTEXT ctx)
+static void crash_backtrace(CONTEXT ctx, uintptr_t lo, uintptr_t hi)
 {
-    NT_TIB *tib = (NT_TIB *)NtCurrentTeb();
-    uintptr_t lo = (uintptr_t)tib->StackLimit, hi = (uintptr_t)tib->StackBase;
     char w[320];
     for (int i = 0, shown = 0; i < 16 && ctx.Rip; i++) {
         crash_where(ctx.Rip, w, sizeof w);
@@ -1219,13 +1219,12 @@ static void crash_backtrace(CONTEXT ctx)
     }
 }
 
-static void crash_report(const char *when, EXCEPTION_POINTERS *e)
+static void crash_lines(const char *when, const EXCEPTION_RECORD *r, const CONTEXT *c, DWORD tid, uintptr_t lo, uintptr_t hi)
 {
-    EXCEPTION_RECORD *r = e->ExceptionRecord;
     char w[320];
     crash_where((uintptr_t)r->ExceptionAddress, w, sizeof w);
     ediag("CRASH (%s): %s (0x%08lx) on thread %lu, %lu ms after attach, at %s", when, exc_name(r->ExceptionCode),
-          (unsigned long)r->ExceptionCode, GetCurrentThreadId(), GetTickCount() - attach_tick, w);
+          (unsigned long)r->ExceptionCode, tid, GetTickCount() - attach_tick, w);
     if ((r->ExceptionCode == EXCEPTION_ACCESS_VIOLATION || r->ExceptionCode == EXCEPTION_IN_PAGE_ERROR) &&
         r->NumberParameters >= 2) {
         ULONG_PTR op = r->ExceptionInformation[0];
@@ -1237,23 +1236,92 @@ static void crash_report(const char *when, EXCEPTION_POINTERS *e)
               (unsigned long long)r->ExceptionInformation[1]);
     }
     ediag("  stack (loader unwind, module+RVA):");
-    crash_backtrace(*e->ContextRecord);
+    crash_backtrace(*c, lo, hi);
+}
+
+static void crash_report(const char *when, EXCEPTION_POINTERS *e)
+{
+    NT_TIB *tib = (NT_TIB *)NtCurrentTeb();
+    crash_lines(when, e->ExceptionRecord, e->ContextRecord, GetCurrentThreadId(), (uintptr_t)tib->StackLimit,
+                (uintptr_t)tib->StackBase);
+}
+
+static const char CRASH_FIRST_CHANCE[] = "first-chance (the game may still handle it)", CRASH_UNHANDLED[] = "unhandled";
+
+/* The exception a thread with little stack left handed to the log writer (crash_hand_off), one per process. */
+static struct {
+    CONTEXT ctx;
+    EXCEPTION_RECORD rec;
+    DWORD tid;
+    uintptr_t lo, hi;
+    size_t left;
+    const char *when;
+} crash_note;
+static volatile LONG crash_note_claimed;
+
+static void crash_note_job(void)
+{
+    if (crash_note.left == SIZE_MAX)
+        ediag("CRASH: thread %lu hit %s (0x%08lx) off its own stack; it logs nothing itself, the log writer logs it",
+              crash_note.tid, exc_name(crash_note.rec.ExceptionCode), (unsigned long)crash_note.rec.ExceptionCode);
+    else
+        ediag("CRASH: thread %lu hit %s (0x%08lx) with %llu KB of its stack left; it logs nothing itself, the log writer "
+              "logs it",
+              crash_note.tid, exc_name(crash_note.rec.ExceptionCode), (unsigned long)crash_note.rec.ExceptionCode,
+              (unsigned long long)(crash_note.left >> 10));
+    if (crash_note.when == CRASH_UNHANDLED)
+        ediag("CRASH: unhandled exception reached the loader top-level filter; %s",
+              prev_filter ? "passing it to the game's filter" : "the process ends here");
+    crash_lines(crash_note.when, &crash_note.rec, &crash_note.ctx, crash_note.tid, crash_note.lo, crash_note.hi);
+}
+
+/* A stack overflow, or less than SWOFTY_LOW_STACK of this thread's stack left with the log writer to hand to. */
+static int crash_low_stack(DWORD code, size_t *left)
+{
+    *left = swofty_stack_left();
+    return code == EXCEPTION_STACK_OVERFLOW || (*left < SWOFTY_LOW_STACK && log_async);
+}
+
+/* Copies the exception for the log writer, which logs it on its own stack, and waits for it at most 5 s; this thread
+   formats nothing. */
+static __attribute__((noinline)) void crash_hand_off(const char *when, EXCEPTION_POINTERS *e, size_t left)
+{
+    if (!log_async || InterlockedCompareExchange(&crash_note_claimed, 1, 0))
+        return;
+    NT_TIB *tib = (NT_TIB *)NtCurrentTeb();
+    memcpy(&crash_note.ctx, e->ContextRecord, sizeof(CONTEXT));
+    memcpy(&crash_note.rec, e->ExceptionRecord, sizeof(EXCEPTION_RECORD));
+    crash_note.rec.ExceptionRecord = NULL;
+    crash_note.tid = GetCurrentThreadId();
+    crash_note.lo = (uintptr_t)tib->StackLimit;
+    crash_note.hi = (uintptr_t)tib->StackBase;
+    crash_note.left = left;
+    crash_note.when = when;
+    alog_run(crash_note_job, 5000);
 }
 
 static LONG CALLBACK loader_veh(EXCEPTION_POINTERS *e)
 {
     DWORD code = e->ExceptionRecord->ExceptionCode;
-    if (ea_diag && exc_fatal(code) && InterlockedIncrement(&diag_crash_reports) <= 8)
-        crash_report("first-chance (the game may still handle it)", e);
+    if (!ea_diag || !exc_fatal(code) || InterlockedIncrement(&diag_crash_reports) > 8)
+        return EXCEPTION_CONTINUE_SEARCH;
+    size_t left;
+    if (crash_low_stack(code, &left))
+        crash_hand_off(CRASH_FIRST_CHANCE, e, left);
+    else
+        crash_report(CRASH_FIRST_CHANCE, e);
     return EXCEPTION_CONTINUE_SEARCH;
 }
 
 static LONG WINAPI loader_unhandled(EXCEPTION_POINTERS *e)
 {
-    if (ea_diag) {
+    size_t left;
+    if (ea_diag && crash_low_stack(e->ExceptionRecord->ExceptionCode, &left)) {
+        crash_hand_off(CRASH_UNHANDLED, e, left);
+    } else if (ea_diag) {
         ediag("CRASH: unhandled exception reached the loader top-level filter; %s",
               prev_filter ? "passing it to the game's filter" : "the process ends here");
-        crash_report("unhandled", e);
+        crash_report(CRASH_UNHANDLED, e);
     }
     return prev_filter ? prev_filter(e) : EXCEPTION_CONTINUE_SEARCH;
 }
@@ -1788,6 +1856,76 @@ static void log_build(void)
              (unsigned long long)sections[i].size, sections[i].flags);
 }
 
+/* The session's environment for a game the EA app starts, which starts the game with an environment of its own:
+   swofty\session_env.json (native/include/session_env.h) names the variables, and they are set here, before
+   anything reads one. Without the file nothing changes. The values are never logged. The file is removed once
+   applied; a game folder the game may not change (Program Files) keeps it, and the launcher removes it when the
+   session ends. */
+static char session_env_line[512];
+
+static long long process_started(void)
+{
+    FILETIME created, exited, kernel, user;
+    if (!GetProcessTimes(GetCurrentProcess(), &created, &exited, &kernel, &user) ||
+        !(created.dwLowDateTime | created.dwHighDateTime))
+        GetSystemTimeAsFileTime(&created);
+    ULARGE_INTEGER t;
+    t.LowPart = created.dwLowDateTime;
+    t.HighPart = created.dwHighDateTime;
+    return (long long)((t.QuadPart - 116444736000000000ULL) / 10000000ULL);
+}
+
+static void apply_session_env(void)
+{
+    wchar_t path[MAX_PATH * 2];
+    swprintf(path, MAX_PATH * 2, L"%ls\\swofty\\session_env.json", game_dir);
+    HANDLE f =
+        CreateFileW(path, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, 0, NULL);
+    if (f == INVALID_HANDLE_VALUE)
+        return;
+    static char buf[256 << 10];
+    static SwoftySessionEnv env;
+    LARGE_INTEGER size;
+    DWORD got = 0;
+    int whole = GetFileSizeEx(f, &size) && size.QuadPart < (LONGLONG)sizeof buf;
+    if (whole && !ReadFile(f, buf, sizeof buf - 1, &got, NULL))
+        got = 0;
+    CloseHandle(f);
+    buf[got] = 0;
+    long long started = process_started();
+    int code = whole ? swofty_session_env_read(buf, started, &env) : SWOFTY_SESSION_ENV_UNREADABLE;
+    if (code != SWOFTY_SESSION_ENV_OK) {
+        char detail[96] = "";
+        if (code == SWOFTY_SESSION_ENV_EXPIRED)
+            snprintf(detail, sizeof detail, " (%lld s before)", started - env.expires);
+        else if (code == SWOFTY_SESSION_ENV_LATER)
+            snprintf(detail, sizeof detail, " (%lld s after)", env.written - started);
+        else if (!whole)
+            snprintf(detail, sizeof detail, " (larger than %u KB)", (unsigned)(sizeof buf >> 10));
+        snprintf(session_env_line, sizeof session_env_line,
+                 "session env: swofty\\session_env.json ignored: %s%s; the game keeps the environment it was started with",
+                 swofty_session_env_why(code), detail);
+        return;
+    }
+    static wchar_t name[512], value[32768];
+    int set = 0;
+    for (int i = 0; i < env.count; i++)
+        if (MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, env.names[i], -1, name, 512) &&
+            MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, env.values[i], -1, value, 32768) &&
+            SetEnvironmentVariableW(name, value))
+            set++;
+    char removed[160] = "removed the file";
+    if (!DeleteFileW(path))
+        snprintf(removed, sizeof removed,
+                 "the file could not be removed (error %lu), so the launcher removes it when the session ends", GetLastError());
+    else if (GetFileAttributesW(path) != INVALID_FILE_ATTRIBUTES)
+        snprintf(removed, sizeof removed,
+                 "the file is still there after the delete, so the launcher removes it when the session ends");
+    snprintf(session_env_line, sizeof session_env_line,
+             "session env: set %d of %d variable(s) from swofty\\session_env.json (launch request %.64s); %s", set, env.count,
+             env.request, removed);
+}
+
 /* Before the real version.dll is loaded, which is where a hooking module can stall the loader before its first
    log line: one small write of the pid to %LOCALAPPDATA%\Swofty\state\loader-start.marker. kernel32 only; no
    loading, no locks. Any failure is ignored. */
@@ -1858,6 +1996,7 @@ BOOL WINAPI DllMain(HINSTANCE self, DWORD reason, LPVOID reserved)
 
     wcscpy(game_dir, exe_path);
     game_dir[slash ? slash - exe_path : 0] = 0;
+    apply_session_env();
     InitializeCriticalSection(&log_lock);
     open_log();
     {
@@ -1872,6 +2011,8 @@ BOOL WINAPI DllMain(HINSTANCE self, DWORD reason, LPVOID reserved)
     if (real)
         GetModuleFileNameW(real, real_path, MAX_PATH);
     slog("swofty loader (version.dll proxy) attached, pid %lu", GetCurrentProcessId());
+    if (session_env_line[0])
+        slog("%s", session_env_line);
     if (refused_error)
         log_refused();
     slog("log: %s",

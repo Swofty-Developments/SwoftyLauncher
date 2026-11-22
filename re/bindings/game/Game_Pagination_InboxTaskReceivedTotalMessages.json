@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141784580",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-PAGINATION",
-  "notes": "named from its log messages (channel PAGINATION): 'Inbox task received. Total messages = %u'"
+  "evidence": "decomp:re/decomp/141784580.c;pat:log-channel-PAGINATION;xref:0x1417844af",
+  "notes": "Inbox task completion callback (lea in 0x141784490). If the task error string (param_2+8 when +0x88) is empty: logs 'Inbox task received. Total messages = %u' with (+0x80)+0x230 and calls Game_Pagination_SetElementCount (0x1417f0a80); else 0x143884c00 on +0xe0. Then releases the task held at +0xc0 (0x14443d110 + allocator +0xb8 vcall +0x38). (lane owner review requested) Better name: Game_Pagination_OnInboxTaskReceived (bound record keeps its name)."
  },
  "signature": {
   "id": "game.pagination_inbox_task_received_total_messages",

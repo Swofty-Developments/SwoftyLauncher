@@ -1,0 +1,130 @@
+{
+ "schema": 1,
+ "name": "Ne_AnimPacketB4_Sample",
+ "table": "functions",
+ "author": "anim-packet-time",
+ "row": {
+  "addr": "0x143a39df0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_AnimPacketB4_Sample(void *packet, void *binding, float time, void *out)",
+  "evidence": "decomp:own capstone disasm 0x143a39df0-0x143a3a2f3 (re/tools/disx.py);xref:0x1458a1798",
+  "notes": "Slot +0x18 (sample) of the NeAnimPacket_B4 vtable 0x1458a1780 and its only reference (cell 0x1458a1798); the packet factory 0x1443b5880 installs that vtable. Arguments as Ne_AnimPacketB1_Sample; the time is spilled to [rsp+0x2c]. Its per-track sampling is inline: vucomiss xmm0,xmm3 at 0x143a39f77, vcvttss2si r8d at 0x143a39f87, movzx eax,word [rax+rcx*2] at 0x143a3a00a. A track of 3 or more keys compares the time only with its first key (vucomiss; jae, not taken when unordered), turns (time - first key) * rate into a bucket index with vcvttss2si, passes the signed cmp/jle against the bucket count and reads the bucket table at that index: a time that is not a number or plus infinity gives 0x80000000 and reads 4 GB below the table. The lowest float takes the first-key exit (segment 0 at weight 0); a 2-key track clamps it to weight 0 with vmaxss; a 1-key track ignores the time. Core's anim packet time guard wraps it."
+ },
+ "signature": {
+  "id": "core.anim_packet_b4_sample",
+  "section": ".xtls",
+  "pattern": "C3 CC 41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 01 00 00 C5 78 29 BC 24 00 01 00 00 C5 78 29 B4 24 F0 00 00 00 C5 78 29 AC 24 E0 00 00 00 C5 78 29 A4 24 D0 00 00 00 C5 78 29 9C 24 C0 00 00 00 C5 78 29 94 24 B0 00 00 00 C5 78 29 8C 24 A0 00 00 00 C5 78 29 84 24 90 00 00 00 C5 F8 29 BC 24 80 00 00 00 C5 F8 29 74 24 70 C5 FA 11 54 24 2C",
+  "match": "0x143a39dee",
+  "anchor": "0x2",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a39df0",
+  "kind": "func_start",
+  "names": [
+   "Ne_AnimPacketB4_Sample"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-21",
+    "by": "anim-packet-time",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/engine/anim_packet_time_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-21",
+   "verifier": "anim-packet-time-blind",
+   "kind": "func",
+   "item": "Ne_AnimPacketB4_Sample",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x143a39df0-0x143a3a2f3, 0x1443b5880-0x1443b6c8a, 0x143a36380-0x143a36945 (re/tools/disx.py);xref:0x1458a1798,0x1443b63ac",
+   "notes": "gh:anim-packet-time-blind Blind re-derivation on d873a1c8. Factory jump table 0x145a969c8: type 4 stores the vtable 0x1458a1780 (lea at 0x1443b63ac; NeAnimPacket_B4 sits just before it and slot +0x10 0x143a39d40 passes that name to 0x143a38180). It has 11 slots, so no +0x58, and only +0x18 reads a float register. Slot +0x18 = 0x143a39df0 (.pdata to 0x143a3a2f3), referenced only by the cell 0x1458a1798. rcx = packet, rdx = binding slot, xmm2 = time (spilled to [rsp+0x2c] at 0x143a39e5a), r9 = output. It writes 4 floats per track. For 3+ keys, vucomiss [desc+0x10],xmm3 at 0x143a39f77; jae 0x143a39fdb is not taken when unordered. vcvttss2si r8d at 0x143a39f87; signed cmp r10d,r8d; jle at 0x143a39f99; movzx eax,word [rax+rcx*2] at 0x143a3a00a with movsxd rcx,r8d. -FLT_MAX takes the jae: segment 0, weight 0 in xmm7, and the weight-0 test at 0x143a3a1a7 (or r15b=0 at 0x143a3a1d4) goes to the direct cubic and never reaches the solver 0x143a36380. 2-key: vmaxss with 0 gives weight 0 at segment 0, no time index; 1-key ignores the time. Large finite times with (time-first)*rate >= 2^31 give the same INT_MIN, so a guard that maps only non-finite values leaves that open. Same text and rip constants at Steam 26566308 0x143a3c3c0 (.tls$, vtable 0x1458a38f0 +0x18; read at 0x143a3c5da), EA 1.0.141 0x143a26e10 (.rdata, vtable 0x1459b29c0), EA 1.0.145 0x143a293e0 (.arch, vtable 0x1459b5b10). The pattern hits once in the whole file of all four, at 0x3a39dee/0x3a3c3be/0x3a26e0e/0x3a293de, = the hints; anchor 0x2."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "anim-packet-time",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143a39dee",
+    "target": "0x143a39df0"
+   },
+   "sigcheck": "passed",
+   "digest": "e2357e87702efe1afc52a976493bbe113be94468b9e55988d3723cb9fca180be"
+  },
+  {
+   "by": "anim-packet-time",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143a3c3be",
+    "target": "0x143a3c3c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "93aed2d0dd286e2b547775063a6f5365d6202c54afc5a71c8a13293887e223e2"
+  },
+  {
+   "by": "anim-packet-time-blind",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143a39dee",
+    "target": "0x143a39df0"
+   },
+   "sigcheck": "passed",
+   "digest": "e2357e87702efe1afc52a976493bbe113be94468b9e55988d3723cb9fca180be"
+  },
+  {
+   "by": "anim-packet-time-blind",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143a3c3be",
+    "target": "0x143a3c3c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "93aed2d0dd286e2b547775063a6f5365d6202c54afc5a71c8a13293887e223e2"
+  }
+ ]
+}

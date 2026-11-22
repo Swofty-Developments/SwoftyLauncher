@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f8fd40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name GhostLapsStorageSystem (class from the log channel); log channel GHOSTLAP-TRACE: '%s()'"
+  "evidence": "decomp:re/decomp/142f8fd40.c;pat:log-message-method;xref:0x1407f1096",
+  "notes": "GhostLapsStorageSystem ctor(sys,alloc,p3,p4): vt 0x145be6000 then 0x1457fd160 / sub-vt 0x1457fd2b0, child 0x50 object (vt 0x145be6130), seeds RNG table 0x146108c00, base init 0x14364d570 named 'ghost_system', clears +0x228..+0x2f8, list head +0x2b8, timer +0x2f0; logs '%s()'. Caller 0x1407e5420. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ghost_laps_storage_system_construct",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141cea5d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: PhotoMode.allow360VideosWithAnyReplayDuration, PhotoMode.allowAllWeatherChanges, PhotoMode.devEnabled, PhotoMode.showCaptureTypeMenuOptions, PhotoMode.showLogoPositionOffOption'"
+  "evidence": "decomp:re/decomp/141cea5d0.c;pat:log-channel--;xref:0x145744ba8",
+  "notes": "Module init (vtable cell 0x145744ba8): resolves ~20 dependencies (+0x10..+0xa0, +0x650); PhotoMode.devEnabled->+0x358 (forces +0x3e0,+0x35b,+0x359=1), showLogoPositionOffOption->+0x3e0, allowAllWeatherChanges->+0x359, showCaptureTypeMenuOptions->+0x35a, allow360VideosWithAnyReplayDuration->+0x35b. Error 0x16. (lane owner review requested) Better name: Game_PhotoModeModule_Init (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_photo_mode_config",

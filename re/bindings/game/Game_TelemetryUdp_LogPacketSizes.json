@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14472a6e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-UDP-TELEMETRY",
-  "notes": "named from its log messages (channel UDP-TELEMETRY): 'UDP Packet sizes | ----- | (2024) Motion packet:                %4d bytes | (2024) Session packet:               %4d bytes | (2024) Lap data packet:              %4d bytes | (2024) Event packet:      '"
+  "evidence": "decomp:re/decomp/14472a6e0.c;pat:log-channel-UDP-TELEMETRY;xref:0x145c02880",
+  "notes": "Slot 2 of vtable 0x145c02870 (only ref, cell 0x145c02880; after the string TelemetryOutputSystem). Reads config (Input.DBOXAppKey, broadcast/port, dbox, public), allocates the 0x17200-byte UDP output (vtable 0x145c029d0) and a second output (vtable 0x145c02470), adds them to the output list, clears packet buffers and logs the 'UDP Packet sizes' table. Old name was only its log. (lane owner review requested) Better name: Game_TelemetryOutputSystem_CreateOutputs (bound record keeps its name)."
  },
  "signature": {
   "id": "game.telemetry_udp_log_packet_sizes",

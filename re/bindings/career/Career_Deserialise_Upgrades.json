@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143536000",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:per-tree-0x143524c20-find-by-node-hash;xref:0x14123fbb0;kb:subsystems/rnd_ui.md#instances",
-  "notes": "Save load of the Upgrades model. Per tree 0x143524c20 finds each instance by its node hash (+0x58) and REPLACES its state history with no department guard; 0x143523fd0 serialises every instance. A save written while an instance held the dept-4 sentinel restores the sentinel over a fixed init."
+  "evidence": "decomp:re/decomp/143536000.c;pat:per-tree-0x143524c20-find-by-node-hash;kb:subsystems/rnd_ui.md#instances;xref:0x14123fbb0",
+  "notes": "Save load of the Upgrades model (caller Game_UpgradesComponent_Deserialise 0x14123f930). Single slot (+0x1960==1): Career_Read_UpgradesList 0x143524c20 on +0xe0. Reads supplier_history/history_size {day, supplier} into hash +0x1ac8.., percentage_of_upgrades_allowed_to_adapt -> +0x1a98, damage_based_delays/delay (or damage_based_delay) -> shorts +0x1a9c..+0x1aa2; 'upgrades' array -> 0x143524c20 per slot (+0xe0 + k*0xc40). Per-instance replace logic lives in 0x143524c20 (not read). (lane owner review requested)"
  },
  "signature": {
   "id": "career.deserialise_upgrades",

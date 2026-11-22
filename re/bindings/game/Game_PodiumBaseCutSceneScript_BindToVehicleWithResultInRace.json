@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140362900",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=PodiumBaseCutSceneScript::bindToVehicleWithResultInRace; log channel CUTSCENE_PODIUM: 'PodiumBaseCutSceneScript::bindToVehicleWithResultInRace'"
+  "evidence": "decomp:re/decomp/140362900.c;pat:log-message-cxx;xref:0x14036234f,0x140362364,0x140362379",
+  "notes": "(this, script, position): maps race result position to vehicle id via [[0x14601f5c8]+0xb0]+0x108[pos] and the entrant list (byte +0x82), logs 'Attempt to bindToVehicle() using vehicle id', calls vfunc +0x2f0 (bindToVehicle). Called by Game_Podium2019CutSceneScript_Starting. (lane owner review requested)"
  },
  "signature": {
   "id": "game.podium_base_cut_scene_script_bind_to_vehicle_with_result_in_race",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428fdad0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=TyreComponent::preloadShowroomTyreModels; log channel CompoundModelSet: 'TyreComponent::preloadShowroomTyreModels %p'"
+  "evidence": "decomp:re/decomp/1428fdad0.c;pat:log-message-cxx;xref:0x1457af368",
+  "notes": "TyreComponent::preloadShowroomTyreModels (vtable cell 0x1457af368; log CompoundModelSet): fills the property sources ctx+0xe0..+0xf8, caches components (types 0x146ce72c0 -> +0x258, 0x146cb7da0 -> +0x250, 0x146080cc8 tyre component), builds each tyre set's models (0x142e82640), reads resource 'vtfAsset' into this+0x290 (ref counted), u32 'uv_shift' -> this+0x4c and byte 'showroom_id' -> this+0x38 (type mismatch -> error 0x16 trace). (lane owner review requested)"
  },
  "signature": {
   "id": "game.tyre_component_preload_showroom_tyre_models",

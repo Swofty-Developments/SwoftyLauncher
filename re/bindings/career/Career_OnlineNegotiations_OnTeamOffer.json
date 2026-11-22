@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140ff3f20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-ONLINE_CONTRACT_NEGOTIATIONS",
-  "notes": "named from its log messages (channel ONLINE_CONTRACT_NEGOTIATIONS): 'Team made an offer to player'"
+  "evidence": "decomp:re/decomp/140ff3f20.c;pat:log-channel-ONLINE_CONTRACT_NEGOTIATIONS;xref:0x140ff1dc7,0x140ff5668",
+  "notes": "Logs 'Team made an offer to player'; packs driver/team ids (msg+0x10..+0x16) and value msg+0x18, sends type 4 via 0x140ff6be0. Bound in 0x140ff1480, unbound in 0x140ff5560. (lane owner review requested)"
  },
  "signature": {
   "id": "career.online_negotiations_on_team_offer",

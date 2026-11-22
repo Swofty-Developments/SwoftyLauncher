@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d8caa0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-FLOW_VERBOSE",
-  "notes": "named from its log messages (channel FLOW_VERBOSE): 'SessionStateRTTDriverOfTheDay::onStateEnter wait'"
+  "evidence": "decomp:re/decomp/142d8caa0.c;pat:log-channel-FLOW_VERBOSE;xref:0x1457e22f0",
+  "notes": "Slot 4 (+0x20, onStateEnter) of state vtable 0x1457e22d0 (cell 0x1457e22f0). Logs 'onStateEnter setThumbnailGenerationEnabled'/'onStateEnter wait'. First pass caches player car +0xdc8/+0xdd0; finds DOTD driver entry, enables thumbnail system (flag 0x10 at +0x140 or THUMBNAIL_SYSTEM reject log), starts capture 0x142e30a60(kind 0x17) handle +0xdc0, +0xdc4=1; returns true once 0x142e39bb0 status == 2. (lane owner review requested) Better name: Game_SessionStateRTTDriverOfTheDay_OnStateEnter (bound record keeps its name)."
  },
  "signature": {
   "id": "game.flow_verbose_session_state_rtt_driver_of_the_day",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143c6c7a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/143c6c7a0.c;xref:0x143c72c93",
-  "notes": "Hypothesis: FNV-1a 64 hash of the qword at param_2+0xe0 (bytewise), used for the decal-bake cache key. Named callers: Ne_CustomisationDecalRenderer_BakePasses. vp3-verify partial/disagree"
+  "notes": "(renderer,item): FNV-1a 64 over the 8 bytes of item+0xe0, finds entry in the unordered map (buckets +0x90, mask +0xa8, end +0x78, key +0x10); then follows entry+0x20 -> +0x1e8 -> table +0xb0 and finds u32 id entry+0x28 (FNV-1a over 4 bytes, swiss probe); returns Render_DecalLookup_ResolveEntry(obj,{entry+0x30,+0x38}) or 0. Caller Ne_CustomisationDecalRenderer_BakePasses."
  },
  "signature": {
   "id": "core.hash_fnv1a64_qword_decal",

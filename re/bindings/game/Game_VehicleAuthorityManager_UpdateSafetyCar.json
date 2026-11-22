@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14323bc20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VehicleAuthorityManager::updateSafetyCar; log channel NETWORK: 'MOX/Authority: VehicleAuthorityManager::updateSafetyCar()'"
+  "evidence": "decomp:re/decomp/14323bc20.c;pat:log-message-cxx;xref:0x14323a915,0x1436f9249",
+  "notes": "Read in full: logs 'MOX/Authority: ...updateSafetyCar()'; if [this+0x40]+0x4f8 set and the allowed safety-car count (session +0x258, clamped by rule 0x12 via vcall +0x268, max 3) > 0, for each safety car in [this+0x48]+0x30..+0x38: setVehicle 0x14323ca40 (local = machine is host), setVehicleAuthorityId 0x14323cd00, stores owner bytes +0x100/+0x101+id*2 and posts message 0x145836430. Callers 0x14323a8c0, 0x1436f8340. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_authority_manager_update_safety_car",

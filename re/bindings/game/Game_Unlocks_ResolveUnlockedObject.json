@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142ec6100",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-UnlockSystem",
-  "notes": "named from its log messages (channel UnlockSystem): 'Can't find unlocked object (type %s, name %s | Unlockable item was locked, but no longer has a unlock method, resetting to unlocked (type [%s], name [%s])'"
+  "evidence": "decomp:re/decomp/142ec6100.c;pat:log-channel-UnlockSystem;xref:0x1457f08a8",
+  "notes": "Read in full (sys, save node): reads array 'unlocked_items'; per element hashes the name (djb2) and finds the item (id +0xa0) in set +0x88; missing -> 'Can't find unlocked object'; else resets entry sys+0x50+idx*0x40 (cancels pending task with result 3) and applies bool 'unlocked': method refuses saving -> locked, method -> saved value, no method -> unlocked (state 1); byte 'new_flags' -> +0x14; then 0x142ec7160(sys). Vtable cell 0x1457f08a8. Renamed: it deserialises all unlock states. (lane owner review requested) Better name: Game_UnlockSystem_DeserialiseUnlockStates (bound record keeps its name)."
  },
  "signature": {
   "id": "game.unlocks_resolve_unlocked_object",

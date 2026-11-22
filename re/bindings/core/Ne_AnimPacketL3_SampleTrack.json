@@ -1,0 +1,130 @@
+{
+ "schema": 1,
+ "name": "Ne_AnimPacketL3_SampleTrack",
+ "table": "functions",
+ "author": "anim-packet-time",
+ "row": {
+  "addr": "0x143a3aea0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_AnimPacketL3_SampleTrack(void *packet, void *track, uint32_t index, float time, void *out)",
+  "evidence": "decomp:own capstone disasm 0x143a3aea0-0x143a3b022 (re/tools/disx.py);xref:0x143a3b0bb,0x143a3b13b",
+  "notes": "The per-track sampler of NeAnimPacket_L3 (vtable 0x1458a1a00), called from its slot +0x18 (sample, 0x143a3b030, call 0x143a3b0bb) and slot +0x58 (0x143a3b0e0, call 0x143a3b13b) and from nowhere else. rcx = packet, rdx = track (a 0x28-byte entry of the packet's track list, +0x10 key count), r8d = track index, xmm3 = time, 5th argument = the track's output; void. vucomiss xmm0,xmm3 at 0x143a3aef4, vcvttss2si r10d at 0x143a3af05, movzx ecx,word [rcx+r8*2] at 0x143a3af7b. A track of 3 or more keys compares the time only with its first key (vucomiss; jae, not taken when unordered), turns (time - first key) * rate into a bucket index with vcvttss2si, passes the signed cmp/jle against the bucket count and reads the bucket table at that index: a time that is not a number or plus infinity gives 0x80000000 and reads 4 GB below the table. The lowest float takes the first-key exit (segment 0 at weight 0); a 2-key track clamps it to weight 0 with vmaxss; a 1-key track ignores the time. Core's anim packet time guard wraps it."
+ },
+ "signature": {
+  "id": "core.anim_packet_l3_sample_track",
+  "section": ".xtls",
+  "pattern": "56 48 8B 44 24 30 44 8B 4A 10 41 83 F9 01 75 14",
+  "match": "0x143a3aea0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a3aea0",
+  "kind": "func_start",
+  "names": [
+   "Ne_AnimPacketL3_SampleTrack"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-21",
+    "by": "anim-packet-time",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/engine/anim_packet_time_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-21",
+   "verifier": "anim-packet-time-blind",
+   "kind": "func",
+   "item": "Ne_AnimPacketL3_SampleTrack",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x143a3aea0-0x143a3b022, 0x143a3b030-0x143a3b0d8, 0x143a3b0e0-0x143a3b15c, 0x143a3aae0-0x143a3acff, 0x1443b5880-0x1443b6c8a (re/tools/disx.py);xref:0x143a3b0bb,0x143a3b13b,0x1458a1a18,0x1458a1a58,0x1443b63d1",
+   "notes": "gh:anim-packet-time-blind Blind re-derivation on d873a1c8. Factory jump table 0x145a969c8: type 5 stores the vtable 0x1458a1a00 (lea at 0x1443b63d1; NeAnimPacket_L3 sits just before it and slot +0x10 0x143a3adf0 passes that name). It has 12 slots: +0x18 = 0x143a3b030 (time xmm2 into xmm6, then xmm3 to the call at 0x143a3b0bb) and +0x58 = 0x143a3b0e0 (time xmm1, every track in order, call at 0x143a3b13b). Those two rel32 calls are the only references to 0x143a3aea0 (.pdata to 0x143a3b022). Args: rcx packet, rdx track, r8d index (zero-extended), xmm3 time, [rsp+0x28] output (mov rax,[rsp+0x30] after push rsi); it writes 3 floats. vucomiss at 0x143a3aef4, vcvttss2si at 0x143a3af05, jle at 0x143a3af1a, read at 0x143a3af7b. For 3+ keys the only compare before the index is vucomiss [desc+0x10],xmm3; jae (not taken when unordered); then vcvttss2si r10d, the signed cmp esi,r10d; jle (passes INT_MIN), and movsxd r8,r10d; movzx ecx,word [rcx+r8*2]. -FLT_MAX takes the jae: ecx = 0, weight 0, the first key. The 2-key path computes (time - times[0]) * rate, vmaxss with 0 gives weight 0, segment 0, and nothing is indexed by time. 1-key ignores the time. Large finite times with (time-first)*rate >= 2^31 give the same INT_MIN, and a guard that maps only non-finite values leaves them. The slot +0x18 and +0x58 wrappers of L3, L4, S4, L3fp16 and S4fp16 are byte-identical apart from the call target, pass the time unchanged in xmm3, and index nothing by it, so these three entries plus B1/B4/L1 +0x18 are the minimal cover. The fp16 samplers 0x143a3b3a0/0x143a3c650 and 0x143a3a950 index through 0x143a3aae0, which sends a negative vcvttss2si result to segment 0 at weight 0 (test r11d; js 0x143a3ab67). The ntk slots 0x143a3b840/0x143a3b8f0/0x143a3cd40/0x143a3cdd0 ignore the time. Other slots (+0x20..+0x50) take no float. Same text and rip constants at Steam 26566308 0x143a3d470 (.tls$, read 0x143a3d54b; called from 0x143a3d600/0x143a3d6b0, the +0x18/+0x58 of vtable 0x1458a3b70), EA 1.0.141 0x143a27ec0 (.rdata; vtable 0x1459b2c40 slots 0x143a28050/0x143a28100), EA 1.0.145 0x143a2a490 (.arch; vtable 0x1459b5d90 slots 0x143a2a620/0x143a2a6d0). The pattern hits once in the whole file of all four, at the hints 0x3a3aea0/0x3a3d470/0x3a27ec0/0x3a2a490."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "anim-packet-time",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143a3aea0",
+    "target": "0x143a3aea0"
+   },
+   "sigcheck": "passed",
+   "digest": "ab71fd2ce56ddaae1d066f88cefa9e081ff9900b3114051f3156732f6893c294"
+  },
+  {
+   "by": "anim-packet-time",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143a3d470",
+    "target": "0x143a3d470"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "638f9a9d17d45e6c3480f6a774fa9723905842ac9b6db59fa88affc7ff86fc43"
+  },
+  {
+   "by": "anim-packet-time-blind",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143a3aea0",
+    "target": "0x143a3aea0"
+   },
+   "sigcheck": "passed",
+   "digest": "ab71fd2ce56ddaae1d066f88cefa9e081ff9900b3114051f3156732f6893c294"
+  },
+  {
+   "by": "anim-packet-time-blind",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143a3d470",
+    "target": "0x143a3d470"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "638f9a9d17d45e6c3480f6a774fa9723905842ac9b6db59fa88affc7ff86fc43"
+  }
+ ]
+}

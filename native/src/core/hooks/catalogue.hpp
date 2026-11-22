@@ -117,6 +117,10 @@ inline constexpr Event EVENTS[] = {
     {"hud.spectator.visible", M, "swofty::spectator::events::HudVisible", 1, false, Fired::game, nullptr},
 
     {"audio.bundle.resolve", M, "swofty::sounds::events::BundleResolve", 1, false, Fired::no, nullptr},
+
+    {"speech.line", N, "swofty::speech::events::Line", 1, false, Fired::yes, nullptr},
+    {"speech.line.timed", N, "swofty::speech::events::Timed", 1, false, Fired::yes, nullptr},
+    {"speech.line.end", N, "swofty::speech::events::Ended", 1, false, Fired::yes, nullptr},
 };
 
 inline const Event *find(std::string_view id)

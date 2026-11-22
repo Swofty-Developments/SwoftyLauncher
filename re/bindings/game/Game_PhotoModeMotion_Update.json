@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142bd6d10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-PHOTO-MODE",
-  "notes": "named from its log messages (channel PHOTO-MODE): 'In progress: Exposure time = %f, m_renderFrameIdx = %d, m_replaySystem time = %f, m_expectedCurrentReplayTime = %f, m_startShuttleOffset = %f, correction = %f | Take photo'"
+  "evidence": "decomp:re/decomp/142bd6d10.c;pat:log-channel-PHOTO-MODE;xref:0x1457ccfc8",
+  "notes": "Per-frame slot (cell 0x1457ccfc8), returns when +0x394 == 0: smooths settings (+0x2d2c..+0x2d80 pairs, 0.15 lerp), TOD to +0x270 hours/min, on dirty +0x425 stops render (0x142bcf0a0) and arms shutter timer; after 1 s starts motion render (0x142bcf890); steps exposure frames (+0x3e0 < +0x2d8c); on take-photo +0x397 logs 'Take photo', builds '<docs>\\\\photos\\\\F1_25_photo_<time>' name; tracks input axes, toggles car visibility. Old name 'PhotoModeMotion' was the log channel. (lane owner review requested) Better name: Game_PhotoModeSystem_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.photo_mode_motion_update",

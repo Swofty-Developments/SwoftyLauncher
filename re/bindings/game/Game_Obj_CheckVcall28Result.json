@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14399b350",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14399b350.c;xref:0x140799530",
-  "notes": "Returns a lazily initialised (TLS static, Ne_Crt_Atexit) default object. Callers 0x140799240, 0x140959c40, Game_F1DataFeedSystem_RequestLoadReplay. Hypothesis. vp5-verify partial/disagree"
+  "evidence": "decomp:re/decomp/14399b350.c;xref:0x140799530,0x14095a184,0x140c29b0d,0x142a6eb23,0x142c2b2c7,0x142c2b974,0x142c3150a,0x142c3164f,0x142c31aae,0x142c31b72,0x142c325b0,0x142c3267f,0x142c32764,0x142c3283f,0x142c32908,0x142c32a3e,0x142f8adb1,0x1430f6a30,0x14328ed4f,0x14328ee40,0x14398be5e,0x14398be7e,0x14398be9e,0x14398bebe,0x14398bede,0x14398befe,0x14398bf1e,0x14398bf3b,0x14398d748,0x1439e8d44,0x1439e8d87,0x1439e8d9a,0x143a790ca,0x143beded9,0x14426dd6b,0x14426ddbd,0x14445441e,0x1447d3e7c,0x145899580,0x145899780,0x145899860",
+  "notes": "(obj,a,expected): calls obj->vslot+0x28(obj,a,expected,&out); returns 0 when out == expected, otherwise pushes error 0x54 on the TLS error stack (with return address) and returns 0x54. Not a lazy default-object getter. (lane owner review requested)"
  },
  "signature": {
   "id": "game.replay_get_default",

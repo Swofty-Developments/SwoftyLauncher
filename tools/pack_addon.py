@@ -9,7 +9,7 @@
 Only swofty.json, LICENSE, README.md, the icon, the shaders beside postfx passes and shader pack looks,
 their image textures, shader configs and effects with the shaders and image textures beside them, the launcher plugin's programs, the standard library's
 registry.json, registry.lock.json and registry/ data files, and the files the manifest's operations name go in,
-plus every
+plus every file inside the addon that a HUD operations file names (sprite images), plus every
 file an operation file names in a "source" or "sources" field (texture fragments, VTFs, UI files). Entries are
 sorted with a fixed timestamp and mode, so the same inputs give the same bytes. A string in a registry/*.json
 data file that names a file or folder inside the addon (a Path field such as an engine sound's bundle or a
@@ -23,7 +23,7 @@ OPTIONAL = ('LICENSE', 'README.md', 'registry.json', 'registry.lock.json', 'regi
 def wanted(m):
     ops = m.get('operations', {})
     out = ['swofty.json', *OPTIONAL, m.get('icon')]
-    for key in ('database', 'erp', 'ui', 'assets'):
+    for key in ('database', 'erp', 'ui', 'assets', 'hud'):
         out += ops.get(key, [])
     out += [f['source'] for f in ops.get('files', [])]
     out += [s['file'] for s in ops.get('screens', [])]
@@ -118,6 +118,29 @@ def data_paths(addon):
     return out
 
 
+def named_files(addon, rel):
+    """Every string in an operations file that names a file inside the addon, such as a HUD sprite's png."""
+    out = []
+
+    def walk(o):
+        if isinstance(o, dict):
+            for v in o.values():
+                walk(v)
+        elif isinstance(o, list):
+            for v in o:
+                walk(v)
+        elif inside(addon, o):
+            out.append(o.replace('\\', '/'))
+
+    path = os.path.join(addon, rel)
+    if rel.endswith('.json') and os.path.isfile(path):
+        try:
+            walk(json.load(open(path, encoding='utf-8')))
+        except ValueError:
+            pass
+    return out
+
+
 def collect(addon, rels):
     names = set()
     for rel in rels:
@@ -154,6 +177,8 @@ def main():
     for key in ('database', 'erp', 'ui', 'assets'):
         for rel in ops.get(key, []):
             rels += sources(addon, rel)
+    for rel in ops.get('hud', []):
+        rels += named_files(addon, rel)
     rels += data_paths(addon)
     rels += shader_files(addon, m)
     for rel in extra:

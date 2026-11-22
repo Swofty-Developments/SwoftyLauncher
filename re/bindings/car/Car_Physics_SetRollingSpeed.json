@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1447411f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
   "evidence": "decomp:re/decomp/1447411f0.c;xref:0x142c2176a",
-  "notes": "Sets a car rolling at speed (xmm1) along direction param_3 (vec4): body linear velocity car+0x558+0x170, angular +0x180 = 0; each wheel ([car+0x580]+0x70..+0x88) spin = speed / radius (+0x3c) into +0x188; engine rpm from gear ratios car+0x538+0x5fc and XOR-obfuscated values ([car+0x530]+8)+0x548 +0x140/+0x150. Caller Sess_Result_RequestVehicleStatus_2. Addon: teleport / rolling-start velocity."
+  "notes": "(car, speed, dir*): veh+0x558 +0x170 = speed*dir, +0x180 = 0; 4 wheels w+0x188 = speed/w+0x3c; picks among 11 gears (+0x538 +0x5fc) the one with max torque from engine curve ([car+0x530]+0x28) at rpm = driven wheel spin/ratio; sets +0x680/+0x684; engine rpm Eng+0x2538 clamped between idle (+0x8a0^) and limits; gear 1 forced to 2. Caller Sess_Result_RequestVehicleStatus_2. (lane owner review requested)"
  },
  "signature": {
   "id": "car.physics_set_rolling_speed",

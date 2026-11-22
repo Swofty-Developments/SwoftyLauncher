@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a06ea0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143a06ea0.c;xref:0x1439d3e52",
-  "notes": "String \"ImmediateCommandList\"; obtains/creates the immediate command list (calls 1439b8890) for a command queue. Callers Ne_Gfx2CommandQueue_FlushResourceBarriers and Render_Gfx2Device_MapSurfaceViaUploadBuffer."
+  "evidence": "decomp:re/decomp/143a06ea0.c;xref:0x1439d3e52,0x1439dca6c,0x1439dcaac",
+  "notes": "Returns queue+0x50 or, if null and queue type (+0x20) is 0 or 1, takes the next native list from the frame pool (device+0xb50+frame*8: arrays +0x14a0 / +0x1ca0, atomic counters +0x1490/+0x1494), Reset (vcall +0x50) with the queue allocator (+0x38+frame*8), names it (default 0x14589f000 or param_3), SetDescriptorHeaps (+0xe0, 2 heaps) for types 0/1. Callers Ne_Gfx2CommandQueue_FlushResourceBarriers 0x1439d3e20, Render_Gfx2Device_UnmapSurface 0x1439dc7d0. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx2_command_queue_get_immediate_command_list",

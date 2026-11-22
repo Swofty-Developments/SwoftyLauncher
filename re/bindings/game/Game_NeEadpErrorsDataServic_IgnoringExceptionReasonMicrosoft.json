@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144009440",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NeEadpErrorsDataService",
-  "notes": "named from its log messages (channel NeEadpErrorsDataService): 'Ignoring exception. Reason: Microsoft Visual C++ Exception (0xe06d7363).'"
+  "evidence": "decomp:re/decomp/144009440.c;pat:log-channel-NeEadpErrorsDataService;xref:0x145a46d68",
+  "notes": "vt cell 0x145a46d68. (svc,info,phase): phase<2 reads the record (vslot +0x100 -> +0x830); ignores C++ exception 0xe06d7363 unless mode +0x2340 == 2, and when the TLS suspend flag is set (logs both reasons). Phase 1 not ignored: 'Caught exception', watchdog suspend bit 0x4000, user handler +0x12490(+0x12498,info) under CS +0x124a0, 'Leaving exception handler'. Phase 0: state calls on +0x40. (lane owner review requested) Better name: Game_NeEadpErrorsDataService_OnException (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ne_eadp_errors_data_servic_ignoring_exception_reason_microsoft",

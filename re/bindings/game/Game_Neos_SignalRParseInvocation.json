@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144446120",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144446120.c;xref:0x14444663f,0x144446c70",
-  "notes": "Builds an invocation message struct param_1 (NeString target cap 0x40 at +0x10, NeString +0x38, arguments text cap 0xff at +0x68) from JSON keys target and arguments. Caller Game_Neos_SignalRConnectionReconnectRequest 0x144446600. Addon: see server-pushed NEOS hub messages (target name + JSON args)."
+  "evidence": "decomp:re/decomp/144446120.c;xref:0x14444663e,0x144446c6f",
+  "notes": "Callers 0x14444663e, 0x144446c6f (in 0x144446600). Inits {mode +0, NeString hub +0x10 cap 0x40, NeString target +0x38 cap 0x40, NeString +0x68 cap 0xff, args ptr +0x60, valid +0x90}. Mode 2: 'target' -> +0x38, 'arguments' array -> +0x60. Classic: 'H' -> +0x10, 'M' -> +0x38, 'A' array -> +0x60. (lane owner review requested)"
  },
  "signature": {
   "id": "game.neos_signal_r_parse_invocation",

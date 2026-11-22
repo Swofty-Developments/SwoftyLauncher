@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430647a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionManager::enter; log channel NETWORK: 'GameSessionManager::enter(%s).'"
+  "evidence": "decomp:re/decomp/1430647a0.c;pat:log-message-cxx;xref:0x1430838e5,0x14308610a,0x143088362",
+  "notes": "Logs 'GameSessionManager::enter(%s).' (NETWORK); inlined '%s: enable communication with host connection id (%d)' (__FUNCSIG__ GameSessionManager::enter) and GameSessionMigrationManager::setEnabled; calls callHandleStatus 0x143060fb0. Callers 0x1430837c0, 0x1430860a0, 0x143088270 (jmp 0x143088362), 0x143161ce0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_session_manager_enter",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142abe6d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-OPTIONS/P",
-  "notes": "named from its log messages (channel OPTIONS/P): 'Updating preset keyed to option %s, val = %d, req = %d'"
+  "evidence": "decomp:re/decomp/142abe6d0.c;pat:log-channel-OPTIONS/P;xref:0x142abe39b,0x142abe3a0,0x142abe834,0x142abe89c,0x142abeda3",
+  "notes": "Preset keyed to an option: active = (param_3 == required +0x60) -> +0x68; logs 'Updating preset keyed to option' (OPTIONS/P). Inactive: optional 'Reset breakables' (+0x130 = +0x128) and 'Removing restrictions' (0x142a88df0). Active: registers itself as option callback (0x142abdde0, {fn,this,4} entry), counts +0x5c to +0x58 then applies restrictions (0x142abf160). Callers 0x142abe240 (call+lea), 0x142abed90 (lea), self. (lane owner review requested) Better name: Game_OptionsPreset_OnKeyOptionChanged (bound record keeps its name)."
  },
  "signature": {
   "id": "game.options_updating_preset_keyed_option_val_req",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144027dd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-LEADERBOARDS",
-  "notes": "named from its log messages (channel LEADERBOARDS): 'Write request finished: Request Id - %I64u : result = %d, predicted rank = %d'"
+  "evidence": "decomp:re/decomp/144027dd0.c;pat:log-channel-LEADERBOARDS;xref:0x1430e6a2f",
+  "notes": "Per-frame pump of the Steam leaderboard queue +0x40..+0x48 (caller 0x1430e6a2f). Per request state +0x128: 1 -> FindLeaderboard (SteamUserStats vcall +0xb8) + call result; 6 -> fixes entry names ('Entry = %s, score = %d'); by kind +0x28c: 0 ranking/1 around user/2 friends -> DownloadLeaderboardEntries (+0xe0), 3 -> ForUsers (+0xe8), 4 -> UploadLeaderboardScore (+0xf8), call results 0x144028680 / 0x144028c10. Done: logs 'Read/Write request finished', delegates, frees. (lane owner review requested) Better name: Game_SteamLeaderboards_UpdateRequests (bound record keeps its name)."
  },
  "signature": {
   "id": "game.leaderboards_write_request_finished_request_id",

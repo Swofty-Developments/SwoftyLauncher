@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401cfe50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=SkinnedActor::preDelete; log channel ACTOR_MIN_INFO: 'SkinnedActor::preDelete %p'"
+  "evidence": "decomp:re/decomp/1401cfe50.c;pat:log-message-cxx;xref:0x1403c3654,0x1403c3673,0x14738f7f5,0x14738f813,0x1455e5bc0",
+  "notes": "Vtable cell 0x1455e5bc0; also called at 0x1403c3654,0x1403c3673,0x14738f7f5,0x14738f813. Logs preDelete and ACTOR_MIN_INFO \"#### %p %s %s\" (+0x200,+0x210); if resource handle +0x1f8 is set, unregisters it from [[0x14601db08]+0x70]+0x78 (vcall +0x10, callback 0x1401f34d0); clears +0x528..+0x537. (lane owner review requested)"
  },
  "signature": {
   "id": "game.skinned_actor_pre_delete",

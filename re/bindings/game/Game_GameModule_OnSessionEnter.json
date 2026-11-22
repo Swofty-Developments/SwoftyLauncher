@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14080c300",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_GameModule_OnSessionEnter;xref:0x14080c380",
-  "notes": "cxx=game::GameModule::onSessionEnter; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/14080c300.c;str:s_GameModule_OnSessionEnter;xref:0x142d5bbc1,0x1436f6b1c,0x150f54951",
+  "notes": "Own pretty-function string 0x145648d18 'neon::NEerrno game::GameModule::onSessionEnter()' (GAME_MODULE). Sets +0x215, loads '<track>_podium_lights.layer' (0x14080db60), clears flag bit 2 of +0x214, [p1+0x80]+0x3f90 = 1, +0x1a1 = 0, SessionExit (p1+0x1fc) = eNONE via 0x142c76810 (FLOW log), registers p1+0x220 as global 0x146ce72b0, runs vt+0x50/+0x58/+0x60 of each subsystem in [p1+0x18]+8..+0x10, 0x14080c8f0, resets POLY entries, [+0xf8] per-car arrays (+0xd78.. per vehicle up to 27), per-player 0x1434d40a0. Returns 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.session_enter",

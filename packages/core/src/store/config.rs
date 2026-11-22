@@ -93,8 +93,15 @@ impl Store {
     }
 
     /// The settings of a session of `p`, a profile as the caller has it, such as one a room lends the host's
-    /// load order and options.
+    /// load order and options, on the copy Play uses.
     pub fn session_settings_of(&self, p: &Profile) -> Result<SessionSettings> {
+        let copy = crate::game_folder::copies::find_active(&self.config())
+            .map_or(crate::install::Source::Unknown, |c| c.source);
+        self.session_settings_on(p, copy)
+    }
+
+    /// [`Self::session_settings_of`] on `copy`, the store that installed the game folder the session runs.
+    pub fn session_settings_on(&self, p: &Profile, copy: crate::install::Source) -> Result<SessionSettings> {
         let requests = crate::data::paths::game_folder_view(&self.requests_path(&p.name));
         let installed = self.addons()?;
         let mut s = SessionSettings::build(p, &installed, Some(requests))?;
@@ -110,8 +117,13 @@ impl Store {
                 .or(a.track.then_some(swofty_addon::manifest::Category::Tracks));
             a.folder = folders.place(&a.id, builtin, category).map(|k| folders.name(&k));
         }
-        (s.launcher_saves, s.plain_saves) =
-            crate::saves::launcher::session_saves(&self.root, &p.name, p.launcher_saves, p.is_vanilla());
+        (s.launcher_saves, s.plain_saves) = crate::saves::launcher::session_saves(
+            &self.root,
+            &p.name,
+            p.launcher_saves,
+            p.is_vanilla(),
+            copy,
+        );
         let on: Vec<String> = p.enabled().map(str::to_owned).collect();
         s.resume_needs = crate::stdlib::careers::session_needs(&self.root, &p.name, &on, &installed);
         s.addons

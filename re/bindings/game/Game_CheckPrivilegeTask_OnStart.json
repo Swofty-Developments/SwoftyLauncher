@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14336ff60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_OnlineSystems_Tasks_CheckPrivilegeTask_OnStart;xref:0x14336ffd7",
-  "notes": "cxx=game::online_systems::tasks::CheckPrivilegeTask::onStart; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/14336ff60.c;str:s_OnlineSystems_Tasks_CheckPrivilegeTask_OnStart;xref:0x14583c7f0",
+  "notes": "Vtable cell 0x14583c7f0. Own pretty-function log onStart. Clears result string +0x1a8, +0x158=0; privilege +0x148 < 0xc -> +0x150 = entry of [+0x128]+0x1e8 table, value 0xc marks finished (+0xa1=1); +0x1a0=1 and sets bit 2 in the task-state block 0x14604ed68 under its lock. (lane owner review requested)"
  },
  "signature": {
   "id": "game.check_privilege_task_on_start",

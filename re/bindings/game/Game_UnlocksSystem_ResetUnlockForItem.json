@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142ec8eb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=UnlocksSystem::resetUnlockForItem; log channel UnlockSystem: 'UnlocksSystem::resetUnlockForItem() Resetting unlocks for item - now locked (type [%s], name [%s])'"
+  "evidence": "decomp:re/decomp/142ec8eb0.c;pat:log-message-cxx;xref:0x142a7ffff",
+  "notes": "Read in full (this, int id): linear search of 0x40-byte entries this+0x50..+0x58 for the one whose item (vcall +8) has +0xa4 == id; if found and entry item[2] != 0, sets entry+0x10 = 0 (locked) and logs 'UnlocksSystem::resetUnlockForItem() Resetting unlocks for item - now locked (type [%s], name [%s])'. Caller 0x142a7ff30. (lane owner review requested)"
  },
  "signature": {
   "id": "game.unlocks_system_reset_unlock_for_item",

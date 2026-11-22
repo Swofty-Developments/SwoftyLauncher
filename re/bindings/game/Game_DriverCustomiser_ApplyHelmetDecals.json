@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401aa7c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-DRIVER_ACTOR_CUSTOMISER/DECALS",
-  "notes": "named from its log messages (channel DRIVER_ACTOR_CUSTOMISER/DECALS): 'applyHelmetDecals (%p, %f, %f)'"
+  "evidence": "decomp:re/decomp/1401aa7c0.c;pat:log-channel-DRIVER_ACTOR_CUSTOMISER/DECALS;xref:0x14730a606",
+  "notes": "(cust, decal array): requires array, [[cust+8]+0x228] and count array[0x19]; per 0x28-byte entry fetches two descriptors (vcalls +8/+0x10 with provider 0x146064df0), Game_SurfacePackSystem_AssignHelmet 0x1437a6d20([cust+0x28], entry+0x20, model, ...); computes helmet/suit slot indices from [cust+0x28]+0x18380/+0x18280 tables (31 = none, logged), logs 'applyHelmetDecals (%p, %f, %f)' and sets node matrices on each attached model [[cust+8]+0x550..] via 0x143d3d8e0. Caller 0x14730a4b0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.driver_customiser_apply_helmet_decals",

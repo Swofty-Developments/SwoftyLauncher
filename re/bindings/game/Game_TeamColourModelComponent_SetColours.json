@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142aa1b30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=TeamColourModelComponent::setColours; log channel TeamColourModelComponent: 'TeamColourModelComponent::setColours: Primary - [%.2f, %.2f, %.2f, %.2f]; Secondary - [%.2f, %.2f, %.2f, %.2f]; Tertiary - [%.2f, %.2f, %.2f, %.2f]; Alpha - [%.'"
+  "evidence": "decomp:re/decomp/142aa1b30.c;pat:log-message-cxx;xref:0x142aa2122",
+  "notes": "Logs 16 floats (TeamColourModelComponent) and, if model instance +0x28->+0x80 is in state 4 (+0xd8), sets 4 node matrices from param_2 via Ne_ModelInstance_SetNodeMatrices. (lane owner review requested)"
  },
  "signature": {
   "id": "game.team_colour_model_component_set_colours",

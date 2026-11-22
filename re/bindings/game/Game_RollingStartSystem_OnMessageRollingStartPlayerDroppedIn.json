@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f11c40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=RollingStartSystem::onMessageRollingStartPlayerDroppedIn; log channel NETWORK: 'RollingStartSystem::onMessageRollingStartPlayerDroppedIn()'"
+  "evidence": "decomp:re/decomp/142f11c40.c;pat:log-message-cxx;xref:0x142f0dcf4,0x142f0e947",
+  "notes": "Bus handler (lea'd at 0x142f0dcf4 and 0x142f0e947). Vehicle v = msg+0x10: lap progress (Game_VehicleProgressSystem_GetLapProgress) -> clamped fraction, [+0x48] vcalls +0x148/+0x158; fills slot +0x80+v*0x28: +0x80 frac, +0x84 result, +0x88 5.0, +0x90 3, +0x94/+0x96/+0x97 = 1, +0x95 = msg+0x11, +0xa0 vehicle component; if +0x95, +0x90 = obfuscated value and thunk 0x1519eb350(+0x38, v, 1, 1). (lane owner review requested)"
  },
  "signature": {
   "id": "game.rolling_start_system_on_message_rolling_start_player_dropped_in",

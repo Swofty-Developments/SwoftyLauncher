@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143068ce0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionMatchingAttribs::loadDefinitions; log channel NETWORK-ATTRIBUTES: 'GameSessionMatchingAttribs::loadDefinitions(%s).'"
+  "evidence": "decomp:re/decomp/143068ce0.c;pat:log-message-cxx;xref:0x1430d190b",
+  "notes": "Constructor (only caller 0x1430d190b in 0x1430d11b0; returns p1): vtable 0x14580bc60, owner p2 at +0x18, allocator [p2+0x10], reserves definition vectors (+0x70 0x900 bytes, +0x90, +0xb0), seeds an RNG table +0xd0..+0xa94 from a time value, timers via QueryPerformanceCounter. Then the inlined loadDefinitions: logs NETWORK-ATTRIBUTES 'GameSessionMatchingAttribs::loadDefinitions(%s).' for system/matchmaking.xml, loads the file (0x143f393a0), parses the XML (0x1439a91b0) and fills definitions via 0x14407ecf0(p1+0x40); logs 'MOX/Attrib: Successfully loaded %d attribute definitions.'. Renamed: constructor with inlined load. (lane owner review requested) Better name: Game_GameSessionMatchingAttribs_ConstructAndLoadDefinitions (bound record keeps its name)."
  },
  "signature": {
   "id": "game.game_session_matching_attribs_load_definitions",

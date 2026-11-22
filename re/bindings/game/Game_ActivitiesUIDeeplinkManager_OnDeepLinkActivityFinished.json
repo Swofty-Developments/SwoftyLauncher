@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143862fe0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_ActivitiesUIDeeplinkManager_OnDeepLinkActivityFinished;xref:0x1438631c6,0x14386325b",
-  "notes": "cxx=game::ActivitiesUIDeeplinkManager::onDeepLinkActivityFinished; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/143862fe0.c;str:s_ActivitiesUIDeeplinkManager_OnDeepLinkActivityFinished;xref:0x143860e2a,0x143861834",
+  "notes": "Bus handler (bound by lea in 0x143860d80, which subscribes via 0x143987810 and unsubscribes via 0x143988350). Unless PlayGo (+0x63) or trial (0x14078e1a0): if msg+0x10 type != 10 and equals the current activity +0x60 (or none) logs finished/abandoned (msg+0x11). Always resets +0x60 = 10 (none) and clears the presence string ((+0x30)+0x10f8)+0x18, then vcall +0x38. (lane owner review requested)"
  },
  "signature": {
   "id": "game.activities_u_i_deeplink_manager_on_deep_link_activity_finished",

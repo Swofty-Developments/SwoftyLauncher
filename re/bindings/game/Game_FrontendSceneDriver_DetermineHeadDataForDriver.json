@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142890400",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name determineHeadDataForDriver (class from the log channel); log channel FRONTEND_SCENE_DRIVER: 'determineHeadDataForDriver [%p]'"
+  "evidence": "decomp:re/decomp/142890400.c;pat:log-message-method;xref:0x1457a9008",
+  "notes": "Virtual (vtable cell 0x1457a9008). Builds head data into this+0xcb50 via 0x1401b0880 or (driver set, +0x48c) 0x1401aae90 using lookups on this[8] and 3 colour/override slots this+0x540/0x578/0x5b0; allocs a resource list (cap 10) into *p2, fills via 0x1401b6c90; logs 'determineHeadDataForDriver [%p]' (FRONTEND_SCENE_DRIVER); name string this[0x65] from driver, assets 0x143a59cd0 added 0x143a599d0; missing -> fatal 0x1439182a0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.frontend_scene_driver_determine_head_data_for_driver",

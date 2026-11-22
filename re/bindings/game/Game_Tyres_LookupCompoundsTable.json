@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e9dfe0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142e9dfe0.c;xref:0x142a505c8",
-  "notes": "Looks up the \"tyre_compounds\" table in a keyed db object (hash 0xa3ddd6e0 via FUN_1442b30e0), fallback default 0x146ca0e90; returns the record. Caller Game_HeatMap_PostTyreInfringementMessage. Hypothesis."
+  "evidence": "decomp:re/decomp/142e9dfe0.c;xref:0x142a505c8,0x142a50853,0x142a509f9",
+  "notes": "(ctx): finds the 'tyre_compounds' table (hash 0xa3ddd6e0) in the db 0x146ca54f8 via 0x1442b30e0 (fallback 0x146ca0e90), opens the row keyed by [[ctx+0x10]+8]+0x10 (0x1442bb580 / 0x1442bba60) and returns 0x142e9d740(row, 'osd'); releases both handles. Callers 0x142a505c8, 0x142a50853, 0x142a509f9. (lane owner review requested)"
  },
  "signature": {
   "id": "game.tyres_lookup_compounds_table",

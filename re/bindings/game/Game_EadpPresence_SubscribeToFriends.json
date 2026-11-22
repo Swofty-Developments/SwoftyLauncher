@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1440003b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name subscribeToFriends (class from the log channel); log channel EADP_PRESENCE: 'subscribeToFriends: Failed to subcscribe to friends'"
+  "evidence": "decomp:re/decomp/1440003b0.c;pat:log-message-method;xref:0x145a46a20",
+  "notes": "Callback (vtable cell 0x145a46a20): error -> 'subscribeToFriends: Failed to subcscribe to friends', owner +0x74 = code, +0x142 = 1, +0x148 += 10, state 5; success -> 'Running', 0x143febee0(owner), state 6; state stored at +0x70 under critical section; result vcall +0x28(1). (lane owner review requested) Better name: Game_EadpPresence_OnSubscribeToFriendsResult (bound record keeps its name)."
  },
  "signature": {
   "id": "game.eadp_presence_subscribe_to_friends",

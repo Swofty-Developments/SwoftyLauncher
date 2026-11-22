@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144218690",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name doDetachChild (class from the log channel); log channel UI_ATTACHER: '%s'"
+  "evidence": "decomp:re/decomp/144218690.c;pat:log-message-method;xref:0x14421879a,0x144218842",
+  "notes": "Read in full: if child this+0x50 set, logs 'doDetachChild' (UI_ATTACHER), calls child vcalls +0xc0(0,0) and +0xd0(0,0), clears +0x50/+0x5c and bit0 of +0x58, then notifies via 0x1442468d0 on [g 0x146ca5500 vcall +0x48]+0x230 with key 0x146ca22dc. Callers 0x144218790 (0x14421879a) and 0x144218810 (0x144218842). (lane owner review requested)"
  },
  "signature": {
   "id": "game.ui_attacher_do_detach_child",

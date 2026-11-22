@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1417f00a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-PAGINATION",
-  "notes": "named from its log messages (channel PAGINATION): 'Page %u is equal to the current page'"
+  "evidence": "decomp:re/decomp/1417f00a0.c;pat:log-channel-PAGINATION;xref:0x141cb03f0",
+  "notes": "(pager, page): logs and returns when page == current (+0x20, flag +0x28) or page >= page count (ceil(+0x18 / +0x10)); else logs 'Page %u requested', sets current page and valid flag and tail-jumps (0x1417f01cb) into Game_Pagination_RequestCurrentView 0x1417f0220. Caller 0x141cb0260. (lane owner review requested) Better name: Game_Pagination_RequestPage (bound record keeps its name)."
  },
  "signature": {
   "id": "game.pagination_page_equal_current_page",

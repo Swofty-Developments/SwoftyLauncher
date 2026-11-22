@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439dd170",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439dd170.c;xref:0x1439c9aa8",
-  "notes": "Clears six FNV-1a keyed caches (offsets 0x2c0..0x3e0) via 1439dd490/dd6d0/ddd20 when swapchain buffers are resized. Callers Render_Gfx2Device_ResizeSwapchainBuffers. Hypothesis: RTV/descriptor caches. vq0-verify partial/disagree"
+  "evidence": "decomp:re/decomp/1439dd170.c;xref:0x1439c9aa8,0x1439d3df2,0x1439f504b",
+  "notes": "Looks resource param_2 up (FNV-1a 64 on the pointer) in three per-resource view maps (+0x300/+0x310, +0x2b0/+0x2c0, +0x3a0/+0x3b0); for each registered view copies the resource format byte (0x23 / 0x4d / 0x0e cases) into the view and re-creates it (0x1439dd490, 0x1439dd6d0, 0x1439ddd20 per node with resource+0x1c0 handles). Callers Render_Gfx2Device_ResizeSwapchainBuffers 0x1439c9640, 0x1439d3cb0, Render_Gfx2Renderer_FrameBegin 0x1439f4150. (lane owner review requested) Better name: Render_Gfx2Device_RefreshViewsOfResource (bound record keeps its name)."
  },
  "signature": {
   "id": "render.gfx2_device_clear_swapchain_caches",

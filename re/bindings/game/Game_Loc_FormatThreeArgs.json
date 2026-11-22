@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14234a9e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14234a9e0.c;xref:0x1423498fa,0x1423fd00f",
-  "notes": "(out, ctx, String args[3], fmt) Copies three 0x20-byte string args (param_3 +0,+0x20,+0x40) into temp buffers and formats via 0x14080efb0 twice (resolve key through param_4 vcall +0x18). Called from Sess_Flags_UpdateYellowReasons. Hypothesis."
+  "evidence": "decomp:re/decomp/14234a9e0.c;xref:0x1423498fa,0x1423fd00f,0x14357112d",
+  "notes": "(key ref, out, args[3] 0x20 apart, translator): pushes the three args (0x1423ba8e0) into a format arg list; no translator -> Game_Text_AssignOrAppendRefString(args, key, out); with translator the key is first resolved via vcall +0x18 and the resolved ref formatted. Releases the temporary refstrings. (lane owner review requested)"
  },
  "signature": {
   "id": "game.loc_format_three_args",

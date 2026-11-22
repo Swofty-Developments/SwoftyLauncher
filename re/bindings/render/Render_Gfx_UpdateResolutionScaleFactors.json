@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14016ce50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14016ce50.c;xref:0x140157488",
-  "notes": "Per-frame camera/view dependent update: chooses profile pointer [g_14618caa8]+0x1d40 or +0x1d78 by flag [g_14618caa0+0x161], reads uint at +0x20, uses Ne_Crt_Sqrtf, writes ~20 fields at this+0x568..0x620. Callers Game_Render_InitCamerasAndPVS, 0x14016d890. Hypothesis on exact content. vp0-verify partial"
+  "evidence": "decomp:re/decomp/14016ce50.c;xref:0x140157488,0x14016fe0a",
+  "notes": "scale = min(1, sqrt(1920*1080/(w*h))), w,h from display profile [0x14618caa8]+0x1d40/+0x1d78 (+0x20/+0x24), or 1920x1080 if flag +0xe5c and [0x14618caa0]+0x161. On change stores +0x63c and [[+0x98]+0x41f18]+0x4cc and writes derived floats (x0.007/0.005/0.01/0.4) to +0x4d0/+0x4d4 of objects at this+0x568..0x630. Callers in 0x140153d60, 0x14016d890. (lane owner review requested)"
  },
  "signature": {
   "id": "render.camera_update_view_dependent_state",

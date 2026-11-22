@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14325f6e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name handleForcedRelayRequest (class from the log channel); log channel NETWORK: 'handleForcedRelayRequest(%d to %d): %s'"
+  "evidence": "decomp:re/decomp/14325f6e0.c;pat:log-message-method;xref:0x14325dc84",
+  "notes": "Handler: msg+0x10 from, +0x11 to, +0x12 relay flag. Sets/clears bit (1<<to) in relay mask [this+0x40]+0x1d8+from*4, calls 0x140769aa0(g 0x14604bbc8, from, to, flag); if local is host (this+0x18==this+0x19) forwards the message via 0x14402e500. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_handle_forced_relay_request",

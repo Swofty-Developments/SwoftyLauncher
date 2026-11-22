@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143076510",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionMatchingCareer::cancel; log channel NETWORK-SESSION: 'NEbool network::GameSessionMatchingCareer::cancel(neon::NeNetError) | %s: (%d)'"
+  "evidence": "decomp:re/decomp/143076510.c;pat:log-message-cxx;xref:0x1430623d9,0x1430adfd9,0x1430b2e6b,0x1430ef360",
+  "notes": "__FUNCTION__ GameSessionMatchingCareer::cancel(NeNetError), logs '%s: (%d)'; calls 0x1430727e0, 0x143071a30, 0x1430766c0, 0x144065670, 0x1430605c0. Callers incl. onJoinCareerSessionFailedPopupCompleted (0x1430adf50). The 0x14307642c rip match is not a reference. (lane owner review requested)"
  },
  "signature": {
   "id": "career.game_session_matching_career_cancel",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142320250",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void f(void *self)",
-  "evidence": "decomp:re/decomp/142320250.c;xref:0x14231bd67;xref:0x142320df2",
-  "notes": "myteam-g1: MY_TEAM_ACTIVITIES text set via localisation helper."
+  "evidence": "decomp:re/decomp/142320250.c;xref:0x14231bd67,0x142320df2",
+  "notes": "Logs 'Function: markAllTilesToStay'; sets the action string of each calendar tile holder to 'stay' (Vm_Holder_SetCStr / Vm_NodeSet_String). Callers 0x14231b950 and Career_MyTeamActivities_ApplyActivityToSelectedBlock. (lane owner review requested) Better name: Career_MyTeamActivities_MarkAllTilesToStay (bound record keeps its name)."
  },
  "signature": {
   "id": "career.my_team_activities_localize_text",

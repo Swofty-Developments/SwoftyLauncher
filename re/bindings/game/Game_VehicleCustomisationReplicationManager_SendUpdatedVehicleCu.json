@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143145140",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VehicleCustomisationReplicationManager::sendUpdatedVehicleCustomisationInfo; log channel NETWORK-ENTRANTS: 'void network::VehicleCustomisationReplicationManager::sendUpdatedVehicleCustomisationInfo(const network::PlayerDescription &, const game::VehicleStatId &, game: | %s : There is no vehicle customisatio'"
+  "evidence": "decomp:re/decomp/143145140.c;pat:log-message-cxx;xref:0x14220dfe5,0x143145124",
+  "notes": "Read in full: builds the player key from desc (+8..+0x48), looks up the customisation of the standard slot (0x141400ce0 / 0x14246dcb0); none -> logs 'There is no vehicle customisation assigned to the standard slot.'; else replacePlayerVehicleCustomisation 0x1431400c0, send 0x143141520 and 0x14313f270(this,1). Callers 0x14220dc20 and tail jmp from 0x143145060. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_customisation_replication_manager_send_updated_vehicle_cu",

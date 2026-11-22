@@ -257,6 +257,24 @@ int main()
         expect(p.kind == content::Pick::fallback && p.id == 0x00000011, "pick: the 2025 model takes the first non-dlc group");
         p = content::pick(nullptr, nullptr, 2, content::MODEL_2026);
         expect(p.kind == content::Pick::none && p.id == content::NO_CONTENT, "pick: no entries selects no content");
+        auto of = [&](const std::string &group, const content::Desc *d) {
+            content::Cars c = content::cars_of(group, d);
+            return c.known ? content::pick(b, en, c.car_group, c.model) : content::Pick{};
+        };
+        expect(of("f1_career_2025", nullptr).id == 0x00000011,
+               "cars_of: a 2025 career selects the 2025 tile's group, the first non-dlc one");
+        expect(of("f1_career_2026", nullptr).id == 0x00010022,
+               "cars_of: a 2026 career selects the 2026 tile's group, the first dlc one");
+        content::Desc d = desc1990();
+        d.car_group = 2;
+        expect(of("f1_career_1990", &d).id == 0x00020033, "cars_of: a content career selects its content's car_group");
+        d.car_group = -1;
+        expect(of("f1_career_1990", &d).id == 0x00010022,
+               "cars_of: a content without car_group selects what its model tile selects");
+        expect(!content::cars_of("f1_career_1990", nullptr).known && of("f1_career_1990", nullptr).id == content::NO_CONTENT,
+               "cars_of: a group no tile writes selects nothing");
+        expect(!content::cars_of("f1_career_2025x", &d).known, "cars_of: a content whose data group differs is not used");
+        expect(!content::cars_of("", nullptr).known, "cars_of: an empty group selects nothing");
     }
     {
         stock_db();

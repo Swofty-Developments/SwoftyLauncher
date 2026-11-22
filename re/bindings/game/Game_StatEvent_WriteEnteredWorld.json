@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143759840",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-STATEVENT",
-  "notes": "named from its log messages (channel STATEVENT): 'Executing EventWriteEnteredWorld with [%d] StatisticDataProviders registered.'"
+  "evidence": "decomp:re/decomp/143759840.c;pat:log-channel-STATEVENT;xref:0x1436e0e1c",
+  "notes": "Providers this+8..+0x10; 6 entries: CurrentHelpTopic, CurrentSection (val=(float)ctx+0xc, type 3), SectionsStarted, .DifficultyLevelId(+0x24), .GameplayModeId(+8), .SectionId(+0xc) (1.0 type 0). Caller 0x1436e0c50. Provider vt+0x18 gate, vt+0x30({entries,n}); entry={key,djb2,f32 val,u32 type}. (lane owner review requested)"
  },
  "signature": {
   "id": "game.stat_event_write_entered_world",

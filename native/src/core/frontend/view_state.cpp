@@ -1,5 +1,6 @@
 #include "core/frontend/view_state.hpp"
 
+#include "core/runtime/build.hpp"
 #include "core/runtime/hook_errors.hpp"
 #include "core/runtime/runtime.hpp"
 
@@ -13,7 +14,9 @@
 
 #include "core/career/career_state.hpp"
 #include "core/frontend/pause_edge.hpp"
+#include "core/frontend/viewport_camera_logic.hpp"
 #include "core/frontend/view_flow_logic.hpp"
+#include "core/frontend/view_camera_catalog.hpp"
 
 namespace frontend::view {
 
@@ -35,6 +38,23 @@ const runtime::Sig S_PHOTO_OFF{
     "site_Game_PhotoModeActiveClear", "C6 86 25 04 00 00 00 C6 86 94 03 00 00 00", 0x2bdc327, runtime::Sig::addr, 0, 7};
 const runtime::Sig S_CAMERA{"site_Game_UseCameraSettingCall", "48 89 F1 B2 0F E8 ?? ?? ?? ?? 90 48 83 C4 70", 0x2424bbd};
 const runtime::Sig S_PAUSE{"Game_App_SetPauseReason", "41 57 41 56 41 54 56 57 53 48 83 EC 28 89 D3 48 89 CE 84 D2", 0x80e110};
+
+// Game_Camera_SetForViewport writes the selected type from AL and the viewport index is in EDI.
+const runtime::Sig S_VIEWPORT_CAMERA{"site_Game_ViewportCameraTypeStore",
+                                     "42 88 44 ED 20 48 8B 4E 30 4D 8D 7E 18 4C 89 FA 41 89 F8", 0x45394e2};
+constexpr runtime::build_proof::Proof VIEWPORT_CAMERA_LAYOUT{
+    "the primary viewport camera type", runtime::build_proof::bit(runtime::build_proof::Build::steam_1_0_145)};
+constexpr runtime::build_proof::Gate VIEWPORT_CAMERA_GATE{"active viewport camera", &VIEWPORT_CAMERA_LAYOUT};
+
+// This game reader loads the current camera owner and reads its primary camera at +0x98.
+const runtime::Sig S_VIEWPORT_OWNER{
+    "g_Game_ViewportOwner",
+    "48 8B 05 ?? ?? ?? ?? 48 8B 80 98 00 00 00 48 85 C0 74 4D 48 8B 88 A0 02 00 00 48 39 88 A8 02 00 00 74 3D",
+    0x6cc5a18,
+    runtime::Sig::riprel,
+    0,
+    3,
+    7};
 
 const char *const CAMERA_NAMES[8] = {"unknown", "nose_cam",      "nose_cam_alt", "cockpit_cam",
                                      "tv_pod",  "tv_pod_offset", "near_chase",   "far_chase"};
@@ -63,13 +83,18 @@ public:
     void photo_on();
     void photo_off();
     void camera(safetyhook::Context &ctx);
+    void viewport_camera(safetyhook::Context &ctx);
+    void load_trackside_cameras(std::string_view track);
     void pause(safetyhook::Context &ctx);
 
 private:
     uint32_t groups_active();
     void recompute();
+    void recompute_locked();
+    void recover_driving_view();
+    Kind classify_fallback_camera(uintptr_t viewport, uintptr_t expected_camera) const;
 
-    safetyhook::MidHook h_photo_on, h_photo_off, h_camera, h_pause;
+    safetyhook::MidHook h_photo_on, h_photo_off, h_camera_setting, h_pause, h_viewport_camera;
     std::atomic<uint64_t> packed{0};
     std::atomic<uint64_t> active{0};
     std::atomic<int> camera_value{-1};
@@ -77,6 +102,9 @@ private:
     std::atomic<bool> flow_seen{false};
     std::atomic<uint32_t> pause_mask{0};
     std::mutex change_lock;
+    ViewportCamera assigned_camera;
+    uintptr_t viewport_owner_slot = 0;
+    std::vector<CameraUid> trackside_camera_uids;
     bool trust_camera = false;
     std::atomic<int> pause_logged{0};
 };
@@ -132,17 +160,25 @@ std::string flag_text(uint32_t flags)
 
 const char *kind_text(uint32_t kind)
 {
-    static constexpr const char *NAMES[] = {"unknown", "cockpit", "tcam", "tcam_offset", "chase_near", "chase_far", "other"};
-    return kind < 7 ? NAMES[kind] : "unknown";
+    static constexpr const char *NAMES[] = {"unknown",   "cockpit", "tcam",      "tcam_offset", "chase_near",
+                                            "chase_far", "other",   "trackside", "reverse_pod"};
+    return kind < std::size(NAMES) ? NAMES[kind] : "unknown";
 }
 
 void ViewState::recompute()
+{
+    std::lock_guard lock(change_lock);
+    recompute_locked();
+}
+
+void ViewState::recompute_locked()
 {
     uint32_t g = groups_active();
     bool in_session = g & G_SESSION;
     bool driving = g & G_DRIVING;
     bool paused = (g & G_PAUSE) && in_session;
     bool replay = g & G_REPLAY;
+    assigned_camera.update_phase(in_session, replay);
     bool cutscene = g & G_CUTSCENE;
     bool spectating = g & G_SPECTATE;
     bool is_photo = photo.load(std::memory_order_relaxed);
@@ -168,16 +204,19 @@ void ViewState::recompute()
         // MENU comes from no recognised session state, which is also what an unrecognised one looks like.
         kind = frontend::view::UNKNOWN;
         valid = false;
-    } else if (replay || is_photo || cutscene || spectating) {
+    } else if (is_photo || cutscene || spectating) {
         kind = frontend::view::OTHER;
+    } else if (replay) {
+        kind = assigned_camera.kind();
     } else {
-        int cam = camera_value.load(std::memory_order_relaxed);
-        kind = trust_camera ? camera_kind(cam) : frontend::view::UNKNOWN;
+        if (h_viewport_camera)
+            kind = assigned_camera.kind();
+        else if (trust_camera)
+            kind = camera_kind(camera_value.load(std::memory_order_relaxed));
         if (kind == frontend::view::UNKNOWN)
             valid = false;
     }
 
-    std::lock_guard<std::mutex> lock(change_lock);
     frontend::view::State old = unpack(packed.load(std::memory_order_relaxed));
     if (old.kind == kind && old.flags == flags && old.valid == valid && old.serial)
         return;
@@ -211,6 +250,57 @@ void ViewState::camera(safetyhook::Context &ctx)
         swofty::log("[view] camera setting %s (%d)%s", CAMERA_NAMES[value], value,
                     trust_camera ? "" : "; static only, not used for kind");
     recompute();
+}
+
+Kind ViewState::classify_fallback_camera(uintptr_t viewport, uintptr_t expected_camera) const
+{
+    // The verified viewport record holds both the selected object and its definition.
+    uintptr_t camera = 0;
+    if (!swofty::mem::read(viewport, camera) || !camera || camera != expected_camera)
+        return OTHER;
+
+    // The game's UID accessor copies the 16 bytes at camera +0x70 on this build.
+    uintptr_t uid_vtable = 0, getter = 0;
+    CameraUid uid{};
+    const bool circuit_camera = !trackside_camera_uids.empty() && swofty::mem::read(camera + 0x18, uid_vtable) && uid_vtable &&
+                                swofty::mem::read(uid_vtable + 0x20, getter) &&
+                                getter == swofty::api->module_base() + 0x44cc570 && swofty::mem::read(camera + 0x70, uid) &&
+                                std::binary_search(trackside_camera_uids.begin(), trackside_camera_uids.end(), uid);
+
+    if (circuit_camera)
+        return TRACKSIDE;
+
+    uintptr_t definition = 0, name = 0;
+    std::string label;
+    if (swofty::mem::read(viewport + 0x18, definition) && definition && swofty::mem::read(definition + 0x28, name) &&
+        swofty::mem::c_string(name, label, sizeof("podoff_reverse")) && is_reverse_pod(label))
+        return REVERSE_POD;
+    return OTHER;
+}
+
+void ViewState::load_trackside_cameras(std::string_view track)
+{
+    if (!runtime::holds(VIEWPORT_CAMERA_GATE))
+        return;
+    auto uids = circuit_camera_uids(runtime::game_root(), track);
+    const auto count = uids.size();
+    std::lock_guard lock(change_lock);
+    trackside_camera_uids = std::move(uids);
+    swofty::log("[view] loaded %zu trackside camera UIDs for %.*s", count, int(track.size()), track.data());
+}
+
+void ViewState::viewport_camera(safetyhook::Context &ctx)
+{
+    const auto viewport = uint32_t(ctx.rdi);
+    if (viewport != 0)
+        return;
+    std::lock_guard lock(change_lock);
+    if (!(groups_active() & G_SESSION))
+        return;
+    const auto type = uint8_t(ctx.rax);
+    const Kind fallback = type == 8 ? classify_fallback_camera(ctx.rbp + ctx.r13 * 8, ctx.r14) : OTHER;
+    if (assigned_camera.observe(viewport, type, fallback))
+        recompute_locked();
 }
 
 void ViewState::pause(safetyhook::Context &ctx)
@@ -250,8 +340,26 @@ safetyhook::MidHook install(const runtime::Sig &sig, safetyhook::MidHookFn fn)
     return std::move(*h);
 }
 
+void ViewState::recover_driving_view()
+{
+    if (!h_viewport_camera || assigned_camera.kind() != UNKNOWN)
+        return;
+
+    uintptr_t owner = 0, camera = 0;
+    uint8_t type = 0;
+    if (!viewport_owner_slot || !swofty::mem::read(viewport_owner_slot, owner) || !owner ||
+        !swofty::mem::read(owner + 0x98, camera) || !swofty::mem::object_like(camera) || !swofty::mem::read(owner + 0xb8, type))
+        return;
+
+    const Kind fallback = type == 8 ? classify_fallback_camera(owner + 0x98, camera) : OTHER;
+    if (assigned_camera.recover(type, fallback))
+        swofty::log("[view] recovered %s from the current primary viewport (native type %u)", kind_text(assigned_camera.kind()),
+                    unsigned(type));
+}
+
 void ViewState::flow(uint32_t hash, uint32_t to)
 {
+    std::lock_guard lock(change_lock);
     for (size_t i = 0; i < TRACKED_N; i++) {
         if (TRACKED[i].hash != hash)
             continue;
@@ -260,12 +368,21 @@ void ViewState::flow(uint32_t hash, uint32_t to)
             active.fetch_or(bit, std::memory_order_relaxed);
         else if (to == 0 || to == 3)
             active.fetch_and(~bit, std::memory_order_relaxed);
+        const auto group = TRACKED[i].group;
+        if (group == G_SESSION && (to == 0 || to == 3))
+            trackside_camera_uids.clear();
+        // At InGame Entering the primary viewport can still hold the outgoing replay camera.
+        if (group == G_DRIVING && to == 2) {
+            const auto groups = groups_active();
+            if ((groups & (G_SESSION | G_REPLAY | G_CUTSCENE | G_SPECTATE)) == G_SESSION)
+                recover_driving_view();
+        }
         if (TRACKED[i].group == G_REPLAY && (to == 0 || to == 3) && photo.exchange(false))
             swofty::log("[view] photo mode cleared by the replay state leaving");
         break;
     }
     flow_seen.store(true, std::memory_order_relaxed);
-    recompute();
+    recompute_locked();
 }
 
 void ViewState::setup()
@@ -274,13 +391,20 @@ void ViewState::setup()
     trust_camera = GetEnvironmentVariableA("SWOFTY_VIEW_TRUST_CAMERA", trust, sizeof trust) && trust[0] == '1';
     h_photo_on = install(S_PHOTO_ON, [](safetyhook::Context &) { view_state.photo_on(); });
     h_photo_off = install(S_PHOTO_OFF, [](safetyhook::Context &) { view_state.photo_off(); });
-    h_camera = install(S_CAMERA, [](safetyhook::Context &ctx) { view_state.camera(ctx); });
+    h_camera_setting = install(S_CAMERA, [](safetyhook::Context &ctx) { view_state.camera(ctx); });
     h_pause = install(S_PAUSE, [](safetyhook::Context &ctx) { view_state.pause(ctx); });
+    if (runtime::holds(VIEWPORT_CAMERA_GATE)) {
+        const auto owner_slot = runtime::find(S_VIEWPORT_OWNER, "active primary viewport owner", "view");
+        auto hook = install(S_VIEWPORT_CAMERA, [](safetyhook::Context &ctx) { view_state.viewport_camera(ctx); });
+        std::lock_guard lock(change_lock);
+        viewport_owner_slot = owner_slot;
+        h_viewport_camera = std::move(hook);
+    }
     swofty::log("[view] setup: photo %s/%s, camera setting %s%s, pause reasons %s; flow states come from the career flow "
                 "site",
-                h_photo_on ? "armed" : "off", h_photo_off ? "armed" : "off", h_camera ? "armed" : "off",
-                trust_camera ? " (trusted for the view kind)" : " (static only: the view kind stays unknown, valid=0 on track)",
-                h_pause ? "armed" : "off");
+                h_photo_on ? "armed" : "off", h_photo_off ? "armed" : "off", h_camera_setting ? "armed" : "off",
+                trust_camera ? " (settings fallback enabled)" : " (diagnostic only)", h_pause ? "armed" : "off");
+    swofty::log("[view] active viewport camera hook %s", h_viewport_camera ? "armed" : "off");
     recompute();
 }
 
@@ -293,6 +417,8 @@ uint32_t pause_reasons() { return view_state.pause_reasons(); }
 void flow(uint32_t hash, uint32_t to) { view_state.flow(hash, to); }
 
 void setup() { view_state.setup(); }
+
+void load_trackside_cameras(std::string_view track) { view_state.load_trackside_cameras(track); }
 
 }
 

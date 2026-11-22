@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144090ac0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-LAN",
-  "notes": "named from its log messages (channel NETWORK-LAN): 'LAN Discovery Client: Size of message reply (%d) not big enough.  Ignoring.'"
+  "evidence": "decomp:re/decomp/144090ac0.c;pat:log-channel-NETWORK-LAN;xref:0x145a54550",
+  "notes": "LAN discovery client: receiveFrom, then rejects short replies ('Size of message reply (%d) not big enough'), wrong magic, other title id, mismatching game version or invalid discovery info; relevant replies log 'Reply is relevant to client, firing listeners'. Only ref: vtable cell 0x145a54550. (lane owner review requested) Better name: Game_NetworkLan_DiscoveryClientReceiveReply (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_lan_lan_discovery_client_size_message_reply",

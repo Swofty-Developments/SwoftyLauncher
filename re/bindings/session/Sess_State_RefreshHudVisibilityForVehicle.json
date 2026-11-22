@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d65f90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142d65f90.c;xref:0x1457de300,0x1457df000",
-  "notes": "Shared session-state vtable slot 20 (+0xa0) of ~12 states (CinFormationLap, FormationLap, InGamePQ, Cutscene/Location Load/Unload, StoryModeInGamePlaying ...), arg = vehicle index (0xff = none): decides if the HUD may show for the viewed car (camera target is the player car, vehicle status outside masks 0x2045 / 0x14098, pit state outside 0x1e1fe and not 8, game mode +0x1e8 4 or 0x80 or st+0x1011, gate 0x146104178 vcall +0x20, flag +0x31 & 0x20) and ADDS or REMOVES HUD hide reason 0 on the matching player mask (player 1 when the car belongs to the second local player). Addon: the main reason-0 rule; hook it to force the HUD on other cars or while spectating. d7-verify CORRECTION (inverted conditions): vehicle-status masks 0x2045 / 0x14098 must be SET for the HUD to show (none set -> reason 0 added); pit state must be IN mask 0x1e1fe (or > 0x10, or car index >= 0x1b) and != 8; plus viewed car = camera target, game mode +0x1e8 4 or 0x80 or +0x1011, gate 0x146104178, flag +0x31 & 0x20; reason 0 added when any fails, removed otherwise"
+  "evidence": "decomp:re/decomp/142d65f90.c;xref:0x1457de300,0x1457df000,0x1457df5b0,0x1457e4a50,0x1457e4b50,0x1457e6d30,0x1457e8600,0x1457e8700,0x1457e8820,0x1457e8960,0x1457e98f0,0x1457e9eb0,0x1457ea5e0,0x1457ea850",
+  "notes": "Slot +0xa0 of 14 session-state vtables (incl. SessionStateCinFormationLap, FormationLap, InGamePQ, InGamePlaying). Arg car (0xff -> return). Inputs: viewed car = camera target ([st+0xed0]+0x98+p*0x28 -> +0x2a0), status bit masks 0x2045/0x14098 on [[st+0xdd0]+0x30][id]+0x30, pit state mask 0x1e1fe ([st+0xd58]+0x68+id*0x10 -> +4), mode [st+0xc98]+0x1e8 4/0x80 or st+0x1011, gate 0x146104178 vcall+0x20, +0x31&0x20. Sets (fail) or clears HUD hide reason 0 (bit 0 of 0x14604e900, or 0x14604e904 for the 2nd local player)."
  },
  "signature": {
   "id": "session.state_refresh_hud_visibility_for_vehicle",

@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1446dee60.c",
-  "notes": "Per-frame wheel/tyre solve of the SuspensionSystem: calls Car_Tyre_MagicFormula and Car_Tyre_GripScale per wheel (4x each), powf; writes the per-wheel result arrays (+0x730..+0x7f0, 4 floats each) that Car_Suspension_PublishWheelState copies to the wheels."
+  "evidence": "decomp:re/decomp/1446dee60.c;xref:0x1409d5f6b,0x1446dcf3c,0x1446dcf66,0x1446e42e8,0x1446e430a",
+  "notes": "Per-frame wheel/tyre solve (Car_Tyre_MagicFormula, Car_Tyre_GripScale per wheel); callers Car_Physics_StepVehicle and 0x1446e42c0; table lea 0x1409d5f6b."
  },
  "signature": {
   "id": "car.suspension_solve_wheels",

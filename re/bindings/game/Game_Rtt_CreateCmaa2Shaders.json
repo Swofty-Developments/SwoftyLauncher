@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143c3eec0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143c3eec0.c;xref:0x143d85180",
-  "notes": "Loads CMAA2 compute shaders (hdr_array/ and ldr_array/ edges_color_2x2, compute_dispatch_args, process_candidates, deferred_color_apply_2x2, debug_draw_edges). Named callers: Game_Rtt_CreateScenes."
+  "evidence": "decomp:re/decomp/143c3eec0.c;xref:0x143d85180,0x15255dbbc",
+  "notes": "(cmaa): looks up (does not load) five compute programs by name in the shader package [+0xd8]+0x140..+0x148 (match after the last '/'): hdr_array/ or ldr_array/ when the target has 4 layers ([+200]+0x48 +0x34 == 4), else hdr/ or ldr/, chosen by format byte +0x38 == 'J'; edges_color_2x2 +0x38, compute_dispatch_args +0x48, process_candidates +0x60, deferred_color_apply_2x2 +0x70, debug_draw_edges +0x80. Callers RttGenerator, 0x15255da10. (lane owner review requested) Better name: Game_Rtt_FindCmaa2Shaders (bound record keeps its name)."
  },
  "signature": {
   "id": "game.rtt_create_cmaa2_shaders",

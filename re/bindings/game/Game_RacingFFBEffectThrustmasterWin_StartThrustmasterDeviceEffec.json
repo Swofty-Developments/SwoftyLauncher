@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446f47d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=RacingFFBEffectThrustmasterWin::startThrustmasterDeviceEffects; log channel TM_FFB: 'RacingFFBEffectThrustmasterWin::startThrustmasterDeviceEffects, m_device = %p, handle = %d'"
+  "evidence": "decomp:re/decomp/1446f47d0.c;pat:log-message-cxx;xref:0x1446f4744,0x1446f5294",
+  "notes": "(this): logs TM_FFB with device +0x1e0 and handle +0xa00; if handle != 0 calls tm_api_force_set_effect_state(handle, 0/1/2, {0x20000000c, -1}) for 3 effects, +0x2ac = (effect 1 result == 0), logs each result. Callers 0x1446f4744 (0x1446f4700), 0x1446f5294 (0x1446f5250). (lane owner review requested)"
  },
  "signature": {
   "id": "game.racing_ffb_effect_thrustmaster_win_start_thrustmaster_device_effec",

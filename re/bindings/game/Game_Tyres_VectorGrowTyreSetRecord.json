@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e9fe40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142e9fe40.c;xref:0x142e90369",
-  "notes": "std::vector grow-and-append (1.5x) for 0x78-byte tyre set records. Callers Game_Tyres_Deserialise, Game_TyreSystem_HandleTyreSelectionNetMessage."
+  "evidence": "decomp:re/decomp/142e9fe40.c;xref:0x142e90369,0x142e91936",
+  "notes": "vector<0x78-byte record>::emplace_back(key): fast path writes in place, else grows x1.5 (allocator vt+0x18, memcpy, free vt+0x38). New record: +0 key, +8 = 0xffffffff00000000, +0x10 = 0xff, eight zeroed 12-byte slots +0x12..+0x71, +0x74 = 0xffff. Callers 0x142e90369, 0x142e91936. (lane owner review requested)"
  },
  "signature": {
   "id": "game.tyres_vector_grow_tyre_set_record",

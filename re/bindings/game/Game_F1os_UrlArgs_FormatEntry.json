@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144440020",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144440020.c;xref:0x1408251b4",
-  "notes": "Formats one URL/query argument into a temporary string (vtable 0x145612eb8): if *param_2 == 1 increments counter +0x38 and formats with template 0x145a95088, if 0 formats with template 0x145a94fea and the value at param_2+0x28; uses Ne_Get_CStrLen / Ne_String_Reserve. 104 call sites (Game_F1os_OnStart_*). Hypothesis."
+  "evidence": "decomp:re/decomp/144440020.c;xref:0x1408251b4,0x140835fd1,0x140b17038",
+  "notes": "Formats a multipart/form-data part header for record param_2: type 1 -> counter +0x38 += 1, template 0x145a95088 (form-data name=\"file%d\"; filename=\"%s\", octet-stream); type 0 -> template 0x145a94fea (name=\"%s\", x-www-form-urlencoded) with name param_2+0x28; copies it into a node, adds length to +0x30, push_back via 0x1444f3c60. Callers OnStart_* e.g. 0x1408251b4. (lane owner review requested) Better name: Game_F1os_Multipart_AppendPartHeader (bound record keeps its name)."
  },
  "signature": {
   "id": "game.f1os_url_args_format_entry",

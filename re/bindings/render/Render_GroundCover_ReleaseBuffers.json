@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143ebe380",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143ebe380.c;xref:0x143ebe356",
-  "notes": "Releases up to ~14 GPU buffer pairs at +0x3a0..+0x478 (vtable +8 destroy, owner vtable +0x38 free). Caller Render_GroundCover_Destroy."
+  "evidence": "decomp:re/decomp/143ebe380.c;xref:0x143ebe356,0x143ebe35e",
+  "notes": "Destroys a sub-block of the ground-cover state: for each {allocator,object} pair from +0x478 down to +0x3a0 calls object vcall +8 (flag 0) then allocator vcall +0x38. Called for state+0x920 (0x143ebe356) and state+0x420 (0x143ebe35e) from Render_GroundCover_State_Destroy. The objects are owned sub-objects; that they are GPU buffers is not shown. (lane owner review requested) Better name: Render_GroundCover_StateBlock_Destroy (bound record keeps its name)."
  },
  "signature": {
   "id": "render.ground_cover_release_buffers",

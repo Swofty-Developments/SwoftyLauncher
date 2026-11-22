@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a78d40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: q.hotswap.chg, q.hotswap.chgag, q.hotswap.chgrs, q.hotswap.lagr, q.mnifst.patch'"
+  "evidence": "decomp:re/decomp/143a78d40.c;pat:log-channel--;xref:0x145d322d0",
+  "notes": "Static initializer (init table cell 0x145d322d0): SIMD constant block 0x14628f310.., CS 0x14628f498, 0x1447bc360 registers q.hotswap.chg/chgag/chgrs/lagr and q.mnifst.patch into 0x14628f5c8..0x14628f648; type descriptor NeResourceProcessingTimeBudgetAdaptive at 0x14628f668 (hash 0xe30bb075). Not a settings reader. (lane owner review requested) Better name: Game_StaticInit_HotswapQueryNames (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_q_config",

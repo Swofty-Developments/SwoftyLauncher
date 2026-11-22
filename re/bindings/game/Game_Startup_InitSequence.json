@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1443c0560",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "xref:0x1443e0aec;decomp:re/decomp/1443c0560.c",
-  "notes": "engine-re 2026-10-30 static (issue #341): pre-window startup chain called from 0x1443e0ad0 (<- WinMain area 0x1401790ee); each step's status is checked and any non-zero calls Ne_FatalAbort: 0x1443c0c80 (SteamAPI_RestartAppIfNecessary path) at 0x1443c063c, 0x1443c1ce0 at 0x1443c0667 (0 and 0x1c accepted; this is the #341 abort, return address +0x43c066c), 0x1443c2180 at 0x1443c0685, more steps follow"
+  "evidence": "decomp:re/decomp/1443c0560.c;xref:0x1443e0aec",
+  "notes": "Called at 0x1443e0aec. Runs init steps; non-zero status calls Ne_FatalAbort 0x1439182a0 (checked in disasm): 0x1443c0c80 (abort 0x1443c063c), 0x1443c1ce0 (0/0x1c ok, abort 0x1443c0667), 0x1443c2180 .. 0x1443d1bc0 (0x1443c4670/0x1443c4fa0 also accept 0x55); then WatchDog.enabled and WatchDog.delay (default 30000) into +0x188; returns 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.startup_init_sequence",

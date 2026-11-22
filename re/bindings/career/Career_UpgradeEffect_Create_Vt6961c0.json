@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140df5c60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void *FUN(void **out_ref, void *allocator, void *unused, void *cfg_node)",
   "evidence": "decomp:re/decomp/140df5c60.c;xref:0x145695d88",
-  "notes": "myteam-g1: Config-driven factory for an upgrade-effect object (vtable 0x1456961c0, allocs 0x138-0x148 bytes): reads upgrade_department, maps the department name by FNV-1a (lowercased) hash to index 0..5 (stored at +0x120) and one int param at +0x140."
+  "notes": "Factory registered as 'EnableUpgradeDepartment' (cell 0x145695d88): upgrade_department index (+0x120) and bool enable (+0x138), 0x140 bytes, vtable 0x1456961c0. (lane owner review requested) Better name: Career_UpgradeEffect_Create_EnableUpgradeDepartment (bound record keeps its name)."
  },
  "signature": {
   "id": "career.upgrade_effect_create_vt6961c0",

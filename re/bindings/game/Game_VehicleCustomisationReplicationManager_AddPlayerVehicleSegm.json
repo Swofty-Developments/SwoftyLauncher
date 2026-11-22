@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143142e80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VehicleCustomisationReplicationManager::addPlayerVehicleSegmentedDecalNodeList; log channel NETWORK-ENTRANTS: 'void network::VehicleCustomisationReplicationManager::addPlayerVehicleSegmentedDecalNodeList(const PlayerVehicleKey &, const game::VehicleCustomisationStatId::P | %s : Failed to find vehicle customisa'"
+  "evidence": "decomp:re/decomp/143142e80.c;pat:log-message-cxx;xref:0x143144c8b,0x14314610d",
+  "notes": "Read in full (this, key, packed id, decal list): logs 'Attempting to find vehicle customisation info for id'; finds the stored customisation (0x14246dcb0); missing -> 'Failed to find'; else copies it, appends every 16-byte decal node of list +8..+0x10 (0x141106ea0), copies flag +0x28 and calls replacePlayerVehicleCustomisation 0x1431400c0. Callers 0x1431448e0, 0x143145920. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_customisation_replication_manager_add_player_vehicle_segm",

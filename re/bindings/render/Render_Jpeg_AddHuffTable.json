@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1449de7cc",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1449de7cc.c;xref:0x1449d3fd5",
-  "notes": "libjpeg jpeg_add_huff_table: allocates 0x112 bytes, copies the 17 BITS bytes, sums the counts and raises error code 9 when sum is 0 or > 256, then copies huffval. Caller Render_Jpeg_SetDefaults (standard tables)."
+  "evidence": "decomp:re/decomp/1449de7cc.c;xref:0x1449d3fd5,0x1449d3ff2,0x1449d400f,0x1449d402c",
+  "notes": "libjpeg add_huff_table: allocates the 0x112-byte JHUFF_TBL when *htblptr is null, copies the 17 BITS bytes, sums counts 1..16 and raises error 9 when the sum is 0 or > 256, copies huffval, clears sent_table. Callers 0x1449d3fd5, 0x1449d3ff2, 0x1449d400f, 0x1449d402c in Render_Jpeg_SetDefaults (standard DC/AC tables). (lane owner review requested)"
  },
  "signature": {
   "id": "render.jpeg_add_huff_table",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1418130b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "ui",
   "proto": "void Refresh(void *vm, ..., void **p5, void *p6)",
-  "evidence": "decomp:re/decomp/1418130b0.c;xref:0x1414d7eb4;xref:0x14180fa15;xref:0x141874395",
-  "notes": "myteam-g2: Calls Game_Refresh_PerformanceComparison for the selected upgrade (fields +0x43/0x44 flags). Read-only comparison UI."
+  "evidence": "decomp:re/decomp/1418130b0.c;xref:0x1414d7eb4,0x14180fa15,0x141874395,0x1418af31f,0x1418bc316,0x141c606f1,0x141c80ad6,0x141c8ec57,0x141f3b13a,0x141f3f8cc,0x141f42ab4,0x141f45299,0x141f47711,0x141f4a3e9",
+  "notes": "Ctor(owner,ctx,path,desc,subpath): path = param_2 + param_6 (callers pass team_performance); 18 slots of 0x14 bytes set to invalid handle; copies desc (5 qwords, optional u32 vector, int); finds component 0x146063160 on ctx+0x1030 or its sub-list ctx+0x1068; then 0x141890990(this). (lane owner review requested) Better name: Ui_TeamPerformancePanel_Construct (bound record keeps its name)."
  },
  "signature": {
   "id": "ui.refresh_rn_dperformance_comparison",

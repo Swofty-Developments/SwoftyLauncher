@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14357f5c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=NetMarshalZoneMonitor::onSessionRestart; log channel NETWORK: 'NetMarshalZoneMonitor::onSessionRestart()'"
+  "evidence": "decomp:re/decomp/14357f5c0.c;pat:log-message-cxx;xref:0x14584ab18",
+  "notes": "vt cell 0x14584ab18. Calls 0x14357ca30 and 0x14357e780(this); if marshal-zone object +0x11c8 exists: logs 'NetMarshalZoneMonitor::onSessionRestart()' (NETWORK), 0x143195ac0(obj), obj+0x60 = 1, obj+0x90 = QPC + 0x1461089f8, obj+0x98 = same when non-zero. (lane owner review requested)"
  },
  "signature": {
   "id": "game.net_marshal_zone_monitor_on_session_restart",

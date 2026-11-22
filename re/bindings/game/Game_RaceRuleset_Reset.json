@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d36670",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=RaceRuleset::reset; log channel RaceResults: 'RaceRuleset::reset'"
+  "evidence": "decomp:re/decomp/142d36670.c;pat:log-message-cxx;xref:0x1457dc870",
+  "notes": "Virtual (vt cell 0x1457dc870): for 14 entries (stride 0x30 from +0x8) restores flags from defaults, +0x2a8 = +0x2b0, +0x2e8 = 0, +0x2c8 bit0 from +0x2d0, logs RaceResults 'RaceRuleset::reset'; if +0x358 == 1 calls 0x142ccede0(this); tail-calls vt+0xd0(this, +0x384). (lane owner review requested)"
  },
  "signature": {
   "id": "game.race_ruleset_reset",

@@ -18,7 +18,7 @@ use super::archives::{
     carries_handling, merged_later, missing_archives, slice_merges, stock_holders, stray_asset_group_line,
 };
 use super::buildhash::BuildHash;
-use super::loader::loader_line;
+use super::loader::{check_menu_originals, loader_line};
 use super::registry::replaced_operations;
 use crate::activation::place::{SLOTS, slot_file};
 use crate::addons::builtin::{CORE_ID, loader_dir, loader_files};

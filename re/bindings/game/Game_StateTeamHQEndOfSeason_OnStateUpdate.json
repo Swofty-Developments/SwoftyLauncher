@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1437054f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=StateTeamHQEndOfSeason::onStateUpdate; log channel FADE_REQUESTS: '[StateTeamHQEndOfSeason::onStateUpdate()] requested a fade in because this is an online career, the end of season setup just finished and the lead player is not'"
+  "evidence": "decomp:re/decomp/1437054f0.c;pat:log-message-cxx;xref:0x14585f748",
+  "notes": "onStateUpdate (vt cell 0x14585f748): online career only (system 0x14605b128, 0x14077c790, 0x1460609c8): if the lead player record lookup (0x140fdb170) is missing or not state 1, requests fade in (0x1437f07c0); then [+0xc98]+0x292=0, +0x291 = 0x104 - 0x14111b6d0(). (lane owner review requested)"
  },
  "signature": {
   "id": "game.state_team_hq_end_of_season_on_state_update",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142120070",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142120070.c;xref:0x142000206",
-  "notes": "229-line builder for the decal list view-model nodes. Callers Game_CarDecals_BuildList (4 sites). Hypothesis. vp1-verify partial/disagree"
+  "evidence": "decomp:re/decomp/142120070.c;xref:0x142000206,0x142000224,0x14200044b,0x142000469",
+  "notes": "Move-constructs the range [param_1,param_2) of 0x140-byte decal row items into param_3: relinks the 9 tracked node refs (owner +0x28, prev/next +0x10/+8), moves handle +0x120 (source nulled), copies +0x128 and key +0x130/+0x138. (lane owner review requested)"
  },
  "signature": {
   "id": "game.car_decals_build_decal_list_nodes",

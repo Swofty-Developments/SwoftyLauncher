@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1431132d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionEntrantsDocument::handleEntrantsDocumentMessageLockPlayerCommand; log channel NETWORK-ENTRANTS: 'GameSessionEntrantsDocument::handleEntrantsDocumentMessageLockPlayerCommand(%d, %s) from conn %d'"
+  "evidence": "decomp:re/decomp/1431132d0.c;pat:log-message-cxx;xref:0x1430d8df2",
+  "notes": "Only ref: lea at 0x1430d8df2 (in 0x1430d8a40, handler table). Logs NETWORK-ENTRANTS 'handleEntrantsDocumentMessageLockPlayerCommand(%d, %s) from conn %d'. Command p2+0x10: 2 = unlock (remove matching player desc from the locked list p1+0xc0..+0xc8, stride 0x50, match by id +0x48 / type 7 or 3 keys / 0x144121bc0; missing -> error 2), 1 = lock (append desc p2+0x20..+0x60 unless already present; vector growth 1.5x via allocator [p1+0xb8]), 0 = clear all. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_session_entrants_document_handle_entrants_document_message_lo",

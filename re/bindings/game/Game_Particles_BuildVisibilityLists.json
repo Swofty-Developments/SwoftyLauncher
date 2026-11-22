@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b11590",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143b11590.c;xref:0x143b0d8f9,0x143b0dc5b",
-  "notes": "Builds per-view visibility list for particle effects (array at manager+0x858e90..98, counts memset by global 0x1464412c0+1 ints), uses stack frame via alloca. Called by Game_Particles_UpdateManager. Hypothesis."
+  "notes": "(mgr, outVec, pass): collects emitters of all effects (mgr+0x858e90..98, stride 0x180) whose def (+0x160) bit4 of +0xb98 == pass, with particles (+0xe4), layer +0x5c != -1 and def +0x512 bit1, max 5000; clears +0xe8; counting sort by layer (histogram sized by global 0x1464412c0+1), per-layer counts to mgr+0xa7d094; writes sorted emitter pointers into outVec (resized). Callers in 0x143b06d90. Old name 'visibility lists' was a guess. (lane owner review requested) Better name: Game_Particles_BuildLayerSortedEmitterList (bound record keeps its name)."
  },
  "signature": {
   "id": "game.particles_build_visibility_lists",

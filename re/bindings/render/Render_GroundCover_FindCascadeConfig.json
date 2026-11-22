@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144468680",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144468680.c;xref:0x14446737c,0x144467559",
-  "notes": "Resolves the ground-cover cascade config resource: queries three resolver objects in order (+0xf0, +0xe8, +0xe0) via vcall +8, compares class id (vcall +0x10) with global 0x146129f38, returns the config pointer (vcall +0x30). Callee of Render_GroundCover_ReadCascadeConfig. Addon: path to hook for grass/ground-cover density config."
+  "evidence": "decomp:re/decomp/144468680.c;xref:0x14446737c,0x144467559,0x144468072",
+  "notes": "Rename (not a cascade-config finder): same three-source lookup as 0x144468330 ([*this]+0xf0/+0xe8/+0xe0, status 0x57 absent), type check against the int type descriptor 0x146129f38, copies 4 bytes to *param_4 (status 0), else 0x16. Callers 0x14446737c, 0x144467559, 0x144468072 in Render_GroundCoverCascade_Load. (lane owner review requested) Better name: Render_GroundCover_GetPropertyInt (bound record keeps its name)."
  },
  "signature": {
   "id": "render.ground_cover_find_cascade_config",

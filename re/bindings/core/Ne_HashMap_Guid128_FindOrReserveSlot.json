@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142cc4a70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142cc4a70.c;xref:0x142c4e379",
-  "notes": "Hash lookup keyed by a 16-byte value (param_3[0..15]): FNV-1a 64 over all 16 bytes with seed *(param_1+0x10), bucket probe, result slot in *param_2. Caller Game_TrackCameraShots_StopShot. Hypothesis (key may be GUID / shot id). vp1-verify partial/disagree"
+  "evidence": "decomp:re/decomp/142cc4a70.c;xref:0x142c4e379,0x1540f30f4",
+  "notes": "(map, out, const u8 key[16]): robin-hood find-or-insert with a 16-byte key: FNV-1a 64 over the 16 bytes * seed map+0x10 * prime, h^=h>>33; 24-byte slots map+0x18 (16-byte key + value), info map+0x20, mask +0x30; state 1 found, else inserted; grows via Ne_HashMap_Guid128_Grow 0x142cc4e60 (fail -> state 0), at most 256 tries. Callers Game_TrackCameraShots_StopShot 0x142c4e379, .data1 0x1540f30f4."
  },
  "signature": {
   "id": "core.hash_map_guid128_find",

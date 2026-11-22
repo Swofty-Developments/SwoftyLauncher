@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1435288f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:cmp-byte-rax+0x72-4-je@0x143528a05;xref:0x14352e91e,0x14352f67e,0x14352f76a,0x14352f8ba;kb:subsystems/rnd_ui.md#instances",
-  "notes": "Upgrade availability graph search. Treats every department-4 node as the tree hub (cmp byte [rax+0x72],4 ; je @0x143528a05): the stock fake hub central_fake_upgrade (label default) terminates the search there, and any other dept-4 row would act as a hub and unlock out of order. CORRECTION(V9236): Dept-4 node check at 0x143528a05 is real, but the search only returns at the hub when param_6==1 (and only collects it when param_5==1); otherwise it continues, so it is flag-controlled not unconditional termination."
+  "evidence": "decomp:re/decomp/1435288f0.c;pat:cmp-byte-rax+0x72-4-je@0x143528a05;kb:subsystems/rnd_ui.md#instances;xref:0x14352e91e,0x14352f67e,0x14352f76a,0x14352f8ba",
+  "notes": "Graph walk from a start node (param_3 links +0x10..+0x18), visited list on stack, result count at out+0xc00. Dept-4 node (+0x72==4): collected if param_5==1, returns if param_6==1. Not-enabled node (last entry +0xc==0): expands its links; enabled node with last state == param_4: collected. Hub stop is flag-controlled, not unconditional. (lane owner review requested)"
  },
  "signature": {
   "id": "career.search_upgrade_graph",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428e7d80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_FrontendSceneComponentCar_SetCarDecalNode;xref:0x1428e81f6",
-  "notes": "cxx=game::FrontendSceneComponentCar::setCarDecalNode; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1428e7d80.c;str:s_FrontendSceneComponentCar_SetCarDecalNode;xref:0x142001321,0x1420013f1,0x1428eb43f",
+  "notes": "Manager-level (pending map this+0x70b8, FNV hash of car id): car ready (vcall +0x28) -> log 'Changing Car [%u] Decal Node', inlined FrontendSceneComponentCar::setCarDecalNode calls 0x1428b2730 (CarManager setCarDecalNode); not ready -> replaces matching decal node ptr in pending entry list +0x67e0 or copies car setup (0x1416c7420) and inserts pending entry 0x1428e5d60. Logs FrontendSceneComponentManager::setCarDecalNode warning. Old name = inlined callee. (lane owner review requested) Better name: Game_FrontendSceneComponentManager_SetCarDecalNode (bound record keeps its name)."
  },
  "signature": {
   "id": "game.frontend_scene_component_car_set_car_decal_node",

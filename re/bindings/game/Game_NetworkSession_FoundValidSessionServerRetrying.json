@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143073ca0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-SESSION",
-  "notes": "named from its log messages (channel NETWORK-SESSION): '%s: found a valid session on the server, retrying to search for it'"
+  "evidence": "decomp:re/decomp/143073ca0.c;pat:log-channel-NETWORK-SESSION;xref:0x1430709fd,0x143074eb3",
+  "notes": "__FUNCTION__ 'GameSessionMatchingCareer::onGetSessionsComplete'; lea'd as callback in onCareerSearchComplete 0x14306f770. On success logs 'found a valid session on the server, retrying' and setupRetryJoinSession, else notifyJoinCareerSessionResult(0,0x1e,0). (lane owner review requested) Better name: Game_GameSessionMatchingCareer_OnGetSessionsComplete (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_session_found_valid_session_server_retrying",

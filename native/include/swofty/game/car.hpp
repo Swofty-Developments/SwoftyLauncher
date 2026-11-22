@@ -480,6 +480,8 @@ using Car_DetachablePart_Update_t = bool(void *part, float dt);
 inline constexpr fn<"Car_DetachablePart_Update", Car_DetachablePart_Update_t> Car_DetachablePart_Update{}; // L2 experimental
 inline constexpr address<"Car_Differential_Reset_Thunk"> Car_Differential_Reset_Thunk{}; // L2 experimental
 inline constexpr address<"Car_Engine_ComputeDerived_Thunk"> Car_Engine_ComputeDerived_Thunk{}; // L2 experimental
+using Car_Engine_UpdateWear_t = void(void *engine, float dt);
+inline constexpr fn<"Car_Engine_UpdateWear", Car_Engine_UpdateWear_t> Car_Engine_UpdateWear{}; // L2 experimental
 using Car_FrontWing_Init_t = void(void *front_wing, char reset);
 inline constexpr fn<"Car_FrontWing_Init", Car_FrontWing_Init_t> Car_FrontWing_Init{}; // L2 experimental, game::FrontWing
 inline constexpr address<"Car_FrontWing_OnCollision"> Car_FrontWing_OnCollision{}; // L2 experimental
@@ -490,6 +492,7 @@ using Car_GearBox_UpdateShiftTimersAndFaults_t = void(void *gearbox, float dt);
 inline constexpr fn<"Car_GearBox_UpdateShiftTimersAndFaults", Car_GearBox_UpdateShiftTimersAndFaults_t> Car_GearBox_UpdateShiftTimersAndFaults{}; // L2 experimental
 inline constexpr address<"Car_Load_Vtf"> Car_Load_Vtf{}; // L2 experimental
 inline constexpr address<"Car_Model_BindCockpitNodes"> Car_Model_BindCockpitNodes{}; // L2 experimental
+inline constexpr address<"Car_PadAssist_DriftAssist"> Car_PadAssist_DriftAssist{}; // L2 experimental
 inline constexpr address<"Car_Physics_AdvanceCar"> Car_Physics_AdvanceCar{}; // L2 experimental
 inline constexpr address<"Car_Physics_PostVehicleUpdate"> Car_Physics_PostVehicleUpdate{}; // L2 experimental
 using Car_PitStop_ApplyTyreAndWingVisuals_t = void(void *car_visual, float a2, bool a3);
@@ -520,6 +523,10 @@ inline constexpr fn<"Car_Tyre_ChangeToNextCompound", Car_Tyre_ChangeToNextCompou
 using Car_Tyre_CheckCompoundClassRule_t = bool(const void *set);
 inline constexpr fn<"Car_Tyre_CheckCompoundClassRule", Car_Tyre_CheckCompoundClassRule_t> Car_Tyre_CheckCompoundClassRule{}; // L2 experimental
 inline constexpr address<"Car_Tyre_ComputeGripMultiplier"> Car_Tyre_ComputeGripMultiplier{}; // L2 experimental
+using Car_Tyre_CurveMap_FindBracketA_t = void(void *curves, float key, void **bracket);
+inline constexpr fn<"Car_Tyre_CurveMap_FindBracketA", Car_Tyre_CurveMap_FindBracketA_t> Car_Tyre_CurveMap_FindBracketA{}; // L2 experimental
+using Car_Tyre_CurveMap_FindBracketB_t = void(void *curves, float key, void **bracket);
+inline constexpr fn<"Car_Tyre_CurveMap_FindBracketB", Car_Tyre_CurveMap_FindBracketB_t> Car_Tyre_CurveMap_FindBracketB{}; // L2 experimental
 inline constexpr address<"Car_Tyre_GripScale"> Car_Tyre_GripScale{}; // L2 experimental
 using Car_Tyre_IsCompoundAllowed_t = bool(const void *set);
 inline constexpr fn<"Car_Tyre_IsCompoundAllowed", Car_Tyre_IsCompoundAllowed_t> Car_Tyre_IsCompoundAllowed{}; // L2 experimental
