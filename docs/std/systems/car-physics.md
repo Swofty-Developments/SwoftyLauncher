@@ -539,6 +539,17 @@ cars::handling.layer(f1, [](cars::Handling &h) {
 });
 ```
 
+### Locked sliders per box
+
+A box can lock setup sliders its era did not have: `rules.setup_locked` in its `content.package` (1.8) lists `car_setup.sliders` labels. With `SWOFTY_BOX_SETUP=1` the core adds their bits to the game's own setup lock mask, the one parc ferme sets, after every setup apply while that box is pressed or one of its career seasons loads. The game's setters then refuse those sliders, as they refuse the parc ferme ones. A stock box press or leaving the boxes stops adding the bits.
+
+```json
+{ "content.package": { "f5_1950": { "entrant_list": "f5_1950", "season": 1950,
+  "rules": { "setup_locked": ["front_wing", "rear_wing", "differential", "brake_bias", "brake_migration", "ballast", "engine_braking_fraction"] } } } }
+```
+
+`differential` (on and off throttle, mid corner, high speed, preload, ramp), `brake_migration`, `tyre_pressures`, `tyre_pressures_inter_wet` and `brake_cooling` name groups; the other labels name one slider. A locked slider keeps the step its preset gives and still drives the car: give the box's cars a handling file whose `F1Tuning` minimum equals the maximum for that slider, so the step changes nothing. The sliders stay on the screen: no hide flag is known, and their ranges (`car_setup.sliders` min, max, steps) are global game data. Mapped from the game's code; not tested in game yet.
+
 ## AI cars
 
 AI cars use the same handling file, the same physics and the same R&D upgrades as the player. The difficulty setting changes how the AI drives, not its car: there's no hidden grip, power or drag boost. The AI-only values are in the handling file, so you can change them like any other:

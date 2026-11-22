@@ -1,0 +1,492 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "content.package 1.8",
+  "x-registry": "content.package",
+  "x-version": "1.8",
+  "x-applies": "content",
+  "x-snapshot": false,
+  "description": "content::Package: a Grand Prix and Time Trial season build: an entrant list, its teams, cars and drivers, and the box's rules.",
+  "type": "object",
+  "properties": {
+    "title": {
+      "$ref": "#/$defs/text"
+    },
+    "entrant_list": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+$"
+    },
+    "season": {
+      "type": "integer",
+      "minimum": 1950,
+      "maximum": 2100
+    },
+    "calendar": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-ref": "career.calendar"
+    },
+    "teams": {
+      "type": "array",
+      "x-key": [
+        "key"
+      ],
+      "items": {
+        "$ref": "#/$defs/team"
+      }
+    },
+    "rules": {
+      "$ref": "#/$defs/rules"
+    },
+    "setup_mode": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+$",
+      "default": "swofty_f1"
+    },
+    "leaderboard": {
+      "type": "string",
+      "description": "the Time Trial leaderboard of the package's entrant list: \"box\" (its own), \"addon\" (one shared by the addon's packages), \"group:<name>\" (one shared by the addon's packages that name it), \"stock:<label>\" (a descriptor the game ships)",
+      "pattern": "^(box|addon|group:[a-z0-9_]+|stock:[a-z0-9_]+)$",
+      "default": "box"
+    },
+    "virtual_list": {
+      "type": "boolean",
+      "description": "true: the entrant list takes no stat id and no setup mode slot; the core moves its row above the table's count and reads it into swofty_virtual_list when the box is pressed",
+      "default": false
+    },
+    "world": {
+      "type": "object",
+      "description": "The box's own world (SWOFTY_BOX_OWN_WORLDS=1): its sessions load [FILENAME]_<name> at every track, the archive 2025_asset_groups/environment_package/tracks/<code>/wep/<code>_<name>.erp (World eaid eaid://environment_package/tracks/<code>/wep/<code>_<name>.wep) that an addon ships and registers as the group asset_groups/environment_package/tracks/<code>/wep/<code>_<name>.assetgroup. The core gives the box a season (swofty_world_<season>), a track layer row for its setup mode and that season whose worldAssetGroup and worldEri name the world, and the season on every seasons list that holds the list's season. At boot it lists the track folders that hold the archive: the box's track list leaves out every other track, and a box whose world no track holds keeps the world its list's layers load. Any team count; without the flag the record is stored and a box with 11 or 12 teams still gets a garage world.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]{1,24}$",
+          "description": "The world's name: the archive suffix after <code>_ (e1950: silverstone_e1950.erp)"
+        },
+        "season": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]{1,24}$",
+          "description": "The season the box shares with every box that names the same one (default: name). A season id is a bit of a 32-bit mask and with SWOFTY seasons installed about seven are free, so the boxes of one era share one season, world and branding: the first box in load order makes the rows, the others take the season"
+        },
+        "from": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]{1,24}$",
+          "description": "The stock track_data.track_layers row the layer copies its other fields from (default f1_26, myteam_26 for 12 teams). The garages and grid slots are the archive's own"
+        },
+        "branding": {
+          "type": "object",
+          "description": "A game_setup.branding row of the box's season, so the box's sessions show their own series art; the season is then kept off the stock branding rows",
+          "properties": {
+            "from": {
+              "type": "string",
+              "pattern": "^[a-z0-9_]{1,24}$",
+              "description": "The stock branding row it copies (default f1_26)"
+            },
+            "timing_tower_logo": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_]{1,63}$",
+              "description": "timing_tower_logo_texture_path: a slice key of the overrides.osd.timing_tower.timing_tower_logos texture array (stock lc_f1_logo); the addon appends the slice and its overrides.uidb key itself"
+            },
+            "broadcast_show_f1_logo": {
+              "type": "boolean",
+              "description": "The branding row's broadcast_show_f1_logo; missing: the copied row's"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "stat_id": {
+      "$ref": "#/$defs/stat_id"
+    },
+    "extends": {
+      "description": "Data files only: this record is a variant of that record, and its value is a merge patch on the base.",
+      "type": "string",
+      "x-ref": "content.package",
+      "x-missing": {
+        "default": "required",
+        "allow": [
+          "required"
+        ]
+      }
+    }
+  },
+  "required": [
+    "entrant_list",
+    "season"
+  ],
+  "additionalProperties": true,
+  "$defs": {
+    "text": {
+      "description": "A Text: a lang key as a string, or a literal.",
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "literal": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "literal"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "stat_id": {
+      "description": "A StatId: an explicit id, or \"auto\" (absent: \"auto\") for the core to allocate one.",
+      "oneOf": [
+        {
+          "type": "integer",
+          "minimum": 0
+        },
+        {
+          "const": "auto"
+        }
+      ]
+    },
+    "team": {
+      "description": "content::Team: one team of the package, matched by key.",
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "team": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-ref": "team.identity"
+        },
+        "vehicle": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-ref": "vehicle"
+        },
+        "engine_sound": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-ref": "engine_sound"
+        },
+        "livery": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-ref": "livery"
+        },
+        "drivers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/seat"
+          }
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "additionalProperties": false
+    },
+    "seat": {
+      "description": "content::Seat: a driver of the team this season.",
+      "type": "object",
+      "properties": {
+        "driver": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-ref": "driver.identity"
+        },
+        "number": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 999
+        },
+        "look": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-ref": "driver.look"
+        }
+      },
+      "additionalProperties": false
+    },
+    "rules": {
+      "description": "sessions::Rules: the box's points, DRS, tyre classes and rules, applied at session load.",
+      "type": "object",
+      "properties": {
+        "mode": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-ref": "session.mode",
+          "description": "null: swofty_f1, shared by every GP/TT box"
+        },
+        "points": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-ref": "session.points"
+        },
+        "drs": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-ref": "rules.drs"
+        },
+        "tyre_class": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-ref": "tyre.class"
+        },
+        "rules_profile": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-ref": "session.rules_profile"
+        },
+        "refuelling": {
+          "type": "boolean",
+          "default": false
+        },
+        "tyre_warmers": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Whether the box's races run with tyre warmers; the era picker writes it into swofty_f1's has_tyre_warmers when the box is pressed. Missing or null: the setup mode's own setting."
+        },
+        "mandatory_tyre_change": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Whether the box's races require two dry compounds (the game's tyre regulations): false clears every race length requirement of swofty_f1, true sets them all, when the box is pressed. Missing or null: the setup mode's own requirements."
+        },
+        "race_time_limit_s": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 60,
+          "maximum": 86400,
+          "description": "The race time limit in seconds (the game's race_time_limit_in_seconds, classic 7200); the era picker writes it into swofty_f1 when the box is pressed. Missing or null: the setup mode's own limit."
+        },
+        "weekend_mode": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z0-9_]{1,63}$",
+          "description": "A game_setup_modes row whose weekend options (practice, qualifying and race groups and the length options they offer) the box's weekends use; the era picker swaps that row's weekend options into swofty_f1 when the box is pressed and back when another box is. The row must exist at boot (game data or an addon's database rows). Missing or null: swofty_f1's own weekend."
+        },
+        "safety_car": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "off",
+            "reduced",
+            "standard",
+            "increased",
+            null
+          ],
+          "description": "The safety car setting the box's races run with (off for seasons before the safety car); the era picker sets the game's safety car option to it when the box is pressed and puts the player's value back when another box is pressed. Missing or null: the player's own setting."
+        },
+        "formation_lap": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Whether the box's races start with a formation lap (false for seasons that started from the dummy grid); the era picker sets the game's formation lap option to it when the box is pressed and puts the player's value back when another box is pressed. Missing or null: the player's own setting."
+        },
+        "penalties": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "off",
+            "corner_cutting_only",
+            "esports",
+            "on",
+            null
+          ],
+          "description": "The game's rules and flags setting the box's races run with: off (no penalties), corner_cutting_only (track limits only, no collision penalties; the game's Corner_Cutting_Only rule profiles still allow drive-throughs), esports or on (full rules). The era picker sets the game's rules and penalties option to it when the box is pressed and puts the player's value back when another box is pressed. Missing or null: the player's own setting."
+        },
+        "corner_cutting": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "regular",
+            "strict",
+            null
+          ],
+          "description": "The game's corner cutting stringency for the box's races; set and put back like rules.penalties. Missing or null: the player's own setting."
+        },
+        "race_fuel_kg": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "refuel_stint_kg": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "description": "With refuelling on: the fuel a pit stop in the box's races fills each car to (never above its tank, never draining). Missing or null: race_fuel_kg, else a full tank."
+        },
+        "quali_fuel_kg": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "description": "The fuel each car starts the box's qualifying sessions with. Missing or null: the game's own qualifying fuel."
+        },
+        "race_start_fuel_from_quali": {
+          "type": "boolean",
+          "default": false,
+          "description": "Parc ferme (2003-2009): each car starts the race with the fuel it had left at the end of its qualifying session (quali_fuel_kg when it ran no qualifying)."
+        },
+        "race_tyre_change": {
+          "type": "boolean",
+          "default": true,
+          "description": "false (2005): one tyre set for qualifying and race; a race pit stop keeps the car's tyres (compound, wear) unless a tyre is damaged. Pit stops still refuel."
+        },
+        "setup_locked": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "description": "Car setup sliders the box's cars cannot change (SWOFTY_BOX_SETUP=1): the core sets their bits in the game's own setup lock mask, the one parc ferme sets, so the setup screen refuses a change and the car keeps its preset step. Labels are car_setup.sliders labels; differential, brake_migration, tyre_pressures, tyre_pressures_inter_wet and brake_cooling name groups. A locked slider still drives the car with its preset step: give the box's cars a VTF whose F1Tuning Min equals Max for it so the step changes nothing. Missing, null or empty: the game's own locks.",
+          "items": {
+            "enum": [
+              "front_wing",
+              "rear_wing",
+              "on_throttle",
+              "off_throttle",
+              "mid_corner",
+              "diff_high_speed",
+              "diff_preload",
+              "differential",
+              "front_camber",
+              "rear_camber",
+              "front_toe",
+              "rear_toe",
+              "front_suspension",
+              "rear_suspension",
+              "front_suspension_height",
+              "rear_suspension_height",
+              "front_antiroll_bar",
+              "rear_antiroll_bar",
+              "brake_pressure",
+              "brake_bias",
+              "brake_migration",
+              "tyre_pressures",
+              "tyre_pressures_inter_wet",
+              "ballast",
+              "fuel_load",
+              "engine_braking_fraction",
+              "ramp_differential",
+              "brake_cooling"
+            ]
+          },
+          "uniqueItems": true,
+          "maxItems": 28
+        },
+        "car_profile": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-ref": "car.profile"
+        },
+        "grid": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "How the box's race grid forms from qualifying: the core re-ranks the weekend's qualifying classification (Sess_Build_GroupResult) in this box. Missing or null: the game's own grid.",
+          "properties": {
+            "qualifying": {
+              "enum": [
+                "best_lap",
+                "best_of",
+                "aggregate"
+              ],
+              "default": "best_lap",
+              "description": "best_lap: the game's own order. best_of: each driver's best lap over every qualifying-type session of the weekend (F1 1950-1995). aggregate: the sum of each driver's best laps of the two fastest qualifying-type sessions (F1 2005); a weekend with one qualifying session ranks like best_of."
+            },
+            "rows": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 5
+              },
+              "minItems": 1,
+              "maxItems": 8,
+              "description": "Cars per grid row, repeating from the front: [3,2] is the 1950s 3-2-3 grid, [4,3] the 4-3-4 grid. Null: the track's own 2-wide grid. Design only in this version: the core logs the pattern and keeps the track's slots."
+            },
+            "rule_107": {
+              "type": "boolean",
+              "default": false,
+              "description": "The 107 % rule (F1 1996-2002): a driver slower than 107 % of the pole time starts from the back of the grid, behind every driver inside the limit (the game has no non-qualifier, so the car still starts)."
+            }
+          },
+          "additionalProperties": false
+        },
+        "qualifying_tyres": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "enum": [
+              "softer",
+              "medium",
+              "harder"
+            ]
+          },
+          "uniqueItems": true,
+          "maxItems": 2,
+          "description": "Dry class options the box's cars may use only in qualifying (the qualifying tyres of the late 1970s to 1991): in race sessions the core refuses their sets for the garage, AI and pit stop choice. Hand them out only in Qualifying1..3 through the event's tyres.allocation_tyre_presets row. Missing, null or empty: every dry option may race."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "content.package": {
+    "f5_1950": {
+      "$comment": "labels from SETUP_LOCK_LABELS only",
+      "entrant_list": "f5_1950",
+      "season": 1950,
+      "rules": {
+        "setup_locked": [
+          "drs_flap"
+        ]
+      }
+    }
+  }
+}

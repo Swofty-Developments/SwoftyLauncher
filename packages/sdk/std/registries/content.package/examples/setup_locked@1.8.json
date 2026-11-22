@@ -1,0 +1,19 @@
+{
+  "content.package": {
+    "f5_1950": {
+      "entrant_list": "f5_1950",
+      "season": 1950,
+      "rules": {
+        "setup_locked": [
+          "front_wing",
+          "rear_wing",
+          "differential",
+          "brake_bias",
+          "brake_migration",
+          "ballast",
+          "engine_braking_fraction"
+        ]
+      }
+    }
+  }
+}

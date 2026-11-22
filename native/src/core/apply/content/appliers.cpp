@@ -1243,6 +1243,13 @@ BoxOptionsPick box_options_for_box(const std::string &entrant_list)
     return box_options_pick(entrant_list, p.list);
 }
 
+SetupLocksPick setup_locks_for_box(const std::string &entrant_list)
+{
+    Packages p;
+    collect_packages(p);
+    return setup_locks_pick(entrant_list, p.list);
+}
+
 GridBox grid_for_box(const std::string &entrant_list)
 {
     Packages p;

@@ -117,9 +117,30 @@ void apply_fuel(const RuleTarget &t, const char *list)
     auto rules = swofty_core::apply::content::fuel_rules_for_box(list);
     rules.line = t.prefix + rules.line;
     swofty_core::hooks::race_fuel_rules(rules);
+    apply_setup_locks(t, list);
 }
 
-void clear_fuel() { swofty_core::hooks::race_fuel_rules({}); }
+void clear_fuel()
+{
+    swofty_core::hooks::race_fuel_rules({});
+    swofty_core::hooks::box_setup_locks(0, std::string());
+}
+
+// Setup locks per box: the pressed box's rules.setup_locked bits go to the setup apply point (hooks/car_live.cpp), which
+// adds them to every setup entry's lock mask; they travel with the fuel rules (a box press, a career season's load, a stock
+// press or leaving the boxes clears them). Off unless SWOFTY_BOX_SETUP=1.
+void apply_setup_locks(const RuleTarget &t, const char *list)
+{
+    namespace content = swofty_core::apply::content;
+    char v[16] = {};
+    if (!swofty_core::guards::env_off(content::SETUP_LOCKS_ENV, v,
+                                      [](const char *s) { return s && content::setup_locks_enabled(s); })) {
+        swofty_core::hooks::box_setup_locks(0, std::string());
+        return;
+    }
+    auto pick = content::setup_locks_for_box(list);
+    swofty_core::hooks::box_setup_locks(pick.mask, t.prefix + pick.line);
+}
 
 // Race time limit and weekend per box: rules.race_time_limit_s goes into every target mode's
 // race_time_limit_in_seconds; rules.weekend_mode's weekend options are exchanged with the first target mode's (a box

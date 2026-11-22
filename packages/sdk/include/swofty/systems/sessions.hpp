@@ -66,9 +66,10 @@ struct Rules {
     std::optional<GridRules> grid;      // content.package 1.5: how the box's race grid forms; empty = the game's grid
     std::vector<std::string> qualifying_tyres;   // content.package 1.5: "softer" / "medium" / "harder" used only in qualifying
     std::optional<bool> mandatory_tyre_change;   // content.package 1.6: two dry compounds required or not; empty = the mode's
+    std::vector<std::string> setup_locked;   // content.package 1.8: setup sliders the box locks (SWOFTY_BOX_SETUP=1)
 };
 SWOFTY_RECORD(Rules, mode, points, drs, tyre_class, rules_profile, car_profile, refuelling, race_fuel_kg, tyre_warmers, refuel_stint_kg, quali_fuel_kg, race_start_fuel_from_quali, race_tyre_change, race_time_limit_s, weekend_mode, safety_car, formation_lap, penalties, corner_cutting, grid, qualifying_tyres,
-              mandatory_tyre_change)
+              mandatory_tyre_change, setup_locked)
 
 inline Result set_control(cars::live::Car car, Control mode)
 {

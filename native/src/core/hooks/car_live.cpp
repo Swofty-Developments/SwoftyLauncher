@@ -15,6 +15,7 @@
 
 #include "core/apply/content/appliers.hpp"
 #include "core/apply/content/race_fuel.hpp"
+#include "core/apply/content/setup_locks.hpp"
 #include "core/career/ops/tables.hpp"
 #include "core/diagnostics/perf.hpp"
 #include "core/registry/table.hpp"
@@ -179,7 +180,32 @@ bool row_ready(const char *name)
 }
 
 void m_built(safetyhook::Context &ctx) { Ops::built(ctx.rdi); }
-void m_setup(safetyhook::Context &ctx) { Ops::setup_applied(ctx.rdi); }
+// Box setup locks (apply/content/setup_locks.hpp, SWOFTY_BOX_SETUP=1): the pressed box's slider bits go into the lock mask
+// of the setup entry (rsi, the entry Car_Setup_ApplyTuning was called with; mask at +8) after every setup apply, so the
+// setters refuse those sliders the way they do in parc ferme. The game's own bits stay; a box without locks adds none.
+std::atomic<uint64_t> g_setup_locks{0};
+std::atomic<uint32_t> g_setup_lock_lines{0};
+
+void lock_setup_entry(uintptr_t entry)
+{
+    uint64_t box = g_setup_locks.load(std::memory_order_relaxed);
+    if (!box || !entry)
+        return;
+    auto *mask = reinterpret_cast<uint64_t *>(entry + 8);
+    if (!mem::readable(mask, sizeof *mask))
+        return;
+    uint64_t added = 0;
+    *mask = apply::content::setup_locks_merge(*mask, box, &added);
+    if (added && g_setup_lock_lines.fetch_add(1, std::memory_order_relaxed) < 8)
+        swofty::log("[setup] setup entry %p: lock bits 0x%llx added (mask now 0x%llx)", reinterpret_cast<void *>(entry),
+                    static_cast<unsigned long long>(added), static_cast<unsigned long long>(*mask));
+}
+
+void m_setup(safetyhook::Context &ctx)
+{
+    lock_setup_entry(ctx.rsi);
+    Ops::setup_applied(ctx.rdi);
+}
 
 void d_reset(void *loader, uint32_t arg)
 {
@@ -848,6 +874,17 @@ void race_fuel_rules(const apply::content::FuelRules &rules)
     g_tyres_kept.store(rules.tyres_kept(), std::memory_order_relaxed);
     if (rules.any() || !rules.line.empty())
         swofty::log("[fuel] %s", rules.line.empty() ? "the game's own fuel" : rules.line.c_str());
+}
+
+void box_setup_locks(uint64_t mask, const std::string &line)
+{
+    if (g_setup_locks.exchange(mask, std::memory_order_relaxed) == mask)
+        return;
+    g_setup_lock_lines.store(0, std::memory_order_relaxed);
+    std::string where = mask && !row_ready("site_Car_SetupTuningApplied")
+                            ? "; not applied (site_Car_SetupTuningApplied is not a ready binding row)"
+                            : std::string();
+    swofty::log("[setup] %s%s", line.empty() ? "the game's own setup locks" : line.c_str(), where.c_str());
 }
 
 // The pit stop tyre change wrap (pit_box.cpp) asks whether to skip the change for this tyre component and call flag.

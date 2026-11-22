@@ -6,6 +6,7 @@
 #include "core/apply/content/grid_rules.hpp"
 #include "core/apply/content/quali_tyres.hpp"
 #include "core/apply/content/rev_lights.hpp"
+#include "core/apply/content/setup_locks.hpp"
 #include "core/apply/content/tyre_change.hpp"
 #include "core/apply/content/tyre_warmers.hpp"
 #include "core/apply/content/weekend.hpp"
@@ -126,6 +127,7 @@ void seat_entrant_tests();
 void box_time_trial_tests();
 void drs_tests(const std::string &regs);
 void race_fuel_tests();
+void setup_locks_tests();
 void points_tests();
 void career_registry_tests(const std::string &regs);
 void shared_switch_tests(const std::string &regs);

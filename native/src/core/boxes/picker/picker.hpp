@@ -253,6 +253,7 @@ void apply_warmers(const RuleTarget &t, const char *list);
 void apply_rev_lights(void *mode, const char *list);
 void apply_fuel(const RuleTarget &t, const char *list);
 void clear_fuel();
+void apply_setup_locks(const RuleTarget &t, const char *list);
 void apply_weekend(const RuleTarget &t, void *mode, const char *list);
 void apply_box_options(const char *list);
 void apply_grid(const RuleTarget &t, const char *list);

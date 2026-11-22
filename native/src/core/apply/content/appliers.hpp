@@ -3,6 +3,7 @@
 #include "core/apply/content/box_options.hpp"
 #include "core/apply/content/career_rules.hpp"
 #include "core/apply/content/race_fuel.hpp"
+#include "core/apply/content/setup_locks.hpp"
 
 #include <cstdint>
 #include "core/boxes/box_grid_logic.hpp"
@@ -73,6 +74,9 @@ WeekendBox weekend_for_box(const std::string &entrant_list, const std::string &h
 // rules.formation_lap, rules.penalties and rules.corner_cutting (none where the package has no rule), and the line to
 // log.
 BoxOptionsPick box_options_for_box(const std::string &entrant_list);
+// The setup sliders the box with this entrant list locks (setup_locks.hpp): its content.package's rules.setup_locked as
+// lock mask bits (0 when the package has none), and the line to log.
+SetupLocksPick setup_locks_for_box(const std::string &entrant_list);
 // The grid rule the box with this entrant list runs: its content.package's rules.grid (none when the package has no
 // rule), and the line to log. any_grid_rule: whether any loaded content.package has a rules.grid.
 struct GridBox {
