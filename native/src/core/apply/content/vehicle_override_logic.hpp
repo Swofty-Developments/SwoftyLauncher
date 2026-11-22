@@ -73,8 +73,8 @@ inline std::string mode_refusal(const std::string &mode, bool room, const std::s
         return {};
     if (mode == "my_team" || mode == "driver_career") {
         if (!save_blocked.empty())
-            return "a career needs the save splice's career.saving to put the team's car back before each save (" +
-                   save_blocked + ")";
+            return "a career needs the save splice's career.saving to put the team's car back before each save (" + save_blocked +
+                   ")";
         return {};
     }
     return "game mode " + (mode.empty() ? std::string("unknown") : mode) +
@@ -187,8 +187,8 @@ inline Plan plan(const std::vector<Target> &targets, const std::vector<Entrant> 
                 if (t != win)
                     names += (names.empty() ? "" : ", ") + t->id;
             p.lines.push_back("seat " + std::to_string(e.team_position) + " of the car with stat id " +
-                              std::to_string(stat_of_ref(e.vehicle_ref)) + ": " + win->id +
-                              " wins (later in load order) over " + names);
+                              std::to_string(stat_of_ref(e.vehicle_ref)) + ": " + win->id + " wins (later in load order) over " +
+                              names);
         }
         if (win->vehicle_ref == e.vehicle_ref && win->livery_key == e.customisation)
             continue;

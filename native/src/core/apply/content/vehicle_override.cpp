@@ -112,8 +112,7 @@ int64_t stat_id_of(registry::Store &st, const char *reg, const std::string &id)
 std::string str_of(const Value &v) { return v.is_string() ? std::string(v.as_string()) : std::string(); }
 
 // One record resolved against the store for this session, or the reason it is not armed.
-bool resolve(registry::Store &st, const std::string &id, const Value &rec, std::size_t order, vo::Target &out,
-             std::string &why)
+bool resolve(registry::Store &st, const std::string &id, const Value &rec, std::size_t order, vo::Target &out, std::string &why)
 {
     std::string package = str_of(rec["package"]), team = str_of(rec["team"]), vehicle = str_of(rec["vehicle"]);
     registry::Record pkg = st.get("content.package", package);
@@ -294,8 +293,7 @@ public:
         std::vector<std::string> packages = ctx.content;
         if (in_career) {
             CareerBox box = career_box_now(ctx);
-            packages = box.package.empty() ? std::vector<std::string>()
-                                           : scheduler().chain_of("content.package", box.package);
+            packages = box.package.empty() ? std::vector<std::string>() : scheduler().chain_of("content.package", box.package);
         }
         if (packages.empty()) {
             report.lines.push_back(n + " not applied: no box or career season package is active");
