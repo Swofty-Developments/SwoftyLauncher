@@ -1,0 +1,10 @@
+{
+  "team.vehicle_override": {
+    "f78_brabham_bt46b_anderstorp": {
+      "package": "vmknolle.season-1978/f1_1978",
+      "team": "brabham",
+      "vehicle": "vmknolle.season-1978/f78_03_bt46b",
+      "when": { "track": "vmknolle.tracks/anderstorp", "session_types": ["warm_up"] }
+    }
+  }
+}

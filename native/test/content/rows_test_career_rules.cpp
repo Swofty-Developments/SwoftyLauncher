@@ -49,6 +49,13 @@ void pick_tests()
     check(b.runs == std::vector<std::string>{"drs"} && b.left_out == std::vector<std::string>{"weekend_mode", "safety_car"} &&
               has(b.line, "rules drs; left out in a career: weekend_mode, safety_car"),
           "it runs the box's DRS rule and leaves the weekend helper and the race settings to the career");
+    f.safety_car = true;
+    b = content::career_box_pick(f, seasons, lookup);
+    std::printf("      %s\n", b.line.c_str());
+    check(b.runs == std::vector<std::string>{"drs", "safety_car"} && b.left_out == std::vector<std::string>{"weekend_mode"} &&
+              has(b.line, "rules drs, safety_car; left out in a career: weekend_mode"),
+          "SWOFTY_CAREER_SAFETY_CAR=1: the season runs the box's safety car rule too; the weekend helper stays left out");
+    f.safety_car = false;
     f.year = 2011;
     b = content::career_box_pick(f, seasons, lookup);
     std::printf("      %s\n", b.line.c_str());

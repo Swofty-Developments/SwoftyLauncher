@@ -24,6 +24,7 @@ ROOTS = ["audio.audio_bundle_settings.audio_bundle_settings_N", "car_setup.prese
          "entrants.teams.team_N", "pit_lane.pit_times.team_pit_times_N", "bank.initial_team_cash.InitialTeamCash_N",
          "showroom.teams_history.team_history_N", "leaderboards.leaderboard_descriptor_N",
          "game_setup.session_standings.session_standing_preset_N", "game_setup.seasons.season_N",
+         "game_setup.branding.game_setup_branding_N",
          "track_data.track_layers.TrackLayer_N"]
 CATALOG = HERE.parents[4] / "tools" / "gamedb" / "catalog" / "keys.tsv.gz"
 CATALOGUED = ["facilities.facilities.Facilities_N.team_developments.TeamDevelopment_N",

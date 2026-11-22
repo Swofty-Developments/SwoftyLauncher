@@ -91,6 +91,7 @@ init
   src/core/guards/cars/ers_newlap.cpp
   src/core/career/career_saves.cpp
   src/core/career/save_splice.cpp
+  src/core/apply/content/vehicle_override.cpp
   src/core/boxes/box_grid.cpp
   src/core/boxes/car_category.cpp
   src/core/boxes/picker/time_trial.cpp
@@ -170,6 +171,7 @@ inline
   src/core/hooks/core_events.cpp  swofty::sessions::points
   src/core/hooks/core_events.cpp  swofty::content::packages
   src/core/hooks/core_events.cpp  swofty::content::era_boxes
+  src/core/hooks/core_events.cpp  swofty::content::package_ui
   src/core/hooks/core_events.cpp  swofty::content::box_assets
   src/core/hooks/core_events.cpp  swofty::wearables::helmets
   src/core/hooks/core_events.cpp  swofty::wearables::suits
@@ -185,6 +187,7 @@ inline
   src/core/hooks/core_events.cpp  swofty::teams::logos
   src/core/hooks/core_events.cpp  swofty::teams::pit_times
   src/core/hooks/core_events.cpp  swofty::teams::garages
+  src/core/hooks/core_events.cpp  swofty::teams::vehicle_overrides
   src/core/hooks/core_events.cpp  swofty::career::modes
   src/core/hooks/core_events.cpp  swofty::career::contents
   src/core/hooks/core_events.cpp  swofty::career::seasons
@@ -269,6 +272,7 @@ exit
   src/core/boxes/picker/time_trial.cpp
   src/core/boxes/car_category.cpp
   src/core/boxes/box_grid.cpp
+  src/core/apply/content/vehicle_override.cpp
   src/core/career/save_splice.cpp
   src/core/career/career_saves.cpp
   src/core/guards/cars/ers_newlap.cpp

@@ -1,0 +1,12 @@
+{
+  "content.package": {
+    "f5_1950": {
+      "$comment": "world needs a name",
+      "entrant_list": "f5_1950",
+      "season": 1950,
+      "world": {
+        "season": "e1950s"
+      }
+    }
+  }
+}

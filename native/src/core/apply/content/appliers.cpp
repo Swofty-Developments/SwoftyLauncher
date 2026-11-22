@@ -20,6 +20,7 @@
 #include "core/apply/content/box_options.hpp"
 #include "core/apply/content/tyre_change.hpp"
 #include "core/apply/content/tyre_warmers.hpp"
+#include "core/apply/content/vehicle_override.hpp"
 #include "core/apply/content/weekend.hpp"
 #include "core/apply/tracks/boot.hpp"
 #include "core/apply/tracks/box.hpp"
@@ -69,6 +70,44 @@ bool box_worlds_on()
     char v[8] = {};
     DWORD n = GetEnvironmentVariableA(box_world::ENV, v, sizeof v);
     return box_world::enabled(n && n < sizeof v ? std::string_view(v, n) : std::string_view());
+}
+
+// Boxes whose content.package names a world get it (box_world.hpp, choose_named) only with SWOFTY_BOX_OWN_WORLDS=1.
+bool own_worlds_on()
+{
+    char v[8] = {};
+    DWORD n = GetEnvironmentVariableA(box_world::OWN_ENV, v, sizeof v);
+    return box_world::own_enabled(n && n < sizeof v ? std::string_view(v, n) : std::string_view());
+}
+
+// The track folders under the game's 2025_asset_groups/environment_package/tracks that hold <code>/wep/<code>_<name>.erp,
+// read once per name; a folder the core cannot list gives an empty list (the box keeps its world).
+std::optional<std::vector<std::string>> world_tracks_on_disk(const std::string &name)
+{
+    static std::mutex m;
+    static std::map<std::string, std::vector<std::string>> seen;
+    std::lock_guard g(m);
+    if (auto it = seen.find(name); it != seen.end())
+        return it->second;
+    std::vector<std::string> out;
+    std::error_code ec;
+    std::filesystem::path root(runtime::game_root() + L"\\" + runtime::wide(box_world::TRACKS_FOLDER));
+    for (std::filesystem::directory_iterator it(root, ec), end; !ec && it != end; it.increment(ec)) {
+        std::error_code dir_ec;
+        if (!it->is_directory(dir_ec) || dir_ec)
+            continue;
+        std::string code = it->path().filename().string();
+        if (!box_world::name_ok(code))
+            continue;
+        std::error_code file_ec;
+        if (std::filesystem::is_regular_file(it->path() / "wep" / (code + "_" + name + ".erp"), file_ec) && !file_ec)
+            out.push_back(code);
+    }
+    std::sort(out.begin(), out.end());
+    swofty::log("[content] box world %s: %zu track folder(s) hold <code>_%s.erp%s", name.c_str(), out.size(), name.c_str(),
+                ec ? " (the tracks folder could not be read)" : "");
+    seen[name] = out;
+    return out;
 }
 
 void publish_drs(Store &st, Expansion &x)
@@ -183,6 +222,8 @@ std::unique_ptr<Expansion> expansion(Database &d)
 {
     auto x = std::make_unique<Expansion>(base_of(d));
     x->box_worlds = box_worlds_on();
+    x->own_worlds = own_worlds_on();
+    x->world_tracks = world_tracks_on_disk;
     return x;
 }
 
@@ -306,6 +347,8 @@ void run_ahead(const std::shared_ptr<AheadJob> &job)
         if (file) {
             job->work.edits = std::make_shared<const OlderEdits>(older_edits(*file));
             job->work.box_worlds = box_worlds_on();
+            job->work.own_worlds = own_worlds_on();
+            job->work.world_tracks = world_tracks_on_disk;
             job->work.day = today();
             boot_ahead(st, ids::store(), base_over(*file, job->work.edits), job->work);
         }
@@ -346,6 +389,7 @@ bool boot_from_ahead(Store &st, Database &d, Expansion &plan, uint64_t room, Ahe
         AheadNow now;
         now.store_generation = scheduler().boot_generation();
         now.box_worlds = box_worlds_on();
+        now.own_worlds = own_worlds_on();
         now.day = today();
         now.edits = &d.edits;
         now.order = st.order();
@@ -1142,6 +1186,13 @@ void collect_packages(Packages &p)
 
 }
 
+std::optional<std::vector<std::string>> box_world_tracks(const std::string &name)
+{
+    if (!box_worlds_on() || !own_worlds_on())
+        return std::nullopt;
+    return world_tracks_on_disk(name);
+}
+
 DrsBox drs_for_box(const std::string &entrant_list, const std::string &host)
 {
     Packages p;
@@ -1266,7 +1317,7 @@ TyreChangeBox tyre_change_for_box(const std::string &entrant_list, const std::st
     return {pick.required, pick.line};
 }
 
-CareerBox career_box_now(const registry::Context &ctx) { return career_box(registry::store(), ctx); }
+CareerBox career_box_now(const registry::Context &ctx, bool safety_car) { return career_box(registry::store(), ctx, safety_car); }
 
 void start_boot_ahead()
 {
@@ -1300,8 +1351,10 @@ void register_appliers()
         make<Boxes>();
         make<Constructors>();
         make<Logos>();
+        register_box_ui();
         tracks::register_appliers();
         tracks::register_box_appliers();
+        register_vehicle_override();
         set_up_dresser();
     });
 }

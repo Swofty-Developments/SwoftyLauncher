@@ -810,6 +810,28 @@ bool career_weekend(CareerWeekend &out)
     return true;
 }
 
+bool session_entrants(SessionEntrants &out)
+{
+    constexpr uintptr_t RECORD = 0x88, MAX_RECORDS = 64;
+    uintptr_t holder = game::holder_of(game::current_context());
+    game::Weekend w;
+    if (!holder || !game::weekend(holder, w) || !w.at || w.current >= w.sessions)
+        return false;
+    uintptr_t sb = 0, b = 0, e = 0;
+    if (!game::rd(w.at + offsetof(swofty::game::Weekend, sessions_begin), sb) || !sb)
+        return false;
+    uintptr_t s = sb + uintptr_t(w.current) * game::SESSION_STRIDE;
+    if (!game::rd(s + offsetof(swofty::game::Session, participants_begin), b) ||
+        !game::rd(s + offsetof(swofty::game::Session, participants_end), e) || e < b || (e - b) % RECORD ||
+        (e - b) / RECORD > MAX_RECORDS)
+        return false;
+    out.session = s;
+    out.begin = b;
+    out.end = e;
+    out.session_id = w.session;
+    return true;
+}
+
 std::string current_mode(const char *where) { return game::mode_of(game::current_context(), where); }
 
 std::string cached_track_label(int stat_id) { return game::cached_track_label(stat_id); }

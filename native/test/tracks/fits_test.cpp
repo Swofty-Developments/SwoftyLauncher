@@ -51,6 +51,21 @@ int main()
     f = trk::fits(grid_only, *base.by_code("bahrain"), trk::Mode::grand_prix, &facts);
     expect(f.ok, "24 cars clamp to the install grid of 22: a 22-slot world fits");
 
+    trk::BoxInfo era = cs2016(10);
+    era.own_world = "e1950";
+    era.world_checked = true;
+    era.world_tracks = {"melbourne"};
+    expect(trk::worlds_for(facts, era) == std::vector<std::string>{"e1950"}, "a box that names its world loads that one");
+    expect(trk::fits(era, *base.by_code("melbourne"), trk::Mode::grand_prix, &facts).ok,
+           "a track whose folder holds the box's world fits");
+    f = trk::fits(era, *base.by_code("bahrain"), trk::Mode::grand_prix, nullptr);
+    expect(!f.ok && f.rule == trk::Rule::world && f.what == "e1950" &&
+               f.reason.find("environment_package/tracks/bahrain/wep/bahrain_e1950.erp") != std::string::npos,
+           "a track without the archive is left out, facts or none");
+    era.world_checked = false;
+    expect(trk::fits(era, *base.by_code("bahrain"), trk::Mode::grand_prix, nullptr).ok,
+           "when the core did not look, the world rule passes");
+
     trk::BoxInfo f1990 = cs2016(10);
     f1990.package = "swofty.f1-1990/f1_1990";
     for (auto &c : f1990.ai)

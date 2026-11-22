@@ -23,6 +23,7 @@ namespace swofty_core::apply::content {
 struct CareerSeasonFacts {
     std::string career, data_group;
     int year = 0;
+    bool safety_car = false; // SWOFTY_CAREER_SAFETY_CAR=1: the season's rules.safety_car runs (career_opts_in)
 };
 
 struct CareerBox {
@@ -33,6 +34,12 @@ struct CareerBox {
 // The box rules a career season leaves out: rules.weekend_mode (a career's weekends are its calendar's and its season
 // length's) and the four race settings, which stay as the player set them for the career.
 inline constexpr const char *CAREER_LEFT_OUT[] = {"weekend_mode", "safety_car", "formation_lap", "penalties", "corner_cutting"};
+
+// The left-out rules a career season runs when its facts opt in: rules.safety_car with CareerSeasonFacts::safety_car
+// (SWOFTY_CAREER_SAFETY_CAR=1). The era picker then sets the options store's safety_car_frequency at each session
+// load of the career, the option a box press sets, and puts the player's index back when the career unloads or a
+// season without the rule loads.
+inline bool career_opts_in(const CareerSeasonFacts &f, std::string_view rule) { return f.safety_car && rule == "safety_car"; }
 
 // The box rules a career season runs: the ones the era picker writes into a setup mode or hands to the session hooks.
 inline constexpr const char *CAREER_RULES[] = {"drs",
@@ -135,7 +142,7 @@ inline CareerBox career_box_pick(const CareerSeasonFacts &f, const std::vector<s
             b.runs.emplace_back(rule);
     for (const char *rule : CAREER_LEFT_OUT)
         if (!rules[rule].is_null())
-            b.left_out.emplace_back(rule);
+            (career_opts_in(f, rule) ? b.runs : b.left_out).emplace_back(rule);
     auto joined = [](const std::vector<std::string> &v) {
         std::string out;
         for (auto &r : v)
@@ -148,14 +155,14 @@ inline CareerBox career_box_pick(const CareerSeasonFacts &f, const std::vector<s
     return b;
 }
 
-inline CareerSeasonFacts career_facts(const registry::Context &ctx)
+inline CareerSeasonFacts career_facts(const registry::Context &ctx, bool safety_car = false)
 {
-    return {ctx.career, ctx.data_group, ctx.has_year ? ctx.year : 0};
+    return {ctx.career, ctx.data_group, ctx.has_year ? ctx.year : 0, safety_car};
 }
 
-inline CareerBox career_box(registry::Store &st, const registry::Context &ctx)
+inline CareerBox career_box(registry::Store &st, const registry::Context &ctx, bool safety_car = false)
 {
-    CareerSeasonFacts f = career_facts(ctx);
+    CareerSeasonFacts f = career_facts(ctx, safety_car);
     std::vector<std::pair<std::string, Value>> held;
     if (!f.career.empty() && !f.data_group.empty() && f.year)
         for (auto &id : st.list("career.season", "")) {
