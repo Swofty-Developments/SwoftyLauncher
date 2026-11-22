@@ -9,10 +9,12 @@
 #include <string>
 #include <type_traits>
 
+#include <swofty/d3d12.hpp>
 #include <swofty/ease.hpp>
 #include <swofty/events.hpp>
 #include <swofty/fake_hud.hpp>
 #include <swofty/game_assets.hpp>
+#include <swofty/game_mem.hpp>
 #include <swofty/hud_format.hpp>
 #include <swofty/hud_frame.hpp>
 #include <swofty/hud_leaves.hpp>
@@ -128,6 +130,10 @@ SWOFTY_REGISTER
 static void unavailable_without_core()
 {
     CHECK(!detail::registry_table());
+    CHECK(!d3d12::available());
+    CHECK(d3d12::on_srv_created([](void *, const d3d12::SrvCreated *) {}) == d3d12::Result::unavailable);
+    CHECK(d3d12::on_srv_created(nullptr) == d3d12::Result::invalid);
+    CHECK(d3d12::remove_srv_callback(1) == d3d12::Result::unavailable);
     auto v10 = sounds::engine_sounds.add("v10", {.bundle = file("a.bdl")});
     CHECK(v10.empty());
     auto ferrari =
@@ -884,8 +890,65 @@ static void game_assets_wrappers()
     ga::detail::set_table(nullptr);
 }
 
+namespace game_mem_fake {
+struct Call {
+    std::string id;
+    size_t size = 0, offset = 0, n = 0;
+    uint32_t value = 0;
+    bool expect = false;
+    int restores = 0;
+};
+inline Call last;
+inline uint64_t heap[4];
+int write_data(const char *id, size_t size, size_t offset, const void *bytes, size_t n, const void *expect)
+{
+    last.id = id ? id : "";
+    last.size = size, last.offset = offset, last.n = n, last.expect = expect != nullptr;
+    std::memcpy(&last.value, bytes, n < sizeof last.value ? n : sizeof last.value);
+    return SWOFTY_ASSET_OK;
+}
+int restore_data(const char *id)
+{
+    last.id = id ? id : "*";
+    last.restores++;
+    return SWOFTY_ASSET_OK;
+}
+void *alloc(void *, size_t size, size_t) { return size <= sizeof heap ? heap : nullptr; }
+void free(void *, void *p) { last.value = p == heap ? 1u : 0u; }
+inline constexpr swofty::data<"k_Test_ColourTable", uint32_t[6]> colours{};
+inline constexpr swofty::data<"g_Test_Scalar", float> scalar{};
+}
+
+static void game_memory()
+{
+    namespace gm = swofty::game_mem;
+    using namespace game_mem_fake;
+    CHECK(!gm::available());
+    CHECK(gm::write(colours, 4, 0xff00ff00u) == gm::Result::unavailable);
+    CHECK(gm::alloc(16) == nullptr);
+    static_assert(std::is_same_v<gm::detail::element_type<decltype(colours)>, uint32_t>);
+    static_assert(gm::detail::element_count<decltype(colours)> == 6 && gm::detail::element_count<decltype(scalar)> == 1);
+    SwoftyGameMem t{SWOFTY_GAME_MEM_VERSION, write_data, restore_data, alloc, free};
+    gm::set_table(&t);
+    CHECK(gm::available());
+    CHECK(gm::write(colours, 5, 0xff112233u, 0xffffffffu) == gm::Result::ok);
+    CHECK(last.id == "k_Test_ColourTable" && last.size == 24 && last.offset == 20 && last.n == 4 && last.value == 0xff112233u &&
+          last.expect);
+    CHECK(gm::write(colours, 6, 0u) == gm::Result::invalid);
+    CHECK(gm::write(scalar, 0, 1.5f) == gm::Result::ok && last.size == 4 && !last.expect);
+    CHECK(gm::restore(colours) == gm::Result::ok && last.id == "k_Test_ColourTable");
+    CHECK(gm::restore_all() == gm::Result::ok && last.id == "*" && last.restores == 2);
+    uint64_t *p = gm::alloc_array<uint64_t>(4);
+    CHECK(p == heap && gm::alloc_array<uint64_t>(5) == nullptr && gm::alloc_array<uint64_t>(0) == nullptr);
+    gm::free(p);
+    CHECK(last.value == 1u);
+    CHECK(std::strcmp(gm::name(gm::Result::invalid), "invalid") == 0);
+    gm::set_table(nullptr);
+}
+
 int main()
 {
+    game_memory();
     hud_runtime_headers();
     game_assets_wrappers();
     unavailable_without_core();

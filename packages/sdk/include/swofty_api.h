@@ -1606,6 +1606,36 @@ typedef struct SwoftyGameAssets {
     int (*catalogue_name)(const char *catalogue, uint32_t index, char *name, size_t cap, size_t *len);
 } SwoftyGameAssets;
 
+/* Game memory writes (standard library, swofty/game_mem.hpp, experimental), from the core export SwoftyCoreGameMem;
+   not a SwoftyApi field, so SWOFTY_API_VERSION is unchanged and the table carries its own version. Table version 1.
+   The owner of every call is the addon whose code calls it (the module of the return address), as the core's
+   loader.log names it.
+   write_data: copies n bytes from bytes into the data binding id at offset. size is the size the caller declares
+   for the binding (sizeof of its type in swofty/game.hpp). The core checks that id is a data binding of the binding
+   set that resolved on this build, that offset + n fits in size, that size is the one every earlier write of id
+   declared, that the size bytes lie in one section of the game exe's image that is not code, that no other addon
+   holds one of the bytes, and with expect (n bytes, or NULL) that the bytes there are expect now. It saves the
+   bytes there on the owner's first write of the range, makes the pages writable for the copy only and puts their
+   protection back. SWOFTY_ASSET_OK, SWOFTY_ASSET_UNAVAILABLE for an unknown or unresolved id or one that is not a
+   data binding, SWOFTY_ASSET_INVALID for any other check that fails (the reason goes to loader.log).
+   restore_data: copies back the saved bytes of the owner's writes of id (NULL: of every binding), newest first.
+   SWOFTY_ASSET_OK also when the owner wrote nothing there.
+   alloc: size bytes aligned to align (a power of two up to 4096) from the game allocator object allocator through
+   its vtable (+0x18 alloc(self, size, align)); NULL allocator: the game's default allocator (g_Ne_DefaultAllocator).
+   NULL when the allocator is not a game object whose slot points into the exe image, the arguments are out of
+   range or the game's call returns NULL. free: gives p back to allocator (+0x38 free(self, p), NULL: the default
+   one); a NULL p does nothing. Memory from alloc belongs to the game's heap and may be handed to game objects that
+   free it themselves. Every call is safe from any thread. */
+#define SWOFTY_GAME_MEM_VERSION 1
+
+typedef struct SwoftyGameMem {
+    uint32_t version;
+    int (*write_data)(const char *id, size_t size, size_t offset, const void *bytes, size_t n, const void *expect);
+    int (*restore_data)(const char *id);
+    void *(*alloc)(void *allocator, size_t size, size_t align);
+    void (*free)(void *allocator, void *p);
+} SwoftyGameMem;
+
 typedef struct SwoftyApi {
     uint32_t version;
     void (*log)(const char *fmt, ...);
@@ -1834,6 +1864,7 @@ typedef const SwoftyContentOps *(*SwoftyCoreContentOpsFn)(void);
 typedef const SwoftyLive *(*SwoftyCoreLiveFn)(void);
 typedef const SwoftyMem *(*SwoftyCoreMemFn)(void);
 typedef const SwoftyGameAssets *(*SwoftyCoreGameAssetsFn)(void);
+typedef const SwoftyGameMem *(*SwoftyCoreGameMemFn)(void);
 typedef const SwoftyLapHost *(*SwoftyCoreLapHostFn)(void);
 typedef const SwoftySessionHost *(*SwoftyCoreSessionHostFn)(void);
 typedef uint32_t (*SwoftyCoreLangVersionFn)(void);
@@ -1860,6 +1891,7 @@ SWOFTY_EXPORT const SwoftyContentOps *SwoftyCoreContentOps(void);
 SWOFTY_EXPORT const SwoftyLive *SwoftyCoreLive(void);
 SWOFTY_EXPORT const SwoftyMem *SwoftyCoreMem(void);
 SWOFTY_EXPORT const SwoftyGameAssets *SwoftyCoreGameAssets(void);
+SWOFTY_EXPORT const SwoftyGameMem *SwoftyCoreGameMem(void);
 SWOFTY_EXPORT const SwoftyLapHost *SwoftyCoreLapHost(void);
 SWOFTY_EXPORT const SwoftySessionHost *SwoftyCoreSessionHost(void);
 SWOFTY_EXPORT uint32_t SwoftyCoreLangVersion(void);
