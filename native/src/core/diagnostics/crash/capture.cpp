@@ -10,6 +10,7 @@
 #include "core/diagnostics/crash/report_writer.hpp"
 #include "core/diagnostics/crash/symbolizer.hpp"
 #include "core/diagnostics/perf.hpp"
+#include "loader/stack_room.h"
 
 namespace runtime {
 void hud_fatal();
@@ -23,6 +24,8 @@ void wait_arm_before_exit();
 namespace crash {
 
 FaultCapture capture;
+
+constexpr const char *FIRST_CHANCE = "first-chance (the game may still handle it)", *UNHANDLED = "unhandled";
 
 void backtrace(CONTEXT ctx, bool skip_self)
 {
@@ -65,13 +68,12 @@ bool first_time(uintptr_t ip)
     return i < MAX_SEEN;
 }
 
-void report(const char *when, EXCEPTION_POINTERS *e)
+// An exception's first log lines: its number, what and where on which thread, and an access violation's access.
+void report_head(const char *when, const EXCEPTION_RECORD *r, uintptr_t ip, DWORD tid)
 {
-    auto r = e->ExceptionRecord;
-    auto c = e->ContextRecord;
     LONG n = InterlockedIncrement(&capture.reports);
     cl("[crash] #%ld %s %s (0x%08lx) on thread %lu, %lu s after load, at %s", n, when, code_name(r->ExceptionCode),
-       r->ExceptionCode, GetCurrentThreadId(), (GetTickCount() - process.start_tick) / 1000, where(c->Rip).c_str());
+       r->ExceptionCode, tid, (GetTickCount() - process.start_tick) / 1000, where(ip).c_str());
     if ((r->ExceptionCode == EXCEPTION_ACCESS_VIOLATION || r->ExceptionCode == EXCEPTION_IN_PAGE_ERROR) &&
         r->NumberParameters >= 2) {
         auto op = r->ExceptionInformation[0];
@@ -82,6 +84,13 @@ void report(const char *when, EXCEPTION_POINTERS *e)
                      : "accessing",
            (unsigned long long)r->ExceptionInformation[1]);
     }
+}
+
+void report(const char *when, EXCEPTION_POINTERS *e)
+{
+    auto r = e->ExceptionRecord;
+    auto c = e->ContextRecord;
+    report_head(when, r, c->Rip, GetCurrentThreadId());
     if (r->ExceptionCode == EXCEPTION_STACK_OVERFLOW)
         return;
     cl("[crash]   rax=%016llx rbx=%016llx rcx=%016llx rdx=%016llx", c->Rax, c->Rbx, c->Rcx, c->Rdx);
@@ -108,15 +117,17 @@ void stack_bounds(uintptr_t &lo, uintptr_t &hi)
     hi = reinterpret_cast<uintptr_t>(tib->StackBase);
 }
 
-bool holds_loader_lock()
+bool loader_lock_held_by(DWORD tid)
 {
     auto teb = reinterpret_cast<uintptr_t>(NtCurrentTeb());
     uintptr_t peb = *reinterpret_cast<uintptr_t *>(teb + 0x60);
     if (!readable(peb + 0x110, 8))
         return false;
     uintptr_t cs = *reinterpret_cast<uintptr_t *>(peb + 0x110);
-    return cs && readable(cs + 0x10, 8) && *reinterpret_cast<uintptr_t *>(cs + 0x10) == uintptr_t(GetCurrentThreadId());
+    return cs && readable(cs + 0x10, 8) && *reinterpret_cast<uintptr_t *>(cs + 0x10) == uintptr_t(tid);
 }
+
+bool holds_loader_lock() { return loader_lock_held_by(GetCurrentThreadId()); }
 
 bool deliberate_abort(const EXCEPTION_RECORD *r, const CONTEXT *c)
 {
@@ -139,6 +150,45 @@ void keep_fatal(EXCEPTION_POINTERS *e)
     InterlockedExchange(&capture.snapshot_lock, 0);
 }
 
+// The report's blame and reason: a hook-point guard's blame of the reporting thread from just before leads.
+void set_reason(Request &req, const char *reason)
+{
+    req.blame[0] = 0;
+    if (capture.blame_text[0] && capture.blame_tid == req.tid && req.ms - capture.blame_ms < BLAME_MS)
+        snprintf(req.blame, sizeof req.blame, "%s", capture.blame_text);
+    if (req.blame[0])
+        snprintf(req.reason, sizeof req.reason, "%s; %s", req.blame, reason);
+    else
+        snprintf(req.reason, sizeof req.reason, "%s", reason);
+}
+
+std::string certain_reason(bool abort, DWORD code, const std::string &at)
+{
+    return abort ? "the game aborted itself (Ne_FatalAbort writes 0xDEADDEAD to address 1) at " + at
+                 : fmt("%s (0x%08lx) at ", code_name(code), code) + at;
+}
+
+std::string unhandled_reason(const EXCEPTION_RECORD *r, uintptr_t ip)
+{
+    DWORD code = r->ExceptionCode;
+    std::string why = fmt("unhandled %s (0x%08lx)", code_name(code), code);
+    if ((code == EXCEPTION_ACCESS_VIOLATION || code == EXCEPTION_IN_PAGE_ERROR) && r->NumberParameters >= 2)
+        why += fmt(" %s 0x%llx",
+                   r->ExceptionInformation[0] == 1   ? "writing"
+                   : r->ExceptionInformation[0] == 8 ? "executing"
+                                                     : "reading",
+                   (unsigned long long)r->ExceptionInformation[1]);
+    return why + " at " + where(ip);
+}
+
+// The writer sets text_event no later than done_event. Single-handle waits take the least stack.
+void wait_for_writer()
+{
+    SetEvent(report_writer.go_event);
+    WaitForSingleObject(report_writer.text_event, TEXT_WAIT_MS);
+    WaitForSingleObject(report_writer.done_event, report_writer.dump_mode == DUMP_FULL ? FULL_DUMP_WAIT_MS : DUMP_WAIT_MS);
+}
+
 bool request_report(Kind kind, const char *reason, const EXCEPTION_RECORD *rec, const CONTEXT *ctx)
 {
     if (InterlockedCompareExchange(&report_writer.claimed, 1, 0))
@@ -148,13 +198,9 @@ bool request_report(Kind kind, const char *reason, const EXCEPTION_RECORD *rec, 
     req.tid = GetCurrentThreadId();
     req.ms = GetTickCount64();
     stack_bounds(req.lo, req.hi);
-    req.blame[0] = 0;
-    if (capture.blame_text[0] && capture.blame_tid == req.tid && req.ms - capture.blame_ms < BLAME_MS)
-        snprintf(req.blame, sizeof req.blame, "%s", capture.blame_text);
-    if (req.blame[0])
-        snprintf(req.reason, sizeof req.reason, "%s; %s", req.blame, reason);
-    else
-        snprintf(req.reason, sizeof req.reason, "%s", reason);
+    set_reason(req, reason);
+    req.handed = nullptr;
+    req.stack_left = 0;
     req.has_exception = rec != nullptr;
     if (rec) {
         req.rec = *rec;
@@ -171,15 +217,67 @@ bool request_report(Kind kind, const char *reason, const EXCEPTION_RECORD *rec, 
         }
         InterlockedExchange(&capture.snapshot_lock, 0);
     }
-    if (report_writer.writer_tid && GetCurrentThreadId() != report_writer.writer_tid) {
-        SetEvent(report_writer.go_event);
-        HANDLE text[2] = {report_writer.text_event, report_writer.done_event};
-        WaitForMultipleObjects(2, text, FALSE, TEXT_WAIT_MS);
-        WaitForSingleObject(report_writer.done_event, report_writer.dump_mode == DUMP_FULL ? FULL_DUMP_WAIT_MS : DUMP_WAIT_MS);
-    } else if (kind != K_EXCEPTION || req.rec.ExceptionCode != EXCEPTION_STACK_OVERFLOW) {
+    if (report_writer.writer_tid && GetCurrentThreadId() != report_writer.writer_tid)
+        wait_for_writer();
+    else if (kind != K_EXCEPTION || req.rec.ExceptionCode != EXCEPTION_STACK_OVERFLOW)
         write_report();
-    }
     return true;
+}
+
+// A stack overflow, or less than SWOFTY_LOW_STACK of this thread's stack left with a writer to hand the exception to.
+bool low_stack(DWORD code, size_t &left)
+{
+    left = swofty_stack_left();
+    return code == EXCEPTION_STACK_OVERFLOW || (left < SWOFTY_LOW_STACK && report_writer.writer_tid);
+}
+
+/* A fatal exception on a thread with little stack left: it copies the record and the context for the writer and
+   waits while the writer logs them (settle_handed) and writes the report, and formats nothing itself. False with no
+   writer, on the writer, or when the process's report is claimed already. */
+[[gnu::noinline]] bool hand_off(Kind kind, const char *when, const EXCEPTION_RECORD *rec, const CONTEXT *ctx, size_t left)
+{
+    DWORD me = GetCurrentThreadId();
+    if (!report_writer.writer_tid || me == report_writer.writer_tid || InterlockedCompareExchange(&report_writer.claimed, 1, 0))
+        return false;
+    Request &req = report_writer.req;
+    req.kind = kind;
+    req.tid = me;
+    req.ms = GetTickCount64();
+    stack_bounds(req.lo, req.hi);
+    req.reason[0] = 0;
+    req.blame[0] = 0;
+    req.has_exception = true;
+    memcpy(&req.rec, rec, sizeof(EXCEPTION_RECORD));
+    req.rec.ExceptionRecord = nullptr;
+    memcpy(&req.ctx, ctx, sizeof(CONTEXT));
+    req.nprobes = perf::open_probes(req.probes, 32);
+    req.loader_lock = false;
+    req.has_prior = false;
+    req.handed = when;
+    req.stack_left = left;
+    wait_for_writer();
+    return true;
+}
+
+void settle_handed(Request &r)
+{
+    DWORD code = r.rec.ExceptionCode;
+    uintptr_t ip = r.ctx.Rip;
+    bool top = !strcmp(r.handed, UNHANDLED);
+    std::string at = where(ip);
+    std::string room = r.stack_left == SIZE_MAX ? std::string("off its own stack")
+                                                : fmt("with %llu KB of its stack left", (unsigned long long)(r.stack_left >> 10));
+    cl("[crash] thread %lu hit %s (0x%08lx) %s; it logs nothing itself, the crash report writer logs it", r.tid, code_name(code),
+       code, room.c_str());
+    if (top)
+        cl("[crash] unhandled %s (0x%08lx) at %s reached the top-level filter; %s", code_name(code), code, at.c_str(),
+           capture.previous ? "passing it to the game's filter" : "the process ends here");
+    first_time(ip);
+    report_head(r.handed, &r.rec, ip, r.tid);
+    recorder.events.put(GetTickCount64(), r.tid, "exception", fmt("first-chance %s at ", code_name(code)).c_str(), at.c_str());
+    std::string why = top ? unhandled_reason(&r.rec, ip) : certain_reason(r.kind == K_FATAL, code, at);
+    set_reason(r, why.c_str());
+    r.loader_lock = loader_lock_held_by(r.tid);
 }
 
 void already(const char *what)
@@ -200,6 +298,12 @@ LONG CALLBACK veh(EXCEPTION_POINTERS *e)
     keep_fatal(e);
     bool abort = deliberate_abort(e->ExceptionRecord, e->ContextRecord);
     bool certain = abort || code == 0xC0000374 || code == 0xC0000409 || code == EXCEPTION_STACK_OVERFLOW;
+    size_t left;
+    if (low_stack(code, left)) {
+        if (certain)
+            hand_off(abort ? K_FATAL : K_EXCEPTION, FIRST_CHANCE, e->ExceptionRecord, e->ContextRecord, left);
+        return EXCEPTION_CONTINUE_SEARCH;
+    }
     if (!enter())
         return EXCEPTION_CONTINUE_SEARCH;
     uintptr_t ip = e->ContextRecord->Rip;
@@ -207,19 +311,17 @@ LONG CALLBACK veh(EXCEPTION_POINTERS *e)
     if (first_time(ip)) {
         at = where(ip);
         if (capture.reports < MAX_REPORTS)
-            report("first-chance (the game may still handle it)", e);
+            report(FIRST_CHANCE, e);
         else
             cl("[crash] first-chance %s (0x%08lx) at %s; report cap reached, no details", code_name(code), code, at.c_str());
         blackbox::note("exception", fmt("first-chance %s at ", code_name(code)).c_str(), at.c_str());
     }
     leave();
     if (certain) {
-        if (code != EXCEPTION_STACK_OVERFLOW)
-            runtime::hud_fatal();
-        if (at.empty() && code != EXCEPTION_STACK_OVERFLOW)
+        runtime::hud_fatal();
+        if (at.empty())
             at = where(ip);
-        std::string why = abort ? "the game aborted itself (Ne_FatalAbort writes 0xDEADDEAD to address 1) at " + at
-                                : fmt("%s (0x%08lx) at ", code_name(code), code) + at;
+        std::string why = certain_reason(abort, code, at);
         if (!request_report(abort ? K_FATAL : K_EXCEPTION, why.c_str(), e->ExceptionRecord, e->ContextRecord))
             already(abort ? "Ne_FatalAbort" : code_name(code));
     }
@@ -229,23 +331,20 @@ LONG CALLBACK veh(EXCEPTION_POINTERS *e)
 LONG WINAPI unhandled(EXCEPTION_POINTERS *e)
 {
     DWORD code = e->ExceptionRecord->ExceptionCode;
+    size_t left;
+    if (low_stack(code, left)) {
+        hand_off(K_EXCEPTION, UNHANDLED, e->ExceptionRecord, e->ContextRecord, left);
+        return capture.previous ? capture.previous(e) : EXCEPTION_CONTINUE_SEARCH;
+    }
     if (enter()) {
         cl("[crash] unhandled %s (0x%08lx) at %s reached the top-level filter; %s", code_name(code), code,
            where(e->ContextRecord->Rip).c_str(), capture.previous ? "passing it to the game's filter" : "the process ends here");
         if (!fatal(code) || first_time(e->ContextRecord->Rip))
-            report("unhandled", e);
+            report(UNHANDLED, e);
         leave();
     }
-    std::string why = fmt("unhandled %s (0x%08lx)", code_name(code), code);
-    auto r = e->ExceptionRecord;
-    if ((code == EXCEPTION_ACCESS_VIOLATION || code == EXCEPTION_IN_PAGE_ERROR) && r->NumberParameters >= 2)
-        why += fmt(" %s 0x%llx",
-                   r->ExceptionInformation[0] == 1   ? "writing"
-                   : r->ExceptionInformation[0] == 8 ? "executing"
-                                                     : "reading",
-                   (unsigned long long)r->ExceptionInformation[1]);
-    why += " at " + where(e->ContextRecord->Rip);
-    if (!request_report(K_EXCEPTION, why.c_str(), r, e->ContextRecord))
+    std::string why = unhandled_reason(e->ExceptionRecord, e->ContextRecord->Rip);
+    if (!request_report(K_EXCEPTION, why.c_str(), e->ExceptionRecord, e->ContextRecord))
         already("unhandled exception");
     return capture.previous ? capture.previous(e) : EXCEPTION_CONTINUE_SEARCH;
 }
@@ -284,6 +383,7 @@ bool launcher_stop()
 void on_exit(const char *fn, UINT code)
 {
     perf::flush(fn);
+    perf::stop(EXIT_WRITER_WAIT_MS);
     runtime::session_host_exit();
     if (InterlockedExchange(&capture.exited, 1) || !enter())
         return;

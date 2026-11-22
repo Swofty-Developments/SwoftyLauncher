@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e8e170",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142e8e170.c;xref:0x140bccbd6,0x140bccc1f,0x140bccc60,0x140bccce5,0x140bccd70,0x140bccdc7,0x140bcce26,0x141f330bf",
-  "notes": "(set, n): groups at set+0x10 (stride 0x28, count +0xd8), items 0x6c bytes; counts type 1/2/3 items with bit3 of +9; until n reached picks an item via 0x142e8e7d0(set, 0x1457ef0fc, 3), swaps its type with the best-scoring (avg of 4 floats) type-0x10 item of its group, sets bit3; then +0xe8 = 1. Callers 0x140bcc190 (7 sites), 0x141f330bf."
+  "notes": "(set,n): groups at +0x10 stride 0x28 (count +0xd8), items 0x6c bytes; while selected (bit3 of +9) type 1/2/3 items < n (bounded by item total): picks via 0x142e8e7d0(set,0x1457ef0fc,3), swaps type and bit2 with best unselected type-0x10 item of its group (avg of floats +0xc/+0x18/+0x24/+0x30), sets bit3; ends +0xe8 = 1. Callers 0x140bcc190 (Sess_TyreAllocation_OnSessionStart), 0x141f32500. (lane owner review requested)"
  },
  "signature": {
   "id": "game.priority_set_select_up_to",

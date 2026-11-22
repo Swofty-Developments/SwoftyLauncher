@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1413558e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1413558e0.c;pat:log-channel-STORY_SCENARIOS;xref:0x141356393,0x149c4ca0a",
-  "notes": "Handler for MessageHomeScreenInfoRetrieved (unsub lea 0x141356393; lea 0x149c4ca0a): parses JSON (0x1427b4a00/0x1427b7c90) into story scenario info, logs on failure, fills a hash map at this+0x2d0."
+  "notes": "Handler (lea 0x141356393 in 0x141356370 registration; lea 0x149c4ca0a in 0x149c4c6a0). Iterates 0x78-stride entries of (msg+0x10)+0x1e8 vector; per entry allocs 0x56d0 info (0x1427b4a00), parses JSON 0x1427b7c90 from entry+0x20/+0x28, fills 0x140ad98e0; logs STORY_SCENARIOS 'Failed to generate Story Scenario Info from JSON'. If valid (+0x566c) inserts shared ptr into map this+0x2d0..+0x304 by id +0x5668, sets state 1/2 in map +0x318 by time(0) (0x14534f548) vs +0x5670; ends with (+0x278) vt+0x220. (lane owner review requested)"
  },
  "signature": {
   "id": "game.story_scenarios_load_json",

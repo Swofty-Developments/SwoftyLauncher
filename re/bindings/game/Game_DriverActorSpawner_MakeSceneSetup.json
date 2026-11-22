@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401b1860",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1401b1860.c;pat:log-message-method;xref:0x1401b7512",
-  "notes": "(spawner, out setup, driver desc): logs DRIVER_ACTOR_SPAWNER '%s()' makeSceneSetup; memsets a 0x9c0 setup and move-assigns it into out; returns early with 'The driver needs a head to be spawned!' when desc[0]==0; sets path vars PREFIX/STEERINGANIM/YEAR/GENDER/LIVERY/ANIMATION_PACKAGE/CHARACTER_PACKAGE/LIVERY_PACKAGE (sapien vs normal) and resolves suit/logo/glove/helmet scenes via 0x1401b6b40 + Game_Scene_FindByName."
+  "notes": "(spawner p1, out setup p2, desc p3), log DRIVER_ACTOR_SPAWNER '%s()' makeSceneSetup (0x1455e23ee). Memsets 0x9c0 setup, move-assigns into p2, copies optionals p3+0x380/+0x460 to p2+0x7f0/+0x8d0; path vars via 0x1403178d0 (PREFIX..LIVERY_PACKAGE, sapien flag 0x14604c2c8+0x2e8); *p3==0 -> 'needs a head' return; scenes via 0x1401b6b40 + 0x1401a4810. (lane owner review requested)"
  },
  "signature": {
   "id": "game.driver_actor_spawner_make_scene_setup",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143d82110",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143d82110.c;xref:0x143d7f0dc,0x143d840c9",
-  "notes": "Frees owned objects +0x4e8..+0x550 (vcall +8 then allocator +0x38) and re-inits many texture slots via 0x143d7ba40; the '%s.image' naming part lies in protector code at 0x15276da58. Callers Game_Rtt_CreateTextures, 0x143d83bd0."
+  "notes": "Body read in full (decomp includes the protector part at 0x15276da58). Clears +0x18, frees owned objects +0x4e8..+0x550 (vcall +8 then allocator +0x38; +0x540 also 0x1439da070/0x143eb7960); when +0x2c set re-inits texture slots via 0x143d7ba40 (+0x60,+0xd8,+0x1c8, +0x2b8..+0x390 unless +0x1b, +0x428,+0x470,+0x838,+0x608,+0x678); protector part formats a name (0x1401009f0) and creates a view 0x143993770. Callers 0x143d7f030, 0x143d83bd0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.rtt_rebuild_texture_views",

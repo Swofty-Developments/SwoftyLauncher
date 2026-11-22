@@ -133,6 +133,8 @@ struct Profiler {
     std::atomic<uint32_t> hitch_lines{0};
 
     HANDLE wake;
+    std::atomic<HANDLE> writer_thread{nullptr};
+    std::atomic<DWORD> writer_id{0};
     std::mutex write_lock;
     std::atomic<bool> flushed{false};
 
@@ -173,6 +175,7 @@ struct Profiler {
     void attach();
     void start();
     void flush(const char *why);
+    void stop(DWORD wait_ms);
 
     uint32_t probe(const std::string &owner, const std::string &what);
     void enter(uint32_t id);

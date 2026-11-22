@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401f22f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1401f22f0.c;pat:log-message-method;xref:0x147424f9c",
-  "notes": "createAnimationBinding: strings 'Create/Reuse/Add[1]/Add[2] m_animSetBinding %p ...' (ACTOR_SET_BINDING), Bip01 L/R Foot/Toe0 joints, ART_WARN addUniqueTarget failed, ACTOR_ERROR maxJoint_eLOD_ROOTBONE_ONLY_ANIMTARGET is -1. Caller in .data1 (function 0x147424f10)."
+  "notes": "rcx=binding request; actor=[rcx+0x40]. Global registry 0x14601e1d0 (vector, lazily allocated) searched for entry with key [actor+0x1f8] and type 3: on hit refcount+1 at +0x20, reuse (log 'Reuse m_animSetBinding'). Else allocs new anim-set binding, and if no target set builds one: per-joint distance/depth over 5 LOD levels (thresholds 0x1455e58f0), addUniqueTarget 0x143a3f2a0 types 1/3/2 (ART_WARN on fail), Bip01 L/R Foot/Toe0 forced weight 1.0; calls each component vt+0x98, 0x143a36160, then appends ('Add[1]/Add[2]'). Caller is in function 0x147424f10. (lane owner review requested)"
  },
  "signature": {
   "id": "game.actor_create_animation_binding",

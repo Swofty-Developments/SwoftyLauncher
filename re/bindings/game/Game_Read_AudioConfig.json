@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140a249f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140a249f0.c;pat:log-channel--;xref:0x1456687e8",
-  "notes": "Vt cell 0x1456687e8. Body 0x5440 bytes."
+  "notes": "Audio post-load init, not a config reader. Calls Game_AudioEngineBundle_Initialise(p[0x10],p[0x11],p[0xf]); caches ~40 audio sub-objects (hash lookups FUN_14030ffd0 + getters 0x140a043c0..0x140a04c00) into p[0x14]+0xd60..0xee8 (any null -> return 0). Builds crowd mgr ('crowd - linear/random #%d', handlers 'MessageCrowdData/Excitement/Shock'), 'racing line'/'left/right track limit' emitters, 'Audio.passbySystem_enabled', 'music', 'spe... (lane owner review requested) Better name: Game_Audio_InitSubsystems (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_audio_config",

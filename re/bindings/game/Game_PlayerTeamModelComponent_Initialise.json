@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a9f390",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142a9f390.c;pat:log-message-cxx;xref:0x1457bf018",
-  "notes": "cxx=PlayerTeamModelComponent::initialise; log channel ART_WARN_LEVEL_2: '[ART ISSUE] PlayerTeamModelComponent::initialise Material override [%s] doesn't exist for model [%s] using [%s] this maybe intentional used in [%s] [%s] [%s] [%'"
+  "notes": "Vtable slot 0x1457bf018 (neighbours 0x140292ce0/0x140292cf0). Caches three model refs into param_2[0x1c..0x1f], resolves the player's team ('default' fallback) via session tables (0x14248b370), logs PlayerTeamModelComponent 'replace [%s]'/'with [%s]', reads Game.Context.overrideTeamLivery / Game.Context.TeamLivery, builds material name and resolves it (0x143994bc0/0x143993660); on miss logs ART_WARN_LEVEL_2 '[ART ISSUE] ... Material override [%s] doesn't exist ...'; else stores at comp+0x58/+0x60. (lane owner review requested)"
  },
  "signature": {
   "id": "game.player_team_model_component_initialise",

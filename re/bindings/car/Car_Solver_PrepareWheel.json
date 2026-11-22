@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446dbc50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "void Car_Solver_PrepareWheel(void *solver, uint32_t wheel, ...)",
-  "evidence": "doc:re/db/subsystems/car.md",
-  "notes": "Copies drive share [[solver+0x18]+0x578]+0xd0[i] -> solver+0x440[i] every step (0x1446dbce3/ced) -> torque split live-editable (agent power, ap-verify claim 7) | findings from PR #477 by vogtmarcel07-cloud; independent check 2026-10-28 by ap-verify: agree"
+  "evidence": "decomp:re/decomp/1446dbc50.c;doc:re/db/subsystems/car.md;xref:0x1409d612f,0x1446dbb02,0x1446dbb20,0x1446dbb3e,0x1446dbb5c",
+  "notes": "(solver, i, flag, *n1, *n2, dt): copies wheel [solver+0x60+i*8] state into solver SoA arrays (radius +0x770, +0x800/+0x810/+0x820, inv inertia +0x2a0, +0x210 via 0x1446b9650, motion-ratio curves +0x220/+0x230/+0x240, contact vectors, grip factor +0x6f0); drive share [[solver+0x18]+0x578]+0xd0[i] -> solver+0x440[i]; wheel pos in frame solver+0x8a0 -> +0xd0[i]. (lane owner review requested)"
  },
  "signature": {
   "id": "car.solver_prepare_wheel",

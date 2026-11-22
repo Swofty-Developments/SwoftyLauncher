@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14401b2a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14401b2a0.c;pat:log-message-cxx;xref:0x14401b25c,0x1443c61f5",
-  "notes": "WINDOW 'Info::resolutionRestrictionRequired' (log string)."
+  "notes": "Full read. Reads desired mode from param_2 tree (graphics_card/resolution width,height,fullscreen; refreshRate rate; outputMonitor index), searches supported list this+0x10 for that monitor and width/height/rate; if rate not found writes '%u' 0 to desired rate. Returns restrictionRequired (only if fullscreen); logs WINDOW 'Info::resolutionRestrictionRequired: desired resolution %dx%d ...'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.info_resolution_restriction_required",

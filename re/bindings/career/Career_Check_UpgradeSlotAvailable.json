@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141247100",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "bool Check(void *ctx, int *slot)",
-  "evidence": "decomp:re/decomp/141247100.c;xref:0x140aa8d62,0x1412462d5,0x141246d03,0x1412472a5",
-  "notes": "Returns false if byte +0x290==0 or (+0x270) vt+0xf8 >= vt+0xd0. Else value = param_2[2], scaled (when +0xd70 set) by a ratio from (+0xd70)+0x270 vt+0x88 vector size / max of (+0xd70)+0x290 +0xc0 list; returns value <= vt+0x100() && vt+0xf8() == param_2[0]."
+  "evidence": "decomp:re/decomp/141247100.c;xref:0x140aa8d62,0x1412462d5,0x141246d03,0x1412472a5,0x141247bb2,0x141247e95,0x14180cd51,0x141811081,0x14197a245,0x141994222,0x141c49495,0x141c7da38,0x141f43436,0x141f489a7",
+  "notes": "Body read in full. False if byte +0x290==0 or [+0x270] vt+0xf8 >= vt+0xd0. value = param_2[2]; if +0xd70 set it is scaled by (count of [(+0xd70)+0x270 vt+0x88]+0x288..+0x290) / max u32 of [(+0xd70)+0x290]+0xc0..+0xc8 (stride 0x30), rounded, >=0. Returns value <= vt+0x100() && vt+0xf8() == param_2[0]. (lane owner review requested)"
  },
  "signature": {
   "id": "career.check_upgrade_slot_available",

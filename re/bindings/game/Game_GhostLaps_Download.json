@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142fa8010",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142fa8010.c;pat:log-channel-GHOSTLAP-TRACE;xref:0x142fa09ca",
-  "notes": "Ghost download task (GHOSTLAP-TRACE strings). Registered (lea) in 0x142fa0320."
+  "notes": "Own string onRemoteStorageDownload; lea-registered in 0x142fa0320. param_4 {+0 ok,+4 status(2=no ghost),+8 data,+0x10 size}. Fail: +0x88=min(+0x88+2,10.0f), state +0x138=4 (not found) or 2. OK: needs presence, desc via 0x142f8a400, checks version, reset version, size 1..0xc800, stream size, user; desc ->+0x140..+0x1c8, state 1; data -> +0x278, +0x288=1, +0x66=1. Errors 0x5a/0x58/0x22/0x50. (lane owner review requested) Better name: Game_GhostLaps_OnRemoteStorageDownload (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ghost_laps_download",

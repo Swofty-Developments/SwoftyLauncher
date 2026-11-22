@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1407b10c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "vm",
   "proto": "-",
-  "evidence": "decomp:work/exe/decomp/1407b10c0_holder_set_cstr.c;xref:0x1407ac0d8,0x1407ac2bd,0x1407ad6ad,0x1407adc67,0x1407ae440,0x1407ae8b9,0x14099baee,0x14099bb34+2977;pat:exe-agent-label",
-  "notes": "exe-agent label holder_set_cstr"
+  "evidence": "decomp:re/decomp/1407b10c0.c;pat:exe-agent-label;xref:0x1407ac0d7,0x1407ac2bc,0x1407ad6ac,0x1407adc66,0x1407ae43f,0x1407ae8b8,0x14099baed,0x14099bb33",
+  "notes": "Ne_Make_StrFromCStr(&s,a2); holder node a1+8 live (not 0x146048da0, +0x26 bit0 clear, vt+0x20) and string type 0x146ca5508 -> Vm_NodeSet_String 0x140828440(node,&s,0,0); then drops the NeStr refcount (+4) and frees via 0x146ca54a8 vt+0x38 at zero. (lane owner review requested)"
  },
  "signature": {
   "id": "vm.holder_set_c_str",

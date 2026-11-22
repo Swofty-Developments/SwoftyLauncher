@@ -792,6 +792,8 @@ inline constexpr address<"Game_Game_RetireLocalPlayer"> Game_Game_RetireLocalPla
 using Game_Game_SetCurrentGameMode_t = void(void *mode_context, void *mode);
 inline constexpr fn<"Game_Game_SetCurrentGameMode", Game_Game_SetCurrentGameMode_t> Game_Game_SetCurrentGameMode{}; // L2 experimental
 inline constexpr address<"Game_GarageCrewInstanceLogic_StateSendCarToTrack_P3"> Game_GarageCrewInstanceLogic_StateSendCarToTrack_P3{}; // L2 experimental, GarageCrewInstanceLogic::StateSendCarToTrack_P3
+using Game_GarageCrewInstance_Hide_t = void(void *crew_inst, bool hide_car, bool keep_flag);
+inline constexpr fn<"Game_GarageCrewInstance_Hide", Game_GarageCrewInstance_Hide_t> Game_GarageCrewInstance_Hide{}; // L2 experimental
 inline constexpr address<"Game_GarageCrewInstance_PlayOverlaySequence"> Game_GarageCrewInstance_PlayOverlaySequence{}; // L2 experimental
 inline constexpr address<"Game_GarageCrewInstance_PlaySequence"> Game_GarageCrewInstance_PlaySequence{}; // L2 experimental
 inline constexpr address<"Game_GarageModule_Initialise"> Game_GarageModule_Initialise{}; // L2 experimental
@@ -1123,6 +1125,7 @@ inline constexpr address<"Game_RankedMatchingProcessor_Search"> Game_RankedMatch
 using Game_Read_GridConfig_t = void(void *placement);
 inline constexpr fn<"Game_Read_GridConfig", Game_Read_GridConfig_t> Game_Read_GridConfig{}; // L2 experimental
 inline constexpr address<"Game_Read_PhysicsWorldConfig"> Game_Read_PhysicsWorldConfig{}; // L2 experimental
+inline constexpr address<"Game_Read_PitCrewTrainingConfig"> Game_Read_PitCrewTrainingConfig{}; // L2 experimental
 using Game_Read_QualifyingConfig_t = void(void *track_data_system);
 inline constexpr fn<"Game_Read_QualifyingConfig", Game_Read_QualifyingConfig_t> Game_Read_QualifyingConfig{}; // L2 experimental
 inline constexpr address<"Game_Read_RendererTrackInformationSystemConfig"> Game_Read_RendererTrackInformationSystemConfig{}; // L2 experimental
@@ -1294,6 +1297,8 @@ inline constexpr fn<"Game_TeamHQAdvanceViewModel_Update", Game_TeamHQAdvanceView
 inline constexpr address<"Game_TeamHQTimeline_AnimateDeptEvent"> Game_TeamHQTimeline_AnimateDeptEvent{}; // L2 experimental
 using Game_Teleport_Vehicle_t = void(void *car, const char *name, float *prev_mtx, float *new_mtx, float dt, uint32_t flags);
 inline constexpr fn<"Game_Teleport_Vehicle", Game_Teleport_Vehicle_t> Game_Teleport_Vehicle{}; // L2 experimental
+using Game_Teleport_VehicleImmediate_Thunk_t = void(void *car, const char *tag, const float *prev_mtx, const float *new_mtx, float dt, uint32_t flags);
+inline constexpr fn<"Game_Teleport_VehicleImmediate_Thunk", Game_Teleport_VehicleImmediate_Thunk_t> Game_Teleport_VehicleImmediate_Thunk{}; // L2 experimental
 inline constexpr address<"Game_TerminalDamage_Initialise"> Game_TerminalDamage_Initialise{}; // L2 experimental
 inline constexpr address<"Game_ThrustmasterLcd_UpdateSectors"> Game_ThrustmasterLcd_UpdateSectors{}; // L2 experimental
 inline constexpr address<"Game_Thrustmaster_SetWheelRange"> Game_Thrustmaster_SetWheelRange{}; // L2 experimental

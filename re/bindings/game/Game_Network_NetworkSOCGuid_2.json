@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14322f650",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14322f650.c;pat:log-channel-NETWORK/F;xref:0x140fe258e,0x1456bcae8",
-  "notes": "Slot 3 (+0x18) of vtable 0x1456bcad0 and called from 0x140fe2470. Entry log 'SavedOnlineChampionship::deserialiseSaveDataContainer() at %p'; inlined SOCGuid deserialise (SOCID_* fields, success string spelled 'SOCGui2d'), then championship name/code/lastModified/teamName, binary data (weekends, current weekend/session) and entrants (Game_Read_BadgeInfoJson). Better name: Game_SavedOnlineChampionship_Deserialise (bound record keeps its name)."
+  "notes": "Vtbl 0x1456bcad0 slot +0x18. Log 0x14582a29e; championshipName->+0x238; inlined SOCGuid (SOCID_*U64 ->+0x220/+0x228/+0x230, else FUN_143236ad0); codeNumber->+0x210, lastModified->+0x288, teamName->+0x260; binaryBegin->+0x290..+0x400; entrants->vec +0x428 (0x88 recs); driver_info..badge_info->+0x448..+0x4c0; document_block->+0x410. Better name: Game_SavedOnlineChampionship_Deserialise (bound record keeps its name). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_network_soc_guid_2",

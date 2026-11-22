@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140713050",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140713050.c;pat:log-channel-TELEMETRY;xref:0x1406d84b2,0x1406fd6e6",
-  "notes": "Bus handler (lea 0x1406d84b2 in 0x1406d8470, lea 0x1406fd6e6 in 0x1406fd6c0) using strings 'SessionEntered','onSessionEnter','es_report_on_session_enter'; emits several records: adaptive_ai_session_started, play_go_session_entered, customisation_loadout_on_session_start, race_weekend_session_driver_choices. Old name covers one of them only. Better name: Game_Analytics_OnSessionEntered (bound record keeps its name)."
+  "notes": "Session-enter telemetry: subscribes 0x14077d320 to network.DuckBandwidth (0x143987810), obj->this[0x414c]; sends SessionEntered recs (0x140774ac0); 0x14076aba0 es_report_on_session_enter; via 0x14077bb90: adaptive_ai_session_started, play_go_session_entered, customisation_loadout_on_session_start, race_weekend_session_driver_choices; clears +0x208bc. Better name: Game_Analytics_OnSessionEntered (lane owner review requested)"
  },
  "signature": {
   "id": "game.analytics_play_go_session_entered",

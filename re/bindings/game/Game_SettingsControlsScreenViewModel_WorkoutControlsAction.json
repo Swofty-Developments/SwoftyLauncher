@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141da5de0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141da5de0.c;str:s_SettingsControlsScreenViewModel_WorkoutControlsAction;xref:0x141da4308,0x141daad58",
-  "notes": "cxx=game::SettingsControlsScreenViewModel::workoutControlsAction; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "notes": "Own pretty-function 0x14574d176 is the %s of its OPTIONS-UI logs. p2 NEbool open/close; walks items [this+0xaf8]+0x130..+0x138, packs bound values into u64 vector this+0xbb8..+0xbc8, compares item+0x70 with settings_home_block, writes stay/snap/delete/new to item+0x108 (close) or +0xe8 (open) via 0x1407b10c0; ORs delete flag into bool this+0x9b0 (0x140973e20). (lane owner review requested)"
  },
  "signature": {
   "id": "game.settings_controls_screen_view_model_workout_controls_action",

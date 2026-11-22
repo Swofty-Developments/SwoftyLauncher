@@ -23,6 +23,7 @@ constexpr int LOG_LINES = 200;
 constexpr size_t LOG_TAIL = 256 << 10;
 constexpr ULONGLONG PRIOR_MS = 60000;
 constexpr ULONGLONG EXIT_AFTER_FATAL_MS = 10000;
+constexpr unsigned EXIT_WRITER_WAIT_MS = 2000;
 constexpr uint64_t DUMP_STACKS = uint64_t(48) << 20;
 constexpr int KEEP_REPORTS = 8, KEEP_DUMPS = 3;
 constexpr DWORD TEXT_WAIT_MS = 20000, DUMP_WAIT_MS = 60000, FULL_DUMP_WAIT_MS = 600000;

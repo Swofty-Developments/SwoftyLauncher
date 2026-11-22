@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142bdd220",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142bdd220.c;xref:0x141d09556,0x142bdc1e6,0x142bdd216",
-  "notes": "Calls 0x142ea1e30 on [[vm+0x278]+0x110+car*8] when present; car record [0x146ce86e0+car*8]: writes the four wheel tyre records [rec+0x580]+0x70/+0x78/+0x80/+0x88 (+0x88 <- arg+4..+0x10, +0x98 <- arg+0x14..+0x20); flag bytes arg+0x24..+0x2b drive bits 1/2 of record +0x20 (0x14464e3a0, 0x14464e200, 0x144656f80). Callers incl. Game_PhotoModeViewModel_SetTyresAllCars."
+  "notes": "Read in full (disasm of pdata 0x142bdd220-0x142bdd5ad; decomp PIC-polluted). 0x142ea1e30 on [[vm+0x278]+0x110+car*8]; car [0x146ce86e0+car*8]; four tyres [car+0x580]+0x70/+0x78/+0x80/+0x88: +0x88 <- arg+4.., +0x98 <- arg+0x14..; arg bytes +0x24..+0x27 toggle bit 2 via Car_Puncture_Add/Remove + Car_Tyre_UpdateDeflation; arg +0x28..+0x2b -> Car_Tyre_SetPunctureState. Callers Game_PhotoModeViewModel_SetTyresAllCars, Game_PhotoModeSystem_Disable, Game_PhotoMode_FindSelectedCarTyreSet. (lane owner review requested)"
  },
  "signature": {
   "id": "game.photo_mode_set_tyres_on_car",

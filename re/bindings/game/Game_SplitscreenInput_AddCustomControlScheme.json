@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a5d5f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142a5d5f0.c;pat:log-message-method;xref:0x142a5cdb6",
-  "notes": "SPLITSCREEN_INPUT logs \"addCustomControlScheme to player %d\" and \"onControlSchemeAdded to player %d\"; called at 0x142a5cdb6 (in 0x142a5c7f0)."
+  "notes": "pdata ends 0x142a5de52; decomp lines 366-409 = tail-jmp target 0x142a5e0c0 (own pdata, 'onControlSchemeAdded to player %d'), jmp at 0x142a5ddda with (this,scheme,player [p5+0x18]). Logs 'addCustomControlScheme to player %d' (SPLITSCREEN_INPUT), allocs 0x168 scheme (vt 0x1457bb690), name from dev+0x150, id dev+0x138<<8|type, slot[player+0x1a]=dev, 0x142a58d30, push to this[0x2d] and p3 vectors. (lane owner review requested)"
  },
  "signature": {
   "id": "game.splitscreen_input_add_custom_control_scheme",

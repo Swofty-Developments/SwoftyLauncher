@@ -3,7 +3,7 @@
 //! after every other addon, so the DB Editor reads them from its data file and
 //! checks them the way its build does, all but whether a head or kit is installed.
 
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::path::Path;
 
 use serde::Deserialize;
@@ -11,6 +11,7 @@ use swofty_formats::gvdb::Gvdb;
 use swofty_formats::hash::fnv1a64;
 
 use super::{Catalog, Edits, LinkSpec, modules, rows};
+use crate::profile::Profile;
 use crate::store::Store;
 
 pub const ID: &str = "swofty.driver-manager";
@@ -22,6 +23,8 @@ pub const TABLES: [&str; 2] = [
 /// What the game reads when a value picks a Driver Manager driver a build doesn't add.
 pub const MISSING: &str = "the game would read a driver and entrant its database doesn't have";
 const FILE: &str = "drivers.json";
+/// The heads and helmets Driver Manager's **Game drivers** sets on the game's own drivers, by driver label.
+const STOCK: &str = "stock.json";
 const IDS: std::ops::RangeInclusive<u32> = 208..=16382;
 
 fn usable(id: u32) -> bool {
@@ -40,6 +43,8 @@ const KIT: [&str; 6] = [
 ];
 const VOICES: &str = "entrants.audio_names.audio_name";
 const LOOKS: &str = "entrants.driver_customisations.folder";
+const LOOK_ROWS: &str = "preloaded_driver_customisation_properties";
+const LINKED: &str = "linked_driver_stat_id";
 
 /// A driver Driver Manager adds when a profile with it on builds.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -191,7 +196,7 @@ impl Stock {
             drivers: rows::rows(cat, TABLES[0]).into_iter().filter_map(id).collect(),
             looks: rows::rows(cat, LOOKS)
                 .into_iter()
-                .flat_map(|f| cat.rows_of(f, "preloaded_driver_customisation_properties"))
+                .flat_map(|f| cat.rows_of(f, LOOK_ROWS))
                 .filter_map(id)
                 .collect(),
         }
@@ -254,15 +259,18 @@ fn roster(dir: &Path) -> Vec<Saved> {
 /// ones its checks leave out. Its check that a head or kit is installed in the game
 /// folder isn't made; a build that leaves such a driver out says so.
 pub fn drivers(store: &Store, cat: &Catalog) -> Vec<Driver> {
-    match store
+    match installed(store) {
+        true => drivers_in(&store.addon_data_dir(ID), cat),
+        false => Vec::new(),
+    }
+}
+
+fn installed(store: &Store) -> bool {
+    store
         .addons_dir()
         .join(ID)
         .join(crate::manifest::MANIFEST_FILE)
         .is_file()
-    {
-        true => drivers_in(&store.addon_data_dir(ID), cat),
-        false => Vec::new(),
-    }
 }
 
 /// [`drivers`] from Driver Manager's data folder `dir`.
@@ -323,6 +331,119 @@ pub fn link() -> LinkSpec {
         .find(|l| l.addon.as_deref() == Some(ID))
         .cloned()
         .expect("modules.json links Driver Manager")
+}
+
+/// A value of a game driver Driver Manager's **Game drivers** sets.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Part {
+    /// The driver's `head`.
+    Head,
+    /// The `helmet` of every look linked to the driver.
+    Helmet,
+}
+
+/// A game driver whose values a DB Editor addon and Driver Manager's **Game drivers** both set.
+/// Driver Manager builds after every other addon, so its values are the ones the game reads.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Override {
+    /// The driver's row label: `mika_hakkinen`.
+    pub label: String,
+    /// The driver's English name, else its label.
+    pub name: String,
+    /// The values both set, head first.
+    pub parts: Vec<Part>,
+}
+
+#[derive(Deserialize, Default)]
+struct StockChanges {
+    #[serde(default)]
+    drivers: BTreeMap<String, StockChange>,
+}
+
+#[derive(Deserialize, Default)]
+struct StockChange {
+    #[serde(default)]
+    head: Option<String>,
+    #[serde(default)]
+    helmet: Option<String>,
+}
+
+fn stock_changes(dir: &Path) -> BTreeMap<String, StockChange> {
+    std::fs::read(dir.join(STOCK))
+        .ok()
+        .and_then(|b| serde_json::from_slice::<StockChanges>(&b).ok())
+        .map_or_else(BTreeMap::new, |c| c.drivers)
+}
+
+/// The game drivers whose head or helmet `edits` set and Driver Manager's **Game drivers**
+/// sets too, when Driver Manager is installed and on in `profile`; none otherwise. The keys
+/// are the ones Driver Manager's build sets: the driver row's `head`, and the `helmet` of each
+/// look whose `linked_driver_stat_id` is the driver's label. Whether its head or helmet is
+/// installed isn't checked.
+pub fn overrides(store: &Store, profile: &Profile, cat: &Catalog, edits: &Edits) -> Vec<Override> {
+    match profile.enabled().any(|id| id == ID) && installed(store) {
+        true => overrides_in(&store.addon_data_dir(ID), cat, edits),
+        false => Vec::new(),
+    }
+}
+
+/// [`overrides`] from Driver Manager's data folder `dir`.
+pub fn overrides_in(dir: &Path, cat: &Catalog, edits: &Edits) -> Vec<Override> {
+    let edited: HashSet<u64> = edits.edits.iter().map(|e| e.key).collect();
+    if edited.is_empty() {
+        return Vec::new();
+    }
+    let changes = stock_changes(dir);
+    let sets = |row: u64, field: &str| cat.state(Some(row), field).is_ok_and(|k| edited.contains(&k));
+    let mut looks: Option<HashMap<String, Vec<u64>>> = None;
+    let mut out = Vec::new();
+    for (label, change) in &changes {
+        let Ok(row) = cat.state(None, &format!("{}[_metadata_={label}]", TABLES[0])) else {
+            continue;
+        };
+        if rows::value_in(cat, row, "stat_id").is_none_or(|v| v.trim().parse::<f64>().is_err()) {
+            continue;
+        }
+        let mut parts = Vec::new();
+        if change.head.is_some() && sets(row, "head") {
+            parts.push(Part::Head);
+        }
+        if change.helmet.is_some() {
+            let looks = looks.get_or_insert_with(|| linked_looks(cat));
+            if looks
+                .get(label)
+                .is_some_and(|rows| rows.iter().any(|&r| sets(r, "helmet")))
+            {
+                parts.push(Part::Helmet);
+            }
+        }
+        if parts.is_empty() {
+            continue;
+        }
+        let name = cat
+            .lookup(row)
+            .and_then(|n| cat.node(n).display.clone())
+            .unwrap_or_else(|| label.clone());
+        out.push(Override {
+            label: label.clone(),
+            name,
+            parts,
+        });
+    }
+    out
+}
+
+/// The look rows of every driver label, from each look's `linked_driver_stat_id`.
+fn linked_looks(cat: &Catalog) -> HashMap<String, Vec<u64>> {
+    let mut out: HashMap<String, Vec<u64>> = HashMap::new();
+    for folder in rows::rows(cat, LOOKS) {
+        for look in cat.rows_of(folder, LOOK_ROWS) {
+            if let Some(label) = rows::value_in(cat, look, LINKED).filter(|l| !l.is_empty()) {
+                out.entry(label.to_owned()).or_default().push(look);
+            }
+        }
+    }
+    out
 }
 
 /// Why a database lacks rows a pick needs.
@@ -387,6 +508,7 @@ pub fn warnings(
 #[cfg(test)]
 pub(crate) mod tests {
     use super::*;
+    use crate::dbedit::{Edit, Origin};
     use swofty_formats::gvdb::Record;
 
     /// A stock database with one driver, entrant and grid seat, and the choices the fixture drivers pick.
@@ -518,6 +640,149 @@ pub(crate) mod tests {
         );
         assert_eq!(link().addon.as_deref(), Some(ID));
         assert!(is_label("dm_208") && !is_label("dm_") && !is_label("dm_2x") && !is_label("max"));
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    const HEAD: &str = "entrants.drivers.driver_0.head";
+    const NAME: &str = "entrants.drivers.driver_0.full_name";
+    const HELMET: &str =
+        "entrants.driver_customisations.folder_0.preloaded_driver_customisation_properties_0.helmet";
+
+    /// [`database`] with Max's head, his look linked to him and its helmet, named in English.
+    fn named() -> Catalog {
+        let mut db = database();
+        let look = "entrants.driver_customisations.folder_0.preloaded_driver_customisation_properties_0";
+        db.records.extend([
+            Record::new(HEAD, 2, "male_ls144"),
+            Record::new(&format!("{look}.{LINKED}"), 2, "max_verstappen"),
+            Record::new(HELMET, 2, "tier02_livery01"),
+        ]);
+        let mut cat = Catalog::from_gvdb(db, String::new());
+        let lng = swofty_formats::lng::Lng {
+            entries: vec![swofty_formats::lng::Entry {
+                key: "lng_max".into(),
+                value: "Max Verstappen".into(),
+            }],
+        };
+        cat.set_lang(&lng.to_bytes()).unwrap();
+        cat
+    }
+
+    fn edits(paths: &[&str]) -> Edits {
+        let edits = paths
+            .iter()
+            .map(|p| Edit {
+                key: fnv1a64(p),
+                path: Some((*p).into()),
+                select: None,
+                field: None,
+                tag: 2,
+                value: Some("male_ls553".into()),
+                stock: None,
+                origin: Origin::Typed,
+            })
+            .collect();
+        Edits {
+            schema_version: 1,
+            edits,
+            rows: Vec::new(),
+        }
+    }
+
+    fn game_drivers(dir: &Path, drivers: serde_json::Value) {
+        std::fs::create_dir_all(dir).unwrap();
+        let changes = serde_json::json!({ "schema": 1, "drivers": drivers });
+        std::fs::write(dir.join(STOCK), changes.to_string()).unwrap();
+    }
+
+    fn max(parts: &[Part]) -> Vec<Override> {
+        vec![Override {
+            label: "max_verstappen".into(),
+            name: "Max Verstappen".into(),
+            parts: parts.to_vec(),
+        }]
+    }
+
+    #[test]
+    fn finds_the_heads_and_helmets_game_drivers_sets_over_an_addons_edits() {
+        let cat = named();
+        let dir = temp("overrides");
+        assert!(
+            overrides_in(&dir, &cat, &edits(&[HEAD])).is_empty(),
+            "no stock.json"
+        );
+
+        game_drivers(
+            &dir,
+            serde_json::json!({ "max_verstappen": { "head": "male_ls999" } }),
+        );
+        assert_eq!(
+            overrides_in(&dir, &cat, &edits(&[HEAD, NAME])),
+            max(&[Part::Head])
+        );
+        assert!(
+            overrides_in(&dir, &cat, &edits(&[NAME])).is_empty(),
+            "Driver Manager doesn't set a game driver's name"
+        );
+        assert!(
+            overrides_in(&dir, &cat, &edits(&[HELMET])).is_empty(),
+            "Driver Manager sets only the head"
+        );
+
+        game_drivers(&dir, serde_json::json!({ "max_verstappen": { "helmet": "x" } }));
+        assert_eq!(overrides_in(&dir, &cat, &edits(&[HELMET])), max(&[Part::Helmet]));
+        assert!(overrides_in(&dir, &cat, &edits(&[HEAD])).is_empty());
+
+        game_drivers(
+            &dir,
+            serde_json::json!({ "max_verstappen": { "head": "male_ls999", "helmet": "x" } }),
+        );
+        assert_eq!(
+            overrides_in(&dir, &cat, &edits(&[HELMET, HEAD])),
+            max(&[Part::Head, Part::Helmet])
+        );
+        assert!(overrides_in(&dir, &cat, &edits(&[])).is_empty());
+
+        game_drivers(
+            &dir,
+            serde_json::json!({ "lando_norris": { "head": "male_ls999" } }),
+        );
+        assert!(
+            overrides_in(&dir, &cat, &edits(&[HEAD])).is_empty(),
+            "Driver Manager changes another driver"
+        );
+        std::fs::write(dir.join(STOCK), "{ not json").unwrap();
+        assert!(overrides_in(&dir, &cat, &edits(&[HEAD])).is_empty());
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn overrides_need_driver_manager_installed_and_on_in_the_profile() {
+        let cat = named();
+        let dir = temp("overrides-on");
+        let store = Store::new(dir.join("data"));
+        game_drivers(
+            &store.addon_data_dir(ID),
+            serde_json::json!({ "max_verstappen": { "head": "male_ls999" } }),
+        );
+        let mut profile = Profile::new("p");
+        profile.set_enabled(ID, true).unwrap();
+        let head = edits(&[HEAD]);
+        assert!(
+            overrides(&store, &profile, &cat, &head).is_empty(),
+            "Driver Manager isn't installed"
+        );
+
+        std::fs::create_dir_all(store.addons_dir().join(ID)).unwrap();
+        std::fs::write(store.addons_dir().join(ID).join("swofty.json"), "{}").unwrap();
+        assert_eq!(overrides(&store, &profile, &cat, &head), max(&[Part::Head]));
+
+        profile.set_enabled(ID, false).unwrap();
+        assert!(
+            overrides(&store, &profile, &cat, &head).is_empty(),
+            "Driver Manager is off"
+        );
+        assert!(overrides(&store, &Profile::vanilla(), &cat, &head).is_empty());
         std::fs::remove_dir_all(&dir).ok();
     }
 

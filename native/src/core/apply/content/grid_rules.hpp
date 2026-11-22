@@ -3,6 +3,7 @@
 #include "core/apply/content/lower.hpp"
 #include "core/boxes/box_grid_logic.hpp"
 
+#include <cstddef>
 #include <optional>
 #include <string>
 #include <utility>
@@ -60,6 +61,23 @@ inline GridPick grid_pick(const std::string &entrant_list, const std::vector<std
     p.line = "box " + entrant_list + " (" + p.package + "): grid rule " + bg::describe(r) +
              (r.reranks() ? "" : " (the game's own order)") + (r.rows.empty() ? "" : "; rows move the race grid's slots");
     return p;
+}
+
+// The seats of the box whose entrant list was pressed: the drivers of the last content.package (in the order given)
+// with that entrant list, 0 when no package has it. The era picker raises a grid past 22 cars only that far.
+inline size_t package_seats(const std::string &entrant_list, const std::vector<std::pair<std::string, const Value *>> &packages)
+{
+    const Value *found = nullptr;
+    for (auto &[id, rec] : packages)
+        if (rec && (*rec)["entrant_list"].is_string() && (*rec)["entrant_list"].as_string() == entrant_list)
+            found = rec;
+    if (!found)
+        return 0;
+    size_t seats = 0;
+    const Value &teams = (*found)["teams"];
+    for (size_t t = 0; t < teams.size(); t++)
+        seats += teams[t]["drivers"].size();
+    return seats;
 }
 
 }

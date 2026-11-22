@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446b8ce0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1446b8ce0.c;xref:0x144630f30,0x14464fb87",
-  "notes": "Builds a wheel/upright transform into param_2 from param_3: when angle params at [this+0x140]+0x44/+0x48/+0x4c (camber/toe/steer) are non-zero (sign flipped for side +0x2b4 == 2) builds a rotation quat (0x1429ac1e0) with this+0x15c and applies it. Callers: Car_Solver_PrepareWheel, Car_Physics_StepVehicle, Car_Suspension_PublishWheelState."
+  "evidence": "decomp:re/decomp/1446b8ce0.c;xref:0x144630f30,0x14464fb87,0x1446b9464,0x1446b9841,0x1446dc380,0x1446dd035,0x1446dd1e1,0x1446e4c71,0x1446e4f05,0x1446e52fe",
+  "notes": "(wheel, outPos, basePos*, travel): out = base; if [+0x140]+0x44/+0x48 non-zero (sign flip for side +0x2b4==2): offset rotated by euler(+0x15c, +0x4c) and Car_Suspension_ComputeWheelAxisQuat(travel) added; then x += side*curve [+0x140]+0x50(travel), z += curve +0x2f8(travel). Returns a position vector, not a matrix. (lane owner review requested) Better name: Car_Suspension_ComputeWheelPosAtTravel (bound record keeps its name)."
  },
  "signature": {
   "id": "car.suspension_compute_wheel_transform",

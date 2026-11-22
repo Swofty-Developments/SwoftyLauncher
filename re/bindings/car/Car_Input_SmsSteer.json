@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446ce000",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1446ce000.c;doc:re/db/subsystems/car.md",
-  "notes": "Pad SMS steering: grip-limited target angle from v^2/(grip*g), lock/rate fields block +0x22dc..+0x239c, rate * block+0x54 (user steering_rate_scale) (agent options, partly H)"
+  "evidence": "decomp:re/decomp/1446ce000.c;doc:re/db/subsystems/car.md;xref:0x1446cdd02",
+  "notes": "(assists, dt, writeSteer): params block this+[+0x25ec]*0xc4 +0x22dc..+0x239c; target from atan2(v^2/(grip+0x25f8*9.81)); smoothed +0x25f0/+0x25f4/+0x25fc (exp2 half-lives); re-reads 'default' row via Car_Input_ReadSmsSteerParams when [[0x146cc4278]+0xa0]+0xb0; throttle/brake x traction splines (+0xd58/+0xab0/+0x1000, wet +0x1550/+0x12a8/+0x17f8) above 2.5 m/s; writes car+0x1c8 (if writeSteer), +0x1bc, +0x1c4. (lane owner review requested)"
  },
  "signature": {
   "id": "car.input_sms_steer",

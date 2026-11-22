@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144494aa0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/144494aa0.c;pat:log-channel--;xref:0x140a274f6,0x1444e2684",
-  "notes": "Speech recognition: SpeechRecognition.enabled/nfsDataPath/xmlDataPath, parses speech_recognition.xml keyword lists and actions."
+  "notes": "Returns bool SpeechRecognition.enabled; nfsDataPath->+0x40; parses xmlDataPath+\"/speech_recognition.xml\": KeywordList (<=5, stride 0x1ae88 from +0x220, count +0x86ac8), Keyword (<=0x24/list, <300 total, 10 lang ids en..zh), Action (<=5: changeKeywordList=1 playSpeechVO=2 UICommand=3 GameCommand=4), Filter tyre bitmask; lists fed to recognizer +0x10 vtbl+0x10/+0x18. 0x1444e2684 = thunk, rcx=[rcx+0x10]. (lane owner review requested)"
  },
  "signature": {
   "id": "game.read_speech_recognition_config",

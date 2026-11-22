@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1442bc170",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "vm",
   "proto": "-",
-  "evidence": "pat:handle-unlink-next+8-prev;xref:0x1408126d0,0x14099a1e3,0x14099a2bb,0x141f45519;kb:subsystems/rnd_ui.md#pie-object",
-  "notes": "VM node handle {vtable,node,next,prev} move-assign, 2323 E8 callers: if dst.node != src.node and dst.node != 0, unlink dst ([next+8] = prev) and release, then take src. Faults at mov [rdx+8],rcx @0x1442bc19d when dst is unconstructed memory."
+  "evidence": "decomp:re/decomp/1442bc170.c;pat:handle-unlink-next+8-prev;kb:subsystems/rnd_ui.md#pie-object;xref:0x1408126d0,0x14099a1e3,0x14099a2bb,0x140c1672f,0x140c16744,0x140c1675c,0x140c16774,0x140c1678c",
+  "notes": "(dst{node,next,prev},src): if dst.node != src.node: if dst.node: unlink ([prev+8]=next, [next+0x10]=prev), zero links, fix node+0x28 head, Vm_Release_Node(g_reg,node). Then copies the src triple, repoints node+0x28 / next+0x10 / prev+8 from src to dst and zeroes src. Returns dst. (lane owner review requested)"
  },
  "signature": {
   "id": "vm.move_assign_node_handle",

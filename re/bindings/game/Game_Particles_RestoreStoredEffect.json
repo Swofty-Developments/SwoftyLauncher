@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b030e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143b030e0.c;xref:0x143b04025,0x143b04d7d",
-  "notes": "Callers 0x143b04025, 0x143b04d7d in Game_Particles_RestoreStoredEffects. Note from input (saved array mgr+0xa5e370) not re-verified."
+  "notes": "Not a restore: decodes attach handle p2+0x64 (low byte slot, rest index): slot<4 copies 4x4 matrix from p1+0xa5e370; 4..0x23 multiplies p1+0xa5e530 entry by parent matrix p1+0xa5f2c0+idx*0x40; 0x24..0x27 p1+0xa5e548 (direct if flag p1+0xa5e560 byte 0, else times parent). Result -> p2+0x10..0x4f, pushed to emitters [p2+0x80,+0x88) stride 0x180 (prev at +0x50, scale normalise +0x124..+0x150, >5 m jump resets prev). (lane owner review requested) Better name: Game_Particles_UpdateEffectAttachTransform (bound record keeps its name)."
  },
  "signature": {
   "id": "game.particles_restore_stored_effect",

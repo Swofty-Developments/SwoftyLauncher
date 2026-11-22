@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1403a1790",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1403a1790.c;imm:0x7c97c1e9;xref:0x14561b780",
-  "notes": "Vtable cell 0x14561b780. Looks up model node 'halo' (djb2 0x7c97c1e9) and copies its rest transform back or writes a zero 3x4 transform per viewport using camera-settings byte +0x30; this+0x1b0c forces the update. The body also references the driver-model nodes (gloves_x, visor_x, helmet_, balaclava_x, harness_x, hans_device_x ...), so it handles more than the halo."
+  "notes": "Under CS this[0x243]. Per viewport (<2): if a WritableCamera targets this driver (GUID owner+8+0x20), camera component bytes +0x21/+0x22 clear view bits; states +0x1af4/+0x1afc (1/2); vfunc+0xb8(name,show,view) for gloves_x, visor_x, helmet_, balaclava_x, harness_x, hans_device_x, eyes_x, body_incar_x. Then node 'halo' (0x7c97c1e9): rest transform copied or zeroed; +0x1aed: anim/pose layers. (lane owner review requested) Better name: Game_DriverModel_UpdateViewMeshVisibility (bound record keeps its name)."
  },
  "signature": {
   "id": "game.update_cockpit_halo_node",

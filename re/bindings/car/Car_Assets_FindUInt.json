@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446508d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "pat:log-channel-VEHICLE_ASSETS",
-  "notes": "named from its log messages (channel VEHICLE_ASSETS): 'UInt \"%s\" NOT found.'"
+  "evidence": "decomp:re/decomp/1446508d0.c;pat:log-channel-VEHICLE_ASSETS;xref:0x1446502a6,0x1446c8e91,0x1446c90a4",
+  "notes": "(root*, key, uint*): finds child key, parses its 'value' child as uint (0x1439a9dd0; parse error -> 5); optional 'op' child applies '*','+','-','/' to *out ('=' or no op stores the value); returns 0; key missing -> 5 and log 'UInt \"%s\" NOT found.' (VEHICLE_ASSETS). (lane owner review requested)"
  },
  "signature": {
   "id": "car.assets_find_u_int",

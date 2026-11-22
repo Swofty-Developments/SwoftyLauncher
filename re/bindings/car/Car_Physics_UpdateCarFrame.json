@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144642e20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144642e20.c;xref:0x144642b2d,0x144642b99",
-  "notes": "(sys, carIdx): for global car table 0x146ce86e0 (count 0x146ce86dc) entry carIdx, rebuilds the 0x1f0-byte per-car frame cache at sys+0x170+idx*0x1f0 (chassis matrix via Car_Compute_ChassisMatrix from car+0x558 +0x1d0..+0x208, velocities +0x180, per-wheel data +0x2538, flags +0x260). Callers: Car_Physics_PostVehicleUpdate, Car_TyreDeformation_Dtor."
+  "evidence": "decomp:re/decomp/144642e20.c;xref:0x144642b2d,0x144642b99,0x14476ae24",
+  "notes": "(sys, carIdx): car g_table 0x146ce86e0[idx]; if record sys+0x170+idx*0x1f0 vcall+0x28 ok: chassis matrix (Car_Compute_ChassisMatrix) into rec+0x180..+0x1b0, velocity/normalised +0x200/+0x210, angular +0x220; per-wheel subrecords (vcall+0x28 i): pos, spin*R, contact flag, slip; rpm +0x238/+0x23c from Eng+0x2538/+0x2528, gear [+0x538]+0x680 -> +0x25c, inputs car+0x188..+0x1ec copied. (lane owner review requested)"
  },
  "signature": {
   "id": "car.physics_update_car_frame",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1419bbc70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "ui",
   "proto": "void *Bind(void *out, void *facility_data)",
-  "evidence": "decomp:re/decomp/1419bbc70.c;xref:0x1409bbc69;xref:0x1419bdf13;xref:0x1422e3f87",
-  "notes": "myteam-g2: Builds a VM node set for a facility stats texture: Vm_Set_String / Vm_Set_NodeRef with icon node (Vm_Resolve_IconNodeByPath). UI only."
+  "evidence": "decomp:re/decomp/1419bbc70.c;xref:0x1419bdf13,0x1422e3f87",
+  "notes": "Renamed: holder ctor: string 'state_emb' [0], ref 'icon_bg' [4], ref 'bg' [8] under the given node; sets state_emb='green', bg -> '#overrides.team_hq.popup_bgs.money', icon_bg -> '#overrides.team_hq.popup_icon_bgs.money'. Returns param_1. No facility/stat data. (lane owner review requested) Better name: Ui_Bind_MoneyPopupIconNode (bound record keeps its name)."
  },
  "signature": {
   "id": "ui.bind_facility_stats_texture_node",

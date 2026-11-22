@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446f6020",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1446f6020.c;pat:log-message-cxx;xref:0x145c003a8",
-  "notes": "Virtual (vt cell 0x145c003a8). Logs FFB_DEBUG updateIsXboxOneController 'Found xone pad' / 'Not an xone pad' / 'Found Xbox Series pad'."
+  "notes": "Body read fully. Vt cell 0x145c003a8. First part: device mode byte ([+0xd0]+0x110 map keyed by +0x128) 0/1/2 switches the effect profile (+0x20..+0x48 from +0x1e8.. or global 0x146ce83b8), calls 0x1446f1210/0x1446f0e00, state +0x1e1. Then unless +0x2d4: finds devices of types 0x146292220/0x146292240, queries entries (0xa8 stride): none -> 'Found Xbox Series pad' (+0x2d5=1); flagged entry type 0x14628fc90/98 -> 'Found xone pad' (+0x2d5=1) else 'Not an xone pad'; +0x2d4=1. (lane owner review requested)"
  },
  "signature": {
   "id": "game.racing_ffb_effect_x_input_update_is_xbox_one_controller",

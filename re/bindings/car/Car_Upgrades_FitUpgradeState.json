@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143517c50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143517c50.c;xref:0x141242e62,0x141244adb",
-  "notes": "(upg, partId, vehicleParts, arg) When mode +8 == 2 and the part id differs from the last record ([parts+200]-0x10): resolve via 0x1435305d0; then Career_Push_UpgradeState(parts, id, 3, arg), refresh availability, post fitted ratio and a bus message. Callers Car_Fit_UpgradesToRating, Career_Eval_UpgradeAvailability, Career_Post_UpgradeFittedRatio."
+  "evidence": "decomp:re/decomp/143517c50.c;xref:0x141242e62,0x141244adb,0x143514db4,0x14352f1b7,0x143530dc3,0x143531a6b",
+  "notes": "(upg,partId,parts,arg): parts != 0; mode upg+8 == 2 and id differs from last record [parts+0xc8]-0x10 -> 0x1435305d0 may replace parts; 0x1435230e0(parts,id,3,arg) (KB Career_Push_UpgradeState); parts+0xac = arg; last record state 3 + flag -> 0x14352fe00; mode 1..2 -> 0x14352f300, mode 0 -> upg+0x1aa8 = 0x3fff0000; posts bus msg 0x14584e360 (id upg+0xc) via 0x1439876c0. (lane owner review requested)"
  },
  "signature": {
   "id": "car.upgrades_fit_upgrade_state",

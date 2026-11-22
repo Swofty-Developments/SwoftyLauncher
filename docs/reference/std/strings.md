@@ -1,11 +1,11 @@
 ---
 title: Strings
-description: Change the text of lng_* keys while the game runs, for every language or one, with swofty/lang.hpp.
+description: Read and change the text of lng_* keys while the game runs, for every language or one, with swofty/lang.hpp.
 ---
 
 # Strings
 
-`swofty/lang.hpp` changes the text a `lng_*` key shows while the game runs, for every language or for one.
+`swofty/lang.hpp` changes the text a `lng_*` key shows while the game runs, for every language or for one, and reads a key's text in the game's current language.
 
 ```cpp [native/src/my_plugin.cpp]
 #include <cstring>
@@ -70,9 +70,9 @@ SWOFTY_ADDON()
 String overrides differ from `lang` operations and `lang_set` in the [asset API](/reference/addons/asset-api): those are built into the game's language data while it loads and can't change afterwards.
 
 - **Header:** `swofty/lang.hpp`, namespace `swofty::lang`
-- **Table:** `SwoftyApi::lang` (`SwoftyLang`), API version 8
+- **Table:** `SwoftyApi::lang` (`SwoftyLang`), API version 8; table version 2 (the core export `SwoftyCoreLangVersion`) appends `text` and `language`
 - **Feature:** `lang`, stable
-- **Thread:** `set`, `clear` and `clear_all` from any thread; `refresh` on the flow thread
+- **Thread:** `set`, `clear`, `clear_all`, `text` and `language` from any thread; `refresh` on the flow thread
 
 Every call returns a `swofty::lang::Result`: `ok`, `unavailable` or `invalid` (see [result codes](./#result-codes)), and `name(r)` turns it into a string. A core older than API v8 returns `unavailable` from every call. To build one plugin against a core with and without the API, guard the calls with `#if SWOFTY_API_VERSION >= 8` and check `available()` at runtime.
 
@@ -138,6 +138,21 @@ lg::refresh(); // once, after a batch of set/clear calls, on the flow thread
 ```
 
 Call it at most once after a batch of changes, on the flow thread (for example from a core [event](./events) handler). In the game's unprotected code only the locale module's start-up sends that notification, so which labels re-read their text on `refresh()` is not yet known.
+
+## text and language
+
+```cpp
+std::optional<std::string> title = lg::text("lng_f1_2026_championship_season"); // "2026 FIA Formula One World Championship™"
+std::optional<std::string> line = lg::subtitle("eng_radiocheck_03");           // lng_subtitle_eng_radiocheck_03
+std::optional<std::string> code = lg::language();                               // "eng", "fre", ...
+```
+
+- `text(key)` returns the key's text in the game's current language, as UTF-8: the override when one applies (see [set](#set)), else the game's own text.
+- `subtitle(stem)` is `text("lng_subtitle_" + stem)`, the text of a [voice line](./speech).
+- `language()` returns the game's current language code.
+- Both are empty for a key no table has, before the game's locale module has started, and on a core whose `SwoftyLang` is version 1. `version()` returns the version the running core fills: 2 from a core that exports `SwoftyCoreLangVersion`, 1 from an older API v8 core, 0 without the table.
+
+The game's text comes from the current language's set (the locale module's sets at `+0x28`, one per language) through `Loc_LangSet_Find`, the same lookup the game's labels use.
 
 ## How it applies
 

@@ -38,6 +38,11 @@ struct Damage;
 namespace swofty::weather::events {
 struct Setup;
 }
+namespace swofty::speech::events {
+struct Line;
+struct Timed;
+struct Ended;
+}
 namespace swofty::career::events {
 struct AddActivity;
 struct StandingsRebuild;
@@ -89,6 +94,9 @@ bool session_red_flag(swofty::race_control::events::RedFlag &payload);
 bool session_sector(swofty::race_control::events::Sector &payload);
 bool session_car_status(swofty::race_control::events::CarStatus &payload);
 bool car_tyre_damage(swofty::tyre_damage::events::Damage &payload);
+bool speech_line(swofty::speech::events::Line &payload);
+bool speech_line_timed(swofty::speech::events::Timed &payload);
+bool speech_line_end(swofty::speech::events::Ended &payload);
 bool laps_sealing(swofty::laps::events::Sealing &payload);
 bool weather_setup(swofty::weather::events::Setup &payload);
 bool laps_recorded(const char *path, int32_t time_ms, int32_t valid);

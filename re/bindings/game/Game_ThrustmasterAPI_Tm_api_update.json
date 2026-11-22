@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143aaa2e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143aaa2e0.c;pat:log-message-cxx;xref:0x1458a7808",
-  "notes": "vtable cell 0x1458a7808. 0x25d6-byte body: tm_api_update, tm_api_get_device_count, tm_api_get_device_info, tm_api_open_device, logs device info (vendor/product id, name, serial, screens)."
+  "notes": "Vtable slot (cell 0x1458a7808). If dirty flag +0x28: tm_api_get_device_count, per device tm_api_get_device_info into 0x648 rec (logs 'THRUSTMASTER' VID/PID/name/serial), keeps VID 0x44F devices; new ones -> 0xa10 obj (vtbl 0x1458a6dc0), tm_api_open_device, map +0x58, callback +0x18(1); gone ones callback(0)+free. Then tm_api_update: status 1/2 (ARRIVED/DEPARTED) set +0x28; then device vfunc +0x18(param_2). (lane owner review requested) Better name: Game_ThrustmasterAPI_Update_DeviceList (bound record keeps its name)."
  },
  "signature": {
   "id": "game.thrustmaster_api_tm_api_update",

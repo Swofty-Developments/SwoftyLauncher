@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14476f310",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14476f310.c;xref:0x144664fb2,0x144667d8c,0x144669d90",
-  "notes": "Same queue pattern with a 0xb0-byte payload (copies a string via 0x1402b5650). Callers: Car_TyreDamage_Update and 3 tyre functions. (5 xref site(s), fb.py callers.)"
+  "evidence": "decomp:re/decomp/14476f310.c;xref:0x144664fb2,0x144667d8c,0x144669d90,0x14470f7f1",
+  "notes": "Same queue pattern: 0xb0 node, vtable 0x1456706d8, string member from param_2+0x18 (0x1402b5650) plus fixed buffer from param_2+0x20, payload qwords param_2+0x40..+0x98 and byte +0xa0; list +0x58/+0x60 under CS +0x98, SetEvent(+0x90). (lane owner review requested)"
  },
  "signature": {
   "id": "car.event_queue_post_tyre_damage_event",

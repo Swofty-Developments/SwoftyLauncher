@@ -85,6 +85,7 @@ struct Step {
 const Step STEPS[] = {
     {"career_tick", [] { runtime::career_tick(); }},
     {"live_tick", [] { runtime::live_tick(now_seconds()); }},
+    {"speech_tick", [] { runtime::speech_tick(); }},
     {"telemetry_tick", [] { runtime::telemetry_tick(); }},
     {"toast::tick", [] { hud::toast::tick(); }},
     {"lap_host::tick", [] { runtime::lap_host::tick(); }},

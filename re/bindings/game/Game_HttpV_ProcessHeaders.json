@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144050490",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/144050490.c;pat:log-message-method;xref:0x14404f3aa",
-  "notes": "HTTP/V 'processHeaders' (log string). Called from 0x14404e260."
+  "notes": "HTTP/V processHeaders: copies header buf (this[5], len this[6]), splits at CRLF; status code after ' ' of line 1 -> this+0x48; lines with ':' -> name/value via 0x1408531a0 into this+8. If status not 1xx/204/304: Transfer-Encoding flags (chunked/compress/deflate/gzip/identity) -> +0x50, Content-Encoding (+br) -> +0x54, Content-Length -> +0x58 when +0x50&0x10; 'Connection: close' -> +0x5c. (lane owner review requested)"
  },
  "signature": {
   "id": "game.http_v_process_headers",

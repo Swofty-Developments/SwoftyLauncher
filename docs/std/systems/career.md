@@ -648,7 +648,7 @@ The season's year comes from one of two places:
 career::report_season(year, season_index);
 ```
 
-A career loaded in a season that already started fires nothing, but the core still needs its year, for the [season's rules](#the-season-s-rules) among others. An owner's report for that season, or the idle Team HQ of a career no addon owns, dates the career: the core takes the year without a `career.season.start`. An owner reports at the first idle Team HQ after each career load, as well as at each season's start:
+A career loaded in a season that already started fires nothing, but the core still needs its year, for the [season's rules](#the-season-s-rules) among others. An owner's report for that season, or the idle Team HQ of a career no addon owns, dates the career: the core takes the year without a `career.season.start`. An owner reports at `career.loaded` or at the first idle Team HQ after each career load, as well as at each season's start. A `career.loaded` handler can run off the flow thread: its report answers `late`, and the core runs it at the next flow tick, before the session loads. A career resumed straight into a race weekend has its year that way:
 
 ```text
 [registry] career::report_season(2010, 0) from swofty.swofty-seasons-progressive: ok, 2010 already started in career f1_career_sw_progressive.driver_career:3f0a
