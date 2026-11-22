@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1447333d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1447333d0.c",
-  "notes": "Sends the 2024-format packets (tail call after Game_TelemetryUdp_Prepare2024). UDP telemetry, format index [[this+0xe0]+0xc] (0 = 2024, 1 = 2025, 2 = 2026) chosen in Game_TelemetryOutputUDPUpdateable_Update 0x1447311a0 and 0x144738050."
+  "evidence": "decomp:re/decomp/1447333d0.c;xref:0x14473127d,0x14473811b",
+  "notes": "For each 2024 packet buffer gates with Game_TelemetryUdp_RateLimitTick (timers this+0x17040, +0x170a0, ...) and sends via 0x144737d30(this, buf, size, header) (e.g. 0x2f1, 0x546, 0x46d, 0x3b9, 0x5b4 bytes; session history cycles through up to 0x16 cars). Tail-jumped from Game_TelemetryOutputUDPUpdateable_Update, called from Game_TelemetryUdp_HandleEvent. (lane owner review requested)"
  },
  "signature": {
   "id": "game.telemetry_udp_send2024",

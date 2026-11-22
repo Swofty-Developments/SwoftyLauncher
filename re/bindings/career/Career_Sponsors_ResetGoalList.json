@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1410f7230",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void Career_Sponsors_ResetGoalList(void **list)",
-  "evidence": "decomp:re/decomp/1410f7230.c;xref:0x1410f6c13;xref:0x1410f6c63;xref:0x1410f6cc3",
-  "notes": "myteam-g2: Clears the vectors of a sponsor goal list (+0x60, +0x148, +0x128) via allocator vtable+0x38 and resets counters. Also used by Sponsors_DeserialiseGoals and Gdb_Load_SponsorGoalDefinitions."
+  "evidence": "decomp:re/decomp/1410f7230.c;xref:0x1410f6c14,0x1410f6c64,0x1410f6cc4,0x1410f70f4,0x141113831,0x141113e8a",
+  "notes": "Destructor of a 0x160-byte sponsor goal entry: frees vectors +0x60, +0x148, +0x128 via their allocators (vf+0x38) and resets begin/end/cap, frees strings at +0xe8, +0xb0, +0x88, +0x30, +0x0 (string vtable 0x145612ec0). Called per goal by 0x1410f6bf0, 0x1410f6f20 and the goal loaders 0x141111fc0 / 0x141113b70. (lane owner review requested) Better name: Career_SponsorGoal_Dtor (bound record keeps its name)."
  },
  "signature": {
   "id": "career.sponsors_reset_goal_list",

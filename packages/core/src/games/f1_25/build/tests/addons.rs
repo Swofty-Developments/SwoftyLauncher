@@ -150,6 +150,82 @@ fn ops_and_options_that_need_an_addon_apply_only_while_the_build_has_it_on() {
 }
 
 #[test]
+fn a_hud_file_reaches_the_composer_only_while_its_when_holds() {
+    if loader_dir().is_some() {
+        return;
+    }
+    let root = std::env::temp_dir().join(format!("swofty-build-hud-when-{}", std::process::id()));
+    std::fs::remove_dir_all(&root).ok();
+    let dir = root.join("game");
+    std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
+    std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::new(Vec::new()).to_bytes()).unwrap();
+    let game = Game {
+        identity: Identity::detect(&dir, Some(1)).unwrap(),
+        dir,
+        user_reg: None,
+    };
+    let store = Store::new(root.join("data"));
+    let src = root.join("src");
+    std::fs::create_dir_all(src.join("hud")).unwrap();
+    std::fs::create_dir_all(src.join("registry")).unwrap();
+    std::fs::write(
+        src.join("swofty.json"),
+        r#"{ "schema_version": 1, "id": "t.season", "name": "Season", "version": "1.0.0", "author": "t",
+             "compat": { "game": "f1_25" },
+             "options": [{ "id": "season_hud", "type": "toggle", "default": true, "binds": "db" }],
+             "operations": { "hud": ["hud/season.json", "registry/dial.json"] } }"#,
+    )
+    .unwrap();
+    let file = |when: &str| {
+        format!(
+            r#"{{ "when": {when}, "hud.element": {{ "dial": {{ "dial": "f1_26",
+                 "sprites": {{ "base": {{ "png": "art/base.png", "bounds": [-60, -20, 60, 20] }} }},
+                 "elements": [{{ "kind": "sprite", "id": "base", "sprite": "base", "layer": 20 }}] }} }} }}"#
+        )
+    };
+    std::fs::write(src.join("hud/season.json"), file(r#"{ "season_hud": true }"#)).unwrap();
+    std::fs::write(src.join("registry/dial.json"), file(r#"{ "season_hud": true }"#)).unwrap();
+    store.install_addon(&src).unwrap();
+    store
+        .update_profile("default", |p| p.set_enabled("t.season", true))
+        .unwrap();
+    let season = store.registry().unwrap().manifests()["t.season"].clone();
+    let set = |on: bool| {
+        store
+            .update_profile("default", |p| {
+                p.set_option(&season, "season_hud", on.into()).map(drop)
+            })
+            .unwrap()
+    };
+
+    set(false);
+    let built = build(&store, "default", &game).unwrap();
+    for f in ["hud/season.json", "registry/dial.json"] {
+        let line = format!("hud: {f} of Season is off by its when");
+        assert!(built.lines.contains(&line), "{line}: {:#?}", built.lines);
+    }
+    assert!(
+        built
+            .warnings
+            .iter()
+            .any(|w| w.starts_with("t.season: registry/dial.json has a when")),
+        "{:#?}",
+        built.warnings
+    );
+    assert!(
+        !built.warnings.iter().any(|w| w.contains("hud/season.json")),
+        "{:#?}",
+        built.warnings
+    );
+
+    set(true);
+    let err = build(&store, "default", &game).unwrap_err().to_string();
+    assert!(err.contains("base.png"), "{err}");
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
 fn an_option_whose_rounds_need_a_track_the_build_lacks_builds_as_off_and_says_so() {
     use swofty_formats::gvdb::Record;
     if loader_dir().is_some() {

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1412db360",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-SPECIALISTS",
-  "notes": "named from its log messages (channel SPECIALISTS): 'deserialiseSaveDataContainer - Cadence being set for driver %s to %d'"
+  "evidence": "decomp:re/decomp/1412db360.c;pat:log-channel-SPECIALISTS;xref:0x1412eb7ce,0x1412eb9f4,0x1412ecc1d,0x1412ecea6",
+  "notes": "Logs (channel SPECIALISTS) 'deserialiseSaveDataContainer - Cadence being set for driver %s to %d', copies the driver key into +0x80 (0x1413663c0), stores param_2[4] (cadence) at +0xa0, then clears and frees param_2's entry vector. Called 5x from 0x1412eb290. (lane owner review requested) Better name: Career_Specialists_SetCadenceFromSaveData (bound record keeps its name)."
  },
  "signature": {
   "id": "career.specialists_deserialise",

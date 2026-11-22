@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143566070",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143566070.c;xref:0x143563e94,0x143564556",
-  "notes": "Penalty log vector (this+8..+0x10, stride 0x30): searches an equal record (bytes +8..+0xb car/type/reason, ints +0xc..+0x20, floats +0x24/+0x28, int +0x2c); appends it when absent (error-trace code 2 path). Callers: Sess_PenaltyLog_ReceiveAddRecord, Sess_PenaltyLog_RemoveVehicle, Sess_PenaltyLog_SendRecord, Sess_PenaltyLog_SendRecord_2. cv2-verify: finds an equal record and erases it; never appends"
+  "evidence": "decomp:re/decomp/143566070.c;xref:0x143563e94,0x143564556,0x1435655a4,0x143565a14",
+  "notes": "Penalty log vector this+8..+0x10 (stride 0x30): finds a record equal to arg (bytes +8..+0xb, ints +0xc..+0x18, byte +0x1c, int +0x20, floats +0x24/+0x28, int +0x2c), shifts the tail down, size -= 0x30 and calls the freed slot's vtable slot 0 (destructor). Never appends; not found -> error trace code 2 with RtlCaptureStackBackTrace. Callers Sess_PenaltyLog_ReceiveAddRecord, RemoveVehicle, SendRecord, SendRecord_2."
  },
  "signature": {
   "id": "session.penalty_log_find_or_add_record",

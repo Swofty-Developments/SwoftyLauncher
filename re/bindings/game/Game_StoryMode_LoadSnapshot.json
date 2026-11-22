@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141349630",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-GAME",
-  "notes": "named from its log messages (channel GAME): 'Loading story mode snapshot file: %s'"
+  "evidence": "decomp:re/decomp/141349630.c;pat:log-channel-GAME;xref:0x14f28d799",
+  "notes": "Loads the story snapshot: path from 0x141331c70([+0x2c0]), logs GAME \"Loading story mode snapshot file\", copies participants ([+0x2c8]+0x298 +0x1d8, stride 0x98), builds id pairs, 0x1403c2490, loads file 0x142c13f80(path,1,1,1), posts msg 0x1456de360, finds the player driver and posts msg 0x1456de658 with computed values. Caller 0x14f28d780. (lane owner review requested)"
  },
  "signature": {
   "id": "game.story_mode_load_snapshot",

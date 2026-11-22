@@ -22,6 +22,7 @@ inline constexpr address<"Render_ParticleManager_DrawMeshParticles"> Render_Part
 inline constexpr address<"Render_Particles_ReadbackVertexBuffer"> Render_Particles_ReadbackVertexBuffer{}; // L2 experimental
 inline constexpr address<"Render_RainFile_Load"> Render_RainFile_Load{}; // L2 experimental
 inline constexpr address<"Render_RainFile_ParseMaterials"> Render_RainFile_ParseMaterials{}; // L2 experimental
+inline constexpr address<"Render_SceneView_BuildViewParams"> Render_SceneView_BuildViewParams{}; // L2 experimental
 inline constexpr address<"Render_SceneView_SubmitCamera"> Render_SceneView_SubmitCamera{}; // L2 experimental
 inline constexpr address<"Render_Screenshot_CaptureAndSave"> Render_Screenshot_CaptureAndSave{}; // L2 experimental
 inline constexpr address<"Render_TerrainPlugin_Render"> Render_TerrainPlugin_Render{}; // L2 experimental

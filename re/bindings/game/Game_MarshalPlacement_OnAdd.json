@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1403d1af0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1403d1af0.c",
-  "notes": "ECS add handler of the MarshalPlacement component (type hash 0x9d614686): reads the entity type ('normal' or not -> +0x34), numbers it from the counter 0x1460463d0, allocates a 0xb0-byte RaceMarshalInstance into RacemarshalSystem+0x428."
+  "evidence": "decomp:re/decomp/1403d1af0.c;xref:0x14561ea78",
+  "notes": "Script node onAdd (cell 0x14561ea78). String property 'Group' (error 0x57 if missing); +0x34 = group != 'grid'. Slot = global counter 0x1460463d0++ -> +0x30; allocates a 0xb0 'RaceMarshalInstance' record: owner(+0x38)+0x28[slot] = this, +0x428[slot] = record, registered with [owner+0x848] vcall +8 (cb 0x1403d2ed0). Copies the entity transform (table +0xf0 stride 0x70, or +0x90), +0xa2 = is grid, +0xa4 = 0x14022abc0 team value (default 2), +0xa6 = 0x100. (lane owner review requested)"
  },
  "signature": {
   "id": "game.marshal_placement_on_add",

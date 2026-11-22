@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141d9efb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_SettingsControlsScreenViewModel_DeviceConnectionStatusChanged;xref:0x141d9f0b4,0x141d9f200,0x141d9f223",
-  "notes": "cxx=game::SettingsControlsScreenViewModel::deviceConnectionStatusChanged; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/141d9efb0.c;str:s_SettingsControlsScreenViewModel_DeviceConnectionStatusChanged;xref:0x141d9ea42,0x14c25e2a7",
+  "notes": "Handler registered by lea at 0x141d9ea42 and 0x14c25e2a7. Logs OPTIONS-UI deviceConnectionStatusChanged (name, connected/disconnected); if an update is in progress (0x14606a9d8) or view node +0x990 / +0x9d0 reports busy, logs \"screen is updating in progress\"; else logs \"updating screen when device status changed\" and vcall +0x138 (refresh). (lane owner review requested)"
  },
  "signature": {
   "id": "game.settings_controls_screen_view_model_device_connection_status",

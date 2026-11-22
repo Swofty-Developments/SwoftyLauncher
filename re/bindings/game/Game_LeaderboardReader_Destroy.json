@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142fbd590",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_LeaderboardReader_Destroy;xref:0x142fbd67d,0x142fbd6ad",
-  "notes": "cxx=game::LeaderboardReader::destroy; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/142fbd590.c;str:s_LeaderboardReader_Destroy;xref:0x142fed5c3,0x1457ff290",
+  "notes": "virtual void game::LeaderboardReader::destroy(NEbool) (vtable cell 0x1457ff290; also called at 0x142fed5c3). online_services (+0xf8 == 0): resets the pending tasks +0xc8/+0xcc in the [[+0xe8]+0x478]+0x40 list (task +0x20=1, +0x288=0, delegate +0x238 cleared). first_party: releases task ref +0xd8/+0xe0. Then 0x142fbb7a0(this, keep), clears delegate +0xb8/+0xc0, +0xb0 = 2. (lane owner review requested)"
  },
  "signature": {
   "id": "game.leaderboard_reader_destroy",

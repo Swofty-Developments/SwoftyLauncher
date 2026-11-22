@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141aeefb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "vm",
   "proto": "void Vm_Build_UpgradeCardScreenNodes(void *screen)",
-  "evidence": "decomp:re/decomp/141aeefb0.c;xref:0x141ae7e6b;xref:0x141aeb6cf;xref:0x141b914dc",
-  "notes": "myteam-g2: Big (584 lines) builder that links registry nodes (Vm_Link_RegistryNode), formats per-card text with Ne_Crt_Snprintf and walks the upgrade list (Ne_Ref_GetListElementOrEmpty). Builds the facility / loadout upgrade card screen."
+  "evidence": "decomp:re/decomp/141aeefb0.c;xref:0x141ae7e6b,0x141aeb6cf,0x141b914dc,0x141b9170c",
+  "notes": "Sub-VM vm+0x330: resolves selected handles +0xb48/+0xb88, finds the matching card in +0xd08..+0xd10 (or +0xda8); clears list; if the card's +0x130 value (Vm_Get_NodeValueAsString, FNV-1a lowercase) is one of 6 hashes it is pinned first as 'entry_%I64u' (0x140d2b290, list +0xd28); other cards go to a vector sorted by 0x141b92310 (comparator by vm+0x11d4) and are appended; 0x141af3c80 selects the match or first entry. (lane owner review requested) Better name: Vm_Rebuild_UpgradeCardList (bound record keeps its name)."
  },
  "signature": {
   "id": "vm.build_upgrade_card_screen_nodes",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143537920",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "int Career_Write_UpgradesLostNotificationSeason(void * self,uint64_t *a2)",
-  "evidence": "decomp:re/decomp/143537920.c;xref:0x14123f400",
-  "notes": "myteam-g1: Writes last_upgrades_lost_notification_season."
+  "evidence": "decomp:re/decomp/143537920.c;xref:0x14123f401",
+  "notes": "Save writer: for dept 0..3 (names via table 0x14584f698, fallback 'error_department') writes '<dept>_watched_research_day', '_develop_day', '_fit_day' (shorts) and '<dept>_watched_shutdown'; then last_dev_day_before_first_weekend and last_upgrades_lost_notification_season (+0x34). Called by Career_Save_TeamDepartmentsState 0x14123d5a0. (lane owner review requested) Better name: Career_Write_UpgradesWatchedDays (bound record keeps its name)."
  },
  "signature": {
   "id": "career.write_upgrades_lost_notification_season",

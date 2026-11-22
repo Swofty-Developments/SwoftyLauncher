@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439fe470",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/1439fe470.c;xref:0x144719bd5",
-  "notes": "FNV-1a 64 hash of a C-string name (param_2, null -> 0), then probes the texture table of the renderer ([[param_1+0x20]+0x20]+0x678/0x680) and returns the matching entry. Caller Render_Skidmarks_CreateTextureSrv. Hypothesis on the table."
+  "notes": "Third copy of the name binder: FNV-1a 64 of param_2 (null -> 0), linear search of the 40-byte table [[this+0x20]+0x20]+0x678..+0x680 (hash at +8), stores param_3 into this+0xc0[idx] and clears this+0xc8[idx]; returns 0. Caller Render_Skidmarks_CreateTextureSrv 0x144719970. (lane owner review requested) Better name: Render_Gfx_BindShaderResourceByName_C (bound record keeps its name)."
  },
  "signature": {
   "id": "render.texture_table_find_by_name_hash",

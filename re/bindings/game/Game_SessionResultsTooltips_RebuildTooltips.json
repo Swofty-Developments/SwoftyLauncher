@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1422a9070",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name rebuildTooltips (class from the log channel); log channel SESSION_RESULTS_TOOLTIPS: 'rebuildTooltips(), m_resultsInFocus = %s'"
+  "evidence": "decomp:re/decomp/1422a9070.c;pat:log-message-method;xref:0x1422a87ea,0x1422a9055,0x1422a9f7d",
+  "notes": "Logs \"rebuildTooltips(), m_resultsInFocus = %s\" (+0x6b8); computes three bools (not in focus; selected-row flag when +0x6b9 and online; a [+0x670]+0x30 check) and pushes them to view nodes +0xa78, +0xab8, +0xa98 (0x140973e20); logs the m_dbShowSelect state of +0xa78. Callers OnTabActivated (0x1422a87ea), OnResultSelectionChanged (0x1422a9055), jmp at 0x1422a9f7d. (lane owner review requested)"
  },
  "signature": {
   "id": "game.session_results_tooltips_rebuild_tooltips",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14145d2b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14145d2b0.c;xref:0x1413cc51d",
-  "notes": "532-byte function with function-static TLS and Ne_Crt_Strcmp name matching; identical twin of 0x142eefe50. Callers 0x1413cc51d, Game_CompoundModelSet_SpawnRenderModel (0x142e82773), Game_VehicleSpawning_ObjectPreCreation (0x142f3e3ae). Hypothesis: resolves car part model names."
+  "evidence": "decomp:re/decomp/14145d2b0.c;xref:0x1413cc51d,0x142e82773,0x142f3e3ae,0x14371027e,0x144450075,0x1446453fb",
+  "notes": "Read in full: (obj, componentName, propName, value*) - finds component by name in list obj+200 (strcmp 0x14535d850), else creates one (vcall +0x30, type 100) and attaches it (+0x28), then calls component vcall +0x20(propName, typed value vt 0x1456e6fd0). Used for WorldObject.transform (0x40 bytes) at 0x142f3e3ae. Error path records the code in TLS + backtrace ring. Not a model-name resolver. (lane owner review requested) Better name: Game_WorldObject_SetComponentPropMatrix (bound record keeps its name)."
  },
  "signature": {
   "id": "game.vehicle_spawning_resolve_model_name_a",

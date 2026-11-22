@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141a6add0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_DriverCareerTeamSelectViewModel_OnSelectedSameTeamFromMessage;xref:0x141a6ae50",
-  "notes": "cxx=game::DriverCareerTeamSelectViewModel::onSelectedSameTeamFromMessage; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/141a6add0.c;str:s_DriverCareerTeamSelectViewModel_OnSelectedSameTeamFromMessage;xref:0x141a6913b,0x141a6ac3d",
+  "notes": "UI-message result callback (lea'd in 0x141a690b0 at 0x141a6913b and in 0x141a6ac20 at 0x141a6ac3d). Logs pretty-function 0x14572a037 (onSelectedSameTeamFromMessage); if the button id string (*msg+9) equals 'confirm': when vm+0x2c0 == 0 posts bus message 0x145732ed0 via Ne_Post_BusMessage 0x1439876c0 on [0x14618b3b8]+8, else fires route 'open_confirm_selections' on [vm+0x28] (Vm_Fire_Route 0x1442c0e20). (lane owner review requested)"
  },
  "signature": {
   "id": "game.driver_career_team_select_view_model_on_selected_same_team_from_msg",

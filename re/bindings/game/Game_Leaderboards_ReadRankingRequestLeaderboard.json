@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1440268a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-LEADERBOARDS",
-  "notes": "named from its log messages (channel LEADERBOARDS): 'Read ranking request for leaderboard %s, startRank = %d, maxNumEntriesToRead = %d'"
+  "evidence": "decomp:re/decomp/1440268a0.c;pat:log-channel-LEADERBOARDS;xref:0x1430e75a8",
+  "notes": "(mgr, user, def, startRank, max, p6, delegate, out id): logs 'Read ranking request for leaderboard %s, startRank = %d, maxNumEntriesToRead = %d', max clamped to 100; invalid user -> 1, queue full -> 0x10. Queues a 0x298 request: start +0x12c, count +0x130, p6 +0x100, delegate +0xd0, def +0xf8, kind +0x28c = 0, state +0xf0 = 8; id = ++(+0x30). Returns 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.leaderboards_read_ranking_request_leaderboard",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a7c680",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameInputModule::deviceDataReadCallback; log channel INPUT: 'Snap GameInputModule::deviceDataReadCallback'"
+  "evidence": "decomp:re/decomp/142a7c680.c;pat:log-message-cxx;xref:0x141da8e05,0x142a66987,0x142a762c8",
+  "notes": "Callback (lea refs, one in Game_GameInputModule_OnDeviceConnected 0x142a762c8). p3 != 0 -> only clears [[p1+0x48]+0x140]+0x263. Else looks device name *p2 up (djb2 hash) in device map [p1+0xc0]: no entry -> 0x142a6bc90(p2,name or 'Unknown'); with entry writes '#input_device.<name>' / 'axis' UI data (display_text, icon_raw, is_button, localise per control), copies the device record (+0x60..+0x90) into matching controllers [p1+0x58]+0x188..+0x190, notifies listeners [[p1+0x28]+0x38]+0x28.. vt+0x88(p2,type +0xf4), sets p1+0x72, logs INPUT 'Snap GameInputModule::deviceDataReadCallback', calls 0x142a56310. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_input_module_device_data_read_callback",

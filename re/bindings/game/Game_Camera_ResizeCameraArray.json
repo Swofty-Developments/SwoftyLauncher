@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144401ae0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144401ae0.c;xref:0x144400635",
-  "notes": "Resizes the per-viewport camera record array and initialises new records with defaults (1.0, 1000.0 [0x447a0000 far], 0.2 [0x3e4ccccd], 0.5625 [0x3f100000], unit scales, -1.0 at +0x98); null storage returns error 0xe via TLS error slot + backtrace ring. Callers Game_Camera_SetForViewport, 0x1444005b0, 0x1444007a0. Hypothesis on field names; constants look like camera defaults."
+  "evidence": "decomp:re/decomp/144401ae0.c;xref:0x144400635,0x144400aca,0x144536916,0x144536c97,0x14453ad0e,0x14453adab",
+  "notes": "Grows the 0x270-byte per-viewport records in [this+0x48] up to index param_3 (defaults 1.0, far 1000.0, 0.2, 0.5625, -1.0 at +0x98), then pushes camera param_2 with param_4 onto that record's stack (+0xe0, 0x18 stride, max 16, oldest dropped, no push if already on top, count +0x260) and writes viewport data to the render resource (0x146c621e0 slots 3/6). Null camera/list -> errno 0xe. (lane owner review requested) Better name: Game_Camera_PushOnViewportStack (bound record keeps its name)."
  },
  "signature": {
   "id": "game.camera_resize_camera_array",

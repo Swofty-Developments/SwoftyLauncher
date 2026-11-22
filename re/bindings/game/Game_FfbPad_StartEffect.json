@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446f3660",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-FFB_DEBUG",
-  "notes": "named from its log messages (channel FFB_DEBUG): 'PS pad effect started twice'"
+  "evidence": "decomp:re/decomp/1446f3660.c;pat:log-channel-FFB_DEBUG;xref:0x145bffe68",
+  "notes": "PS pad effect vtable 0x145bffe60 slot +8 (next slot 0x1446f3d70 StopEffect). Sets started flag +0x1e0 (logs 'PS pad effect started twice' if set), finds device entry matching +0x28/+0x30, default +0x1f0/+0x1f4 = 2; resolves bindings of actions 'Brake' and 'Accelerate': ps_pad_button_r2_pressure -> 1, l2 -> 0, stored at +0x1f0 (brake) and +0x1f4 (accelerate). (lane owner review requested)"
  },
  "signature": {
   "id": "game.ffb_pad_start_effect",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141459ba0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141459ba0.c;xref:0x141438b3c",
-  "notes": "Assign of a vector of 16-byte decal records between two containers with allocator rebind. Callers Game_Livery_ParseDecalsJson, 0x1416cb050, 0x1424ff270."
+  "evidence": "decomp:re/decomp/141459ba0.c;xref:0x141438b3c,0x1416cb075,0x142500022,0x1425dc666",
+  "notes": "Move-assign of an allocator-aware vector of 16-byte shared_ptr pairs {alloc +0, begin +8, end +0x10, cap +0x18}: releases own refs (counts +8/+0xc); same allocator -> steals the source storage and swaps; else allocates src cap*0x10, moves elements, releases and frees the source. Returns dst. Generic (caller is Game_Livery_ParseDecalsJson at 0x141438b3c), 'AssignDecals' was too narrow. (lane owner review requested) Better name: Game_SharedPtrVector_MoveAssign (bound record keeps its name)."
  },
  "signature": {
   "id": "game.livery_vector_assign_decals",

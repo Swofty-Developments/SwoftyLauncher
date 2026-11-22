@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446dafa0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1446dafa0.c;xref:0x1446dcf2c,0x1446dcf56",
-  "notes": "(veh): increments substep counter +0xa50; every N (+0xa54) substeps updates the 4 tyre models (0x1446b97d0) with per-wheel inputs (+0x190, +0x170) and integrates (0x1446b91d0). Caller: Car_Physics_StepVehicle."
+  "evidence": "decomp:re/decomp/1446dafa0.c;xref:0x1446dcf2c,0x1446dcf56,0x1446e42d8",
+  "notes": "(veh): when (+0xa50+1) % +0xa54 == 0 and +0xa50 < +0xa4c-1: per wheel Car_Suspension_ComputeWheelPose(w, veh+0x8a0, +0x170[i], +0x190[i]); HV>=7: axis from BuildWheelStaticRotation at travel +-0.005 -> w+0x330; transforms with matrix veh+0x8a0 into w+0x340/+0x350/+0x360; then vcall [veh]+0x28. Not a tyre-model update. (lane owner review requested) Better name: Car_Physics_SubstepWheelFrames (bound record keeps its name)."
  },
  "signature": {
   "id": "car.physics_substep_tyre_update",

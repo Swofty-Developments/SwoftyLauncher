@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14327a420",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name handleRemotePlayerStats (class from the log channel); log channel NETWORK: '%s(%s) : stats updated.'"
+  "evidence": "decomp:re/decomp/14327a420.c;pat:log-message-method;xref:0x143279b0a",
+  "notes": "Logs handleRemotePlayerStats(conn); matches the user id msg+0x10 (Ne_UserId_Equals), creates the remote stats entry if missing (log \"new stats created\") or updates it; message types +0xc 0x1a/0x19 copy the stats payload (0x15e bytes from msg+0x80) and stamp time (Ne_Crt_Time64). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_handle_remote_player_stats",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143af7480",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143af7480.c;xref:0x143af7057,0x143b02e1d",
-  "notes": "djb2 (seed 0x1505, x33) hash of effect-name string, looks up effect definition in manager table (global 0x146294200); builds emitter defs via Game_Particles_BuildEmitterDefs. Callers Render_Particles_CreateCarEffect, Game_Particles_CreateEffectNode. Addon: effect names are hashed with djb2 for lookup."
+  "notes": "(mgr, name, id): djb2 hash (seed 0x1505) of name; lazily builds the def table at mgr+0x857af0 with Game_Particles_BuildEmitterDefs from resource pack 0x146294200; finds def with hash (+8); if effect count < cap mgr+0xa5b7f8 allocates a 0xa0-byte instance (allocator mgr+0x857aa8), id -> +100, init 0x143af4990, sort keys +0x170 step 0.001, index +0x58, appends to mgr+0x858e90; returns instance or 0. Callers 0x143af5620, 0x143b02910. (lane owner review requested) Better name: Game_Particles_CreateEffectInstanceByName (bound record keeps its name)."
  },
  "signature": {
   "id": "game.particles_find_effect_def_by_name",

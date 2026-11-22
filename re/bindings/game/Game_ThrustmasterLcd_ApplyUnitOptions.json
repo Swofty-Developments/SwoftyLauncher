@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142fdd500",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142fdd500.c;xref:0x142fd9b01",
-  "notes": "Reads the options 'speed_unit' and 'temperature_unit' through Ne_RobinHoodMap_Str_FindIndex on the options store ([[param_1+0x5d0]+0x98]+0x270) and clamps via Game_Option_ClampValueIndex; used by the Thrustmaster wheel LCD (Game_ThrustmasterLcd_Update, Game_LightPeripheralThrustMasterDisplay_OnDeviceConnectionStatus)."
+  "evidence": "decomp:re/decomp/142fdd500.c;xref:0x142fd9b01,0x142fdd3f6",
+  "notes": "Once (+0x640): finds speed_unit and temperature_unit options (Game_OptionsStore_FindOption) into +0x630/+0x638, caches indices +0x644..+0x650, clamps current values and subscribes change callbacks 0x142fdd8b0/0x142fdd970. (lane owner review requested)"
  },
  "signature": {
   "id": "game.thrustmaster_lcd_apply_unit_options",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1404a3a90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1404a3a90.c;xref:0x1409bd185,0x1409be0b3",
-  "notes": "Returns the protobuf type name f1.proto.FaultOrFailureOnFormationLap as an allocated string. Callers: Ai_CannedEvents_PerformAccident. cv4-verify: proto message ctor (name f1.proto.FaultOrFailureOnFormationLap -> base 0x144935190, vtable 0x1456282c0), not GetTypeName"
+  "notes": "Proto message ctor: builds std::string 'f1.proto.FaultOrFailureOnFormationLap' (global allocator 0x14618b130), base ctor 0x144935190(this, name), frees the temp, sets vtable 0x1456282c0 and zeroes +0x48..+0x60. Callers 0x1409bd185, 0x1409be0b3 (0x1409bc6c0). (lane owner review requested)"
  },
  "signature": {
   "id": "game.fault_on_formation_lap_proto_get_type_name",

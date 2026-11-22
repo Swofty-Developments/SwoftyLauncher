@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432bf640",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name recordURL (class from the log channel); log channel OS_METRICS: 'recordURL %d: %s'"
+  "evidence": "decomp:re/decomp/1432bf640.c;pat:log-message-method;xref:0x1432c33e1,0x14336ec58",
+  "notes": "(mgr, id, str): same lookup as RecordArgs; logs 'recordURL %d: %s' and passes the copied string (<0x7f chars) to the record's URL setter 0x1404fb900 (also used by CreateRecord). (lane owner review requested)"
  },
  "signature": {
   "id": "game.os_metrics_record_u_r_l",

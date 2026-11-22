@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140bcff00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140bcff00.c;xref:0x140bcfba7",
-  "notes": "Calls 0x140afe6a0 (list of shared refs) and returns a copy of the first element (use count +1) plus valid flag at out+0x10; releases temp vector. Caller Game_Tyres_ShouldShowScreenDuringLoading. Hypothesis."
+  "evidence": "decomp:re/decomp/140bcff00.c;xref:0x140bcfba7,0x140bcfe3e,0x140bcfe52,0x14130d5ae,0x141de2fc6",
+  "notes": "(src, out): gets the shared-ref list via 0x140afe6a0(src); empty -> out+0x10 = 0; else out = copy of element 0 (ref count +8 incremented), out+0x10 = 1; then releases every temporary ref (vt+0 / vt+8 on zero counts) and frees the buffer (vt+0x38). (lane owner review requested)"
  },
  "signature": {
   "id": "game.tyres_get_first_shared_ref",

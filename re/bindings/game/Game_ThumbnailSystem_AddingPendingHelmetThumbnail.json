@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e2e690",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-THUMBNAIL_SYSTEM",
-  "notes": "named from its log messages (channel THUMBNAIL_SYSTEM): 'Adding pending helmet thumbnail generation for set ID %d'"
+  "evidence": "decomp:re/decomp/142e2e690.c;pat:log-channel-THUMBNAIL_SYSTEM;xref:0x142e368eb,0x142e3798d,0x142e399c6",
+  "notes": "If enabled: allocates 0x240 helmet task (vtable 0x1457ecbc0) with helmet data from param_3 (+0x10,+0x20,+0x28..+0x30), new set id, inserts into map +0xc0, logs 'helmet thumbnail generation', queues id; else callback(4/3). (lane owner review requested)"
  },
  "signature": {
   "id": "game.thumbnail_system_adding_pending_helmet_thumbnail",

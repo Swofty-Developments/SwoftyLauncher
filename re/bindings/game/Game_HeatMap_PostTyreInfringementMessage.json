@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a502d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142a502d0.c;xref:0x14356d451",
-  "notes": "(sys, infr, flag) Builds an 'infringement' message: picks text key safety_rating_tyre_regulations or penalty_tyre_regulations by mode (online +0x388/+1000), fills [TYRE_0]/[TYRE_1] placeholders and posts it (listener assign/unregister). Called from Sess_Infringement_ProcessQueue."
+  "notes": "(sys, infr, playerIdx). Key penalty_tyre_regulations or safety_rating_tyre_regulations (+0x58: +0x388/+1000), template via 0x142a4cc50, built with 0x142a4eef0 if missing; fills [TYRE_0]/[TYRE_1] from infr tyre list (infr[0xf] entries, stride 0x18) and sets 'infringement'. Caller 0x14356bb00. (lane owner review requested) Better name: Game_Hud_PostTyreRegulationsInfringement (bound record keeps its name)."
  },
  "signature": {
   "id": "game.heat_map_post_tyre_infringement_message",

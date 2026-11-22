@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1403622c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=Podium2019CutSceneScript::starting; log channel CUTSCENE_PODIUM: 'Podium2019CutSceneScript::starting'  | 2026-11-17 engine-re round A2: hard-coded track: 'las_vegas' (0x1403623dd, record+0x68 string) and time-of-day value (vt+0x238 -> +0x110 -> +0x26c8) > 1.6580628 sets world render-state bool 0x23 = 0; otherwise sets g 0x145f979c8 = 1."
+  "evidence": "decomp:re/decomp/1403622c0.c;pat:log-message-cxx;xref:0x140368bf9,0x1455f7310,0x1456033c0,0x145603750,0x145603af0",
+  "notes": "Logs, Game_PodiumBaseCutSceneScript_Starting, 0x1402338b0, BindToVehicleWithResultInRace for this+0x900/+0x908/+0x910 (positions 0..2), Monaco barrier hidden, posts bus message 0x145621798; track 'las_vegas' and time of day (vfunc +0x238 -> +0x110 -> +0x26c8) > 1.6580628 sets world render-state bool 0x23 = 0; time <= 1.6580628 (any track) sets 0x145f979c8 = 1. (lane owner review requested)"
  },
  "signature": {
   "id": "game.podium2019_cut_scene_script_starting",

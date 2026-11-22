@@ -129,6 +129,13 @@ impl Shell {
             .into_any_element()
     }
 
+    /// This player's lap on `page`, which the highlighted and pinned rows read.
+    fn own_lap<'a>(&self, page: &'a BoardPage) -> Option<&'a Row> {
+        self.account.display_name()?;
+        let me = self.online.me.as_ref().map(|m| m.driver.id.as_str());
+        own_row(&page.rows, page.mine.as_ref(), me)
+    }
+
     fn board_header(&self, page: &BoardPage, p: Palette, cx: &mut Context<Self>) -> AnyElement {
         let t = &page.track;
         let byline = self.online_bylines(&[t]).into_iter().next().flatten();

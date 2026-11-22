@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14253f1b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-F1LifeSystem",
-  "notes": "named from its log messages (channel F1LifeSystem): 'FZ Scene has been activated, despawning F1Life environments to make room. | Data Mode Changed Prev - [%s] To Curr [%s] | FZ Scene has been deactivated, respawning F1Life environments'"
+  "evidence": "decomp:re/decomp/14253f1b0.c;pat:log-channel-F1LifeSystem;xref:0x14253ca25,0x14254060a",
+  "notes": "Handler of 'MessageMainSceneHasUpdated' (subscribe lea 0x14253ca25 in 0x14253c7a0, unsubscribe in 0x1425405b0). Scene 'F1World' -> FZConstructor/FZDriver: mode +0x1b08=5 (eFZAreas), despawn F1Life envs; otherwise from mode 5 back to 1 (eFrontend) and SetupScene 0x142542680. Old name OnDataModeChanged came from its log. (lane owner review requested) Better name: Game_F1Life_OnMainSceneHasUpdated (bound record keeps its name)."
  },
  "signature": {
   "id": "game.f1_life_on_data_mode_changed",

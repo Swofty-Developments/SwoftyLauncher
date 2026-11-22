@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141dc23f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name rebindAction (class from the log channel); log channel INPUT: 'rebindAction - binding action \"%s\" to axis \"%s\" on device type \"%s UID \"%d\" with calibration Deadzone:%f type:%d'"
+  "evidence": "decomp:re/decomp/141dc23f0.c;pat:log-message-method;xref:0x141dbf2ed",
+  "notes": "rebindAction(ui, actionId*, binding, device*, ref*, type). ref==0: only pushes +0xce0 into prop +0xcc8. Else ensures the map entry in +0xbc8, deadzone const 0x1458a72d0 or 0x1458a72d4, logs INPUT 'rebindAction - binding action...', stores the binding (0x143a9f260), updates matching rows (+0x330), 0x141dc09a0, 0x141dbc840, +0xcba=1, two bool props. (lane owner review requested)"
  },
  "signature": {
   "id": "game.input_rebind_action",

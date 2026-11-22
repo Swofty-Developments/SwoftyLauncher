@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143252220",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'MOX/Mechanical: Vehicle %s has no racing::vehicle::car.'"
+  "evidence": "decomp:re/decomp/143252220.c;pat:log-channel-NETWORK;xref:0x143252b4a,0x1432530e0,0x143253141",
+  "notes": "Called from 0x143252aa0. (this, rec): when +0xa8 enabled resolves the vehicle's components into the per-vehicle record: car object, game component (0x143f9b3c0 key 0x146ce8a40), ghost/helper/tyre components (0x1446029b0 keys 0x146080cc8/0x1460969c8/0x146096968), cachedCarData (0x142f01190) and driver orders; stores them at rec+8/+0x18/+0x20/+0x30, or logs which one is missing and clears the record. (lane owner review requested) Better name: Game_Network_ResolveMechanicalVehicleComponents (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_mox_mechanical_vehicle_racing_vehicle",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14083d100",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14083d100.c;xref:0x141489440,0x1414a7c50",
-  "notes": "(out, path, ctx, ?, int): resolves a UI data-binding path through 0x1442b1b60 and returns the bound property or static default 0x146048da0; releases the temporary ref (allocator g 0x146ca54a8). Callers: Sess_Bind_SessionCarsVm, Game_SessionHud_OnSessionEnter."
+  "evidence": "decomp:re/decomp/14083d100.c;xref:0x1407e1b3a,0x1407eb25e,0x14080ba46,0x140999cb4,0x140999db6,0x140c17c42,0x140d13205,0x141209d4e,0x14148959a,0x141489683,0x141489765,0x141489a6c",
+  "notes": "Read in full (alloc, path, ctx, value, int mode): no ctx/path -> static default 0x146048da0. Finds the node with 0x1442b1b60; existing node of value type 0x146ca5550 is returned (mode 1 also writes value via 0x140977b20). Missing: follows the parent alias chain (vcall +0x30, at most 0x62 hops), hashes the path (djb2 0x1505), allocates a 0x68-byte node (0x14083c570) and inserts it (0x1442b32b0 / 0x1442b3770); failure frees it and returns the default. Releases temp refs. Xref list truncated. Renamed: it creates missing nodes. (lane owner review requested) Better name: Game_UiBinding_FindOrCreateA (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ui_binding_resolve_a",

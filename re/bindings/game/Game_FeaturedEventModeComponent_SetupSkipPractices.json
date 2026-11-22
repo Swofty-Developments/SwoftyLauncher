@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1412083b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_Championship_FeaturedEventModeComponent_SetupSkipPractices;xref:0x141208644,0x14120869d",
-  "notes": "cxx=game::championship::FeaturedEventModeComponent::setupSkipPractices; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1412083b0.c;str:s_Championship_FeaturedEventModeComponent_SetupSkipPractices;xref:0x1456c9fa8",
+  "notes": "Own pretty-function FeaturedEventModeComponent::setupSkipPractices (WEEKLY_GP logs). For the current event: mode +0x58==3 marks sessions (stride 0xa0, list +0x220) skipped (+0x8c=1) until a session type 0xf..0x11; mode 1 skips practices already completed (count from 0x1432d4810 +0x1c); mode 2 skips practice types 1..3. (lane owner review requested)"
  },
  "signature": {
   "id": "game.featured_event_mode_component_setup_skip_practices",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144444340",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144444340.c;xref:0x1444410a9,0x144443cb0",
-  "notes": "SignalR connection start/handshake reply. Mode byte this+0x10738: 1 = classic (key Response compared to the expected value), 2 = core handshake (expects {}, logs Unexpected SignalR handshake); on success sets state byte this+0x228 = 6 and notifies listeners this+0x10720..0x10728 (vcall +0x10 with eWebSocketStarted, +8 with connection id this+0x106f0); also reads ConnectionToken/ConnectionId/Url. Addon: know when the NEOS realtime socket is up."
+  "evidence": "decomp:re/decomp/144444340.c;xref:0x1444410a8,0x144443caf",
+  "notes": "jmp 0x1444410a8, call 0x144443caf. Parses the JSON reply: negotiate path stores ConnectionToken / ConnectionId / Url (+0x22c = 1); mode +0x10738 == 1 compares 'Response'; mode 2 expects '{}' ('Unexpected SignalR handshake'); classic init via 0x144446600 and S check 0x144445db0; success sets +0x228 = 6 and notifies listeners +0x10720..+0x10728 with +0x106f0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.neos_signal_r_handle_start_response",

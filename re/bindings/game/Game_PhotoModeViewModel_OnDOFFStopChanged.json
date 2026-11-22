@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141d07ad0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=PhotoModeViewModel::onDOFFStopChanged; log channel PHOTO-MODE: 'PhotoModeViewModel::onDOFFStopChanged: DOF fStop = %f'"
+  "evidence": "decomp:re/decomp/141d07ad0.c;pat:log-message-cxx;xref:0x141cefc3a",
+  "notes": "PhotoModeViewModel handler (this, cmd): acts only when cmd+8 == 10, reads \"value\" from cmd+0x10 (int or float by type check), logs PHOTO-MODE; registered by lea in 0x141cef700. int index -> this+0x528; f-stop = table (system+0x310)+0x20 [index*8] -> system+0x2d74; dirty, refresh. (lane owner review requested)"
  },
  "signature": {
   "id": "game.photo_mode_view_model_on_doff_stop_changed",

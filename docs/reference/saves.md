@@ -122,7 +122,7 @@ The core writes the reason to `swofty/launcher-saves.json` in the game folder, a
 $ swofty run --steam-saves-once
 ```
 
-The session sets `SWOFTY_LAUNCHER_SAVES=off` for the game. To stay on Steam's saves, turn **Use launcher saves** off in the menu beside Play.
+The session sets `SWOFTY_LAUNCHER_SAVES=off` for the game, through `swofty/session_env.json` on an EA app copy ([EA app](/reference/launch#ea-app)). The core then leaves the profile's launcher saves and their plain store alone. To stay on Steam's saves, turn **Use launcher saves** off in the menu beside Play.
 
 ### The EA app copy
 
@@ -169,13 +169,15 @@ With `plain_saves` in `settings.json`, the core writes the plain store of the pr
 {"plain_saves": {"root": "Z:\\data\\saves\\default\\plain", "schema": 1}}
 ```
 
-Without the key the core writes and injects nothing. A key with another `schema`, no `root` or a `..` part in the root logs `[saves] plain store off: <why>` and leaves the store alone.
+Without the key the core writes and injects nothing. A key with another `schema`, no `root` or a `..` part in the root logs `[saves] plain store off: <why>` and leaves the store alone. A session with `SWOFTY_LAUNCHER_SAVES=off` and a `launcher_saves` block in `settings.json` runs on the copy's own save while the root is the launcher saves' plain store. The core leaves that store alone and logs `[saves] plain store off: this session runs on the copy's own save (SWOFTY_LAUNCHER_SAVES=off), and the root is the plain store of the profile's launcher saves (<root>); nothing is written or put back`.
 
 The core writes a generation after each finished profile load (`event: "load"`, the tree after any injection) and after each finished profile save (`event: "save"`) on a worker thread, so a save never waits for it. A generation is `generations/<12 digits>/manifest.json` and `containers/<fnv64>.bag`, then `CURRENT`. Every file is written to a temporary name, flushed to disk, renamed, and its folder is flushed. `CURRENT` moves last. A generation number is above `CURRENT` and above every folder on disk, so a number is never reused. The core never deletes a generation.
 
 A `.bag` is one root container as `Game_SaveData_WriteBag` emits it. The load generation holds every root child the game matched to a mode (`source: "game"`, `registered: true`) and every container the splice kept (`source: "kept"`). The save generation holds the kept containers as written and the registered containers as the game wrote them: from the end of the kept entries to the end of the containers block the core copies the bytes the save writes into the stream, splits them by the bag format and keeps them only when exactly the registered children come out whole. When that fails the generation holds the registered containers' load-time bytes marked `"as_of": "load"` and the core logs why. Every manifest container has `pair`: the mode name for `gm_<mode>` and `<mode>_SaveSlotGameModeComponent`, null for any other. A container put back this session has `source: "injected"` in the load generation. `slots` come from the game's slot managers at load; the guid is `0x` and 16 hex digits. `loaded_addons` are the enabled ids in the settings.json `addons` list.
 
-At load the core takes the newest `event: "save"` generation written by a session that had the core and brings back each container the loaded tree lacks. A container whose mode is not registered joins the splice's kept set, so the next profile save writes it back. A container whose mode is registered and that the file lacks is read by the root's registered child from a bag made from our bytes after the root has loaded. A mode reads its container once: its tables keep what a read put in them, so a second read appends to them and runs past their end. The core never reads a container the game has read again, so a container the file holds with no careers stays as the game read it and the core logs `did not put back <mode>: the loaded save holds it without careers ...`; a **Restore** of that mode puts it back at the next Play. The two halves of a mode's pair (`gm_<mode>` and `<mode>_SaveSlotGameModeComponent`) come back or are replaced together from one generation, never one half from another generation; an absent half joins a present one only when the present half has the same SHA-256 as in the generation, otherwise the core logs `did not put back <name>: <why>`. The game's own container with careers is never replaced, and a container the newest save generation lacks is not restored from an older one, so a deletion stays.
+At load the core takes the newest `event: "save"` generation written by a session that had the core and brings back each container the loaded tree lacks. A container whose mode is not registered joins the splice's kept set, so the next profile save writes it back. A container whose mode is registered and that the file lacks is read by the root's registered child from a bag made from our bytes after the root has loaded. A mode reads its container once: its tables keep what a read put in them, so a second read appends to them and runs past their end. The core never reads a container the game has read again, so a container the file holds with no careers stays as the game read it and the core logs `did not put back <mode>: the loaded save holds it without careers ...`; a **Restore** of that mode puts it back at the next Play. The two halves of a mode's pair (`gm_<mode>` and `<mode>_SaveSlotGameModeComponent`) come back or are replaced together from one generation, never one half from another generation; an absent half joins a present one only when the present half has the same SHA-256 as in the generation, otherwise the core logs `did not put back <name>: <why>`. The game's own container with careers is never replaced, and a container the newest save generation lacks is not restored from an older one, so a deletion stays. Only the halves of a mode's pair and `swofty_registry` come back into the kept set; any other container the loaded tree lacks logs `did not put back <name>: it is not a game mode's container`.
+
+Only the profile save has a plain store generation. The game's other saves, such as the race highlights (`savegame@highlights000`), have a root container of the same class with their own registered children; the core tells the profile's root by its `options_options` child (or, where the root's children don't read, by the address of the first root the game loads at boot) and leaves the others alone: no kept containers, no `career.saving` or `career.saved`, no generation, and the kept set stays as the profile load left it. A save generation an older core wrote at a highlights save lists `ReplayHighlights_ReplayHighlights` as its only registered container. The core passes over a save generation whose registered containers include neither `options_options` nor a mode's pair, and logs `plain store: generation <n> was written at another save than the profile's (such as the race highlights); nothing is put back from it`. A profile load that finds `ReplayHighlights_ReplayHighlights` among the profile's own children leaves it out of the kept set and logs `left out ReplayHighlights_ReplayHighlights, the race highlights save's own container, ...`.
 
 ```text
 [saves] put back driver_career_progressive: 2 career(s) from generation 41
@@ -184,6 +186,8 @@ At load the core takes the newest `event: "save"` generation written by a sessio
 [saves] plain store: wrote generation 42 (save, 9 container(s))
 [saves] plain store: the save generation was not written (<why>); the game's save is untouched
 [saves] plain store: could not capture <name>: <why>
+[saves] did not put back ReplayHighlights_ReplayHighlights: it is not a game mode's container
+[saves] a save other than the profile (its root registers 1 container(s): ReplayHighlights_ReplayHighlights): no kept save containers, career events or plain store generation for it
 ```
 
 A container is checked against the size and SHA-256 in its manifest before it is injected.
@@ -396,7 +400,34 @@ The core writes the launcher's own copy of every save container from inside the 
   pins.json                       generations the launcher keeps
 ```
 
-The root is `$DATA/saves/<profile>/plain/` for a session on launcher saves and `$DATA/plain/<vault source>/` (`steam-<id3>`, `ea-<user>`) for a session on the copy's own save. A profile without `plain_saves` in its settings writes and injects nothing.
+The root follows the save the session plays:
+
+| Session | Plain root | Vault source |
+|---|---|---|
+| **Use launcher saves** on, Steam copy | `$DATA/saves/<profile>/plain/` | `launcher-<profile>` |
+| **Use launcher saves** on, EA app copy | `$DATA/saves/<profile>/ea-plain/` | `launcher-ea.<profile>` |
+| **Use launcher saves** off, Steam copy | `$DATA/plain/steam-<id3>/` | `steam-<id3>` |
+| **Use launcher saves** off, EA app copy | `$DATA/plain/ea-<user>/` | `ea-<user>` |
+
+The EA app copy's root sits beside `$DATA/saves/<profile>/ea`, the title folder its save device reads, not inside it. The Steam and EA app copies of one profile never share a root: what one copy wrote is never put back into the other's save and never counts as a career the other lost. A session on the copy's own save names the root of the copy save the launcher found last, and no root while that save is the other copy's. A session run once on the copy's own save with launcher saves on writes none. A profile without `plain_saves` in its settings writes and injects nothing.
+
+#### Splitting a shared store
+
+Before launcher 1.10.15, a session on either copy wrote `$DATA/saves/<profile>/plain/`. Each manifest names the exe that wrote it in `exe_sha256`, and every build a core runs on is in `re/db/builds/` (`ea.json` and `ea-1-0-145.json` for the EA app copy). Once per profile, at launcher start and before a Play, with F1 25 closed and the session lock held, the launcher splits that store:
+
+1. Each complete generation an EA app build wrote is copied into `$DATA/saves/<profile>/ea-plain/generations/`, under the same number. A copy goes to `ea-plain/split.copying/` first and is renamed into place whole. `ea-plain/CURRENT` then names the newest one.
+2. Each restore request in `plain/inject.json` or `plain/inject.applying.json` that names one of them moves to the same file in `ea-plain/`, with the same generation number, and `ea-plain/pins.json` pins that generation. The next EA app session takes it. A request whose generation `ea-plain/` has no copy of (no generation under that number, or one of its own) is answered in `ea-plain/injected.json` as not applied, naming the generation and where it is kept. `ea-plain/` is written first and `plain/` last, each id once. Requests for any other generation stay in `plain/`.
+3. Each of them then moves out of `plain/generations/` to `plain/split-ea/generations/`, where no reader looks. The Steam layout's store keeps its `CURRENT`, so the next generation's number is still above every earlier one.
+4. `plain/split.json` records the split: the EA app generations, whether the EA layout's store got a copy, and the generations no known build wrote.
+
+```text
+saves: split the plain store of profile default: 1 generation(s) the EA app copy wrote (40) are set aside in /home/you/.local/share/swofty/saves/default/plain/split-ea; /home/you/.local/share/swofty/saves/default/ea-plain has a copy of each
+saves: moved restore request r1795230000-gm_f1_world (gm_f1_world from generation 40) of profile default to inject.json of the EA layout's store /home/you/.local/share/swofty/saves/default/ea-plain; the next EA app session takes it
+```
+
+A store split by launcher 1.10.15 moves its leftover requests for the generations `split.json` names at the next launcher start or Play.
+
+Nothing is deleted. A generation no known build wrote, and a torn one, stays in `plain/`, the Steam layout's store. An `ea-plain/` that a core wrote before the split gets no copy: its own generations are newer than any copy would be, and the set-aside ones stay in `plain/split-ea/`. A split that stops part way runs again from where it stopped at the next launcher start or Play; `split.json` is written last.
 
 The core writes a generation after every profile load the game finishes (`event: "load"`) and after every profile save the game reports done (`event: "save"`). `packages/core/src/games/f1_25/saves/plain/` reads it:
 
@@ -415,6 +446,8 @@ The launcher prunes generations at launcher start, never while F1 25 runs or a s
 A profile with **Use launcher saves** off keeps its careers in the Steam save. An F1 25 started from Steam without the launcher runs without the profile's addons and drops the career containers no loaded game mode claims (`gm_driver_career_progressive`) when it saves; Steam Cloud then uploads that save.
 
 Every mode is two root containers, `gm_<mode>` and `<mode>_SaveSlotGameModeComponent`, and the launcher treats them as one unit. A manifest entry names its mode in `pair`; without it the launcher strips a leading `gm_` or a trailing `_SaveSlotGameModeComponent`. The launcher decides what is lost by identity: the mode, then the career's slot guid. A mode or career is lost when the last good save generation has it and the newest generation lacks it; a mode with one half missing is lost. The last good save generation is the newest `save` generation a session with the core wrote. Only a `load` generation newer than it can show a loss, because a career missing from a later `save` was deleted in a session with the core, and deletions stick. A container the core put back at load is in the newest generation with `source: "injected"`, and a container named in a `[saves] put back <name>: <k> career(s) from generation <g>` line of the newest session's loader log is not lost. No byte total takes part.
+
+Only modes with careers count: a mode whose containers list career slots, or one the core keeps unclaimed for an addon (the game reads no slots of it). The game's own records (`options_options`, `trophies_trophies`, journal entries) and modes with no career (`gm_dev`, `gm_time_trial`) never raise the notice. A container the newest load kept unclaimed (its addon off) still holds its careers and is not lost. A load generation that lists no registered container, as on the EA app copy where the core captures only the containers it keeps or puts back, judges only the containers the good generation kept. A career lost from a mode the game reads by slot is named by its slot; a mode whose slots the game does not read is named by its label (`Driver Career Progressive`).
 
 ```rust
 // packages/core/src/games/f1_25/saves/vault/guard.rs

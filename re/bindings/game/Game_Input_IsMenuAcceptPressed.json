@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1436af750",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1436af750.c;xref:0x142d6d5bd,0x142d6f63f",
-  "notes": "Returns 1 if any local controller ([0x14604c2c8]+0x140 +0x1c0/+0x1c8) reports the interned input action 'Menu Accept' (static 0x1461014b0 via Ne_Input_InternActionName, test 0x144116870). 15 callers: IntroVideo_CanFinish, PlayCutScene, RetirementSequence, TalkingPoints (skip button). Addon: skip-cutscene detection."
+  "evidence": "decomp:re/decomp/1436af750.c;xref:0x142d6d5bd,0x142d6f63f,0x142d79e21,0x142d8aa7f,0x142d8c0ab,0x142d95d7f,0x142d9ad14,0x142d9ae15,0x142dae13c,0x1436c2dd8,0x1436c3768,0x1436c74db,0x1436c9d38,0x1436e3580,0x1436fa4d8,0x14e9ea649",
+  "notes": "Returns 1 if any local controller ([0x14604c2c8]+0x140, slots +0x1c0/+0x1c8) reports the interned action 'Menu Accept' (static 0x1461014b0 via 0x143a860a0, test 0x144116870), else 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.input_is_menu_accept_pressed",

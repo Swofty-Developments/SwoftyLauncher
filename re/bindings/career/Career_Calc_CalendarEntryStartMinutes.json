@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1410f5a80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "int Calc(void *calendar, uint32_t index)",
-  "evidence": "decomp:re/decomp/1410f5a80.c;xref:0x140a80dff;xref:0x140a9031c;xref:0x140c571e1",
-  "notes": "myteam-g2: Entry index into calendar vector (calendar+8, stride 0x10 = timestamp pair), converts via Ne_Crt_DiffClock to days then multiplies by 0x5a0 (1440 min/day). Returns minutes-from-start of that calendar entry (0 if out of range). Read-only date helper."
+  "evidence": "decomp:re/decomp/1410f5a80.c;xref:0x140a80e00,0x140a9031d,0x140c571e2,0x140c5815c,0x140c5a7ab,0x140c9a653",
+  "notes": "Calendar vector at param_1+8..+0x10 (0x10-byte start/end timestamp pairs). For index < count returns the summed durations of entries 0..index inclusive, each = round((difftime(end,start) via 0x145347970 + 86400)/86400) days * 0x5a0 (1440 min); 0 if out of range. Not the start minute of the entry. (lane owner review requested) Better name: Career_Calc_CalendarMinutesThroughEntry (bound record keeps its name)."
  },
  "signature": {
   "id": "career.calc_calendar_entry_start_minutes",

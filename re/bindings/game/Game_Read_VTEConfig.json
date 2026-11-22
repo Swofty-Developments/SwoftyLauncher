@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f7f7b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: VTE.Sessions.override, VTE.enabled, VTE.imgui'"
+  "evidence": "decomp:re/decomp/142f7f7b0.c;pat:log-channel--;xref:0x1457fc020",
+  "notes": "Module init (vtable cell 0x1457fc020): map dependency 0x1460bed80->+0x48, vt+0x28(0x14604ec98)->+0x38; VTE.enabled->+0x41, VTE.imgui->+0x40, VTE.Sessions.override->+0x50; registers handler id 0xd9 on [+0x48]+0x3d0 (vt+8) with callbacks 0x142f7fac0/0x142f7f770. Returns 0 or 0x16. (lane owner review requested) Better name: Game_VteModule_Init (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_vte_config",

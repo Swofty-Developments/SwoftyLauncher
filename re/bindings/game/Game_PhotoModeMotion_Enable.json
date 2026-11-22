@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142bdaa20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-PHOTO-MODE-MOTION",
-  "notes": "named from its log messages (channel PHOTO-MODE-MOTION): 'Photo mode enabled: Replay time = %f'"
+  "evidence": "decomp:re/decomp/142bdaa20.c;pat:log-channel-PHOTO-MODE-MOTION;xref:0x142bda7bd",
+  "notes": "Asset-group load callback from Game_PhotoModeSystem_SetEnabled (lea 0x142bda7bd): posts 'photo_mode_data_ready', arms motion render +0x2b8, overrides global +0x490 (saved +0x3fb0), snapshots per-car tyre/wheel list +0x3b8 and transforms, reads vsync / frameRateLimiterEnabled (+0x3d3/+0x3d4), logs 'Photo mode enabled', active +0x394 = 1, posts bus message 0x1457d3f30, clears pending +0x395. (lane owner review requested) Better name: Game_PhotoModeSystem_Enable (bound record keeps its name)."
  },
  "signature": {
   "id": "game.photo_mode_motion_enable",

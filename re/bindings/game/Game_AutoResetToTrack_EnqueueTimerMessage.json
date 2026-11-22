@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430236d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1430236d0.c;xref:0x142f01cff",
-  "notes": "Posts a typed message (0x58-byte record reserved through function-static TLS list Ne_Tls_GetValue(0x1461089d0)) on the message bus [param_1+0x68]. Callers Game_AutoResetToTrack_StartTimer, Game_AutoResetToTrack_FireDeferred. Hypothesis (auto reset to track after leaving the circuit). vp5-verify partial/disagree"
+  "evidence": "decomp:re/decomp/1430236d0.c;xref:0x142f01cff,0x142f03a92",
+  "notes": "Posts a typed 0x18-byte message (vtable 0x145800df0, payload u64 param_2+8 and byte param_2+0x10) to queue param_1 (+0x58/+0x60 list, +0x70 allocator, CS +0x98) and SetEvent +0x90; disabled queue (+0x68==0) or alloc failure only log. Caller 0x142f01210 posts it with the vehicle index after setting the reset timer to -1.0 (AUTO_RESET_TO_TRACK); also 0x142f03a30. (lane owner review requested)"
  },
  "signature": {
   "id": "game.auto_reset_to_track_post_timer_message",

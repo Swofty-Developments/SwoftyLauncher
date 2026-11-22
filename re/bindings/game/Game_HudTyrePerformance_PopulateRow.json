@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14152be50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14152be50.c;xref:0x141529d6b",
-  "notes": "Fills one tyre-performance HUD row for car index param_3: scans player list (+0x2e0 stride 0x88, car idx byte +0x82), reads compound name from tyre set +0x50 and copies it into the view model. Caller Hud_Open_TyrePerformance."
+  "evidence": "decomp:re/decomp/14152be50.c;xref:0x141529d6b,0x141529e83,0x14152b81d,0x14152bc9b",
+  "notes": "(vm, row, carIdx) tyre-performance row: car in session list (+0x2e0 stride 0x88, byte +0x82) -> driver name and number (0x3fff = none), wear fraction via 0x14152c470(row+0x68), lap count prop +0x50 from the tyre stint list, tyre text via 0x141883960(row+0x168); row[0]=1 if valid else 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.hud_tyre_performance_populate_row",

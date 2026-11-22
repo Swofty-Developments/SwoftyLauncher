@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143087780",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameSessionMatchingProcessor::searchCallback; log channel NETWORK-MATCHING: 'GameSessionMatchingProcessor::searchCallback(%s)'"
+  "evidence": "decomp:re/decomp/143087780.c;pat:log-message-cxx;xref:0x14308772a",
+  "notes": "Only ref: lea 0x14308772a (in 0x143087650). Logs 'GameSessionMatchingProcessor::searchCallback(%s)' (p2). Failure -> +0x59 = 1. No context ([[p1+0x28]+0x4d8]+0x28) or no enumerator p3 -> logs and ignores. Else for each session (p3+0x18..+0x20) skips banned ones (ctx +0xb0 list, 'is banned'), scores it via context vt+0x28 and inserts {priority, session ref} sorted by descending priority into vector p1+0x40..+0x50 (stride 0x18, allocator [p1+0x38]). If final (p4) logs the list ('Search found %zu sessions'), sets +0x58 = 1 and the search timer +0x60. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_session_matching_processor_search_callback",

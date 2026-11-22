@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1442497d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-UIRef",
-  "notes": "named from its log messages (channel UIRef): 'UNLINK node owner [%hs][%u]'"
+  "evidence": "decomp:re/decomp/1442497d0.c;pat:log-channel-UIRef;xref:0x14427ee74,0x144280560,0x1442805f0,0x144280696,0x14433513f,0x153913a04,0x15391e254",
+  "notes": "UIRef unlink: if owner id this+0x30 != 0 logs 'UNLINK node owner', sends message vt 0x145a74610 {id, byte this+0x3d, 1} and clears +0x30. If node id this+0x38 != 0: 0x1442299e0(uiSys, id, vcall +0x28), +0x3e = 0, logs 'UNLINK node', sends the message with flag 0 when the ids differed and +0x3c set; clears +0x38. Always +0x3f = 0. (lane owner review requested) Better name: Game_UIRef_Unlink (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ui_ref_unlink_node_owner",

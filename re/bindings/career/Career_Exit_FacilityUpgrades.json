@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1423defd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void f(void *flow)",
   "evidence": "decomp:re/decomp/1423defd0.c;xref:0x145786b80",
-  "notes": "myteam-g1: Flow state: my_team_exiting_facility_upgrades; also handles the purchase cash / upgrades result when leaving."
+  "notes": "Vtable slot (cell 0x145786b80), command hash dispatch (0xd910697d, 0xde2e7ac2, 0x493fe92b back, 0xffe1e3d9, 0x14aa4db3, ...). Back: tutorial my_team_exiting_facility_upgrades, route screen_group_back; re_scroll_list, focus_unavailable_button; purchase uses Career_Get_BankTeamBalance and facility node counters, confirm/not-enough-cash messages. (lane owner review requested) Better name: Career_FacilityUpgradesVM_HandleCommand (bound record keeps its name)."
  },
  "signature": {
   "id": "career.exit_facility_upgrades",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14388dfc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-HUD_CUSTOMISATION",
-  "notes": "named from its log messages (channel HUD_CUSTOMISATION): 'Failed to find hud customisation settings save path - trying to create | Failed to create hud customisation settings save path'"
+  "evidence": "decomp:re/decomp/14388dfc0.c;pat:log-channel-HUD_CUSTOMISATION;xref:0x141c11409,0x1436ce9aa,0x1438118f7,0x143811985,0x1438119e1,0x1515c8833",
+  "notes": "(settings, alloc, name, set) -> bool. Creates the save dir (+0x18) if missing (the two log lines are its failure logs), deletes the old file, writes XML HudConfigSets version=1 / HudConfigSet screenWidth, screenHeight, resolutionMessageShown / HudElements: HudElement key, debugName, x, y, enabled, opacity, scale. (lane owner review requested) Better name: Game_HudCustomisation_WriteSettingsXml (bound record keeps its name)."
  },
  "signature": {
   "id": "game.hud_customisation_create_save_path",

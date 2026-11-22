@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140bf9080",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-ADVANCE_SESSION",
-  "notes": "named from its log messages (channel ADVANCE_SESSION): 'Setting the destination to %s for sessionId: %s'"
+  "evidence": "decomp:re/decomp/140bf9080.c;pat:log-channel-ADVANCE_SESSION;xref:0x140bf8dd4",
+  "notes": "Net message 0x93 receive handler (registered on ((+0x2a8)+0x3d0) vslot +8 in 0x140bf89c0 via lea 0x140bf8dd4; 0x93 is the id SetDestination sends). logs ADVANCE_SESSION 'Setting the destination to %s for sessionId: %s', msg+0x14 -> +0x310, (char)msg+0x15 -> +0x314, +0x324 = msg+0x16 (0x140bf7230 when 0), then posts bus message vt 0x1456896b8. (lane owner review requested) Better name: Game_AdvanceSession_OnNetSetDestination (bound record keeps its name)."
  },
  "signature": {
   "id": "game.advance_session_set_destination_3",

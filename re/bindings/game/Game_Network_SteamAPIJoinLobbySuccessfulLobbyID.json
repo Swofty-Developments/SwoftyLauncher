@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144097ce0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'Steam API : Join Lobby Successful -> Lobby ID: %lu'"
+  "evidence": "decomp:re/decomp/144097ce0.c;pat:log-channel-NETWORK;xref:0x144097a2e",
+  "notes": "Steam lobby-enter call result: records an error entry in ring 0x146107900 on failure, else logs \"Join Lobby Successful -> Lobby ID: %lu\" and stores the lobby state. (lane owner review requested) Better name: Game_Network_Steam_OnLobbyEntered (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_steam_api_join_lobby_successful_lobby_id",

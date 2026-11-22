@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141002260",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-ONLINE_CONTRACT_NEGOTIATIONS",
-  "notes": "named from its log messages (channel ONLINE_CONTRACT_NEGOTIATIONS): 'Process contract broken sent'"
+  "evidence": "decomp:re/decomp/141002260.c;pat:log-channel-ONLINE_CONTRACT_NEGOTIATIONS;xref:0x141000107,0x141003aaa",
+  "notes": "B-class bus handler (bound 0x140ffeec0, unbound 0x1410038d0): sends net message 0xc9 (desc 0x1456b75e0) with packed id msg+0x10/+0x12 via 0x14402e500 on [this+0x298]+0x3d0, logs 'Process contract broken sent'. (lane owner review requested)"
  },
  "signature": {
   "id": "career.online_negotiations_send_contract_broken",

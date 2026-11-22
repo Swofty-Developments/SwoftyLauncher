@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143523510",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:cmp-byte-rcx+0x72-3-ja-ret@0x143523520;xref:0x1412304ba,0x1412308d9,0x141230c4d,0x143517e9d,0x14352f26d;kb:subsystems/rnd_ui.md#instances",
-  "notes": "Sets the enabled flag (+0xc) of the current state entry. Returns at once for department > 3 (cmp byte [rcx+0x72],3 ; ja @0x143523520), so a dept-4 (ENUM A Fake) instance never leaves the init sentinel."
+  "evidence": "decomp:re/decomp/143523510.c;pat:cmp-byte-rcx+0x72-3-ja-ret@0x143523520;kb:subsystems/rnd_ui.md#instances;xref:0x1412304ba,0x1412308d9,0x141230c4d,0x143517e9d,0x14352f26d",
+  "notes": "Returns if dept +0x72 > 3 or last entry enabled byte (+0xc) already equals the value. Same history push as Career_Set_UpgradeFitted (copy last entry when day +4 differs; sentinel if empty); writes day short +4 and enabled byte +0xc. (lane owner review requested)"
  },
  "signature": {
   "id": "career.set_upgrade_enabled",

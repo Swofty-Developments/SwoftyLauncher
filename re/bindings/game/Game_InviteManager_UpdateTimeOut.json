@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1431644e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=InviteManager::updateTimeOut; log channel NETWORK-INVITE: 'NEbool network::InviteManager::updateTimeOut() | %s: Timed out (%.2f secs).'"
+  "evidence": "decomp:re/decomp/1431644e0.c;pat:log-message-cxx;xref:0x1430e8cc7,0x1430e8dd3,0x1430e8e20",
+  "notes": "'NEbool network::InviteManager::updateTimeOut()': if no +0xba8 and elapsed since +0xba0 > 120 s logs 'Timed out (%.2f secs)', records error 0x6057d in the error ring (net_invite_manager.cpp), fail(8) 0x143161f50, returns 0; else 1. (lane owner review requested)"
  },
  "signature": {
   "id": "game.invite_manager_update_time_out",

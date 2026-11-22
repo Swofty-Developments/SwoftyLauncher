@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1441361b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
   "evidence": "decomp:re/decomp/1441361b0.c;xref:0x144136049",
-  "notes": "swiss-style hash map (ne_hash_map.h assert string) grow/rehash of the fixed name-resolver map keyed by Ne_UserId_Equals (fatal stub 0x144136850). Sole caller Ne_PresenceNameResolverFixed_InsertName. vq1-verify partial/disagree"
+  "notes": "robin_hood map find-or-insert (info bytes +0x30, slots +0x28, mask +0x40, hash mul +0x20, info_inc +0x50, shift +0x54, size +0x38, max +0x48, 80% load). Key = UserId: inline compare for type 3/7, else Ne_UserId_Equals 0x144121bc0. Returns {slot index, code} in param_2: 1 found, 2/3 inserted, 0 overflow; first use allocs 8 slots, grows via 0x144136860. Sole caller Ne_PresenceNameResolverFixed_InsertName."
  },
  "signature": {
   "id": "core.presence_name_resolver_fixed_map_rehash",

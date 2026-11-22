@@ -28,6 +28,7 @@ use crate::commands::run::RunArgs;
 use crate::commands::run::failure::{already_running, start};
 use crate::console::output::{info, say};
 use crate::signals::ending;
+use crate::stores::ea::session_env::{self, SessionEnv};
 use crate::time::{now_secs, stamp};
 
 pub(crate) fn play(
@@ -81,6 +82,14 @@ pub(crate) fn play(
     let usage = swofty_core::online::server::usage::Session::start(&store.root, game);
     let laps = crate::commands::laps::begin(store, config, profile, g);
     let mut watch = LoaderWatch::new(store, g, &session, launched, placed_loader);
+    session_env::remove_leftover(game);
+    let _session_env = match args.via_ea {
+        true => SessionEnv::write(
+            game,
+            &session_env::Contents::new(&request.id, unix_secs(), &command.env, &config.launch.env),
+        ),
+        false => None,
+    };
     let ea = match args.via_ea {
         true => Some(crate::stores::ea::start(
             store,
@@ -232,6 +241,12 @@ fn wait_game(child: &mut Child, mut tick: impl FnMut()) -> Result<ExitStatus> {
         }
         std::thread::sleep(Duration::from_millis(200));
     }
+}
+
+fn unix_secs() -> u64 {
+    SystemTime::now()
+        .duration_since(SystemTime::UNIX_EPOCH)
+        .map_or(0, |d| d.as_secs())
 }
 
 fn shell_join(args: &[String]) -> String {

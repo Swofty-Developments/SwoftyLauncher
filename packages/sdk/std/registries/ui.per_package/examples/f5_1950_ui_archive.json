@@ -1,0 +1,17 @@
+{
+  "ui.per_package": {
+    "f5_1950_ui_archive": {
+      "package": "vmknolle.season-1950/f5_1950",
+      "textures": {
+        "erp": "ui/f5_1950_ui.erp",
+        "resources": [
+          "eaid://ui_package/art/textures/broadcast_ui_generic/bc_logos/bc_logos_fia.tif.image",
+          "eaid://ui_package/art/textures/broadcast_ui_generic/bc_logos/bc_logos_fia.tif",
+          "eaid://ui_package/art/textures/broadcast_ui_generic/bc_safety_car/bc_sc_fia_icon.tif.image",
+          "eaid://ui_package/art/textures/broadcast_ui_generic/bc_safety_car/bc_sc_fia_icon.tif"
+        ]
+      },
+      "archives": ["2025_asset_groups/ui_package/flow_race.erp", "2025_asset_groups/ui_package/screens/broadcast_persistent.erp"]
+    }
+  }
+}

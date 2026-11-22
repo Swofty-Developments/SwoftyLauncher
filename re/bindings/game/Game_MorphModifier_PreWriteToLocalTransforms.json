@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401c6af0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name preWriteToLocalTransforms (class from the log channel); log channel MorphModifier: 'preWriteToLocalTransforms %p m_animData %p m_animData->m_animSet %p'"
+  "evidence": "decomp:re/decomp/1401c6af0.c;pat:log-message-method;xref:0x14560bcc0",
+  "notes": "Virtual (cell 0x14560bcc0). Enabled (+8) and actor LOD < 2: evaluates layers (0x143a37610, cb 0x1401c5c50); then advances three random idle timers (LCG seed +0x150), smooths weights 0.1/0.9 into channels +0x1a8/+0x1b0/+0x1b8, calls 0x1401c7010/0x1401c71b0(dt). Missing set logs 'preWriteToLocalTransforms %p...'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.morph_modifier_pre_write_to_local_transforms",

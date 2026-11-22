@@ -8,8 +8,8 @@
   "level": "L2",
   "subsystem": "core",
   "proto": "uint32_t (void *cfg)",
-  "evidence": "decomp:re/decomp/1443db170.c;xref:0x145a89248",
-  "notes": "myteam-g1: Reads ResourceMessageHandler.synchronousResourceProcessingTimeBudget and ErpLoader.* settings (readBufferSize 0x200000, readBufferCount 4, forceSequentialReads). Generic engine resource loader config.  2026-11-17 engine-re: also AssetGroupLoader.rollbackOnLoadError (default 0), AssetGroupLoader.retryOnDescriptionLoadError (0), AssetGroupLoader.pathPrefix/pathSuffix (0x40-byte strings at 0x14628f520/0x14628f560), Storage.UserMarkers.decompressErp, ErpLoader.useApr; ends by loading the asset manifest (Ne_AssetManifest_Load 0x143a5a550, call 0x1443dbe67)"
+  "evidence": "decomp:re/decomp/1443db170.c;xref:0x145a89248;pat:disasm-0x1443db170",
+  "notes": "myteam-g1: Reads ResourceMessageHandler.synchronousResourceProcessingTimeBudget and ErpLoader.* settings (readBufferSize 0x200000, readBufferCount 4, forceSequentialReads). Generic engine resource loader config.  2026-11-17 engine-re: also AssetGroupLoader.rollbackOnLoadError (default 0), AssetGroupLoader.retryOnDescriptionLoadError (0), AssetGroupLoader.pathPrefix/pathSuffix (0x40-byte strings at 0x14628f520/0x14628f560), Storage.UserMarkers.decompressErp, ErpLoader.useApr; ends by loading the asset manifest (Ne_AssetManifest_Load 0x143a5a550, call 0x1443dbe67)  | 2026-11-20 engine-re (track ERP size limits): heaps: EGO_ERP_WORKSPACE (lea 0x1443db272) and EGO_ERP_TEMP (0x1443db289, again 0x1443dbb0c) from the heap registry; resource map object 0xb8 bytes in EGO_APPLICATION with Ne_RobinHoodMap_Rehash(0x40000) (growable, no count cap); ERP loader object (0x400 bytes) built by 0x143a60bc0(loader, EGO_ERP_TEMP, EGO_ERP_WORKSPACE, resource map, ..., readBufferSize default 0x200000, readBufferCount 4, forceSequentialReads, useApr, decompressErp); EGO_ASSET_GROUP_LOADER at 0x1443dbaf5."
  },
  "signature": {
   "id": "core.init_resource_message_handler_config",
@@ -45,6 +45,16 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/1443db170.c;xref:0x145a89248",
    "notes": "V10358 Strings ErpLoader.*, ResourceMessageHandler.synchronousResourceProcessingTimeBudget; 0x200000 read buffer."
+  },
+  {
+   "date": "2026-11-20",
+   "verifier": "size-verify",
+   "kind": "func",
+   "item": "0x1443db170",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "pat:disasm-0x1443db170;xref:0x1443db272,0x1443db289,0x1443db69d,0x1443db4e1,0x1443db4ed,0x1443db4fc,0x1443db508,0x143a60bef,str:0x145a892f4,0x145a89306,0x145a89313,0x145a8932c",
+   "notes": "V12104 Confirmed: rbx=lookup 'EGO_ERP_WORKSPACE', r14=lookup 'EGO_ERP_TEMP'; at 0x1443db69d rcx=new loader, rdx=r14 (TEMP), r8=rbx (WORKSPACE); ctor stores rdx at [this+0] (0x143a60bef). readBufferSize default 0x200000 (0x1443db4ed), readBufferCount default 4 (0x1443db508), via getter 0x143a43240, passed on the stack. Addition: if either heap is missing it falls back to 'EGO_APPLICATION' (0x1443db3af / 0x1443db4d0)."
   }
  ],
  "proofs": []

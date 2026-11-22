@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401af660",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1401af660.c;xref:0x140cb7080",
-  "notes": "Formats '%s %u' (string + index) into a string buffer. Callers Career_DeptEvent_ChooseOutcome, Career_DeptEvent_Start, Game_RenderBadgeViewModel_SetupNextCapture."
+  "evidence": "decomp:re/decomp/1401af660.c;xref:0x140cb7080,0x140cbc32e,0x140cbc374,0x141d7a335,0x141d7b3d7,0x141d7b42f",
+  "notes": "(id{u8 kind,u16 index},outStr). Initialises a 0x40-byte inline string (vtable 0x145613548) and formats '%s %u' with enum name table 0x145612e60[kind] (ePreLoaded/eUserDefined/eNetworkReplicated) and u16 at id+2. Callers 0x140cb67a0, 0x140cbbc00, 0x141d79e00. (lane owner review requested)"
  },
  "signature": {
   "id": "game.format_name_with_index",

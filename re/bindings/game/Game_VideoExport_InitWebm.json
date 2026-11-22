@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1444b1f20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-VIDEO_EXPORT",
-  "notes": "named from its log messages (channel VIDEO_EXPORT): 'Using %s | Failed to get default codec config. | Failed to allocate image. | Failed to initialize encoder | Cannot open webm export file | Could not initialize muxer segment! | Could not add video tra'"
+  "evidence": "decomp:re/decomp/1444b1f20.c;pat:log-channel-VIDEO_EXPORT;xref:0x142bd1e0e,0x1444b1802",
+  "notes": "Read in full: (enc, path, w, h, fps, bitrate): 'VP90' +0x24c, size/fps +0x250..+0x25c; I420 image +0x1c0; codec config + init (+0x2b9) + 4 controls; file +0x260, writer +0x268, segment +0x270; video track +0x280, optional vorbis track +0x288 from audio src +0x298 (Xiph-laced headers); returns 0 or 5. (lane owner review requested)"
  },
  "signature": {
   "id": "game.video_export_init_webm",

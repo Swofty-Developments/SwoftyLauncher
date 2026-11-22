@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141d057e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141d057e0.c;xref:0x1413bb8cb,0x141cf04d2,0x141cf06e2",
-  "notes": "Second release variant (other lock-guard layout, slots +0x98..+0xe8). Same callers as Game_TimeOfDay_UnlockAll. (13 xref site(s), fb.py callers.)"
+  "evidence": "decomp:re/decomp/141d057e0.c;xref:0x141cf04d2,0x141cf06e2,0x141cf08f2,0x141d00dae,0x142e13ed6,0x1438b5c56,0x1438c332c,0x1438c353f,0x1438c4884,0x14477d076,0x144792d12,0x14479c3a3",
+  "notes": "Same lock set as Game_TimeOfDay_UnlockAll but releases remaining slots in descending order (+0xe8 down to +8, incl. +0x28). Every call site follows an UnlockAll call (scoped lock-set dtor). (lane owner review requested) Better name: Game_TimeOfDay_LockSet_ReleaseRemaining (bound record keeps its name)."
  },
  "signature": {
   "id": "game.time_of_day_unlock_all_b",

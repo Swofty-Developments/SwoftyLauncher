@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a6a9d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=ERPInfo::eUnloading; log channel EGO_ERP_LOADER: 'processUnload - \"%s\" - setting m_status = ERPInfo::eUnloading'"
+  "evidence": "decomp:re/decomp/143a6a9d0.c;pat:log-message-cxx;xref:0x143a62240,0x15214e6f1",
+  "notes": "(loader, erp, listener, p4, p5): info = 0x143a5e4a0([+0x3c0]); status 3 -> 'processUnload - \"%s\" - already in the middle of unloading', status 0 -> 'no record of this erp being loaded', both reply vt 0x1458a3548 {0x25} to the listener. Else status 3 (eUnloading, logged), QPC +0x38, listener +0x20, +0x28=p4, drops resource refs posting vt 0x1458a35b0; none -> 0x143a6b120. (lane owner review requested) Better name: Game_EgoErpLoader_ProcessUnload (bound record keeps its name)."
  },
  "signature": {
   "id": "game.erp_info_e_unloading",

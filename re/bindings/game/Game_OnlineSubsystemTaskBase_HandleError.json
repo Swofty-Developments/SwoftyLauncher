@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432c0fb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_OnlineSubsystemTaskBase_HandleError;xref:0x1432c104d",
-  "notes": "cxx=game::OnlineSubsystemTaskBase::handleError; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1432c0fb0.c;str:s_OnlineSubsystemTaskBase_HandleError;xref:0x1432db2cf,0x14336bd04",
+  "notes": "Logs with game::OnlineSubsystemTaskBase::handleError(const ErrorBase&, EHandlerResponse, TaskCancelledCallback); builds the UI error (online_services_generic_exception_*, online_services_EA_not_logged_in, online_services_upgrade_required, error-code node) via Game_UiMessage_DisplayMessage and sets the task finished. Called from Game_F1osTasksystem_InternalStartTask, Game_OnlineServerLogInTask_OnError. (lane owner review requested)"
  },
  "signature": {
   "id": "game.online_subsystem_task_base_handle_error",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a68490",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name popNextRead (class from the log channel); log channel EGO_ERP_LOADER: 'popNextRead - close \"%s\"'"
+  "evidence": "decomp:re/decomp/143a68490.c;pat:log-message-method;xref:0x143a657af,0x143a65a7d",
+  "notes": "Adds timers +0x3a0..+0x3b0 to globals 0x14628f5a8.., logs EGO_ERP_LOADER_TIMING summary; closes file +0x338 ('popNextRead - close \"%s\"'); frees buffers if +0x378; clears +0x330/+0x340, +0x3f5=1. Under lock +0x2d8 pops queue +0x318..+0x320: kind 1 -> unload +0x3f8, state 2, posts vt 0x1458a35b0; kind 0 -> state 1, StartRead(loader, &cur, req+8, req+0x10), frees req; empty -> 0x1439952f0([+0x3b8]). (lane owner review requested)"
  },
  "signature": {
   "id": "game.ego_erp_loader_pop_next_read",

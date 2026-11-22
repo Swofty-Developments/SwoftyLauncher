@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1434d61b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_Player_ResetSaveDataContainer;xref:0x1434d65e2",
-  "notes": "cxx=game::Player::resetSaveDataContainer; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1434d61b0.c;str:s_Player_ResetSaveDataContainer;xref:0x1458449e0",
+  "notes": "Secondary-vtable cell 0x1458449e0, this = Player+0x1e0. Gets/creates VM node 'player_backup', logs restoreDefaultSettings, copies 'settings', resets bindings, Game_Input_GenerateCustomControlSchemes, enable_subtitles option for modes 9/10, sets +0x438; arg 1 logs 'resetSaveDataContainer - eRecovery', else clears +0x43a/+0x360/+0x368..+0x387. Returns 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.player_reset_save_data_container",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14192eb80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14192eb80.c;xref:0x1417eaafa,0x1417eab09",
-  "notes": "(params2, variant{name,type,value}): sets one of two named parameter slots (+0x30/+0xa0 names) from a typed variant: 1 int, 2 double, 3 short, 4 uint, 5 string, 6-9 other; used before firing telemetry/UI events. Callers: Sess_Flags_UpdateYellowReasons, Game_FrontendScenePreview_UpdateTick, Game_Career_HideDriversOnExit."
+  "evidence": "decomp:re/decomp/14192eb80.c;xref:0x1417eaafa,0x1417eab09,0x1420d1ff3,0x1420d1ffe,0x1423256bc,0x1423256c9,0x143570ebb,0x143570ecb",
+  "notes": "(params with slots +0x00/+0x70 {type, value +8, ref +0x10, name +0x28/+0x30}, variant {name, type, value, ref}): slot = first empty/same-name slot (strcmp), copies name (<= 63); value by type: 1 int/2 double -> type 1, 3 short/4 int/5 int64 (<= 0x7fffffff) -> 4, 6/7/8 unsigned -> 7, 9 refcounted object -> 9. Called e.g. from 0x1417eaa50, 0x1420d1b80, 0x1423252b0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.event_params_set_value",

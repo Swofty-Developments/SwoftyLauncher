@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140ff8af0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_Championship_CareerOnlineSynchroniser_OnProfileSaveComplete;xref:0x140ff8b7d",
-  "notes": "cxx=game::championship::CareerOnlineSynchroniser::onProfileSaveComplete; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/140ff8af0.c;str:s_Championship_CareerOnlineSynchroniser_OnProfileSaveComplete;xref:0x140ff857e",
+  "notes": "SaveSystem callback (lea at 0x140ff857e): logs 'Profile Save complete with result %d'; for result 0 or 4 tail-calls the current policy ([+0x50]) slot +0x20 (onLocalSaveFinished). (lane owner review requested)"
  },
  "signature": {
   "id": "game.career_online_synchroniser_on_profile_save_complete",

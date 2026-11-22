@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141debf60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141debf60.c;xref:0x14574f538,0x1401f7e2b",
-  "notes": "Copy D of the filter/rebuild-list slot (vt slot @0x14574f538, also called directly from 0x1401f6db0); same body as _A. Shares the inlined UIOptionsSystem::setSelectedFilter block: filter level global 0x14606aa34 (0=filter_basic,1=filter_advanced,2=filter_expert) is matched by name in the options list [this+0x630]+0x70..0x78, then UIOptionsSystem refresh 0x142adc6d0(this+0x640 if this[0x114]) and vcall this+0x118 (refresh view). d4-verify-a: identical to _B (2499 bytes): body only when child this[0x175] != null, filter then 0x141da4670/0x141da7170 on the child and a UI event"
+  "evidence": "decomp:re/decomp/141debf60.c;xref:0x14574f538",
+  "notes": "Vtable cell 0x14574f538. Body only when child this[0x165] != 0 (old note said 0x175: wrong). Inlined UIOptionsSystem::setSelectedFilter (global 0x14606aa34: 1 filter_advanced, 2 filter_expert, else filter_basic, searched in [this+0x630]+0x70..+0x78), 0x142adc6d0, vcall +0x118, 0x141da4670(this,child), 0x141da7170(child,0,0x2b7a7b70), UI event rebuilt_list (0x144320fe0). Old xref 0x1401f7e2b is not an instruction start (rel32 noise inside 0x1401f6db0): no direct call. (lane owner review requested)"
  },
  "signature": {
   "id": "game.settings_view_model_apply_filter_rebuild_list_d",

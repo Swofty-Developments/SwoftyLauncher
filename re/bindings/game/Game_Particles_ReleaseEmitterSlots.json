@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b0e9b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143b0e9b0.c;xref:0x143b0df5e",
-  "notes": "Hypothesis: compacts/clears particle slots of an emitter (memset + Game_Particles_RestoreParticleSlot); called from UpdateManager. Named callers: Game_Particles_UpdateManager."
+  "notes": "Inverse of Game_Particles_StoreEffectEmitters: reads replay store stream param_2 per effect in mgr+0x858e90 (skips id 0xffffff02, def +0xb99 bit5), checks emitter count vs header bits 0-4, restores flagged emitters (transform/pos, +0xe0/+0xdc/+4), takes chunks from free list 0x146294210 and decodes particles (0x143af4710, 16 per chunk). Returns next pointer or 0 on mismatch. Caller 0x143b06d90. Old name was wrong. (lane owner review requested) Better name: Game_Particles_LoadEffectEmittersFromStore (bound record keeps its name)."
  },
  "signature": {
   "id": "game.particles_release_emitter_slots",

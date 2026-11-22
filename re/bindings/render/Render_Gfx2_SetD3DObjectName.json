@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439b8890",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1439b8890.c;xref:0x1439b0f38",
-  "notes": "Converts an ANSI name (lstrlenA + MultiByteToWideChar into a stack buffer) and calls a SetName-style vcall on the D3D object param_1. Debug names for resources. Callers 0x1439ada80, 0x1439b9390 (many)."
+  "evidence": "decomp:re/decomp/1439b8890.c;xref:0x1439b0f38,0x1439b9556,0x1439bb2f6,0x1439bbef0",
+  "notes": "If param_1 non-null: lstrlenA + MultiByteToWideChar into an alloca buffer, then vcall +0x30 on param_1 (SetName slot of ID3D12Object) with the wide string. Used after heap/resource creation (0x1439b9cc0, 0x1439bbd20, 0x1439bb0f0). (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx2_set_d3_d_object_name",

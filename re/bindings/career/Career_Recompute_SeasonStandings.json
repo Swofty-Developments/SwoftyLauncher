@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140b2fa60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void Career_Recompute_SeasonStandings(void *standings, char mode)",
-  "evidence": "decomp:re/decomp/140b2fa60.c;decomp:re/decomp/14962fff0.c;decomp:re/decomp/140b30a90.c;xref:0x140ae86d8,0x140ae92f9",
-  "notes": "jmp thunk to .data1 body 0x149618ee0 (vtable 0x145670be0 slot +0x30, also called directly by Career_Rebuild_SeasonStandings and Career_Apply_SeasonResultsToStandings). this = the drivers F1SeasonStandings embedded in Season at +0x2a8. mode 0 clears the per-session points (+0x20) and cumulative tables (+0x40), mode 2 pops the last session of each, then vt+0x38 (0x1413cdff0) refreshes the points and 0x14962fff0 adds each new session to the cumulative table through 0x140b30a90 (a copy of the previous session plus the session points: entries {u32 key, i32 total}, 8 bytes, per round 0x20 {alloc,begin,end,cap}, per session 0x28 with the id at +0x20); finally every table session is sorted by Career_Compare_StandingsEntries with ctx {this, &packed(last round | last session id<<32)}. The constructors standings (vtable 0x145670b40) derive from the drivers points (+0x20), not from this table."
+  "evidence": "decomp:re/decomp/140b2fa60.c;decomp:re/decomp/14962fff0.c;decomp:re/decomp/140b30a90.c;xref:0x140ae86d7,0x140ae86f6,0x140ae8718,0x140ae873a",
+  "notes": "jmp thunk to .data1 0x149618ee0 (vtable ptrs 0x145670c10/0x145670c60). mode 2 pops the last session of the tables at +0x20 and +0x40; mode 0 calls 0x140b30040(+0x10); then vt+0x38(this), 0x140b30210(+0x10) rebuilds the cumulative table, and every session of +0x40 is sorted by 0x140b31170 with ctx {this,&packed(last round|last session id<<32)}. (lane owner review requested)"
  },
  "signature": {
   "id": "career.recompute_season_standings",

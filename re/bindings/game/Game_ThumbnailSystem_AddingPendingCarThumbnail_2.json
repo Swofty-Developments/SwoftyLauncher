@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e2e150",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-THUMBNAIL_SYSTEM",
-  "notes": "named from its log messages (channel THUMBNAIL_SYSTEM): 'Adding pending car thumbnail REgeneration for set ID %d'"
+  "evidence": "decomp:re/decomp/142e2e150.c;pat:log-channel-THUMBNAIL_SYSTEM;xref:0x142e33df5,0x142e34c6b,0x142e37518",
+  "notes": "Regeneration for an existing set id param_2 (map +200): calls old callback(1), creates new car task like 0x142e2dc20, replaces the task in the set entry, stores new callback, logs 'Adding pending car thumbnail REgeneration', queues id. (lane owner review requested) Better name: Game_ThumbnailSystem_RegenerateCarThumbnail (bound record keeps its name)."
  },
  "signature": {
   "id": "game.thumbnail_system_adding_pending_car_thumbnail_2",

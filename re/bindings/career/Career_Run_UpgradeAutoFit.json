@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1412484e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:cmp-byte-rcx+0x72-3-ja-ret@0x1412486b8;xref:0x141246d11,0x141247bc0;kb:subsystems/rnd_ui.md#instances",
-  "notes": "Auto-fit pass over the team upgrade instances. Returns at once for department > 3 (cmp byte [rcx+0x72],3 ; ja @0x1412486b8), so a dept-4 (ENUM A Fake) instance never leaves the init sentinel. CORRECTION(V9169): Auto-fit loop over team upgrade instances calling 1435157d0 is right, but the department > 3 check (cmp byte [rcx+0x72],3 ; ja at 0x1412486bc) jumps to the loop continue 0x141248650 and skips that instance rather than returning from the function."
+  "evidence": "decomp:re/decomp/1412484e0.c;pat:cmp-byte-rcx+0x72-3-ja-ret@0x1412486b8;kb:subsystems/rnd_ui.md#instances;xref:0x141246d11,0x141247bc0",
+  "notes": "Finds team param_2's model in (+0xd60)+0x298..+0x2a0 and the current round ((+0x270) vt+0xf8) in +0x2f8..+0x300 (stride 0x40, allowed category bytes from +0x20); for each enabled upgrade (0x141244520, 0x14352e380) with allowed category +0x70, last record flag clear and dept byte +0x72 < 4 calls Career_Set_UpgradeFitted (0x1435157d0) with today ((+0xd68)+0x2b0>>5)/45. Dept > 3 is skipped (continue), not a return. (lane owner review requested)"
  },
  "signature": {
   "id": "career.run_upgrade_auto_fit",

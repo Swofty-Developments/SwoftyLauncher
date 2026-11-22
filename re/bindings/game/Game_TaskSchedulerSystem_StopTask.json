@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432ddb60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_TaskSchedulerSystem_StopTask;xref:0x1432ddbe0,0x1432ddced",
-  "notes": "cxx=game::TaskSchedulerSystem::stopTask; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1432ddb60.c;str:s_TaskSchedulerSystem_StopTask;xref:0x141683f86,0x141aa0303,0x141cb9257,0x141cb92c9,0x141cb933b,0x141df97db,0x141dfba9b,0x141dfbb0d,0x141dfbb7f,0x141dfe4fb,0x141dfe56d",
+  "notes": "TaskSchedulerSystem::stopTask(WeakBaseTaskPtr): locks weak ptr, Game_OnlineSubsystemTaskBase_StopTask; if it is the current task (+0x88) logs, calls 0x1432dc0a0 with it and clears +0x88/+0x90; releases refs. (lane owner review requested)"
  },
  "signature": {
   "id": "game.task_scheduler_system_stop_task",

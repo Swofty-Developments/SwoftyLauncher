@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14315f6f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=UnrankedMatching::onPostRaceResultSyncEnter; log channel NETWORK-MATCHING: 'virtual NEbool network::UnrankedMatching::onPostRaceResultSyncEnter() | %s: new exitType: %d, new transition state: %s'"
+  "evidence": "decomp:re/decomp/14315f6f0.c;pat:log-message-cxx;xref:0x14581deb0",
+  "notes": "Read in full: exitType = byte [[this+0x10]+0x40]+0x1fc; reads UI data '#ui_menu_data.frontend_transition_state' and logs 'exitType: %d, transition state: %s' (NETWORK-MATCHING); if exitType == 1, the current event (as in onIncomingConnection) has a session record whose name matches string 0x14565e69b and [lobby+0x1058]+0x208 vcall +0x78 == 2: sets the transition state to 'main_menu', this+0x58 = 1 and logs the new state. Returns 1. Vtable cell 0x14581deb0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.unranked_matching_on_post_race_result_sync_enter",

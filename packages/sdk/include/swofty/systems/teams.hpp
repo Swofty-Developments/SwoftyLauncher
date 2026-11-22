@@ -99,12 +99,38 @@ struct PitTimes {
 SWOFTY_RECORD(PitTimes, team, from)
 SWOFTY_RECORD_REGISTRY(PitTimes, "team.pit_times")
 
+// When a vehicle override applies: every field that is set must match the session. An empty track, a year of 0 and
+// no session types match every session, so an override with an empty `when` runs the whole box or career season.
+struct VehicleOverrideWhen {
+    Ref<tracks::Track> track;               // the session's track record ("<provider>/anderstorp")
+    int year = 0;                           // the box's season, or the career's year
+    std::vector<std::string> session_types; // "practice", "qualifying", "sprint", "race"; empty = the whole weekend
+};
+SWOFTY_RECORD(VehicleOverrideWhen, track, year, session_types)
+
+// One package team's car for chosen events (experimental, off unless SWOFTY_VEHICLE_OVERRIDE=1): at each session load
+// that `when` matches, the seats it names drive `vehicle` instead of the team's own car. Only the session's own copy
+// of the entrant records changes, so the team, its results and the career's rows keep the team's car.
+struct VehicleOverride {
+    static constexpr Version version{1, 0};
+    Ref<content::Package> package;               // the box or career season whose team it changes
+    std::string team;                            // the package's team entry key ("brabham")
+    std::vector<Ref<drivers::Identity>> drivers; // the seats it changes, by the team's drivers; empty = every seat
+    Ref<cars::Vehicle> vehicle;                  // a vehicle registered at boot ("vmknolle.season-1978/f78_03_bt46b")
+    Ref<liveries::Livery> livery;                // empty: the vehicle's own livery
+    VehicleOverrideWhen when;
+    json::Value extra;
+};
+SWOFTY_RECORD(VehicleOverride, package, team, drivers, vehicle, livery, when)
+SWOFTY_RECORD_REGISTRY(VehicleOverride, "team.vehicle_override")
+
 inline Registry<Constructor> constructors{"team.constructor",
                                           {.applies = Applies::boot, .shared = {.provider_registry = "team.identity"}}};
 inline Registry<Identity> identities{"team.identity", {.applies = Applies::boot}};
 inline Registry<Logo> logos{"team.logo", {.applies = Applies::read}};
 inline Registry<PitTimes> pit_times{"team.pit_times", {.applies = Applies::boot}};
 inline Registry<Garage> garages{"team.garage", {.applies = Applies::boot}};
+inline Registry<VehicleOverride> vehicle_overrides{"team.vehicle_override", {.applies = Applies::session}};
 
 inline Result set_logo(Ref<Identity> team, Ref<Logo> logo)
 {

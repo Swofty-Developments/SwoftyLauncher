@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1409f4fa0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "int Game_AudioF1Car_Setup(void *car_audio, void *init)",
-  "evidence": "decomp:re/decomp/1409f4fa0.c;xref:0x145666d38;imm:0x145666e88;imm:0x145666e93",
-  "notes": "AudioF1Car component init (vtable 0x145666d20 slot 3). Reads property switchName from init+0xf0, +0xe8, +0xe0 (filled by the base init 0x14450c3e0); stores its Wwise ID (Game_Get_WwiseIdFromString) at +0x1058, the engine switch value set through emitter vt+0x50 (switch group 0x146050908; reads 0x1409f9304,0x1409f9407,0x1409f950d); formats audio.audio_car_data.<label>. at 0x1409f5226 (r8 = rsi = label, rsi dead after) and reads 42 fields by case-sensitive FNV-1a 64 (exists check 0x1445a2090); bundle_name is lowered and matched against the bundle registry (audio system vt+0x38, entries +0xd0..+0xd8, 0xa8 each, key +0x00, flags +0xa4: 1 engine, 2 exhaust, 4 cabin), then 0x144528f40 attaches the component. Only reader of switchName and of that format string. The Wwise ID ignores case, the db rows do not: F1 1990 gives its cars the donor label in other case (addons/f1-1990/tools/audio.py)"
+  "evidence": "decomp:re/decomp/1409f4fa0.c;imm:0x145666e88;imm:0x145666e93;xref:0x145666d38",
+  "notes": "AudioF1Car init (vtable 0x145666d20 slot 3, cell 0x145666d38): switchName from init+0xf0/+0xe8/+0xe0 -> Wwise id at +0x1058; reads audio.audio_car_data.<label>.<field> (FNV-1a64, exists 0x1445a2090; string values XOR-decoded with key table 0x145890978) for ~45 fields; bundle_name lowered and matched in registry vt+0x38 list +0xd0 (0xa8 entries, flags +0xa4 1/2/4) -> 0x144528f40; safety_car selects the \"safety car - exhaust/engine/cabin\" emitters. (lane owner review requested)"
  },
  "signature": {
   "id": "game.audio_f1_car_setup",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d6fad0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VehicleDropInManager::completedDropIn; log channel NETWORK/F: 'VehicleDropInManager::completedDropIn()'"
+  "evidence": "decomp:re/decomp/142d6fad0.c;pat:log-message-cxx;xref:0x1457dfda8",
+  "notes": "Read in full (this, u32 *out): if [[[this+0xdb8]+0x3c0]+0x50]+8 < 2, nothing pending (+0x88/+0xd0 null) and no player entry with +0x68/+0x69 set: logs 'VehicleDropInManager::completedDropIn()', posts message 0x1458364d0 (0x3700000007) to all (mode 1) and clears +0x4e4. Then writes a state hash to *out (0x7c9df43c, [0x146cb2280] or [0x146cb2284]). Vtable cell 0x1457dfda8. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_drop_in_manager_completed_drop_in",

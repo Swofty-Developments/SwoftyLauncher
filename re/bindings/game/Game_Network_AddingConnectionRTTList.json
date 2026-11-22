@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14406e7d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'Adding connection [%d] to RTT list'"
+  "evidence": "decomp:re/decomp/14406e7d0.c;pat:log-channel-NETWORK;xref:0x152f106b5",
+  "notes": "Connection-arrived handler: if the conn id is not yet in the RTT vector this+0x10..0x18 (0x58-byte entries, id at +0x4c) logs \"Adding connection [%d] to RTT list\" and appends an entry with QPC timestamps, else logs \"already present\"; sets local connectivity on. (lane owner review requested) Better name: Game_Network_AddConnectionToRttList (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_adding_connection_rtt_list",

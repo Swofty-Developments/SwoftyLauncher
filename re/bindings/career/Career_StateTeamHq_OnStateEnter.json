@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1436ffae0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "uint64_t(void *state)",
-  "evidence": "decomp:re/decomp/1436ffae0.c;xref:0x14585f610;doc:addons/career-editor/protocol/bridge.md#state-detection",
-  "notes": "StateTeamHQ onStateEnter (vtable slot 0x14585f610, after the StateTeamHQ name): clears state+0xd9c, sets it to 1 when Career_Is_MyTeamGameMode_Thunk(game mode) and feature flag +3 bit0; subscribes start_hq_flow (0x143703d40 picks enter_my_team_career vs enter_team_hq from +0xd9c) CORRECTION(V9245): It is the vtable slot at 0x14585f610 and clears/sets byte +0xd9c as claimed, but start_hq_flow is not subscribed here: its string is referenced from the next function 0x1437020a0, and this function also does other work (thumbnail request, network and cutscene strings)."
+  "evidence": "decomp:re/decomp/1436ffae0.c;doc:addons/career-editor/protocol/bridge.md#state-detection;xref:0x14585f610",
+  "notes": "StateTeamHQ vtable slot 0x14585f610. Clears +0xd9c; sets it to 1 when 0x140778420 (Is_MyTeam game-mode check) is true and feature byte +3 bit0 is set. If subscriptions flag +0x1244 is 0 calls Career_StateTeamHq_SubscribeFlowMessages 0x1437020a0(state,1). Also: cutscene subtask, camera cycle, thumbnail request, online race status, flow strings (enter_playercard, enter_next_career_season_setup). (lane owner review requested)"
  },
  "signature": {
   "id": "career.state_team_hq_on_state_enter",

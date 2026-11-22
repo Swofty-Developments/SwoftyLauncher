@@ -1,0 +1,8 @@
+{
+  "car.profile": {
+    "boost": {
+      "cars": { "team": "mercedes" },
+      "power_scale": 1.03
+    }
+  }
+}

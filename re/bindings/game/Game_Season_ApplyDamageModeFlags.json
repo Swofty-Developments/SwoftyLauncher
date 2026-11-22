@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143099190",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143099190.c;doc:re/db/subsystems/game.md",
-  "notes": "cf-verify claim 8: writes a stored rules-flag record (not car+0x130): entry in [x+0x228..0x230] byte +0x14, else x+0x250, else profile+0xe6c; mode [this+0x3f0]: 0 -> (b & 0xf0)|0x20, 1/2/3 -> (b & 0xd0)|0x27 / 0x23 / 0x2b; +3 byte bit1 (tyre damage) cleared for 0, set for 1-3 (online season H)"
+  "evidence": "decomp:re/decomp/143099190.c;doc:re/db/subsystems/game.md;xref:0x1430993f2,0x14309d00a,0x14309d255,0x14309e37b",
+  "notes": "Rules-flag record = entry of [[x+0x2b0]+0x228..+0x230] whose id matches [x+0x2a8] (stride 0x20), else [x+0x2b0]+0x240 if +0x25c set, else x+0xe5c (x = [[this+0x420]+0x4f8]). Mode [this+0x3f0]: 0 -> byte +0x10 = (b&0xf0)|0x20, +0x13 bit1 cleared; 1/2/3 -> (b&0xd0)|0x27/0x23/0x2b, +0x13 bit1 set; record written back. Damage meaning of the bits from re/db/subsystems/game.md. (lane owner review requested)"
  },
  "signature": {
   "id": "game.season_apply_damage_mode_flags",

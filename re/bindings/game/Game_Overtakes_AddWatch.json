@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142521720",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-OVERTAKES",
-  "notes": "Log channel OVERTAKES: 'Overtake watch added between cars %d (P%d) and %d (P%d)'"
+  "evidence": "decomp:re/decomp/142521720.c;pat:log-channel-OVERTAKES;xref:0x145791128",
+  "notes": "Overtake tracker update (vtable cell 0x145791128). Watch list = byte pairs at this+0x140, count this+0x48*8. Removes watches whose cars are not active (+0x18 != 2) or swapped places (positions XOR +0x48^+0x50); adds a watch for a car that gained a place (prev pos +0x68^+0x70), logs 'Overtake watch added', posts bus message 0x145793950 (Ne_Post_BusMessage); when the gap (dist XOR +8^+0x10 * 0x146ce66b8) >= 3.0 logs 'Overtake recorded' and calls vcall +0x20. (lane owner review requested) Better name: Game_Overtakes_UpdateWatches (bound record keeps its name)."
  },
  "signature": {
   "id": "game.overtakes_add_watch",

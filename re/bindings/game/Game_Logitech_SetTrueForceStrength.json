@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143fc63b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name setTrueForceStrength (class from the log channel); log channel LOGITECH: 'setTrueForceStrength(%.3f)'"
+  "evidence": "decomp:re/decomp/143fc63b0.c;pat:log-message-method;xref:0x145a44778",
+  "notes": "Virtual (cell 0x145a44778). (this, strength): if device +0xe78 is set calls 0x1449f5870(0x145f717b0, 0, strength, 0) and logs LOGITECH 'setTrueForceStrength(%.3f)'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.logitech_set_true_force_strength",

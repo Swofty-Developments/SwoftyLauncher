@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446c9a50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: AeroHeight.front, AeroHeight.rear, rideHeight.front.Left, rideHeight.front.Right, rideHeight.rear.Left, rideHeight.rear.Right'"
+  "evidence": "decomp:re/decomp/1446c9a50.c;pat:log-channel--;xref:0x145bfca90",
+  "notes": "Registers 21 debug channels on [[this+8]+0x148] via Car_Aero_RegisterDebugChannel(group, name, this, getter, min, max, flags): aero CL.A/front/rear, CD.A, Balance, Wake %, AeroHeight.front/rear; suspension rideHeight.*; damage fwing/rwing_damage; drs fail_at_distance/distance_travelled/fix_time. No config read. (lane owner review requested) Better name: Game_F1Aero_RegisterDebugChannels (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_ride_height_config",

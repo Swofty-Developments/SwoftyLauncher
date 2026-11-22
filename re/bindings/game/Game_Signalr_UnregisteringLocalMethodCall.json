@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432b9ff0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-SIGNALR/V",
-  "notes": "named from its log messages (channel SIGNALR/V): '%s: unregistering local method call %s'"
+  "evidence": "decomp:re/decomp/1432b9ff0.c;pat:log-channel-SIGNALR/V;xref:0x14259feab,0x1425a00ae,0x1425aa962,0x1425c5d30,0x143354dfa,0x1434579fe,0x1501fe9a3",
+  "notes": "Logs SIGNALR/V \"%s: %s\" with SignalRHubMethodHandle::unregisterSelf and *param_1; if name non-null: logs the SIGNALR unregisterLocalMethodCall line (inlined reporter), removes the djb2 hash of the name from [[0x1460c4a30]+0x500]+0x20098 +0x468 (0x1444f5510), 0x1433312a0(param_1[1]+8,&name), then param_1[0]=0. Old name was only the inlined log fragment. (lane owner review requested) Better name: Game_SignalRHubMethodHandle_UnregisterSelf (bound record keeps its name)."
  },
  "signature": {
   "id": "game.signalr_unregistering_local_method_call",

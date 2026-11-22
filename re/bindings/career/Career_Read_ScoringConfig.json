@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141200980",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: scoring.score_awarded_for_clean_laps, scoring.score_awarded_for_fastest_lap, scoring.score_awarded_for_finishing_1st, scoring.score_awarded_for_finishing_2nd, scoring.score_awarded_for_finishing_3rd, scoring.score_awarded_for_finishing_4th, scoring.score_awarded_for_fini'"
+  "evidence": "decomp:re/decomp/141200980.c;pat:log-channel--;xref:0x1412006b4,0x1456c9800",
+  "notes": "Reads Gdb keys with Gdb_Get_FieldInt (0x1445a2cf0): scoring.score_awarded_for_finishing_1st..6th, fastest_lap, laps_lead, clean_laps -> ints at +0x314..+0x334; then '%s.%s' assist keys (steering_assist, braking_assist, traction_control, dynamic_racing_line, gearbox, flashbacks, corner_cutting, surface_type levels) into the map at +0x340 (0x14129d8d0). Vtable cell 0x1456c9800; also called at 0x1412006b4. (lane owner review requested)"
  },
  "signature": {
   "id": "career.read_scoring_config",

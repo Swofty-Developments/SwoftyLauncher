@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a9f080",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onGaragesHidden (class from the log channel); log channel GarageModelComponent: 'onGaragesHidden  setVisible(true) [m_garageId %d] override [%s]'"
+  "evidence": "decomp:re/decomp/142a9f080.c;pat:log-message-method;xref:0x142b0f590,0x142b16a34",
+  "notes": "onGaragesHidden(comp,msg): msg+0x10 hidden flag; toggles model comp+0x30 visible byte +0x10d and render proxy +0x80 bit1 of +0x13c (queues 0x143d3ce20 on the render queue), logs setVisible(true/false). Handler (lea) in 0x142b165f0 / 0x142b0f3a0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.garage_model_component_on_garages_hidden",

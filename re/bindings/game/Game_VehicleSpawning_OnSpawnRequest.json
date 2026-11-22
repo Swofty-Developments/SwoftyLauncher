@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f39bf0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-VEHICLE_SPAWNING_SYSTEM",
-  "notes": "named from its log messages (channel VEHICLE_SPAWNING_SYSTEM): 'VehicleSpawnRequest: Vehicle %d is using optional decals %I64d, size = % d | VehicleSpawnRequest: Vehicle %d is customisation decals %I64d, size = % d | VehicleSpawnRequest: Vehicle %d is using no dec'"
+  "evidence": "decomp:re/decomp/142f39bf0.c;pat:log-channel-VEHICLE_SPAWNING_SYSTEM;xref:0x1428b0e5f,0x14371354f",
+  "notes": "Read in full: constructor returning param_1: +0 vehicle id, +0x10 copy (0x14096ccf0), +0x6790 flag, +0x67a0 0x40-byte transform, callbacks +0x6860/+0x6870; decal list +0x67e0 (optional decals from param_9 or customisation +0x5c30) and custom livery +0x6820..+0x6850 (from param_10 or +0x11f8/+0x1200); all 'VehicleSpawnRequest: ...' logs. Not an event handler. (lane owner review requested) Better name: Game_VehicleSpawnRequest_Construct (bound record keeps its name)."
  },
  "signature": {
   "id": "game.vehicle_spawning_on_spawn_request",

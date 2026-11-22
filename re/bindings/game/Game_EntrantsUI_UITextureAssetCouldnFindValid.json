@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1424b0e10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-ENTRANTS_UI",
-  "notes": "named from its log messages (channel ENTRANTS_UI): 'UI Texture Asset: couldn't find valid handle for path %s'"
+  "evidence": "decomp:re/decomp/1424b0e10.c;pat:log-channel-ENTRANTS_UI;xref:0x1424bfa10,0x1424f1721,0x1424f27a5,0x1424f3732,0x1424f5642,0x1424f75e4,0x142e99d4f,0x142e9a40f",
+  "notes": "Opens gdb 'ui_texture_path' under path param_5; child node 'textures' (param_3 == 0) or 'invalid'; per row decodes obfuscated 'path'/'name' (xor 0x145890978), maps name via 0x1401b9000(param_4); mode 0 resolves the texture handle (0x1442b1b60 or 0x140846270 when param_6), logs ENTRANTS_UI 'UI Texture Asset: couldn't find valid handle for path %s' if missing, adds it (0x14083c270). Old name was a log fragment. (lane owner review requested) Better name: Game_EntrantsUi_LoadUiTexturePaths (bound record keeps its name)."
  },
  "signature": {
   "id": "game.entrants_ui_ui_texture_asset_couldn_find_valid",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1402289a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=CutsceneManager::shutdownInternal; log channel CUTSCENE_MANAGER: '>>>>>>>> CutsceneManager::shutdownInternal [%p] [%s]'"
+  "evidence": "decomp:re/decomp/1402289a0.c;pat:log-message-cxx;xref:0x1428b3c89,0x1428b55d2,0x1428b6296,0x1428bbc7b",
+  "notes": "(mgr, sharedPtr<script>*): if the script is non-null takes vcall +0x28 (name), logs CUTSCENE_MANAGER '>>>>>>>> CutsceneManager::shutdownInternal [%p] [%s]', calls script vcall +0xa0, then releases the local copy and the param shared_ptr. (lane owner review requested)"
  },
  "signature": {
   "id": "game.cutscene_manager_shutdown_internal",

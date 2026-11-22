@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143109ae0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name finaliseEntrants (class from the log channel); log channel NETWORK-ENTRANTS: '%s().'"
+  "evidence": "decomp:re/decomp/143109ae0.c;pat:log-message-method;xref:0x1436dcceb,0x1436fe760",
+  "notes": "Logs finaliseEntrants(); on host with pending flag this+0xdd: resolves entrants, 0x1431096c0(this+0xe4), sends registered entrants, adds AI players, clears flags +0xdd/+0xdf. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_entrants_finalise_entrants",

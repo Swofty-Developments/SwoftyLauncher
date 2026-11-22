@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142bd1e30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-PHOTO-MODE",
-  "notes": "named from its log messages (channel PHOTO-MODE): 'Creating the normal photo took %I64d microseconds'"
+  "evidence": "decomp:re/decomp/142bd1e30.c;pat:log-channel-PHOTO-MODE;xref:0x142bce45d,0x142bcea6b",
+  "notes": "Capture types 0/1 (1 = stereo, double width): allocates pixel array (+0x1254 x +0x1258 x bpp +0x1260), reads pixels via 0x142bd24c0, converts to RGBA8 (bpp 4) or half (bpp 8, 0x142bd08c0), logs time, writes PNG (bpp<5) or EXR via 0x142bd27a0, frees; on alloc failure calls fail callback +200(+0xd0) and 0x142bcf220(this,1). Callers 0x142bcdec0, 0x142bce8c0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.photo_mode_helper_create_normal_photo",

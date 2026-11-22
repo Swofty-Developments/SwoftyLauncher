@@ -278,6 +278,8 @@ void season_start(const sn::Moment &m)
 {
     if (m.fire)
         hk::events::career_season_start(m.year, m.index);
+    else if (m.dated)
+        swofty_core::apply::moments::career_dated(m.year);
 }
 
 snap::format::Freeze freeze_of(const std::string &data_group)
@@ -522,6 +524,8 @@ std::string snapshots_career_id(const char *key)
     std::lock_guard g(slot_mu);
     return key && committed_key == key && !committed_id.empty() ? committed_id : std::string(key ? key : "");
 }
+
+std::string snapshots_career_now() { return facts_career(); }
 
 int snapshots_report_season(const std::string &caller, int year, int season_index)
 {

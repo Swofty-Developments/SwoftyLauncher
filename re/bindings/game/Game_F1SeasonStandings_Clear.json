@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1413cefd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_Championship_Standings_F1SeasonStandings_Clear;xref:0x1413cf040",
-  "notes": "cxx=game::championship::standings::F1SeasonStandings::clear; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1413cefd0.c;str:s_Championship_Standings_F1SeasonStandings_Clear;xref:0x140ae8083,0x140ae808f,0x140ae809b,0x140ae80a7,0x14309aaa2",
+  "notes": "Own pretty-function 'neon::NEerrno game::championship::standings::F1SeasonStandings::clear()' (GAME log 'Clear season standings.'). Calls 0x1413ccf70(this), 0x140b2dcd0(this+0x120,0), 0x140b2fa60(this,0), 0x140b2d290(this+0x110,0); returns the first error. (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1_season_standings_clear",

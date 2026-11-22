@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a02430",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143a02430.c;xref:0x143a00b9e,0x143bcb8c2",
-  "notes": "Same state-cache pattern as Render_Gfx_BindSlotRange64 for 14 slots (start+count <= 0xe, cache ctx+0x150/+0xe50, dirty bits ctx+0x1288 bit 16+slot). Hypothesis: constant-buffer slot binder."
+  "evidence": "decomp:re/decomp/143a02430.c;xref:0x143a00b9e,0x143bcb8c2,0x143d5ce6b",
+  "notes": "Same cache pattern as BindSlotRange64 for start+count <= 0xe: cache ctx+0x150+slot*8 and +0xe50+slot*4 (buffer+0xd0 per-frame index), dirty bit 16+slot in ctx+0x1288, residency insert of buffer+0x180+frame*0x40. Hypothesis: constant-buffer slots. Callers Render_Gfx_SubmitDraw 0x143a007e0, 0x143bcb630, 0x143d5cb70. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx_bind_slot_range14",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143998b80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143998b80.c;xref:0x14379c9e5,0x143998b32",
-  "notes": "Write-side counterpart of 0x143999260: if stream valid sets error codes in TLS error list else writes header; ErrorTrace_PushRing. Caller Render_Write_PngFile and ThumbnailSystem screenshot writer. Hypothesis (png write init). vp2-verify partial/disagree"
+  "evidence": "decomp:re/decomp/143998b80.c;xref:0x14379c9e5,0x143998b32,0x143bff89d,0x14415b0ed",
+  "notes": "File stream open (binary): error 5 if already open (vcall +0xb8); copies the path skipping leading slashes, / -> backslash; mode 0 rb, 1 w+b (on failure creates parent dirs via 0x1439997d0 and retries), 2 a+b; FILE* at +8, mode at +0x10; failure -> error 5 in TLS list / ErrorTrace ring. Callers incl. Render_Write_PngFile, 0x14379c250. (lane owner review requested) Better name: Render_FileStream_OpenBinary (bound record keeps its name)."
  },
  "signature": {
   "id": "render.image_stream_write_header",

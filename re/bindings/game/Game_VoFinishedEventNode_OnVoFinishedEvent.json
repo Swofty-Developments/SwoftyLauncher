@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1425292d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onVoFinishedEvent (class from the log channel); log channel VoFinishedEventNode: 'onVoFinishedEvent: sending end signal'"
+  "evidence": "decomp:re/decomp/1425292d0.c;pat:log-message-method;xref:0x142529252,0x14252937a",
+  "notes": "Read in full by disassembly (pdata 0x1425292d0-0x142529352; decomp merged the tail-jmp target). Logs VoFinishedEventNode 'onVoFinishedEvent: sending end signal', then tail-jmps 0x14400c680(this[1], this[2]) (graph signal send). Refs are lea sites (callback registration) in 0x1425291f0 and 0x142529360. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vo_finished_event_node_on_vo_finished_event",

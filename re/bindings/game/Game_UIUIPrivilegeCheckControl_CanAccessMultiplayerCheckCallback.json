@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143823fb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_UI_UIPrivilegeCheckControl_CanAccessMultiplayerCheckCallback;xref:0x143824049",
-  "notes": "cxx=game::UI::UIPrivilegeCheckControl::canAccessMultiplayerCheckCallback; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/143823fb0.c;str:s_UI_UIPrivilegeCheckControl_CanAccessMultiplayerCheckCallback;xref:0x1438230e1,0x14382314d",
+  "notes": "game::UI::UIPrivilegeCheckControl::canAccessMultiplayerCheckCallback(task, success, cb) (own string; lea 0x1438230e1, 0x14382314d): logs NETWORK-PRESENCE, cb -> this+0x88/+0x90; success -> cb(ctx, 1); failure shows a popup by task (0 no_chat_privilege_msg, 0xc leaderboard_cable_not_plugged, 2/4 no_mp_no_privilege_msg, 0xd no_mp_not_signed_in_network_msg, 0xe no_mp_not_signed_in_msg) via 0x1442d9bf0; this+0xa8 &= result. (lane owner review requested)"
  },
  "signature": {
   "id": "game.u_i_u_i_privilege_check_control_can_access_multiplayer_check_callback",

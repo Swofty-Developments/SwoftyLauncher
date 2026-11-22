@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_GarageCrew_ShowAll_Thunk",
+ "table": "functions",
+ "author": "msyeett",
+ "row": {
+  "addr": "0x1403c0590",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_GarageCrew_ShowAll_Thunk(void *self)",
+  "evidence": "decomp:own disasm 0x1403c05d0-0x1403c05d5;xref:0x14023a76d,0x14026b518,0x1402756eb,0x140277bdb,0x140341f69",
+  "notes": "jmp stub into .data1 (0x147cade60): shows every pit crew; called every frame while a car is near the pit lane. An overwrite that returns keeps a hidden crew hidden"
+ },
+ "signature": {
+  "id": "game.garage_crew_show_all_thunk",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 0F 8E ?? ?? ?? ?? 08 55 58",
+  "match": "0x1403c0590",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403c0590",
+  "kind": "func_start",
+  "names": [
+   "Game_GarageCrew_ShowAll_Thunk"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-22",
+    "by": "msyeett",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1403c05d0",
+  "made_on_target": "0x1403c05d0",
+  "twin": "made on steam-26566308; the target 0x1403c05d0 is KB 0x1403c0590: Game_PitStopLogic_NeSequenceClipTargetImpl (0x3bbde0) and Sess_PitStopUpdateJob_Update (0x3c06e0) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "msyeett",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1403c05d0",
+    "target": "0x1403c05d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "aff054133b6d14c5af11904d16775c2a58dd6c7b1a688838cb4f54f94057add7"
+  }
+ ]
+}

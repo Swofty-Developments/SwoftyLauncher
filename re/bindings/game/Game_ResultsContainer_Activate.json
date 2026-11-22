@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141d255a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-RESULTS_CONTAINER",
-  "notes": "named from its log messages (channel RESULTS_CONTAINER): 'container activated'"
+  "evidence": "decomp:re/decomp/141d255a0.c;pat:log-channel-RESULTS_CONTAINER;xref:0x141d24c0c,0x141d50a67,0x14574ac18",
+  "notes": "Vtable slot (cell 0x14574ac18). Logs 'container activated'; +0x11b1 = 1; re-inits view model +0x2c0 (0x141d7e5b0, 0x141809750 with name [+0x10]+8), +0x3e0 = 1, 0x141d54460; current screen +0x1070 = -1; clears callback slots +0x1078/+0x10b8/+0x10f8/+0x1138 and step queue +0x1178; state string +0x11a8 = 'none'. Callers 0x141d24c0c, 0x141d50a67. (lane owner review requested)"
  },
  "signature": {
   "id": "game.results_container_activate",

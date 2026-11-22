@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143235ec0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=SavedOnlineChampionshipContainer::createSavedOnlineChampionship; log channel NETWORK/F: 'SavedOnlineChampionshipContainer::createSavedOnlineChampionship(%08X, %s, {%s})'"
+  "evidence": "decomp:re/decomp/143235ec0.c;pat:log-message-cxx;xref:0x143038b20",
+  "notes": "Logs NETWORK/F createSavedOnlineChampionship(code, name, {guid bytes param_4+8..+0x1f}); allocates 0x4e0 from [+0x208] and runs Game_SavedOnlineChampionship_Construct(obj,[+0x208],[+0x210],[+0x218],name,code,guid); logs \"  created as %p\"; pushes it to vector +0x228..+0x238; then a lookup in map +0x138 by obj+0x70 and 0x143652150 with the guid hash. Caller Game_ChampionshipStoreManager_OnSaveRequest (0x143038b20). (lane owner review requested)"
  },
  "signature": {
   "id": "game.saved_online_championship_container_create_saved_online_champions",

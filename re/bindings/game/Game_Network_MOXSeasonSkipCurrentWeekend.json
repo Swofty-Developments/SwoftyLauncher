@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14309daf0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'MOX/Season: Skip Current Weekend requested.'"
+  "evidence": "decomp:re/decomp/14309daf0.c;pat:log-channel-NETWORK;xref:0x1430e128d",
+  "notes": "Caller 0x1430e0560. Logs 'MOX/Season: Skip Current Weekend requested.'; when local with the document open lists tracks (0x1407b5c40, 0x1413cd0a0/0x1413cd290); on exhaustion logs 'Track selection exhausted. Restarting the season.'; resetTrackSet via 0x143099650 or logs 'but the document is not open'; then 0x14309ac00. (lane owner review requested) Better name: Game_GameSessionSeasonDocument_SkipCurrentWeekend (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_mox_season_skip_current_weekend",

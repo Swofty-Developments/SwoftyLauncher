@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140359f20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140359f20.c;xref:0x14035a7c2",
-  "notes": "Builds a scene key string beginning \"nigh\"+\"t\" and appends characters copied from param_2 (unrolled copy). 18 callers (Podium2019 Make*Seq, Pod2019FirstScript_Initialise). vp0-verify partial"
+  "evidence": "decomp:re/decomp/140359f20.c;xref:0x14035a7c2,0x14035aeff,0x14035beaf,0x14035c5df,0x14035cd0f,0x14035d8fb,0x14035e06c,0x14035e6bb,0x14035ef2b,0x14035f79b,0x1403604b8,0x1403610c8,0x14036519e,0x140367001,0x140367281,0x14036768c,0x140367912,0x140368503",
+  "notes": "(this, name): looks up scenes name, 'night_'+name and 'clear_day_'+name (0x140240410) and subtracts offset this+0x53c from their times +0x58/+0x5c/+0x60; 'overcast_'+name is looked up and passed to 0x140240700. Called by all Make*Seq builders and 0x140363850. (lane owner review requested)"
  },
  "signature": {
   "id": "game.cut_scene_build_named_scene_key",

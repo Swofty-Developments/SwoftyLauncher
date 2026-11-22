@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428dd3e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name findOrCreateNewCustomDriver (class from the log channel); log channel FRONTEND_SCENE_MANAGER/DRIVER: '%s()'"
+  "evidence": "decomp:re/decomp/1428dd3e0.c;pat:log-message-method;xref:0x140c82329,0x1416ba070,0x1416c9dae,0x1416d1326,0x1416d19cb,0x1417e7a47,0x1417e7a57,0x141867ce6,0x14196eaa4,0x141996c19,0x141a166cb,0x141a24c93,0x141a56d1b,0x141a57325,0x141a5d43b,0x141a60032,0x141a60f18,0x141a66d28,0x141adb861,0x141bf26cd,0x141bf2ee0,0x141bf39a9,0x141bf413f,0x141c58af8,0x141ea5c7a,0x141ea64f8,0x141ee5207,0x141ee9bc7,0x141eee5b1,0x141eef83e,0x1421cc718,0x1422af615,0x1422de0cc,0x1422f803e,0x142302ac7,0x142303f1f,0x14230c609,0x14230cfe7,0x14230e2dc,0x14231187d,0x14234bd6f,0x142543303,0x142543675,0x142546162,0x142546173,0x142546ece,0x1425477d6,0x142547a46,0x14254b187,0x14254d675,0x1427b01c5,0x1427b0859,0x1427b30ec,0x1437037e2,0x143878711",
+  "notes": "Logs findOrCreateNewCustomDriver (FRONTEND_SCENE_MANAGER/DRIVER). Searches driver component vector this+0x6fb8..0x6fc0 (stride 0x450, ushort id +0xb8) for param_2 and returns it; else (logs 'Failed to find Driver Component Id %u' when id != 0xffff) appends a new component (ctor 0x1429e3bb0, vector grow via allocator +0x6fb0) with id from counter 0x145f94280 and returns the new id. (lane owner review requested)"
  },
  "signature": {
   "id": "game.frontend_scene_manager_find_or_create_new_custom_driver",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428a3f80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name isHelmetSpawned (class from the log channel); log channel FRONTEND_SCENE_HELMET: 'isHelmetSpawned %s'"
+  "evidence": "decomp:re/decomp/1428a3f80.c;pat:log-message-method;xref:0x142e3f5c7",
+  "notes": "(helmetMgr,id*) -> bool. Hash lookup u16 id in map +0x120..+0x154; miss false; hit logs 'isHelmetSpawned %s' (FRONTEND_SCENE_HELMET) with state name 0x1457b6530[+0x48], returns +0x48 == 3 && +0x49 == 3. Only ref: leaf thunk 0x142e3f5b0 (no pdata) tail-jmps at 0x142e3f5c7 with this=[[p+0x18]+0x30]+0x9f0, id=p+0x228. (lane owner review requested)"
  },
  "signature": {
   "id": "game.frontend_scene_helmet_is_helmet_spawned",

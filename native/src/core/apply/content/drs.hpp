@@ -106,7 +106,7 @@ struct DrsPick {
 // The DRS group for the box whose entrant list was pressed: the last content.package (in the order given) with that
 // entrant list, its rules.drs, and that rule's group if the boot apply added it.
 inline DrsPick drs_pick(const std::string &entrant_list, const std::vector<std::pair<std::string, const Value *>> &packages,
-                        const std::map<std::string, DrsGroup> &groups)
+                        const std::map<std::string, DrsGroup> &groups, const std::string &host = "swofty_f1")
 {
     DrsPick p;
     const Value *found = nullptr;
@@ -116,26 +116,26 @@ inline DrsPick drs_pick(const std::string &entrant_list, const std::vector<std::
             found = rec;
         }
     if (!found) {
-        p.line = "box " + entrant_list + ": no content.package; " + "swofty_f1 keeps its own DRS group";
+        p.line = "box " + entrant_list + ": no content.package; " + host + " keeps its own DRS group";
         return p;
     }
     const Value &drs = (*found)["rules"]["drs"];
     if (!drs.is_string()) {
-        p.line = "box " + entrant_list + " (" + p.package + "): no DRS rule; swofty_f1 keeps its own DRS group";
+        p.line = "box " + entrant_list + " (" + p.package + "): no DRS rule; " + host + " keeps its own DRS group";
         return p;
     }
     p.rule = std::string(drs.as_string());
     auto it = groups.find(p.rule);
     if (it == groups.end()) {
-        p.line = "box " + entrant_list + " (" + p.package + "): rules.drs " + p.rule +
-                 " was not added at boot; swofty_f1 keeps its own DRS group";
+        p.line = "box " + entrant_list + " (" + p.package + "): rules.drs " + p.rule + " was not added at boot; " + host +
+                 " keeps its own DRS group";
         return p;
     }
     p.group = it->second;
     const DrsLaps &l = it->second.laps;
-    p.line = "box " + entrant_list + " (" + p.package + "): swofty_f1 DRS group " + it->second.label + " (rules.drs " + p.rule +
-             ": race start lap " + std::to_string(l.race_start) + ", red flag restart " + std::to_string(l.red_flag_restart) +
-             ", safety car end " + std::to_string(l.safety_car_end) + ")";
+    p.line = "box " + entrant_list + " (" + p.package + "): " + host + " DRS group " + it->second.label + " (rules.drs " +
+             p.rule + ": race start lap " + std::to_string(l.race_start) + ", red flag restart " +
+             std::to_string(l.red_flag_restart) + ", safety car end " + std::to_string(l.safety_car_end) + ")";
     return p;
 }
 

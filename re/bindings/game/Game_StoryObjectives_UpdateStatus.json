@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1413bdc90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-STORY_OBJECTIVES",
-  "notes": "named from its log messages (channel STORY_OBJECTIVES): 'Failing objective %s in updateStatus because all vehicles at or ahead of the desired position (%d) have already finished | The player's result status is %s and the result reason is %s, their current t'"
+  "evidence": "decomp:re/decomp/1413bdc90.c;pat:log-channel-STORY_OBJECTIVES;xref:0x1456e0750",
+  "notes": "updateStatus (vt cell 0x1456e0750): if active and enough results ([+0xd0]+0x108.. >= +0xe0), finds the player result; when finished (status 2) sorts results (0x140d31970) and if all vehicles up to the target position finished ahead, logs and fails vcall +0x70(this,0). (lane owner review requested)"
  },
  "signature": {
   "id": "game.story_objectives_update_status",

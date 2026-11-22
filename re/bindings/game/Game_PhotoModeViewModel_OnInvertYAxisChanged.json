@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141d08780",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=PhotoModeViewModel::onInvertYAxisChanged; log channel PHOTO-MODE: 'PhotoModeViewModel::onInvertYAxisChanged: Setting = %d'"
+  "evidence": "decomp:re/decomp/141d08780.c;pat:log-message-cxx;xref:0x141cefe1d",
+  "notes": "PhotoModeViewModel handler (this, cmd): acts only when cmd+8 == 10, reads \"value\" from cmd+0x10 (int or float by type check), logs PHOTO-MODE; registered by lea in 0x141cef700. bool (value == 1) saved to 'lead_player.settings.photo_mode_cam_invert_y_axis'; on change also sets value +0x3f0 and this+0x428; camera (system+0x378)+0x170 = flag. (lane owner review requested)"
  },
  "signature": {
   "id": "game.photo_mode_view_model_on_invert_y_axis_changed",

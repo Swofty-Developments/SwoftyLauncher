@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439ef7f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1439ef7f0.c;xref:0x1443cc38c",
-  "notes": "Hypothesis: constructs the renderer gfx config (vtable 0x14589c8b0, size field 0x40, monitor enum); from Game_Read_RendererGfxConfig_3. Named callers: Game_Read_RendererGfxConfig_3."
+  "notes": "Window object ctor: vtable 0x14589c8b0, allocator param_2 at +0xd0, settings +0xe0, owner +0xd8; UTF-16 title '<WINDOW TITLE NOT SET>' at +0x2c8; QPC timestamps/frequency +0x3d8..+0x3e8; ends with EnumDisplayMonitors(Ne_WindowWin_MonitorEnumProc, this). Not a config reader. (lane owner review requested) Better name: Game_WindowWin_Construct (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_renderer_gfx_config_construct",

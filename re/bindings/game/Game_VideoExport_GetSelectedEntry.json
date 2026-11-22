@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141f0fa80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141f0fa80.c;xref:0x141f0f259,0x141f0fd61",
-  "notes": "Reads the video export list entry from the data holder (+0x698, vcall +0x30 validity) and releases it (Ne_Resource_Release). Caller Game_VideoExport_StartHighlightExport. Hypothesis."
+  "evidence": "decomp:re/decomp/141f0fa80.c;xref:0x141f0f259,0x141f0fd61,0x141f0fee5,0x141f10091,0x141f10c3f,0x141f111c0,0x141f11911,0x141f1228e,0x141f124f6,0x141f1264e",
+  "notes": "Read in full: (screen, out*) follows the focus chain of VM node [this+0x698] (vcall +0x30 valid, child via +0x58 vt +0x38, max 0x62 levels); if it is the node of list [this+0x700] takes the focused child of +0x7c0, else of +0x8e8; returns that node ref in out (vt 0x14565f3d8, 0x1442bba60) and drops the temp ref (0x1442b3d70). (lane owner review requested)"
  },
  "signature": {
   "id": "game.video_export_get_selected_entry",

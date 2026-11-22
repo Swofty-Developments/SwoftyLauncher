@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1406ae1e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1406ae1e0.c;xref:0x1406adf9a",
-  "notes": "Builds a vector (byte elements) of vehicle indices from the vehicle list [this+0x70]+0x108 that pass Game_ReplayCamera_IsVehicleSelectable. Callers Game_ReplayCamera_UpdateFocusVehicle, 0x1406ae360, 0x1406ae910."
+  "evidence": "decomp:re/decomp/1406ae1e0.c;xref:0x1406adf9a,0x1406ae403,0x1406ae928,0x1406aee39,0x1406aef89,0x141fa6752",
+  "notes": "(cam, out byte vector): out uses allocator cam+0; for each entry of [cam+0x70]+0x108..+0x110 (first byte = vehicle index) that passes Game_ReplayCamera_IsVehicleSelectable, push_back the index (grow 1.5x). Callers 0x1406adf50, 0x1406ae360, 0x1406ae910, 0x1406aee20, 0x1406aef70, 0x141fa66f0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.replay_camera_build_selectable_vehicle_list",

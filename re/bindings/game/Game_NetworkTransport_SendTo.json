@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144093a40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name SendTo (class from the log channel); log channel NETWORK-TRANSPORT/V: '%s: channel is available: %d, channel state: %s'"
+  "evidence": "decomp:re/decomp/144093a40.c;pat:log-message-method;xref:0x1440939a1,0x144094c26",
+  "notes": "Logs 'SendTo' (null address check), FindOrCreateChannel without create and, if the channel state allows, AddPacketToBuilder 0x144049e30. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_transport_send_to",

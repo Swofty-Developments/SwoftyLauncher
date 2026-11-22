@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14443fd40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14443fd40.c;xref:0x140825155",
-  "notes": "Appends a 16-byte record {ptr,len} (param_2) as new 0x20-byte node (allocator [param_1+0x58] vcall +0x18, size 0x20 align 8) holding a copied byte buffer. 104 call sites in Game_F1os_OnStart_* handlers. Hypothesis: request body/field append."
+  "evidence": "decomp:re/decomp/14443fd40.c;xref:0x140825155,0x140835f72,0x140b16fd9",
+  "notes": "Copies byte span param_2 {ptr,len} into a 0x20-byte node (allocator this+0x58), wraps it in a shared_ptr (ctrl vtable 0x1457a6e40), builds field record id 0 named param_3 (0x1444404b0), appends its form-data header (0x144440020), adds the data size to total +0x30, pushes the record into vector +8 (0x1444f3c60). Callers Game_F1os_OnStart_* e.g. 0x140825155. (lane owner review requested) Better name: Game_F1os_Multipart_AppendBinaryPart (bound record keeps its name)."
  },
  "signature": {
   "id": "game.f1os_request_body_append",

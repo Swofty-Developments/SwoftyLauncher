@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143928e00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143928e00.c;xref:0x143994c14",
-  "notes": "MD5 block-feed helper (calls Ne_Hash_Md5Transform per 64-byte block, buffers remainder). Callers Ne_HashedName_FromString (0x143994c14), Ne_String_FormatToPool (0x143994ed7). vq0-verify partial/disagree"
+  "evidence": "decomp:re/decomp/143928e00.c;xref:0x143994c14,0x143994ed7",
+  "notes": "(ctx, data, len): MD5 update that lowercases ASCII A-Z (|0x20) while copying into the 64-byte block ctx+0x18; bit count ctx[0..1], Ne_Hash_Md5Transform 0x143928ed0 per full block (state ctx+8). Callers Ne_HashedName_FromString 0x143994c14, Ne_String_FormatToPool 0x143994ed7."
  },
  "signature": {
   "id": "core.hash_md5_update_bytes",

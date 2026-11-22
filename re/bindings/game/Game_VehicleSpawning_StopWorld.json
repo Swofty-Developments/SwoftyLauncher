@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f3aef0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-VEHICLE_SPAWNING_SYSTEM",
-  "notes": "named from its log messages (channel VEHICLE_SPAWNING_SYSTEM): 'Stopping world for vehicle %d'"
+  "evidence": "decomp:re/decomp/142f3aef0.c;pat:log-channel-VEHICLE_SPAWNING_SYSTEM;xref:0x14f7ed81e",
+  "notes": "Read in full: (sys, stopReq) finds request by vehicle id, SetState(6), releases +0x68f8, clears a render flag via 0x143f9b3c0, builds instance name '%s_%d' (car/safety_car/showroom_car), copies stopReq to +0x6890..+0x68a0, logs 'Stopping world for vehicle %d', calls 0x14442cdf0(sys+0xc0, name, cb 0x142f3db30). Only static ref is a jmp in 0x14f7ed6a0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_spawning_stop_world",

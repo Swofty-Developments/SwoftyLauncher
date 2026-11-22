@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143805410",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-UIHubTrace",
-  "notes": "named from its log messages (channel UIHubTrace): '%zu [ACTION] FadeDownContentAndHeader Action Triggered'"
+  "evidence": "decomp:re/decomp/143805410.c;pat:log-channel-UIHubTrace;xref:0x143804b1c,0x15161977b",
+  "notes": "Logs '[ACTION] FadeDownContentAndHeader Action Triggered'; hub+0x74 = 4 when non-zero; event 0x1461030b4 to the communicator hub+0x78. Header open (+0x68 == 1): hub+0x70 = 5, posts vt 0x14588bb20 hash 0x6f82260d for element +0x54; content open (+0x6c == 1): the same for element +0x58; neither -> event 0x1461030ac. Callers 0x143804b1c, 0x15161977b. (lane owner review requested) Better name: Game_UIHub_FadeDownContentAndHeader (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ui_hub_trace_fade_down_content_and_header_action",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140997110",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name reportGameDataSynchronised (class from the log channel); log channel PLAYERSET: '%s: Connection %d verified and synchronised, changing to INITIALDATA'"
+  "evidence": "decomp:re/decomp/140997110.c;pat:log-message-method;xref:0x1430596a3,0x14305a090",
+  "notes": "(this, connection id): finds the byte id in this+0x70..+0x78 (stride 8); state +4 is 2 or 3 -> sets 4, logs 'Connection %d verified and synchronised, changing to INITIALDATA'; other state logs 'synchronised, but is in state %d'; not found logs 'verified, but not in our role array?'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.playerset_report_game_data_synchronised",

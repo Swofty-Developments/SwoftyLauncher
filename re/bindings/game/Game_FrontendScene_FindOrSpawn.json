@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428b6aa0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1428b6aa0.c;xref:0x1427add94",
-  "notes": "Finds a scene by name (Game_Scene_FindByName) or spawns it (Game_SceneManagerSpawn_SpawnScene via 0x1401dbe20 / 0x14018d980). Callers Game_FrontendSceneScript_SpawnSequences, Game_FrontendSceneCameraManager_Update."
+  "evidence": "decomp:re/decomp/1428b6aa0.c;xref:0x1427add94,0x1427ae1b4,0x14288b5c0,0x1428a6671,0x1428a67bb,0x1428a6dd4,0x1428a7097,0x1428b6ee6",
+  "notes": "Scene manager = [[0x14601f5c8+0x28]+0x68]. Game_Scene_FindByName(mgr,p2,1); if found, builds a spawn-flags block (p7/p8 into it), transform from p4 (0x1401dbe20) + p3 position, and spawns an instance via 0x1401a4b70(mgr,flags,scene,xf,p5,..). If p6 adds the instance to list p1+0x18 (0x14018d980); if p8 calls 0x140190710(inst,1,0). Destroys the 0x28-byte entries of p5 (count p5[0x14]); returns instance or 0. Never spawns when not found: renamed from FindOrSpawn. (lane owner review requested) Better name: Game_FrontendScene_SpawnSceneByName (bound record keeps its name)."
  },
  "signature": {
   "id": "game.frontend_scene_find_or_spawn",

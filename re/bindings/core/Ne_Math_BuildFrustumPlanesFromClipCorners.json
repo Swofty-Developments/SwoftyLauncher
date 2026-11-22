@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14395cfe0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14395cfe0.c;xref:0x14395cd17",
-  "notes": "SIMD 4x4 matrix inverse core (optional sign-flip param_3, uses +-0.0 masks and 1.0). Callers Ne_Math_Mat4Invert and Ne_Math_Matrix4x4_Invert. vq0-verify partial/disagree"
+  "evidence": "decomp:re/decomp/14395cfe0.c;xref:0x14395cd17,0x14395cf90",
+  "notes": "(Frustum *out, const float m[16], bool flip): transforms the 8 clip-cube corners (+-1,+-1,0/1) by m with perspective divide into out[6..13], builds the 6 planes by cross product + rsqrt normalisation into out[0..5] (flip changes the corner set), then stores SoA transposes of planes/corners in out[0xe..0x15]. Not a matrix inverse. Callers 0x14395caf0, 0x14395cd70."
  },
  "signature": {
   "id": "core.math_mat4_invert_simd",

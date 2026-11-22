@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140bb45b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=OnlineDocumentComponent::onResultsFinalised; log channel NETWORK-ENTRANTS: 'OnlineDocumentComponent::onResultsFinalised'"
+  "evidence": "decomp:re/decomp/140bb45b0.c;pat:log-message-cxx;xref:0x1456785a8,0x1456b2ab8",
+  "notes": "Logs NETWORK-ENTRANTS 'OnlineDocumentComponent::onResultsFinalised' and NETWORK/F '%s().' around closeDocument/openDocument of the online document. Referenced only by vtable cells 0x1456785a8 and 0x1456b2ab8. (lane owner review requested)"
  },
  "signature": {
   "id": "game.online_document_component_on_results_finalised",

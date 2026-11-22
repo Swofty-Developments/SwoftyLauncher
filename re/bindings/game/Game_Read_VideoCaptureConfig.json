@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140ad22a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: DebugCamera.enableDpadCommands, DebugCamera.fov, DebugCamera.invertVerticalLook, DebugCamera.quickSpeedMultiplier, DebugCamera.speedMultiplier, VideoCapture.enabled, VideoCapture.farMax, VideoCapture.farMin, VideoCapture.fovMax, VideoCapture.fovMin, VideoCapture.nearMax,'"
+  "evidence": "decomp:re/decomp/140ad22a0.c;pat:log-channel--;xref:0x14566a200",
+  "notes": "Allocator EGO_APPLICATION->+0x30; VideoCapture.enabled->+0x4a0 (off: return 0). Debug camera +0xf0: DebugCamera.speedMultiplier, quickSpeedMultiplier, enableDpadCommands, fov (-> +0x358), invertVerticalLook; VideoCapture rotation/translation speed, fov, near, far min/max -> +0x4c0..+0x4e4; registers debugCamera via 0x143b535d0. Returns 0 or 0xe. (lane owner review requested) Better name: Game_VideoCapture_InitDebugCamera (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_video_capture_config",

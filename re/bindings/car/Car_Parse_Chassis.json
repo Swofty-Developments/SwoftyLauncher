@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14462e6d0.c",
-  "notes": "VTF Chassis / ChassisComposite section (Mass, COM, MOI, visual height offsets)."
+  "evidence": "decomp:re/decomp/14462e6d0.c;xref:0x143648944,0x145bf7420,0x145bf7a30",
+  "notes": "VTF Chassis/ChassisComposite reader (vtable slot cells 0x145bf7420 and 0x145bf7a30, plus jmp 0x143648944); calls Car_RigidBody_IntegrateState."
  },
  "signature": {
   "id": "car.parse_chassis",

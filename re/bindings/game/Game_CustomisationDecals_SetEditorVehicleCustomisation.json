@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14142bd50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name setEditorVehicleCustomisation (class from the log channel); log channel CUSTOMISATION_DECALS: 'setEditorVehicleCustomisation(). Num editor decals=%I64u, m_editorDecalNodeList list id is %I64u'"
+  "evidence": "decomp:re/decomp/14142bd50.c;pat:log-message-method;xref:0x14142da75,0x141fececf,0x141feea95,0x141ff8baf",
+  "notes": "(system, u32 *key): only for service type 5 and a key != system+0x1a8: clears the editor list +0x178..+0x180, copies every decal node of customisation 0x14246dcb0([system+0x258], key) (cust+0xe8..+0xf0) into fresh 0x70-byte nodes in list +0x170 (filtered by known area ids when [0x14604c2c8]+0x2c8 is set), logs 'setEditorVehicleCustomisation()...', dirty +0x168 if an old key was set, +0x1a8 = key, CreateServiceForEditorNode. (lane owner review requested)"
  },
  "signature": {
   "id": "game.customisation_decals_set_editor_vehicle_customisation",

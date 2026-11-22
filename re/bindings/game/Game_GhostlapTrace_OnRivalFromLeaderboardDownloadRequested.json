@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141482d60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onRivalFromLeaderboardDownloadRequested (class from the log channel); log channel GHOSTLAP-TRACE: '%s() Ghost requested from for user: %s, leaderboard: %s'"
+  "evidence": "decomp:re/decomp/141482d60.c;pat:log-message-method;xref:0x14147c828,0x14147ff6b",
+  "notes": "onRivalFromLeaderboardDownloadRequested(ui,msg): not online-ready -> popup 'leaderboard_no_network'; else resolves the user name (0x140816b10), logs it, starts the ghost download 0x142f8b790 with completion 0x141484aa0, stores rival info (msg+0x18..+0x70) in ui, refreshes 0x141484300 and the platform icon db value. Registered (lea) in 0x14147c2d0, 0x14147e870. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ghostlap_trace_on_rival_from_leaderboard_download_requested",

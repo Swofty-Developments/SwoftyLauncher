@@ -779,6 +779,66 @@ fn a_career_deleted_in_game_is_not_a_drop() {
 }
 
 #[test]
+fn a_forgotten_career_leaves_the_list_and_comes_back_with_its_save_slot() {
+    let root = tmp("career-forget");
+    let loc = steam(&root, "843502855", &[1u8; 900]);
+    let v = vault(&root, &loc);
+    let data = root.join("data");
+    write_index(&root, &[("p:1", "present", 2016, 7), ("p:2", "present", 2017, 1)]);
+    let a = take(&v, &loc, Reason::AfterSession, T0, &[2u8; 900]);
+    write_index(&root, &[("p:1", "deleted", 2016, 7), ("p:2", "present", 2017, 1)]);
+    take(&v, &loc, Reason::AfterSession, T0 + 10, &[3u8; 900]);
+
+    assert!(
+        !careers::forget(&data, "p:2").unwrap(),
+        "a career in the save stays"
+    );
+    assert!(careers::forget(&data, "p:1").unwrap());
+    let index = crate::stdlib::careers::read(&crate::stdlib::careers::data_path(&data));
+    assert_eq!(
+        index.iter().map(|c| c.career.as_str()).collect::<Vec<_>>(),
+        ["p:2"]
+    );
+    assert!(v.careers().find("p:1").unwrap().dismissed);
+    assert!(v.find(&a.id).is_ok(), "the versions stay");
+    assert!(
+        v.index_of(&v.find(&a.id).unwrap())
+            .unwrap()
+            .iter()
+            .any(|c| c.career == "p:1")
+    );
+
+    take(&v, &loc, Reason::AfterSession, T0 + 20, &[4u8; 900]);
+    assert!(v.careers().drop_to_show().is_empty());
+    assert!(!kinds(&v).contains(&EventKind::CareersMissing));
+
+    write_index(&root, &[("p:1", "present", 2016, 8), ("p:2", "present", 2017, 1)]);
+    take(&v, &loc, Reason::AfterSession, T0 + 30, &[5u8; 900]);
+    let back = v.careers();
+    let row = back.find("p:1").unwrap();
+    assert_eq!(
+        (row.status.clone(), row.dismissed),
+        (careers::Status::Present, false)
+    );
+}
+
+#[test]
+fn forgetting_a_career_the_vault_still_holds_as_present_raises_no_drop() {
+    let root = tmp("career-forget-present");
+    let loc = steam(&root, "843502855", &[1u8; 900]);
+    let v = vault(&root, &loc);
+    let data = root.join("data");
+    write_index(&root, &[("p:1", "present", 2016, 7), ("p:2", "present", 2017, 1)]);
+    take(&v, &loc, Reason::AfterSession, T0, &[2u8; 900]);
+    write_index(&root, &[("p:1", "missing", 2016, 7), ("p:2", "present", 2017, 1)]);
+    assert_eq!(v.careers().find("p:1").unwrap().status, careers::Status::Present);
+    assert!(careers::forget(&data, "p:1").unwrap());
+    take(&v, &loc, Reason::BeforeSession, T0 + 10, &[3u8; 900]);
+    assert!(v.careers().drop_to_show().is_empty());
+    assert!(!kinds(&v).contains(&EventKind::CareersMissing));
+}
+
+#[test]
 fn the_first_run_with_no_index_makes_no_claims() {
     let root = tmp("career-first");
     let loc = steam(&root, "843502855", &[1u8; 900]);

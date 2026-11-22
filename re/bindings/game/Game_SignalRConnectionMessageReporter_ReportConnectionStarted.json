@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432b9c20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=SignalRConnectionMessageReporter::reportConnectionStarted; log channel SIGNALR: 'virtual void online_services::SignalRConnectionMessageReporter::reportConnectionStarted(const NEchar *) | %s: connection started, adding local method calls'"
+  "evidence": "decomp:re/decomp/1432b9c20.c;pat:log-message-cxx;xref:0x1458341c8",
+  "notes": "Vtable cell 0x1458341c8. Logs SIGNALR \"%s: connection started, adding local method calls\" and NEOS_SIGNALR \"Connection started %s\"(param_2); walks the hash set this+0x30/+0x38 (count +0x40): per entry logs SIGNALR/V \"local method call for %s\" and invokes the stored functor (entry+0x40, vcall +0x10 with the key), then destroys the functor copy. (lane owner review requested)"
  },
  "signature": {
   "id": "game.signal_r_connection_message_reporter_report_connection_started",

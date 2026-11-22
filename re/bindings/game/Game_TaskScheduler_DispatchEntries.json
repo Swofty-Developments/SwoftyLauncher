@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432dc0a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1432dc0a0.c;xref:0x1432bfafd,0x1432d96b8",
-  "notes": "Iterates 16-byte task entries (+0x70..+0x78) and runs/updates them. Callers Game_F1osTasksystem_Update/InternalStartTask, Game_TaskSchedulerSystem_StopTask. Hypothesis."
+  "evidence": "decomp:re/decomp/1432dc0a0.c;xref:0x1432bfafd,0x1432d96b8,0x1432da814,0x1432da8ee,0x1432ddd34",
+  "notes": "Erases all entries equal to param_2 (shared ptr) from task vector +0x70..+0x78 (16-byte elems, releasing refs), then calls 0x1432dcd20(this) and releases param_2. Not a dispatcher. (lane owner review requested) Better name: Game_TaskScheduler_EraseTaskEntry (bound record keeps its name)."
  },
  "signature": {
   "id": "game.task_scheduler_dispatch_entries",

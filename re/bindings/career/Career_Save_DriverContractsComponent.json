@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140da41d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "uint64_t Career_Save_DriverContractsComponent(void *comp, void *save_node)",
   "evidence": "decomp:re/decomp/140da41d0.c;xref:0x145692340",
-  "notes": "myteam-g1: Writer of the driver contracts component (My Team driver comms): writes decidedDriverContracts and pendingDriverContracts, contract slot refs (+0x468, +0x478), four driver lists (+0x7d0,+0x790,+0x7b0,+0x7f0 via Career_Serialise_DriverContractList) and field +0x834. Save names: decidedDriverContracts / pendingDriverContracts."
+  "notes": "Save writer (vtable cell 0x145692340): driver_slots (count +0x6f0, 0x68-byte slots), driver_progression (+0x718..+0x728), meeting_progression (+0x760..+0x770), contractWindowOpening (+0x468), secretDriverApproach (+0x478), contract_window_open (+0x834), pendingDriverMoves (+0x7d0), pendingDriverContracts (+0x790), decidedDriverContracts (+0x7b0), lastSeasonsSignings (+0x7f0), forcedDriverMoves (+0x818), reserve_drivers. (lane owner review requested)"
  },
  "signature": {
   "id": "career.save_driver_contracts_component",

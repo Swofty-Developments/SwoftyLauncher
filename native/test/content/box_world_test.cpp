@@ -266,6 +266,121 @@ static void test_pools()
     check(season && layer, "the season pool stops at 31 and the layer pool at 255");
 }
 
+static Db with_branding()
+{
+    Db d = stock();
+    d.rows("game_setup.branding", "game_setup_branding",
+           {{{"_metadata_", "f1_26"}, {"seasons", "season_2025,season_2026"}, {"stat_id", "3"}},
+            {{"_metadata_", "f2_26"}, {"seasons", "season_2026"}}});
+    return d;
+}
+
+static void test_named_world()
+{
+    Db d = with_branding();
+    bw::Own own{"e1950", "e1950s", "", "", true};
+    bw::WorldTracks tracks = [](const std::string &name) -> std::optional<std::vector<std::string>> {
+        if (name == "e1950")
+            return std::vector<std::string>{"spa_francorchamps", "monza", "silverstone"};
+        return std::vector<std::string>{};
+    };
+    auto c = bw::choose_named(10, "season_2025", own, d.reader(), tracks);
+    check(c.apply && c.season == "swofty_world_e1950s" && c.layer == "swofty_world_e1950s_world" && c.from_layer == "f1_26",
+          "a 10-team box that names a world gets the shared season and a layer copied from f1_26");
+    check(c.checked && c.tracks == std::vector<std::string>({"monza", "silverstone", "spa_francorchamps"}),
+          "the tracks that hold the archive, sorted");
+    check(c.branding == "swofty_world_e1950s_branding" && c.from_branding == "f1_26" && c.new_branding,
+          "its branding row copies f1_26");
+    bool stock_branding = false;
+    for (auto &r : c.appends)
+        stock_branding = stock_branding || r == "game_setup.branding.game_setup_branding_0";
+    check(!stock_branding, "with a branding row of its own the season stays off the stock branding rows");
+    check(bw::world_eri("e1950") == "eaid://environment_package/tracks/[FILENAME]/wep/[FILENAME]_e1950.wep" &&
+              bw::world_group("e1950") == "asset_groups/environment_package/tracks/[FILENAME]/wep/[FILENAME]_e1950" &&
+              bw::world_file("monza", "e1950") == "2025_asset_groups/environment_package/tracks/monza/wep/monza_e1950.erp",
+          "the world's group, eri and archive");
+
+    auto twelve = bw::choose_named(12, "season_2025", bw::Own{"e1950", "", "", "", false}, d.reader(), tracks);
+    check(twelve.apply && twelve.from_layer == "myteam_26" && twelve.share == "e1950" && twelve.branding.empty(),
+          "12 teams copy myteam_26; the season defaults to the world's name");
+
+    auto none = bw::choose_named(10, "season_2025", bw::Own{"e1960", "", "", "", false}, d.reader(), tracks);
+    check(!none.apply && none.line.find("no track folder holds") != std::string::npos,
+          "a world no track folder holds leaves the box's world as it is, with a line");
+
+    auto bad = bw::choose_named(10, "season_2025", bw::Own{"E1950", "", "", "", false}, d.reader(), tracks);
+    check(!bad.apply && bad.line.find("a name is not") != std::string::npos, "a bad name is refused with a line");
+
+    auto unchecked = bw::choose_named(10, "", bw::Own{"e1950", "", "", "", false}, d.reader(), {});
+    check(unchecked.apply && !unchecked.checked && unchecked.from_season == "season_2025",
+          "a host tool that cannot look applies it; a list with no season copies season_2025");
+
+    check(bw::own_enabled("1") && !bw::own_enabled("") && !bw::own_enabled("0"), "SWOFTY_BOX_OWN_WORLDS is off unless 1");
+}
+
+static void test_named_lowering()
+{
+    Db d = with_branding();
+    std::map<std::string, int64_t> next = {{bw::SEASON_IDS, 25}, {bw::LAYER_IDS, 30}, {bw::BRANDING_IDS, 13}};
+    content::StatIds stat = [&next](const std::string &registry, const std::string &, int64_t) { return next[registry]++; };
+    bw::WorldTracks tracks = [](const std::string &) -> std::optional<std::vector<std::string>> {
+        return std::vector<std::string>{"monza"};
+    };
+    Value branding_block = Value::object({{"timing_tower_logo", "lc_f1_1950_logo"}, {"broadcast_show_f1_logo", false}});
+    Value world = Value::object({{"name", "e1950"}, {"season", "e1950s"}, {"branding", branding_block}});
+    Value rec = Value::object({{"entrant_list", "f5_1950"}, {"world", world}});
+    content::Plan plan;
+    Value row = Value::object({{"_metadata_", "f5_1950"}});
+    content::lower_named_world("vmknolle.season-1950/f5_1950", rec, "swofty_f1", 10, "f1_2025", row, d.reader(), stat, plan,
+                               &tracks);
+    auto ops = ops_of(plan);
+    const Value *layer = nullptr, *branding = nullptr;
+    for (std::size_t i = 0; i < plan.ops.size(); i++) {
+        if (ops[i].rfind("add-row track_data.track_layers", 0) == 0)
+            layer = &plan.ops[i]["set"];
+        if (ops[i].rfind("add-row game_setup.branding from game_setup.branding.game_setup_branding[_metadata_=f1_26]", 0) == 0)
+            branding = &plan.ops[i]["set"];
+    }
+    check(!ops.empty() && ops.front() == "add-row game_setup.seasons from game_setup.seasons.season[_metadata_=season_2025]" &&
+              plan.ops[0]["set"]["statId"].as_string() == "25" &&
+              plan.ops[0]["set"]["_metadata_"].as_string() == "swofty_world_e1950s",
+          "the shared season row copies season_2025 with an id from the season pool");
+    check(layer && (*layer)["worldEri"].as_string() == bw::world_eri("e1950") &&
+              (*layer)["worldAssetGroup"].as_string() == bw::world_group("e1950") && (*layer)["statId"].as_string() == "30" &&
+              (*layer)["seasons"].as_string() == "swofty_world_e1950s" && (*layer)["game_setup_modes"].as_string() == "swofty_f1",
+          "the layer row names the box's world for its setup mode and season");
+    check(branding && (*branding)["timing_tower_logo_texture_path"].as_string() == "lc_f1_1950_logo" &&
+              (*branding)["broadcast_show_f1_logo"].as_string() == "False" && (*branding)["stat_id"].as_string() == "13" &&
+              (*branding)["seasons"].as_string() == "swofty_world_e1950s",
+          "the branding row carries the lap counter logo and the season");
+    check(row["season"].as_string() == "swofty_world_e1950s", "the list row carries the shared season");
+    check(!plan.lines.empty() && plan.lines.back().find("1 track(s) hold it (monza)") != std::string::npos,
+          "one line names the rows and the tracks");
+
+    Db shared = with_branding();
+    shared.keys["game_setup.seasons._season_instancecount_"] = "3";
+    shared.keys["game_setup.seasons.season_2._metadata_"] = "swofty_world_e1950s";
+    shared.keys["track_data.track_layers._TrackLayer_instancecount_"] = "4";
+    shared.keys["track_data.track_layers.TrackLayer_3._metadata_"] = "swofty_world_e1950s_world";
+    shared.keys["game_setup.branding._game_setup_branding_instancecount_"] = "3";
+    shared.keys["game_setup.branding.game_setup_branding_2._metadata_"] = "swofty_world_e1950s_branding";
+    content::Plan again;
+    Value row2 = Value::object({{"_metadata_", "f5_1950_tt"}});
+    content::lower_named_world("vmknolle.season-1950/f5_1950_tt", rec, "swofty_f1", 10, "f1_2025", row2, shared.reader(), stat,
+                               again, &tracks);
+    check(again.ops.size() == 0 && row2["season"].as_string() == "swofty_world_e1950s",
+          "a second box of the same season adds no rows and takes the season");
+
+    content::Plan full;
+    Value row3 = Value::object({{"_metadata_", "f5_1950"}});
+    content::StatIds none = [](const std::string &, const std::string &, int64_t) -> int64_t { return -1; };
+    content::lower_named_world("vmknolle.season-1950/f5_1950", rec, "swofty_f1", 10, "f1_2025", row3, d.reader(), none, full,
+                               &tracks);
+    check(full.ops.size() == 0 && !row3["season"].is_string() && !full.lines.empty() &&
+              full.lines.back().find("no free season id (0 to 31)") != std::string::npos,
+          "no free season id: no rows, with a line naming world.season");
+}
+
 int main()
 {
     test_who_gets_a_world();
@@ -275,6 +390,8 @@ int main()
     test_time_trial_list();
     test_enabled();
     test_pools();
+    test_named_world();
+    test_named_lowering();
     std::printf("%s\n", failures ? "FAILED" : "all passed");
     return failures ? 1 : 0;
 }

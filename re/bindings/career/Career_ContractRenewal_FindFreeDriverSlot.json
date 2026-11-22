@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140d8c590",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "uint64_t Career_ContractRenewal_FindFreeDriverSlot(void *comp)",
-  "evidence": "decomp:re/decomp/140d8c590.c;xref:0x140d8c458;xref:0x140d9a3c9;xref:0x140d9d37a",
-  "notes": "myteam-g2: Calls Career_ContractRenewal_CollectDriverEventsForTeam for the active team and copies the resulting records; returns whether a free or expiring slot exists. Read only helper for ProgressDay / RetireDriver."
+  "evidence": "decomp:re/decomp/140d8c590.c;xref:0x140d8c458,0x140d9a3c9,0x140d9d37a",
+  "notes": "Bool (default 1): pending entries +0x348..+0x350 and +0x368..+0x370 ({u32 value, u32 driver key}); returns 0 when an entry's team still has an open seat (0x140d8c8f0) above threshold +0x2f8/+0x2f4 or its driver is in the available list +0x308. Its caller logs 'getApproachesAndAuctionsFinished returned false' right after a 0 result. (lane owner review requested) Better name: Career_ContractRenewal_GetApproachesAndAuctionsFinished (bound record keeps its name)."
  },
  "signature": {
   "id": "career.contract_renewal_find_free_driver_slot",

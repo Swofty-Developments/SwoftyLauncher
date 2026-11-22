@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a03a30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143a03a30.c;xref:0x143a01646",
-  "notes": "Ray-tracing dispatch: flushes dirty state, sets the state object (vcall +0xd8 with object from param_3+8 vcall +0x58, then context vcall +0x1a0) and builds raygen/miss/hit shader-table descs {addr,size,stride} from three buffers plus width/height/depth=1, then context vcall +0x1a8. Hypothesis: DispatchRays; shows the renderer has a DXR path."
+  "notes": "If PSO [ctx+0x12d8]+0x75c is 0: list vcall +0x1a0(state object) and +0x1a8(desc with shader-table ranges, width param_4, height param_5, depth 1). Else compute path: flush, +0xd8 root signature, then Dispatch (+0x140) with groups from +0x75c/+0x75e/+0x760 or, with param_9, indirect +0x148 with signature device+0x2590/+0x2598. Caller Render_Gfx_SubmitDraw 0x143a007e0. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx_dispatch_rays",

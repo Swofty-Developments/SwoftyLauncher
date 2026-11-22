@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141c20e60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
   "proto": "void(HudSpectatorScreen*)",
   "evidence": "decomp:re/decomp/141c20e60.c;xref:0x14573ca88",
-  "notes": "vt slot 13 (onScreenActivated) of HudSpectatorScreenViewModel; [vm+0x278] is the SpectatorDirector. When [[vm+0x2b8]+0x40] is set it calls Sess_SpectatorHud_Hide. Reads the current driver [dir+0xd6]."
+  "notes": "HudSpectatorScreenViewModel vtable 0x14573ca20 slot 13 (+0x68). Binds VM props (detail_group_active, gap_group_active, mfd_active, penalty_details_active, session_title, show_tooltips, session.current_car.index, ...), subscribes vehicle_newlap_recorded, MessageStartLightsComplete, RedFlagWaved/Deployed (Ne_Subscribe_BusMessage); if [[vm+0x2b8]+0x40] calls Sess_SpectatorHud_Hide 0x141c237e0; reads current driver [[vm+0x278]+0xd6]."
  },
  "signature": {
   "id": "session.spectator_hud_on_activated",

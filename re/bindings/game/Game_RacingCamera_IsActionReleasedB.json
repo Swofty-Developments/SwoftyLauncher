@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1445413f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1445413f0.c;xref:0x144540811",
-  "notes": "Twin of Game_RacingCamera_IsActionReleasedA (same structure, other action id, Ne_InputMapper_IsActionReleased). Caller Game_RacingCamera_ProcessCameraInput. Hypothesis on which action."
+  "evidence": "decomp:re/decomp/1445413f0.c;xref:0x144540811,0x1445409e1",
+  "notes": "Twin of 0x1445412a0: slot entry +8 == 0 and Ne_InputMapper_IsActionReleased 0x1441165b0 with action desc 0x146cc1cc0+player*0x148 (else 0x146cc1dc0+player*0x148). Callers in 0x144540050. (lane owner review requested)"
  },
  "signature": {
   "id": "game.racing_camera_is_action_released_b",

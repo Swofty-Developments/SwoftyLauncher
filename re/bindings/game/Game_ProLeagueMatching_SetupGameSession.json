@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143159470",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=ProLeagueMatching::setupGameSession; log channel NETWORK: 'ProLeagueMatching::setupGameSession() league id %llu event id %llu track %d'"
+  "evidence": "decomp:re/decomp/143159470.c;pat:log-message-cxx;xref:0x14581d3d0",
+  "notes": "Virtual (vt cell 0x14581d3d0): event = [this+0x40]+0xb0; player count by session kind (2, 0x14, [..]+0x268, 0x1430dc620 or [+0x3c8]+0x48) set on lobby +0x4a0 vt+0x18; logs league id, event id (+0x70), track (+0x89); event+0xe0 vt+0x18; track record by +0x89 -> 'Track selected %s', track set 'custom' and 0x143099650(lobby,1,name); 0x142ad42e0(this+0x50, event+0xc0). (lane owner review requested)"
  },
  "signature": {
   "id": "game.pro_league_matching_setup_game_session",

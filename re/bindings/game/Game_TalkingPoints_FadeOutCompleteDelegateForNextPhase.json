@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d96e30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name fadeOutCompleteDelegateForNextPhase (class from the log channel); log channel TalkingPoints: 'fadeOutCompleteDelegateForNextPhase'"
+  "evidence": "decomp:re/decomp/142d96e30.c;pat:log-message-method;xref:0x14eb410b1",
+  "notes": "Delegate (lea at 0x14eb410b1): logs, resets +0xea8/+0xea6, +0xeac=0.3; copies phase list of +0xe88; if UI open (+0x72) posts close message 0x14565e950 with +0x71 and clears it; calls 0x140acc2b0(+0xe88). (lane owner review requested)"
  },
  "signature": {
   "id": "game.talking_points_fade_out_complete_delegate_for_next_phase",

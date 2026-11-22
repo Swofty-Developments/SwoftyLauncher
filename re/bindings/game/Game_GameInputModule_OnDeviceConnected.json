@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a75d80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GameInputModule::onDeviceConnected; log channel INPUT: 'GameInputModule::onDeviceConnected - connected=%d, setting m_pendingRefresh=true'"
+  "evidence": "decomp:re/decomp/142a75d80.c;pat:log-message-cxx;xref:0x142a749d6,0x142a78cfa",
+  "notes": "Refs: lea at 0x142a749d6 (in 0x142a733f0) and 0x142a78cfa (in 0x142a78bc0), handler registration. Logs INPUT 'GameInputModule::onDeviceConnected - connected=%d, setting m_pendingRefresh=true' (p2). Under CS 0x146078a80 updates the global device bookkeeping: disconnect removes id p3[1] from the 8-slot list 0x146078ac0 (count 0x146078b00), connect appends it; counters 0x146078ab0/ab4, ring of 8 events 0x146078b20 (time, connected, id). Disconnect posts bus message 0x1457c2d00 (Ne_Post_BusMessage); connect requests device data with callback Game_GameInputModule_DeviceDataReadCallback. Sets p1+0x72 = 1. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_input_module_on_device_connected",

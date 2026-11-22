@@ -204,6 +204,19 @@ inline Settings parse_settings(std::string_view text)
     return s;
 }
 
+// The root settings.json names beside a launcher_saves block is the plain store of the profile's launcher saves. A session
+// run once on the copy's own save (SWOFTY_LAUNCHER_SAVES=off) plays another save and leaves that store alone: why, or ""
+// when the root is the session's.
+inline std::string off_for_session(std::string_view settings_text, std::string_view launcher_saves)
+{
+    json::Value doc;
+    if (launcher_saves != "off" || settings_text.empty() || !json::parse(std::string(settings_text), doc) ||
+        doc.type != json::Value::Obj || doc["launcher_saves"].type == json::Value::Null)
+        return {};
+    return "this session runs on the copy's own save (SWOFTY_LAUNCHER_SAVES=off), and the root is the plain store of the "
+           "profile's launcher saves";
+}
+
 // ---- manifests ----
 
 struct Slot {
@@ -443,8 +456,26 @@ inline std::optional<std::vector<uint8_t>> read_container(const Root &root, uint
     return bytes;
 }
 
-// The newest generation that a session with the core wrote at a profile save (rule 2), walking back from CURRENT.
-inline std::optional<Manifest> newest_core_save(const Root &root)
+// Whether a generation is of the profile save. An older core also wrote one at a save of another kind, the race
+// highlights: its registered containers are that save's own (HIGHLIGHTS_CHILD) and none of the profile's, which always has
+// the options container and every game mode's pair. A generation that lists no registered container (the EA app copy's)
+// holds only the kept ones and counts.
+inline bool profile_generation(const Manifest &m)
+{
+    bool registered = false;
+    for (const Entry &e : m.containers) {
+        if (!e.registered)
+            continue;
+        if (e.name == sp::PROFILE_CHILD || !pair_of(e.name).empty())
+            return true;
+        registered = true;
+    }
+    return !registered;
+}
+
+// The newest generation that a session with the core wrote at a profile save (rule 2), walking back from CURRENT. A save
+// generation of another save is passed over, and its number added to `other` when given.
+inline std::optional<Manifest> newest_core_save(const Root &root, std::vector<uint64_t> *other = nullptr)
 {
     auto cur = root.current();
     if (!cur)
@@ -455,8 +486,12 @@ inline std::optional<Manifest> newest_core_save(const Root &root)
         if (*it > *cur)
             continue;
         auto m = read_generation(root, *it);
-        if (m && m->event == "save" && !m->session.empty())
+        if (!m || m->event != "save" || m->session.empty())
+            continue;
+        if (profile_generation(*m))
             return m;
+        if (other)
+            other->push_back(m->generation);
     }
     return std::nullopt;
 }
@@ -477,11 +512,17 @@ struct PutBack {
     std::vector<Skip> skipped;
 };
 
+// The containers a put-back may add to the kept set: either half of a game mode's pair, and the career snapshots' own entry.
+// A registered container that is not a mode's would never be written back (the save leaves out a kept name the root
+// registers), and anything else (the race highlights' replay container of an older core's generation) is not the profile's.
+inline bool restorable(const std::string &name) { return !pair_of(name).empty() || name == sp::ENTRY_NAME; }
+
 // Rule 2: the containers of that save generation the tree the game just loaded lacks, matched by name. `tree` maps each
 // container the tree holds to the SHA-256 of its bytes ("" when they are not known). A container the tree has is never
 // replaced, and what the newest save generation does not hold (a deletion, or a container that never was) is not brought
 // back from an older one. The halves of a mode's pair come back together or not at all: when one half is absent and the
-// other is present, the absent one comes back only if the present one is byte for byte the one in that generation.
+// other is present, the absent one comes back only if the present one is byte for byte the one in that generation. Only a
+// restorable container comes back.
 inline PutBack put_back(const Manifest &newest, const std::map<std::string, std::string> &tree)
 {
     PutBack out;
@@ -489,6 +530,10 @@ inline PutBack put_back(const Manifest &newest, const std::map<std::string, std:
     for (const Entry &e : newest.containers) {
         if (tree.count(e.name) || !taken.insert(e.name).second)
             continue;
+        if (!restorable(e.name)) {
+            out.skipped.push_back({e.name, "it is not a game mode's container"});
+            continue;
+        }
         std::string pair = pair_of(e.name);
         if (!pair.empty()) {
             const Entry *bad = nullptr;

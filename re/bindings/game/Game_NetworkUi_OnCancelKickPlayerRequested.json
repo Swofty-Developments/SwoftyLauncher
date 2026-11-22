@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430ac540",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onCancelKickPlayerRequested (class from the log channel); log channel NETWORK-UI: '%s(%d).'"
+  "evidence": "decomp:re/decomp/1430ac540.c;pat:log-message-method;xref:0x1430aac25,0x1430df5e4",
+  "notes": "UI command handler lea'd in 0x1430aa810: logs 'onCancelKickPlayerRequested(%d)' and closes the kick message (UI_MESSAGE closeMessage). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_ui_on_cancel_kick_player_requested",

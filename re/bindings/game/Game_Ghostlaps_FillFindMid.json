@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f86eb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name fillFindMid (class from the log channel); log channel GHOSTLAPS: '%s()'"
+  "evidence": "decomp:re/decomp/142f86eb0.c;pat:log-message-method;xref:0x142f996f1",
+  "notes": "GHOSTLAPS '%s()' fillFindMid(this, rank). If 0x142f89800(this,this+0xc0) and rank!=0: +0xc0=1, +0x140=rank (caller passes this+0x9e8), +0x148=1, +0x290=1, +0x291 session flag. Case 6 of 0x142f98320, completion 0x142f86fc0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ghostlaps_fill_find_mid",

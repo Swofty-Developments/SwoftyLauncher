@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141f0fed0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-Video_Export",
-  "notes": "named from its log messages (channel Video_Export): 'Failed to find highlights save path [%S] - trying to create | Save path [%S] - established | Failed to create highlights save path [%S]'"
+  "evidence": "decomp:re/decomp/141f0fed0.c;pat:log-channel-Video_Export;xref:0x141f1240b,0x141f12473",
+  "notes": "Read in full; refs are tail-jmps. Gets selected highlight (0x141f0fa80/0x141f096b0/0x141f097d0), route 'enter_highlight_export_screen', 0x141f10870(5,..), SetExportName 'highlights_export_entered', export-progress VM nodes, dated folder (GetFileAttributesW/CreateDirectoryW), job +0x968 (+0xa1=1, 30 fps, paths), posts vt 0x14576c558, event 'ExportHighlightVideoStart', then 0x141f10c30. (lane owner review requested) Better name: Game_VideoExport_StartHighlightExport (bound record keeps its name)."
  },
  "signature": {
   "id": "game.video_export_create_highlights_folder",

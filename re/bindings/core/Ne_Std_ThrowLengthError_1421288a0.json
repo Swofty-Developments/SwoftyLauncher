@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1421288a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "void (void)",
-  "evidence": "decomp:re/decomp/1421288a0.c;xref:0x141ee593c;xref:0x141ee723b;xref:0x141eea2fc",
-  "notes": "myteam-g2: Tiny noreturn thunk: calls Ne_Std_ThrowExceptionNoReturn with a fixed message then traps; the std::vector/string too-long style throw used by the accolades page code. No career logic."
+  "evidence": "decomp:re/decomp/1421288a0.c;xref:0x141ee593c,0x141ee723b,0x141eea2fc",
+  "notes": "Noreturn: calls Ne_Std_ThrowExceptionNoReturn 0x1449e16b4 with 'invalid vector subscript' (0x1456de550), then int3. Callers Career_MyTeamAccolades_Page, Career_MyTeamAccolades_PageAlt, 0x141ee65a0, 0x141eeadd0. Better name: Ne_Std_ThrowInvalidVectorSubscript_1421288a0 (bound record keeps its name)."
  },
  "signature": {
   "id": "core.std_throw_length_error_1421288a0",

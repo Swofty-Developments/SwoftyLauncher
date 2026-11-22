@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432c2980",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-F1OS",
-  "notes": "named from its log messages (channel F1OS): 'Stopping online service task %s'"
+  "evidence": "decomp:re/decomp/1432c2980.c;pat:log-channel-F1OS;xref:0x14565b790,0x14565b8b0,0x14565cc10",
+  "notes": "Shared virtual (cells incl. 0x14565b790, 0x14565b8b0, 0x14565cc10, 0x1457f1c60). For error code param_3 in {1,2,13} allocates an error record (vtable 0x145834c40) on the task result +0x40, formats 'Error Code: %d - Message: %s ' and for code 1 '%s_Exception_%s', logs 'Stopping online service task %s', calls cleanUpRequest 0x1432b4440(...,1). (lane owner review requested) Better name: Game_F1os_OnlineServiceTask_StopWithError (bound record keeps its name)."
  },
  "signature": {
   "id": "game.f1os_stopping_online_service_task",

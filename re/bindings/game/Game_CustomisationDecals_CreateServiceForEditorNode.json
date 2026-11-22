@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141427e80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141427e80.c;xref:0x14142c149,0x14142c4eb",
-  "notes": "Looks up an editor decal node in a flat hash set (key = byte at this+0x1ac, multiplicative hash, probing) of the customisation service (+0x2b0); calls Game_DecalGeneration_CreateService when missing. Callers SetEditorVehicleCustomisation, RemoveEditorDecalNode. Hypothesis. vp0-verify partial"
+  "evidence": "decomp:re/decomp/141427e80.c;xref:0x14142c149,0x14142c4eb,0x141fef6f6",
+  "notes": "(system, u32 arg): looks up the decal service of key byte system+0x1ac in the robin-hood map [system+0x2b0] (+0x60 mul, +0x68/+0x70/+0x80/+0x90/+0x94); only for service type byte 5: vehicle customisation 0x14246dcb0([system+0x258], id system+0x1a8); if present calls Game_DecalGeneration_CreateService 0x141428060(system, &sp, 1, editor list system+0x170, livery colours (when cust+0x38), key byte, arg) and drops the returned shared_ptr. No 'create when missing' check. (lane owner review requested)"
  },
  "signature": {
   "id": "game.customisation_decals_find_service_for_editor_node",

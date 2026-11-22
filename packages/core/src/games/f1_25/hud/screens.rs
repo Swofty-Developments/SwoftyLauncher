@@ -458,6 +458,16 @@ pub fn targets(rec: &HudElement) -> Result<Option<Vec<Target>>> {
     }];
     for (k, v) in &rec.also {
         let facts = ScreenFacts::parse(&serde_json::Value::String(k.clone()))?;
+        // also.<the record's own screen> carries only hide: elements kept off that screen
+        if out[0].facts.key == facts.key {
+            if v.show.is_some() || v.hide.is_empty() {
+                return Err(err(format!(
+                    "also.{k}: the record's own screen takes only hide here (show is the record's show)"
+                )));
+            }
+            out[0].hide = v.hide.clone();
+            continue;
+        }
         let show = show_of(v.show.as_ref(), &format!("also.{k}"))?;
         if out.iter().any(|t| t.facts.key == facts.key) {
             return Err(err(format!("also.{k}: the record already targets {k}")));
@@ -474,6 +484,25 @@ pub fn targets(rec: &HudElement) -> Result<Option<Vec<Target>>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn also_on_the_own_screen_hides_elements_there() {
+        let rec: HudElement = serde_json::from_value(serde_json::json!({
+            "screen": "replay", "prefix": "vmkq", "show": { "view_model": "view_model_data.hud_q_on" },
+            "also": { "replay": { "hide": ["win"] },
+                      "standings": { "show": { "view_model": "view_model_data.hud_q_on" }, "hide": ["all"] } },
+            "elements": []
+        }))
+        .unwrap();
+        let t = targets(&rec).unwrap().unwrap();
+        assert_eq!(t.len(), 2);
+        assert_eq!(t[0].facts.key, "replay");
+        assert_eq!(t[0].hide, vec!["win".to_owned()]);
+        assert_eq!(t[1].hide, vec!["all".to_owned()]);
+        let mut bad = rec.clone();
+        bad.also.get_mut("replay").unwrap().show = rec.show.clone();
+        assert!(targets(&bad).is_err());
+    }
 
     #[test]
     fn the_presets_have_the_measured_shape() {

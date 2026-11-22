@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141788bc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "void Game_Mfd_FuelMix_BuildOptions(void *fuel_sub, uint32_t mask)",
-  "evidence": "doc:re/db/subsystems/game.md",
-  "notes": "Stores mask at +0x324, adds rows lean/standard/rich/max (lng_hud_fuel_*); Max row skipped when (sessionType-15) < 3 (0x141788c9a: 83 c0 f1 83 f8 03 72 21 -> jb 0x141788cc3; 15..17 = race sessions inferred); NOP 72 21 at 0x141788ca0 shows Max in races (fuel-mix, fuel-verify claim 3) | findings from PR #474 by vogtmarcel07-cloud; independent check 2026-10-28 by fuel-verify: partial"
+  "evidence": "doc:re/db/subsystems/game.md;doc:re/research/fuel_mix_five.md#sites;decomp:re/decomp/141788bc0.c;xref:0x1417884d0,0x141788988,0x141788f9c",
+  "notes": "(mfd, mask): +0x324 = mask; rebuilds list +0x350 (0x1441f0ec0/0x1441f10d0); adds via 0x141789520: bit0 'lean' (lng_hud_fuel_lean, 0), bit1 'standard' (1), bit2 'rich' (2), bit3 'max' (lng_hud_fuel_max, 3) only when session type [[+0xf0]+0x1a8]+4 is outside 0xf..0x11. Then bool node +0x30 = 0x141789070(this). (lane owner review requested) | engine-re fuel-mix-5 2026-11-20 (static): the only fixed 4-mix parts are the four bit tests and the four Game_Mfd_FuelMix_AddRow 0x141789520 calls (ids 0..3); AddRow and Game_Mfd_FuelMix_SetSelected 0x1417891f0 take any id, so a replacement with a fifth AddRow(id 4) is enough for the row. The mask is compared with sub+0x324 at 0x14178897d (Game_Mfd_FuelMix_Update) and 0x141788ef9 (Game_Mfd_FuelMix_Recheck); a stored bit 4 the builders do not compute rebuilds the list every frame. edited by engine-re with --force 2026-11-20 at user request (lane owner review requested)"
  },
  "signature": {
   "id": "game.mfd_fuel_mix_build_options",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143d834e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143d834e0.c;xref:0x143d834a5,0x140176bd2",
-  "notes": "Creates the default bind layout for an RTT target set: names it '<unknown-because-not-initialised/resource>' / 'default://blank', builds it with Render_Gfx2_BindLayout_Create and an MD5 transform of the desc (Ne_Hash_Md5Transform_Alt); throws bad_function_call if the factory is empty. Caller Render_Rtt_ConstructTargetSet."
+  "evidence": "decomp:re/decomp/143d834e0.c;xref:0x140176bd2,0x143d834a5",
+  "notes": "Creates the default bind layout of an RTT target set: names '<unknown-because-not-initialised/resource>' / 'default://blank', MD5 key (Ne_Hash_Md5Transform_Alt), Render_Gfx2_BindLayout_Create through the stored factory; Ne_Std_ThrowBadFunctionCall when it is empty. Callers Render_Rtt_ConstructTargetSet 0x143d834a5 and a tail jump at 0x140176bd2 in 0x140176530. (lane owner review requested)"
  },
  "signature": {
   "id": "render.rtt_create_blank_bind_layout",

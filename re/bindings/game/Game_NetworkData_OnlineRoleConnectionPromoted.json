@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1409976e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-DATA",
-  "notes": "named from its log messages (channel NETWORK-DATA): 'OnlineRole: Connection %d promoted to WATCHING'"
+  "evidence": "decomp:re/decomp/1409976e0.c;pat:log-channel-NETWORK-DATA;xref:0x1456585d8",
+  "notes": "OnlineRole per-connection state machine: sends a pending \"game mode data received\" (type 0x2b) via Game_NetworkData_SendToConnection; promotes connections to WATCHING/PLAYING, sends verified-client lists (sendVerifiedClient) and the initial data size (0x143061550), assigns IDs -> VERIFYING. (lane owner review requested) Better name: Game_OnlineRole_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_data_online_role_connection_promoted",

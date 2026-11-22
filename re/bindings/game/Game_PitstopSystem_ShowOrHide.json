@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1403c62f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name showOrHide (class from the log channel); log channel PitstopSystem: 'showOrHide'  | engine-re track RE round B2 2026-11-17 (static): this+0xc0 = first show_pitstop_zone item of the pit-lane TrackSpace markup (Game_PitstopSystem_FindShowPitstopZone_Body 0x147de5cd0); 0 -> returns at once."
+  "evidence": "decomp:re/decomp/1403c62f0.c;pat:log-message-method;xref:0x14561e1a8",
+  "notes": "vt 0x14561e0e0 slot (0x14561e1a8). Logs showOrHide; returns when this+0xc0 (show_pitstop_zone item) is 0. Per car slot: pose points -> lap fraction (Game_TrackSpace_FindVolume, Game_ZoneVolume_SignedDistance) tested against item +0x10..+0x14 (wraps when start > end) or forced byte this+0xb8+i. Inside and this+0xd0 clear -> 0x1403c0590, garage crews within 6 m of the camera unhidden, others hidden; else 0x1403c23b0 and all 32 crews hidden; posts a bus message. (lane owner review requested)"
  },
  "signature": {
   "id": "game.pitstop_system_show_or_hide",

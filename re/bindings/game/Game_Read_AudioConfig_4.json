@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1443f0aa0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--;decomp:re/decomp/1443f0aa0.c;xref:0x145a8a848",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: audio.emitter.%02I64u, audio.event.%02I64u, audio.param.%02I64u, audio.podium.emitter.%02I64u, audio.resetp.%02I64u'  | 2026-11-17 engine-re (decomp read, corrected per V11305): AudioMultiEmitter key registration/init (vt slot 0x145a8a848), not the property reader itself: precomputes djb2 hashes of the key names into globals (0x146ca6140, 0x146ca61e0..) and inserts handlers via 0x143fa5890. Key set: audio.event.01..10, audio.param.01, audio.resetp.01, audio.emitter.01..40 (loop 1..0x28; each is the woid of an AudioSpeaker instance, e.g. the stock _tannoy speakers in layer audio_env) and audio.podium.emitter.01..05. The formatted emitter strings get no stored hash here; the 40-speaker bound is the loop count only."
+  "evidence": "pat:log-channel--;decomp:re/decomp/1443f0aa0.c;xref:0x145a8a848,0x148f994ac,0x154a40f6a",
+  "notes": "Not a config read. Allocs 0x58 obj (vt 0x145a89e80, crit sec, 300-entry 0x960 array) -> +0x60; stores this/+0x10/+0x28/+0x60 into handler globals 0x146ca66b8/6238/6320/6bb8/6190/62a8/6d08/6c10/6b58/6b00/6cb8 and inserts each key into [+0x28]+0x50 hash via 0x143fa5890/0x143fa52b0; djb2 (0x1505,*33) of \"audio.event.%02I64u\" 1..10 -> 0x146ca61e0 and 0x146ca6140, \"audio.param.01\",\"audio.resetp.01\", event 01-05 -> 0x146ca6270..; formats \"... (lane owner review requested) Better name: Game_Audio_RegisterPropertyHandlers (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_audio_config_4",

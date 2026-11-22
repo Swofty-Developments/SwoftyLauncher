@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401bc730",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name setVisible (class from the log channel); log channel HairModifier: 'setVisible %s'"
+  "evidence": "decomp:re/decomp/1401bc730.c;pat:log-message-method;xref:0x1455e28a8",
+  "notes": "HairModifier vt cell 0x1455e28a8, logs 'setVisible %s'. Render object +0x30: +0x54 = visible && strandHairEnabled (0x145f8d26e); on change sets dirty (+0x14 |= 2) and queues 0x143d00900. (lane owner review requested)"
  },
  "signature": {
   "id": "game.hair_modifier_set_visible",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d033d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_TelemetryOutputDataSystem_UpdateUDPLobbyData;xref:0x142d0453a",
-  "notes": "cxx=game::TelemetryOutputDataSystem::updateUDPLobbyData; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/142d033d0.c;str:s_TelemetryOutputDataSystem_UpdateUDPLobbyData;xref:0x1421d5c3f",
+  "notes": "updateUDPLobbyData: needs online championship; rate-limited 500 ms; builds per-player lobby entries (max 24: AI flag, team, nationality, platform, name or lng_player, car number, ready status) and sends packet id 9 to listeners (+0xd2a0 vt+0x68) as 0x51a, 0x3ba or 0x426 bytes depending on format setting. (lane owner review requested)"
  },
  "signature": {
   "id": "game.telemetry_output_data_system_update_u_d_p_lobby_data",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1440bcbf0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-PARTY-TRANSPORT",
-  "notes": "named from its log messages (channel NETWORK-PARTY-TRANSPORT): '? Peer Index %d is not present (%zu connections)'"
+  "evidence": "decomp:re/decomp/1440bcbf0.c;pat:log-channel-NETWORK-PARTY-TRANSPORT;xref:0x145a596f8",
+  "notes": "Body read in full. Only when state +0x18==2 and byte +0xf8==0: param_2<0 -> endpoint +0x20 (interface 0x1440b01e0); else peer index -> u16 connection id from table +0x38..+0x40 ('? Peer Index %d is not present (%zu connections)'), resolved by vt+0x148 on endpoint +0x28 ('? Peer Index %d has departed.'), then sent with vt+0x28 (data param_3, flag 3); releases param_3. Only ref vtable cell 0x145a596f8. Better name Game_NetworkPartyTransport_SendToPeer (bound record keeps its name). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_party_transport_peer_index_present",

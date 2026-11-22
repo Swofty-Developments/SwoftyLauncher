@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1444b16c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-VIDEO_EXPORT",
-  "notes": "named from its log messages (channel VIDEO_EXPORT): 'Failed to get initialise WebM file | Failed to fetch graphics resource. | Frame time = %I64d, Time step sum = %I64d, Time step counter = %I64d, Time step average = %I64d | Failed to encode frame, erro'"
+  "evidence": "decomp:re/decomp/1444b16c0.c;pat:log-channel-VIDEO_EXPORT;xref:0x145a93008",
+  "notes": "Read in full; only ref vtable cell 0x145a93008. Per-frame capture step: frame time from QPC (+0x288/+0x298, +0x40/+0x58); if +0x274 active runs state +0x2a0: 0 = init WebM via 0x1444b1f20 with staging texture +0x2d0[i] size (fail 'Failed to get initialise WebM file' -> 0x1444b0a10, state 3); 1 = warm-up wait; 2 = rotate 3 staging buffers (0x146cb7b90), map 0x1439dc210, RGB->I420 into encoder image, 0x1444b2c30, error 2 fires 'export_failed'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.video_export_encode_frame",

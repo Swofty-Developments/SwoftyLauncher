@@ -40,7 +40,10 @@ pub(super) fn build_profile(
     std::fs::create_dir_all(dir).with_context(|| format!("creating {}", dir.display()))?;
     let session = match built.settings.take() {
         Some(s) => s,
-        None => store.session_settings(profile)?,
+        None => store.session_settings_on(
+            &store.profile(profile)?,
+            swofty_core::install::Source::detect(&g.dir),
+        )?,
     };
     let mut session = session;
     if let Some(m) = integrity

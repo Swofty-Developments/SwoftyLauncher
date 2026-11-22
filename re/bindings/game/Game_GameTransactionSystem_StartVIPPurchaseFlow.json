@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e65a10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_GameTransactionSystem_StartVIPPurchaseFlow;xref:0x142e65a90",
-  "notes": "cxx=game::GameTransactionSystem::startVIPPurchaseFlow; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/142e65a10.c;str:s_GameTransactionSystem_StartVIPPurchaseFlow;xref:0x141d1eb25",
+  "notes": "startVIPPurchaseFlow(sys,delegate): stores delegate sys+0xa8/+0xb0; offline -> 'customisation_confirm_reconnect'; else 'transaction_confirm_purchase' (callback 0x142e654e0) with purchase_type=PPVIP. Caller 0x141d1e1d0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_transaction_system_start_v_i_p_purchase_flow",

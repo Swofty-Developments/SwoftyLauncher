@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14353b030",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "xref:0x14353abf2,0x14353ae09;kb:subsystems/rnd_ui.md",
-  "notes": "R&D upgrade-tree NODE loader (the tile data source): loops the same dept-code table (0x145735d60 codes 0..4, break at 5, NO code-4 exclusion), opens <team_link>.<deptname>.upgrade by instancecount (Gdb_Init_TableCursor), reads grid_coordinates.x/y + every column, appends all departments nodes (incl code-4 fake) into the combined tree model at UpgradesComponent+0x68+0x28. Called from the model builder 0x14353abb0 (player team r8b=0xff + per linked team). Sibling of the flat Career_Load_UpgradeRows 0x143539bc0. Node links resolve via Gdb_Find_RowByLabel (0x1445a2bd0, scan 0..instancecount-1) so our upgrade_1/2/3 need the instancecount bump to be in range.  engine-suppliers 2026-11-13 (capstone): key arg rdx +0x10 is the joined row path char* (checked non-empty at 0x14353b063); r8b engine stat id, 0xff for the team tree (0x14353abee), parent_engine stat id per engine_supplier_upgrades row (0x14353aff8, called 0x14353ae08). Builder loads EVERY supplier row into every team tree; hooked by native/src/core/guards/career/rnd_suppliers_guard.cpp."
+  "evidence": "decomp:re/decomp/14353b030.c;kb:subsystems/rnd_ui.md;xref:0x14353abf1,0x14353ae08",
+  "notes": "If path (arg2+0x10) non-empty: loops the dept-code bytes 0x145735d60..0x145735d66 (skips code 5, names via 0x14584f880), opens '%s.%s' table (Gdb_Init_TableCursor 0x1445a25c0), per row reads grid_coordinates.x/y, links and other fields, node name '%s_%d' with engine param_3, appends 0x40-byte nodes to vector arg1+8..+0x18. No code-4 exclusion. Called twice by Career_Build_UpgradeTreeModel 0x14353abb0. (lane owner review requested)"
  },
  "signature": {
   "id": "career.load_upgrade_tree_nodes",

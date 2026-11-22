@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140b77890",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name F1CarSetupDataManagerBase (class from the log channel); log channel NETWORK/F: '%s: serialization code: %08X'"
+  "evidence": "decomp:re/decomp/140b77890.c;pat:log-message-method;xref:0x140d04b93,0x1429090f1",
+  "notes": "Constructor: vtables 0x14568d750/0x14568d7d0 at +0/+8, serialization code 0x25e86493 at +0x10, allocator param_2 at +0x30/+0x38, InitializeCriticalSection, binding vector reserved to 0x1b, creates shared 0x50-byte map at 0x14605a400 once; logs NETWORK/F '%s: serialization code: %08X' with 'F1CarSetupDataManagerBase'. Callers in 0x140d04960 and 0x142908eb0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1_car_setup_data_manager_base_construct",

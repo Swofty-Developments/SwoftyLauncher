@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f868f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name fillFindHead (class from the log channel); log channel GHOSTLAPS: '%s()'"
+  "evidence": "decomp:re/decomp/142f868f0.c;pat:log-message-method;xref:0x142f9967b",
+  "notes": "GHOSTLAPS '%s()' fillFindHead. Gate 0x142f89800(this,this+0xc0); request +0xc0=1 (by rank), +0x140=1 (rank), +0x148=1 (count), +0x290=1, +0x291 from session flags. Called in case 5 of Game_GhostLapHandler_Update 0x142f98320, which submits via 0x142f850f0 with completion 0x142f869f0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ghostlaps_fill_find_head",

@@ -253,7 +253,7 @@ fn write_generation(
             std::fs::write(gd.join("containers").join(format!("{}.bag", fnv(name))), &bytes).unwrap();
             serde_json::json!({
                 "name": name, "fnv64": fnv(name), "type_id": 1, "bytes": bytes.len(), "sha256": format!("{name}:{}", slots.iter().map(|s| s.1).collect::<Vec<_>>().join(",")),
-                "registered": false, "source": source,
+                "registered": *source == "game", "source": source,
                 "slots": slots.iter().enumerate().map(|(i, (guid, who))| serde_json::json!({
                     "slot": i, "guid": guid, "name": who, "season": 2016, "round": 7, "last_played": 1_000 + i
                 })).collect::<Vec<_>>()
@@ -295,7 +295,7 @@ fn the_banner_names_a_career_the_newest_generation_lacks_and_offers_its_containe
         "save",
         Some("s1"),
         &[
-            ("driver_career", "game", &[("0x01", "Stock")]),
+            ("gm_driver_career", "game", &[("0x01", "Stock")]),
             (
                 "driver_career_progressive",
                 "kept",
@@ -308,7 +308,7 @@ fn the_banner_names_a_career_the_newest_generation_lacks_and_offers_its_containe
         2,
         "load",
         None,
-        &[("driver_career", "game", &[("0x01", "Stock")])],
+        &[("gm_driver_career", "game", &[("0x01", "Stock")])],
     );
     match banner_from(&d, loc.source.clone(), "p".into()) {
         Some(Banner::Lost(Missing {
@@ -325,6 +325,93 @@ fn the_banner_names_a_career_the_newest_generation_lacks_and_offers_its_containe
         }
         _ => panic!("expected a lost banner"),
     }
+    std::fs::remove_dir_all(&d).ok();
+}
+
+#[test]
+fn an_ea_copy_load_beside_a_steam_save_raises_no_banner_for_the_games_records_or_addon_off_careers() {
+    let d = std::env::temp_dir().join(format!("swofty-launcher-saves-ea-load-{}", std::process::id()));
+    std::fs::remove_dir_all(&d).ok();
+    let loc = vault::Location::launcher_ea(&d, "default");
+    std::fs::create_dir_all(&loc.dir).unwrap();
+    std::fs::write(loc.dir.join("NXDSMWW.BWW"), vec![1u8; 4000]).unwrap();
+    std::fs::write(loc.dir.join("QKRHMYXE"), vec![2u8; 416]).unwrap();
+    let v = Vault::of(&d, &loc).unwrap();
+    v.snapshot(&loc, vault::Meta::new(vault::Reason::Imported), 1_000)
+        .unwrap();
+    let plain = swofty_core::saves::plain::root_of_source(&d, &loc.source);
+    write_generation(
+        &plain,
+        39,
+        "save",
+        Some("steam"),
+        &[
+            ("camera_camera_system", "game", &[]),
+            ("options_options", "game", &[]),
+            ("journal_entries_entry4", "game", &[]),
+            ("gm_dev", "game", &[]),
+            ("gm_driver_career_26", "game", &[]),
+            (
+                "driver_career_26_SaveSlotGameModeComponent",
+                "game",
+                &[("0x01", "Career Save 1")],
+            ),
+            ("gm_driver_career_sw_progressive", "game", &[]),
+            (
+                "driver_career_sw_progressive_SaveSlotGameModeComponent",
+                "game",
+                &[("0x0a", "Career Save 1")],
+            ),
+            ("gm_driver_career_progressive", "kept", &[]),
+            ("driver_career_progressive_SaveSlotGameModeComponent", "kept", &[]),
+        ],
+    );
+    write_generation(
+        &plain,
+        40,
+        "load",
+        Some("ea"),
+        &[
+            ("gm_driver_career_sw_progressive", "injected", &[]),
+            (
+                "driver_career_sw_progressive_SaveSlotGameModeComponent",
+                "injected",
+                &[],
+            ),
+            ("gm_driver_career_progressive", "injected", &[]),
+            (
+                "driver_career_progressive_SaveSlotGameModeComponent",
+                "injected",
+                &[],
+            ),
+        ],
+    );
+    assert!(banner_from(&d, loc.source.clone(), "default".into()).is_none());
+    write_generation(
+        &plain,
+        41,
+        "load",
+        Some("steam-addons-off"),
+        &[
+            ("camera_camera_system", "game", &[]),
+            ("options_options", "game", &[]),
+            ("gm_driver_career_26", "game", &[]),
+            (
+                "driver_career_26_SaveSlotGameModeComponent",
+                "game",
+                &[("0x01", "Career Save 1")],
+            ),
+            ("gm_driver_career_sw_progressive", "kept", &[]),
+            (
+                "driver_career_sw_progressive_SaveSlotGameModeComponent",
+                "kept",
+                &[],
+            ),
+            ("gm_driver_career_progressive", "kept", &[]),
+            ("driver_career_progressive_SaveSlotGameModeComponent", "kept", &[]),
+        ],
+    );
+    assert!(banner_from(&d, loc.source.clone(), "default".into()).is_none());
     std::fs::remove_dir_all(&d).ok();
 }
 
@@ -555,10 +642,51 @@ fn an_imported_save_with_no_listing_gets_a_titled_placeholder() {
 #[test]
 fn the_fixed_columns_leave_room_at_the_narrowest_window() {
     let content = 960. - 220. - 2. * 28.;
-    let career_fixed = super::MODE_W + super::PLAYED_W + super::CHIP_W + 3. * 10. + 24.;
+    let career_fixed = super::MODE_W + super::PLAYED_W + super::CHIP_W + super::FORGET_W + 4. * 10. + 24.;
     let version_fixed = super::PIN_W + super::WHEN_W + super::SIZE_W + super::ACTIONS_W + 4. * 10. + 24.;
     assert!(content - career_fixed >= 150., "{}", content - career_fixed);
     assert!(content - version_fixed >= 150., "{}", content - version_fixed);
+}
+
+#[test]
+fn a_forgotten_career_leaves_the_careers_list_and_comes_back_with_its_save_slot() {
+    use swofty_core::saves::vault::careers::State;
+    let root = std::env::temp_dir().join(format!("swofty-saves-forget-{}", std::process::id()));
+    std::fs::remove_dir_all(&root).ok();
+    let index = swofty_core::stdlib::careers::data_path(&root);
+    std::fs::create_dir_all(index.parent().unwrap()).unwrap();
+    let write = |status: &str| {
+        std::fs::write(
+            &index,
+            format!(
+                r#"{{"version":1,"careers":[
+                {{"career":"driver_career:a1","profile":"Race","slot":"a1","status":"present","driver":"Oscar PIASTRI","team":"McLaren"}},
+                {{"career":"my_team:b2","profile":"Race","slot":"b2","status":"{status}","team":"Racing Bulls"}}]}}"#
+            ),
+        )
+        .unwrap();
+    };
+    let store = swofty_core::store::Store::new(&root);
+    let states = || {
+        build_saves(&store, None, "Race", false)
+            .view
+            .entries
+            .iter()
+            .map(|e| (e.l.career.clone(), e.l.state))
+            .collect::<Vec<_>>()
+    };
+    let (a, b) = ("driver_career:a1".to_owned(), "my_team:b2".to_owned());
+    write("deleted");
+    assert_eq!(
+        states(),
+        [(a.clone(), State::Present), (b.clone(), State::DeletedInGame)]
+    );
+    assert!(!vault::careers::forget(&root, &a).unwrap());
+    assert!(vault::careers::forget(&root, &b).unwrap());
+    assert_eq!(states(), [(a.clone(), State::Present)]);
+    write("present");
+    assert_eq!(states(), [(a, State::Present), (b, State::Present)]);
+    std::fs::remove_dir_all(&root).ok();
 }
 
 #[test]

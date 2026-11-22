@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1422a8fb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=SessionResultsStandardViewModel::onResultSelectionChanged; log channel SESSION_RESULTS_TOOLTIPS: 'Rebuild Tooltips from: SessionResultsStandardViewModel::onResultSelectionChanged'"
+  "evidence": "decomp:re/decomp/1422a8fb0.c;pat:log-message-cxx;xref:0x1422a7fe1",
+  "notes": "If [+0x960] set, reads the selected result row (0x1418405a0 on +0x6d0) and stores its bit-4 flag in +0x6b9; logs SESSION_RESULTS_TOOLTIPS \"Rebuild Tooltips from: ...onResultSelectionChanged\"; then Game_SessionResultsTooltips_RebuildTooltips (0x1422a9070). Referenced by lea at 0x1422a7fe1 (inside OnTabActivated). (lane owner review requested)"
  },
  "signature": {
   "id": "game.session_results_standard_view_model_on_result_selection_changed",

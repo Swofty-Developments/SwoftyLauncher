@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140b808a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_Championship_ChampionshipFormationLapComponent_OnRaceStarted;xref:0x140b80b8b,0x140b80c2e,0x140b80d75",
-  "notes": "cxx=game::championship::ChampionshipFormationLapComponent::onRaceStarted; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/140b808a0.c;str:s_Championship_ChampionshipFormationLapComponent_OnRaceStarted;xref:0x140b800e4,0x140b80e88",
+  "notes": "Own pretty-function log onRaceStarted; bound by lea 0x140b800e4/0x140b80e88. If save state +0x298 == 1: when [+0xa70]+0x40 == 0 applies 26 stored tyre records (+0x29c step 0x4c) via 0x140b816b0, optimal tyre temps (0x142f46370) when Sess_FormationLapLogic_IsActiveType0; non-immersive formation sets temps per car; then 0x140b81a90 for all 26 records. (lane owner review requested)"
  },
  "signature": {
   "id": "game.race_started",

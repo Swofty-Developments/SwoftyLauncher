@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14024af00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14024af00.c;xref:0x140240cc1",
-  "notes": "Copies an 8-qword transform from param_2 into the script at +0x470..+0x4a8 and zeroes the w components. 30 callers: Game_CrewCeleGarage01/02_Initialise, Game_PitstopCutScene_Initialise, SpawnGarageGantry. vp0-verify partial"
+  "evidence": "decomp:re/decomp/14024af00.c;xref:0x140240cc1,0x14026abd2,0x14027592e,0x140278b40,0x14027b630,0x14027ca20,0x14027dd60,0x14027edf0,0x140280070,0x140281e50,0x140283010,0x140284970,0x140285c90,0x140287070,0x140288c50,0x140289e90,0x14028b510,0x14028ca20,0x140335dc4,0x140338954",
+  "notes": "(script, float4x4 *m): copies m to script+0x470..+0x4af, zeroes the y of the X row (+0x474) and Z row (+0x494) and re-normalizes them with Y = (0,1,0), i.e. keeps yaw only; then rotates the X/Z rows around Y by a constant angle (sin/cos polynomial), one constant when [[[[0x14601f5c8]+0x20]+0x1a8]+0x30] is null or its byte +0x60 is 0, another otherwise; translation row +0x4a0 recomputed with the same rotation. Not a w-clear as noted before. (lane owner review requested)"
  },
  "signature": {
   "id": "game.cut_scene_script_store_garage_transform",

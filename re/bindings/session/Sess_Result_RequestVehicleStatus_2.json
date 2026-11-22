@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142c21610",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
   "proto": "-",
   "evidence": "pat:log-channel-SESSION-RESULT;decomp:re/decomp/142c21610.c;xref:0x142c1fb7e,0x142c20745",
-  "notes": "named from its log messages (channel SESSION-RESULT): 'Vehicle %d requested status %s.%s' sb2-verify-a: the log string is inlined in a large per-vehicle progress/lap update (setUnmodifiedProgressLap, TyreSystem warning)"
+  "notes": "Called by Game_F1DataFeedSystem_UpdateCar. Per car index (< g 0x146ce86dc, car = g 0x146ce86e0[i]): copies the 4x4 matrix arg3 into [car+0x558]+0x190/+0x290/+0x1d0, tyre temps (arg8[0x25..0x28]+273.15) into [car+0x580]+0x70..+0x88, wheel transforms, progress record [[this+0xe0]+0x38][i] (+0x30..+0xc0, PROGRESS setUnmodifiedProgressLap log); finally sets result row [[this+0xf0]+0x148][i] to eRetired (0x307) or eActive (2) with the SESSION-RESULT log. Better name: Sess_DataFeed_ApplyVehicleState (bound record keeps its name)."
  },
  "signature": {
   "id": "session.result_request_vehicle_status_2",

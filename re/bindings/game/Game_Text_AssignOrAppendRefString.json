@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14080efb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14080efb0.c;xref:0x14080ebf9",
-  "notes": "1403-byte string-building helper (Ne_String_CloneAppendCStr, Ne_Make_StrFromCStr, Strcmp, Chkstk) used by Game_Character_ExpandPackagePlaceholders (0x14080f6c8) and 0x14080ebf9/0x14080fa28 (19 callers). Hypothesis: expands package path placeholders for character assets. vq0-verify partial/disagree"
+  "evidence": "decomp:re/decomp/14080efb0.c;xref:0x14080ebf9,0x14080f6c8,0x14080fa28,0x140c1d2af,0x140c1d2e7,0x140c1da58,0x140c1da90,0x140c1e1f8,0x140c1e230,0x1414eb6cf,0x1416781ef,0x14167837a,0x1416785bc,0x1416c54d8,0x14234ab93,0x14234abe6,0x14248b7ef,0x1428a574a,0x14f36a148",
+  "notes": "If source string has flag 0x200000: mode 0 shares ref, mode 1 concatenates. Else expands '[name]' tokens using up to 5 name/variant pairs in param_1 (Ne_Variant_FormatToString), then assigns (mode 0) or appends (mode 1) to param_3. (lane owner review requested) Better name: Game_Text_ExpandPlaceholdersAssignOrAppend (bound record keeps its name)."
  },
  "signature": {
   "id": "game.character_append_package_path_part",

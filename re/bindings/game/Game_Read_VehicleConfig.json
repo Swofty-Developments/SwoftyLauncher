@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14463a800",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: Game.VehicleDamage.tyres, Vehicle.FineUpdateRate, Vehicle.FineUpdateRateAI, Vehicle.TyreContactSubStepCycleAI, Vehicle.TyreContactSubStepCyclePlayer'"
+  "evidence": "decomp:re/decomp/14463a800.c;pat:log-channel--;xref:0x145bf7d08",
+  "notes": "Module init (vtable cell 0x145bf7d08): six dependencies via vt+0x28 -> +0xc8,+0xd0,+0xe8,+0xd8,+0x100,+0x108; Game.VehicleDamage.tyres->0x145faa608 (default 1), Vehicle.FineUpdateRate->0x145faa60c, FineUpdateRateAI->0x145faa610, TyreContactSubStepCyclePlayer->0x145faa614, TyreContactSubStepCycleAI->0x145faa618. Returns 0 or 0x16. (lane owner review requested) Better name: Game_VehicleModule_InitSettings (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_vehicle_config",

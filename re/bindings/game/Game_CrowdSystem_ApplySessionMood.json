@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1413ee2d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1413ee2d0.c;xref:0x1413f055c,0x142d4ecc8",
-  "notes": "Chooses the crowd mood/intensity by session type ([this+0xb8]+0x1a8)+4: 1-4 practice -> +0x108, 5-14 qualifying -> +0x10c, 15-17 race -> +0x110, 18 time trial -> +0x104; +0x114 when override flags +0x100/+0x118 set; writes it to every crowd group (+0x88..+0x90) +0xc and posts a message per group. Callers: Game_CrowdSystem_OnSessionEnter, Game_Garage_SendVehicleStatusChange, Sess_FormationLapStartLights_OnStateEnter, Sess_PreRaceGridState_OnEnter, Sess_StartLights_Enter."
+  "evidence": "decomp:re/decomp/1413ee2d0.c;xref:0x1413f055c,0x142d4ecc8,0x142d5ff78,0x142d81508,0x142d8f8d8",
+  "notes": "Override +0x100 clear: value by session type ([+0xb8]+0x1a8)+4: 1-4 -> +0x108, 5-14 -> +0x10c, 15-17 -> +0x110, 18 -> +0x104, or +0x114 when +0x118 set; written to every zone (+0x88..+0x90) +0xc, message 0x1456e5910, 0x1413f1b50(zone,0); with override 0x1413f1b50(zone,1). Copies +0x100 into the 15 sub-objects +0x8..+0x78 (+0x30). (lane owner review requested)"
  },
  "signature": {
   "id": "game.crowd_system_apply_session_mood",

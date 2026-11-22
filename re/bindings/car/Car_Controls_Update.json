@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144741700.c;xref:0x1409d5fde,0x14474049c,0x155e15ade",
-  "notes": "Controls phase of Car_Update (dt param): player check +0x124 == 1, throttle/limiter value [car]+0x1c0 clamped 0..1 with obfuscated config [car+0x538] (+0x100..+0x168, +0x680 mode, +0x69c timer), wheel radius check +0x188. Hypothesis: traction/launch limiting. Caller: Car_Update. (3 xref site(s), fb.py callers.)"
+  "evidence": "decomp:re/decomp/144741700.c;xref:0x1409d5fdc,0x14474049c",
+  "notes": "Controls phase of Car_Update (dt param): player check +0x124 == 1, throttle/limiter value [car]+0x1c0 clamped 0..1 with obfuscated config [car+0x538] (+0x100..+0x168, +0x680 mode, +0x69c timer), wheel radius check +0x188. Hypothesis: traction/launch limiting. Caller: Car_Update."
  },
  "signature": {
   "id": "car.controls_update",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142456400",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void Career_Collect_TeamEntriesByKey(void *out, void *src, uint32_t team_key, void *alloc)",
-  "evidence": "decomp:re/decomp/142456400.c;xref:0x140a9b5fa;xref:0x140cbc0da;xref:0x1414d2f7e",
-  "notes": "myteam-g2: Collects pointers to the 0x58-byte records at src+8..+0x10 whose team key (u8@+0x58, u16@+0x5a) equals team_key into a vector. Used by Career_DeptEvent_Start and Career_GameValue_GetNetWeeklyIncome (team income entries)."
+  "evidence": "decomp:re/decomp/142456400.c;xref:0x140a9b5fb,0x140cbc0da,0x1414d2f7e,0x141f4ed43,0x1425492c7,0x1425495a8",
+  "notes": "(out, src, key, alloc) Walks records src+8..src+0x10 with stride 0x88, collects pointers whose u8 +0x58 == key low byte and u16 +0x5a == key>>16 into vector out {alloc, begin, end, cap} (x1.5 growth via alloc vslots +0x18/+0x38). Callers incl. Career_DeptEvent_Start. (lane owner review requested)"
  },
  "signature": {
   "id": "career.collect_team_entries_by_key",

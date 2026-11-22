@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140810be0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-PARTY",
-  "notes": "named from its log messages (channel NETWORK-PARTY): 'Unreadable Game.GameSessionActivity message: %d bits claimed sent, %zu bytes in the message'"
+  "evidence": "decomp:re/decomp/140810be0.c;pat:log-channel-NETWORK-PARTY;xref:0x148797a41",
+  "notes": "Party handler for Game.GameSessionActivity: size check against the claimed bits ('Unreadable Game.GameSessionActivity message'), then reads the activity with the bit reader 0x143925660 ('Unreadable GameSessionActivity in ...'). Handler stored by lea 0x148797a41 in 0x1487978e0 (.data1). (lane owner review requested) Better name: Game_NetworkParty_HandleGameSessionActivityMessage (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_party_unreadable_game_game_session_activity",

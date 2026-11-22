@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141d7e950",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-RESULTS_CONTAINER",
-  "notes": "named from its log messages (channel RESULTS_CONTAINER): 'screen open start: %hs'"
+  "evidence": "decomp:re/decomp/141d7e950.c;pat:log-channel-RESULTS_CONTAINER;xref:0x141e71688,0x141e71cfe",
+  "notes": "(c, id, callback): only when no screen is open (+0x1070 == -1): +0x1070 = id, copies callback to +0x1078 (0x1417dfb80), builds 'vm_open_%hs' (Ne_Format_String, screen name table 0x1457563d0), logs 'screen open start: %hs', fires it via 0x144320950; always destroys the passed functor. Callers 0x141e714d0, 0x141e71ab0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.results_container_open_screen",

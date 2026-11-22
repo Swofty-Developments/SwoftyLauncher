@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1419bbfa0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void f(void *view)",
-  "evidence": "decomp:re/decomp/1419bbfa0.c;xref:0x1419a115e;xref:0x1419a1375;xref:0x1419a1585",
-  "notes": "myteam-g1: Updates facility_stats_texture and workforce_cap display values (many packed texture/colour slots)."
+  "evidence": "decomp:re/decomp/1419bbfa0.c;xref:0x1419a115e,0x1419a1375,0x1419a1585,0x1419a1795",
+  "notes": "Builds an info/outcome panel: icon, info, is_player, is_team_mate, header, subtitle, rewards (reward_1/2, part_reward, currency_reward, loyalty_reward, resource_reward, value, colour, valid), workforce_cap, facility_stats_texture (Ui_Bind_FacilityStatsTextureNode), extra_outcomes_info, bg_effect, visible. Called 6x from 0x14199ff20. (lane owner review requested) Better name: Career_Build_OutcomeRewardsNodes (bound record keeps its name)."
  },
  "signature": {
   "id": "career.update_facility_stats_texture",

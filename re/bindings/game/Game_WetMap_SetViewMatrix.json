@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143be2070",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143be2070.c;xref:0x14478cf76,0x14478d06f,0x14478d16e",
-  "notes": "Hypothesis: copies 4 SSE matrices (view/proj for the wet map camera) into the wet map state; from WetMap_CreateResources / PlaceCamera. Named callers: Game_WetMap_CreateResources, Game_WetMap_PlaceCamera. vp3-verify partial/disagree"
+  "evidence": "decomp:re/decomp/143be2070.c;xref:0x14478cf76,0x14478d06f,0x14478d16e,0x14478e7d2",
+  "notes": "Read in full: (camera, mat4*) stores the 4x4 matrix at camera+0xb0..+0xe8 and its full inverse (cofactor/determinant via shuffles, 1/det) at +0xf0..+0x12c. One matrix + inverse, not 4 copied matrices (input note). All static call sites are in WetMap code (0x14478c050, 0x14478e440), the object itself is a generic camera block. (lane owner review requested)"
  },
  "signature": {
   "id": "game.wet_map_set_view_projection",

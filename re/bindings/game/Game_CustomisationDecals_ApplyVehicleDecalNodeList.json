@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a97c70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name applyVehicleDecalNodeList (class from the log channel); log channel CUSTOMISATION_DECALS: 'applyVehicleDecalNodeList(id=%I64u, num decals=%d)'"
+  "evidence": "decomp:re/decomp/142a97c70.c;pat:log-message-method;xref:0x1414379d5",
+  "notes": "(veh, list, livery, surface, generation): logs 'applyVehicleDecalNodeList(id=%I64u, num decals=%d)'; copies livery p3+0x10..+0x2c to p1+0x140..+0x15c, list id -> +0x88, surface -> +0x110. No surface/empty list: default livery path + DestroySurfaceAndProxy, +0x1d0 = 0. Same generation: clears the map of [p1+0xe8], +0x1d4 = 1. Else re-applies, DestroySetProxy, frees [p1+0xc8]+8, queues one request per decal node into p1+0x188; +0x1d0 = generation. (lane owner review requested)"
  },
  "signature": {
   "id": "game.customisation_decals_apply_vehicle_decal_node_list",

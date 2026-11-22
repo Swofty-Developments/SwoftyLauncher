@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142c1b630",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142c1b630.c;xref:0x142bcf148",
-  "notes": "If feed mode (param_1+0x168) == 2: calls Game_F1DataFeedSystem_InterpolateSimulatorCarDataFrame (or the RealWorld variant) into a stack frame and copies fields to param_1+0x18b478.. (e.g. +0x18b47c = int(value/2pi*3600*0.001), vectors +0x18b4e0/+0x18b4f0). Callers Game_PhotoModeSystem_StopPhotoModeRender, 0x142c19310 (x3) and 12 more. Hypothesis: telemetry / photo-mode car data frame."
+  "evidence": "decomp:re/decomp/142c1b630.c;xref:0x142bcf148,0x142bd4182,0x142c18db4,0x142c19737,0x142c19a02,0x142c19cbd,0x142c19d9f,0x142c19ec7,0x142c19f8a,0x142c1a02b,0x142c1a081,0x142c1a1f6,0x142c1a2b5,0x142c1b3cb,0x142c1b567,0x142c2ef36",
+  "notes": "Dispatch on feed mode +0x168: 0 -> InterpolateUDP 0x142c2f250, 1 -> InterpolateRealWorld 0x142c2f980, 2 -> InterpolateSimulator 0x142c31280 (only if +0x1a4 clear or +0x1a5 set; then copies the result into frame +0x18b470.., sets +0x18b52c and +0x18dec4 = time). Returns 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1_data_feed_fetch_car_data_frame",

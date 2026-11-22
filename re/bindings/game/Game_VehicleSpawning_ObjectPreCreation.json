@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f3e200",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-VEHICLE_SPAWNING_SYSTEM",
-  "notes": "named from its log messages (channel VEHICLE_SPAWNING_SYSTEM): 'objectPreCreation for vehicle %d | Vehicle %d has decals'"
+  "evidence": "decomp:re/decomp/142f3e200.c;pat:log-channel-VEHICLE_SPAWNING_SYSTEM;xref:0x142f3c214",
+  "notes": "Read in full; callback (lea at 0x142f3c214 in 0x142f3b410). (sys, worldObj, req): only for classes F1Car/F1SafetyCar/F1ShowRoomCar; logs 'objectPreCreation for vehicle %d'; sets WorldObject.transform (0x14145d2b0, matrix from req+0x67a0 or car slot), Model.instanceDataSize=0x1c (0x142eefe50), CustomDecalModel.vehicleIndex/packedVehicleStatId/decalSetId, VehicleSpawnData, CarPhysics2, FrontendVehicleComponent, VehicleRegistration; marks entry +0x6908=1. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_spawning_object_pre_creation",

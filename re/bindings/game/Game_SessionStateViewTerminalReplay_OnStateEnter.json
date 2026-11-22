@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142da5da0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onStateEnter (class from the log channel); log channel HIDE_REASONS: 'onStateEnter'"
+  "evidence": "decomp:re/decomp/142da5da0.c;pat:log-message-method;xref:0x1457e3e60",
+  "notes": "Vtable cell 0x1457e3e60. Logs SessionStateViewTerminalReplay \"onStateEnter\"; vcall +0x98(1); unless +0xed4: waits on vcall +0x60, finds replay track \"pr\" in 0x146ce5060 and rewinds it, sets replay [+0xd60] start/end times (+0x7c), replay mode 2 under CS, HUD hide reasons 0/1, Game_SessionStateViewReplay_OnStateEnter (0x142d9d480), +0xed0 = 4, posts task 0x1457e66c8. (lane owner review requested)"
  },
  "signature": {
   "id": "game.session_state_view_terminal_replay_on_state_enter",

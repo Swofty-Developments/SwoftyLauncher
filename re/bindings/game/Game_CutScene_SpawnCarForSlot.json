@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14024c670",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14024c670.c;xref:0x14033dcdf",
-  "notes": "Reads team/driver slot data (helpers 0x14024c370/460/580, 0x248f90) and the car-slot record from the session player list ([sess+0x88]+0x260, stride 0x88, byte +0x12) into a 0x28-byte info struct. 60 callers (podium / postrace reaction scripts). vp0-verify partial"
+  "evidence": "decomp:re/decomp/14024c670.c;xref:0x14033dcdf,0x14033f06f,0x14035a2e7,0x14035a427,0x14035a567,0x14035aa17,0x14035ab57,0x14035ac97,0x14035b9c7,0x14035bb07,0x14035bc47,0x14035c0f7,0x14035c237,0x14035c377,0x14035c827,0x14035c967,0x14035caa7,0x14035d5c7,0x14035d707,0x14035d847",
+  "notes": "(script, u32 slot, u16 a, u8 b, u8 c): driver stat id 0x140248f90, driver customisation by entrant 0x14024c460(slot), vehicle ResolveVehicleForSlot 0x14024c580(slot), driver customisation index 0x14024c370(slot); entrant (0x88 stride, byte +0x82 == slot byte) livery colours 40 bytes from registry [0x146064df0]+0x38 (value +0x20..+0x48); if driver, customisation (+0x310 set) and vehicle exist returns Game_CameraActor_Enable 0x1402474e0(script, ..., &colours, a, b, c, 1, 0, 0, 0, 0), else 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.cut_scene_get_car_slot_info",

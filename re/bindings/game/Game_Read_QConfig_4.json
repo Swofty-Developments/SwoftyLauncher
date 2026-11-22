@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1447d3a00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: ap.edit.psend, q.edit.changed, q.edit.get, q.edit.pchanged'"
+  "evidence": "decomp:re/decomp/1447d3a00.c;pat:log-channel--;xref:0x145d32878",
+  "notes": "Static initializer (init table cell 0x145d32878): SIMD constants 0x146ce95c0.., CS 0x146ce9748, names q.edit.changed/pchanged/get and ap.edit.psend via 0x1447bc360 into 0x146ce97c0..0x146ce9820. Not a settings reader. (lane owner review requested) Better name: Game_StaticInit_EditQueryNames (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_q_config_4",

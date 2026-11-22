@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141af0870",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "vm",
   "proto": "void Vm_Update_MaxUpgradeLevelWarning(void *screen)",
-  "evidence": "decomp:re/decomp/141af0870.c;xref:0x141ae974a;xref:0x141b914e4;xref:0x141b91714",
-  "notes": "myteam-g2: Sets bool nodes (Vm_NodeSet_Bool) to show / hide the max-upgrade-level warning for the selected card (FUN_141af1200, FUN_1414c65b0). UI only."
+  "evidence": "decomp:re/decomp/141af0870.c;xref:0x141ae974a,0x141b914e4,0x141b91714,0x141b91c73",
+  "notes": "sel = 0x141af1200(vm,sub+0xb80); for each card in sub(+0x330)+0xd08..+0xd10: same int id (+0x30) as sel -> bool [card+0x360]=0; else bool=1 and bg nodes card+0x318/+0x338 = tech_level_bg_large/tech_level_bg [high] when no sel or sel u32 +0x90 <= card +0x90, else [low] (Vm_Resolve_IconNodeByPath). Renamed (no warning text set). (lane owner review requested) Better name: Vm_Update_TechLevelCardBackgrounds (bound record keeps its name)."
  },
  "signature": {
   "id": "vm.update_max_upgrade_level_warning",

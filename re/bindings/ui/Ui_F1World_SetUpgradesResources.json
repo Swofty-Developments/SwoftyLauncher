@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141b1c5b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "ui",
   "proto": "void FUN(void *view, void *ctx)",
   "evidence": "decomp:re/decomp/141b1c5b0.c;xref:0x145730688",
-  "notes": "myteam-g1: UI binding code; lng_f1_world_upgrades_resources, upgrades. Static, string-key driven."
+  "notes": "Vtable slot (cell 0x145730688). Sets this+0x628|=1, fires onTabActivated and tab_activated (vcall +0x80 on this+0x620), binds play_view_cached_button, backdrop GenericBackDrop, fills tab list this+0x878 (0x141b0cfd0) with tech_level, upgrades (lng_f1_world_upgrades_resources), licence, objectives, podium_pass; one list_entry_%d play_button per 0x70-byte entry of this+0x880. (lane owner review requested) Better name: Ui_F1World_OnTabActivated (bound record keeps its name)."
  },
  "signature": {
   "id": "ui.f1_world_set_upgrades_resources",

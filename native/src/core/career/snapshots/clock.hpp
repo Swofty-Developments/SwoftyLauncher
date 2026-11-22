@@ -22,7 +22,9 @@
 // years from that owner's career::report_season alone: its index can carry the owner's own offsets (a
 // later first year, test seasons), so the core logs what the records say and waits for the report.
 // career.season.start fires once per career and year: once this session, and not again for a per-season
-// career whose saved entry already holds that year's snapshot.
+// career whose saved entry already holds that year's snapshot. A moment that starts nothing still dates the
+// career when its year is known (a career loaded in a season that already started): runtime.cpp hands that
+// year to the apply scheduler without a career.season.start.
 
 namespace career::snapshots::seasons {
 
@@ -93,7 +95,7 @@ inline int year_at(const YearMap &m, int index, std::string &why)
 }
 
 struct Moment {
-    bool fire = false;
+    bool fire = false, dated = false;
     int year = 0, index = 0;
     std::vector<std::string> lines;
 };
@@ -229,10 +231,11 @@ public:
         }
         if (started(s.career, computed)) {
             once(m, head + " is " + std::to_string(computed) + ", which already started in this career");
+            m.dated = true, m.year = computed, m.index = s.index;
             return m;
         }
         started_.insert({s.career, computed});
-        m.fire = true, m.year = computed, m.index = s.index;
+        m.fire = m.dated = true, m.year = computed, m.index = s.index;
         m.lines.push_back(head + " is " + std::to_string(computed) + " (season " + std::to_string(s.index + 1) +
                           " of the career.season records of data group " + s.data_group + ", " +
                           std::to_string(map.years.front()) + "-" + std::to_string(map.years.back()) + "); career.season.start");
@@ -277,10 +280,11 @@ public:
                                       : "; " + why + ", and the reported year stands";
         if (started(s.career, year)) {
             m.lines.push_back(head + ": ok, " + std::to_string(year) + " already started in career " + s.career + note);
+            m.dated = true, m.year = year, m.index = s.index;
             return Report::ok;
         }
         started_.insert({s.career, year});
-        m.fire = true, m.year = year, m.index = s.index;
+        m.fire = m.dated = true, m.year = year, m.index = s.index;
         m.lines.push_back(head + ": ok, career " + s.career + " season index " + std::to_string(s.index) + " is " +
                           std::to_string(year) + note + "; career.season.start");
         return Report::ok;

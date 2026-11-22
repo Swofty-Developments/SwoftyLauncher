@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1434c03c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1434c03c0.c;xref:0x1434c00ac,0x1434ce856,0x1434d1336,0x1434d18c6",
-  "notes": "For vehicle slot byte param_3 (table at ctx+0x938, 0x10 stride) reads state +0xe0 (99 -> 0xc else state>>1) and applies a pit/reset state change unless param_4 == 6; function-static TLS list. Callers Game_Pitlane_Multiplayer_resetToTrack, Game_PitLane_PutVehicleInGarage, Game_Pitlane_Multiplayer_teleportToGarage. Hypothesis. L2 2026-11-14 (engine-re round 2): decomp read; 4 reference(s) (0x1434c00ac, 0x1434ce856, 0x1434d1336, 0x1434d18c6). raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)  KEPT L1 (engine-re round 2 self-check): the row still carries a hypothesis / partial claim, so only the decomp and xref evidence was refreshed."
+  "notes": "Dispatcher, not a reset: rec = [ctx+0x938+car*0x10] (null -> return); box = rec+0xe0 == 99 ? 0xc : rec+0xe0>>1; returns when type (arg4) == 6 or rec+0xe0 > 0x17; type 0 0x1434c0600, 1 0x1434c0fb0, 2 0x1434c1c00, 3 0x1434c2870, 4 0x1434c3520, 5 0x1434c1780; false result / bad type records a stack backtrace (code 0x58). Callers: Game_Pitlane_Multiplayer_resetToTrack, 0x1434ce470, Game_PitLane_PutVehicleInPitBox, Game_Pitlane_Multiplayer_teleportToGarage. (lane owner review requested) Better name: Game_PitLane_BuildPitSplineByType (bound record keeps its name)."
  },
  "signature": {
   "id": "game.pitlane_apply_vehicle_reset_state",

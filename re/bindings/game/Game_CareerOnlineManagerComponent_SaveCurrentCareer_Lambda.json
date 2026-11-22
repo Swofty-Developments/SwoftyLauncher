@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1410befb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_Championship_CareerOnlineManagerComponent_SaveCurrentCareer_Lambda;xref:0x1410bf030,0x1410bfbb3",
-  "notes": "cxx=game::championship::CareerOnlineManagerComponent::saveCurrentCareer; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1410befb0.c;str:s_Championship_CareerOnlineManagerComponent_SaveCurrentCareer_Lambda;xref:0x1456bbc50",
+  "notes": "Lambda body (cell 0x1456bbc50), pretty string 'saveCurrentCareer(...)::operator()(UpdateCareerArgs &)'. Under TryEnterCriticalSection 0x146100c18: looks up career +0x340, refreshes the slot (0x1429ce380 or 0x1429cec50), re-indexes customisation maps, bumps version +0x11c, serialises (0x140fe9610 twice with 0x140fe9f90), fills args ID/Version/StoreBackup (logged). Returns whether the lock was taken. (lane owner review requested)"
  },
  "signature": {
   "id": "game.career_online_manager_component_save_current_career_lambda",

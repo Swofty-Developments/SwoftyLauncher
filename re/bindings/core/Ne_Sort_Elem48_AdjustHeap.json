@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143ee82f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143ee82f0.c;xref:0x143ee81dc",
-  "notes": "Insertion/partition step for 48-byte elements (key at +0 qword pair, field +0x1c). Callers Ne_Sort_Introsort_Elem48. vq1-verify partial/disagree"
+  "evidence": "decomp:re/decomp/143ee82f0.c;xref:0x143ee81dc,0x143ee8290",
+  "notes": "std heap adjust (sift the hole down choosing the larger child, then push the value up) on 48-byte elements ordered by the 128-bit key (qword +0 then +8); copies +0x10,+0x18,+0x1c (locked),+0x20 per move; (base,hole,len,&val). Callers inside Ne_Sort_Introsort_Elem48 (heap-sort fallback)."
  },
  "signature": {
   "id": "core.sort_elem48_insertion_step",

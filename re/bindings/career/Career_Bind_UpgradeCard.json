@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1417f8090",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1417f8090.c;kb:subsystems/career.md#pipeline",
-  "notes": "binds an upgrade's name/description/type to VM nodes (Vm_NodeSet_String on obj+0x28/+0x48/+0x68); lng name from a 0x15-entry vocabulary k_Career_UpgradeCardLngTable(0x14571b340) indexed by the upgrade type byte [arg1+4], else lng_invalid; formats %s_description_short. The upgrade_card UI binder (overlaps vm lane). CORRECTION(V9182): It is a card binder, but the lng vocabulary table at 0x14571b340 holds objective names (lng_fast_sector_1.., lng_clean_lap, lng_rnd_obj_*), indexed by a dword at [arg2+0x20] (<0x15), so it binds an objective/R&D card rather than a plain upgrade card; department names come from a separate switch."
+  "evidence": "decomp:re/decomp/1417f8090.c;kb:subsystems/career.md#pipeline;xref:0x1418042ce,0x14180c886,0x141c658aa,0x141c658d1",
+  "notes": "Objective card binder: lng name from table 0x14571b340 (lng_fast_sector_1.., lng_clean_lap, lng_rnd_obj_*) indexed by dword [param_2+0x20] (<0x15) else lng_invalid; '%s_description_short'; reward upgrade name (engine_power..general_maintenance / INVALID UPGRADE, lng_rnd_%s), dept icon (rnd_dept_icons_small, error_department), objective/complete icons (pp_obj_icons_large, pp_icons_large.obj*), RP amount. (lane owner review requested) Better name: Career_Bind_RnDObjectiveCard (bound record keeps its name)."
  },
  "signature": {
   "id": "career.bind_upgrade_card",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1418dfec0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-UI",
-  "notes": "named from its log messages (channel UI): 'highlighting tile set at index: %d'"
+  "evidence": "decomp:re/decomp/1418dfec0.c;pat:log-channel-UI;xref:0x1419e2e53",
+  "notes": "(screen): idx = 0x1418df680 (tile_set_index); logs 'highlighting tile set at index: %d' (idx+1) and the spawned count. Tile sets = screen+0xb30 (+0x50..+0x58, stride 0x10) when screen+0xbd0: for set[idx] writes bool 1 into every tile's nodes +0x400 / +0x150 and the set node [+0x150]+0x190; for idx > 0 writes 0 into the +0x400 nodes of set[idx-1]. Out of range -> 0x1419514d0 + int3. Caller jmp 0x1419e2e53. (lane owner review requested) Better name: Game_UI_HighlightTileSet (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ui_highlighting_tile_set_index",

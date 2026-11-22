@@ -10,6 +10,7 @@
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -60,6 +61,10 @@
 // Career saves: the splice also fires career.saving at site_Game_SaveData_ContainersCount and career.saved at
 // site_Game_SaveData_ContainersDone (a separate mixin; a good result in [r12]) for the root (career_saves.cpp).
 //
+// Only the profile's root: the game's other saves (the race highlights, savegame@highlights000) have a root of the same
+// class. A load or save of another root gets no kept containers, no career events and no plain store generation, and leaves
+// the kept store as it is (sp::ProfileRoot).
+//
 // SWOFTY_SAVE_SPLICE=0 turns it off.
 
 namespace career::save_data {
@@ -92,6 +97,7 @@ constexpr int WRITE_FAILED = 0x58;
 constinit swofty_core::guards::LogFirst<1> pool_line;
 sp::Store store;
 sp::Owed owed;
+sp::ProfileRoot profile_root;
 uint32_t loads = 0;
 
 // ---- W4 career snapshots (native/src/core/career/snapshots/): the core's own swofty_registry entry rides in
@@ -169,6 +175,47 @@ constexpr runtime::build_proof::Proof BAG_LAYOUT{"the save root's child table an
 constexpr runtime::build_proof::Gate BAG_GATE{"the plain store's registered containers", &BAG_LAYOUT};
 
 bool bag_proven() { return runtime::holds(BAG_GATE); }
+
+bool profile_load(uintptr_t self)
+{
+    bool has = career::save_data::registered_child(self, sp::PROFILE_CHILD) != 0;
+    bool profile;
+    {
+        std::lock_guard<std::mutex> g(hooks.lock);
+        profile = profile_root.at_load(self, has);
+    }
+    if (!profile)
+        swofty::log("[saves] a save other than the profile loads (its root has no %s); the save splice and the plain store "
+                    "leave it alone",
+                    sp::PROFILE_CHILD);
+    return profile;
+}
+
+bool profile_save(uintptr_t self, bool names_ok, const std::vector<std::string> &registered)
+{
+    bool has = names_ok ? std::find(registered.begin(), registered.end(), sp::PROFILE_CHILD) != registered.end()
+                        : career::save_data::registered_child(self, sp::PROFILE_CHILD) != 0;
+    bool profile;
+    {
+        std::lock_guard<std::mutex> g(hooks.lock);
+        profile = profile_root.at_save(self, has);
+    }
+    if (!profile) {
+        std::string what = names_ok && !registered.empty() ? "its root registers " + std::to_string(registered.size()) +
+                                                                 " container(s): " + registered.front()
+                                                           : std::string("its root's children are not readable");
+        swofty::log("[saves] a save other than the profile (%s): no kept save containers, career events or plain store "
+                    "generation for it",
+                    what.c_str());
+    }
+    return profile;
+}
+
+bool saving_profile(uintptr_t self)
+{
+    std::lock_guard<std::mutex> g(hooks.lock);
+    return profile_root.is(self);
+}
 
 bool env_on(const char *name)
 {
@@ -684,7 +731,7 @@ void fix_registered(void *root, void *root_bag, uint8_t reset_on_error, uint64_t
 
 int *deserialise_entry(void *self, int *result, void *bag, uint8_t reset_on_error, uint64_t groups)
 {
-    bool root = is_root(reinterpret_cast<uintptr_t>(self));
+    bool root = is_root(reinterpret_cast<uintptr_t>(self)) && profile_load(reinterpret_cast<uintptr_t>(self));
     int depth = ++load_depth;
     if (root) {
         std::lock_guard<std::mutex> g(hooks.lock);
@@ -834,6 +881,11 @@ void unclaimed_entry(SwoftyContext *c)
 {
     if (!hooks.live() || !is_root(c->rdi))
         return;
+    {
+        std::lock_guard<std::mutex> g(hooks.lock);
+        if (!in_root_load || !profile_root.is(c->rdi))
+            return;
+    }
     uintptr_t slot = 0;
     void *prop = nullptr;
     std::string why, name;
@@ -850,6 +902,13 @@ void unclaimed_entry(SwoftyContext *c)
             why = "its name does not resolve";
             ok = false;
         }
+    }
+    if (ok && name == sp::HIGHLIGHTS_CHILD) {
+        std::lock_guard<std::mutex> g(hooks.lock);
+        swofty::log("[saves] profile load %u: left out %s, the race highlights save's own container, which an older core "
+                    "copied into the profile; the game drops it and the highlights save keeps its own",
+                    loads, name.c_str());
+        return;
     }
     ok = ok && encode(bag, bytes, why);
     std::lock_guard<std::mutex> g(hooks.lock);
@@ -1009,6 +1068,13 @@ void count_entry(SwoftyContext *c)
     uintptr_t self = 0;
     if (!hooks.live() || !mem::read(c->rsp + FRAME_SELF, self) || !is_root(self))
         return;
+    uint64_t count = 0;
+    uintptr_t begin = 0;
+    bool have_children = mem::read(c->rsp + FRAME_COUNT, count) && mem::read(c->rsp + FRAME_CHILDREN, begin);
+    std::vector<std::string> registered;
+    bool names_ok = have_children && child_names(begin, c->r15, registered) && registered.size() == count;
+    if (!profile_save(self, names_ok, registered))
+        return;
     runtime::career_saves_saving();
     // W4: the career snapshots' new swofty_registry body, when they changed since the last write.
     std::vector<uint8_t> entry;
@@ -1030,11 +1096,6 @@ void count_entry(SwoftyContext *c)
                 entry_hooks.written(false);
         }
     }
-    uint64_t count = 0;
-    uintptr_t begin = 0;
-    bool have_children = mem::read(c->rsp + FRAME_COUNT, count) && mem::read(c->rsp + FRAME_CHILDREN, begin);
-    std::vector<std::string> registered;
-    bool names_ok = have_children && child_names(begin, c->r15, registered) && registered.size() == count;
     registered_now = names_ok ? registered : std::vector<std::string>();
     registered_now_ok = names_ok;
     tee_stop();
@@ -1065,7 +1126,7 @@ void count_entry(SwoftyContext *c)
 }
 
 template <class SV = g::NeStreamVtbl>
-int write_kept(void *stream, uint32_t bag_type, const std::vector<size_t> &picked, std::string &names)
+int write_kept(void *stream, uint32_t bag_type, const std::vector<size_t> &picked, std::string &names, std::string &failed)
 {
     if constexpr (layout::save_streams<g::NeBagCodec, g::NeCountingStream, g::NeMemWriteStream, SV>) {
         auto write = reinterpret_cast<Write_t>(method(stream, offsetof(SV, write)));
@@ -1083,13 +1144,15 @@ int write_kept(void *stream, uint32_t bag_type, const std::vector<size_t> &picke
                 r = write(stream, &bag_type, sizeof bag_type);
             if (!r)
                 r = write(stream, k.body.data(), k.body.size());
-            if (r)
+            if (r) {
+                failed = k.name;
                 return r;
+            }
             names += (names.empty() ? "" : ", ") + k.name;
         }
         return 0;
     } else {
-        (void)stream, (void)bag_type, (void)picked, (void)names;
+        (void)stream, (void)bag_type, (void)picked, (void)names, (void)failed;
         return WRITE_FAILED;
     }
 }
@@ -1097,7 +1160,7 @@ int write_kept(void *stream, uint32_t bag_type, const std::vector<size_t> &picke
 void children_inner(SwoftyContext *c)
 {
     uintptr_t self = 0;
-    if (!hooks.live() || !mem::read(c->rsp + FRAME_SELF, self) || !is_root(self))
+    if (!hooks.live() || !mem::read(c->rsp + FRAME_SELF, self) || !is_root(self) || !saving_profile(self))
         return;
     std::lock_guard<std::mutex> g(hooks.lock);
     std::vector<size_t> picked = owed.take(reinterpret_cast<const void *>(c->r12));
@@ -1107,8 +1170,8 @@ void children_inner(SwoftyContext *c)
     uint32_t bag_type = 0;
     mem::read(c->rsp + FRAME_STREAM, stream);
     mem::read(c->rsp + FRAME_BAG_TYPE, bag_type);
-    std::string names;
-    int r = write_kept(stream, bag_type, picked, names);
+    std::string names, failed;
+    int r = write_kept(stream, bag_type, picked, names, failed);
     // W4: whether the career snapshots' entry went out with this save.
     bool entry_written = false;
     if (entry_put) {
@@ -1121,9 +1184,12 @@ void children_inner(SwoftyContext *c)
     if (r) {
         *reinterpret_cast<int *>(c->r12) = r;
         c->rip = b.done;
-        swofty::log("[saves] profile save: writing back the kept save containers failed with code %d; the save fails "
-                    "as on any write error",
-                    r);
+        uint64_t bytes = 0;
+        for (size_t i : picked)
+            bytes += i < store.size() ? store.kept()[i].body.size() : 0;
+        swofty::log("[saves] profile save: writing back the kept save containers failed with code %d at %s (%zu kept, %llu "
+                    "bytes); the save fails as on any write error and the game writes no file",
+                    r, failed.empty() ? "?" : failed.c_str(), picked.size(), (unsigned long long)bytes);
         return;
     }
     swofty::log("[saves] profile save: wrote back %zu save container(s) no loaded game mode claims: %s", picked.size(),
@@ -1136,7 +1202,7 @@ void children_entry(SwoftyContext *c)
     children_inner(c);
     uintptr_t self = 0;
     if (c->rip != rip || !hooks.live() || !plain::enabled() || !env_on("SWOFTY_PLAIN_SAVE_CAPTURE") || !bag_proven() ||
-        !mem::read(c->rsp + FRAME_SELF, self) || !is_root(self))
+        !mem::read(c->rsp + FRAME_SELF, self) || !is_root(self) || !saving_profile(self))
         return;
     void *stream = nullptr;
     mem::read(c->rsp + FRAME_STREAM, stream);
@@ -1148,9 +1214,10 @@ void saved_entry(SwoftyContext *c)
 {
     uintptr_t self = 0;
     int result = 1;
-    if (hooks.live() && mem::read(c->rsp + FRAME_SELF, self) && is_root(self))
-        tee_finish();
-    if (!hooks.live() || !mem::read(c->rsp + FRAME_SELF, self) || !is_root(self) || !mem::read(c->r12, result) || result)
+    if (!hooks.live() || !mem::read(c->rsp + FRAME_SELF, self) || !is_root(self) || !saving_profile(self))
+        return;
+    tee_finish();
+    if (!mem::read(c->r12, result) || result)
         return;
     std::vector<cs::SlotRead> reads;
     std::vector<Manager> known;

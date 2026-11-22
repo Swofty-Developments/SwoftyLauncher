@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141400ce0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141400ce0.c;xref:0x140713dfd",
-  "notes": "If u16 at param_1+0x262 == 0x3fff: copies 3 floats from +0x1b0/+0x1b4/+0x1b8 into param_2 (w = 0x3fff0000 packed), else FNV-1a lookup of key param_3 in [[param_1+0x270]+0x230..0x238]. 18 call sites incl Game_Analytics_PlayGoSessionEntered. Hypothesis: fetch a packed 4-component value (colour/vector) by key with default. vp0-verify partial"
+  "evidence": "decomp:re/decomp/141400ce0.c;xref:0x140713dfd,0x140c2fe16,0x14140061f,0x141bfa3d3,0x141c02ca2,0x141f29642,0x14200d4dd,0x142093818,0x1421f03e9,0x1422d783c,0x14251551e,0x1425712b6,0x14290aeea,0x142936d75,0x142e330b9,0x142e33ad7,0x1431451ed,0x1431c319e",
+  "notes": "(obj, u32 out[4], key): u16 obj+0x262 == 0x3fff: out = {obj+0x1b0, 0x3fff0000, obj+0x1b8, obj+0x1b4}, and if key (rotated, FNV-1a on u16) is found in a table of [[obj+0x270]+0x230..+0x238] out[1] = 0x141442820(obj,..) result. Else out = {obj+0x260, obj+0x264, obj+0x1b8, obj+0x268}. Returns a 4-u32 packed id tuple, not a colour. (lane owner review requested)"
  },
  "signature": {
   "id": "game.customisation_lookup_packed_vec4",

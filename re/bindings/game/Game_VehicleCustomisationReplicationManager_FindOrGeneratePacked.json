@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14313fd70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VehicleCustomisationReplicationManager::findOrGeneratePackedNetStatId; log channel NETWORK-ENTRANTS: 'game::VehicleCustomisationStatId::PackedStatId network::VehicleCustomisationReplicationManager::findOrGeneratePackedNetStatId(const PlayerDescription &, const g | %s : Attempt to add a new network rep'"
+  "evidence": "decomp:re/decomp/14313fd70.c;pat:log-message-cxx;xref:0x140fe0c91,0x140fee9eb,0x1431c2e80,0x1431c31ce",
+  "notes": "Read in full (this, desc, ?, customisation): only when [this+0x10]+8 < 2; looks up the player key in map this+0x40; found -> returns node+0x70 id, reconciling via 0x143141190 when the info differs from a static empty one; not found -> adds through 0x142477f90 (store +0x28), id = byte +0x4a40 << 14 | u16 +0x4a42, registers it (0x143141420), and sends (0x143141520) on result 0/2/4, else logs 'Attempt to add ... unsuccessful!'; null -> 'returned nullptr!'. Callers 0x140fdd630, 0x140fee8e0, 0x1431c2ae0, 0x1431c2fc0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_customisation_replication_manager_find_or_generate_packed",

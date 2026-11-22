@@ -17,6 +17,7 @@ mod hooks;
 mod logos;
 mod memory;
 mod package_ids;
+mod saves;
 mod slow_init;
 mod stall;
 mod system;
@@ -33,9 +34,10 @@ use crate::session::SessionRecord;
 use crate::store::Store;
 
 use broken_addons::{
-    aggressive_ai, aggressive_ai_crash, anim_clip_crash, anim_clip_nan, pitlane, pitlane_crash,
-    skip_cutscenes, skip_cutscenes_crash, td_wheel_off, td_wheel_off_crash, tyre_curve_crash, tyre_curve_nan,
-    unloaded_ai_line, unloaded_ai_line_crash,
+    aggressive_ai, aggressive_ai_crash, anim_clip_crash, anim_clip_nan, marshal_lights, marshal_lights_crash,
+    pitlane, pitlane_crash, skip_cutscenes, skip_cutscenes_crash, td_wheel_off, td_wheel_off_anim,
+    td_wheel_off_anim_crash, td_wheel_off_crash, tyre_curve_crash, tyre_curve_nan, unloaded_ai_line,
+    unloaded_ai_line_crash,
 };
 pub use career::stuck_weekend;
 use career::{
@@ -54,6 +56,7 @@ use graphics::graphics_mods;
 use hang::{hang, hang_watchdog};
 pub use logos::unbuilt_logos;
 pub use package_ids::{PACKAGE_ID_MAX, PackageIds};
+pub use saves::unsaved_profile;
 pub(crate) use slow_init::slow_start;
 use stall::BOOT_STALL_SECS;
 pub use stall::stalled;
@@ -114,6 +117,12 @@ pub fn logos(session: &SessionRecord, game: Option<&Path>, store: &Store) -> Opt
     unbuilt_logos(&evidence(session, game, store))
 }
 
+/// Why `session`, which ended without a crash, could not save the profile,
+/// when its log says the kept careers could not be written back.
+pub fn saves(session: &SessionRecord, game: Option<&Path>, store: &Store) -> Option<Diagnosis> {
+    unsaved_profile(&evidence(session, game, store))
+}
+
 /// The cause of a crash, from the first rule that recognises it. A crash no
 /// rule recognises, on an F1 25 older than [`LATEST_GAME_VERSION`], is put down
 /// to the old build.
@@ -167,8 +176,10 @@ const RULES: &[Rule] = &[
     |c| pitlane_crash(c.evidence, &c.fatal).then(|| pitlane(c.evidence)),
     |c| td_wheel_off_crash(c.evidence, &c.fatal).then(|| td_wheel_off(c.evidence)),
     |c| tyre_curve_crash(c.evidence, &c.fatal).then(tyre_curve_nan),
+    |c| td_wheel_off_anim_crash(c.evidence, &c.fatal).then(|| td_wheel_off_anim(c.evidence)),
     |c| anim_clip_crash(c.evidence, &c.fatal).then(anim_clip_nan),
     |c| unloaded_ai_line_crash(&c.fatal).then(|| unloaded_ai_line(c.evidence, &c.fatal)),
+    |c| marshal_lights_crash(c.evidence, &c.fatal).then(|| marshal_lights(c.evidence, &c.fatal)),
     |c| hardware_settings_crash(c.evidence, &c.fatal).then(|| hardware_settings(c.evidence)),
     |c| entrant_list_crash(c.evidence, &c.fatal).then(|| missing_entrant_list(c.evidence)),
     |c| sent_to_team_hq_crash(c.evidence, &c.fatal).then(|| sent_to_team_hq(c.evidence, &c.fatal)),

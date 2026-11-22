@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14476c110",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14476c110.c;xref:0x144656178",
-  "notes": "vector emplace_back for 0x68-byte entries (size = diff * inverse(13)): constructs entry in place, moves the std::function (small-buffer check) and 128-byte name, reallocates otherwise. 2767 bytes, 17 callers incl. Game_Tweakables_FindOrAddDamageGroup. Partner of 0x144727d90. Hypothesis on entry meaning."
+  "evidence": "decomp:re/decomp/14476c110.c;xref:0x144656178,0x14465f148,0x144660b46,0x144676104,0x144677446,0x14467d368,0x14467e5a6,0x144688394,0x14468f376,0x1446a5de2,0x1446a7774,0x1446b41d8,0x1446b6b96,0x1446ca4e2,0x1446cd838,0x1446d1028,0x144770447",
+  "notes": "vector<0x1f8-byte tweakable entry>::emplace_back(&&entry) (begin/end/cap at this+8/+0x10/+0x18, allocator this+0): in place when capacity allows, else grows x1.5 (vt+0x18), move-constructs every old element (std::function at +0x20/+0x58 moved or cloned, vectors +0x80/+0xa0 stolen, both 128-char names copied), appends the new one, destroys the old elements and frees the buffer (vt+0x38). (lane owner review requested)"
  },
  "signature": {
   "id": "game.tweakables_vector_emplace_named_entry",

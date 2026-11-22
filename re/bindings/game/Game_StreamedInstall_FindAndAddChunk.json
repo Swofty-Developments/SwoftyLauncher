@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14379ed60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name findAndAddChunk (class from the log channel); log channel STREAMED_INSTALL: 'findAndAddChunk - \"%s\" chunkId=%u'"
+  "evidence": "decomp:re/decomp/14379ed60.c;pat:log-message-method;xref:0x1437a07e9,0x1437a0815,0x1437a097e,0x1437a099f,0x1437a26b6,0x1437a2856,0x1437a3c6c",
+  "notes": "findAndAddChunk(this, path): null/empty path logs; else looks up the chunk id (0x143f808f0 on static map 0x1460446b0) and sets bit id in bitset this+0x58; logs found/failed (STREAMED_INSTALL). Callers in 0x14379fe50, 0x1437a1c40, 0x1437a3bd0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.streamed_install_find_and_add_chunk",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e3efe0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-THUMBNAIL_TASK",
-  "notes": "named from its log messages (channel THUMBNAIL_TASK): 'Driver Thumbnail: Despawning Driver (RTT Task ID %d)'"
+  "evidence": "decomp:re/decomp/142e3efe0.c;pat:log-channel-THUMBNAIL_TASK;xref:0x1457ecac0",
+  "notes": "vtable cell 0x1457ecac0. Logs despawn, clears driver handle +0x550 (clears flag +0xf1 in entity map) and frees spawned asset group +0x560 (0x1409a6f20). (lane owner review requested)"
  },
  "signature": {
   "id": "game.thumbnail_task_driver_thumbnail_despawning_driver",

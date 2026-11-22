@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141003050",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-ONLINE_CONTRACT_NEGOTIATIONS",
-  "notes": "named from its log messages (channel ONLINE_CONTRACT_NEGOTIATIONS): 'Process team select message received'"
+  "evidence": "decomp:re/decomp/141003050.c;pat:log-channel-ONLINE_CONTRACT_NEGOTIATIONS;xref:0x141000d49",
+  "notes": "Net handler for message 0xc6 (registered in 0x140ffeec0): logs 'Process team select message received'; for a valid driver id msg+0x10 found among participants (this+0x270 vf+0x1c8) stores/updates (driver, team msg+0x12) in this+0x2f0..+0x300; if 0x140ffc990 is false posts 0x1456bb6a8 on the bus. (lane owner review requested)"
  },
  "signature": {
   "id": "career.online_negotiations_receive_team_select",

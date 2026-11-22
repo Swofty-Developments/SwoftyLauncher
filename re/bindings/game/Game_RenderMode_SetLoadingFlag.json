@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d79450",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142d79450.c;xref:0x142d79420,0x142d79bf0",
-  "notes": "(bool loading) Under global render-state CS (0x14604edc0) sets/clears bit 0x4000 of the render flag word 0x14604ed98 and writes the mode string 'loading' or 'main' into render parameter queue 0x146c621e0 (vcall +0x20, param 2, 0x20 bytes) then commits; also touches key 0x146cc4a60. Callers: Sess_PlayCutScene_OnStateEnter (4x)."
+  "evidence": "decomp:re/decomp/142d79450.c;xref:0x142d79420,0x142d79bf0,0x142d7a18f,0x142d7a1ce",
+  "notes": "(bool loading): on the lazily-initialised render-state block 0x14604ed68 (CS 0x14604edc0) sets/clears bit 0x4000 of 0x14604ed98, on change calls 0x14144d8b0(0x14604ed68); via store 0x146c621e0 (key 0x146cc4a60: vcall +0x18 lookup, +0x20(h,2,0x20) buffer) writes 'loading' or 'main' and commits (+0x30, +0x20(h,1,0)). Callers Sess_PlayCutScene_OnStateEnter, 0x142d799b0, 0x142d7a060. (lane owner review requested)"
  },
  "signature": {
   "id": "game.render_mode_set_loading_flag",

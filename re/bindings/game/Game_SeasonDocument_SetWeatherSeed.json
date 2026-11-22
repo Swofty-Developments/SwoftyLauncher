@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143098e90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-WEATHERSEED",
-  "notes": "named from its log messages (channel NETWORK-WEATHERSEED): '%s() | GameSessionSeasonDocument::setWeatherAndTimeOfDaySeed set seed to %u | GameSessionSeasonDocument::regenerateWeatherAndTimeOfDaySeed setWeatherAndTimeOfDaySeed called. set seed to %u | %s(%u). |' | Host/offline (doc+8 < 2): doc+0x760 = QPC seed, dirty +0x766/+0x768 for replication; apply component (type 0x14605afc0)+0x2c4 -> Sess_WeatherComponent_SetSystemRandomSeed 0x140bde3e0. Online weather is rebuilt per client from the seed, no per-frame replication found (medium) (wx-drive round 4) | findings from PR #471 by vogtmarcel07-cloud"
+  "evidence": "decomp:re/decomp/143098e90.c;pat:log-channel-NETWORK-WEATHERSEED;xref:0x143036a48,0x143099400,0x143099721,0x1430a86dd,0x1430a8c7a",
+  "notes": "regenerateWeatherAndTimeOfDaySeed (logged as %s()). Host/offline (doc+8 < 2) and a new value: doc+0x760 = QPC low 32 bits; if [doc+0x498]+0x4bc < 1: 0x143227630([[doc+0x420]+0xf8]) and dirty +0x766/+0x768 = 1. Then applyWeatherAndTimeOfDaySeed: component 0x14605afc0 of [[doc+0x420]+0x4f8]+0x1030 gets +0x2c4 = seed and, if +0x2a0 set, Sess_WeatherComponent_SetSystemRandomSeed (0x140bde3e0). (lane owner review requested) Better name: Game_SeasonDocument_RegenerateWeatherAndTimeOfDaySeed (bound record keeps its name)."
  },
  "signature": {
   "id": "game.season_document_set_weather_seed",

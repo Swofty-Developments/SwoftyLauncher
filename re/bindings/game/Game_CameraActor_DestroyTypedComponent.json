@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401c0fe0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1401c0fe0.c;xref:0x14018f2bb",
-  "notes": "Switch on camera-actor type (+0x1fc): for the matching typed component slot (+0x3c0, +0x440 ...) calls its vtable +8 destructor then owner (+400) vtable +0x38 unregister, and nulls the slot. 4 callers: Game_Scenemanagerspawn_RemoveScene, Game_WorldActorProxy_RequestSetDisabled, Game_CameraActor_RefreshCameraState (0x1401c1154). Counterpart of 0x1401c08d0. vq0-verify partial/disagree"
+  "evidence": "decomp:re/decomp/1401c0fe0.c;xref:0x14018f2bb,0x140190236,0x1401c1154,0x1402906f6",
+  "notes": "Switch on current type +0x1fc: types 0..3 take the typed component slot (+0x3c0/+0x440/+0x5a0/+0x848), call its vt+8 (arg 0) then owner allocator (+400) vt+0x38 free, and null the slot; type 4 clears [[0x14601db08+0x90]+0x90]. Counterpart of 0x1401c08d0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.camera_actor_release_typed_component",

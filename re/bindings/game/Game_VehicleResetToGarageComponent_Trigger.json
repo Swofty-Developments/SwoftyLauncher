@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f33d80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_VehicleResetToGarageComponent_Trigger;xref:0x142f33f50",
-  "notes": "VehicleResetToGarageComponent::trigger on a SessionResult status change (names table 0x14565c1f8: eInvalid, eInactive, eActive, eFinished, eDidNotFinish, eDisqualified, eNotClassified, eRetired); skipped for cars with flag 0x20 at +0x32 (then only remembered at +0x40..+0x43); 1 eInactive: 'Hiding and returning vehicle to garage' (0x142f1be60(.., 3)); 2 eActive: resets the component; 5 eDisqualified / 7 eRetired: hides the car, garage slot reset (0x142f343d0), posts vt 0x1458016d0."
+  "evidence": "decomp:re/decomp/142f33d80.c;str:s_VehicleResetToGarageComponent_Trigger;xref:0x142f34f15,0x14f7a2424",
+  "notes": "Read in full (asm checked). Pretty-fn 0x1457f72b5, GARAGE/V. If car+0x32 bit 0x20 is CLEAR only stores pending +0x40..+0x43 and returns (input note inverted). Status 1: 'Hiding and returning vehicle to garage' -> 0x142f1be60(+0x30,3)/0x142f1c000; 2: reset, tail-jmp 0x142f1c000(+0x30,0x23); 5/7: hide, 0x142f343d0 or 0x142a3f330, post vt 0x1458016d0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_reset_to_garage_component_trigger",

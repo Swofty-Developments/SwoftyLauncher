@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14111a960",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=SponsorGoal::findIntGameValue; log channel SPONSORS: 'SponsorGoal::findIntGameValue has no valid condition component'"
+  "evidence": "decomp:re/decomp/14111a960.c;pat:log-message-cxx;xref:0x1410f7a61,0x14110a2a1,0x14110a852",
+  "notes": "Component this+0x118 (log SPONSORS if null). Looks up key +0xf8 in map comp+0x290 (0x140e1dcd0, entries +0x2a8 stride 0x18); if the object is of type 0x146129ca8 (chain root 0x146053d10) calls vcall +0xf0(&out,param_2) and returns the low 32 bits when the valid byte is set, else 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.sponsor_goal_find_int_game_value",

@@ -129,15 +129,26 @@ fn a_put_back_container_and_a_deleted_career_are_not_lost() {
     std::fs::remove_dir_all(&d).ok();
 }
 
+fn claimed(mut g: Gen<'_>) -> Gen<'_> {
+    g.containers[2].1 = "game";
+    g.containers[3].1 = "game";
+    g
+}
+
 #[test]
 fn a_career_missing_from_a_container_the_load_still_has_is_named() {
     let d = dir("career");
     let p = Plain::at(d.join("plain"));
     write(
         &p,
-        &career_gen(1, "save", Some("s1"), &[("0x0a", "Jacob"), ("0x0b", "Ada")]),
+        &claimed(career_gen(
+            1,
+            "save",
+            Some("s1"),
+            &[("0x0a", "Jacob"), ("0x0b", "Ada")],
+        )),
     );
-    write(&p, &career_gen(2, "load", None, &[("0x0a", "Jacob")]));
+    write(&p, &claimed(career_gen(2, "load", None, &[("0x0a", "Jacob")])));
     current(&p, 2);
     let loss = p.loss(&[]).unwrap();
     assert!(!loss.items[0].whole);
@@ -272,8 +283,63 @@ fn roots_follow_the_contract() {
         root_of_source(data, "launcher-default"),
         data.join("saves/default/plain")
     );
+    assert_eq!(
+        root_of_source(data, "launcher-ea.default"),
+        data.join("saves/default/ea-plain")
+    );
     assert_eq!(root_of_source(data, "steam-123"), data.join("plain/steam-123"));
     assert_eq!(root_of_source(data, "ea-me"), data.join("plain/ea-me"));
+    assert_eq!(
+        root_of_launcher(data, "default", crate::install::Source::Steam),
+        root_of_source(data, "launcher-default")
+    );
+    assert_eq!(
+        root_of_launcher(data, "default", crate::install::Source::EaApp),
+        root_of_source(data, "launcher-ea.default")
+    );
+    assert_eq!(
+        root_of_launcher(data, "default", crate::install::Source::Unknown),
+        root_of_source(data, "launcher-default"),
+        "a copy no store installed plays the Steam layout's store, as store_of_game picks it"
+    );
+}
+
+#[test]
+fn every_vault_source_of_a_profile_maps_to_the_root_its_session_writes() {
+    use crate::install::Source::{EaApp, Steam};
+    use crate::saves::launcher::store_of_copy;
+    let d = dir("session-roots");
+    for copy in [Steam, EaApp] {
+        assert_eq!(
+            root_of_session(&d, "p", true, copy),
+            Some(root_of_source(&d, &store_of_copy(&d, "p", copy).source))
+        );
+    }
+    assert_ne!(
+        root_of_session(&d, "p", true, Steam),
+        root_of_session(&d, "p", true, EaApp)
+    );
+    std::fs::remove_dir_all(&d).ok();
+}
+
+#[test]
+fn a_session_on_the_copys_own_save_writes_no_root_while_the_save_found_last_is_the_other_copys() {
+    use crate::install::Source::{EaApp, Steam};
+    let d = dir("own-roots");
+    assert_eq!(root_of_session(&d, "p", false, Steam), None);
+    remember_copy_source(&d, "steam-843502855");
+    assert_eq!(
+        root_of_session(&d, "p", false, Steam),
+        Some(d.join("plain/steam-843502855"))
+    );
+    assert_eq!(root_of_session(&d, "p", false, EaApp), None);
+    remember_copy_source(&d, "ea-steamuser");
+    assert_eq!(
+        root_of_session(&d, "p", false, EaApp),
+        Some(d.join("plain/ea-steamuser"))
+    );
+    assert_eq!(root_of_session(&d, "p", false, Steam), None);
+    std::fs::remove_dir_all(&d).ok();
 }
 
 #[test]
@@ -310,13 +376,192 @@ fn a_career_guid_missing_from_either_half_of_a_mode_is_lost() {
     let p = Plain::at(d.join("plain"));
     write(
         &p,
-        &career_gen(1, "save", Some("s1"), &[("0x0a", "Jacob"), ("0x0b", "Ada")]),
+        &claimed(career_gen(
+            1,
+            "save",
+            Some("s1"),
+            &[("0x0a", "Jacob"), ("0x0b", "Ada")],
+        )),
     );
-    write(&p, &career_gen(2, "load", None, &[("0x0a", "Jacob")]));
+    write(&p, &claimed(career_gen(2, "load", None, &[("0x0a", "Jacob")])));
     current(&p, 2);
     let loss = p.loss(&[]).unwrap();
     assert_eq!(loss.items[0].careers.len(), 1);
     assert_eq!(loss.items[0].careers[0].guid, "0x0b");
     assert!(p.careers().iter().all(|r| !r.mode.is_empty()));
+    std::fs::remove_dir_all(&d).ok();
+}
+
+fn records<'a>() -> Vec<FixtureContainer<'a>> {
+    vec![
+        ("options_options", "game", Vec::new()),
+        ("trophies_trophies", "game", Vec::new()),
+        ("journal_entries_entry1", "game", Vec::new()),
+    ]
+}
+
+#[test]
+fn a_load_that_lists_no_registered_container_loses_none_of_them() {
+    let d = dir("unlisted");
+    let p = Plain::at(d.join("plain"));
+    let mut save = claimed(career_gen(1, "save", Some("s1"), &[("0x0a", "Jacob")]));
+    save.containers.extend(records());
+    save.containers
+        .extend(pair("driver_career_1990", "kept", Vec::new()));
+    write(&p, &save);
+    let mut load = Gen {
+        n: 2,
+        event: "load",
+        session: Some("ea"),
+        containers: pair("driver_career_progressive", "injected", Vec::new()),
+    };
+    load.containers
+        .extend(pair("driver_career_1990", "injected", Vec::new()));
+    write(&p, &load);
+    current(&p, 2);
+    assert!(
+        p.loss(&[]).is_none(),
+        "a core that does not capture the registered containers lists none of them"
+    );
+
+    load.n = 3;
+    load.containers.truncate(2);
+    write(&p, &load);
+    current(&p, 3);
+    let loss = p.loss(&[]).unwrap();
+    assert_eq!(
+        loss.modes(),
+        ["driver_career_1990"],
+        "a kept mode is still judged"
+    );
+    assert_eq!(loss.names(), ["Driver Career 1990"]);
+    std::fs::remove_dir_all(&d).ok();
+}
+
+#[test]
+fn a_career_whose_addon_is_off_at_load_is_not_lost() {
+    let d = dir("addon-off");
+    let p = Plain::at(d.join("plain"));
+    write(
+        &p,
+        &claimed(career_gen(1, "save", Some("s1"), &[("0x0a", "Jacob")])),
+    );
+    write(&p, &career_gen(2, "load", None, &[]));
+    current(&p, 2);
+    assert!(
+        p.loss(&[]).is_none(),
+        "the load kept the mode's containers unclaimed and their careers with them"
+    );
+    std::fs::remove_dir_all(&d).ok();
+}
+
+#[test]
+fn the_games_records_and_modes_without_a_career_are_not_careers() {
+    let d = dir("records");
+    let p = Plain::at(d.join("plain"));
+    let mut save = career_gen(1, "save", Some("s1"), &[]);
+    save.containers.extend(records());
+    save.containers.extend(pair("dev", "game", Vec::new()));
+    write(&p, &save);
+    write(
+        &p,
+        &Gen {
+            n: 2,
+            event: "load",
+            session: None,
+            containers: vec![("camera_camera_system", "game", Vec::new())],
+        },
+    );
+    current(&p, 2);
+    let loss = p.loss(&[]).unwrap();
+    assert_eq!(loss.modes(), ["driver_career", "driver_career_progressive"]);
+    assert_eq!(
+        loss.names(),
+        ["Stock, season 2, round 5", "Driver Career Progressive"]
+    );
+    std::fs::remove_dir_all(&d).ok();
+}
+
+/// 20261121-024026: an older core wrote generation 63 at a race highlights save (its root registers only
+/// `ReplayHighlights_ReplayHighlights`), with the profile's kept containers in it.
+fn highlights_gen<'a>(n: u64) -> Gen<'a> {
+    let mut containers = vec![("ReplayHighlights_ReplayHighlights", "game", Vec::new())];
+    containers.extend(pair("driver_career_progressive", "kept", vec![("0x0a", "Jacob")]));
+    containers.extend(pair("driver_career_1990", "kept", Vec::new()));
+    Gen {
+        n,
+        event: "save",
+        session: Some("s1"),
+        containers,
+    }
+}
+
+#[test]
+fn a_highlights_save_generation_is_not_a_profile_save() {
+    let d = dir("highlights");
+    let p = Plain::at(d.join("plain"));
+    let mut profile = career_gen(1, "save", Some("s1"), &[("0x0a", "Jacob")]);
+    profile.containers.extend(records());
+    write(&p, &profile);
+    write(&p, &highlights_gen(2));
+    current(&p, 2);
+    let highlights = p.manifest(2).unwrap();
+    assert!(!highlights.is_profile() && !highlights.is_session_save());
+    assert!(p.manifest(1).unwrap().is_profile());
+    assert_eq!(
+        p.newest_session_save().map(|m| m.generation),
+        Some(1),
+        "the core puts back from the newest profile save, not the highlights one"
+    );
+
+    write(&p, &career_gen(3, "load", None, &[("0x0a", "Jacob")]));
+    current(&p, 3);
+    assert!(
+        p.loss_between(&highlights, &p.manifest(3).unwrap(), &[])
+            .is_some(),
+        "judged against the highlights generation, the 1990 mode the profile never had would be lost"
+    );
+    assert!(
+        p.loss(&[]).is_none(),
+        "the highlights generation is never the last good save a load is judged against"
+    );
+    std::fs::remove_dir_all(&d).ok();
+}
+
+#[test]
+fn a_generation_without_registered_containers_or_with_only_records_is_a_profile_save() {
+    let kept_only = Gen {
+        n: 1,
+        event: "save",
+        session: Some("ea"),
+        containers: pair("driver_career_progressive", "kept", Vec::new()),
+    };
+    let d = dir("profile-shapes");
+    let p = Plain::at(d.join("plain"));
+    write(&p, &kept_only);
+    write(
+        &p,
+        &Gen {
+            n: 2,
+            event: "save",
+            session: Some("s1"),
+            containers: records(),
+        },
+    );
+    current(&p, 2);
+    assert!(
+        p.manifest(1).unwrap().is_session_save(),
+        "the EA app copy's save generations list only kept containers"
+    );
+    assert!(
+        p.manifest(2).unwrap().is_session_save(),
+        "the options container marks the profile"
+    );
+    assert!(is_mode_half("gm_dev") && is_mode_half("dev_SaveSlotGameModeComponent"));
+    assert!(
+        !is_mode_half("gm_")
+            && !is_mode_half("_SaveSlotGameModeComponent")
+            && !is_mode_half("options_options")
+    );
     std::fs::remove_dir_all(&d).ok();
 }

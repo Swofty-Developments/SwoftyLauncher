@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14120c6e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-FeaturedEvent",
-  "notes": "named from its log messages (channel FeaturedEvent): 'Resetting score for %s | Score Type %s increased by %u to %u'"
+  "evidence": "decomp:re/decomp/14120c6e0.c;pat:log-channel-FeaturedEvent;xref:0x1456ca4d0",
+  "notes": "Vtable cell 0x1456ca4d0. Resets scores (+0x4e4 total time, +0x4e8 best lap, +0x4f0 clean race), adds points from result list param_2 for the player's car (time vs target +0x4fc, best lap vs +0x4f8), counts clean races, sets flags +0x520..+0x526 and queues message 0x1456cf290 (flags, time) on the bus. Old name AddScore came from a log. (lane owner review requested) Better name: Game_FeaturedEvent_UpdateScoresFromResults (bound record keeps its name)."
  },
  "signature": {
   "id": "game.featured_event_add_score",

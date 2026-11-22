@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141f45d30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141f45d30.c",
-  "notes": "Per-sector VM widget for the DEVELOPMENT POTENTIAL pie. Matches the dept icon name (aero/chassis/maintenance/engine via string compare) and issues VM commands init_pie_sector / highlight_pie_sector on a pre-authored sector node. 4 sectors keyed by the 4 stock dept names."
+  "evidence": "decomp:re/decomp/141f45d30.c;xref:0x14575e050,0x141f462a7",
+  "notes": "Event handler (class A vtable cell 0x14575e050; also jmp at 0x141f462a7). Event hash 0x90135a75: compares nodes under [this+0x6b0]+0x28 and fires init_pie_sector. Hash 0x3aae34e1: strcmp of param_3 icon name against aero/chassis/maintenance/engine, creates the sector node, 0x1414c70f0([this+0x6b0]+0x40) and fires highlight_pie_sector. (lane owner review requested) Better name: Career_RnDResearchVM_HandlePieSectorEvent (bound record keeps its name)."
  },
  "signature": {
   "id": "career.build_rn_d_pie_sector",

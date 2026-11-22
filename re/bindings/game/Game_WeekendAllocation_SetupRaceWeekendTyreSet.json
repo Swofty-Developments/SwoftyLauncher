@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e8cd70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=WeekendAllocation::setupRaceWeekendTyreSet; log channel TYRES/V: 'WeekendAllocation::setupRaceWeekendTyreSet()'"
+  "evidence": "decomp:re/decomp/142e8cd70.c;pat:log-message-cxx;xref:0x140bcbd87,0x140bce910,0x141f33056,0x1432d4332",
+  "notes": "Read in full (decomp inlines tail-jmp target 0x142e8a900). Logs TYRES/V 'WeekendAllocation::setupRaceWeekendTyreSet()'; type < 3 -> +4; clears 5 compound buckets (+0x10, stride 0x28, count +0xd8); if rules+0x150 picks by priority tables 0x1457eef5c/0x1457eef8c, else by session counts +0x88/+0x8c (compounds 3/4 via 0x142e9e540); adds 0x6c-byte tyre sets via 0x142e8a900. (lane owner review requested)"
  },
  "signature": {
   "id": "game.weekend_allocation_setup_race_weekend_tyre_set",

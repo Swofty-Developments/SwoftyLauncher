@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1427668b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-WEEKLY_GP",
-  "notes": "named from its log messages (channel WEEKLY_GP): 'EnterRace with player %s'"
+  "evidence": "decomp:re/decomp/1427668b0.c;pat:log-channel-WEEKLY_GP;xref:0x14258e013",
+  "notes": "Read in full: 0x1432d2ef0; base payload (vt 0x145830b88) in request+0x10: option mask from [this+0x98]+0x238, u16 +0x68, value via +0x250, name; mode this+0x100: 1 -> payload +0x28 (0x1432d4810 +0x1c clamped 0..3), 2 -> +0x40, 3 -> +0x58 with one XOR-decoded id string per player ('EnterRace with player %s'); 0 derives 1/2/3 from session type; resets mode. (lane owner review requested) Better name: Game_WeeklyGp_BuildEnterRaceRequest (bound record keeps its name)."
  },
  "signature": {
   "id": "game.weekly_gp_enter_race",

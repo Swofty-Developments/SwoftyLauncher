@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140ba1e30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-INSTANT_RACE",
-  "notes": "named from its log messages (channel INSTANT_RACE): 'Hotload Triggered flag set to %s | Use Real GP settings flag set to %s'"
+  "evidence": "decomp:re/decomp/140ba1e30.c;pat:log-channel-INSTANT_RACE;xref:0x1456779e0",
+  "notes": "Vt cell 0x1456779e0. If 0x1413ca0d0()+7 bit0: +0x89/+0x88/+0x8a=0 (logs 'Hotload Triggered flag set to %s', 'Use Real GP settings flag set to %s'); if the current save slot is the instant race one (flag 0x40) refreshes it (0x1429cec50) and selects a slot with flags&0x41==0 (0x1429d0b90). (lane owner review requested) Better name: Game_InstantRace_ClearFlagsRestoreSaveSlot (bound record keeps its name)."
  },
  "signature": {
   "id": "game.instant_race_set_hotload_flags",

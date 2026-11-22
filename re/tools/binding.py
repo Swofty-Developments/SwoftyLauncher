@@ -1140,12 +1140,16 @@ def lint_with(changes):
         store.records = base
 
 
+FILE_LIST_MAX_BYTES = 4 << 20
+
+
 def cmd_ci(a):
     """Classify a pull request. --files is the GitHub API file list; --head holds the PR's copies of the binding
     records it touches (written by the workflow from git blobs, never executed). Everything else comes from this
     checkout, which is the base branch."""
     with open(a.files, 'rb') as f:
-        files = br.parse_json(f.read(4 << 20)) if os.path.getsize(a.files) <= 4 << 20 else None
+        files = br.parse_json(f.read(FILE_LIST_MAX_BYTES), FILE_LIST_MAX_BYTES) \
+            if os.path.getsize(a.files) <= FILE_LIST_MAX_BYTES else None
     result = {'verdict': 'review', 'records': [], 'errors': [], 'notes': [], 'owner_review': False}
     if not isinstance(files, list) or not all(isinstance(x, dict) and isinstance(x.get('filename'), str) for x in files):
         result['verdict'] = 'fail'

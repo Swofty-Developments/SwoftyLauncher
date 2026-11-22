@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446f5250",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TM_FFB",
-  "notes": "named from its log messages (channel TM_FFB): 'RacingFFBEffectThrustmasterWin::start, m_device = %p, handle = %d'"
+  "evidence": "decomp:re/decomp/1446f5250.c;pat:log-channel-TM_FFB;xref:0x145bfff30",
+  "notes": "Slot 4 of TM effect vtable 0x145bfff10 (cell 0x145bfff30). Same body as slot 1 0x1446f4700 (QPC stamp, 0x1446f47d0, '::start' log) but returns 0; slot role (restart/resume) not proven. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ffb_thrustmaster_start_2",

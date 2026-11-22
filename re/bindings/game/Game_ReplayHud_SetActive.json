@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142c048b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142c048b0.c;xref:0x142da2760",
-  "notes": "(hud, char active): when changed sets +0x130 and pushes the bool to UI property +0x3b0 (bool type 0x146129dc0); when inactive also resets +0x370 property and clears the input bit in [+0xa0]+0x54. Caller: Sess_ViewInstantReplay_Update."
+  "evidence": "decomp:re/decomp/142c048b0.c;xref:0x142d9d80d,0x142d9ed81,0x142da18c5,0x142da2805,0x142da2929,0x142da2a66,0x142da2db0,0x142da66c8,0x142da675c,0x142da69f3",
+  "notes": "(hud, active): when changed (or false) pushes the bool to UI node +0x3b0 (Vm_NodeSet_Bool, type 0x146129dc0), stores +0x130, clears +0x134..+0x138. When inactive: Ne_VmNode_SetFloat(+0x370, 0), and if +0x98: 0x14453f620([+0xb8], +0x84, +0x7c) when +0x7d, clears bit +0x7e in [+0xa0]+0x54 when +0x7f, +0x98 = 0. Callers Sess_ViewInstantReplay_Update, Game_SessionStateViewReplay_OnStateEnter, 0x142d9ec50, 0x142da1280, 0x142da6680. (lane owner review requested)"
  },
  "signature": {
   "id": "game.replay_hud_set_active",

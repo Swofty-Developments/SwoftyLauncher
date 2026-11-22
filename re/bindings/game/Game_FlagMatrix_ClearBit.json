@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14144dac0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14144dac0.c;xref:0x142d56c9d",
-  "notes": "Under lock this+0x58 clears bit param_3 (<25) in mask word param_2 (<21) and, if changed, recomputes (0x14144d8b0). Likely HUD/visibility reason masks (L1 hypothesis). Caller Sess_InGame_UpdateBase."
+  "notes": "(obj,word,bit). Under CS obj+0x58: if word < 0x15 and bit < 0x19 clears bit in u32 obj[word]; if changed calls 0x14144d8b0(obj) (recompute). Caller 0x142d566a0 (Sess_InGame_UpdateBase). Meaning of the 21x25 mask (HUD/visibility reasons) is a hypothesis. (lane owner review requested)"
  },
  "signature": {
   "id": "game.flag_matrix_clear_bit",

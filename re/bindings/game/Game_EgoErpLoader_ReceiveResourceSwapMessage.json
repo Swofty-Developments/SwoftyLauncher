@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a63730",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name receiveResourceSwapMessage (class from the log channel); log channel EGO_ERP_LOADER: 'receiveResourceSwapMessage'"
+  "evidence": "decomp:re/decomp/143a63730.c;pat:log-message-method;xref:0x143a60eee",
+  "notes": "Bus handler: logs 'receiveResourceSwapMessage'; allocates a 0x38 request (kind 1, resource msg+0x10, msg+0x18/+0x20/+0x28/+0x38/+0x30). If loader idle (+0x330 and +0x3f8 null): becomes pending unload +0x3f8, state +0x3f0=2, resource status +0x22=4, posts msg vt 0x1458a35b0 via 0x143a6c360; else appends to request queue +0x318/+0x320/+0x328 under lock +0x2d8. Returns 0. Fn ptr taken by lea in 0x143a60bc0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ego_erp_loader_receive_resource_swap_message",

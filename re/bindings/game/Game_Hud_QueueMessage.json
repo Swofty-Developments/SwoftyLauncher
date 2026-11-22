@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a50140",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142a50140.c;xref:0x14356d5c9,0x1435753e3",
-  "notes": "(hud, value, msgType, arg, playerIdx): pushes a HUD toast into 'hud_main_queue' (or 'hud_main_queue2' for the second split-screen player); if a template exists sets 'message' with 'number' or 'TIME' (msgType 0x11). Callers: Sess_Rules_ApplyBlackFlag, Sess_Infringement_ProcessQueue, Sess_Rules_SendBlackFlagTimerToOsd."
+  "notes": "(hud, value, type, arg, playerIdx): key via 0x142a4fc80; queue 'hud_main_queue' or 'hud_main_queue2' (second local player); template via 0x142a4cc50, built with 0x142a4eef0 if missing, else sets 'message' with 'number' or 'TIME' (type 0x11). (lane owner review requested)"
  },
  "signature": {
   "id": "game.hud_queue_message",

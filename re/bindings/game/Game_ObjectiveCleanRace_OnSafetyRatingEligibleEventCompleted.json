@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1427322b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_ObjectiveCleanRace_OnSafetyRatingEligibleEventCompleted;xref:0x142732337",
-  "notes": "cxx=game::ObjectiveCleanRace::onSafetyRatingEligibleEventCompleted; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1427322b0.c;str:s_ObjectiveCleanRace_OnSafetyRatingEligibleEventCompleted;xref:0x142731f04,0x1427323c2",
+  "notes": "Handler lea'd at 0x142731f04, 0x1427323c2. If results-collected byte +0x80 == 0 logs WARN 'A safety rating eligible session was completed but no results were collected.' (SAFETY_RATING, own pretty function); else if count +0x68 > 0 calls vslot +0x30. Returns 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.objective_clean_race_on_safety_rating_eligible_event_completed",

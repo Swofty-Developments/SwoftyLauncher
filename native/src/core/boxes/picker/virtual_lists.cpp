@@ -2,6 +2,8 @@
 
 #include "core/runtime/runtime.hpp"
 
+#include "core/apply/content/appliers.hpp"
+
 #include <iterator>
 
 namespace era_picker {
@@ -122,6 +124,7 @@ void narrow(void *mode, const char *list)
     restore_lists();
     std::string row = virtual_lists.parse_list_bound ? virtual_row(list) : std::string();
     const char *want = row.empty() ? list : VIRTUAL_HOST;
+    const size_t seats = swofty_core::apply::content::seats_for_box(list);
     for_each_host_setup(mode, [&](uint8_t *setup) {
         int64_t count = at<int64_t>(setup, LIST_COUNT);
         if (count <= 1 || count > int64_t(LIST_SLOTS) || picker.narrowed_count == std::size(picker.narrowed))
@@ -150,7 +153,7 @@ void narrow(void *mode, const char *list)
         n.kept = 1;
         n.time_trial = false;
         n.grid = {};
-        std::string grid = n.grid.raise(setup, list_cars(hit).cars);
+        std::string grid = n.grid.raise(setup, list_cars(hit).cars, seats);
         if (!grid.empty())
             swofty::log("[era] %s pressed: %s", list, grid.c_str());
         n.kept_lists[0] = hit;
@@ -160,17 +163,20 @@ void narrow(void *mode, const char *list)
         if (picker.lines.narrow.note())
             swofty::log("[era] %s offers only %s (of %lld lists)", logic::HOST, list, (long long)count);
     });
-    apply_drs(mode, list);
-    apply_warmers(mode, list);
+    const RuleTarget t = host_target(mode);
+    forget_career_rules();
+    box_rules.host = t.host;
+    apply_drs(t, list);
+    apply_warmers(t, list);
     apply_rev_lights(mode, list);
-    apply_tyre_change(mode, list);
-    apply_fuel(list);
-    apply_weekend(mode, list);
+    apply_tyre_change(t, list);
+    apply_fuel(t, list);
+    apply_weekend(t, mode, list);
     // After the weekend exchange: the points swap edits the race sessions the host mode holds now.
-    apply_points(mode, list);
+    apply_points(t, list);
     apply_box_options(list);
-    apply_grid(list);
-    apply_quali_tyres(list);
+    apply_grid(t, list);
+    apply_quali_tyres(t, list);
 }
 
 // Ends the Time Trial hold, putting the Time Trial cuts back before the swap (logic::end_hold); `cuts` puts them back

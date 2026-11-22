@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143286ae0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143286ae0.c;xref:0x14328a253",
-  "notes": "Parses an online JSON buffer (param_3+0x10 data, +0xc0 size; logs Unable to parse JSON in buffer) and builds award entries (vtable 0x14584eee0) via 0x1434e15c0 per element. Called from 0x14328a180. Addon: trophy/award list download."
+  "evidence": "decomp:re/decomp/143286ae0.c;xref:0x14328a252",
+  "notes": "(src, out shared_ptr, ctx): parses the JSON text src+0x28 (length src+0x20; allocator ctx+0x10) with 0x140b5e130; error -> logs JSON 'Unable to parse JSON in buffer, ParseErrorCode %d'. OK -> allocates one 0x30-byte record plus control block vt 0x14584eee0 (allocator 0x146129c00) and fills it with 0x1434e15c0(record, doc, ctx+0xc0, alloc); out = shared_ptr only when that returns true. Caller 0x14328a252. (lane owner review requested)"
  },
  "signature": {
   "id": "game.trophies_parse_awards_json",

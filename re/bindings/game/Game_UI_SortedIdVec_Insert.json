@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428a7ed0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1428a7ed0.c;xref:0x141cc1645,0x141df2e8f",
-  "notes": "Sorted vector of u64 insert (lower_bound via 0x1449e2850, grow x1.5) at this+0x1d0..0x1e0. Callers Game_Showroom_ShowInfoPanel/HideInfoPanel, Game_StoryHub_Build*List, Game_SponsorLoadout. Hypothesis."
+  "evidence": "decomp:re/decomp/1428a7ed0.c;xref:0x141cc1645,0x141df2e8f,0x141ea982b,0x141eaeff6,0x141ff30ab,0x141ffffd6,0x142002866",
+  "notes": "(this, id u64): 0x1449e2850 searches the u64 vector this+0x1d0..+0x1d8; only when it returns the end (id absent) the id is appended - in place with spare capacity (cap +0x1e0), else grow x1.5 via allocator this+0x1c8 (vt+0x18 / vt+0x38). Present ids are left alone; no sorting. Callers 0x141cc1645, 0x141df2e8f, 0x141ea982b, 0x141eaeff6, 0x141ff30ab, 0x141ffffd6, 0x142002866. (lane owner review requested) Better name: Game_UI_IdVec_AddUnique (bound record keeps its name)."
  },
  "signature": {
   "id": "game.u_i_sorted_id_vec_insert",

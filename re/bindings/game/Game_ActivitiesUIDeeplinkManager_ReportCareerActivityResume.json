@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143867ff0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_ActivitiesUIDeeplinkManager_ReportCareerActivityResume;xref:0x1438682d7,0x143868d93",
-  "notes": "cxx=game::ActivitiesUIDeeplinkManager::reportCareerActivityResume; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/143867ff0.c;str:s_ActivitiesUIDeeplinkManager_ReportCareerActivityResume;xref:0x1438634f3,0x143863793,0x15193200b",
+  "notes": "Own pretty string reportCareerActivityResume. Builds career ids (career_%s_%s / career_my_team_%s_%s; career_f1/f2/my_team_f1 short/medium/full via 0x1453784c0), logs '%s seasons are completed', updates availability (0x14386a5e0), then submits a resume request with '%s_%s_weekend_%d' (0x14386a960) via 0x144134d70. Callers OnSaveSlotLoaded/Created. (lane owner review requested)"
  },
  "signature": {
   "id": "game.activities_u_i_deeplink_manager_report_career_activity_resume",

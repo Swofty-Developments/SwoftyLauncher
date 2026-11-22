@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141356920",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-STORY_SCENARIOS",
-  "notes": "named from its log messages (channel STORY_SCENARIOS): 'Jumping to chapter %d'"
+  "evidence": "decomp:re/decomp/141356920.c;pat:log-channel-STORY_SCENARIOS;xref:0x141f6bade",
+  "notes": "jumpToChapter(chapter): logs, 0x141330770([+0x298], chapter|0x400000000); reads story system 0x146063fb0 flags (+0x308, +0x5a0, +0x514); for entries with id 0xd1125bb7 in [0x146079258]+0x340 sets a bitset and rebuilds masks +0x650..+0x668 via 0x142b5e950/0x142ad73f0. Caller 0x141f6b410. (lane owner review requested)"
  },
  "signature": {
   "id": "game.story_scenarios_jump_to_chapter",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140140e90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140140e90.c;xref:0x14014e43b",
-  "notes": "Hashes a name (Ne_HashedName_FromString), looks up 0x143bdfd10 and registers via 0x1439932e0. Called from Game_Read_RendererGfxConfig (8+ sites). vp0-verify partial"
+  "evidence": "decomp:re/decomp/140140e90.c;xref:0x14014e43b,0x14014e49b,0x14014e4aa",
+  "notes": "Hashes name param_2 (Ne_HashedName_FromString), allocates 0x810 bytes from *param_1 and constructs Render_ViewParams_ConstructDefault 0x143bdfd10, registers it under the name in the registry from param_1[1] vcall +8 (Render_Gfx2_RegisterResourceNotify), appends the hashed name to vector param_1[7..9]. Callers in Game_Read_RendererGfxConfig. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx2_register_named_resource",

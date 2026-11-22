@@ -562,6 +562,7 @@ The game loads every entrant list below the table's count, keeps its stat id in 
 - The box that opens the package shows when `swofty_virtual_list` is offered under `swofty_f1`. When the box is pressed, the core reads the list's row into `swofty_virtual_list` and selects that list. The next press puts the host's own entrants back.
 - The database op is [`virtual-list`](/reference/ops/database#virtual-list).
 - **Older cores.** A core before 1.9.10 ignores `virtual_list` and loads the list as usual. Declare `content.package` 1.3 when the box depends on it.
+- **Past 32 lists.** Once a setup mode names 32 lists (31 in `swofty_f1` while a virtual package needs `swofty_virtual_list` there), the core leaves out each further `content.package` that would add one, in load order. Its box stays hidden, and the launcher lists `entrant list <list> left out` under the addon. Lists that database ops added past 32 are cut to the first 32 at boot, and the launcher lists them under the core.
 
 ## Career seasons race in boxes
 

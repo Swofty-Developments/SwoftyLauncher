@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e09950",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142e09950.c;xref:0x14080a0b4,0x142cd1ea5",
-  "notes": "Destructor of the SessionSettings data sub-object (vtable 0x1457ea868): destroys entries +0x15b..+0x15c (stride 0x98 bytes) and frees them. Callers Game_SessionSettings_Reset, Sess_Loader_UnloadSession, Game_StateSession_OnStateExit, Game_GameModule_Update."
+  "evidence": "decomp:re/decomp/142e09950.c;xref:0x14080a0b4,0x142cd1ea5,0x142d48633,0x142ece1eb,0x1436f903d",
+  "notes": "Sets vtable 0x1457ea868, destroys entries of +0xad8..+0xae0 (stride 0x98, vcall +0 dtor) and frees them via [+0xad0]; then for each 0x6780 entry of +0xab8..+0xac0 destroys nested arrays (+0x5c20 count of 0x4a50 records via 0x14030c740, +0x11c0 count of 0x4c0 records), frees via [+0xab0], clears +0xaa0. Callers Game_SessionSettings_Reset, Sess_Loader_UnloadSession, 0x14080a0b4, 0x142ece1eb, 0x1436f903d. (lane owner review requested)"
  },
  "signature": {
   "id": "game.session_settings_data_dtor",

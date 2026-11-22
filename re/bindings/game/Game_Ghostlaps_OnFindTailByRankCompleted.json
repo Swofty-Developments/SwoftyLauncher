@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f85a30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onFindTailByRankCompleted (class from the log channel); log channel GHOSTLAPS: '%s(%d, %s, %s)'"
+  "evidence": "decomp:re/decomp/142f85a30.c;pat:log-message-method;xref:0x142f995b2",
+  "notes": "GHOSTLAPS onFindTailByRankCompleted '%s(%d, %s, %s)'. Same flow as 0x142f86210: own row -> +0x750; rank!=1 -> +0x610 and setState FindHead (+0xa0=5); rank-1 own row -> all three, Finish(1). Failure: +0x9d0=0, Finish(4). (lane owner review requested)"
  },
  "signature": {
   "id": "game.ghostlaps_on_find_tail_by_rank_completed",

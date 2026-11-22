@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1403c35d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name preDelete (class from the log channel); log channel FeVehicleProxyActor: 'preDelete %p'"
+  "evidence": "decomp:re/decomp/1403c35d0.c;pat:log-message-method;xref:0x14561deb0",
+  "notes": "Vtable slot 4 of 0x14561de90. Logs 'preDelete %p', zeroes +0x568..+0x577, calls 0x1401cfe50 on itself and on every child actor in vector +0x550..+0x558. (lane owner review requested)"
  },
  "signature": {
   "id": "game.fe_vehicle_proxy_actor_pre_delete",

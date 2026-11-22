@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143aafe60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-EYETRACKING",
-  "notes": "named from its log messages (channel EYETRACKING): 'Connected = %d | Gaze pos = (%f, %f) | TOBII HEADTRACKING YAW  , m_yaw %f  Raw Yaw:%f --- m_pitch %f --- x = %f'"
+  "evidence": "decomp:re/decomp/143aafe60.c;pat:log-channel-EYETRACKING;xref:0x1458a7cc0",
+  "notes": "Tobii update (vtable cell 0x1458a7cc0), guarded by counter 0x146108920: with the API object this+0xa0: vt+0x30 update, connected (vt+0x40) -> this+0x10, logs TOBII_EYE 'Connected' and 'Gaze pos'. Connected and present: averages the gaze points (this+0xa8 vt+0x10) into +0xb0/+0xb4, head pose -> +0x50 = -clamp(z*0.0005, +0x7c, +0x88), +0x64 = -clamp(yaw rad, +-[+0x6c]), +0x60 = clamp(pitch rad, -0.3, 0.8); logs EYETRACKING. Else zeroes +0x50..+0x68. (lane owner review requested)"
  },
  "signature": {
   "id": "game.tobii_update",

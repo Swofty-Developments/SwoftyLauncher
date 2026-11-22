@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428c8af0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onVehicleComponentCleanupCallback (class from the log channel); log channel FRONTEND_SCENE_MANAGER/VERBOSE: '%s() - Cleaning up vehicle placement pointers'"
+  "evidence": "decomp:re/decomp/1428c8af0.c;pat:log-message-method;xref:0x1428c8259",
+  "notes": "Callback registered by lea at 0x1428c8259 in 0x1428c8040. Same pattern as 0x1428c85f0 for cars: vector this+0x6fd8 (stride 0x6990, placement via 0x1428c5cc0), pending list +0x70c8 (field +0x68d8 cleared), main car +0x1d0 (0x1428daa30), then 0x1428dbb80(this,id) per id. Log '%s() - Cleaning up vehicle placement pointers'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.frontend_scene_manager_on_vehicle_component_cleanup_callback",

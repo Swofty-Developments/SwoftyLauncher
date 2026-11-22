@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142c74bf0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142c74bf0.c;xref:0x142c7487b,0x142c75598",
-  "notes": "(seq) When seq+0x61: gets the event system (registry key 0x14607f1a0 on [0x14604c2c8]+0x30) and, if current event allows (+0x180 == 0, +0xf8, first entry name), writes the podium cutscene name into seq+0x18 ('pod_2019' ...) and the request block seq+0x25..+0x45. Callers Game_RewardSequence_PlayCutscene, PreloadRewardSequence, Sess_RetirementSequence_Update."
+  "evidence": "decomp:re/decomp/142c74bf0.c;xref:0x142c7487b,0x142c75598,0x142d8666f,0x142d8a673",
+  "notes": "(seq): when +0x61: event (registry key 0x14607f1a0 on [0x14604c2c8]+0x30) with +0x180 == 0 and +0xf8: writes 'pod_2019_1st' into seq+0x18 (cap +8 = 0x40, ptr +0x10); +0x5c = +0x50 of the entry in [[0x146044988+0x30]+0x88]+0x260 list +0x2e0 (stride 0x88) whose byte +0x82 equals the first event entry id (else 0x3fff0000); +0x61 = 0. Callers Game_RewardSequence_PlayCutscene, 0x142c75340, 0x142d86620, Sess_RetirementSequence_Update. (lane owner review requested)"
  },
  "signature": {
   "id": "game.reward_sequence_select_podium_cutscene",

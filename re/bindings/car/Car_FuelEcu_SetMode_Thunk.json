@@ -8,8 +8,8 @@
   "level": "L2",
   "subsystem": "car",
   "proto": "bool (void *ecu, int mode)",
-  "evidence": "decomp:re/decomp/1553ff3d0.c;xref:0x14324b7c1,0x14389bbf3,0x14470e082",
-  "notes": "jmp to .data1 body 0x1553ff3d0: when mode != fuel_mode (+0x128) copies that mode's four scales into the active pairs, recomputes Engine derived values and the GearBox table, stores the mode; returns true: both paths end at 0x1553ff471 mov al,1 and no caller reads it (proto corrected per V1209). Callers 0x1432495e0, 0x14389a2b0, 0x14470d760 (who sets the player/AI fuel mix is L3, see T test)"
+  "evidence": "decomp:re/decomp/1553ff3d0.c;xref:0x14324b7c1,0x14389bbf3,0x14470e082;doc:re/research/fuel_mix_five.md#sites",
+  "notes": "jmp to .data1 body 0x1553ff3d0: when mode != fuel_mode (+0x128) copies that mode's four scales into the active pairs, recomputes Engine derived values and the GearBox table, stores the mode; returns true: both paths end at 0x1553ff471 mov al,1 and no caller reads it (proto corrected per V1209). Callers 0x1432495e0, 0x14389a2b0, 0x14470d760 (who sets the player/AI fuel mix is L3, see T test) | engine-re fuel-mix-5 2026-11-20 (static): the body has no bound on the mode: movsxd rbx,edx / shl rax,4 (0x1553ff3f8) then +0x28/+0x68/+0xa8/+0xe8 + mode*0x10, so a mode 4 would read the next table's lean entry (burn <- power lean, power <- revs lean, revs <- temperature lean, temperature <- the fuel_mode bytes). A fifth game mode cannot pass through here. edited by engine-re with --force 2026-11-20 at user request (lane owner review requested)"
  },
  "signature": {
   "id": "car.fuel_ecu_set_mode",
@@ -88,6 +88,16 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/1553ff3d0.c;xref:0x14389bbf3,0x14324b7c1,0x14470e082",
    "notes": "V8634 body re-read: no-op when [ecu+0x128]==mode; else active pairs +0x130/+0x140/+0x150/+0x160 = value^key^ownkey of the mode table at base+mode*0x10 with bases 0x28 burn, 0x68 power, 0xa8 revs, 0xe8 temperature (key at +8), then engine derived and gearbox table, then stores mode. Calling with another mode and back re-runs the active mix."
+  },
+  {
+   "date": "2026-11-20",
+   "verifier": "fuel5-verify",
+   "kind": "func",
+   "item": "0x14468e6a0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "pat:disasm-0x14468e6a0;pat:disasm-0x1553ff3d7-0x1553ff46b",
+   "notes": "V12404 blind re-derivation (own capstone disasm, no write-up read): jmp body; no bound, movsxd/shl 4, tables +0x28/+0x68/+0xa8/+0xe8 to +0x130..+0x160 (xor-decoded), mode at +0x128, skipped when equal; also calls 0x144689a70, 0x1446a5130"
   }
  ],
  "proofs": []

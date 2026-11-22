@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1414378f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-CUSTOMISATION_DECALS",
-  "notes": "named from its log messages (channel CUSTOMISATION_DECALS): 'GenerationService: vehicle %d, Generate %I64d decals in list %I64d | GenerationService: vehicle %d, list %I64d, changing state from %s to %s'"
+  "evidence": "decomp:re/decomp/1414378f0.c;pat:log-channel-CUSTOMISATION_DECALS;xref:0x141436e79",
+  "notes": "Called from the decal state machine 0x141435170 (0x141436e79). Logs 'Generate %I64d decals in list %I64d' (count = (+0x178 - +0x170)>>4, list +0x188); if flags +0x1e0 bit4 sets +0xd9; calls 0x142a97c70([this+8], this+0x168, this+0x1a0, {+0x1d0,+0x1d8}, flags&3); then sets state byte +0xd8 = 4 (eGenerateBake, name table 0x1456e5980) with a state-change log. (lane owner review requested)"
  },
  "signature": {
   "id": "game.decal_generation_generate",

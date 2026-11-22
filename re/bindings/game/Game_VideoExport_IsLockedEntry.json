@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141f097d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141f097d0.c;xref:0x141f0f275,0x141f0ff12",
-  "notes": "Reads property is_locked_entry from the VM node and returns bool. Callers Game_VideoExport_StartHighlightExport and others."
+  "evidence": "decomp:re/decomp/141f097d0.c;xref:0x141f0f275,0x141f0ff12,0x141f100ca,0x141f10c6c,0x141f111ee,0x141f11923,0x141f120de,0x141f122b4,0x141f1267c",
+  "notes": "Read in full: (nodeRef) looks up child 'is_locked_entry' (0x144252eb0), binds it (0x1409728b0), returns its byte != 0 when the type id matches bool type 0x146129dc0, else false; releases the ref. (lane owner review requested)"
  },
  "signature": {
   "id": "game.video_export_is_locked_entry",

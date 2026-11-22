@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141dffe30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-FRIENDS_LIST",
-  "notes": "named from its log messages (channel FRIENDS_LIST): 'SocialHubFriendsTabBaseViewModel: we got %I64u platform friends from F1OS'"
+  "evidence": "decomp:re/decomp/141dffe30.c;pat:log-channel-FRIENDS_LIST;xref:0x1457447e0,0x145750980,0x145750dd0",
+  "notes": "Slot 0 of 3 vtables (next cells 0x141e01f10,0x141e024e0). Casts task result param_2; error flag obj+0x48 -> TRACE 'GetFriends task returned with an error'. Else platform friends obj+0x120 and EA friends obj+0x140 (64-byte entries): logs counts (FRIENDS_LIST), skips blocked (SOCIAL_HUB log), adds Online/Offline entries to this+0x1418/0x1458/0x1438 and vector +0x1400 (stride 0x88). Renamed: name was class only. (lane owner review requested) Better name: Game_SocialHubFriendsTabBaseViewModel_OnGetFriendsDone (bound record keeps its name)."
  },
  "signature": {
   "id": "game.friends_list_social_hub_friends_tab_base_view_model",

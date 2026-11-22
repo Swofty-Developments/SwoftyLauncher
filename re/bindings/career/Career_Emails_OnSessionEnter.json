@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140dd4550",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-EMAILS",
-  "notes": "named from its log messages (channel EMAILS): 'Entering a session where we shouldn't be entering the hub, so no emails have been generated. Session(%s)'"
+  "evidence": "decomp:re/decomp/140dd4550.c;pat:log-channel-EMAILS;xref:0x145694518",
+  "notes": "Email component vtable method (cell 0x145694518): calls 0x140dd93d0(comp+0x2e0, player identity); when flag +0x360 is set clears it, maps the session type ([comp+0x270] vt+0xa8 -> +8) to an email trigger; trigger 9 logs EMAILS 'Entering a session where we shouldn't be entering the hub', otherwise calls 0x140dd4870(comp, trigger). (lane owner review requested)"
  },
  "signature": {
   "id": "career.emails_on_session_enter",

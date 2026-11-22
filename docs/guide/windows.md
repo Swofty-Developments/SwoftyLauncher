@@ -91,7 +91,7 @@ Smart App Control has no exceptions for single apps. To use the launcher, turn i
 2. Select **Off**.
 3. Press **Play** again.
 
-On some versions of Windows, Smart App Control can only be turned back on by resetting Windows. Microsoft Defender Antivirus keeps protecting the PC with it off. To keep Smart App Control on, play F1 25 from Steam, without mods.
+On Windows 11 25H2 and 26H2, and 24H2 build 26100.8116 or later, with current updates, Smart App Control can be turned back on in the same **Smart App Control settings** page without resetting Windows. Older builds can only turn it back on by resetting Windows. Microsoft Defender Antivirus keeps protecting the PC with it off. To keep Smart App Control on, play F1 25 from Steam, without mods.
 
 If Smart App Control is already off, a policy set by whoever manages the PC blocked the program. They can allow the launcher folder and the game folder.
 

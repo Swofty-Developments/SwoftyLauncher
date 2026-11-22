@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140972140",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140972140.c;xref:0x1407b11e5,0x14185b34a",
-  "notes": "(holder, variant{ptr,type,...}) Assigns a VM variant by type (switch on variant[1]: 1 string copied into a 64-byte buffer, others numeric / object) comparing against the current string (holder+0x30) to detect change; releases old ref (0x146ca54a8 vcall +0x38). 8 callers (Vm_Holder_SetCStr, Sess_Flags_UpdateYellowReasons)."
+  "evidence": "decomp:re/decomp/140972140.c;xref:0x1407b11e5,0x14185b34a,0x141fae93d,0x142348657,0x1423494ee,0x142349cc2,0x1423d6633,0x1435709a0",
+  "notes": "Read in full: (dst, src{name*, type, value, ref}) switch on src type +8: copies name (<= 63 chars) into dst inline buffer +0x30 (len 0x40 at +0x20, ptr +0x28), value into dst+8 and normalises the tag dst+0: 1 int and 2 float(->int) -> 1; 3 short, 4 int, 5 int64 (<= INT_MAX only) -> 4; 6 u16, 7/8 u32 -> 7; 9 ref-counted object at +0x10 (AddRef new, release old via 0x146ca54a8 vcall +0x38) -> 9. The strcmp at +0x30 compares the stored key name, not a string value. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vm_value_assign_variant",

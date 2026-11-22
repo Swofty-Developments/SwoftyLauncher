@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14325f5a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VehicleProgressManager::handleNetMessageVehicleResetToTrack; log channel NETWORK: 'VehicleProgressManager::handleNetMessageVehicleResetToTrack(%d)'"
+  "evidence": "decomp:re/decomp/14325f5a0.c;pat:log-message-cxx;xref:0x14325dc49",
+  "notes": "Read in full (this, msg): logs handleNetMessageVehicleResetToTrack(%d); for vehicle msg+0x10 <= 0x1a with record this+0xf8[id] whose +0x7c & 5 == 1, logs 'Ghosting vehicle %d because NetMessageVehicleResetToTrack', calls Ghost 0x142f1be60(record+0x60 component, reason 0x2f) and stores the current session time (from [0x1460815a8]+0x1a8) into component+0x68c. Registered by lea 0x14325dc49 in 0x14325c810. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_progress_manager_handle_net_message_vehicle_reset_to_track",

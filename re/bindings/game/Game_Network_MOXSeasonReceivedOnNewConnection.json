@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430a5770",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK",
-  "notes": "named from its log messages (channel NETWORK): 'MOX/Season: Received onNewConnection notification from %d'"
+  "evidence": "decomp:re/decomp/1430a5770.c;pat:log-channel-NETWORK;xref:0x14580fae8",
+  "notes": "Slot 3 (+0x18) of vtable 0x14580fad0. (this, connId): logs 'Received onNewConnection notification from %d'; as host logs 'Host sends open Season Document Message on new connection', sends it via 0x14402e500([[this+0x420]+0x3d0], 2, ...) and 0x1430a4b60(this, connId); else logs 'onNewConnection: sending SessionDocumentMessageClose' and sends that. (lane owner review requested) Better name: Game_GameSessionSeasonDocument_OnNewConnection (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_mox_season_received_on_new_connection",

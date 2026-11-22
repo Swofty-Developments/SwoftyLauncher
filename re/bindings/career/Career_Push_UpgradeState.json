@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1435230e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:cmp-byte-rcx+0x72-3-ja-ret@0x1435230f3;xref:0x14122d44b,0x141230486,0x1412308cc,0x1412469c1;kb:subsystems/rnd_ui.md#instances",
-  "notes": "Appends a state entry (log \"Changing state from %s to %s\"), 20 E8 callers. Returns at once for department > 3 (cmp byte [rcx+0x72],3 ; ja @0x1435230f3), so a dept-4 (ENUM A Fake) instance never leaves the init sentinel."
+  "evidence": "decomp:re/decomp/1435230e0.c;pat:cmp-byte-rcx+0x72-3-ja-ret@0x1435230f3;kb:subsystems/rnd_ui.md#instances;xref:0x14122d44b,0x141230486,0x1412308cc,0x1412469c1,0x143517cdd,0x143517e71",
+  "notes": "Returns if dept +0x72 > 3 or last state byte (+8) already == new state. Pushes a copy of the last 16-byte history entry (+0xc0..+0xc8; sentinel state 5 if empty), logs UPGRADES/V 'Changing state from %s to %s for %s on %s, engine %d' (name +0x10, engine +0x7c), writes day +4, state +8 and owner key +0. (lane owner review requested)"
  },
  "signature": {
   "id": "career.push_upgrade_state",

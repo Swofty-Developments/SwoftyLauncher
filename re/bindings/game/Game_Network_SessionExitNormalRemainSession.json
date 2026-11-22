@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140bb49e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK/F",
-  "notes": "named from its log messages (channel NETWORK/F): ' - SessionExit normal, remain in session and update the season document.'"
+  "evidence": "decomp:re/decomp/140bb49e0.c;pat:log-channel-NETWORK/F;xref:0x1456784d8,0x140fce281",
+  "notes": "Read as disassembly within pdata 0x140bb49e0-0x140bb4d12 (decomp is polluted by tail callee 0x144062c40): logs 'OnlineDocumentComponent::onPostProgress()' (NETWORK/F), ' - m_canSaveOnQuit is true.', ' - SessionExit normal, remain in session and update the season document.', eFRONT_END_DISCONNECT -> 0x144062c40 / jmp 0x143038620. Vtable cell 0x1456784d8; jmp 0x140fce281. (lane owner review requested) Better name: Game_Network_OnlineDocumentComponent_OnPostProgress (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_session_exit_normal_remain_session",

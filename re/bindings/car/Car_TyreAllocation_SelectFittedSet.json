@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e8c960",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
   "evidence": "decomp:re/decomp/142e8c960.c;xref:0x140bcca09",
-  "notes": "Selects the fitted tyre set: param_1 allocation (compound groups stride 0x28 at +0x10, count +0xd8; sets vector +0x20..+0x28 of 0x6c-byte sets), param_2 group, param_3 set index; skips sets flagged +0x14/+0x20/+0x2c/+0x38, falls back to best set 0x142e8ab90; writes fitted id +0xe0 (set+4, -1 none), set byte +0xe4, valid +0xe8=1. Caller Sess_TyreAllocation_OnSessionStart."
+  "notes": "(alloc,group,setIdx): group = alloc+0x10+g*0x28 (count alloc+0xd8), 0x6c-byte sets at [group+0x10..+0x18]; rejects a set with any wheel punctured bool (set+0x14/+0x20/+0x2c/+0x38) and falls back to 0x142e8ab90; writes alloc+0xe0 = set+4 group id (-1 none), alloc+0xe4 = set+8 index, alloc+0xe8 = 1. alloc+0xe0/+0xe4 is m_tyreSetToStartRaceOn (read by 0x142e884f0). Caller 0x140bcc190. (lane owner review requested) Better name: Car_TyreAllocation_SelectStartRaceSet (bound record keeps its name)."
  },
  "signature": {
   "id": "car.tyre_allocation_select_fitted_set",

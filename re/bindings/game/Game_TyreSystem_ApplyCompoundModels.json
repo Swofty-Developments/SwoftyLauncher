@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e96a20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142e96a20.c;xref:0x14023891a,0x142dfec10",
-  "notes": "(tyreSys) Requires two compound sets (+0x9920/+0x9938 < 5, ptrs +0x9928/+0x9930, +0x9940/+0x9948): for 4 wheels sets tyre model visibility (Game_CompoundModelSet_SetTyreVisibility) and model data (0x142e87540) for the current and next compounds (per-compound blocks stride 0xde0 at +0x4d0/+0x970, mapping via [+0x9bc0]+0x1d8), then Game_LapStats_RecordVehicleLap. Callers Car_Tyre_ActivateCompounds, Game_Tyres_Deserialise, Sess_RedFlagStrategyCalc_Update, TyreSelection net msg."
+  "evidence": "decomp:re/decomp/142e96a20.c;xref:0x14023891a,0x142dfec10,0x142e904c2,0x142e91c03,0x142e92fb0,0x142e96416,0x14f402a86,0x14f4297d4",
+  "notes": "(tyreEntry): needs both compound refs (+0x9920/+0x9938 < 5 with pointers) and +0x20. For wheels 0..3 runs 0x142e83130 + 0x142e87540 on the current/next blocks (stride 0xde0 by map [+0x9bc0]+0x1d8, +0x4d0/+0x970); hides slots 4/5 of every set; then re-resolves both refs from the table +0x9bd0 (stride 0x18, 0x142e9e6c0 rebuild) for +0x9c98[-0x6c] and +0x9c70 (fallback id (id>2)*3+1, else -1). (lane owner review requested)"
  },
  "signature": {
   "id": "game.tyre_system_apply_compound_models",

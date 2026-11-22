@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14289edf0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name changeDriver (class from the log channel); log channel FRONTEND_SCENE_DRIVER: 'changeDriver [%p]'"
+  "evidence": "decomp:re/decomp/14289edf0.c;pat:log-message-method;xref:0x1428dfd57,0x1428eeb78",
+  "notes": "Logs FRONTEND_SCENE_DRIVER 'changeDriver [%p]'. Finds driver entry by ushort id *param_2 in hash map (this+0xc8..0xfc, 0x18-byte slots). param_3 vcall+8: type 2 = diff 0x14288f3e0 (flags 2 suit/4 helmet/8 gloves, logs 'Processing suit change'), swaps item assets or sets rebuild flag +0xf2; type 1 = diff 0x1428894f0 on desc +0x480. Then 0x142889c50 if param_4 changed, stores +0xf8/+0x108. (lane owner review requested)"
  },
  "signature": {
   "id": "game.frontend_scene_driver_change_driver",

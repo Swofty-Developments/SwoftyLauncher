@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1440966b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onP2PConnectRequest (class from the log channel); log channel NETWORK/V: '%s( param(remoteUserId: %lu) )'"
+  "evidence": "decomp:re/decomp/1440966b0.c;pat:log-message-method;xref:0x14406131b",
+  "notes": "Steam P2P session-request callback: logs onP2PConnectRequest(remoteUserId); gets the lobby member count (ISteamMatchmaking vtable+0x88) for lobby this+0x1e8, iterates members (vtable+0x90) and accepts the session (vtable+0x18) only if the requester is a member. (lane owner review requested) Better name: Game_Network_Steam_OnP2PSessionRequest (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_on_p2_p_connect_request",

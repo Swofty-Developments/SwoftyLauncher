@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a6b870",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name startRead (class from the log channel); log channel EGO_ERP_LOADER: 'startRead - read \"%s\"'"
+  "evidence": "decomp:re/decomp/143a6b870.c;pat:log-message-method;xref:0x143a68d77,0x152155efa",
+  "notes": "(loader, read state rs, ERPInfo, flag): resets rs (rs[0]=info, times, info+0x38 = now); file path from the hashed-name table [0x14628f690] (+0x208.., pool +0x1c0/+0x1d8) or 0x143a5b5e0; logs 'startRead - read \"%s\"'; next ring buffer (+0x28..+0x30, idx +0x1c) -> rs[2]; open+read 0x143f37750([+0x98], path, buf+0x10, 0, size buf+0x18, 2) -> rs[1]. Callers 0x143a68490, 0x152155c70. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ego_erp_loader_start_read",

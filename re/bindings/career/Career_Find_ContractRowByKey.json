@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1416dffe0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "uint64_t Find(void *ctx, void *out, void *key)",
-  "evidence": "decomp:re/decomp/1416dffe0.c;xref:0x14187826f;xref:0x1418782b8;xref:0x141c883e6",
-  "notes": "myteam-g2: Robin-Hood map lookup (Ne_RobinHoodMap_U64_FindIndex) in ctx+0x10..0x20 with TLS cached default; used by RnD icon strip and contract hub rows."
+  "evidence": "decomp:re/decomp/1416dffe0.c;xref:0x140557ccd,0x14187826f,0x1418782b8,0x141c883e6",
+  "notes": "Resolves from registry param_3 (Ne_RobinHoodMap_U64_FindIndex) key 0x14604ed28 -> +8 and EntrantsSystem (0x14606ecd8) -> +0x10; then from (+8)+0x88 ->+0x260 game mode gets CareerRecognitionComponent (0x146060948) -> +0x18 and DriverStatisticsComponent (0x146061768) -> +0x20. Returns 0, or 0x16 with error trace when a system is missing. Not a contract-row lookup. (lane owner review requested) Better name: Career_Bind_RecognitionStatsContext (bound record keeps its name)."
  },
  "signature": {
   "id": "career.find_contract_row_by_key",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140381380",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GarageCrewInstance::~GarageCrewInstance; log channel GARAGECREWINSTANCE: 'GarageCrewInstance::~GarageCrewInstance %p'"
+  "evidence": "decomp:re/decomp/140381380.c;pat:log-message-cxx;xref:0x140388ca5,0x14038ce88,0x14038f32a,0x14038f45e,0x14038f73a",
+  "notes": "~GarageCrewInstance(inst): logs %p; deactivates extra world inst+0x210 (0x1444bcf00) and unloads it via 0x14442cdf0 with inst+0x228, runs 0x140381810, releases objects +0xf8/+0x100/+0x108/+0x110, removes models +0xc8/+0xd0/+0xd8/+0xe0/+0xf0 (0x14018ef80), clears event vector +0xa0..+0xb0. Callers 0x140388c10, 0x14038cd90, 0x14038f270, 0x14038f360, 0x14038f6e0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.garage_crew_instance_destroy",

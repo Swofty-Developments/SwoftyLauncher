@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1444a4b70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: Renderer.Gfx.enableFSR3, Renderer.Gfx.enableRealTimePathTracer, Renderer.Gfx.enableXeSS'"
+  "evidence": "decomp:re/decomp/1444a4b70.c;pat:log-channel--;xref:0x1444a23f6",
+  "notes": "Builds u32 flags *param_1 from device 0x14618caa8 (bytes +0x3995..+0x39a7), settings enableFSR3 (bit9), enableXeSS (bit12), enableRealTimePathTracer (bit14 gate), GPU vendor +0x880: 0x10de bit3, 0x1002 bit2, 0x8086/0x8087 bit4; bit5 = hardware_settings_info cpu.processors < 5. Called by Game_Read_UIConfig for its 0x140-byte block +0xa0. (lane owner review requested) Better name: Game_Gfx_BuildFeatureSupportFlags (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_renderer_gfx_config_5",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141f096b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141f096b0.c;xref:0x141f0f289,0x141f0fefe",
-  "notes": "Reads property slot_id from the VM node (FUN_144252eb0) and returns it as u32 (default on failure). Callers Game_VideoExport_StartHighlightExport and others."
+  "evidence": "decomp:re/decomp/141f096b0.c;xref:0x141f0f289,0x141f0fefe,0x141f100b0,0x141f10c58,0x141f111d6,0x141f11f16,0x141f122a0,0x141f12308,0x141f12664",
+  "notes": "Read in full: (nodeRef) looks up child 'slot_id' (0x144252eb0) of node [p+8]+8, binds it (0x140970b00), returns the u32 value if the node is valid and its type id matches 0x146129f38, else 0; releases the ref. (lane owner review requested)"
  },
  "signature": {
   "id": "game.video_export_get_slot_id",

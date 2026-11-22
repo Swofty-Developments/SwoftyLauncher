@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140d8ecd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-CONTRACT_RENEWAL",
-  "notes": "named from its log messages (channel CONTRACT_RENEWAL): 'Replace new drivers old position. Team : %s - Driver %s replaced with reserve driver %s '"
+  "evidence": "decomp:re/decomp/140d8ecd0.c;pat:log-channel-CONTRACT_RENEWAL;xref:0x140d8f6a2,0x140d8fe65,0x140d95cfe",
+  "notes": "When the incoming driver sits on another team, backfills that seat with the team's first reserve (log 'Replace new drivers old position ... replaced with reserve driver'), via 0x140d8f1f0 and 0x1407b72e0; returns 0 without a reserve. Callers ForceToLowestTeam, Sign_DriverToTeam, 0x140d95cfe. (lane owner review requested)"
  },
  "signature": {
   "id": "career.contract_renewal_replace_with_reserve",

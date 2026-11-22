@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401ee140",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=ActorManager::resetUsageMap; log channel SceneManagerSpawn_Verbose: 'ActorManager::resetUsageMap %u'"
+  "evidence": "decomp:re/decomp/1401ee140.c;pat:log-message-cxx;xref:0x140252d2c,0x14026f34c,0x14027068c,0x14027108c,0x1402716bc,0x140271cec,0x1402726dc,0x140272d0c,0x14027333c,0x140389b11,0x1403ad3df,0x1403d6775,0x1403d6892,0x1403dad4f,0x140c75a3d,0x14753b16b",
+  "notes": "Logs SceneManagerSpawn_Verbose 'ActorManager::resetUsageMap %u'. Under CS +0x30: if map count +0x98 != 0 sets it 0, returns every occupied node (ctrl bytes +0x90, slots +0x88) to the free list +0x68, memsets the ctrl bytes and sets the end sentinel, +0xb0 = 0x20; then +0xc0 = param_2*3 + 0x11. (lane owner review requested)"
  },
  "signature": {
   "id": "game.actor_manager_reset_usage_map",

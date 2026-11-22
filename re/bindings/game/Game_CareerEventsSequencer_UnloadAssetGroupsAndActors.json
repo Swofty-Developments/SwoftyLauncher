@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c7d520",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name unloadAssetGroupsAndActors (class from the log channel); log channel CareerEventsSequencer: 'unloadAssetGroupsAndActors'"
+  "evidence": "decomp:re/decomp/140c7d520.c;pat:log-message-method;xref:0x140c7a66e",
+  "notes": "Logs 'unloadAssetGroupsAndActors'; clears +0x168/+0x1a0, unloads the resource manager's asset group handle ([+0x88]+0x10, 0x140229cf0 when +0x3b), calls [0x146076620+0x1090] vt+0x58, releases the handle (refcount +0x24), clears +0x3b and +0x7c. (lane owner review requested)"
  },
  "signature": {
   "id": "game.career_events_sequencer_unload_asset_groups_and_actors",

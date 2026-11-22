@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14036e090",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=CelebrateParcferme01_script::starting; log channel CUTSCENE_PODIUM: 'CelebrateParcferme01_script::starting'"
+  "evidence": "decomp:re/decomp/14036e090.c;pat:log-message-cxx;xref:0x1455f61e0",
+  "notes": "Vtable cell 0x1455f61e0. Own log '...::starting'. Base 0x140237f40, render msg (0x146c39770, field 0xb = 0), marks driver slots of [0x146045ed8]+0x28 (+100=1), 0x146ce89d8=1, vt+0x2f0 for vehicle slots +0x840..+0x870 with the team byte (+0x82) from the grid order list, +0x520=0xbfffffff and ghosts/unghosts vehicles by that mask. (lane owner review requested)"
  },
  "signature": {
   "id": "game.celebrate_parcferme01_script_starting",

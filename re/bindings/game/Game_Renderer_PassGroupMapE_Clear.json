@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b47490",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143b47490.c;xref:0x143b1c70e,0x143b3a216",
-  "notes": "Clears one of five pass-group hash maps (80% load sizing via 0x28f5c28f5c28f5d, 0x28-byte buckets each holding a vector of 0x30-byte objects destroyed via vcall +0), resets counters. Instance E of 5 identical instantiations called from Game_Renderer_InitPassGroups and the pass-group teardown paths (0x143b3a1ed.., 0x143b4f27d.., 0x143b4f997..); map identity not resolved."
+  "evidence": "decomp:re/decomp/143b47490.c;xref:0x143b1c70e,0x143b3a216,0x143b3a750,0x143b3ac66,0x143b3b1ef,0x143b3b77f,0x143b4f2a6,0x143b4f381,0x143b4f9c0,0x143b4fa63,0x15239ebc4",
+  "notes": "Open-addressing hash map destructor (5 identical instances A-E): if capacity +0x30 != 0, size +0x28 = 0; for each occupied slot (ctrl bytes +0x20, cap+1+min(0xff,80%) slots) destroys the slot's vector of 0x30-byte objects (vcall +0) and frees it via slot allocator +8; frees slot storage via allocator +8 unless it is the inline sentinel (+0x30). Instance E; called from InitPassGroups (0x143b1c70e) and teardown 0x143b37e20/0x143b4ef00/0x143b4f5b0. (lane owner review requested) Better name: Game_Renderer_PassGroupMapE_Destroy (bound record keeps its name)."
  },
  "signature": {
   "id": "game.renderer_pass_group_map_e_clear",

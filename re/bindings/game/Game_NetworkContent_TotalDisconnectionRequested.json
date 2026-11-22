@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14303a8d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-CONTENT",
-  "notes": "named from its log messages (channel NETWORK-CONTENT): 'Total disconnection requested. Resetting internal state.'"
+  "evidence": "decomp:re/decomp/14303a8d0.c;pat:log-channel-NETWORK-CONTENT;xref:0x14305820a,0x14306104d",
+  "notes": "Logs \"Total disconnection requested. Resetting internal state.\"; mask this+0x118 = 1, clears +0x120 and the host/own conn bytes, re-evaluates every content item (vtable+8) and logs its enabled/DISABLED state. (lane owner review requested) Better name: Game_NetworkContent_ResetOnDisconnect (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_content_total_disconnection_requested",

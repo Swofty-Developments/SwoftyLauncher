@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140384f70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-GARAGECREWINSTANCE",
-  "notes": "named from its log messages (channel GARAGECREWINSTANCE): 'GarageCrewInstance::setMonitorStand teamName %s - using FOM stand | GarageCrewInstance::setMonitorStand teamName %s | GarageCrewInstance::setMonitorStand standNameClassic %s | GarageCrewInstance::setM'"
+  "evidence": "decomp:re/decomp/140384f70.c;pat:log-channel-GARAGECREWINSTANCE;xref:0x14028ad2c,0x14028adc6,0x14028c3cc,0x14028c466,0x140382032,0x1403820a8",
+  "notes": "setMonitorStand(model,teamName,mirrored): all parts off (vt+0xd8(0)), shows part teamName or the 'f1_garage_monitor_stand_..' / 'garage_car_dual_monitor_stand_..' names built from it (vt+0xc0(name,1)), falls back to garage_car_dual_monitor_stand_fom; then screen/frame/body/stand_f2/arm/surround and the _l or _r screen ui/logo by mirrored. Callers 0x140289cc0, 0x14028b340, 0x140381f40. (lane owner review requested)"
  },
  "signature": {
   "id": "game.garage_crew_instance_set_monitor_stand",

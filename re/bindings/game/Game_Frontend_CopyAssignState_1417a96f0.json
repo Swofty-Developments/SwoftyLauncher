@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1417a96f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1417a96f0.c;xref:0x1416c6fb6",
-  "notes": "Copy-assign of a large frontend state object (fields at +0x6780..+0x67b0, vtables 0x145612fa0/0x145612fe0). 9 callers incl. Game_FrontendSceneManager_Update (0x1428ccf4a). Hypothesis."
+  "evidence": "decomp:re/decomp/1417a96f0.c;xref:0x1416c6fb6,0x1416c7086,0x1428ccf4a,0x1428e5e3e,0x1428ea816,0x1428eaa86,0x1428eac88,0x1428eafd7",
+  "notes": "Construct-from-other (dest flags cleared first, nothing destroyed): copies base via 0x14096ccf0, then optional members: +0x6780 (flag +0x67b0, vtables 0x145612fa0/0x145612fe0), +0x67b8..+0x67e8 moved (source vector +0x67c0..+0x67d0 zeroed, flag +0x67f0), +0x67f8/+0x67fa, array of +0x6860 0x30-byte entries at +0x6800 (flag +0x6870), +0x6888 (flag +0x6890), +0x6898/+0x689a. Used by Game_FrontendScene_KeyMap_FindOrInsert (0x1428e5e3e) for the node value. Renamed: construct, not assign. (lane owner review requested) Better name: Game_Frontend_CopyConstructState_1417a96f0 (bound record keeps its name)."
  },
  "signature": {
   "id": "game.frontend_copy_assign_state_1417a96f0",

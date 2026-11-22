@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f1ccf0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142f1ccf0.c;xref:0x142f02c42",
-  "notes": "Ghosting rule: no ghost if collision masks (+0x4b8 vs +0x520[idx]/+0x518) overlap or vehicle states (+0x9f0c/+0x9f10) are 3; otherwise stamps QueryPerformanceCounter+offset (0x1461089f8) into +0x668 as ghost deadline. Caller Game_VehicleGhostComponent_CheckCollisions. Addon: ghost (no-collision) timing hook."
+  "evidence": "decomp:re/decomp/142f1ccf0.c;xref:0x142f1cb3f",
+  "notes": "Read in full: blocked = (+0x4b8 & (+0x520[+0x628] | +0x518)) != 0 or vehicle [+0x18]+0x9f10/+0x9f0c == 3. If blocked: stamps QPC+[0x1461089f8] into +0x668 (and +0x670 if non-zero) and zeroes counter +0x680. Returns true only when not blocked AND +0x680 > 10 AND (now - +0x668)/+0x678 > 1.0 s. Caller 0x142f1cb00 (0x142f1cb3f). (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_ghost_refresh_ghost_deadline",

@@ -21,7 +21,7 @@ mod resume;
 mod rows;
 
 pub use index_file::{
-    data_path, keep, kept_ids, migrate, parse, read, rename_profile, replace_profile, sync,
+    data_path, forget, keep, kept_ids, migrate, parse, read, rename_profile, replace_profile, sync,
 };
 pub use list::{
     ListSave, READY as SEVERITY_READY, ResumeRow, RowAddon, VERSION as SEVERITY_VERSION, date_text,
@@ -33,7 +33,7 @@ pub use resume::{
     CareerNeeds, MissingRows, ResumeNeed, RowSet, mark_missing_modes, mode_owners, mode_suffix, of_profile,
     resume_needs, session_needs,
 };
-pub use rows::{Played, drop_former_owners, settle_rows, stock_max_for};
+pub use rows::{Played, settle_rows, stock_max_for};
 
 pub const GAME_PATH: &str = "swofty/careers/index.json";
 pub const DATA_PATH: &str = "careers/index.json";

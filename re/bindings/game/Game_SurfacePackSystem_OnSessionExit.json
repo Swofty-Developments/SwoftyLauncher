@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1437a5c40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-GameSurfacePack",
-  "notes": "named from its log messages (channel GameSurfacePack): 'onSessionExit | resetMappings | Exiting the session, prepare to recreate the atlas | removeSurfaces (%d) | removeUnassignedSurfaces(%d) | Requesting to destroy the atlas | Exiting the session without '"
+  "evidence": "decomp:re/decomp/1437a5c40.c;pat:log-channel-GameSurfacePack;xref:0x1458729e0",
+  "notes": "resetMappings (memset +0x18180 0x2f8, 3 tables -1); if +0x184e0 and car unchanged (+0x184b4==0) moves assigned surfaces +0xd8 (stride 0x40, count +0x180e0) to unassigned list +0xc0d8 (max 0x300) via Game_GameSurfacePack_HandleUnassignedSurfaceOwnershipTransfer; else removes all, then sets +0x180f8 destroy-atlas and +0x180f5. (lane owner review requested)"
  },
  "signature": {
   "id": "game.surface_pack_system_on_session_exit",

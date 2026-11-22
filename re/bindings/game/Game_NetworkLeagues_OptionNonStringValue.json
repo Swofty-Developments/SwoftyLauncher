@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143180aa0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-LEAGUES",
-  "notes": "named from its log messages (channel NETWORK-LEAGUES): '? Option \"%s\" has a non-string value.'"
+  "evidence": "decomp:re/decomp/143180aa0.c;pat:log-channel-NETWORK-LEAGUES;xref:0x14317b764",
+  "notes": "Walks the 'options' JSON object: string values are stored via 0x142add1c0 into the map at this+0xc0, other types log '? Option \"%s\" has a non-string value.'; handles category (category_f1_2025 / category_multiplayer_car) and backfillLobbyWithAi ('* backFillLobbyWithAi present: set to %s'). Caller 0x1431717c0. (lane owner review requested) Better name: Game_NetworkLeagues_ParseOptions (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_leagues_option_non_string_value",

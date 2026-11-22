@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1403c3540",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name postBuild (class from the log channel); log channel FeVehicleProxyActor: 'postBuild %p'"
+  "evidence": "decomp:re/decomp/1403c3540.c;pat:log-message-method;xref:0x14561dea0",
+  "notes": "Vtable slot 2 of 0x14561de90. Real body 0x1403c3540..0x1403c35c2: logs FeVehicleProxyActor 'postBuild %p' then tail-jumps to 0x1401cf580 (base postBuild). The decomp is polluted by that tail target. (lane owner review requested)"
  },
  "signature": {
   "id": "game.fe_vehicle_proxy_actor_post_build",

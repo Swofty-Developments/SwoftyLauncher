@@ -477,9 +477,17 @@ fn the_main_menu_navigation_routes_and_entries_are_added_within_the_loader_rules
         patch::SHOWROOM_ROUTE,
     );
     let hub = route_text(&routes, "fe_f1_world", "showroom").replace("=fe_f1_world", "=fe_home");
+    let open = "OpenScreen [Id=4, Target=fe_showroom] after 3";
+    assert!(hub.contains(open), "{hub}");
+    let expected = format!(
+        "{}\nTransitionScreen [Id=9, Direction=out, Target=fe_planes] after -\nCloseScreen [Id=10, Target=fe_planes] \
+         after 9\nFrontendSceneSwitch [Id=11, Target=fe_f1_world] after -",
+        hub.replace(open, &format!("{open},10,11"))
+    );
     assert_eq!(
-        ours, hub,
-        "the main menu's Showroom route is the hub's own showroom route from the home screen"
+        ours, expected,
+        "the main menu's Showroom route is the hub's own showroom route from the home screen, with fe_planes closed \
+         and the hub's scene switched to before fe_showroom opens"
     );
     assert!(!ours.contains("slice_bg_content_underlay") && !ours.contains("theatre_container"));
     std::fs::remove_dir_all(&dir).ok();

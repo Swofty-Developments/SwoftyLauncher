@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141510f00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: osd_visibility_option.hud_notifications_dynamic.red_flag_notifications, osd_visibility_option.hud_notifications_dynamic.safety_car_notificatio, osd_visibility_option.hud_notifications_dynamic.safety_rating_notifica'"
+  "evidence": "decomp:re/decomp/141510f00.c;pat:log-channel--;xref:0x1414c911a,0x141c13eed",
+  "notes": "Ctor: base 0x1414ded70, vtables 0x1456ebcb0/0x1456ebd50/0x1456ebd80. Allocates three child VMs bound to osd_visibility_option.hud_notifications_dynamic.{safety_car,red_flag,safety_rating}_notifications.hud_message.content, Vm_Register_ViewModel each, pushes them into vector +0x300; 13 resource handles from +0x390 (stride 0xe8) get callbacks 0x141513090..0x141513150. (lane owner review requested) Better name: Game_HudNotificationsDynamicVM_Construct (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_osd_visibility_option_hud_notifications_dynamic_config",

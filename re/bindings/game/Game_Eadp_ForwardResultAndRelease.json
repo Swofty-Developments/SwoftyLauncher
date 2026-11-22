@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1449b7530",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1449b7530.c;xref:0x143fd2d75,0x143fd48fb",
-  "notes": "EADP SDK adapter: calls the holder's result accessor (vcall +8 then +0x40), forwards the value to 0x1449b7640 and releases the shared_ptr control block (atomic dec, vcall 0 destroy). Callers Game_EadpSDK_OnSignInStateChanged, Ne_PresenceEadp_ProcessPlayerCardList and ~30 other EADP callbacks."
+  "evidence": "decomp:re/decomp/1449b7530.c;xref:0x143fd2d75,0x143fd48fb,0x143fd626f",
+  "notes": "param_2 = shared_ptr {obj, ctrl}: value = obj->vcall(+8)()->vcall(+0x40)(), forwarded with param_1 to 0x1449b7640; then releases ctrl (atomic dec use count -> vcall 0 dispose, weak count -> vcall +8 destroy). Returns param_1. Callers include 0x143fd16b0, 0x143fd4860, 0x143fd6210, 0x143fd8840. (lane owner review requested)"
  },
  "signature": {
   "id": "game.eadp_forward_result_and_release",

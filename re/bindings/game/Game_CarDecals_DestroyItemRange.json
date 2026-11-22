@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14211f560",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14211f560.c;xref:0x141ffeed2",
-  "notes": "211-line builder of a decal item node (releases temp refs). Callers 0x141ffeca0, Game_CarDecals_BuildList (3), 0x142001520. Hypothesis. vp1-verify partial/disagree"
+  "evidence": "decomp:re/decomp/14211f560.c;xref:0x141ffeed2,0x141fff8dc,0x14200023d,0x142000482,0x1420017f2",
+  "notes": "Destroys the range [param_1,param_2) of 0x140-byte decal row items: releases the refcounted handle +0x120, then unlinks and frees the 9 tracked node refs (+0x100 down to +0, 0x20 each) via 0x1442b3d70. (lane owner review requested)"
  },
  "signature": {
   "id": "game.car_decals_build_decal_item_node",

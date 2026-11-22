@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1444a1b30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: UI.EnableMouseSupport, UI.IsTextProcessorEnabled, UI.ShowInProgressRoute, UI.TextEngine, UI.TextProcessorAffectsRTLLanguagesOnly'"
+  "evidence": "decomp:re/decomp/1444a1b30.c;pat:log-channel--;xref:0x14560c1c0",
+  "notes": "UI module init (vtable cell 0x14560c1c0): allocator EGO_UI, creates UI subsystems (+0x58..+0xe8); UI.EnableMouseSupport->0x146ca5480, UI.IsTextProcessorEnabled->0x146ca5481, UI.TextProcessorAffectsRTLLanguagesOnly->0x145f98af0, UI.TextEngine (default original), UI.ShowInProgressRoute; 0x140-byte block filled by 0x1444a4b70 -> +0xa0. Returns 0 or 0xc. (lane owner review requested) Better name: Game_UiModule_Init (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_ui_config",

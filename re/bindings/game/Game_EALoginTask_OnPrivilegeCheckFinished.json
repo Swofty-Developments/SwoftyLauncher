@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143372d60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143372d60.c;xref:0x1433728af,0x143372a1f,0x143372c70,0x143373520",
-  "notes": "F1OS CheckPrivilegeTask completion (param_2=done/failed, param_3=keep spinner): stamps QPC time task[0x29]/[0x2a], clears task[0x27]. param_2==0: if a session user exists ([[task[0x34]+0x140]+0x198]+0x1c0) and no popup text pending, restarts busy spinner type 5 (0x14079c940, delay 0.01) unless param_3, then issues an async platform privilege request (user vcall +0x40 id -> service vcall +0x10, callback 0x143373270) and posts bus message vt 0x14583eea8. Otherwise sets task+0x1ba=0x100, runs 0x143371ff0, F1OS-TASKSYSTEM log 'setting finished on %s : %s' (OK!/with error from task+0x48), shows a pending popup (task+0x90 via 0x1442ccac0), marks done +0xa1, clears spinner count and posts message vt 0x14583eed0 with result byte. Addon: hook to see/force privilege-check results (online/crossplay/UGC gate). d16-verify: works on the EALoginTask (timer +0x148/+0x150, field +0x1ba), not a separate CheckPrivilegeTask"
+  "notes": "Clears +0x138, QPC time +0x148 (+0x150). param_2==0 with session user [[[+0x1a0]+0x140]+0x198]+0x1c0: popup pending -> 0x1417a5b20, else spinner 0x14079c940(5, 0.01) unless param_3; async privilege request via [[+0x118]+0x230] vcall +0x10 (callback 0x143373270), posts vt 0x14583eea8. Else +0x1ba=0x100, 0x143371ff0, F1OS-TASKSYSTEM 'setting finished on %s : %s', popup +0x90, +0xa1=1, posts vt 0x14583eed0 {+0x1ba}. (lane owner review requested)"
  },
  "signature": {
   "id": "game.check_privilege_task_on_finished",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14465eeb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: tyre_damage.front.left, tyre_damage.front.right, tyre_damage.rear.left, tyre_damage.rear.right'"
+  "evidence": "decomp:re/decomp/14465eeb0.c;pat:log-channel--;xref:0x145bf8ec0",
+  "notes": "If 0x145faa608 (Game.VehicleDamage.tyres, written by 0x14463a800) is set: adds tweakables tyre_damage.rear.left/rear.right/front.left via Game_Tweakables_FindOrAddDamageGroup and front.right (group damage, 0..1) via ConstructNamedEntry/VectorEmplaceNamedEntry on [[this+8]+0x148]. (lane owner review requested) Better name: Game_TyreDamage_RegisterTweakables (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_tyre_damage_config",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c345f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void *Career_Copy_SponsorDefinitionStrings(void *dst, void *src)",
-  "evidence": "decomp:re/decomp/140c345f0.c;xref:0x140c3340c;xref:0x140c341a9;xref:0x140c9668c",
-  "notes": "myteam-g2: Copies the string fields of a sponsor definition (Ne_String_Reserve) during Load_SponsorDefinition and Read_CareerSetupDataConfig; no state write."
+  "evidence": "decomp:re/decomp/140c345f0.c;xref:0x140c3340c,0x140c341a9,0x140c9668c,0x140c967ec",
+  "notes": "Copy constructor of a sponsor/setup definition record: copies the plain fields and duplicates 4 string members via 0x1402b5650; no state write; returns param_1. callers incl. 0x140c32080, 0x140c95ef0. (lane owner review requested)"
  },
  "signature": {
   "id": "career.copy_sponsor_definition_strings",

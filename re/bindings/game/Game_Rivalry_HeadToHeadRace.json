@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1412636e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-RIVALS",
-  "notes": "Log channel RIVALS: 'Head to head data for %s: FastestLap:%lu FastestSector1:%lu FastestSector2:%lu FastestSector3:%lu RaceStatus:%s RacePosition:%u Penalties:%u' | 'Rival:%s Number of times beaten rival :%d Best Position :%d' | 'Rival:%s Number of times rival beat us :%d Best Position :%d'"
+  "evidence": "decomp:re/decomp/1412636e0.c;pat:log-channel-RIVALS;xref:0x1456cd688",
+  "notes": "Vtable slot (cell 0x1456cd688). Race twin of HeadToHeadQuali: positions [+0xa0] (us) vs [+0xd8] (rival), default 0x1c; podium counters +0x30/+0x44 for positions < 3, beaten counters +0x2c/+0x40, best positions +0x24/+0x38; logs 'Head to head data' (RaceStatus) and the two 'Rival:%s' lines when traced. (lane owner review requested)"
  },
  "signature": {
   "id": "game.rivalry_head_to_head_race",

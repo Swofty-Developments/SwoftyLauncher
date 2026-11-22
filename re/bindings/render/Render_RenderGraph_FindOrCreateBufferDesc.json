@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143bd9b30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143bd9b30.c;xref:0x143bda4dc,0x143bd7d48",
-  "notes": "Render-graph resource-desc cache: interns the resource name hash (Ne_StringPool_InternByHash), looks the desc up in the map at this+0x310 (vector +0x338/+0x350), otherwise builds a buffer resource desc with Render_Gfx2Buffer_BuildResourceDesc and inserts it (0x143ed0570). Callers Render_Gfx2_HandleMap_FindOrAdd and 0x143bd44f0."
+  "evidence": "decomp:re/decomp/143bd9b30.c;xref:0x143bd7d48,0x143bda4dc",
+  "notes": "Cache of buffer allocation info: FNV-1a 64 over the 0x78-byte desc copy, lookup in the map this+0x338 (mask +0x350, end +0x320); on miss Render_Gfx2Buffer_BuildResourceDesc(device, out, desc) and insert (0x143ed0570 on +0x310). Returns the 16-byte result in param_2. Callers 0x143bd44f0, 0x143bda160 (0x143bda4dc). (lane owner review requested)"
  },
  "signature": {
   "id": "render.render_graph_find_or_create_buffer_desc",

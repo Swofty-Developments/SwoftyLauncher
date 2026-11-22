@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140bce940",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140bce940.c;xref:0x140bcbbbb",
-  "notes": "If bit 4 of [[this+0x2f8]+0x80]+0x180 is set reads tweakable \"Game.Tyres.WarmUpSetsPerCompound\" (default 6) and checks every compound slot of the preset (arrays at param_2 +0x20/+0x48/+0x70/+0x98..., count via *0x684bda13 inverse-of-12 trick) has that many sets. Addon: tweakable name Game.Tyres.WarmUpSetsPerCompound. Callers Game_TyreAllocationComponent_SetPresetChoice (+ForHumanDriver)."
+  "evidence": "decomp:re/decomp/140bce940.c;xref:0x140bcbbbb,0x140bce7ad",
+  "notes": "(alloc, preset): if bit 2 (mask 4) of [[this+0x2f8]+0x80]+0x180: reads tweakable 'Game.Tyres.WarmUpSetsPerCompound' (default 6) via 0x143a43240 on [this+0x2f8]+0x200; if any of the first min(preset+0xd8, 5) compound vectors (0x4c-byte sets, begin +0x20/+0x48/+0x70/+0x98/+0xc0) has another count, calls 0x142e8d300(preset, n) and preset+0xe8 = 1. Returns the bit. (lane owner review requested)"
  },
  "signature": {
   "id": "game.tyre_allocation_validate_warm_up_sets",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14475c9a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14475c9a0.c;xref:0x14462d15b",
-  "notes": "builds suspension{type}{idx}_{corner} + x0_suspension{type}{idx}_fixed_{corner} (+_01 chicken wing) and looks up model node ids; tables 0x145c056f8 type(_multiarm,_spring,_steeringarm,_fin) 0x145c05380 idx('',2..12) 0x145c056b0 corner(bl,br,fl,fr); missing node -> -1 + VEHICLE_COMPONENT log only"
+  "evidence": "decomp:re/decomp/14475c9a0.c;xref:0x14462d15a,0x14462d1ac,0x14462d1c9,0x14462d1e9,0x14462d285,0x14462d2a2,0x14462d31e,0x14462d33b,0x14462d3a2,0x14462d402,0x14462d43c,0x14462d476",
+  "notes": "(out[4],corner,idx,model,type). type 1..4 -> 0x145c056f8 (_multiarm/_spring/_steeringarm/_fin), idx -> 0x145c05380, corner -> 0x145c056b0. out[0]=node 'suspension%s%s_%s', out[1]='x0_suspension%s%s_fixed_%s'; if fixed missing scans model names for a prefix match, sets out[1]=index, out[3]=suffix node; out[2]='..._fixed_%s_01' (chicken wing log). Missing -> VEHICLE_COMPONENT log. All callers in 0x14462d090 (Game_Build_SuspensionRig). (lane owner review requested)"
  },
  "signature": {
   "id": "game.find_suspension_nodes",

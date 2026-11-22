@@ -42,6 +42,8 @@ Shipped in 1.6.0:
 - **[Liveries](./liveries)** `swofty/systems/liveries.hpp`: `liveries::liveries`.
 - **[Teams](./teams)** `swofty/systems/teams.hpp`: `teams::constructors`, `identities`, `logos`, `pit_times`, `garages`.
 - **[Garage art](./garage)** `swofty/systems/teams.hpp`: `teams::garages`.
+- **[Sponsor boards](./sponsors)** `swofty/systems/tracks.hpp`: `tracks::sponsors` (experimental).
+- **[Vehicle overrides](./vehicle-override)** `swofty/systems/teams.hpp`: `teams::vehicle_overrides` (experimental, 1.10.15).
 - **[Drivers](./drivers)** `swofty/systems/drivers.hpp`: `drivers::people`, `identities`, `heads`, `looks`, `stats`.
 - **[Helmets, suits and gloves](./wearables)** `swofty/systems/wearables.hpp`: `wearables::helmets`, `suits`, `gloves`, `season_sets`.
 - **[Sounds](./sounds)** `swofty/systems/sounds.hpp`: `sounds::engine_sounds`.
@@ -61,6 +63,10 @@ Added in 1.10.0:
 - **[Tyre damage](/reference/std/tyre-damage)** `swofty/systems/tyre_damage.hpp`: each wheel's puncture state and deflation, `tyre_damage::state`, `deflation`, `damaged`, and the `car.tyre.damage` payload.
 - **[Weather setup](/reference/std/weather)** `swofty/systems/weather.hpp`: the `session.weather.setup` payload, `weather::set_seed` and `weather::script`.
 - **[Standings](/reference/std/standings)** `swofty/systems/career.hpp`: the loaded career's drivers' championship, `career::standings`, `Standings::find` and `StandingsDriver::points_in`.
+
+Added in 1.10.25 (experimental, `SWOFTY_BOX_UI=1`):
+
+- **[Box UI textures](./box-ui)** `swofty/systems/content.hpp`: `content::package_ui`, a box's own UI textures swapped into ui_package archives while the box is pressed.
 
 Described on their pages, in headers that come later:
 

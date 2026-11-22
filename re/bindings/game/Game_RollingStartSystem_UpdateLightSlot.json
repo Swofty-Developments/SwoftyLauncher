@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f0ff20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142f0ff20.c;xref:0x142f0fbd9,0x142f0fe75",
-  "notes": "Per-light-slot update (slot = param_2 and 0xff, record stride 0x28, enable flag +0x95) of the start-light sequence: uses Sess_Get_PlayerVehicleIndex and signals via Ne_Event_Set. Called by Game_RollingStartSystem_UpdateLights. Addon: where rolling-start/grid lights change state."
+  "notes": "(sys, v): if slot v (+0x80+v*0x28) is enabled (+0x95), thunk 0x1519eb350(+0x38, v, 0, 1) for each local player owning v; if v is a local player's vehicle queues bus message vt 0x145800f18; always queues vt 0x145800f28 {v} on [0x14618b3b8]+8 (CS +0x98, Ne_Event_Set +0x88); resets the slot (+0x80 0, +0x88 5.0, +0x90 3, +0x95 1, +0x98 -1.0, +0xa0 0). Callers 0x142f0f2a0. No light handling. (lane owner review requested) Better name: Game_RollingStartSystem_EndVehicleRollingStart (bound record keeps its name)."
  },
  "signature": {
   "id": "game.rolling_start_system_update_light_slot",

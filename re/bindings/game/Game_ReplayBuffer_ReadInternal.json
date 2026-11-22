@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1445c5e30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=ReplayBuffer::readInternal; log channel REPLAYBUFFER: 'ReplayBuffer::readInternal failed to read data from paged buffer.'"
+  "evidence": "decomp:re/decomp/1445c5e30.c;pat:log-message-cxx;xref:0x145befd00,0x145befe90",
+  "notes": "ReplayBuffer vtable slot (cells 0x145befd00/0x145befe90), judged by disassembly (decomp merges tail target 0x1445c5d30). (dst, size, flags): decompressed mode (+0x51 && +0x12): memcpy from buffer +0x58 at cursor +0x68 bounded by +0x70, else 0x22. Paged: if page offset+size fits page size-8 tail-jmp 0x1445c5d30; else reads to page end, the 8-byte page trailer, then tail-jmps for the rest; logs 'failed to read data from paged buffer.' (lane owner review requested)"
  },
  "signature": {
   "id": "game.replay_buffer_read_internal",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140767160",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=ElasticSearchReporterModule::report_MultiplayerLaunch; log channel TELEMETRY: 'ElasticSearchReporterModule::report_MultiplayerLaunch(numConnections=%d)'"
+  "evidence": "decomp:re/decomp/140767160.c;pat:log-message-cxx;xref:0x14870e61d,0x148712618",
+  "notes": "report_MultiplayerLaunch(module): builds 'mp_launch' (0x1c8, 0x1404e5740) and 'mp_launch_friends' (0x88, 0x1404e3aa0) events: lobby options from [[+0x209d8]+0x418]+0x4d0..+0x580 (names like 'off'/'unrestricted'/'manual'), per-connection 0x60 records (+0x50/+0x54/+0x58), friend counts; numConnections +0xac; logs TELEMETRY 'report_MultiplayerLaunch(numConnections=%d)'; both sent via 0x14077bb90 + rings. Callers 0x14870e5e0, 0x1487125d0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.elastic_search_reporter_module_report_multiplayer_launch",

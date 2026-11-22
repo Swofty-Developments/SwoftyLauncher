@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14445aea0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "int Game_PhysicsUpdateStage_Update(void *stage, void *time_step_info)",
-  "evidence": "doc:re/db/subsystems/game.md",
-  "notes": "PhysicsUpdateStage vtable 0x145a8f910 slot 10 (entry 0x145a8f960): per frame W+0xb0; per physics step (accumulator s+0x30, step s+0x24, max s+0x38, Denuvo-initialised): CS world+0x60, W+0xb8 Car_Physics_PreAdvance, NePhysicsWorld_Step 0x1440c7970, W+0xc0 push chassis to rigid body 0x144642660, pumps, W+0xc8 Car_Physics_AdvanceStages 0x144642760 ('Car advanceStage'); after steps W+0xd0 phase 6 interpolation 0x1446429f0, W+0xd8 Car_Physics_PostVehicleUpdate 0x144642ab0 ('postPhysicsVehicleUpdate'). Variable-step, multi-threaded, not deterministic (agent tick, tr-verify claims 3, 5)"
+  "evidence": "decomp:re/decomp/14445aea0.c;doc:re/db/subsystems/game.md;xref:0x145a8f960",
+  "notes": "vt 0x145a8f910 slot 10. W=[this+0x10]: W+0xb0 callbacks per frame; accumulator this+0x30 += dt, step this+0x20, substep cap this+0x24, max steps this+0x38 (2 when behind); per step: W+0xb8 (skipped when this+0x60 unless entry flag), Ne_PhysUpdateStage_RunSubsteps 0x1440c7970, W+0xc0, Ne_PhysWorld_AdvanceStepState 0x1440c7ae0, Ne_PhysUpdateStage_FinishStepNotifyBodies 0x1440c7d70, W+0xc8; after: alpha this+0x70, 0x1440c7e10 + W+0xd0, W+0xd8. (lane owner review requested)"
  },
  "signature": {
   "id": "game.physics_update_stage_update",

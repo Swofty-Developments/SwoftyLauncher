@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d4e8c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-GARAGE",
-  "notes": "named from its log messages (channel GARAGE): '%s: sending MessageVehicleStatusChange: %s'"
+  "evidence": "decomp:re/decomp/142d4e8c0.c;pat:log-channel-GARAGE;xref:0x1457e4c50",
+  "notes": "Restart path (vtable cell 0x1457e4c50): resets timing state +0xdb0 (0x142cf2c80), session +0xdb8 (0x142cd5bb0), posts msg vt 0x1457e6e00, per vehicle posts MessageVehicleStatusChange (vt 0x14565bb68) logged '%s'='restartResultsStatus', CrowdSystem limitCrowdExcitement (0x1413ee2d0), 0x1430f2f40 outside session types 9/0xe. Old name came from the GARAGE log line only. (lane owner review requested) Better name: Game_Game_RestartResultsStatus (bound record keeps its name)."
  },
  "signature": {
   "id": "game.garage_send_vehicle_status_change",

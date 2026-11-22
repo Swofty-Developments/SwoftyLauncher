@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140ff3cc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-ONLINE_CONTRACT_NEGOTIATIONS",
-  "notes": "named from its log messages (channel ONLINE_CONTRACT_NEGOTIATIONS): 'Approach failed'"
+  "evidence": "decomp:re/decomp/140ff3cc0.c;pat:log-channel-ONLINE_CONTRACT_NEGOTIATIONS;xref:0x140ff1707,0x140ff55c3",
+  "notes": "Logs 'Approach failed'; packs driver id (msg+0x10/+0x12) and team id (msg+0x14/+0x16) as 14-bit id + 2-bit kind, sends type 1 via 0x140ff6be0 (not 0x140ff1380). Bound in 0x140ff1480, unbound in 0x140ff5560. (lane owner review requested)"
  },
  "signature": {
   "id": "career.online_negotiations_on_approach_failed",

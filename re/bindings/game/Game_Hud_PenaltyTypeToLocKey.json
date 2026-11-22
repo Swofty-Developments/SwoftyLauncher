@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a4fc80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142a4fc80.c;xref:0x142a4ef5d",
-  "notes": "Maps penalty/infringement type to HUD string keys: safety_rating_* and penalty_* for drive_through, stop_go, grid, reminder, time, warning, disqualified, removed_from_formation_lap, parked_too_long_timer, tyre_regulations, plus tt_lap_invalid, tt_this_next_lap_invalid, tt_this_previous_lap_invalid, penalty_speed_limit ('<INVALID>' default). Callers Game_Hud_BuildInfringementMessage (0x142a4ef5d), Game_Hud_QueueMessage. Addon-relevant: penalty type names."
+  "evidence": "decomp:re/decomp/142a4fc80.c;xref:0x142a4ef5d,0x142a50195,0x14d9c4732",
+  "notes": "(hud, type, out) -> 0, or 0x16 when hidden (+0x38+0xd1). Switch type 0..0x12: penalty_* or safety_rating_* key (+0x58: +0x388/+1000), tt_lap_invalid, tt_this_next/previous_lap_invalid, penalty_speed_limit; 0x11 -> 'penalty_black_flag_timer'; default '<INVALID>'. Key written to out+0x18. (lane owner review requested)"
  },
  "signature": {
   "id": "game.hud_penalty_type_to_loc_key",

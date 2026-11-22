@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141784ea0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-PAGINATION",
-  "notes": "named from its log messages (channel PAGINATION): 'Evicted %u items from the cache'"
+  "evidence": "decomp:re/decomp/141784ea0.c;pat:log-channel-PAGINATION;xref:0x14570ace8",
+  "notes": "Vtable slot (cell 0x14570ace8). Under lock +0x50 walks the cached item map (rb-tree head +0xd0, size +0xd8), erases every item whose index (+0x20) is outside the view span param_2 {start, len}, destroys item data (0x1417d0760) and frees the node (allocator +0xc8 vcall +0x38); logs 'Evicted %u items from the cache' (PAGINATION). (lane owner review requested) Better name: Game_Pagination_EvictItemsOutsideView (bound record keeps its name)."
  },
  "signature": {
   "id": "game.pagination_evicted_items_cache",

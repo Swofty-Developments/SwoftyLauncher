@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1418df680",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1418df680.c;xref:0x1418db259",
-  "notes": "Evaluates highlight 'tile_set_index' for a UI tile (state +0xbe8, +0x58; default table 0x146ca0e90, Ne_Resource_Release). Callers 0x1418db060, 0x1418df830, Game_UI_HighlightingTileSetIndex."
+  "evidence": "decomp:re/decomp/1418df680.c;xref:0x1418db259,0x1418db540,0x1418df84c,0x1418dfdfb,0x1418dfe4a,0x1418dfed3,0x1418dffdc,0x1418e02a3,0x141d1e7cb,0x141d1ed32,0x141d20e62",
+  "notes": "(tile): walks the node chain from [tile+0xbe8]+8 upward (at most 0x62 steps), builds a lookup on the resulting node (0x1442bba60) and reads property 'tile_set_index' (0x1457160b4) via 0x144252eb0; returns its u32 when the value type matches 0x146129d40, else -1. Releases the temporary handle (0x1442b3d70). (lane owner review requested) Better name: Game_UI_GetTileSetIndex (bound record keeps its name)."
  },
  "signature": {
   "id": "game.u_i_tile_set_index_evaluate",

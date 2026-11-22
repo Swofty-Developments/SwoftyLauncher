@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141bf0f40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141bf0f40.c;xref:0x141c484d6,0x141dafe63",
-  "notes": "(ctx, char *state) For UI node ctx+8 (not the null node 0x146068ab0, flag +0x26 bit0 clear) of the expected type (0x146129dc0): compares its current state char (vcall +0x38) with *state and applies change (0x1442bc5b0 / 0x1442bc390 / 0x1442bc760). Callers Sess_ViewInstantReplay_Update, ViewTerminalReplay, TeamHqLaptopVM, OptionsUI hidden-ignore. Hypothesis: UI layer visibility toggle."
+  "evidence": "decomp:re/decomp/141bf0f40.c;xref:0x141c484d6,0x141dafe63,0x142da2c85,0x142da6b66",
+  "notes": "Read in full (ctx, char *value): node = ctx+8 (not null, not the null node [0x146068ab0], flag +0x26 bit0 clear, valid via vcall +0x20) whose value type equals type 0x146129dc0; if the current value (value vcall +0x38) differs from *value: optional 0x1442bc5b0 (flag +0x60 bit1), snapshot of the old value, set via vcall +0x40 (float-type 0x146129be0 path with 0x1453484a0 check), optional 0x1442bc390, change notification 0x1442bc760 (event 0x14565f3d0). Returns 1 on change. Callers 0x141c47b70, 0x141dae7f0, 0x142da2760, 0x142da6680. Renamed: a generic bool-property setter, the hidden-state use comes from callers. (lane owner review requested) Better name: Game_UiBinding_SetBoolValue (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ui_input_set_hidden_state",

@@ -454,7 +454,15 @@ fn a_store_with_no_generation_maps_the_launcher_save_file_once() {
         path: &path,
         snapshot: Some("20261120-snap"),
     };
-    let lines = prepare_play(&d, "p", true, &aliases(), 9000, Some(save));
+    let lines = prepare_play(
+        &d,
+        "p",
+        true,
+        crate::install::Source::Steam,
+        &aliases(),
+        9000,
+        Some(save),
+    );
     assert_eq!(
         lines,
         [
@@ -485,12 +493,34 @@ fn a_store_with_no_generation_maps_the_launcher_save_file_once() {
     let root = crate::saves::plain::root_of_profile(&d, "p");
     assert!(root.join("remap-checked.json").is_file());
     let bytes = std::fs::read(&path).unwrap();
-    assert!(prepare_play(&d, "p", true, &aliases(), 9001, Some(save)).is_empty());
+    assert!(
+        prepare_play(
+            &d,
+            "p",
+            true,
+            crate::install::Source::Steam,
+            &aliases(),
+            9001,
+            Some(save)
+        )
+        .is_empty()
+    );
     assert_eq!(std::fs::read(&path).unwrap(), bytes);
 
     let plain = Plain::at(root);
     put_generation(&plain, 1, &old_parts(), Event::Save, 9500);
-    assert!(prepare_play(&d, "p", true, &aliases(), 9600, Some(save)).is_empty());
+    assert!(
+        prepare_play(
+            &d,
+            "p",
+            true,
+            crate::install::Source::Steam,
+            &aliases(),
+            9600,
+            Some(save)
+        )
+        .is_empty()
+    );
     assert_eq!(std::fs::read(&path).unwrap(), bytes);
     std::fs::remove_dir_all(&d).ok();
 }
@@ -505,7 +535,15 @@ fn a_save_the_game_outran_the_store_maps_the_file_and_marks_the_store() {
         path: &path,
         snapshot: None,
     };
-    let lines = prepare_play(&d, "p", true, &aliases(), 9000, Some(save));
+    let lines = prepare_play(
+        &d,
+        "p",
+        true,
+        crate::install::Source::Steam,
+        &aliases(),
+        9000,
+        Some(save),
+    );
     assert!(lines[0].starts_with(
         "[saves] careers in plain generation 5 hold earlier row ids but the game saved after it"
     ));
@@ -516,7 +554,18 @@ fn a_save_the_game_outran_the_store_maps_the_file_and_marks_the_store() {
     );
     assert_eq!(plain.current(), Some(5));
     assert!(plain.already_checked(5, &IdMaps::from_aliases(&aliases())));
-    assert!(prepare_play(&d, "p", true, &aliases(), 9001, Some(save)).is_empty());
+    assert!(
+        prepare_play(
+            &d,
+            "p",
+            true,
+            crate::install::Source::Steam,
+            &aliases(),
+            9001,
+            Some(save)
+        )
+        .is_empty()
+    );
     std::fs::remove_dir_all(&d).ok();
 }
 
@@ -528,14 +577,30 @@ fn an_unreadable_file_is_left_alone_and_tried_again() {
         path: &path,
         snapshot: None,
     };
-    let lines = prepare_play(&d, "p", true, &aliases(), 9000, Some(save));
+    let lines = prepare_play(
+        &d,
+        "p",
+        true,
+        crate::install::Source::Steam,
+        &aliases(),
+        9000,
+        Some(save),
+    );
     assert!(lines[1].starts_with("[saves] launcher save file left alone: "));
     assert!(
         !crate::saves::plain::root_of_profile(&d, "p")
             .join("remap-checked.json")
             .exists()
     );
-    let none = prepare_play(&d, "p", true, &aliases(), 9000, None);
+    let none = prepare_play(
+        &d,
+        "p",
+        true,
+        crate::install::Source::Steam,
+        &aliases(),
+        9000,
+        None,
+    );
     assert_eq!(
         none,
         ["[saves] the plain store has no generation yet; not mapped"]
@@ -560,7 +625,15 @@ fn a_save_file_with_this_builds_ids_is_not_written() {
         path: &path,
         snapshot: None,
     };
-    let lines = prepare_play(&d, "p", true, &aliases(), 9000, Some(save));
+    let lines = prepare_play(
+        &d,
+        "p",
+        true,
+        crate::install::Source::Steam,
+        &aliases(),
+        9000,
+        Some(save),
+    );
     assert!(lines.last().unwrap().contains("left alone"));
     assert_eq!(std::fs::read(&path).unwrap(), bytes);
     assert!(

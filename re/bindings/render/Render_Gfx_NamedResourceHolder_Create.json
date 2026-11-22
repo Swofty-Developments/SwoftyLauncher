@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143bfc180",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143bfc180.c;xref:0x143bfc094,0x14f953c3e",
-  "notes": "Allocates a 0x70-byte holder (allocator vcall +0x18, vtable 0x1458c2000) and stores the resource name as a small string (Ne_String_Reserve + Ne_Get_CStrLen, copy). Caller Render_Gfx_AllocAndTrackResource. Hypothesis."
+  "evidence": "decomp:re/decomp/143bfc180.c;xref:0x143bfc094",
+  "notes": "Allocates a 0x70-byte holder (allocator vcall +0x18, vtable 0x1458c2000), stores param_3, refs the shared pair param_4 (+0x18/+0x20), copies the name param_5+0x10 into a small string at +0x28 (Ne_String_Reserve), stores *param_6/param_7; returns {holder, 0x28-byte control block vtable 0x145a395e0, allocator 0x146129c00}. Caller Render_Gfx_AllocAndTrackResource 0x143bfc094. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx_named_resource_holder_create",

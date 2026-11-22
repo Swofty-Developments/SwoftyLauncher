@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14370e5b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=SetUIPreloadStateFlowSubTask::currentStateChangeDone; log channel FLOW/V: 'TEMP_LOG: SetUIPreloadStateFlowSubTask::currentStateChangeDone() STATUS:%d IS_CHANGING:%hs FLOWSTATE:%d'"
+  "evidence": "decomp:re/decomp/14370e5b0.c;pat:log-message-cxx;xref:0x14370e663,0x15115dd60,0x15116c84f",
+  "notes": "Logs FLOW/V \"TEMP_LOG: SetUIPreloadStateFlowSubTask::currentStateChangeDone() STATUS:%d IS_CHANGING:%hs FLOWSTATE:%d\"; if the flow [+0x60] has no pending changes (+0x58 == +0x60) calls 0x143855af0(flow, state +0x68, callback 0x14370e6b0), else re-queues itself into flow+0x70 (0x142dcf3c0). Referenced by lea at 0x14370e663 (itself), 0x15115dd60, 0x15116c84f. (lane owner review requested)"
  },
  "signature": {
   "id": "game.set_ui_preload_state_flow_sub_task_current_state_change_done",

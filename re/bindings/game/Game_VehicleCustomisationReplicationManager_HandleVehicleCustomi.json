@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143145060",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VehicleCustomisationReplicationManager::handleVehicleCustomisationIdAllocated; log channel NETWORK-ENTRANTS: 'void network::VehicleCustomisationReplicationManager::handleVehicleCustomisationIdAllocated(neon::NeNetMessage &, neon::NeNetConnectionID) | %s : VehicleSCustomisationIdAllocatedNetMessage recieved fr'"
+  "evidence": "decomp:re/decomp/143145060.c;pat:log-message-cxx;xref:0x14313f17d",
+  "notes": "Read in full: logs 'VehicleSCustomisationIdAllocatedNetMessage recieved from connection id'; if [this+0x10]+8 > 1 and the local machine id (vcall +0x10) equals param_3: looks up the standard-slot customisation, replaces it (0x1431400c0), sends (0x143141520) and flushes (0x14313f270); this tail is shared with sendUpdatedVehicleCustomisationInfo. Registered by lea 0x14313f17d in 0x14313f030. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_customisation_replication_manager_handle_vehicle_customi",

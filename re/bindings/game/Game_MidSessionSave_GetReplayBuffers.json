@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142fe06e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-MidSessionDataSaveDataContainer",
-  "notes": "named from its log messages (channel MidSessionDataSaveDataContainer): 'Failed to get full replay and/or key frame buffer | Failed - replay system not yet initalised'"
+  "evidence": "decomp:re/decomp/142fe06e0.c;pat:log-channel-MidSessionDataSaveDataContainer;xref:0x14111eafd,0x142c13b56,0x1458008d0",
+  "notes": "Virtual of MidSessionDataSaveDataContainer (cell 0x1458008d0; calls 0x14111eafd, 0x142c13b56). No replay system +0x218 -> 'Failed - replay system not yet initalised', 0x58. Pauses it (0x1445d5c40), writes 'jump_in_time', 'instant_replay_rewind_bound_time', 'streams' (per stream 'stream_name', 'full_buffer', 'key_buffer' via 0x142fdf180; 'Failed to get full replay and/or key frame buffer'), resumes, then 'session_guid'. It writes, not gets: renamed. (lane owner review requested) Better name: Game_MidSessionSave_WriteReplayState (bound record keeps its name)."
  },
  "signature": {
   "id": "game.mid_session_save_get_replay_buffers",

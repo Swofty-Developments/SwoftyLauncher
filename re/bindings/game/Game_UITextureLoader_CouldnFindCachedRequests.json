@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1441e2910",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-UI_TEXTURE_LOADER",
-  "notes": "named from its log messages (channel UI_TEXTURE_LOADER): 'couldn't it find in cached requests: %s.%s'"
+  "evidence": "decomp:re/decomp/1441e2910.c;pat:log-channel-UI_TEXTURE_LOADER;xref:0x1532e5d36,0x1532eec11",
+  "notes": "(loader, &name, &ext) -> bool: scans the cached request vector loader+0x18..+0x20 (stride 0x30) for an entry whose two interned strings (+8, +0x10) equal name and ext (pointer, hash +6 & 0xfffff, then 0x14535d850 compare); found -> erases it (shifts the tail down, ref counts moved, last slot released) and returns true; else logs UI_TEXTURE_LOADER 'couldn't it find in cached requests: %s.%s' and returns false. Callers 0x1532e5d36, 0x1532eec11. (lane owner review requested) Better name: Game_UITextureLoader_RemoveCachedRequest (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ui_texture_loader_couldn_find_cached_requests",

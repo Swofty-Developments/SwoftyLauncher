@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143242590",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=VehicleMechanicalManager::onMessageDriverPlayerChanged; log channel NETWORK-MECHANICAL: 'neon::NeDispatchAction network::VehicleMechanicalManager::onMessageDriverPlayerChanged(neon::NeMessage &) | %s: locality is now %s.'"
+  "evidence": "decomp:re/decomp/143242590.c;pat:log-message-cxx;xref:0x1432422cc,0x1432e1aa3",
+  "notes": "Read in full: logs vehicleId msg+0x10; when id != 0xff, compares msg+0x12 (is local) with the stored local flag (+0x230+id*0x108, ids < 0x1b) and on change calls setVehicle 0x14323ca40(this, id) and logs 'locality is now LOCAL/REMOTE'. Registered by lea at 0x1432422cc (in 0x143241e50) and 0x1432e1aa3 (in 0x1432e1a70). (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_mechanical_manager_on_message_driver_player_changed",

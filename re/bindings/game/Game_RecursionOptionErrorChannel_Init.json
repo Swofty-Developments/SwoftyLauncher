@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140d325d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140d325d0.c;xref:0x140be9c8e",
-  "notes": "Static-local init (guard 0x14605abc8): allocates a 0xa0-byte reporter (hashed name 'recursion_option_error', vtable 0x14568b310, critical section) and stores globals 0x14605abb8/0x14605abc0. Caller Sess_WeekendOptions_OnRaceLengthChanged."
+  "notes": "Allocates 0xa0/align 0x10 via allocator vt+0x18; +8 = Ne_Hash_Djb2Xor(recursion_option_error), +0x10/+0x30 = param_2, final vtable 0x14568b310 (temp 0x14568b380), InitializeCriticalSection at +0x78; allocator -> 0x14605abb8, object -> 0x14605abc0. Caller Sess_WeekendOptions_OnRaceLengthChanged. (lane owner review requested)"
  },
  "signature": {
   "id": "game.recursion_option_error_channel_init",

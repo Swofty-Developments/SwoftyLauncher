@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430af1a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-UI",
-  "notes": "named from its log messages (channel NETWORK-UI): 'network error, cable unplugged!'"
+  "evidence": "decomp:re/decomp/1430af1a0.c;pat:log-channel-NETWORK-UI;xref:0x1430ad55c,0x1430ae3fb,0x1430af7ef,0x1430afeac",
+  "notes": "Checks connectivity; if offline sets 'error_failed' and shows 'network_cable_disconnected' or 'network_lost_connection_to_online_service' (0x143062630), logging 'network error, cable unplugged!' / 'not online!'; result used by callers like 0x1430af6f0. (lane owner review requested) Better name: Game_NetworkUi_CheckNetworkErrorPopup (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_ui_network_cable_unplugged",

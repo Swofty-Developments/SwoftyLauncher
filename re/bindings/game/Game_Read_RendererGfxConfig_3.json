@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1443cc250",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: Renderer.Gfx.SSGI, Renderer.Gfx.WIN.uploadHeapSize, Renderer.Gfx.clearColour, Renderer.Gfx.d3DDebugMuteFilters, Renderer.Gfx.d3dDebugBreakOnCorruption, Renderer.Gfx.d3dDebugBreakOnError, Renderer.Gfx.d3dDebugBreakOnInfo, Renderer.Gfx.d3dDebugBreakOnMessage, Renderer.Gfx.'"
+  "evidence": "decomp:re/decomp/1443cc250.c;pat:log-channel--;xref:0x1443c088d;pat:disasm-0x1443cd291",
+  "notes": "Allocator EGO_WINDOW->+0x20, 0x8b8 window (0x1439ef7f0)->+0x28; creation descriptor from Window.* (HeadlessFrameRateLimit->+0x30, displayMode, width, height) and Renderer.Gfx.* (HDR, VRS, async compute, reflex, D3D debug/validation, -enable/-disable-gpu-debugging, mute filters, hintMax*, upload heap, SSGI->0x146c3aec6, linearUI->0x146c62080), Steam Deck flag; window vt+8 creates it; +8 cb 0x1443d9a50. (lane owner review requested) Better name: Game_Window_CreateFromSettings (bound record keeps its name).  | 2026-11-20 engine-re (track ERP size limits): Renderer.Gfx.WIN.uploadHeapSize default 0x4b00000 = 75 MiB (mov r9d at 0x1443cd298, read 0x1443cd29e): D3D12 upload heap size, settings key."
  },
  "signature": {
   "id": "game.read_renderer_gfx_config_3",
@@ -45,6 +45,16 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/1443cc250.c;xref:0x1443c088d",
    "notes": "V6592 size=9565; strings, callees and callers match claim"
+  },
+  {
+   "date": "2026-11-20",
+   "verifier": "size-verify",
+   "kind": "func",
+   "item": "0x1443cc250",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "pat:disasm-0x1443cc250;xref:0x1443cd291,0x1443cd298,0x1443cd29e,str:0x145a8876c",
+   "notes": "V12106 Confirmed: inside 0x1443cc250 lea rdx->'Renderer.Gfx.WIN.uploadHeapSize' (0x145a8876c), r8=&[rsp+0x12c], r9d=0x4b00000 default at 0x1443cd298, call config getter 0x143a43240 (same getter as ErpLoader.* settings)."
   }
  ],
  "proofs": []

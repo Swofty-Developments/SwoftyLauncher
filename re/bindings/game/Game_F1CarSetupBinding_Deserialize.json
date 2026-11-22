@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c0f4a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=F1CarSetupBinding::deserialize; log channel NETWORK: '! F1CarSetupBinding::deserialize() ran out of data reading the custom setup flag'"
+  "evidence": "decomp:re/decomp/140c0f4a0.c;pat:log-message-cxx;xref:0x140c0f2a6,0x140c101a9",
+  "notes": "Own log strings 'F1CarSetupBinding::deserialize() ran out of data ...'. Reads from bit stream param_2: active setup (5 bits) -> +1, custom-setup flag bit -> +2, then 0x2a options (bit width from table 0x14605a6c8) into +0x1ba8 (or +0x1b00 when +0x1c50==0) plus a frozen ('MEI'/'unfrozen') bit mask at +8. Called from Deserialize 0x140c0eb60 and HandleNetMessage 0x140c0fc80. (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1_car_setup_binding_deserialize",

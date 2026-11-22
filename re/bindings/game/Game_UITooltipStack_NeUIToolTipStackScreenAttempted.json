@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144276860",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-UI_TOOLTIP_STACK",
-  "notes": "named from its log messages (channel UI_TOOLTIP_STACK): 'The NeUIToolTipStack[% hs] on the screen[% hs] attempted to unregister.'"
+  "evidence": "decomp:re/decomp/144276860.c;pat:log-channel-UI_TOOLTIP_STACK;xref:0x144276a62,0x144276b20,0x144276ba0,0x144276c20,0x153857d34,0x1538586e3",
+  "notes": "Real body ends at 0x1442769c7 (decomp merges tail 0x1441e39e0): logs UI_TOOLTIP_STACK 'attempted to unregister' (own name vt+0x18, screen = parent of type 0x43534955), unlinks itself from the list [this+0x58]+0x20, vt+0xd0(0, 0), this+0x50 = 0, tail-jumps 0x1441e39e0 (refresh). Callers 0x144276a62, 0x144276b20, 0x144276ba0, 0x144276c20, 0x153857d34, 0x1538586e3. (lane owner review requested) Better name: Game_UITooltipStack_Unregister (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ui_tooltip_stack_ne_ui_tool_tip_stack_screen_attempted",

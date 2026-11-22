@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1414333d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1414333d0.c;xref:0x141432e6f",
-  "notes": "Vector range insert (16-byte elements) with growth logic into the decal vector (this+8..+0x18) from [param_4,param_5). Callers 0x141432ca0, Game_DecalCustomisation_DeleteAllFiles."
+  "evidence": "decomp:re/decomp/1414333d0.c;xref:0x141432e6f,0x14143441a",
+  "notes": "vector<shared_ptr<T>> range insert: vector {allocator p1[0], begin p1[1], end p1[2], cap p1[3]}, inserts copies of [p4,p5) (strong count +8 incremented) before position p3; reallocates with max(1.5x cap, needed) when full (moves old elements, releases them, frees old block via vt+0x38), else shifts the tail in place; returns the iterator to the first inserted element in *p2. (lane owner review requested)"
  },
  "signature": {
   "id": "game.customisation_decals_insert_range",

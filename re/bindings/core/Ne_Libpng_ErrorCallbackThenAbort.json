@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1447a04f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1447a04f0.c;xref:0x142bd4bfc",
-  "notes": "Tiny forwarder: calls 1447a0530 with a field at +0x118 and param_2. Hypothesis: png/zlib stream helper; 146 callers (image codec code and 0x142bd4bfc). vq1-verify partial/disagree"
+  "evidence": "decomp:re/decomp/1447a04f0.c;xref:0x142bd4bfc,0x14390ef1d,0x14390ef2c,0x14390f1a2,0x143910692",
+  "notes": "png_error shape: (png_ptr, msg): if png_ptr and error_fn [png_ptr+0x118] set, calls it(png_ptr, msg); then default error 0x1447a0530(png_ptr, msg); then int3 (no return). 146 sites incl. Ne_Libpng_CheckIhdr."
  },
  "signature": {
   "id": "core.libpng_forward_with_field118",

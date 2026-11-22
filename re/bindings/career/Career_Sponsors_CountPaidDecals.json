@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141104190",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "doc:re/research/sponsors.md#career-sponsors",
-  "notes": "Weekly per-decal income count (career.my_team_sponsors.weekly_income_per_decal_thresholds). Branch A (no per-decal data) sums 0x141103de0 = unlocked slots per area at renown minus reserved; branch B counts saved livery nodes (cust+0xe8..+0xf0, 16-byte entries) minus reserved per area. Not sponsor-specific: every placed decal pays, reserved (title) slots do not. Site 0x141104491 (rsi = count, r15 = livery)."
+  "evidence": "decomp:re/decomp/141104190.c;doc:re/research/sponsors.md#career-sponsors;xref:0x141108f4a,0x141111f4f,0x141ff887f,0x141ffc4a8,0x141ffe4b6,0x141ffeb7f",
+  "notes": "For team param_2 finds its entrant customisation (0x14246dcb0 on c+0x358). Branch A: per area of the [c+0x370] list sums 0x141103de0 slots minus reserved ([entry+0x30]+8), floored at 0. Branch B (livery data present): (cust+0xf0 - cust+0xe8)/0x10 nodes, minus reserved per area unless an active title record (+0xd8==0, +0x158) matches cust+0x78. Weekly-income use is from the doc only. (lane owner review requested)"
  },
  "signature": {
   "id": "career.sponsors_count_paid_decals",

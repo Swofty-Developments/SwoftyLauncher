@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143bfc330",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143bfc330.c;xref:0x143eb9512",
-  "notes": "Debug dump of streaming priority/density/deficit per texture ('[Priority %3.3f] Density [%3.3f] Deficit [%3.3f] ... Mips %d to %d', TEXTURE_STREAM_REMOVE_COMMANDS). Addon: texture streaming budget tuning. Named callers: Game_TextureStreaming_AdjustQualityFactor."
+  "notes": "Walks priority list +0x148..+0x150 from the end while budget allows; for entries over budget computes how many mips to drop (+0x39), logs 'Priority/Density/Deficit ... Mips %d to %d' and issues a remove command (0x143ed57b0 into +0x370); entries with 0 drop are erased. (lane owner review requested) Better name: Game_TextureStreaming_ScheduleMipRemovals (bound record keeps its name)."
  },
  "signature": {
   "id": "game.texture_streaming_log_priorities",

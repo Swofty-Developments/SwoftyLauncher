@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140d958b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "-",
-  "evidence": "pat:log-channel-CONTRACT_RENEWAL",
-  "notes": "named from its log messages (channel CONTRACT_RENEWAL): 'Driver Retired. Team : %s - Driver %s ' CORRECTION(V9082): 85KB function: has Driver Retired but also CONTRACT_RENEWAL_ADVANCED approach simulation strings (Team has no seats, Simulate approaches, Team officialy approached), i.e. retire plus inlined approach simulation; name covers only part."
+  "evidence": "decomp:re/decomp/140d958b0.c;pat:log-channel-CONTRACT_RENEWAL;xref:0x145690b50",
+  "notes": "Vtable method of the contract-renewal component (only ref: vtable cell 0x145690b50). Works on day index ([comp+0x2a0]+0x2b0>>5)/0x2d: retirement pass (log 'Driver Retired'), reserve-driver swaps via 0x140d94140 (2 calls), driver record moves (0x140d89370/89550/89740), then an inlined copy of the approach simulation of 0x140d99210 (CONTRACT_RENEWAL_ADVANCED logs, 0x140d9a7b0, 0x140d9dac0). (lane owner review requested) Better name: Career_ContractRenewal_UpdateForDay (bound record keeps its name)."
  },
  "signature": {
   "id": "career.contract_renewal_retire_driver",

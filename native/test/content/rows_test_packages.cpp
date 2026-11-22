@@ -401,6 +401,189 @@ void garage_tests()
           "garage art stays fenced off unless SWOFTY_GARAGE_ART is exactly 1");
 }
 
+void sponsors_tests()
+{
+    std::map<std::string, std::string> db = {
+        {std::string(content::VEHICLES) + "[_metadata_=f50_alfa].vehicle_package", "f1_1950_alfa"},
+        {std::string(content::VEHICLES) + "[_metadata_=f50_ferrari].vehicle_package", "f1_1950_ferrari"},
+        {std::string(content::VEHICLES) + "[_metadata_=renault_2025].vehicle_package", "f1_2025_renault"},
+        {std::string(content::PACKAGES) + "[_metadata_=f1_1950_alfa].resource_path",
+         "f1_1950_vehicle_package/teams/alfa/wep/alfa"},
+        {std::string(content::PACKAGES) + "[_metadata_=f1_1950_ferrari].resource_path",
+         "f1_1950_vehicle_package/teams/ferrari/wep/ferrari"},
+        {std::string(content::PACKAGES) + "[_metadata_=f1_2025_renault].resource_path",
+         "f1_2025_vehicle_package/teams/renault/wep/renault"},
+    };
+    content::Read read = [&](const std::string &p) -> std::optional<std::string> {
+        auto it = db.find(p);
+        return it == db.end() ? std::nullopt : std::optional<std::string>(it->second);
+    };
+    auto team = [](const char *key, const char *vehicle) { return Value::object({{"key", key}, {"vehicle", vehicle}}); };
+    std::map<std::string, Value> recs = {
+        {"vehicle|mod.s/alfa", Value::object({{"label", "f50_alfa"}})},
+        {"vehicle|mod.s/ferrari", Value::object({{"label", "f50_ferrari"}})},
+        {"vehicle|mod.b/renault", Value::object({{"label", "renault_2025"}})},
+        {"content.package|mod.s/f1_1950",
+         Value::object({{"teams", Value::array({team("alfa", "mod.s/alfa"), team("ferrari", "mod.s/ferrari"),
+                                                team("alfa_b", "mod.s/alfa")})}})},
+        {"content.package|mod.b/f1_2025", Value::object({{"teams", Value::array({team("renault", "mod.b/renault")})}})},
+        {"content.package|mod.s/empty", Value::object({{"teams", Value::array()}})}};
+    content::Lookup lookup = [&](const std::string &reg, const std::string &id) -> const Value * {
+        auto it = recs.find(reg + "|" + id);
+        return it == recs.end() ? nullptr : &it->second;
+    };
+    auto lower = [&](const char *json) {
+        content::Plan plan;
+        Value rec = swofty::json::parse(json);
+        content::lower_sponsors("mod.s/boards_1950", rec, lookup, read, plan);
+        return plan;
+    };
+
+    content::Plan box = lower(R"j({"package":"mod.s/f1_1950","textures":"sponsors/f1_1950"})j");
+    check(box.garages.size() == 1 && box.garages[0].registry == "track.sponsors" && box.garages[0].groups.size() == 2 &&
+              box.garages[0].groups[0] == "asset_groups/f1_1950_vehicle_package/teams/alfa/wep/alfa.assetgroup" &&
+              box.garages[0].groups[1] == "asset_groups/f1_1950_vehicle_package/teams/ferrari/wep/ferrari.assetgroup",
+          "sponsor boards go to the group of every car of the box, each group once");
+    check(box.garages[0].vehicles.size() == 2, "a car two team entries share is named once");
+    check(box.garages[0].folder == "sponsors/f1_1950/" && box.garages[0].srgb &&
+              box.garages[0].root == "eaid://environment_package/core_assets/shared_textures/sponsors/",
+          "the folder gains a slash and root and srgb take the sponsor defaults");
+    check(box.garages[0].game_path == "2025_asset_groups/swofty_sponsors/mod_s_boards_1950.erp",
+          "the boards archive has a game path of its own per record, apart from the garage art's");
+    content::Plan garage;
+    content::lower_garage("mod.s/g", swofty::json::parse(R"j({"package":"mod.s/f1_1950","entry":"alfa","textures":"g"})j"),
+                          lookup, read, garage);
+    check(garage.garages.size() == 1 && garage.garages[0].registry == "team.garage" &&
+              garage.garages[0].game_path.rfind("2025_asset_groups/swofty_garage/", 0) == 0,
+          "garage art keeps its own registry tag and game path");
+    bool leaks = false;
+    for (auto &g : box.garages[0].groups)
+        leaks = leaks || g.find("f1_2025") != std::string::npos;
+    check(!leaks, "a box's boards never reach the stock 2025 box's car groups");
+    content::Plan other = lower(R"j({"package":"mod.b/f1_2025","textures":"s","root":"eaid://x/","srgb":false})j");
+    check(other.garages.size() == 1 && other.garages[0].groups.size() == 1 &&
+              other.garages[0].groups[0] == "asset_groups/f1_2025_vehicle_package/teams/renault/wep/renault.assetgroup" &&
+              other.garages[0].root == "eaid://x/" && !other.garages[0].srgb,
+          "another box's boards land on that box's own car groups, with its own root and srgb");
+    for (const char *bad : {R"j({"package":"mod.s/nope","textures":"s"})j", R"j({"package":"mod.s/f1_1950"})j",
+                            R"j({"textures":"s"})j", R"j({"package":"mod.s/empty","textures":"s"})j"}) {
+        content::Plan p = lower(bad);
+        check(p.garages.empty() && p.refused == 1, std::string("refused: ") + bad);
+    }
+    db.erase(std::string(content::VEHICLES) + "[_metadata_=f50_alfa].vehicle_package");
+    content::Plan one = lower(R"j({"package":"mod.s/f1_1950","textures":"s"})j");
+    check(one.garages.size() == 1 && one.garages[0].groups.size() == 1,
+          "a car without a vehicle row is skipped and the box's other cars still take the boards");
+    db.erase(std::string(content::VEHICLES) + "[_metadata_=f50_ferrari].vehicle_package");
+    check(lower(R"j({"package":"mod.s/f1_1950","textures":"s"})j").garages.empty(),
+          "a box none of whose cars has an asset group is refused");
+    check(!content::box_sponsors_enabled(nullptr) && !content::box_sponsors_enabled("") && !content::box_sponsors_enabled("0") &&
+              !content::box_sponsors_enabled("on") && !content::box_sponsors_enabled("11") && content::box_sponsors_enabled("1"),
+          "box sponsor boards stay fenced off unless SWOFTY_BOX_SPONSORS is exactly 1");
+}
+
+void box_assets_tests()
+{
+    std::map<std::string, std::string> db = {
+        {std::string(content::VEHICLES) + "[_metadata_=f50_alfa].vehicle_package", "f1_1950_alfa"},
+        {std::string(content::VEHICLES) + "[_metadata_=f50_ferrari].vehicle_package", "f1_1950_ferrari"},
+        {std::string(content::PACKAGES) + "[_metadata_=f1_1950_alfa].resource_path",
+         "f1_1950_vehicle_package/teams/alfa/wep/alfa"},
+        {std::string(content::PACKAGES) + "[_metadata_=f1_1950_ferrari].resource_path",
+         "f1_1950_vehicle_package/teams/ferrari/wep/ferrari"},
+    };
+    content::Read read = [&](const std::string &p) -> std::optional<std::string> {
+        auto it = db.find(p);
+        return it == db.end() ? std::nullopt : std::optional<std::string>(it->second);
+    };
+    auto team = [](const char *key, const char *vehicle) { return Value::object({{"key", key}, {"vehicle", vehicle}}); };
+    std::map<std::string, Value> recs = {
+        {"vehicle|mod.s/alfa", Value::object({{"label", "f50_alfa"}})},
+        {"vehicle|mod.s/ferrari", Value::object({{"label", "f50_ferrari"}})},
+        {"content.package|mod.s/f1_1950",
+         Value::object({{"teams", Value::array({team("alfa", "mod.s/alfa"), team("ferrari", "mod.s/ferrari"),
+                                                team("alfa_b", "mod.s/alfa")})}})}};
+    content::Lookup lookup = [&](const std::string &reg, const std::string &id) -> const Value * {
+        auto it = recs.find(reg + "|" + id);
+        return it == recs.end() ? nullptr : &it->second;
+    };
+    auto lower = [&](const char *json) {
+        content::Plan plan;
+        content::lower_box_assets("mod.s/kit_1950", swofty::json::parse(json), lookup, read, plan);
+        return plan;
+    };
+
+    content::Plan marshals = lower(R"j({"package":"mod.s/f1_1950","kind":"marshals","textures":"kit/marshals",)j"
+                                   R"j("resources":["eaid://character_package_shared/"]})j");
+    check(marshals.garages.size() == 1 && marshals.garages[0].registry == "content.box_assets" &&
+              marshals.garages[0].kind == "marshals" && marshals.garages[0].groups.size() == 2 &&
+              marshals.garages[0].folder == "kit/marshals/" && marshals.garages[0].root == "eaid://" &&
+              marshals.garages[0].archive.empty() && marshals.garages[0].prefixes.size() == 1,
+          "a marshals folder goes to every car group of the box, its folder mirroring whole eaid names");
+    check(marshals.garages[0].game_path == "2025_asset_groups/swofty_box_assets/mod_s_kit_1950.erp",
+          "a box assets record has a game path of its own, apart from the garage art's and the sponsor boards'");
+
+    content::Plan crowd = lower(R"j({"package":"mod.s/f1_1950","kind":"crowd","archive":"kit/crowd_1950.erp",)j"
+                                R"j("resources":["eaid://character_package_shared/crowd/"]})j");
+    check(crowd.garages.size() == 1 && crowd.garages[0].archive == "kit/crowd_1950.erp" && crowd.garages[0].folder.empty() &&
+              crowd.garages[0].groups.size() == 2,
+          "a ready archive is listed as it is on every car group of the box");
+
+    content::Plan garage = lower(R"j({"package":"mod.s/f1_1950","kind":"garage","entry":"ferrari","textures":"g"})j");
+    check(garage.garages.size() == 1 && garage.garages[0].groups.size() == 1 &&
+              garage.garages[0].groups[0] == "asset_groups/f1_1950_vehicle_package/teams/ferrari/wep/ferrari.assetgroup" &&
+              garage.garages[0].root == "eaid://environment_package/core_assets/objects/textures/",
+          "an entry keeps the archive to that team's cars, and kind garage takes the garage art's root");
+    check(lower(R"j({"package":"mod.s/f1_1950","kind":"sponsors","textures":"s"})j").garages[0].root ==
+              "eaid://environment_package/core_assets/shared_textures/sponsors/",
+          "kind sponsors takes the sponsor boards' root");
+    check(lower(R"j({"package":"mod.s/f1_1950","textures":"s","root":"eaid://x/"})j").garages[0].kind == "other" &&
+              lower(R"j({"package":"mod.s/f1_1950","textures":"s","root":"eaid://x/"})j").garages[0].root == "eaid://x/",
+          "a record without kind is other, and its own root is kept");
+
+    for (const char *bad : {
+             R"j({"kind":"crowd","textures":"s"})j",
+             R"j({"package":"mod.s/nope","textures":"s"})j",
+             R"j({"package":"mod.s/f1_1950","kind":"menus","textures":"s"})j",
+             R"j({"package":"mod.s/f1_1950"})j",
+             R"j({"package":"mod.s/f1_1950","textures":"s","archive":"a.erp","resources":["eaid://x/"]})j",
+             R"j({"package":"mod.s/f1_1950","archive":"a.erp"})j",
+             R"j({"package":"mod.s/f1_1950","archive":"a.bin","resources":["eaid://x/"]})j",
+             R"j({"package":"mod.s/f1_1950","archive":"../a.erp","resources":["eaid://x/"]})j",
+             R"j({"package":"mod.s/f1_1950","archive":"a.erp","resources":["x/"]})j",
+             R"j({"package":"mod.s/f1_1950","entry":"nobody","textures":"s"})j",
+         }) {
+        content::Plan p = lower(bad);
+        check(p.garages.empty() && p.refused == 1, std::string("box assets refused: ") + bad);
+    }
+
+    content::Plan sponsors;
+    content::lower_sponsors("mod.s/boards", swofty::json::parse(R"j({"package":"mod.s/f1_1950","textures":"b"})j"), lookup, read,
+                            sponsors);
+    check(sponsors.garages.size() == 1 && sponsors.garages[0].registry == "track.sponsors" &&
+              sponsors.garages[0].kind == "sponsors" && sponsors.garages[0].groups.size() == 2 &&
+              sponsors.garages[0].game_path == "2025_asset_groups/swofty_sponsors/mod_s_boards.erp",
+          "track.sponsors lowers through the box assets route with kind sponsors and keeps its own game path");
+
+    std::vector<content::BoxArchiveEntry> entries = {
+        {"eaid://character_package_shared/crowd/a/textures/a_d.tif.image", "GfxSurfaceRes", 3},
+        {"eaid://character_package_shared/crowd/a/textures/a_d.tif", "GfxSRVResource", 1},
+        {"eaid://character_package_shared/crowd/a/textures/billboard_d.texarray.image", "GfxSurfaceRes", 2},
+        {"eaid://crowd_package/shared/props/textures/umbrella_d.texarray.image", "GfxSurfaceRes", 2},
+    };
+    content::BoxArchiveCheck in =
+        content::check_box_archive(entries, {"eaid://character_package_shared/crowd/", "eaid://crowd_package/"});
+    check(in.resources == 4 && in.outside == 0 && in.streamed == 1,
+          "an archive inside its prefixes passes and its streamed surfaces are counted");
+    content::BoxArchiveCheck out = content::check_box_archive(entries, {"eaid://character_package_shared/crowd/"});
+    check(out.outside == 1 && out.first_outside == "eaid://crowd_package/shared/props/textures/umbrella_d.texarray.image",
+          "a resource outside the prefixes is found and named");
+    check(content::check_box_archive(entries, {}).outside == 0, "no prefixes allow any name");
+    check(!content::box_assets_enabled(nullptr) && !content::box_assets_enabled("") && !content::box_assets_enabled("0") &&
+              !content::box_assets_enabled("on") && content::box_assets_enabled("1"),
+          "box assets stay fenced off unless SWOFTY_BOX_ASSETS is exactly 1");
+}
+
 void livery_tests()
 {
     std::map<std::string, std::string> db = {

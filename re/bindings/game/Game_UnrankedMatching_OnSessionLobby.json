@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14315e990",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=UnrankedMatching::onSessionLobby; log channel NETWORK-MATCHING: 'virtual void network::UnrankedMatching::onSessionLobby() | %s'"
+  "evidence": "decomp:re/decomp/14315e990.c;pat:log-message-cxx;xref:0x14581de38",
+  "notes": "Read in full: logs 'onSessionLobby()' (NETWORK-MATCHING); rich presence record [this+0x18]: takes the lobby name [..+0x260]+0xe78 when it is not 'DEV', flags 'lng_rp_multiplayer_custom', sets state 2, action 'lng_rp_action_in_the_lobby', 'lng_rp_multiplayer'. In mode 1 sessions: host with +0x765 writes track set name 'AllTracks' (+0x3b0, logs 'MOX/Season: Change TRACK SET NAME to %s'), posts 0x1458234b0 via [+0x458] vcall +0x20; for the current event with session name 'on' (0x14565e69b) computes free slots = max - present players and calls 0x143117bb0. Vtable cell 0x14581de38. (lane owner review requested)"
  },
  "signature": {
   "id": "game.unranked_matching_on_session_lobby",

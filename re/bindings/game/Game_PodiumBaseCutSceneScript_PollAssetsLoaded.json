@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140357ea0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=PodiumBaseCutSceneScript::pollAssetsLoaded; log channel CUTSCENE_PODIUM: 'PodiumBaseCutSceneScript::pollAssetsLoaded | pollAssetsLoaded isWorldPostCreationComplete returned false %p %s'"
+  "evidence": "decomp:re/decomp/140357ea0.c;pat:log-message-cxx;xref:0x1455f74f0",
+  "notes": "pollAssetsLoaded override (vt cell 0x1455f74f0): logs CUTSCENE_PODIUM 'PodiumBaseCutSceneScript::pollAssetsLoaded', returns 1 when Game_CutsceneManager_AreAssetGroupsLoaded 0x14022a110(this[9], this+0x38) and (this+0x538 bit7 clear or this+0x539 bit0 set); else logs CUTSCENE_SCRIPT_VERBOSE 'isWorldPostCreationComplete returned false' and returns 0. Same body as 0x140370340 plus the class log line. (lane owner review requested)"
  },
  "signature": {
   "id": "game.podium_base_cut_scene_script_poll_assets_loaded",

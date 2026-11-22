@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432d2060",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_OnlineSystemEADPAsyncTask_OnStart;xref:0x1432d21df",
-  "notes": "cxx=game::OnlineSystemEADPAsyncTask::onStart; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/1432d2060.c;str:s_OnlineSystemEADPAsyncTask_OnStart;xref:0x1458357f0",
+  "notes": "Logs its pretty name virtual game::OnlineSystemEADPAsyncTask::onStart; fails with eLogicError 'NetworkSubsystem not set!' / 'EADP is not logged in!' (Game_OnlineSubsystemTaskBase_StopTask), else issues the async EADP request with the two finished callbacks. Only reference: vtable cell 0x1458357f0 (next cell Game_OnlineSystemEADPAsyncTask_Update). (lane owner review requested)"
  },
  "signature": {
   "id": "game.online_system_e_a_d_p_async_task_on_start",

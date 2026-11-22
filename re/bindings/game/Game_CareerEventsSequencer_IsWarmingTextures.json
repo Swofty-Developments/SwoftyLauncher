@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c74070",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=CareerEventsSequencer::isWarmingTextures; log channel CUTSCENE_TEXTURE_CONTROL_VERBOSE: '>>>>CareerEventsSequencer::isWarmingTextures FALSE timeout > 30.0f'"
+  "evidence": "decomp:re/decomp/140c74070.c;pat:log-message-cxx;xref:0x1456838c8",
+  "notes": "Whole CareerEventsSequencer::update (vt 0x1456838c8 slot +0x30; name kept for bound record). Steps logged on CareerEventsSequencer_Verbose: loadData/loadIdleEvents, setWorldsToLoad (adds HospUpWorld via 0x14442b4c0 at 0x140c74972), spawn*Events, isWarmingTextures (QPC ratio <1 TRUE, >30 FALSE), playback/camera, fade state switch +0x19c (0x140c7ac60/0x140c7a820 race_day_r_n_d_area, fadeUpIntoHub). (lane owner review requested)"
  },
  "signature": {
   "id": "game.career_events_sequencer_is_warming_textures",

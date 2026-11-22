@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142c2f980",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=F1DataFeedSystem::interpolateRealWorldCarDataFrame; log channel F1-DATA-FEED: 'F1DataFeedSystem::interpolateRealWorldCarDataFrame called, time = %s, fileOffset1 = %I64u, fileOffset2 = %I64u, fract = %f'"
+  "evidence": "decomp:re/decomp/142c2f980.c;pat:log-message-cxx;xref:0x142c1b66d",
+  "notes": "Own log string. Mode 1 of FetchCarDataFrame 0x142c1b630. Finds two stream lines around time (0x142c36820), parses both (0x142c32480), per car (24 x 0xe0) lerps position, heading (2pi wrap), speed (km/h), lap distance; derives gear 1..8 from speed bands and rpm 9000+3000*frac; writes frames at this+0x18b470+i*0xc0 and lap history ring buffers. (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1_data_feed_system_interpolate_real_world_car_data_frame",

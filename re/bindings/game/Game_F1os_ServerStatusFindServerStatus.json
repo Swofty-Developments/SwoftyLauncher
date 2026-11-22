@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14336ed90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-F1OS",
-  "notes": "named from its log messages (channel F1OS): 'Server Status: Failed to find server status message. gameISOLanguage=%s'"
+  "evidence": "decomp:re/decomp/14336ed90.c;pat:log-channel-F1OS;xref:0x14583c660",
+  "notes": "Virtual (vtable cell 0x14583c660): parses the 'ServerStatus' reply ('accessible', 'Message'), logs 'Server Status: m_serverStatus.m_accessible=%d', 'Server set to be NOT accessible' / ' - Server set to be accessible', 'Contacted server: %s (%s)'; missing message -> 'Server Status: Failed to find server status message. gameISOLanguage=%s'. (lane owner review requested) Better name: Game_F1os_ServerStatusTask_HandleResult (bound record keeps its name)."
  },
  "signature": {
   "id": "game.f1os_server_status_find_server_status",

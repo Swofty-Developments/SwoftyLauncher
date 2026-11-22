@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141f10c30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141f10c30.c;xref:0x141f107c5",
-  "notes": "Highlight theatre play: gets selected highlight index (0x141f096b0), picks list table (0x14606b660/0x14606b688 by 0x141f097d0), reads item field +0x188, posts a bus message (vtable 0x14576daf0 via Ne_Post_BusMessage on _DAT_14618b3b8+8) and fires UI triggers 'trigger_play_highlight', 't_loading_screen', 'fade_out_and_exit', '#ui_menu_data.frontend_transition_state', 'theatre_highlights', 'trigger_failed_play_highlight'. Called from Game_VideoExport_StartHighlightExport. Addon: UI trigger names of the highlight theatre."
+  "evidence": "decomp:re/decomp/141f10c30.c;xref:0x141f107c5,0x141f113cf",
+  "notes": "Read in full: selected entry -> slot_id / is_locked pick list table 0x14606b688 or 0x14606b660 (fn table: count, get, item, status). Valid index and status 0: posts bus vt 0x14576daf0 with item+0x188 (0x1439876c0), fires 'trigger_play_highlight', sends 'fade_out_and_exit' with 't_loading_screen' to [this+0x620] vcall +0x80, sets a VM node, 0x143759dd0([this+0x9c0]); else fires 'trigger_failed_play_highlight'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.video_export_play_highlight_in_theatre",

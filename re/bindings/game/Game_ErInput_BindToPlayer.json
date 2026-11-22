@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144703180",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name bindToPlayer (class from the log channel); log channel ER_INPUT: 'bindToPlayer - device \"%s\" isDeviceAlreadyAssignedToAnyInputProvider=%d'"
+  "evidence": "decomp:re/decomp/144703180.c;pat:log-message-method;xref:0x144703096,0x144703f4a,0x144704436,0x155520190,0x155523026",
+  "notes": "(binder, device {id, name +8, type +0x10, +0x20}): logs ER_INPUT 'bindToPlayer - device \"%s\" isDeviceAlreadyAssignedToAnyInputProvider=%d' after scanning providers [[this]+0x50]. First an unbound provider gets the device (preset priority from [this+8]+0xf8 under lock +0x468, 0x143a8ad70, bind 0x14442e890); else a lower-priority provider is unbound (0x14442ea40), rebound, and the displaced device rebound recursively. (lane owner review requested)"
  },
  "signature": {
   "id": "game.er_input_bind_to_player",

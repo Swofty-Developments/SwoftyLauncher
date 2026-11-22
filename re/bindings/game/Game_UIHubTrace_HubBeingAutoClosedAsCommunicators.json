@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143805cd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-UIHubTrace",
-  "notes": "named from its log messages (channel UIHubTrace): '%zu [AUTO CLOSE] Hub is being auto closed as no communicators have been registered in time.'"
+  "evidence": "decomp:re/decomp/143805cd0.c;pat:log-channel-UIHubTrace;xref:0x1458891b8",
+  "notes": "Per-frame hub tick on the subobject at hub+0x48 (vtable cell 0x1458891b8): ++this+0x60; with no communicator (this+0x30) and no persist flag (+0x51) counts down +0x54 frames and adds dt*1000 (msg+0x18) to +0x58 up to +0x5c; when both expire logs '[AUTO CLOSE] ... no communicators registered in time' and, if +0x2c != 0, calls 0x143804a80(this-0x48, 0). Then sets [comm+0x50]+0x90 from comm+0x49 and the +0x1c..+0x28 states. (lane owner review requested) Better name: Game_UIHub_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ui_hub_trace_hub_being_auto_closed_as_communicators",

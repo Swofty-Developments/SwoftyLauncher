@@ -122,6 +122,7 @@ Each entry names the header, the `SwoftyApi` member and its API version, the fea
 - **Hooking the game**
   - **[Mixin API](./mixin)** (`swofty/mixin.hpp`): bindings, `SWOFTY_WRAP` and the other mixin macros, chains, init and per-object fields. `register_mixins` and `resolve`, API 2; `hook`; the game thread that reaches the hooked instruction.
   - **[Memory](./memory)** (`swofty/mem.hpp`): guarded reads of game memory: `read`, `in_image`, `object_like`, `c_string`. Header only; the core export `SwoftyCoreMem` when the core has it, any API version; any thread.
+  - **[Game memory writes](./game-memory)** (`swofty/game_mem.hpp`): write a value into a data binding with the core's checks and restore, and allocate through the game's allocators: `write`, `restore`, `alloc`, `free`. The core export `SwoftyCoreGameMem`, any API version; any thread. Experimental.
 - **Your addon's own state**
   - **[Settings](./settings)** (`swofty/mixin.hpp`): read your manifest `options` and react when the player changes one. `setting` and `watch_setting`, API 3; `options`; the flow thread.
   - **[Logging](./logging)** (`swofty/mixin.hpp`): `swofty::log` writes to `swofty/loader.log`. `log`, API 1; `log`; any thread.
@@ -132,16 +133,19 @@ Each entry names the header, the `SwoftyApi` member and its API version, the fea
   - **[Pit lane](./pitlane)** (`swofty/systems/pitlane.hpp`): each car's garage and pit box from the live state. The live state, API 9; feature `telemetry` (experimental); any thread.
   - **[Tyre damage](./tyre-damage)** (`swofty/systems/tyre_damage.hpp`): each wheel's puncture state and deflation from the live state, and the `car.tyre.damage` event. The live state and the hooks table, API 9; features `events` (stable) and `telemetry` (experimental); any thread for the reads, the flow thread for the event.
   - **[Race control](./race-control)** (`swofty/systems/race_control.hpp`): events when the flag, the safety car, the red flag, a car's sector or a car's result status changes, and the state now. The hooks table, API 9; features `events` (stable) and `telemetry` (experimental); the flow thread.
+  - **[Voice lines](./speech)** (`swofty/systems/speech.hpp`): `speech.line`, `speech.line.timed` and `speech.line.end` for every voice line the game posts, with its speaker, category, subtitle stem and id. The hooks table, API 9; feature `events` (stable); the flow thread.
   - **[Weather setup](./weather)** (`swofty/systems/weather.hpp`): the `session.weather.setup` event, the session's seed and a scripted forecast per dataset. The hooks table, API 9; feature `events` (stable) and `SWOFTY_WEATHER_CHAIN=1`; the thread that sets up the session.
   - **[Standings](./standings)** (`swofty/systems/career.hpp`): the loaded career's drivers' championship in the game's order, with each driver's points and finishes per round. The career operations table, version 8; feature `career`; the flow thread.
   - **[Telemetry](./telemetry)** (`swofty/telemetry.hpp`): live car, session and participant reads. `telemetry`, API 5; feature `telemetry` (experimental); the flow thread.
+  - **[Game assets](./game-assets)** (`swofty/game_assets.hpp`): the game's own resources by `eaid://` URI, textures decoded to RGBA8 and UI image catalogue entries. The core export `SwoftyCoreGameAssets`, any API version; no feature; a thread of your own.
   - **[Database read](./db)** (`swofty/db.hpp`): read values and walk tables of the game database. `db`, API 5; feature `db` (stable); the caller's thread.
   - **[Career](./career)** (`swofty/career.hpp`): flow states, the running career, its components, the game bus and career-mode blocks. `career`, API 6 (`block` and `unblock` 7); feature `career` (stable); the flow thread.
 - **What the player sees**
   - **[Overlay](./overlay)** (`swofty/overlay.hpp`): 2D rectangles, lines, text and images drawn over the game. `overlay`, API 5; feature `overlay` (experimental); the render thread.
   - **[Popup](./popup)** (`swofty/popup.hpp`): the game's message popup with your text. `popup`, API 7; feature `popup` (stable); any thread, shown on the flow thread.
   - **[Race HUD](./hud)** (`swofty/hud.hpp`): toasts in the race HUD's own notification, and HUD data leaves. The `SwoftyCoreHud` export, feature-detected (API 8 header); feature `popup` (stable); any thread, posted on the flow thread.
-  - **[Strings](./strings)** (`swofty/lang.hpp`): the text a `lng_*` key shows, changed while the game runs. `lang`, API 8; feature `lang` (stable); any thread, `refresh` on the game thread.
+  - **[HUD slots](./hud-slots)** (`swofty/hud_slot.hpp`): an entry of your own in the game's HUD editor, made by a `hud.slot` record, and the placement the player gives it. The `SwoftyCoreHudSlotRead` export, feature-detected; no feature; any thread.
+  - **[Strings](./strings)** (`swofty/lang.hpp`): the text a `lng_*` key shows, read and changed while the game runs. `lang`, API 8 (`text` and `language` with the `SwoftyCoreLangVersion` export); feature `lang` (stable); any thread, `refresh` on the game thread.
 - **The career front end**
   - **[Career contents](./career-content)** (`swofty/career_content.hpp`): extra tiles in the Addons row of Driver Career, My Team or both, with their own save slots, and the per-career check. `career_content`, API 6 or later and the `SwoftyCoreCareerContent` export; feature `career` (experimental); addon init and the flow thread.
   - **[Characters](./characters)** (`swofty/characters.hpp`): per-career character refs, voices and strings. `characters`, API 8, feature-detected; feature `career` (stable); any thread, `refresh` on the game thread.
@@ -169,6 +173,7 @@ packages/sdk/include/
   swofty/systems/race_control.hpp  flag, safety car, red flag, sector and result status events
   swofty/db.hpp             game-database reads
   swofty/storage.hpp        addon storage
+  swofty/game_assets.hpp    the game's resources, textures and UI image catalogues
   swofty/career.hpp         flow states, the running career, its components, the game bus and career-mode blocks
   swofty/popup.hpp          the game's message popup with your text
   swofty/lang.hpp           runtime string overrides
@@ -178,9 +183,11 @@ packages/sdk/include/
   swofty/career_wizard.hpp  per-career new-career wizard control
   swofty/era.hpp            boxes in the Addons row of the Grand Prix / Time Trial era picker
   swofty/hud.hpp            toasts in the race HUD's own notification
+  swofty/hud_slot.hpp       the placement of the addon's own HUD editor entry
   swofty/view.hpp           the game's pause reason mask: paused(), pause_reasons()
   swofty/hub.hpp            Team HQ tabs (not in the template's native/include/)
   swofty/mem.hpp            guarded memory reads: read, in_image, object_like, c_string
+  swofty/game_mem.hpp       data binding writes and game allocator calls (not in the template's native/include/)
   swofty/assets.hpp         runtime asset loading
 native/include/
   swofty/game.hpp, swofty/game/*.hpp   the Game API: the engine's functions, structs and sites
@@ -250,4 +257,5 @@ swofty/career.hpp                                        6 (block and unblock: 7
 swofty/popup.hpp                                         7
 swofty/lang.hpp                                          8
 swofty/mem.hpp                                           none: it needs no SwoftyApi table
+swofty/game_mem.hpp                                      none: it needs no SwoftyApi table
 ```

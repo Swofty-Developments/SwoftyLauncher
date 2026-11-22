@@ -1,0 +1,60 @@
+{
+ "schema": 1,
+ "name": "Sess_Build_SessionParticipant",
+ "table": "functions",
+ "author": "vmknolle",
+ "row": {
+  "addr": "0x142e0c700",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void *Sess_Build_SessionParticipant(void *participant, const EntrantRecord *rec, void *entrants_system, void *mode_holder, ...)",
+  "evidence": "decomp:re/decomp/142e0c700.c;xref:0x1407b1a5f,0x1407b882f,0x142939e6f,0x142e32fbf,0x142e339e4",
+  "notes": "jmp thunk to 0x14f2dcbd0 (decomp read). (out, rec, entrants, mode_holder, ...): vehicle = 0x14243fd10(entrants, rec+0x5c); customisation 0x14246dcb0(rec+0x64) unless u16 +0x66 == 0x3fff (if +0x38 set, id via vt+0x30 | 1<<32); 0x14246db90(rec+0x60) unless +0x62 == 0x3fff; 0x142458210(rec); team flags rec+0x80/+0x81; list mode_holder+0xe18 (+0xb8); finally 0x142e0a530(out, vehicle, 0, ...). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "session.build_session_participant",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 48 A9 6A C9 06 E9 D8 DC",
+  "match": "0x142e0c700",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e0c700",
+  "kind": "func_start",
+  "names": [
+   "Sess_Build_SessionParticipant"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-20",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vmknolle",
+   "date": "2026-11-20",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142e0c700",
+    "target": "0x142e0c700"
+   },
+   "sigcheck": "passed",
+   "digest": "507f4fe79328b7ca6551c347df619acce563c2b43e12ad2be5d1f57c1b624d15"
+  }
+ ]
+}

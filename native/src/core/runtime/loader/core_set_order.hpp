@@ -66,6 +66,10 @@ enum class CoreSetId : uint8_t {
     resume_gate,
     tyre_curve,
     anim_clip_time,
+    marshal_lights,
+    anim_packet_time,
+    speech,
+    vehicle_override,
     phys_nonfinite,
     count,
 };
@@ -126,6 +130,10 @@ constexpr std::array<std::string_view, CORE_SET_COUNT> CORE_SET_NAMES = {
     "resume_gate",
     "tyre_curve",
     "anim_clip_time",
+    "marshal_lights",
+    "anim_packet_time",
+    "speech",
+    "vehicle_override",
     "phys_nonfinite",
 };
 
@@ -185,6 +193,10 @@ constexpr std::array<CoreSetId, CORE_SET_COUNT - 1> COMMIT_ORDER = {
     CoreSetId::resume_gate,
     CoreSetId::tyre_curve,
     CoreSetId::anim_clip_time,
+    CoreSetId::marshal_lights,
+    CoreSetId::anim_packet_time,
+    CoreSetId::speech,
+    CoreSetId::vehicle_override,
     CoreSetId::phys_nonfinite,
 };
 

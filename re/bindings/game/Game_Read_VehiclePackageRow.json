@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142504a90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142504a90.c",
-  "notes": "caller is plaintext code in .data1 at 0x14cca1269; fields stat_id resource_path resource_path_specialisation blob_shadow_decal *_asset_group ai_package_folder driver_animation_set; bytes +0x60 has_cockpit_halo +0x61 is_story_vehicle_package +0x62 is_equal_performance_vehicle_package +0x63 is_26_aero_regulations"
+  "evidence": "decomp:re/decomp/142504a90.c;xref:0x14cca1269",
+  "notes": "GDB row -> struct: stat_id byte +0; strings resource_path +8, resource_path_specialisation +0x10, blob_shadow_decal +0x18, tyre_compounds/pit_stop/pit_wall/garage/crew_livery_asset_group +0x20..+0x40, ai_package_folder +0x50; driver_animation_set via Sess_Resolve_DriverAnimSetId into param_3 vector -> +0x58; bools +0x60..+0x63 (halo, story, equal perf, 26 aero); 0x140683ce0(+0x68) ai_vehicle_package_config. (lane owner review requested)"
  },
  "signature": {
   "id": "game.read_vehicle_package_row",

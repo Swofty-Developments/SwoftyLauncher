@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140385760",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=GarageCrewInstanceLogic::StateCarIsReadyForTrack; log channel GARAGECREW: 'GarageCrewInstanceLogic::StateCarIsReadyForTrack::processEvent unexpected %d %s'"
+  "evidence": "decomp:re/decomp/140385760.c;pat:log-message-cxx;xref:0x145622ce8",
+  "notes": "StateCarIsReadyForTrack::processEvent(out,logic): event type [logic+0xa0]+0x14: 0 -> state 9 (logic+0x18) unless the crew busy check fails, 2 -> 0xc (logic+0x28), 3 -> 6 (logic+0x08), 5 -> 1 (self), else 'unexpected' log. Writes state id logic+0x80, next state +0x48, transition flag +0x90, pops the event. Vtable cell 0x145622ce8. (lane owner review requested)"
  },
  "signature": {
   "id": "game.garage_crew_instance_logic_state_car_is_ready_for_track",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14099e800",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name setSunOverrideScenario (class from the log channel); log channel SunOverrideComponent: 'setSunOverrideScenario %s'"
+  "evidence": "decomp:re/decomp/14099e800.c;pat:log-message-method;xref:0x1401841d6,0x140185bbd,0x140362829,0x140362f6a",
+  "notes": "Static setSunOverrideScenario(name): logs; if name differs (strcmp 0x14535d850) from global 0x14604f8d0, copies it (<=0x104) into 0x14604f8d8 and for each registered component in 0x14604f9e0 with flag +0xf90 calls vt+0x48 and vt+0x38. Callers 0x140183ca0, 0x140184cb0, 0x140362490, 0x140362c00. (lane owner review requested)"
  },
  "signature": {
   "id": "game.sun_override_component_set_sun_override_scenario",

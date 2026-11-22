@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1404536c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "void *rec, void *json_writer",
   "evidence": "decomp:re/decomp/1404536c0.c;xref:0x14087e330",
-  "notes": "myteam-g1: Analytics JSON writer emitting sponsor_one..sponsor_eleven_stat_id fields (11 sponsor stat ids of the team/car loadout), generated code."
+  "notes": "Writer of 'customisation_loadout_on_session_start_record': baseCtx rec+0x50, 'livery_data' rec+0x60 via 0x140420190, ints suit..sponsor_eleven_stat_id rec+0x70..0xc0, bool custom_liverys_used 0xc4, array equipped_decal_list (vec 0xc8: chosen_decal_id/projection_area_id/projection_area_name), special_edition_livery_id 0xe0. (lane owner review requested) Better name: Game_Analytics_CustomisationLoadoutRecord_WriteJson (bound record keeps its name)."
  },
  "signature": {
   "id": "game.analytics_sponsor_one_to_eleven_stat_ids_write_json",

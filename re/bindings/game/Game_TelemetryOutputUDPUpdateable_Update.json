@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1447311a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=TelemetryOutputUDPUpdateable::update; log channel UDP-TELEMETRY: 'TelemetryOutputUDPUpdateable::update: Format = %d, YourTelemetry = %d, ShowOnlineNames = %d, m_gameDataValid = %d, m_sessionStarted = %d, m_motionUpdating = %d,'"
+  "evidence": "decomp:re/decomp/1447311a0.c;pat:log-message-cxx;xref:0x145c029f0",
+  "notes": "vtable cell 0x145c029f0. If enabled: by UDP format (+0xe0->+0xc) 0 Prepare2024, 1 Prepare2025, 2 PreparePackets2026; per-packet rate limiters (Game_TelemetryUdp_RateLimitTick) send via 0x144737d30 with sizes e.g. 2025 session 0x2f1, lap 0x505, motion 0x545, history 0x5b4 cycling cars (22, or 24 for 2026). (lane owner review requested)"
  },
  "signature": {
   "id": "game.telemetry_output_udp_updateable_update",

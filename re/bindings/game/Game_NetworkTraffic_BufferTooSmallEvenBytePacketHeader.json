@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14404aa50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-TRAFFIC/T",
-  "notes": "named from its log messages (channel NETWORK-TRAFFIC/T): 'Buffer too small even for %u byte packet header, size %u'"
+  "evidence": "decomp:re/decomp/14404aa50.c;pat:log-channel-NETWORK-TRAFFIC/T;xref:0x144046421,0x14409c5a7,0x1440a40a8",
+  "notes": "Initialises a packet reader on (buf,len): needs >=3 bytes ('Buffer too small even for %u byte packet header'), 12-bit size from bytes 0-1, byte 2 kept at +0x14, offset 3; size 0 or size != len-2 sets error byte +0x15. (lane owner review requested) Better name: Game_NetworkTraffic_InitPacketReader (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_traffic_buffer_too_small_even_byte_packet_header",

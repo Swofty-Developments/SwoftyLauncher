@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14146c110",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14146c110.c;xref:0x14142b48b",
-  "notes": "589-byte slot finder for the u16-keyed decals map; callers 0x14142b48b and Game_CustomisationDecals_Map_InsertU16 (0x14146c43e). Hypothesis."
+  "evidence": "decomp:re/decomp/14146c110.c;xref:0x14142b48b,0x14146c43e",
+  "notes": "Renamed (it is not a slot finder). std::map insert helper: size++, links the new node p3 under the parent/side in p2 (side flag p2[1]), updates leftmost/rightmost of the head, then the red-black recolour/rotate loop (colour byte +0x18, nil byte +0x19); root set black. (lane owner review requested) Better name: Game_CustomisationDecals_Map_InsertNodeFixup (bound record keeps its name)."
  },
  "signature": {
   "id": "game.customisation_decals_map_find_slot_u16",

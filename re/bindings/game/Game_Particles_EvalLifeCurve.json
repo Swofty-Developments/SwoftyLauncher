@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143aee090",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143aee090.c;xref:0x143af27c7,0x143b1055f",
-  "notes": "Evaluates a particle parameter curve at normalised life: mode +0x134 (0 -> 0, 1 -> constant +0xa0, else table sample with fract of t*scale(+0x130), clamp 0.99999). Callers Game_Particles_BuildEmitterDefs, Asset_Load_ParticleResourcePack, UpdateManager sub. Addon: particle value-over-life curves."
+  "evidence": "decomp:re/decomp/143aee090.c;xref:0x143af27c7,0x143b1055f,0x143b109af,0x143b13ef7",
+  "notes": "(curve, t): mode +0x134 = key count: 0 -> 0, 1 -> +0xa0, else t clamped to 0.99999 times +0x130, fract, binary search in key times +0xd0, cubic segment eval with tangents +0x30/+0x34 and inv lengths +0x100; returns lerp toward +0x94 by t*+0x90. Callers 0x143aef1b0, 0x143b0faf0, 0x143b13710. (lane owner review requested)"
  },
  "signature": {
   "id": "game.particles_eval_life_curve",

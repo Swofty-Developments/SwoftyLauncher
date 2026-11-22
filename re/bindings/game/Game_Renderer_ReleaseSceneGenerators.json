@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b33a40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143b33a40.c;xref:0x143b18da7,0x143b21fd1,0x143b220e8",
-  "notes": "Looks up three named generators in the scene registry (strings 'staticGenerator', 'shadows', 'ghostCarGenerator') via vcall +0x60 on [param_1+0xf0f58] and removes/releases the param_2 object from each (vcall +0x38). Addon: names of render generators (static / shadows / ghost car). Named callers: Game_Renderer_CreateRenderPasses."
+  "evidence": "decomp:re/decomp/143b33a40.c;xref:0x143b18da7,0x143b21fd1,0x143b220e8,0x143b35700,0x143b36452,0x143b43817",
+  "notes": "(renderer, gen): looks up 'staticGenerator', 'shadows', 'ghostCarGenerator' in [renderer+0xf0f58] (vcall +0x60) and removes gen from each (vcall +0x38); erases gen from vector [renderer+0xf0ee8]+8..+0x10 (memmove) or logs trace code 2; then gen vcall +8(0) and frees it via [renderer+0x80] vcall +0x38. Callers incl. CreateRenderPasses, 0x143b21800, 0x143b35690, thunk 0x143b36452, 0x143b437a0. (lane owner review requested) Better name: Game_Renderer_DestroyGenerator (bound record keeps its name)."
  },
  "signature": {
   "id": "game.renderer_release_scene_generators",

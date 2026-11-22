@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f79fe0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-VOICE_COMMANDS",
-  "notes": "named from its log messages (channel VOICE_COMMANDS): '%s eUIAction_Recognised | %s eUIAction_NotRecognised | %s eUIAction_CloseUI | %s eUIAction_RecognisedHidden | %s eUIAction_ChangeKeywordList | %s'"
+  "evidence": "decomp:re/decomp/142f79fe0.c;pat:log-channel-VOICE_COMMANDS;xref:0x142f79924",
+  "notes": "Read in full (decomp merges tails beyond pdata end 0x142f7a6a8: case 5 body and an analytics tail). Logged method 'onUICommand'; ref is a lea in 0x142f79650 (registration). switch action: 1 Recognised -> SetSelectedCommandById 0x142f7eab0(this,id); 2 RecognisedHidden -> CommandRecognised 0x142f7f3c0, then 'set_voice_control_button_released' and pending callback +0x86b00; 3 NotRecognised -> bools +0x158=0/+0x178=1, timer; 4 ChangeKeywordList -> +0x300|=4; 5 CloseUI. (lane owner review requested) Better name: Game_VoiceCommands_OnUiCommand (bound record keeps its name)."
  },
  "signature": {
   "id": "game.voice_commands_on_ui_action",

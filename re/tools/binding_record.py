@@ -46,12 +46,12 @@ class RecordError(ValueError):
     pass
 
 
-def parse_json(data):
+def parse_json(data, max_bytes=MAX_BYTES):
     """Strict JSON for untrusted bytes: capped size, UTF-8, no duplicate keys, no NaN or Infinity."""
     if not isinstance(data, (bytes, bytearray)):
         raise RecordError('expected bytes')
-    if len(data) > MAX_BYTES:
-        raise RecordError(f'file is {len(data)} bytes, the limit is {MAX_BYTES}')
+    if len(data) > max_bytes:
+        raise RecordError(f'file is {len(data)} bytes, the limit is {max_bytes}')
     try:
         text = bytes(data).decode('utf-8')
     except UnicodeDecodeError as e:

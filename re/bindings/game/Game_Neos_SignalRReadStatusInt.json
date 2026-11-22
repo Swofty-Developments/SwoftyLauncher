@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144445db0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144445db0.c;xref:0x144444bea",
-  "notes": "Reads integer member S (SignalR classic init/status flag) from a parsed JSON message param_1 into *param_3. Called from Game_Neos_SignalRHandleStartResponse."
+  "evidence": "decomp:re/decomp/144445db0.c;xref:0x144444be9",
+  "notes": "Only caller 0x144444be9. Looks up member 'S' in the parsed JSON object; if it is an int copies it to *param_3 (missing value logged on JSON); returns found && *param_3 == *param_2. (lane owner review requested)"
  },
  "signature": {
   "id": "game.neos_signal_r_read_status_int",

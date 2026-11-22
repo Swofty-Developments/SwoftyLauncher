@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e31e50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-THUMBNAIL_SYSTEM",
-  "notes": "named from its log messages (channel THUMBNAIL_SYSTEM): 'Adding pending driver thumbnail REgeneration for set ID %d'"
+  "evidence": "decomp:re/decomp/142e31e50.c;pat:log-channel-THUMBNAIL_SYSTEM;xref:0x142e31863,0x142e36d37",
+  "notes": "For set id in param_2: clears VM bool, finds set in system map, calls old callback(1), allocates new driver task (_Construct_A type 2 / _B type 1), replaces it, callback 0x142e32310, logs 'driver thumbnail REgeneration', queues id; sets +0xac on failure. (lane owner review requested) Better name: Game_ThumbnailSystem_RegenerateDriverThumbnail (bound record keeps its name)."
  },
  "signature": {
   "id": "game.thumbnail_system_adding_pending_driver_thumbnail_2",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140361f70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=Podium2019CutSceneScript::setMonacoBarrierVisibility; log channel CUTSCENE_PODIUM: 'Podium2019CutSceneScript::setMonacoBarrierVisibility | ERROR: Failed to find Monaco barrier World Object in PodiumMonacoCutSceneScript::setMonacoBarrierVisibility() function. | ERROR: Failed to set th'"
+  "evidence": "decomp:re/decomp/140361f70.c;pat:log-message-cxx;xref:0x140362383,0x140362b9f",
+  "notes": "(this, visible): when monaco flag this+0x8f8 and barrier object this+0x8f0 exist, component 0x146cb7da0 of [obj+0x10] gets +0x10d = visible and bit1 of its render node [+0x80]+0x13c updated (update queued via 0x146c621e0 vfunc +0x68); else logs 'Failed to find Monaco barrier World Object' / 'Failed to set the visibility'. Callers: _Starting (hide), _SetStateFinished (show). (lane owner review requested)"
  },
  "signature": {
   "id": "game.podium2019_cut_scene_script_set_monaco_barrier_visibility",

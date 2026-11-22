@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142767250",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-WEEKLY_GP",
-  "notes": "named from its log messages (channel WEEKLY_GP): 'EnterRace returned participant %s, qualifying time: %.3f, grid penalty: %d. | EnterRace completed with no qualifying results'"
+  "evidence": "decomp:re/decomp/142767250.c;pat:log-channel-WEEKLY_GP;xref:0x14258ebc9",
+  "notes": "Read in full: error +0x10 or +0x28 -> 0x1432d4d00(this+0x98, err+8) (+0x28 also 0x140bf9310 on the session component); else participant +0x40: no list -> 'EnterRace completed with no qualifying results' and clears [this+0x98]+0x218; else logs each 0x38-byte entry ('EnterRace returned participant %s, qualifying time...') and copies them to [this+0x98]+0x210; clears +0x110..+0x150. (lane owner review requested)"
  },
  "signature": {
   "id": "game.weekly_gp_on_enter_race_result",

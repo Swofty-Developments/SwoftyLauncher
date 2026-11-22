@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140990640",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=LightBarSystem::onMessagePlayerDroppedIn; log channel NETWORK: 'LightBarSystem::onMessagePlayerDroppedIn()'"
+  "evidence": "decomp:re/decomp/140990640.c;pat:log-message-cxx;xref:0x1409909d9,0x140993bcf",
+  "notes": "Bus handler (fn ptr lea 0x1409909d9 and 0x140993bcf). Logs NETWORK 'LightBarSystem::onMessagePlayerDroppedIn()'; local car index 0x1400fa590([+0x38], 0) -> byte +0x5c; if valid, vehicle record [[+0x30]+0x28][idx] -> component 0x143f9b3c0(rec+0x10, type 0x146096968) -> +0x28 (else 0). Returns 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.light_bar_system_on_message_player_dropped_in",

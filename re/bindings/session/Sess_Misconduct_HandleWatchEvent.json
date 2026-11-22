@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1435b1dd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1435b1dd0.c;xref:0x1435b1c7a",
-  "notes": "(mc, evt) Event type evt[1]: 4 -> if allowed by table 0x1460fc966 and mode byte [mc+0x70]+0x108 is 1 or 2, raises misconduct 0x34/0x35 via 0x1435c16f0 with weight table 0x1460fd780; returns 1 for handled types (<7). Called from Sess_Misconduct_RemoveWatchedIncident."
+  "evidence": "decomp:re/decomp/1435b1dd0.c;xref:0x1435b1c7a,0x14584d978",
+  "notes": "(mc, evt): evt[1] >= 7 -> 1; evt[1] != 4 -> 0. Type 4: if byte 0x1460fc966 + ([mc+0x78]+0x68)*0x2c is set and level = 0x145f967ec[mode] != 8 (mode = [mc+0x70]+0x108): mode 1 -> 0x1435c16f0(mc,evt,0x34,w[level],level), mode 2 -> 0x35 (weights 0x1460fd780); returns 1. Callers Sess_Misconduct_RemoveWatchedIncident and vtable cell 0x14584d978."
  },
  "signature": {
   "id": "session.misconduct_handle_watch_event",

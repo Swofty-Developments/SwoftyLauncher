@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "team.vehicle_override 1.0",
+  "x-registry": "team.vehicle_override",
+  "x-version": "1.0",
+  "x-applies": "session",
+  "x-snapshot": false,
+  "description": "teams::VehicleOverride: one package team's car for chosen events. At each session load that when matches, the seats it names drive vehicle instead of the team's own car. The core writes the session's own copy of the entrant records only, before the game builds the session's cars, and puts the team's car back at the session's end and before every career save. Experimental: off unless SWOFTY_VEHICLE_OVERRIDE=1, refused in Time Trial and online modes.",
+  "type": "object",
+  "properties": {
+    "package": {
+      "description": "The box's (or career season's) content package.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-ref": "content.package"
+    },
+    "team": {
+      "description": "The key of the package's team entry whose car changes.",
+      "type": "string",
+      "pattern": "^[a-z0-9_]+$"
+    },
+    "drivers": {
+      "description": "The seats that change, by the drivers the package's team entry names. Empty: every seat of the team.",
+      "type": "array",
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-ref": "driver.identity"
+      }
+    },
+    "vehicle": {
+      "description": "The car those seats drive: a vehicle registered at boot, so it has its stat id, package and asset groups.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-ref": "vehicle"
+    },
+    "livery": {
+      "description": "Empty: the vehicle's own livery. 1.0 has no other livery yet; a livery named here is reported and the vehicle's own is used.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-ref": "livery"
+    },
+    "when": {
+      "$ref": "#/$defs/when"
+    },
+    "extends": {
+      "description": "Data files only: this record is a variant of that record, and its value is a merge patch on the base.",
+      "type": "string",
+      "x-ref": "team.vehicle_override",
+      "x-missing": {
+        "default": "required",
+        "allow": [
+          "required"
+        ]
+      }
+    }
+  },
+  "required": [
+    "package",
+    "team",
+    "vehicle"
+  ],
+  "additionalProperties": true,
+  "$defs": {
+    "when": {
+      "description": "teams::VehicleOverrideWhen: the sessions the override runs in. Every field that is set must match; an empty when is the whole box or career season.",
+      "type": "object",
+      "properties": {
+        "track": {
+          "description": "The session's track record. Empty: every track.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-ref": "track"
+        },
+        "year": {
+          "description": "The box's season or the career's year. 0: every year.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2100
+        },
+        "session_types": {
+          "description": "The session types it runs in. Empty: the whole weekend (recommended: a car that changes between two sessions of one weekend makes the game reload the cars).",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "practice",
+              "qualifying",
+              "sprint",
+              "race"
+            ]
+          },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

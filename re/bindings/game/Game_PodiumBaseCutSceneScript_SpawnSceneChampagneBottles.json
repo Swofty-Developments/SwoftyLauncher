@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140359de0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=PodiumBaseCutSceneScript::spawnSceneChampagneBottles; log channel CUTSCENE_PODIUM: 'PodiumBaseCutSceneScript::spawnSceneChampagneBottles'"
+  "evidence": "decomp:re/decomp/140359de0.c;pat:log-message-cxx;xref:0x14035a24b,0x14035a97b,0x14035b92b,0x14035c05b,0x14035c78b,0x14035d45b,0x14035dbcb,0x14035e21b,0x14035ea8b,0x14035f2fb,0x14036031c,0x14036047c,0x140360f2c,0x14036108c,0x140364bfb,0x140366441,0x14036664b,0x140367e6b",
+  "notes": "(this, sceneName): logs class string, spawns the scene via Game_CameraActorEnable_SpawnScene 0x14023f920(this,name,0,0,..,0,1,0,1,0,1) and for each actor (scene+0x78, count [scene+0xa0]+0x100) calls actor vt+0x190(actor,0). Called from the per-year podium spawn functions 0x14035a180..0x140363850. (lane owner review requested)"
  },
  "signature": {
   "id": "game.podium_base_cut_scene_script_spawn_scene_champagne_bottles",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1442c04e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "vm",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1442c04e0.c;xref:0x1442c0201,0x1442c03ee",
-  "notes": "node side of a binding event: ev 0 with entry mode 2 and node+vm present decodes the VM path and resolves the g_Vm_Registry data node (data context, the LINK seen in the log); jump table over ev 0..9"
+  "evidence": "decomp:re/decomp/1442c04e0.c;xref:0x1442c0200,0x1442c03ed",
+  "notes": "Within its pdata 0x1442c04e0-0x1442c05e1 (decomp merges tail target 0x1442c05f0): jump table 0x145a85d1c over ev=r8 0..9 checks state [ctx+0x140]: ev0 st2, ev3 st3, ev5 st4, ev7 st6, ev9 st5 -> tail jmp 0x1442c05f0 (path decode + registry node); ev2/6 st!=0, ev4 st3, ev8 st6 -> 0x14420cd60(rcx,[ctx+0x18]+8), Ne_IntrusiveNode_Reassign(ctx+0x10,empty), byte +0x144=0, relink [ctx+8]+8. Callers in Vm_Dispatch_BindingMessage 0x1442c00e0. (lane owner review requested)"
  },
  "signature": {
   "id": "vm.apply_binding_event",

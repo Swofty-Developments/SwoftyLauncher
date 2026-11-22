@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143820bd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-TOP_LEVEL_UI",
-  "notes": "named from its log messages (channel TOP_LEVEL_UI): 'initialise connect helper after initial data. it will skip home screen in some cases, hasValidData=%s'"
+  "evidence": "decomp:re/decomp/143820bd0.c;pat:log-channel-TOP_LEVEL_UI;xref:0x14382028f,0x1438e790e",
+  "notes": "Bus handler (lea at 0x14382028f,0x1438e790e). If state +0x50 in {1,3,4} and msg+0x10: logs 'initialise connect helper after initial data... hasValidData=%s' from +0xe0; sets helper+0x80 = 0x143882d30() && hasValidData, +0x81 changed flag, state = 6 or 7. (lane owner review requested)"
  },
  "signature": {
   "id": "game.top_level_ui_initialise_connect_helper_after",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1406d6360",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-ELASTIC",
-  "notes": "named from its log messages (channel ELASTIC): 'ElasticSearch disabled via config'"
+  "evidence": "decomp:re/decomp/1406d6360.c;pat:log-channel-ELASTIC;xref:0x1456420f0",
+  "notes": "Module init (vtable cell 0x1456420f0): sanitises the report code (+0x202f0, 'Report Code: %s', custom_info_reportCode/Valid); resolves services into +0x209b8..+0x20a58 (missing -> return 0x16); config 'EADP.adeptTelemetryEnabled', 'EADP.autoLoginEnabled', 'ElasticSearch.Enabled' -> +0x38 (0 logs ELASTIC 'ElasticSearch disabled via config'), 'Product.Name'; registers handlers 0x1406d8470/0x1406fc540, Report_Interaction('start','application'), +0x20960=1, returns 0. (lane owner review requested) Better name: Game_ElasticSearchReporterModule_Initialise (bound record keeps its name)."
  },
  "signature": {
   "id": "game.elastic_elastic_search_disabled_via_config",

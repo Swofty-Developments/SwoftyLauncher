@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14038f270",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onSessionExit (class from the log channel); log channel GARAGECREW: 'onSessionExit'"
+  "evidence": "decomp:re/decomp/14038f270.c;pat:log-message-method;xref:0x14561b540",
+  "notes": "GarageCrew onSessionExit: logs, destroys and frees all 32 crew instances of module 0x146045a88 (+0x68) under CS 0x146045a38 (0x140381380). Vtable cell 0x14561b540. (lane owner review requested)"
  },
  "signature": {
   "id": "game.garagecrew_on_session_exit",

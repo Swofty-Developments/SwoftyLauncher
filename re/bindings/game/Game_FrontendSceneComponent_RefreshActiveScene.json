@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428f0cf0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name refreshActiveScene (class from the log channel); log channel FRONTEND_SCENE_COMPONENT/MAINSCENE: '%s() - %s'"
+  "evidence": "decomp:re/decomp/1428f0cf0.c;pat:log-message-method;xref:0x1428cd717,0x1428f0928,0x1428f2038,0x1428f26c2,0x14d3d24b6",
+  "notes": "Reads 3 scene name handles from (this+0x98)+0x1050/0x1058/0x1060 (flag +0x1068), stores them at this+0x108/0x110/0x118, queues a 0x30 B message (vtable 0x14579ab98) with the names on the list at (*0x14618b3b8)+8 (+0x58/+0x60 under CS +0x98, signal +0x88), then logs '%s : %s - %s - %s' 'Current Active Scene' via '%s() - %s' refreshActiveScene (FRONTEND_SCENE_COMPONENT/MAINSCENE). Callers in 0x1428c9060, spawn 0x1428efd50, spawnComplete 0x1428f19c0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.frontend_scene_component_refresh_active_scene",

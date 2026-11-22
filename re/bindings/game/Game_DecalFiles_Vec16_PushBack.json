@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141432b20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141432b20.c;xref:0x141433f2a,0x141433f49",
-  "notes": "vector of 16-byte elements push_back with x1.5 growth. Callers Game_CustomisationDecals_OpenFile and 0x141434050."
+  "evidence": "decomp:re/decomp/141432b20.c;xref:0x141433f2a,0x141433f49,0x1414341a0,0x1414341bf",
+  "notes": "vector<shared_ptr (16 bytes)>::push_back: grows x1.5 (min +1) through allocator this[0] (+0x18 alloc, +0x38 free), moves the old elements, releases the old refs; copies the new element with ref +8 ++. Callers 0x141433880 and Game_DecalFileOp_CreateDeleteJob. (lane owner review requested)"
  },
  "signature": {
   "id": "game.decal_files_vec16_push_back",

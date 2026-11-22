@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1407fd310",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name handleApplicationResumeFromSuspended (class from the log channel); log channel GAME: '%s'"
+  "evidence": "decomp:re/decomp/1407fd310.c;pat:log-message-method;xref:0x1407f778a",
+  "notes": "handleApplicationResumeFromSuspended(game): logs GAME; looks up components 0x1460bed80 and 0x146079b70 in the game+0x30 registry and calls 0x1430ef280 / 0x142a83850, clears [[0x14601f5c8]+0xc0]+0x1b8, sends 2 to [[game+0x100]+0xa0]+0xca0 (0x140b4de60), posts bus msg vt 0x14564b640. Handler registration (lea) in 0x1407f7320. (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_handle_application_resume_from_suspended",

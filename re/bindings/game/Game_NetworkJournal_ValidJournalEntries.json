@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143148760",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-NETWORK-JOURNAL",
-  "notes": "named from its log messages (channel NETWORK-JOURNAL): 'Valid Journal Entries: '"
+  "evidence": "decomp:re/decomp/143148760.c;pat:log-channel-NETWORK-JOURNAL;xref:0x14fe3e885",
+  "notes": "Logs 'Valid Journal Entries: ' then compares each guid in the message (msg+0x10, +0x18, +0x20, ...) with the local journal guid (0x1431496d0 on this+0x70) and logs matches ('   %llu'); tail jumps to 0x143149d40. Handler stored by lea 0x14fe3e885 in 0x14fe3e6b0 (.data1). (lane owner review requested) Better name: Game_NetworkJournal_HandleValidEntriesMessage (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_journal_valid_journal_entries",

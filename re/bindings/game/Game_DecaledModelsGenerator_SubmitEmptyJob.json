@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144470ed0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/144470ed0.c;xref:0x142a925fb",
-  "notes": "Allocates a 0x20-byte job record from plRam0000000146c621e0 (+0x20 alloc, type 0x17), zero-inits it, posts it under job name 'decaledModelsGenerator' (vcall +0x78), sets [param_1+0x80]+0x128 = 2 and queues callback 0x143d3ce20 (vcall +0x68). Caller Game_CustomisationDecals_DestroySetProxy. Addon: name of the decal baking job."
+  "notes": "Called from 0x142a925e0 (0x142a925fb). ctx=[this+0x80]: allocates a 0x20-byte record from global 0x146c621e0 (vcall +0x20, ctx+8, 0x17, 0x20) = {0, -1, 0, 0}; gets the 'decaledModelsGenerator' (0x145a3c3c0) mask via vcall +0x78 and CLEARS it from ctx+0x70; if changed, sets ctx+0x128=2 (queues 0x143d3ce20 via vcall +0x68 when it was 0) and ctx+0x12c |= 0x20. Sets this+0x112 = 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.decaled_models_generator_submit_empty_job",

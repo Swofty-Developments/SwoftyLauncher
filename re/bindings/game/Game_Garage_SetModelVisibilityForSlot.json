@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1403b8280",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1403b8280.c;xref:0x1403b7df5",
-  "notes": "Per-slot (<0x1a) setter: iterates sub-models of the slot and calls vcall +0x98 with value param_4 (tyre/wing pit-stop parts). Caller Car_PitStop_ApplyTyreAndWingVisuals. Hypothesis."
+  "evidence": "decomp:re/decomp/1403b8280.c;xref:0x1403b7df5,0x1403b7e63",
+  "notes": "(garage,slot<=0x1a,animIdx,visible,time): skipped when garage+0x64; every sub-model of slot garage+0xe0 gets vt+0x98(visible); anim player garage+0x398[animIdx] times +0x58/+0x5c = time, +0x390[idx]=0; hidden -> times -1 and update 0x14366b6c0; the decomp tail is that update merged in. Callers 0x1403b77c0 (two sites). (lane owner review requested)"
  },
  "signature": {
   "id": "game.garage_set_model_visibility_for_slot",

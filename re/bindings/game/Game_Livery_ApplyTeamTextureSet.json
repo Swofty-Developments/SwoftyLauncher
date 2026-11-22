@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1418cbd10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1418cbd10.c;xref:0x1418705e3",
-  "notes": "Looks up a team/livery texture set via 0x141870d10 (3-way index, table [this+0x1b8]+0x2c8 stride 0x10), copies it with 0x1424ad4e0 (from tex+0x6c8) and updates [this+0x90]. Callers Game_Read_TexturesConfig, 0x141870760, 0x1418cba70. Hypothesis."
+  "evidence": "decomp:re/decomp/1418cbd10.c;xref:0x1418705e3,0x141870bd2,0x1418cbcd5",
+  "notes": "(livery node): key = Game_Livery_ResolveTeamEntryKey(this) {type<3, u16 idx}; entry = [[+0x1b8]+0x2c8+type*0x10]+8 [idx] (stride 0x10); colours = Game_Livery_ResolveTeamColours(entry+0x6c8); if property +0x90 is a live node of type 0x146129d80 writes the colours with 0x14160d520. No texture set involved; old name was misleading. (lane owner review requested) Better name: Game_Livery_ApplyTeamColours (bound record keeps its name)."
  },
  "signature": {
   "id": "game.livery_apply_team_texture_set",

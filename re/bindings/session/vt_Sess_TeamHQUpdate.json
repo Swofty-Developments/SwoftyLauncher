@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14585fa50",
-  "type": "vtable[11]",
+  "type": "vtable[20]",
   "level": "L2",
   "subsystem": "session",
-  "evidence": "pat:flow-state-type-record;xref:0x146102580;decomp:re/decomp/1437b8ad0.c",
-  "notes": "cxx=StateTeamHQUpdate; neon flow state (slot 2 = NeFlowState base 0x1436aef00, slot 0 returns type record 0x146102580 whose +8 names the class); onStateEnter 0x143707cc0, onStateUpdate 0x143708590, onStateExit 0x1437089c0 (slots 8/9/10). (vmknolle session-flow map)"
+  "evidence": "pat:flow-state-type-record;decomp:re/decomp/1437b8ad0.c;xref:0x1437b8adc",
+  "notes": "cxx=StateTeamHQUpdate; 20 slots (next vtable at +0xa0, lea 0x143707f30). Slot 0 -> type record 0x146102580, +8=name set by static init 0x1437c1990 at 0x1437c2c13. Slot 2 NeFlowState base 0x1436aef00; slots 8/9/10 onStateEnter/Update/Exit 0x143707cc0/0x143708590/0x1437089c0. Only ref: slot-1 dtor 0x1437b8ad0 re-installs it; no ctor found."
  },
  "signature": {
   "id": "session.team_h_q_update",

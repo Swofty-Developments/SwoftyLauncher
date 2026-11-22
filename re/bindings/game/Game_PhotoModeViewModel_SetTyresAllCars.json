@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141d09430",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=PhotoModeViewModel::setTyresAllCars; log channel PHOTO-MODE: 'PhotoModeViewModel::setTyresAllCars: tyres = %d'"
+  "evidence": "decomp:re/decomp/141d09430.c;pat:log-message-cxx;xref:0x141ceff76",
+  "notes": "PhotoModeViewModel handler (this, cmd): acts only when cmd+8 == 10, reads \"value\" from cmd+0x10 (int or float by type check), logs PHOTO-MODE; registered by lea in 0x141cef700. int tyre id; if != this+0x360: id 10 restores the saved per-car tyres (0x142bdd220 over system+0x3b8 list, stride 0x2c), else Game_PhotoMode_ApplyTyreSetToCar for every car (count 0x146ce86dc); dirty; fills this+0x308..+0x360 with the id. (lane owner review requested)"
  },
  "signature": {
   "id": "game.photo_mode_view_model_set_tyres_all_cars",

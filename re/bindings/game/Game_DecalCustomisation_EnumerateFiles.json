@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141432ca0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141432ca0.c;xref:0x141429e16",
-  "notes": "Allocates a refcounted file list (0x20 vector + 0x28 control block) and fills it via 0x141432f00 / 0x1414333d0. Callers Game_CustomisationDecals_DeleteFiles (2), Game_DecalCustomisation_DeleteAllFiles. Hypothesis."
+  "evidence": "decomp:re/decomp/141432ca0.c;xref:0x141429e16,0x141429e5f,0x1414343f9",
+  "notes": "(sys, out sharedPtr<list>, sharedPtr<set>*): allocates a 0x20 list (allocator sys[0]) with a 0x28 control block (vtable 0x1456e6380, allocator 0x146129c00); for each entry of the set ([p3]+0x28 slots, +0x30 occupancy bitmap) calls 0x141432f00 on entry +8/+0x10 and appends the result range via 0x1414333d0; releases p3. Callers 0x141429d20, Game_DecalCustomisation_DeleteAllFiles. (lane owner review requested)"
  },
  "signature": {
   "id": "game.decal_customisation_enumerate_files",

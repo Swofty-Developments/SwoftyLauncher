@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143884c00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "str:s_UIConnectionManager_ForceOfflineMode;xref:0x143884c7b",
-  "notes": "cxx=game::UIConnectionManager::forceOfflineMode; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/143884c00.c;str:s_UIConnectionManager_ForceOfflineMode;xref:0x1417845ab,0x1417849d5,0x142739a33,0x14279f353,0x14336b6e4",
+  "notes": "game::UIConnectionManager::forceOfflineMode() (own string 0x14588152b, channel TOP_LEVEL_UI): logs, logs the inlined game::OnlineServer::triggerLogout() (F1OS), calls 0x1432bb360 on the online server [0x1460c1e78], then tail-jumps to 0x143882ad0 (shared continuation, outside this pdata range). Callers 0x1417845ab, 0x1417849d5, 0x142739a33, 0x14279f353, 0x14336b6e4. (lane owner review requested)"
  },
  "signature": {
   "id": "game.u_i_connection_manager_force_offline_mode",

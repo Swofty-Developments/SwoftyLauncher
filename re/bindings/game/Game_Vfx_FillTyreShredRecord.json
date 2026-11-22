@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b214d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143b214d0.c;xref:0x1445ad575",
-  "notes": "Reads the vehicle (+0xf0d40 table by id param_3+0x20) and writes byte (+0x12d3) from the driver team id (+0x32); populates tyre shred event record; caller Game_Vfx_TyreShredImpactEvent."
+  "notes": "Read in full: if +0xf0cc8: entry by idx param_3+0x20 in [this+0xf0d40]; entry+0x12d3 = [param_3[3]+0x32]; when resources param_2+0xd0/+0xe0 change or list empty re-resolves handles (+0xe0/+0xe8) and copies the u16 list to [entry+0x1190]; copies param_2+0x60..+0xc8 to entry+0x50..+0xb8 and matrix [param_3]+0x20 to entry+0x10. Caller 0x1445acb00 (shred path). (lane owner review requested)"
  },
  "signature": {
   "id": "game.vfx_fill_tyre_shred_record",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142ea3ba0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name onVictoryVOAvailable (class from the log channel); log channel END_RACE_UI_SEQUENCER: 'onVictoryVOAvailable() called'"
+  "evidence": "decomp:re/decomp/142ea3ba0.c;pat:log-message-method;xref:0x142ea3369,0x142ea3e9f",
+  "notes": "Bus handler: logs 'onVictoryVOAvailable() called'; only when current state +0x58 == 0: if 0x146104178 vcall +0x10 is true -> next state 3; else reads option 'victory_vo_onoff' from the settings registry 0x146079258 (+0x270/+0x288) -> value 1 = state 1, else state 1 when the local player's ([+0x40]+0x148)[0x1400fa590] entry byte +0x18 != 2, otherwise 3; next state stored at +0x59. Returns 0. Fn ptr lea in 0x142ea3330, 0x142ea3e80. (lane owner review requested)"
  },
  "signature": {
   "id": "game.end_race_ui_sequencer_on_victory_vo_available",

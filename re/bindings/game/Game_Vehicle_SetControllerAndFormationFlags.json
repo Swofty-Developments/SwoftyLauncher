@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143613aa0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143613aa0.c;doc:re/db/subsystems/game.md",
-  "notes": "cf-verify claim 6: same car+0x124 / car+0x134 b7 write as 0x14389cc90 target; also sets car+0x130 b7 (PU wear), +0x131 b6, +0x132 b2 (fuel use) (formation lap path, H)"
+  "evidence": "decomp:re/decomp/143613aa0.c;doc:re/db/subsystems/game.md;xref:0x142d6a663,0x1436154e3,0x143616262,0x143616bb3,0x150855fa3",
+  "notes": "Read in full (asm tail checked): clears this+0x50..+0x52 and per-car state in [0x1460fe8f0]+0x70 table, 0x142f1c000(this+0x30,0xf/0x10); on car [[this+0x18]+0x58]: +0x132|=4, +0x130|=0x80, +0x131|=0x40, 0x142f39460, +0x9ea8 bit8 from +0x9eb0; if +0x32&0x20 and +0x30&1: calls 0x14389cc90(mgr,car,0,0xd)/(1,5)/(0,2) and tail-jmp (1,0xa); decomp inlined 0x14389cc90 (the +0x124/+0x134 write). (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_set_controller_and_formation_flags",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14471c0b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-cxx",
-  "notes": "cxx=ReplayFrame::recordFadeMaker; log channel SKIDMARKS: 'ReplayFrame::recordFadeMaker (%p)'"
+  "evidence": "decomp:re/decomp/14471c0b0.c;pat:log-message-cxx;xref:0x14472322a,0x1447232c7",
+  "notes": "recordFadeMaker(frame, maker, a, b, c, d) (log SKIDMARKS_REPLAY 'ReplayFrame::recordFadeMaker (%p)'): if fade count u16 +0xa < 0x1ff appends a 4-byte record at +0x8814 {maker+0x217d, flags (bit7 from c, bit6 if maker+0x217d == d) | maker+0x2174, a, b} and type code 2 into the 2-bit stream +0x46428 (count +4, max 0x340); else logs 'c_maxFadesMade needs increasing?'. Callers Render_Skidmarks_Update. (lane owner review requested)"
  },
  "signature": {
   "id": "game.replay_frame_record_fade_maker",

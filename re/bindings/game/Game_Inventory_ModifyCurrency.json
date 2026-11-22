@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1425ae100",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-INVENTORY",
-  "notes": "named from its log messages (channel INVENTORY): 'Accessing wallet [%s] | --Modifying amount of currency %s by %d | ----New amount: %d'"
+  "evidence": "decomp:re/decomp/1425ae100.c;pat:log-channel-INVENTORY;xref:0x14255e060,0x1425654d3,0x1425a075d,0x142c5b74a",
+  "notes": "(inv, wallet, currency, delta): wallet hash map (+0x98..+0xcc) by id, currency map at wallet+0x60 (byte key); amount (+4) = clamp(old+delta, 0, 0x7fffffff); logs 'Modifying amount of currency %s by %d' / 'New amount: %d'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.inventory_modify_currency",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143fdc380",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-EadpSDK",
-  "notes": "named from its log messages (channel EadpSDK): 'Subscriptions web api returned no subscriptions for user'"
+  "evidence": "decomp:re/decomp/143fdc380.c;pat:log-channel-EadpSDK;xref:0x143fdbb17",
+  "notes": "Response callback lea'd at 0x143fdbb17 in 0x143fdb010. Parses JSON 'subscriptions' (type/level/subscriptionGroup/state/acquisition/detail), logs 'Found subscription: ...', 'Subscriptions web api returned %u subscriptions for user' or '... returned no subscriptions for user' (EadpSDK). (lane owner review requested) Better name: Game_EadpSDK_OnSubscriptionsWebApiResponse (bound record keeps its name)."
  },
  "signature": {
   "id": "game.eadp_sdk_subscriptions_web_api_returned",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428a2ef0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1428a2ef0.c;xref:0x1428e509c",
-  "notes": "Hash lookup (multiplicative hash, ctrl bytes +0xd8) of ushort id *param_2 in the driver surface-pack map, resolves the driver component (vcall +0x20, object +0x280) and calls Game_SurfacePackSystem_AssignHelmet / AssignSuit / Game_DriverCustomiser_App*. Only caller Game_FrontendSceneComponentDriver_UpdateDecals. Hypothesis."
+  "notes": "(drvMgr,id*). Hash lookup u16 id in map +0xc8..+0xfc (0x18-byte slots); if component type (vcall +0x20 -> vcall +8) == 2: skin id from [+0x280]+0x228+8 (or -1), clears and re-assigns helmet decals from list 0x142893e80 (Game_SurfacePackSystem_AssignHelmet) and suit decals from 0x142893c70 (Game_SurfacePackSystem_AssignSuit) on +0x90; for a matching [+0x280] applies Game_DriverCustomiser_ApplySuitDecals at +0x5c0. Only caller 0x1428e5050. (lane owner review requested)"
  },
  "signature": {
   "id": "game.frontend_scene_driver_assign_helmet_suit_by_id",

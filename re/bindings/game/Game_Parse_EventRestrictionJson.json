@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1427b80d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1427b80d0.c;xref:0x142584bd4,0x1427928ab",
-  "notes": "Parses one event rule/restriction JSON object (param_2 = name e.g. 'featured_event_restriction' or 'safety_rating_preset_*', param_3 = dst e.g. event+0x4aa0, param_4 = JSON value): keys values (array, string values auto/inactive/2d/3d mapped via tables 0x1457a0e98..), min, max, priority; logs missing keys on JSON channel. Callers: CollaborativeEvent/featured event parser 0x14278bcf0 (eventType, invitationalName, parentEventType) and safety-rating preset loader 0x142584880. Addon: read/override F1 World event restrictions and safety rating presets (min/max/allowed values)."
+  "notes": "Each JSON member key = option name (options system 0x146079258 +0x270). Null removes that option's restriction from list param_3 (stride 0x38); else 'values' [first,last] by name (aliases 0x1457a0e98: auto->automatic, 2d->two_d, 3d->three_d) or 'min'/'max', 'priority' (default param_5), clamped to option range +0xb8 -> range (type 2) or bitmask (type 1), replaced/appended via 0x142880ac0. Returns 0 (0x16 bad type). (lane owner review requested)"
  },
  "signature": {
   "id": "game.parse_event_restriction_json",

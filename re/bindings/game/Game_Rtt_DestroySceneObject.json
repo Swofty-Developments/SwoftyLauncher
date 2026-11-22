@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b5c4b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143b5c4b0.c;xref:0x143d888b2",
-  "notes": "Hypothesis: tears down scene object members (+0x468, +0x400 ...; frees via vcall +0x20). Named callers: Game_Rtt_CreateScenes."
+  "notes": "Member teardown: destroys the functor at +0x468 (inline storage +0x430, vcall +0x20), then releases three shared pointers +0x400, +0x3f0, +0x3e0 (strong count +8 -> vcall +0, weak +0xc -> vcall +8). Caller Game_Rtt_RttGenerator. (lane owner review requested)"
  },
  "signature": {
   "id": "game.rtt_destroy_scene_object",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e2dc20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel-THUMBNAIL_SYSTEM",
-  "notes": "named from its log messages (channel THUMBNAIL_SYSTEM): 'Adding pending car thumbnail generation for set ID %d'"
+  "evidence": "decomp:re/decomp/142e2dc20.c;pat:log-channel-THUMBNAIL_SYSTEM;xref:0x142e3355c,0x142e3490e,0x142e351e8,0x142e35358,0x142e38caf,0x142e39177,0x14379e84a",
+  "notes": "If system enabled (+0x140): finds view by key (0x142ee2990), allocates car task (0x6aa0, vtable 0x1457ec900 + Game_VehicleCustomisation_Copy, or 0x6af0 via 0x142e3b7b0 when request+0x67b0), new set id from 0x14607fce0, Game_Thumbnail_SetMap_Emplace into +0xc0, queues id in +0xe0; else callback(4/3). (lane owner review requested)"
  },
  "signature": {
   "id": "game.thumbnail_system_adding_pending_car_thumbnail",
