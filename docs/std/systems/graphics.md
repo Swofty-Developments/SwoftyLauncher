@@ -185,6 +185,27 @@ events::on<graphics::events::SettingRead>().before([](graphics::events::SettingR
 graphics::set_setting("rainSplashes", 0);
 ```
 
+## Shader resource views
+
+`swofty/d3d12.hpp` ships today. The core owns `ID3D12Device::CreateShaderResourceView` (vtable entry 18) and hooks it once. An addon that needs to find one of the game's textures registers a callback instead of patching the device's vtable itself. The callback runs right after the game writes each view, on the thread that made it, with the resource, its size and format, the view description and the CPU descriptor handle.
+
+```cpp
+#include <swofty/d3d12.hpp>
+
+std::atomic<uint64_t> track_info_view{0};
+
+SWOFTY_ON_LOAD
+{
+    swofty::d3d12::on_srv_created([](void *, const swofty::d3d12::SrvCreated *v) {
+        // the track's TrackInfo texture: 16384 x 64, BC7 (DXGI_FORMAT 97, 98 or 99)
+        if (v->width == 16384 && v->height == 64 && v->format >= 97 && v->format <= 99)
+            track_info_view = v->cpu_handle;
+    });
+}
+```
+
+A callback must return quickly: the game makes thousands of views while a track loads, and several threads make them at once. A view the callback makes itself does not call the callbacks again. `on_srv_created` returns `not_live` when the core could not hook the call; the `[gfx] srv hook` lines in `loader.log` say why. The same hook carries the `SWOFTY_SRV_CLAMP=1` clamp.
+
 ## The spectator camera
 
 The game has a spectator mode: a director that follows any driver with a broadcast or TV pod camera, and its own HUD. Addons can turn it on in a single-player session, pick who it follows and with which camera, and keep its HUD up while it follows another car.
@@ -238,6 +259,7 @@ Planned, with no header yet:
 
 - **Looks and passes: ready** (shipped). They sit outside the KB. The core hooks D3D12 and DXGI by vtable.
 - **The spectator camera: implemented, waiting on verification.** `SpectatorDirector::setActive` (`Sess_SpectatorDirector_SetActive`, L2), the requested and current driver (+0xDC, +0xD6) and camera (+0xE0, +0xD8), the UI flag `session.spectator_mode.active` (+0xD0) and the HUD hide with reason 6 (`Sess_SpectatorHud_Hide`, L2) are in the KB. `follow` stores the driver byte in the requested-driver field (+0xDC), as the HUD next and previous commands do. The core finds the director by watching the game's calls to it, so a spectator call answers late until the game has called the director once in the session. `hud.spectator.visible` fires on every hide with `following` filled in; a handler that sets `visible` skips the hide, and the HUD is not shown again if it was already hidden. Whether the director renders a usable camera in an offline race is in-game check 4.
+- **Shader resource view callbacks: implemented, waiting on verification.** One core hook on `CreateShaderResourceView` serves every addon (16 callbacks at most). It arms at the ready step when the clamp is on or a callback is registered, otherwise with the first callback. Whether the game's views reach it with an overlay or frame generation layer in front of the device is an in-game check.
 - **`render.present` runs every frame.** A look is graded into the LUT once when it changes, not per frame. A `Present` handler should only read state it already has.
 - **Settings: ready.** The hardware-setting sites are L2 (16 bool and 12 int), used by one addon.
 - **Replays and telemetry: partial.** `Sess_Recordable_Register` is L2; the rest is L1. UDP holds 22 cars; the live per-wheel values are unverified.

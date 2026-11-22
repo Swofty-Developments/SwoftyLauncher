@@ -1,0 +1,12 @@
+{
+  "content.package": {
+    "f5_1950": {
+      "$comment": "world.name is 1 to 24 of a-z, 0-9 and _",
+      "entrant_list": "f5_1950",
+      "season": 1950,
+      "world": {
+        "name": "E1950"
+      }
+    }
+  }
+}

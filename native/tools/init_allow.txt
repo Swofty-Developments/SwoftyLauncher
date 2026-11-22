@@ -44,6 +44,7 @@ type: CategoryHooks
 type: DeviceHooks
 type: ListHooks
 type: SwapchainHooks
+type: SrvHooks
 type: EntrantCapHooks
 type: FirstReadHooks
 type: safetyhook::InlineHook

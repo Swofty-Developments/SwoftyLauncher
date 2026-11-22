@@ -187,6 +187,7 @@ inline std::size_t row_keys(const std::string &table)
         {"game_setup.scenarios", 7},
         {"drs.drs_allowed_lap", 8},
         {"leaderboards", 3},
+        {"game_setup.branding", 90},
         {"options_system.options.multiplayer.options_folder_2.option[_metadata_=category]", 8}};
     auto it = sizes.find(table);
     return it == sizes.end() ? 16 : it->second;
@@ -732,10 +733,128 @@ inline void lower_box_world(const std::string &id, const std::string &list, cons
         std::to_string(c.appends.size()) + " season lists");
 }
 
-// box_worlds: give a box with more teams than its world has garages a world of its own (box_world.hpp).
+// The box's list's season: the list row's own (entrant_list_set), else its source list's.
+inline std::string list_season(const Value &row, const std::string &list_from, const Read &read)
+{
+    if (row["season"].is_string())
+        return std::string(row["season"].as_string());
+    return read ? read(std::string(LISTS) + "[_metadata_=" + list_from + "].season").value_or("") : "";
+}
+
+// The record's "world" block (content.package 1.7) as box_world::Own; name empty when it has none.
+inline box_world::Own own_world_of(const Value &rec)
+{
+    box_world::Own own;
+    const Value &w = rec["world"];
+    if (!w.is_object() || !w["name"].is_string())
+        return own;
+    own.name = std::string(w["name"].as_string());
+    if (w["season"].is_string())
+        own.share = std::string(w["season"].as_string());
+    if (w["from"].is_string())
+        own.from_layer = std::string(w["from"].as_string());
+    const Value &b = w["branding"];
+    own.branding = b.is_object();
+    if (own.branding && b["from"].is_string())
+        own.from_branding = std::string(b["from"].as_string());
+    return own;
+}
+
+// The rows of a box that names its world (box_world.hpp, choose_named): the shared season with an id from the
+// content.package.season pool (keyed world:<season>), the season on every seasons list that holds the list's
+// season, a layer row for the box's setup mode and that season whose worldAssetGroup and worldEri name the box's
+// world, a branding row with the record's timing tower logo when it has a branding block, and the season on the list
+// row. A later box that names the same season adds no rows and takes the season.
+inline void lower_named_world(const std::string &id, const Value &rec, const std::string &mode, std::size_t teams,
+                              const std::string &list_from, Value &row, const Read &read, const StatIds &stat, Plan &plan,
+                              const box_world::WorldTracks *tracks)
+{
+    namespace bw = box_world;
+    bw::Own own = own_world_of(rec);
+    bw::Named c = bw::choose_named(teams, list_season(row, list_from, read), own, read, tracks ? *tracks : bw::WorldTracks());
+    if (!c.line.empty())
+        plan.lines.push_back("content.package " + id + ": " + c.line);
+    if (!c.apply)
+        return;
+    std::optional<int64_t> season_id, layer_id, branding_id;
+    if (c.new_season)
+        season_id = stat_of(stat, bw::SEASON_IDS, "world:" + c.share, -1);
+    if (c.new_layer)
+        layer_id = stat_of(stat, bw::LAYER_IDS, "world:" + c.share, -1);
+    if ((c.new_season && !season_id) || (c.new_layer && !layer_id)) {
+        plan.lines.push_back("content.package " + id + ": world " + c.name + ": no free " +
+                             std::string(c.new_season && !season_id ? "season id (0 to 31)" : "track layer id (0 to 255)") +
+                             "; the box keeps the world its list's layers load (the boxes of one era can share a season: "
+                             "world.season)");
+        return;
+    }
+    if (c.new_branding) {
+        branding_id = stat_of(stat, bw::BRANDING_IDS, "world:" + c.share, -1);
+        if (!branding_id) {
+            plan.lines.push_back("content.package " + id + ": world " + c.name +
+                                 ": no free branding id; the box keeps the branding of " + c.from_season);
+            c.new_branding = false;
+            c.branding.clear();
+        }
+    }
+    if (c.new_season) {
+        push_row(plan, bw::SEASONS, std::string(bw::SEASONS) + "." + bw::SEASON_ROW + "[_metadata_=" + c.from_season + "]",
+                 Value::object({{"_metadata_", c.season}, {"statId", std::to_string(*season_id)}}));
+        for (auto &r : c.appends)
+            push_op(plan, append_op(r, "seasons", c.season));
+    }
+    if (c.new_layer)
+        push_row(plan, bw::LAYERS, std::string(bw::LAYERS) + "." + bw::LAYER_ROW + "[_metadata_=" + c.from_layer + "]",
+                 Value::object({{"_metadata_", c.layer},
+                                {"statId", std::to_string(*layer_id)},
+                                {"game_setup_modes", mode},
+                                {"seasons", c.season},
+                                {"worldAssetGroup", bw::world_group(c.name)},
+                                {"worldEri", bw::world_eri(c.name)}}));
+    if (c.new_branding) {
+        const Value &b = rec["world"]["branding"];
+        Value set = Value::object({{"_metadata_", c.branding},
+                                   {"stat_id", std::to_string(*branding_id)},
+                                   {"game_setup_modes", mode},
+                                   {"seasons", c.season}});
+        if (b["timing_tower_logo"].is_string())
+            set["timing_tower_logo_texture_path"] = std::string(b["timing_tower_logo"].as_string());
+        if (b["broadcast_show_f1_logo"].is_bool())
+            set["broadcast_show_f1_logo"] = std::string(b["broadcast_show_f1_logo"].as_bool() ? "True" : "False");
+        push_row(plan, bw::BRANDING, std::string(bw::BRANDING) + "." + bw::BRANDING_ROW + "[_metadata_=" + c.from_branding + "]",
+                 std::move(set));
+    }
+    row["season"] = c.season;
+    std::string where;
+    if (!c.checked) {
+        where = "the track folders were not looked at";
+    } else {
+        for (auto &t : c.tracks)
+            where += (where.empty() ? "" : ", ") + t;
+        where = std::to_string(c.tracks.size()) + " track(s) hold it (" + where + "); the box's track list leaves out the rest";
+    }
+    std::string season_part =
+        c.new_season ? " (statId " + std::to_string(*season_id) + ", " + std::to_string(c.appends.size()) + " season lists)"
+                     : std::string(" (shared, made by an earlier box)");
+    std::string layer_part =
+        c.new_layer ? " (from " + c.from_layer + ", statId " + std::to_string(*layer_id) + ", " + bw::world_eri(c.name) + ")"
+                    : std::string(" (shared)");
+    std::string branding_part;
+    if (!c.branding.empty())
+        branding_part = ", branding " + c.branding +
+                        (c.new_branding ? " (from " + c.from_branding + ", stat_id " + std::to_string(*branding_id) + ")"
+                                        : std::string(" (shared)"));
+    plan.lines.push_back("content.package " + id + ": world " + c.name + ": season " + c.season + season_part + ", layer " +
+                         c.layer + layer_part + branding_part + "; " + where);
+}
+
+// box_worlds: give a box with more teams than its world has garages a world of its own (box_world.hpp). own_worlds
+// (SWOFTY_BOX_OWN_WORLDS=1): a box whose record names a world gets that one instead (lower_named_world); tracks lists
+// the track folders that hold it.
 inline void lower_package(const std::string &id, const Value &rec, const Lookup &lookup, Plan &plan, const StatIds &stat = {},
                           const PersonMap *wear = nullptr, const Read &read = {}, const ConstructorTeams *constructors = nullptr,
-                          const Dropped *dropped = nullptr, bool box_worlds = false)
+                          const Dropped *dropped = nullptr, bool box_worlds = false, bool own_worlds = false,
+                          const box_world::WorldTracks *tracks = nullptr)
 {
     plan.owner = addon_of(id);
     if (std::string gone = dropped_ref(rec, dropped); !gone.empty()) {
@@ -846,7 +965,11 @@ inline void lower_package(const std::string &id, const Value &rec, const Lookup 
     bool virt = rec["virtual_list"].is_bool() && rec["virtual_list"].as_bool();
     if (virt)
         plan.virtual_lists.push_back(list);
-    if (box_worlds && !virt && mode == box_world::SETUP_MODE)
+    if (box_worlds && own_worlds && !virt && rec["world"].is_object())
+        lower_named_world(id, rec, mode, teams.size(), list_from, row, read, stat, plan, tracks);
+    const Value &listed = row;
+    bool named = listed["season"].is_string() && listed["season"].as_string().rfind("swofty_world_", 0) == 0;
+    if (box_worlds && !virt && mode == box_world::SETUP_MODE && !named)
         lower_box_world(id, list, mode, teams.size(), list_from, row, read, stat, plan);
     auto list_id = virt ? std::optional<int64_t>() : stat_of(stat, "content.package", id, pin_of(rec));
     if (list_id)
@@ -995,6 +1118,7 @@ inline constexpr PoolSpec POOLS[] = {
     {"team.identity", "entrants.teams", "team", "stat_id", TEAM_STAT_MAX},
     {box_world::SEASON_IDS, box_world::SEASONS, box_world::SEASON_ROW, "statId", box_world::SEASON_ID_MAX},
     {box_world::LAYER_IDS, box_world::LAYERS, box_world::LAYER_ROW, "statId", box_world::LAYER_ID_MAX},
+    {box_world::BRANDING_IDS, box_world::BRANDING, box_world::BRANDING_ROW, "stat_id", box_world::BRANDING_ID_MAX},
 };
 
 struct PoolScan {
