@@ -82,6 +82,52 @@ static void hold()
     CHECK(t.snapshot(3).serves == 0 && t.snapshot(8).armed == 0);
 }
 
+static void learned_lead()
+{
+    ph::Table t;
+    t.set_crew(ph::CREW_STRETCH);
+    t.arm(3, 17);
+    enter_box(t, 3);
+    CHECK(t.clip_started(3, true, false, 10) == ph::CREW_STRETCH);
+    CHECK(near(t.crew_step(3, 0.1f, 1.0f), 0.1f * (10 + ph::STRETCH_LEAD) / 17));
+    int steps = 1;
+    while (t.car(3).waiting.load() && steps < 1000) {
+        t.crew_step(3, 0.1f, 1.0f);
+        steps++;
+    }
+    CHECK(steps > 180 && steps < 200);
+    float at_timeout = t.clip_time(3);
+    for (int i = 0; i < 4; i++)
+        CHECK(near(t.crew_step(3, 0.1f, 1.0f), 0.1f));
+    CHECK(!t.crew_start(3));
+    float measured = t.clip_time(3);
+    CHECK(std::fabs(measured - (at_timeout + 0.4f)) < 1e-3f);
+    CHECK(t.lead(10) == measured);
+    CHECK(t.lead(5) == 5 + ph::STRETCH_LEAD);
+    CHECK(t.crew_step(3, 0.1f, 1.0f) == 0.1f);
+    t.on_status(3, ph::IN_PIT_BOX, ph::CREW_COMPLETED);
+    t.on_status(3, ph::CREW_COMPLETED, ph::ON_TRACK);
+
+    t.arm(3, 20);
+    enter_box(t, 3);
+    t.clip_started(3, true, false, 10);
+    CHECK(near(t.crew_step(3, 0.1f, 1.0f), 0.1f * measured / 20));
+    for (int i = 1; i < 200; i++)
+        t.crew_step(3, 0.1f, 1.0f);
+    CHECK(std::fabs(t.clip_time(3) - measured) < 1e-2f);
+    CHECK(t.crew_start(3));
+    CHECK(std::fabs(t.lead(10) - measured) < 1e-2f);
+
+    ph::Table u;
+    u.set_crew(ph::CREW_STRETCH);
+    u.arm(4, 5);
+    enter_box(u, 4);
+    u.clip_started(4, true, false, 5);
+    u.crew_step(4, 0.1f, 1.0f);
+    CHECK(u.crew_start(4));
+    CHECK(u.lead(5) == 5 + ph::STRETCH_LEAD);
+}
+
 static void stretch()
 {
     ph::Table t;
@@ -95,9 +141,10 @@ static void stretch()
     t.on_status(2, ph::ENTERING_PIT_BOX, ph::IN_PIT_BOX);
     CHECK(t.clip_started(2, true, false) == ph::CREW_STRETCH);
     float rate = 1.2f;
-    CHECK(near(t.crew_step(2, 0.1f * rate, rate), 0.1f * 5 / 20));
-    CHECK(near(t.crew_step(2, 0.1f * rate, rate), 0.025f));
+    CHECK(near(t.crew_step(2, 0.1f * rate, rate), 0.1f * (5 + ph::STRETCH_LEAD) / 20));
+    CHECK(near(t.crew_step(2, 0.1f * rate, rate), 0.1f * (5 + ph::STRETCH_LEAD) / 20));
     CHECK(t.crew_start(2));
+    CHECK(t.lead(5) == 5 + ph::STRETCH_LEAD);
     CHECK(near(t.crew_step(2, 0.12f, rate), 0.12f));
     CHECK(!t.crew_start(2));
     t.on_status(2, ph::IN_PIT_BOX, ph::PERFORMED_RELEASE);
@@ -109,12 +156,12 @@ static void stretch()
     t.arm(4, 3);
     enter_box(t, 4);
     t.clip_started(4, true, false);
-    CHECK(near(t.crew_step(4, 0.1f, 1.0f), 0.1f * 5 / 3));
+    CHECK(near(t.crew_step(4, 0.1f, 1.0f), 0.1f * (5 + ph::STRETCH_LEAD) / 3));
 
     t.arm(12, 15);
     enter_box(t, 12);
     CHECK(t.clip_started(12, true, false, 10) == ph::CREW_STRETCH);
-    CHECK(near(t.crew_step(12, 0.3f, 1.5f), 0.2f * 10 / 15));
+    CHECK(near(t.crew_step(12, 0.3f, 1.5f), 0.2f * (10 + ph::STRETCH_LEAD) / 15));
 
     t.arm(9, 2);
     enter_box(t, 9);
@@ -177,6 +224,7 @@ int main()
 {
     hold();
     stretch();
+    learned_lead();
     freeze();
     names();
     if (g_fail) {

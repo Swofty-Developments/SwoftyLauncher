@@ -9,8 +9,11 @@
 // seconds; the core fixes that number when the car enters the pit lane and adds it to the game's own box hold
 // (Game_PitLane_UpdateMovement keeps the car in the box until its box clock passes the crew's job time plus the hold
 // seconds, which are the stop-go length or 0). The crew waits through those seconds before it works:
-//   stretch  the game's 5 s stop-go crew clip (StartJobDoStandardStop...5SP) plays with only its wait timed to the
-//            hold, the work after the clip's Start event at normal speed
+//   stretch  the game's stop-go crew clip (StartJobDoStandardStop...5SP or 10SP) plays with only its wait timed to
+//            the hold, the work after the clip's Start event at normal speed. The Start event sits a little past the
+//            clip's nominal 5 or 10 s; until it is measured the wait is timed to nominal + STRETCH_LEAD, which
+//            the event comes before, so the crew starts early and the car still waits out the hold. The clip time
+//            the event fires at is kept per clip length for the stops after
 //   freeze   the plain stop clip stands still for the hold seconds from its first frame, then plays
 //   none     the crew works at once and the car waits after it
 // Stretch falls back to freeze for a stop whose SP clip does not exist. A stop counts as served when the car leaves
@@ -24,6 +27,7 @@ inline constexpr uint32_t CARS = 27;
 inline constexpr float MAX_SECONDS = 600.0f;
 inline constexpr float STRETCH_BASE = 5.0f;
 inline constexpr float WAIT_SLACK = 2.0f;
+inline constexpr float STRETCH_LEAD = 3.0f;
 
 enum Status : uint32_t {
     ON_TRACK = 1,
@@ -76,6 +80,9 @@ struct Car {
     std::atomic<float> waited{0};
     std::atomic<float> base{STRETCH_BASE};
     std::atomic<uint32_t> last_crew{CREW_NONE};
+    std::atomic<float> clip{0};
+    std::atomic<uint32_t> timing{0};
+    std::atomic<uint32_t> kind{0};
 
     void reset()
     {
@@ -89,6 +96,9 @@ struct Car {
         waited = 0;
         base = STRETCH_BASE;
         last_crew = CREW_NONE;
+        clip = 0;
+        timing = 0;
+        kind = 0;
     }
 };
 
@@ -135,11 +145,13 @@ public:
             k.armed = 0;
             k.last_crew = k.crew.load();
             k.waiting = 0;
+            k.timing = 0;
             return s;
         }
         if (!in_lane(after)) {
             k.stop = 0;
             k.waiting = 0;
+            k.timing = 0;
         }
         return 0;
     }
@@ -177,7 +189,11 @@ public:
             k.crew = m = CREW_FREEZE;
         if (m == CREW_NONE)
             return m;
-        k.base = base > 0 && std::isfinite(base) ? base : STRETCH_BASE;
+        float nominal = base > 0 && std::isfinite(base) ? base : STRETCH_BASE;
+        k.kind = nominal >= 10.0f ? 1u : 0u;
+        k.base = m == CREW_STRETCH ? lead(nominal) : nominal;
+        k.clip = 0;
+        k.timing = m == CREW_STRETCH ? 1u : 0u;
         k.waited = 0;
         k.waiting = 1;
         return m;
@@ -190,8 +206,59 @@ public:
         if (c >= CARS)
             return dt;
         Car &k = cars_[c];
-        if (!k.waiting.load(std::memory_order_relaxed))
+        bool waiting = k.waiting.load(std::memory_order_relaxed), timing = k.timing.load(std::memory_order_relaxed);
+        if (!waiting && !timing)
             return dt;
+        float out = waiting ? wait_step(k, dt, rate) : dt;
+        if (timing)
+            k.clip.store(k.clip.load(std::memory_order_relaxed) + out, std::memory_order_relaxed);
+        return out;
+    }
+
+    // The clip time the stop-go clip's Start event fires at, for a clip of nominal seconds (5 or 10): measured at an
+    // earlier stretched stop, else nominal + STRETCH_LEAD.
+    float lead(float nominal) const
+    {
+        float l = leads_[nominal >= 10.0f ? 1 : 0].load(std::memory_order_relaxed);
+        return l > 0 ? l : nominal + STRETCH_LEAD;
+    }
+
+    // The stop-go clip's Start event for car c: the crew starts working. Keeps the clip time it fired at as the lead
+    // of that clip length. Returns whether it ended a stretched wait.
+    bool crew_start(uint32_t c)
+    {
+        if (c >= CARS)
+            return false;
+        Car &k = cars_[c];
+        if (k.timing.exchange(0)) {
+            float at = k.clip.load(), nominal = k.kind.load() ? 10.0f : 5.0f;
+            if (at >= nominal * 0.8f && at <= nominal * 2.5f)
+                leads_[k.kind.load() ? 1 : 0] = at;
+        }
+        if (k.crew.load() != CREW_STRETCH || !k.waiting.load())
+            return false;
+        k.waiting = 0;
+        return true;
+    }
+
+    // The clip time of car c's stop-go clip: where its Start event fired once it has.
+    float clip_time(uint32_t c) const { return cars_[c < CARS ? c : 0].clip.load(); }
+
+    Snapshot snapshot(uint32_t c) const
+    {
+        const Car &k = cars_[c < CARS ? c : 0];
+        return {k.armed.load(), k.stop.load(), k.served.load(), k.serves.load(), k.status.load(), k.last_crew.load()};
+    }
+
+    void reset_all()
+    {
+        for (auto &k : cars_)
+            k.reset();
+    }
+
+private:
+    float wait_step(Car &k, float dt, float rate)
+    {
         float s = k.stop.load(std::memory_order_relaxed);
         if (s <= 0 || !(rate > 0) || !std::isfinite(dt)) {
             k.waiting = 0;
@@ -214,32 +281,8 @@ public:
         return real * k.base.load(std::memory_order_relaxed) / s;
     }
 
-    // The stop-go clip's Start event for car c: the crew starts working.
-    bool crew_start(uint32_t c)
-    {
-        if (c >= CARS)
-            return false;
-        Car &k = cars_[c];
-        if (k.crew.load() != CREW_STRETCH || !k.waiting.load())
-            return false;
-        k.waiting = 0;
-        return true;
-    }
-
-    Snapshot snapshot(uint32_t c) const
-    {
-        const Car &k = cars_[c < CARS ? c : 0];
-        return {k.armed.load(), k.stop.load(), k.served.load(), k.serves.load(), k.status.load(), k.last_crew.load()};
-    }
-
-    void reset_all()
-    {
-        for (auto &k : cars_)
-            k.reset();
-    }
-
-private:
     Car cars_[CARS];
+    std::atomic<float> leads_[2] = {0.0f, 0.0f};
     std::atomic<uint32_t> mode_{CREW_STRETCH};
 };
 

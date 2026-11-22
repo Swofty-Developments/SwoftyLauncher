@@ -8,6 +8,7 @@
 #include <swofty/mixin.hpp>
 
 #include <atomic>
+#include <cstdio>
 #include <cstring>
 #include <string>
 
@@ -118,10 +119,13 @@ void play(void *instance, const char *name)
         return;
     }
     uint32_t m = table.clip_started(car, base > 0, missing, base > 0 ? base : STRETCH_BASE);
-    swofty::log("[pit hold] car %u: crew clip %s%s, the crew %s for %.2f s", car, n.c_str(),
+    char lead[64] = "";
+    if (m == CREW_STRETCH)
+        std::snprintf(lead, sizeof lead, " (its Start event at clip time %.2f s)", table.car(car).base.load());
+    swofty::log("[pit hold] car %u: crew clip %s%s, the crew %s for %.2f s%s", car, n.c_str(),
                 missing ? " (its stop-go clip did not load)" : "",
                 m == CREW_STRETCH ? "plays the stop-go wait" : m == CREW_FREEZE ? "stands still" : "works at once and the car waits",
-                table.car(car).stop.load());
+                table.car(car).stop.load(), lead);
 }
 
 void scaled_dt(SwoftyContext *c)
@@ -142,9 +146,13 @@ void scaled_dt(SwoftyContext *c)
 void clip_start(SwoftyContext *c)
 {
     uint32_t car = instance_car(c->rbx);
-    if (car < CARS && table.crew_start(car))
-        swofty::log("[pit hold] car %u: the stop-go clip's Start event after %.2f s of crew wait", car,
-                    table.car(car).waited.load());
+    if (car >= CARS)
+        return;
+    bool timed = table.car(car).timing.load();
+    bool ended = table.crew_start(car);
+    if (timed || ended)
+        swofty::log("[pit hold] car %u: the stop-go clip's Start event at clip time %.2f s, after %.2f s of crew wait%s",
+                    car, table.clip_time(car), table.car(car).waited.load(), ended ? "" : " (the wait had already ended)");
 }
 
 void crew_mode()
