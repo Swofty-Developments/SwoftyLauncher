@@ -354,17 +354,82 @@ struct Catalog {
     addons: Vec<serde_json::Value>,
 }
 
-/// The addons of a catalog. An entry this launcher can't read is left out, so one
-/// malformed addon doesn't hide the others.
+/// The addons of a catalog. An entry or a version this launcher can't read is
+/// left out, so one malformed addon or version doesn't hide the others.
 pub fn parse(text: &str) -> Option<Vec<Addon>> {
+    parse_noting(text, &mut |_| {})
+}
+
+/// [`parse`], naming each entry and version it leaves out to `note`.
+fn parse_noting(text: &str, note: &mut dyn FnMut(&str)) -> Option<Vec<Addon>> {
     let catalog = serde_json::from_str::<Catalog>(text).ok()?;
     Some(
         catalog
             .addons
             .into_iter()
-            .filter_map(|a| serde_json::from_value(a).ok())
+            .filter_map(|entry| {
+                let id = entry
+                    .get("id")
+                    .and_then(serde_json::Value::as_str)
+                    .unwrap_or("?")
+                    .to_owned();
+                read_addon(entry, note)
+                    .map_err(|e| note(&format!("left out {id} from the catalog: {e}")))
+                    .ok()
+            })
             .collect(),
     )
+}
+
+/// One addon entry with the versions this launcher can read. Each version it
+/// can't read is left out and named to `note`; the entry fails when the addon
+/// itself can't be read, or when it lists versions and none can be read.
+fn read_addon(
+    mut entry: serde_json::Value,
+    note: &mut dyn FnMut(&str),
+) -> std::result::Result<Addon, String> {
+    let (versions, latest) = match entry.as_object_mut() {
+        Some(fields) => (fields.remove("versions"), fields.remove("latest")),
+        None => (None, None),
+    };
+    let mut addon: Addon = serde_json::from_value(entry).map_err(|e| e.to_string())?;
+    let versions: Vec<serde_json::Value> = match versions {
+        Some(v) => serde_json::from_value(v).map_err(|e| format!("versions: {e}"))?,
+        None => Vec::new(),
+    };
+    let mut left_out = Vec::new();
+    addon.versions = versions
+        .into_iter()
+        .filter_map(|v| read_version(v, &mut left_out))
+        .collect();
+    addon.latest = latest
+        .filter(|v| !v.is_null())
+        .and_then(|v| read_version(v, &mut left_out));
+    for (version, e) in &left_out {
+        note(&format!("left out {} {version} from the catalog: {e}", addon.id));
+    }
+    if !left_out.is_empty() && addon.versions.is_empty() && addon.latest.is_none() {
+        return Err("no version this launcher can read".into());
+    }
+    Ok(addon)
+}
+
+fn read_version(raw: serde_json::Value, left_out: &mut Vec<(String, String)>) -> Option<Version> {
+    let label = raw
+        .get("version")
+        .and_then(serde_json::Value::as_str)
+        .unwrap_or("?")
+        .to_owned();
+    match serde_json::from_value(raw) {
+        Ok(v) => Some(v),
+        Err(e) => {
+            let skipped = (label, e.to_string());
+            if !left_out.contains(&skipped) {
+                left_out.push(skipped);
+            }
+            None
+        }
+    }
 }
 
 pub fn cache_path(root: &Path) -> PathBuf {
@@ -484,7 +549,8 @@ fn fetch_from(root: &Path, url: &str, waits: Waits) -> std::result::Result<Vec<A
         Err(Trouble::Offline(_)) => read_catalog(url, waits)?,
         read => read?,
     };
-    let addons = parse(&text).ok_or_else(|| Trouble::Failed(format!("{url}: not an addon catalog")))?;
+    let addons = parse_noting(&text, &mut |line| log(root, line))
+        .ok_or_else(|| Trouble::Failed(format!("{url}: not an addon catalog")))?;
     let path = cache_path(root);
     if let Some(dir) = path.parent() {
         std::fs::create_dir_all(dir).ok();
@@ -503,15 +569,16 @@ pub enum Stage {
     Installing,
 }
 
-/// One addon with every version and its 30-day trend.
-pub fn fetch_one(id: &str) -> std::result::Result<Addon, Trouble> {
+/// One addon with every version it can read and its 30-day trend.
+pub fn fetch_one(root: &Path, id: &str) -> std::result::Result<Addon, Trouble> {
     let url = format!("{}/v1/addons/{id}", base_url());
     let text = get(&url, TIMEOUT)?
         .with_config()
         .limit(CATALOG_LIMIT)
         .read_to_string()
         .map_err(|e| Trouble::Failed(format!("{url}: {e}")))?;
-    serde_json::from_str(&text).map_err(|e| Trouble::Failed(format!("{url}: {e}")))
+    let entry = serde_json::from_str(&text).map_err(|e| Trouble::Failed(format!("{url}: {e}")))?;
+    read_addon(entry, &mut |line| log(root, line)).map_err(|e| Trouble::Failed(format!("{url}: {e}")))
 }
 
 pub fn now_secs() -> i64 {
@@ -784,6 +851,124 @@ mod tests {
         let ids: Vec<String> = parse(&text).unwrap().into_iter().map(|a| a.id).collect();
         assert_eq!(ids, ["a.good"]);
         assert!(parse("{\"not\": 1}").is_none());
+    }
+
+    fn listed_version(v: &str, launcher: serde_json::Value) -> serde_json::Value {
+        serde_json::json!({
+            "version": v, "launcher": launcher, "game": "f1_25", "size": 1, "sha256": "00",
+            "url": format!("http://x/{v}.zip"), "published_at": "2026-11-22T00:00:00Z",
+            "changelog": "", "native": false, "yanked": false, "status": "approved"
+        })
+    }
+
+    fn listed_addon(
+        id: &str,
+        latest: serde_json::Value,
+        versions: Vec<serde_json::Value>,
+    ) -> serde_json::Value {
+        serde_json::json!({
+            "id": id, "name": id, "author": "a", "summary": "", "description": "",
+            "downloads": 4045, "latest": latest, "versions": versions
+        })
+    }
+
+    fn parse_with_notes(text: &str) -> (Vec<Addon>, Vec<String>) {
+        let mut notes = Vec::new();
+        let addons = parse_noting(text, &mut |line| notes.push(line.to_owned())).unwrap();
+        (addons, notes)
+    }
+
+    #[test]
+    fn a_version_this_launcher_cannot_read_leaves_the_rest_of_the_addon() {
+        let good = listed_version("1.0.7", serde_json::json!(">=1.10.0"));
+        let text = serde_json::json!({ "addons": [
+            listed_addon("tom.bmw-2026-testing", good.clone(), vec![
+                good,
+                listed_version("1.0.6", serde_json::json!("Any version")),
+            ]),
+            listed_addon("a.other", listed_version("2.0.0", serde_json::Value::Null), vec![
+                listed_version("2.0.0", serde_json::Value::Null),
+            ]),
+        ] })
+        .to_string();
+        let (addons, notes) = parse_with_notes(&text);
+        let ids: Vec<&str> = addons.iter().map(|a| a.id.as_str()).collect();
+        assert_eq!(ids, ["tom.bmw-2026-testing", "a.other"]);
+        let tom = &addons[0];
+        let versions: Vec<String> = tom.versions.iter().map(|v| v.version.to_string()).collect();
+        assert_eq!(versions, ["1.0.7"]);
+        assert_eq!(tom.latest.as_ref().unwrap().version, launcher("1.0.7"));
+        assert_eq!(
+            tom.offered(&launcher("1.10.26")).unwrap().version,
+            launcher("1.0.7")
+        );
+        assert_eq!(tom.downloads, 4045);
+        assert_eq!(
+            notes,
+            ["left out tom.bmw-2026-testing 1.0.6 from the catalog: \
+              unexpected character 'A' while parsing major version number"]
+        );
+        assert_eq!(parse(&text).unwrap(), addons);
+    }
+
+    #[test]
+    fn an_unreadable_latest_leaves_the_older_versions() {
+        let bad = listed_version("2.0.0", serde_json::json!("latest"));
+        let text = serde_json::json!({ "addons": [listed_addon("a.b", bad.clone(), vec![
+            bad,
+            listed_version("1.0.0", serde_json::json!(">=1.0.0")),
+        ])] })
+        .to_string();
+        let (addons, notes) = parse_with_notes(&text);
+        assert!(addons[0].latest.is_none());
+        assert_eq!(
+            addons[0].offered(&launcher("1.10.26")).unwrap().version,
+            launcher("1.0.0")
+        );
+        assert_eq!(notes.len(), 1, "{notes:?}");
+        assert!(
+            notes[0].starts_with("left out a.b 2.0.0 from the catalog: "),
+            "{notes:?}"
+        );
+    }
+
+    #[test]
+    fn an_addon_with_no_version_this_launcher_can_read_is_left_out() {
+        let bad = listed_version("1.0.0", serde_json::json!("Any version"));
+        let text = serde_json::json!({ "addons": [
+            listed_addon("a.none", bad.clone(), vec![bad]),
+            serde_json::json!({ "id": "a.empty", "name": "E" }),
+        ] })
+        .to_string();
+        let (addons, notes) = parse_with_notes(&text);
+        let ids: Vec<&str> = addons.iter().map(|a| a.id.as_str()).collect();
+        assert_eq!(ids, ["a.empty"]);
+        assert_eq!(
+            notes.last().map(String::as_str),
+            Some("left out a.none from the catalog: no version this launcher can read")
+        );
+    }
+
+    #[test]
+    fn the_registry_log_names_a_version_left_out_of_the_fetched_catalog() {
+        let good = listed_version("1.0.7", serde_json::json!(">=1.10.0"));
+        let body = serde_json::json!({ "addons": [listed_addon("tom.bmw-2026-testing", good.clone(), vec![
+            good,
+            listed_version("1.0.6", serde_json::json!("Any version")),
+        ])] })
+        .to_string();
+        let registry = serve(vec![ok(body.as_bytes(), true)]);
+        let dir = scratch("left-out");
+        let url = format!("{}/v1/addons", registry.url);
+        let addons = fetch_from(&dir, &url, waits(5_000, 5_000)).unwrap();
+        assert_eq!(addons[0].versions.len(), 1);
+        let log = std::fs::read_to_string(dir.join(LOG_FILE)).unwrap();
+        assert!(
+            log.contains("left out tom.bmw-2026-testing 1.0.6 from the catalog"),
+            "{log}"
+        );
+        assert_eq!(cached(&dir).unwrap(), addons);
+        std::fs::remove_dir_all(&dir).ok();
     }
 
     #[test]

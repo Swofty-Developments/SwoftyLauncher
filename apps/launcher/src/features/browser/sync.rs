@@ -341,17 +341,18 @@ impl Browser {
     }
 
     pub(super) fn fetch_details<H: Host<Self>>(host: &mut H, id: &str, cx: &mut Context<H>) {
-        let (b, _) = host.split();
+        let (b, needs) = host.split();
         if !b.loading.insert(id.to_owned()) {
             return;
         }
+        let root = needs.store.root.clone();
         let id = id.to_owned();
         let started = Instant::now();
         cx.spawn(async move |this, cx| {
             let job = id.clone();
             let result = cx
                 .background_executor()
-                .spawn(async move { catalog::fetch_one(&job) })
+                .spawn(async move { catalog::fetch_one(&root, &job) })
                 .await;
             this.update(cx, |host, cx| {
                 let (b, needs) = host.split();
