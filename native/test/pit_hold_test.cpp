@@ -128,6 +128,38 @@ static void learned_lead()
     CHECK(u.lead(5) == 5 + ph::STRETCH_LEAD);
 }
 
+static void flashback_replay()
+{
+    ph::Table t;
+    t.set_crew(ph::CREW_STRETCH);
+    t.arm(19, 19);
+    enter_box(t, 19);
+    CHECK(t.clip_started(19, true, false, 10) == ph::CREW_STRETCH);
+    for (int i = 0; i < 93; i++)
+        t.crew_step(19, 0.1f, 1.0f);
+    CHECK(t.car(19).clips.load() == 1);
+    CHECK(t.clip_started(19, true, false, 10) == ph::CREW_STRETCH);
+    CHECK(t.car(19).clips.load() == 2);
+    CHECK(t.car(19).waited.load() == 0);
+    CHECK(t.clip_time(19) == 0);
+    CHECK(t.car(19).waiting.load());
+    int steps = 0;
+    while (t.car(19).waiting.load() && steps < 1000) {
+        t.crew_step(19, 0.1f, 1.0f);
+        steps++;
+    }
+    CHECK(steps > 200 && steps < 220);
+    t.on_status(19, ph::IN_PIT_BOX, ph::CREW_COMPLETED);
+    CHECK(t.car(19).served.load() == 19);
+    t.on_status(19, ph::CREW_COMPLETED, ph::ON_TRACK);
+
+    t.arm(19, 5);
+    enter_box(t, 19);
+    CHECK(t.car(19).clips.load() == 0);
+    t.clip_started(19, true, false, 5);
+    CHECK(t.car(19).clips.load() == 1);
+}
+
 static void stretch()
 {
     ph::Table t;
@@ -225,6 +257,7 @@ int main()
     hold();
     stretch();
     learned_lead();
+    flashback_replay();
     freeze();
     names();
     if (g_fail) {

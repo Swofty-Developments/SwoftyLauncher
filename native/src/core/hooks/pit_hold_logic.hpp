@@ -11,9 +11,11 @@
 // seconds, which are the stop-go length or 0). The crew waits through those seconds before it works:
 //   stretch  the game's stop-go crew clip (StartJobDoStandardStop...5SP or 10SP) plays with only its wait timed to
 //            the hold, the work after the clip's Start event at normal speed. The Start event sits a little past the
-//            clip's nominal 5 or 10 s; until it is measured the wait is timed to nominal + STRETCH_LEAD, which
-//            the event comes before, so the crew starts early and the car still waits out the hold. The clip time
-//            the event fires at is kept per clip length for the stops after
+//            clip's nominal 5 or 10 s (about 11.3 s in the 10SP clip on Steam 1.0.145); until it is measured the
+//            wait is timed to nominal + STRETCH_LEAD, a little past it, so the crew starts early rather than late and
+//            the car still waits out the hold. The clip time the event fires at is kept per clip length for the
+//            stops after. A StartJob clip that plays again in the same stop (a flashback into the stop) starts the
+//            wait over for the whole hold
 //   freeze   the plain stop clip stands still for the hold seconds from its first frame, then plays
 //   none     the crew works at once and the car waits after it
 // Stretch falls back to freeze for a stop whose SP clip does not exist. A stop counts as served when the car leaves
@@ -27,7 +29,7 @@ inline constexpr uint32_t CARS = 27;
 inline constexpr float MAX_SECONDS = 600.0f;
 inline constexpr float STRETCH_BASE = 5.0f;
 inline constexpr float WAIT_SLACK = 2.0f;
-inline constexpr float STRETCH_LEAD = 3.0f;
+inline constexpr float STRETCH_LEAD = 1.5f;
 
 enum Status : uint32_t {
     ON_TRACK = 1,
@@ -83,6 +85,7 @@ struct Car {
     std::atomic<float> clip{0};
     std::atomic<uint32_t> timing{0};
     std::atomic<uint32_t> kind{0};
+    std::atomic<uint32_t> clips{0};
 
     void reset()
     {
@@ -99,6 +102,7 @@ struct Car {
         clip = 0;
         timing = 0;
         kind = 0;
+        clips = 0;
     }
 };
 
@@ -136,6 +140,8 @@ public:
             k.crew = s > 0 ? mode_.load() : uint32_t(CREW_NONE);
             k.waiting = 0;
             k.waited = 0;
+            k.timing = 0;
+            k.clips = 0;
             return 0;
         }
         if (before == IN_PIT_BOX && served_exit(after) && k.stop.load() > 0) {
@@ -176,14 +182,16 @@ public:
     }
 
     // The crew of car c starts its box clip: a stop-go clip of base seconds (sp) or a plain one; sp_missing when the
-    // stop-go clip did not load and the plain one plays instead. Returns the crew mode the stop runs.
+    // stop-go clip did not load and the plain one plays instead. Returns the crew mode the stop runs. A clip that
+    // starts again in the same stop starts the wait over.
     uint32_t clip_started(uint32_t c, bool sp, bool sp_missing, float base = STRETCH_BASE)
     {
         if (c >= CARS)
             return CREW_NONE;
         Car &k = cars_[c];
-        if (k.stop.load() <= 0 || k.waiting.load())
-            return k.waiting.load() ? k.crew.load() : uint32_t(CREW_NONE);
+        if (k.stop.load() <= 0)
+            return CREW_NONE;
+        k.clips.fetch_add(1);
         uint32_t m = k.crew.load();
         if (m == CREW_STRETCH && (!sp || sp_missing))
             k.crew = m = CREW_FREEZE;

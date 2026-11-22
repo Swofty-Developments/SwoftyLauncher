@@ -24,7 +24,7 @@
 //                                                   (the 5SP/10SP suffix goes on every crew clip of the stop) is
 //                                                   played plain
 //   site_Sess_PitStopUpdateJob_ScaledDt             xmm6 = the crew job's frame step of the instance rsi; changed
-//                                                   while the crew waits
+//                                                   while the crew waits, counted until the clip's Start event
 //   site_Game_PitStopLogic_ClipStartEvent           the clip's Start event of the instance rbx: the crew starts working
 // A PitStopInstance holds its car at +0x350 when its car count +0x358 is not 0, the game's own reading at the crew call
 // sites. The crew wait style is the core config's "pit_hold_crew" (stretch, freeze or none; default stretch), or
@@ -122,8 +122,9 @@ void play(void *instance, const char *name)
     char lead[64] = "";
     if (m == CREW_STRETCH)
         std::snprintf(lead, sizeof lead, " (its Start event at clip time %.2f s)", table.car(car).base.load());
-    swofty::log("[pit hold] car %u: crew clip %s%s, the crew %s for %.2f s%s", car, n.c_str(),
+    swofty::log("[pit hold] car %u: crew clip %s%s%s, the crew %s for %.2f s%s", car, n.c_str(),
                 missing ? " (its stop-go clip did not load)" : "",
+                table.car(car).clips.load() > 1 ? " again in this stop (a flashback), the wait starts over" : "",
                 m == CREW_STRETCH ? "plays the stop-go wait" : m == CREW_FREEZE ? "stands still" : "works at once and the car waits",
                 table.car(car).stop.load(), lead);
 }
@@ -131,7 +132,10 @@ void play(void *instance, const char *name)
 void scaled_dt(SwoftyContext *c)
 {
     uint32_t car = instance_car(c->rsi);
-    if (car >= CARS || !table.car(car).waiting.load(std::memory_order_relaxed))
+    if (car >= CARS)
+        return;
+    bool waiting = table.car(car).waiting.load(std::memory_order_relaxed);
+    if (!waiting && !table.car(car).timing.load(std::memory_order_relaxed))
         return;
     float rate = 0;
     if (!mem::read(c->rsi + INSTANCE_RATE, rate))
@@ -139,7 +143,7 @@ void scaled_dt(SwoftyContext *c)
     float dt = c->xmm6.f32[0];
     float out = table.crew_step(car, dt, rate);
     c->xmm6.f32[0] = out;
-    if (!table.car(car).waiting.load(std::memory_order_relaxed))
+    if (waiting && !table.car(car).waiting.load(std::memory_order_relaxed))
         swofty::log("[pit hold] car %u: the crew wait ended after %.2f s", car, table.car(car).waited.load());
 }
 
