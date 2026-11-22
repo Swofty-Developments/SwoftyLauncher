@@ -4,11 +4,11 @@ use std::process::ExitCode;
 use anyhow::{Result, bail};
 use clap::Subcommand;
 use serde_json::Value;
-use swofty_core::game_folder::baseline::Identity;
 use swofty_core::install::Game;
 use swofty_core::online::server::api::{Api, Boards};
 use swofty_core::online::server::integrity::{self, Module};
 use swofty_core::online::timetrial::barred::{self, Barred};
+use swofty_core::online::timetrial::fingerprint::{self, Played, Session, Setup};
 use swofty_core::online::timetrial::queue::{Entry, Folder, Limits, Queue, unix_now};
 use swofty_core::online::timetrial::upload::{self, Watcher};
 use swofty_core::online::timetrial::{self, token};
@@ -208,12 +208,6 @@ fn hand_over(game: &std::path::Path, addons: &[Barred]) {
     }
 }
 
-fn fingerprint(store: &Store, profile: &str, identity: &Identity) -> Option<Value> {
-    let p = store.profile(profile).ok()?;
-    let fp = swofty_core::online::multiplayer::fingerprint::fingerprint(store, &p, identity).ok()?;
-    Some(swofty_core::online::timetrial::fingerprint::wire(&fp))
-}
-
 fn send(store: &Store, profile: &str, file: Option<PathBuf>) -> Result<()> {
     let Some(token) = token(&store.root, &store.config()) else {
         bail!(
@@ -223,7 +217,14 @@ fn send(store: &Store, profile: &str, file: Option<PathBuf>) -> Result<()> {
     let api = Api::new(&token);
     let print = crate::commands::build::game(store, None)
         .ok()
-        .and_then(|g| fingerprint(store, profile, &g.identity))
+        .and_then(|g| {
+            let played = Played {
+                store: store.clone(),
+                profile: profile.to_owned(),
+                game_build: g.identity,
+            };
+            played.fingerprint().map(|f| fingerprint::wire(&f))
+        })
         .unwrap_or(Value::Null);
     let queue = Queue::new(&store.root);
     match file {
@@ -274,6 +275,12 @@ pub fn begin(
         timetrial::clear_session_keys(&g.dir);
         return None;
     };
+    let played = Played {
+        store: store.clone(),
+        profile: profile.to_owned(),
+        game_build: g.identity.clone(),
+    };
+    let prints = Session::start(played, |line| say("laps", line));
     let build = Some(g.identity.exe_sha256.to_ascii_lowercase()).filter(|b| !b.is_empty());
     let nonce = match upload::nonce(&store.root, config, build.as_deref()) {
         Ok(n) => Some(n),
@@ -289,7 +296,6 @@ pub fn begin(
         say("laps", &format!("lap recording is off: {e}"));
         return None;
     }
-    let (s, p, identity) = (store.clone(), profile.to_owned(), g.identity.clone());
     let integrity = session_integrity()
         .and_then(|state| serde_json::to_value(state).ok())
         .unwrap_or(Value::Null);
@@ -300,7 +306,7 @@ pub fn begin(
         nonce.is_none(),
         build,
         integrity,
-        move || fingerprint(&s, &p, &identity),
+        prints,
         |line| say("laps", line),
     ))
 }
