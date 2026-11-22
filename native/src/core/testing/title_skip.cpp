@@ -276,7 +276,7 @@ void want(bool on)
         return;
     if (on) {
         runtime::pad::setup();
-        runtime::pad::claim(true);
+        runtime::pad::claim(runtime::pad::Owner::title, true);
         char env[16] = {};
         if (GetEnvironmentVariableA("SWOFTY_TITLE_PRESS_AFTER_MS", env, sizeof env))
             press_after = strtoull(env, nullptr, 10);
@@ -284,7 +284,7 @@ void want(bool on)
     } else {
         wanted_at = 0;
         runtime::pad::release();
-        runtime::pad::claim(false);
+        runtime::pad::claim(runtime::pad::Owner::title, false);
     }
 }
 

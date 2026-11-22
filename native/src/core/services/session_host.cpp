@@ -76,7 +76,7 @@ int api_pad_claim(int on)
     runtime::pad::setup();
     if (!runtime::pad::why().empty())
         return 0;
-    runtime::pad::claim(on != 0);
+    runtime::pad::claim(runtime::pad::Owner::plugin, on != 0);
     return 1;
 }
 
