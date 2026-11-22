@@ -1,11 +1,11 @@
 ---
 title: Failures, damage and retiring
-description: Reported findings on F1 25's mechanical failures, terminal damage, garage repairs, result statuses and session restarts, from the Terminal Damage addon. Not yet independently verified.
+description: Reported findings on F1 25's mechanical failures, terminal damage, garage repairs, result statuses, session restarts and crashes to avoid, from the Terminal Damage addon. Not yet independently verified.
 ---
 
 # Failures, damage and retiring
 
-The std library has no operation for scripted failures, retiring a car or disqualifying one yet. `sessions::issue_penalty` and `sessions::PenaltyKind` on [Sessions](/std/systems/sessions) are the design and aren't in the SDK headers. Until they are, an addon that needs these reads and calls the game directly.
+The std library has no operation for scripted failures or retiring a car yet; [`sessions::disqualify`](/std/systems/sessions#who-drives-a-car) disqualifies one. `sessions::issue_penalty` and `sessions::PenaltyKind` on [Sessions](/std/systems/sessions) are the design and aren't in the SDK headers. Until they are, an addon that needs these reads and calls the game directly.
 
 ::: warning Reported, not verified
 Everything on this page comes from the author of the Terminal Damage addon (`nick.terminal-damage-probe`), who checked it in game with that addon on the Steam build (`F1_25.exe` SHA-256 `d873a1c8…`). It isn't in the knowledge base as verified and has no independent check under [`re/PROTOCOL.md`](https://github.com/Swofty-Developments/SwoftyLauncher/blob/main/re/PROTOCOL.md). Treat it as a starting point: offsets hold for that build only, and the core's bindings don't use them.
@@ -51,7 +51,7 @@ Controller reasons seen in `setController`: 0 `PIT_LANE`, 2 `DISQUALIFIED`, 3 `N
 
 ## Disqualifying a car
 
-`Sess_Rules_Disqualify` (`0x143571440`, `void (void *rules, uint32_t vehicle)`) works mid-race, not only for the formation-lap timer. Called on the game thread, it hands the car to the AI with reason 2. `rules` is the `rcx` of `RuleManager::onSessionEnter` (`0x1435676a0`). A later retire request still sets `RETIRED` on the same car.
+`Sess_Rules_Disqualify` (`0x143571440`, `void (void *rules, uint32_t vehicle)`) works mid-race, not only for the formation-lap timer. Called on the game thread, it hands the car to the AI with reason 2. `rules` is the `rcx` of `RuleManager::onSessionEnter` (`0x1435676a0`). A later retire request still sets `RETIRED` on the same car. [`sessions::disqualify`](/std/systems/sessions#who-drives-a-car) makes this call for you on a core with session operations version 2.
 
 ## Session results
 
@@ -77,7 +77,7 @@ The pause menu offers no **Return to garage** while the player's car is broken. 
 
 ## Car speed without UDP
 
-The game's car telemetry writer (`0x142cf9820`) reads the speed from the car object. Check each pointer for null: the chain isn't valid while the car is being built.
+[Live state](/reference/std/live) reads any car's speed for you: `live::speed_kmh`. To read it yourself, the game's car telemetry writer (`0x142cf9820`) reads the speed from the car object. Check each pointer for null: the chain isn't valid while the car is being built.
 
 ```cpp
 uintptr_t physics = *(uintptr_t *)(car + 0x558);
@@ -103,7 +103,7 @@ float kmh = sqrtf(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]) * 3.6f;
 | 3 | Wheel lost |
 | 4 | Suspension |
 | 5 | Tyres (likely) |
-| 6 | Aero (not mapped) |
+| 6 | Front wing |
 | 7 | Sidepods |
 | 8 | Floor |
 | 9 | Rear wing |
@@ -127,8 +127,9 @@ The game's red flag repair (loop at `0x1435847da`) restores aero and body parts 
 
 `F1SuspensionDamage` is at `car+0x5d0`.
 
-- `0x1446568e0` returns 3 bits per corner, in the order RL, RR, FL, FR (corner `i` is `(packed >> 3*i) & 7`): 0 ok, 1 puncture, 2 broken suspension, 3 to 5 wheel detached.
-- `0x144656a80(suspension_damage, 0)` reattaches and repairs.
+- `0x1446568e0` returns 3 bits per corner, in the order RL, RR, FL, FR (corner `i` is `(packed >> 3*i) & 7`): 0 ok, 1 puncture, 2 broken suspension, 3 a wheel coming loose, 4 a wheel the game tore off, 5 a wheel gone. At state 2 the wheel stays on and the car drives as on a flat tyre. State 4 is the game's terminal crash damage, and it switches the engine off.
+- Each corner's damage is a float at `+0x130 + 4*i`, in the same order. The getter reads states 3 to 5 only from it, against the wheel detach limit (1.0 by default) and the parts detach limit (1.5). A wheel part detaches once the damage reaches the wheel detach limit (`0x144655570`).
+- `0x144656a80(suspension_damage, packed)` sets the states. `0` reattaches and repairs. State 2 on one corner breaks its suspension and keeps the wheel on. The game sends its terminal damage message for a corner set this way only once more of the car breaks.
 - `0x144660cd0(car+0x5c8, 0)` repairs the front wing.
 
 ## Garage repairs
@@ -187,12 +188,19 @@ These `f1_suspension_damage.*` layers worked in a Montreal race on the player's 
 
 `get` returned the composed values at once, and 30 seconds later the car's own `F1SuspensionDamage` held them too. After a 23 m/s hit on the rear left, the game's damage on that corner was 0.31.
 
+## Crashes to avoid
+
+These come from crash reports sent with **Send Logs** while Terminal Damage did each of them:
+
+- **Tearing a wheel off through its damage.** Terminal Damage 0.76.0 to 0.76.3 set a corner's damage just past the wheel detach limit, so the game detached the wheel in its next update. In four reports F1 25 crashed about 30 ms later, in its tyre wear estimate on a key that isn't a number, and in others in its animation code ([Send logs](/using/send-logs) lists both). One log showed wheel geometry that isn't a number after 3 of 20 such wheels. To break a corner, set it to state 2 with `0x144656a80` instead: the wheel stays on.
+- **A flashback after a lost wheel.** The game refuses a flashback while the player's car is rated terminal: the `VehicleDamageMonitor` recordable's `canJumpIn` (slot 9, thunk `0x142f16d70`) rates the car with `0x142f168b0` into a record like the one under [Terminal damage](#terminal-damage) and refuses at an overall state of 5. An addon that lifts the refusal should keep it while part 3 (wheel lost) is at 5. In four reports the refusal was lifted with a wheel off, and the game crashed within seconds of the flashback, in the race progress update or in the replay.
+- **A replay after the garage crew pushed the car in.** Terminal Damage spawned the garage crew during a race (`SpawnGarageCrew`, `0x140388cf0`) to push a broken car into its garage. In two players' reports F1 25 later crashed while a replay played, in `Ne_ReplayRecordable_ReadFrom` and then `0x14038e4f0+0x174`.
+
 ## What's still missing
 
 [Issue #691](https://github.com/Swofty-Developments/SwoftyLauncher/issues/691) asks for these in the std library. None of them exists yet:
 
-- `sessions::retire(car)` and `sessions::disqualify(car)`.
+- `sessions::retire(car)`.
 - A getter for the session rules object.
 - A `failure.planned` event with the car, part and lap, and a veto.
 - A way to change the failure roll without patching bytes.
-- A car speed read that doesn't need UDP.
