@@ -3083,6 +3083,22 @@ __declspec(dllexport) __attribute__((noinline)) void fake_crash(volatile int *p)
     printf("not reached\n");
 }
 
+// Recurses until the thread's stack runs out: the crash handlers then have the few KB a stack overflow leaves them.
+__declspec(dllexport) __attribute__((noinline)) int fake_overflow(volatile char *up, int depth)
+{
+    volatile char frame[1024];
+    frame[0] = (char)depth;
+    if (up && up[0] == 0x7f && depth < 0)
+        return 0;
+    return fake_overflow(frame, depth + 1) + frame[0];
+}
+
+static DWORD WINAPI overflow_thread(LPVOID p)
+{
+    (void)p;
+    return (DWORD)fake_overflow(NULL, 0);
+}
+
 static uintptr_t slot8(void) { return ((uintptr_t (*)(void))OTHER_VT[8])(); }
 
 // A stand-in NeMemoryHeap for the crash report's heap decoding: Ne_ReportMemoryError with the game's
@@ -4015,6 +4031,13 @@ int main(int argc, char **argv)
     if (main_argc > 1 && !strcmp(main_argv[1], "abort")) {
         SetErrorMode(SEM_NOGPFAULTERRORBOX);
         fake_fatal_abort();
+    }
+    if (main_argc > 1 && !strcmp(main_argv[1], "overflow")) {
+        SetErrorMode(SEM_NOGPFAULTERRORBOX);
+        HANDLE t = CreateThread(NULL, 256 << 10, overflow_thread, NULL, STACK_SIZE_PARAM_IS_A_RESERVATION, NULL);
+        if (t)
+            WaitForSingleObject(t, 90000);
+        ExitProcess(3);
     }
     DestroyWindow(w);
     return fails != 0;
