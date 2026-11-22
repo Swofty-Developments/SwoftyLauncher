@@ -101,7 +101,7 @@ def main():
     ap.add_argument('--sdk', required=True)
     ap.add_argument('--define', action='append', default=[])
     ap.add_argument('--game-include', default='')
-    ap.add_argument('--strip', default='-s')
+    ap.add_argument('--strip', default='-gdwarf -gline-tables-only')
     ap.add_argument('--order-snapshot', help='the link order effects the core build must keep (tools/init_check.py)')
     a = ap.parse_args()
 

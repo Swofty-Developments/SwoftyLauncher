@@ -66,10 +66,17 @@ game_run_report() {
             echo "    thread ${task##*/} '$(cat "$task/comm" 2>/dev/null)' state ${stat%% *} in $(cat "$task/wchan" 2>/dev/null || echo '?')"
         done
     done
+    local gpid
+    for gpid in $(pgrep -f "^$exe" 2>/dev/null); do
+        if command -v gdb >/dev/null && sudo -n true 2>/dev/null; then
+            echo "game_run: the PE stack of the main thread of pid $gpid:"
+            timeout 200 python3 "$(dirname "${BASH_SOURCE[0]}")/pe_stack.py" "$gpid" 2>&1 | head -n 120
+        fi
+    done
     log=$(dirname "$exe")/swofty/loader.log
     if [ -f "$log" ]; then
         echo "game_run: the last lines of $log:"
-        tail -n 25 "$log" | sed 's/^/  /'
+        tail -n 400 "$log" | sed 's/^/  /'
     fi
 }
 

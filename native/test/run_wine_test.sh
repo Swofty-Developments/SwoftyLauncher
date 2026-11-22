@@ -11,7 +11,7 @@ set -Eeuo pipefail
 trap 'line=$LINENO' ERR
 SELF=$(readlink -f "$0")
 cd "$(dirname "$SELF")"
-CASES=(modes crash close perf_ro acclim acclim_penalty ers_mode standings weekends teamhq activity setup_vm pairs fe_tiles ai_corner replay_grid garage_crew pit_slots leaderboard myteam_vehicle myteam_keep myteam_heal track_list ntpage int3 stages packed filled register)
+CASES=(modes crash close perf_ro acclim acclim_penalty ers_mode standings weekends teamhq activity setup_vm pairs fe_tiles ai_corner replay_grid garage_crew pit_slots leaderboard myteam_vehicle myteam_keep myteam_heal track_list ntpage int3 stages packed filled register stages_stress)
 if [[ ${1:-} == --list ]]; then
     printf '%s\n' "${CASES[@]}"
     exit 0
@@ -1298,6 +1298,30 @@ for skip in 0 1; do
     [[ $code != 0 ]] && echo "ok  : int3: process ended with $code" || { echo "FAIL: int3: process exited 0"; status=1; }
 done
 }
+case_stages_stress() {
+python3 - "$SG/swofty/addons/core/bindings.wine-test.json" <<'EOF2'
+import json, sys
+doc = json.load(open(sys.argv[1]))
+doc['build']['size'] += 1
+json.dump(doc, open(sys.argv[1], 'w'), indent=1)
+EOF2
+local hangs=0 other=0 i t rc what
+for i in $(seq 40); do
+    t=$SECONDS rc=0
+    if ((i % 2)); then
+        what=stages
+        rm -rf "$SG/swofty/cache"
+        SWOFTY_EARLY_STAGE=1 game_run -t 30 "$SG/F1_25.exe" stages >/dev/null || rc=$?
+    else
+        what=filled
+        SWOFTY_EARLY_STAGE=1 game_run -t 30 "$OUT/filled/F1_25.exe" >/dev/null || rc=$?
+    fi
+    echo "stress $i $what rc=$rc $((SECONDS - t))s"
+    ((rc == 124 || rc == 137)) && hangs=$((hangs + 1))
+    ((rc != 0 && rc != 124 && rc != 137)) && other=$((other + 1))
+done
+echo "stress summary: $hangs hang(s), $other other nonzero exit(s) of 40 runs"
+}
 case_stages() {
 echo "==== stages"
 LOG=$SG/swofty/loader.log
@@ -1525,6 +1549,9 @@ all)
     ;;
 setup)
     OUT=$OUT/base
+    if [[ -n ${CI:-} ]] && ! command -v gdb >/dev/null; then
+        sudo -n apt-get install -y -qq gdb >/dev/null 2>&1 || echo "run_wine_test.sh: gdb did not install"
+    fi
     build
     environment
     rm -rf "$WINEPREFIX"
