@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1419d2030",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1419d2030.c;pat:log-message-cxx;xref:0x145724460",
-  "notes": "BroadcastDriverMovesMessageViewModel row builder (vtable cell 0x145724460): title/rows, driver_name, old/new team name and nub colour, row_visible, lng_free_agent; row cap log."
+  "notes": "Binds title (this+0x298/0x2b8), resets 10 row slots at this+0x2d8 step 0xe0 (driver_name, old/new_team_name, old/new_team_nub_colour, row_visible) and rows this+0xb98; loops driver-move entries filling name, teams (or lng_free_agent), colours; logs 'BroadcastDriverMovesMessageViewModel::addRowData: Already added %d rows - this has been capped.'; sets this+0xbb0=1. (lane owner review requested)"
  },
  "signature": {
   "id": "game.broadcast_driver_moves_message_view_model_add_row_data",

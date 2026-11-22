@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141bb17f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141bb17f0.c;str:s_FEHomeViewModel_OnScreenActivated;xref:0x145738ac8",
-  "notes": "Own pretty-function 'virtual void game::FEHomeViewModel::onScreenActivated()'. Determines game configuration (beta/trial/preview/demo/VTE/movie/stream install) and m_currentState (UI.overrideMainMenuState override), sets show_tutorial_prompt, story logo, beta panel, news; calls F1Life SetupScene 0x142542680 (site 0x141bb27b4)."
+  "notes": "Pretty-function 0x145738b30 'virtual void game::FEHomeViewModel::onScreenActivated()' (TOP_LEVEL_UI). Sets m_currentState this+0x380 (enum names table 0x145751670: eNormal/eBeta/eStreamInstall/ePreview/eDemo/eTrial/ePQITest/eVTE/eMovie) from config flags, override via 'UI.overrideMainMenuState' (FNV hash switch); sets show_tutorial_prompt, contextual_decision, offline_description, story_logo, news, customisation_item_lost popup (then FUN_142542680), ui_menu_data.show_user_name, beta_panel_visible; posts bus msg via 0x1439876c0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.f_e_home_view_model_on_screen_activated",

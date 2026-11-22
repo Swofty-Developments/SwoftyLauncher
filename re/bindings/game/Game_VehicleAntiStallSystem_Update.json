@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f4a070",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142f4a070.c;xref:0x1457f8b28",
-  "notes": "Per-car race start / anti-stall state machine (entry+0x18 0..3); logs '[VEHICLE RACE START] sending Race Start message for vehicle id: %d reaction time: %.3f' (NETWORK) and 'Anti Stall System: vehicle id %u is out of bounds'; while system+0x100 == 0 sets bit 2 of the car input block (+0x50 -> +0x1fc). Only ref vtable cell 0x1457f8b28 (neighbours not code)."
+  "notes": "Body read in full. (system, dt record): per car entry in +0x48..+0x50 a race-start state machine (entry+0x18 0..3) driven by the race-start manager [0x146095a68]: sets/clears bit 2 (0x2) of the car input block (+0x50 -> +0x1fc), launch flags +0x9f14/+0x9f15, reaction timer +0x2c; on change sends message 0xd2 via 0x14402e500 and logs '[VEHICLE RACE START] sending Race Start message ... reaction time'. Then anti-stall checks for the player car (logs 'Anti Stall System: vehicle id %u is out of bounds'), posts bus messages (vtables 0x145801b90 / 0x145801ba0) and a vt+0x98 call on +0xb0. Only ref vt cell 0x1457f8b28. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_anti_stall_system_update",

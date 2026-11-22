@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e9eda0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "pat:log-channel-TYRES",
-  "notes": "Log channel TYRES: 'TyreSelection::setCurrentTyres(compound=%s , index=%d , lap=%d) called on non authoritative machine, we already have data the lap, ignoring request.'"
+  "evidence": "decomp:re/decomp/142e9eda0.c;pat:log-channel-TYRES;xref:0x142e9425a,0x14f4297cc",
+  "notes": "(sel,{compound,index},lap): history vector +0x30..+0x40 of 0x78-byte entries {owner, 0x6c tyre-set copy, u16 lap +0x74}, at most 100 (oldest shifted out). Non-authoritative (+0x20 == 0) and an entry for lap exists -> logs, returns. Copies the set from allocation [+8] (groups +0x20 stride 0x28, count +0xd8) into the last entry or appends one; +0x48 = 1. Callers in 0x142e94040, 0x14f429710. (lane owner review requested)"
  },
  "signature": {
   "id": "car.tyre_selection_set_current_tyres",

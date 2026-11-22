@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1414f70b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "hud",
   "proto": "void Hud_MfdVm_RefreshPanelAvailability(void *vm)",
-  "evidence": "doc:re/db/subsystems/game.md",
-  "notes": "Sets the MFD panel-enabled holders via setter 0x140973e20 (holders +0x440 car_settings always, +0x460 pit_settings race/solo_testing/pro_online_custom, +0x480 car_damage, +0x4a0 car_engine, +0x4c0 car_temp from game-mode rules record bits, +0x4e0 mods per entrant); called from update slot 0x1414f7ba0 (agent rest, tr-verify claim 9)"
+  "evidence": "decomp:re/decomp/1414f70b0.c;doc:re/db/subsystems/game.md;xref:0x1414f6e10,0x1414f7be4,0x1414f7c12",
+  "notes": "Writes the MFD panel bools (holder+8 pointers, bool type 0x146129dc0, setter 0x140973e20): car_settings +0x448 = 1; pit_settings +0x468 from session type / mode name solo_testing, pro_online_custom; car_damage +0x488, car_engine +0x4a8, car_temp +0x4c8 from rules record flag bits; mods +0x4e8 from entrant match. +0x640/+0x641 flags, enabled count -> +0x644. Called from 0x1414f6e10 (Hud_Bind_DynamicMfdViewModel) and 0x1414f7ba0. (lane owner review requested)"
  },
  "signature": {
   "id": "hud.mfd_vm_refresh_panel_availability",

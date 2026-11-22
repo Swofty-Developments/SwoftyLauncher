@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144650b00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144650b00.c",
-  "notes": "the object at car+0x5e0: damage meshes at +0x58 (stride 0x60; name object at +0, u16 current +0x58 / max +0x5a) for rearwing_*, sidepod_*, sidewing_*, wing_mirror_*, bargeboard_*, floor_damage_*, camera_wing, topcanopy_bm, diffuser_bm; also loads the 'rearwing' collision hull."
+  "evidence": "decomp:re/decomp/144650b00.c;xref:0x145bf8a30",
+  "notes": "Slot 2 of F1BodyDamage vtable 0x145bf8a20 (cell 0x145bf8a30). Removes (0x1446510d0) then adds (0x144651f90) listener 0x1446512c0 on the car; if !param_2 and parts +0x58 empty: per def +0x30..+0x38 (stride 0x60, name +0x10) with a type-2 shape in [car+0x5b0] appends a 0x60 part (bbox of hull chunks, u16 max +0x5a = 100*chunks, min 100); names starting 'rearwing' also go to list +0x78; +0x48 = shape 'RearWing' +0x98. (lane owner review requested)"
  },
  "signature": {
   "id": "car.damage_meshes_init",

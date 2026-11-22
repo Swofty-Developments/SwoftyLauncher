@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1403a03d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
   "evidence": "decomp:re/decomp/1403a03d0.c;xref:0x142bde4b3,0x142c22410",
-  "notes": "Sets animation scalars as lerp between min/max of clip sets: +0x5d4 from set +0x5d8/+0x5e0 with param_2, +0x624 from +0x628/+0x630 with param_3, plus set +0x1390/+0x137c. Callers Sess_Result_RequestVehicleStatus_2, Game_PhotoModeMotion_Enable."
+  "notes": "Sets three anim scalars: +0x5d4 = lerp(min,max over clip set [[+0x5d8]+0x18][+0x5e0], param_2), +0x624 = same for +0x628/+0x630 with param_3, +0x1384 = same for [[+0x1390]][+0x137c] with param_2 (min/max via clip vcall +0x20); if [[0x14601f5c8]+0xc0]+0xeb: applies via 0x1403a6400, 0x1443b9930 and the +0x1270 vcalls. (lane owner review requested)"
  },
  "signature": {
   "id": "car.anim_set_normalised_poses",

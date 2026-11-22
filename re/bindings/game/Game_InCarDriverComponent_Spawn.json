@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1403a7040",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1403a7040.c;pat:log-message-cxx;xref:0x145623320",
-  "notes": "DRIVER 'InCarDriverComponent::spawn - game mode is null, skipping' (log string)."
+  "notes": "Vtable slot 0x145623320 (neighbours 0x1403a8570/0x14043f140). Returns if actor +0x20 set; once (+0x30) subscribes 'animate_driver_message' via Ne_Subscribe_BusMessage 0x143987810 (handler 0x1403a6ee0). Gets vehicle id from component 0x146ce8b00 +0x58 +0xe8, finds entrant/driver/team in session +0x290 tables; logs DRIVER 'InCarDriverComponent::spawn ...' (game mode null / no Entrant / no Driver / no animation set / scene for driver). Spawns 'incar' scene 0x1401b71c0 -> +0x18, actor 'InCarDriver' -> +0x20 (else WARN 'Failed to spawn driver m_inCarDriverActor is null'). (lane owner review requested)"
  },
  "signature": {
   "id": "game.in_car_driver_component_spawn",

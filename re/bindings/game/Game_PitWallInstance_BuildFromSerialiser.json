@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1403d0bd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1403d0bd0.c;pat:log-message-cxx;xref:0x1403d054b,0x147e4709a",
-  "notes": "cxx=PitWallInstance::buildFromSerialiser; log channel TRACE: 'RAW: PitWallInstance::buildFromSerialiser failed unable to find script %s'"
+  "notes": "Instance [+0x38]+0x128[+0x30]; releases scripts +0x60/+0x68 and scene +0x18; transform from locator ([+0x18]+0xf0, stride 0x70, +0x20) or +0x90; type +0x70: 0 PitWallScene/PitWall, else PitPerchScene/Pitperch(+PitperchLook); driver look from [[0x14604c2c8]+0x290]+0x2c8, Game_SceneManagerSpawn_SpawnScene 0x1401a4b70, 'racecrewclothes'; scripts 0x143662b90/0x143660a60 bound to parts. TRACE 'RAW: PitWallInstance::buildFromSerialiser fai... (lane owner review requested)"
  },
  "signature": {
   "id": "game.pit_wall_instance_build_from_serialiser",

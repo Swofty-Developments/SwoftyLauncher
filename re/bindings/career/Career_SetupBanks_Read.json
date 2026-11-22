@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c03d00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "int (void *a, void *json, int64_t is_modded)",
   "evidence": "decomp:re/decomp/140c03d00.c;xref:0x14567f8a8",
-  "notes": "setup_banks reader (vtable ptr 0x14567f8a8): param_3==0 resolves season_2025 by hash and reads setups[] at top level, calling 0x140c02120; otherwise loops setup_banks[] reading season_id + setups[] and calls 0x140c02120 per entry."
+  "notes": "vtable cell 0x14567f8a8. param_3==0: bank 0x140c02120(g 0x14605a400, hash of 'season_2025') and array 'setups' (0x14567f8d4); else array 'setup_banks' (0x14567f8c8), per entry byte 'season_id' (0x14562c3f0) -> bank, then its 'setups'. Each setup parsed by 0x140c046b0 into a temp and added with 0x140d372a0. Errors 0x57 (key missing) / 0x58 (type mismatch) pushed to the TLS error chain. (lane owner review requested)"
  },
  "signature": {
   "id": "career.setup_banks_read",

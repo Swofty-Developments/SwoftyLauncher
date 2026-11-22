@@ -46,6 +46,9 @@ bool deliberate_abort(const EXCEPTION_RECORD *r, const CONTEXT *c);
 void keep_fatal(EXCEPTION_POINTERS *e);
 bool request_report(Kind kind, const char *reason, const EXCEPTION_RECORD *rec, const CONTEXT *ctx);
 void already(const char *what);
+// On the writer, before a report handed over by a thread with little stack left: that thread's log lines, from the
+// copies it handed over, and the report's reason, blame and loader lock.
+void settle_handed(Request &r);
 
 LONG CALLBACK veh(EXCEPTION_POINTERS *e);
 LONG WINAPI unhandled(EXCEPTION_POINTERS *e);

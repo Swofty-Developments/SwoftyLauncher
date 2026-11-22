@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144665c90.c;xref:0x144665331",
-  "notes": "SIMD (1376 bytes) sibling of ComputeBonePairLinkVector: uses 0.5 / +-1.0 / sign masks to derive an orthonormal link basis from bone transforms. Called 6x from Car_Suspension_ResolveLinkGeometryFromBones. Hypothesis."
+  "evidence": "decomp:re/decomp/144665c90.c;xref:0x144665331,0x14475d243,0x14475d679,0x14475da54,0x14475de73,0x14475e38b,0x14475ea93",
+  "notes": "SIMD helper over bone transforms; callers 0x144665331 (fn 0x144664080) and Car_Suspension_ResolveLinkGeometryFromBones."
  },
  "signature": {
   "id": "car.suspension_build_bone_pair_basis",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143160580",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143160580.c;pat:log-message-cxx",
-  "notes": "AutoTestSearcher::onCustomSearchCompletedDelegate (own log strings in the body)."
+  "evidence": "decomp:re/decomp/143160580.c;pat:log-message-cxx;xref:0x1430e95e7",
+  "notes": "Registered by lea 0x1430e95e7 in 0x1430e0560. Logs NETWORK-INVITE 'AutoTestSearcher::onCustomSearchCompletedDelegate(success=%d, neterr=%d)' / (numSessionsFound=%d) / (session=%d, autotestUID=%I64d). On success scans [[+0x40]+0x3f8]+0x20 sessions (stride 0x1a0) for +0x170 == UID +0x48, calls cb +0x58(+0x60, s+0xae, s); after timeout +0x50 s calls cb with empty result; clears cb. (lane owner review requested)"
  },
  "signature": {
   "id": "game.auto_test_searcher_on_custom_search_completed_delegate",

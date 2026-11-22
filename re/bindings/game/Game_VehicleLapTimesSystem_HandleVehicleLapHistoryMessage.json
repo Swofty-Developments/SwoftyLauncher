@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142f327a0.c;pat:log-message-cxx",
-  "notes": "Read in full: logs 'handleVehicleLapHistoryMessage : Vehicle %d' (LAPTIMES), gets data via findOrCreateLapTimesData 0x142f32ee0(this, msg+0x10), deserialises the bit stream msg+0x28 (msg+0x20 bytes) with 0x14098b3d0, stores the result in the TLS error slot and sets this+0x150 = 1."
+  "notes": "Logs LAPTIMES 'VehicleLapTimesSystem::handleVehicleLapHistoryMessage : Vehicle %d' (msg+0x10), 0x142f32ee0 findOrCreateLapTimesData, bit reader over msg+0x28 (msg+0x20 bytes) -> 0x14098b3d0 deserialise, result into TLS error slot + backtrace ring, this+0x150 = 1."
  },
  "signature": {
   "id": "game.vehicle_lap_times_system_handle_vehicle_lap_history_message",

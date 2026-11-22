@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140cb0750",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "uint64_t Career_DeptEvent_FindOrCreateForDriver(void *mgr, void *args)",
-  "evidence": "decomp:re/decomp/140cb0750.c;xref:0x140cac42f,0x140cad197,0x140cadfe3,0x140caf3ea",
-  "notes": "Bool, not a lookup: driver row param_2 (key +0x50) -> its entrant row in [this+0x278]+0x2e0 and team schedule 0x140cb0e30(row+0x58); teammates via 0x142456530; true if both driver and teammate rows have +0x4b&0x10, false if neither, else schedule+0xa59 == (row+0x80==0 && row+0x81!=0). Callers ChooseOutcome/Schedule/Start. Better name: Career_DeptEvent_IsDriverEligible (bound record keeps its name)."
+  "evidence": "decomp:re/decomp/140cb0750.c;xref:0x140cac42f,0x140cad197,0x140cadfe3,0x140caf3ea,0x140cb69d0,0x140cbbefb,0x140cbc113,0x14128f0a4",
+  "notes": "Bool, not a lookup: driver key param_2+0x50 (0x3fff = none -> true) -> its entrant row in [this+0x278]+0x2e0 (stride 0x88) -> schedule 0x140cb0e30(row+0x58); teammate via 0x142456530; true if both driver and teammate rows have +0x4b&0x10, false if neither, else schedule+0xa59 == (+0x80==0 && +0x81!=0). Better name Career_DeptEvent_IsDriverEligible (bound record keeps its name). (lane owner review requested)"
  },
  "signature": {
   "id": "career.dept_event_find_or_create_for_driver",

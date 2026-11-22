@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140796010",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140796010.c;xref:0x145644fd0",
-  "notes": "Vt cell 0x145644fd0; Steam appdetails price_overview completion handler."
+  "notes": "Vtable cell; (task,req): if [+0x138]==*req parses JSON (0x144435250), failure -> 0x1432c0280 'An error occurred when communicating with Steam.'. Per root member: key -> app id (0x14534dcd8); success/data/price_overview -> currency, final_formatted, final (x0.01), initial_formatted -> 0x140968790 pushes 0xe0 entry to +0x120..+0x130. Log F1OS-TASKSYSTEM 'setting finished', +0xa1=1. (lane owner review requested)"
  },
  "signature": {
   "id": "game.steam_parse_price_overview",

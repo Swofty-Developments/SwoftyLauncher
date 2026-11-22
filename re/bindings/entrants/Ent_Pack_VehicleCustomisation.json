@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1424fc250",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "entrants",
   "proto": "void Ent_Pack_VehicleCustomisation(uint32_t *out)",
-  "evidence": "decomp:re/decomp/142452e60.c;pat:writes-EntrantRecord+0x64",
-  "notes": "packs the entrant 'vehicle_customisation' label (livery preset) into EntrantRecord+0x64; 0x3fff0000 when empty."
+  "evidence": "decomp:re/decomp/1424fc250.c;pat:writes-EntrantRecord+0x64;xref:0x140babd41,0x141128d69,0x14245348e,0x14246912e,0x142a0d13e,0x143873b77,0x143874347",
+  "notes": "(out u32*, label): looks the label up in DB path 'entrants.vehicles.vehicle_customisations' (stat_id field); out = {kind 0, u16 stat_id} (stat 0 when missing). Caller 0x142452e60 (site 0x14245348e) sets 0x3fff0000 for an empty label and stores the key at EntrantRecord+0x64 (0x142453721). (lane owner review requested)"
  },
  "signature": {
   "id": "entrants.pack_vehicle_customisation",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1422774f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "ui",
   "proto": "uint32_t (void *bus_owner, void *src, int mode)",
-  "evidence": "decomp:re/decomp/1422774f0.c;xref:0x142276ff0;xref:0x1423f33b6",
-  "notes": "myteam-g2: If mode == 0 builds a message of class UNK_14565a998 carrying three copied strings (src+0x18, +0x48, +0x70) plus three scalar fields and posts it with Ne_Post_BusMessage; otherwise takes an alternate path through a TLS/Event helper (Ne_Event_Set). A generic UI popup/dialog request used by the sponsor and setup screens."
+  "evidence": "decomp:re/decomp/1422774f0.c;xref:0x142276ff0,0x1423f33b6",
+  "notes": "mode==0: builds msg 0x14565a998 on stack (strings from src+0x18/+0x48/+0x70 plus scalars) and posts with Ne_Post_BusMessage 0x1439876c0; mode!=0: tail-jmp 0x1423a18f0, which allocs a 0xa0 copy under a critical section, appends it to a queue and signals (0x14391cdd0). (lane owner review requested)"
  },
  "signature": {
   "id": "ui.post_popup_request_message",

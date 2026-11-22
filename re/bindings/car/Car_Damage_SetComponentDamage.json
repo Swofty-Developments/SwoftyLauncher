@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144660cd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "pat:log-channel-VEHICLE_DAMAGE",
-  "notes": "Log channel VEHICLE_DAMAGE: '%s: damage: %x, was broken: %d, is broken: %d' | '%s: reset damage' | '%s: left damage: %f, right damage: %f' | '%s: setFrontWingDamage: %f' | PR #453/#448 (vmknolle): VEHICLE_DAMAGE log '%s: damage: %x, was broken, is broken': if the wing was broken and the bits clear (& 0x3ff == 0) -> slot 0x18(0x1000) reset ('reset damage'); else left damage = max * (bits >> 5) / 30, right = max * (bits & 0x1f) / 30, total ratio clamped to [0,1] into [+0x90]+0x199c ('setFrontWingDamage')."
+  "evidence": "decomp:re/decomp/144660cd0.c;pat:log-channel-VEHICLE_DAMAGE;xref:0x14324b85d",
+  "notes": "racing::collision::F1WingDamage::setNetBits(NEint) (own log string, VEHICLE_DAMAGE). max +0x38, left +0x48, right +0x4c: if left+right > max/10 and (bits & 0x3ff) == 0 -> 'reset damage', vcall +0x18(0x1000); else left = max*(bits>>5)/30, right = max*(bits&0x1f)/30; if +0x90: [+0x90]+0x199c = clamp((l+r)/max,0,1) ('setFrontWingDamage'). (lane owner review requested) Better name: Car_F1WingDamage_SetNetBits (bound record keeps its name)."
  },
  "signature": {
   "id": "car.damage_set_component_damage",

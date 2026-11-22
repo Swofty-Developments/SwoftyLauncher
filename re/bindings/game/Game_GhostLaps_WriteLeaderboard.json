@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142fa7190",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142fa7190.c;pat:log-channel-GHOSTLAP-TRACE;xref:0x142fa1486",
-  "notes": "Leaderboard write task (strings). Registered (lea) in 0x142fa0a60."
+  "notes": "Callback 'onLeaderboardEntryWrite' (GHOSTLAP-TRACE '%s(#%d, %s, %s, %d ms)', success/failure). Fail: GHOSTLAPS 'leaderboard write failed.', debounce +0x90 (max 5), +0x8c=2^(n+2) 'Debounce: %d %+1.2fs'. OK: needs presence ('no active presence.'), compares user ids, reads UGC keys VehicleStatId/TeamStatId/VehicleCustomisationStatId/PerformanceState/CarSetup/DriverAssists/Sector1-3/GhostLap/Date into +0x230..+0x270; lap 0x4fffffff -> 'c... (lane owner review requested) Better name: Game_GhostLaps_OnLeaderboardEntryWrite (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ghost_laps_write_leaderboard",

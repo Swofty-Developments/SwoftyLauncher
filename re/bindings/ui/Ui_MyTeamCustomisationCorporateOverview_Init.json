@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141a23810",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "ui",
   "proto": "void f(void *self)",
-  "evidence": "decomp:re/decomp/141a23810.c;xref:0x141a23801;xref:0x14bc82239",
-  "notes": "myteam-g1: UI setup for customisation_my_team_corporate and customisation_my_team_overview screens."
+  "evidence": "decomp:re/decomp/141a23810.c;xref:0x141a23801,0x14bc82239",
+  "notes": "Route from setup state this+0x270 byte list +0x100..+0x108: 1 -> driver_career_driver_type_select; 3 -> customisation_my_team_overview or _corporate (flag 0x8000000, +0x182); 0x1e -> driver_career_driver_select; else +0x1e2 ? driver_career_team_select : driver_career_confirm_selections; fired by 0x1442c0e20(this+0x28); then 0x140dcbd00 on component 0x14605c138. (lane owner review requested) Better name: Ui_CareerSetup_GoToNextScreen (bound record keeps its name)."
  },
  "signature": {
   "id": "ui.my_team_customisation_corporate_overview_init",

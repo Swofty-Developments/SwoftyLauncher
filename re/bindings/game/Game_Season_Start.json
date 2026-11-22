@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140ae35a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140ae35a0.c;pat:log-message-cxx;xref:0x1407b629c",
-  "notes": "cxx=Season::start; log channel GAME: 'Season::start() completion status (%s)'"
+  "notes": "this+0x538 0->1; season=vtbl+0x98(this+0x208), null->return; 0x140ae2d80 builds two optional u32 lists; obj=vtbl+0x88; copies lists param_3/param_4; obj+0x538 0->1; entry=obj+0x288[obj+0x2a0]; old=entry+0x23c; 0x140af0460(entry,param_2,param_5); old==0 -> 0x140ae8040(obj,4 lists). GAME log 'Season::start() completion status (%s)' from obj+0x538 (NotStarted/InProgress/Completed). (lane owner review requested)"
  },
  "signature": {
   "id": "game.season_start",

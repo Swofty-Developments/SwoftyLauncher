@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1416ddb60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "ui",
   "proto": "void *Bind(void *out, void *ctx, void *row)",
-  "evidence": "decomp:re/decomp/1416ddb60.c;xref:0x141874582;xref:0x1418746cc;xref:0x141c8811c",
-  "notes": "myteam-g2: Fills a department/contract row VM node: ref/string/int/bool children (~0x11..0x55 offsets) incl. a 'H.aE' string literal; uses token resolver C. UI only."
+  "evidence": "decomp:re/decomp/1416ddb60.c;xref:0x141874582,0x1418746cc,0x141c8811c,0x1420bb5e4,0x1422ee546,0x1422f5bfc,0x1422fbce5",
+  "notes": "Renamed (no contract/department data here): VM holder ctor: refs player_driver +0x0, other_driver +0x20, other_team_texture +0x40; strings/ints/floats player/other recognition (+0x60..+0x1a0, *_normalised floats), bool show_team_not_other_driver_info, two sub-structs via 0x1416dd9e0 (+0x1c0,+0x220), child 'perks' +0x280, next_perks_* fields to +0x380. Returns param_1. (lane owner review requested) Better name: Ui_Bind_RecognitionCompareVm (bound record keeps its name)."
  },
  "signature": {
   "id": "ui.bind_contract_row_node",

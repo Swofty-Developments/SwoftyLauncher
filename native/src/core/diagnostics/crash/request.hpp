@@ -33,6 +33,10 @@ struct Request {
     uint32_t probes[32];
     int nprobes;
     Snapshot prior;
+    /* Set by a thread with little stack left (hand_off): what it would have logged ("first-chance ..." or
+       "unhandled"), which the writer logs from the copies before it fills the reason, the blame and loader_lock. */
+    const char *handed;
+    size_t stack_left;
 };
 
 }

@@ -938,7 +938,8 @@ typedef struct SwoftyServices {
    Table version 2 adds report_season: the addon that owns the active career's data group (its career
    content or career.mode record) says the season at the Championship's season_index is year; the core
    then fires career.season.start once per career and year, activates the season's records and freezes
-   its snapshot. Any other caller gets SWOFTY_REFUSED; no career loaded, SWOFTY_ASSET_LATE.
+   its snapshot. Any other caller gets SWOFTY_REFUSED; no career loaded, SWOFTY_ASSET_LATE. A report from
+   off the flow thread also gets SWOFTY_ASSET_LATE, and the core runs it at the next flow tick.
    Table version 3 adds apply_teams: the request {"season": <a career.season record>}; each listed slot
    (1-12) races as its team (the data group's slot table, the Championship's participants), and a team
    with no career rows gets them, built from its donor's (contracts, R&D, standings, initial cash, renown

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142da44b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142da44b0.c;pat:log-channel--;xref:0x1457e3dc8",
-  "notes": "Sibling of 0x142d9dfe0 (photo mode request handling) for replay highlights; only diffed, not read in full."
+  "notes": "Vtable cell 0x1457e3dc8 (vtable 0x1457e3da8, neighbours code). Returns a flow result id in *out: 0x19306425 if +0xed4; sets datastore ui_menu_data.photo_mode_available=1 and photo_mode_enabled=0x142bda550(+0xdc0); [+0xdc0]+0x394 -> [0x146cb2280]; ui_menu_data.start_photo_mode set and allowed -> +0xdb8 state 4, enters photo mode (0x142bda710) and clears the flag; else may arm timer 'replay_highlights_restart' (cb 0x142da4e40) into +0xf80, +0xdb8 state 7; done -> Game_Flow_StateDeactivatingSubTask, 0x19306425. (lane owner review requested)"
  },
  "signature": {
   "id": "game.read_ui_menu_data_config_6",

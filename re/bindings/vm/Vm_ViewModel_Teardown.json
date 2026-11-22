@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14431d0c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "vm",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14431d0c0.c;xref:0x145738a78,0x1457391b8",
-  "notes": "VM vtable slot 3: if flags&0x10 call slot15, if flags&4 call slot7"
+  "evidence": "decomp:re/decomp/14431d0c0.c;xref:0x145680738,0x1456816d8,0x145681818,0x145681938",
+  "notes": "thunk -> .data1 0x153c4cd00 (body read): flags byte +0x25c: bit 0x10 -> vt slot 15 (+0x78), bit 4 -> slot 7 (+0x38); returns 0. Vtable slot 3 (e.g. cell 0x1456e6ca8 of TabViewModel vt 0x1456e6c90). The bits are set/cleared by Vm_Route_BindingEvent ev0/ev2 (0x10) and ev3/ev4 (4). (lane owner review requested)"
  },
  "signature": {
   "id": "vm.view_model_teardown",

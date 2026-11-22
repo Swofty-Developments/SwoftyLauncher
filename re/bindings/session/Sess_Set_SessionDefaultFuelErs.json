@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f43b30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
   "proto": "void Sess_Set_SessionDefaultFuelErs(void *sys)",
   "evidence": "doc:re/db/subsystems/game.md;decomp:re/decomp/142f43b30.c;xref:0x142f41894,0x142f43556",
-  "notes": "Bus handler for 'player_dropped_in' (0x1456136a8): subscribed in 0x142f41610 (lea 0x142f41894, Ne_Subscribe_BusMessage), unsubscribed in Game_VehicleSystem_Terminate (lea 0x142f43556, 0x143988350). One vehicle: msg ushort +0x10 > 0xff, low byte = index into [g 0x146096578]+0x30; controller [entry+0x20] vfunc +0x18 -> writes u32 +8 then +0 = 3 for session types 5..14 and 18, 1 for 15..17, nothing else (type [[this+0x78]+0x1a8]+4). Returns 0. Better name: Sess_PlayerDroppedIn_SetDefaultFuelErs (bound record keeps its name)."
+  "notes": "Bus handler for 'player_dropped_in': lea 0x142f41894 in 0x142f41610 (subscribe), lea 0x142f43556 in Game_VehicleSystem_Terminate (unsubscribe). If msg ushort +0x10 > 0xff, low byte indexes [g 0x146096578]+0x30; controller [entry+0x20] vfunc +0x18 -> u32 +8 and +0 = 3 for session type 5..14 or 18, 1 for 15..17 (type [[this+0x78]+0x1a8]+4). Returns 0. Better name: Sess_PlayerDroppedIn_SetDefaultFuelErs (bound record keeps its name). (lane owner review requested)"
  },
  "signature": {
   "id": "session.set_session_default_fuel_ers",

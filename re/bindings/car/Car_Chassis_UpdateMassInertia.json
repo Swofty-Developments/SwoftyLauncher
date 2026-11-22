@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "car",
   "proto": "void Car_Chassis_UpdateMassInertia(void *chassis)",
-  "evidence": "doc:re/db/subsystems/car.md",
+  "evidence": "decomp:re/decomp/144678300.c;doc:re/db/subsystems/car.md;xref:0x144677745",
   "notes": "Every frame (from 0x144677720): m0 = sqrtMass^2 + Engine+0x2534 + GearBox+0x67c (fault masses) + fuel FuelTank+0x100 as box (sizes +0xc8/+0xd8/+0xe8, centre Y +0xa8 Z +0xb8) + chassis +0x32c..+0x338; mass-weighted COM, inertia with parallel axis; then 0x144676a80 (agents car-chassis, car-pu, static)"
  },
  "signature": {

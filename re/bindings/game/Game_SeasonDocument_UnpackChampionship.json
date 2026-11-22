@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430a1e90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1430a1e90.c;pat:log-channel-NETWORK-WEATHERSEED;xref:0x143036981,0x143039546,0x1430a1827",
-  "notes": "named from its log messages (channel NETWORK-WEATHERSEED): 'GameSessionSeasonDocument::unpackChampionship set seed to %u | %s(%u). | WeatherAndTimeOfDayComponent::setRandomSeed %u'"
+  "notes": "String GameSessionSeasonDocument::unpackChampionship(); discards when in session (this+0x76a). Seed this+0x148 -> (this+0x420)->+0x4f8 +0x1414; custom grid (u16 this+0x1d8, 0x50-byte slots this+0x1e0 -> vector this+0x740); weather seed this+0x160 -> this+0x760 -> component +0x2c4 (setRandomSeed log). Callers 0x143036981, 0x143039546, 0x1430a1827. (lane owner review requested)"
  },
  "signature": {
   "id": "game.season_document_unpack_championship",

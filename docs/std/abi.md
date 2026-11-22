@@ -219,11 +219,19 @@ SWOFTY_EXPORT const SwoftyCareerOps *SwoftyCoreCareerOps(void);
 | `SWOFTY_ASSET_OK` | the season started, or that year already started in this career |
 | `SWOFTY_REFUSED` | the caller doesn't own the data group, or no addon owns it |
 | `SWOFTY_ASSET_INVALID` | a year outside 1950-2100, or a negative season index |
-| `SWOFTY_ASSET_LATE` | no career is loaded, or the call came off the flow thread |
+| `SWOFTY_ASSET_LATE` | no career is loaded, or the call came off the flow thread, in which case the core queues the report and runs it at the next flow tick |
 
 ```text
 [registry] career::report_season(2018, 2) from swofty.progressive: ok, career 1f2a season index 2 is 2018; career.season.start
 [registry] career::report_season(2018, 2) from tails.whatif: refused (only swofty.progressive, which owns data group f1_career_progressive, reports its seasons)
+```
+
+A report from a `career.loaded` handler that runs off the flow thread is queued:
+
+```text
+[career-ops] report_season(2010, 0) from swofty.swofty-seasons-progressive: called off the flow thread (thread 15076); queued, the next flow tick runs it
+[registry] career::report_season(2010, 0) from swofty.swofty-seasons-progressive: ok, 2010 already started in career driver_career_sw_progressive:7d8bffb65642b0ea
+[career-ops] report_season(2010, 0) from swofty.swofty-seasons-progressive, queued off the flow thread: run at the flow tick: ok
 ```
 
 `apply_lineup` takes one of two requests. `{"season": ...}` is a `career.season` record, which the core plans against the slot table. `{"lineup": ...}` is a line-up in stat ids, which the core writes as given:

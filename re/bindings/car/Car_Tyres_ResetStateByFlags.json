@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446b1fb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1446b1fb0.c;xref:0x15543f46b",
-  "notes": "Resets a tyre/wheel state object (param_1) by reset flags param_3: 0x4 enables, 0x200 -> grip scale 1.0, 0x400 -> carcass and surface temperature = ambient (vcall +8 on world +0xd8+0x130) + 273.15 K, 0x1000 clears +0xf4; game mode 100 (+0x9f40) uses XOR-protected values. Called for front and rear by Car_SuspensionSystem_OnTuningChanged (only caller 0x15543f450 is in .data1, named only)."
+  "evidence": "decomp:re/decomp/1446b1fb0.c;xref:0x15543f466,0x15543f476,0x15543f489,0x15543f49c",
+  "notes": "(w,car,flags): 0x1446b6d10 reset; w+0x138 = 0. flags&4: 0x200 -> w+0xf0 = 1.0, w+0x108 = w+0x110; 0x400 -> w+0xe8/+0xec = ambient+273.15; 0x1000 -> w+0xf4 = 0; [w]+0x9f40 == 100 -> geometry terms w+0x118..+0x12c from XOR values of [w+0xe0], else w+0x118 = 1.5, +0x124 = 0.146. 0x200 clears contact state; 0x1 resets +0x1f0, random phase on 0x4000 (LCG car+0x178), 0x1446b9d40. All calls in 0x15543f450. (lane owner review requested)"
  },
  "signature": {
   "id": "car.tyres_reset_state_by_flags",

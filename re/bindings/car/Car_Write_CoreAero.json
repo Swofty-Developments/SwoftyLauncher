@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14467cfd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14467cfd0.c",
-  "notes": "VTF CoreAero: slip streaming constants (SlipStreaming, SlipStreamWhileBraking). Correction: this is the serialiser (component data vtable slot 3): it writes the section back as XML through the writer object's vtable (+0x28 begin element, +0x68 attribute, +0x78 end, +0x98 comment); the field list above is what it writes. The reader is slot 2 (Game_Read_VtfFloat by name, values stored XOR-obfuscated)."
+  "evidence": "decomp:re/decomp/14467cfd0.c;xref:0x145bf9ec8",
+  "notes": "CoreAero serialiser: comment 'Slip streaming constants', bools SlipStreaming +0x10, SlipStreamWhileBraking +0x11; XML writer (vcalls +0x28 begin, +0x58/+0x68/+0x70 value, +0x78 end, +0x98 comment). Only ref: vtable cell 0x145bf9ec8, next qword = 'CoreAero'. (lane owner review requested)"
  },
  "signature": {
   "id": "car.parse_core_aero",
