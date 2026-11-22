@@ -11,6 +11,8 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cstdarg>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <string>
@@ -70,6 +72,21 @@ struct CallerScope {
     explicit CallerScope(void *caller) : was(gate_caller) { gate_caller = caller; }
     ~CallerScope() { gate_caller = was; }
 };
+
+void knob_say(const char *fmt, ...)
+{
+    char buf[512];
+    va_list ap;
+    va_start(ap, fmt);
+    int n = vsnprintf(buf, sizeof buf - 2, fmt, ap);
+    va_end(ap);
+    if (n < 0)
+        return;
+    n = n > int(sizeof buf - 2) ? int(sizeof buf - 2) : n;
+    buf[n++] = '\n';
+    DWORD w = 0;
+    WriteFile(GetStdHandle(STD_ERROR_HANDLE), buf, DWORD(n), &w, nullptr);
+}
 
 unsigned test_stall_ms()
 {
@@ -262,9 +279,13 @@ struct Platform {
     void unhook_factories()
     {
         safetyhook::trap_stall_ms = test_stall_ms();
+        knob_say("knob: worker %lu unhooks the factories (stall %u ms, hooks enabled %d %d %d)", GetCurrentThreadId(),
+                 safetyhook::trap_stall_ms, int(hooks.factory.enabled()), int(hooks.factory1.enabled()),
+                 int(hooks.factory2.enabled()));
         for (int i = FACTORY; i < EXPORTS; i++)
             d3d12::unhook(exports[i]);
         safetyhook::trap_stall_ms = 0;
+        knob_say("knob: worker %lu has taken the factory hooks out", GetCurrentThreadId());
     }
 };
 
@@ -304,11 +325,16 @@ static void wait_arm_inner()
 
 void wait_arm_before_exit()
 {
+    knob_say("knob: exit on %lu: gate running %d, stall event %p", GetCurrentThreadId(), int(gate.running()),
+             safetyhook::trap_stalled);
     wait_arm_inner();
+    knob_say("knob: exit on %lu: past the arm wait, gate running %d", GetCurrentThreadId(), int(gate.running()));
     if (!safetyhook::trap_stalled)
         return;
     DWORD from = GetTickCount();
     DWORD r = WaitForSingleObject(safetyhook::trap_stalled, 3000);
+    knob_say("knob: exit on %lu: waited %lu ms for the stall (%s); ExitProcess goes on", GetCurrentThreadId(),
+             GetTickCount() - from, r == WAIT_OBJECT_0 ? "it began" : "it did not begin");
     swofty::log("[d3d12] test: the exit waited %lu ms for the worker to stall inside its factory unhook (%s)",
                 GetTickCount() - from, r == WAIT_OBJECT_0 ? "it did" : "it did not");
 }

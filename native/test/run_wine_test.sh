@@ -1311,13 +1311,15 @@ for i in $(seq 16); do
     if ((i % 2)); then
         what=stages
         rm -rf "$SG/swofty/cache"
-        SWOFTY_TEST_TRAP_STALL_MS=300 SWOFTY_EARLY_STAGE=1 game_run -t 30 "$SG/F1_25.exe" stages >/dev/null || rc=$?
+        SWOFTY_TEST_TRAP_STALL_MS=300 SWOFTY_EARLY_STAGE=1 game_run -t 30 "$SG/F1_25.exe" stages >"$OUT/stress.out" 2>&1 || rc=$?
         LOG=$SG/swofty/loader.log
     else
         what=filled
-        SWOFTY_TEST_TRAP_STALL_MS=300 SWOFTY_EARLY_STAGE=1 game_run -t 30 "$OUT/filled/F1_25.exe" >/dev/null || rc=$?
+        SWOFTY_TEST_TRAP_STALL_MS=300 SWOFTY_EARLY_STAGE=1 game_run -t 30 "$OUT/filled/F1_25.exe" >"$OUT/stress.out" 2>&1 || rc=$?
         LOG=$OUT/filled/swofty/loader.log
     fi
+    grep '^knob:' "$OUT/stress.out" | sed "s/^/  stress $i /"
+    grep -E 'still runs|pe_stack: pc sample 1' "$OUT/stress.out" | sed "s/^/  stress $i /"
     echo "stress $i $what rc=$rc $((SECONDS - t))s; $(grep -E 'arm runs (on a|in the)|game exits while|test: the exit waited' "$LOG" | cut -c25-200 | tr '\n' '|')"
     ((rc == 124 || rc == 137)) && hangs=$((hangs + 1))
     ((rc != 0 && rc != 124 && rc != 137)) && other=$((other + 1))
