@@ -1306,7 +1306,7 @@ doc['build']['size'] += 1
 json.dump(doc, open(sys.argv[1], 'w'), indent=1)
 EOF2
 local hangs=0 other=0 i t rc what
-for i in $(seq 40); do
+for i in $(seq 120); do
     t=$SECONDS rc=0
     if ((i % 2)); then
         what=stages
@@ -1320,7 +1320,7 @@ for i in $(seq 40); do
     ((rc == 124 || rc == 137)) && hangs=$((hangs + 1))
     ((rc != 0 && rc != 124 && rc != 137)) && other=$((other + 1))
 done
-echo "stress summary: $hangs hang(s), $other other nonzero exit(s) of 40 runs"
+echo "stress summary: $hangs hang(s), $other other nonzero exit(s) of 120 runs"
 }
 case_stages() {
 echo "==== stages"
