@@ -199,6 +199,7 @@ inline
   src/core/hooks/core_events.cpp  swofty::tracks::venues
   src/core/hooks/core_events.cpp  swofty::tracks::data
   src/core/hooks/core_events.cpp  swofty::tracks::per_package
+  src/core/hooks/core_events.cpp  swofty::tracks::sponsors
 exit
   src/core/runtime/loader/mixin_manager.cpp
   src/core/runtime/loader/patch_set.cpp

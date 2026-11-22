@@ -81,6 +81,7 @@ struct CostCapComponent;
 struct CostCapSeason;
 struct CostCapTeam;
 struct CurvePoint;
+struct CutscenePlacementRegistry;
 struct DepartmentData;
 struct DriveThroughObject;
 struct DriverAcademiesComponent;

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1411cff10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
   "evidence": "decomp:re/decomp/1411cff10.c;xref:0x1411cf467,0x141f58ec7",
-  "notes": "Same slot layout as Car_PuComponent_SetFittedId but sets +0x20 = number of parts in the pool (vector +8..+0x10, 16-byte entries) and +0x28 = 1, then the same online notification. Callers Car_Read_WearRatesConfig, Car_Component_Fit."
+  "notes": "Same as Car_PuComponent_SetFittedId but slot +0x20 = pool count ((+0x10-+8)>>4 of the slot's vector, 0 if slot null) and +0x28 = 1, then the same per-vehicle code/value update in [mgr+0x2f8]+0x48. (lane owner review requested)"
  },
  "signature": {
   "id": "car.pu_component_set_pool_count",

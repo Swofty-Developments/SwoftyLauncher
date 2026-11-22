@@ -9,7 +9,7 @@
   "subsystem": "car",
   "proto": "-",
   "evidence": "decomp:re/decomp/144109f80.c;xref:0x14465cb96,0x14465e157,0x14465e18e",
-  "notes": "(def, tyreIdx, splits, n, cfg*, flag) builds the tyre deformation particle graph (allocator +0x170, nodes +0x188, Car_Deformation_PushParticleSet). Callers: Car_TyreDeformation_SetTyre, Car_TyreDeformation_CreateTyreBody. (3 xref site(s), fb.py callers.)"
+  "notes": "(def, tyreIdx, splits, n, cfg*, flag) builds the tyre deformation particle graph (allocator +0x170, nodes +0x188, Car_Deformation_PushParticleSet). Callers: Car_TyreDeformation_SetTyre, Car_TyreDeformation_CreateTyreBody."
  },
  "signature": {
   "id": "car.deformation_build_tyre_particles",

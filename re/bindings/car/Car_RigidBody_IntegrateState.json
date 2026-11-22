@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144100170.c;xref:0x1440c029b,0x14458a721",
-  "notes": "Large rigid-body update: without constraint parent (+0x360) resets orientation/accumulators (+0x50..+0x80, +0x230) and integrates velocities with timestep +0x434 and flag +0x470. Callers: Car_Parse_Chassis."
+  "evidence": "decomp:re/decomp/144100170.c;xref:0x1440c029b,0x14458a721,0x14462fb47,0x14462fd76,0x14463005f,0x14466b5b6,0x144761c06,0x1447621e6,0x152f5ca4a,0x152ff7847,0x15539c156",
+  "notes": "Large rigid-body state update (constraint parent +0x360, timestep +0x434, flag +0x470); called from Ne_PhysWorld_CreateRigidBody, Car_Parse_Chassis and others."
  },
  "signature": {
   "id": "car.rigid_body_integrate_state",

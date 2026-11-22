@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f14a60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142f14a60.c;xref:0x142bf0442,0x142bf41d1",
-  "notes": "(?, vehicle, const char *names[], float level xmm3) For each name in the list finds the matching damage part in [[vehicle+8]+0x58]+0x5e0 list (+0x58..+0x60, stride 0x60, name +0x10) and sets it to clamp(level,0,1)*part max (+0x5a u16) via 0x144652780(part,value,1). 17 callers: Sess_RedFlagSystem_PerformRepairs, Game_RepairTimes_OnVehicleStatusFadeIn, DRS markup. Addon: repair/damage a car by part names."
+  "evidence": "decomp:re/decomp/142f14a60.c;xref:0x142bf0442,0x142bf41d1,0x142bf426b,0x142bf4301,0x142bf439b,0x142bf4431,0x142bf44cb,0x142bf4561,0x142bf45fb,0x142bf4691,0x142bf472b,0x142bf47c1,0x142bf485b,0x142bf48f1,0x142bf498b,0x142bf4ae6,0x143584995",
+  "notes": "(?, vehicle, names[8], level xmm3): for each of the 8 name slots (disasm reads rsi+0..+0x38) finds the first part in [[vehicle+8]+0x58]+0x5e0 list +0x58..+0x60 (stride 0x60) whose def name +0x10 matches (0x14535d850) and calls 0x144652780(part, clamp(level,0,1) * u16 max +0x5a, 1); the last call is a tail jmp. (lane owner review requested)"
  },
  "signature": {
   "id": "car.damage_set_parts_by_names",

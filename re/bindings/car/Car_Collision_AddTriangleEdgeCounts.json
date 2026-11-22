@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14464a660",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14464a660.c;xref:0x144649918",
-  "notes": "Adds the 3 edges of a triangle (indices tri+0x14,+0x18,+0x1c) to a unique-edge table (count at +0, entries {a,b,count} stride 12): matching unordered edge increments count else appends. Used by Car_Collision_ComputeConvexHull to find boundary edges (count 1)."
+  "evidence": "decomp:re/decomp/14464a660.c;xref:0x144649918,0x144649ad1",
+  "notes": "(table, tri): adds edges (tri+0x14,+0x18), (+0x18,+0x1c), (+0x1c,+0x14) to a table {count +0, entries {a,b,n} stride 12}: an existing unordered match increments n, else appends with n = 1. Callers in Car_Collision_ComputeConvexHull 0x144649140. (lane owner review requested)"
  },
  "signature": {
   "id": "car.collision_add_triangle_edge_counts",

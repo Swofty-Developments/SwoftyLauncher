@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144633400",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
   "evidence": "decomp:re/decomp/144633400.c;xref:0x14462ec72,0x144632088",
-  "notes": "Reads front/rear wheel params (+0x18c, +0x194, type +0x2b4==2 table 0x1455d8b30) from wheel objects [car+0x580]+0x70/+0x78 and passes them to 0x14475ce00. Callers: Car_Parse_Chassis. (2 xref site(s), fb.py callers.)"
+  "notes": "For all four wheels [car+0x580]+0x70/+0x78/+0x80/+0x88 (not only one axle) builds a 16-byte record: node byte [[*w+0x5d0]+0xe8+u32(w+0x2b0)*8]+0x38 (0 if none), float w+0x18c, w+0x194, sign 0x1455d8b30 {1.0,-1.0}[w+0x2b4 == 2]; passes the 4 records with car, param_3, param_4 to 0x14475ce00. (lane owner review requested) Better name: Car_Chassis_ReadWheelParams (bound record keeps its name)."
  },
  "signature": {
   "id": "car.chassis_read_axle_wheel_params",

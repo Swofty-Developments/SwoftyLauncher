@@ -128,6 +128,11 @@ pub struct CarWheelProxies {
 }
 
 #[repr(C)]
+pub struct CutscenePlacementRegistry {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
 pub struct DepartmentData {
     _opaque: [u8; 0],
 }
@@ -3916,6 +3921,7 @@ pub type Car_Create_DetachablePart_t = unsafe extern "C" fn(
     k: f32,
 ) -> *mut c_void;
 pub type Car_DetachablePart_Update_t = unsafe extern "C" fn(part: *mut c_void, dt: f32) -> bool;
+pub type Car_Engine_UpdateWear_t = unsafe extern "C" fn(engine: *mut c_void, dt: f32);
 pub type Car_FrontWing_Init_t = unsafe extern "C" fn(front_wing: *mut c_void, reset: c_char);
 pub type Car_GearBox_UpdateShiftTimersAndFaults_t = unsafe extern "C" fn(gearbox: *mut c_void, dt: f32);
 pub type Car_PitStop_ApplyTyreAndWingVisuals_t =
@@ -4498,6 +4504,8 @@ pub type Game_F1World_AssignDefaultFanzoneChoices_t = unsafe extern "C" fn(self_
 pub type Game_FEHomeViewModel_OnUpdate_t = unsafe extern "C" fn(vm: *mut FEHomeViewModel, dt: f32);
 pub type Game_Failure_Apply_t =
     unsafe extern "C" fn(fail_sys: *mut c_void, fault_rec: *mut c_void, silent: bool);
+pub type Game_FfbThrustmaster_ConfigureEffects_t =
+    unsafe extern "C" fn(effect: *mut c_void, lanes: *const f32) -> i32;
 pub type Game_Fill_PerformanceComparison_t = unsafe extern "C" fn(comparison: *mut c_void);
 pub type Game_FrontendTransitionVM_OnScreenActivated_t = unsafe extern "C" fn(vm: *mut c_void);
 pub type Game_FullRaceReplaySystem_Init_t = unsafe extern "C" fn(
@@ -4508,6 +4516,8 @@ pub type Game_FullRaceReplaySystem_Init_t = unsafe extern "C" fn(
 pub type Game_Game_HandleInterruptEvent_t =
     unsafe extern "C" fn(game: *mut c_void, event: *const c_void) -> u64;
 pub type Game_Game_SetCurrentGameMode_t = unsafe extern "C" fn(mode_context: *mut c_void, mode: *mut c_void);
+pub type Game_GarageCrewInstance_Hide_t =
+    unsafe extern "C" fn(crew_inst: *mut c_void, hide_car: bool, keep_flag: bool);
 pub type Game_Get_ModelNodeId_t = unsafe extern "C" fn(name: *const c_char) -> u32;
 pub type Game_GridRundown_ShouldPlay_t = unsafe extern "C" fn(
     variant: u8,
@@ -4594,6 +4604,8 @@ pub type Game_PitLane_ProjectBoxPose_t = unsafe extern "C" fn(
 ) -> bool;
 pub type Game_PitLane_PutVehicleInPitBox_t = unsafe extern "C" fn(pitlane: *mut c_void, vehicle: u8);
 pub type Game_PitLane_UpdateMovement_t = unsafe extern "C" fn(mgr: *mut c_void, dt: f32);
+pub type Game_PitLane_VehicleWantsToLeaveGarage_Thunk_t =
+    unsafe extern "C" fn(pit_lane_system: *mut c_void, vehicle_idx: u8, instant: bool);
 pub type Game_Pitlane_SetVehicleStatus_t = unsafe extern "C" fn(self_: *mut c_void, vehicle: u8, status: u32);
 pub type Game_Place_Vehicle_t = unsafe extern "C" fn(
     car: *mut c_void,
@@ -4611,6 +4623,8 @@ pub type Game_Predict_StrategyWetness_t =
     unsafe extern "C" fn(self_: *mut c_void, window3: *const f32) -> f32;
 pub type Game_RaceMarshalSystem_Update_t = unsafe extern "C" fn(system: *mut c_void, dt: *mut f64);
 pub type Game_RaceStrategyVm_Populate_t = unsafe extern "C" fn(vm: *mut c_void);
+pub type Game_RacingFFBEffectDirectInput_UpdateDeviceEffects_t =
+    unsafe extern "C" fn(effect: *mut c_void, lanes: *const f32) -> i32;
 pub type Game_Read_GridConfig_t = unsafe extern "C" fn(placement: *mut c_void);
 pub type Game_Read_QualifyingConfig_t = unsafe extern "C" fn(track_data_system: *mut c_void);
 pub type Game_Read_StoryForcedTitleUpdateValueSetting_t = unsafe extern "C" fn(ctx: *mut c_void) -> bool;
@@ -4662,6 +4676,8 @@ pub type Game_SceneManagerSpawn_SpawnScene_t = unsafe extern "C" fn(
     ov_b: *mut c_void,
     p7: u64,
 ) -> *mut c_void;
+pub type Game_Scene_FindByName_t =
+    unsafe extern "C" fn(scene_mgr: *mut c_void, name: *const c_char, log_on_miss: bool) -> *mut c_void;
 pub type Game_Scene_UpdateInstanceTransformsBatch_t =
     unsafe extern "C" fn(scene: *mut c_void, actor_update_flag: u8);
 pub type Game_SeasonLength_ApplyPreset_t = unsafe extern "C" fn(component: *mut c_void, preset: u8);
@@ -4687,6 +4703,14 @@ pub type Game_Teleport_Vehicle_t = unsafe extern "C" fn(
     dt: f32,
     flags: u32,
 );
+pub type Game_Teleport_VehicleImmediate_Thunk_t = unsafe extern "C" fn(
+    car: *mut c_void,
+    tag: *const c_char,
+    prev_mtx: *const f32,
+    new_mtx: *const f32,
+    dt: f32,
+    flags: u32,
+);
 pub type Game_TileList_PushChildSelection_Thunk_t =
     unsafe extern "C" fn(widget: *mut c_void, child: *mut c_void);
 pub type Game_TimeManager_OnResetFixedTimeStep_t =
@@ -4706,6 +4730,7 @@ pub type Game_UITrack_Apply_DevContractTrack_t = unsafe extern "C" fn(self_: *mu
 pub type Game_UITrack_FindTrackInfoWithFallback_t =
     unsafe extern "C" fn(contract: *mut c_void, track_name: *const c_char);
 pub type Game_UITrack_Select_DefaultTrack_t = unsafe extern "C" fn(self_: *mut c_void, cfg: *mut c_void);
+pub type Game_Update_WeatherTimelineScalar_t = unsafe extern "C" fn(weather_owner: *mut c_void);
 pub type Game_VehiclePlacementSystem_Connect_t =
     unsafe extern "C" fn(self_: *mut c_void, owner: *mut c_void, registry: *mut c_void) -> u32;
 pub type Game_Vfx_UpdateWheelTyreInstance_t = unsafe extern "C" fn(
@@ -5670,6 +5695,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Car_Engine_UpdateWear: Binding = Binding {
+        id: "Car_Engine_UpdateWear",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Car_FrontWing_Init: Binding = Binding {
         id: "Car_FrontWing_Init",
         kind: "func",
@@ -5707,6 +5737,11 @@ pub mod bindings {
     };
     pub const Car_Model_BindCockpitNodes: Binding = Binding {
         id: "Car_Model_BindCockpitNodes",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Car_PadAssist_DriftAssist: Binding = Binding {
+        id: "Car_PadAssist_DriftAssist",
         kind: "func",
         status: Status::Experimental,
     };
@@ -10425,6 +10460,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_FfbThrustmaster_ConfigureEffects: Binding = Binding {
+        id: "Game_FfbThrustmaster_ConfigureEffects",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_Fill_PerformanceComparison: Binding = Binding {
         id: "Game_Fill_PerformanceComparison",
         kind: "func",
@@ -11007,6 +11047,11 @@ pub mod bindings {
     };
     pub const Game_GarageCrewInstanceLogic_StateSendCarToTrack_P3: Binding = Binding {
         id: "Game_GarageCrewInstanceLogic_StateSendCarToTrack_P3",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GarageCrewInstance_Hide: Binding = Binding {
+        id: "Game_GarageCrewInstance_Hide",
         kind: "func",
         status: Status::Experimental,
     };
@@ -12125,6 +12170,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_PitLane_VehicleWantsToLeaveGarage_Thunk: Binding = Binding {
+        id: "Game_PitLane_VehicleWantsToLeaveGarage_Thunk",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_PitStopInstance_PlaySequence: Binding = Binding {
         id: "Game_PitStopInstance_PlaySequence",
         kind: "func",
@@ -12430,6 +12480,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_RacingFFBEffectDirectInput_UpdateDeviceEffects: Binding = Binding {
+        id: "Game_RacingFFBEffectDirectInput_UpdateDeviceEffects",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_RacingVehicles_Initialise: Binding = Binding {
         id: "Game_RacingVehicles_Initialise",
         kind: "func",
@@ -12697,6 +12752,11 @@ pub mod bindings {
     };
     pub const Game_SceneManager_DestroyScene: Binding = Binding {
         id: "Game_SceneManager_DestroyScene",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Scene_FindByName: Binding = Binding {
+        id: "Game_Scene_FindByName",
         kind: "func",
         status: Status::Experimental,
     };
@@ -13180,6 +13240,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_Teleport_VehicleImmediate_Thunk: Binding = Binding {
+        id: "Game_Teleport_VehicleImmediate_Thunk",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_TerminalDamage_Initialise: Binding = Binding {
         id: "Game_TerminalDamage_Initialise",
         kind: "func",
@@ -13437,6 +13502,11 @@ pub mod bindings {
     };
     pub const Game_UiMessageScreen_Destructor: Binding = Binding {
         id: "Game_UiMessageScreen_Destructor",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Update_WeatherTimelineScalar: Binding = Binding {
+        id: "Game_Update_WeatherTimelineScalar",
         kind: "func",
         status: Status::Experimental,
     };
@@ -17850,6 +17920,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Render_SceneView_BuildViewParams: Binding = Binding {
+        id: "Render_SceneView_BuildViewParams",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Render_SceneView_SubmitCamera: Binding = Binding {
         id: "Render_SceneView_SubmitCamera",
         kind: "func",
@@ -18922,6 +18997,11 @@ pub mod bindings {
     };
     pub const Sess_RaceRuleset_SetTimeLimit: Binding = Binding {
         id: "Sess_RaceRuleset_SetTimeLimit",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_RaceRuleset_SetTotalLaps: Binding = Binding {
+        id: "Sess_RaceRuleset_SetTotalLaps",
         kind: "func",
         status: Status::Experimental,
     };
@@ -21237,6 +21317,11 @@ pub mod bindings {
     };
     pub const g_FeTile_SelectedCareerContent: Binding = Binding {
         id: "g_FeTile_SelectedCareerContent",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const g_Game_CutscenePlacements: Binding = Binding {
+        id: "g_Game_CutscenePlacements",
         kind: "data",
         status: Status::Experimental,
     };

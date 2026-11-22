@@ -5,8 +5,8 @@ The logo is apps/launcher/assets/icon.svg rendered to a 2048 px PNG with a trans
 background (any SVG renderer; Edge or Chrome headless works:
   msedge --headless=new --default-background-color=00000000 --window-size=2048,2048 --screenshot=logo.png logo.html).
 The glow is composited in float with fresh dither and light grain per frame, so it shows no
-rings after the Bink encode. --voice mixes an optional voice line (any mono or stereo WAV) in under the chimes;
-the shipped video has none.
+rings after the Bink encode. The sound is a low swell and a soft pad, with no chime or ping.
+--voice mixes an optional voice line (any mono or stereo WAV) in over it; the shipped video has none.
 
   python make_intro.py --logo logo.png [--voice voice.wav] [--out DIR] [--ffmpeg ffmpeg]
   -> DIR/swofty_intro.mp4 (+ .wav and two stills)
@@ -120,11 +120,6 @@ def audio(path, voice=None, t_voice=1.35):
     out = np.zeros(n)
     sw = np.sin(2 * np.pi * 55 * t) * np.clip(t / 1.2, 0, 1) * np.exp(-np.maximum(0, t - 1.2) * 1.2)
     out += 0.35 * sw
-    for t0, f in ((0.35, 659.25), (1.25, 987.77)):
-        m = t >= t0; tt = t[m] - t0
-        env = (1 - np.exp(-tt * 60)) * np.exp(-tt * 1.6)
-        s = sum(a * np.sin(2 * np.pi * f * k * tt) for k, a in ((1, 1), (2, 0.35), (3, 0.12), (4.2, 0.05)))
-        out[m] += 0.3 * env * s
     pad = sum(np.sin(2 * np.pi * f * t) for f in (164.81, 246.94, 329.63))
     out += 0.06 * pad * np.clip((t - 0.3) / 1.5, 0, 1) * np.clip((5.8 - t) / 1.2, 0, 1)
     out = out / np.max(np.abs(out)) * 0.55

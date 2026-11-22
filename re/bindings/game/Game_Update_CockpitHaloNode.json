@@ -7,9 +7,9 @@
   "addr": "0x1403a1790",
   "level": "L2",
   "subsystem": "game",
-  "proto": "-",
+  "proto": "void Game_Update_CockpitHaloNode(void *in_car_driver_actor)",
   "evidence": "decomp:re/decomp/1403a1790.c;imm:0x7c97c1e9;xref:0x14561b780",
-  "notes": "Under CS this[0x243]. Per viewport (<2): if a WritableCamera targets this driver (GUID owner+8+0x20), camera component bytes +0x21/+0x22 clear view bits; states +0x1af4/+0x1afc (1/2); vfunc+0xb8(name,show,view) for gloves_x, visor_x, helmet_, balaclava_x, harness_x, hans_device_x, eyes_x, body_incar_x. Then node 'halo' (0x7c97c1e9): rest transform copied or zeroed; +0x1aed: anim/pose layers. (lane owner review requested) Better name: Game_DriverModel_UpdateViewMeshVisibility (bound record keeps its name)."
+  "notes": "In-car driver actor frame update, slot 38 of its vtable 0x14561b650 (cell 0x14561b780, the only ref). Per viewport it shows or hides the driver mesh nodes by name through vcall +0xb8 (gloves_x, body_incar_x, suit_attachments_x, visor_x, visor_tear_x, visor_attachments_x, helmet_, eyes_x, face_balaclava(_v2)_x, balaclava(_v2)_x, harness_x, hans_device_x, harness_classic_x) from camera-settings byte +0x30 and the 'WritableCamera' component; looks up the 'halo' node (Ne_NameRegistry_FindId(0x7c97c1e9)) and copies its rest transform back or writes a zero 3x4 transform; this+0x1b0c is set to 1 here when ctx+0x38 != 0 (no other setter seen). Then samples the clip players (Ne_AnimClipPlayer_Sample_Thunk 0x1403a6400), evaluates the anim layers via Game_InCarDriver_EvaluateAnimLayers (0x1403a33a0) and stores its result at +0x1acc. Better name: Game_InCarDriver_UpdateFrame. Used by vmknolle dukati-lean (rider pose)."
  },
  "signature": {
   "id": "game.update_cockpit_halo_node",
@@ -47,5 +47,25 @@
    "notes": "V4611 halo node/zero-matrix logic and djb2 0x7c97c1e9 confirmed; but +0x1b0c is only set here (to 1 when ctx+0x38!=0), no Enable/DisableHaloGeoMod setter seen; name ok; vtable/indirect"
   }
  ],
- "proofs": []
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1403a1790",
+    "target": "0x1403a1790"
+   },
+   "sigcheck": "passed",
+   "digest": "dc9dcd1186b9d51c08bc5bba87b22adacb2b33d18c8e79023eb6bd841594587f"
+  }
+ ]
 }

@@ -166,6 +166,7 @@ export default defineConfigWithTheme<DocsThemeConfig>({
           {
             text: "Releases",
             items: [
+              { text: "1.10.25", link: "/releases/1.10.25" },
               { text: "1.10.24", link: "/releases/1.10.24" },
               { text: "1.10.23", link: "/releases/1.10.23" },
               { text: "1.10.22", link: "/releases/1.10.22" },
@@ -576,6 +577,7 @@ export default defineConfigWithTheme<DocsThemeConfig>({
               { text: "Liveries", link: "/std/systems/liveries", icon: "file" },
               { text: "Teams", link: "/std/systems/teams", icon: "file" },
               { text: "Garage art", link: "/std/systems/garage", icon: "file" },
+              { text: "Sponsor boards", link: "/std/systems/sponsors", icon: "file" },
               { text: "Drivers", link: "/std/systems/drivers", icon: "file" },
               { text: "Helmets, suits and gloves", link: "/std/systems/wearables", icon: "file" },
               { text: "Sounds", link: "/std/systems/sounds", icon: "file" },
@@ -744,6 +746,7 @@ export default defineConfigWithTheme<DocsThemeConfig>({
                       { text: "Career wizard", link: "/reference/std/career-wizard", icon: "file" },
                       { text: "Era picker boxes", link: "/reference/std/era-picker", icon: "file" },
                       { text: "Memory", link: "/reference/std/memory", icon: "file" },
+                      { text: "Game memory writes", link: "/reference/std/game-memory", icon: "file" },
                       { text: "Logging", link: "/reference/std/logging", icon: "file" },
                       { text: "Mixin API", link: "/reference/std/mixin", icon: "file" },
                       { text: "Settings", link: "/reference/std/settings", icon: "file" },
