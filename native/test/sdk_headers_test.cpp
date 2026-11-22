@@ -739,6 +739,16 @@ static int fake_row_find(const char *id, uint32_t *h)
 static int fake_row_value(uint32_t h, uint32_t *v) { return h == 1 ? (*v = g_row_value, SWOFTY_ASSET_OK) : SWOFTY_ASSET_INVALID; }
 static int fake_row_set(uint32_t h, uint32_t v) { return h == 1 && v < 2 ? (g_row_value = v, SWOFTY_ASSET_OK) : SWOFTY_ASSET_INVALID; }
 static int fake_row_lock(uint32_t h, int l) { return h == 1 ? (g_row_locked = l, SWOFTY_ASSET_OK) : SWOFTY_ASSET_INVALID; }
+static uint32_t g_row_car = 0xff;
+static int fake_row_vehicle(uint32_t h, uint32_t *c)
+{
+    if (h != 1)
+        return SWOFTY_ASSET_INVALID;
+    if (g_row_car >= 27)
+        return SWOFTY_ASSET_LATE;
+    *c = g_row_car;
+    return SWOFTY_ASSET_OK;
+}
 static int fake_active(int on) { return g_on = on, SWOFTY_ASSET_OK; }
 static int fake_follow(uint32_t car) { return g_follow = int(car), SWOFTY_ASSET_OK; }
 static int fake_camera(int32_t c) { return g_camera = c, c == 1 || c == 2 ? SWOFTY_ASSET_OK : SWOFTY_ASSET_INVALID; }
@@ -776,13 +786,16 @@ static void content_ownership()
 static void pit_rows()
 {
     CHECK(!swofty::hud::PitRow::find("serve"));
-    SwoftyPitRowOps ops{SWOFTY_PIT_ROWS_VERSION, fake_row_find, fake_row_value, fake_row_set, fake_row_lock};
+    SwoftyPitRowOps ops{SWOFTY_PIT_ROWS_VERSION, fake_row_find, fake_row_value, fake_row_set, fake_row_lock, fake_row_vehicle};
     swofty::detail::set_pit_rows_table(&ops);
     CHECK(!swofty::hud::PitRow::find("other"));
     auto row = swofty::hud::PitRow::find("serve");
     CHECK(row && !row->yes());
     CHECK(row->set(true) && row->yes() && g_row_value == 1);
     CHECK(row->lock(true) && g_row_locked == 1 && row->lock(false) && g_row_locked == 0);
+    CHECK(!row->car());
+    g_row_car = 19;
+    CHECK(row->car() == 19u);
     ops.version = 0;
     CHECK(!swofty::hud::PitRow::find("serve"));
     swofty::detail::set_pit_rows_table(nullptr);

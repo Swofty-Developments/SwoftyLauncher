@@ -84,6 +84,17 @@ public:
         return t && t->set_locked && t->set_locked(handle_, locked ? 1 : 0) == SWOFTY_ASSET_OK;
     }
 
+    // The car whose pit page shows the row: the player's car, also while the AI drives it down the pit lane. Empty
+    // while no pit page is built (menus, loading).
+    std::optional<uint32_t> car() const
+    {
+        auto t = swofty::detail::pit_rows_table();
+        uint32_t c = 0;
+        if (!t || !t->vehicle || t->vehicle(handle_, &c) != SWOFTY_ASSET_OK)
+            return std::nullopt;
+        return c;
+    }
+
     uint32_t handle() const { return handle_; }
 
 private:

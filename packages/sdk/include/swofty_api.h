@@ -1107,7 +1107,9 @@ typedef struct SwoftySessionOps {
    SWOFTY_ASSET_UNAVAILABLE when the profile's build has no such row (the addon is off, a third row, or the launcher is
    older). value reads the row: 0 NO, 1 YES. set_value moves it; set_locked greys the row out and holds it on NO while
    locked is non-zero (the game also locks it, like the repair row, from pit entry until the car is in the box).
-   Every call is safe from any thread; the page shows a change the next time it updates. */
+   vehicle gives the car whose pit page holds the row (the player's car, also while the AI drives it in the pit lane),
+   SWOFTY_ASSET_LATE while no pit page is built. Every call is safe from any thread; the page shows a change the next
+   time it updates. */
 #define SWOFTY_PIT_ROWS_VERSION 1
 
 typedef struct SwoftyPitRowOps {
@@ -1116,6 +1118,7 @@ typedef struct SwoftyPitRowOps {
     int (*value)(uint32_t handle, uint32_t *value);
     int (*set_value)(uint32_t handle, uint32_t value);
     int (*set_locked)(uint32_t handle, int locked);
+    int (*vehicle)(uint32_t handle, uint32_t *car);
 } SwoftyPitRowOps;
 
 /* Content ownership (standard library 1.8, experimental), from the core export SwoftyCoreContentOps; not a

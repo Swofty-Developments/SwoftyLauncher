@@ -77,6 +77,7 @@ struct alignas(16) Row {
 Row rows[ROWS];
 std::atomic<int> locked[ROWS];
 std::atomic<int> wanted[ROWS] = {-1, -1};
+std::atomic<uint32_t> vehicles[ROWS] = {0xff, 0xff};
 std::atomic<bool> live{false};
 
 uint32_t load_u32(const void *p) { return __atomic_load_n(reinterpret_cast<const uint32_t *>(p), __ATOMIC_RELAXED); }
@@ -106,6 +107,7 @@ void release(size_t k)
     if (!r.built)
         return;
     r.built = false;
+    vehicles[k] = 0xff;
     uintptr_t vt = at<uintptr_t>(r, 0), dtor = 0;
     if (vt && swofty::mem::read(vt, dtor) && swofty::mem::in_image(reinterpret_cast<void *>(dtor)))
         reinterpret_cast<RowDtor>(dtor)(r.object, 0);
@@ -149,6 +151,7 @@ void build(size_t k, uintptr_t real, void *list, uint8_t vehicle)
     link(r.object + ROW_DATA, data);
     reinterpret_cast<Sync>(a_sync)(r.object);
     enabled_original(r.object, true);
+    vehicles[k] = vehicle;
     swofty::log("[pit rows] %s built for %s beside the repair row of vehicle %u", NAMES[k], settings_pit_row_name(k).c_str(),
                 unsigned(vehicle));
 }
@@ -182,6 +185,7 @@ void update_enabled(void *row, bool force)
         uint8_t vehicle = 0xff;
         swofty::mem::read(real + ROW_VEHICLE, vehicle);
         at<uint8_t>(r, ROW_VEHICLE) = vehicle;
+        vehicles[k].store(vehicle, std::memory_order_relaxed);
         bool lock = locked[k].load(std::memory_order_relaxed);
         store_u32(r.car + CAR_STATE, lock ? LOCKED : car_state(real, vehicle));
         bool dirty = false;
@@ -293,7 +297,19 @@ int set_locked(uint32_t handle, int on)
     return SWOFTY_ASSET_OK;
 }
 
-const SwoftyPitRowOps table = {SWOFTY_PIT_ROWS_VERSION, find, value, set_value, set_locked};
+int vehicle(uint32_t handle, uint32_t *out)
+{
+    size_t k = 0;
+    if (!out || !slot(handle, k))
+        return SWOFTY_ASSET_INVALID;
+    uint32_t v = vehicles[k].load(std::memory_order_relaxed);
+    if (v >= CARS)
+        return SWOFTY_ASSET_LATE;
+    *out = v;
+    return SWOFTY_ASSET_OK;
+}
+
+const SwoftyPitRowOps table = {SWOFTY_PIT_ROWS_VERSION, find, value, set_value, set_locked, vehicle};
 
 }
 
