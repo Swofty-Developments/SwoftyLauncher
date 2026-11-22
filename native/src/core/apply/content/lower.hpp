@@ -966,7 +966,8 @@ inline void lower_package(const std::string &id, const Value &rec, const Lookup 
         plan.virtual_lists.push_back(list);
     if (box_worlds && own_worlds && !virt && rec["world"].is_object())
         lower_named_world(id, rec, mode, teams.size(), list_from, row, read, stat, plan, tracks);
-    bool named = row["season"].is_string() && row["season"].as_string().rfind("swofty_world_", 0) == 0;
+    const Value &listed = row;
+    bool named = listed["season"].is_string() && listed["season"].as_string().rfind("swofty_world_", 0) == 0;
     if (box_worlds && !virt && mode == box_world::SETUP_MODE && !named)
         lower_box_world(id, list, mode, teams.size(), list_from, row, read, stat, plan);
     auto list_id = virt ? std::optional<int64_t>() : stat_of(stat, "content.package", id, pin_of(rec));
