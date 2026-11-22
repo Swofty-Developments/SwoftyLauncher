@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141fe5a10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141fe5a10.c;doc:re/research/sponsors.md#catalogue;xref:0x141fe593f,0x141fe59f6",
-  "notes": "Called from 0x141fe5520 and 0x141fe59e0."
+  "notes": "Sponsor/decal catalogue list build. Allocs 0x50 list obj -> this+0x338; binds VM nodes under this+0x10: 'sponsors' list at +0x278 (func_0x1442a1810), 'selected_sponsor' NodeRef (Vm_Set_NodeRef 0x14083c270) at +0x2c0, 'goto_store_allowed' bool (Vm_Set_Bool) at +0x2e0 = !Game_Entitlement_IsNonEaPlayTrial. Ctx==2 (Ui_Get_CustomisationContext) path: entries via 0x141feb380 sorted (0x142147640); else sorted 0x14214a600. Per entry: snprintf 'sponsor_%d', 0x141fe9600, PushTile 0x142149410; ends with 0x141fe8920(this,idx,1). (lane owner review requested)"
  },
  "signature": {
   "id": "game.decal_catalogue_vm_build_tiles",

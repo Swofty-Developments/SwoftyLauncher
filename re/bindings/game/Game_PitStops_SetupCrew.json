@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1403ad360",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1403ad360.c;pat:log-channel-PITSTOPS;xref:0x1403c7876",
-  "notes": "named from its log messages (channel PITSTOPS): 'Crew %d m_team %s | Contact John Smedley : failed to find pitlight scene for %s '"
+  "notes": "Builds one pit crew scene: param_2->+0x60 crew id, transform param_3->+0x70..+0xaf, mirrored param_4->+0x430, car idx param_8/9->+0xc0/+0xc1. Spawns scenes via 0x1401a4810/0x1401a4b70: PitstopSceneCar(+0x188), *Heads (lowq_ variants), PitstopEquip*, TyreNew/Old_*, ReplaceFrontWing, RemoveFrontJack, FrontWingStand, F2_ prefix for F2 cars; pit_light_<team>(+0x198) + PITSTOPS log 'Crew %d m_team %s'; fl/fr/rl/rr/fw objects +0x1b8..+0x1d8. (lane owner review requested)"
  },
  "signature": {
   "id": "game.pit_stops_setup_crew",

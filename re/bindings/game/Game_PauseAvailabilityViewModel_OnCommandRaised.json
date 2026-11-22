@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142bc10f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142bc10f0.c;pat:log-message-cxx;xref:0x1457cba40",
-  "notes": "PauseAvailabilityViewModel::onCommandRaised (own log string, channel FFB_DEBUG); vtable cell 0x1457cba40."
+  "notes": "Switch on hash *(u32*)*rdx. Ne_Log_Thunk 0x1406d4c80 (FFB_DEBUG) logs PauseAvailabilityViewModel::onCommandRaised - exit_flow/back_pressed, both zero [this+0x10c4]. Via 0x144320fe0 dispatches %s_pressed, block_input, fade_on_content, camera_toggled, inputAllow/inputDisallow, options_list_rebuilt; builds lng_restart_session safety-rating popup. Tail-jmps 0x142bbeb60, 0x142bc0420, 0x1416fcb70, 0x14391cdd0 (decomp merged these). (lane owner review requested)"
  },
  "signature": {
   "id": "game.pause_availability_view_model_on_command_raised",

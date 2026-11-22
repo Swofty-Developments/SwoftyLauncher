@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401ed220",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1401ed220.c;xref:0x1401a6401,0x1401ebb97,0x1401ec128",
-  "notes": "Takes a vector of u32 actor ids (param_3): empty -> 0xffffffff, single -> that id, else under critical section (+0x30) merges/looks up in the scene actor table (+200) and returns the combined id. Callers Game_SceneManagerSpawn_MergeScene, Game_SceneManager_BuildMaterialActorForScene. Hypothesis."
+  "notes": "param_3 = u32 id vector: 0 ids -> 0xffffffff, 1 -> that id. Else under CS +0x30: per id finds/inserts node {id,u64 useCount} in FNV-1a robin-hood map +0x60..+0xb4 (new count 0), keeps ids with minimal count, picks one by LCG +0xc0 (0x343fd/0x269ec3), increments its count, returns it. +200 = allocator (vcall +0x18/+0x38). Old 'merges' claim wrong. (lane owner review requested) Better name: Game_SceneManager_PickLeastUsedActorId (bound record keeps its name)."
  },
  "signature": {
   "id": "game.scene_manager_resolve_material_actor_ids",

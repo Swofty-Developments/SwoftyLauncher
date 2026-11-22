@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141da11d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141da11d0.c;pat:log-channel-OPTIONS-UI;xref:0x141d9fad2,0x141daf08f,0x141daf813,0x141dd00a5,0x141ddb0a3,0x141ddfcf6,0x141de3857,0x141de98a6,0x1457520d0",
-  "notes": "Cell 0x1457520d0 plus jmp/call sites in several options VMs. Command handler (open, back_pressed, race_style_selected) that ignores commands while exiting or updating the filter level."
+  "notes": "Renamed (was Game_OptionsUI_ExitingViewUpdatingFilterLevel, a log fragment). Body read fully: switch on command hash [*param_2]: 0x73ecfeb0 sets +0x8b4 and posts 'back_pressed' (vt+0x50) once; 0x8b5b6cb -> vt+0x108; 0xe379aeaa -> vt+0x110; 0x912a5ece posts 'open' (pending +0xa10) or 'race_style_selected' to [+0x620] vt+0x80, else vt+0x140; 0x9d20ff39/0x9fe65ec6 ignored (OPTIONS-UI log) while +0x8ba or property [+0x990] set, else select entry by djb2 hash +0x8bc/+0x8c0, global 0x14606a9d8 = 1/2, vt+0x120. (lane owner review requested) Better name: Game_OptionsUI_HandleCommand (bound record keeps its name)."
  },
  "signature": {
   "id": "game.options_ui_exiting_view_updating_filter_level",

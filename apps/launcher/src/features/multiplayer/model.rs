@@ -837,11 +837,6 @@ pub(crate) fn room_focus(in_room: bool, away: bool, viewing: Option<&str>) -> Ro
     }
 }
 
-/// How many rooms the Time Trial page's rooms card lists out of `total`.
-pub(crate) fn card_rooms(total: usize) -> usize {
-    total.min(3)
-}
-
 #[derive(Clone)]
 pub(super) enum Start {
     Create(RoomSettings),

@@ -120,9 +120,17 @@ template <class Call> HRESULT gated(int which, void *caller, Call call)
     CallerScope scope(caller);
     double waited = 0;
     arm_gate::Pass p = arm_gate::Pass::open;
+    arm_gate::Exempt who = arm_gate::Exempt::none;
     if (gate.running()) {
         uint32_t me = GetCurrentThreadId();
-        p = gate.wait(me, gate.is_worker(me) ? arm_gate::Exempt::none : exempt_of(caller), arm_gate::WAIT_CAP, &waited);
+        who = gate.is_worker(me) ? arm_gate::Exempt::none : exempt_of(caller);
+        p = gate.wait(me, who, arm_gate::WAIT_CAP, &waited);
+    }
+    if (who == arm_gate::Exempt::core) {
+        if (p != arm_gate::Pass::open && passes_told.fetch_add(1) < PASSES_TOLD)
+            swofty::log("[d3d12] %s from the core's own code (thread %lu) while the D3D12 arm runs: %s, %.0f ms", e.name,
+                        GetCurrentThreadId(), arm_gate::pass_name(p), waited);
+        return call();
     }
     if (p == arm_gate::Pass::timed_out)
         swofty::log("[d3d12] %s from %s (thread %lu) waited %.0f ms for the D3D12 arm on its worker and goes on without it",

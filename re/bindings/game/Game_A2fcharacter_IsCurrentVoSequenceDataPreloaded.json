@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14025e0e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14025e0e0.c;pat:log-message-method;xref:0x1455ede78",
-  "notes": "Vtable slot (cell 0x1455ede78) of A2FCharacter: VO state-machine tick; logs Summoning/Dismissing Character, Pending VO found, Requested Preload, waiting on VO Sequence to preload, Playing VO Sequence. The isCurrentVoSequenceDataPreloaded() line is one log inside (likely an inlined callee); old name covers only that fragment. Better name: Game_A2fcharacter_UpdateVoState (bound record keeps its name)."
+  "notes": "A2FCharacter vtable slot (this,double*dt). Summon +0x2c0: copies data, 'Summoning Character [%s]', state +0x588=5; dismiss +0x540: 0x14025fe70, 'Dismissing', state 6. Pending VO +0x5a0 -> 'Requested Preload of VO Sequence', state 3; state 3 finds seq in map +0x78, polls preload (vcall +0x20) -> 'Playing VO Sequence', state 4. Ends 0x14018fa60(+0x88,dt). isCurrentVoSequenceDataPreloaded is one log. (lane owner review requested) Better name: Game_A2fcharacter_UpdateVoState (bound record keeps its name)."
  },
  "signature": {
   "id": "game.a2fcharacter_is_current_vo_sequence_data_preloaded",

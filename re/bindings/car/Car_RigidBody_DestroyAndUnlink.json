@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1441011a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1441011a0.c;xref:0x143168d8c,0x1440c5ad7",
-  "notes": "Rigid-body destruction: under the world critical section (body+0x368 -> +0x60) unlinks the body from the world list (flag 0x471 bit0, links +0x2f0/+0x2f8), deletes its child chains (+0x360 constraints, +0x350, +0x358 via vcall 0) and walks the contact list (+0x460) removing contacts referencing it. Callers Ne_PhysWorld_InitFromConfig cleanup path and 0x1440c6990. Hypothesis on exact scope."
+  "evidence": "decomp:re/decomp/1441011a0.c;xref:0x1440c5ad7,0x1440c6a20,0x1440c6c57,0x1530684d4",
+  "notes": "(body): under world CS [[body+0x368]+0x60]: unlink from world list (flag +0x471 bit0, links +0x2f0/+0x2f8, head world+0x90); delete chains +0x360/+0x350/+0x358 (vcall 0); remove contacts in +0x460 referencing the body (count +0x468); island 0x1440c2b60/0x1440c1c80; unlink +0x330/+0x338 and +0x310/+0x318 lists, +0x320/+0x328 if bit1; clears world+0x50. (lane owner review requested)"
  },
  "signature": {
   "id": "car.rigid_body_destroy_and_unlink",

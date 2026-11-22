@@ -279,6 +279,38 @@ fn packs_an_addon_without_registry_code_like_pack_addon_py() {
 }
 
 #[test]
+fn packs_hud_files_and_the_files_they_name() {
+    if python().is_err() {
+        eprintln!("skipped: python3 isn't installed");
+        return;
+    }
+    let sdk = sdk_root().unwrap();
+    let root = scratch("pack-hud");
+    let folder = root.join("mod.hud");
+    std::fs::create_dir_all(folder.join("hud")).unwrap();
+    std::fs::create_dir_all(folder.join("art")).unwrap();
+    std::fs::write(
+        folder.join(MANIFEST_FILE),
+        r#"{"schema_version":1,"id":"mod.hud","name":"H","version":"1.0.0","operations":{"hud":["hud/h.json"]}}"#,
+    )
+    .unwrap();
+    std::fs::write(
+        folder.join("hud/h.json"),
+        r#"{"hud.slot":{"radio":{"name":"Radio","rect":[0.1,0.1,0.2,0.1]}},"hud.element":{"e":{"sprites":{"row":{"png":"art/row.png"}}}}}"#,
+    )
+    .unwrap();
+    std::fs::write(folder.join("art/row.png"), "png").unwrap();
+    std::fs::write(folder.join("art/unused.png"), "png").unwrap();
+    pack(&sdk, &folder, &root.join("out"), false, &[]).unwrap();
+    let packed =
+        String::from_utf8_lossy(&std::fs::read(root.join("out/mod.hud.swoftyaddon")).unwrap()).into_owned();
+    assert!(packed.contains("hud/h.json"));
+    assert!(packed.contains("art/row.png"));
+    assert!(!packed.contains("art/unused.png"));
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
 fn pack_records_a_registry_dll_when_wine_is_there() {
     let sdk = sdk_root().unwrap();
     let built = sdk.join("native/build/recorder-test");

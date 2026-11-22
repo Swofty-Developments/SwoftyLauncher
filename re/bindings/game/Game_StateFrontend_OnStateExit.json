@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1436d3b00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1436d3b00.c;pat:log-message-cxx;xref:0x14585ae00",
-  "notes": "StateFrontend::onStateExit (vt cell 0x14585ae00). Calls unsubscribe 0x143988350 several times and 0x1428d9a90/0x144422f70/0x14416d5b0."
+  "notes": "Body read in full; own string 'TEMP_LOG: Calling StateFrontend::onStateExit'. Requests 'unload_frontend', VM option update, checks cached frontend assets, 0x1428d9a90/0x1428cf460; when +0xc18==1: 0x144422f70, thumbnail-generation disable logs, 0x14416d5b0(..,9), unsubscribes MessageGameModeChanged / GlobalDriverSet / MessageEnterBetaCodePressed (0x143988350), 0x14417bfb0 'recalculateFrontEndTransition', 0x1436d49a0, posts message vtable 0x1458736a0 to the bus queue. Only ref vt cell 0x14585ae00. (lane owner review requested)"
  },
  "signature": {
   "id": "game.state_frontend_on_state_exit",

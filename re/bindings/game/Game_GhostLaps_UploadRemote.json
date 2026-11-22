@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142fa65f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142fa65f0.c;pat:log-channel-GHOSTLAP-TRACE;xref:0x142fa447f",
-  "notes": "Remote storage upload task (strings). Registered (lea) in 0x142fa3de0."
+  "notes": "GHOSTLAP-TRACE onRemoteStorageUpload completion (lea in 0x142fa3de0): QPC -> this+0x70/+0x78, posts event; failure: retry delay +0x88=min(10,+2), error ring 0x146107900, returns unless code 0x1c (NE_ENOSPC). Else deserialises (0x142f8a400) into +0x138..+0x1c8 and copies to memory storage +0x278/+0x288..+0x318, or resets (0x142f9d5c0). (lane owner review requested) Better name: Game_GhostLaps_OnRemoteStorageUpload (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ghost_laps_upload_remote",

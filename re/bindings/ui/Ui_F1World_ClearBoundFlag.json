@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141aeca80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "ui",
   "proto": "void Ui_F1World_ClearBoundFlag(void *self, void *a2)",
-  "evidence": "decomp:re/decomp/141aeca80.c;xref:0x141aeb494;xref:0x141aeb93d;xref:0x141b91e95",
-  "notes": "myteam-g2: Writes bool false into the bound property at self+0x148 (bool-typed check via vtable); called by upgrade card screen and max upgrade level warning."
+  "evidence": "decomp:re/decomp/141aeca80.c;xref:0x141aeb494,0x141aeb93d,0x141b91e95",
+  "notes": "Renamed: sets bool holder +0x148 = false, string +0x120 = param_2, bool holder +0x108 = true (bool type 0x146129dc0, setter 0x140973e20). (lane owner review requested) Better name: Ui_F1World_SetMessageVisible (bound record keeps its name)."
  },
  "signature": {
   "id": "ui.f1_world_clear_bound_flag",

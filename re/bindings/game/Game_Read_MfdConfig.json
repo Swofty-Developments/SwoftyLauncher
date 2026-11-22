@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1414c7cd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1414c7cd0.c;pat:log-channel--;xref:0x141c117fe,0x141c1c4db",
-  "notes": "0x9104-byte body: MFD attacher panels, osd_visibility_option.* children, many Message* bus names (Flashback, HudNotification, Checkpoint): looks like the in-race HUD/MFD VM setup, not a config reader."
+  "notes": "Not a config reader. If param_4==0: 0x144165f20(this[0x55],path) lists layout nodes; per node djb2 hash (0x1505) of path+name, switch on type hash *(int*)node[2] allocs a HUD VM (base ctor 0x1414ded70), some subscribe Message* (FlashbackUsed, CheckpointLoaded, DisplayHud*Notification) via 0x143987810; MFD VM builds 8 mfd.attacher.* panels; push to this[0x51]. Then queues path msg on this[5]+0x30, posts 0x1456f54b8, stores path at this+0x2c0/0x2d0. (lane owner review requested) Better name: Game_Hud_CreateChildViewModels (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_mfd_config",

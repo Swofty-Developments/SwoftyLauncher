@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1409e6000.c",
+  "evidence": "decomp:re/decomp/1409e3fb0.c;xref:0x145665c20",
   "notes": "second R&D aggregate consumer (decompiled at entry 0x1409e6000); re-reads upgrade_type + bhp_adjustment/mass_adjustment by name and copies ~5-byte enum arrays; data/string-driven, not a dept[4] index"
  },
  "signature": {

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a577d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142a577d0.c;pat:log-channel-INPUT;xref:0x141dcb8f1",
-  "notes": "INPUT axis snapshot read ('Can't find axis snapshot from ID', 'Snapshot good %s is pressed %f') (log strings)."
+  "notes": "Walks input devices (this+0x48->+0x140->+0x198), skips virtual_keyboard/mouse; axis pressed if |value-prev|>0.1, DB '#input_device.%s.axis.%s' (+/- fallback) -> icon_raw; sets UI icon_%d visible/text '{s:icons_tool_tips}%s{/s}'/enabled, hides rest to icon_25, sets key_pressed, num_more=max(0,n-7). Old name came from a log string. (lane owner review requested) Better name: Game_InputModule_UpdatePressedKeyIcons (bound record keeps its name)."
  },
  "signature": {
   "id": "game.input_module_read_axis_snapshot",

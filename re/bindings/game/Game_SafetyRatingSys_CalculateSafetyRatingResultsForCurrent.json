@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142c66d90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142c66d90.c;str:s_SafetyRatingSystem_CalculateSafetyRatingResultsForCurrentSession;xref:0x142c6d5a6,0x142c6eafb,0x142c6f70d,0x142c6fc54,0x14e59c5ea",
-  "notes": "Pretty-function game::SafetyRatingSystem::calculateSafetyRatingResultsForCurrentSession; 4 KB body. Callers 0x142c6d590, 0x142c6e840, Game_SafetyRating_OnMatchComplete, 0x142c6fa30, 0x14e59c580."
+  "notes": "Own pretty-function 0x1457d2939 is %s of its SAFETY_RATING log 0x1457d29a4. sret p2 SafetyRatingSessionResults (vptr 0x1457a67d0). Walks penalty records [this+0x4c0]+0x48..+0x50 (stride 0x30) for vehicle this+0x64, skips excluded/AI-control windows (grace this+0x360), deducts rec+0x2c from +8/+0xc; per-lap clean laps vs threshold this+0x364 -> +0x10, streak bonus table this+0x348..; writes +0x18/+0x1c. (lane owner review requested)"
  },
  "signature": {
   "id": "game.safety_rating_sys_calculate_safety_rating_results_for_current",

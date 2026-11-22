@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142473a80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "entrants",
   "proto": "-",
-  "evidence": "pat:log-channel-ENTRANTS_SYSTEM",
-  "notes": "named from its log messages (channel ENTRANTS_SYSTEM): 'Team customisation removed with stat id %s | Couldn't find array to remove team customisation with stat id %s | Couldn't find team customisation to remove with stat id %s'"
+  "evidence": "decomp:re/decomp/142473a80.c;pat:log-channel-ENTRANTS_SYSTEM;xref:0x141a20cd5",
+  "notes": "(entrants, u32 key): kind 0 (ePreLoaded) refused -> 5; list [entrants+0x2f8+kind*0x10] missing -> 1; remover 0x142473da0(list, key>>16) false -> 2, true -> 0; each case logs on ENTRANTS_SYSTEM (kind names ePreLoaded/eUserDefined/eNetworkReplicated from table 0x145612e60). (lane owner review requested)"
  },
  "signature": {
   "id": "entrants.entrants_system_remove_team_customisation",

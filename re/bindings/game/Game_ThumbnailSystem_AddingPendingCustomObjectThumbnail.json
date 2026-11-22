@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e37a00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142e37a00.c;pat:log-channel-THUMBNAIL_SYSTEM;xref:0x14187efc7,0x1419f28a5,0x1421cfc35,0x1421cfde8",
-  "notes": "0xdf2-byte body: custom object thumbnail generation and REgeneration (log strings), uses Game_Thumbnail_HashMap_Insert/FindOrInsert."
+  "notes": "Looks up existing entry by name (param_4) in robin-hood map +0x78/+0x80; if new: id=++(+0xa8), Game_Thumbnail_HashMap_Insert 0x142ee49a0 (+0x50), allocs 0x250 job (vt 0x1457ec230->0x1457ec9f0, copies param_2 desc), FindOrInsert 0x142ee45a0 into owner+0xc0 with callback 0x142e32310, logs THUMBNAIL_SYSTEM 'Adding pending custom object thumbnail generation for set ID %d', pushes id to owner+0xe0 vector. If exists and param_6: replaces j... (lane owner review requested) Better name: Game_ThumbnailSystem_AddPendingCustomObjectThumbnail (bound record keeps its name)."
  },
  "signature": {
   "id": "game.thumbnail_system_adding_pending_custom_object_thumbnail",

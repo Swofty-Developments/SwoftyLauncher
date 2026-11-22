@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "pat:log-channel-VEHICLE_COMPONENT",
+  "evidence": "decomp:re/decomp/144662060.c;pat:log-channel-VEHICLE_COMPONENT;xref:0x14465422f,0x144661b70,0x144661cd3",
   "notes": "named from its log messages (channel VEHICLE_COMPONENT): '- | FAILED component name: %s, part: %s, model: %s, proxy %s'"
  },
  "signature": {

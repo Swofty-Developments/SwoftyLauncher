@@ -39,7 +39,10 @@ fn main() {
                 size(px(1440.), px(900.)),
                 cx,
             ))),
-            window_min_size: Some(size(px(1024.), px(680.))),
+            window_min_size: Some(size(
+                px(ui::scale::MIN_WINDOW_WIDTH),
+                px(ui::scale::MIN_WINDOW_HEIGHT),
+            )),
             app_id: Some("net.swofty.ModLauncher".into()),
             titlebar: Some(TitlebarOptions {
                 title: Some(swofty_i18n::tr("Swofty Launcher").into()),

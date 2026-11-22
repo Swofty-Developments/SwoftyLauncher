@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e3a7f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142e3a7f0.c;pat:log-channel-THUMBNAIL_TASK;xref:0x14f346256,0x14f3462c7",
-  "notes": "Handler (lea at 0x14f346256,0x14f3462c7): RTT task complete states (logs 'Aborting on RTT Task Complete', 'Thumbnail Task Complete, cleaning up')."
+  "evidence": "decomp:re/decomp/142e3a7f0.c;pat:log-channel-THUMBNAIL_TASK;xref:0x14f346255,0x14f3462c6",
+  "notes": "CS param_1[0xd]. Abort flag +0x1c0: 'Aborting on RTT Task Complete', state!=7 marks subtasks + 0x142e3a4d0, vt+0x60, state=10 Cancelled (names 0x1457f1298). Else stores RTT result param_2 under FNV hash of entry name in map param_1[0x22..0x2a], pops stack +0x168/+0x170, next via vt+0x58; stack empty: Dynamic -> state 8, else 'Thumbnail Task Complete, cleaning up.' state 9. (lane owner review requested) Better name: Game_ThumbnailTask_OnRttTaskComplete (bound record keeps its name)."
  },
  "signature": {
   "id": "game.thumbnail_task_state_aborting_rtt_task_complete_id",

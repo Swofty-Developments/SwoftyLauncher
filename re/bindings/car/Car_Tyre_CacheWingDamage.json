@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e97060",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "pat:log-channel-PITSTOP_TYRES",
-  "notes": "Log channel PITSTOP_TYRES: 'TyreComponent::cacheWingDamage %p - PITLANE ENTER'"
+  "evidence": "decomp:re/decomp/142e97060.c;pat:log-channel-PITSTOP_TYRES;xref:0x1434ccff4,0x1434cd0c8",
+  "notes": "TyreComponent::cacheWingDamage (string, PITSTOP_TYRES). Once (guard +0x9911 -> 1): per compound slot resolves 12 part nodes by id (0x142e83fe0) from [veh+0x5c8]+0xb0 (node id +0x4c) and copies node flag +0x38 into bool arrays (+0x220/+0x22c, +0x6c0/+0x6cc, current slot +0x1f0/+0x1fc, +0x690/+0x69c). Both calls in 0x1434cc6b0. (lane owner review requested)"
  },
  "signature": {
   "id": "car.tyre_cache_wing_damage",

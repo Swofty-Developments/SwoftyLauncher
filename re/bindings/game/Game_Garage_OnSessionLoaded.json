@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14038f360",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14038f360.c;pat:log-message-method;xref:0x14561b510",
-  "notes": "onSessionLoaded (GARAGE), vtable cell 0x14561b510; calls spawnGarageCrew 0x140388cf0 per garage."
+  "notes": "Own body 0x14038f360-0x14038f6d5 read in full by disassembly (decomp merges spawnGarageCrew 0x140388cf0). Logs GARAGECREW onSessionLoaded; session type [[+0x20]+0x1a8]+4: types 1..0xe, 0x12, or 0xf..0x11 with flag (0x1413ca0d0 +7 bit3) -> when [[[+0x28]+0x88]+0x260]+0x2b0]+0x20c is set and module [0x146045a88]+0x68 is empty, calls spawnGarageCrew 0x140388cf0(module, 0..0x1f) (last as tail jmp); other types: under lock frees the 32 crew slots module+0x68.. (0x140381380, allocator vt+0x38). Only ref vt cell 0x14561b510. (lane owner review requested)"
  },
  "signature": {
   "id": "game.garage_on_session_loaded",

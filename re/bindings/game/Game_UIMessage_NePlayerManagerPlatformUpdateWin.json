@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144117e00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/144117e00.c;pat:log-channel-UI_MESSAGE;xref:0x1434df18d,0x145a5b298",
-  "notes": "Large UI_MESSAGE body (pdata 0x2445 bytes; vtable cell 0x145a5b298, caller 0x1434df18d): closeAllMessagesInQueue on multipage_popup_queue / default_queue and the log 'NePlayerManager::platformUpdateWin:: m_updateUserControllerPairing = %s'."
+  "notes": "Is NePlayerManager::platformUpdateWin itself (log 0x145a5b4db 'm_updateUserControllerPairing = %s' when +0x261 set and +0x263 clear, then 0x14411b260 PlatformProcessAllInputDevices). Syncs device lists +0x70..+0x170 vs player slots +0x1b0/+0x1b8 (+0x1c0 dev); lead logout -> closeAllMessagesInQueue multipage_popup_queue/default_queue + lead_player_logout_msg (0x1442d9bf0, cb 0x14411aeb0); state +0x1f0 1/4 'Staring Platform Signin Flow', 3 'Login Process Completed for player %d'; device_not_supported_msg, no_mp_not_signed_in_msg. (lane owner review requested) Better name: Game_NePlayerManager_PlatformUpdateWin (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ui_message_ne_player_manager_platform_update_win",

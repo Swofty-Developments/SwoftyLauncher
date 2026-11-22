@@ -401,6 +401,87 @@ void garage_tests()
           "garage art stays fenced off unless SWOFTY_GARAGE_ART is exactly 1");
 }
 
+void sponsors_tests()
+{
+    std::map<std::string, std::string> db = {
+        {std::string(content::VEHICLES) + "[_metadata_=f50_alfa].vehicle_package", "f1_1950_alfa"},
+        {std::string(content::VEHICLES) + "[_metadata_=f50_ferrari].vehicle_package", "f1_1950_ferrari"},
+        {std::string(content::VEHICLES) + "[_metadata_=renault_2025].vehicle_package", "f1_2025_renault"},
+        {std::string(content::PACKAGES) + "[_metadata_=f1_1950_alfa].resource_path",
+         "f1_1950_vehicle_package/teams/alfa/wep/alfa"},
+        {std::string(content::PACKAGES) + "[_metadata_=f1_1950_ferrari].resource_path",
+         "f1_1950_vehicle_package/teams/ferrari/wep/ferrari"},
+        {std::string(content::PACKAGES) + "[_metadata_=f1_2025_renault].resource_path",
+         "f1_2025_vehicle_package/teams/renault/wep/renault"},
+    };
+    content::Read read = [&](const std::string &p) -> std::optional<std::string> {
+        auto it = db.find(p);
+        return it == db.end() ? std::nullopt : std::optional<std::string>(it->second);
+    };
+    auto team = [](const char *key, const char *vehicle) { return Value::object({{"key", key}, {"vehicle", vehicle}}); };
+    std::map<std::string, Value> recs = {
+        {"vehicle|mod.s/alfa", Value::object({{"label", "f50_alfa"}})},
+        {"vehicle|mod.s/ferrari", Value::object({{"label", "f50_ferrari"}})},
+        {"vehicle|mod.b/renault", Value::object({{"label", "renault_2025"}})},
+        {"content.package|mod.s/f1_1950",
+         Value::object({{"teams", Value::array({team("alfa", "mod.s/alfa"), team("ferrari", "mod.s/ferrari"),
+                                                team("alfa_b", "mod.s/alfa")})}})},
+        {"content.package|mod.b/f1_2025", Value::object({{"teams", Value::array({team("renault", "mod.b/renault")})}})},
+        {"content.package|mod.s/empty", Value::object({{"teams", Value::array()}})}};
+    content::Lookup lookup = [&](const std::string &reg, const std::string &id) -> const Value * {
+        auto it = recs.find(reg + "|" + id);
+        return it == recs.end() ? nullptr : &it->second;
+    };
+    auto lower = [&](const char *json) {
+        content::Plan plan;
+        Value rec = swofty::json::parse(json);
+        content::lower_sponsors("mod.s/boards_1950", rec, lookup, read, plan);
+        return plan;
+    };
+
+    content::Plan box = lower(R"j({"package":"mod.s/f1_1950","textures":"sponsors/f1_1950"})j");
+    check(box.garages.size() == 1 && box.garages[0].registry == "track.sponsors" && box.garages[0].groups.size() == 2 &&
+              box.garages[0].groups[0] == "asset_groups/f1_1950_vehicle_package/teams/alfa/wep/alfa.assetgroup" &&
+              box.garages[0].groups[1] == "asset_groups/f1_1950_vehicle_package/teams/ferrari/wep/ferrari.assetgroup",
+          "sponsor boards go to the group of every car of the box, each group once");
+    check(box.garages[0].vehicles.size() == 2, "a car two team entries share is named once");
+    check(box.garages[0].folder == "sponsors/f1_1950/" && box.garages[0].srgb &&
+              box.garages[0].root == "eaid://environment_package/core_assets/shared_textures/sponsors/",
+          "the folder gains a slash and root and srgb take the sponsor defaults");
+    check(box.garages[0].game_path == "2025_asset_groups/swofty_sponsors/mod_s_boards_1950.erp",
+          "the boards archive has a game path of its own per record, apart from the garage art's");
+    content::Plan garage;
+    content::lower_garage("mod.s/g", swofty::json::parse(R"j({"package":"mod.s/f1_1950","entry":"alfa","textures":"g"})j"),
+                          lookup, read, garage);
+    check(garage.garages.size() == 1 && garage.garages[0].registry == "team.garage" &&
+              garage.garages[0].game_path.rfind("2025_asset_groups/swofty_garage/", 0) == 0,
+          "garage art keeps its own registry tag and game path");
+    bool leaks = false;
+    for (auto &g : box.garages[0].groups)
+        leaks = leaks || g.find("f1_2025") != std::string::npos;
+    check(!leaks, "a box's boards never reach the stock 2025 box's car groups");
+    content::Plan other = lower(R"j({"package":"mod.b/f1_2025","textures":"s","root":"eaid://x/","srgb":false})j");
+    check(other.garages.size() == 1 && other.garages[0].groups.size() == 1 &&
+              other.garages[0].groups[0] == "asset_groups/f1_2025_vehicle_package/teams/renault/wep/renault.assetgroup" &&
+              other.garages[0].root == "eaid://x/" && !other.garages[0].srgb,
+          "another box's boards land on that box's own car groups, with its own root and srgb");
+    for (const char *bad : {R"j({"package":"mod.s/nope","textures":"s"})j", R"j({"package":"mod.s/f1_1950"})j",
+                            R"j({"textures":"s"})j", R"j({"package":"mod.s/empty","textures":"s"})j"}) {
+        content::Plan p = lower(bad);
+        check(p.garages.empty() && p.refused == 1, std::string("refused: ") + bad);
+    }
+    db.erase(std::string(content::VEHICLES) + "[_metadata_=f50_alfa].vehicle_package");
+    content::Plan one = lower(R"j({"package":"mod.s/f1_1950","textures":"s"})j");
+    check(one.garages.size() == 1 && one.garages[0].groups.size() == 1,
+          "a car without a vehicle row is skipped and the box's other cars still take the boards");
+    db.erase(std::string(content::VEHICLES) + "[_metadata_=f50_ferrari].vehicle_package");
+    check(lower(R"j({"package":"mod.s/f1_1950","textures":"s"})j").garages.empty(),
+          "a box none of whose cars has an asset group is refused");
+    check(!content::box_sponsors_enabled(nullptr) && !content::box_sponsors_enabled("") && !content::box_sponsors_enabled("0") &&
+              !content::box_sponsors_enabled("on") && !content::box_sponsors_enabled("11") && content::box_sponsors_enabled("1"),
+          "box sponsor boards stay fenced off unless SWOFTY_BOX_SPONSORS is exactly 1");
+}
+
 void livery_tests()
 {
     std::map<std::string, std::string> db = {

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446fd980",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "pat:log-channel-FFB_PLUGIN",
-  "notes": "named from its log messages (channel FFB_PLUGIN): 'slip angle input %f'"
+  "evidence": "decomp:re/decomp/1446fd980.c;pat:log-channel-FFB_PLUGIN;xref:0x145c010d8",
+  "notes": "FFB input (vtable cell 0x145c010d8): needs scale +0x50>=0.001, lane mask +0x40, car g_table[[+0x38]+0x128] with |v.fwd|>=5; front/rear avg (max if +0x70) of slip angle ratio w+0x3b0/w+0x3c8 ([car+0x580]+0x70..+0x88) through Game_FfbEffect_EvalWaveform (+0x68 for 2nd) times [+0x38]+0x180..+0x18c; out = clamp(-1,1)*scale, only if >0.1, AND lane mask. Log FFB_PLUGIN 'slip angle input %f'. (lane owner review requested)"
  },
  "signature": {
   "id": "car.ffb_slip_angle_input",

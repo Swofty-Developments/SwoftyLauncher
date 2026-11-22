@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144441070",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/144441070.c;pat:log-channel-NEOS_SIGNALR/V;xref:0x1444409ae",
-  "notes": "lea 0x1444409ae. Parses the received JSON payload and dispatches on 'type' (Invocation, Completion -> 0x1444450e0, Ping, Close -> 'Server closed connection'); 'Error in payload'. Decomp polluted. Better name: Game_NeosSignalr_OnPayload (bound record keeps its name)."
+  "notes": "In bounds: state +0x228==6: trims last char unless '}', JSON-parse 0x140b5e130, log 'Received SignalR payload'. Mode +0x10738!=2: 0x1444450e0 else 0x144444e30. Mode 2: 'error' -> 'Error in payload: %s'; 'type' 1 Invocation->0x144444e30, 3 Completion->0x1444450e0, 6 Ping, 7 Close->0x144441e70('Server closed connection'). Lines 326+ = merged handshake code 0x1444445e4..0x144444894 (outside pdata) (lane owner review requested)"
  },
  "signature": {
   "id": "game.neos_signalr_received_signal_r_payload",

@@ -88,6 +88,15 @@ impl Pipeline<'_, '_> {
             puts: &puts,
             run,
         };
+        if !inputs.hud_slots.is_empty() {
+            let base = |rel: &str| bases.path(rel);
+            let cache = |addon: &str| run.store.addon_cache_dir(addon);
+            let (ops, lines) = crate::hud::slots::ops(&inputs.hud_slots, &base, &cache)?;
+            self.built
+                .lines
+                .extend(lines.into_iter().map(|l| format!("hud slot: {l}")));
+            erp_ops.splice(0..0, ops);
+        }
         if !inputs.hud_inputs.is_empty() {
             let ops = crate::diagnostics::phases::time_part("build.apply.hud", || {
                 self.compose_hud(inputs, &bases, &erp_ops)

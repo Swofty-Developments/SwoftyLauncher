@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14406ed50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14406ed50.c;pat:log-message-method;xref:0x1409977ce,0x1430566b0,0x14305c1cf",
-  "notes": "Logs \"Transport is null\" / \"Not connected to destination\" errors, else \"%s: destination, dataType, size\"; queues the packet (Game_NetworkTraffic_QueuedPacketSizeConnectionId) and logs the traffic kbits (NETWORK-TRAFFIC)."
+  "evidence": "decomp:re/decomp/14406ed50.c;pat:log-message-method;xref:0x1409977ce,0x140997c0d,0x1430566b0,0x14305a123,0x14305a293,0x14305c1cf,0x143060299,0x143060e9c,0x143060f9e,0x14306175d,0x143061ae5,0x143061bb1,0x143061bfa,0x143061e8d,0x143061fed,0x143062126,0x14306346b,0x143063777,0x14306396f,0x143063d5c,0x1430645be",
+  "notes": "Body read in full. Returns 0x10 when byte +0x718 set; 0xe with logs when transport +0x110 is null or the destination is not connected (mask +0x180+src*0xc); else logs destination/dataType/size, for size < 0x48f and channel < 3 adds size*8 to the NETWORK-TRAFFIC counters at 0x146c9f2b0.. (logs kbits) and sends via 0x14406f280(+0x130,...); size >= 0x48f -> error 0x54. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_data_send_to_connection",
