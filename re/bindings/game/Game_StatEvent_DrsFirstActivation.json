@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14377a0f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14377a0f0.c;pat:log-channel-STAT_EVENT_DRS;xref:0x143779cf4,0x14377a6cd",
-  "notes": "DRS handler (lea 0x143779cf4 in 0x143779830, 0x14377a6cd in 0x14377a640): only for the local driver (msg+0x10 == [this+8]+0x173) and once (this+0x18/+0x19); finds the DRS zone entry, then inlined EventWriteActivateDRS writes ActivateDRS, .SectionId, .F1WEventMode, .F1WEventMode.SectionId to providers [[this+8]+0x70]; sets +0x18=1 and logs STAT_EVENT_DRS."
+  "notes": "DRS bus handler: only if msg+0x10 == [[this+8]+0x173] (local driver), this+0x19 set and +0x18 clear; car 0x142f0c7f0([+0x10]+0x90); walks zone list [+0x10]+0x48..+0x50 (0x20 stride) back for entry with driver byte and dist; needs entry -0x14 == 0. Writes ActivateDRS, .SectionId.%d, .F1WEventMode.%d, .F1WEventMode.%d.SectionId.%d (value 4) to providers [[this+8]+0x70] vcall +0x18/+0x30; sets +0x18=1, logs STAT_EVENT_DRS. (lane owner review requested)"
  },
  "signature": {
   "id": "game.stat_event_drs_first_activation",

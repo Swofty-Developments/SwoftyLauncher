@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c04fd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "void Car_Load_SetupPreset(void *out, uint8_t variant, const char *package_label)",
-  "evidence": "decomp:re/decomp/140c04fd0.c;xref:0x149a21759,0x149a21779,0x149a21799,0x149a217b9,0x149a217d9;kb:subsystems/gamedb.md#side-data",
-  "notes": "Gdb_Find_RowByLabel(car_setup.presets, vehicle_package_setups, package_label) (both names stack-built), then reads <row>.<ai|player>.<variant>.<slider> with Gdb_Get_FieldInt for the 42 car_setup.sliders labels; variant names from the table at 0x14568eaf0 (index 0..4, else 0x145636190). A package without a preset row gets no setup; a row with only _metadata_ crashed session load (read of index -1)."
+  "evidence": "decomp:re/decomp/140c04fd0.c;kb:subsystems/gamedb.md#side-data;xref:0x149a21759,0x149a21779,0x149a21799,0x149a217b9,0x149a217d9,0x149a2180d",
+  "notes": "(slots, variant, packageLabel): Gdb_Find_RowByLabel('car_setup.presets' / 'vehicle_package_setups', label); builds <row>.player.<variant> and <row>.ai.<variant> (variant names 0x14568eaf0: max_downforce..max_speed, else 'invalid'); for the 42 slider labels (front_wing .. brake_bm_input_end) reads both with Gdb_Get_FieldInt and calls slots vtable +8 (i, value) twice. (lane owner review requested)"
  },
  "signature": {
   "id": "car.load_setup_preset",

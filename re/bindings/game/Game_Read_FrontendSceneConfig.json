@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428f35b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1428f35b0.c;pat:log-channel--;xref:0x14289cb2c,0x14289cd5c,0x14289cfac",
-  "notes": "Callers 0x14289cb2c, 0x14289cd5c, 0x14289cfac (0x14289b240). Strings sequence / type_of_random."
+  "notes": "Gdb row reader: out+0 = row id (0x1445a3900, XOR key 0x145890978); 'type_of_random' lowercase FNV-1a == 0xeb117469c6cdc09b -> bool +0x58; 'sequence' label looked up (0x1445a2bd0) in frontend_scene.driver.animations.sequences.{general_sequences,emote_sequences,pose_sequences.pose_idle_sequences,mannequin_sequences} ('Sequence'/'Invalid'); param_3 -> +0x59. (lane owner review requested) Better name: Game_Read_FrontendDriverAnimSequenceRef (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_frontend_scene_config",

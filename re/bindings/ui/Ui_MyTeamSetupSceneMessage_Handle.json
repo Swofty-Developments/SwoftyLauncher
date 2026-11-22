@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141641950",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "ui",
   "proto": "void f(void *self, void *msg)",
   "evidence": "decomp:re/decomp/141641950.c;xref:0x1456fa0a8",
-  "notes": "myteam-g1: Message handler for MyTeamSetupSceneMessage (scene setup for My Team creation); reads attribute container fields +0x290..+0x2d8."
+  "notes": "Vtable slot (cell 0x1456fa0a8). Posts bus msg 0x145708ac0 with context text; subscribes CustomisationTextureQueueLoadRequestMessage (0x141643140), ...ProcessLoadRequestsMessage (0x1416435e0), ...UnloadRequestsMessage (0x141643630), MyTeamSetupSceneMessage (0x141643740); mode 0/2 by context (0x1428bd940); binds focused_pip and focused-item nodes. (lane owner review requested) Better name: Ui_CustomisationScene_Activate (bound record keeps its name)."
  },
  "signature": {
   "id": "ui.my_team_setup_scene_message_handle",

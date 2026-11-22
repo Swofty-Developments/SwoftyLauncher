@@ -5,11 +5,11 @@
  "author": "vmknolle",
  "row": {
   "addr": "0x1407d11a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
   "proto": "void Sess_Loader_FillSessionDescriptor(void *game_manager, void *descriptor)",
-  "evidence": "decomp:own Ghidra decomp of 0x1407d11a0 (jmp 0x1487062f0);xref:0x142d48bb2,0x142d48348,0x143575283,0x1436f8814",
-  "notes": "jmp thunk to .data1 0x1487062f0. Fills a session descriptor (the SessionSettings the game manager holds at +0x1a8): 0x142cd18f0(descriptor), then 0x14290fb80(manager+0x88, descriptor) walks the game mode's components and calls each one's slot 0x80 (championship modes: Game_ChampionshipGameMode_BuildSessionSettings 0x1407b7b90; Time Trial: Sess_TimeTrialMode_FillDescriptor 0x142936760), which build the participants +0xad0; ends with 0x142cd23d0(descriptor). Callers: Sess_Loader_SetupTrackAssets (0x142d48bb2, before Game_VehicleAssetManager_ChangeResidentAssets in Sess_Loader_StartFrontendAssetLoad) and the loader keep checks 0x142d48040 (0x142d48348), 0x1436f8340 (0x1436f8814), 0x143575170 (0x143575283) that fill a temporary descriptor to compare with the live one. Research: re/research/session_vehicle_swap.md"
+  "evidence": "decomp:re/decomp/1407d11a0.c;xref:0x142d48348,0x142d48bb2,0x143575283,0x1436f8814",
+  "notes": "jmp thunk (no pdata) to .data1 0x1487062f0. Body: Game_SessionSettings_Reset 0x142cd18f0(desc), 0x14290fb80(this+0x88 manager, desc), manager+0x260 vt+0xf0(+0x148 +0x988, desc); if mode name +0xe78 == 'DEV': +0xf60 +0x28 = name, +0x52 = (name != 'lng_rp_multiplayer_custom'); 0x142c60260; logs 'Game Mode Settings' type %s; copies the sanitised mode name to a global; 0x142cd23d0(desc); this+0x298 = 0. (lane owner review requested)"
  },
  "signature": {
   "id": "session.loader_fill_session_descriptor",

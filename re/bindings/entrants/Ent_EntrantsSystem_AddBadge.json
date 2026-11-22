@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1424717e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "entrants",
   "proto": "-",
-  "evidence": "pat:log-channel-ENTRANTS_SYSTEM",
-  "notes": "named from its log messages (channel ENTRANTS_SYSTEM): 'Badge added with stat id %s | Couldn't find array to add badge with type %s | Failed to add badge with stat id %s'"
+  "evidence": "decomp:re/decomp/1424717e0.c;pat:log-channel-ENTRANTS_SYSTEM;xref:0x140fe93ce,0x1416e58ef,0x141fcebc6,0x142056ac7,0x14226658d",
+  "notes": "AddBadge for type 1 eUserDefined: array this+0x3c8; ENTRANTS_SYSTEM: id = (first free slot of the array's 16-byte entries << 16) | type; result *p3 = 0 ok / 1 no array / 3 insert failed; logs added/failed with stat id. Copies the badge record and inserts via 0x140cddf70. (lane owner review requested)"
  },
  "signature": {
   "id": "entrants.entrants_system_add_badge",

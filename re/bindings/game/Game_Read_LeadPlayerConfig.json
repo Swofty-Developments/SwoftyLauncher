@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140789270",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140789270.c;pat:log-channel--;xref:0x1456444a8",
-  "notes": "Parses hardware_settings_config (graphics_card, resolution, motion/dbox, led_display, udp telemetry ip/port/sendRate/format, wooting RGB) plus lead_player head/eye tracking; name too narrow."
+  "notes": "vtable 0x1456444a0 slot1. Reads hardware_settings_config (graphics_card/resolution, motion dbox+udp ip/port/sendRate/format, led_display), lead_player.settings head/eye_tracking, wooting device name; per group diffs vs snapshot, on change builds event, FUN_14077a240 with hud_customisation/settings_head_and_eye_tracking/settings_dbox_and_sli/settings_udp_telemetry/settings_wooting_keyboard, queues. (lane owner review requested) Better name: Game_Emit_HardwareSettingsChangeEvents (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_lead_player_config",

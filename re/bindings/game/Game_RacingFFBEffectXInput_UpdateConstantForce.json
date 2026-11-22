@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446f5a60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1446f5a60.c;pat:log-message-cxx;xref:0x145c00378",
-  "notes": "Virtual (vt cell 0x145c00378): pad selection (+0x2d0 active pad index, function table 0x14604e1a0) and vibration via 0x1446f5610 / 0x14537f2a0 with motors scaled by 65535; logs FFB_DEBUG updateConstantForce strings."
+  "notes": "vtable cell 0x145c00378. Logs FFB_PLUGIN motor values; if +0x1e1 and no gaming input ([0x146ca0810]+0x1a0==0) with pad table 0x14604e1a0: picks the first pad from +0x2d0 with input > 0.2, stops the old pad (0x1446f5610 zero), logs 'Changing active pad index', sets +0x2d0, sends motors via 0x1446f5610. Else 0x1446f5970 gate, |motors| * 65535.0 packed to u16 and sent by 0x14537f2a0(+0x30, ...). (lane owner review requested)"
  },
  "signature": {
   "id": "game.racing_ffb_effect_x_input_update_constant_force",

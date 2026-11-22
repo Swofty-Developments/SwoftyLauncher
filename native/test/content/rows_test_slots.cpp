@@ -612,6 +612,33 @@ void drs_tests(const std::string &regs)
     check(!content::grid_pick("f1_2008", grids).rule && !content::grid_pick("f1_2025", grids).rule,
           "grid null or a stock box: the game's own grid");
 
+    auto pair = [](const char *a, const char *b) {
+        return std::string(R"({"drivers":[{"driver":")") + a + R"("},{"driver":")" + b + R"("}]})";
+    };
+    std::string twelve, eleven;
+    for (int t = 0; t < 12; t++) {
+        std::string team = pair(("d" + std::to_string(2 * t)).c_str(), ("d" + std::to_string(2 * t + 1)).c_str());
+        twelve += (t ? "," : "") + team;
+        if (t < 11)
+            eleven += (t ? "," : "") + team;
+    }
+    Value s2010 = swofty::json::parse(R"({"entrant_list":"sw_f1_2010","teams":[)" + twelve + "]}");
+    Value s2010_tt = swofty::json::parse(R"({"entrant_list":"sw_f1_2010_tt","teams":[{"drivers":[{"driver":"d0"}]}]})");
+    Value s2013 = swofty::json::parse(R"({"entrant_list":"sw_f1_2013","teams":[)" + eleven + "]}");
+    Value s2013b = swofty::json::parse(R"({"entrant_list":"sw_f1_2013","teams":[)" + twelve + "]}");
+    Value broken = swofty::json::parse(R"({"entrant_list":"sw_f1_1999","teams":null})");
+    std::vector<std::pair<std::string, const Value *>> seasons = {{"swofty.swofty-seasons-2010/sw_2010", &s2010},
+                                                                  {"swofty.swofty-seasons-2010/sw_2010_tt", &s2010_tt},
+                                                                  {"swofty.swofty-seasons-2013/sw_2013", &s2013},
+                                                                  {"mod.a/sw_1999", &broken}};
+    check(content::package_seats("sw_f1_2010", seasons) == 24 && content::package_seats("sw_f1_2013", seasons) == 22 &&
+              content::package_seats("sw_f1_2010_tt", seasons) == 1,
+          "a package's seats are its teams' drivers: 12 teams seat 24, 11 seat 22");
+    check(content::package_seats("f1_2025", seasons) == 0 && content::package_seats("sw_f1_1999", seasons) == 0,
+          "a stock list, or a package with no teams, seats none");
+    seasons.push_back({"mod.b/sw_2013", &s2013b});
+    check(content::package_seats("sw_f1_2013", seasons) == 24, "the last package with the box's entrant list decides (seats)");
+
     Value q1985 = swofty::json::parse(R"({"entrant_list":"f1_1985","rules":{"qualifying_tyres":["softer"]}})");
     Value q1990 =
         swofty::json::parse(R"({"entrant_list":"f1_1990","rules":{"qualifying_tyres":["medium","softer","softer","wet"]}})");

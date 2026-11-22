@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1436c5ef0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1436c5ef0.c;pat:log-channel--;xref:0x14585a7c0",
-  "notes": "Strings show a DriverHQ intro cutscene/fade sub-task (DriverHQIntroMessage, UICameraSubTask, FADE_REQUESTS 'Clearing fade reasons') reading 4 Game.DriverHQIntro.*.ForceOn bools; name 'GameConfig_7' is vague."
+  "notes": "Once (+0xca0): +0xc90 = component 0x1460616c8; checks bools 'Game.DriverHQIntro.{NewSeasonEstablishingCutscene,DriverHQIntro,DriverRatingsMilestone,DriverWonWorldChampionship}.ForceOn' (0x143a43b90) or career state, pushes 0x58 strings 'NewSeasonEstablishingCutscene'/'Intro'/'DriverRatingsMilestone'/'DriverChampionship' to vector +0xca8; registers 'DriverHQIntroMessage' handler 0x1436c5ee0 (0x143987810); posts msg 0x1456982f0. Then F... (lane owner review requested) Better name: Game_DriverHQIntroTask_QueueIntrosAndUpdate (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_game_config_7",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1445d6040",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1445d6040.c;pat:log-message-method;xref:0x1402a37eb",
-  "notes": "Log REPLAY_VERBOSE 'updateFromModule ...' (record / play / playFromStart / instant replay min/max/finish times); calls 0x1445d6ce0 and EndCompression. Caller thunk 0x1402a37e0."
+  "notes": "Body read fully. Call from thunk 0x1402a37e0. Skips when no modules (+0x98..+0xa0) or param_2+0x34; under lock +0xb0: pending rewind (+0x50) recomputes instant-replay min/max/finish times (+0x48, 'updateFromModule instantReplayMinimumTime ...'); per mode +0x20 (0..8) computes time step +0x80 from param_2+8 and rates +0x70/+0x74; record mode advances module times (+0xd8/+0xe0/+0x110) and switches state when full (0x1445d5c40); play modes call 0x1445d6ce0; REPLAY_VERBOSE record/play/playFromStart logs. (lane owner review requested)"
  },
  "signature": {
   "id": "game.replay_system_update_from_module",

@@ -1,6 +1,7 @@
 // Host unit test for the plain save store (plain_saves_logic.hpp): settings, manifests, the generation and CURRENT protocol,
-// the put-back decision, inject requests taken once, the replace of a registered mode before its only read and the SHA-256
-// the manifests carry. native/test/run_tests.sh plain_saves builds and runs it.
+// the put-back decision (never from a save of another kind, only a mode's containers), inject requests taken once, the
+// replace of a registered mode before its only read and the SHA-256 the manifests carry. native/test/run_tests.sh plain_saves
+// builds and runs it.
 #include "core/career/plain_saves_logic.hpp"
 
 #include <array>
@@ -166,28 +167,29 @@ static void putback(const fs::path &tmp)
     expect(!ps::newest_core_save(root).has_value(), "put back: an empty store has nothing");
     root.write_generation(
         header("save"),
-        {body("A_mode", "a1", "game", 1, true), body("B_career", "b1", "kept", 2), body("C_career", "c1", "kept", 1)}, why);
-    root.write_generation(header("load"), {body("A_mode", "a1", "game", 1, true)}, why);
-    root.write_generation(header("save", ""), {body("D_old", "d", "kept")}, why);
+        {body("gm_a_mode", "a1", "game", 1, true), body("gm_b_career", "b1", "kept", 2), body("gm_c_career", "c1", "kept", 1)},
+        why);
+    root.write_generation(header("load"), {body("gm_a_mode", "a1", "game", 1, true)}, why);
+    root.write_generation(header("save", ""), {body("gm_d_old", "d", "kept")}, why);
     auto newest = ps::newest_core_save(root);
     expect(newest && newest->generation == 1 && newest->event == "save",
            "put back: newest save of a core session, skipping loads and sessionless ones");
 
-    auto picks = ps::put_back(*newest, {{"A_mode", ""}}).picks;
-    expect(picks.size() == 2 && picks[0].entry.name == "B_career" && picks[1].entry.name == "C_career" &&
+    auto picks = ps::put_back(*newest, {{"gm_a_mode", ""}}).picks;
+    expect(picks.size() == 2 && picks[0].entry.name == "gm_b_career" && picks[1].entry.name == "gm_c_career" &&
                picks[0].generation == 1,
            "put back: only the containers the tree lacks come back");
-    expect(ps::put_back(*newest, {{"A_mode", ""}, {"B_career", ""}, {"C_career", ""}}).picks.empty(),
+    expect(ps::put_back(*newest, {{"gm_a_mode", ""}, {"gm_b_career", ""}, {"gm_c_career", ""}}).picks.empty(),
            "put back: a container the tree has is never replaced");
-    expect(ps::put_back_line("B_career", 2, 1) == "[saves] put back B_career: 2 career(s) from generation 1",
+    expect(ps::put_back_line("gm_b_career", 2, 1) == "[saves] put back gm_b_career: 2 career(s) from generation 1",
            "put back: the log line");
 
-    root.write_generation(header("save"), {body("A_mode", "a2", "game", 1, true), body("C_career", "c2", "kept", 1)}, why);
+    root.write_generation(header("save"), {body("gm_a_mode", "a2", "game", 1, true), body("gm_c_career", "c2", "kept", 1)}, why);
     newest = ps::newest_core_save(root);
     expect(newest && newest->generation == 4, "deletions: the newer save is the one to put back from");
-    picks = ps::put_back(*newest, {{"A_mode", ""}}).picks;
-    expect(picks.size() == 1 && picks[0].entry.name == "C_career",
-           "deletions: B_career, gone from the newest save, is not brought back from an older one");
+    picks = ps::put_back(*newest, {{"gm_a_mode", ""}}).picks;
+    expect(picks.size() == 1 && picks[0].entry.name == "gm_c_career",
+           "deletions: gm_b_career, gone from the newest save, is not brought back from an older one");
 
     fs::remove(root.path() / ps::CURRENT);
     expect(!ps::newest_core_save(root).has_value(), "put back: with no CURRENT nothing is trusted");
@@ -196,6 +198,69 @@ static void putback(const fs::path &tmp)
     fclose(fp);
     newest = ps::newest_core_save(root);
     expect(newest && newest->generation == 1, "put back: a generation above CURRENT (an unfinished write) is ignored");
+}
+
+// 20261121-024026: a race highlights save (savegame@highlights000, its root registers only ReplayHighlights_ReplayHighlights)
+// went through the splice as the profile, and the plain store wrote it as save generation 63 with the 6 kept containers. The
+// next profile load put the 25 MB replay container back into the profile, and every profile save after it failed with code
+// 55 (it no longer fit the game's 14 MB save buffer).
+static void highlights(const fs::path &tmp)
+{
+    fs::remove_all(tmp);
+    ps::Root root(tmp / "plain");
+    std::string why;
+    auto profile = std::vector<ps::Body>{body(sp::PROFILE_CHILD, "opts", "game", 0, true),
+                                         body("gm_driver_career_25", "dc25", "game", 0, true),
+                                         body("driver_career_25_SaveSlotGameModeComponent", "dc25-slots", "game", 1, true),
+                                         body("gm_driver_career_progressive", "prog", "kept"),
+                                         body("driver_career_progressive_SaveSlotGameModeComponent", "prog-slots", "kept")};
+    uint64_t good = root.write_generation(header("save"), profile, why);
+    auto bad_bodies = std::vector<ps::Body>{body(sp::HIGHLIGHTS_CHILD, std::string(4096, 'r'), "game", 0, true),
+                                            body("gm_driver_career_progressive", "prog", "kept"),
+                                            body("driver_career_progressive_SaveSlotGameModeComponent", "prog-slots", "kept")};
+    uint64_t bad = root.write_generation(header("save"), bad_bodies, why);
+    expect(good == 1 && bad == 2 && root.current() == 2u, "highlights: an older core's highlights generation is the newest");
+
+    auto bad_m = ps::read_generation(root, bad);
+    auto good_m = ps::read_generation(root, good);
+    expect(bad_m && !ps::profile_generation(*bad_m), "highlights: a generation whose registered container is the replay one "
+                                                     "is not of the profile");
+    expect(good_m && ps::profile_generation(*good_m), "highlights: a generation with the options container is the profile's");
+
+    std::vector<uint64_t> other;
+    auto newest = ps::newest_core_save(root, &other);
+    expect(newest && newest->generation == good && other == std::vector<uint64_t>{bad},
+           "highlights: the put-back works from the newest profile save and names the highlights generation it passed over");
+
+    std::map<std::string, std::string> tree;
+    for (const ps::Body &b : profile)
+        tree[b.name] = ps::Sha256::of(b.bytes->data(), b.bytes->size());
+    expect(ps::put_back(*newest, tree).picks.empty(), "highlights: the intact profile gets nothing put back");
+
+    auto from_bad = ps::put_back(*bad_m, tree);
+    expect(from_bad.picks.empty() && from_bad.skipped.size() == 1 && from_bad.skipped[0].name == sp::HIGHLIGHTS_CHILD &&
+               from_bad.skipped[0].reason == "it is not a game mode's container",
+           "highlights: even from that generation the replay container is never put back into the profile");
+
+    fs::remove_all(tmp);
+    ps::Root only(tmp / "plain");
+    only.write_generation(header("save"), bad_bodies, why);
+    other.clear();
+    expect(!ps::newest_core_save(only, &other).has_value() && other.size() == 1,
+           "highlights: a store whose only save generation is a highlights one puts nothing back");
+
+    ps::Manifest ea;
+    ea.event = "save";
+    ea.containers.push_back({"gm_driver_career_progressive", "", "", "kept", 10, 0, false});
+    expect(ps::profile_generation(ea), "highlights: a generation that lists no registered container (EA app copy) counts");
+    ps::Manifest none;
+    expect(ps::profile_generation(none), "highlights: an empty generation counts");
+
+    expect(ps::restorable("gm_driver_career_1990") && ps::restorable("driver_career_1990_SaveSlotGameModeComponent") &&
+               ps::restorable(sp::ENTRY_NAME),
+           "restorable: a mode's halves and the career snapshots' entry");
+    expect(!ps::restorable(sp::HIGHLIGHTS_CHILD) && !ps::restorable(sp::PROFILE_CHILD) && !ps::restorable("settings"),
+           "restorable: nothing else");
 }
 
 static void pairs(const fs::path &tmp)
@@ -216,20 +281,22 @@ static void pairs(const fs::path &tmp)
            "pairs: the manifest names the pair of each half and null for the rest");
     auto m = *ps::newest_core_save(root);
     auto sha = [&](const char *s) { return ps::Sha256::of(s, strlen(s)); };
-    auto none = ps::put_back(m, {});
-    expect(none.picks.size() == 3 && none.skipped.empty(), "pairs: with nothing loaded both halves come back");
-    auto both =
-        ps::put_back(m, {{"gm_driver_career_1990", sha("gm-bytes")}, {"driver_career_1990_SaveSlotGameModeComponent", "x"}});
-    expect(both.picks.size() == 1 && both.picks[0].entry.name == "settings", "pairs: a pair the tree holds whole is left alone");
-    auto same = ps::put_back(m, {{"gm_driver_career_1990", sha("gm-bytes")}});
-    expect(same.picks.size() == 2 && same.picks[0].entry.name == "driver_career_1990_SaveSlotGameModeComponent" &&
+    auto none = ps::put_back(m, {{"settings", ""}});
+    expect(none.picks.size() == 2 && none.skipped.empty(), "pairs: with nothing loaded both halves come back");
+    auto lost = ps::put_back(m, {});
+    expect(lost.picks.size() == 2 && lost.skipped.size() == 1 && lost.skipped[0].name == "settings",
+           "pairs: a container that is not a mode's is never put back");
+    auto both = ps::put_back(
+        m, {{"gm_driver_career_1990", sha("gm-bytes")}, {"driver_career_1990_SaveSlotGameModeComponent", "x"}, {"settings", ""}});
+    expect(both.picks.empty() && both.skipped.empty(), "pairs: a pair the tree holds whole is left alone");
+    auto same = ps::put_back(m, {{"gm_driver_career_1990", sha("gm-bytes")}, {"settings", ""}});
+    expect(same.picks.size() == 1 && same.picks[0].entry.name == "driver_career_1990_SaveSlotGameModeComponent" &&
                same.skipped.empty(),
            "pairs: an absent half comes back when the present half is the one in the generation");
-    auto diff = ps::put_back(m, {{"gm_driver_career_1990", sha("other")}});
-    expect(diff.picks.size() == 1 && diff.picks[0].entry.name == "settings" && diff.skipped.size() == 1 &&
-               diff.skipped[0].reason.find("differs") != std::string::npos,
+    auto diff = ps::put_back(m, {{"gm_driver_career_1990", sha("other")}, {"settings", ""}});
+    expect(diff.picks.empty() && diff.skipped.size() == 1 && diff.skipped[0].reason.find("differs") != std::string::npos,
            "pairs: an absent half is skipped, with the reason, when the present half differs");
-    auto unknown = ps::put_back(m, {{"driver_career_1990_SaveSlotGameModeComponent", ""}});
+    auto unknown = ps::put_back(m, {{"driver_career_1990_SaveSlotGameModeComponent", ""}, {"settings", ""}});
     expect(unknown.skipped.size() == 1 && unknown.skipped[0].name == "gm_driver_career_1990",
            "pairs: a present half whose bytes are not known counts as different");
     auto grp = ps::Request{"r", "gm_driver_career_1990", 1, true};
@@ -443,6 +510,7 @@ int main(int argc, char **argv)
     settings();
     generations(tmp / "gen");
     putback(tmp / "put");
+    highlights(tmp / "highlights");
     pairs(tmp / "pair");
     requests(tmp / "req");
     one_shot(tmp / "once");

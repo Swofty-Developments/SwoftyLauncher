@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143889310",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "vm",
   "proto": "-",
   "evidence": "decomp:re/decomp/143889310.c;xref:0x14588a618",
-  "notes": "route-command executor shape (self, NeStr **err_out, cmd): 'No screen called %u exists' on a missing screen, else calls Vm_Open_Screen 0x144182660; siblings with 'No screen called %hs exists': 0x144181e70 0x144183060 0x144183de0 0x144185500 0x144186240"
+  "notes": "Route executor (self,NeStr **err,cmd), only ref vtable cell 0x14588a618: looks up the FIXED screen hash 0xc4d8d4ca in the screen table; missing -> err 'No screen called %u exists'; else finds the scene matching 'persistent_scene' and, if the screen is not in scene list +0x130, calls Vm_Open_Screen 0x144182660; sets 'value', self+0x98=0, +0x9c=4; *err = empty. (lane owner review requested)"
  },
  "signature": {
   "id": "vm.route_cmd_open_screen",

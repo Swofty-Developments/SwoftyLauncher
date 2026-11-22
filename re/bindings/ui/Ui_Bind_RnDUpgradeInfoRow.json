@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "ui",
   "proto": "void Bind(void *vm, ..., void *info)",
-  "evidence": "decomp:re/decomp/1406d45c0.c;xref:0x1406d2190;xref:0x14148483a;xref:0x141c47f49",
-  "notes": "myteam-g2: Sets string/ref nodes for an upgrade info row (vm+0x378). UI only."
+  "evidence": "decomp:re/decomp/1406d45c0.c;xref:0x1406d2190,0x14148483a,0x141c47f49,0x141c7642f,0x1431618f5,0x1442aa5f4",
+  "notes": "Renamed (generic, callers outside R&D): (ctx {owner,node}, name, holder*, int, str): creates a value of ref type 0x146ca5550 for [node], sets it from holder (vt+0x40), calls 0x1442cbe00(node, name, value, int, str); on success notifies [owner+0x378] vt+0x30; frees value and releases holder. Returns success. Better name: Ui_Vm_SetRefValueNode (bound record keeps its name)."
  },
  "signature": {
   "id": "ui.bind_rn_dupgrade_info_row",

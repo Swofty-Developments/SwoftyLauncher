@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14183e570",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14183e570.c;xref:0x141834763,0x141834903,0x141835813,0x141836a84,0x14183c0b0,0x141840345,0x141913cdf,0x141939b83",
-  "notes": "About 1600 line destructor/cleanup: resets many embedded view-model members (vtable 0x145612e48 at +0x152*8 ...), releases thumbnails with Ne_Resource_Release. Callers Game_SessionResults_ReleaseThumbnails, PopulateTable. Hypothesis."
+  "notes": "Destructor of ONE results row (0xab0 bytes): caller 0x141834763 loops it over the vector [rsi+0x1a0..0x1a8] with stride 0xab0. Body: from +0xa90 down to +0x0, 4-qword data-binding handles (vtable 0x145612e48, owner, prev/next) unlinked from owner list (owner+0x28) and freed via FUN_1442b3d70([0x146ca54f8]); member at +0x840 (vtable 0x1456f89d0) drops two refcounted ptrs +0x9e8/+0x9d8, FUN_141605e20(+0x848). No thumbnail/resource release in this body. (lane owner review requested) Better name: Game_SessionResults_DestroyRow (bound record keeps its name)."
  },
  "signature": {
   "id": "game.session_results_destroy_rows",

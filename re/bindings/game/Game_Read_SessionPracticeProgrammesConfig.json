@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142944640",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142944640.c;pat:log-channel--;xref:0x14295f489,0x14295fa73,0x14295fc4a,0x14295fe99,0x142960069,0x14296038d,0x14296056b",
-  "notes": "Session HUD: session.number_of_laps, practice_programmes.topPill/bottomPill, race_flags pp_icon variants."
+  "notes": "Ctor (this,owner,name): vtables 0x1457b1f40/0x1457b2150 at +0/+8, owner +0x10, name copied to +0x58; binds via [0x146ca54f8] 'session.number_of_laps' (->+0x258), 'session.practice_programmes.topPill'/'bottomPill' (->+0x280/+0x2a0); once-only statics 0x146076050.. resolve '#overrides.osd.race_flags.pp_icon'/_fail/_pass/_perfect. Returns this. Sites all in 0x14295f370. Old name misleading. (lane owner review requested) Better name: Game_SessionPracticeProgrammesWidget_Ctor (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_session_practice_programmes_config",

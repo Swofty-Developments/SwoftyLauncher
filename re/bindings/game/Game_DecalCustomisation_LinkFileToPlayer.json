@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1414317f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1414317f0.c;pat:log-channel-CUSTOMISATION_DECALS;xref:0x141435aee,0x141436c81",
-  "notes": "Called from 0x141435170 (generation service update)."
+  "notes": "Body read in full. (tracker, player key param_2, vehicle param_3, file key param_4, decal type param_5, file name param_6): returns on empty name; copies the name into a shared string, looks the player up in m_fileTrackingMap (+8 hash map, 0x14146f980); existing entry: finds the type slot (logs 'Overwriting file name for type %s with file %s for player %s') or, for another decal list, logs 'Trying to link a file to player (%s) for a different decal list'; new entry: builds per-player maps (0x14146cc00 / 0x14146dd40) and inserts it; logs 'Added (%s) %s to m_fileTrackingMap'. Callers in 0x141435170. (lane owner review requested)"
  },
  "signature": {
   "id": "game.decal_customisation_link_file_to_player",

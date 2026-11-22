@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143927510",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "vm",
   "proto": "int Vm_Open_Pkg(const void *data, void **out)",
-  "evidence": "decomp:re/decomp/14449e140.c;xref:0x1406876b1,0x14068c768,0x1406900b1+28",
-  "notes": "validates a !pkg fragment and returns its root for the readers; 0 = ok H1 2026-11-19 engine-re: opens a !pkg (magic '!pkg' 0x676b7021; byte-swapped '!pkg' -> status 5). If the header vca ref (+0xc) has bit 31 set, resolves it as base + (ref & 0x7fffff) (KB 0x143927752, Steam 1.0.145 0x143929ce2), runs Vm_Pkg_ResolveValueTables and stores the resolved delta back (bit 31 clear = already resolved, a second open returns at once). One package = one base: there is no second slot or chain."
+  "evidence": "decomp:re/decomp/143927510.c;xref:0x1406876b0,0x14068c767,0x1406900b0,0x140692b30,0x140695604,0x140697b50,0x14069a33e,0x142518ff2",
+  "notes": "(pkg,out): null -> error 0xe in the TLS error chain + backtrace ring 0x146107830; magic '!pkg' 0x676b7021: *out=pkg; pkg[3]>=0 -> 0; else Vm_Pkg_ResolveValueTables 0x1439272e0 on base+(pkg[3]&0x7fffff), stores the resolved delta into pkg[3] (bit 31 cleared), 0 on success else that error. Byte-swapped magic and any other magic both return 5. Decomp re/decomp/143927510.c (input path 14449e140.c missing). (lane owner review requested)"
  },
  "signature": {
   "id": "vm.open_pkg",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141d247c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141d247c0.c;pat:log-channel-RESULTS_CONTAINER;xref:0x141d247b8,0x141d50796,0x141d50ac0,0x145748d30,0x14574ac00",
-  "notes": "Vtable slot (cells 0x145748d30, 0x14574ac00): switch on the event hash *param_2 (0x2d9097c3, 0x2e4d24e3, 0x6adae820, -0x78e45f5f, -0x570399ee) logging 'container close complete' / 'screen close/open complete' / 'timeout!', invoking stored callbacks, a 'restart_resume_replay_confirm' popup, and tail-jumps into Exit. Not a single transition-done hook. Better name: Game_ResultsContainer_OnUIEvent (bound record keeps its name)."
+  "notes": "Body 0x141d247c0-0x141d24be9 read (decomp merges tail-jump targets 0x1417dfc50, 0x141d7dcd0). Switch on event hash *param_2: -0x570399ee sets +0x11b0; -0x78e45f5f / 0x6adae820 / 0x2d9097c3 log and invoke stored callbacks (+0x1078/+0x10b8/+0x10f8 via 0x1417dfc50); 0x2e4d24e3 opens the 'restart_resume_replay_confirm' popup or tail-jumps 0x141d7dcd0. Better name Game_ResultsContainer_OnUIEvent (bound record keeps its name). (lane owner review requested)"
  },
  "signature": {
   "id": "game.results_container_on_transition_done",

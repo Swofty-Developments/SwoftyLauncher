@@ -5,11 +5,11 @@
  "author": "vmknolle",
  "row": {
   "addr": "0x1407a0eb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
   "proto": "void *Sess_ParticipantDescVec_PushBack(void *vec, const void *participant)",
-  "evidence": "decomp:own Ghidra decomp of 0x1407a0eb0;xref:0x1407b8844,0x1407b8acb,0x1407b1a6c,0x1407b1c4c,0x142939e7a",
-  "notes": "push_back on a vector of 0x6780-byte session participants {allocator +0, begin +8, end +0x10, capacity +0x18 in elements}; grows x1.5 through the allocator (slot 0x18 alloc, align 0x10; slot 0x38 free), copy-constructs every element with 0x14096ccf0 and destroys the old ones (inner arrays +0x5c20 of 0x4a50 and +0x11c0 of 0x4c0). Called with the session descriptor's participants (descriptor +0xad0) by the championship fill (0x1407b7b90), the generic fill 0x1407b17f0 and the Time Trial fill (0x142939e7a). Research: re/research/session_vehicle_swap.md"
+  "evidence": "decomp:re/decomp/1407a0eb0.c;xref:0x1407b1a6c,0x1407b1c4c,0x1407b883f,0x1407b8acb,0x142939e7a",
+  "notes": "push_back on vector {alloc +0, begin +8, end +0x10, cap +0x18} of 0x6780-byte records: if full grows x1.5 (min +1) via alloc vt+0x18(n*0x6780,0x10), copy-constructs old + new element with Ne_Struct_CopyConstructInlineStrings 0x14096ccf0, destroys old (+0x5c20 count of 0x4a50 items at +0x11d0 via 0x14030c740; +0x11c0 count of 0x4c0 items at +0xd00 with +0x490 count of 0x28 objs at +0x170; clears +0x880), frees via vt+0x38; else constructs at end. Callers 0x1407b17f0, 0x1407b7b90, 0x142936760. (lane owner review requested)"
  },
  "signature": {
   "id": "session.participant_desc_vec_push_back",

@@ -147,6 +147,34 @@ int ov_load_image(const char *id, const char *file)
     return SWOFTY_ASSET_OK;
 }
 
+int ov_load_image_rgba(const char *id, uint32_t width, uint32_t height, const void *rgba)
+{
+    Caller c = caller(__builtin_return_address(0));
+    if (!overlay.implemented || !settings().gate)
+        return SWOFTY_ASSET_UNAVAILABLE;
+    const char *who = c.id.empty() ? c.dll.c_str() : c.id.c_str();
+    if (!id || !*id || !rgba || !width || !height || width > hud::img::MAX_SIDE || height > hud::img::MAX_SIDE) {
+        swofty::log("[overlay] api: %s load_image_rgba %s (%ux%u) -> invalid: the id is empty, the pixels are missing or "
+                    "the size is outside 1..4096",
+                    who, id ? id : "", width, height);
+        return SWOFTY_ASSET_INVALID;
+    }
+    auto *p = static_cast<const uint8_t *>(rgba);
+    std::vector<uint8_t> px(p, p + size_t(width) * height * 4);
+    hud::img::premultiply(px);
+    int slot;
+    {
+        std::lock_guard<std::mutex> g(overlay.reg_lock);
+        slot = overlay.reg.set_image(owner_of(c) + "\n" + id, width, height, std::move(px));
+    }
+    if (slot + 1 >= int(TEX_MAX)) {
+        swofty::log("[overlay] api: %s load_image_rgba %s -> invalid: the overlay holds at most %u images", who, id, TEX_MAX - 1);
+        return SWOFTY_ASSET_INVALID;
+    }
+    swofty::log("[overlay] api: %s load_image_rgba %s (%ux%u) -> ok (slot %d)", who, id, width, height, slot);
+    return SWOFTY_ASSET_OK;
+}
+
 hud::drawlist::Frame *frame_of(SwoftyPaint *paint) { return reinterpret_cast<hud::drawlist::Frame *>(paint); }
 
 struct Found {
@@ -423,7 +451,8 @@ const SwoftyOverlay table = {ov_available,
                              ov_safe_area,
                              ov_ui_scale,
                              ov_input,
-                             ov_focus};
+                             ov_focus,
+                             ov_load_image_rgba};
 
 }
 

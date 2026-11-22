@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14197b310",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "bool (void *tab)",
   "evidence": "decomp:re/decomp/14197b310.c;xref:0x14197b257,0x14197fc3b",
-  "notes": "Gets UpgradesComponent (0x146063160) and OwnerSetupComponent (0x146060a08) from the game mode, resolves the player team key (+0x348/+0x370), finds its Upgrades model (+0x298..+0x2a0) and returns whether query 0x143536fe0 (filters upgrades by dept +0x72 / category +0x71) with a fresh filter yields any result."
+  "notes": "Body read in full. Game mode [this+0x88]+0x260 (not root type 0x146129ca0): components 0x146063160 (upgrades) and 0x146060a08 (owner setup) via vt+0x10 on +0x1030; player team key from 0x1410d0c00(setup+0x348) into +0x370 (u16 +0x50: 14-bit id, 2-bit kind); finds the matching model in upgrades+0x298..+0x2a0 (+0xc key) and returns whether 0x143536fe0 with a fresh filter (0x108) yields a result. (lane owner review requested)"
  },
  "signature": {
   "id": "career.check_fitting_tab_has_unfitted_parts",
