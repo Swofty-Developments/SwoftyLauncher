@@ -7,9 +7,9 @@
   "addr": "0x14473db90",
   "level": "L2",
   "subsystem": "game",
-  "proto": "void Game_Teleport_VehicleImmediate_Thunk(void *car, const char *tag, void *prev_mtx, float *mtx, float dt, uint32_t flags)",
+  "proto": "void Game_Teleport_VehicleImmediate_Thunk(void *car, const char *tag, const float *prev_mtx, const float *new_mtx, float dt, uint32_t flags)",
   "evidence": "decomp:re/decomp/1434be940.c;decomp:re/decomp/14473db90.c;xref:0x1434beef3,0x1437ac9d4",
-  "notes": "jmp thunk to 0x1555b8a20: logs VEHICLE_TELEPORT_REQUEST when flags&3 and dt>1/30, calls Game_Teleport_Vehicle, and if vehicle+0x9f08 posts bus msg 0x145c05320 with vehicle+0xe8. (lane owner review requested)"
+  "notes": "jmp thunk to 0x1555b8a20: logs VEHICLE_TELEPORT_REQUEST when flags&3 and dt>1/30, calls Game_Teleport_Vehicle, and if vehicle+0x9f08 posts bus msg 0x145c05320 with vehicle+0xe8. (lane owner review requested) | 2026-11-21 engine-re re-check: 5-byte E9 jmp to the .data1 body 0x1555b8a20 (pdata ..0x1555b8b63); dt is stack arg 5 ([rsp+0xb0]), flags arg 6 ([rsp+0xb8]); logs VEHICLE_TELEPORT_REQUEST when flags&3, dt>1/30, !(flags&0x40); calls the core 0x14473dcc0 with all 6 args; posts bus msg 0x145c05320 (payload car+0xe8) when byte car+0x9f08 is set. Hook: the jmp is the only ref to the body, so a 5-byte hook here sees every wrapper call; the bytes after the jmp are junk (relocate only the rel32 E9). Direct callers of the core 0x14473dcc0 bypass it: 0x142d68cec, 0x142f347aa, 0x142f63f4b, 0x1437ac96b, 0x144606c14, 0x1446445ec."
  },
  "signature": {
   "id": "game.place_vehicle_blend_thunk",
@@ -75,7 +75,37 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/1555b8a20.c;xref:0x1434beef3",
    "notes": "V1769 blind re-check: jmp stub into .data1 body 0x1555b8a20 -> FUN_14473dcc0, 6 args unchanged; 2 callers"
+  },
+  {
+   "date": "2026-11-21",
+   "verifier": "vogtmarcel07-cloud",
+   "kind": "func",
+   "item": "Game_Teleport_VehicleImmediate_Thunk",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1555b8a20.c;xref:0x1434beef3,0x1437ac9d4",
+   "notes": "gh:vogtmarcel07-cloud independent re-check 2026-11-21: thunk jmp to 0x1555b8a20 read in its pdata range; 6-arg proto from the stack reads and both callers; safe as a 5-byte hook site (only ref to the body)"
   }
  ],
- "proofs": []
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14473db90",
+    "target": "0x14473db90"
+   },
+   "sigcheck": "passed",
+   "digest": "f53c434d68f260fd9b724939f1fb90ec4360d1493d116456be99ede0fd68e4db"
+  }
+ ]
 }

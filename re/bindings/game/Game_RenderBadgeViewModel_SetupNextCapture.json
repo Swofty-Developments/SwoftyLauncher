@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141d79e00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141d79e00.c;str:s_RenderBadgeViewModel_SetupNextCapture;xref:0x145749ea0",
-  "notes": "virtual setupNextCapture() (pretty-function 0x14574a4eb, vtable cell 0x145749ea0): capture types eRenderUIBadgeStatIds / eBlankEnvironmentBadge / eEnvironmentBadge, myteam_logo_01_da default texture; calls SetupBadgeData, LoadTexture, SetTextureForLayer. 6 KB body."
+  "notes": "Vtable slot (cell 0x145749ea0); pretty-fn 0x14574a4eb setupNextCapture. If queue +0xf0..+0xf8 non-empty, switch on front type: 1 eRenderUIBadgeStatIds (statIds +0x110, path+'.image', 0x141d77e70), 2 eEnvironmentBadge (+0x170), 3 eBlankEnvironmentBadge (cstm_badge_large bg/emblem blank via 0x141d76d70/0x141d77570/0x141d77800), 4 pop; completion result uses myteam_logo_01_da texture. (lane owner review requested)"
  },
  "signature": {
   "id": "game.render_badge_view_model_setup_next_capture",

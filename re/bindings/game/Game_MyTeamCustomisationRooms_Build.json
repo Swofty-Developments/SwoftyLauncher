@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428d0020",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "void *f(void *self)",
   "evidence": "decomp:re/decomp/1428d0020.c;xref:0x1428cfb50",
-  "notes": "Only caller 0x1428cfb50 in 0x1428cfaa0 ('Looking up Scene Description from Preset'). 30 KB body naming scenes Main, F1World, Customisation, Story, TeamHQV2, Home, GenericRoom...; builds front-end scene preset descriptions for many scenes, not only the My Team rooms. Better name: Game_FrontendScene_BuildPresetDescriptions (bound record keeps its name)."
+  "notes": "(helper read) switch(param_2 u8 enum 1..0x30, default zeroes): fills 32-byte out with 3 refcounted name handles (0x1441974e0): +0 scene (AbstractScene/F1World/Story/TeamHQV2/Customisation/Shop/DriverHQ/F1CG, or param_3 for 3-7,11), +8 room (GenericRoom, MyTeamVehicleCustomisationRoom, HubA, Home, Lobby...), +0x10 shot (Main/Face/Map...), +0x18 type 0/2/3/5/6. Pure lookup; My Team only cases 5 and 7. (lane owner review requested) Better name: Game_FrontendScene_GetPresetDescription (bound record keeps its name)."
  },
  "signature": {
   "id": "game.my_team_customisation_rooms_build",

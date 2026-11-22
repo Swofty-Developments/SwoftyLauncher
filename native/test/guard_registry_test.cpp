@@ -73,6 +73,7 @@ const std::vector<std::string> OFFERED = {
     "anim_clip_time",
     "marshal_lights",
     "anim_packet_time",
+    "speech",
     "vehicle_override",
 };
 
@@ -131,6 +132,7 @@ const std::vector<std::string> SETTLED = {
     "anim_clip_time",
     "marshal_lights",
     "anim_packet_time",
+    "speech",
     "vehicle_override",
 };
 

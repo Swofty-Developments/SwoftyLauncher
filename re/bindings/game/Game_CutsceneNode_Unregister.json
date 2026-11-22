@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142ab5ea0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142ab5ea0.c;xref:0x1406a64b9,0x1406a650e,0x1406a65fc,0x1406a6651,0x14081ac81,0x14081aca1,0x140b1c143",
-  "notes": "Body read: when g 0x146079258 != 0 erases this from the pointer vector [this+0x10]+0x108..+0x110, then on the owner recomputes an index (vcall +0x60, 0x142abb3a0, 0x142abb9c0) and notifies listeners owner+0xe8..+0xf0 (stride 0x18, flag 2) or calls 0x142abc3d0. Callers come from many unrelated modules (xref list truncated)."
+  "evidence": "decomp:re/decomp/142ab5ea0.c;xref:0x1406a64b9,0x1406a650e,0x1406a65fc,0x1406a6651,0x14081ac81,0x14081aca1,0x140b1c143,0x140b1c1e3,0x140b1c233,0x140b7b233,0x140bc7260,0x140be9e73,0x140be9ff3,0x140cd225f",
+  "notes": "(xref list cut, full list in s6/xr.txt) If g 0x146079258: erases this from option [this+0x10] vector +0x108..+0x110 (not found -> TLS err 2); option vt+0x60 current value, index via Game_Option_ClampValueIndex 0x142abb3a0 around 0x142abb9c0; same index -> listeners +0xe8..+0xf0 (stride 0x18, flag 2), else 0x142abc3d0. Old name Game_CutsceneNode_Unregister wrong: owner is an option. (lane owner review requested) Better name: Game_OptionRestriction_Unregister (bound record keeps its name)."
  },
  "signature": {
   "id": "game.cutscene_node_unregister",

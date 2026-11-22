@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1443d5ce0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1443d5ce0.c;pat:log-channel--;xref:0x1443c8355",
-  "notes": "Recommended PC spec check: RecommendedPCSpec.* driver versions per vendor, min CPU/RAM/VRAM, fake/skip switches."
+  "notes": "Reads 35 'RecommendedPCSpec.*' keys from config DAT_14604e8d8 (skipCheck default 1 -> return 1; Intel/NVidia/AMD driver .value/.displayValue, MinNumProcessors, MinMemoryBytes, GpuMemory(VR), ShaderModel, ResourceBindingTier). VerifyVersionInfoW 'winVer10OrGreater'; systemInfo winBuildNumber 1909/2004/20H2; graphics_card vendorId 0x1002/0x10de/0x8086; logs 'belowMinSpec=true/false', calls FUN_143ad6700/FUN_1443d9a20. In bounds. (lane owner review requested)"
  },
  "signature": {
   "id": "game.read_recommended_pc_spec_config",

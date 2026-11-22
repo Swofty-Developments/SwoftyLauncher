@@ -9,7 +9,7 @@
   "subsystem": "career",
   "proto": "uint32_t *Get(void *tree_vm, int dept_index)",
   "evidence": "decomp:re/decomp/141c7f9a0.c;xref:0x141c7b80d,0x141c7fe69",
-  "notes": "Walks (+0x6d0)+0x858..+0x860 entries, their +0x2b0 lists and +0x1d0 objects via virtual calls, updating properties (Ne_Property_SetUIDBRefIfChanged)."
+  "notes": "Walks [this+0x6d0]+0x858..+0x860 departments, their +0x2b0 lists and +0x1d0 property objects (type 0x146129f38 value == param_2), then resolves a child chain (<0x62 steps) and returns entry+0x830. Decomp contains label code_r0x0001414c70f0 and reads lVar11+0x838 after the loop: merged tail-jump target, not checked against disassembly."
  },
  "signature": {
   "id": "career.get_rn_dtree_department_selection",

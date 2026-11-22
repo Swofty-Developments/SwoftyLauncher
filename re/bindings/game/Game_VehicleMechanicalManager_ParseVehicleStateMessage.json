@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14324c110",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "pat:log-message-cxx;doc:re/research/fuel_mix_five.md#sites;decomp:re/decomp/14324c110.c;xref:0x143059bd7",
-  "notes": "Pretty-function string parseVehicleStateMessage(const NEbyte *, NEsize_t, NEbyte, NEbool) and 'received ...' logs for engine damage/temp, ERS, wing/suspension/body damage, tyres, fuel, anti stall, engine wear, ghosting, controls, progress, penalties and incidents are in the body. Caller 0x143058640 (0x143059bd7). | engine-re fuel-mix-5 2026-11-20 (static): reads ranged 0..3 fields with Ne_BitStream_ReadRangedUInt at 0x14324db53 and 0x14324f13c (the controls fuel mix among them; log text 'fuelmix(%u)' 0x14582c5cd). edited by engine-re with --force 2026-11-20 at user request (lane owner review requested)"
+  "notes": "Logs carry pretty-function parseVehicleStateMessage (0x14582be34). Bitstream: vehicle idx 0..0x1a, slot param_1+idx*0x108 (+0x160 null -> 'vehicle unknown'); sections vehicle/rules/ghost/controls/progress/pit: damage, ERS, tyres, fuel, wear, penalties, incidents. Ranged 0..3 reads: 0x14324db53 = controls fuelmix, 0x14324f13c = anti stall. On success and !param_5 writes +0x1b0..+0x220, +0x228=1, ++[+0x22c]. Caller 0x143059bd7. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_mechanical_manager_parse_vehicle_state_message",

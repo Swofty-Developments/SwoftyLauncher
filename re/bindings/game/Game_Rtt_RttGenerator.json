@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143d84490",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143d84490.c;pat:log-message-method;xref:0x143d8b5a3",
-  "notes": "Log RTT 'rttGenerator has no instances - nothing will render!'; 27 KB body that calls the ASSAO/CMAA2/deferred/tiled-lighting/decal setup functions. Caller Render_SceneView_SubmitCamera."
+  "notes": "Own log tag 'createScenes' (RTT, '%s: no forwardPlus/gbufferExport/translucentForwardPlus ctxsetup' -> return 0). Returns 1 only if scene slots param_2+0x100..0x1c0 exist and +0xd0==ctx+0x24; else one-time ctx init (6 Rtt*.ContextSetup at ctx[0x97..0x9c]) and builds Rtt_GBufferExport30/ScreenSpaceDecals/LightTiling/ASSAO/DeferredLighting/ForwardPlus*/CMAA2/SSAOEye/SSS* scenes via 0x143b5c570, returns 0. (lane owner review requested) Better name: Game_Rtt_RttGenerator_CreateScenes (bound record keeps its name)."
  },
  "signature": {
   "id": "game.rtt_rtt_generator",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428aed30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1428aed30.c;pat:log-channel-VEHICLE_SPAWNING_SYSTEM;xref:0x1457ab030",
-  "notes": "Only ref: absolute vtable cell 0x1457ab030 (code neighbours). Large body (pdata 0x1428aed30-0x1428b1595) also calls VehicleSpawnRequest ctor 0x142f39bf0 at 0x1428b0e5f, so it is more than a despawn handler."
+  "notes": "Vtable cell 0x1457ab030 (code neighbours). Gated by 0x14370f130(0x146076420). Walks car map this[0x2e..0x30] by state +0x94: 2 and +0x95==0: 'startDespawning()', 0x1428ab1f0 hide, 'VehicleDespawnRequest for vehicle %d', state 3; 2 else 'Setting Pending/Initial visibility change for vehicle [%d]', 0x1428a8f50/0x1428a9620; 0 and +0x95==2: 'startSpawning()', VehicleSpawnRequest 0x142f39bf0, state 1. Erases done entries. (lane owner review requested) Better name: Game_FrontendSceneCarManager_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.vehicle_spawning_despawn",

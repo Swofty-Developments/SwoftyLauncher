@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1445d6ce0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1445d6ce0.c;pat:log-message-method;xref:0x1445d6b0f,0x1445d6c51",
-  "notes": "Log ReplaySystem 'targetTime %f m_easeInFlashbackStartTime %f m_rewindForInstantReplayTargetTime %f m_easeInFlashbackTimer %f dt %f' and 'ret %s failedToReached(Lerp|Target)Time %s numStillRewinding %d'; calls Game_ReplayStream_Rewind. 'targetTime' is a logged value, not the method name. Callers 0x1445d6040. Better name: Game_ReplaySystem_RewindToTargetTime (bound record keeps its name)."
+  "notes": "Body read in full. Per-frame replay seek/rewind update (dt in xmm1; returns when dt==0 or +0x20<2). Ease-in flashback path (+0x53): targetTime from +0x5c/+0x48/+0x58 and curve [+0x68], logged; rewinds streams +0x98..+0xa0 via 0x1445d3640, posts bus messages (0x1439876c0), 0x1445d5c40(this,4,1). Other paths (+0x46, +0x47, mode +0x3c 0/1/2) rewind/advance streams (0x1445d3640/0x1445d33f0) in 0.5 s steps for at most 3 ms. Callers in 0x1445d6040. Better name Game_ReplaySystem_UpdateRewind (bound record keeps its name). (lane owner review requested)"
  },
  "signature": {
   "id": "game.replay_system_target_time",

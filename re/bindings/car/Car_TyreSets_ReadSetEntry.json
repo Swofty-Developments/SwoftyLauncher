@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e897c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142e897c0.c;xref:0x142e8c3b4",
-  "notes": "Deserialiser for one tyre-set entry (bit reader FUN_143925660 widths 0x13/0x12; states DAMAGED / HANDED BACK / MANDATORY / SAVED DAMAGE / USED OUTSIDE GARAGE; logs \"wheel ix: %d, ok: %d, position: %d\"). Caller Car_TyreSets_DeserialiseSets."
+  "evidence": "decomp:re/decomp/142e897c0.c;xref:0x142e8c3b4,0x142ea0810",
+  "notes": "(set,stream): set+0 0..0x13; 5 bits into set+9: bit0 DAMAGED, bit1 SAVED DAMAGE, bit2 MANDATORY, bit3 HANDED BACK, bit4 USED OUTSIDE GARAGE; per wheel w<4: floats set+0xc+w*0xc (0..1, step 0.001) and +0x10+w*0xc (0..1, step 0.1), bool +0x14+w*0xc; second block +0x3c/+0x40/+0x44+w*0xc. Logs 'wheel ix: %d, ok: %d, position: %d'. Callers 0x142e8c270, 0x142ea0500. (lane owner review requested)"
  },
  "signature": {
   "id": "car.tyre_sets_read_set_entry",

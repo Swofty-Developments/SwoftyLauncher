@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14099b7f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14099b7f0.c;pat:log-message-method;xref:0x145662e68",
-  "notes": "Vt cell 0x145662e68; logs SUBTITLES m_displayText in a large body."
+  "notes": "Vtable slot +0xc8 of code-pointer run from 0x145662da0. If this+0x52: clear text, log 'm_displayText set to: Nothing, from GameSubtitleSystem::update', this+0x150=0. Else if dirty this+0x50: under CS this+0x120 look up entry this+0xa8, build lng_subtitle_ key, avatar texture, VALUE_n parts summing durations (+0x170), push text/duration to bindings this+0x1c0/0x1a0, log updateValues, this+0x150=1; then publish visibility (+0x160/+0x180/+0x280). (lane owner review requested) Better name: Game_Subtitles_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.subtitles_m_display_text",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14322d270",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14322d270.c;pat:log-channel-NETWORK/F;xref:0x140feaabf,0x1456bcae0",
-  "notes": "Slot 2 (+0x10) of vtable 0x1456bcad0 and called from 0x140fea920. Entry log 'SavedOnlineChampionship::serialiseSaveDataContainer(%s, %u) at %p'; inlined network::SOCGuid::serialiseSaveDataContainer (SOCID_DataVersion/PresenceU64/DateTimeU64/RandomU64), then championshipName, codeNumber, lastModified, teamName, binaryBegin and the entrants (ei_vehicle, ei_driver, badge via Game_Write_BadgeInfoJson ...). Better name: Game_SavedOnlineChampionship_Serialise (bound record keeps its name)."
+  "notes": "Slot 2 of vtable 0x1456bcad0. Log SavedOnlineChampionship::serialiseSaveDataContainer; writes fields via 0x143932a40: championshipName(+0x238), inlined SOCGuid (SOCID_DataVersion/PresenceU64 +0x220/DateTimeU64 +0x228/RandomU64 +0x230), codeNumber +0x210, lastModified, teamName +0x260, binaryBegin, entrants (+0x428, stride 0x88: ei_*, badge, car_number, custom_se_livery), driver_info, *_info lists, document_block. (lane owner review requested) Better name: Game_SavedOnlineChampionship_Serialise (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_network_soc_guid",

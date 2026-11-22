@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e884f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142e884f0.c;xref:0x142e8e096,0x142ea05ac",
-  "notes": "(tyreSet, stream) Reads compound (ranged int -1..5) and set index (-1..0xe) via Ne_BitStream_ReadRangedInt; logs TYRES/V deserialize '%s: compound: %s, index: %d'. Callers Car_TyreSets_Deserialise, Car_TyreSelection_SetCurrentTyres."
+  "evidence": "decomp:re/decomp/142e884f0.c;xref:0x142e8e096,0x142ea05ac,0x142ea0803",
+  "notes": "(out,stream): 0x143925a50 reads compound -1..5 into out+0, then index -1..0xe into byte out+4 (negative -> -1); returns ok; logs TYRES/V deserialize '%s: compound: %s, index: %d' (name table 0x1457f39e0). Used for m_tyreSetToStartRaceOn (alloc+0xe0) by Car_TyreSets_Deserialise; other caller 0x142ea0500. (lane owner review requested)"
  },
  "signature": {
   "id": "car.tyre_set_deserialise_compound",

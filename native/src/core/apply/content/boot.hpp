@@ -294,6 +294,7 @@ struct Expansion {
     std::map<std::string, std::vector<std::pair<std::string, std::string>>> texts;
     std::set<std::string> owners;
     std::map<std::string, std::map<std::string, int>> left_out;
+    std::map<std::string, std::vector<std::string>> status;
     std::vector<std::string> virtual_lists;
     // A box with more teams than its world has garages gets a world of its own (box_world.hpp). The core turns it on
     // unless SWOFTY_BOX_WORLDS=0; host tools pass it.
@@ -379,6 +380,69 @@ inline void settle_virtual_lists(Expansion &x, const StatIds &stat)
     }
     lines.push_back("virtual lists: " + std::to_string(moved) + " moved above the count (" + std::to_string(count()) +
                     " lists left for the game)");
+}
+
+// Why a content.package's plan does not fit: one of the setup mode fields it appends its list to already names
+// SETUP_MODE_LISTS lists (one fewer in swofty_f1 while a virtual package needs the host there). Empty when it fits.
+inline std::string setup_mode_full(const rows::Engine &e, const Plan &plan, bool host)
+{
+    const std::string prefix = std::string(SETUP_ROW) + "[";
+    for (std::size_t i = 0; i < plan.ops.size(); i++) {
+        const Value &op = plan.ops[i];
+        std::string select(op["select"].as_string()), field(op["field"].as_string()), list(op["value"].as_string());
+        if (op["op"].as_string() != "list-append" || select.rfind(prefix, 0) != 0 ||
+            (field != "entrant_lists" && field != "selectable_entrant_lists"))
+            continue;
+        auto row = e.resolve(select);
+        if (!row)
+            continue;
+        std::vector<std::string> have = rows::Engine::items(e.text(*row + "." + field).value_or(""));
+        if (std::find(have.begin(), have.end(), list) != have.end())
+            continue;
+        std::string mode = e.text(*row + "._metadata_").value_or(*row);
+        bool hosts =
+            host && mode == "swofty_f1" && std::find(have.begin(), have.end(), std::string(VIRTUAL_HOST_LIST)) == have.end();
+        std::size_t room = SETUP_MODE_LISTS - (hosts ? 1 : 0);
+        if (have.size() >= room)
+            return "entrant setup mode " + mode + " already names " + std::to_string(have.size()) + " lists in " + field +
+                   (hosts ? " and keeps a slot for " + std::string(VIRTUAL_HOST_LIST) : std::string()) + "; the game loads " +
+                   std::to_string(SETUP_MODE_LISTS) + " at most";
+    }
+    return {};
+}
+
+// The backstop for lists the database brought: an entrant setup mode field naming more than SETUP_MODE_LISTS lists
+// keeps its first SETUP_MODE_LISTS, and the rest are logged.
+inline void cap_setup_mode_lists(Expansion &x)
+{
+    auto &e = x.engine;
+    auto n = e.instance_count("entrants.entrant_setup_modes", "entrant_setup_mode");
+    if (!n)
+        return;
+    for (int64_t i = 0; i < *n; i++) {
+        std::string row = std::string(SETUP_ROW) + "_" + std::to_string(i);
+        for (const char *field : {"entrant_lists", "selectable_entrant_lists"}) {
+            std::string path = row + "." + field;
+            auto old = e.get(gvdb::fnv64(path));
+            if (!old)
+                continue;
+            std::vector<std::string> have = rows::Engine::items(old->text);
+            if (have.size() <= SETUP_MODE_LISTS)
+                continue;
+            std::string kept, gone;
+            for (std::size_t k = 0; k < have.size(); k++) {
+                std::string &into = k < SETUP_MODE_LISTS ? kept : gone;
+                into += (into.empty() ? "" : ",") + have[k];
+            }
+            e.attribute("swofty.core", "content.package");
+            e.put_text(path, old->tag, kept);
+            std::string line = "entrant setup mode " + e.text(row + "._metadata_").value_or(row) + ": " + field + " named " +
+                               std::to_string(have.size()) + " lists, the game loads " + std::to_string(SETUP_MODE_LISTS) +
+                               "; left out " + gone;
+            x.lines["content.package"].push_back(line);
+            x.status["swofty.core"].push_back(line);
+        }
+    }
 }
 
 inline TeamRefs refs_of(registry::Store &st, const Lookup &lookup)
@@ -610,10 +674,13 @@ inline void expand(registry::Store &st, Expansion &x, const StatIds &stat, const
     WearCtx wear = wear_context(st, lookup);
     TeamRefs refs = refs_of(st, lookup);
     std::map<std::string, std::pair<std::string, std::string>> vehicle_tower;
+    bool hosts = false;
     for (auto &pid : in_load_order(st, "content.package")) {
         const Value *pkg = lookup("content.package", pid);
         if (!pkg)
             continue;
+        if (!skip.count(addon_of(pid)) && (*pkg)["virtual_list"].is_bool() && (*pkg)["virtual_list"].as_bool())
+            hosts = true;
         const Value &entries = (*pkg)["teams"];
         for (std::size_t t = 0; t < entries.size(); t++) {
             if (!entries[t]["vehicle"].is_string() || !entries[t]["team"].is_string())
@@ -688,6 +755,15 @@ inline void expand(registry::Store &st, Expansion &x, const StatIds &stat, const
             else
                 lower_package(id, *rec, lookup, plan, stat, &wear.person_driver, read, &refs.constructor_team, &dropped,
                               x.box_worlds);
+            if (std::string full = r == "content.package" ? setup_mode_full(x.engine, plan, hosts) : std::string();
+                !full.empty()) {
+                x.refused[reg]++;
+                std::string list = (*rec)["entrant_list"].is_string() ? std::string((*rec)["entrant_list"].as_string()) : id;
+                x.status[owner].push_back("entrant list " + list + " left out: " + full +
+                                          ". Turn some season addons off to get it back");
+                lines.push_back(std::string(reg) + " " + id + ": not applied: " + full);
+                continue;
+            }
             x.engine.add_fields(plan.fields);
             x.engine.attribute(owner, reg, id);
             std::size_t mark = x.engine.mark();
@@ -730,6 +806,7 @@ inline void expand(registry::Store &st, Expansion &x, const StatIds &stat, const
     }
     lower_seat_entrants(st, x, lookup, read, skip);
     settle_virtual_lists(x, stat);
+    cap_setup_mode_lists(x);
     for (auto &l : x.engine.lines)
         x.lines["content.package"].push_back(l);
     for (auto &w : x.engine.writes())

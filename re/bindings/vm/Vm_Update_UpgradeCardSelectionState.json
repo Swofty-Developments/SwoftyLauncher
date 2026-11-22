@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141af1430",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "vm",
   "proto": "void Vm_Update_UpgradeCardSelectionState(void *screen)",
-  "evidence": "decomp:re/decomp/141af1430.c;xref:0x141ae9759;xref:0x141aeacfb;xref:0x141aebafa",
-  "notes": "myteam-g2: Updates selected / locked / equipped bool nodes of an upgrade card from the card data (Vm_NodeSet_Bool). UI only."
+  "evidence": "decomp:re/decomp/141af1430.c;xref:0x141ae9759,0x141aeacfb,0x141aebafa,0x141aec534,0x141aecdd6,0x141af0ccc",
+  "notes": "switch mode [vm+0x11d8]: 1 -> bool node sub(+0x330)+0x128, 2 -> +0x148, 3..5 -> +0x168, 6..8 -> +0x208; writes false (Vm_NodeSet_Bool) when the node is live and bool-typed; other modes nothing. No card data read: renamed. (lane owner review requested) Better name: Vm_Clear_UpgradeScreenModeFlag (bound record keeps its name)."
  },
  "signature": {
   "id": "vm.update_upgrade_card_selection_state",

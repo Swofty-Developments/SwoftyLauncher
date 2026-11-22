@@ -11,6 +11,7 @@
 # reads it, under each unit's rank; the build fails unless it is the order of the mixins and on-load sections. After
 # an intended change, copy native/build/init-order.txt here.
 init
+  src/core/audio/speech.cpp
   src/core/guards/engine/anim_packet_time_guard.cpp
   src/core/guards/session/marshal_lights_guard.cpp
   src/core/guards/engine/anim_clip_time_guard.cpp
@@ -23,6 +24,7 @@ init
   src/core/hud/room_cover.cpp
   src/core/weather/setup.cpp
   src/core/guards/ai/ai_line_set_guard.cpp
+  src/core/diagnostics/session_loader.cpp
   src/core/diagnostics/session_job_probe.cpp
   src/core/guards/session/session_enter.cpp
   src/core/guards/frontend/tile_list_select_guard.cpp
@@ -335,6 +337,7 @@ exit
   src/core/guards/frontend/tile_list_select_guard.cpp
   src/core/guards/session/session_enter.cpp
   src/core/diagnostics/session_job_probe.cpp
+  src/core/diagnostics/session_loader.cpp
   src/core/guards/ai/ai_line_set_guard.cpp
   src/core/hud/room_cover.cpp
   src/core/live/live_state.cpp
@@ -345,6 +348,7 @@ exit
   src/core/guards/engine/anim_clip_time_guard.cpp
   src/core/guards/session/marshal_lights_guard.cpp
   src/core/guards/engine/anim_packet_time_guard.cpp
+  src/core/audio/speech.cpp
 mixins
   src/core/guards/garage/pit_garage_state.cpp  SWOFTY_HOOK_GUARD(pit_garage_state)
   src/core/diagnostics/session_job_probe.cpp  SWOFTY_ON_LOAD

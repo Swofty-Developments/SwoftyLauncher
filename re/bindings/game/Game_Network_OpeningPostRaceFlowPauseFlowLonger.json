@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d7ab60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142d7ab60.c;pat:log-channel-NETWORK;xref:0x1457e0a48",
-  "notes": "Slot 9 (+0x48, onStateUpdate per the vt_Sess_* rows) of vtable 0x1457e0a00 (name SessionStatePostRace precedes); only ref. (this, out, dt): adds dt to this[0x1b6]; while byte +0xfb8 bit7 is set waits for the pause flow (logs Can't open / Opening the PostRaceFlow), then requests enter_session_results / enter_multiplayer_driver_of_the_day, fades (Broadcast/Replay/BroadcastFull), logs POST_RACE Next State, posts via Ne_Post_BusMessage 0x1439876c0. Better name: Game_SessionStatePostRace_OnStateUpdate (bound record keeps its name)."
+  "notes": "Body read in full. (this, out, dt): +0xdb0 += dt; while byte +0xfb8 bit7 waits for the pause flow ([0x146104178] vt+0x20; logs Can't open / Opening the PostRaceFlow), then requests enter_session_results or enter_multiplayer_driver_of_the_day (0x1438574e0, copies the request to +0xdb8..), fades in Broadcast/BroadcastFull/Replay (FADE_REQUESTS), syncs replay times, reads the next state string ([+0xcb0]+0x98; logs POST_RACE 'Next State %s'), posts via 0x1439876c0, stores its DJB2 hash in +0xc90 and *out. Only ref vt cell 0x1457e0a48 (slot 9 of vtable 0x1457e0a00). Better name Game_SessionStatePostRace_OnStateUpdate (bound record keeps its name). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_opening_post_race_flow_pause_flow_longer",

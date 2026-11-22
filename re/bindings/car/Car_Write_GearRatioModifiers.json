@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446cf330",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1446cf330.c;xref:0x1446cfc82,0x1446cfc91",
-  "notes": "Serialises gear modifiers: writes Name/value then FirstGearModifier.. per-gear floats from param_1+0x18.. through writer vcalls +0x28 (key), +0x68 (float), +0x78 (end). Callers: Car_Write_EnergyRecovery."
+  "evidence": "decomp:re/decomp/1446cf330.c;xref:0x1446cfc82,0x1446cfc91,0x1446cfca0,0x1446cfcc0",
+  "notes": "(mods,writer): Name element (string mods+0..+0x10), then floats FirstGearModifier..EighthGearModifier from +0x18..+0x34 and DerateStartSpeed +0x3c (+0x38 not written); returns first non-zero writer result. Calls and a tail jmp in 0x1446cf6c0 (KB Car_Write_EnergyRecovery). (lane owner review requested)"
  },
  "signature": {
   "id": "car.write_gear_ratio_modifiers",

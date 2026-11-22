@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141877dd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "ui",
   "proto": "uint64_t Link(void *vm, uint32_t *id)",
-  "evidence": "decomp:re/decomp/141877dd0.c;xref:0x14187656b;xref:0x141878fba;xref:0x14187a5ba",
-  "notes": "myteam-g2: Links/resolves a registry node (Vm_Link_RegistryNode / Resolve) and releases resource set (Game_Hud_ReleaseResourceSet_140c22460). UI only."
+  "evidence": "decomp:re/decomp/141877dd0.c;xref:0x14187656b,0x141878fba,0x14187a5ba,0x1418af32a,0x141c60703,0x141c8ec69,0x141f3b153,0x141f42ad6,0x141f47733",
+  "notes": "(self,id*): id u16 at +2 == 0x3fff -> default node 0x146067300. Else temp from 0x1423eee30(buf,*id), its interned path (buf+0xe8) resolved under base path self+0x20 by 0x1442b1b60; buf released by 0x140c22460. (lane owner review requested) Better name: Ui_Resolve_RegistryNodeById (bound record keeps its name)."
  },
  "signature": {
   "id": "ui.link_rn_dregistry_node",

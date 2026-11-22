@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140d38210",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "vm",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140d38210.c;xref:0x1415a9608,0x140c18e79,0x1414760f2+18;doc:research/ui-native.md#12",
-  "notes": "same template, node set 0x140d2b600; used for priority (FeTile_Construct_Tile), stat_id, id, bound_vehicle_index; likely uint32"
+  "evidence": "decomp:re/decomp/140d38210.c;doc:research/ui-native.md#12;xref:0x140c18e79,0x1414760f2,0x14152f780,0x1415a9608,0x141682ff6,0x141750b90,0x141750c7b,0x141750d64",
+  "notes": "Same template as Vm_Set_Int 0x140d38fd0 (diffed line by line): type 0x146129da0, update via 0x140d2b600(node,value,0,1) when mode==1, new-node ctor 0x140d38510. Name check, djb2 hash, 0x68-byte node and empty handle 0x146054810 identical. (lane owner review requested)"
  },
  "signature": {
   "id": "vm.set_u_int",

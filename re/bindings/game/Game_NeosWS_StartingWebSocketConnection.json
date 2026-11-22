@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1444474c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1444474c0.c;pat:log-channel-NEOS_WS;xref:0x145a8e938",
-  "notes": "Cell 0x145a8e938. Logs 'Starting web socket connection to %s', registers the transport in a hash map and opens the WinHttp connection."
+  "notes": "Vtable slot (cell 0x145a8e938). Logs NEOS_WS 'Starting web socket connection to %s' (url arg2+0x128); self vcall +0x28 (reset), +0x134=0; new 0x48-byte handler (vtable 0x145a8ea40, CS) at +0x140 with shared ctrl +0x148; 0x14404b7e0(url, ..., callback 0x144447d60) -> request id +0x130; inits status +0xd0..; under CS 0x146cb4890 inserts id -> this into global hash map 0x146cb5a08..; destroys arg2 (0x144052930). (lane owner review requested) Better name: Game_NeosWS_WebSocketTransport_Start (bound record keeps its name)."
  },
  "signature": {
   "id": "game.neos_ws_starting_web_socket_connection",

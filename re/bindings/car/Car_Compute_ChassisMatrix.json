@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14467ccb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14467ccb0.c;xref:0x1403c8cf0,0x1403ca430",
-  "notes": "(car, float out[16]): builds the car body 4x4 world matrix from obfuscated values (+0xa8^+0xb0, +0xb8^+0xc0) and the two axle wheel heights ([car+8]+0x580 +0x70/+0x88, wheel+0x308/+0x318 + [+0x558]+0x2d8), pitch via atan2f. Callers: Game_PitBoxCarActor_Update, Game_PitCrewActor_Update, Game_PitLane_UpdateMovement, Game_PitLane_UpdateLimitZones, Car_BodyDamage_OnCollision."
+  "evidence": "decomp:re/decomp/14467ccb0.c;xref:0x140382e7b,0x140383bac,0x14038883c,0x14038b561,0x1403b2109,0x1403b2389,0x1403c0f95,0x1403c134e,0x1403c16f4,0x1403c1ca6,0x1403c20ee,0x1403c8ecf,0x1403c999b,0x1403ccbe6,0x1403cf0e7,0x1409d5bc4,0x142e84809,0x142e851ef,0x142e912c7,0x142f1b411,0x14338b73c,0x1434b7971,0x1434b7c83,0x1434b7ec9,0x1434b8c83,0x1434be52c,0x1434bf384,0x1434bf568,0x1434bf73f,0x143825ec7,0x1445a75c0,0x144629ad5,0x144629cbd,0x14462a141,0x14462a307,0x14462e7df,0x1446302f8,0x1446305ba,0x144630b20,0x144631eda,0x144642f68,0x144648649,0x14464f016,0x14464f185,0x14465169f,0x14465262f,0x14465e937,0x14466474c,0x14466514e,0x144666e7c,0x14466774d,0x144667863,0x1446692ad,0x14470f09e,0x14471fafd,0x14479a698,0x1553909e2,0x1555b5f00",
+  "notes": "(chassis, out[16]): wheel heights h0/h1 = |w+0x318 + w+0x308 + [*w+0x558]+0x2d8| for wheels [car+0x580]+0x70 and +0x88; angle = 0x145352cec(b-a, h0+h1)/2, a = +0xa8^+0xb0, b = +0xb8^+0xc0 (obfuscated); quaternion about axis +0x190 -> 3x3 rotation; translation = second row * (h0*a + h1*b)/(h0+h1); w = 1. (lane owner review requested)"
  },
  "signature": {
   "id": "car.compute_chassis_matrix",

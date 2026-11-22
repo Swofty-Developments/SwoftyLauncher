@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1432952c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1432952c0.c;pat:log-channel--;xref:0x14582fcb0",
-  "notes": "OnlineServices.ServerName(_win), EADP.autoLoginEnabled, OnlineServices.enabled/LogToFile (debug_win/online_services_log.txt), F1OS websocket, HTTP content types."
+  "notes": "Vtable slot (cell 0x14582fcb0). OnlineServices.ServerName/_win -> +0x20 (F1OS log); header maps +0x490/+0x498 (Content-Type urlencoded/multipart, Accept-Encoding gzip); EADP.autoLoginEnabled -> +0x4a9; OnlineServices.enabled -> +0x4d8, LogToFile opens debug_win/online_services_log.txt; F1OS_WEBSOCKET -> +0x4b8; creates request objects +0x4e0..+0x528, calls vtbl+0x10/+0x8; returns 0, else 0x16. (lane owner review requested) Better name: Game_OnlineServices_InitFromConfig (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_online_services_config",

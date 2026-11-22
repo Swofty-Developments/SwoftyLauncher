@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142af1f30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142af1f30.c;pat:log-message-method;xref:0x142af1daa,0x14ddfd1f8",
-  "notes": "INPUT 'constructNewControlScheme control scheme name' (log string)."
+  "notes": "Bus handler (lea 0x14ddfd1f8 -> Ne_Subscribe 0x143987810, lea 0x142af1daa -> unsubscribe 0x143988350, key 0x145754e8e). Needs this+0x98, pending this+0x30. msg+0x10: 0 drop; 1 copy pending bindings into current scheme (id ctx+0x60); 2 new 0x168 scheme vtbl 0x1457bb690, unique id ctr<<8|2, name from msg+0x18, log constructNewControlScheme, XML Device/ActionMaps file; then select scheme, ctx+0x72=1 (lane owner review requested) Better name: Game_Input_OnSaveControlSchemeResult (bound record keeps its name)."
  },
  "signature": {
   "id": "game.input_construct_new_control_scheme",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143eb8070",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143eb8070.c;pat:log-message-method;xref:0x1459bf918",
-  "notes": "vtable cell 0x1459bf918. Decomp polluted (hundreds of removed blocks, tail into 0x1449e22b4): visible part evicts one texture cache entry under SRW lock (cancels stream commands in 4 lists, 'cache %d adjusted by %d', Render_TextureStreaming_FreeEntry); calls 0x143bfc330 at 0x143eb9512."
+  "notes": "Decomp truncated (call 0x1449e22b4 taken as branch); full pdata disasm read. TextureManager=[rcx+8]; SRW locks +0x590/+0x598; cancels stream cmds in lists +0x300/+0x348/+0x390/+0x3d8, cache counter +0x200 ('cache %d adjusted by %d'), 0x143bf3320; PURGE/SKIP tags, qsort 0x14535b670 (cmp 0x143bfb700), loads 0x143bfc8d0; quality +0x214 clamp +0x20c/+0x210; flag +0x4c0 requestLoadMoreFailedAndBlocked. (lane owner review requested) Better name: Game_TextureManager_UpdateStreaming (bound record keeps its name)."
  },
  "signature": {
   "id": "game.texture_streaming_verbose_clearing",

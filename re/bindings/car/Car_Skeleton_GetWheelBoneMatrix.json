@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144633230",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144633230.c;xref:0x142e84389",
-  "notes": "Returns the 4x4 matrix for wheel param_3 (state stride 0xfc, index table +0x5f4+idx*4) from the skeleton at [[param_1+0x58]+0x580]+0x70+wheel*8; if index <0 returns identity with translation y=-1000.0 (0xc47a0000). 8 callers (Game_Vfx_BuildWheelParamRecord, Game_Vfx_TyreShredImpactEvent)."
+  "evidence": "decomp:re/decomp/144633230.c;xref:0x142e84389,0x142e8553b,0x1445a76e5,0x1445a7707,0x1445a7729,0x1445a774b,0x1445ac374,0x1445ad132",
+  "notes": "(obj, out4x4, wheel, sub, live): idx = obj+0x5f4+wheel*0xfc+sub*4; idx<0 -> identity with y=-1000; else bone 3x4 at idx*0x30 from pose buffer (vcall [model+0x28]+8; buffer chosen by bitset when live) transposed to 4x4; fallback obj+0xb50+wheel*0x30 when no model/wheel or wheel damage obj flag +0x38. (lane owner review requested)"
  },
  "signature": {
   "id": "car.skeleton_get_wheel_bone_matrix",

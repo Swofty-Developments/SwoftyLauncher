@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14379c250",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14379c250.c;pat:log-channel-THUMBNAIL_SYSTEM;xref:0x145872198",
-  "notes": "vtable cell 0x145872198. Strings: SCREENSHOT 'Writing out JPEG/PNG took', THUMBNAIL_SYSTEM 'Requesting Setting Thumbnail Generation' and 'rejected because disabled'; name is a log fragment."
+  "notes": "vtable cell 0x145872198. If +0x238: CPU copy 'BackBuffer CPU Copy', map ('ScreenShot-Start'), RGBA buffer w*4*h, overlays 0x14379d710. Path +0xa0: libpng 1.6.37 RGBA8 write, log PNG time. +0x1a8: RGB convert, JPEG encode (0x1449d4404(.,0x5f,1) likely quality 95), callback +0x68(+0x70,buf) kept in +0x1b0. Thumbnail request reason 9 clears bit 2 of (+0x48)+0x141 or logs rejected; +0x239=1 ok. (lane owner review requested) Better name: Game_Screenshot_CaptureBackBufferWritePngJpeg (bound record keeps its name)."
  },
  "signature": {
   "id": "game.thumbnail_system_writing_out_jpeg_took_microseconds",

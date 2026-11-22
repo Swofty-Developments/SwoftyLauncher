@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144739180.c",
-  "notes": "VTESystem (vtable 0x145c03550 slot 4) row writer for telemetry_data.csv: Time, CarId, DriverId, TeamId, laps, position, lap time, pace, position XYZ, tyre compound/age/deg, pit/DRS/ERS flags, track/weather state, temps, speed, steering, throttle, g-forces, engine power, MGU-K power, brake balance, ride heights, per-wheel slip angle/slip ratio/lateral force/longitudinal force (RL,RR,FL,FR), front wing, gap, wake % CLF/CLR/CD. Wheels: car (+0x20 of VTE) -> SuspensionSystem +0x580 -> wheels +0x70 RL, +0x78 RR, +0x80 FL, +0x88 FR; per wheel +0x3b0 slip angle, +0x3b4 slip ratio, +0x3c0 lateral force, +0x3c4 longitudinal force (order from the CSV header)."
+  "evidence": "decomp:re/decomp/144739180.c;xref:0x145c03570",
+  "notes": "VTESystem telemetry_data.csv row writer (header Time,CarId,DriverId,TeamId,RaceLapNumber,...). Wheels: [[vte+0x20]+0x580]+0x70/+0x78/+0x80/+0x88, per wheel +0x3b0/+0x3b4/+0x3c0/+0x3c4 read (KB: slip angle, slip ratio, lateral, longitudinal force). Only ref: vtable cell 0x145c03570."
  },
  "signature": {
   "id": "car.vte_write_telemetry_row",

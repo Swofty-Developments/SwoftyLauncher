@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e8c270",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
   "evidence": "decomp:re/decomp/142e8c270.c;xref:0x142e8dfbb",
-  "notes": "(sets, stream) Reads count (Ne_BitStream_ReadRangedUInt 0..15), grows array (entries 0x6c) and deserialises each tyre set (0x142e897c0); logs TYRES/V deserialize '%s: %d tyre sets, ok: %d'. Called from Car_TyreSets_Deserialise."
+  "notes": "(group,stream): count 0..15 (0x143925660), grows the 0x6c-byte set vector (+0x10..+0x20, allocator +8); each new set: +0 = 0, +4 = group id (group+0), +8 = index; then Car_TyreSets_ReadSetEntry per set, stops on failure. Logs TYRES/V '%s: %d tyre sets, ok: %d'. Caller 0x142e8deb0. (lane owner review requested)"
  },
  "signature": {
   "id": "car.tyre_sets_deserialise_sets",

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "site_Game_Mfd_FuelMix_MaxRowGate",
+ "table": "globals",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141788c9a",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/141788bc0.c;doc:re/research/fuel_mix_five.md#sites;xref:0x141788c89,0x141788c9a,0x141788ca0,0x141788cc3",
+  "notes": "Game_Mfd_FuelMix_BuildOptions, Max-row gate: add eax,-0xf; cmp eax,3 (6 bytes, 0x141788c9a..0x141788c9f), then jb 0x141788cc3 skips the 'max' AddRow (id 3, lng_hud_fuel_max) when eax = session type [[sub+0xf0]+0x1a8]+4 is 15..17 (which sessions these are is not proven by these bytes). Reached only when mask bit 3 is set (test bl,8 at 0x141788c0d/0x141788c84 -> 0x141788c89). eax is dead after the jb (both paths call 0x141789520 / 0x141789070 without reading it), so a site handler that writes c.rax = 0 makes the jb fall through and offers Max for that call only (e.g. only while an add-on's season is active). No branch lands in 0x141788c9b..0x141788c9f (disassembly of 0x141788bc0..0x141788d3b). Process-wide SWOFTY_PATCH form: 83 C0 F1 83 F8 00 (cmp eax,0, the jb is never taken). Replaces the own 2-byte write 72 21 -> 90 90 at 0x141788ca0 in the vmknolle season labels DLLs."
+ },
+ "signature": {
+  "id": "game.mfd_fuel_mix_max_row_gate",
+  "section": ".xtls",
+  "pattern": "83 C0 F1 83 F8 03 72 21 C7 44 24 20 03 00 00 00",
+  "match": "0x141788c9a",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141788c9a",
+  "kind": "mid",
+  "expect": "83 C0 F1 83 F8 03",
+  "names": [
+   "site_Game_Mfd_FuelMix_MaxRowGate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-21",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141788c9a",
+    "target": "0x141788c9a"
+   },
+   "sigcheck": "passed",
+   "digest": "bbef23dfabee2817105faf65e6bd20de531f27c1157cda3208e5f24f3bccbdb0"
+  }
+ ]
+}

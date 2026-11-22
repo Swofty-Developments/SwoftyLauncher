@@ -93,7 +93,7 @@ mod tests {
     use super::*;
     use crate::shell::tabs::Tab;
 
-    const MIN_WINDOW: u32 = 1024;
+    const MIN_WINDOW: u32 = crate::ui::scale::MIN_WINDOW_WIDTH as u32;
     const WINDOWS_BUTTONS: usize = 3;
     const ACCOUNTS: [Option<usize>; 4] = [None, Some(5), Some(14), Some(32)];
 

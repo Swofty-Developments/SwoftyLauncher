@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140be23c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140be23c0.c;pat:log-message-cxx;xref:0x14567b968",
-  "notes": "Only ref: vtable cell (code neighbours). Name from its cxx log 'WeatherAndTimeOfDayComponent::deserialiseSaveDataContainer Random seed deserialised %u' (WEATHER_SEED_EXTENDED)."
+  "notes": "Vtable cell only ref. Reads save container keys via FUN_143931730: contains_general_data, rnd_seed (-> +0x2c4, logs WEATHER_SEED_EXTENDED 'WeatherAndTimeOfDayComponent::deserialiseSaveDataContainer Random seed deserialised %u'), tod_type/tod_quick/tod_p1_time..tod_ss_prog (+0x2c8..+0x2d9), tod_customised, w_type, w_quick (+0x2dc), w_p1_active.. w_ss_active (+0x2e0..+0x2ec), w_*_slots via FUN_140be2020, w_customised (+0x330); mirrors into #settings.current_settings.time_of_day/weather.* UI vars via FUN_1442b1540; type mismatch -> 0x58, missing key -> 0x57. (lane owner review requested)"
  },
  "signature": {
   "id": "game.weather_and_time_of_day_component_deserialise_save_data_container",

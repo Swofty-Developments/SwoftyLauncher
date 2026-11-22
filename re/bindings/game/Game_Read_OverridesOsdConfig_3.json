@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141569430",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141569430.c;pat:log-channel--;xref:0x141568f0f,0x1415692d4,0x1415693d4",
-  "notes": "Practice graph lap icons and quali pace lap icons (not_set/failed/passed/perfect), lng_hud_laps."
+  "notes": "Under lock [+0x6b0]: practice program obj -> +0x308 (else 0x14156ad90, return). 5 lap slots (+0x410 step 0x80): icon overrides.osd.practice_programs_qp_icons.quali_pace_lap_not_set, text 'off', visible i<vfn+0x70, label '%hs%u' lng_hud_laps,i. If vfn+200 graph: +0x638/650/668/680 = practice_graph_lap_icons graph_lap_icon_not_set/failed/passed/perfect, else quali_pace_lap_*; bools +0x318/+0x338/+0x378 (vfn+0x48 !=0 / ==4). Old name = string fragment. (lane owner review requested) Better name: Game_PracticeOsd_RefreshLapIcons (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_overrides_osd_config_3",

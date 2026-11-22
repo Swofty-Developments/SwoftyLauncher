@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446b7b70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1446b7b70.c;xref:0x1446b5914",
-  "notes": "tyre thermal step (arg = CarTyreState+8, dt param_3): work/(dt*75), pressure-ratio lerp of compound +0x690/+0x694, wetness spline compound+0x1168, then 0x1446b8210; reads TyreType.UpgradeTempFactor (+0x634) at 0x1446b7e1f. Not fully read. | If car+0x133 bit2 clear (simplified): wheel+0x6c/+0x70 = WetnessTarget spline (+0x1168)(wheel+0x8c) = target tyre temperature vs water (medium); water cooling clamp((wet-0.15)*4)*0.002; blister wheel+0x94 += dt*BlisterRate(+0x128)*clamp((T-MinBlist+0x12c)/(MaxBlist+0x130-MinBlist)) if HandlingVersion>=13 (wx-drive, static) | findings from PR #471 by vogtmarcel07-cloud"
+  "evidence": "decomp:re/decomp/1446b7b70.c;xref:0x1409d54b4,0x1446b5914",
+  "notes": "(w=wheel+8,contact,dt): skipped if car+0x134 bit6. Work term w+0x74/(dt*75) x lerp(TT+0x690,+0x694, pressure ratio). car+0x133 bit2 clear: w+0x64/+0x68 = spline TT+0x1168 then 0x1446b8210(...,1). Else full model: ambient+273.15, slip/speed terms, 0x1446b8210(...,0), carcass w+0x68 and surface w+0x64 steps, upgrade factor [w]+0x634. +0x9f40 > 12: blister w+0x8c += dt*TT+0x128*clamp((w+0x68-TT+0x12c)/(TT+0x130-TT+0x12c)). (lane owner review requested)"
  },
  "signature": {
   "id": "car.tyre_update_temperature",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14167c780",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "vm",
   "proto": "void Vm_Apply_SponsorRowData(void *vm, uint64_t *data)",
-  "evidence": "decomp:re/decomp/14167c780.c;xref:0x1419aa4bf;xref:0x141a1406e;xref:0x141a6be3e",
-  "notes": "myteam-g2: Copies the 6-qword sponsor row data into vm+0xe90..0xeb8, refreshes the row bindings (FUN_14167c850) and picks the finance icon (Vm_FinanceTransactionRow_SetIcon) from the bound int. Display only."
+  "evidence": "decomp:re/decomp/14167c780.c;xref:0x1419aa4bf,0x141a1406e,0x141a6be3e,0x141efdb1b,0x142263316,0x14226bdcb,0x14226c16b,0x14226f45d",
+  "notes": "Copies 6 qwords from a2 into row+0xe90..+0xeb8, calls 0x14167c850(row+0x120); if byte row+0x620: reads the int (type 0x146129f38) of node [row+0x468] and calls Vm_FinanceTransactionRow_SetIcon 0x14167bfc0(row+0x20,-value,1,0,1,0,0). Same object as the invoice row built by 0x14167c320 (row+0xe90 block). Renamed: no sponsor-specific data. (lane owner review requested) Better name: Vm_Apply_InvoiceRowData (bound record keeps its name)."
  },
  "signature": {
   "id": "vm.apply_sponsor_row_data",
