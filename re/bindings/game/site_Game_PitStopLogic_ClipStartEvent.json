@@ -1,0 +1,112 @@
+{
+ "schema": 1,
+ "name": "site_Game_PitStopLogic_ClipStartEvent",
+ "table": "globals",
+ "author": "swofty",
+ "row": {
+  "addr": "0x1403bc020",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/1403bbda0.c;xref:0x1403bc020",
+  "notes": "The Start branch of Game_PitStopLogic_NeSequenceClipTargetImpl (clip event 'Start'): rbx = the PitStopInstance, r14 = its PitStopLogic. It writes the crew speed into logic+0x14c and inst+0x3bc and starts the pit lane record's pit stop timer (+0x138 = 1): the crew starts working here."
+ },
+ "signature": {
+  "id": "game.pit_stop_logic_clip_start_event",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 48 8B 83 C0 03 00 00",
+  "match": "0x1403bc01b",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403bc020",
+  "kind": "mid",
+  "expect": "48 8B 83 C0 03 00 00",
+  "names": [
+   "site_Game_PitStopLogic_ClipStartEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-22",
+    "by": "swofty",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/hooks/pit_hold.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-22",
+   "verifier": "serve-verify",
+   "kind": "global",
+   "item": "site_Game_PitStopLogic_ClipStartEvent",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1403bbda0-0x1403bc300;xref:0x1403bbf25",
+   "notes": "gh:serve-verify Confirmed: reached only by je 0x1403bbf25 after the event name compares equal to Start; r14 = [this+0x10] = the PitStopLogic (embedded at inst+0x1f0: logic+0x14c = inst+0x33c, logic+0x160/+0x168 = inst+0x350/+0x358), rbx = [r14] = the PitStopInstance. Writes the float [[[rbx+0x3c0]+0x98]+0x68+car*0x10] to logic+0x14c and rbx+0x3bc, then sets +0x138 = 1 on the movement record [[...+0x98]+0x48]+0x938+car*0x10 (the flag UpdateMovement checks before adding dt to +0x130). Exits to 0x1403bc2f0 when inst+0x3c0 or +0x98 is null or the car is 0xff; car > 0x1a goes to 0x1403bc256. Site is 7 bytes, no branch into it."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "swofty",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1403bc01b",
+    "target": "0x1403bc020"
+   },
+   "sigcheck": "passed",
+   "digest": "2b73fd89d67a99e606c5d099be8119e2f2dd9574b69b8a84a583bd4a0abf7d8d"
+  },
+  {
+   "by": "swofty",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1403bc05b",
+    "target": "0x1403bc060"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b8943960acb9091bab981696c298d433d09a3ab942d1ad078d6a3c13b248e02a"
+  },
+  {
+   "by": "serve-verify",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1403bc01b",
+    "target": "0x1403bc020"
+   },
+   "sigcheck": "passed",
+   "digest": "2b73fd89d67a99e606c5d099be8119e2f2dd9574b69b8a84a583bd4a0abf7d8d"
+  }
+ ]
+}

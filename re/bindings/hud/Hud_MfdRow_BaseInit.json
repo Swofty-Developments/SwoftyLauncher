@@ -1,0 +1,111 @@
+{
+ "schema": 1,
+ "name": "Hud_MfdRow_BaseInit",
+ "table": "functions",
+ "author": "swofty",
+ "row": {
+  "addr": "0x1417855e0",
+  "level": "L2",
+  "subsystem": "hud",
+  "proto": "void Hud_MfdRow_BaseInit(void *row, void *list_handle, uint8_t vehicle, const char *name)",
+  "evidence": "decomp:re/decomp/1417855e0.c;xref:0x14178c8a2,0x14178ad62,0x14178db78,0x141792462",
+  "notes": "Base init of an MFD settings row: gets or makes the child djb2(name) of the list node [list_handle+8], moves it into row+0x10 with its enabled (row+0x30) and visible (row+0x50) bools, then sets up the row's input binding object at row+0x68 (action_player_index, use_look_controls_ref) from row+0xa8 / row+0xb0. The vehicle argument (r8) is never read: callers store row+0xd0 themselves. 9 callers."
+ },
+ "signature": {
+  "id": "hud.mfd_row_base_init",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC A8 00 00 00 48 89 CE 48 8B 42 08",
+  "match": "0x1417855e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1417855e0",
+  "kind": "func_start",
+  "names": [
+   "Hud_MfdRow_BaseInit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-22",
+    "by": "swofty",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/frontend/pit_rows.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-22",
+   "verifier": "serve-verify",
+   "kind": "func",
+   "item": "Hud_MfdRow_BaseInit",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1417855e0-0x1417858fd;xref:0x14178c8a2,0x14178ad62,0x14178db78,0x141792462",
+   "notes": "gh:serve-verify Confirmed: rcx = row, rdx = list handle (node [rdx+8]), r9 = name (djb2 into Vm_GetOrCreate_ChildNode; a null name skips it); 0x141785900 builds the node, enabled and visible handles that move into row+0x10, +0x30, +0x50; then 0x141785a80 (a jmp to the protector-relocated body 0x14b7ed680) sets action_player_index from row+0xa8 on the binding at row+0x68. Differences: r8 (vehicle) is never read by BaseInit, callers store row+0xd0 themselves; 9 callers (also 0x141785efd, 0x141787d68, 0x14178a4e6, 0x1417904b6, 0x141793402); the use_look_controls_ref source (row+0xb0) is not confirmed in the relocated body."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "swofty",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1417855e0",
+    "target": "0x1417855e0"
+   },
+   "sigcheck": "passed",
+   "digest": "17e89180ece4ad619b719b052cfe3c12fbb9560d522b7fec04d9052a9dc996b3"
+  },
+  {
+   "by": "swofty",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141786d60",
+    "target": "0x141786d60"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "37ac981de645c575166ba2ae50097545220b6cc2b1bf7777685372cb2d26cc85"
+  },
+  {
+   "by": "serve-verify",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1417855e0",
+    "target": "0x1417855e0"
+   },
+   "sigcheck": "passed",
+   "digest": "17e89180ece4ad619b719b052cfe3c12fbb9560d522b7fec04d9052a9dc996b3"
+  }
+ ]
+}

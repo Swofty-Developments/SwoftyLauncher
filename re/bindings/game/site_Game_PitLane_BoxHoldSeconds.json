@@ -1,0 +1,112 @@
+{
+ "schema": 1,
+ "name": "site_Game_PitLane_BoxHoldSeconds",
+ "table": "globals",
+ "author": "swofty",
+ "row": {
+  "addr": "0x1434ba03f",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:own disasm 0x1434b9fbe-0x1434ba0d5;xref:0x1434ba0b7,0x1434ba6c8",
+  "notes": "In Game_PitLane_UpdateMovement's InPitBox step, after the hold seconds are chosen: xmm0 = g_stopGoDuration (0x145f9677c) when Sess_Penalty_IsServedAtNextStop (call 0x1434b9fc8, edx = r12d) answered true, else 0. r12d = vehicle, r14 = the car's pit lane movement record (+0xe4 box clock, +0xe8 crew job time, +0xf8 feature-flag box clock), rsi = movement manager. Nothing writes xmm0 before the two release compares (0x1434ba0b7: box clock > crew time + xmm0; 0x1434ba6c8 flag path: +0xf8 >= xmm0 + setting), so adding seconds to xmm0 here holds that car longer. On the non-flag path the compare at 0x1434ba0b7 runs only when the car's crew entry (r9) is found; with none the car is released at 0x1434ba0c5 and added seconds do nothing."
+ },
+ "signature": {
+  "id": "game.pit_lane_box_hold_seconds",
+  "section": ".xtls",
+  "pattern": "48 8B 96 F0 0A 00 00 45 8B 86 E0 00 00 00",
+  "match": "0x1434ba03f",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434ba03f",
+  "kind": "mid",
+  "expect": "48 8B 96 F0 0A 00 00",
+  "names": [
+   "site_Game_PitLane_BoxHoldSeconds"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-22",
+    "by": "swofty",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/hooks/pit_hold.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-22",
+   "verifier": "serve-verify",
+   "kind": "global",
+   "item": "site_Game_PitLane_BoxHoldSeconds",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1434b83e0-0x1434bbc00;xref:0x1434b9fc8,0x1434ba035,0x1434ba0b7,0x1434ba6c8",
+   "notes": "gh:serve-verify Confirmed in Game_PitLane_UpdateMovement state 4 (table at 0x1434b88a0): r14 = [[rsp+0x60]], the record of vehicle r12d (0x1434b8993), not rewritten on the paths to the site; al = Sess_Penalty_IsServedAtNextStop(edx=r12d) from 0x1434b9fc8; xmm0 = 0 (0x1434ba031, jmp 0x1434ba035 to the site) or [0x145f9677c] (0x1434ba037). The site is the join point and no branch lands inside its 7 bytes. xmm0 is not written before 0x1434ba0b7 (release when +0xe4 > +0xe8 + xmm0) or 0x1434ba6c8 (release when +0xf8 >= xmm0 + setting); every branch into those compares comes from after the site. Difference: on the non-flag path the compare runs only when a crew entry r9 is found; r9 = 0 releases the car at 0x1434ba0c5 without it. Same shape on 1.0.145 at 0x1434bc5bf."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "swofty",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1434ba03f",
+    "target": "0x1434ba03f"
+   },
+   "sigcheck": "passed",
+   "digest": "d418e27df45d228c1d0962263dd655eb05102dd0f5a6326160a019291f274ab1"
+  },
+  {
+   "by": "swofty",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1434bc5bf",
+    "target": "0x1434bc5bf"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5615e2c0c09b70b75cf472c3ab42807c53cac842ed8434fb0b8c60508cba63ce"
+  },
+  {
+   "by": "serve-verify",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1434ba03f",
+    "target": "0x1434ba03f"
+   },
+   "sigcheck": "passed",
+   "digest": "d418e27df45d228c1d0962263dd655eb05102dd0f5a6326160a019291f274ab1"
+  }
+ ]
+}

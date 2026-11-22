@@ -1,0 +1,111 @@
+{
+ "schema": 1,
+ "name": "Hud_PitRepairRow_Sync",
+ "table": "functions",
+ "author": "swofty",
+ "row": {
+  "addr": "0x14178d040",
+  "level": "L2",
+  "subsystem": "hud",
+  "proto": "void Hud_PitRepairRow_Sync(void *row)",
+  "evidence": "decomp:own disasm 0x14178d040-0x14178d24b;xref:0x141540555",
+  "notes": "Points current_repair at element [[row+0xb8]+0x68+veh*0x10]+0xc of the row's data list (node row+0xe0), moves that reference into the handle at row+0xf8 and subscribes Hud_PitRepairRow_OnValueChanged with context row on its node (Ne_BusMessage_SubscribeHandlerUnique, deduplicated on {fn, ctx}). Caller PitSettingsVm_Refresh."
+ },
+ "signature": {
+  "id": "hud.pit_repair_row_sync",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 48 89 CE 0F B6 81 D0 00 00 00",
+  "match": "0x14178d040",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14178d040",
+  "kind": "func_start",
+  "names": [
+   "Hud_PitRepairRow_Sync"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-22",
+    "by": "swofty",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/frontend/pit_rows.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-22",
+   "verifier": "serve-verify",
+   "kind": "func",
+   "item": "Hud_PitRepairRow_Sync",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14178d040-0x14178d24b;xref:0x141540555",
+   "notes": "gh:serve-verify Confirmed: index = [[row+0xb8]+0x68+veh*0x10]+0xc (0 when veh > 0x1a), Ne_Ref_GetListElementOrEmpty on the data node row+0xe0, set as the row node's current_repair reference, moved into the handle at row+0xf8 (node field +0x100), then Ne_BusMessage_SubscribeHandlerUnique(rdx = row+0x100, r8 = {0x14178cf10, row}) when +0x100 is set. One caller, 0x141540555 in PitSettingsVm_Refresh."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "swofty",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14178d040",
+    "target": "0x14178d040"
+   },
+   "sigcheck": "passed",
+   "digest": "5f0bb72fde4260263c373ee5a2e327fb4a253438af1b9eaa3c86a1c9b9ed97ed"
+  },
+  {
+   "by": "swofty",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14178e7c0",
+    "target": "0x14178e7c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f665d3e76412553aaad5a74c8e0eddf03663de35921818387ff8e8423c5db170"
+  },
+  {
+   "by": "serve-verify",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14178d040",
+    "target": "0x14178d040"
+   },
+   "sigcheck": "passed",
+   "digest": "5f0bb72fde4260263c373ee5a2e327fb4a253438af1b9eaa3c86a1c9b9ed97ed"
+  }
+ ]
+}

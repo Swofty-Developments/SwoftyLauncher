@@ -1,0 +1,111 @@
+{
+ "schema": 1,
+ "name": "Hud_MfdRow_AddOption",
+ "table": "functions",
+ "author": "swofty",
+ "row": {
+  "addr": "0x14178d390",
+  "level": "L2",
+  "subsystem": "hud",
+  "proto": "void Hud_MfdRow_AddOption(void *list_handle, const char *id, const char *lng, uint32_t value)",
+  "evidence": "decomp:re/decomp/14178d390.c;xref:0x14178cae6,0x14178cb02,0x14178cb1e",
+  "notes": "Adds (or finds, by djb2(id)) a child of the list node [list_handle+8] with display_name = lng and int value = value; its only callers are the repair row's three options, added in value order."
+ },
+ "signature": {
+  "id": "hud.mfd_row_add_option",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 44 89 CE",
+  "match": "0x14178d390",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14178d390",
+  "kind": "func_start",
+  "names": [
+   "Hud_MfdRow_AddOption"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-22",
+    "by": "swofty",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/frontend/pit_rows.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-22",
+   "verifier": "serve-verify",
+   "kind": "func",
+   "item": "Hud_MfdRow_AddOption",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14178d390-0x14178d71a;xref:0x14178cae6,0x14178cb02,0x14178cb1e",
+   "notes": "gh:serve-verify Confirmed: rcx = list handle (node [rcx+8]), rdx = id hashed with djb2 into Vm_GetOrCreate_ChildNode, r8 = lng set as display_name, r9d = the int set as value. Difference: the only callers on 1.0.141 are the repair row's three in Hud_PitRepairRow_Init."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "swofty",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14178d390",
+    "target": "0x14178d390"
+   },
+   "sigcheck": "passed",
+   "digest": "a8f9172cf587790fd8e520eb43d63004592dd4fd2c59f4b9bc263df4153c0cf9"
+  },
+  {
+   "by": "swofty",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14178eb10",
+    "target": "0x14178eb10"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a07139488730e8ad9a0b482c9310010d78e0a7b425f1b57d20fabf8f1b5fde37"
+  },
+  {
+   "by": "serve-verify",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14178d390",
+    "target": "0x14178d390"
+   },
+   "sigcheck": "passed",
+   "digest": "a8f9172cf587790fd8e520eb43d63004592dd4fd2c59f4b9bc263df4153c0cf9"
+  }
+ ]
+}

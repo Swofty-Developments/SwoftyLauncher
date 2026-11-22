@@ -1464,8 +1464,12 @@ inline constexpr site<"site_Game_GrandPrixContinueVm_F1wWarningCheck"> site_Game
 inline constexpr site<"site_Game_MyTeamVehicleBases_AiConfigLoad"> site_Game_MyTeamVehicleBases_AiConfigLoad{}; // L2 experimental
 inline constexpr site<"site_Game_MyTeamVehicleBases_NextBase"> site_Game_MyTeamVehicleBases_NextBase{}; // L2 experimental
 inline constexpr site<"site_Game_MyTeamVehicleBases_SaveRecord"> site_Game_MyTeamVehicleBases_SaveRecord{}; // L2 experimental
+inline constexpr site<"site_Game_PitLane_BoxHoldSeconds"> site_Game_PitLane_BoxHoldSeconds{}; // L2 experimental
 inline constexpr site<"site_Game_PitLane_BoxPoseFalse"> site_Game_PitLane_BoxPoseFalse{}; // L2 experimental
 inline constexpr site<"site_Game_PitLane_BoxSlotRead"> site_Game_PitLane_BoxSlotRead{}; // L2 experimental
+inline constexpr site<"site_Game_PitStopLogic_ClipStartEvent"> site_Game_PitStopLogic_ClipStartEvent{}; // L2 experimental
+inline constexpr site<"site_Game_PitStopObserver_StopGoAnswerPlain"> site_Game_PitStopObserver_StopGoAnswerPlain{}; // L2 experimental
+inline constexpr site<"site_Game_PitStopObserver_StopGoAnswerPrefixed"> site_Game_PitStopObserver_StopGoAnswerPrefixed{}; // L2 experimental
 inline constexpr site<"site_Game_PitStops_CrewTemplateRead"> site_Game_PitStops_CrewTemplateRead{}; // L2 experimental
 inline constexpr site<"site_Game_PitStops_CrewTemplateSkip"> site_Game_PitStops_CrewTemplateSkip{}; // L2 experimental
 inline constexpr site<"site_Game_SaveData_ContainersChildren"> site_Game_SaveData_ContainersChildren{}; // L3 stable
