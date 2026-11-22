@@ -166,8 +166,7 @@ struct LogoSite {
 
 constexpr LogoSite LOGO_SITES[] = {
     {"site_Game_DriverSelect_TeamLogoFormat", swofty::teams::LogoContext::driver_select, "teams.driver_select_team_logos"},
-    {"site_Game_TeamSelect_TeamLogoFormat", swofty::teams::LogoContext::team_select,
-     "team_logos.driver_career_2024_team_select"},
+    {"site_Game_TeamSelect_TeamLogoFormat", swofty::teams::LogoContext::team_select, "team_logos.driver_career_2024_team_select"},
 };
 constexpr const char *LOGO_POINT = "team.logo.resolve";
 constexpr size_t MAX_LABEL = 128;

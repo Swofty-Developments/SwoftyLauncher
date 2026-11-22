@@ -171,6 +171,8 @@ core/hooks/car_live.cpp: std::make_unique<session_points::MidPoint>("car.setup.a
 core/hooks/dispatch.hpp: virtual bool install(bool late, const std::string &subscribers) = 0; => none
 core/hooks/game_point.hpp: bool install(bool late, const std::string &subscribers) override => none
 core/hooks/game_point.hpp: auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), detour_); => via
+core/hooks/game_points.cpp: auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), FNS[i]); => mid binding site_Game_DriverSelect_TeamLogoFormat site_Game_TeamSelect_TeamLogoFormat
+core/hooks/game_points.cpp: bool install(bool late, const std::string &subscribers) override => none
 core/hooks/game_points.hpp: slot = std::make_unique<GamePoint>(s.point, s.binding, detour, ops); => via
 core/hooks/game_points.hpp: make(add, ADD_ACTIVITY, reinterpret_cast<void *>(&d_add_activity), ce::AddActivity::version); => inline spec ADD_ACTIVITY
 core/hooks/game_points.hpp: make(decide, DECIDE, reinterpret_cast<void *>(&d_decide), ce::ContractDecide::version); => inline spec DECIDE
