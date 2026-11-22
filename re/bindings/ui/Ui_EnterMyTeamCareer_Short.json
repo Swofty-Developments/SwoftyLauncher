@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1437083c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "ui",
   "proto": "void f(void *self)",
-  "evidence": "decomp:re/decomp/1437083c0.c;xref:0x1437081c0;xref:0x143708903;xref:0x143708953",
-  "notes": "myteam-g1: Short variant of enter_my_team_career."
+  "evidence": "decomp:re/decomp/1437083c0.c;xref:0x1437081c0,0x143708903,0x143708953,0x1437089a3",
+  "notes": "Renamed: pending byte pair [state+0xd20]+0x291 (high byte set): 1 -> +0x293=0x107; 3 -> +0x293=0x10d; 2 posts bus msg (vt 0x1456c67e8) 'enter_driver_ratings_update'; 4 posts 'enter_team_hq' when the game mode has component 0x146060948, else 'enter_my_team_career' (Ne_Post_BusMessage). (lane owner review requested) Better name: Ui_CareerHub_PostPendingEnterLink (bound record keeps its name)."
  },
  "signature": {
   "id": "ui.enter_my_team_career_short",

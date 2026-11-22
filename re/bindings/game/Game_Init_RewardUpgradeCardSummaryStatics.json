@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142ccaee0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "void Game_Init_RewardUpgradeCardSummaryStatics(void)",
   "evidence": "decomp:re/decomp/142ccaee0.c;xref:0x145d31cc8",
-  "notes": "Static initialiser for RewardF1WUniqueUpgradeCardSummary / RewardF1WUpgradeCardSummary / RewardUpgradeCardResult globals (earlier notes)."
+  "notes": "Whole body read: unity-TU static initialiser (CRT init cell 0x145d31cc8), not reward-only. Fills SIMD constant tables, CRITICAL_SECTION 0x146079d78, audio bus names (mute/unmute_vehicle_bus), Menu Back sound handles (0x143a860a0), MT seed table 0x14607a640, and type-info records {0x145890940, name, hash, parent}: TimeTrialOptionsManager..GraphicsWindowOptionsManager, PaddockPass*, PhotoMode*, Replay*, Reward*Result/Summary, RichPresence, PauseSystem, SessionBaseState, Marshal/PitlaneLightsSystem. Old name misleading. (lane owner review requested) Better name: Game_StaticInit_TypeInfo_OptionsToSessionState (bound record keeps its name)."
  },
  "signature": {
   "id": "game.init_reward_upgrade_card_summary_statics",

@@ -7,6 +7,7 @@
 #include <swofty/mixin.hpp>
 
 #include <atomic>
+#include <cstring>
 #include <map>
 #include <mutex>
 #include <set>
@@ -27,6 +28,9 @@
 // to the module's listeners (+0x170), the notification the game sends after it loads a language.
 // A key keeps one text variant per lang.string record in load order; a record's within is checked
 // against the core's current facts at lookup, so a season's strings show only in that season.
+// text() (SwoftyLang version 2) answers a key in the current language: the override when one applies,
+// else the current language's set (module +0x28 + language * 0x10, Loc_LocaleModule_Init) through
+// Loc_LangSet_Find mode 0, the trampoline once the function is hooked.
 
 namespace {
 
@@ -36,7 +40,8 @@ const runtime::Sig S_LANG_INFO{
     "g_Loc_LanguageInfo", "48 8D 0D ?? ?? ?? ?? 48 8B 5C 08 60", 0x62925e8, runtime::Sig::riprel, 0, 3, 7};
 
 constexpr uint32_t LANGS = 0x13;
-constexpr size_t MODULE_LANG = 0x160, MODULE_LISTENERS = 0x170, INFO_STRIDE = 0x100, INFO_CODE = 0x60;
+constexpr size_t MODULE_LANG = 0x160, MODULE_LISTENERS = 0x170, MODULE_SETS = 0x28, SET_STRIDE = 0x10, INFO_STRIDE = 0x100,
+                 INFO_CODE = 0x60;
 
 using Find_t = const char *(void *set, const char *key, int32_t mode);
 using Init_t = int32_t(void *module);
@@ -384,6 +389,61 @@ int lang_refresh()
     return SWOFTY_ASSET_OK;
 }
 
+int copy_out(const char *text, char *out, size_t cap, size_t *len)
+{
+    size_t n = strlen(text);
+    if (len)
+        *len = n;
+    if (!out || n >= cap)
+        return SWOFTY_TOO_SMALL;
+    memcpy(out, text, n + 1);
+    return SWOFTY_ASSET_OK;
+}
+
+const char *game_text(uint8_t *m, const char *key)
+{
+    uint32_t lang = *reinterpret_cast<const uint32_t *>(m + MODULE_LANG);
+    if (lang >= LANGS)
+        return nullptr;
+    auto *slot = m + MODULE_SETS + size_t(lang) * SET_STRIDE;
+    void *set = runtime::readable(slot, sizeof(void *)) ? *reinterpret_cast<void **>(slot) : nullptr;
+    if (!set || !runtime::readable(set, sizeof(void *)))
+        return nullptr;
+    bool hooked;
+    {
+        std::lock_guard<std::mutex> g(g_install);
+        hooked = bool(h_find);
+    }
+    if (hooked)
+        return h_find.call<const char *>(set, key, 0);
+    return reinterpret_cast<Find_t *>(g_find_at)(set, key, 0);
+}
+
+int lang_text(const char *key, char *out, size_t cap, size_t *len)
+{
+    setup_once();
+    uint8_t *m = g_module.load(std::memory_order_acquire);
+    if (!g_on || !g_find_at || !m)
+        return SWOFTY_ASSET_UNAVAILABLE;
+    if (!key || !*key)
+        return SWOFTY_ASSET_INVALID;
+    const char *text = g_count.load(std::memory_order_acquire) ? lookup(key) : nullptr;
+    if (!text)
+        text = game_text(m, key);
+    if (!text)
+        return SWOFTY_ASSET_INVALID;
+    return copy_out(text, out, cap, len);
+}
+
+int lang_language(char *out, size_t cap, size_t *len)
+{
+    setup_once();
+    const char *code = g_on ? current_code() : nullptr;
+    if (!code || !runtime::readable(code, 1))
+        return SWOFTY_ASSET_UNAVAILABLE;
+    return copy_out(code, out, cap, len);
+}
+
 uintptr_t find(const runtime::Sig &s)
 {
     uintptr_t at = 0;
@@ -427,9 +487,12 @@ void setup_once()
         std::call_once(g_setup_once, setup);
 }
 
-const SwoftyLang table = {lang_available, lang_override_set, lang_override_clear, lang_override_clear_all, lang_refresh};
+const SwoftyLang table = {lang_available, lang_override_set, lang_override_clear, lang_override_clear_all,
+                          lang_refresh,   lang_text,         lang_language};
 
 }
+
+extern "C" __declspec(dllexport) uint32_t SwoftyCoreLangVersion(void) { return SWOFTY_LANG_VERSION; }
 
 const SwoftyLang *runtime::lang_table() { return &table; }
 

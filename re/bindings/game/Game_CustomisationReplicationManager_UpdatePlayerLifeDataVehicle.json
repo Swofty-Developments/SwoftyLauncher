@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14318b770",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14318b770.c;pat:log-message-cxx;xref:0x14318d247,0x14318d387",
-  "notes": "Own pretty-function 0x1458221d5 = updatePlayerLifeDataVehicleCustomisations(const PlayerDescription&, const game::F1LifeVehicleCustomisationsGroupData&); logs 'Updating/Updated player (%s) life data vehicle customisations'; posts EnqueueMessage_A at 0x14318ba51. Callers = handleF1LifeDataVehicleCustomisationsAdd/Update."
+  "notes": "Pretty-fn 0x1458221d5 network::CustomisationReplicationManager::updatePlayerLifeDataVehicleCustomisations. Finds player entry by PlayerDescription in hash map +0xa0 (mask +0xb8, end +0x88); copies 6 groups param_3+0x20..+0x5d0 into entry +0xfc0..+0x1570 (0x141935da0), notifies 0x143218a60 at 0x14318ba51; if *(this+8)<2 builds msg vtbl 0x145825130 and sends 0x14402e500(this+0x38) at 0x14318c80e. Logs Updating/Updated. (lane owner review requested)"
  },
  "signature": {
   "id": "game.customisation_replication_manager_update_player_life_data_vehicle",

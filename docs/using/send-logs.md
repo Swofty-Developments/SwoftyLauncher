@@ -102,8 +102,6 @@ The logs go to the developers' Discord as one zip file, `swofty-logs-<username>-
 
 The logs can include folder paths with your computer's user name, your hardware, and your installed mods and profiles. Passwords, tokens and keys in `config.json`, in addon settings and in each session's `env.txt` are replaced with `[redacted]`. Each file is cut to its last 5 MB, and the whole zip holds at most 40 MB before compression.
 
-A bot in the developers' Discord reads each report with Anthropic's Claude API to suggest a cause, so the zip's contents are also sent to Anthropic.
-
 ## From the command line
 
 ```sh

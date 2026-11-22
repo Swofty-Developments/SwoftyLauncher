@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1409b5fb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "void(void *cfg)",
   "evidence": "decomp:re/decomp/1409b5fb0.c;xref:0x145664ec0",
-  "notes": "Strings confirm canned_events Faults/Failures/Accidents RaceLengthPercentages, player_data fault_data/failure_data track_vo keys and faultType parsing. Only ref is vt cell 0x145664ec0."
+  "notes": "Allocs 0xee0 obj ((param_1+0x10)->vt+0x18), fills ints/5 vectors from tunables registry *0x146cc4278 by 64-bit hashes + lists 'canned_events.Faults/Failures/Accidents.RaceLengthPercentages', fault_data/failure_data track_vo; gdb 'canned_events.player_data.fault_data.attributes' faultType->attribute (mask 0x2a2) at +0x230; RNG state idx 0x270; swaps into param_1+0xe0, frees old (lane owner review requested) Better name: Game_CannedEvents_LoadTunables (bound record keeps its name)."
  },
  "signature": {
   "id": "game.canned_events_load_player_fault_data",

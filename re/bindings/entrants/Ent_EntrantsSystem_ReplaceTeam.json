@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1424726f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "entrants",
   "proto": "-",
-  "evidence": "pat:log-channel-ENTRANTS_SYSTEM",
-  "notes": "named from its log messages (channel ENTRANTS_SYSTEM): 'Team replaced with stat id %s, existing entry? %s | Failed to add team with stat id %s whilst replacing'"
+  "evidence": "decomp:re/decomp/1424726f0.c;pat:log-channel-ENTRANTS_SYSTEM;xref:0x140c2d5f0,0x14175671c,0x1420633d0,0x14225c4be,0x14225d006",
+  "notes": "(entrants, key, record): kind 0 refused -> 5; team list [entrants+0x2c8+kind*0x10] (same as RemoveTeam) missing -> 1 (log text says 'driver'); field-by-field compare with the existing record; removes with 0x142472510, adds via 0x140cdbd40; fail -> 3; posts bus msg 0x14578d678; returns 0/2. (lane owner review requested)"
  },
  "signature": {
   "id": "entrants.entrants_system_replace_team",

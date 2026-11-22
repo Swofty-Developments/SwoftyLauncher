@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14316ad80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14316ad80.c;pat:log-channel-PLAYERSET;xref:0x143108c08,0x14310f402,0x14316a847,0x14316e2c5",
-  "notes": "named from its log messages (channel PLAYERSET): '%s: %s | %s: Player(%s) already in the set. | [PlayerSetEntry(%s, %s)] : isLocal = %s. | [PlayerSetEntry(%s, %s)] : playerIx = %d. | [PlayerSetEntry(%s, %s)] : userIx = %d. | [PlayerSetEntry(%s, %s)] '"
+  "notes": "network::PlayerSetSubsystem::AddPlayer(desc,isLocal) per own __FUNCTION__ string: blank human presence (flag 0x10000000, empty id) -> log, return 0; finds entry in this+0x58..0x60 by id match, else allocs 0x98 entry (ctor 0x143167ef0) and pushes it; sets isLocal +0x64, clears playerIx +0x60=-1, userIx +0x62, isPlaying +0x65, isWatching +0x67, isDroppingIn +0x68 with change flag +0x69; notifies listeners this+0x78..0x80 vt+0x18; returns entry. (lane owner review requested)"
  },
  "signature": {
   "id": "game.player_set_add_player",

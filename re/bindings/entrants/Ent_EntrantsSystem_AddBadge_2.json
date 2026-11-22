@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142471c60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "entrants",
   "proto": "-",
-  "evidence": "pat:log-channel-ENTRANTS_SYSTEM",
-  "notes": "named from its log messages (channel ENTRANTS_SYSTEM): 'Badge added with stat id %s | Couldn't find array to add badge with type %s | Failed to add badge with stat id %s'"
+  "evidence": "decomp:re/decomp/142471c60.c;pat:log-channel-ENTRANTS_SYSTEM;xref:0x141854ec9,0x142573a5f,0x143129f2c",
+  "notes": "AddBadge for type 2 eNetworkReplicated: array this+0x3d8; ENTRANTS_SYSTEM: id = (first free slot of the array's 16-byte entries << 16) | type; result *p3 = 0 ok / 1 no array / 3 insert failed; logs added/failed with stat id. Same body as Ent_EntrantsSystem_AddBadge (0x1424717e0) except array and type. (lane owner review requested) Better name: Ent_EntrantsSystem_AddBadge_NetReplicated (bound record keeps its name)."
  },
  "signature": {
   "id": "entrants.entrants_system_add_badge_2",

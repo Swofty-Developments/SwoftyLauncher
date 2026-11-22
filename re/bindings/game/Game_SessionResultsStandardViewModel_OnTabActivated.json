@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1422a7b50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1422a7b50.c;pat:log-message-cxx;xref:0x1422a6c2f,0x1457793b8",
-  "notes": "cxx=SessionResultsStandardViewModel::onTabActivated; log channel SESSION_RESULTS_TOOLTIPS: 'Rebuild Tooltips from: SessionResultsStandardViewModel::onTabActivated'"
+  "notes": "onTabActivated: dispatches 'onTabActivated' (0x144320fe0), rebinds show_select_tip/show_profile_tip/show_licence_tip (+0xa70/+0xa90/+0xab0), rebuilds list +0x6d0 (cb 0x1422a8fb0 OnResultSelectionChanged), +0xb60, +0xaf0; may fire enable_featured_driver_button, spawn_custom_panel, enable_dismiss_button_for_featured_driver; logs SESSION_RESULTS_TOOLTIPS, calls 0x1422a9070 RebuildTooltips, fires 'built_list'. vt cell 0x1457793b8. (lane owner review requested)"
  },
  "signature": {
   "id": "game.session_results_standard_view_model_on_tab_activated",

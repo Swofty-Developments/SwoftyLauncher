@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141a02e70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141a02e70.c;pat:log-channel--;xref:0x141a016aa,0x141a016b4,0x141a016be,0x141a016c8,0x141a016d2,0x141a016dc,0x141a016e6,0x141a016f0,0x141a016fa,0x141a01782,0x141a0178c,0x141a01796,0x141a017a0,0x141a017aa,0x141a017b4,0x141a017be,0x141a017c8,0x141a017d2,0x141a017dc,0x141a017e6,0x141a017f0,0x141a017fa,0x141a01804,0x141a01908,0x141a01912",
-  "notes": "Call sites in 0x1419ffb40. Keys are VM paths broadcast_persistent.*."
+  "notes": "Not a config read. switch(type byte param_2) allocs from +0x278 a broadcast view model (sizes 0x2e8..0xb80) per type 1-6,8,0xb-0xe,0x14,0x15,0x20-0x28,0x2b,0x2d,0x2f; inline cases set VM path + hash and call Vm_Register_ViewModel 0x1442bf450: broadcast_persistent.header/.tyre_list/.lap_count/.dummy_messages_for_vm.{driver_in_car_overline,driver_in_car_postrace,end_time_trial_challenge_event,event_mode_details,race_winner,season_resul... (lane owner review requested) Better name: Game_BroadcastPersistent_CreateViewModelByType (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_broadcast_persistent_config",

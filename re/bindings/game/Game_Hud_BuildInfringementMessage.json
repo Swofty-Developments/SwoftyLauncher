@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a4eef0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142a4eef0.c;xref:0x142a502a1,0x142a50548,0x1505a0a0b",
-  "notes": "HUD infringement queue message builder (keys infringement / incident_points / hide_sub_message / is_neutral from strings)."
+  "notes": "Returns early if 0x142a4fc80 rejects; builds a message node in hud_main_queue or hud_main_queue2 (by driver slot): message.infringement text (type param_4, later formatted with driver name), msg_duration 6.0 when flag +0xd1, message.number param_8/param_11, drive-through counter lookup, hide_sub_message+is_neutral for types 15-16, offender name, incident_points=param_5, message_type = eDriveThrough/eStopGo/eGridPenalty/ePenaltyReminder... by param_3. (lane owner review requested)"
  },
  "signature": {
   "id": "game.hud_build_infringement_message",

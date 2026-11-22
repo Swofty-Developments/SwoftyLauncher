@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f7b940",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142f7b940.c;pat:log-channel-VOICE_COMMANDS;xref:0x1457fbc88",
-  "notes": "Only ref: vtable cell 0x1457fbc88 (code neighbours). Logs State::eState_Disabled/eState_Hold transitions (voiceControlsAllowed, isSpeechVOPlaying, closeVoiceCommandsUI)."
+  "notes": "Vtable cell 0x1457fbc88 (code neighbours). State byte +0x88 indexes names at 0x145801ee0 (eState_Idle/Listening/Hold/Closing/Paused/Disabled); VOICE_COMMANDS 'update' logs eState_Disabled voiceControlsAllowed/isSpeechVOPlaying/closeVoiceCommandsUI, eState_Hold closeVoiceCommandsUI. Polls inputs Talk/MFD Button/MFD Menu Up/Down/Look Up/Down, QPC timers +0x328..+0x3d0, sets state 1/4/5. Decomp lines 51-100 = tail jump 0x142f7c115 into 0x142f7b750. (lane owner review requested)"
  },
  "signature": {
   "id": "game.voice_commands_update_state",

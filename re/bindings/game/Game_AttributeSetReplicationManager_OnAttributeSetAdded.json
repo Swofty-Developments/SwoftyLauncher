@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143126390",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143126390.c;pat:log-message-cxx",
-  "notes": "onAttributeSetAdded (own pretty-function string in the body)."
+  "evidence": "decomp:re/decomp/143126390.c;pat:log-message-cxx;xref:0x1431229a6,0x143122e94",
+  "notes": "Body read fully; own pretty-function 'network::AttributeSetReplicationManager::onAttributeSetAdded(neon::NeMessage &)'. Needs [this+0x10]+8 and an attribute set in [this+0x38]+0x48.. with state byte +0x39 == 2; checks message key msg+0x10 against the local id from session 0x14604c2c8; looks the key up in [this+0x30]+0xa0..+0xd4, builds update msg (vt 0x145824520) via 0x143124fb0 and sends 0x14402e500([this+0x20],1,..); logs NETWORK-ENTRANTS. Refs: lea 0x1431229a6, 0x143122e94 in 0x1431228f0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.attribute_set_replication_manager_on_attribute_set_added",

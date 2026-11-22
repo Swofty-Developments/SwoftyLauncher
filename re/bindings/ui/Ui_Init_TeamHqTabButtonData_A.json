@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1414bf8c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "ui",
   "proto": "void Init(void *tab, ... )",
-  "evidence": "decomp:re/decomp/1414bf8c0.c;xref:0x141c407a1;xref:0x141c41c2f;xref:0x141efde7a",
-  "notes": "myteam-g2: Fills a tab descriptor struct (fixed strings via Ne_Set_FixedString, resource handle init) with flags at +0x11c..0x16d/+0x8ec; used by HubLaptop and TeamHq tab build."
+  "evidence": "decomp:re/decomp/1414bf8c0.c;xref:0x141c407a1,0x141c41c2f,0x141efde7a,0x1422cf839,0x1422d0967,0x1422d0c27,0x1422d2463,0x1422d2d5f,0x1422d374c,0x1422d4dc1",
+  "notes": "Ctor: base 0x1414bdac0, vtables 0x1456f7c90 / 0x1456f7d70 / 0x1456f7da0, stores param_3 allocator and param_2 owner, tab name param_6 as fixed string (+0xa58) with djb2 hash (+0xb60). Callers pass tabbing_secondary_tab + tabbing_secondary_controller (0x141c3f130) and team_hq_secondary_tab + team_hq_tab_secondary_controller (0x1422cf7a0). (lane owner review requested) Better name: Ui_SecondaryTabController_Construct (bound record keeps its name)."
  },
  "signature": {
   "id": "ui.init_team_hq_tab_button_data_a",

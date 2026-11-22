@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141dcfe30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141dcfe30.c;pat:log-channel-OPTIONS-UI;xref:0x14574e7c0",
-  "notes": "vt cell 0x14574e7c0. 4 KB options view-model command handler (exit, close_and_go_back, story_difficulty, tutorial_shown, update_player_select)."
+  "evidence": "decomp:re/decomp/141dcfe30.c;pat:log-channel-OPTIONS-UI;xref:0x14574e7c0,0x14574e920",
+  "notes": "Menu view-model command override (vt cell 0x14574e7c0), switch on command hash *param_2. Decomp also holds merged out-of-bounds code (base FUN_141da11d0 + 0x14c32c../0x14c353.. blocks): judged in-bounds only. In bounds: cmd 0x2b0357a string compare start_event/begin_braking_point/begin_zenith_story (story_difficulty -> UiMessage 0x1442d9bf0 \"story_difficulty_warning\"), career_wizard/c_career/cat_credits -> raise \"exit\"; \"weekly_gp_co... (lane owner review requested) Better name: Game_OptionsUI_OnCommandRaised_Menu (bound record keeps its name)."
  },
  "signature": {
   "id": "game.options_ui_back_press_ignored_don_allow_back",

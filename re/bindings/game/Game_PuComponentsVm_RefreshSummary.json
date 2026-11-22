@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141f55300",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141f55300.c;xref:0x141f52728,0x141f57d5c,0x141f59055",
-  "notes": "Callers 0x141f52728 (0x141f50910), 0x141f57d5c (0x141f57b30), 0x141f59055 (0x141f58a20)."
+  "notes": "Walks entries at vm+0x650 ->+0x228..+0x230 (stride 0x2c8): sums float props of each entry's selected part (+0x170, +0x1d0 match), picks entry with min (+0xd0 - +0xf0) int props; writes ref prop +0x268 (FUN_140977b20), avg floats /count and /100 to +0x08/+0x28/+0x48/+0x68 (FUN_140b3c6d0), int diff to +0x128, ratio +0xf0/+0xd0 to +0x148; FUN_141f57510 on +0x80 and +0x160. (lane owner review requested)"
  },
  "signature": {
   "id": "game.pu_components_vm_refresh_summary",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e7c800",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142e7c800.c;xref:0x142e7c6be",
-  "notes": "Twin of Curve2D_SampleByBinarySearchY comparing the first key (pfVar[0]) and defaulting to 1.0 when the inner list ends early. Callers Car_Tyre_SampleWearCurve2DAlt."
+  "evidence": "decomp:re/decomp/142e7c800.c;xref:0x142e7c6be,0x142e7c6d4,0x142e7c740,0x142e7c756",
+  "notes": "(curve, x in xmm1): binary search of 0x28-byte keys (+8..+0x10) by key[0] <= x, then of the key's (x,y) pairs (+0x10/+0x18) by key[0]+pair.x < x; clamped linear interpolation of y; returns 1.0 when the first pair's y >= 1.0. Twin of 0x142e7c410. All calls in Car_Tyre_SampleWearCurve2DAlt 0x142e7c5f0. (lane owner review requested)"
  },
  "signature": {
   "id": "car.tyre_curve2_d_sample_by_binary_search_x",

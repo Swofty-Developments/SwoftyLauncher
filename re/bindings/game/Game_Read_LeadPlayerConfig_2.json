@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a733f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142a733f0.c;pat:log-channel--;xref:0x1457bc470",
-  "notes": "EGO_INPUT_SYSTEM: input_device/axis/vk_code_0x%02X icon tables, MessageOnOptionsLoaded, Head Tracking Reset; lead_player tracking keys are a small part."
+  "notes": "Gets 'EGO_INPUT_SYSTEM' allocator ->this+0x10, builds sub-objects (+0xc0,+0x58,+0xc8 'gameinput',+0xe0), VK 0..0xfe GetKeyNameTextW -> 'input_device/axis/vk_code_0x%02X' icon_raw/localise/display_text; registers OnDeviceConnected 0x142a75d80, lead_player eye/head tracking watchers, 'Head Tracking Reset', 'controlDataRefresh2'->0x142a76950, splash_press_start, MessageOnOptionsLoaded (0x143987810). (lane owner review requested) Better name: Game_GameInputModule_Initialise (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_lead_player_config_2",

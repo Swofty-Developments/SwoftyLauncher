@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144657040",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144657040.c",
-  "notes": "VTF F1TyreDamage: rot rate and damage progression ranges, slip angle and force ranges, SlipAngleForceMultPunc / MultBlow (puncture vs blow-out), AirResistanceMult. Correction: this is the serialiser (component data vtable slot 3): it writes the section back as XML through the writer object's vtable (+0x28 begin element, +0x68 attribute, +0x78 end, +0x98 comment); the field list above is what it writes. The reader is slot 2 (Game_Read_VtfFloat by name, values stored XOR-obfuscated)."
+  "evidence": "decomp:re/decomp/144657040.c;xref:0x145bf8d18",
+  "notes": "F1TyreDamage serialiser: floats Min/MaxRotRate, Min/MaxDamageProgressionTime, Min/MaxSlipAngle, Min/MaxSlipAngleForce, SlipAngleForceMultPunc, SlipAngleForceMultBlow, AirResistanceMult; XML writer (vcalls +0x28 begin, +0x58/+0x68/+0x70 value, +0x78 end, +0x98 comment). Only ref: vtable cell 0x145bf8d18. (lane owner review requested)"
  },
  "signature": {
   "id": "car.parse_f1_tyre_damage",

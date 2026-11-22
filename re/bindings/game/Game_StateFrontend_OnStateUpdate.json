@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1436d2120",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1436d2120.c;pat:log-message-cxx;xref:0x14585adf8",
-  "notes": "StateFrontend::onStateUpdate (vt cell 0x14585adf8); large body with UI/fade/bus calls."
+  "notes": "StateFrontend::onStateUpdate (TEMP_LOG strings), vt cell 0x14585adf8. Counter 0x146101dcc; network beta offline/mod messages to InterruptQueue; frontend_transition_state game_completed -> fade reasons clear/fade in on +0xce0+0x7b8; posts bus msg 0x145873690; exit-state 1/2/0xf -> fade out, result 0xfa95b51 (LINK:intro); 0xe -> eLinkExit; recalculateFrontEndTransition path -> 0x7c95dbc6; else beta_control_button counter. Returns *param_2. (lane owner review requested)"
  },
  "signature": {
   "id": "game.state_frontend_on_state_update",

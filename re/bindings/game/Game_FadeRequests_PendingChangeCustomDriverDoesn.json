@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1428c9060",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1428c9060.c;pat:log-channel-FADE_REQUESTS;xref:0x1457acf48",
-  "notes": "Vtable cell 0x1457acf48. FRONTEND_SCENE_MANAGER update: transition state changes (eIdle/eRequested/eFadeOut via setTransitionState), processes pending custom driver / car / object changes ('Pending Change for a Custom Driver that doesn't exisit ...', processPendingCustomObjectChanges, startSpawn). Old name was a log fragment. Better name: Game_FrontendSceneManager_ProcessPendingChanges (bound record keeps its name)."
+  "notes": "FRONTEND_SCENE_MANAGER per-frame update (vtable cell 0x1457acf48). Switch on m_transitionState +0x20 (names table 0x1457ad360: eIdle/eRequested/eFadeIn/ePendingSwitch/eFadeOut); eRequested -> eFadeOut (fade via 0x1437f0660) or ePendingSwitch; ePendingSwitch applies camera (+0x71b8) / cutscene (+0x7188) change. When idle processes pending driver (+0x7068), car (+0x70b8), object (+0x7118) changes and spawn list +0x7160, then erases released components. (lane owner review requested) Better name: Game_FrontendSceneManager_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.fade_requests_pending_change_custom_driver_doesn",

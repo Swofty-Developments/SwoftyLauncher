@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401e9150",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1401e9150.c;pat:log-message-cxx;xref:0x1401a5955",
-  "notes": "cxx=SceneManager::buildMaterialActorForScene; log channel ACTOR: 'SceneManager::buildMaterialActorForScene : MaterialActor[%s][%d] | setWorldObjectId %p Failed to find %p | SceneManager::buildWorldActorForScene : WorldActor[%s][%d] | setWorldObjectId %p Found %p %s ' | 2026-11-19 engine-re: the context suffix for a part is entry [part material index +0x114] of the instance's material context list (stride 0x28, string +0x10), else '.emb?context=default' (0x14560e1ce, lea 0x1401ebc2b); then Game_Actor_LoadModelResources 0x140187560 (call 0x1401ebe00) resolves it."
+  "notes": "Builds ALL actor kinds of scene p3 into instance p4 (not only material): per list logs ACTOR 'buildMaterial/World/TOD/Light/Camera/Actor/DynamicActorForScene'. Material(+0xb0,n+0x118,0x160)->inst+0x90; WorldActorProxy(+0x70,0x170, 0x1443ab250/ab380)->+0x80; TOD(+0x90,0xe8)->+0x88; Light(+0x30)->+0x70; Camera(+0x10)->+0x68; Actor(+0x50,0x140187560, parts 0x1401cb030 'addPart')->+0x78; Dynamic(+0xd0)->+0x98; then queues them; Sleep(1) ... (lane owner review requested) Better name: Game_SceneManager_BuildActorsForSceneInstance (bound record keeps its name)."
  },
  "signature": {
   "id": "game.scene_manager_build_material_actor_for_scene",

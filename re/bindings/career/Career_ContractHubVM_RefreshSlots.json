@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141ae6cb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void *vm",
   "evidence": "decomp:re/decomp/141ae6cb0.c;xref:0x141ae6c6b",
-  "notes": "F1 World loadout/card list refresh: equipped, new, contract_icon_texture_large, rarity_gradient_texture, loadout_rarity_bullet_points, sort lng_sort_rarity/lng_sort_newest; Vm_Build_UpgradeCardScreenNodes, Vm_Init_UpgradeLoadoutSlot, Vm_Update_UpgradeCardSelectionState. Better name: Career_F1World_RefreshLoadoutCards (bound record keeps its name)."
+  "notes": "Slot type *(this+0x320) 0-12 (LoadoutWing..Strategist, table 0x145736f30; 8-11 contracts -> 4-7). Clears lists +0xd08/+0xd68, builds 0x3b8 cards (0x141af4f90) from 0x1425b4bf0(+0x2d0,type); contracts add 0x298 cards (vt 0x14572f450: equipped,new,contract_icon_texture_large,rarity_gradient_texture). Jumptable sets lng_<x>_slot/lng_<x>s, sort lng_sort_newest/rarity (+0x11d4), lng_craft_* hint. Better name: Career_F1World_RefreshLoadoutCards (bound record keeps its name). (lane owner review requested)"
  },
  "signature": {
   "id": "career.contract_hub_vm_refresh_slots",

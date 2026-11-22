@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140a1d610",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140a1d610.c",
-  "notes": "Not a registration: car fault message handler: if msg car (+0x10) is the player car, plays a radio event via vt+0x120 by fault bits msg+0x14: 0x8 randomfault_brakes, 0x10 _electrical, 0x20 _fuel, 0x40 _cooling, 0x80 _lubricant, 0x100 _sensors; 0 -> gar_enter_garage, other -> gar_car_repairs."
+  "evidence": "decomp:re/decomp/140a1d610.c;xref:0x140a1b274,0x140a1deb9",
+  "notes": "Registered by lea 0x140a1b274 (in 0x140a17e70) and 0x140a1deb9 (in 0x140a1d9a0). Car fault message handler: if msg+0x10 equals the player car (0x1400fa590(this[0x1b7],0)) plays a radio event via vt+0x120 by fault bits msg+0x14: 0x8 randomfault_brakes, 0x10 _electrical, 0x20 _fuel, 0x40 _cooling, 0x80 _lubricant, 0x100 _sensors, 0 gar_enter_garage, other gar_car_repairs. Returns 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.audio_random_fault_events",

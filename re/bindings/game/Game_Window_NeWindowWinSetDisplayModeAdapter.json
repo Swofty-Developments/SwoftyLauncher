@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439fa850",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1439fa850.c;pat:log-channel-WINDOW;xref:0x1439f2e38,0x1439f2f86,0x1439f88ea",
-  "notes": "Callers 0x1439f1d20 (two) and 0x1439f7d80. Logs 'NeWindowWin::setDisplayMode: Adapter %d. name = %S, vendor id = 0x%04X'; likely NeWindowWin::setDisplayMode itself."
+  "notes": "NeWindowWin::setDisplayMode itself (every log 0x14589cee2..0x14589d508 prefixed so). mode edx: 1 promoted to 2 when global+0x5068/+0x507c; enumerates adapters/outputs (logs Adapter/Monitor), swapchain (global+0xa50) GetDesc vt+0x60, output FindClosestMatchingMode vt+0x48, SetFullscreenState vt+0x50, ResizeTarget vt+0x70; SetWindowLongPtrW style/exstyle, SetWindowPos, ShowCursor; this+0x244 = mode, writes graphics_card.resolution displayMode '%u'; deferred res -> 0x1439f7d80. (lane owner review requested) Better name: Game_Window_NeWindowWin_SetDisplayMode (bound record keeps its name)."
  },
  "signature": {
   "id": "game.window_ne_window_win_set_display_mode_adapter",

@@ -1,5 +1,5 @@
-//! The frame both Online pages share: the page's main column on the left, and a rail on the right that opens with
-//! a card previewing the other page, above the global ranking.
+//! The Multiplayer page's frame: its main column on the left, and a rail on the right that opens with a card
+//! previewing Time Trial, above a short global ranking.
 
 use super::ranking::RIGHT_W;
 use super::widgets::panel;
@@ -14,21 +14,13 @@ use gpui_kit::*;
 const WIDE: f32 = 1000.;
 const SIDE: f32 = 28.;
 const GAP: f32 = 20.;
-const NARROW_RANKING_H: f32 = 520.;
-
-/// How the rail's ranking takes its height: the whole ranking fills the rail, a short one keeps its own height.
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub(crate) enum RankFit {
-    Fill,
-    Own,
-}
 
 impl Shell {
     fn online_wide(&self) -> bool {
         self.layout.content_width >= WIDE
     }
 
-    /// The width of an Online page's main column.
+    /// The width of the Multiplayer page's main column.
     pub(crate) fn online_main_width(&self) -> f32 {
         self.layout.content_width - 2. * SIDE - if self.online_wide() { GAP + RIGHT_W } else { 0. }
     }
@@ -38,20 +30,10 @@ impl Shell {
         &self,
         id: &'static str,
         main: impl IntoElement,
-        card: Option<AnyElement>,
+        card: AnyElement,
         ranking: AnyElement,
-        fit: RankFit,
     ) -> AnyElement {
         if !self.online_wide() {
-            let ranking = match fit {
-                RankFit::Fill => div()
-                    .h(px(NARROW_RANKING_H))
-                    .flex()
-                    .flex_col()
-                    .child(ranking)
-                    .into_any_element(),
-                RankFit::Own => ranking,
-            };
             return v_flex()
                 .flex_1()
                 .min_h_0()
@@ -60,28 +42,16 @@ impl Shell {
                 .pb(px(28.))
                 .gap(px(24.))
                 .child(main)
-                .children(card)
+                .child(card)
                 .child(ranking)
                 .into_any_element();
         }
-        let rail = match fit {
-            RankFit::Fill => v_flex()
-                .w(px(RIGHT_W))
-                .flex_shrink_0()
-                .h_full()
-                .gap(px(16.))
-                .pb(px(20.))
-                .children(card)
-                .child(v_flex().flex_1().min_h_0().child(ranking))
-                .into_any_element(),
-            RankFit::Own => v_flex()
-                .w(px(RIGHT_W))
-                .flex_shrink_0()
-                .h_full()
-                .scroll_y(SharedString::from(format!("{id}-rail")))
-                .child(v_flex().gap(px(16.)).pb(px(20.)).children(card).child(ranking))
-                .into_any_element(),
-        };
+        let rail = v_flex()
+            .w(px(RIGHT_W))
+            .flex_shrink_0()
+            .h_full()
+            .scroll_y(SharedString::from(format!("{id}-rail")))
+            .child(v_flex().gap(px(16.)).pb(px(20.)).child(card).child(ranking));
         h_flex()
             .flex_1()
             .min_h_0()
@@ -103,7 +73,7 @@ impl Shell {
     }
 }
 
-/// A card at the top of an Online page's rail that previews the other page: its title and the way there over
+/// A card at the top of the Multiplayer page's rail that previews Time Trial: its title and the way there over
 /// `body`.
 pub(crate) fn preview_card(title: impl Into<SharedString>, open: impl IntoElement, p: Palette) -> Div {
     panel(p).flex_shrink_0().child(

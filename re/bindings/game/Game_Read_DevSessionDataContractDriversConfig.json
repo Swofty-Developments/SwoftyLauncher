@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141129850",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141129850.c;pat:log-channel--;xref:0x141127869,0x1411278a0",
-  "notes": "Callers 0x141127869, 0x1411278a0 (0x141125e80)."
+  "notes": "Read in full. Callers in Sess_DevSession_Apply 0x141125e80. Reads DevSessionDataContract.Drivers.%sDriver/%sTeam/%sVehicle/%sCarNumber (team via 'entrants.teams' tree -> stat_id). Driver, team and vehicle all set: appends a 0x88-byte entrant record (vtable 0x145612e20, grow x1.5) to param_2; else unless +0x351, DevSessionDataContract.Entrants.%sEntrant picks a matching entrant index and overwrites its identity block. (lane owner review requested)"
  },
  "signature": {
   "id": "game.read_dev_session_data_contract_drivers_config",

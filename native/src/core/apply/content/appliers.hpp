@@ -75,6 +75,9 @@ struct GridBox {
 };
 GridBox grid_for_box(const std::string &entrant_list);
 bool any_grid_rule();
+// The drivers of the content.package of the box with this entrant list (0 when it has none): how far past 22 cars the
+// era picker raises its grid.
+size_t seats_for_box(const std::string &entrant_list);
 // The qualifying tyre rule the box with this entrant list runs: its content.package's rules.qualifying_tyres as a
 // class option mask (bit 0 softer, 1 medium, 2 harder; 0 = no rule), and the line to log.
 struct QualiTyresBox {

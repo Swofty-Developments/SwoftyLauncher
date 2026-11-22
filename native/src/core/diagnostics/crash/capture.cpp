@@ -284,6 +284,7 @@ bool launcher_stop()
 void on_exit(const char *fn, UINT code)
 {
     perf::flush(fn);
+    perf::stop(EXIT_WRITER_WAIT_MS);
     runtime::session_host_exit();
     if (InterlockedExchange(&capture.exited, 1) || !enter())
         return;
