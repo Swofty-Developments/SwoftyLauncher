@@ -6,6 +6,7 @@ use std::time::{Duration, Instant, SystemTime};
 use gpui_kit::*;
 use swofty_core::catalog::publishers::{self, Creator};
 use swofty_core::catalog::stars::{self};
+use swofty_core::catalog::withdrawn;
 use swofty_core::catalog::{self, Addon, Trouble, Update};
 use swofty_core::updates::release::current_version;
 use swofty_i18n::{tr, trf, trn};
@@ -129,7 +130,8 @@ impl Browser {
         if !b.feed.begin_fetch() {
             return;
         }
-        let root = needs.store.root.clone();
+        let store = needs.store.clone();
+        let root = store.root.clone();
         let shown = b.addons.clone();
         let known = b.icons.keys().chain(b.avatars.keys()).cloned().collect();
         let started = Instant::now();
@@ -138,11 +140,24 @@ impl Browser {
                 .background_executor()
                 .spawn(async move { fetch(&root, shown, known) })
                 .await;
+            let listed = fetched.addons.clone();
             this.update(cx, |host, cx| {
                 let (b, needs) = host.split();
                 b.take_fetched(&needs.store.root, fetched, started.elapsed());
                 b.sync_updates(needs.library);
                 Self::sync_stars(host, cx);
+                cx.notify();
+            })
+            .ok();
+            let Some(listed) = listed else {
+                return;
+            };
+            let checks = cx
+                .background_executor()
+                .spawn(async move { withdrawn::refresh(&store, &listed) })
+                .await;
+            this.update(cx, |host, cx| {
+                host.split().0.withdrawn = checks;
                 cx.notify();
             })
             .ok();
@@ -412,6 +427,11 @@ impl Browser {
 impl Shell {
     pub(crate) fn catalog_update(&self, id: &str) -> Option<&Update> {
         self.browser.updates.iter().find(|u| u.id == id)
+    }
+
+    /// Whether the registry withdrew the version of `m` that is installed ([`withdrawn`]).
+    pub(crate) fn withdrawn(&self, m: &swofty_core::manifest::AddonManifest) -> bool {
+        !self.store.is_builtin(&m.id) && self.browser.withdrawn.is_withdrawn(&m.id, &m.version)
     }
 
     pub(super) fn installed_version(&self, id: &str) -> Option<semver::Version> {

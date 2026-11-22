@@ -15,6 +15,7 @@ mod startup;
 mod stuck;
 mod system;
 mod tyres;
+mod withdrawn;
 
 use std::collections::{BTreeMap, BTreeSet};
 

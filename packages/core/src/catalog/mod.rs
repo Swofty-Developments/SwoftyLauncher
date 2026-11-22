@@ -9,6 +9,7 @@ pub mod requires;
 pub mod search;
 pub mod source;
 pub mod stars;
+pub mod withdrawn;
 
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};

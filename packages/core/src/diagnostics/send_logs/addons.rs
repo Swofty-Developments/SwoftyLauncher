@@ -114,9 +114,20 @@ impl Sources<'_> {
                 return s;
             }
         };
+        let withdrawn = crate::catalog::withdrawn::Checks::load(&store.root);
         let row = |id: &str| match addons.get(id) {
             Some(m) => {
-                let mut row = format!("{} {} ({}), {}\n", m.name, m.version, m.id, self.addon_source(m));
+                let mark = match withdrawn.is_withdrawn(&m.id, &m.version) {
+                    true => ", withdrawn from the Addon Browser",
+                    false => "",
+                };
+                let mut row = format!(
+                    "{} {} ({}), {}{mark}\n",
+                    m.name,
+                    m.version,
+                    m.id,
+                    self.addon_source(m)
+                );
                 let stored = p.options.get(id);
                 let declared = m.options.iter().map(|o| (o.id.as_str(), Some(o)));
                 let stale = stored

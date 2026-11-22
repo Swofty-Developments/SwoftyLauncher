@@ -24,6 +24,7 @@ mod startup;
 mod system;
 mod tyres;
 pub mod weekend;
+mod withdrawn;
 mod wording;
 
 #[cfg(test)]
@@ -67,6 +68,7 @@ use system::{
     quit_fault, quit_fault_diagnosis,
 };
 pub use tyres::unplaced_tyres;
+use withdrawn::{noted, withdrawn_crash};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Diagnosis {
@@ -133,10 +135,11 @@ pub fn saves(session: &SessionRecord, game: Option<&Path>, store: &Store) -> Opt
 }
 
 /// The cause of a crash, from the first rule that recognises it. A crash no
-/// rule recognises, on an F1 25 older than [`LATEST_GAME_VERSION`], is put down
-/// to the old build.
+/// rule recognises names the withdrawn addons that are on, or, on an F1 25
+/// older than [`LATEST_GAME_VERSION`], is put down to the old build. Any other
+/// diagnosis ends with a step naming the withdrawn addons that are on.
 pub fn diagnose(e: &Evidence) -> Option<Diagnosis> {
-    matched(e).or_else(|| {
+    let d = matched(e).or_else(|| withdrawn_crash(e)).or_else(|| {
         let mut d = outdated_exe(e.game_version.as_deref())?;
         d.what = format!(
             "Your F1 25 is {}. Mods are made for {LATEST_GAME_VERSION}, the latest update, and F1 25 crashed on \
@@ -144,7 +147,8 @@ pub fn diagnose(e: &Evidence) -> Option<Diagnosis> {
             e.game_version.as_deref().unwrap_or_default().trim()
         );
         Some(d)
-    })
+    })?;
+    Some(noted(d, e))
 }
 
 /// A crash as the rules read it: the evidence, with what every rule needs from it worked out once.

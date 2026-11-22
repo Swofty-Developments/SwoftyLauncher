@@ -14,6 +14,12 @@ impl Shell {
         !self.vanilla() && (m.enabled || m.locked)
     }
 
+    /// What the Addons page says about `m` when the registry withdrew its installed version.
+    pub(super) fn withdrawn_note(&self, m: &AddonItem) -> Option<String> {
+        self.withdrawn(&m.manifest)
+            .then(|| withdrawn_text(&m.manifest.name, &m.manifest.version, self.addon_on(m)))
+    }
+
     pub(super) fn update_ready(&self, m: &AddonItem) -> bool {
         (m.manifest.id == swofty_core::updates::managed::ID && self.updates.plan().addon.is_some())
             || self.catalog_update(&m.manifest.id).is_some()
@@ -210,5 +216,39 @@ impl Shell {
         let c = Changes::read(&self.store, &self.library.profile, &self.library.on(), item);
         self.addons.changes.insert(id.to_owned(), c.clone());
         c
+    }
+}
+
+/// The Addons page's text for an installed version the registry withdrew, for an addon that is on or off.
+pub(super) fn withdrawn_text(name: &str, version: &semver::Version, on: bool) -> String {
+    match on {
+        true => trf!(
+            "{name} {version} was withdrawn from the Addon Browser. Turn it off.",
+            name = name,
+            version = version
+        ),
+        false => trf!(
+            "{name} {version} was withdrawn from the Addon Browser. It is off in this profile.",
+            name = name,
+            version = version
+        ),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::withdrawn_text;
+
+    #[test]
+    fn withdrawn_text_says_to_turn_it_off_while_it_is_on() {
+        let v = semver::Version::new(1, 0, 7);
+        assert_eq!(
+            withdrawn_text("BMW 2026 Testing", &v, true),
+            "BMW 2026 Testing 1.0.7 was withdrawn from the Addon Browser. Turn it off."
+        );
+        assert_eq!(
+            withdrawn_text("BMW 2026 Testing", &v, false),
+            "BMW 2026 Testing 1.0.7 was withdrawn from the Addon Browser. It is off in this profile."
+        );
     }
 }

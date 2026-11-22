@@ -346,6 +346,13 @@ impl Shell {
             .flex_shrink_0()
             .gap(px(4.))
             .justify_end()
+            .when_some(self.withdrawn_note(m), |d, why| {
+                d.child(
+                    pill(IconName::TriangleAlert, tr("Withdrawn"), p.warning)
+                        .id(SharedString::from(format!("withdrawn-{id}")))
+                        .tooltip(move |window, cx| Tooltip::new(why.clone()).build(window, cx)),
+                )
+            })
             .when_some(
                 self.addons.status.get(&id).filter(|l| !l.is_empty()),
                 |d, lines| {

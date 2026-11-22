@@ -106,6 +106,17 @@ pub(crate) fn run(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Res
                 ),
             );
         }
+        if !p.is_vanilla() {
+            for w in swofty_core::catalog::withdrawn::enabled(store, p.enabled()) {
+                say(
+                    "warning",
+                    &format!(
+                        "{} ({}) {} was withdrawn from the Addon Browser; turn it off",
+                        w.name, w.id, w.version
+                    ),
+                );
+            }
+        }
     }
     if let Some(cpus) = config.launch.cpu_affinity.as_deref().and_then(parse_cpu_list) {
         set_affinity(&cpus);

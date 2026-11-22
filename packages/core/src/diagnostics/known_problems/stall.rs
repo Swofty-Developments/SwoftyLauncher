@@ -4,6 +4,7 @@ use crate::store::Store;
 use super::Diagnosis;
 use super::evidence::{Evidence, evidence};
 use super::slow_init::slow_addon_init;
+use super::withdrawn::{noted, withdrawn_stall};
 use super::wording::name;
 
 /// Addons known to keep F1 25 on Loading... after Press any button, so it never
@@ -86,9 +87,10 @@ pub(crate) fn last_screen(perf: &str) -> Option<&str> {
     last
 }
 
-/// Whether an addon known to stall the boot explains the session's stall.
+/// Whether an addon known to stall the boot, or a withdrawn addon that is on, explains the session's stall.
 pub(crate) fn addon_stall(session: &SessionRecord, store: &Store) -> bool {
-    boot_stall(&evidence(session, None, store)).is_some()
+    let e = evidence(session, None, store);
+    boot_stall(&e).is_some() || withdrawn_stall(&e).is_some()
 }
 
 /// How long the game had been on the start screen when it ended: from the
@@ -133,12 +135,20 @@ pub(super) fn minutes(secs: f64) -> String {
 }
 
 /// The cause of a session that ended without a crash, from the first rule that
-/// recognises it, and else the addon that held up its start.
+/// recognises it, and else the addon that held up its start. A diagnosis that
+/// is not about the withdrawn addons that are on ends with a step naming them.
 pub fn stalled(e: &Evidence) -> Option<Diagnosis> {
-    let Some((addon, secs)) = boot_stall(e) else {
-        return stalled_save(e).or_else(|| slow_addon_init(e));
+    let d = match boot_stall(e) {
+        Some((addon, secs)) => known_stall(&addon, secs),
+        None => withdrawn_stall(e)
+            .or_else(|| stalled_save(e))
+            .or_else(|| slow_addon_init(e))?,
     };
-    Some(Diagnosis {
+    Some(noted(d, e))
+}
+
+fn known_stall(addon: &str, secs: f64) -> Diagnosis {
+    Diagnosis {
         id: "boot_stall",
         title: format!("{addon} kept F1 25 on the loading screen"),
         what: format!(
@@ -149,7 +159,7 @@ pub fn stalled(e: &Evidence) -> Option<Diagnosis> {
         steps: vec![format!(
             "Turn off {addon} in your profile, then press Play again."
         )],
-    })
+    }
 }
 
 /// What the core logs for each profile load.

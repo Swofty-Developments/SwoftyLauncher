@@ -6,7 +6,7 @@ use crate::services::library::{AddonItem, Changes, Source, Type};
 use crate::shell::Shell;
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::{Palette, ScrollArea};
-use crate::ui::{addon_icon, back_row, chevron, fact, label, logo, tag};
+use crate::ui::{Callout, addon_icon, back_row, chevron, fact, label, logo, tag};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::tooltip::Tooltip;
@@ -94,9 +94,11 @@ impl Shell {
         };
         let conflicts = self.conflicts_block(id, p, cx).into_any_element();
         let flag = self.problem_list(id, p, cx);
+        let withdrawn = self.withdrawn_callout(m, cx);
         let body = v_flex()
             .gap(px(18.))
             .when(!inline, |d| d.child(head))
+            .children(withdrawn)
             .children(flag)
             .when_some(man.description.clone(), |d, text| {
                 d.child(
@@ -332,6 +334,31 @@ impl Shell {
                         ),
                 )
             })
+    }
+
+    /// The warning at the top of the panel when the registry withdrew the installed version, with
+    /// **Turn off** while it is on.
+    fn withdrawn_callout(&self, m: &AddonItem, cx: &mut Context<Self>) -> Option<AnyElement> {
+        let text = self.withdrawn_note(m)?;
+        let callout = Callout::warning(text).title(tr("Withdrawn from the Addon Browser"));
+        let switchable = m.enabled && !m.locked && !self.vanilla();
+        let callout = match switchable {
+            true => {
+                let id = m.manifest.id.clone();
+                callout.actions(
+                    Button::new("detail-withdrawn-off")
+                        .outline()
+                        .tap_sm()
+                        .icon(IconName::PowerOff)
+                        .label(tr("Turn off"))
+                        .on_click(cx.listener(move |this, _, window, cx| {
+                            this.set_addon_enabled(&id, false, window, cx)
+                        })),
+                )
+            }
+            false => callout,
+        };
+        Some(callout.into_any_element())
     }
 
     fn detail_buttons(

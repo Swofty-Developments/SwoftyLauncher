@@ -136,6 +136,18 @@ pub(crate) fn run(inputs: Inputs) -> Checked {
                 timings.time("lonely", || {
                     notes.extend(lonely(&store, &p, &installed, &catalog))
                 });
+                if !p.is_vanilla() {
+                    let found = timings.time("withdrawn", || {
+                        swofty_core::catalog::withdrawn::enabled(&store, p.enabled())
+                    });
+                    if !found.is_empty() {
+                        let labels: Vec<String> = found.iter().map(|w| w.label()).collect();
+                        let mut line = String::new();
+                        let _ = write!(line, "[play] withdrawn addons on: {}", labels.join(", "));
+                        lines.push(line);
+                        notes.push(withdrawn_note(&labels));
+                    }
+                }
                 let all = match p.is_vanilla() {
                     true => Default::default(),
                     false => timings.time("deps", || swofty_core::stdlib::deps::read_all(&store, &installed)),
@@ -343,6 +355,27 @@ fn lonely(
     notes
 }
 
+/// The notice for addons that are on whose installed version was withdrawn from the Addon Browser.
+fn withdrawn_note(labels: &[String]) -> Note {
+    let list = labels.join(", ");
+    match labels {
+        [one] => Note::warning(
+            &trf!("{addon} was withdrawn", addon = one),
+            trf!(
+                "{addon} was withdrawn from the Addon Browser. Turn it off on the Addons page.",
+                addon = one
+            ),
+        ),
+        _ => Note::warning(
+            tr("Withdrawn addons are on"),
+            trf!(
+                "{addons} were withdrawn from the Addon Browser. Turn them off on the Addons page.",
+                addons = list
+            ),
+        ),
+    }
+}
+
 fn lonely_note(base: &str, family: &[String]) -> Note {
     let shown = family.iter().take(4).cloned().collect::<Vec<_>>().join(", ");
     let more = family.len().saturating_sub(4);
@@ -516,6 +549,24 @@ mod tests {
         assert!(vanilla_note(0).is_none());
         assert!(vanilla_note(1).unwrap().body.starts_with("1 career uses addons"));
         assert!(vanilla_note(3).unwrap().body.starts_with("3 careers use addons"));
+    }
+
+    #[test]
+    fn withdrawn_note_names_every_withdrawn_addon_that_is_on() {
+        let one = withdrawn_note(&["BMW 2026 Testing 1.0.7".to_owned()]);
+        assert_eq!(one.title, "BMW 2026 Testing 1.0.7 was withdrawn");
+        assert_eq!(
+            one.body,
+            "BMW 2026 Testing 1.0.7 was withdrawn from the Addon Browser. Turn it off on the Addons page."
+        );
+        assert_eq!(one.level, NoteLevel::Warning);
+        assert!(one.sticky);
+        let two = withdrawn_note(&["A 1.0.0".to_owned(), "B 2.0.0".to_owned()]);
+        assert_eq!(two.title, "Withdrawn addons are on");
+        assert_eq!(
+            two.body,
+            "A 1.0.0, B 2.0.0 were withdrawn from the Addon Browser. Turn them off on the Addons page."
+        );
     }
 
     #[test]

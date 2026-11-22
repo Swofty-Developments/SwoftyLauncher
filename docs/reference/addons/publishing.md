@@ -126,7 +126,7 @@ Creators with the [Addon Creator role](/using/addon-browser#publish-your-own) pu
 - **Description:** [Markdown](#markdown), and the preview shows it as the launcher does. Images don't show there; add pictures to the gallery instead.
 - **Gallery:** pictures, videos and YouTube, Vimeo or Streamable links, shown on the addon's page in the launcher. See [Gallery](/using/addon-browser#gallery).
 - **Review:** the version shows **Pending review**, and Swofty sends a Discord message when it's reviewed.
-- **Yank:** **Stop offering this version to players** yanks a version, and **Unyank** undoes it. It's the only action on a version.
+- **Yank:** **Stop offering this version to players** yanks a version, and **Unyank** undoes it. It's the only action on a version. Players who have a yanked version installed see it as [withdrawn](/using/addons#withdrawn) on the Addons page.
 
 ### Markdown {#markdown}
 

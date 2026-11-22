@@ -24,6 +24,8 @@ use swofty_core::store::Store;
 pub(crate) struct Browser {
     pub(crate) addons: Vec<Addon>,
     pub(crate) updates: Vec<Update>,
+    /// What the registry says about the installed versions the catalog doesn't list.
+    pub(crate) withdrawn: catalog::withdrawn::Checks,
     pub(crate) toasts: Vec<Notification>,
     pub(super) icons: HashMap<String, Arc<Image>>,
     pub(super) search: Entity<InputState>,
@@ -89,6 +91,7 @@ impl Browser {
         Self {
             addons: cached.unwrap_or_default(),
             updates: Vec::new(),
+            withdrawn: catalog::withdrawn::Checks::load(root),
             toasts: Vec::new(),
             icons: HashMap::new(),
             search,

@@ -1193,6 +1193,25 @@ fn bundles_the_running_games_logs_first_with_its_performance_summary() {
         "{addons}"
     );
     assert!(summary.find("\nPerformance\n") < summary.find("\nFiles\n"));
+    crate::catalog::withdrawn::Checks(
+        [(
+            "t.helper".to_owned(),
+            crate::catalog::withdrawn::Check {
+                version: semver::Version::new(1, 2, 3),
+                withdrawn: true,
+                checked: 1,
+            },
+        )]
+        .into(),
+    )
+    .save(&store.root)
+    .unwrap();
+    let bundle = Bundle::collect_with(&store, &report(&game), Limits::default(), "20261021-091501");
+    let summary = summary_of(&bundle);
+    assert!(
+        summary.contains("        Helper 1.2.3 (t.helper), installed, withdrawn from the Addon Browser\n"),
+        "{summary}"
+    );
     std::fs::remove_dir_all(&root).ok();
 }
 

@@ -134,6 +134,10 @@ An addon made for a newer Swofty Launcher, or one whose `swofty.json` is damaged
 
 A profile saved by a newer launcher keeps the settings this launcher doesn't know, and saves them back unchanged.
 
+## Withdrawn versions {#withdrawn}
+
+An installed version that was withdrawn from the [Addon Browser](/using/addon-browser) shows **Withdrawn** on its row. Its panel says so and has **Turn off**. The launcher leaves it installed and doesn't turn it off. **Play** names the withdrawn addons that are on. When F1 25 crashes or stays on the loading screen, the crash screen names them too.
+
 ## Built-in addons
 
 | Addon | What it does |
