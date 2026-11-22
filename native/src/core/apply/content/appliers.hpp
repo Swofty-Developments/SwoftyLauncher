@@ -21,6 +21,10 @@ void undress_teams(const char *why);
 // The team.identity id the loaded team record of this stat id wears in the current career (a dressed slot), or "".
 std::string worn_team(uint16_t stat);
 
+// The track codes whose folder in the game holds environment_package/tracks/<code>/wep/<code>_<name>.erp, the world a
+// content.package names (box_world.hpp); nullopt while box worlds or SWOFTY_BOX_OWN_WORLDS are off.
+std::optional<std::vector<std::string>> box_world_tracks(const std::string &name);
+
 // The DRS group the box with this entrant list runs: the label of its content.package's rules.drs group if the
 // boot apply added it (empty otherwise), and the line to log. host names the setup mode the rules go into in that line,
 // here and in the other box lookups that take it.
