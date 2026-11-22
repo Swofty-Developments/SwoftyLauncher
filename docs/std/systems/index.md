@@ -62,6 +62,10 @@ Added in 1.10.0:
 - **[Weather setup](/reference/std/weather)** `swofty/systems/weather.hpp`: the `session.weather.setup` payload, `weather::set_seed` and `weather::script`.
 - **[Standings](/reference/std/standings)** `swofty/systems/career.hpp`: the loaded career's drivers' championship, `career::standings`, `Standings::find` and `StandingsDriver::points_in`.
 
+Added in 1.10.25:
+
+- **[Pit stops](/reference/std/pit-stops)** `swofty/systems/sessions.hpp`, `swofty/systems/pit_rows.hpp`: a car's time penalty, extra box holds at its next stop and the addon rows on the MFD pit page, `sessions::time_penalty`, `sessions::set_pit_hold`, `sessions::pit_hold` and `hud::PitRow`.
+
 Described on their pages, in headers that come later:
 
 - **[Cars](./cars)**: `vehicle.damage_model`, `vehicle.parts`.

@@ -384,7 +384,7 @@ Development switches in the game's environment: `SWOFTY_MFD_TEST=open` opens the
 | `pit_rows[].id` | string | 1 to 32 of `a-z`, `0-9` and `_`, unique in the addon. Your native code names the row by it. |
 | `pit_rows[].label` | string | 1 to 24 characters, shown as written. The game's own rows are in capitals. |
 
-Each row shows NO or YES and starts on NO. Your addon reads and drives it through the core API `swofty::hud::pit_rows`, described in the [std HUD reference](/reference/std/hud). The page holds 2 addon rows in all: the rows of the addons that are on, in load order, and the rows past the second are left out. Launchers before 1.10.25 reject `hud.pit_rows`.
+Each row shows NO or YES and starts on NO. Your addon reads and drives it through the core API `swofty::hud::PitRow`, described in [Pit stops](/reference/std/pit-stops). The page holds 2 addon rows in all: the rows of the addons that are on, in load order, and the rows past the second are left out. Launchers before 1.10.25 reject `hud.pit_rows`.
 
 ## operations
 
