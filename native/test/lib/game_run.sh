@@ -3,10 +3,8 @@
 # goes to the caller's stdout once it ends. SECONDS (default 120) is the timeout, which returns 124 (137 when the
 # game outlives the 5 s after it).
 #
-# Every run starts and ends with no wineserver for WINEPREFIX: game_settle stops it and waits until it is gone, so a
-# run never meets the server of the run before while that server shuts down (3 s after its last process ends) or
-# while the processes it started on the display xvfb-run just closed still run. An empty WINEPREFIX is made first,
-# outside the game's timeout.
+# An empty WINEPREFIX is made first, outside the game's timeout. Runs share the prefix's wineserver, which outlives
+# a run by 3 s; a retry starts with none: game_settle stops it and waits until it is gone.
 #
 # The run goes through `wine cmd /c`, whose exit code is the game process's own. A bare `wine EXE` exits with the
 # status of the Unix process instead: the process tells the wineserver it ended, then runs the Unix exit handlers,
@@ -51,7 +49,6 @@ game_run_prefix() {
     local rc=0
     timeout 300 "${PIN[@]}" xvfb-run -a wine wineboot -i >/dev/null 2>&1 || rc=$?
     ((rc == 0)) || echo "game_run: making the Wine prefix $WINEPREFIX failed (exit $rc)" >&$GAME_RUN_ERR
-    game_settle
 }
 
 game_run_report() {
@@ -93,7 +90,6 @@ game_run() {
     [ -f "$(dirname "$exe")/version.dll" ] && loader=1
     out=$(mktemp)
     for attempt in 1 2; do
-        game_settle
         game_run_prefix
         marker=$(game_run_marker)
         [ -z "$marker" ] || rm -f "$marker"
@@ -112,7 +108,6 @@ game_run() {
         timeout -k 5 "$secs" "${PIN[@]}" xvfb-run -a wine cmd /c "$exe" "$@" >"$out" 2>&1 || rc=$?
         kill $watch 2>/dev/null || :
         wait $watch 2>/dev/null || :
-        game_settle
         if [[ $rc == 0 || $rc == 124 || $rc == 137 || -z $loader || $(game_run_traces "$log" "$marker") != "$before" ]]; then
             break
         fi
@@ -122,6 +117,7 @@ game_run() {
             echo "game_run: wine start failure again: $exe exited $rc and the loader wrote nothing; Wine printed:" >&$GAME_RUN_ERR
         fi
         tail -n 20 "$out" | sed 's/^/  /' >&$GAME_RUN_ERR
+        game_settle
     done
     cat "$out"
     rm -f "$out"

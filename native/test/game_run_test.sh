@@ -102,7 +102,7 @@ SETTLE='server -k|server -w'
 scenario "a clean run" "exit 0"
 play 'game_run "'"$T"'/game/F1_25.exe" a "b c"'
 want_rc "a clean run returns 0" 0
-want_calls "the wineserver is stopped and waited for before and after the one run" "$SETTLE|run exit 0: a b c FOO=|$SETTLE"
+want_calls "the game runs once and the wineserver is left running" "run exit 0: a b c FOO="
 has "the game's output reaches stdout" out '^game output$'
 lacks "nothing is retried" err 'retrying'
 
@@ -110,12 +110,12 @@ scenario "an empty prefix" "exit 0"
 rm -rf "$T/prefix"
 play 'game_run "'"$T"'/game/F1_25.exe"'
 want_rc "a run in an empty prefix returns 0" 0
-want_calls "wineboot makes the prefix before the game runs" "$SETTLE|wineboot|$SETTLE|run exit 0:  FOO=|$SETTLE"
+want_calls "wineboot makes the prefix before the game runs" "wineboot|run exit 0:  FOO="
 
 scenario "a Wine start failure" start-fail "exit 0"
 play 'game_run "'"$T"'/game/F1_25.exe"'
 want_rc "the second run's result is returned" 0
-want_calls "the game runs once more after a settle" "$SETTLE|run start-fail:  FOO=|$SETTLE|$SETTLE|run exit 0:  FOO=|$SETTLE"
+want_calls "the wineserver is stopped and waited for before the game runs once more" "run start-fail:  FOO=|$SETTLE|run exit 0:  FOO="
 has "the retry is announced" err '^game_run: retrying: wine start failure: .*F1_25\.exe exited 1 and the loader wrote nothing; Wine printed:$'
 has "Wine's output of the failed run is printed" err '^  wine: could not start the program$'
 lacks "stdout has only the run that counts" out 'could not start'
@@ -123,43 +123,43 @@ lacks "stdout has only the run that counts" out 'could not start'
 scenario "two Wine start failures" start-fail start-fail
 play 'game_run "'"$T"'/game/F1_25.exe"'
 want_rc "the second failure's exit code is returned" 1
-want_calls "there is one retry, no more" "$SETTLE|run start-fail:  FOO=|$SETTLE|$SETTLE|run start-fail:  FOO=|$SETTLE"
+want_calls "there is one retry, no more" "run start-fail:  FOO=|$SETTLE|run start-fail:  FOO=|$SETTLE"
 has "the second failure is named" err '^game_run: wine start failure again: '
 
 scenario "a game exit after the loader attached" "exit 5" "exit 0"
 play 'game_run "'"$T"'/game/F1_25.exe"'
 want_rc "the game's exit code is returned" 5
-want_calls "a game result is never retried" "$SETTLE|run exit 5:  FOO=|$SETTLE"
+want_calls "a game result is never retried" "run exit 5:  FOO="
 
 scenario "the start marker alone" "marker 7" "exit 0"
 mkdir -p "$T/prefix/drive_c/users/tester/AppData/Local/Swofty/state"
 play 'game_run "'"$T"'/game/F1_25.exe"'
 want_rc "a run whose loader wrote only the start marker returns its exit code" 7
-want_calls "the marker counts as the loader attached" "$SETTLE|run marker 7:  FOO=|$SETTLE"
+want_calls "the marker counts as the loader attached" "run marker 7:  FOO="
 
 scenario "a stale start marker" start-fail "exit 0"
 mkdir -p "$T/prefix/drive_c/users/tester/AppData/Local/Swofty/state"
 echo 1 >"$T/prefix/drive_c/users/tester/AppData/Local/Swofty/state/loader-start.marker"
 play 'game_run "'"$T"'/game/F1_25.exe"'
-want_calls "a marker left by an earlier run does not count" "$SETTLE|run start-fail:  FOO=|$SETTLE|$SETTLE|run exit 0:  FOO=|$SETTLE"
+want_calls "a marker left by an earlier run does not count" "run start-fail:  FOO=|$SETTLE|run exit 0:  FOO="
 
 scenario "no loader beside the exe" start-fail "exit 0"
 rm "$T/game/version.dll"
 play 'game_run "'"$T"'/game/F1_25.exe"'
 want_rc "an exe without the loader returns its exit code" 1
-want_calls "an exe without the loader is never retried" "$SETTLE|run start-fail:  FOO=|$SETTLE"
+want_calls "an exe without the loader is never retried" "run start-fail:  FOO="
 
 for code in 124 137; do
     scenario "a timeout ($code)" "quiet $code" "exit 0"
     play 'game_run "'"$T"'/game/F1_25.exe"'
     want_rc "a timeout returns $code" $code
-    want_calls "a timeout is never retried" "$SETTLE|run quiet $code:  FOO=|$SETTLE"
+    want_calls "a timeout is never retried" "run quiet $code:  FOO="
 done
 
 scenario "variables set for the call" "exit 0"
 play 'FOO=bar game_run "'"$T"'/game/F1_25.exe"; [[ -z ${FOO:-} ]]'
 want_rc "the variable is gone after the call" 0
-want_calls "a variable set before game_run reaches the game" "$SETTLE|run exit 0:  FOO=bar|$SETTLE"
+want_calls "a variable set before game_run reaches the game" "run exit 0:  FOO=bar"
 
 scenario "a redirected run" start-fail "exit 0"
 play 'game_run "'"$T"'/game/F1_25.exe" >"'"$T"'/redirected" 2>&1'
