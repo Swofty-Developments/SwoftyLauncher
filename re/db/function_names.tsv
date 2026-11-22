@@ -12191,6 +12191,7 @@ addr	name
 0x14444fe60	Game_Cannon_RegisterEventHandlers
 0x144453090	Ne_MoverCollision_BuildQueryContext
 0x1444537a0	Ne_MoverCollision_CreateResource
+0x144454260	Game_PhysicsObjects_LoadResource
 0x144456600	Ne_PhysShape_BuildConvexFromPoints
 0x144457220	Game_Read_PhysicsWorldConfig
 0x14445aea0	Game_PhysicsUpdateStage_Update
@@ -12767,6 +12768,7 @@ addr	name
 0x1446fb050	Game_FfbWaveVoice_Advance
 0x1446fb1c0	Game_FfbEffectDef_Create
 0x1446fbce0	Game_Unk_1446fbce0
+0x1446fc6f0	Car_Ffb_Collision_Update
 0x1446fca00	Game_FfbPlugin_EngineSplineGain_Update
 0x1446fca90	Game_FfbPlugin_EngineSplineGain_Init
 0x1446fd300	Game_FfbSlipAnglePlugin_Init
