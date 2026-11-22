@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141c6e1b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void f(void *panel)",
   "evidence": "decomp:re/decomp/141c6e1b0.c;xref:0x14573fd48",
-  "notes": "Vtable cell 0x14573fd48. Upgrade panel binder on #r_and_d_flow.upgrade_hash_name: resource_points (+icons), button_text/icon/enabled, upgrade_type/size/desc, duration, selected_tile, card anim status, timeline_data, build_data; uses Career_Query_EnabledUpgrades, Career_Get_RpWallet, Career_Get_EffectiveUpgradeCost, Career_Get_TeamModifiers. Better name: Career_Update_RnDUpgradeInfoPanel (bound record keeps its name)."
+  "notes": "Vtable cell 0x14573fd48. Reads #r_and_d_flow.upgrade_hash_name (Vm_Resolve_RegistryNode), finds matching upgrade via Career_Query_EnabledUpgrades (+0x310), allocs 0xad0 binder (vt 0x14573fe00) binding resource_points(_icon), colour, button_text/icon/enabled, upgrade_type/size/desc, duration, selected_tile, focused, visible, card_scale_anim, card/info_anim_status; RP wallet/cost (0x1435086c0, 0x14351dde0), lng_rnd_%s type/size names, timeline_data, UiEvent build_data. No cancel-research logic. (lane owner review requested) Better name: Career_Update_RnDUpgradeInfoPanel (bound record keeps its name)."
  },
  "signature": {
   "id": "career.update_rn_dcancel_research_panel",

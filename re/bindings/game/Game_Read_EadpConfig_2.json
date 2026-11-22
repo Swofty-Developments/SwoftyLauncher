@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1449bbf40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1449bbf40.c;pat:log-channel--;xref:0x1449bb03d,0x1449c387b,0x1449c3cc4,0x1449c3e89,0x1449c42c9",
-  "notes": "Callers 0x1449bb03d, 0x1449c387b, 0x1449c3cc4, 0x1449c3e89, 0x1449c42c9. Contains DirectorServiceImpl::loadHardcodedConfiguration() and EADP service URL strings."
+  "notes": "Full body read. Log tag 'DirectorServiceImpl::loadHardcodedConfiguration()' (0x145396580). Under CS this+8: skips if this+0xbe (already hardcoded), +0xbb/+0xbc (from backend), +0xbd (persistence), or env id UNKNOWN/unset. By env string vs PROD/LOAD (0x14539330c/0x1453932fc) fills map this+0x100 with eadp.* service -> URL (gcs.ea.com, gcs-int, gcs-load, accounts.grpc[.int/.lt].ea.com), sets +0xbe=1,+0xb8=1, logs 0x145397590, calls 0x1449bba90. (lane owner review requested) Better name: Game_Director_LoadHardcodedConfig (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_eadp_config_2",

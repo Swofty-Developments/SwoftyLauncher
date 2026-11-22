@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446cd9a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "pat:log-channel-PAD_ASSISTS",
-  "notes": "Log channel PAD_ASSISTS: 'You wish to use the drift assist vs peak slip angle proportion spline but it has not been loaded.'"
+  "evidence": "decomp:re/decomp/1446cd9a0.c;pat:log-channel-PAD_ASSISTS;xref:0x15546ef91",
+  "notes": "(assists, dt): grip estimate +0x25f8 from Car_Tyre_MagicFormula of [car+0x580]+0x98 wheels (+0x1630/+0x1638) / (m*9.81/4), optional Car_Tyre_ComputeGripMultiplier; by mode car+0x220: 0/2 Car_Input_SmsSteer(..,1), 1 direct steer (+rate feed-forward), else clamp + SmsSteer(..,0); +0x1d4 = steer; +0x1c8 blended by +0x1a4 to +0x1a8 unless mode 3; drift assist (+0x2600) scales throttle +0x1bc by splines +0x1aa0/+0x1d48. (lane owner review requested) Better name: Car_PadAssist_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "car.pad_assist_drift_assist",

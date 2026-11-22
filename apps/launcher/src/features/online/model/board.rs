@@ -177,3 +177,14 @@ pub fn best_sectors(rows: &[Row], n: usize) -> Vec<Option<u64>> {
         .map(|i| rows.iter().filter_map(|r| r.sectors_ms.get(i).copied()).min())
         .collect()
 }
+
+/// This player's lap on a board: the one the server marks as theirs, else the row of the driver `me` among the
+/// rows read. The boards server marks none today, so the driver is what finds it.
+pub fn own_row<'a>(rows: &'a [Row], marked: Option<&'a Row>, me: Option<&str>) -> Option<&'a Row> {
+    marked.or_else(|| me.and_then(|id| rows.iter().find(|r| r.driver.id == id)))
+}
+
+/// The own lap a full board pins above its rows: the own lap when none of the rows read is it.
+pub fn pinned_row<'a>(rows: &[Row], own: Option<&'a Row>) -> Option<&'a Row> {
+    own.filter(|m| rows.iter().all(|r| r.lap_id != m.lap_id))
+}

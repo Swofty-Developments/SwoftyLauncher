@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14473a9a0.c",
-  "notes": "VTESystem end-of-session export: lap_analysis.csv, final_classification.csv (CarId,CarNo,Position,NumLaps,GridPosition,Points,NumPitStops,ResultStatus...), tyre_strategies.csv, overtakes.csv, report.txt."
+  "evidence": "decomp:re/decomp/14473a9a0.c;xref:0x145c035b8",
+  "notes": "VTESystem end-of-session export: lap_analysis.csv, final_classification.csv, tyre_strategies.csv, overtakes.csv, report.txt; calls Car_Vte_CreateOutputFolder (0x14473aa0e, 0x14473aa69, 0x14473aacc, 0x14473b2ed, 0x14473b3e6) and Car_Vte_SortReportEntries 0x14473bbaf. Only ref: vtable cell 0x145c035b8."
  },
  "signature": {
   "id": "car.vte_write_session_report",

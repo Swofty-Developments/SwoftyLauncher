@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140d7f0d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "uint16_t *Career_Calc_DriverOverallRating_Cached(void *comp, uint16_t *out, uint32_t driver_key)",
-  "evidence": "decomp:re/decomp/140d7f0d0.c;xref:0x140d794b4,0x140d79eee,0x140d7c262,0x140d7dd12",
-  "notes": "Optional out {u16,has}: needs settings from 0x140d82070; finds the row of driver key param_3; rating = 0x14113d120([this+0x360]); flag = 0x140d822a0 (rows without +0x4b&0x10) or a days check vs this+0x2d0; band 0x200 if rating >= threshold1, 0x100 if >= threshold2; out = flag|band. Not a cached overall rating. Better name: Career_DriverMarket_GetDriverRatingBand (bound record keeps its name)."
+  "evidence": "decomp:re/decomp/140d7f0d0.c;xref:0x140d794b4,0x140d79eee,0x140d7c262,0x140d7dd12,0x140d7dff4,0x140d7f95c,0x140d7fd9f,0x140d80ff1,0x140d83505,0x140d8351e,0x140d835f5,0x140d8360e,0x140ddb7b8,0x140dddf2d,0x140dde32d,0x140e58009,0x140e60ea7,0x14106621c,0x1410666bc,0x141069f26,0x14187950f,0x1422ef728",
+  "notes": "Out {u16,has}: settings 0x140d82070 must be valid, key top16 != 0x3fff; finds driver row in [[this+0x278]+0x2e0..+0x2e8] (0x88 stride, +0x52/+0x50); rating = 0x14113d120([this+0x360]); flag = 0x140d822a0 (no +0x4b&0x10) or rating <= days-[this+0x2d0]; band 0x200 if rating >= thr1, 0x100 if >= thr2; out = flag|band. Not a cached overall rating. (lane owner review requested) Better name: Career_DriverMarket_GetDriverRatingBand (bound record keeps its name)."
  },
  "signature": {
   "id": "career.calc_driver_overall_rating_cached",

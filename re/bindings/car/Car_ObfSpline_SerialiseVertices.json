@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14466d150",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14466d150.c;xref:0x144674a61",
-  "notes": "(writer *w, name, ObfSpline *s): writes numVertices then a SplineElement {x,y} per 32-byte element via writer vtable (+0x28 begin, +0x48 array(name,count), +0x68 write float, +0x78 end); x = e[0]^e[2], y = e[4]^e[6] (XOR de-obfuscation). Called from the steering-spline save path (0x144674a61 block, Car_PadAssist steering splines)."
+  "evidence": "decomp:re/decomp/14466d150.c;xref:0x144674a61,0x144674a77,0x144674a8d,0x144674aa3,0x144674ab9,0x144674acf,0x144674ae5,0x144674afb,0x144674b11,0x144674b27,0x144674b3d,0x144674b53,0x14468687c,0x14468691e,0x144686934,0x144686c2b,0x144686c57,0x144686c7c,0x144686f36,0x144686f4c,0x144686f9b,0x144686fea,0x144687000,0x14468716c,0x1446873ca,0x1446a8a0e,0x1446a937d,0x1446a9393,0x1446a98c0,0x1446a98d6,0x1446a98ec,0x1446a9902,0x1446a9918,0x1446a992e,0x1446a9944,0x1446a995a,0x1446b6674,0x1446c7aad,0x1446c7acc,0x1446c7aea,0x1446c7b09,0x1446c7b27,0x1446c7b46,0x1446c7b64,0x1446c7b83,0x1446cc781,0x1446cc797,0x1446cc7ad,0x1446cc7c3,0x1446cc7d9,0x1446cc7ef,0x1446cc805,0x1446cc81b,0x1446cc831,0x1446cc847,0x1446cc85d,0x1446cc873,0x1446cfb61,0x1446cfb77,0x1446cfb8d,0x1446cfba3,0x1446cfbea,0x1446cfc00,0x1446cfc16,0x1446cfc5d,0x1446cfc73",
+  "notes": "(writer, name, ObfSpline*): writer vcall +0x28 begin, +0x48 array('numVertices', n=(end-begin)>>5); per element +0x28('SplineElement'), +0x68('x', e+0^e+8), +0x68('y', e+0x10^e+0x18), +0x78 end; final +0x78; returns first error. Callers in Car_Write_BrakeECU/Engine/SuspensionSystem/Turbo/F1Aero/F1Assists/EnergyRecovery. (lane owner review requested)"
  },
  "signature": {
   "id": "car.obf_spline_serialise_vertices",

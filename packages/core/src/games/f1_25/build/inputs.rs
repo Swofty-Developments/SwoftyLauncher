@@ -40,6 +40,7 @@ pub(super) struct Inputs {
     /// The Driver Manager drivers each DB Editor package picks, by the package's name.
     pub driver_picks: Vec<(String, Vec<String>)>,
     pub hud_inputs: Vec<crate::hud::Input>,
+    pub hud_slots: Vec<crate::hud::slots::SlotInput>,
     pub shader_files: BuildFiles,
     pub std_index: Option<crate::stdlib::index::Placed>,
     /// The record room a standard library addon asks the database for.
@@ -276,6 +277,7 @@ impl Inputs {
             outputs,
             driver_picks,
             hud_inputs,
+            hud_slots,
             ..
         } = gathered_rest;
         let inputs = Self {
@@ -286,6 +288,7 @@ impl Inputs {
             outputs,
             driver_picks,
             hud_inputs,
+            hud_slots,
             shader_files,
             std_index,
             room_asked,

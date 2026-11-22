@@ -9,7 +9,7 @@
   "subsystem": "car",
   "proto": "-",
   "evidence": "decomp:re/decomp/14039f960.c;xref:0x14039dd6c,0x1403a6b18",
-  "notes": "(carVisual, dt): drives 9 procedural shake channels (0x1403a0c40 per part: mirrors, wings, bodywork etc. +0x10e8..+0x1148, amplitudes 1.2/0.2/2.5) from car state. Caller: Car_Visual_UpdateRenderState."
+  "notes": "(vis,dt): repeated calls of 0x1403a0c40(vis, id, a, b, out +0x10e8..+0x1148, dt, amplitudes 1.2/0.2/2.5..., input +0x10c4..+0x10e4); last one picks +0x1140/+0x1138 by byte +0x10ac. Callers in 0x14039aa80, 0x1403a66d0."
  },
  "signature": {
   "id": "car.visual_update_part_vibration",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141d9f6d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/141d9f6d0.c;str:s_SettingsControlsScreenViewModel_OnCommandRaised;xref:0x14574cb90",
-  "notes": "cxx=game::SettingsControlsScreenViewModel::onCommandRaised; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "evidence": "decomp:re/decomp/141d9f6d0.c;str:s_SettingsControlsScreenViewModel_OnCommandRaised;xref:0x14574cb90,0x141da17f7",
+  "notes": "Vtable slot 0x14574cb90; thunk 0x141da17f0 (rcx-=0x268) jmps here. pdata 141d9f6d0-141da03a2 switches on command hash *param_2: settings_home sets +0x8ba, cat_controls compare, renamed_/duplicated_control_scheme via scheme store +0x15b slots 0x38/0x30, downloading_control_scheme_msg; logs own pretty-function string 0x14574cd45. Unmatched hashes tail-jmp 0x141da11d0 (decomp merged it and other tail targets). (lane owner review requested)"
  },
  "signature": {
   "id": "game.settings_controls_screen_view_model_on_command_raised",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144728690",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/144728690.c;xref:0x145c02490",
-  "notes": "Vtable cell 0x145c02490."
+  "notes": "Body read fully. Vt cell 0x145c02490. dt>0 and enabled: vt+0x10 once, 0x144c83400 ready, car [this+0x20]: builds a 0xb0-byte record (dt, rpm = engine rad/s*60/2pi from [+0x530]+0x2538, gear, per-wheel load/suspension/slip from wheels [+0x580]+0x70..+0x88, body velocity/acceleration diffs kept at this+0x70..+0x9f, DBOX 'Angular acceleration ...' log) and posts it with 0x144c83420(0x3e9, rec, 0xb0); failure logs 'Failed to post RaceTelemetry event. Result was %d'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.dbox_send_motion",

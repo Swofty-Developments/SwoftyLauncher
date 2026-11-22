@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1414384e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1414384e0.c;xref:0x1424fb4d8,0x14ac7646c",
-  "notes": "JSON decal list parser ('decals', uniqueId, mirrorLinkedDecalUniqueId, projectionAreaId, rotationAngle, translation, scale, id; 'Unable to parse JSON in buffer, ParseErrorCode %d', 'Unable to find value for %s in JSON'); calls Game_SharedPtrVector_MoveAssign at 0x141438b3c. Callers 0x1424fb4d8, 0x14ac7646c."
+  "notes": "Reads buffer (0x143f393a0, alloc p1+8), parses JSON (error log 'Unable to parse JSON in buffer' channel JSON); per 'decals' element allocs 0x70 decal (vt 0x1456e3240): uniqueId +0x20, mirrorLinkedDecalUniqueId +0x68, id +0x10 (id<<16|9), projectionAreaId +0x28, translation +0x30, rotationAngle +0x40, scale +0x50; shared_ptr push 0x141108480; result into optional p2 (flag +0x38, move-assign 0x141459ba0). (lane owner review requested)"
  },
  "signature": {
   "id": "game.livery_parse_decals_json",

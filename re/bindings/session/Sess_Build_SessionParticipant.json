@@ -5,11 +5,11 @@
  "author": "vmknolle",
  "row": {
   "addr": "0x142e0c700",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
   "proto": "void *Sess_Build_SessionParticipant(void *participant, const EntrantRecord *rec, void *entrants_system, void *mode_holder, ...)",
-  "evidence": "decomp:own Ghidra decomp of 0x142e0c700 (jmp 0x14f2dcbd0);xref:0x1407b882f,0x1407b1a5f,0x142939e6f,0x142e32fbf,0x142e339e4",
-  "notes": "jmp thunk to .data1 0x14f2dcbd0. Builds one 0x6780-byte session participant from an EntrantRecord: vehicle = Sess_ResolveEntityHandle(entrants_system, rec+0x5c); vehicle customisation (livery preset) from rec+0x64 via Ent_Get_VehicleCustomisation_Thunk 0x14246dcb0 when the u16 +0x66 is not 0x3fff (none: the vehicle's own livery); rec+0x60 via 0x14246db90 when +0x62 is not 0x3fff; team position rec+0x80/+0x81; mode_holder+0xe18 (selected list); then 0x142e0a530(participant, vehicle, 0, ...). The championship fill (Game_ChampionshipGameMode_BuildSessionSettings 0x1407b882f), the generic fill 0x1407b1a5f and the Time Trial fill 0x142939e6f call it per entrant; the result is pushed into the session descriptor +0xad0 (0x1407a0eb0) whose asset paths Game_VehicleAssetManager_ChangeResidentAssets loads. Research: re/research/session_vehicle_swap.md"
+  "evidence": "decomp:re/decomp/142e0c700.c;xref:0x1407b1a5f,0x1407b882f,0x142939e6f,0x142e32fbf,0x142e339e4",
+  "notes": "jmp thunk to 0x14f2dcbd0 (decomp read). (out, rec, entrants, mode_holder, ...): vehicle = 0x14243fd10(entrants, rec+0x5c); customisation 0x14246dcb0(rec+0x64) unless u16 +0x66 == 0x3fff (if +0x38 set, id via vt+0x30 | 1<<32); 0x14246db90(rec+0x60) unless +0x62 == 0x3fff; 0x142458210(rec); team flags rec+0x80/+0x81; list mode_holder+0xe18 (+0xb8); finally 0x142e0a530(out, vehicle, 0, ...). (lane owner review requested)"
  },
  "signature": {
   "id": "session.build_session_participant",

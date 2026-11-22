@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1443ba3d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1443ba3d0.c;pat:log-channel--;xref:0x145a86be0",
-  "notes": "Vt cell 0x145a86be0. Body references EGO_ANIMATION_* memory-pool names plus Animation.initial* keys."
+  "notes": "Read in full. Vt cell 0x145a86be0. Registers memory pools EGO_ANIMATION, EGO_ANIMATION_CLIPDATA, ..._PACKETDATA ... _MORPH (+0x10..+0x78, mirrored into globals 0x14627ce78.. / 0x146cb7a98); Animation.initialStringsCapacity (0x200), creates string table (vt 0x145a86fc0 'ACStringTable'), AnimClip resource handler (0x1443b5430), job queue 'animation_jobs' (logs default job policy), Animation.initialAnimPlayerCapacity / initialAnimArrayCapacity arrays; registers 3 type handlers via 0x143fa5890. Errors -> 0xc. Old name claimed a config read only. (lane owner review requested) Better name: Game_AnimationSystem_Initialise (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_animation_config",

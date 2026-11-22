@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1437ce000",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
   "evidence": "decomp:re/decomp/1437ce000.c;xref:0x142f47f10",
-  "notes": "(ctx, out[2], carIdx) If ctx+4000 (0xfa0) is null: lazily seeds an MT19937 (624 words at 0x146108c00, seed from QPC ms) and returns a random pair; else name [[ctx+0xf70]+0xb0+car*8]+0xa18 is matched (strcmp) against list +0x270..+0x278 (stride 0x18) returning the pair, default +0x258/+0x260. Called from Car_Surface_SampleAt. Hypothesis."
+  "notes": "(ctx, out[2], carIdx): ctx+0xfa0 null -> out = obfuscated 0 (fresh key pair from PRNG 0x146108c00); else package label [[ctx+0xf70]+0xb0+car*8]+0xa18 strcmp'd against list +0x270..+0x278 (stride 0x18: name, 16-byte value), default +0x258/+0x260. Caller Car_Surface_SampleAt. (lane owner review requested)"
  },
  "signature": {
   "id": "car.surface_lookup_vehicle_entry",

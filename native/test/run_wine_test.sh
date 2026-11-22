@@ -285,6 +285,7 @@ EOF
         once "stall: the test report is written beside the crash reports" '\[stall\] load-stall report 1 of at most 1: .*thread\(s\) read in [0-9]+ ms; written to swofty\\stall-[0-9]{8}-[0-9]{6}\.txt'
         once "stall: the report lists the threads not in a wait first" '\[stall\] == Threads not in a wait \([0-9]+; [0-9]+ with a frame in F1_25\.exe, listed first'
         once "stall: the report holds the thread table" '\[stall\] == Threads \([0-9]+; [1-9][0-9]* unwound'
+        once "stall: the report has the session loader section" '\[stall\] == Session loader \(entry probes on Game_StreamingAssetLoadTask_Update and Sess_Loader_UnloadSession'
         check "stall: a suspended thread's stack is unwound and named" '\[stall\]   #1  [0-9a-f]{16} rsp=[0-9a-f]{16}  [A-Za-z0-9_.]+\+0x[0-9a-f]+ '
         check "stall: a wait is named from the module's exports" '\[stall\] thread [0-9]+.*, waiting in [A-Za-z]+'
         once "stall: the watchdog thread is not suspended" '\[stall\] thread [0-9]+.*\(the load-stall watchdog, not suspended\)'
@@ -698,7 +699,7 @@ check "crash reports armed with a minidump" '\[crash\] crash reports: .*crash-<t
 check "Ne heap error reporting hooked by the pattern" '\[crash\] Ne_ReportMemoryError at base\+0x[0-9a-f]+ hooked'
 }
 case_crash() {
-for mode in crash exit heap abort; do
+for mode in crash exit heap abort overflow; do
     echo "==== $mode"
     code=0
     rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp
@@ -724,6 +725,12 @@ for mode in crash exit heap abort; do
         check "heap: a report is written before the abort" '\[crash\] crash report .*crash-.*: fatal Ne heap error 0x16'
         parse_report "fatal Ne heap error 0x16" "Ne heap,FakeHeap,Failed to find address,capacity 65536,guard 32 bytes,CORRUPT" || status=1
         [[ $code != 0 && $code != 124 && $code != 137 ]] && echo "ok  : heap: the process aborted ($code)" || { echo "FAIL: heap: the process did not abort on its own (exit $code)"; status=1; }
+    elif [[ $mode == overflow ]]; then
+        check "overflow: the overflowing thread hands its exception to the writer" '\[crash\] thread [0-9]+ hit STACK_OVERFLOW \(0xc00000fd\) with [0-9]+ KB of its stack left; it logs nothing itself, the crash report writer logs it'
+        check "overflow: the writer logs the first-chance line for the faulting thread" '\[crash\] #[0-9]+ first-chance .*STACK_OVERFLOW \(0xc00000fd\) on thread [0-9]+, '
+        check "overflow: a report with a minidump is written" '\[crash\] crash report .*crash-.*\.txt: STACK_OVERFLOW \(0xc00000fd\) at .*minidump crash-.*\.dmp'
+        parse_report "STACK_OVERFLOW (0xc00000fd) at" "Fake_Overflow_Here" || status=1
+        [[ $code != 0 && $code != 124 && $code != 137 ]] && echo "ok  : overflow: the process ended ($code)" || { echo "FAIL: overflow: the process ended with $code"; status=1; }
     else
         check "abort: Ne_FatalAbort is recognised" '\[crash\] crash report .*crash-.*: the game aborted itself'
         parse_report "the game aborted itself" "Ne_FatalAbort" || status=1

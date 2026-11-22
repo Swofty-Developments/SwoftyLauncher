@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14404e260",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14404e260.c;pat:log-channel-HTTP;xref:0x145a4d628",
-  "notes": "HTTP '[%u] Waiting for Response from server' (log string); vtable cell 0x145a4d628; calls 0x144050130 and 0x144050490."
+  "notes": "neon::http::NeNetHttpRequest method (cell 0x145a4d628). Under CS drains WinHttp status codes queued at [+0x21e8]+0x38: 0x40 logs Waiting for Response, 0x800 closing, 0x20000 headers (+0x160, WebSocketCompleteUpgrade on 101), 0x80000 read -> callback [+0x118], 0x100000/0x400000 WriteData/ReceiveResponse, 0x200000 error; WebSocket path Send/Receive/Close. Errors set +0x130. Returns 0x10/0x16/0. (lane owner review requested) Better name: Game_NeHttpRequest_ProcessStatusQueue (bound record keeps its name)."
  },
  "signature": {
   "id": "game.http_waiting_response_server",

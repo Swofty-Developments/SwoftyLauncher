@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e8edd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
   "evidence": "decomp:re/decomp/142e8edd0.c;xref:0x140bcd045",
-  "notes": "Rebuilds a car's tyre allocation for the session (param_3 = session type, 0x10/0x11 special-cased): reads options via 0x140b03110, refills compound groups 0,1,2,3,5,6 through 0x142e8eaf0 and merges 0x6c-byte set records. Caller Sess_TyreAllocation_OnSessionStart."
+  "notes": "(alloc,opts,sessType): option 0x140b03110(opts,1|2) picks group 0xf/0x10/0x11; 0x142e8eaf0 collects sets of that group and groups 1,2,3,5,6; group ids (set+4) of collected sets with MANDATORY (set+9 bit2) form a list; every set of every group (alloc+0x10 stride 0x28, count +0xd8) then gets bit2 = its group id in list (sets with set+0 = 0x10/0x11 only for sessType 0x10/0x11); alloc+0xe8 = 1. Caller 0x140bcc190. (lane owner review requested) Better name: Car_TyreAllocation_RefreshMandatoryFlags (bound record keeps its name)."
  },
  "signature": {
   "id": "car.tyre_allocation_rebuild_for_session",

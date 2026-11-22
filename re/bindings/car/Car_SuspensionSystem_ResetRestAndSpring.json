@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446b1460",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1446b1460.c;doc:re/db/subsystems/car.md",
-  "notes": "su-verify claim 8: (car+0x580): axle+0x1648 = src+0x15b8, axle+0x165c = src+0x1604 for both axles (src objects container+0x58/+0x60, H stock VTF data), then keys tarr/tarf in map car+0xd8 -> +0x138"
+  "evidence": "decomp:re/decomp/1446b1460.c;doc:re/db/subsystems/car.md;xref:0x145bfbae0",
+  "notes": "(susp): axle +0x90/+0x98: +0x1648 = [this+0x58/+0x60]+0x15b8, 0x1446a83c0 on both wheels, +0x165c = src+0x1604; looks up 'tarr'/'tarf' (fallback 'sofr'/'soff', then first) in map [[car]+0xd8]+0x138 and Car_Tyre_SetCompound on wheels without compound (+0x70/+0x78 rear, +0x80/+0x88 front); then 0x1446b1ba0. Vtable cell 0x145bfbae0. (lane owner review requested)"
  },
  "signature": {
   "id": "car.suspension_system_reset_rest_and_spring",

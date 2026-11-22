@@ -440,7 +440,11 @@ DWORD Profiler::write_loop()
 {
     Minute last;
     sysmem::probe();
+    if (flushed.load())
+        return 0;
     sys::boot();
+    if (flushed.load())
+        return 0;
     vq::scan();
     last.vq = new (std::nothrow) vq::Last();
     if (last.vq)

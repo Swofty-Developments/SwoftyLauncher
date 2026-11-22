@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "ui",
   "proto": "void Set(void *vm, void *row, char flag, uint32_t value)",
-  "evidence": "decomp:re/decomp/141812c40.c;xref:0x141c48682;xref:0x141c5fc15",
-  "notes": "myteam-g2: Sets driver upgrade row state; no callees beyond field stores. UI only."
+  "evidence": "decomp:re/decomp/141812c40.c;xref:0x141c48682,0x141c5fc15",
+  "notes": "(?,obj,col,idx): value (component 0x146061708 +0x2b0 >> 5) / 45 written as u16 into component 0x146063160 at +0x3e8 + idx*8 (+0/+2/+4 for col 0/1/2) with dirty byte +6; without bit 0x100 in idx all 4 slots."
  },
  "signature": {
   "id": "ui.set_rn_ddriver_upgrade_row_state",

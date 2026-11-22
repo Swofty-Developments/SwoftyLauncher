@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141a0c040",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void Career_ContractNegotiationsView_OnStatSelected(void *view, void *event)",
   "evidence": "decomp:re/decomp/141a0c040.c;xref:0x141a0bee0",
-  "notes": "Large view handler: dispatches start_transition_out (Ne_UiEvent_DispatchByName), reads option career_type, resolves #ui_menu_data.contract_negotiations.stat_id (Vm_Set_ShortProperty_WithUnknownName) and driver_type_select; uses view+0x1370..+0x13a0 and +0x1718.. arrays."
+  "notes": "Callback: lea 0x141a0bee0 stores it as fn of a 0x18 functor {vt,fn,view} in 0x141a0be70. If arg string (+8, flag +0x88) set: clears 5 bool props +0x1718..+0x1798, +0x136a=1, dispatches start_transition_out, binds FUN_141a073b0 request on +0x1370 (handle +0x1398/+0x13a0). Else: item bool prop true -> fires 'career_session_requested' listeners; otherwise reads career_type, sets stat_id ushort, dispatches driver_type_select. (lane owner review requested)"
  },
  "signature": {
   "id": "career.contract_negotiations_view_on_stat_selected",

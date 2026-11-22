@@ -17,9 +17,11 @@
 // device is released, as when the arm runs in the stage.
 //
 // A call goes straight through when it comes from the worker, from a thread that holds the loader lock (the worker
-// may need it to load the driver), from the core's own code on another thread, or from code under the Windows
-// folder or the game's D3D12 folder (the D3D12 and DXGI runtimes and the driver, whose threads the worker's device
-// may wait for). Any other caller is the game or a module it loaded, and waits.
+// may need it to load the driver), or from code under the Windows folder or the game's D3D12 folder (the D3D12 and
+// DXGI runtimes and the driver, whose threads the worker's device may wait for). Any other caller waits: the game, a
+// module it loaded, and the core's own code on another thread (the profiler's adapter walk). Steam's overlay hooks
+// each new factory's vtable on its first CreateDXGIFactory calls, and two threads that make their first factories at
+// once both install that hook and can leave its original-function pointer 0 or pointing back into its own detour.
 
 namespace render::d3d12::arm_gate {
 
@@ -56,10 +58,11 @@ inline Choice choose(const Inputs &in)
     return {true, {}};
 }
 
-// Why a call may go straight through while the worker runs.
+// Who a caller is, for the gate: loader_lock and system go straight through while the worker runs; core (the core's
+// own code on another thread) and none wait.
 enum class Exempt { none, loader_lock, core, system };
 
-enum class Pass { open, worker, loader_lock, core, system, waited, timed_out };
+enum class Pass { open, worker, loader_lock, system, waited, timed_out };
 
 inline const char *pass_name(Pass p)
 {
@@ -70,8 +73,6 @@ inline const char *pass_name(Pass p)
         return "the arm's own call";
     case Pass::loader_lock:
         return "passed: its thread holds the loader lock";
-    case Pass::core:
-        return "passed: the core's own call";
     case Pass::system:
         return "passed: a Windows, D3D12 runtime or driver module's call";
     case Pass::waited:
@@ -138,8 +139,6 @@ public:
             return Pass::worker;
         if (exempt == Exempt::loader_lock)
             return Pass::loader_lock;
-        if (exempt == Exempt::core)
-            return Pass::core;
         if (exempt == Exempt::system)
             return Pass::system;
         auto from = std::chrono::steady_clock::now();

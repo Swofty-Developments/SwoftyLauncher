@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144111290.c;xref:0x14410b42d",
+  "evidence": "decomp:re/decomp/144111290.c;xref:0x14410b42d,0x14410c6c0",
   "notes": "std::vector range insert for 0x120-byte elements: 1.5x growth, relocate, copy [first,last). 1713 lines (manual element copies). Caller Car_Deformation_BuildTyreParticles."
  },
  "signature": {

@@ -9,7 +9,7 @@
   "subsystem": "car",
   "proto": "-",
   "evidence": "decomp:re/decomp/1446b87d0.c;xref:0x1446798d6,0x1446798fc,0x1446da12e",
-  "notes": "Per wheel side (+0x150 / +0x220 by index) distance of a point to the wheel probe segment (+0x70/+0xa0), iterations by 0x145faa624. Hypothesis. Callers: Car_Contact_QueryWheels, 0x1446788e0. (3 xref site(s), fb.py callers.)"
+  "notes": "Per wheel side (+0x150 / +0x220 by index) distance of a point to the wheel probe segment (+0x70/+0xa0), iterations by 0x145faa624. Hypothesis. Callers: Car_Contact_QueryWheels, 0x1446788e0."
  },
  "signature": {
   "id": "car.contact_wheel_probe_distance",

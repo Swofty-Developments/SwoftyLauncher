@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141d75800",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141d75800.c;pat:log-channel--;xref:0x141d78909",
-  "notes": "Caller 0x141d78909 (0x141d77e70). Logs RENDER_BADGE '%s - Setting texture [%s] for layer [%d]' with the game's own 'void game::RenderBadgeViewModel::setTexture(...)' (0x14574a76b); bg_%s / bg_style_blank / emblem_style_blank strings. Better name: Game_RenderBadgeViewModel_SetTexture (bound record keeps its name)."
+  "notes": "Old name wrong. Colours from badge [+0x318] (0x140feecc0/0x140feee70, +0x1d8 list). bg: def from [+0x310]+0x240, 'bg_%s' -> LoadTexture 0x141d76d70, inlined setTexture log (RENDER_BADGE, layer 0) -> Vm_Holder_SetCStr([+0x2d8]+0x80); bg_style -> 0x141d77800(this,0,..). emblem: [+0x310]+0x250, layer 1 at +0x1c0, emblem_style -> 0x141d77800(this,1,..). (lane owner review requested) Better name: Game_RenderBadgeViewModel_UpdateLayers (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_customisation_config_2",

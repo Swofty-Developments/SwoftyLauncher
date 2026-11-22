@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140fd0990",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140fd0990.c;str:s_Championship_CareerOnlineDocumentComponent_InternalSerialiseAndCalcula;xref:0x140fcdbfd,0x140fce0c2,0x140fcfdba",
-  "notes": "Own pretty string 'CareerOnlineDocumentComponent::internalSerialiseAndCalculateHash(void *, const KeysContainer &, NeNetConnectionID)'; logs 'Serialising %s', 'Skipping %s because already synced', 'changing synchronisation hashes'. Decomp polluted (merged tails)."
+  "notes": "Own string 'CareerOnlineDocumentComponent::internalSerialiseAndCalculateHash'. Walks component tree @+0x358, serialises each (vtbl+0x10) into buffer sized max*1.1; 'Game.CareerSync.DumpComponents(Verbose)' dumps CAREER_DEBUG 'syncinghost_/syncingclient_' .xml ('save_%s','buffer_data','size','base64'); FNV-1a hash per key into map @+0x2c8; sends 1100-byte chunks via FUN_14402e500. All code in pdata bounds (old 'merged tails' note wrong). (lane owner review requested)"
  },
  "signature": {
   "id": "game.career_online_document_comp_internal_serialise_and_calculate_hash",

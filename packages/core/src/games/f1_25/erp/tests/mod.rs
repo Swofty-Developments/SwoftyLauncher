@@ -17,6 +17,7 @@ mod coherence;
 mod overlay;
 mod slices;
 mod stats;
+mod templates;
 mod ui_check;
 mod ui_merge;
 mod write;

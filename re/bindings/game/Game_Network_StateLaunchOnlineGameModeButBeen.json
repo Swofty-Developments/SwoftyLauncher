@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1436dd020",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1436dd020.c;pat:log-channel-NETWORK;xref:0x14585c108",
-  "notes": "StateLaunch update: handles disconnect (\"go back to FE\"), host migration, documents closed, flow-state changes, kicks inappropriate players, finalises network documents, starts/ends datasync, begins championship, stops the FrontEnd flow; writes the next state id to *param_2. Better name: Game_StateLaunch_Update (bound record keeps its name)."
+  "notes": "Vtable cell 0x14585c108. StateLaunch update (flow state +0xce0 0..3, log 'setting m_flowState from %d to %d'): online disconnect -> 'go back to FE'; host migration -> 0x1436dc120/0x1436dc850; 'Documents are all closed.'; datasync 0x143103eb0/0x1431041a0; 'Season started!' 0x143038620; 'Terminating the UI flow.', fade + 'FrontEnd flow stopped', closes 'network_queue'; writes next state id (globals 0x146cb2280/84/88/94) to *param_2. Better name: Game_StateLaunch_Update (bound record keeps its name). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_state_launch_online_game_mode_but_been",
